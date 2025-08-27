@@ -1,0 +1,134 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/**
+ * Ionic Dark Mode
+ * -----------------------------------------------------
+ * For more info, please see:
+ * https://ionicframework.com/docs/theming/dark-mode
+ */
+
+/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
+:root{
+  --error_color:  #bb2124;
+}
+
+h1, h2, h3, h4,h5, h6, p, a{
+  font-family: 'Nunito', sans-serif;
+}
+
+.fredoka{
+  font-family: 'Fredoka', sans-serif;
+}
+
+.w-full{
+  width: 100%;
+  max-width: unset;
+}
+
+.p-0{
+  padding: 0 !important;
+}
+
+.p-l-0{
+  padding-left: 0 !important;
+}
+
+.p-r-0{
+  padding-right: 0 !important;
+}
+
+.flex-center{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+:root{
+  --footer_text: #6B656A;
+}
+
+.card{
+  background: #FDFDFD;
+  box-shadow: 0px 0px 8px 2px rgba(107, 101, 106, 0.15);
+  border-radius: 32px;
+}
+
+.typical-header{
+  top: 0;
+  left: 0;
+  width: 100vw;
+  min-height: 60px;
+
+  h3{
+    font-family: 'Fredoka', sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 140%;
+    margin: 0;
+  }
+
+  p{
+    margin: 0;
+  }
+}
+
+.toggler{
+  margin-top: 25px;
+}
+
+.toggler div{
+  text-align: center;
+  font-size: 18px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 500;
+  color: black;
+  position: relative;
+  padding: 8px 0;
+}
+
+.toggler div.active{
+  color: #8B8DCB;
+}
+
+.toggler div.active:before{
+  position: absolute;
+  content: '';
+  width: 60%;
+  height: 2px;
+  left: 20%;
+  bottom: 0;
+  background: #8B8DCB;
+}
+
+.toggler div:not(:last-child){
+  border-right: 1px solid black;
+}

@@ -1,0 +1,64 @@
+<div class="signup-container">
+  <h2 class="fredoka" style="margin-top: 15px">Login to your account</h2>
+  <div class="container w-full p-0" style="height: calc(100vh - 200px); display: flex; justify-content: center; align-items: center;">
+    <div class="container w-full p-0">
+      <div class="toggle-buttons">
+        <button [class.active]="loginMode === 'phone'" (click)="switchMode('phone')">Phone Number</button>
+        <button [class.active]="loginMode === 'email'" (click)="switchMode('email')">Email</button>
+      </div>
+
+      <form [formGroup]="signInForm" (ngSubmit)="onSubmit()">
+        <ng-container *ngIf="loginMode === 'email'">
+          <div class="input-group">
+            <input [ngClass]="{'error' : email?.invalid && (email?.dirty)}" formControlName="email" type="email" placeholder="Email" />
+            <div class="error" *ngIf="email?.invalid && (email?.dirty)">
+              Oops! That email looks off. Please check it again.
+            </div>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="loginMode === 'phone'">
+          <div class="input-group">
+            <input formControlName="phone" [ngClass]="{'error' : (phone?.invalid || phone?.value.length < 10) && phone?.dirty }"  type="number" placeholder="Phone" />
+            <div class="error" *ngIf="(phone?.invalid || phone?.value.length !== 10) && phone?.dirty ">
+              Please Enter a valid 10 digit phone number
+            </div>
+          </div>
+        </ng-container>
+
+        <div class="input-group">
+          <input formControlName="password" [ngClass]="{'error' : (password?.invalid || password?.value.length < 8) && password?.dirty }" [type]="hidePassword ? 'password' : 'text'" placeholder="Password" />
+          <span class="toggle-eye" (click)="hidePassword = !hidePassword">
+          <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+          <div class="error" *ngIf="(password?.invalid || password?.value.length !== 8) && password?.dirty ">
+            Password should be atleast 8 characters long
+          </div>
+        </span>
+        </div>
+
+        <button class="signup-btn" [disabled]="signInForm.invalid">Login</button>
+      </form>
+
+      <div class="or-divider"><span>OR</span></div>
+
+      <div class="container w-full p-0">
+        <div class="container p-0" style="width: fit-content !important;">
+          <div class="social-logins">
+            <button class="social-btn google"><img src="/assets/app-assets/Onbaording-common-google-icon.svg" alt=""></button>
+            <button class="social-btn apple"><img src="/assets/app-assets/Onbaording-common-apple-icon.svg" alt=""></button>
+            <button class="social-btn facebook"><img src="/assets/app-assets/Onbaording-common-facebook-icon.svg" alt=""></button>
+          </div>
+        </div>
+      </div>
+
+      <p class="login-text">Don't have and Account ?<a href="home/sign-up?step=1"> Sign Up</a></p>
+    </div>
+  </div>
+  <div class="container w-full p-0" style="opacity: 0.5">
+    <label class="whatsapp-checkbox">
+      <input type="checkbox" [(ngModel)]="whatsappConsent" />
+      Receive offers, updates and reminders on <b><i class="fa-brands fa-whatsapp"></i> WhatsApp</b>.
+    </label>
+
+    <p class="terms">By continuing you accept our <a href="#">Privacy Policy</a> and <a href="#">Terms of Use</a>.</p>
+  </div>
+</div>

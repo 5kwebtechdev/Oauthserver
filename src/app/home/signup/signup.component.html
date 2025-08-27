@@ -1,0 +1,177 @@
+<ion-content>
+  <div class="signup-container">
+    <h2 class="fredoka" style="margin-top: 15px"><i (click)="goBack()" class="fa-solid fa-arrow-left" style="margin-right: 10px; font-size: 21px"></i> Create your Account</h2>
+    <h4 class="step-text">
+      Step {{step}} of 4
+      <span>{{stepDesciption[step-1]}}</span>
+    </h4>
+    <div class="step-completion-slider {{returnSameNumber(step)}}">
+
+    </div>
+
+<!--//////////////////////// STEP 1-->
+    <ng-container *ngIf="step === 1" [@slideIn]>
+      <div class="container w-full p-0" style="display: flex; justify-content: center; align-items: center;">
+        <div class="container w-full p-0" style="padding: 50px 0px !important;">
+          <div class="toggle-buttons">
+            <button [class.active]="loginMode === 'phone'" (click)="switchMode('phone')">Phone Number</button>
+            <button [class.active]="loginMode === 'email'" (click)="switchMode('email')">Email</button>
+          </div>
+
+          <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+            <ng-container *ngIf="loginMode === 'email'">
+              <div class="input-group">
+                <input [ngClass]="{'error' : email?.invalid && (email?.dirty)}" formControlName="email" type="email" placeholder="Email" />
+                <div class="error" *ngIf="email?.invalid && (email?.dirty)">
+                  Oops! That email looks off. Please check it again.
+                </div>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="loginMode === 'phone'">
+              <div class="input-group">
+                <input formControlName="phone" [ngClass]="{'error' : (phone?.invalid || phone?.value.length < 10) && phone?.dirty }"  type="number" placeholder="Phone" />
+                <div class="error" *ngIf="(phone?.invalid || phone?.value.length !== 10) && phone?.dirty ">
+                  Please Enter a valid 10 digit phone number
+                </div>
+              </div>
+            </ng-container>
+
+            <div class="input-group">
+              <input formControlName="password" [ngClass]="{'error' : (password?.invalid || password?.value.length < 8) && password?.dirty }" [type]="hidePassword ? 'password' : 'text'" placeholder="Password" />
+              <span class="toggle-eye" (click)="hidePassword = !hidePassword">
+                <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+              </span>
+              <div class="error" *ngIf="(password?.invalid || password?.value.length !== 8) && password?.dirty ">
+                Password should be atleast 8 characters long
+              </div>
+            </div>
+
+            <button class="signup-btn" (click)="signup()"
+            >Sign Up</button>
+          </form>
+
+          <div class="or-divider"><span>OR</span></div>
+
+          <div class="container w-full p-0">
+            <div class="container p-0" style="width: fit-content !important;">
+              <div class="social-logins">
+                <button class="social-btn google"><img src="/assets/app-assets/Onbaording-common-google-icon.svg" alt=""></button>
+                <button class="social-btn apple"><img src="/assets/app-assets/Onbaording-common-apple-icon.svg" alt=""></button>
+                <button class="social-btn facebook"><img src="/assets/app-assets/Onbaording-common-facebook-icon.svg" alt=""></button>
+              </div>
+            </div>
+          </div>
+
+          <p class="login-text">Don't have and Account ?<a href="#"> Sign In</a></p>
+        </div>
+      </div>
+      <div class="container w-full p-0" style="opacity: 0.5">
+        <label class="whatsapp-checkbox">
+          <input type="checkbox" [(ngModel)]="whatsappConsent" />
+          Receive offers, updates and reminders on <b><i class="fa-brands fa-whatsapp"></i> WhatsApp</b>.
+        </label>
+
+        <p class="terms">By continuing you accept our <a href="#">Privacy Policy</a> and <a href="#">Terms of Use</a>.</p>
+      </div>
+    </ng-container >
+    <ng-container *ngIf="step === 2" [@slideIn]>
+      <div class="container w-full" style="height: 50px">
+
+      </div>
+      <div class="role-selector container p-0" [ngClass]="{'active': roleSelected === 'child'}" (click)="roleSelected = 'child'">
+        <div class="row">
+          <div class="col-6">
+            <h2>Child</h2>
+            <h4>Build Habits</h4>
+            <h4>Earn Rewards</h4>
+            <h4>Grow Your Pet</h4>
+          </div>
+          <div class="col-6">
+            <img src="/assets/app-assets/Onboarding-role-selection-child.svg" alt="">
+          </div>
+        </div>
+      </div>
+      <div class="role-selector container p-0" [ngClass]="{'active': roleSelected === 'parent'}" (click)="roleSelected = 'parent'" style="margin-top: 25px">
+        <div class="row">
+          <div class="col-6 p-l-0">
+            <img src="/assets/app-assets/Onboarding-role-selection-parent.svg" alt="">
+          </div>
+          <div class="col-6">
+            <h2>Parent</h2>
+            <h4>Build Habits</h4>
+            <h4>Earn Rewards</h4>
+            <h4>Grow Your Pet</h4>
+          </div>
+        </div>
+      </div>
+
+      <button class="signup-btn" style="margin-top: 25px" [disabled]="!roleSelected" (click)="proceedWithRole()">Save & Continue</button>
+    </ng-container>
+    <ng-container *ngIf="step === 3" [@slideIn]>
+      <div class="profile">
+        <form [formGroup]="profileForm">
+          <h4>Full Name <span>Just for Setup. Never Shown</span></h4>
+          <div class="input-group">
+            <input [ngClass]="{'error' : name?.invalid && (email?.dirty)}" formControlName="name" type="text" placeholder="Full Name" />
+            <div class="error" *ngIf="name?.invalid && (name?.dirty)">
+              Oops! That email looks off. Please check it again.
+            </div>
+          </div>
+          <h4>Date of Birth <span>To Match Content to your Age</span></h4>
+          <div class="input-group">
+<!--            <input  formControlName="dob" type="text" placeholder="Date of Birth" />-->
+            <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" [showTrigger]="openBirthdayPicker" style="width: 100%" >
+              <input type="text" formControlName="dob" (click)="openBirthdayPickerNow()" placeholder="Date of Birth" />
+            </mindful-birthdaypicker>
+          </div>
+          <h4>Gender <span>Used for small personalisation touches</span></h4>
+          <div class="row">
+            <div class="col-6">
+              <div class="gender-select-button" (click)="gender = 'male'" [ngClass]="gender === 'male' ? 'active' : null">
+                Male
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="gender-select-button" (click)="gender = 'female'" [ngClass]="gender === 'female' ? 'active' : null">
+                Female
+              </div>
+            </div>
+          </div>
+        </form>
+        <ng-container *ngIf="gender">
+          <h4 style="margin-top: 15px">Choose an avatar <span>Your buddy's way of finding you</span></h4>
+          <div class="row">
+            <ng-container *ngFor="let avatar of avatars">
+              <div class="col-4 single-avatar" *ngIf="avatar.gender === gender" (click)="avatarSelected = avatar.key" [ngClass]="avatarSelected === avatar.key ? 'active' : null">
+                <img src="{{avatar.value}}" alt="">
+              </div>
+            </ng-container>
+          </div>
+        </ng-container>
+      </div>
+      <button class="signup-btn" style="margin-top: 25px" [disabled]="false" (click)="proceedWithAvatar()">Save & Continue</button>
+    </ng-container>
+    <ng-container *ngIf="step === 4" [@slideIn]>
+      <swiper-container
+        slides-per-view="1.4"
+        centered-slides="true"
+        space-between="20"
+        grab-cursor="true"
+        (animationend)="onSlideChange()"
+        (transitionend)="onSlideChange()"
+        #swiperEl
+        [style]="{ marginTop: '50px' }"
+      >
+        <swiper-slide *ngFor="let pet of pets">
+          <div class="pet-card">
+            <h4>{{pet.name}}</h4>
+            <p>{{pet.text[0]}}</p>
+            <p>{{pet.text[1]}}</p>
+            <img [src]="pet.image" alt="" />
+          </div>
+        </swiper-slide>
+      </swiper-container>
+      <button class="signup-btn" style="margin-top: 25px" [disabled]="false" (click)="proceedWithAvatar()">Let's get started</button>
+    </ng-container>
+  </div>
+</ion-content>

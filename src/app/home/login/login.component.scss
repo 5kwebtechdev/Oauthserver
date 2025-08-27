@@ -1,0 +1,162 @@
+.signup-container {
+  margin: auto;
+  padding: 1.5rem;
+  background: #FDEAD7;
+  font-family: "Segoe UI", sans-serif;
+  color: #532b19;
+  height: 100vh;
+  width: 100vw;
+  border-radius: 0;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 500;
+  }
+
+  .step-text {
+    font-size: 0.9rem;
+    color: #6b3d2b;
+  }
+
+  .subheading {
+    margin-bottom: 1rem;
+    font-weight: 500;
+  }
+
+  .toggle-buttons {
+    display: flex;
+    margin-bottom: 40px;
+    background: #f7c29b;
+    border-radius: 40px;
+
+    button {
+      flex: 1;
+      padding: 0.7rem;
+      border: none;
+      border-radius: 30px;
+      font-weight: 500;
+      cursor: pointer;
+      margin: 6px;
+      background: transparent;
+      color: #772817;
+
+      &.active {
+        background: #ff823b;
+        color: white;
+      }
+    }
+  }
+
+  .input-group {
+    margin-bottom: 1rem;
+    position: relative;
+
+    input {
+      width: 100%;
+      padding: 0.8rem;
+      border: 2px solid #ff823b;
+      border-radius: 10px !important;
+      font-size: 1rem;
+    }
+
+    input.error{
+      border-color:var(--error_color);
+    }
+
+    .toggle-eye {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+
+    .error {
+      color: var(--error_color);
+      font-size: 0.8rem;
+      margin-top: 0.3rem;
+    }
+  }
+
+  .signup-btn {
+    width: 100%;
+    background: #ff9a5a;
+    padding: 0.9rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    margin-bottom: 1rem;
+    cursor: pointer;
+  }
+
+  .or-divider {
+    text-align: center;
+    margin: 1rem 0;
+
+    span {
+      background: #ffe9db;
+      padding: 0 10px;
+    }
+
+    &::before,
+    &::after {
+      content: '';
+      display: inline-block;
+      height: 1px;
+      background: #c08464;
+      width: 40%;
+      vertical-align: middle;
+    }
+  }
+
+  .social-logins {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1rem;
+    width: 50vw;
+    margin-top: 1.2rem;
+
+    .social-btn {
+      width: 40px;
+      height: 40px;
+      font-size: 1.2rem;
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+    }
+  }
+
+  .login-text {
+    text-align: center;
+    margin-bottom: 1rem;
+    font-weight: 500;
+    font-size: 16px;
+    color: #772817;
+
+    a {
+      color: #772817;
+      font-weight: bold;
+    }
+  }
+
+  .whatsapp-checkbox {
+    align-items: center;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: #772817;
+  }
+
+  .terms {
+    font-size: 0.75rem;
+    text-align: center;
+    color: #772817;
+
+    a {
+      color: #772817;
+      font-weight: bold;
+    }
+  }
+}

@@ -1,0 +1,95 @@
+.carousel-wrapper {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.carousel-track {
+  white-space: nowrap;
+  transition: transform 0.5s ease-in-out;
+  height: 100%;
+}
+
+.carousel-slide {
+  display: inline-block;
+  width: 100vw;
+  height: 100vh;
+  vertical-align: top;
+  background: linear-gradient(to top right, #ffb974, #ffe3c8);
+  position: relative;
+}
+
+.slide-image {
+  width: 100%;
+  object-fit: contain;
+  position: relative;
+  top: -15px;
+}
+
+.text-content {
+  padding: 1.5rem;
+  text-align: left;
+}
+
+.text-content h2 {
+  color: #512100;
+  font-size: 40px;
+  margin-bottom: 1rem;
+  font-family: 'Fredoka', sans-serif;
+}
+
+.text-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: #fff;
+}
+
+.text-content li {
+  margin-bottom: 0.5rem;
+  font-size: 22px;
+  font-family: 'Nunito', sans-serif;
+}
+
+.carousel-footer {
+  position: absolute;
+  bottom: 1rem;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ddd;
+  cursor: pointer;
+}
+
+.dots span.active {
+  background-color: #a61e4d;
+}
+
+.next-btn {
+  background: #fff;
+  border-radius: 50%;
+  width: 60px;
+  aspect-ratio: 1;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 5px;
+  font-size: 24px;
+  transition: 0.4s;
+}

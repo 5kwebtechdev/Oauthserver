@@ -1,0 +1,94 @@
+.footer{
+  height: 75px;
+  border-top: 1px solid #cecece;
+  background: white;
+  box-shadow: 0 0 12px 0 rgba(107, 101, 106, 0.16);
+  position: fixed;
+  width: 100vw;
+  bottom: 0;
+  left: 0;
+  z-index: 99;
+
+  // Variables to control size of the middle button
+  --glow_size: 84px;
+  --button_size: 70px;
+  --hero_button_image_size: 60px;
+}
+
+.home-button-container{
+  width: 100%;
+  max-width: unset;
+  padding: 0 !important;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 99;
+}
+
+.hero-button {
+  width: var(--button_size);
+  aspect-ratio: 1;
+  display: block;
+  background-size: 600%;
+  background: white;
+  border-radius: 10000px;
+  position: relative;
+  margin: auto;
+  bottom: 35px;
+  background-position: -65%;
+}
+
+.hero-button::after{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: black;
+
+    /* Apply circular mask hole */
+    //-webkit-mask-image: radial-gradient(circle 50px at center, transparent 0, black 1px);
+    -webkit-mask-composite: destination-out;
+    mask-image: radial-gradient(circle 50px at center, transparent 0, black 1px);
+    mask-composite: subtract;
+    border-radius: 100px;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.hero-button:before {
+  content: '';
+  position: absolute;
+  width: var(--glow_size);
+  aspect-ratio: 1;
+  background: radial-gradient(ellipse at top, #8b8dcb, transparent),
+  radial-gradient(ellipse at bottom, #89b3b6, transparent),
+  radial-gradient(ellipse at left, #90214d, transparent),
+  radial-gradient(ellipse at right, #f6ac72, transparent);
+  display: block;
+  left: calc((var(--button_size) - var(--glow_size)) / 2);
+  top: calc((var(--button_size) - var(--glow_size)) / 2);
+  border-radius: 1000px;
+  z-index: -1;
+  filter: blur(4px);
+  transform: rotate(-45deg);
+}
+
+.hero-button img{
+  width: var(--hero_button_image_size);
+  padding-left: calc(var(--button_size) - var(--hero_button_image_size));
+  padding-top: calc(var(--button_size) - var(--hero_button_image_size));
+}
+
+p{
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  color: var(--footer_text);
+  text-align: center;
+  margin-top: 10px;
+}
+
+.col-5 img{
+  display: block;
+  margin: auto;
+  padding-top: 15px;
+}

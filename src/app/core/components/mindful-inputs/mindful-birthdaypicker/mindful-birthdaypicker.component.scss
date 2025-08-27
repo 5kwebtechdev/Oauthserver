@@ -1,0 +1,99 @@
+.birthday-input {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.overlay {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.popover {
+  width: 100%;
+  max-height: calc(5 * 40px + 48px + 64px); // picker + header + footer
+  background: #FDEAD7;
+  border-radius: 20px 20px 0 0;
+  padding-top: 10px;
+  max-width: unset;
+}
+
+.header {
+  text-align: right;
+  padding: 0 16px;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.picker {
+  position: relative;
+  display: flex;
+  justify-content: space-around;
+  height: 200px; // 5 rows * 40
+}
+
+.column {
+  width: 33%;
+  height: 100%;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  text-align: center;
+}
+
+.item {
+  height: 40px;
+  line-height: 40px;
+  opacity: 0.5;
+  color: #772817;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.item.selected {
+  font-weight: bold;
+  color: white;
+  opacity: 1;
+  border-radius: 6px;
+}
+
+.item:nth-child(n+3):nth-child(-n+999) {
+  // optional styling tweak
+}
+
+.highlight-bar {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-20px);
+  height: 40px;
+  width: 90%;
+  pointer-events: none;
+  border-radius: 10px;
+  background: #EE6621;
+}
+
+.footer {
+  padding: 16px;
+  text-align: center;
+}
+
+button {
+  background: transparent;
+  color: #EE6621;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 24px;
+  font-size: 16px;
+}

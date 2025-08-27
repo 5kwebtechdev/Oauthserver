@@ -1,0 +1,30 @@
+<div class="container">
+  <div class="circle-wrapper">
+    <svg class="progress-ring" viewBox="0 0 120 120" preserveAspectRatio="xMidYMid meet">
+      <circle
+        class="ring-bg"
+        cx="60"
+        cy="60"
+        r="50"
+        stroke="#e0e0e0"
+        stroke-width="14"
+        fill="transparent"
+      />
+      <circle
+        class="ring-progress"
+        cx="60"
+        cy="60"
+        r="50"
+        [attr.stroke]="borderColor"
+        stroke-width="14"
+        fill="transparent"
+        stroke-linecap="round"
+        [attr.stroke-dasharray]="339.292"
+        [attr.stroke-dashoffset]="339.292 - (animatedPercentage / 100 * 339.292)"
+        transform="rotate(-90 60 60)"
+      />
+    </svg>
+    <div class="circle-text">{{ innerText }}</div>
+  </div>
+  <div class="below-text">{{ belowText }}</div>
+</div>

@@ -1,0 +1,171 @@
+import { Component, Input, OnInit } from '@angular/core';
+
+interface TimetableEvent {
+  startTime: string; // "HH:mm"
+  endTime: string;   // "HH:mm"
+  title: string;
+  type: string;
+  _top?: number;
+  _height?: number;
+  _column?: number;
+  _columnCount?: number;
+}
+
+@Component({
+  // eslint-disable-next-line @angular-eslint/component-selector
+  selector: 'mindful-timeline',
+  templateUrl: './mindful-timeline.component.html',
+  styleUrls: ['./mindful-timeline.component.scss'],
+  standalone: false
+})
+export class MindfulTimelineComponent implements OnInit {
+  @Input() events: TimetableEvent[] = [];
+
+  timeSlots: string[] = [];
+  compressedSlots: { startHour: number, count: number }[] = [];
+  hourHeight = 60;
+
+  ngOnInit(): void {
+    this.generateTimeSlots();
+    this.compressEmptyBlocks();
+    this.assignEventPositions();
+  }
+
+  generateTimeSlots() {
+    this.timeSlots = Array.from({ length: 24 }, (_, i) =>
+      `${i.toString().padStart(2, '0')}:00`
+    );
+  }
+
+  parseTime(time: string): number {
+    const [h, m] = time.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  assignEventPositions() {
+    // Sort events by start time
+    this.events.sort((a, b) => this.parseTime(a.startTime) - this.parseTime(b.startTime));
+
+    const groups: TimetableEvent[][] = [];
+    let currentGroup: TimetableEvent[] = [];
+
+    for (const event of this.events) {
+      const eventStart = this.parseTime(event.startTime);
+      const eventEnd = this.parseTime(event.endTime);
+
+      // Check for overlap with group
+      if (
+        currentGroup.length === 0 ||
+        this.parseTime(currentGroup[currentGroup.length - 1].endTime) > eventStart
+      ) {
+        currentGroup.push(event);
+      } else {
+        this.assignColumns(currentGroup);
+        currentGroup = [event];
+      }
+    }
+
+    if (currentGroup.length > 0) {
+      this.assignColumns(currentGroup);
+    }
+
+    // Calculate top and height
+    this.events.forEach(event => {
+      event._top = this.getCompressedTop(this.parseTime(event.startTime));
+      const duration = this.parseTime(event.endTime) - this.parseTime(event.startTime);
+      event._height = (duration / 60) * this.hourHeight;
+    });
+  }
+
+  assignColumns(events: TimetableEvent[]) {
+    const slots: TimetableEvent[][] = [];
+
+    for (const event of events) {
+      let placed = false;
+      for (const slot of slots) {
+        if (this.parseTime(slot[slot.length - 1].endTime) <= this.parseTime(event.startTime)) {
+          slot.push(event);
+          placed = true;
+          break;
+        }
+      }
+
+      if (!placed) {
+        slots.push([event]);
+      }
+    }
+
+    const total = slots.length;
+    slots.forEach((slot, colIndex) => {
+      slot.forEach(e => {
+        e._column = colIndex;
+        e._columnCount = total;
+      });
+    });
+  }
+
+  compressEmptyBlocks() {
+    const occupied = new Set<number>();
+    this.events.forEach(e => {
+      const startHour = Math.floor(this.parseTime(e.startTime) / 60);
+      const endHour = Math.ceil(this.parseTime(e.endTime) / 60);
+      for (let h = startHour; h < endHour; h++) {
+        occupied.add(h);
+      }
+    });
+
+    this.compressedSlots = [];
+    let i = 0;
+
+    while (i < 24) {
+      if (!occupied.has(i)) {
+        let start = i;
+        while (i < 24 && !occupied.has(i)) i++;
+        const gap = i - start;
+        if (gap >= 5) {
+          this.compressedSlots.push({ startHour: start, count: gap });
+        }
+      } else {
+        i++;
+      }
+    }
+  }
+
+
+
+  getCompressedTop(minutes: number): number {
+    const hour = Math.floor(minutes / 60);
+    const minuteOffset = minutes % 60;
+    const skipHeight = 60;
+
+    let top = 0;
+    let compressedOffset = 0;
+
+    let blocksSkipped = 0;
+    let countSkippped = 0;
+
+    this.compressedSlots.filter((block) => block.startHour < hour).forEach(block => {
+      blocksSkipped++;
+      countSkippped += block.count;
+    })
+
+    console.log(hour, countSkippped, blocksSkipped, minutes, this.compressedSlots);
+    minutes = minutes - (countSkippped * 60) + (blocksSkipped * 60);
+    console.log(minutes);
+    return minutes;
+  }
+
+
+
+  isCompressedSlot(hour: number): boolean {
+    return this.compressedSlots.some(
+      block => hour >= block.startHour && hour < block.startHour + block.count
+    );
+  }
+
+  getCompressedHeight(hour: number): number {
+    const block = this.compressedSlots.find(s => hour === s.startHour);
+    if (!block) return 0;
+    return 60; // compressed visual height
+  }
+}

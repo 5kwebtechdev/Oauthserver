@@ -1,0 +1,20 @@
+.mindful-selectors {
+  .label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .badges-container {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 5px 0;
+  }
+
+  mindful-badge {
+    cursor: pointer;
+  }
+}

@@ -1,0 +1,8 @@
+<div *ngIf="type" class="button {{type}}" [ngClass]="{'medium': medium , 'large': large, 'disabled': disabled}">
+  <p>{{text}}</p>
+</div>
+<ng-container *ngIf="!type">
+  <p style="color: red; font-weight: bold; font-size:16px">
+    Button Style Not defined
+  </p>
+</ng-container>

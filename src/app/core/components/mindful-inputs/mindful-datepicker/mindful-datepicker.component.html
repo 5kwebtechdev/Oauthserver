@@ -1,0 +1,45 @@
+<div class="datepicker-wrapper">
+  <input type="text" [value]="startDate ? (type === 'range' && endDate ? startDate.toDateString() + ' - ' + endDate.toDateString() : startDate.toDateString()) : ''"
+         (click)="toggleCalendar()" readonly />
+
+  <div class="calendar-overlay" *ngIf="isOpen">
+    <div class="calendar-popup">
+      <div class="calendar-header">
+        <span>{{ currentMonth | date: 'MMMM yyyy' }}</span>
+        <div class="nav-buttons">
+          <button (click)="prevMonth()">&#8249;</button>
+          <button (click)="nextMonth()" style="margin-left: 20px">&#8250;</button>
+        </div>
+      </div>
+
+      <div class="range-selector" *ngIf="type === 'range'">
+        <div class="box" [class.active]="selectingStart" (click)="selectingStart = true">
+          <label>Start Date</label>
+          <div>{{ startDate ? (startDate | date: 'mediumDate') : 'Not selected' }}</div>
+        </div>
+        <div class="box" [class.active]="!selectingStart" (click)="selectingStart = false">
+          <label>End Date</label>
+          <div>{{ endDate ? (endDate | date: 'mediumDate') : 'Not selected' }}</div>
+        </div>
+      </div>
+
+      <div class="calendar-grid">
+        <div class="day" *ngFor="let d of ['Sun','Mon','Tue','Wed','Thur','Fri','Sat']">{{ d }}</div>
+        <button *ngFor="let date of getMonthDays()"
+                [class.isStartDate] = "isStartOfRange(date)"
+                [class.isEndDate] = "isEndOfRange(date)"
+                [class.currentMonth]="isDateinCurrentMonth(date)"
+                [class.selected]="isSameDay(date, startDate) || isSameDay(date, endDate)"
+                [class.in-range]="isInRange(date)"
+                (click)="selectDate(date)">
+          <p>{{ date.getDate() }}</p>
+        </button>
+      </div>
+
+      <div class="calendar-actions">
+        <button (click)="cancelSelection()">Cancel</button>
+        <button (click)="confirmSelection()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>

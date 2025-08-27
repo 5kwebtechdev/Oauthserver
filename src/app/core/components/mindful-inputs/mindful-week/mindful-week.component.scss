@@ -1,0 +1,41 @@
+.week-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100vw;
+  padding: 10px;
+  box-sizing: border-box;
+  background: #fff;
+  gap: 5px;
+}
+
+.day-card {
+  flex: 1;
+  border-radius: 5px;
+  text-align: center;
+  padding: 10px 0;
+  color: #333;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  user-select: none;
+
+  .day {
+    font-size: 14px;
+    font-weight: 400;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .date {
+    font-size: 16px;
+    font-weight: 400;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  &.today {
+    border: 1px solid #90214D;
+  }
+
+  &.selected {
+    background-color: #90214D;
+    color: #fff;
+  }
+}

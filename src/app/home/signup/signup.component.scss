@@ -1,0 +1,409 @@
+
+.signup-container {
+  margin: auto;
+  padding: 1.5rem;
+  background: #FDEAD7;
+  font-family: "Segoe UI", sans-serif;
+  color: #532b19;
+  height: 100vh;
+  width: 100vw;
+  border-radius: 0;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 500;
+  }
+
+  .step-text {
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #6b3d2b;
+    margin-top: 25px;
+
+    span{
+      display: block;
+      font-size: 20px;
+      font-weight: 700;
+    }
+  }
+
+  .step-completion-slider{
+    --step: 1;
+    width: 100%;
+    height: 4px;
+    background: #FEF6EE;
+    border-radius: 20px;
+    margin-top: 10px;
+    position: relative;
+
+    &::before{
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0%;
+      height: 100%;
+      background: #772817;
+      border-radius: 20px;
+      transition: 0.2s;
+      transition-timing-function: ease-in-out;
+    }
+  }
+
+  .step-completion-slider.one::before{
+    width: 25%;
+  }
+
+  .step-completion-slider.two::before{
+    width: 50%;
+  }
+
+  .step-completion-slider.three::before{
+    width: 75%;
+  }
+
+  .step-completion-slider.four::before{
+    width: 100%;
+  }
+
+
+  .subheading {
+    margin-bottom: 1rem;
+    font-weight: 500;
+  }
+
+  .toggle-buttons {
+    display: flex;
+    margin-bottom: 40px;
+    background: #f7c29b;
+    border-radius: 40px;
+
+    button {
+      flex: 1;
+      padding: 0.7rem;
+      border: none;
+      border-radius: 30px;
+      font-weight: 500;
+      cursor: pointer;
+      margin: 6px;
+      background: transparent;
+      color: #772817;
+
+      &.active {
+        background: #ff823b;
+        color: white;
+      }
+    }
+  }
+
+  .input-group {
+    margin-bottom: 1rem;
+    position: relative;
+
+    input {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 10px !important;
+      font-size: 1rem;
+      background: #FAD2AE;
+      border: 2px solid transparent;
+      transition: 0.2s;
+
+      &:focus,
+      &:active,
+      &:hover,
+      &:focus-visible {
+        border: 2px solid #ff823b;
+        outline: none;
+      }
+    }
+
+    input.error{
+      border-color:var(--error_color);
+    }
+
+    .toggle-eye {
+      position: absolute;
+      transform: translateY(-50%);
+      cursor: pointer;
+      top: 28px;
+      right: 15px;
+    }
+
+    .error {
+      color: var(--error_color);
+      font-size: 0.8rem;
+      margin-top: 0.3rem;
+    }
+  }
+
+  .signup-btn {
+    width: 100%;
+    background: #ff9a5a;
+    padding: 0.9rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    margin-bottom: 1rem;
+    cursor: pointer;
+  }
+
+  .or-divider {
+    text-align: center;
+    margin: 1rem 0;
+
+    span {
+      background: #ffe9db;
+      padding: 0 10px;
+    }
+
+    &::before,
+    &::after {
+      content: '';
+      display: inline-block;
+      height: 1px;
+      background: #c08464;
+      width: 40%;
+      vertical-align: middle;
+    }
+  }
+
+  .social-logins {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1rem;
+    width: 50vw;
+    margin-top: 1.2rem;
+
+    .social-btn {
+      width: 40px;
+      height: 40px;
+      font-size: 1.2rem;
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+    }
+  }
+
+  .login-text {
+    text-align: center;
+    margin-bottom: 1rem;
+    font-weight: 500;
+    font-size: 16px;
+    color: #772817;
+
+    a {
+      color: #772817;
+      font-weight: bold;
+    }
+  }
+
+  .whatsapp-checkbox {
+    align-items: center;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: #772817;
+  }
+
+  .terms {
+    font-size: 0.75rem;
+    text-align: center;
+    color: #772817;
+
+    a {
+      color: #772817;
+      font-weight: bold;
+    }
+  }
+
+  .role-selector{
+    background: #FAD2AE;
+    border-radius: 25px;
+    overflow: hidden;
+    padding-top: 25px !important;
+    padding-left: 15px !important;
+    position: relative;
+    border: 5px solid transparent;
+    transition: 0.2s;
+
+    h2{
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 500;
+      font-size: 40px;
+      text-align: left;
+      color: #772817;
+      margin: 10px 0px 15px 0px;
+    }
+
+    h4{
+      font-family: 'Nunito', sans-serif;
+      font-weight: 400;
+      font-size: 20px;
+      text-align: left;
+      opacity: 0.5;
+    }
+
+    // Add custom rules for second child of parent
+    &:nth-child(2) {
+      margin-top: 15px;
+      padding-left: 0px !important;
+      padding-right: 15px !important;
+
+      h2{
+        text-align: right;
+      }
+
+      h4{
+        text-align: right;
+      }
+    }
+
+    &.active{
+      border: 5px solid #EE6621;
+    }
+
+    &::before{
+      //Use font awesome 6.7 tick mark in content
+      content: '\f00c';
+      font-family: 'Font Awesome 6 Free', serif;
+      font-weight: 900;
+      position: absolute;
+      top: 12px;
+      right: 10px;
+      width: 24px;
+      aspect-ratio: 1;
+      border-radius: 100px;
+      background: #4CAF50;
+      font-size: 12px;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: 0.2s;
+    }
+
+    &.active::before{
+      opacity: 1;
+    }
+  }
+
+  .profile{
+    margin-top: 50px;
+
+
+    h4{
+      font-style: normal;
+      font-weight: 600;
+      font-size: 20px;
+      line-height: 130%;
+      color: #772817;
+      position: relative;
+
+      span{
+        font-weight: 500;
+        font-size: 13px;
+        line-height: 130%;
+        color: #EE6621;
+        text-align: right;
+        position: absolute;
+        right: 0;
+        bottom: 0;
+      }
+    }
+  }
+
+  .gender-select-button{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #FAD2AE;
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    border-radius: 15px;
+    height: 50px;
+    color: #772817;
+    font-weight: 500;
+    transition: 0.2s;
+
+    &.active{
+      background: #EE6621;
+      color: white;
+    }
+  }
+
+  .single-avatar{
+    margin-top: 15px;
+    position: relative;
+
+    img{
+      border-radius: 1000px;
+      border: 5px solid transparent;
+      transition: 0.2s;
+    }
+
+    &::before{
+      //Use font awesome 6.7 tick mark in content
+      content: '\f00c';
+      font-family: 'Font Awesome 6 Free', serif;
+      font-weight: 900;
+      position: absolute;
+      top: 12px;
+      right: 10px;
+      width: 24px;
+      aspect-ratio: 1;
+      border-radius: 100px;
+      background: #4CAF50;
+      font-size: 12px;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: 0.2s;
+    }
+
+    &.active{
+      img{
+        border: 5px solid #EE6621;
+      }
+
+      &::before{
+        opacity: 1;
+      }
+    }
+  }
+}
+
+swiper-slide.swiper-slide-active .pet-card {
+  transform: scale(1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  background: #EE6621;
+}
+
+.pet-card{
+  background: #FAD2AE;
+  border-radius: 20px;
+  padding: 20px;
+  padding-bottom: 0;
+  transition: 0.2s;
+  transform: scale(0.95);
+}
+
+.pet-card h4{
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 130%;
+  color: white;
+}
+
+.pet-card p{
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  color: white;
+}

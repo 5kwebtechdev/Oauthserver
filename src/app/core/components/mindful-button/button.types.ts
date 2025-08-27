@@ -1,0 +1,16 @@
+export type buttonStyles =
+    'lavendar'
+  | 'lavendar-transparent'
+  | 'violet'
+  | 'violet-transparent'
+  | 'orange'
+  | 'orange-transparent'
+  | 'green'
+  | 'red'
+  | 'magenta'
+  | 'magenta-transparent'
+  | 'mango'
+  | 'plum'
+  | 'gold'
+  | 'aqua'
+  | 'coral';
