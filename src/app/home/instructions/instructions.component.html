@@ -1,0 +1,39 @@
+<ion-content>
+  <div class="instructions">
+    <h2><i class="fa-solid fa-arrow-left" routerLink="/home/sign-up" style="margin-right: 10px; font-size: 21px"></i> Instructions</h2>
+
+    <ol class="steps">
+      <li>Ask your parent to create their account on their device.</li>
+      <li>After signup, your parent creates a family in the app.</li>
+      <li>Your parent will see a family code and a QR code.</li>
+      <li>Enter the family code or scan the QR code in the next screen to join their family.</li>
+      <li>Once linked, you are good to proceed !</li>
+    </ol>
+
+    <h3>FAQ's</h3>
+
+    <details class="faq">
+      <summary>What if my parent doesn't have an account yet?</summary>
+      <p>Ask them to download the app and sign up. Then they can create a family and share the code with you.</p>
+    </details>
+
+    <details class="faq">
+      <summary>How do I get the family code or QR from my parent?</summary>
+      <p>In your parent's app, go to Family settings → Share code/QR. They can show or send it to you.</p>
+    </details>
+
+    <details class="faq">
+      <summary>What if the code or QR doesn't work when I enter it?</summary>
+      <p>Double-check the code, ensure internet is on, and try again. Ask your parent to regenerate if needed.</p>
+    </details>
+
+    <details class="faq">
+      <summary>Can I start using the app without entering a code right away?</summary>
+      <p>You can explore, but linking to your parent's family unlocks the full experience.</p>
+    </details>
+
+    <button class="next" routerLink="/home/sign-up" [queryParams]="{ step: 3 }">Next</button>
+  </div>
+</ion-content>
+
+ 

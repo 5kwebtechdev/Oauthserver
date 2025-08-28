@@ -9,6 +9,7 @@ import {LoginComponent} from "./login/login.component";
 import {SignupComponent} from "./signup/signup.component";
 import {MindfulSelectorsComponent} from "../core/components/mindful-selectors/mindful-selectors.component";
 import {MindfulInputsModule} from "../core/components/mindful-inputs/mindful-inputs.module";
+import {InstructionsComponent} from "./instructions/instructions.component";
 
 @NgModule({
     imports: [
@@ -20,7 +21,7 @@ import {MindfulInputsModule} from "../core/components/mindful-inputs/mindful-inp
         MindfulSelectorsComponent,
         MindfulInputsModule
     ],
-  declarations: [HomePage, LoginComponent, SignupComponent],
+  declarations: [HomePage, LoginComponent, SignupComponent, InstructionsComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
 })
 export class HomePageModule {}

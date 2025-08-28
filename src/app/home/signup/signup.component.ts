@@ -37,6 +37,9 @@ export class SignupComponent implements AfterViewInit {
   public avatarSelected:any;
 
   public openBirthdayPicker = false;
+  public showAgeSuggestionModal = false;
+  public computedAge: number | null = null;
+  private ageModalShown = false;
 
 
   public stepDesciption = [
@@ -167,7 +170,6 @@ export class SignupComponent implements AfterViewInit {
       this.core.triggerToasrt('Please select a role');
       return;
     }
-
     this.router.navigate(['home/sign-up'], { queryParams: { step: 3 } });
   }
 
@@ -177,7 +179,8 @@ export class SignupComponent implements AfterViewInit {
       return;
     }
 
-    this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
+    // this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
+    this.router.navigate(['home/instructions']);
   }
 
   goBack(){
@@ -213,9 +216,48 @@ export class SignupComponent implements AfterViewInit {
   }
 
   birthdayChanged(date: any){
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      return;
+    }
+
     this.profileForm.patchValue({
-      dob: new Date(date).toString().slice(4, 16)
+      dob: parsedDate.toISOString().slice(0, 10)
     })
+
+    this.computedAge = this.calculateAge(parsedDate);
+    if (this.computedAge !== null && this.computedAge >= 18 && !this.ageModalShown) {
+      this.showAgeSuggestionModal = true;
+      this.ageModalShown = true;
+    }
+  }
+
+  private calculateAge(dob: Date): number | null {
+    try {
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+        age--;
+      }
+      return age;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  closeAgeSuggestionModal(): void {
+    this.showAgeSuggestionModal = false;
+  }
+
+  selectSelfRole(): void {
+    this.roleSelected = 'child';
+    this.showAgeSuggestionModal = false;
+  }
+
+  selectParentRole(): void {
+    this.roleSelected = 'parent';
+    this.showAgeSuggestionModal = false;
   }
 
   protected readonly top = top;

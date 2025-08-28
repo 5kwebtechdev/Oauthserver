@@ -407,3 +407,78 @@ swiper-slide.swiper-slide-active .pet-card {
   font-size: 13px;
   color: white;
 }
+
+/* Age modal */
+.age-modal-backdrop{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.35);
+  z-index: 1000;
+}
+
+.age-modal{
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100vw - 48px);
+  max-width: 520px;
+  background: #FFE9D6;
+  color: #532b19;
+  border-radius: 16px;
+  padding: 20px;
+  z-index: 1001;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+  text-align: center;
+
+  h3{
+    margin: 0 0 8px 0;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+  }
+
+  p{
+    margin: 0 0 16px 0;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .actions{
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+
+    button{
+      flex: 1;
+      height: 48px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .secondary{
+      background: #FFE1CD;
+      color: #532b19;
+      border: 2px solid #EE6621;
+    }
+
+    .primary{
+      background: #EE6621;
+      color: #fff;
+    }
+  }
+
+  .close{
+    position: absolute;
+    right: 10px;
+    top: 8px;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    line-height: 24px;
+    cursor: pointer;
+  }
+}
