@@ -92,9 +92,9 @@
         <div class="row">
           <div class="col-6">
             <h2>Child</h2>
-            <h4>Build Habits</h4>
-            <h4>Earn Rewards</h4>
-            <h4>Grow Your Pet</h4>
+            <h4>Learn and grow</h4>
+            <h4>Link with your parents</h4>
+            <h4>Earn rewards together</h4>
           </div>
           <div class="col-6">
             <img src="/assets/app-assets/Onboarding-role-selection-child.svg" alt="">
@@ -109,9 +109,24 @@
           </div>
           <div class="col-6">
             <h2>Parent</h2>
-            <h4>Build Habits</h4>
-            <h4>Earn Rewards</h4>
-            <h4>Grow Your Pet</h4>
+            <h4>Grow together</h4>
+            <h4>Link with child</h4>
+            <h4>Track progress</h4>
+          </div>
+        </div>
+      </div>
+
+      <div class="role-selector container p-0" [ngClass]="{'active': roleSelected === 'self'}"
+        (click)="roleSelected = 'self'" style="margin-top: 25px">
+        <div class="row">
+          <div class="col-6">
+            <h2>Self</h2>
+            <h4>Personal Journey</h4>
+            <h4>Daily Reflections</h4>
+            <h4>Mindful Growth</h4>
+          </div>
+          <div class="col-6">
+            <img src="/assets/app-assets/Onboarding-role-selection-self.svg" alt="">
           </div>
         </div>
       </div>
@@ -133,7 +148,7 @@
           <h4>Date of Birth <span>To Match Content to your Age</span></h4>
           <div class="input-group">
             <!--            <input  formControlName="dob" type="text" placeholder="Date of Birth" />-->
-            <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" [showTrigger]="openBirthdayPicker"
+            <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" [showTrigger]="openBirthdayPicker"  
               style="width: 100%">
               <input type="text" formControlName="dob" (click)="openBirthdayPickerNow()" placeholder="Date of Birth" />
             </mindful-birthdaypicker>
@@ -192,8 +207,8 @@
       <p>Based on your profile, you might love these
       </p>
       <div class="actions">
-        <button class="secondary" (click)="selectSelfRole()">Try Self Role</button>
-        <button class="primary" (click)="selectParentRole()">Try Parent Role</button>
+        <button class="secondary" (click)="closeAgeSuggestionModal()">Cancel</button>
+        <button class="primary" (click)="selectSelfRole()">Try Self Role</button>
       </div>
       <button class="close" aria-label="Close" (click)="closeAgeSuggestionModal()">×</button>
     </div>

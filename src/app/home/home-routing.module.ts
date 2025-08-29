@@ -5,6 +5,7 @@ import {LoginComponent} from "./login/login.component";
 import {SignupComponent} from "./signup/signup.component";
 import {InstructionsComponent} from "./instructions/instructions.component";
 import {JoinFamilyComponent} from "./join-family/join-family.component";
+import {ScanQrComponent} from './scan-qr/scan-qr.component';
 
 const routes: Routes = [
   {
@@ -22,6 +23,9 @@ const routes: Routes = [
   },{
     path: 'join-family',
     component: JoinFamilyComponent
+  },{
+    path: 'scan-qr',
+    component: ScanQrComponent
   },{
     path : 'auth',
     // Rpoute to authenticated module

@@ -1,6 +1,6 @@
 .join-family {
   /* page background and main container */
-  background: #FDEAD7; /* matches login background */
+  background: #FDEAD7; 
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -94,7 +94,7 @@
     border-radius: 8px;
   }
 
-  /* Input card area (Frame 39504) */
+  /* Input card area */
   .card {
     display: flex;
     flex-direction: row;

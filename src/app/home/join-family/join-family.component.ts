@@ -34,6 +34,10 @@ export class JoinFamilyComponent {
     this.form.patchValue({ code: scanned });
   }
 
+  openScanner() {
+    this.router.navigate(['/home/scan-qr']);
+  }
+
   submit() {
     this.submitted = true;
     // mark all controls as touched to show validation messages
@@ -45,7 +49,7 @@ export class JoinFamilyComponent {
     const code = this.form.value.code;
     // TODO: call API to join family using `code`. For now navigate or log.
     console.log('Joining family with code:', code);
-    // Navigate to next page or home after join
-    this.router.navigate(['/home']);
+  // Navigate to signup step 4 after successful join
+  this.router.navigate(['home', 'sign-up'], { queryParams: { step: 4 } });
   }
 }

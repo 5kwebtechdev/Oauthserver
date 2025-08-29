@@ -16,7 +16,7 @@
     <form [formGroup]="form" (ngSubmit)="submit()">
       <div class="card">
         <ion-input formControlName="code" placeholder="Enter code" type="text" inputmode="numeric" [attr.maxlength]="8"></ion-input>
-        <button type="button" class="qr-icon" (click)="scanCode()" aria-label="Scan QR">▦</button>
+  <button type="button" class="qr-icon" (click)="openScanner()" aria-label="Scan QR">▦</button>
       </div>
 
       <div class="validation" *ngIf="(submitted && f.code.errors) || (f.code.touched && f.code.invalid)">

@@ -24,7 +24,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
     ]),
   ],
 })
-export class SignupComponent implements AfterViewInit {
+export class SignupComponent implements AfterViewInit, OnInit {
   public signupForm: FormGroup;
   public profileForm:  FormGroup;
   public loginMode: 'email' | 'phone' = 'phone';
@@ -32,11 +32,24 @@ export class SignupComponent implements AfterViewInit {
   public whatsappConsent = true;
   public step !: number;
 
-  public roleSelected !: 'child' | 'parent';
+  public roleSelected !: 'child' | 'parent' | 'self';
   public gender !: 'male' | 'female';
   public avatarSelected:any;
 
-  public openBirthdayPicker = false;
+  // Use an accessor so we can defensively guard and log unexpected changes
+  private _openBirthdayPicker = false;
+  public get openBirthdayPicker(): boolean {
+    return this._openBirthdayPicker;
+  }
+  public set openBirthdayPicker(val: boolean) {
+    // small debug log to catch unexpected auto-opens; safe to remove later
+    if (val && !this._openBirthdayPicker) {
+      console.debug('[Signup] openBirthdayPicker => true');
+    } else if (!val && this._openBirthdayPicker) {
+      console.debug('[Signup] openBirthdayPicker => false');
+    }
+    this._openBirthdayPicker = val;
+  }
   public showAgeSuggestionModal = false;
   public computedAge: number | null = null;
   private ageModalShown = false;
@@ -110,6 +123,11 @@ export class SignupComponent implements AfterViewInit {
     });
   }
 
+  ngOnInit(): void {
+    // Defensive: ensure picker does not open automatically on init
+    this.openBirthdayPicker = false;
+  }
+
   attachSlideChangeListener(swiperEl: HTMLElement) {
 
   }
@@ -134,7 +152,9 @@ export class SignupComponent implements AfterViewInit {
     this.route.queryParams.subscribe(params => {
       const stepParam = params['step'];
       this.step = Number(stepParam) || 1;
-      this.renderer.setStyle(document.documentElement, '--step', this.step);
+  this.renderer.setStyle(document.documentElement, '--step', this.step);
+  // Ensure birthday picker doesn't open automatically when navigating to step 3
+  this.openBirthdayPicker = false;
     })
   }
 
@@ -170,6 +190,18 @@ export class SignupComponent implements AfterViewInit {
       this.core.triggerToasrt('Please select a role');
       return;
     }
+    // central check: show age suggestion modal for certain role/age combinations
+    const dobVal = this.profileForm.get('dob')?.value;
+    const parsedDob = dobVal ? new Date(dobVal) : null;
+    const age = parsedDob ? this.calculateAge(parsedDob) : null;
+
+    if (this.shouldShowAgeSuggestion(this.roleSelected, age)) {
+      this.showAgeSuggestionModal = true;
+      this.ageModalShown = true;
+      return;
+    }
+
+    // proceed to next step
     this.router.navigate(['home/sign-up'], { queryParams: { step: 3 } });
   }
 
@@ -212,7 +244,8 @@ export class SignupComponent implements AfterViewInit {
   }
 
   openBirthdayPickerNow() {
-    this.openBirthdayPicker = !this.openBirthdayPicker;
+  // explicitly open the birthday picker only when user clicks the input
+  this.openBirthdayPicker = true;
   }
 
   birthdayChanged(date: any){
@@ -226,10 +259,26 @@ export class SignupComponent implements AfterViewInit {
     })
 
     this.computedAge = this.calculateAge(parsedDate);
-    if (this.computedAge !== null && this.computedAge >= 24 && !this.ageModalShown) {
+  // close the picker after choosing a date
+  this.openBirthdayPicker = false;
+    // central decision using helper
+    if (!this.ageModalShown && this.shouldShowAgeSuggestion(this.roleSelected, this.computedAge)) {
       this.showAgeSuggestionModal = true;
       this.ageModalShown = true;
     }
+  }
+
+  private shouldShowAgeSuggestion(role: 'child' | 'parent' | 'self' | undefined, age: number | null): boolean {
+    // no modal for self
+    if (!role || role === 'self') return false;
+
+    // if child selected and age is provided and age >= 24 -> suggest self
+    if (role === 'child' && age !== null && age >= 24) return true;
+
+    // if parent selected and age is provided and age < 24 -> suggest self
+    if (role === 'parent' && age !== null && age < 24) return true;
+
+    return false;
   }
 
   private calculateAge(dob: Date): number | null {
@@ -251,13 +300,17 @@ export class SignupComponent implements AfterViewInit {
   }
 
   selectSelfRole(): void {
-    this.roleSelected = 'child';
-    this.showAgeSuggestionModal = false;
+  this.roleSelected = 'self';
+  this.showAgeSuggestionModal = false;
+  // proceed directly to step 3 for Self role
+  this.router.navigate(['home', 'sign-up'], { queryParams: { step: 3 } });
   }
 
   selectParentRole(): void {
-    this.roleSelected = 'parent';
-    this.showAgeSuggestionModal = false;
+  this.roleSelected = 'parent';
+  this.showAgeSuggestionModal = false;
+  // continue to next step even if user insists on parent role
+  this.router.navigate(['home', 'sign-up'], { queryParams: { step: 3 } });
   }
 
   protected readonly top = top;
