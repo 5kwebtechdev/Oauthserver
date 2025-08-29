@@ -4,6 +4,7 @@ import { HomePage } from './home.page';
 import {LoginComponent} from "./login/login.component";
 import {SignupComponent} from "./signup/signup.component";
 import {InstructionsComponent} from "./instructions/instructions.component";
+import {JoinFamilyComponent} from "./join-family/join-family.component";
 
 const routes: Routes = [
   {
@@ -18,6 +19,9 @@ const routes: Routes = [
   },{
     path: 'instructions',
     component: InstructionsComponent
+  },{
+    path: 'join-family',
+    component: JoinFamilyComponent
   },{
     path : 'auth',
     // Rpoute to authenticated module

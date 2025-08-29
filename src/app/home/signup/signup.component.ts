@@ -226,7 +226,7 @@ export class SignupComponent implements AfterViewInit {
     })
 
     this.computedAge = this.calculateAge(parsedDate);
-    if (this.computedAge !== null && this.computedAge >= 18 && !this.ageModalShown) {
+    if (this.computedAge !== null && this.computedAge >= 24 && !this.ageModalShown) {
       this.showAgeSuggestionModal = true;
       this.ageModalShown = true;
     }

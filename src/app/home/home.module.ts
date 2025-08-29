@@ -10,6 +10,8 @@ import {SignupComponent} from "./signup/signup.component";
 import {MindfulSelectorsComponent} from "../core/components/mindful-selectors/mindful-selectors.component";
 import {MindfulInputsModule} from "../core/components/mindful-inputs/mindful-inputs.module";
 import {InstructionsComponent} from "./instructions/instructions.component";
+import {JoinFamilyComponent} from "./join-family/join-family.component";
+import {ScanQrComponent} from "./scan-qr/scan-qr.component";
 
 @NgModule({
     imports: [
@@ -19,9 +21,10 @@ import {InstructionsComponent} from "./instructions/instructions.component";
         HomePageRoutingModule,
         ReactiveFormsModule,
         MindfulSelectorsComponent,
-        MindfulInputsModule
+        MindfulInputsModule,
+        ScanQrComponent
     ],
-  declarations: [HomePage, LoginComponent, SignupComponent, InstructionsComponent],
+      declarations: [HomePage, LoginComponent, SignupComponent, InstructionsComponent, JoinFamilyComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
 })
 export class HomePageModule {}
