@@ -1,4 +1,4 @@
-<ion-content>
+<ion-content class="bg-mindful-secondary">
   <div class="signup-container">
     <h2 class="fredoka" style="margin-top: 15px"><i (click)="goBack()" class="fa-solid fa-arrow-left"
         style="margin-right: 10px; font-size: 21px"></i> Create your Account</h2>
@@ -170,7 +170,7 @@
           </div>
         </form>
         <ng-container *ngIf="gender">
-          <h4 style="margin-top: 15px">Choose an avatar <span>Your buddy's way of finding you</span></h4>
+          <h4 style="margin-top: 15px">Choose an avatar </h4>
           <div class="row">
             <ng-container *ngFor="let avatar of avatars">
               <div class="col-4 single-avatar" *ngIf="avatar.gender === gender" (click)="avatarSelected = avatar.key"

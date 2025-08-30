@@ -1,62 +1,58 @@
-<ion-content>
-  <div class="instructions-child">
-    <h2>
-      <i class="fa-solid fa-arrow-left" routerLink="/home/sign-up" [queryParams]="{step: 3}"></i>
+<ion-content class="bg-mindful-secondary">
+  <div class="mindful-page-container">
+    <h2 class="mindful-header">
+      <i class="fa-solid fa-arrow-left back-icon" routerLink="/home/sign-up" [queryParams]="{step: 3}"></i>
       Instructions
     </h2>
 
-    <div class="step-indicator">
-      <p>Step 4 of 5</p>
-    </div>
-
-    <div class="instructions-list">
-      <div class="instruction-item">
-        <div class="step-number">1</div>
-        <p>Ask your parent to create their account on their device.</p>
+    <div class="mindful-instructions">
+      <div class="mindful-instructions__item">
+        <div class="mindful-instructions__number">1</div>
+        <p class="mindful-instructions__text">Ask your parent to create their account on their device.</p>
       </div>
-      <div class="instruction-item">
-        <div class="step-number">2</div>
-        <p>After signup, your parent creates a family in the app.</p>
+      <div class="mindful-instructions__item">
+        <div class="mindful-instructions__number">2</div>
+        <p class="mindful-instructions__text">After signup, your parent creates a family in the app.</p>
       </div>
-      <div class="instruction-item">
-        <div class="step-number">3</div>
-        <p>Your parent will see a family code and a QR code.</p>
+      <div class="mindful-instructions__item">
+        <div class="mindful-instructions__number">3</div>
+        <p class="mindful-instructions__text">Your parent will see a family code and a QR code.</p>
       </div>
-      <div class="instruction-item">
-        <div class="step-number">4</div>
-        <p>Enter the family code or scan the QR code in the next screen to join their family.</p>
+      <div class="mindful-instructions__item">
+        <div class="mindful-instructions__number">4</div>
+        <p class="mindful-instructions__text">Enter the family code or scan the QR code in the next screen to join their family.</p>
       </div>
-      <div class="instruction-item">
-        <div class="step-number">5</div>
-        <p>Once linked, you are good to proceed!</p>
+      <div class="mindful-instructions__item">
+        <div class="mindful-instructions__number">5</div>
+        <p class="mindful-instructions__text">Once linked, you are good to proceed!</p>
       </div>
     </div>
 
-    <div class="faq-section">
-      <h3>FAQ's</h3>
+    <div class="mindful-faq">
+      <h3 class="mindful-faq__title">FAQ's</h3>
 
-      <details class="faq-item">
+      <details class="mindful-faq__item">
         <summary>What if my parent doesn't have an account yet?</summary>
         <p>Ask them to download the app and sign up. Then they can create a family and share the code with you.</p>
       </details>
 
-      <details class="faq-item">
+      <details class="mindful-faq__item">
         <summary>How do I get the family code or QR from my parent?</summary>
         <p>In your parent's app, go to Family settings → Share code/QR. They can show or send it to you.</p>
       </details>
 
-      <details class="faq-item">
+      <details class="mindful-faq__item">
         <summary>What if the code or QR doesn't work when I enter it?</summary>
         <p>Double-check the code, ensure internet is on, and try again. Ask your parent to regenerate if needed.</p>
       </details>
 
-      <details class="faq-item">
+      <details class="mindful-faq__item">
         <summary>Can I start using the app without entering a code right away?</summary>
         <p>You can explore, but linking to your parent's family unlocks the full experience.</p>
       </details>
     </div>
 
-    <button class="next-btn" routerLink="/home/join-family">Next</button>
+    <button class="mindful-btn mindful-btn--primary" routerLink="/home/join-family">Next</button>
   </div>
 </ion-content>
 

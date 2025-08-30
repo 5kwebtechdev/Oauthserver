@@ -132,3 +132,430 @@ h1, h2, h3, h4,h5, h6, p, a{
 .toggler div:not(:last-child){
   border-right: 1px solid black;
 }
+
+/* ===== MINDFUL BUDDY COMMON COMPONENT STYLES ===== */
+
+/* Common Page Container */
+.mindful-page-container {
+  padding: 20px;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: 'Nunito', sans-serif;
+  color: #772817;
+  position: relative;
+  overflow-x: hidden;
+
+  @media (max-width: 480px) {
+    padding: 16px;
+  }
+
+  @media (max-width: 360px) {
+    padding: 12px;
+  }
+}
+
+/* Common Header with Back Button */
+.mindful-header {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 500;
+  font-size: 25px;
+  color: #772817;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+
+  .back-icon {
+    margin-right: 10px;
+    font-size: 21px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    
+    &:hover {
+      color: #EE6621;
+    }
+  }
+
+  @media (max-width: 480px) {
+    font-size: 22px;
+  }
+}
+
+/* Common Button Styles */
+.mindful-btn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  transition: all 0.3s ease;
+
+  &--primary {
+    background: #EE6621;
+    color: #FFFFFF;
+
+    &:hover:not(:disabled) {
+      background: #d55a1e;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(238, 102, 33, 0.3);
+    }
+
+    &:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+
+  &--secondary {
+    background: transparent;
+    border: 2px solid #772817;
+    color: #772817;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 12px;
+
+    &:hover {
+      background: #772817;
+      color: #FFE9D6;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 14px;
+    font-size: 15px;
+
+    &.mindful-btn--secondary {
+      font-size: 13px;
+    }
+  }
+}
+
+/* Common FAQ Styles */
+.mindful-faq {
+  margin-bottom: 40px;
+
+  &__title {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 500;
+    font-size: 20px;
+    color: #772817;
+    margin-bottom: 20px;
+    text-align: center;
+
+    @media (max-width: 480px) {
+      font-size: 18px;
+    }
+  }
+
+  &__item {
+    background: #FAD2AE;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    overflow: hidden;
+
+    summary {
+      padding: 16px 12px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      list-style: none;
+      position: relative;
+      color: #772817;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+
+      &::after {
+        content: '▼';
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        transition: transform 0.3s ease;
+        font-size: 12px;
+      }
+    }
+
+    &[open] summary::after {
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    p {
+      padding: 0 12px 16px;
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.4;
+      color: #772817;
+      opacity: 0.8;
+
+      @media (max-width: 480px) {
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+/* Common Instructions List */
+.mindful-instructions {
+  margin-bottom: 40px;
+
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    gap: 15px;
+
+    @media (max-width: 480px) {
+      gap: 12px;
+    }
+  }
+
+  &__number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #EE6621;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+
+    @media (max-width: 480px) {
+      width: 28px;
+      height: 28px;
+      font-size: 14px;
+    }
+  }
+
+  &__text {
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0;
+    color: #772817;
+    font-weight: 500;
+
+    @media (max-width: 480px) {
+      font-size: 15px;
+    }
+  }
+}
+
+/* Common Form Input Groups */
+.mindful-input-group {
+  margin-bottom: 24px;
+
+  input, ion-input {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    background: #FAD2AE;
+    font-size: 16px;
+    font-family: 'Nunito', sans-serif;
+    color: #772817;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+
+    &::placeholder {
+      color: #772817;
+      opacity: 0.6;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: #EE6621;
+      background: #FFE9D6;
+      box-shadow: 0 0 0 3px rgba(238, 102, 33, 0.1);
+    }
+
+    &.error, &.ng-invalid.ng-touched {
+      border-color: #e74c3c;
+      background: #ffeaea;
+    }
+
+    @media (max-width: 480px) {
+      padding: 14px 16px;
+      font-size: 15px;
+    }
+  }
+
+  .error-message {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #e74c3c;
+    font-weight: 500;
+
+    @media (max-width: 480px) {
+      font-size: 12px;
+      margin-top: 6px;
+    }
+  }
+
+  .note-text {
+    font-size: 13px;
+    color: #772817;
+    margin: 0 0 8px 0;
+    opacity: 0.7;
+    font-weight: 500;
+
+    @media (max-width: 480px) {
+      font-size: 12px;
+      margin: 8px 0;
+    }
+  }
+}
+
+/* Common Step Indicator */
+.mindful-step-indicator {
+  margin-bottom: 30px;
+  
+  &__step {
+    font-weight: 600;
+    font-size: 16px;
+    color: #6b3d2b;
+    margin: 0 0 8px 0;
+    opacity: 0.8;
+  }
+
+  &__title {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 500;
+    font-size: 20px;
+    color: #772817;
+    margin: 0 0 15px 0;
+  }
+
+  &__progress {
+    width: 100%;
+    height: 4px;
+    background: #FAD2AE;
+    border-radius: 20px;
+    overflow: hidden;
+
+    &-fill {
+      width: 100%;
+      height: 100%;
+      background: #772817;
+      border-radius: 20px;
+    }
+  }
+}
+
+/* Common Background Colors - Fully Responsive */
+.bg-mindful-primary,
+.bg-mindful-secondary,
+.bg-mindful-accent {
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
+  width: 100vw;
+  position: relative;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.bg-mindful-primary { 
+  background: #FFE9D6;
+}
+
+.bg-mindful-secondary { 
+  background: #FDEAD7;
+}
+
+.bg-mindful-accent { 
+  background: #FAD2AE;
+}
+
+/* Ensure ion-content fills full viewport with proper background coverage */
+ion-content {
+  --background: transparent;
+  width: 100vw;
+  min-height: 100vh;
+  min-height: 100dvh;
+  
+  &.bg-mindful-primary {
+    --background: #FFE9D6;
+  }
+  
+  &.bg-mindful-secondary {
+    --background: #FDEAD7;
+  }
+  
+  &.bg-mindful-accent {
+    --background: #FAD2AE;
+  }
+  
+  .mindful-page-container {
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    position: relative;
+  }
+}
+
+/* Fix for iOS safe areas */
+@supports (padding: max(0px)) {
+  ion-content {
+    &.bg-mindful-primary,
+    &.bg-mindful-secondary,
+    &.bg-mindful-accent {
+      .mindful-page-container {
+        min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+        min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+    }
+  }
+}
+
+/* Responsive adjustments for different screen sizes */
+@media (max-width: 768px) {
+  .bg-mindful-primary,
+  .bg-mindful-secondary,
+  .bg-mindful-accent {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  
+  ion-content {
+    &.bg-mindful-primary,
+    &.bg-mindful-secondary,
+    &.bg-mindful-accent {
+      width: 100vw;
+      max-width: 100vw;
+    }
+  }
+}
+
+/* Fix for landscape mode on mobile */
+@media (orientation: landscape) and (max-height: 500px) {
+  .bg-mindful-primary,
+  .bg-mindful-secondary,
+  .bg-mindful-accent {
+    min-height: 100vh;
+  }
+  
+  ion-content {
+    &.bg-mindful-primary,
+    &.bg-mindful-secondary,
+    &.bg-mindful-accent {
+      .mindful-page-container {
+        min-height: 100vh;
+      }
+    }
+  }
+}
+
+/* Common Text Colors */
+.text-mindful-primary { color: #772817; }
+.text-mindful-secondary { color: #6b3d2b; }
+.text-mindful-accent { color: #EE6621; }

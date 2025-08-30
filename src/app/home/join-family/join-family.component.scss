@@ -1,212 +1,59 @@
-.join-family {
-  /* page background and main container */
-  background: #FDEAD7; 
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-  width: 100%;
-  padding: 22px 18px 48px;
-  box-sizing: border-box;
+/* Join Family Component - using global mindful styles */
 
-  /* Invalid message (Incorrect OTP) shown under the input */
-  .invalid-msg {
-    display: block;
-    margin-top: 12px;
-    font-family: 'Nunito', sans-serif;
-    font-style: normal;
-    font-weight: 700;
-    font-size: 13px;
-    line-height: 130%;
-    color: #BB2124;
-    align-self: flex-start;
-    margin-left: 8px;
+.input-container {
+  position: relative;
+  
+  ion-input {
+    --padding-end: 50px; /* Make room for QR button */
   }
-
-  /* Header */
-  .header {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .header-row{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    width:100%;
-    max-width: 920px;
-  }
-
-  .title {
-    font-family: 'Fredoka', sans-serif;
-    font-weight: 500;
-  font-size: 28px;
-    line-height: 130%;
-    color: #772817;
-    margin: 0;
-  }
-
-  /* Progress indicator block */
-
-  .progress {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    width: 100%;
-    max-width: 920px;
-    align-items: flex-start;
-  }
-
-  .progress-top {
-    font-family: 'Nunito', sans-serif;
-    font-weight: 500;
-    font-size: 14px;
-    color: #772817;
-  }
-
-  .progress-title {
-    font-family: 'Nunito', sans-serif;
-    font-weight: 600;
-    font-size: 22px;
-    color: #772817;
-  }
-
-  /* Lines */
-  .line-outer {
-    position: relative;
-    width: 100%;
-    height: 8px;
-    background: #FEF6EE;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-top: 6px;
-  }
-
-  .line-inner {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 30%; /* approximate progress */
-    background: #772817;
-    border-radius: 8px;
-  }
-
-  /* Input card area */
-  .card {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 22px 24px;
-    gap: 8px;
-    width: 100%;
-    max-width: 920px;
-    background: #FDE0CB; /* pale peach inside */
-    border-radius: 16px;
-    box-sizing: border-box;
-    position: relative;
-    border: 2px solid #C84B3E; /* red border like Figma */
-  }
-
-  ion-input[formControlName="code"] {
-    --padding-start: 0;
-    --padding-end: 0;
-    width: calc(100% - 72px);
-    font-family: 'Nunito', sans-serif;
-    font-weight: 600;
-    font-size: 28px;
-    line-height: 120%;
-    color: #772817;
-    opacity: 0.95;
-    background: transparent;
-    padding-left: 8px;
-  }
-
-  /* QR icon bounding box */
+  
   .qr-icon {
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    min-height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border-radius: 6px;
-    color: #B87D62;
-    font-size: 20px;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
     border: none;
-    margin-left: 8px;
-  }
-
-  /* Note text */
-  .note {
-    width: 100%;
-    max-width: 920px;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    line-height: 130%;
-    text-decoration-line: underline;
     color: #772817;
-    margin: 8px 0 18px 0;
-    padding-left: 6px;
-  }
-
-  /* Join button */
-  .join {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    max-width: 920px;
-    height: 64px;
-    background: #EE6621;
-    border-radius: 12px;
-    color: #FFFFFF;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 700;
-    font-size: 18px;
-    line-height: 140%;
-    border: none;
+    font-size: 24px;
     cursor: pointer;
-    margin-top: 18px;
-  }
-
-  /* FAQ area */
-  .faq-title {
-    font-family: 'Fredoka', sans-serif;
-    font-weight: 500;
-    font-size: 20px;
-    color: #772817;
-  text-align: center;
-  width: 100%;
-  }
-
-  .faq {
-    width: 100%;
-    max-width: 920px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  /* style details/summary as FAQ cards */
-  .faq details {
-    background: #FAD2AE;
+    padding: 12px;
     border-radius: 8px;
-    padding: 14px 16px;
-  }
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
 
-  .faq summary {
-    font-family: 'Nunito', sans-serif;
-    font-weight: 600;
-    font-size: 15px;
-    color: #772817;
-    list-style: none;
-    cursor: pointer;
-  }
+    &:hover {
+      background: rgba(238, 102, 33, 0.1);
+      color: #EE6621;
+      transform: translateY(-50%) scale(1.05);
+    }
 
+    &:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .qr-icon {
+      right: 6px;
+      font-size: 20px;
+      padding: 10px;
+      min-width: 40px;
+      min-height: 40px;
+      border-radius: 6px;
+
+      &:hover {
+        transform: translateY(-50%) scale(1.03);
+      }
+
+      &:active {
+        transform: translateY(-50%) scale(0.97);
+      }
+    }
+  }
 }

@@ -6,7 +6,6 @@
   overflow: hidden;
   font-family: 'Nunito', sans-serif;
 
-  // Header
   .header {
     display: flex;
     flex-direction: row;
@@ -79,7 +78,6 @@
     }
   }
 
-  // QR Scanner Viewport
   .scanner-viewport {
     position: absolute;
     width: 245px;
@@ -134,7 +132,6 @@
     }
   }
 
-  // Upload from Gallery Button
   .upload-gallery-btn {
     display: flex;
     flex-direction: row;
@@ -175,7 +172,6 @@
     }
   }
 
-  // Divider Section
   .divider-section {
     display: flex;
     flex-direction: column;

@@ -71,7 +71,15 @@ export class JoinFamily2Component implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/home/instructions-for-parent'], { queryParams: { role: this.userRole } });
+    // If family is created (success page), go back to create family page
+    if (this.familyCreated) {
+      this.familyCreated = false;
+      this.selectedMode = 'create';
+      this.familyForm.reset();
+    } else {
+      // Otherwise go back to instructions page
+      this.router.navigate(['/home/instructions-for-parent'], { queryParams: { role: this.userRole } });
+    }
   }
 
   selectMode(mode: 'create' | 'join') {
@@ -137,7 +145,7 @@ export class JoinFamily2Component implements OnInit {
       // Generate QR code data (for now, just the family code)
       this.qrCodeData = this.familyCode;
       
-      this.core.triggerToasrt(`Family "${familyName}" created successfully!`);
+      // Family created successfully - no toast notification
     }, 2000);
   }
 

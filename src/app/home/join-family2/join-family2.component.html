@@ -1,15 +1,15 @@
-<ion-content>
-  <div class="join-family2">
-    <h2>
-      <i class="fa-solid fa-arrow-left" (click)="goBack()"></i>
+<ion-content class="bg-mindful-secondary">
+  <div class="mindful-page-container">
+    <h2 class="mindful-header">
+      <i class="fa-solid fa-arrow-left back-icon" (click)="goBack()"></i>
       Create or Join Your Family
     </h2>
 
-    <div class="step-indicator">
-      <p>Step 3 of 3</p>
-      <h3>Manage your family's progress</h3>
-      <div class="progress-bar">
-        <div class="progress-fill"></div>
+    <div class="mindful-step-indicator">
+      <p class="mindful-step-indicator__step">Step 3 of 3</p>
+      <h3 class="mindful-step-indicator__title">Manage your family's progress</h3>
+      <div class="mindful-step-indicator__progress">
+        <div class="mindful-step-indicator__progress-fill"></div>
       </div>
     </div>
 
@@ -38,7 +38,7 @@
       </div>
 
       <form [formGroup]="familyForm" (ngSubmit)="createFamily()">
-        <div class="input-group">
+        <div class="mindful-input-group">
           <input 
             type="text" 
             formControlName="familyName"
@@ -54,22 +54,18 @@
 
         <button 
           type="submit" 
-          class="create-family-btn"
+          class="custom-create-btn"
           [disabled]="familyForm.invalid || isLoading">
           <span *ngIf="!isLoading">Create Family</span>
           <span *ngIf="isLoading">Creating...</span>
         </button>
       </form>
-
-      <button class="continue-without-btn" (click)="continueWithoutFamily()">
-        Continue Without Family
-      </button>
     </div>
 
     <!-- Family Join Section -->
     <div class="family-join-section" *ngIf="selectedMode === 'join'">
       <form [formGroup]="joinFamilyForm" (ngSubmit)="joinFamily()">
-        <div class="input-group">
+        <div class="mindful-input-group">
           <div class="code-input-container">
             <input 
               type="text" 
@@ -100,7 +96,7 @@
 
         <button 
           type="submit" 
-          class="join-family-btn"
+          class="mindful-btn mindful-btn--primary"
           [disabled]="joinFamilyForm.invalid || isLoading">
           <span *ngIf="!isLoading">Join Family</span>
           <span *ngIf="isLoading">Joining...</span>
@@ -141,32 +137,32 @@
         </button>
       </div>
 
-      <button class="child-completed-btn" (click)="childCompleted()">
+      <button class="mindful-btn mindful-btn--primary" (click)="childCompleted()">
         My child has done the required
       </button>
     </div>
 
-    <div class="faq-section">
-      <h3>FAQ's</h3>
+    <div class="mindful-faq">
+      <h3 class="mindful-faq__title">FAQ's</h3>
 
       <!-- FAQs for family creation flow -->
       <ng-container *ngIf="selectedMode === 'create' && !familyCreated">
-        <details class="faq-item">
+        <details class="mindful-faq__item">
           <summary>Should I create a new family or join an existing one?</summary>
           <p>Create a new family if you're the first parent setting up the account. Join an existing family if another parent has already created one and shared the family code with you.</p>
         </details>
 
-        <details class="faq-item">
+        <details class="mindful-faq__item">
           <summary>What happens after I create my family?</summary>
           <p>You'll receive a unique family code and QR code that you can share with your children or partner. They can use this code to join your family and sync their progress.</p>
         </details>
 
-        <details class="faq-item">
+        <details class="mindful-faq__item">
           <summary>Can I change my family name later?</summary>
           <p>Yes, you can change your family name anytime from the family settings page in your profile.</p>
         </details>
 
-        <details class="faq-item">
+        <details class="mindful-faq__item">
           <summary>What if I accidentally create a family when I meant to join one?</summary>
           <p>No problem! You can leave the family you created and join the correct one using the family code. Contact support if you need help with this process.</p>
         </details>
@@ -174,22 +170,22 @@
 
       <!-- FAQs for family join flow -->
       <ng-container *ngIf="selectedMode === 'join'">
-        <details class="faq-item">
+        <details class="mindful-faq__item">
           <summary>What if I don't have the family code or QR yet?</summary>
           <p>Ask the family creator (usually the other parent) to share the family code or QR code with you. They can find this in their family settings or after creating the family.</p>
         </details>
 
-        <details class="faq-item">
+        <details class="mindful-faq__item">
           <summary>How do I scan the QR code if my camera isn't working?</summary>
           <p>If the QR scanner isn't working, you can manually enter the family code instead. The family code is usually 6-8 characters long and contains letters and numbers.</p>
         </details>
 
-        <details class="faq-item">
+        <details class="mindful-faq__item">
           <summary>What happens if the code is wrong or expired?</summary>
           <p>If you enter an incorrect code, you'll see an error message. Family codes don't expire, but make sure you're entering the exact code provided by the family creator. Double-check for any typos.</p>
         </details>
 
-        <details class="faq-item">
+        <details class="mindful-faq__item">
           <summary>Can I use the app without linking right now?</summary>
           <p>Yes, you can continue without joining a family and set up individual tracking. You can always join a family later from your profile settings.</p>
         </details>
@@ -197,22 +193,22 @@
 
       <!-- FAQs for family created success state -->
       <ng-container *ngIf="familyCreated">
-        <details class="faq-item">
+        <details class="mindful-faq__item">
           <summary>How do I share this code with my child?</summary>
           <p>You can share the family code directly by copying it, or use the QR code feature. Your child can scan the QR code or enter the family code in their app to join your family.</p>
         </details>
 
-        <details class="faq-item">
+        <details class="mindful-faq__item">
           <summary>Does the family code expire or stop working?</summary>
           <p>No, family codes don't expire. However, you can generate a new code anytime from your family settings if needed for security reasons.</p>
         </details>
 
-        <details class="faq-item">
+        <details class="mindful-faq__item">
           <summary>What if my child enters the wrong code or it doesn't work?</summary>
           <p>Make sure your child enters the code exactly as shown. If issues persist, try generating a new family code from settings or use the QR code instead.</p>
         </details>
 
-        <details class="faq-item">
+        <details class="mindful-faq__item">
           <summary>Can multiple children use the same family code?</summary>
           <p>Yes! Multiple children can join the same family using this code. Each child will have their own progress tracking within the family.</p>
         </details>

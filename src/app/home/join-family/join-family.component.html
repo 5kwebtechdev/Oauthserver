@@ -1,40 +1,42 @@
-<ion-content>
-  <div class="join-family">
-    <div class="header-row">
-      <i (click)="goBack()" class="fa-solid fa-arrow-left" style="margin-right: 10px; font-size: 21px"></i>
-      <h2 class="title">Join Your Family</h2>
-    </div>
-
-    <div class="progress">
-      <div class="progress-top">Step 3 of 4</div>
-      <div class="progress-title">Enter your family code or scan the QR</div>
-      <div class="line-outer" aria-hidden="true">
-        <div class="line-inner"></div>
+<ion-content class="bg-mindful-secondary">
+  <div class="mindful-page-container">
+    <h2 class="mindful-header">
+      <i (click)="goBack()" class="fa-solid fa-arrow-left back-icon"></i>
+      Join Your Family
+    </h2>
+    
+    <div class="mindful-step-indicator">
+      <p class="mindful-step-indicator__step">Step 3 of 4</p>
+      <h3 class="mindful-step-indicator__title">Enter your family code or scan the QR</h3>
+      <div class="mindful-step-indicator__progress">
+        <div class="mindful-step-indicator__progress-fill" style="width: 75%;"></div>
       </div>
     </div>
 
     <form [formGroup]="form" (ngSubmit)="submit()">
-      <div class="card">
-        <ion-input formControlName="code" placeholder="Enter code" type="text" inputmode="numeric" [attr.maxlength]="8"></ion-input>
-  <button type="button" class="qr-icon" (click)="openScanner()" aria-label="Scan QR">▦</button>
+      <div class="mindful-input-group">
+        <div class="input-container">
+          <ion-input formControlName="code" placeholder="Enter code" type="text" inputmode="numeric" [attr.maxlength]="8"></ion-input>
+          <button type="button" class="qr-icon" (click)="openScanner()" aria-label="Scan QR">▦</button>
+        </div>
+
+        <div class="error-message" *ngIf="(submitted && f.code.errors) || (f.code.touched && f.code.invalid)">
+          <small *ngIf="f.code.errors?.required">Code is required.</small>
+          <small *ngIf="f.code.errors?.pattern">Code must be 8 digits</small>
+        </div>
+        
+        <p class="note-text"><strong>Note:</strong> Double-check the code before entering</p>
       </div>
 
-      <div class="validation" *ngIf="(submitted && f.code.errors) || (f.code.touched && f.code.invalid)">
-        <small class="invalid-msg" *ngIf="f.code.errors?.required">Code is required.</small>
-        <small class="invalid-msg" *ngIf="f.code.errors?.pattern">Code must be 8 digits</small>
-      </div>
-
-      <p class="note"><strong>Note:</strong> Double-check the code before entering</p>
-
-  <button class="join" type="submit" [disabled]="form.invalid">Join Family</button>
+      <button class="mindful-btn mindful-btn--primary" type="submit" [disabled]="form.invalid">Join Family</button>
     </form>
 
-    <h3 class="faq-title">FAQ's</h3>
-
-    <details class="faq">
-      <summary>What if I don't have the family code or QR yet?</summary>
-      <p>Ask your parent to create a family and share the code with you.</p>
-    </details>
-
+    <div class="mindful-faq">
+      <h3 class="mindful-faq__title">FAQ's</h3>
+      <details class="mindful-faq__item">
+        <summary>What if I don't have the family code or QR yet?</summary>
+        <p>Ask your parent to create a family and share the code with you.</p>
+      </details>
+    </div>
   </div>
 </ion-content>
