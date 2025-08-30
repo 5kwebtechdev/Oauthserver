@@ -1,0 +1,222 @@
+<ion-content>
+  <div class="join-family2">
+    <h2>
+      <i class="fa-solid fa-arrow-left" (click)="goBack()"></i>
+      Create or Join Your Family
+    </h2>
+
+    <div class="step-indicator">
+      <p>Step 3 of 3</p>
+      <h3>Manage your family's progress</h3>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+    </div>
+
+    <div class="mode-selection">
+      <div class="toggle-container">
+        <div class="toggle-background"></div>
+        <div class="toggle-slider" [class.slide-right]="selectedMode === 'join'"></div>
+        <button 
+          class="toggle-btn left" 
+          [class.active]="selectedMode === 'create'"
+          (click)="selectMode('create')">
+          Create Family
+        </button>
+        <button 
+          class="toggle-btn right" 
+          [class.active]="selectedMode === 'join'"
+          (click)="selectMode('join')">
+          Join Family
+        </button>
+      </div>
+    </div>
+
+    <div class="family-creation-section" *ngIf="selectedMode === 'create' && !familyCreated">
+      <div class="section-header">
+        <p class="section-label">For naming your family</p>
+      </div>
+
+      <form [formGroup]="familyForm" (ngSubmit)="createFamily()">
+        <div class="input-group">
+          <input 
+            type="text" 
+            formControlName="familyName"
+            placeholder="Set family name"
+            [class.error]="familyName?.invalid && familyName?.touched"
+            maxlength="30">
+          <div class="error-message" *ngIf="familyName?.invalid && familyName?.touched">
+            <span *ngIf="familyName?.errors?.['required']">Family name is required</span>
+            <span *ngIf="familyName?.errors?.['minlength']">Family name must be at least 2 characters</span>
+            <span *ngIf="familyName?.errors?.['maxlength']">Family name must be less than 30 characters</span>
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          class="create-family-btn"
+          [disabled]="familyForm.invalid || isLoading">
+          <span *ngIf="!isLoading">Create Family</span>
+          <span *ngIf="isLoading">Creating...</span>
+        </button>
+      </form>
+
+      <button class="continue-without-btn" (click)="continueWithoutFamily()">
+        Continue Without Family
+      </button>
+    </div>
+
+    <!-- Family Join Section -->
+    <div class="family-join-section" *ngIf="selectedMode === 'join'">
+      <form [formGroup]="joinFamilyForm" (ngSubmit)="joinFamily()">
+        <div class="input-group">
+          <div class="code-input-container">
+            <input 
+              type="text" 
+              formControlName="familyCode"
+              placeholder="Enter code"
+              [class.error]="familyCodeControl?.invalid && familyCodeControl?.touched"
+              maxlength="10"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false">
+            <button 
+              type="button" 
+              class="qr-scanner-btn"
+              (click)="openQRScanner()"
+              (touchstart)="$event.preventDefault()"
+              aria-label="Scan QR Code"
+              title="Scan QR Code">
+              <i class="fa-solid fa-qrcode"></i>
+            </button>
+          </div>
+          <p class="note-text">Note: Double-check the code before entering</p>
+          <div class="error-message" *ngIf="familyCodeControl?.invalid && familyCodeControl?.touched">
+            <span *ngIf="familyCodeControl?.errors?.['required']">Family code is required</span>
+            <span *ngIf="familyCodeControl?.errors?.['minlength']">Family code must be at least 6 characters</span>
+            <span *ngIf="familyCodeControl?.errors?.['maxlength']">Family code must be less than 10 characters</span>
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          class="join-family-btn"
+          [disabled]="joinFamilyForm.invalid || isLoading">
+          <span *ngIf="!isLoading">Join Family</span>
+          <span *ngIf="isLoading">Joining...</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Family Created Success State -->
+    <div class="family-success-section" *ngIf="selectedMode === 'create' && familyCreated">
+      <div class="success-header">
+        <h3 class="success-title">Family Created Successfully !</h3>
+      </div>
+
+      <div class="family-code-section">
+        <p class="code-label">Your Family Code</p>
+        <div class="code-display">
+          <span class="code-text">{{familyCode}}</span>
+          <button class="copy-btn" (click)="copyFamilyCode()">
+            <i class="fa-regular fa-copy"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="divider">
+        <span>OR</span>
+      </div>
+
+      <div class="qr-code-section">
+        <div class="qr-code-container">
+          <!-- Placeholder QR Code - Replace with actual QR generation library -->
+          <div class="qr-code-placeholder">
+            <div class="qr-pattern"></div>
+          </div>
+        </div>
+        <button class="share-qr-btn" (click)="shareQRCode()">
+          <i class="fa-solid fa-share"></i>
+          Share QR code
+        </button>
+      </div>
+
+      <button class="child-completed-btn" (click)="childCompleted()">
+        My child has done the required
+      </button>
+    </div>
+
+    <div class="faq-section">
+      <h3>FAQ's</h3>
+
+      <!-- FAQs for family creation flow -->
+      <ng-container *ngIf="selectedMode === 'create' && !familyCreated">
+        <details class="faq-item">
+          <summary>Should I create a new family or join an existing one?</summary>
+          <p>Create a new family if you're the first parent setting up the account. Join an existing family if another parent has already created one and shared the family code with you.</p>
+        </details>
+
+        <details class="faq-item">
+          <summary>What happens after I create my family?</summary>
+          <p>You'll receive a unique family code and QR code that you can share with your children or partner. They can use this code to join your family and sync their progress.</p>
+        </details>
+
+        <details class="faq-item">
+          <summary>Can I change my family name later?</summary>
+          <p>Yes, you can change your family name anytime from the family settings page in your profile.</p>
+        </details>
+
+        <details class="faq-item">
+          <summary>What if I accidentally create a family when I meant to join one?</summary>
+          <p>No problem! You can leave the family you created and join the correct one using the family code. Contact support if you need help with this process.</p>
+        </details>
+      </ng-container>
+
+      <!-- FAQs for family join flow -->
+      <ng-container *ngIf="selectedMode === 'join'">
+        <details class="faq-item">
+          <summary>What if I don't have the family code or QR yet?</summary>
+          <p>Ask the family creator (usually the other parent) to share the family code or QR code with you. They can find this in their family settings or after creating the family.</p>
+        </details>
+
+        <details class="faq-item">
+          <summary>How do I scan the QR code if my camera isn't working?</summary>
+          <p>If the QR scanner isn't working, you can manually enter the family code instead. The family code is usually 6-8 characters long and contains letters and numbers.</p>
+        </details>
+
+        <details class="faq-item">
+          <summary>What happens if the code is wrong or expired?</summary>
+          <p>If you enter an incorrect code, you'll see an error message. Family codes don't expire, but make sure you're entering the exact code provided by the family creator. Double-check for any typos.</p>
+        </details>
+
+        <details class="faq-item">
+          <summary>Can I use the app without linking right now?</summary>
+          <p>Yes, you can continue without joining a family and set up individual tracking. You can always join a family later from your profile settings.</p>
+        </details>
+      </ng-container>
+
+      <!-- FAQs for family created success state -->
+      <ng-container *ngIf="familyCreated">
+        <details class="faq-item">
+          <summary>How do I share this code with my child?</summary>
+          <p>You can share the family code directly by copying it, or use the QR code feature. Your child can scan the QR code or enter the family code in their app to join your family.</p>
+        </details>
+
+        <details class="faq-item">
+          <summary>Does the family code expire or stop working?</summary>
+          <p>No, family codes don't expire. However, you can generate a new code anytime from your family settings if needed for security reasons.</p>
+        </details>
+
+        <details class="faq-item">
+          <summary>What if my child enters the wrong code or it doesn't work?</summary>
+          <p>Make sure your child enters the code exactly as shown. If issues persist, try generating a new family code from settings or use the QR code instead.</p>
+        </details>
+
+        <details class="faq-item">
+          <summary>Can multiple children use the same family code?</summary>
+          <p>Yes! Multiple children can join the same family using this code. Each child will have their own progress tracking within the family.</p>
+        </details>
+      </ng-container>
+    </div>
+  </div>
+</ion-content>

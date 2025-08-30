@@ -3,8 +3,10 @@ import { RouterModule, Routes } from '@angular/router';
 import { HomePage } from './home.page';
 import {LoginComponent} from "./login/login.component";
 import {SignupComponent} from "./signup/signup.component";
-import {InstructionsComponent} from "./instructions/instructions.component";
+import {InstructionsForChildComponent} from "./instructions-for-child/instructions-for-child.component";
+import {InstructionsForParentComponent} from "./instructions-for-parent/instructions-for-parent.component";
 import {JoinFamilyComponent} from "./join-family/join-family.component";
+import {JoinFamily2Component} from "./join-family2/join-family2.component";
 import {ScanQrComponent} from './scan-qr/scan-qr.component';
 
 const routes: Routes = [
@@ -18,11 +20,17 @@ const routes: Routes = [
     path : 'sign-up',
     component:SignupComponent
   },{
-    path: 'instructions',
-    component: InstructionsComponent
+    path: 'instructions-for-child',
+    component: InstructionsForChildComponent
+  },{
+    path: 'instructions-for-parent',
+    component: InstructionsForParentComponent
   },{
     path: 'join-family',
     component: JoinFamilyComponent
+  },{
+    path: 'join-family2',
+    component: JoinFamily2Component
   },{
     path: 'scan-qr',
     component: ScanQrComponent

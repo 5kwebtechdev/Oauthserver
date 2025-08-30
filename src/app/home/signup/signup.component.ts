@@ -52,7 +52,6 @@ export class SignupComponent implements AfterViewInit, OnInit {
   }
   public showAgeSuggestionModal = false;
   public computedAge: number | null = null;
-  private ageModalShown = false;
 
 
   public stepDesciption = [
@@ -152,9 +151,9 @@ export class SignupComponent implements AfterViewInit, OnInit {
     this.route.queryParams.subscribe(params => {
       const stepParam = params['step'];
       this.step = Number(stepParam) || 1;
-  this.renderer.setStyle(document.documentElement, '--step', this.step);
-  // Ensure birthday picker doesn't open automatically when navigating to step 3
-  this.openBirthdayPicker = false;
+      this.renderer.setStyle(document.documentElement, '--step', this.step);
+      // Ensure birthday picker doesn't open automatically when navigating to step 3
+      this.openBirthdayPicker = false;
     })
   }
 
@@ -190,18 +189,8 @@ export class SignupComponent implements AfterViewInit, OnInit {
       this.core.triggerToasrt('Please select a role');
       return;
     }
-    // central check: show age suggestion modal for certain role/age combinations
-    const dobVal = this.profileForm.get('dob')?.value;
-    const parsedDob = dobVal ? new Date(dobVal) : null;
-    const age = parsedDob ? this.calculateAge(parsedDob) : null;
 
-    if (this.shouldShowAgeSuggestion(this.roleSelected, age)) {
-      this.showAgeSuggestionModal = true;
-      this.ageModalShown = true;
-      return;
-    }
-
-    // proceed to next step
+    // proceed to next step without age validation
     this.router.navigate(['home/sign-up'], { queryParams: { step: 3 } });
   }
 
@@ -211,8 +200,53 @@ export class SignupComponent implements AfterViewInit, OnInit {
       return;
     }
 
-    // this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
-    this.router.navigate(['home/instructions']);
+    // If role is 'self', complete signup and go to step 4 (pet selection)
+    if (this.roleSelected === 'self') {
+      this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
+      return;
+    }
+
+    // For child/parent: validate age and route accordingly
+    const dobVal = this.profileForm.get('dob')?.value;
+    const parsedDob = dobVal ? new Date(dobVal) : null;
+    const age = parsedDob ? this.calculateAge(parsedDob) : null;
+
+    if (age !== null) {
+      // Child role: age < 24 is valid, age >= 24 shows popup
+      if (this.roleSelected === 'child') {
+        if (age < 24) {
+          // Valid age for child role - go to child instructions
+          this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
+          return;
+        } else {
+          // Age >= 24 - show suggestion popup
+          this.showAgeSuggestionModal = true;
+          return;
+        }
+      }
+      
+      // Parent role: age >= 24 is valid, age < 24 shows popup
+      if (this.roleSelected === 'parent') {
+        if (age >= 24) {
+          // Valid age for parent role - go to parent instructions
+          this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
+          return;
+        } else {
+          // Age < 24 - show suggestion popup repeatedly until correct age
+          this.showAgeSuggestionModal = true;
+          return;
+        }
+      }
+    }
+
+    // If no age provided, require age input
+    if (age === null) {
+      this.core.triggerToasrt('Please enter your date of birth');
+      return;
+    }
+
+    // Fallback: continue to instructions with selected role
+    this.router.navigate(['home/instructions-for-child'], { queryParams: { role: this.roleSelected } });
   }
 
   goBack(){
@@ -259,26 +293,11 @@ export class SignupComponent implements AfterViewInit, OnInit {
     })
 
     this.computedAge = this.calculateAge(parsedDate);
-  // close the picker after choosing a date
-  this.openBirthdayPicker = false;
-    // central decision using helper
-    if (!this.ageModalShown && this.shouldShowAgeSuggestion(this.roleSelected, this.computedAge)) {
-      this.showAgeSuggestionModal = true;
-      this.ageModalShown = true;
-    }
-  }
-
-  private shouldShowAgeSuggestion(role: 'child' | 'parent' | 'self' | undefined, age: number | null): boolean {
-    // no modal for self
-    if (!role || role === 'self') return false;
-
-    // if child selected and age is provided and age >= 24 -> suggest self
-    if (role === 'child' && age !== null && age >= 24) return true;
-
-    // if parent selected and age is provided and age < 24 -> suggest self
-    if (role === 'parent' && age !== null && age < 24) return true;
-
-    return false;
+    // close the picker after choosing a date
+    this.openBirthdayPicker = false;
+    
+    // Don't show popup automatically when birthday changes
+    // Only show popup when user clicks Save & Continue with invalid age
   }
 
   private calculateAge(dob: Date): number | null {
@@ -297,20 +316,32 @@ export class SignupComponent implements AfterViewInit, OnInit {
 
   closeAgeSuggestionModal(): void {
     this.showAgeSuggestionModal = false;
+    // Reset the age modal state so it doesn't appear when navigating back to step 2
+    // but can appear again if user clicks Save & Continue with wrong age
   }
 
   selectSelfRole(): void {
-  this.roleSelected = 'self';
-  this.showAgeSuggestionModal = false;
-  // proceed directly to step 3 for Self role
-  this.router.navigate(['home', 'sign-up'], { queryParams: { step: 3 } });
+    this.roleSelected = 'self';
+    this.showAgeSuggestionModal = false;
+    // proceed directly to step 4 for Self role (pet selection)
+    this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
   }
 
   selectParentRole(): void {
-  this.roleSelected = 'parent';
-  this.showAgeSuggestionModal = false;
-  // continue to next step even if user insists on parent role
-  this.router.navigate(['home', 'sign-up'], { queryParams: { step: 3 } });
+    this.roleSelected = 'parent';
+    this.showAgeSuggestionModal = false;
+    // For child users switching to parent role, check age again
+    const dobVal = this.profileForm.get('dob')?.value;
+    const parsedDob = dobVal ? new Date(dobVal) : null;
+    const age = parsedDob ? this.calculateAge(parsedDob) : null;
+    
+    if (age !== null && age >= 24) {
+      // Age is valid for parent role, proceed to parent instructions
+      this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
+    } else {
+      // Stay on current step (step 3) so user can update their age
+      // The validation will trigger again when they click Save & Continue
+    }
   }
 
   protected readonly top = top;

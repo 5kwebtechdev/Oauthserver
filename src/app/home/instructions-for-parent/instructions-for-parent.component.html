@@ -1,0 +1,56 @@
+<div class="instructions-parent">
+  <h2 class="fredoka">
+    <i (click)="goBack()" class="fa-solid fa-arrow-left"></i>
+    Instructions
+  </h2>
+  
+  
+
+  <div class="instructions-list">
+    <div class="instruction-item">
+      <div class="step-number">1</div>
+      <p>Create your family in the next step to get started.</p>
+    </div>
+    
+    <div class="instruction-item">
+      <div class="step-number">2</div>
+      <p>You'll receive a unique family code and QR code instantly.</p>
+    </div>
+    
+    <div class="instruction-item">
+      <div class="step-number">3</div>
+      <p>Share the code with your child or let them scan the QR code on their device.</p>
+    </div>
+    
+    <div class="instruction-item">
+      <div class="step-number">4</div>
+      <p>Once your child enters the code, you'll both be connected and can track progress together!</p>
+    </div>
+  </div>
+
+  <div class="faq-section">
+    <h3>FAQ's</h3>
+    
+    <details class="faq-item">
+      <summary>What if my child doesn't have the app downloaded yet?</summary>
+      <p>Your child will need to download the app first. You can share the download link along with the family code.</p>
+    </details>
+    
+    <details class="faq-item">
+      <summary>Can I add multiple children to the same family?</summary>
+      <p>Yes, you can add multiple children to your family using the same family code.</p>
+    </details>
+    
+    <details class="faq-item">
+      <summary>What if the family code stops working or expires?</summary>
+      <p>Family codes don't expire, but you can generate a new one if needed from your family settings.</p>
+    </details>
+    
+    <details class="faq-item">
+      <summary>What if I want to join someone else's family instead of creating my own?</summary>
+      <p>You can choose to join an existing family instead of creating a new one in the next step.</p>
+    </details>
+  </div>
+
+  <button class="next-btn" (click)="proceedNext()">Next</button>
+</div>

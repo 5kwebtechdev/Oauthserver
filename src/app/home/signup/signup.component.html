@@ -11,7 +11,7 @@
     </div>
 
     <!--//////////////////////// STEP 1-->
-    <ng-container *ngIf="step === 1" [@slideIn]>
+    <div *ngIf="step === 1" [@slideIn]>
       <div class="container w-full p-0" style="display: flex; justify-content: center; align-items: center;">
         <div class="container w-full p-0" style="padding: 50px 0px !important;">
           <div class="toggle-buttons">
@@ -19,7 +19,7 @@
             <button [class.active]="loginMode === 'email'" (click)="switchMode('email')">Email</button>
           </div>
 
-          <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+          <form [formGroup]="signupForm">
             <ng-container *ngIf="loginMode === 'email'">
               <div class="input-group">
                 <input [ngClass]="{'error' : email?.invalid && (email?.dirty)}" formControlName="email" type="email"
@@ -52,7 +52,7 @@
               </div>
             </div>
 
-            <button class="signup-btn" (click)="signup()">Sign Up</button>
+            <button type="button" class="signup-btn" (click)="signup()">Sign Up</button>
           </form>
 
           <div class="or-divider"><span>OR</span></div>
@@ -82,8 +82,8 @@
         <p class="terms">By continuing you accept our <a href="#">Privacy Policy</a> and <a href="#">Terms of Use</a>.
         </p>
       </div>
-    </ng-container>
-    <ng-container *ngIf="step === 2" [@slideIn]>
+    </div>
+    <div *ngIf="step === 2" [@slideIn]>
       <div class="container w-full" style="height: 50px">
 
       </div>
@@ -133,8 +133,8 @@
 
       <button class="signup-btn" style="margin-top: 25px" [disabled]="!roleSelected" (click)="proceedWithRole()">Save &
         Continue</button>
-    </ng-container>
-    <ng-container *ngIf="step === 3" [@slideIn]>
+    </div>
+    <div *ngIf="step === 3" [@slideIn]>
       <div class="profile">
         <form [formGroup]="profileForm">
           <h4>Full Name <span>Just for Setup. Never Shown</span></h4>
@@ -183,8 +183,8 @@
       </div>
       <button class="signup-btn" style="margin-top: 25px" [disabled]="false" (click)="proceedWithAvatar()">Save &
         Continue</button>
-    </ng-container>
-    <ng-container *ngIf="step === 4" [@slideIn]>
+    </div>
+    <div *ngIf="step === 4" [@slideIn]>
       <swiper-container slides-per-view="1.4" centered-slides="true" space-between="20" grab-cursor="true"
         (animationend)="onSlideChange()" (transitionend)="onSlideChange()" #swiperEl [style]="{ marginTop: '50px' }">
         <swiper-slide *ngFor="let pet of pets">
@@ -198,19 +198,23 @@
       </swiper-container>
       <button class="signup-btn" style="margin-top: 25px" [disabled]="false" (click)="proceedWithAvatar()">Let's get
         started</button>
-    </ng-container>
+    </div>
 
     <!-- Age Suggestion Modal -->
     <div class="age-modal-backdrop" *ngIf="showAgeSuggestionModal" (click)="closeAgeSuggestionModal()"></div>
     <div class="age-modal" *ngIf="showAgeSuggestionModal" role="dialog" aria-modal="true">
-      <h3>Personalized Experience Available</h3>
-      <p>Based on your profile, you might love these
-      </p>
-      <div class="actions">
-        <button class="secondary" (click)="closeAgeSuggestionModal()">Cancel</button>
-        <button class="primary" (click)="selectSelfRole()">Try Self Role</button>
+      <div class="age-modal__content">
+        <h3 class="age-modal__title">Personalized Experience Available</h3>
+        <p class="age-modal__subtitle" *ngIf="roleSelected === 'parent'">Based on your profile, you might love<br>our Self mode</p>
+        <p class="age-modal__subtitle" *ngIf="roleSelected === 'child'">Based on your profile, you might love<br>these</p>
       </div>
-      <button class="close" aria-label="Close" (click)="closeAgeSuggestionModal()">×</button>
+      <div class="age-modal__actions">
+        <button class="age-modal__btn age-modal__btn--secondary" *ngIf="roleSelected === 'parent'" (click)="closeAgeSuggestionModal()">Cancel</button>
+        <button class="age-modal__btn age-modal__btn--secondary" *ngIf="roleSelected === 'child'" (click)="selectSelfRole()">Try Self Role</button>
+        <button class="age-modal__btn age-modal__btn--primary" *ngIf="roleSelected === 'parent'" (click)="selectSelfRole()">Try Self Role</button>
+        <button class="age-modal__btn age-modal__btn--primary" *ngIf="roleSelected === 'child'" (click)="selectParentRole()">Try Parent Role</button>
+      </div>
+      <p class="age-modal__footer">You can always switch role in<br>settings if you prefer</p>
     </div>
   </div>
 </ion-content>

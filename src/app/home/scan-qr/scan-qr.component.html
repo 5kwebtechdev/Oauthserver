@@ -1,8 +1,51 @@
-<ion-content>
-  <div class="scanner-shell">
-    <h3>Scan QR (stub)</h3>
-    <button (click)="openGallery()">Open gallery</button>
-    <button (click)="enterCode()">Enter code manually</button>
-    <a (click)="close()">Close</a>
+<ion-content [fullscreen]="true">
+  <div class="qr-scanner">
+    <!-- Header -->
+    <div class="header">
+      <button class="close-btn" (click)="close()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="header-actions">
+        <button class="flashlight-btn" (click)="toggleFlashlight()" [class.active]="flashlightOn">
+          <i class="fa-solid fa-flashlight"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- QR Scanner Viewport -->
+    <div class="scanner-viewport">
+      <div class="scanner-frame">
+        <!-- Corner brackets -->
+        <div class="corner-bracket top-left"></div>
+        <div class="corner-bracket top-right"></div>
+        <div class="corner-bracket bottom-left"></div>
+        <div class="corner-bracket bottom-right"></div>
+      </div>
+    </div>
+
+    <!-- Upload from Gallery Button -->
+    <button class="upload-gallery-btn" (click)="openGallery()">
+      <i class="fa-solid fa-image"></i>
+      <span>Upload from gallery</span>
+    </button>
+
+    <!-- Divider Section -->
+    <div class="divider-section">
+      <div class="divider">
+        <div class="divider-line"></div>
+        <span class="divider-text">OR</span>
+        <div class="divider-line"></div>
+      </div>
+      
+      <div class="manual-entry">
+        <p class="error-text">
+          Facing errors?<br>
+          Try entering the code instead.
+        </p>
+        <button class="enter-code-btn" (click)="enterCode()">
+          Enter code
+        </button>
+      </div>
+    </div>
   </div>
 </ion-content>

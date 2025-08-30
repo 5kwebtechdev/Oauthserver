@@ -20,7 +20,7 @@ export class JoinFamilyComponent {
   }
 
   goBack() {
-    this.router.navigate(['/home/instructions']);
+    this.router.navigate(['/home/instructions-for-child']);
   }
 
   get f(): any {

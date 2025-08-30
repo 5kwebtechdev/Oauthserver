@@ -1,3 +1,331 @@
-.scanner-shell {
-  padding: 16px;
+.qr-scanner {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #FFFFFF;
+  overflow: hidden;
+  font-family: 'Nunito', sans-serif;
+
+  // Header
+  .header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    position: absolute;
+    width: calc(100% - 32px);
+    height: 48px;
+    left: 16px;
+    top: 60px;
+    z-index: 10;
+
+    .close-btn {
+      width: 40px;
+      height: 40px;
+      background: none;
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.3s ease;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.1);
+      }
+
+      i {
+        font-size: 24px;
+        color: #282527;
+      }
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+
+      .flashlight-btn {
+        width: 48px;
+        height: 48px;
+        background: none;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.3s ease;
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.1);
+        }
+
+        &.active {
+          background: rgba(238, 102, 33, 0.2);
+          
+          i {
+            color: #EE6621;
+          }
+        }
+
+        i {
+          font-size: 32px;
+          color: #282527;
+          transition: color 0.3s ease;
+        }
+      }
+    }
+  }
+
+  // QR Scanner Viewport
+  .scanner-viewport {
+    position: absolute;
+    width: 245px;
+    height: 249px;
+    left: calc(50% - 245px/2);
+    top: calc(50% - 249px/2 - 89.5px);
+
+    .scanner-frame {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+
+      .corner-bracket {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border: 4px solid #282527;
+
+        &.top-left {
+          top: -2px;
+          left: -2px;
+          border-right: none;
+          border-bottom: none;
+          border-radius: 12px 0 0 0;
+        }
+
+        &.top-right {
+          top: -2px;
+          right: -2px;
+          border-left: none;
+          border-bottom: none;
+          border-radius: 0 12px 0 0;
+        }
+
+        &.bottom-left {
+          bottom: -2px;
+          left: -2px;
+          border-right: none;
+          border-top: none;
+          border-radius: 0 0 0 12px;
+        }
+
+        &.bottom-right {
+          bottom: -2px;
+          right: -2px;
+          border-left: none;
+          border-top: none;
+          border-radius: 0 0 12px 0;
+        }
+      }
+    }
+  }
+
+  // Upload from Gallery Button
+  .upload-gallery-btn {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 8px;
+    gap: 6px;
+    position: absolute;
+    width: 165px;
+    height: 40px;
+    left: calc(50% - 165px/2);
+    top: 493px;
+    background: #FFFFFF;
+    box-shadow: 0px 0px 2px 2px rgba(107, 101, 106, 0.1);
+    border-radius: 32px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0px 2px 8px 2px rgba(107, 101, 106, 0.15);
+      transform: translateY(-1px);
+    }
+
+    i {
+      width: 24px;
+      height: 24px;
+      font-size: 16px;
+      color: #282527;
+    }
+
+    span {
+      font-family: 'Nunito';
+      font-weight: 500;
+      font-size: 13px;
+      line-height: 130%;
+      color: #282527;
+    }
+  }
+
+  // Divider Section
+  .divider-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+    gap: 24px;
+    position: absolute;
+    width: 292.5px;
+    height: 120px;
+    left: 50px;
+    top: 565px;
+
+    .divider {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      height: 21px;
+
+      .divider-line {
+        width: 126.25px;
+        height: 1px;
+        background: #772817;
+        opacity: 0.3;
+      }
+
+      .divider-text {
+        font-family: 'Nunito';
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 130%;
+        color: #772817;
+      }
+    }
+
+    .manual-entry {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      width: 217px;
+      height: 75px;
+
+      .error-text {
+        font-family: 'Nunito';
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 130%;
+        text-align: center;
+        color: #772817;
+        opacity: 0.7;
+        margin: 0;
+      }
+
+      .enter-code-btn {
+        font-family: 'Nunito';
+        font-weight: 700;
+        font-size: 16px;
+        line-height: 130%;
+        text-align: center;
+        text-decoration: underline;
+        color: #772817;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        transition: opacity 0.3s ease;
+
+        &:hover {
+          opacity: 0.8;
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 480px) {
+  .qr-scanner {
+    .header {
+      width: calc(100% - 24px);
+      left: 12px;
+      top: 40px;
+    }
+
+    .scanner-viewport {
+      width: 200px;
+      height: 200px;
+      left: calc(50% - 200px/2);
+      top: calc(50% - 200px/2 - 60px);
+    }
+
+    .upload-gallery-btn {
+      width: 140px;
+      left: calc(50% - 140px/2);
+      top: 420px;
+
+      span {
+        font-size: 12px;
+      }
+    }
+
+    .divider-section {
+      width: calc(100% - 40px);
+      left: 20px;
+      top: 480px;
+
+      .manual-entry {
+        width: 100%;
+
+        .error-text {
+          font-size: 14px;
+        }
+
+        .enter-code-btn {
+          font-size: 14px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 360px) {
+  .qr-scanner {
+    .scanner-viewport {
+      width: 180px;
+      height: 180px;
+      left: calc(50% - 180px/2);
+      top: calc(50% - 180px/2 - 50px);
+    }
+
+    .upload-gallery-btn {
+      width: 120px;
+      left: calc(50% - 120px/2);
+      font-size: 11px;
+    }
+
+    .divider-section {
+      .manual-entry {
+        .error-text {
+          font-size: 13px;
+        }
+
+        .enter-code-btn {
+          font-size: 13px;
+        }
+      }
+    }
+  }
 }
