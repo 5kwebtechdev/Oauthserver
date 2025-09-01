@@ -18,9 +18,24 @@
         </ng-container>
         <ng-container *ngIf="loginMode === 'phone'">
           <div class="input-group">
-            <input formControlName="phone" [ngClass]="{'error' : (phone?.invalid || phone?.value.length < 10) && phone?.dirty }"  type="number" placeholder="Phone" />
-            <div class="error" *ngIf="(phone?.invalid || phone?.value.length !== 10) && phone?.dirty ">
-              Please Enter a valid 10 digit phone number
+            <div class="phone-input-container"
+                 [ngClass]="{'error' : !isPhoneValid(phone?.value) && phone?.dirty }">
+              <div class="country-code-selector" (click)="openCountryCodeModal()">
+                <span class="flag-emoji">{{selectedCountry.flag}}</span>
+                <span class="country-code">{{selectedCountry.code}}</span>
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+              <input formControlName="phone"
+                type="tel" 
+                [maxlength]="currentPhoneLength"
+                pattern="[0-9]*"
+                inputmode="numeric"
+                (input)="onPhoneInput($event)"
+                (keypress)="onKeyPress($event)"
+                placeholder="Enter {{currentPhoneLength}} digit number" />
+            </div>
+            <div class="error" *ngIf="!isPhoneValid(phone?.value) && phone?.dirty ">
+              {{getPhoneErrorMessage()}}
             </div>
           </div>
         </ng-container>
@@ -50,7 +65,7 @@
         </div>
       </div>
 
-      <p class="login-text">Don't have and Account ?<a href="home/sign-up?step=1"> Sign Up</a></p>
+      <p class="login-text">Don't have and Account ?<a href="home/sign-up?step=0.1"> Sign Up</a></p>
     </div>
   </div>
   <div class="container w-full p-0" style="opacity: 0.5">
@@ -60,5 +75,31 @@
     </label>
 
     <p class="terms">By continuing you accept our <a href="#">Privacy Policy</a> and <a href="#">Terms of Use</a>.</p>
+  </div>
+
+  <!-- Country Code Modal -->
+  <div class="country-modal-backdrop" *ngIf="showCountryCodeModal" (click)="closeCountryCodeModal()"></div>
+  <div class="country-modal" *ngIf="showCountryCodeModal" role="dialog" aria-modal="true">
+    <div class="country-modal__header">
+      <h3 class="country-modal__title">Country code</h3>
+      <button class="country-modal__close" (click)="closeCountryCodeModal()">
+        <i class="fa-solid fa-times"></i>
+      </button>
+    </div>
+    <div class="country-modal__content">
+      <div class="country-list">
+        <div class="country-item" 
+             *ngFor="let country of countries" 
+             (click)="selectCountry(country)"
+             [class.selected]="selectedCountry.code === country.code">
+          <span class="country-flag">{{country.flag}}</span>
+          <span class="country-name">{{country.name}}</span>
+          <span class="country-code">{{country.code}}</span>
+        </div>
+      </div>
+    </div>
+    <div class="country-modal__footer">
+      <button class="country-modal__done-btn" (click)="closeCountryCodeModal()">Done</button>
+    </div>
   </div>
 </div>

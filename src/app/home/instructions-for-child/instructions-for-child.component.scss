@@ -1,8 +1,3 @@
-// All common styles moved to global.scss
-// This component now uses mindful-* classes from global styles
-// Only component-specific overrides would go here if needed
-
-// Example of component-specific overrides:
-// .instructions-child-specific {
-//   /* Any unique styles for this component only */
-// }
+.mindful-page-container {
+  margin-top: 56px;
+}

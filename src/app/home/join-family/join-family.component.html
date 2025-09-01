@@ -17,7 +17,14 @@
       <div class="mindful-input-group">
         <div class="input-container">
           <ion-input formControlName="code" placeholder="Enter code" type="text" inputmode="numeric" [attr.maxlength]="8"></ion-input>
-          <button type="button" class="qr-icon" (click)="openScanner()" aria-label="Scan QR">▦</button>
+          <button 
+            type="button" 
+            class="qr-icon" 
+            (click)="openScanner()" 
+            (touchstart)="openScanner()" 
+            aria-label="Scan QR">
+            <img src="assets/icons/qr_code.svg" alt="QR Code">
+          </button>
         </div>
 
         <div class="error-message" *ngIf="(submitted && f.code.errors) || (f.code.touched && f.code.invalid)">

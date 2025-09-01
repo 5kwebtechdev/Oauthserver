@@ -3,11 +3,11 @@
     <!-- Header -->
     <div class="header">
       <button class="close-btn" (click)="close()">
-        <i class="fa-solid fa-xmark"></i>
+        <img src="assets/icons/close.svg" alt="Close">
       </button>
       <div class="header-actions">
-        <button class="flashlight-btn" (click)="toggleFlashlight()" [class.active]="flashlightOn">
-          <i class="fa-solid fa-flashlight"></i>
+        <button class="flashlight-btn">
+          <img src="assets/icons/flashlight_on.png" alt="Flashlight">
         </button>
       </div>
     </div>
@@ -15,17 +15,14 @@
     <!-- QR Scanner Viewport -->
     <div class="scanner-viewport">
       <div class="scanner-frame">
-        <!-- Corner brackets -->
-        <div class="corner-bracket top-left"></div>
-        <div class="corner-bracket top-right"></div>
-        <div class="corner-bracket bottom-left"></div>
-        <div class="corner-bracket bottom-right"></div>
+        <!-- Scanner SVG Icon -->
+        <img src="assets/icons/scanner.svg" alt="QR Scanner" class="scanner-icon">
       </div>
     </div>
 
     <!-- Upload from Gallery Button -->
-    <button class="upload-gallery-btn" (click)="openGallery()">
-      <i class="fa-solid fa-image"></i>
+    <button class="upload-gallery-btn">
+      <img src="assets/icons/filter.svg" alt="Gallery" class="gallery-icon">
       <span>Upload from gallery</span>
     </button>
 

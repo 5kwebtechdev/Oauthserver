@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-join-family',
@@ -8,14 +8,34 @@ import { Router } from '@angular/router';
   styleUrls: ['./join-family.component.scss'],
   standalone: false
 })
-export class JoinFamilyComponent {
+export class JoinFamilyComponent implements OnInit {
   form: FormGroup;
   submitted = false;
+  userRole: 'child' | 'parent' | 'self' = 'child';
 
-  constructor(private fb: FormBuilder, private router: Router) {
-    // require exactly 8 numeric digits for the family code
+  constructor(private fb: FormBuilder, private router: Router, private route: ActivatedRoute) {
     this.form = this.fb.group({
       code: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]]
+    });
+  }
+
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      const role = params['role'];
+      const scannedCode = params['scannedCode'];
+      
+      if (role && ['child', 'parent', 'self'].includes(role)) {
+        this.userRole = role;
+      }
+      
+      if (scannedCode) {
+        this.form.patchValue({ code: scannedCode });
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { role: this.userRole },
+          queryParamsHandling: 'replace'
+        });
+      }
     });
   }
 
@@ -27,29 +47,36 @@ export class JoinFamilyComponent {
     return this.form.controls as any;
   }
 
-  // Stub for QR scan — in a real app you'd call a camera/QR plugin
   scanCode() {
-    // simulate a scanned 8-digit numeric code result
     const scanned = '12345678';
     this.form.patchValue({ code: scanned });
   }
 
   openScanner() {
-    this.router.navigate(['/home/scan-qr']);
+    console.log('QR Scanner button clicked - join-family component');
+    console.log('User role:', this.userRole);
+    
+    this.router.navigate(['/home/scan-qr'], { 
+      queryParams: { 
+        role: this.userRole,
+        returnTo: 'join-family'
+      } 
+    }).then(success => {
+      console.log('Navigation to scan-qr successful:', success);
+    }).catch(error => {
+      console.error('Navigation to scan-qr failed:', error);
+    });
   }
 
   submit() {
     this.submitted = true;
-    // mark all controls as touched to show validation messages
     Object.keys(this.form.controls).forEach(k => this.form.controls[k].markAsTouched());
     if (this.form.invalid) {
       return;
     }
 
     const code = this.form.value.code;
-    // TODO: call API to join family using `code`. For now navigate or log.
     console.log('Joining family with code:', code);
-  // Navigate to signup step 4 after successful join
-  this.router.navigate(['home', 'sign-up'], { queryParams: { step: 4 } });
+    this.router.navigate(['home', 'sign-up'], { queryParams: { step: 4 } });
   }
 }

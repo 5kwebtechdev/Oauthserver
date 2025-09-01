@@ -13,12 +13,10 @@ import { CommonModule } from '@angular/common';
 export class ScanQrComponent implements OnInit {
   userRole: 'child' | 'parent' | 'self' = 'parent';
   returnTo: string = 'join-family';
-  flashlightOn: boolean = false;
 
   constructor(private router: Router, private route: ActivatedRoute) {}
 
   ngOnInit() {
-    // Get query parameters passed from the previous component
     this.route.queryParams.subscribe(params => {
       const role = params['role'];
       const returnTo = params['returnTo'];
@@ -34,38 +32,20 @@ export class ScanQrComponent implements OnInit {
   }
 
   openGallery() {
-    // stub for gallery/scan
-    console.log('open gallery');
-    // TODO: Implement actual QR scanning from gallery
+    console.log('Gallery functionality removed');
   }
 
   toggleFlashlight() {
-    this.flashlightOn = !this.flashlightOn;
-    console.log('Flashlight toggled:', this.flashlightOn);
-    // TODO: Implement actual flashlight control
+    console.log('Flashlight functionality removed');
   }
 
   enterCode() {
-    // Navigate back to the component that called this scanner
     const targetRoute = this.returnTo === 'join-family2' ? '/home/join-family2' : '/home/join-family';
     this.router.navigate([targetRoute], { queryParams: { role: this.userRole } });
   }
 
   close() {
-    // Navigate back to the component that called this scanner
     const targetRoute = this.returnTo === 'join-family2' ? '/home/join-family2' : '/home/join-family';
     this.router.navigate([targetRoute], { queryParams: { role: this.userRole } });
-  }
-
-  // Method to handle scanned QR code result
-  onQRCodeScanned(scannedCode: string) {
-    // Navigate back with the scanned code
-    const targetRoute = this.returnTo === 'join-family2' ? '/home/join-family2' : '/home/join-family';
-    this.router.navigate([targetRoute], { 
-      queryParams: { 
-        role: this.userRole, 
-        scannedCode: scannedCode 
-      } 
-    });
   }
 }

@@ -1,8 +1,10 @@
-import { Component, OnInit, Renderer2, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Renderer2, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import {Router, ActivatedRoute} from "@angular/router";
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {CoreService} from "../../core/services/core.service";
+import { CountriesService, Country } from "../../core/services/countries.service";
 import { trigger, transition, style, animate } from '@angular/animations';
+import { Subscription } from 'rxjs';
 
 
 @Component({
@@ -24,13 +26,25 @@ import { trigger, transition, style, animate } from '@angular/animations';
     ]),
   ],
 })
-export class SignupComponent implements AfterViewInit, OnInit {
+export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   public signupForm: FormGroup;
   public profileForm:  FormGroup;
+  public passwordForm: FormGroup; // Add password form
   public loginMode: 'email' | 'phone' = 'phone';
-  public hidePassword = true;
   public whatsappConsent = true;
   public step !: number;
+
+  public showCountryCodeModal = false;
+  public selectedCountry: Country;
+  public countries: Country[] = [];
+  private subscription = new Subscription();
+
+  // OTP related properties
+  public otpDigits: string[] = ['', '', '', ''];
+  public canResendOtp = false;
+  public otpResendTimer = 300; // 5 minutes
+  private resendInterval: any;
+  private isFromUserInput = false; // Track if input is from user typing vs auto-fill
 
   public roleSelected !: 'child' | 'parent' | 'self';
   public gender !: 'male' | 'female';
@@ -55,10 +69,10 @@ export class SignupComponent implements AfterViewInit, OnInit {
 
 
   public stepDesciption = [
-    'Sign Up to Begin',
-    'Pick a Role to Move Forward',
-    'Tell us about you',
-    "They'll Grow with you, Cheer You on"
+    'Pick a role to move forward',      // Step 1 - Role Selection
+    'Tell us about you!',          // Step 2 - Profile Information (Name, DOB, Gender, Avatar)  
+    'Sign up to begin your journey',         // Step 3 - Account Creation (Phone/Email)
+    "They'll grow with you, cheer you on"   // Step 4 - Pet Selection
   ]
 
   public avatars = [
@@ -100,7 +114,7 @@ export class SignupComponent implements AfterViewInit, OnInit {
     text: ['Loves quiet focus and gentle growth', 'Loves quiet focus and gentle growth']
   }]
 
-  currentImage: any = this.pets[0];
+  public currentImage: any = this.pets[0];
 
   ngAfterViewInit(): void {
     if (!this.swiperRef?.nativeElement) {
@@ -125,6 +139,25 @@ export class SignupComponent implements AfterViewInit, OnInit {
   ngOnInit(): void {
     // Defensive: ensure picker does not open automatically on init
     this.openBirthdayPicker = false;
+    
+    // Load countries from service
+    this.subscription.add(
+      this.countriesService.getCountries().subscribe({
+        next: (countries) => {
+          this.countries = countries;
+          console.log('Countries loaded:', countries.length);
+        },
+        error: (error) => {
+          console.error('Error loading countries:', error);
+          // Fallback to default country if loading fails
+          this.countries = [this.countriesService.getDefaultCountry()];
+        }
+      })
+    );
+    
+    // Debug: check if flag is properly loaded
+    console.log('Selected country flag:', this.selectedCountry.flag);
+    console.log('Selected country code:', this.selectedCountry.code);
   }
 
   attachSlideChangeListener(swiperEl: HTMLElement) {
@@ -136,11 +169,13 @@ export class SignupComponent implements AfterViewInit, OnInit {
     private route: ActivatedRoute,
     private renderer: Renderer2,
     private router: Router,
-    private core: CoreService
+    private core: CoreService,
+    private countriesService: CountriesService
   ) {
+    // Initialize with default country
+    this.selectedCountry = this.countriesService.getDefaultCountry();
     this.signupForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', []],
       phone: ['', []],
     });
 
@@ -148,9 +183,21 @@ export class SignupComponent implements AfterViewInit, OnInit {
       name: ['', [Validators.required]],
       dob: [''],
     })
+    
+    this.passwordForm = this.fb.group({
+      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(12)]],
+    })
     this.route.queryParams.subscribe(params => {
       const stepParam = params['step'];
       this.step = Number(stepParam) || 1;
+      // Handle special step cases
+      if (stepParam === '0.1') {
+        this.step = 0.1;
+      } else if (stepParam === '0.2') {
+        this.step = 0.2;
+      } else if (stepParam === '0.3') {
+        this.step = 0.3;
+      }
       this.renderer.setStyle(document.documentElement, '--step', this.step);
       // Ensure birthday picker doesn't open automatically when navigating to step 3
       this.openBirthdayPicker = false;
@@ -164,8 +211,9 @@ export class SignupComponent implements AfterViewInit, OnInit {
   get phone(){
     return this.signupForm.get('phone');
   }
+
   get password(){
-    return this.signupForm.get('password');
+    return this.passwordForm.get('password');
   }
 
   get name(){
@@ -177,7 +225,35 @@ export class SignupComponent implements AfterViewInit, OnInit {
   }
 
   signup(){
-    this.router.navigate(['home/sign-up'], { queryParams: { step: 2 } });
+    this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
+  }
+
+  signupFromLogin(){
+    // Validate form first
+    if (this.loginMode === 'phone') {
+      if (!this.isPhoneValid(this.phone?.value)) {
+        this.core.triggerToasrt('Please enter a valid phone number');
+        return;
+      }
+      // From step 0.1 with phone, go to step 0.2 (OTP verification)
+      this.startOtpTimer();
+      this.router.navigate(['home/sign-up'], { queryParams: { step: 0.2 } });
+      
+      // Focus first OTP input after navigation
+      setTimeout(() => {
+        const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
+        if (firstInput) {
+          firstInput.focus();
+        }
+      }, 100);
+    } else {
+      if (this.email?.invalid) {
+        this.core.triggerToasrt('Please enter a valid email address');
+        return;
+      }
+      // From step 0.1 with email, go to step 0.3 (password creation)
+      this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
+    }
   }
 
   dob(){
@@ -191,7 +267,7 @@ export class SignupComponent implements AfterViewInit, OnInit {
     }
 
     // proceed to next step without age validation
-    this.router.navigate(['home/sign-up'], { queryParams: { step: 3 } });
+    this.router.navigate(['home/sign-up'], { queryParams: { step: 2 } });
   }
 
   proceedWithAvatar(){
@@ -245,12 +321,19 @@ export class SignupComponent implements AfterViewInit, OnInit {
       return;
     }
 
-    // Fallback: continue to instructions with selected role
-    this.router.navigate(['home/instructions-for-child'], { queryParams: { role: this.roleSelected } });
+    // Fallback: continue to step 3 (phone/email)
+    this.router.navigate(['home/sign-up'], { queryParams: { step: 3 } });
   }
 
   goBack(){
-    if(this.step > 1){
+    if(this.step === 0.1){
+      // From step 0.1, go back to login
+      this.router.navigate(['home/login']);
+    } else if(this.step === 0.2){
+      // From step 0.2, go back to step 0.1
+      this.clearOtpTimer();
+      this.router.navigate(['home/sign-up'], { queryParams: { step: 0.1 } });
+    } else if(this.step > 1){
       this.router.navigate(['home/sign-up'], { queryParams: { step: this.step-1 } });
     }
   }
@@ -344,5 +427,327 @@ export class SignupComponent implements AfterViewInit, OnInit {
     }
   }
 
+  openCountryCodeModal(): void {
+    if (this.loginMode === 'phone') {
+      this.showCountryCodeModal = true;
+    }
+  }
+
+  closeCountryCodeModal(): void {
+    this.showCountryCodeModal = false;
+  }
+
+  // Get current phone number length requirement
+  get currentPhoneLength(): number {
+    return this.selectedCountry.phoneLength;
+  }
+
+  // Validate phone number based on selected country
+  isPhoneValid(phoneValue: string): boolean {
+    if (!phoneValue) return false;
+    const cleanPhone = phoneValue.replace(/\D/g, ''); // Remove non-digits
+    return cleanPhone.length === this.currentPhoneLength;
+  }
+
+  // Format phone validation error message
+  getPhoneErrorMessage(): string {
+    return `Please enter a valid ${this.currentPhoneLength} digit phone number for ${this.selectedCountry.name}`;
+  }
+
+  selectCountry(country: Country): void {
+    this.selectedCountry = country;
+    this.showCountryCodeModal = false;
+    
+    // Clear phone validation when country changes
+    const phoneControl = this.signupForm.get('phone');
+    if (phoneControl) {
+      phoneControl.markAsUntouched();
+      phoneControl.updateValueAndValidity();
+    }
+  }
+
+  // Only allow numeric input
+  onKeyPress(event: KeyboardEvent): boolean {
+    const charCode = event.which ? event.which : event.keyCode;
+    // Only allow numbers (0-9)
+    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+      return false;
+    }
+    return true;
+  }
+
+  // Handle phone input to ensure only numbers
+  onPhoneInput(event: any): void {
+    const input = event.target;
+    const value = input.value;
+    // Remove any non-numeric characters
+    const numericValue = value.replace(/[^0-9]/g, '');
+    
+    // Update the form control with clean numeric value
+    this.signupForm.patchValue({
+      phone: numericValue
+    });
+    
+    // Set cursor position to end
+    setTimeout(() => {
+      input.setSelectionRange(numericValue.length, numericValue.length);
+    }, 0);
+  }
+
+  // OTP related methods
+  getOtpDestination(): string {
+    if (this.loginMode === 'phone') {
+      const phoneValue = this.phone?.value || '';
+      const maskedPhone = phoneValue.length > 4 
+        ? phoneValue.slice(0, 2) + '*'.repeat(phoneValue.length - 4) + phoneValue.slice(-2)
+        : phoneValue;
+      return `${this.selectedCountry.code} ${maskedPhone}`;
+    } else {
+      const emailValue = this.email?.value || '';
+      const [username, domain] = emailValue.split('@');
+      if (username && domain) {
+        const maskedUsername = username.length > 2 
+          ? username.slice(0, 2) + '*'.repeat(Math.max(0, username.length - 4)) + username.slice(-2)
+          : username;
+        return `${maskedUsername}@${domain}`;
+      }
+      return emailValue;
+    }
+  }
+
+  onOtpInput(event: any, index: number): void {
+    const inputElement = event.target as HTMLInputElement;
+    const inputValue = inputElement.value;
+    const previousValue = this.otpDigits[index];
+    
+    // Only allow numeric input
+    const numericValue = inputValue.replace(/[^0-9]/g, '');
+    
+    // Clear the input immediately to prevent interference
+    inputElement.value = '';
+    
+    if (numericValue.length > 0) {
+      // Take only the first digit and put it ONLY in current input
+      const digit = numericValue.charAt(0);
+      this.otpDigits[index] = digit;
+      inputElement.value = digit; // Set value only to current input
+      
+      // Auto-advance to next input (move cursor only, don't copy value)
+      // Only move if:
+      // 1. User manually typed (not auto-fill)
+      // 2. Value actually changed
+      // 3. Not the last input
+      if (this.isFromUserInput && 
+          previousValue !== digit && 
+          index < this.otpDigits.length - 1) {
+        
+        setTimeout(() => {
+          const nextInput = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
+          if (nextInput) {
+            nextInput.focus(); // Just move cursor, value will be empty
+            // Ensure next input is empty
+            nextInput.value = this.otpDigits[index + 1] || '';
+          }
+        }, 10);
+      }
+    } else {
+      // Handle deletion
+      this.otpDigits[index] = '';
+      inputElement.value = '';
+    }
+    
+    // Reset the flag after processing
+    this.isFromUserInput = false;
+  }
+
+  onOtpKeydown(event: KeyboardEvent, index: number): void {
+    // Set flag for user input detection
+    if (event.key >= '0' && event.key <= '9') {
+      this.isFromUserInput = true;
+    }
+    
+    // Handle backspace (like popular apps)
+    if (event.key === 'Backspace') {
+      event.preventDefault();
+      
+      // If current input has value, clear it
+      if (this.otpDigits[index]) {
+        this.otpDigits[index] = '';
+        (event.target as HTMLInputElement).value = '';
+      } else if (index > 0) {
+        // If current input is empty, move to previous input and clear it
+        const prevInput = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
+        if (prevInput) {
+          this.otpDigits[index - 1] = '';
+          prevInput.value = '';
+          prevInput.focus();
+        }
+      }
+    }
+    
+    // Handle arrow keys for manual navigation
+    if (event.key === 'ArrowRight' && index < this.otpDigits.length - 1) {
+      const nextInput = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
+      if (nextInput) nextInput.focus();
+    }
+    
+    if (event.key === 'ArrowLeft' && index > 0) {
+      const prevInput = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
+      if (prevInput) prevInput.focus();
+    }
+  }
+
+  onOtpKeyup(event: KeyboardEvent, index: number): void {
+    // Reset user input flag after a short delay
+    setTimeout(() => {
+      this.isFromUserInput = false;
+    }, 50);
+  }
+
+  onOtpFocus(event: FocusEvent, index: number): void {
+    // Select text when focused (like popular apps)
+    const input = event.target as HTMLInputElement;
+    setTimeout(() => {
+      input.select();
+    }, 10);
+  }
+
+  onOtpPaste(event: ClipboardEvent): void {
+    event.preventDefault();
+    const pasteData = event.clipboardData?.getData('text') || '';
+    const numericData = pasteData.replace(/[^0-9]/g, '');
+    
+    // Clear all inputs first
+    this.otpDigits = ['', '', '', ''];
+    
+    // Fill OTP digits with pasted data (like popular apps)
+    for (let i = 0; i < Math.min(numericData.length, this.otpDigits.length); i++) {
+      this.otpDigits[i] = numericData[i];
+      const input = document.getElementById(`otp-input-${i}`) as HTMLInputElement;
+      if (input) {
+        input.value = numericData[i];
+      }
+    }
+    
+    // Focus on the next empty input or the last filled input (like WhatsApp)
+    const nextEmptyIndex = this.otpDigits.findIndex(digit => digit === '');
+    const focusIndex = nextEmptyIndex !== -1 ? nextEmptyIndex : Math.min(numericData.length - 1, this.otpDigits.length - 1);
+    
+    if (focusIndex >= 0) {
+      const focusInput = document.getElementById(`otp-input-${focusIndex}`) as HTMLInputElement;
+      if (focusInput) {
+        focusInput.focus();
+      }
+    }
+  }
+
+  isOtpComplete(): boolean {
+    return this.otpDigits.every(digit => digit !== '');
+  }
+
+  verifyOtp(): void {
+    if (!this.isOtpComplete()) {
+      this.core.triggerToasrt('Please enter the complete OTP');
+      return;
+    }
+    
+    const otp = this.otpDigits.join('');
+    console.log('Verifying OTP:', otp);
+    
+    // Simulate OTP verification (replace with actual API call)
+    // For now, accept any 4-digit OTP
+    this.clearOtpTimer();
+    
+    // Navigate to step 0.3 (password creation) after successful OTP verification
+    this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
+  }
+
+  resendOtp(): void {
+    console.log('Resending OTP to:', this.getOtpDestination());
+    this.core.triggerToasrt('OTP resent successfully');
+    
+    // Reset OTP inputs
+    this.otpDigits = ['', '', '', ''];
+    
+    // Clear all input values
+    for (let i = 0; i < 4; i++) {
+      const input = document.getElementById(`otp-input-${i}`) as HTMLInputElement;
+      if (input) {
+        input.value = '';
+      }
+    }
+    
+    // Focus first input
+    const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
+    if (firstInput) {
+      firstInput.focus();
+    }
+    
+    // Restart timer
+    this.startOtpTimer();
+  }
+
+  private startOtpTimer(): void {
+    this.canResendOtp = false;
+    this.otpResendTimer = 300; // 5 minutes
+    
+    this.resendInterval = setInterval(() => {
+      this.otpResendTimer--;
+      if (this.otpResendTimer <= 0) {
+        this.canResendOtp = true;
+        this.clearOtpTimer();
+      }
+    }, 1000);
+  }
+
+  private clearOtpTimer(): void {
+    if (this.resendInterval) {
+      clearInterval(this.resendInterval);
+      this.resendInterval = null;
+    }
+  }
+
+  // Get masked phone number for OTP display
+  getMaskedPhoneNumber(): string {
+    const phoneControl = this.signupForm.get('phone');
+    if (!phoneControl || !phoneControl.value) {
+      return '*******059'; // Fallback
+    }
+    
+    const phone = phoneControl.value;
+    if (phone.length < 4) {
+      return '*******' + phone;
+    }
+    
+    // Show first 2 and last 3 digits, mask the rest
+    const firstTwo = phone.substring(0, 2);
+    const lastThree = phone.substring(phone.length - 3);
+    const maskedMiddle = '*'.repeat(Math.max(0, phone.length - 5));
+    
+    return firstTwo + maskedMiddle + lastThree;
+  }
+
+  // Format timer display as MM:SS
+  formatTime(seconds: number): string {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+    this.clearOtpTimer();
+  }
+
   protected readonly top = top;
+
+  proceedWithPassword(): void {
+    if (this.passwordForm.valid) {
+      console.log('Password created:', this.password?.value);
+      // Navigate to step 1 (role selection) after password creation
+      this.router.navigate(['home/sign-up'], { queryParams: { step: 1 } });
+    } else {
+      this.core.triggerToasrt('Please enter a valid password (6-12 characters)');
+    }
+  }
 }

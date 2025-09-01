@@ -14,17 +14,13 @@
     </div>
 
     <div class="mode-selection">
-      <div class="toggle-container">
-        <div class="toggle-background"></div>
-        <div class="toggle-slider" [class.slide-right]="selectedMode === 'join'"></div>
+      <div class="toggle-buttons">
         <button 
-          class="toggle-btn left" 
           [class.active]="selectedMode === 'create'"
           (click)="selectMode('create')">
           Create Family
         </button>
         <button 
-          class="toggle-btn right" 
           [class.active]="selectedMode === 'join'"
           (click)="selectMode('join')">
           Join Family
@@ -80,10 +76,10 @@
               type="button" 
               class="qr-scanner-btn"
               (click)="openQRScanner()"
-              (touchstart)="$event.preventDefault()"
+              (touchstart)="openQRScanner(); $event.preventDefault()"
               aria-label="Scan QR Code"
               title="Scan QR Code">
-              <i class="fa-solid fa-qrcode"></i>
+              <img src="assets/icons/qr_code.svg" alt="QR Code">
             </button>
           </div>
           <p class="note-text">Note: Double-check the code before entering</p>
@@ -115,7 +111,7 @@
         <div class="code-display">
           <span class="code-text">{{familyCode}}</span>
           <button class="copy-btn" (click)="copyFamilyCode()">
-            <i class="fa-regular fa-copy"></i>
+            <img src="assets/icons/file_copy.svg" alt="Copy">
           </button>
         </div>
       </div>
@@ -132,7 +128,7 @@
           </div>
         </div>
         <button class="share-qr-btn" (click)="shareQRCode()">
-          <i class="fa-solid fa-share"></i>
+          <img src="assets/icons/share.svg" alt="Share">
           Share QR code
         </button>
       </div>

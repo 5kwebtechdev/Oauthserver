@@ -123,8 +123,8 @@ export class MindfulBirthdaypickerComponent implements ControlValueAccessor, Aft
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['showTrigger'] && changes['showTrigger']?.previousValue != changes['showTrigger']?.currentValue) {
-      // Do Something triggered by the parent button.
+    if (changes['showTrigger'] && changes['showTrigger']?.currentValue === true) {
+      // Only open when showTrigger becomes true
       this.open();
     }
   }

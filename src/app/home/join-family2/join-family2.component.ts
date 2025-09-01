@@ -54,13 +54,11 @@ export class JoinFamily2Component implements OnInit {
         this.userRole = 'parent'; // Default fallback
       }
       
-      // If there's a scanned code, populate the join family form
       if (scannedCode) {
-        this.selectedMode = 'join'; // Switch to join mode
+        this.selectedMode = 'join';
         this.joinFamilyForm.patchValue({
           familyCode: scannedCode
         });
-        // Clear the scannedCode from URL to prevent reprocessing
         this.router.navigate([], {
           relativeTo: this.route,
           queryParams: { role: this.userRole },
@@ -71,20 +69,17 @@ export class JoinFamily2Component implements OnInit {
   }
 
   goBack() {
-    // If family is created (success page), go back to create family page
     if (this.familyCreated) {
       this.familyCreated = false;
       this.selectedMode = 'create';
       this.familyForm.reset();
     } else {
-      // Otherwise go back to instructions page
       this.router.navigate(['/home/instructions-for-parent'], { queryParams: { role: this.userRole } });
     }
   }
 
   selectMode(mode: 'create' | 'join') {
     this.selectedMode = mode;
-    // Reset forms when switching modes
     if (mode === 'join') {
       this.joinFamilyForm.reset();
     } else {
@@ -103,23 +98,26 @@ export class JoinFamily2Component implements OnInit {
     this.isLoading = true;
     const familyCode = this.joinFamilyForm.get('familyCode')?.value;
 
-    // Simulate API call to join family
     setTimeout(() => {
       this.isLoading = false;
-      // TODO: Implement actual family joining logic
       this.core.triggerToasrt(`Successfully joined family with code: ${familyCode}`);
-      // Navigate to authenticated module after successful join
       this.router.navigate(['/home/auth'], { queryParams: { role: this.userRole } });
     }, 2000);
   }
 
   openQRScanner() {
-    // Navigate to QR scanner component
+    console.log('QR Scanner button clicked - join-family2 component');
+    console.log('User role:', this.userRole);
+    
     this.router.navigate(['/home/scan-qr'], { 
       queryParams: { 
         role: this.userRole,
         returnTo: 'join-family2'
       } 
+    }).then(success => {
+      console.log('Navigation to scan-qr successful:', success);
+    }).catch(error => {
+      console.error('Navigation to scan-qr failed:', error);
     });
   }
 
@@ -134,18 +132,14 @@ export class JoinFamily2Component implements OnInit {
     const familyName = this.familyForm.get('familyName')?.value;
     this.createdFamilyName = familyName;
 
-    // Simulate API call
     setTimeout(() => {
       this.isLoading = false;
       this.familyCreated = true;
       
-      // Generate random family code (6-8 characters alphanumeric)
       this.familyCode = this.generateFamilyCode();
       
-      // Generate QR code data (for now, just the family code)
       this.qrCodeData = this.familyCode;
       
-      // Family created successfully - no toast notification
     }, 2000);
   }
 
@@ -207,7 +201,6 @@ export class JoinFamily2Component implements OnInit {
   }
 
   childCompleted() {
-    // Navigate to authenticated module or dashboard
     this.router.navigate(['/home/auth'], { queryParams: { role: this.userRole } });
   }
 

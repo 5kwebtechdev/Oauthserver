@@ -1,10 +1,8 @@
-/* Join Family Component - using global mindful styles */
-
 .input-container {
   position: relative;
   
   ion-input {
-    --padding-end: 50px; /* Make room for QR button */
+    --padding-end: 50px;
   }
   
   .qr-icon {
@@ -15,7 +13,6 @@
     background: none;
     border: none;
     color: #772817;
-    font-size: 24px;
     cursor: pointer;
     padding: 12px;
     border-radius: 8px;
@@ -26,26 +23,44 @@
     min-width: 44px;
     min-height: 44px;
     touch-action: manipulation;
+    z-index: 10;
+
+    img {
+      width: 24px;
+      height: 24px;
+      filter: brightness(0) saturate(100%) invert(28%) sepia(57%) saturate(1234%) hue-rotate(16deg) brightness(92%) contrast(85%);
+      transition: filter 0.3s ease;
+      pointer-events: none;
+    }
 
     &:hover {
       background: rgba(238, 102, 33, 0.1);
-      color: #EE6621;
       transform: translateY(-50%) scale(1.05);
+      
+      img {
+        filter: brightness(0) saturate(100%) invert(49%) sepia(75%) saturate(3540%) hue-rotate(16deg) brightness(97%) contrast(85%);
+      }
     }
 
     &:active {
       transform: translateY(-50%) scale(0.95);
+      background: rgba(238, 102, 33, 0.2);
     }
   }
   
   @media (max-width: 480px) {
     .qr-icon {
       right: 6px;
-      font-size: 20px;
       padding: 10px;
       min-width: 40px;
       min-height: 40px;
       border-radius: 6px;
+
+      img {
+        width: 20px;
+        height: 20px;
+        pointer-events: none;
+      }
 
       &:hover {
         transform: translateY(-50%) scale(1.03);
