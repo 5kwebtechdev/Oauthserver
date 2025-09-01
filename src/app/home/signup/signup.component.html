@@ -1,12 +1,15 @@
 <ion-content class="bg-mindful-secondary">
   <div class="signup-container">
-    <h2 class="fredoka" style="margin-top: 15px"><i (click)="goBack()" class="fa-solid fa-arrow-left"
-        style="margin-right: 10px; font-size: 21px"></i> {{ step === 1 ? "Who's using the app?" : (step === 0.1 ? "Add phone number or email address" : (step === 0.2 ? "Check your phone" : "Create your Account")) }}</h2>
-    <h4 class="step-text" *ngIf="step !== 3 && step !== 0.1 && step !== 0.2">
+    <h2 class="fredoka" style="margin-top: 15px">
+  <i (click)="step = 0.2" class="fa-solid fa-arrow-left"
+     style="margin-right: 10px; font-size: 21px"></i>
+  {{ step === 1 ? "Who's using the app?" : (step === 0.1 ? "Add phone number or email address" : (step === 0.2 ? "Check your phone" : (step === 0.3 ? "Create Password" : "Create your Account"))) }}
+</h2>
+    <h4 class="step-text" *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3">
       Step {{step}} of 4
       <span>{{stepDesciption[step-1]}}</span>
     </h4>
-    <div class="step-completion-slider {{returnSameNumber(step)}}" *ngIf="step !== 3 && step !== 0.1 && step !== 0.2">
+    <div class="step-completion-slider {{returnSameNumber(step)}}" *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3">
 
     </div>
 
@@ -134,10 +137,8 @@
 
     <!--//////////////////////// STEP 0.3 - Create Password-->
     <div *ngIf="step === 0.3" [@slideIn]>
-      <div class="password-container">
-        <h2 class="password-title">Create Password</h2>
-        <p class="password-description">It must be six characters or more<br>For safeguarding your account</p>
-        
+      <p class="password-description">It must be six characters or more<br>For safeguarding your account</p>  
+      <div class="password-container">              
         <form [formGroup]="passwordForm">
           <div class="input-group">
             <label class="password-label">Password</label>
