@@ -1,0 +1,219 @@
+<ion-content class="showcase-content">
+  <div class="showcase-container">
+    
+    <div class="showcase-header">
+      <h1>🚀 Component Showcase</h1>
+      <p>All components from authenticated and core/components folders</p>
+    </div>
+
+    <!-- Core Components Section -->
+    <div class="section">
+      <h2>🎯 Core Components</h2>
+      
+      <div class="component-demo">
+        <h3>Challenge Card</h3>
+        <challenge-card></challenge-card>
+      </div>
+
+      <div class="component-demo">
+        <h3>Content Card</h3>
+        <content-card 
+          [title]="sampleContentCard.title"
+          [imageUrl]="sampleContentCard.imageUrl"
+          [difficulty]="sampleContentCard.difficulty"
+          [likes]="sampleContentCard.likes"
+          [views]="sampleContentCard.views"
+          [isNew]="sampleContentCard.isNew">
+        </content-card>
+      </div>
+
+      <div class="component-demo">
+        <h3>Course Card</h3>
+        <course-card
+          [title]="sampleCourseCard.title"
+          [description]="sampleCourseCard.description"
+          [imageUrl]="sampleCourseCard.imageUrl"
+          [duration]="sampleCourseCard.duration"
+          [progress]="sampleCourseCard.progress"
+          [isNew]="sampleCourseCard.isNew">
+        </course-card>
+      </div>
+
+      <div class="component-demo">
+        <h3>Habit Card</h3>
+        <habit-card 
+          [expanded]="false"
+          [inProgress]="false"
+          [percentageCompleted]="75"
+          [startTime]="sampleHabit.startTime"
+          [endTime]="sampleHabit.endTime">
+        </habit-card>
+      </div>
+
+      <div class="component-demo">
+        <h3>Mindful Badge</h3>
+        <mindful-badge 
+          [text]="'Sample Badge'"
+          [type]="'success'"
+          [medium]="true">
+        </mindful-badge>
+      </div>
+
+      <div class="component-demo">
+        <h3>Mindful Button</h3>
+        <mindful-button 
+          [text]="'Sample Button'"
+          [type]="'violet'"
+          [medium]="true"
+          (click)="onButtonClick()">
+        </mindful-button>
+      </div>
+
+      <div class="component-demo">
+        <h3>Mindful Dropdown</h3>
+        <mindful-dropdown 
+          [label]="'Select an option'"
+          [options]="sampleDropdownOptions"
+          [width]="'medium'">
+        </mindful-dropdown>
+      </div>
+
+      <div class="component-demo">
+        <h3>Mindful Selectors</h3>
+        <mindful-selectors></mindful-selectors>
+      </div>
+
+      <div class="component-demo">
+        <h3>Tutor Card</h3>
+        <tutor-card 
+          [name]="sampleTutor.name"
+          [avatar]="sampleTutor.avatar"
+          [description]="sampleTutor.description"
+          [rating]="sampleTutor.rating"
+          [experience]="sampleTutor.experience"
+          [isOnline]="sampleTutor.isOnline">
+        </tutor-card>
+      </div>
+
+      <div class="component-demo">
+        <h3>Mindful Timeline (Module Component)</h3>
+        <div class="preview-note">
+          <p><strong>Note:</strong> This component is part of the MindfulInputsModule and cannot be displayed here directly.</p>
+          <p>It is used in other pages within the application.</p>
+        </div>
+      </div>
+
+      <div class="component-demo">
+        <h3>Typical Page (Module Component)</h3>
+        <div class="preview-note">
+          <p><strong>Note:</strong> This component is part of the AuthenticatedModule and cannot be displayed here directly.</p>
+          <p>It provides a common page layout structure for other components.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mindful Input Components Section -->
+    <div class="section">
+      <h2>📝 Mindful Input Components (Module Components)</h2>
+      
+      <div class="component-demo">
+        <h3>Birthday Picker</h3>
+        <div class="preview-note">
+          <p><strong>Note:</strong> This component is part of the MindfulInputsModule.</p>
+          <p>It provides a birthday date picker functionality.</p>
+        </div>
+      </div>
+
+      <div class="component-demo">
+        <h3>Completion Component</h3>
+        <div class="preview-note">
+          <p><strong>Note:</strong> This component is part of the MindfulInputsModule.</p>
+          <p>It displays completion percentage with visual progress.</p>
+        </div>
+      </div>
+
+      <div class="component-demo">
+        <h3>Date Picker</h3>
+        <div class="preview-note">
+          <p><strong>Note:</strong> This component is part of the MindfulInputsModule.</p>
+          <p>It provides date selection functionality.</p>
+        </div>
+      </div>
+
+      <div class="component-demo">
+        <h3>Time Picker</h3>
+        <div class="preview-note">
+          <p><strong>Note:</strong> This component is part of the MindfulInputsModule.</p>
+          <p>It provides time selection functionality.</p>
+        </div>
+      </div>
+
+      <div class="component-demo">
+        <h3>Week Component</h3>
+        <div class="preview-note">
+          <p><strong>Note:</strong> This component is part of the MindfulInputsModule.</p>
+          <p>It displays weekly calendar or schedule view.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Authenticated Components Section -->
+    <div class="section">
+      <h2>🔐 Authenticated Components</h2>
+      
+      <div class="component-demo">
+        <h3>User Dashboard Preview</h3>
+        <div class="preview-note">
+          <p><strong>Note:</strong> User Dashboard component is rendered in a preview container to avoid conflicts.</p>
+          <ion-button routerLink="/authenticated/home" fill="outline">
+            <ion-icon name="home"></ion-icon>
+            View Full User Dashboard
+          </ion-button>
+        </div>
+      </div>
+
+      <div class="component-demo">
+        <h3>Profile Component Preview</h3>
+        <div class="preview-note">
+          <p><strong>Note:</strong> Profile component is rendered separately to avoid routing conflicts.</p>
+          <ion-button routerLink="/authenticated/profile/home" fill="outline">
+            <ion-icon name="person"></ion-icon>
+            View Full Profile
+          </ion-button>
+        </div>
+      </div>
+
+      <div class="component-demo">
+        <h3>Timeline Component Preview</h3>
+        <div class="preview-note">
+          <p><strong>Note:</strong> Timeline component is rendered separately to avoid conflicts.</p>
+          <ion-button routerLink="/authenticated/timeline" fill="outline">
+            <ion-icon name="time"></ion-icon>
+            View Full Timeline
+          </ion-button>
+        </div>
+      </div>
+
+      <div class="component-demo">
+        <h3>Add Calendar Component Preview</h3>
+        <div class="preview-note">
+          <p><strong>Note:</strong> Add Calendar component is rendered separately to avoid conflicts.</p>
+          <ion-button routerLink="/authenticated/add-calendar" fill="outline">
+            <ion-icon name="calendar"></ion-icon>
+            View Full Calendar
+          </ion-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Section -->
+    <!-- <div class="section">
+      <h2>🦶 Footer Component</h2>
+      <div class="component-demo">
+        <h3>Footer</h3>
+        <footer></footer>
+      </div>
+    </div> -->
+
+  </div>
+</ion-content>

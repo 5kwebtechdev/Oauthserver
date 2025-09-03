@@ -5,12 +5,13 @@ import {UserDashboardComponent} from "./user-dashboard/user-dashboard.component"
 import {ProfileComponent} from "./profile/profile.component";
 import {TimelineComponent} from "./timeline/timeline.component";
 import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
+import {ComponentShowcaseComponent} from "./component-showcase/component-showcase.component";
 
 
 const routes: Routes = [
   {
     path: 'home',
-  component: UserDashboardComponent
+    component: UserDashboardComponent
   },{
     path: 'profile/:section',
     component: ProfileComponent
@@ -20,6 +21,9 @@ const routes: Routes = [
   },{
     path: 'add-calendar',
     component: AddCalendarComponent
+  },{
+    path: 'showcase',
+    component: ComponentShowcaseComponent
   },{
     path: '',
     component: AuthenticatedComponent

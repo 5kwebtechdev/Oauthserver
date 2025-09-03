@@ -1,0 +1,25 @@
+<div class="content-card">
+  <div class="card-image-container">
+    <img [src]="imageUrl" [alt]="title" class="card-image">
+    <div class="card-badges" *ngIf="difficulty || isNew">
+      <span class="difficulty-badge" [ngClass]="'difficulty-' + difficulty" *ngIf="difficulty">{{ difficulty }}</span>
+      <span class="new-badge" *ngIf="isNew">NEW</span>
+    </div>
+    <div class="play-button">
+      <ion-icon name="play-outline"></ion-icon>
+    </div>
+  </div>
+  <div class="card-content">
+    <h4 class="card-title">{{ title }}</h4>
+    <div class="card-stats">
+      <span class="likes">
+        <ion-icon name="heart-outline"></ion-icon>
+        {{ likes }}
+      </span>
+      <span class="views">
+        <ion-icon name="eye-outline"></ion-icon>
+        {{ views }}
+      </span>
+    </div>
+  </div>
+</div>

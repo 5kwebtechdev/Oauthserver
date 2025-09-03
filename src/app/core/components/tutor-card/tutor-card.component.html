@@ -1,0 +1,19 @@
+<div class="tutor-card">
+  <div class="tutor-avatar-container">
+    <img [src]="avatar" [alt]="name" class="tutor-avatar">
+    <div class="online-indicator" [ngClass]="{'online': isOnline}"></div>
+  </div>
+  <div class="tutor-info">
+    <h4 class="tutor-name">{{ name }}</h4>
+    <p class="tutor-description">{{ description }}</p>
+    <div class="tutor-stats">
+      <div class="rating">
+        <ion-icon name="heart" color="danger"></ion-icon>
+        <span>{{ rating }} | {{ experience }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="tutor-action">
+    <button class="view-profile-btn">View Profile</button>
+  </div>
+</div>
