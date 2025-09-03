@@ -8,7 +8,7 @@ import {LongPressDirective} from "../core/directives/gestureControlDirective";
 import {MindfulButtonComponent} from "../core/components/mindful-button/mindful-button.component";
 import {IonicModule} from "@ionic/angular";
 import {MindfulBadgeComponent} from "../core/components/mindful-badge/mindful-badge.component";
-import {TestComponent} from "./test/test.component";
+import {UserDashboardComponent} from "./user-dashboard/user-dashboard.component";
 import {ChallengeCardComponent} from "../core/components/challenge-card/challenge-card.component";
 import {TypicalPageComponent} from "../core/components/typical-page/typical-page.component";
 import {ProfileComponent} from "./profile/profile.component";
@@ -27,7 +27,7 @@ import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
     ProfileHomeComponent,
     MindfulTimelineComponent,
     TimelineComponent,
-    AddCalendarComponent
+  AddCalendarComponent
   ],
   exports: [
     TypicalPageComponent
@@ -41,7 +41,7 @@ import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
     MindfulBadgeComponent,
     ChallengeCardComponent,
     IonicModule,
-    TestComponent,
+  UserDashboardComponent,
     FooterComponent,
     MindfulInputsModule,
     MindfulSelectorsComponent

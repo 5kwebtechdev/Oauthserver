@@ -1,0 +1,27 @@
+<div class="mood-card" role="group" aria-label="Mood selector">
+  <div class="mood-right">
+      <div class="mood-text">
+          <div class="mood-title">You're radiating pure <span class="mood-highlight">{{activeLabel}}</span> today!</div>
+          <div class="mood-sub">{{activeSubtitle}}</div>
+        </div>
+    </div>
+    <div class="mood-left">   
+      <div class="mood-emoji" role="button" tabindex="0" (click)="openPopup()" (keydown.enter)="openPopup()" aria-label="Open mood picker">
+        <ng-container *ngIf="isAssetActive; else unicodeEmoji">
+          <img class="active-asset" [src]="activeAssetSrc" alt="active mood" />
+        </ng-container>
+        <ng-template #unicodeEmoji>{{activeEmoji}}</ng-template>
+      </div>
+</div>
+</div>
+<div class="mood-progress" aria-hidden="true"><span class="bar" [style.width.%]="progressPercent"></span></div>
+<!-- Popup: choose from 6 emoji assets -->
+<div class="mood-popup" *ngIf="showPopup" role="dialog" aria-modal="true" aria-label="Pick your mood">
+  <div class="mood-popup-grid">
+    <button *ngFor="let p of popupOptions" type="button" class="popup-emoji" (click)="choosePopup(p.src)" [class.selected]="popupSelection === p.src">
+      <img [src]="p.src" [alt]="p.label" />
+    </button>
+  </div>
+  <button class="set-vibe" type="button" (click)="setVibe()" [disabled]="!popupSelection">Set the vibe</button>
+  <button class="popup-close" type="button" (click)="closePopup()" aria-label="Close">✕</button>
+</div>

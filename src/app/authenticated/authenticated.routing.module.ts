@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import {AuthenticatedComponent} from "./authenticated.component";
-import {TestComponent} from "./test/test.component";
+import {UserDashboardComponent} from "./user-dashboard/user-dashboard.component";
 import {ProfileComponent} from "./profile/profile.component";
 import {TimelineComponent} from "./timeline/timeline.component";
 import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
@@ -10,7 +10,7 @@ import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
 const routes: Routes = [
   {
     path: 'home',
-    component: TestComponent
+  component: UserDashboardComponent
   },{
     path: 'profile/:section',
     component: ProfileComponent

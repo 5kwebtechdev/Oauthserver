@@ -1,0 +1,258 @@
+.glance-in-day{
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  margin-top: 30px;
+}
+
+.toggler{
+  margin-top: 25px;
+}
+
+.toggler div{
+  text-align: center;
+  font-size: 18px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 500;
+  color: black;
+  position: relative;
+  padding: 8px 0;
+}
+
+.toggler div.active{
+  color: #8B8DCB;
+}
+
+.toggler div.active:before{
+  position: absolute;
+  content: '';
+  width: 60%;
+  height: 2px;
+  left: 20%;
+  bottom: 0;
+  background: #8B8DCB;
+}
+
+.toggler div:not(:last-child){
+  border-right: 1px solid black;
+}
+
+.user-profile-section {
+  position: relative;
+  width: 100%;
+  max-width: 393px;
+  margin: 0 auto;
+  height: 340px;
+  background-image: url('/assets/Background.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 24px 24px 48px 48px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+
+  // Top Header with Avatar and Tools
+  .profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .user-avatar {
+        img {
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+      }
+
+      .user-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+      }
+    }
+
+    .header-tools {
+      display: flex;
+      gap: 12px;
+
+      .tool-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+
+        .tool-icon {
+          width: 32px;
+          height: 32px;
+          cursor: pointer;
+        }
+
+        .tool-label {
+          font-size: 11px;
+          font-weight: 500;
+          color: #333;
+          background: rgba(255, 255, 255, 0.8);
+          padding: 4px 8px;
+          border-radius: 8px;
+        }
+      }
+    }
+  }
+
+  // Centered Stats Row (Figma)
+  .stats-row{
+    display:flex;
+    justify-content:center;
+    margin-bottom: 18px;
+  }
+  .stats-inner{
+    display:flex;
+    align-items:center;
+    background: transparent;
+    gap: 0px;
+  }
+  .stat-col{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    min-width:64px;
+  }
+  .stat-col .stat-icon{ width:56px; height:56px }
+  .stat-col .stat-value{ font-size:22px; font-weight:800; color:#111 }
+  .stat-divider-vertical{ width:1px; height:44px; background: rgba(0,0,0,0.08); margin:0 12px }
+
+  /* Message bubble with panda overlapping */
+  .message-card.bubble{
+    position: relative;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: 0 10px 30px rgba(20,20,20,0.06);
+    margin-top: 6px;
+    max-width: 320px;
+  }
+  .message-card.bubble .bubble-inner{ padding-right: 24px }
+  .message-card.bubble .greeting-text{ font-size:18px; font-weight:700; margin:0 0 6px 0 }
+  .message-card.bubble .message-text{ font-size:15px; color:#555; margin:0; line-height:1.45 }
+  .message-card.bubble:after{
+    content: '';
+    position: absolute;
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+    border-left: 12px solid #fff;
+  }
+  .message-card .digital-pet{ position: absolute; right: -14px; bottom: -10px }
+  .message-card .digital-pet img{ width:110px; height:auto }
+}
+
+/* === Profile / Top header styles === */
+.top-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 12px 16px;
+  gap:12px;
+}
+.top-header .left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.avatar{
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  overflow:hidden;
+  display:inline-block;
+  flex:0 0 56px;
+  border:2px solid #eee;
+}
+.avatar img{ width:100%; height:100%; object-fit:cover }
+.profile-info{ display:flex; flex-direction:column }
+.profile-info .name{ font-weight:700; font-size:16px }
+.profile-info .subtitle{ font-size:12px; color:rgba(0,0,0,0.6) }
+
+/* aliases for newly added template classes - grouped selectors */
+.profile-header,
+.top-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 12px 16px;
+  gap:12px;
+}
+.profile-header .user-info,
+.top-header .left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.user-avatar,
+.avatar{
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  overflow:hidden;
+  display:inline-block;
+  flex:0 0 56px;
+  border:2px solid #eee;
+}
+.user-avatar img,
+.avatar img{ width:100%; height:100%; object-fit:cover }
+.user-info .user-name,
+.profile-info .name{ font-weight:700; font-size:16px }
+
+.stats-bar,
+.user-stats{ display:flex; gap:12px; padding:12px 16px; align-items:center; justify-content:space-between }
+.stats-bar .stat-item,
+.user-stats .stat{ flex:1; background:#fff; border-radius:10px; padding:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); text-align:center }
+.stats-bar .stat-item .stat-value,
+.user-stats .stat .value{ font-weight:700; font-size:18px; color:#333 }
+.stats-bar .stat-item .stat-label,
+.user-stats .stat .label{ font-size:12px; color:rgba(0,0,0,0.6) }
+.stats-bar .stat-divider{ color: rgba(0,0,0,0.25); padding:0 6px }
+
+.message-card .greeting-text,
+.message-card .content .title{ font-weight:700; font-size:14px; margin-bottom:4px }
+.message-card .message-text,
+.message-card .content .body{ font-size:13px; color:rgba(0,0,0,0.7) }
+
+.top-header .tools{ display:flex; gap:8px }
+.top-header .tools button{ background:transparent; border:none; padding:8px; border-radius:8px }
+.top-header .tools button .icon{ width:20px; height:20px }
+
+/* === User stats bar === */
+.user-stats{ display:flex; gap:12px; padding:12px 16px; align-items:center; justify-content:space-between }
+.user-stats .stat{ flex:1; background:#fff; border-radius:10px; padding:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); text-align:center }
+.user-stats .stat .value{ font-weight:700; font-size:18px; color:#333 }
+.user-stats .stat .label{ font-size:12px; color:rgba(0,0,0,0.6) }
+
+/* === Message card === */
+.message-card{ background:#fff; border-radius:12px; padding:12px; margin:12px 16px; box-shadow:0 6px 20px rgba(33,33,33,0.06); display:flex; gap:12px; align-items:flex-start }
+.message-card .thumb{ width:48px; height:48px; border-radius:8px; overflow:hidden; flex:0 0 48px }
+.message-card .content{ flex:1 }
+.message-card .content .title{ font-weight:700; font-size:14px; margin-bottom:4px }
+.message-card .content .body{ font-size:13px; color:rgba(0,0,0,0.7) }
+.message-card .meta{ font-size:11px; color:rgba(0,0,0,0.45); margin-top:8px }
+
+/* Responsive tweaks */
+@media (max-width: 480px){
+  .top-header{ padding:10px }
+  .user-stats{ gap:8px; padding:8px }
+  .user-stats .stat{ padding:8px }
+  .message-card{ margin:8px 10px; padding:10px }
+}
+
