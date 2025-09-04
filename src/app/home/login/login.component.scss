@@ -1,11 +1,11 @@
 .signup-container {
-  margin: auto;
-  padding: 1.5rem;
+  margin: 0 auto;
+  padding: 2rem 1.2rem 0 1.2rem;
   background: #FDEAD7;
   font-family: "Segoe UI", sans-serif;
   color: #532b19;
-  height: 100vh;
-  width: 100vw;
+  min-height: 100vh;
+  max-width: 400px;
   border-radius: 0;
 
   h2 {
@@ -25,7 +25,8 @@
 
   .toggle-buttons {
     display: flex;
-    margin-bottom: 40px;
+    margin-bottom: 32px; // was 40px, reduce for upward movement
+    margin-top: 2px;    // add negative margin to move up
     background: #f7c29b;
     border-radius: 40px;
 
@@ -57,6 +58,13 @@
       border: 2px solid #ff823b;
       border-radius: 10px !important;
       font-size: 1rem;
+      background: #f7c293; // <-- Set background color for email and password fields
+      color: #772817;
+
+      &::placeholder {
+        color: #772817;
+        opacity: 0.6;
+      }
     }
 
     input.error{
@@ -265,6 +273,34 @@
     a {
       color: #772817;
       font-weight: bold;
+    }
+  }
+
+  .login-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-top: 1.2rem;
+    margin-bottom: 2rem;
+    width: 100%;
+
+    .back-arrow {
+      color: #532b19;
+      font-size: 1.2rem;
+      margin-right: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+
+    .login-title {
+      color: #532b19;
+      font-size: 1.3rem;
+      font-weight: 700;
+      font-family: 'Fredoka', 'Segoe UI', sans-serif;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
     }
   }
 }

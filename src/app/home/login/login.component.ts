@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
 import { CountriesService, Country } from "../../core/services/countries.service";
 import { Subscription } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -144,5 +145,12 @@ export class LoginComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       input.setSelectionRange(numericValue.length, numericValue.length);
     }, 0);
+  }
+
+  goBack() {
+    // Navigate to home page
+    window.location.href = '/home';
+    // Or, if you use Angular Router:
+    // this.router.navigate(['/home']);
   }
 }

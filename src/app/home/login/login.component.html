@@ -1,5 +1,10 @@
 <div class="signup-container">
-  <h2 class="fredoka" style="margin-top: 15px">Login to your account</h2>
+  <div class="login-header">
+    <span class="back-arrow" (click)="goBack()">
+      <i class="fa-solid fa-arrow-left"></i>
+    </span>
+    <span class="login-title fredoka">Login your account</span>
+  </div>
   <div class="container w-full p-0" style="height: calc(100vh - 200px); display: flex; justify-content: center; align-items: center;">
     <div class="container w-full p-0">
       <div class="toggle-buttons">
@@ -41,13 +46,16 @@
         </ng-container>
 
         <div class="input-group">
-          <input formControlName="password" [ngClass]="{'error' : (password?.invalid || password?.value.length < 8) && password?.dirty }" [type]="hidePassword ? 'password' : 'text'" placeholder="Password" />
+          <input formControlName="password"
+                 [ngClass]="{'error' : (password?.invalid || password?.value.length < 8) && password?.dirty }"
+                 [type]="hidePassword ? 'password' : 'text'"
+                 placeholder="Password" />
           <span class="toggle-eye" (click)="hidePassword = !hidePassword">
-          <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-          <div class="error" *ngIf="(password?.invalid || password?.value.length !== 8) && password?.dirty ">
+            <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+          </span>
+          <div class="error" *ngIf="(password?.invalid || password?.value.length < 8) && password?.dirty">
             Password should be atleast 8 characters long
           </div>
-        </span>
         </div>
 
         <button class="signup-btn" [disabled]="signInForm.invalid">Login</button>

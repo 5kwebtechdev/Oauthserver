@@ -22,3 +22,7 @@ describe('LoginComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+
+goBack() {
+  window.location.href = '/home';
+}
