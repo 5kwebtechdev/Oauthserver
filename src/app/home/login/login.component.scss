@@ -186,6 +186,17 @@
     }
   }
 
+  .error-message {
+    background-color: #fdeaea;
+    border: 1px solid #e74c3c;
+    color: #e74c3c;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
   .signup-btn {
     width: 100%;
     background: #ff9a5a;

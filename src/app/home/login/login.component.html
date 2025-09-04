@@ -50,7 +50,17 @@
         </span>
         </div>
 
-        <button class="signup-btn" [disabled]="signInForm.invalid">Login</button>
+        <!-- Show error message if login fails -->
+        <div class="error-message" *ngIf="loginError">
+          {{ loginError }}
+        </div>
+        
+        <button class="signup-btn" [disabled]="signInForm.invalid || loading">
+          <span *ngIf="!loading">Login</span>
+          <span *ngIf="loading">
+            <i class="fa-solid fa-spinner fa-spin"></i> Logging in...
+          </span>
+        </button>
       </form>
 
       <div class="or-divider"><span>OR</span></div>

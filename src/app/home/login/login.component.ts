@@ -1,6 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
 import { CountriesService, Country } from "../../core/services/countries.service";
+import { AuthService, LoginCredentials } from "../../core/services/auth.service";
+import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -14,6 +16,8 @@ export class LoginComponent implements OnInit, OnDestroy {
   public loginMode: 'email' | 'phone' = 'email';
   public hidePassword = true;
   public whatsappConsent = true;
+  public loading = false;
+  public loginError: string | null = null;
 
   public showCountryCodeModal = false;
   public selectedCountry: Country;
@@ -21,7 +25,12 @@ export class LoginComponent implements OnInit, OnDestroy {
   private subscription = new Subscription();
 
 
-  constructor(private fb: FormBuilder, private countriesService: CountriesService) {
+  constructor(
+    private fb: FormBuilder, 
+    private countriesService: CountriesService,
+    private authService: AuthService,
+    private router: Router
+  ) {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
     this.signInForm = this.fb.group({
@@ -48,7 +57,43 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   onSubmit() {
     if (this.signInForm.valid) {
-      console.log(this.signInForm.value);
+      this.loading = true;
+      this.loginError = null;
+      
+      const credentials: LoginCredentials = {
+        password: this.signInForm.get('password')?.value
+      };
+      
+      // Add either email or phone based on login mode
+      if (this.loginMode === 'email') {
+        credentials.email = this.signInForm.get('email')?.value;
+      } else {
+        // Format phone with country code
+        const phoneNumber = this.signInForm.get('phone')?.value;
+        credentials.phone = this.selectedCountry.code + phoneNumber;
+      }
+      
+      this.authService.login(credentials).subscribe({
+        next: (response) => {
+          this.loading = false;
+          console.log('Login successful', response);
+          // Navigate to dashboard or home page after successful login
+          this.router.navigate(['/authenticated/user-dashboard']);
+        },
+        error: (error) => {
+          this.loading = false;
+          console.error('Login error', error);
+          
+          // Handle different error scenarios
+          if (error.status === 401) {
+            this.loginError = 'Invalid email/phone or password. Please try again.';
+          } else if (error.status === 404) {
+            this.loginError = 'User not found. Please check your credentials.';
+          } else {
+            this.loginError = 'An error occurred during login. Please try again later.';
+          }
+        }
+      });
     }
   }
 
