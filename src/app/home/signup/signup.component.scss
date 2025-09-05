@@ -13,10 +13,24 @@
   overflow-x: hidden;
 
   h2 {
+     display: flex;               /* keep arrow + text in one row */
+    align-items: flex-start;     /* align top of arrow with first line */
+    gap: 10px;                   /* space between arrow and text */
     font-size: 1.5rem;
     font-weight: 500;
+    line-height: 1.3;            /* improves readability for two lines */
+    margin-top: 32px;
   }
-
+.title-text {
+      display: flex;               /* keep arrow + text in one row */
+    align-items: flex-start;     /* align top of arrow with first line */
+    gap: 10px;                   /* space between arrow and text */
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1.3;            /* improves readability for two lines */
+    margin-top: 32px;
+    
+    }
   .step-text {
     font-family: 'Nunito', sans-serif;
     font-size: 16px;
@@ -1170,4 +1184,11 @@ swiper-slide.swiper-slide-active .pet-card {
     font-size: 14px;
     padding: 0.65rem;
   }
+}
+
+.header-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #6b2b1e; // same brown color
+  font-family: 'Fredoka', sans-serif; // matches your existing font
 }
