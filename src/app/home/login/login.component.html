@@ -1,18 +1,27 @@
 <div class="signup-container">
-  <div class="login-header">
-    <span class="back-arrow" (click)="goBack()">
-      <i class="fa-solid fa-arrow-left"></i>
-    </span>
-    <span class="login-title fredoka">Login your account</span>
-  </div>
-  <div class="container w-full p-0" style="height: calc(100vh - 200px); display: flex; justify-content: center; align-items: center;">
-    <div class="container w-full p-0">
+  <div class="login-header-toggle-wrapper">
+    <div class="login-header">
+      <span class="back-arrow" (click)="goBack()">
+        <i class="fa-solid fa-arrow-left"></i>
+      </span>
+      <span class="login-title fredoka">Login your account</span>
+    </div>
+    <div class="login-toggle-form-wrapper">
       <div class="toggle-buttons">
-        <button [class.active]="loginMode === 'phone'" (click)="switchMode('phone')">Phone Number</button>
-        <button [class.active]="loginMode === 'email'" (click)="switchMode('email')">Email</button>
+        <button 
+          [class.active]="loginMode === 'phone'" 
+          (click)="switchMode('phone')">
+          Phone Number
+        </button>
+        <button 
+          [class.active]="loginMode === 'email'" 
+          (click)="switchMode('email')">
+          Email
+        </button>
       </div>
-
-      <form [formGroup]="signInForm" (ngSubmit)="onSubmit()">
+      <!-- Helper text -->
+    <small class="helper-text">Only for login and safety</small>
+      <form [formGroup]="signInForm" (ngSubmit)="onSubmit()" class="login-form-fields">
         <ng-container *ngIf="loginMode === 'email'">
           <div class="input-group">
             <input [ngClass]="{'error' : email?.invalid && (email?.dirty)}" formControlName="email" type="email" placeholder="Email" />
@@ -21,6 +30,7 @@
             </div>
           </div>
         </ng-container>
+        
         <ng-container *ngIf="loginMode === 'phone'">
           <div class="input-group">
             <div class="phone-input-container"
@@ -53,29 +63,46 @@
           <span class="toggle-eye" (click)="hidePassword = !hidePassword">
             <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
           </span>
+          
           <div class="error" *ngIf="(password?.invalid || password?.value.length < 8) && password?.dirty">
             Password should be atleast 8 characters long
           </div>
+          <!-- Forgot password link -->
+          <a class="forgot-password" href="reset-password">Forgot password?</a>
         </div>
 
-        <button class="signup-btn" [disabled]="signInForm.invalid">Login</button>
+    
+        <button
+          class="signup-btn"
+          type="submit"
+          [disabled]="!isLoginFormValid()">
+          Login
+        </button>
       </form>
+    </div>
+  </div>
 
+  <div class="signup-link">
+  <p>Don’t have an account? <a href="home/sign-up?step=0.1">Sign up</a></p>
+</div>
+  
+  <!--<div class="container w-full p-0" style="height: calc(100vh - 200px); display: flex; justify-content: center; align-items: center;">
+    <div class="container w-full p-0">
       <div class="or-divider"><span>OR</span></div>
-
+ 
       <div class="container w-full p-0">
         <div class="container p-0" style="width: fit-content !important;">
-          <div class="social-logins">
+         <div class="social-logins">
             <button class="social-btn google"><img src="/assets/app-assets/Onbaording-common-google-icon.svg" alt=""></button>
             <button class="social-btn apple"><img src="/assets/app-assets/Onbaording-common-apple-icon.svg" alt=""></button>
             <button class="social-btn facebook"><img src="/assets/app-assets/Onbaording-common-facebook-icon.svg" alt=""></button>
-          </div>
+          </div> 
         </div>
-      </div>
+      </div> 
 
       <p class="login-text">Don't have and Account ?<a href="home/sign-up?step=0.1"> Sign Up</a></p>
     </div>
-  </div>
+  </div> -->
   <div class="container w-full p-0" style="opacity: 0.5">
     <label class="whatsapp-checkbox">
       <input type="checkbox" [(ngModel)]="whatsappConsent" />

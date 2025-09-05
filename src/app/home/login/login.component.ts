@@ -54,6 +54,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loginMode = 'phone';
     console.log('LoginComponent initialized');
     
     // Load countries from service
@@ -152,5 +153,18 @@ export class LoginComponent implements OnInit, OnDestroy {
     window.location.href = '/home';
     // Or, if you use Angular Router:
     // this.router.navigate(['/home']);
+  }
+
+  isLoginFormValid(): boolean {
+    if (this.loginMode === 'phone') {
+      const phoneValid = !!this.signInForm.get('phone') && !!this.signInForm.get('phone')!.valid;
+      const passwordValid = !!this.signInForm.get('password') && !!this.signInForm.get('password')!.valid;
+      return phoneValid && passwordValid;
+    } else if (this.loginMode === 'email') {
+      const emailValid = !!this.signInForm.get('email') && !!this.signInForm.get('email')!.valid;
+      const passwordValid = !!this.signInForm.get('password') && !!this.signInForm.get('password')!.valid;
+      return emailValid && passwordValid;
+    }
+    return false;
   }
 }
