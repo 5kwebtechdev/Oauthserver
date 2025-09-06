@@ -1,5 +1,5 @@
 import {Component, Input, OnInit, ViewChild, ElementRef, booleanAttribute} from '@angular/core';
-import {NgClass} from "@angular/common";
+import {NgClass, NgIf} from "@angular/common";
 import {LongPressDirective} from "../../directives/gestureControlDirective";
 import {HabitCardService} from "./habit-card.service";
 import {CoerceBoolean} from "../../coerceBoolean.decorator";
@@ -11,10 +11,14 @@ import {CoerceBoolean} from "../../coerceBoolean.decorator";
   styleUrls: ['./habit-card.component.scss'],
   imports: [
     NgClass,
+    NgIf,
     LongPressDirective
   ]
 })
 export class HabitCardComponent  implements OnInit {
+
+  @Input()
+  mode: 'single' | 'list' = 'single';
 
   @Input()
   expanded: boolean = false;
@@ -22,6 +26,10 @@ export class HabitCardComponent  implements OnInit {
   @Input({transform: booleanAttribute})
   @CoerceBoolean()
   inProgress: boolean = false;
+  
+  @Input({transform: booleanAttribute})
+  @CoerceBoolean()
+  isEmpty: boolean = true;
 
   @Input()
   percentageCompleted : number = 0;
@@ -31,6 +39,10 @@ export class HabitCardComponent  implements OnInit {
 
   @Input()
   endTime !: number;
+
+  // Properties for list mode
+  public currentActive: string = 'habits';
+  public showContent: boolean = false;
 
   public isRunningLate: boolean = false;
   public missedTime: boolean = false;
@@ -93,6 +105,10 @@ export class HabitCardComponent  implements OnInit {
         action: true
       })
     }
+  }
+
+  showContentNow(){
+    this.showContent = true;
   }
 
   protected readonly console = console;

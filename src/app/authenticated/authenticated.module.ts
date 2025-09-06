@@ -18,7 +18,6 @@ import {MindfulTimelineComponent} from "../core/components/mindful-timeline/mind
 import {TimelineComponent} from "./timeline/timeline.component";
 import {MindfulSelectorsComponent} from "../core/components/mindful-selectors/mindful-selectors.component";
 import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
-import {ComponentShowcaseComponent} from "./component-showcase/component-showcase.component";
 
 @NgModule({
   declarations: [
@@ -45,8 +44,7 @@ import {ComponentShowcaseComponent} from "./component-showcase/component-showcas
   UserDashboardComponent,
     FooterComponent,
     MindfulInputsModule,
-    MindfulSelectorsComponent,
-    ComponentShowcaseComponent
+    MindfulSelectorsComponent
   ]
 })
 export class AuthenticatedModule { }

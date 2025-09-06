@@ -1,0 +1,33 @@
+<section class="journal-empty">
+	<header class="journal-empty__header">
+		<div class="journal-empty__title-block">
+			<h3 class="journal-empty__title">Your Journal, Your Journey</h3>
+			<div class="journal-empty__tagline">
+				<span>Track moods</span>
+				<span class="dot"></span>
+				<span>Save</span>
+				<span class="dot"></span>
+				<span>Feel Better</span>
+			</div>
+		</div>
+
+		<button class="journal-empty__view-all" (click)="onViewAllEntries()">
+			<span>View all</span>
+			<span class="chev" aria-hidden="true">›</span>
+		</button>
+	</header>
+
+	<div class="journal-empty__body">
+		<img class="journal-empty__illustration" src="/assets/app-assets/Journal-study.svg" alt="Panda with kids illustration">
+
+		<div class="journal-empty__texts">
+			<p class="lead">We are waiting to hear about your day!</p>
+			<p class="sub">Post your journal to keep your story alive</p>
+		</div>
+
+		<button class="journal-empty__post" (click)="onCreateNewEntry()">
+			<img src="/assets/app-assets/post-button.png" alt="Post now">
+		</button>
+	</div>
+</section>
+

@@ -1,0 +1,161 @@
+.reels-card {
+  position: relative;
+  width: 100%;
+  max-width: 90vw;
+  margin: 5vh auto 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reels-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 6px;
+}
+
+.titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.heading {
+  font-family: 'Fredoka', sans-serif;
+  font-size: clamp(16px, 3.2vw, 20px);
+  margin: 0;
+}
+
+.tagline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.8;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+}
+
+.see-all {
+  background: none;
+  border: 0;
+  color: #90214D;
+  font-weight: 600;
+}
+
+.reels-swiper {
+  padding: 6px 6px 18px;
+}
+
+.reel {
+  width: 172px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #d9d9d9;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.04);
+}
+
+.card-media {
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+
+  .category {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    background: #FFA9A1;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #282527;
+  }
+
+  .bookmark {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #FFE4E1;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #FFE4E1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+}
+
+.reel-body {
+  padding: 8px;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #b8e3e9;
+}
+
+.author {
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.title {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 14px;
+  margin: 6px 0;
+}
+
+.bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #e6e6e6;
+}
+
+/* Swiper pagination bullets */
+.reels-swiper {
+  ::ng-deep {
+    .swiper-pagination-bullet {
+      width: 8px;
+      height: 8px;
+      background: #e6e6e6;
+      opacity: 1;
+    }
+
+    .swiper-pagination-bullet-active {
+      background: #90214D;
+    }
+  }
+}
+
+@media (max-width: 420px) {
+  .reel {
+    width: 150px;
+  }
+
+  .card-media {
+    height: 140px;
+  }
+}

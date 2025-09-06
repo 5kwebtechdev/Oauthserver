@@ -1,10 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import {NgClass, CommonModule} from "@angular/common";
+import { CommonModule } from "@angular/common";
 import {HabitCardComponent} from "../../core/components/habit-card/habit-card.component";
+import {ChallengeCardComponent} from "../../core/components/challenge-card/challenge-card.component";
+import {ContentCardComponent} from "../../core/components/content-card/content-card.component";
+import {TutorCardComponent} from "../../core/components/tutor-card/tutor-card.component";
+import {ReelsCardComponent} from "../../core/components/reels-card/reels-card.component";
+import {JournalsComponent} from "../../core/components/journals/journals.component";
+import {AcademySectionComponent} from "../../core/components/academy-section/academy-section.component";
 import {IonicModule} from "@ionic/angular";
-import {FooterComponent} from "../../core/components/footer/footer.component";
-import {MindfulDropdownComponent} from "../../core/components/mindful-dropdown/mindful-dropdown.component";
-import {MindfulSelectorsComponent} from "../../core/components/mindful-selectors/mindful-selectors.component";
 import {MindfulInputsModule} from "../../core/components/mindful-inputs/mindful-inputs.module";
 import {MoodSelectorComponent} from "../../core/components/mood-selector/mood-selector.component";
 
@@ -14,18 +17,19 @@ import {MoodSelectorComponent} from "../../core/components/mood-selector/mood-se
   styleUrls: ['./user-dashboard.component.scss'],
   imports: [
   CommonModule,
-    NgClass,
     HabitCardComponent,
+    ChallengeCardComponent,
+    ContentCardComponent,
+  ReelsCardComponent,
+    TutorCardComponent,
+    JournalsComponent,
+  AcademySectionComponent,
     IonicModule,
-    FooterComponent,
-    MindfulDropdownComponent,
-    MindfulSelectorsComponent,
   MoodSelectorComponent,
     MindfulInputsModule
   ]
 })
 export class UserDashboardComponent implements OnInit {
-  public currentActive: any = 'habits';
   // Minimal properties used by the template
   public userName: string = 'User';
   public userCoins: number = 0;

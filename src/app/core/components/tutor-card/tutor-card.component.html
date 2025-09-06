@@ -1,19 +1,129 @@
-<div class="tutor-card">
-  <div class="tutor-avatar-container">
-    <img [src]="avatar" [alt]="name" class="tutor-avatar">
-    <div class="online-indicator" [ngClass]="{'online': isOnline}"></div>
-  </div>
-  <div class="tutor-info">
-    <h4 class="tutor-name">{{ name }}</h4>
-    <p class="tutor-description">{{ description }}</p>
-    <div class="tutor-stats">
-      <div class="rating">
-        <ion-icon name="heart" color="danger"></ion-icon>
-        <span>{{ rating }} | {{ experience }}</span>
-      </div>
-    </div>
-  </div>
-  <div class="tutor-action">
-    <button class="view-profile-btn">View Profile</button>
-  </div>
-</div>
+<section class="tutors-section">
+	<header class="tutors-section__header">
+		<div class="tutors-section__title-group">
+			<h3 class="tutors-section__title-group__title">Your Guides to Greatness!</h3>
+			<div class="tutors-section__title-group__tagline">
+				<span>Pick tutor</span>
+				<span style="width:4px;height:4px;border-radius:50%;background:#282527;display:inline-block"></span>
+				<span>Learn</span>
+				<span style="width:4px;height:4px;border-radius:50%;background:#282527;display:inline-block"></span>
+				<span>Level up</span>
+			</div>
+		</div>
+
+		<div class="tutors-section__view-all" role="button" aria-label="View all tutors">
+			<span class="label">View all</span>
+			<span class="chev" aria-hidden="true"></span>
+		</div>
+	</header>
+
+	<div class="tutors-section__list">
+		<!-- Single card (repeat using *ngFor in parent when needed) -->
+		<article class="tutors-section__card">
+			<div class="thumbnail">
+				<div class="avatar" [ngStyle]="{'background-image': 'url(' + (avatar || '/assets/icon/avatar-placeholder.png') + ')'}"></div>
+			</div>
+
+			<div class="content">
+				<div class="head">
+					<div class="name-block">
+						<p class="name">{{ name || 'Mr. Sharma' }}</p>
+						<p class="role">{{ description || 'Math & Science Wizard' }}</p>
+					</div>
+
+					<div class="stats">
+						<span class="heart-icon" aria-hidden="true"></span>
+						<span class="meta">{{ rating || 400 }} | {{ experience || '8+ yrs' }}</span>
+					</div>
+				</div>
+
+				<div class="cta-row">
+					<div class="info">
+						<div class="time">
+							<span class="icon" style="width:16px;height:16px;background:#9CC7D8;border-radius:50%" aria-hidden="true"></span>
+							<span class="txt">5pm - 8pm</span>
+						</div>
+
+						<div class="fees">
+							<span class="icon" style="width:16px;height:16px;background:#F0D36A;border-radius:50%" aria-hidden="true"></span>
+							<span class="txt">₹ 800/subject</span>
+						</div>
+					</div>
+
+					<button class="profile-btn">View Profile</button>
+				</div>
+			</div>
+		</article>
+    <article class="tutors-section__card">
+			<div class="thumbnail">
+				<div class="avatar" [ngStyle]="{'background-image': 'url(' + (avatar || '/assets/icon/avatar-placeholder.png') + ')'}"></div>
+			</div>
+
+			<div class="content">
+				<div class="head">
+					<div class="name-block">
+						<p class="name">{{ name || 'Mr. Sharma' }}</p>
+						<p class="role">{{ description || 'Math & Science Wizard' }}</p>
+					</div>
+
+					<div class="stats">
+						<span class="heart-icon" aria-hidden="true"></span>
+						<span class="meta">{{ rating || 400 }} | {{ experience || '8+ yrs' }}</span>
+					</div>
+				</div>
+
+				<div class="cta-row">
+					<div class="info">
+						<div class="time">
+							<span class="icon" style="width:16px;height:16px;background:#9CC7D8;border-radius:50%" aria-hidden="true"></span>
+							<span class="txt">5pm - 8pm</span>
+						</div>
+
+						<div class="fees">
+							<span class="icon" style="width:16px;height:16px;background:#F0D36A;border-radius:50%" aria-hidden="true"></span>
+							<span class="txt">₹ 800/subject</span>
+						</div>
+					</div>
+
+					<button class="profile-btn">View Profile</button>
+				</div>
+			</div>
+		</article>
+    <article class="tutors-section__card">
+			<div class="thumbnail">
+				<div class="avatar" [ngStyle]="{'background-image': 'url(' + (avatar || '/assets/icon/avatar-placeholder.png') + ')'}"></div>
+			</div>
+
+			<div class="content">
+				<div class="head">
+					<div class="name-block">
+						<p class="name">{{ name || 'Mr. Sharma' }}</p>
+						<p class="role">{{ description || 'Math & Science Wizard' }}</p>
+					</div>
+
+					<div class="stats">
+						<span class="heart-icon" aria-hidden="true"></span>
+						<span class="meta">{{ rating || 400 }} | {{ experience || '8+ yrs' }}</span>
+					</div>
+				</div>
+
+				<div class="cta-row">
+					<div class="info">
+						<div class="time">
+							<span class="icon" style="width:16px;height:16px;background:#9CC7D8;border-radius:50%" aria-hidden="true"></span>
+							<span class="txt">5pm - 8pm</span>
+						</div>
+
+						<div class="fees">
+							<span class="icon" style="width:16px;height:16px;background:#F0D36A;border-radius:50%" aria-hidden="true"></span>
+							<span class="txt">₹ 800/subject</span>
+						</div>
+					</div>
+
+					<button class="profile-btn">View Profile</button>
+				</div>
+			</div>
+		</article>
+	</div>
+</section>
+

@@ -1,0 +1,47 @@
+<section class="reels-card">
+  <header class="reels-header">
+    <div class="titles">
+      <h3 class="heading">Made by Kids, for Kids!</h3>
+      <div class="tagline">
+        <span class="tag">Watch reels</span>
+        <span class="dot">•</span>
+        <span class="tag">Create</span>
+        <span class="dot">•</span>
+        <span class="tag">Get Inspired</span>
+      </div>
+    </div>
+
+    <button class="see-all">View all ›</button>
+  </header>
+
+  <div #reelsSwiper class="reels-swiper swiper-container">
+    <div class="swiper-wrapper">
+      <div class="swiper-slide" *ngFor="let s of slides">
+        <article class="reel">
+          <div class="card-media" [style.backgroundImage]="'url(' + s.image + ')'">
+            <div class="category">{{ s.category }}</div>
+            <button class="bookmark" aria-label="Save"></button>
+            <div class="play">▶</div>
+          </div>
+
+          <div class="reel-body">
+            <div class="meta-row">
+              <div class="avatar"></div>
+              <div class="author">{{ s.author }}</div>
+            </div>
+            <h4 class="title">{{ s.title }}</h4>
+            <div class="bottom-row">
+              <div class="tags">{{ s.tags }}</div>
+              <div class="stats">
+                <span class="duration">{{ s.duration }}</span>
+                <span class="likes">{{ s.likes }}</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <div class="swiper-pagination"></div>
+  </div>
+</section>

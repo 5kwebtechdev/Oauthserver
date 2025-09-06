@@ -1,3 +1,105 @@
+.day-at-glance-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0px;
+  gap: 0px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.glance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.glance-in-day {
+  font-weight: bold;
+  font-size: 24px;
+  margin-left: 4vw;
+}
+
+.add-new-btn {
+  background: transparent;
+  border: none;
+  color: #8B8DCB;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.glance-subtitle {
+  // margin-top: 1vw;
+  align-self: flex-start;
+  margin-left: 4vw;
+  
+  p {
+    color: #666;
+    font-size: 16px;
+ 
+  }
+}
+
+.empty-state {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.empty-state-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  // padding: 24px;
+}
+
+.empty-state-image {
+  margin-bottom: 24px;
+}
+
+.empty-state-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.empty-state-description {
+  color: #666;
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 24px;
+  max-width: 300px;
+}
+
+.add-now-btn {
+  /* Journal-post */
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 12px;
+  gap: 8px;
+  width: 361px;
+  height: 42px;
+  background: linear-gradient(270.94deg, #90214D 0.07%, #CD3578 99.93%);
+  border: 1px solid #4A0D25;
+  box-shadow: 0px 0px 1px 0.5px rgba(144, 33, 77, 0.2), inset 0px -2px 2px #EA7CB5;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  flex: none;
+  order: 1;
+  align-self: center;
+  flex-grow: 0;
+  margin: 0 auto;
+}
+
 .habit-wrapper{
   box-shadow: 0 0 8px 0 rgba(107, 101, 106, 0.25);
   border-radius: 10px;
@@ -154,4 +256,44 @@ h4{
 
 img.score{
   padding-top: 1px;
+}
+
+// List mode styles
+.glance-in-day {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  margin-top: 30px;
+}
+
+.toggler {
+  margin-top: 25px;
+}
+
+.toggler div {
+  text-align: center;
+  font-size: 18px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 500;
+  color: black;
+  position: relative;
+  padding: 8px 0;
+}
+
+.toggler div.active {
+  color: #8B8DCB;
+}
+
+.toggler div.active:before {
+  position: absolute;
+  content: '';
+  width: 60%;
+  height: 2px;
+  left: 20%;
+  bottom: 0;
+  background: #8B8DCB;
+}
+
+.toggler div:not(:last-child) {
+  border-right: 1px solid black;
 }

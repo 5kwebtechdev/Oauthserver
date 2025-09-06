@@ -1,0 +1,25 @@
+<section class="academy">
+  <header class="academy__header">
+    <div class="academy__title">
+      <h3>Begin Your Life Skills Quest!</h3>
+      <div class="academy__subtitle">Real lessons • Life ready • Future strong</div>
+    </div>
+
+    <button class="academy__view" (click)="onViewAll()">View all <span class="chev">›</span></button>
+  </header>
+
+  <div class="academy__cards">
+    <article class="academy__card" *ngFor="let c of courses">
+      <img class="academy__img" [src]="c.image" alt="{{c.title}}">
+      <div class="academy__content">
+        <h4 class="title">{{c.title}}</h4>
+        <div class="meta">{{c.lessons}} lessons • {{c.duration}}</div>
+        <p class="desc">{{c.description}}</p>
+        <div class="card-footer">
+          <button class="start" (click)="onStart(c)">Start Course</button>
+          <span class="level">{{c.level}}</span>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>

@@ -1,4 +1,47 @@
-<div class="container w-full p-0">
+<!-- List Mode -->
+<div *ngIf="mode === 'list'">
+  <div class="day-at-glance-container">
+    <div class="glance-header">
+      <h2 class="glance-in-day">Your Day at a Glance</h2>
+    </div>
+    
+    <div class="glance-subtitle">
+      <p>Check tasks • Finish habits • Crush it</p>
+    </div>
+    
+    <div class="empty-state" *ngIf="isEmpty && !showContent">
+      <div class="empty-state-content">
+        <div class="empty-state-image">
+          <img src="assets/app-assets/your-day-at-glance.svg" alt="Empty day illustration">
+        </div>
+        <h3 class="empty-state-title">Your day's a blank slate!</h3>
+        <p class="empty-state-description">Add tasks, habits, and your timetable to earn coins and level up your day. Don't miss out!</p>
+      </div>
+    </div>
+    
+    <div class="add-button-container" *ngIf="isEmpty">
+      <button class="add-now-btn" (click)="showContentNow()">+ Add now</button>
+    </div>
+  </div>
+
+  <div class="container w-full" *ngIf="showContent">
+    <div class="row toggler">
+      <div class="col-4" (click)="currentActive = 'all'" [ngClass]="currentActive === 'all' ? 'active' : 'null'">All</div>
+      <div class="col-4" (click)="currentActive = 'habits'" [ngClass]="currentActive === 'habits' ? 'active' : 'null'">Habits</div>
+      <div class="col-4" (click)="currentActive = 'tasks'" [ngClass]="currentActive === 'tasks' ? 'active' : 'null'">Tasks</div>
+    </div>
+  </div>
+
+  <div class="container w-full" style="margin-top: 20px" *ngIf="showContent">
+    <habit-card [startTime]="1745484315000" [endTime]="1745489715000" inProgress mode="single"></habit-card>
+    <habit-card [startTime]="1745484315000" [endTime]="1745486115000" mode="single"></habit-card>
+    <habit-card [startTime]="1745484315000" [endTime]="1745486115000" inProgress mode="single"></habit-card>
+    <habit-card [startTime]="1745484315000" [endTime]="1745486115000" mode="single"></habit-card>
+  </div>
+</div>
+
+<!--  Card Mode -->
+<div *ngIf="mode === 'single'" class="container w-full p-0">
   <div class="habit-wrapper"
        (tap)="toggle()" long-press
        (press)="console.log('Long pressed')"

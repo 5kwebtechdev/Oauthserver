@@ -1,84 +1,268 @@
-.tutor-card {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 12px;
-  
-  .tutor-avatar-container {
-    position: relative;
-    margin-right: 12px;
-    
-    .tutor-avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-    
-    .online-indicator {
-      position: absolute;
-      bottom: 2px;
-      right: 2px;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      border: 2px solid white;
-      background: #ccc;
-      
-      &.online {
-        background: #4CAF50;
-      }
-    }
-  }
-  
-  .tutor-info {
-    flex: 1;
-    
-    .tutor-name {
-      font-size: 16px;
-      font-weight: 600;
-      margin: 0 0 4px 0;
-      color: #333;
-    }
-    
-    .tutor-description {
-      font-size: 12px;
-      color: #666;
-      margin: 0 0 6px 0;
-    }
-    
-    .tutor-stats {
-      .rating {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 12px;
-        color: #666;
-        
-        ion-icon {
-          font-size: 14px;
-        }
-      }
-    }
-  }
-  
-  .tutor-action {
-    .view-profile-btn {
-      background: #E3F2FD;
-      border: none;
-      border-radius: 20px;
-      padding: 8px 16px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #1976D2;
-      cursor: pointer;
-      
-      &:hover {
-        background: #BBDEFB;
-      }
-    }
-  }
+// Tutor card styles translated from Figma spec
+// Uses local component classes to avoid global collisions
+
+$primary-text: #282527;
+$accent: #90214D;
+$card-bg: #D6E3EF;
+$heart-color: #E1527C;
+$cta-grad-start: #7284B9;
+$cta-grad-end: #505D83;
+
+.tutors-section {
+	// Figma container (absolute positioning optional)
+	position: relative; /* keep relative so absolute children align */
+	width: 361px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 16px;
+	padding: 0;
+
+	// Header block
+	&__header {
+		position: relative;
+		width: 361px;
+		height: 48px;
+	}
+
+	&__title-group {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 233px;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 2px;
+
+		&__title {
+			font-family: 'Fredoka', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+			font-weight: 500;
+			font-size: 20px;
+			line-height: 140%;
+			color: $primary-text;
+			margin: 0;
+		}
+
+		&__tagline {
+			display: flex;
+			gap: 4px;
+			align-items: center;
+			opacity: 0.7;
+			font-family: 'Nunito', 'Segoe UI', Roboto, Arial;
+			font-weight: 500;
+			font-size: 13px;
+			color: $primary-text;
+		}
+	}
+
+	&__view-all {
+		position: absolute;
+		right: 0;
+		top: 4px;
+		width: 77px;
+		height: 22px;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 4px;
+		cursor: pointer;
+
+		.label {
+			font-family: 'Nunito', Arial;
+			font-weight: 600;
+			font-size: 16px;
+			color: $accent;
+		}
+
+		.chev {
+			width: 12px;
+			height: 12px;
+			display: inline-block;
+			background-color: $accent;
+			mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='9 18 15 12 9 6'/></svg>") no-repeat center / contain;
+		}
+
+		// decorative underline per Figma
+		&::after {
+			content: '';
+			position: absolute;
+			left: 0;
+			top: 18px;
+			width: 77px;
+			height: 0;
+			border-top: 0.5px solid $accent;
+			opacity: 0.9;
+			z-index: 2;
+		}
+	}
+
+	// Tutors list
+	&__list {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		width: 361px;
+		height: auto; // allow content to size
+	}
+
+	// Single tutor card
+	&__card {
+		position: relative;
+		width: 361px;
+		height: 120px;
+		background: $card-bg;
+		box-shadow: 0 0 8px 2px rgba(107,101,106,0.15);
+		border-radius: 12px;
+		overflow: hidden;
+		display: block;
+
+		&--compact { height: 120px; }
+
+		.thumbnail {
+			position: absolute;
+			left: 8px;
+			top: 16px;
+			width: 92px;
+			height: 90px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+
+			.avatar {
+				width: 91.67px;
+				height: 90px;
+				background-size: cover;
+				background-position: center;
+				border-radius: 8px;
+			}
+		}
+
+		.content {
+			position: absolute;
+			left: 108px;
+			top: 24px;
+			width: 245px;
+			height: 84px;
+			display: flex;
+			flex-direction: column;
+			gap: 16px;
+
+			.head {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+				align-items: flex-end;
+				gap: 12px;
+				width: 100%;
+
+				.name-block {
+					display: flex;
+					flex-direction: column;
+					gap: 2px;
+
+					.name {
+						font-family: 'Nunito', Arial;
+						font-weight: 600;
+						font-size: 13px;
+						color: $primary-text;
+						margin: 0;
+					}
+
+					.role {
+						font-family: 'Nunito', Arial;
+						font-weight: 600;
+						font-size: 10px;
+						color: $primary-text;
+						opacity: 0.7;
+						margin: 0;
+					}
+				}
+
+				.stats {
+					display: flex;
+					align-items: center;
+					gap: 6px;
+
+					.heart-icon {
+						width: 16px;
+						height: 16px;
+						background-color: $heart-color;
+						mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M12.1 21.35l-1.1-.99C5.14 15.24 2 12.39 2 8.5 2 6 3.99 4 6.5 4c1.74 0 3.41.81 4.5 2.09C12.09 4.81 13.76 4 15.5 4 18.01 4 20 6 20 8.5c0 3.89-3.14 6.74-8.9 11.86l-1.0.99z'/></svg>") no-repeat center / contain;
+					}
+
+					.meta {
+						font-family: 'Nunito', Arial;
+						font-weight: 600;
+						font-size: 13px;
+						color: $primary-text;
+						text-align: center;
+					}
+				}
+			}
+
+			.cta-row {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				justify-content: space-between;
+				gap: 26px;
+				width: 100%;
+
+				.info {
+					display: flex;
+					gap: 8px;
+					align-items: center;
+
+					.time,
+					.fees {
+						display: flex;
+						gap: 6px;
+						align-items: center;
+						font-family: 'Nunito', Arial;
+						font-weight: 600;
+						font-size: 8px;
+						color: $primary-text;
+						opacity: 0.9;
+					}
+
+					.time {
+						.icon, .img { width: 16px; height: 16px; display:inline-block; }
+					}
+
+					.fees { .icon, .img { width: 16px; height: 16px; display:inline-block; } }
+				}
+
+				.profile-btn {
+					display: inline-flex;
+					align-items: center;
+					justify-content: center;
+					padding: 8px 12px;
+					gap: 8px;
+					width: 88px;
+					height: 34px;
+					background: linear-gradient(90.64deg, $cta-grad-start 0.01%, $cta-grad-end 99.99%);
+					border: 0.5px solid rgba(69,80,106,1);
+					box-shadow: 0 0 1px 0.5px rgba(80,93,131,0.2), inset 0 -2px 2px rgba(138,160,202,0.2);
+					border-radius: 4px;
+					color: #fff;
+					font-family: 'Nunito', Arial;
+					font-weight: 600;
+					font-size: 10px;
+					cursor: pointer;
+					text-align: center;
+				}
+			}
+		}
+	}
 }
+
+// Small responsive tweak: scale down on narrow screens
+@media (max-width: 420px) {
+	.tutors-section {
+		width: 100%;
+		&__card { width: 100%; }
+		&__header { width: 100%; }
+	}
+}
+

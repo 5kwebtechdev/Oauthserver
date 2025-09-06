@@ -1,100 +1,108 @@
-.content-card {
-  border-radius: 12px;
-  overflow: hidden;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 16px;
-  
-  .card-image-container {
-    position: relative;
-    
-    .card-image {
-      width: 100%;
-      height: 120px;
-      object-fit: cover;
+.content-section {
+  /* Flow with document; not absolute so it appears under habit-card */
+  position: relative;
+  width: 100%;
+  max-width: 90vw;
+  margin: 5vh auto 0 auto; /* 5vh top margin and centered */
+  background: #FBE8EF;
+  border-radius: 1rem; /*16px*/
+  padding: clamp(1rem, 2.5vw, 1.25rem);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  overflow: visible;
+
+  .content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+
+    .content-title h2 {
+      margin: 0 0 0.25rem 0;
+      font-size: clamp(1.25rem, 3vw, 1.75rem);
+      text-align: center;
     }
-    
-    .card-badges {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      display: flex;
-      gap: 4px;
-      
-      .difficulty-badge, .new-badge {
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 10px;
-        font-weight: 600;
-        text-transform: uppercase;
-      }
-      
-      .difficulty-easy {
-        background: #4CAF50;
-        color: white;
-      }
-      
-      .difficulty-medium {
-        background: #FF9800;
-        color: white;
-      }
-      
-      .difficulty-hard {
-        background: #F44336;
-        color: white;
-      }
-      
-      .new-badge {
-        background: #E91E63;
-        color: white;
-      }
+
+    .content-sub {
+      margin: 0;
+      font-size: clamp(0.875rem, 2vw, 1rem);
+      color: rgba(0,0,0,0.6);
+      text-align: center;
     }
-    
-    .play-button {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      
-      ion-icon {
-        font-size: 20px;
-        color: #333;
-      }
+
+    .content-actions {
+      align-self: center;
+    }
+
+    .view-all {
+      background: transparent;
+      border: none;
+      font-weight: 600;
+      color: #90214D;
+      cursor: pointer;
     }
   }
-  
-  .card-content {
-    padding: 12px;
-    
-    .card-title {
-      font-size: 14px;
-      font-weight: 600;
-      margin: 0 0 8px 0;
-      color: #333;
-    }
-    
-    .card-stats {
+
+  .slides {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 1rem;
+
+    .slide {
+      flex: 0 0 320px;
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      scroll-snap-align: start;
+      overflow: hidden;
       display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      color: #666;
-      
-      .likes, .views {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        
-        ion-icon {
-          font-size: 14px;
+      flex-direction: column;
+
+      .media {
+        position: relative;
+        height: clamp(140px, 28vw, 180px);
+
+        img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        .difficulty-circle, .difficulty-pill {
+          position: absolute;
+          right: 12px;
+          top: 12px;
+          background: #fff;
+          padding: 6px 10px;
+          border-radius: 999px;
+          font-weight: 700;
+          color: #90214D;
+          border: 2px solid rgba(144,33,77,0.15);
         }
       }
+
+      .slide-body {
+        padding: 0.75rem 1rem 1rem 1rem;
+
+        .meta-row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+
+        .slide-title { margin: 0; font-size: 1.125rem; }
+        .tag { background: transparent; border: 1px solid rgba(144,33,77,0.12); padding: 6px 10px; border-radius: 999px; color: #90214D; }
+
+        .slide-desc { margin: 0.5rem 0; color: rgba(0,0,0,0.7); font-size: 0.95rem; }
+
+        .slide-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; }
+
+        .rewards { display: flex; align-items: center; gap: 0.5rem; }
+        .icon { width: 20px; height: 20px; }
+        .amount { font-weight: 700; margin-right: 0.5rem; }
+
+        .cta { background: linear-gradient(270.94deg, #90214D 0.07%, #CD3578 99.93%); color: #fff; border: none; padding: 10px 14px; border-radius: 8px; }
+        .cta.ghost { background: transparent; color: #90214D; border: 1px solid rgba(144,33,77,0.12); }
+      }
     }
   }
+
+  .pager { display:flex; gap:0.5rem; justify-content:center; margin-top:0.75rem; }
+  .dot { width:10px; height:10px; border-radius:50%; background:rgba(0,0,0,0.2); display:inline-block }
+  .dot.active { background:#90214D }
 }

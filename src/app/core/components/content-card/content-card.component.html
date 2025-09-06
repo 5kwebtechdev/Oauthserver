@@ -1,25 +1,89 @@
-<div class="content-card">
-  <div class="card-image-container">
-    <img [src]="imageUrl" [alt]="title" class="card-image">
-    <div class="card-badges" *ngIf="difficulty || isNew">
-      <span class="difficulty-badge" [ngClass]="'difficulty-' + difficulty" *ngIf="difficulty">{{ difficulty }}</span>
-      <span class="new-badge" *ngIf="isNew">NEW</span>
+<section class="content-section" aria-label="Curiosity highlights">
+  <header class="content-header">
+    <div class="content-title">
+      <h2>Start Curious, Play, Conquer!</h2>
+      <p class="content-sub">Dive into brain-teasing quizzes, mind-bending puzzles, captivating stories, and insightful reads.</p>
     </div>
-    <div class="play-button">
-      <ion-icon name="play-outline"></ion-icon>
-    </div>
+    <!-- <nav class="content-actions">
+      <button class="view-all" aria-label="View all">View all</button>
+    </nav> -->
+  </header>
+
+  <!-- horizontal swipe area: touch-friendly scroll + snap -->
+  <div class="slides" role="list">
+    <!-- Slide 1 -->
+    <article class="slide" role="listitem">
+      <div class="media">
+        <img src="/assets/app-assets/content-memory-maze.jpg" alt="The Memory Maze" />
+        <div class="difficulty-circle">Hard</div>
+      </div>
+
+      <div class="slide-body">
+        <div class="meta-row">
+          <h3 class="slide-title">The Memory Maze</h3>
+          <span class="tag">Puzzle</span>
+        </div>
+        <p class="slide-desc">Test your memory by finding matching pairs in the shortest time!</p>
+
+        <div class="slide-footer">
+          <div class="rewards">
+            <img src="/assets/app-assets/token.svg" alt="token" class="icon token"> <span class="amount">50</span>
+            <img src="/assets/app-assets/trophy.svg" alt="trophy" class="icon trophy"> <span class="amount">2</span>
+          </div>
+          <button class="cta">Finish in 5 min</button>
+        </div>
+      </div>
+    </article>
+
+    <!-- Slide 2 -->
+    <article class="slide" role="listitem">
+      <div class="media">
+        <img src="/assets/app-assets/content-riddle-royale.jpg" alt="Riddle Royale" />
+        <div class="difficulty-pill">Easy</div>
+      </div>
+      <div class="slide-body">
+        <div class="meta-row">
+          <h3 class="slide-title">Riddle Royale</h3>
+          <span class="tag">Riddle</span>
+        </div>
+        <p class="slide-desc">Crack three mind-bending riddles to prove your wit</p>
+        <div class="slide-footer">
+          <div class="rewards">
+            <img src="/assets/app-assets/token.svg" alt="token" class="icon token"> <span class="amount">70</span>
+            <img src="/assets/app-assets/trophy.svg" alt="trophy" class="icon trophy"> <span class="amount">4</span>
+          </div>
+          <button class="cta ghost">Solve in 2 min</button>
+        </div>
+      </div>
+    </article>
+
+    <!-- Slide 3 (duplicate as example) -->
+    <article class="slide" role="listitem">
+      <div class="media">
+        <img src="/assets/app-assets/content-riddle-royale.jpg" alt="Riddle Royale" />
+        <div class="difficulty-pill">Easy</div>
+      </div>
+      <div class="slide-body">
+        <div class="meta-row">
+          <h3 class="slide-title">Riddle Royale</h3>
+          <span class="tag">Riddle</span>
+        </div>
+        <p class="slide-desc">Crack three mind-bending riddles to prove your wit</p>
+        <div class="slide-footer">
+          <div class="rewards">
+            <img src="/assets/app-assets/token.svg" alt="token" class="icon token"> <span class="amount">70</span>
+            <img src="/assets/app-assets/trophy.svg" alt="trophy" class="icon trophy"> <span class="amount">4</span>
+          </div>
+          <button class="cta ghost">Solve in 2 min</button>
+        </div>
+      </div>
+    </article>
   </div>
-  <div class="card-content">
-    <h4 class="card-title">{{ title }}</h4>
-    <div class="card-stats">
-      <span class="likes">
-        <ion-icon name="heart-outline"></ion-icon>
-        {{ likes }}
-      </span>
-      <span class="views">
-        <ion-icon name="eye-outline"></ion-icon>
-        {{ views }}
-      </span>
-    </div>
+
+  <!-- simple pager dots -->
+  <div class="pager" aria-hidden="true">
+    <span class="dot active"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
   </div>
-</div>
+</section>
