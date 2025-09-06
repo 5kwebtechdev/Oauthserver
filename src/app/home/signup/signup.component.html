@@ -1,9 +1,13 @@
 <ion-content class="bg-mindful-secondary">
   <div class="signup-container">
-    <h2 class="fredoka" style="margin-top: 15px">
-  <i (click)="step = 0.2" class="fa-solid fa-arrow-left"
-     style="margin-right: 10px; font-size: 21px"></i>
-  {{ step === 1 ? "Who's using the app?" : (step === 0.1 ? "Add phone number or email address" : (step === 0.2 ? "Check your phone" : (step === 0.3 ? "Create Password" : "Create your Account"))) }}
+    <h2 class="fredoka" style="margin-top: 32px">
+  <i (click)="goBack()" class="fa-solid fa-arrow-left"
+     style="margin-right: 10px; font-size: 21px">
+    </i>
+  <!--{{ step === 1 ? "Who's using the app?" : (step === 0.1 ? "Add phone number or email address" : (step === 0.2 ? "Check your phone" : (step === 0.3 ? "Create Password" : "Create your Account"))) }}-->
+  <span class="header-text">
+    {{ step === 1 ? "Who's using the app?" : (step === 0.1 ? "Add phone number or email address" : (step === 0.2 ? "Check your phone" : (step === 0.3 ? "Create Password" : "Create your Account"))) }}
+  </span>
 </h2>
     <h4 class="step-text" *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3">
       Step {{step}} of 4
@@ -15,8 +19,8 @@
 
     <!--//////////////////////// STEP 0.1 - Account Creation (Phone/Email)-->
     <div *ngIf="step === 0.1" [@slideIn]>
-      <div class="container w-full p-0" style="display: flex; justify-content: center; align-items: center;">
-        <div class="container w-full p-0" style="padding: 50px 0px !important;">
+  <div class="container w-full p-0" style="display: flex; justify-content: flex-start; align-items: flex-start;">
+    <div class="container w-full p-0" style="padding: 10px 0px !important;">
           <div class="toggle-buttons">
             <button [class.active]="loginMode === 'phone'" (click)="switchMode('phone')">Phone Number</button>
             <button [class.active]="loginMode === 'email'" (click)="switchMode('email')">Email</button>

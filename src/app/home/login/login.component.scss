@@ -1,11 +1,11 @@
 .signup-container {
-  margin: auto;
-  padding: 1.5rem;
+  margin: 0 auto;
+  padding: 2rem 1.2rem 0 1.2rem;
   background: #FDEAD7;
   font-family: "Segoe UI", sans-serif;
   color: #532b19;
-  height: 100vh;
-  width: 100vw;
+  min-height: 100vh;
+  max-width: 400px;
   border-radius: 0;
 
   h2 {
@@ -23,27 +23,71 @@
     font-weight: 500;
   }
 
+  .login-header-toggle-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0;
+    gap: 32px;
+
+    // Remove or comment out these lines to prevent stretching:
+    // width: 361px;
+    // height: 144px;
+
+    flex: none;
+    order: 0;
+    align-self: stretch;
+    flex-grow: 0;
+  }
+
   .toggle-buttons {
     display: flex;
-    margin-bottom: 40px;
-    background: #f7c29b;
+    flex-direction: row;
+    align-items: center;
+    background: #fad2ae;
     border-radius: 40px;
+    width: 361px;
+    height: 64px;
+    position: relative;
+    padding: 0;
+    gap: 0;
+    margin-bottom: 32px;
 
     button {
-      flex: 1;
-      padding: 0.7rem;
+      position: absolute;
+      top: 8px;
+      height: 48px;
       border: none;
-      border-radius: 30px;
-      font-weight: 500;
+      outline: none;
+      border-radius: 40px;
+      font-family: 'Nunito', sans-serif;
+      font-style: normal;
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 130%;
       cursor: pointer;
-      margin: 6px;
+      transition: background 0.2s, color 0.2s;
+      z-index: 1;
       background: transparent;
       color: #772817;
+      padding: 8px 12px;
 
       &.active {
-        background: #ff823b;
-        color: white;
+        background: #ee6621;
+        color: #fff;
+        box-shadow: 0 2px 8px #ee662133;
+        z-index: 2;
       }
+    }
+
+    button:first-child {
+      left: 8px;
+      width: 165px;
+    }
+
+    button:last-child {
+      left: 181px;
+      width: 172px;
     }
   }
 
@@ -57,6 +101,13 @@
       border: 2px solid #ff823b;
       border-radius: 10px !important;
       font-size: 1rem;
+      background: #f7c293; // <-- Set background color for email and password fields
+      color: #772817;
+
+      &::placeholder {
+        color: #772817;
+        opacity: 0.6;
+      }
     }
 
     input.error{
@@ -171,13 +222,24 @@
       }
     }
 
-    .toggle-eye {
-      position: absolute;
-      right: 10px;
-      top: 50%;
+   .input-group {
+  position: relative; /* container for absolute positioning */
+  display: flex;
+  align-items: center;
+}
+
+.input-group input {
+  width: 100%;
+  padding-right: 40px; /* leaves space so text doesn't overlap the icon */
+}
+
+.toggle-eye {
+   position: absolute;
       transform: translateY(-50%);
       cursor: pointer;
-    }
+      top: 28px;
+      right: 15px;
+}
 
     .error {
       color: var(--error_color);
@@ -207,6 +269,20 @@
     color: white;
     margin-bottom: 1rem;
     cursor: pointer;
+    transition: box-shadow 0.2s, background 0.2s, opacity 0.2s;
+
+    &:not(:disabled) {
+      box-shadow: 0 0 12px 2px #ff823b80;
+      background: #ff823b;
+      opacity: 1;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      box-shadow: none;
+      cursor: not-allowed;
+      background: #ff9a5a;
+    }
   }
 
   .or-divider {
@@ -276,6 +352,45 @@
     a {
       color: #772817;
       font-weight: bold;
+    }
+  }
+
+  .login-header {
+    font-family: 'Fredoka';
+    font-style: normal; 
+    font-weight: 500;
+    font-size: 25px;
+    line-height: 130%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0px;
+    gap: 14px;
+
+    width: 278px;
+    height: 48px;
+
+    // Inside auto layout
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+
+    .back-arrow {
+      color: #532b19;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+
+    .login-title {
+      color: #532b19;
+      font-size: 1.3rem;
+      font-weight: 700;
+      font-family: 'Fredoka', 'Segoe UI', sans-serif;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
     }
   }
 }
@@ -511,5 +626,75 @@
 @media (orientation: landscape) and (max-height: 500px) {
   .country-modal {
     max-height: 90vh;
+  }
+}
+
+/*.helper-text {
+  font-size: 0.75rem;
+  color: #6b3d2b;
+  margin-top: 0.3rem;
+  display: block;
+  text-align: left; // ensures left alignment
+}
+
+.forgot-password {
+  font-size: 0.85rem;
+  color: #ee6621;
+  text-decoration: none;
+  margin-top: 0.3rem;
+  display: inline-block; // keeps it aligned left
+  text-align: left;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}*/
+
+.forgot-password {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 130%;
+  color: #EE6621;
+  text-decoration: underline;
+
+  display: block;
+  margin-top: 4px;
+  text-align: right;   /* align text inside */
+  width: 100%;         /* take full row so it can push text right */
+}
+
+.helper-text {
+  font-size: 0.75rem;
+  color: #EE6621;
+  margin-top: 0.3rem;
+  display: block;
+  text-align: right;  /* ⬅️ pushes text to rightmost */
+  width: 100%;       /* take full row so it can push text right */
+}
+
+.signup-link {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  p {
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #772817; // SAME color for both
+    margin: 0;
+
+    a {
+      font-weight: 700;   // Bold for emphasis
+      color: inherit;     // Inherit parent text color (#772817)
+      text-decoration: underline;
+      cursor: pointer;
+
+      &:hover {
+        color: #ee6621; // Optional hover effect
+      }
+    }
   }
 }
