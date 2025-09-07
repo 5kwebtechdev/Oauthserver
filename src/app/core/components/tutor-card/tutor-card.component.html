@@ -1,27 +1,26 @@
-<section class="tutors-section">
+<section class="tutors-section" aria-labelledby="tutors-title">
 	<header class="tutors-section__header">
 		<div class="tutors-section__title-group">
-			<h3 class="tutors-section__title-group__title">Your Guides to Greatness!</h3>
-			<div class="tutors-section__title-group__tagline">
-				<span>Pick tutor</span>
-				<span style="width:4px;height:4px;border-radius:50%;background:#282527;display:inline-block"></span>
-				<span>Learn</span>
-				<span style="width:4px;height:4px;border-radius:50%;background:#282527;display:inline-block"></span>
-				<span>Level up</span>
+			<h3 id="tutors-title" class="tutors-section__title">Your Guides to Greatness!</h3>
+			<div class="tutors-section__tagline">
+				<span class="tag">Pick tutor</span>
+				<span class="dot">•</span>
+				<span class="tag">Learn</span>
+        		<span class="dot">•</span>			
+				<span class="tag">Level up</span>
 			</div>
 		</div>
 
-		<div class="tutors-section__view-all" role="button" aria-label="View all tutors">
-			<span class="label">View all</span>
-			<span class="chev" aria-hidden="true"></span>
-		</div>
+		<button class="see-all tutors-section__view-all" aria-label="View all tutors">
+			View all <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+		</button>
 	</header>
 
-	<div class="tutors-section__list">
-		<!-- Single card (repeat using *ngFor in parent when needed) -->
-		<article class="tutors-section__card">
+	<div class="tutors-section__list" role="list">
+		<!-- Example cards (kept inline for the section) -->
+		<article class="tutors-section__card" role="listitem">
 			<div class="thumbnail">
-				<div class="avatar" [ngStyle]="{'background-image': 'url(' + (avatar || '/assets/icon/avatar-placeholder.png') + ')'}"></div>
+				<div class="avatar" [ngStyle]="{'background-image': 'url(' + (avatar || '/assets/images/Avatar.png') + ')'}" aria-hidden="true"></div>
 			</div>
 
 			<div class="content">
@@ -31,8 +30,8 @@
 						<p class="role">{{ description || 'Math & Science Wizard' }}</p>
 					</div>
 
-					<div class="stats">
-						<span class="heart-icon" aria-hidden="true"></span>
+					<div class="stats" aria-hidden="true">
+						<img class="icon heart-icon" src="/assets/app-assets/Tutor-Likes-count-icon.svg" alt="Likes" aria-hidden="true" />
 						<span class="meta">{{ rating || 400 }} | {{ experience || '8+ yrs' }}</span>
 					</div>
 				</div>
@@ -40,86 +39,67 @@
 				<div class="cta-row">
 					<div class="info">
 						<div class="time">
-							<span class="icon" style="width:16px;height:16px;background:#9CC7D8;border-radius:50%" aria-hidden="true"></span>
+							<img class="icon time-icon" src="/assets/app-assets/Tutor-timings-icon.svg" alt="Timings" aria-hidden="true" />
 							<span class="txt">5pm - 8pm</span>
 						</div>
 
 						<div class="fees">
-							<span class="icon" style="width:16px;height:16px;background:#F0D36A;border-radius:50%" aria-hidden="true"></span>
+							<img class="icon fee-icon" src="/assets/app-assets/Tutor-fees-icon.svg" alt="Fees" aria-hidden="true" />
 							<span class="txt">₹ 800/subject</span>
 						</div>
 					</div>
 
+					  <button class="profile-btn" [attr.aria-label]="'View profile of ' + (name || 'Mr. Sharma')">View Profile</button>
+				</div>
+			</div>
+		</article>
+
+		<!-- duplicate cards visually (these can be replaced with dynamic data later) -->
+		<article class="tutors-section__card" role="listitem"> 
+			<div class="thumbnail">
+				<div class="avatar" [ngStyle]="{'background-image': 'url(' + (avatar || '/assets/images/Avatar-female.png') + ')'}" aria-hidden="true"></div>
+			</div>
+			<div class="content">
+				<div class="head">
+					<div class="name-block">
+						<p class="name">Ms. Aarthi Sharma</p>
+						<p class="role">Math & Science Wizard</p>
+					</div>
+					<div class="stats" aria-hidden="true">
+						<img class="icon heart-icon" src="/assets/app-assets/Tutor-Likes-count-icon.svg" alt="Likes" aria-hidden="true" />
+						<span class="meta">400 | 8+ yrs</span>
+					</div>
+				</div>
+				<div class="cta-row">
+					<div class="info">
+						<div class="time"><img class="icon time-icon" src="/assets/app-assets/Tutor-timings-icon.svg" alt="Timings" aria-hidden="true" /><span class="txt">5pm - 8pm</span></div>
+						<div class="fees"><img class="icon fee-icon" src="/assets/app-assets/Tutor-fees-icon.svg" alt="Fees" aria-hidden="true" /><span class="txt">₹ 800/subject</span></div>
+					</div>
 					<button class="profile-btn">View Profile</button>
 				</div>
 			</div>
 		</article>
-    <article class="tutors-section__card">
-			<div class="thumbnail">
-				<div class="avatar" [ngStyle]="{'background-image': 'url(' + (avatar || '/assets/icon/avatar-placeholder.png') + ')'}"></div>
-			</div>
 
+		<article class="tutors-section__card" role="listitem">
+			<div class="thumbnail">
+				<div class="avatar" [ngStyle]="{'background-image': 'url(' + (avatar || '/assets/images/Avatar.png') + ')'}" aria-hidden="true"></div>
+			</div>
 			<div class="content">
 				<div class="head">
 					<div class="name-block">
 						<p class="name">{{ name || 'Mr. Sharma' }}</p>
 						<p class="role">{{ description || 'Math & Science Wizard' }}</p>
 					</div>
-
-					<div class="stats">
-						<span class="heart-icon" aria-hidden="true"></span>
+					<div class="stats" aria-hidden="true">
+						<img class="icon heart-icon" src="/assets/app-assets/Tutor-Likes-count-icon.svg" alt="Likes" aria-hidden="true" />
 						<span class="meta">{{ rating || 400 }} | {{ experience || '8+ yrs' }}</span>
 					</div>
 				</div>
-
 				<div class="cta-row">
 					<div class="info">
-						<div class="time">
-							<span class="icon" style="width:16px;height:16px;background:#9CC7D8;border-radius:50%" aria-hidden="true"></span>
-							<span class="txt">5pm - 8pm</span>
-						</div>
-
-						<div class="fees">
-							<span class="icon" style="width:16px;height:16px;background:#F0D36A;border-radius:50%" aria-hidden="true"></span>
-							<span class="txt">₹ 800/subject</span>
-						</div>
+						<div class="time"><img class="icon time-icon" src="/assets/app-assets/Tutor-timings-icon.svg" alt="Timings" aria-hidden="true" /><span class="txt">5pm - 8pm</span></div>
+						<div class="fees"><img class="icon fee-icon" src="/assets/app-assets/Tutor-fees-icon.svg" alt="Fees" aria-hidden="true" /><span class="txt">₹ 800/subject</span></div>
 					</div>
-
-					<button class="profile-btn">View Profile</button>
-				</div>
-			</div>
-		</article>
-    <article class="tutors-section__card">
-			<div class="thumbnail">
-				<div class="avatar" [ngStyle]="{'background-image': 'url(' + (avatar || '/assets/icon/avatar-placeholder.png') + ')'}"></div>
-			</div>
-
-			<div class="content">
-				<div class="head">
-					<div class="name-block">
-						<p class="name">{{ name || 'Mr. Sharma' }}</p>
-						<p class="role">{{ description || 'Math & Science Wizard' }}</p>
-					</div>
-
-					<div class="stats">
-						<span class="heart-icon" aria-hidden="true"></span>
-						<span class="meta">{{ rating || 400 }} | {{ experience || '8+ yrs' }}</span>
-					</div>
-				</div>
-
-				<div class="cta-row">
-					<div class="info">
-						<div class="time">
-							<span class="icon" style="width:16px;height:16px;background:#9CC7D8;border-radius:50%" aria-hidden="true"></span>
-							<span class="txt">5pm - 8pm</span>
-						</div>
-
-						<div class="fees">
-							<span class="icon" style="width:16px;height:16px;background:#F0D36A;border-radius:50%" aria-hidden="true"></span>
-							<span class="txt">₹ 800/subject</span>
-						</div>
-					</div>
-
 					<button class="profile-btn">View Profile</button>
 				</div>
 			</div>

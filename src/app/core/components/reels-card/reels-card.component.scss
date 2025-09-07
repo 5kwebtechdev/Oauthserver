@@ -1,11 +1,11 @@
 .reels-card {
   position: relative;
-  width: 100%;
-  max-width: 90vw;
+  width: min(390px, 90vw);
   margin: 5vh auto 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+  margin-top: 8vh;
 }
 
 .reels-header {
@@ -39,23 +39,77 @@
   background: none;
   border: 0;
   color: #90214D;
+  font-family: 'Nunito', sans-serif;
   font-weight: 600;
+  font-size: 16px;
+  position: relative;
+  margin-top: -20px;
+
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 18px;
+    width: 77px;
+    height: 0;
+    border-top: 1px solid currentColor;
+    opacity: 0.9;
+    z-index: 2;
+  }
+}
+
+.see-all .fa-chevron-right,
+.see-all .fa-solid.fa-chevron-right {
+  display: inline-block;
+  width: 6px;
+  height: 10px;
+  font-size: 10px; /* match height */
+  line-height: 10px;
+  vertical-align: middle;
+  text-align: center;
 }
 
 .reels-swiper {
   padding: 6px 6px 18px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.reels-swiper::-webkit-scrollbar {
+  display: none;
+}
+
+.reels-swiper .swiper-wrapper {
+  display: flex;
+  gap: 1vw;
+}
+
+.reels-swiper .swiper-slide {
+  width: 160px !important;
+  flex: 0 0 160px !important;
+  max-width: 160px !important;
 }
 
 .reel {
+  flex: 0 0 160px;
   width: 172px;
+  height: 240px;
   border-radius: 8px;
   overflow: hidden;
   background: #d9d9d9;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.04);
+  scroll-snap-align: start;
+  position: relative;
 }
 
+
 .card-media {
-  height: 160px;
+  height: 180px;
   background-size: cover;
   background-position: center;
   position: relative;
@@ -63,12 +117,14 @@
   .category {
     position: absolute;
     left: 8px;
-    top: 8px;
+    top: 6px;
     background: #FFA9A1;
     padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 12px;
+    border-radius: 4px;
+    font-size: 8px;
+    font-weight: 600;
     color: #282527;
+    line-height: 11px;
   }
 
   .bookmark {
@@ -80,26 +136,80 @@
     border-radius: 50%;
     background: #FFE4E1;
     border: 1px solid rgba(0, 0, 0, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img.bookmark-icon {
+      width: 12px;
+      height: 16px;
+      display: inline-block;
+      object-fit: contain;
+      filter: grayscale(1) brightness(0) invert(0); /* neutral by default */
+    }
+
+    &.saved {
+      background: #FFE4E1;
+      img.bookmark-icon {
+        filter: none; /* show original SVG colors when saved */
+      }
+    }
   }
 
-  .play {
+    .play {
     position: absolute;
     left: 50%;
-    top: 50%;
+    top: 70%;
     transform: translate(-50%, -50%);
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: #FFE4E1;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
+
+    i, svg, .icon-play {
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+      line-height: 16px;
+      display: inline-block;
+    }
   }
+
+    .reel-video {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 50;
+      background: black;
+    }
+
+    .video-close {
+      position: absolute;
+      right: 8px;
+      top: 8px;
+      z-index: 60;
+      background: rgba(0,0,0,0.5);
+      border: none;
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 }
 
 .reel-body {
   padding: 8px;
+  height: calc(240px - 180px);
 }
 
 .meta-row {
@@ -109,32 +219,32 @@
 }
 
 .avatar {
-  width: 24px;
-  height: 24px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #b8e3e9;
 }
 
 .author {
   font-weight: 600;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .title {
   font-family: 'Fredoka', sans-serif;
-  font-size: 14px;
-  margin: 6px 0;
+  font-size: 10px;
+  margin: 6px 0 4px 0;
+  color: #FFFFFF;
 }
 
 .bottom-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 12px;
+  font-size: 10px;
   color: #e6e6e6;
 }
 
-/* Swiper pagination bullets */
 .reels-swiper {
   ::ng-deep {
     .swiper-pagination-bullet {
@@ -151,11 +261,17 @@
 }
 
 @media (max-width: 420px) {
+  .reels-card {
+    width: min(360px, 94vw);
+  }
+
   .reel {
-    width: 150px;
+    flex: 0 0 160px;
+    width: 160px;
+    height: 220px;
   }
 
   .card-media {
-    height: 140px;
+    height: 150px;
   }
 }

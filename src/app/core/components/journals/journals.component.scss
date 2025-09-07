@@ -124,7 +124,29 @@ $muted: rgba(40,37,39,0.7);
 		border-radius: 8px;
 		cursor: pointer;
 
-		img { width: auto; height: 22px; }
+		.post-text, .journal-empty__post-text {
+			display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 12px;
+  gap: 8px;
+  width: 361px;
+  height: 42px;
+  background: linear-gradient(270.94deg, #90214D 0.07%, #CD3578 99.93%);
+  border: 1px solid #4A0D25;
+  box-shadow: 0px 0px 1px 0.5px rgba(144, 33, 77, 0.2), inset 0px -2px 2px #EA7CB5;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  flex: none;
+  order: 1;
+  align-self: center;
+  flex-grow: 0;
+  margin: 0 auto;
+		}
 	}
 
 }
@@ -132,6 +154,8 @@ $muted: rgba(40,37,39,0.7);
 @media (max-width: 420px) {
 	.journal-empty {
 		width: 100%;
+		margin-top: 28px;
+        margin-left: 4vw;
 		&__body { margin-top: 56px; }
 		&__post { width: 100%; }
 		&__illustration { width: 160px; }
