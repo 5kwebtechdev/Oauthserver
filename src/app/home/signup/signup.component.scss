@@ -258,6 +258,18 @@
       cursor: pointer;
       top: 28px;
       right: 15px;
+      color: #772817;
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+      z-index: 2;
+      
+      i {
+        font-size: 18px;
+      }
+      
+      &:hover {
+        opacity: 1;
+      }
     }
 
     .error {
@@ -925,9 +937,9 @@ swiper-slide.swiper-slide-active .pet-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem 1rem;
+  padding: 0px !important;
   text-align: center;
-  min-height: 60vh;
+  // min-height: 60vh;
   justify-content: center;
 }
 
@@ -989,18 +1001,18 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .otp-digit {
-  width: 60px;
-  height: 60px;
-  border: 2px solid #EE6621;
-  border-radius: 12px;
-  background: #FAD2AE;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 600;
-  font-size: 24px;
-  color: #772817;
-  text-align: center;
-  transition: all 0.2s ease;
-  outline: none;
+   width: 80px !important;
+    height: 80px !important;
+    border: 2px solid #EE6621;
+    border-radius: 12px;
+    background: #fdead7;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    font-size: 24px;
+    color: #772817;
+    text-align: center;
+    transition: all 0.2s ease;
+    outline: none;
   
   &:focus {
     border-color: #ff823b;
@@ -1055,17 +1067,16 @@ swiper-slide.swiper-slide-active .pet-card {
   
   .otp-subtitle {
     font-size: 14px;
-    margin-bottom: 2rem;
+    text-align: left;
   }
   
   .otp-inputs-container {
     width: 100%;
-    max-width: 320px;
     height: auto;
   }
   
   .otp-inputs {
-    gap: 0.75rem;
+    gap: 8px;
   }
   
   .otp-digit {
@@ -1078,7 +1089,7 @@ swiper-slide.swiper-slide-active .pet-card {
 /* Very small screens */
 @media (max-width: 360px) {
   .otp-inputs {
-    gap: 0.5rem;
+    gap: 8px;
   }
   
   .otp-digit {
@@ -1093,11 +1104,15 @@ swiper-slide.swiper-slide-active .pet-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem 1rem;
+  padding: 0px !important;
   text-align: center;
-  min-height: 60vh;
   justify-content: center;
+
+  form {
+    width: 100%;
+  }
 }
+
 
 .password-title {
   font-family: 'Fredoka', sans-serif;
@@ -1190,7 +1205,8 @@ swiper-slide.swiper-slide-active .pet-card {
   
   .password-description {
     font-size: 14px;
-    margin-bottom: 2rem;
+    text-align: left;
+    margin-bottom: 0px !important;
   }
   
   .password-input {

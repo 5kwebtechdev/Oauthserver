@@ -5,7 +5,10 @@
     </i>
   <!--{{ step === 1 ? "Who's using the app?" : (step === 0.1 ? "Add phone number or email address" : (step === 0.2 ? "Check your phone" : (step === 0.3 ? "Create Password" : "Create your Account"))) }}-->
   <span class="header-text">
-    {{ step === 1 ? "Who's using the app?" : (step === 0.1 ? "Add phone number or email address" : (step === 0.2 ? "Check your phone" : (step === 0.3 ? "Create Password" : "Create your Account"))) }}
+    {{ step === 1 ? "Who's using the app?" : (step === 0.1 ? "Add phone number or email address" : (step === 0.2 ? loginMode === 'phone' ? "Check your phone" : "Check your email" : (step === 0.3 ? "Create Password" : "Create your Account"))) }}
+   <p *ngIf="step === 0.2 && loginMode === 'phone'" class="otp-subtitle">We've sent an OTP to the number<br>{{getMaskedPhoneNumber()}}</p>
+   <p *ngIf="step === 0.2 && loginMode === 'email'" class="otp-subtitle">We've sent an OTP to the email<br>{{email?.value}}</p>
+    <p *ngIf="step === 0.3" class="password-description">It must be six characters or more</p>
   </span>
 </h2>
     <h4 class="step-text" *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3">
@@ -105,7 +108,6 @@
     <!--//////////////////////// STEP 0.2 - OTP Verification-->
     <div *ngIf="step === 0.2" [@slideIn]>
       <div class="otp-container">
-        <p class="otp-subtitle">We've sent an OTP to the number<br>{{getMaskedPhoneNumber()}}</p>
         
         <div class="otp-inputs-container">
           <div class="otp-inputs">
@@ -149,24 +151,20 @@
 
     <!--//////////////////////// STEP 0.3 - Create Password-->
     <div *ngIf="step === 0.3" [@slideIn]>
-      <p class="password-description">It must be six characters or more<br>For safeguarding your account</p>  
       <div class="password-container">              
         <form [formGroup]="passwordForm">
-          <div class="input-group">
-            <label class="password-label">Password</label>
-            <input 
-              formControlName="password"
-              type="password" 
-              class="password-input"
-              placeholder="Enter your password"
-              maxlength="12"
-            />
-            <div class="password-info">Maximum 12 characters allowed</div>
-            <div class="error" *ngIf="password?.invalid && password?.dirty">
-              <span *ngIf="password?.errors?.['required']">Password is required</span>
-              <span *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters</span>
-              <span *ngIf="password?.errors?.['maxlength']">Password cannot exceed 12 characters</span>
-            </div>
+         <div class="input-group">
+          <input formControlName="password"
+                 [ngClass]="{'error' : (password?.invalid || password?.value.length < 8) && password?.dirty }"
+                 [type]="hidePassword ? 'password' : 'text'"
+                 placeholder="Password" />
+          <span class="toggle-eye" (click)="hidePassword = !hidePassword">
+            <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+          </span>
+          
+          <div class="error" *ngIf="(password?.invalid || password?.value.length < 8) && password?.dirty">
+            Password should be atleast 8 characters long
+          </div>
           </div>
         </form>
         

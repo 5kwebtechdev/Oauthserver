@@ -251,8 +251,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.core.triggerToasrt('Please enter a valid email address');
         return;
       }
-      // From step 0.1 with email, go to step 0.3 (password creation)
-      this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
+      // From step 0.1 with email, also go to step 0.2 (OTP verification)
+      this.startOtpTimer();
+      this.router.navigate(['home/sign-up'], { queryParams: { step: 0.2 } });
+      
+      // Focus first OTP input after navigation
+      setTimeout(() => {
+        const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
+        if (firstInput) {
+          firstInput.focus();
+        }
+      }, 100);
     }
   }
 
@@ -750,4 +759,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.core.triggerToasrt('Please enter a valid password (6-12 characters)');
     }
   }
+
+  // Password visibility toggle
+  public hidePassword: boolean = true;
 }
