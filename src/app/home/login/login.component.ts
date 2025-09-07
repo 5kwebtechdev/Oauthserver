@@ -4,7 +4,6 @@ import { CountriesService, Country } from "../../core/services/countries.service
 import { AuthService, LoginCredentials } from "../../core/services/auth.service";
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',

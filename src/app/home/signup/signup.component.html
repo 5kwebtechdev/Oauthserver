@@ -1,8 +1,7 @@
 <ion-content class="bg-mindful-secondary">
   <div class="signup-container">
-    <h2 class="fredoka" style="margin-top: 32px">
-  <i (click)="goBack()" class="fa-solid fa-arrow-left"
-     style="margin-right: 10px; font-size: 21px">
+    <h2 class="fredoka">
+  <i (click)="goBack()" class="fa-solid fa-arrow-left">
     </i>
   <!--{{ step === 1 ? "Who's using the app?" : (step === 0.1 ? "Add phone number or email address" : (step === 0.2 ? "Check your phone" : (step === 0.3 ? "Create Password" : "Create your Account"))) }}-->
   <span class="header-text">
@@ -18,7 +17,10 @@
     </div>
 
     <!--//////////////////////// STEP 0.1 - Account Creation (Phone/Email)-->
-    <div *ngIf="step === 0.1" [@slideIn]>
+    <div *ngIf="step === 0.1" [@slideIn] style="
+    max-width: 360px;
+    align-self: center;
+">
   <div class="container w-full p-0" style="display: flex; justify-content: flex-start; align-items: flex-start;">
     <div class="container w-full p-0" style="padding: 10px 0px !important;">
           <div class="toggle-buttons">
@@ -62,7 +64,13 @@
 
 
 
-            <button type="button" class="signup-btn" (click)="signupFromLogin()">Sign Up</button>
+            <button 
+              type="button" 
+              class="signup-btn" 
+              (click)="signupFromLogin()" 
+              [ngClass]="{'active-bg': phone?.value || email?.value}">
+              Sign Up
+            </button>
           </form>
 
           <div class="or-divider"><span>OR</span></div>

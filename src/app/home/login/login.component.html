@@ -68,7 +68,7 @@
             Password should be atleast 8 characters long
           </div>
           <!-- Forgot password link -->
-          <a class="forgot-password" href="reset-password">Forgot password?</a>
+          <a class="forgot-password" [routerLink]="['/home/reset-password']" [queryParams]="{ mode: loginMode }">Forgot password?</a>
         </div>
 
         <!-- Show error message if login fails -->
@@ -107,7 +107,7 @@
       <p class="login-text">Don't have and Account ?<a href="home/sign-up?step=0.1"> Sign Up</a></p>
     </div>
   </div> -->
-  <div class="container w-full p-0" style="opacity: 0.5">
+  <div class="container w-full p-0 terms-condition">
     <label class="whatsapp-checkbox">
       <input type="checkbox" [(ngModel)]="whatsappConsent" />
       Receive offers, updates and reminders on <b><i class="fa-brands fa-whatsapp"></i> WhatsApp</b>.

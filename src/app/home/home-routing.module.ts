@@ -8,6 +8,7 @@ import {InstructionsForParentComponent} from "./instructions-for-parent/instruct
 import {JoinFamilyComponent} from "./join-family/join-family.component";
 import {JoinFamily2Component} from "./join-family2/join-family2.component";
 import {ScanQrComponent} from './scan-qr/scan-qr.component';
+import {ResetPasswordComponent} from "./reset-password/reset-password.component";
 
 const routes: Routes = [
   {
@@ -19,7 +20,12 @@ const routes: Routes = [
   },{
     path : 'sign-up',
     component:SignupComponent
-  },{
+  },
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent, // Add this route
+  },
+  {
     path: 'instructions-for-child',
     component: InstructionsForChildComponent
   },{

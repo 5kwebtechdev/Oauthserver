@@ -14,6 +14,7 @@ import {InstructionsForParentComponent} from "./instructions-for-parent/instruct
 import {JoinFamilyComponent} from "./join-family/join-family.component";
 import {JoinFamily2Component} from "./join-family2/join-family2.component";
 import {ScanQrComponent} from "./scan-qr/scan-qr.component";
+import {ResetPasswordComponent} from "./reset-password/reset-password.component";
 
 @NgModule({
     imports: [
@@ -24,9 +25,18 @@ import {ScanQrComponent} from "./scan-qr/scan-qr.component";
         ReactiveFormsModule,
         MindfulSelectorsComponent,
         MindfulInputsModule,
-        ScanQrComponent
+        ScanQrComponent,
+        ResetPasswordComponent
     ],
-      declarations: [HomePage, LoginComponent, SignupComponent, InstructionsForChildComponent, InstructionsForParentComponent, JoinFamilyComponent, JoinFamily2Component],
+      declarations: [
+        HomePage, 
+        LoginComponent, 
+        SignupComponent, 
+        InstructionsForChildComponent, 
+        InstructionsForParentComponent, 
+        JoinFamilyComponent, 
+        JoinFamily2Component
+    ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
 })
 export class HomePageModule {}

@@ -1,11 +1,15 @@
 .signup-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
   margin: 0 auto;
   padding: 2rem 1.2rem 0 1.2rem;
   background: #FDEAD7;
   font-family: "Segoe UI", sans-serif;
   color: #532b19;
   min-height: 100vh;
-  max-width: 400px;
+  // min-width: 360px;
   border-radius: 0;
 
   h2 {
@@ -18,6 +22,22 @@
     color: #6b3d2b;
   }
 
+  .login-header-toggle-wrapper {
+        align-items: center;
+  }
+  .login-toggle-form-wrapper {
+    display: flex !important;
+    flex-direction: column;
+  }
+
+  .terms-condition {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0.5;
+    margin-top: 16px;
+  }
+
   .subheading {
     margin-bottom: 1rem;
     font-weight: 500;
@@ -26,68 +46,88 @@
   .login-header-toggle-wrapper {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
     padding: 0;
     gap: 32px;
-
-    // Remove or comment out these lines to prevent stretching:
-    // width: 361px;
-    // height: 144px;
-
+    align-self: center;
+    width: 100%;
     flex: none;
     order: 0;
-    align-self: stretch;
     flex-grow: 0;
   }
 
+  // .toggle-buttons {
+  //   display: flex;
+  //   flex-direction: row;
+  //   align-items: center;
+  //   background: #fad2ae;
+  //   border-radius: 40px;
+  //   width: 100%;
+  //   // min-width: 360px;
+  //   height: 64px;
+  //   position: relative;
+  //   padding: 0;
+  //   gap: 0;
+  //   margin-bottom: 32px;
+
+  //   button {
+  //     position: absolute;
+  //     top: 8px;
+  //     height: 48px;
+  //     border: none;
+  //     outline: none;
+  //     border-radius: 40px;
+  //     font-family: 'Nunito', sans-serif;
+  //     font-style: normal;
+  //     font-weight: 600;
+  //     font-size: 16px;
+  //     line-height: 130%;
+  //     cursor: pointer;
+  //     transition: background 0.2s, color 0.2s;
+  //     z-index: 1;
+  //     background: transparent;
+  //     color: #772817;
+  //     padding: 8px 12px;
+
+  //     &.active {
+  //       background: #ee6621;
+  //       color: #fff;
+  //       box-shadow: 0 2px 8px #ee662133;
+  //       z-index: 2;
+  //     }
+  //   }
+
+  //   button:first-child {
+  //     left: 8px;
+  //     width: 165px;
+  //   }
+
+  //   button:last-child {
+  //     left: 181px;
+  //     width: 165px;
+  //   }
+  // }
+
   .toggle-buttons {
     display: flex;
-    flex-direction: row;
-    align-items: center;
+    margin-bottom: 40px;
     background: #fad2ae;
     border-radius: 40px;
-    width: 361px;
-    height: 64px;
-    position: relative;
-    padding: 0;
-    gap: 0;
-    margin-bottom: 32px;
 
     button {
-      position: absolute;
-      top: 8px;
-      height: 48px;
+      flex: 1;
+      padding: 0.7rem;
       border: none;
-      outline: none;
-      border-radius: 40px;
-      font-family: 'Nunito', sans-serif;
-      font-style: normal;
-      font-weight: 600;
-      font-size: 16px;
-      line-height: 130%;
+      border-radius: 30px;
+      font-weight: 500;
       cursor: pointer;
-      transition: background 0.2s, color 0.2s;
-      z-index: 1;
+      margin: 6px;
       background: transparent;
       color: #772817;
-      padding: 8px 12px;
 
       &.active {
-        background: #ee6621;
-        color: #fff;
-        box-shadow: 0 2px 8px #ee662133;
-        z-index: 2;
+        background: #EE6621;
+        color: white;
       }
-    }
-
-    button:first-child {
-      left: 8px;
-      width: 165px;
-    }
-
-    button:last-child {
-      left: 181px;
-      width: 172px;
     }
   }
 
@@ -98,10 +138,10 @@
     input {
       width: 100%;
       padding: 0.8rem;
-      border: 2px solid #ff823b;
+      border: 2px solid transparent;
       border-radius: 10px !important;
       font-size: 1rem;
-      background: #f7c293; // <-- Set background color for email and password fields
+      background: #FAD2AE; 
       color: #772817;
 
       &::placeholder {
@@ -118,7 +158,7 @@
       display: flex;
       background: #FAD2AE;
       border-radius: 10px;
-      border: 2px solid #ff823b;
+      border: 2px solid transparent;
       transition: 0.2s;
       overflow: hidden;
       width: 100%;
@@ -130,6 +170,7 @@
 
       &.error {
         border-color: var(--error_color);
+        border-radius: 10px;
       }
 
       .country-code-selector {
@@ -249,8 +290,6 @@
   }
 
   .error-message {
-    background-color: #fdeaea;
-    border: 1px solid #e74c3c;
     color: #e74c3c;
     padding: 10px;
     border-radius: 8px;
@@ -267,7 +306,7 @@
     border: none;
     border-radius: 12px;
     color: white;
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
     cursor: pointer;
     transition: box-shadow 0.2s, background 0.2s, opacity 0.2s;
 
@@ -366,8 +405,8 @@
     align-items: center;
     padding: 0px;
     gap: 14px;
-
-    width: 278px;
+    width: 100%;
+    // width: 278px;
     height: 48px;
 
     // Inside auto layout
@@ -384,11 +423,12 @@
     }
 
     .login-title {
-      color: #532b19;
-      font-size: 1.3rem;
-      font-weight: 700;
-      font-family: 'Fredoka', 'Segoe UI', sans-serif;
-      letter-spacing: 0.01em;
+      color: #772817;
+      font-family: 'Fredoka';
+      font-style: normal;
+      font-weight: 500;
+      font-size: 25px;
+      line-height: 130%;
       display: flex;
       align-items: center;
     }

@@ -1,7 +1,10 @@
 
 .signup-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
   margin: auto;
-  padding: 1.5rem;
+  padding: 32px 20px 0 20px;
   font-family: "Segoe UI", sans-serif;
   color: #532b19;
   min-height: 100vh;
@@ -15,11 +18,12 @@
   h2 {
      display: flex;               /* keep arrow + text in one row */
     align-items: flex-start;     /* align top of arrow with first line */
-    gap: 10px;                   /* space between arrow and text */
+    gap: 14px;                   /* space between arrow and text */
     font-size: 1.5rem;
     font-weight: 500;
     line-height: 1.3;            /* improves readability for two lines */
-    margin-top: 32px;
+    margin-top: 20px;
+    align-items: center;
   }
 .title-text {
       display: flex;               /* keep arrow + text in one row */
@@ -93,7 +97,7 @@
   .toggle-buttons {
     display: flex;
     margin-bottom: 40px;
-    background: #f7c29b;
+    background: #fad2ae;
     border-radius: 40px;
 
     button {
@@ -108,7 +112,7 @@
       color: #772817;
 
       &.active {
-        background: #ff823b;
+        background: #EE6621;
         color: white;
       }
     }
@@ -273,6 +277,10 @@
     color: white;
     margin-bottom: 1rem;
     cursor: pointer;
+
+    &.active-bg {
+    background: #EE6621; 
+  }
   }
 
   .or-divider {
@@ -297,9 +305,14 @@
 
   .social-logins {
     display: flex;
-    justify-content: space-around;
-    margin-bottom: 1rem;
-    width: 50vw;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 0px;
+    gap: 40px;
+    width: 200px;
+    height: 40px;
+    margin-bottom: 2rem;
     margin-top: 1.2rem;
 
     .social-btn {
@@ -416,7 +429,7 @@
   }
 
   .profile{
-    margin-top: 50px;
+    // margin-top: 50px;
 
 
     h4{
@@ -960,7 +973,7 @@ swiper-slide.swiper-slide-active .pet-card {
 
 .otp-inputs {
   display: flex;
-  gap: 1rem;
+  gap: 8px;
   justify-content: center;
   flex-wrap: wrap;
   width: 100%;
@@ -1187,8 +1200,9 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .header-text {
-  font-size: 18px;
-  font-weight: 600;
-  color: #6b2b1e; // same brown color
-  font-family: 'Fredoka', sans-serif; // matches your existing font
+  font-weight: 500;
+  font-size: 25px;
+  line-height: 130%;
+  color: #772817; 
+  font-family: 'Fredoka', sans-serif; 
 }
