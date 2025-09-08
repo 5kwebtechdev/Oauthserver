@@ -26,7 +26,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
 
   constructor(
-    private fb: FormBuilder, 
+    private fb: FormBuilder,
     private countriesService: CountriesService,
     private authService: AuthService,
     private router: Router
@@ -34,8 +34,9 @@ export class LoginComponent implements OnInit, OnDestroy {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
     this.signInForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', []],
+      // Email/phone validators are applied dynamically in switchMode()
+      email: ['', [Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(8)]],
       phone: ['', []],
     });
   }
@@ -44,35 +45,54 @@ export class LoginComponent implements OnInit, OnDestroy {
     return this.signInForm.get('email');
   }
 
-  get phone(){
+  get phone() {
     return this.signInForm.get('phone');
   }
-  get password(){
+  get password() {
     return this.signInForm.get('password');
   }
 
   switchMode(mode: 'email' | 'phone') {
     this.loginMode = mode;
+
+    // Apply validators depending on selected login mode
+    if (mode === 'email') {
+      this.email?.setValidators([Validators.required, Validators.email]);
+      this.phone?.clearValidators();
+      // clear phone value when switching to email
+      this.phone?.setValue('');
+    } else {
+      this.phone?.setValidators([Validators.required]);
+      this.email?.clearValidators();
+      // clear email value when switching to phone
+      this.email?.setValue('');
+    }
+
+    // Ensure Angular re-evaluates validity
+    this.email?.updateValueAndValidity();
+    this.phone?.updateValueAndValidity();
   }
 
   onSubmit() {
-    if (this.signInForm.valid) {
+    // Only proceed when fields required for the active mode are valid
+    if (this.isLoginFormValid()) {
       this.loading = true;
       this.loginError = null;
-      
+
       const credentials: LoginCredentials = {
         password: this.signInForm.get('password')?.value
       };
-      
+
       // Add either email or phone based on login mode
       if (this.loginMode === 'email') {
         credentials.email = this.signInForm.get('email')?.value;
       } else {
         // Format phone with country code
         const phoneNumber = this.signInForm.get('phone')?.value;
-        credentials.phone = this.selectedCountry.code + phoneNumber;
+        credentials.phone = phoneNumber;
+        // credentials.phone = this.selectedCountry.code + phoneNumber;
       }
-      
+
       this.authService.login(credentials).subscribe({
         next: (response) => {
           this.loading = false;
@@ -83,7 +103,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         error: (error) => {
           this.loading = false;
           console.error('Login error', error);
-          
+
           // Handle different error scenarios
           if (error.status === 401) {
             this.loginError = 'Invalid email/phone or password. Please try again.';
@@ -98,9 +118,10 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loginMode = 'phone';
+    // Initialize login mode and its validators
+    this.switchMode('phone');
     console.log('LoginComponent initialized');
-    
+
     // Load countries from service
     this.subscription.add(
       this.countriesService.getCountries().subscribe({
@@ -115,7 +136,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
       })
     );
-    
+
     // Debug: check if flag is properly loaded
     console.log('Selected country flag:', this.selectedCountry.flag);
     console.log('Selected country code:', this.selectedCountry.code);
@@ -155,7 +176,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   selectCountry(country: Country): void {
     this.selectedCountry = country;
     this.showCountryCodeModal = false;
-    
+
     // Clear phone validation when country changes
     const phoneControl = this.signInForm.get('phone');
     if (phoneControl) {
@@ -180,12 +201,12 @@ export class LoginComponent implements OnInit, OnDestroy {
     const value = input.value;
     // Remove any non-numeric characters
     const numericValue = value.replace(/[^0-9]/g, '');
-    
+
     // Update the form control with clean numeric value
     this.signInForm.patchValue({
       phone: numericValue
     });
-    
+
     // Set cursor position to end
     setTimeout(() => {
       input.setSelectionRange(numericValue.length, numericValue.length);
@@ -201,8 +222,10 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   isLoginFormValid(): boolean {
     if (this.loginMode === 'phone') {
-      const phoneValid = !!this.signInForm.get('phone') && !!this.signInForm.get('phone')!.valid;
-      const passwordValid = !!this.signInForm.get('password') && !!this.signInForm.get('password')!.valid;
+      const phoneControl = this.signInForm.get('phone');
+      const passwordControl = this.signInForm.get('password');
+      const phoneValid = !!phoneControl && !!phoneControl.valid && this.isPhoneValid(phoneControl.value);
+      const passwordValid = !!passwordControl && !!passwordControl.valid;
       return phoneValid && passwordValid;
     } else if (this.loginMode === 'email') {
       const emailValid = !!this.signInForm.get('email') && !!this.signInForm.get('email')!.valid;

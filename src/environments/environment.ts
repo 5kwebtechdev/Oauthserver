@@ -4,7 +4,9 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8080/v1'
+  apiUrl: 'http://localhost:8082/v1',
+  // API token to include in Authorization header when calling certain endpoints
+  apiAuthToken: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwidXNlcm5hbWUiOiJhbGljZV8wMSIsImlhdCI6MTc1MTAxNzg0MiwiZXhwIjoxNzUxMTA0MjQyfQ.C2IZ05IGlWOxIZAaVasRwMQUy3om2Bt19GeW17vhyb8'
 };
 
 /*

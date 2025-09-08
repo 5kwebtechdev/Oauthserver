@@ -4,6 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CountriesService } from '../../core/services/countries.service';
+import { AuthService } from '../../core/services/auth.service';
 
 interface Country {
   name: string;
@@ -51,20 +52,24 @@ export class ResetPasswordComponent {
 
   // Password match validation error
   public passwordMismatchError: boolean = false;
-  
+
   // Password visibility toggles
   public hideNewPassword: boolean = true;
   public hideConfirmPassword: boolean = true;
-  
+  public resetError: string | null = null;
+  // Persist identifier used to request OTP so it can be reused in later steps
+  public requestedIdentifier: string | null = null;
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
     private countriesService: CountriesService // Inject CountriesService
+    , private authService: AuthService
   ) {
     this.resetPasswordForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required ]],
+      email: ['', [Validators.email]],
+      phone: ['', []],
       otp: ['', [Validators.required, Validators.minLength(4)]],
       newPassword: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', [Validators.required, Validators.minLength(8)]],
@@ -75,31 +80,41 @@ export class ResetPasswordComponent {
     console.log('Initial Form State:', this.resetPasswordForm);
     console.log('Initial Form Validity:', this.resetPasswordForm.valid);
 
+    // Restore requested identifier if present (helps when component is recreated during navigation)
+    const savedIdentifier = sessionStorage.getItem('requestedIdentifier');
+    if (savedIdentifier) {
+      this.requestedIdentifier = savedIdentifier;
+      console.log('Restored requestedIdentifier from sessionStorage:', this.requestedIdentifier);
+    }
+
     // Get mode from query params (passed from login page)
     this.route.queryParams.subscribe((params) => {
       this.mode = params['mode'] || 'email';
-      
+      // Apply validators based on mode
+      this.applyModeValidators();
+
       // If step query param is provided, go to that step
       const stepParam = params['step'];
       if (stepParam) {
         this.step = Number(stepParam);
-        
+
         // If we're starting directly at step 2, initialize OTP timer
         if (this.step === 2) {
+              console.log('requestedIdentifier set (phone):', this.requestedIdentifier);
           this.startOtpTimer();
         }
-        
+
         // If we're starting directly at step 3, ensure form controls are set up properly
         if (this.step === 3) {
           // Make sure password fields are properly initialized
           const newPasswordControl = this.resetPasswordForm.get('newPassword');
           const confirmPasswordControl = this.resetPasswordForm.get('confirmPassword');
-          
+
           if (newPasswordControl && confirmPasswordControl) {
             // Reset values in case there are any cached values
             newPasswordControl.setValue('');
             confirmPasswordControl.setValue('');
-            
+
             // Mark as pristine/untouched to prevent validation errors on initial load
             newPasswordControl.markAsPristine();
             confirmPasswordControl.markAsPristine();
@@ -116,12 +131,33 @@ export class ResetPasswordComponent {
     });
   }
 
+  private applyModeValidators(): void {
+    const emailControl = this.resetPasswordForm.get('email');
+    console.log('requestedIdentifier before reset:', this.requestedIdentifier);
+    const phoneControl = this.resetPasswordForm.get('phone');
+
+    if (this.mode === 'email') {
+      emailControl?.setValidators([Validators.required, Validators.email]);
+      phoneControl?.clearValidators();
+      phoneControl?.setValue('');
+    } else {
+      phoneControl?.setValidators([Validators.required]);
+      emailControl?.clearValidators();
+      emailControl?.setValue('');
+    }
+
+    emailControl?.updateValueAndValidity();
+    phoneControl?.updateValueAndValidity();
+  }
+
   /**
    * Navigates back to the previous step or login page.
    */
   goBack(): void {
     if (this.step > 1) {
       this.step--;
+      // update query params so URL reflects the current step (use absolute path like signup)
+      this.router.navigate(['home/reset-password'], { queryParams: { step: this.step, mode: this.mode } });
     } else {
       this.router.navigate(['/home/login']); // Navigate back to login
     }
@@ -136,16 +172,47 @@ export class ResetPasswordComponent {
     if (this.step === 1 && this.mode === 'email') {
       const emailControl = this.resetPasswordForm.get('email');
       if (emailControl?.valid) {
-        this.step = 2; // Move to OTP screen
-        this.startOtpTimer(); // Start OTP timer
+        // Call API to request OTP with identifier = email
+        const identifier = emailControl.value;
+        this.authService.requestOtp(identifier).subscribe({
+            next: () => {
+            this.step = 2; // Move to OTP screen
+            // persist identifier for later steps
+            this.requestedIdentifier = identifier;
+              // persist across navigation/reloads
+              try { if (this.requestedIdentifier) sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier); } catch(e) {}
+            this.startOtpTimer(); // Start OTP timer
+
+            // update URL so route contains current step and mode (use absolute path like signup)
+            this.router.navigate(['home/reset-password'], { queryParams: { step: this.step, mode: this.mode } });
+          },
+          error: (err) => {
+            console.error('Failed to request OTP:', err);
+          }
+        });
       } else {
         console.error('Email is invalid');
       }
     } else if (this.step === 1 && this.mode === 'phone') {
       const phoneControl = this.resetPasswordForm.get('phone');
       if (phoneControl?.valid) {
-        this.step = 2; // Move to OTP screen
-        this.startOtpTimer(); // Start OTP timer
+        // Format phone with country code
+        // const rawPhone = phoneControl.value;
+        const identifier = phoneControl.value;
+        this.authService.requestOtp(identifier).subscribe({
+            next: () => {
+            this.step = 2; // Move to OTP screen
+            // persist identifier with country code for later steps
+            this.requestedIdentifier = identifier;
+              try { if (this.requestedIdentifier) sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier); } catch(e) {}
+            this.startOtpTimer(); // Start OTP timer
+            // update URL so route contains current step and mode (use absolute path like signup)
+            this.router.navigate(['home/reset-password'], { queryParams: { step: this.step, mode: this.mode } });
+          },
+          error: (err) => {
+            console.error('Failed to request OTP:', err);
+          }
+        });
       } else {
         console.error('Phone is invalid');
       }
@@ -160,17 +227,35 @@ export class ResetPasswordComponent {
     } else if (this.step === 3) {
       const newPasswordControl = this.resetPasswordForm.get('newPassword');
       const confirmPasswordControl = this.resetPasswordForm.get('confirmPassword');
-      
+
       if (newPasswordControl?.valid && confirmPasswordControl?.valid) {
         // Check if passwords match
         if (newPasswordControl.value === confirmPasswordControl.value) {
           this.passwordMismatchError = false;
-          
-          // Reset password successful - here you would normally make an API call
-          console.log('Password reset successful');
-          
-          // Show success message before redirecting
-          this.showPasswordResetSuccess();
+          // Call backend to reset password
+          const identifier = this.requestedIdentifier ?? (this.mode === 'email'
+            ? this.resetPasswordForm.get('email')?.value
+            : this.resetPasswordForm.get('phone')?.value);
+
+          console.log('Using identifier for password reset:', identifier);
+
+          const newPassword = newPasswordControl.value;
+          const confirmPassword = confirmPasswordControl.value;
+
+          this.authService.resetPassword(identifier, newPassword, confirmPassword).subscribe({
+            next: (resp) => {
+              console.log('Password reset successful:', resp);
+              this.resetError = null;
+              // clear persisted identifier
+              try { sessionStorage.removeItem('requestedIdentifier'); } catch(e) {}
+              this.showPasswordResetSuccess();
+            },
+            error: (err) => {
+              console.error('Password reset failed:', err);
+              const serverMsg = err?.error || 'Password reset failed';
+              this.resetError = typeof serverMsg === 'string' ? serverMsg : 'Password reset failed';
+            }
+          });
         } else {
           this.passwordMismatchError = true;
           console.error('Passwords do not match');
@@ -234,17 +319,17 @@ export class ResetPasswordComponent {
     if (!phoneControl || !phoneControl.value) {
       return '*******059'; // Fallback
     }
-    
+
     const phone = phoneControl.value;
     if (phone.length < 4) {
       return '*******' + phone;
     }
-    
+
     // Show first 2 and last 3 digits, mask the rest
     const firstTwo = phone.substring(0, 2);
     const lastThree = phone.substring(phone.length - 3);
     const maskedMiddle = '*'.repeat(Math.max(0, phone.length - 5));
-    
+
     return firstTwo + maskedMiddle + lastThree;
   }
 
@@ -274,9 +359,9 @@ export class ResetPasswordComponent {
       // 1. User manually typed (not auto-fill)
       // 2. Value actually changed
       // 3. Not the last input
-      if (this.isFromUserInput && 
-          previousValue !== digit && 
-          index < this.otpDigits.length - 1) {
+      if (this.isFromUserInput &&
+        previousValue !== digit &&
+        index < this.otpDigits.length - 1) {
 
         setTimeout(() => {
           const nextInput = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
@@ -291,7 +376,7 @@ export class ResetPasswordComponent {
       // Handle deletion
       this.otpDigits[index] = '';
       inputElement.value = '';
-      
+
       // Update the OTP form control
       this.updateOtpFormControl();
     }
@@ -368,7 +453,7 @@ export class ResetPasswordComponent {
         input.value = numericData[i];
       }
     }
-    
+
     // Update the OTP form control after pasting
     this.updateOtpFormControl();
 
@@ -397,22 +482,31 @@ export class ResetPasswordComponent {
     const otp = this.otpDigits.join('');
     console.log('Verifying OTP:', otp);
 
-    // Simulate OTP verification (replace with actual API call)
-    // Here we're simulating an OTP verification
-    const correctOtp = '1234'; // This would come from your backend in a real app
-    
-    if (otp !== correctOtp) {
-      this.otpIncorrect = true;
-      this.canResendOtp = true;
-      this.clearOtpTimer();
-      this.otpError = 'Incorrect OTP';
-      return;
-    }
-    
-    // If OTP is correct
-    this.otpIncorrect = false;
-    this.otpError = null;
-    this.step = 3; // Move to new password screen
+    // Call backend to verify OTP
+    const identifier = this.mode === 'email'
+      ? this.resetPasswordForm.get('email')?.value
+      : this.resetPasswordForm.get('phone')?.value;
+
+    this.authService.verifyOtp(identifier, otp).subscribe({
+      next: (resp) => {
+        console.log('OTP verified response:', resp);
+        this.otpIncorrect = false;
+        this.otpError = null;
+        this.step = 3; // Move to new password screen
+
+        // reflect step in query params so deep links / reloads show correct step
+        this.router.navigate(['home/reset-password'], { queryParams: { step: this.step, mode: this.mode } });
+      },
+      error: (err) => {
+        console.error('OTP verification failed:', err);
+        this.otpIncorrect = true;
+        this.canResendOtp = true;
+        this.clearOtpTimer();
+        // If server returned text message, show it; otherwise fallback
+        const serverMsg = err?.error || 'Incorrect OTP';
+        this.otpError = typeof serverMsg === 'string' ? serverMsg : 'Incorrect OTP';
+      }
+    });
   }
 
   startOtpTimer(): void {
@@ -447,7 +541,7 @@ export class ResetPasswordComponent {
   checkPasswordsMatch(): void {
     const newPassword = this.resetPasswordForm.get('newPassword')?.value;
     const confirmPassword = this.resetPasswordForm.get('confirmPassword')?.value;
-    
+
     if (newPassword && confirmPassword && newPassword !== confirmPassword) {
       this.passwordMismatchError = true;
     } else {
@@ -461,11 +555,11 @@ export class ResetPasswordComponent {
   isPasswordValid(): boolean {
     const newPasswordControl = this.resetPasswordForm.get('newPassword');
     const confirmPasswordControl = this.resetPasswordForm.get('confirmPassword');
-    
+
     // Check if both fields are valid and passwords match
-    return Boolean(newPasswordControl?.valid && 
-           confirmPasswordControl?.valid && 
-           newPasswordControl?.value === confirmPasswordControl?.value);
+    return Boolean(newPasswordControl?.valid &&
+      confirmPasswordControl?.valid &&
+      newPasswordControl?.value === confirmPasswordControl?.value);
   }
 
   /**
@@ -474,11 +568,11 @@ export class ResetPasswordComponent {
   showPasswordResetSuccess(): void {
     // You can implement a toast or modal notification here
     console.log('Password reset successful!');
-    
+
     // Wait a moment before redirecting
     setTimeout(() => {
-      this.router.navigate(['/home/login'], { 
-        queryParams: { passwordReset: 'success' } 
+      this.router.navigate(['/home/login'], {
+        queryParams: { passwordReset: 'success' }
       });
     }, 1500);
   }
@@ -497,10 +591,10 @@ export class ResetPasswordComponent {
     // Clear any previous errors
     this.otpError = null;
     this.otpIncorrect = false;
-    
+
     // Clear OTP inputs
     this.otpDigits = ['', '', '', ''];
-    
+
     // Clear all input values
     for (let i = 0; i < 4; i++) {
       const input = document.getElementById(`otp-input-${i}`) as HTMLInputElement;
@@ -508,7 +602,7 @@ export class ResetPasswordComponent {
         input.value = '';
       }
     }
-    
+
     // Focus first input
     setTimeout(() => {
       const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
@@ -516,10 +610,10 @@ export class ResetPasswordComponent {
         firstInput.focus();
       }
     }, 10);
-    
+
     // Restart timer
     this.startOtpTimer();
-    
+
     // Simulate sending a new OTP (replace with actual API call)
     console.log('Resending OTP to:', this.getMaskedPhoneNumber());
   }

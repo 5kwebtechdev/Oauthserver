@@ -8,45 +8,36 @@
     </div>
     <div class="login-toggle-form-wrapper">
       <div class="toggle-buttons">
-        <button 
-          [class.active]="loginMode === 'phone'" 
-          (click)="switchMode('phone')">
+        <button [class.active]="loginMode === 'phone'" (click)="switchMode('phone')">
           Phone Number
         </button>
-        <button 
-          [class.active]="loginMode === 'email'" 
-          (click)="switchMode('email')">
+        <button [class.active]="loginMode === 'email'" (click)="switchMode('email')">
           Email
         </button>
       </div>
       <!-- Helper text -->
-    <small class="helper-text">Only for login and safety</small>
+      <small class="helper-text">Only for login and safety</small>
       <form [formGroup]="signInForm" (ngSubmit)="onSubmit()" class="login-form-fields">
         <ng-container *ngIf="loginMode === 'email'">
           <div class="input-group">
-            <input [ngClass]="{'error' : email?.invalid && (email?.dirty)}" formControlName="email" type="email" placeholder="Email" />
+            <input [ngClass]="{'error' : email?.invalid && (email?.dirty)}" formControlName="email" type="email"
+              placeholder="Email" />
             <div class="error" *ngIf="email?.invalid && (email?.dirty)">
               Oops! That email looks off. Please check it again.
             </div>
           </div>
         </ng-container>
-        
+
         <ng-container *ngIf="loginMode === 'phone'">
           <div class="input-group">
-            <div class="phone-input-container"
-                 [ngClass]="{'error' : !isPhoneValid(phone?.value) && phone?.dirty }">
+            <div class="phone-input-container" [ngClass]="{'error' : !isPhoneValid(phone?.value) && phone?.dirty }">
               <div class="country-code-selector" (click)="openCountryCodeModal()">
                 <span class="flag-emoji">{{selectedCountry.flag}}</span>
                 <span class="country-code">{{selectedCountry.code}}</span>
                 <i class="fa-solid fa-chevron-down"></i>
               </div>
-              <input formControlName="phone"
-                type="tel" 
-                [maxlength]="currentPhoneLength"
-                pattern="[0-9]*"
-                inputmode="numeric"
-                (input)="onPhoneInput($event)"
-                (keypress)="onKeyPress($event)"
+              <input formControlName="phone" type="tel" [maxlength]="currentPhoneLength" pattern="[0-9]*"
+                inputmode="numeric" (input)="onPhoneInput($event)" (keypress)="onKeyPress($event)"
                 placeholder="Enter {{currentPhoneLength}} digit number" />
             </div>
             <div class="error" *ngIf="!isPhoneValid(phone?.value) && phone?.dirty ">
@@ -57,26 +48,26 @@
 
         <div class="input-group">
           <input formControlName="password"
-                 [ngClass]="{'error' : (password?.invalid || password?.value.length < 8) && password?.dirty }"
-                 [type]="hidePassword ? 'password' : 'text'"
-                 placeholder="Password" />
+            [ngClass]="{'error' : (password?.invalid || password?.value.length < 8) && password?.dirty }"
+            [type]="hidePassword ? 'password' : 'text'" placeholder="Password" />
           <span class="toggle-eye" (click)="hidePassword = !hidePassword">
             <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
           </span>
-          
+
           <div class="error" *ngIf="(password?.invalid || password?.value.length < 8) && password?.dirty">
             Password should be atleast 8 characters long
           </div>
           <!-- Forgot password link -->
-          <a class="forgot-password" [routerLink]="['/home/reset-password']" [queryParams]="{ mode: loginMode }">Forgot password?</a>
+          <a class="forgot-password" [routerLink]="['/home/reset-password']" [queryParams]="{ mode: loginMode }">Forgot
+            password?</a>
         </div>
 
         <!-- Show error message if login fails -->
         <div class="error-message" *ngIf="loginError">
           {{ loginError }}
         </div>
-        
-        <button class="signup-btn" [disabled]="signInForm.invalid || loading">
+
+        <button class="signup-btn" [disabled]="!isLoginFormValid() || loading">
           <span *ngIf="!loading">Login</span>
           <span *ngIf="loading">
             <i class="fa-solid fa-spinner fa-spin"></i> Logging in...
@@ -87,9 +78,9 @@
   </div>
 
   <div class="signup-link">
-  <p>Don’t have an account? <a href="home/sign-up?step=0.1">Sign up</a></p>
-</div>
-  
+    <p>Don’t have an account? <a href="home/sign-up?step=0.1">Sign up</a></p>
+  </div>
+
   <!--<div class="container w-full p-0" style="height: calc(100vh - 200px); display: flex; justify-content: center; align-items: center;">
     <div class="container w-full p-0">
       <div class="or-divider"><span>OR</span></div>
@@ -127,10 +118,8 @@
     </div>
     <div class="country-modal__content">
       <div class="country-list">
-        <div class="country-item" 
-             *ngFor="let country of countries" 
-             (click)="selectCountry(country)"
-             [class.selected]="selectedCountry.code === country.code">
+        <div class="country-item" *ngFor="let country of countries" (click)="selectCountry(country)"
+          [class.selected]="selectedCountry.code === country.code">
           <span class="country-flag">{{country.flag}}</span>
           <span class="country-name">{{country.name}}</span>
           <span class="country-code">{{country.code}}</span>
