@@ -1,0 +1,15 @@
+<div class="ad-banner" role="region" aria-label="Advertisement banner">
+  <div #slidesContainer class="slides-wrapper">
+    <div *ngFor="let s of slides; index as i" class="banner-slide" [style.background]="s.bg || 'transparent'">
+      <div class="slide-inner">
+        <img [src]="s.image" alt="" class="slide-image">
+        <div class="slide-text">
+          <h3>{{s.title}}</h3>
+          <p>{{s.description}}</p>
+          <button class="cta">{{s.cta}}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div #pagerContainer class="pager"></div>
+</div>

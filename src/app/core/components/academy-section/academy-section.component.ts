@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { NgFor } from '@angular/common';
+import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
 import { IonicModule } from '@ionic/angular';
 
 export interface CourseCard {
@@ -17,7 +18,7 @@ export interface CourseCard {
   templateUrl: './academy-section.component.html',
   styleUrls: ['./academy-section.component.scss'],
   standalone: true,
-  imports: [NgFor, IonicModule]
+  imports: [NgFor, IonicModule, MindfulButtonComponent]
 })
 export class AcademySectionComponent {
   @Input() courses: CourseCard[] = [

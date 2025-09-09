@@ -1,0 +1,47 @@
+<ion-content class="ion-padding">
+  <ng-container [ngSwitch]="page">
+    <div *ngSwitchCase="'empty'" class="notes-empty">
+      <!-- Header area (back + title) -->
+      <div class="empty-header">
+        <button class="back-btn" aria-label="Back" (click)="close()">
+          <img src="/assets/app-assets/Back-common-icon.svg" alt="Back" class="back-icon">
+        </button>
+        <h2 class="empty-title">Quick Notes. Big Ideas</h2>
+      </div>
+
+      <div class="notes-epmty-message">
+        <!-- Illustration from assets -->
+        <div class="empty-illustration">
+          <img src="/assets/app-assets/empty-notes-page.svg" alt="No notes illustration">
+        </div>
+
+        <!-- Primary messages -->
+        <h3 class="empty-heading">No Notes Yet?</h3>
+        <p class="empty-sub">Write what’s on your mind. Notes help you save ideas, feelings, and cool moments.</p>
+
+        <!-- Action button -->
+        <button expand="block" class="empty-action" (click)="go('input')">Write your first notes</button>
+      </div>
+    </div>
+
+    <div *ngSwitchCase="'home'" class="notes-home">
+      <p class="muted">Your saved notes will appear here (demo).</p>
+      <!-- demo list -->
+      <ion-list>
+        <ion-item *ngIf="false">This is a placeholder for saved notes.</ion-item>
+      </ion-list>
+    </div>
+
+    <div *ngSwitchCase="'input'" class="notes-input">
+      <ion-item>
+        <ion-textarea [(ngModel)]="noteText" placeholder="Write your note..."></ion-textarea>
+      </ion-item>
+    </div>
+
+    <div *ngSwitchCase="'save'" class="notes-save">
+      <h3>Saved</h3>
+      <p>{{ noteText }}</p>
+      <mindful-button type="lavendar" text="Back to Notes" (click)="go('home')"></mindful-button>
+    </div>
+  </ng-container>
+</ion-content>

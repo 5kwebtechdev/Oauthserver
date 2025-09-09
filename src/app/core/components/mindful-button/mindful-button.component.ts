@@ -4,6 +4,7 @@ import {buttonStyles} from "./button.types";
 import {CoerceBoolean} from "../../coerceBoolean.decorator";
 
 @Component({
+  standalone: true,
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'mindful-button',
   templateUrl: './mindful-button.component.html',
@@ -29,6 +30,9 @@ export class MindfulButtonComponent implements OnInit {
   @Input({transform: booleanAttribute})
   @CoerceBoolean()
   large: boolean = false
+
+  // @Input()
+  // width: string = "auto";
 
   @Input({transform: booleanAttribute})
   @CoerceBoolean()

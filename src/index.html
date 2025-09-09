@@ -12,6 +12,9 @@
   <meta name="format-detection" content="telephone=no" />
   <meta name="msapplication-tap-highlight" content="no" />
 
+  <!-- DEV ONLY: allow connect to local devtools probes (eg. Chrome DevTools app-specific probes). Remove before production. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:; connect-src 'self' http://localhost:51735 ws://localhost:51735 ws://localhost:*/ http://localhost:* https://localhost:*; img-src 'self' data:; style-src 'self' 'unsafe-inline' https:; script-src 'self' 'unsafe-inline' https:;">
+
   <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
 
   <!-- add to homescreen for ios -->
@@ -24,6 +27,13 @@
 </body>
   <script>
     window.FontAwesomeConfig = { autoReplaceSvg: false }
+  </script>
+  <!-- Load Swiper from CDN as ES module and expose on window for components to use -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.2.10/swiper-bundle.min.css">
+  <script type="module">
+    import Swiper from 'https://cdn.jsdelivr.net/npm/swiper@11.2.10/+esm';
+    // expose to global so Angular components can access without bundling Swiper
+    window.Swiper = Swiper;
   </script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>

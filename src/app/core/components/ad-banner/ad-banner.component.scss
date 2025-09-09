@@ -1,0 +1,6 @@
+.ad-banner { 
+  .slides-wrapper { display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; }
+  .banner-slide { min-width: 80%; scroll-snap-align:start; border-radius:12px; padding:12px; }
+  .dot { width:8px; height:8px; display:inline-block; margin:0 4px; background:#ccc; border-radius:50%; }
+  .dot.active { background:#333; }
+}

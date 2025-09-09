@@ -15,6 +15,9 @@ const routes: Routes = [
     path: 'profile/:section',
     component: ProfileComponent
   },{
+    path: 'test',
+    loadComponent: () => import('./test/test.component').then(m => m.TestComponent)
+  },{
     path: 'timeline',
     component: TimelineComponent
   },{

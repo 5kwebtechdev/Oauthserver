@@ -1,6 +1,7 @@
 import {Component, Input, OnInit, ViewChild, ElementRef, booleanAttribute} from '@angular/core';
 import {NgClass, NgIf} from "@angular/common";
 import {LongPressDirective} from "../../directives/gestureControlDirective";
+import {MindfulButtonComponent} from "../mindful-button/mindful-button.component";
 import {HabitCardService} from "./habit-card.service";
 import {CoerceBoolean} from "../../coerceBoolean.decorator";
 
@@ -12,7 +13,8 @@ import {CoerceBoolean} from "../../coerceBoolean.decorator";
   imports: [
     NgClass,
     NgIf,
-    LongPressDirective
+  LongPressDirective,
+  MindfulButtonComponent
   ]
 })
 export class HabitCardComponent  implements OnInit {

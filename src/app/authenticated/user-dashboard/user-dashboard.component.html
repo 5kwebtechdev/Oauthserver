@@ -17,7 +17,7 @@
         </div>
 
         <nav class="header-tools" role="navigation" aria-label="Profile tools">
-          <button class="tool-item" type="button" aria-label="Notes">
+          <button class="tool-item" type="button" aria-label="Notes" (click)="openNotes()">
             <img src="/assets/app-assets/Notes-Icon-Home-Top.svg" alt="Notes" class="tool-icon">
            <!-- <span class="tool-label">Notes</span> -->
           </button>
@@ -81,6 +81,15 @@
 
     <!-- Habit Card -->
     <habit-card mode="list"></habit-card>
+
+    <!-- Ad-banner (commented out because mindful-banner component is missing) -->
+    <!--
+    <div style="margin-top: 16px;">
+      <mindful-banner></mindful-banner>
+    </div>
+    -->
+
+    <!-- Ad-banner -->
 
     <!-- Content Card -->
     <div style="margin-top: 5vh; height: 450px;">

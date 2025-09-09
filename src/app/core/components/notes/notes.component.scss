@@ -1,0 +1,4 @@
+.empty-header { display: inline-flex; justify-content: center; align-items: center; gap: 16px; }
+.notes-empty, .notes-home, .notes-input, .notes-save { text-align: center; }
+.muted { color: var(--ion-color-medium); }
+ion-textarea { min-height: 200px; }

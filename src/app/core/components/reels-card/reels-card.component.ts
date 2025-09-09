@@ -21,10 +21,10 @@ export class ReelsCardComponent {
       duration: '20 sec',
       likes: '10K',
       tags: '#FunScience #DIYExperiment....',
-  image: '/assets/app-assets/reel-1-placeholder.jpg',
-  video: '',
-  isPlaying: false,
-  saved: false
+    image: '/assets/app-assets/reel-1-placeholder.jpg',
+    video: '',
+    isPlaying: false,
+    saved: false
     },
     {
       id: 2,

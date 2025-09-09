@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from "@angular/common";
+import { ModalController } from '@ionic/angular';
+import { NotesComponent } from '../../core/components/notes/notes.component';
 import {HabitCardComponent} from "../../core/components/habit-card/habit-card.component";
 import {ChallengeCardComponent} from "../../core/components/challenge-card/challenge-card.component";
 import {ContentCardComponent} from "../../core/components/content-card/content-card.component";
@@ -10,6 +12,7 @@ import {AcademySectionComponent} from "../../core/components/academy-section/aca
 import {IonicModule} from "@ionic/angular";
 import {MindfulInputsModule} from "../../core/components/mindful-inputs/mindful-inputs.module";
 import {MoodSelectorComponent} from "../../core/components/mood-selector/mood-selector.component";
+import {AdBannerComponent} from "../../core/components/ad-banner/ad-banner.component";
 
 @Component({
   selector: 'app-user-dashboard',
@@ -26,7 +29,9 @@ import {MoodSelectorComponent} from "../../core/components/mood-selector/mood-se
   AcademySectionComponent,
     IonicModule,
   MoodSelectorComponent,
-    MindfulInputsModule
+  MindfulInputsModule,
+  NotesComponent,
+  AdBannerComponent
   ]
 })
 export class UserDashboardComponent implements OnInit {
@@ -39,7 +44,15 @@ export class UserDashboardComponent implements OnInit {
   // currently selected mood
   public selectedMood: string | null = 'happy';
 
-  constructor() { }
+  constructor(private modalCtrl: ModalController) { }
+
+  async openNotes() {
+    const modal = await this.modalCtrl.create({
+      component: NotesComponent,
+      componentProps: {}
+    });
+    await modal.present();
+  }
 
   ngOnInit() {}
 
