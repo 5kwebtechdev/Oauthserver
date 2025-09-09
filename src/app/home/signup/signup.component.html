@@ -1,21 +1,26 @@
 <ion-content class="bg-mindful-secondary">
   <div class="signup-container">
     <h2 class="fredoka">
-  <i (click)="goBack()" class="fa-solid fa-arrow-left">
-    </i>
-  <!--{{ step === 1 ? "Who's using the app?" : (step === 0.1 ? "Add phone number or email address" : (step === 0.2 ? "Check your phone" : (step === 0.3 ? "Create Password" : "Create your Account"))) }}-->
-  <span class="header-text">
-    {{ step === 1 ? "Who's using the app?" : (step === 0.1 ? "Add phone number or email address" : (step === 0.2 ? loginMode === 'phone' ? "Check your phone" : "Check your email" : (step === 0.3 ? "Create Password" : "Create your Account"))) }}
-   <p *ngIf="step === 0.2 && loginMode === 'phone'" class="otp-subtitle">We've sent an OTP to the number<br>{{getMaskedPhoneNumber()}}</p>
-   <p *ngIf="step === 0.2 && loginMode === 'email'" class="otp-subtitle">We've sent an OTP to the email<br>{{email?.value}}</p>
-    <p *ngIf="step === 0.3" class="password-description">It must be six characters or more</p>
-  </span>
-</h2>
+      <i (click)="goBack()" class="fa-solid fa-arrow-left">
+      </i>
+      <!--{{ step === 1 ? "Who's using the app?" : (step === 0.1 ? "Add phone number or email address" : (step === 0.2 ? "Check your phone" : (step === 0.3 ? "Create Password" : "Create your Account"))) }}-->
+      <span class="header-text">
+        {{ step === 1 ? "Who's using the app?" : (step === 0.1 ? "Add phone number or email address" : (step === 0.2 ?
+        loginMode === 'phone' ? "Check your phone" : "Check your email" : (step === 0.3 ? "Create Password" : "Create
+        your Account"))) }}
+        <p *ngIf="step === 0.2 && loginMode === 'phone'" class="otp-subtitle">We've sent an OTP to the
+          number<br>{{getMaskedPhoneNumber()}}</p>
+        <p *ngIf="step === 0.2 && loginMode === 'email'" class="otp-subtitle">We've sent an OTP to the
+          email<br>{{email?.value}}</p>
+        <p *ngIf="step === 0.3" class="password-description">It must be six characters or more</p>
+      </span>
+    </h2>
     <h4 class="step-text" *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3">
       Step {{step}} of 4
       <span>{{stepDesciption[step-1]}}</span>
     </h4>
-    <div class="step-completion-slider {{returnSameNumber(step)}}" *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3">
+    <div class="step-completion-slider {{returnSameNumber(step)}}"
+      *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3">
 
     </div>
 
@@ -24,8 +29,8 @@
     max-width: 360px;
     align-self: center;
 ">
-  <div class="container w-full p-0" style="display: flex; justify-content: flex-start; align-items: flex-start;">
-    <div class="container w-full p-0" style="padding: 10px 0px !important;">
+      <div class="container w-full p-0" style="display: flex; justify-content: flex-start; align-items: flex-start;">
+        <div class="container w-full p-0" style="padding: 10px 0px !important;">
           <div class="toggle-buttons">
             <button [class.active]="loginMode === 'phone'" (click)="switchMode('phone')">Phone Number</button>
             <button [class.active]="loginMode === 'email'" (click)="switchMode('email')">Email</button>
@@ -43,20 +48,14 @@
             </ng-container>
             <ng-container *ngIf="loginMode === 'phone'">
               <div class="input-group">
-                <div class="phone-input-container" 
-                     [ngClass]="{'error' : !isPhoneValid(phone?.value) && phone?.dirty }">
+                <div class="phone-input-container" [ngClass]="{'error' : !isPhoneValid(phone?.value) && phone?.dirty }">
                   <div class="country-code-selector" (click)="openCountryCodeModal()">
                     <span class="flag-emoji">{{selectedCountry.flag}}</span>
                     <span class="country-code">{{selectedCountry.code}}</span>
                     <i class="fa-solid fa-chevron-down"></i>
                   </div>
-                  <input formControlName="phone"
-                    type="tel" 
-                    [maxlength]="currentPhoneLength"
-                    pattern="[0-9]*"
-                    inputmode="numeric"
-                    (input)="onPhoneInput($event)"
-                    (keypress)="onKeyPress($event)"
+                  <input formControlName="phone" type="tel" [maxlength]="currentPhoneLength" pattern="[0-9]*"
+                    inputmode="numeric" (input)="onPhoneInput($event)" (keypress)="onKeyPress($event)"
                     placeholder="Enter {{currentPhoneLength}} digit number" />
                 </div>
                 <div class="error" *ngIf="!isPhoneValid(phone?.value) && phone?.dirty ">
@@ -67,13 +66,14 @@
 
 
 
-            <button 
-              type="button" 
-              class="signup-btn" 
-              (click)="signupFromLogin()" 
+            <button type="button" class="signup-btn" (click)="signupFromLogin()"
               [ngClass]="{'active-bg': phone?.value || email?.value}">
               Sign Up
             </button>
+
+            <div class="error-message" *ngIf="errorMessage">
+              {{ errorMessage }}
+            </div>
           </form>
 
           <div class="or-divider"><span>OR</span></div>
@@ -108,41 +108,26 @@
     <!--//////////////////////// STEP 0.2 - OTP Verification-->
     <div *ngIf="step === 0.2" [@slideIn]>
       <div class="otp-container">
-        
+
         <div class="otp-inputs-container">
           <div class="otp-inputs">
-            <input 
-              *ngFor="let digit of otpDigits; let i = index" 
-              type="tel" 
-              class="otp-digit"
-              [value]="otpDigits[i]"
-              (input)="onOtpInput($event, i)"
-              (keydown)="onOtpKeydown($event, i)"
-              (keyup)="onOtpKeyup($event, i)"
-              (paste)="onOtpPaste($event)"
-              (focus)="onOtpFocus($event, i)"
-              maxlength="1"
-              inputmode="numeric"
-              pattern="[0-9]*"
-              autocomplete="one-time-code"
-              [id]="'otp-input-' + i"
-              [attr.data-index]="i"
-            />
+            <input *ngFor="let digit of otpDigits; let i = index" type="tel" class="otp-digit" [value]="otpDigits[i]"
+              (input)="onOtpInput($event, i)" (keydown)="onOtpKeydown($event, i)" (keyup)="onOtpKeyup($event, i)"
+              (paste)="onOtpPaste($event)" (focus)="onOtpFocus($event, i)" maxlength="1" inputmode="numeric"
+              pattern="[0-9]*" autocomplete="one-time-code" [id]="'otp-input-' + i" [attr.data-index]="i" />
           </div>
           <div class="otp-timer" *ngIf="!canResendOtp">
             {{formatTime(otpResendTimer)}}
           </div>
         </div>
-        
-        <button 
-          type="button" 
-          class="signup-btn otp-next-btn" 
-          [disabled]="!isOtpComplete()"
-          (click)="verifyOtp()"
-        >
+
+        <button type="button" class="signup-btn otp-next-btn" [disabled]="!isOtpComplete()" (click)="verifyOtp()">
           Next
         </button>
-        
+        <div class="error-message" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </div>
+
         <div class="otp-resend" *ngIf="canResendOtp">
           <p>Didn't receive the code? <a href="#" (click)="resendOtp()">Resend</a></p>
         </div>
@@ -151,29 +136,24 @@
 
     <!--//////////////////////// STEP 0.3 - Create Password-->
     <div *ngIf="step === 0.3" [@slideIn]>
-      <div class="password-container">              
+      <div class="password-container">
         <form [formGroup]="passwordForm">
-         <div class="input-group">
-          <input formControlName="password"
-                 [ngClass]="{'error' : (password?.invalid || password?.value.length < 8) && password?.dirty }"
-                 [type]="hidePassword ? 'password' : 'text'"
-                 placeholder="Password" />
-          <span class="toggle-eye" (click)="hidePassword = !hidePassword">
-            <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-          </span>
-          
-          <div class="error" *ngIf="(password?.invalid || password?.value.length < 8) && password?.dirty">
-            Password should be atleast 8 characters long
-          </div>
+          <div class="input-group">
+            <input formControlName="password"
+              [ngClass]="{'error' : (password?.invalid || password?.value.length < 8) && password?.dirty }"
+              [type]="hidePassword ? 'password' : 'text'" placeholder="Password" />
+            <span class="toggle-eye" (click)="hidePassword = !hidePassword">
+              <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+            </span>
+
+            <div class="error" *ngIf="(password?.invalid || password?.value.length < 8) && password?.dirty">
+              Password should be atleast 8 characters long
+            </div>
           </div>
         </form>
-        
-        <button 
-          type="button" 
-          class="signup-btn password-next-btn" 
-          [disabled]="!passwordForm.valid"
-          (click)="proceedWithPassword()"
-        >
+
+        <button type="button" class="signup-btn password-next-btn" [disabled]="!passwordForm.valid"
+          (click)="proceedWithPassword()">
           Next
         </button>
       </div>
@@ -228,7 +208,8 @@
         </div>
       </div>
 
-      <button class="signup-btn" style="margin-top: 25px" [disabled]="!roleSelected" (click)="proceedWithRole()">Save &
+      <button class="signup-btn" style="margin-top: 25px" [disabled]="!roleSelected" (click)="proceedWithRole()">Save
+        &
         Continue</button>
     </div>
     <!--//////////////////////// STEP 2 - Profile Information-->
@@ -246,7 +227,7 @@
           <h4>Date of Birth <span>To Match Content to your Age</span></h4>
           <div class="input-group">
             <!--            <input  formControlName="dob" type="text" placeholder="Date of Birth" />-->
-            <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" [showTrigger]="openBirthdayPicker"  
+            <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" [showTrigger]="openBirthdayPicker"
               style="width: 100%">
               <input type="text" formControlName="dob" (click)="openBirthdayPickerNow()" placeholder="Date of Birth" />
             </mindful-birthdaypicker>
@@ -279,8 +260,10 @@
           </div>
         </ng-container>
       </div>
-      <button class="signup-btn" style="margin-top: 25px" [disabled]="false" (click)="proceedWithAvatar()">Save &
+      <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+      <button class="signup-btn" style="margin-top: 25px" [disabled]="false" (click)="registerOrProceed()">Save &
         Continue</button>
+
     </div>
     <!--//////////////////////// STEP 3 - Account Creation-->
     <div *ngIf="step === 3" [@slideIn]>
@@ -303,20 +286,14 @@
             </ng-container>
             <ng-container *ngIf="loginMode === 'phone'">
               <div class="input-group">
-                <div class="phone-input-container" 
-                     [ngClass]="{'error' : !isPhoneValid(phone?.value) && phone?.dirty }">
+                <div class="phone-input-container" [ngClass]="{'error' : !isPhoneValid(phone?.value) && phone?.dirty }">
                   <div class="country-code-selector" (click)="openCountryCodeModal()">
                     <span class="flag-emoji">{{selectedCountry.flag}}</span>
                     <span class="country-code">{{selectedCountry.code}}</span>
                     <i class="fa-solid fa-chevron-down"></i>
                   </div>
-                  <input formControlName="phone"
-                    type="tel" 
-                    [maxlength]="currentPhoneLength"
-                    pattern="[0-9]*"
-                    inputmode="numeric"
-                    (input)="onPhoneInput($event)"
-                    (keypress)="onKeyPress($event)"
+                  <input formControlName="phone" type="tel" [maxlength]="currentPhoneLength" pattern="[0-9]*"
+                    inputmode="numeric" (input)="onPhoneInput($event)" (keypress)="onKeyPress($event)"
                     placeholder="Enter {{currentPhoneLength}} digit number" />
                 </div>
                 <div class="error" *ngIf="!isPhoneValid(phone?.value) && phone?.dirty ">
@@ -379,14 +356,20 @@
     <div class="age-modal" *ngIf="showAgeSuggestionModal" role="dialog" aria-modal="true">
       <div class="age-modal__content">
         <h3 class="age-modal__title">Personalized Experience Available</h3>
-        <p class="age-modal__subtitle" *ngIf="roleSelected === 'parent'">Based on your profile, you might love<br>our Self mode</p>
-        <p class="age-modal__subtitle" *ngIf="roleSelected === 'child'">Based on your profile, you might love<br>these</p>
+        <p class="age-modal__subtitle" *ngIf="roleSelected === 'parent'">Based on your profile, you might love<br>our
+          Self mode</p>
+        <p class="age-modal__subtitle" *ngIf="roleSelected === 'child'">Based on your profile, you might love<br>these
+        </p>
       </div>
       <div class="age-modal__actions">
-        <button class="age-modal__btn age-modal__btn--secondary" *ngIf="roleSelected === 'parent'" (click)="closeAgeSuggestionModal()">Cancel</button>
-        <button class="age-modal__btn age-modal__btn--secondary" *ngIf="roleSelected === 'child'" (click)="selectSelfRole()">Try Self Role</button>
-        <button class="age-modal__btn age-modal__btn--primary" *ngIf="roleSelected === 'parent'" (click)="selectSelfRole()">Try Self Role</button>
-        <button class="age-modal__btn age-modal__btn--primary" *ngIf="roleSelected === 'child'" (click)="selectParentRole()">Try Parent Role</button>
+        <button class="age-modal__btn age-modal__btn--secondary" *ngIf="roleSelected === 'parent'"
+          (click)="closeAgeSuggestionModal()">Cancel</button>
+        <button class="age-modal__btn age-modal__btn--secondary" *ngIf="roleSelected === 'child'"
+          (click)="selectSelfRole()">Try Self Role</button>
+        <button class="age-modal__btn age-modal__btn--primary" *ngIf="roleSelected === 'parent'"
+          (click)="selectSelfRole()">Try Self Role</button>
+        <button class="age-modal__btn age-modal__btn--primary" *ngIf="roleSelected === 'child'"
+          (click)="selectParentRole()">Try Parent Role</button>
       </div>
       <p class="age-modal__footer">You can always switch role in<br>settings if you prefer</p>
     </div>
@@ -402,10 +385,8 @@
       </div>
       <div class="country-modal__content">
         <div class="country-list">
-          <div class="country-item" 
-               *ngFor="let country of countries" 
-               (click)="selectCountry(country)"
-               [class.selected]="selectedCountry.code === country.code">
+          <div class="country-item" *ngFor="let country of countries" (click)="selectCountry(country)"
+            [class.selected]="selectedCountry.code === country.code">
             <span class="country-flag">{{country.flag}}</span>
             <span class="country-name">{{country.name}}</span>
             <span class="country-code">{{country.code}}</span>

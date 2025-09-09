@@ -1,7 +1,8 @@
 import { Component, OnInit, Renderer2, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
-import {Router, ActivatedRoute} from "@angular/router";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {CoreService} from "../../core/services/core.service";
+import { Router, ActivatedRoute } from "@angular/router";
+import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { CoreService } from "../../core/services/core.service";
+import { AuthService } from '../../core/services/auth.service';
 import { CountriesService, Country } from "../../core/services/countries.service";
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Subscription } from 'rxjs';
@@ -21,14 +22,16 @@ import { Subscription } from 'rxjs';
       ]),
       transition(':leave', [
         animate('300ms ease-in',
-        style({ transform: 'translateX(-100%)', opacity: 0 })),
+          style({ transform: 'translateX(-100%)', opacity: 0 })),
       ]),
     ]),
   ],
 })
 export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
+  // Persist identifier used to request OTP so it can be reused in later steps
+  public requestedIdentifier: string | null = null;
   public signupForm: FormGroup;
-  public profileForm:  FormGroup;
+  public profileForm: FormGroup;
   public passwordForm: FormGroup; // Add password form
   public loginMode: 'email' | 'phone' = 'phone';
   public whatsappConsent = true;
@@ -48,7 +51,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   public roleSelected !: 'child' | 'parent' | 'self';
   public gender !: 'male' | 'female';
-  public avatarSelected:any;
+  public avatarSelected: any;
+
+  public errorMessage: string | null = null;
 
   // Use an accessor so we can defensively guard and log unexpected changes
   private _openBirthdayPicker = false;
@@ -76,18 +81,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   ]
 
   public avatars = [
-    {key: 1,gender: 'female', value: 'assets/app-assets/Onboarding-Avatars-female-1.svg'},
-    {key: 2,gender: 'female', value: 'assets/app-assets/Onboarding-Avatars-female-2.svg'},
-    {key: 3,gender: 'female', value: 'assets/app-assets/Onboarding-Avatars-female-3.svg'},
-    {key: 4,gender: 'female', value: 'assets/app-assets/Onbarding-Avatars-female-4.svg'},
-    {key: 5,gender: 'female', value: 'assets/app-assets/Onboarding-Avatars-female-5.svg'},
-    {key: 6,gender: 'female', value: 'assets/app-assets/Onboarding-Avatars-female-6.svg'},
-    {key: 7,gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-1.svg'},
-    {key: 8,gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-2.svg'},
-    {key: 9,gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-3.svg'},
-    {key: 10,gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-4.svg'},
-    {key: 11,gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-5.svg'},
-    {key: 12,gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-6.svg'},
+    { key: 1, gender: 'female', value: 'assets/app-assets/Onboarding-Avatars-female-1.svg' },
+    { key: 2, gender: 'female', value: 'assets/app-assets/Onboarding-Avatars-female-2.svg' },
+    { key: 3, gender: 'female', value: 'assets/app-assets/Onboarding-Avatars-female-3.svg' },
+    { key: 4, gender: 'female', value: 'assets/app-assets/Onbarding-Avatars-female-4.svg' },
+    { key: 5, gender: 'female', value: 'assets/app-assets/Onboarding-Avatars-female-5.svg' },
+    { key: 6, gender: 'female', value: 'assets/app-assets/Onboarding-Avatars-female-6.svg' },
+    { key: 7, gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-1.svg' },
+    { key: 8, gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-2.svg' },
+    { key: 9, gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-3.svg' },
+    { key: 10, gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-4.svg' },
+    { key: 11, gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-5.svg' },
+    { key: 12, gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-6.svg' },
   ]
 
   @ViewChild('swiperEl', { static: false }) swiperEl?: ElementRef;
@@ -139,7 +144,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   ngOnInit(): void {
     // Defensive: ensure picker does not open automatically on init
     this.openBirthdayPicker = false;
-    
+
     // Load countries from service
     this.subscription.add(
       this.countriesService.getCountries().subscribe({
@@ -154,10 +159,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         }
       })
     );
-    
+
     // Debug: check if flag is properly loaded
     console.log('Selected country flag:', this.selectedCountry.flag);
     console.log('Selected country code:', this.selectedCountry.code);
+
+    // Restore requested identifier if present (helps when component is recreated during navigation)
+    const savedIdentifier = sessionStorage.getItem('requestedIdentifier');
+    if (savedIdentifier) {
+      this.requestedIdentifier = savedIdentifier;
+      console.log('Restored requestedIdentifier from sessionStorage:', this.requestedIdentifier);
+    }
   }
 
   attachSlideChangeListener(swiperEl: HTMLElement) {
@@ -170,7 +182,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     private renderer: Renderer2,
     private router: Router,
     private core: CoreService,
-    private countriesService: CountriesService
+    private countriesService: CountriesService,
+    private authService: AuthService
   ) {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -183,7 +196,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       name: ['', [Validators.required]],
       dob: [''],
     })
-    
+
     this.passwordForm = this.fb.group({
       password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(12)]],
     })
@@ -208,15 +221,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return this.signupForm.get('email');
   }
 
-  get phone(){
+  get phone() {
     return this.signupForm.get('phone');
   }
 
-  get password(){
+  get password() {
     return this.passwordForm.get('password');
   }
 
-  get name(){
+  get name() {
     return this.profileForm.get('name');
   }
 
@@ -224,66 +237,101 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.loginMode = mode;
   }
 
-  signup(){
+  signup() {
+    // persist entered identifier in session for later registration
+    try {
+      const identifier = this.loginMode === 'email' ? this.email?.value : this.phone?.value;
+      if (identifier) sessionStorage.setItem('requestedIdentifier', identifier);
+    } catch (e) { }
+
     this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
   }
 
-  signupFromLogin(){
+  signupFromLogin() {
     // Validate form first
     if (this.loginMode === 'phone') {
       if (!this.isPhoneValid(this.phone?.value)) {
         this.core.triggerToasrt('Please enter a valid phone number');
         return;
       }
-      // From step 0.1 with phone, go to step 0.2 (OTP verification)
-      this.startOtpTimer();
-      this.router.navigate(['home/sign-up'], { queryParams: { step: 0.2 } });
-      
-      // Focus first OTP input after navigation
-      setTimeout(() => {
-        const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
-        if (firstInput) {
-          firstInput.focus();
+      // Call backend to request OTP with identifier = phone (include country code if needed)
+      const identifier = this.phone?.value;
+      this.authService.requestOtp(identifier).subscribe({
+        next: (resp) => {
+          // Persist identifier for later verification
+          this.requestedIdentifier = identifier;
+          try { if (this.requestedIdentifier) sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier); } catch (e) { }
+
+          // Start OTP timer and navigate to OTP step
+          this.startOtpTimer();
+          this.router.navigate(['home/sign-up'], { queryParams: { step: 0.2 } });
+
+          // Focus first OTP input after navigation
+          setTimeout(() => {
+            const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
+            if (firstInput) {
+              firstInput.focus();
+            }
+          }, 100);
+        },
+        error: (err) => {
+          console.error('Failed to request OTP:', err);
+          this.errorMessage = 'Failed to send OTP. Please try again.';
         }
-      }, 100);
+      });
     } else {
       if (this.email?.invalid) {
-        this.core.triggerToasrt('Please enter a valid email address');
+        this.errorMessage = 'Please enter a valid email address';
         return;
       }
-      // From step 0.1 with email, also go to step 0.2 (OTP verification)
-      this.startOtpTimer();
-      this.router.navigate(['home/sign-up'], { queryParams: { step: 0.2 } });
-      
-      // Focus first OTP input after navigation
-      setTimeout(() => {
-        const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
-        if (firstInput) {
-          firstInput.focus();
+      // Call backend to request OTP with identifier = email
+      const identifier = this.email?.value;
+      this.authService.requestOtp(identifier).subscribe({
+        next: (resp) => {
+          this.requestedIdentifier = identifier;
+          try { if (this.requestedIdentifier) sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier); } catch (e) { }
+
+          this.startOtpTimer();
+          this.router.navigate(['home/sign-up'], { queryParams: { step: 0.2 } });
+
+          setTimeout(() => {
+            const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
+            if (firstInput) {
+              firstInput.focus();
+            }
+          }, 100);
+        },
+        error: (err) => {
+          console.error('Failed to request OTP:', err);
+          this.core.triggerToasrt('Failed to send OTP. Please try again.');
         }
-      }, 100);
+      });
     }
   }
 
-  dob(){
+  dob() {
     return this.profileForm.get('dob');
   }
 
-  proceedWithRole(){
-    if(!this.roleSelected){
+  proceedWithRole() {
+    if (!this.roleSelected) {
       this.core.triggerToasrt('Please select a role');
       return;
     }
+    // persist role selection
+    try { sessionStorage.setItem('signup_role', this.roleSelected); } catch (e) { }
 
     // proceed to next step without age validation
     this.router.navigate(['home/sign-up'], { queryParams: { step: 2 } });
   }
 
-  proceedWithAvatar(){
-    if(!this.avatarSelected){
+  proceedWithAvatar() {
+    if (!this.avatarSelected) {
       this.core.triggerToasrt('Please select an avatar');
       return;
     }
+    // persist avatar
+    try { sessionStorage.setItem('signup_avatar', String(this.avatarSelected)); } catch (e) { }
 
     // If role is 'self', complete signup and go to step 4 (pet selection)
     if (this.roleSelected === 'self') {
@@ -309,7 +357,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           return;
         }
       }
-      
+
       // Parent role: age >= 24 is valid, age < 24 shows popup
       if (this.roleSelected === 'parent') {
         if (age >= 24) {
@@ -330,31 +378,76 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
+    // persist profile details in session (name, dob, gender)
+    try {
+      const profile = {
+        name: this.profileForm.get('name')?.value,
+        dob: parsedDob ? parsedDob.getTime() : null,
+        gender: this.gender,
+        avatar: this.avatarSelected
+      };
+      sessionStorage.setItem('signup_profile', JSON.stringify(profile));
+    } catch (e) { }
+
     // Fallback: continue to step 3 (phone/email)
     this.router.navigate(['home/sign-up'], { queryParams: { step: 3 } });
   }
 
-  goBack(){
-    if(this.step === 0.1){
+  /**
+   * Called from profile Save & Continue when user should be registered immediately
+   */
+  registerOrProceed(): void {
+    // First run the same validations/persistence as proceedWithAvatar
+    if (!this.avatarSelected) {
+      this.core.triggerToasrt('Please select an avatar');
+      return;
+    }
+
+    const dobVal = this.profileForm.get('dob')?.value;
+    const parsedDob = dobVal ? new Date(dobVal) : null;
+    const age = parsedDob ? this.calculateAge(parsedDob) : null;
+
+    if (age === null) {
+      this.core.triggerToasrt('Please enter your date of birth');
+      return;
+    }
+
+    // persist profile details
+    try {
+      const profile = {
+        name: this.profileForm.get('name')?.value,
+        dob: parsedDob ? parsedDob.getTime() : null,
+        gender: this.gender,
+        avatar: this.avatarSelected
+      };
+      sessionStorage.setItem('signup_profile', JSON.stringify(profile));
+    } catch (e) { }
+
+    // Now attempt registration using collected session/form data
+    this.registerFromSession();
+  }
+
+  goBack() {
+    if (this.step === 0.1) {
       // From step 0.1, go back to login
       this.router.navigate(['home/login']);
-    } else if(this.step === 0.2){
+    } else if (this.step === 0.2) {
       // From step 0.2, go back to step 0.1
       this.clearOtpTimer();
       this.router.navigate(['home/sign-up'], { queryParams: { step: 0.1 } });
-    } else if(this.step > 1){
-      this.router.navigate(['home/sign-up'], { queryParams: { step: this.step-1 } });
+    } else if (this.step > 1) {
+      this.router.navigate(['home/sign-up'], { queryParams: { step: this.step - 1 } });
     }
   }
 
-  returnSameNumber(num: any){
-    if(num === 1){
+  returnSameNumber(num: any) {
+    if (num === 1) {
       return 'one';
-    }else if(num === 2){
+    } else if (num === 2) {
       return 'two';
-    }else if (num === 3){
+    } else if (num === 3) {
       return 'three';
-    }else{
+    } else {
       return 'four';
     }
   }
@@ -370,11 +463,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   openBirthdayPickerNow() {
-  // explicitly open the birthday picker only when user clicks the input
-  this.openBirthdayPicker = true;
+    // explicitly open the birthday picker only when user clicks the input
+    this.openBirthdayPicker = true;
   }
 
-  birthdayChanged(date: any){
+  birthdayChanged(date: any) {
     const parsedDate = new Date(date);
     if (isNaN(parsedDate.getTime())) {
       return;
@@ -387,7 +480,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.computedAge = this.calculateAge(parsedDate);
     // close the picker after choosing a date
     this.openBirthdayPicker = false;
-    
+
     // Don't show popup automatically when birthday changes
     // Only show popup when user clicks Save & Continue with invalid age
   }
@@ -426,7 +519,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const dobVal = this.profileForm.get('dob')?.value;
     const parsedDob = dobVal ? new Date(dobVal) : null;
     const age = parsedDob ? this.calculateAge(parsedDob) : null;
-    
+
     if (age !== null && age >= 24) {
       // Age is valid for parent role, proceed to parent instructions
       this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
@@ -466,7 +559,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   selectCountry(country: Country): void {
     this.selectedCountry = country;
     this.showCountryCodeModal = false;
-    
+
     // Clear phone validation when country changes
     const phoneControl = this.signupForm.get('phone');
     if (phoneControl) {
@@ -491,12 +584,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const value = input.value;
     // Remove any non-numeric characters
     const numericValue = value.replace(/[^0-9]/g, '');
-    
+
     // Update the form control with clean numeric value
     this.signupForm.patchValue({
       phone: numericValue
     });
-    
+
     // Set cursor position to end
     setTimeout(() => {
       input.setSelectionRange(numericValue.length, numericValue.length);
@@ -507,7 +600,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   getOtpDestination(): string {
     if (this.loginMode === 'phone') {
       const phoneValue = this.phone?.value || '';
-      const maskedPhone = phoneValue.length > 4 
+      const maskedPhone = phoneValue.length > 4
         ? phoneValue.slice(0, 2) + '*'.repeat(phoneValue.length - 4) + phoneValue.slice(-2)
         : phoneValue;
       return `${this.selectedCountry.code} ${maskedPhone}`;
@@ -515,7 +608,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       const emailValue = this.email?.value || '';
       const [username, domain] = emailValue.split('@');
       if (username && domain) {
-        const maskedUsername = username.length > 2 
+        const maskedUsername = username.length > 2
           ? username.slice(0, 2) + '*'.repeat(Math.max(0, username.length - 4)) + username.slice(-2)
           : username;
         return `${maskedUsername}@${domain}`;
@@ -528,28 +621,28 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const inputElement = event.target as HTMLInputElement;
     const inputValue = inputElement.value;
     const previousValue = this.otpDigits[index];
-    
+
     // Only allow numeric input
     const numericValue = inputValue.replace(/[^0-9]/g, '');
-    
+
     // Clear the input immediately to prevent interference
     inputElement.value = '';
-    
+
     if (numericValue.length > 0) {
       // Take only the first digit and put it ONLY in current input
       const digit = numericValue.charAt(0);
       this.otpDigits[index] = digit;
       inputElement.value = digit; // Set value only to current input
-      
+
       // Auto-advance to next input (move cursor only, don't copy value)
       // Only move if:
       // 1. User manually typed (not auto-fill)
       // 2. Value actually changed
       // 3. Not the last input
-      if (this.isFromUserInput && 
-          previousValue !== digit && 
-          index < this.otpDigits.length - 1) {
-        
+      if (this.isFromUserInput &&
+        previousValue !== digit &&
+        index < this.otpDigits.length - 1) {
+
         setTimeout(() => {
           const nextInput = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
           if (nextInput) {
@@ -564,7 +657,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.otpDigits[index] = '';
       inputElement.value = '';
     }
-    
+
     // Reset the flag after processing
     this.isFromUserInput = false;
   }
@@ -574,11 +667,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (event.key >= '0' && event.key <= '9') {
       this.isFromUserInput = true;
     }
-    
+
     // Handle backspace (like popular apps)
     if (event.key === 'Backspace') {
       event.preventDefault();
-      
+
       // If current input has value, clear it
       if (this.otpDigits[index]) {
         this.otpDigits[index] = '';
@@ -593,13 +686,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         }
       }
     }
-    
+
     // Handle arrow keys for manual navigation
     if (event.key === 'ArrowRight' && index < this.otpDigits.length - 1) {
       const nextInput = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
       if (nextInput) nextInput.focus();
     }
-    
+
     if (event.key === 'ArrowLeft' && index > 0) {
       const prevInput = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
       if (prevInput) prevInput.focus();
@@ -625,10 +718,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     event.preventDefault();
     const pasteData = event.clipboardData?.getData('text') || '';
     const numericData = pasteData.replace(/[^0-9]/g, '');
-    
+
     // Clear all inputs first
     this.otpDigits = ['', '', '', ''];
-    
+
     // Fill OTP digits with pasted data (like popular apps)
     for (let i = 0; i < Math.min(numericData.length, this.otpDigits.length); i++) {
       this.otpDigits[i] = numericData[i];
@@ -637,11 +730,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         input.value = numericData[i];
       }
     }
-    
+
     // Focus on the next empty input or the last filled input (like WhatsApp)
     const nextEmptyIndex = this.otpDigits.findIndex(digit => digit === '');
     const focusIndex = nextEmptyIndex !== -1 ? nextEmptyIndex : Math.min(numericData.length - 1, this.otpDigits.length - 1);
-    
+
     if (focusIndex >= 0) {
       const focusInput = document.getElementById(`otp-input-${focusIndex}`) as HTMLInputElement;
       if (focusInput) {
@@ -659,47 +752,76 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.core.triggerToasrt('Please enter the complete OTP');
       return;
     }
-    
+
     const otp = this.otpDigits.join('');
     console.log('Verifying OTP:', otp);
-    
-    // Simulate OTP verification (replace with actual API call)
-    // For now, accept any 4-digit OTP
-    this.clearOtpTimer();
-    
-    // Navigate to step 0.3 (password creation) after successful OTP verification
-    this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
+
+    const identifier = this.requestedIdentifier || (this.loginMode === 'phone' ? this.phone?.value : this.email?.value);
+
+    // Call backend to verify OTP
+    this.authService.verifyOtp(identifier || '', otp).subscribe({
+      next: (resp) => {
+        this.clearOtpTimer();
+        // Proceed to password creation
+        this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
+      },
+      error: (err) => {
+        console.error('OTP verification failed:', err);
+        this.errorMessage = 'Incorrect OTP. Please try again.';
+        this.canResendOtp = true;
+        this.clearOtpTimer();
+      }
+    });
   }
 
   resendOtp(): void {
-    console.log('Resending OTP to:', this.getOtpDestination());
-    this.core.triggerToasrt('OTP resent successfully');
-    
-    // Reset OTP inputs
-    this.otpDigits = ['', '', '', ''];
-    
-    // Clear all input values
-    for (let i = 0; i < 4; i++) {
-      const input = document.getElementById(`otp-input-${i}`) as HTMLInputElement;
-      if (input) {
-        input.value = '';
+    const identifier = this.requestedIdentifier || (this.loginMode === 'phone' ? this.phone?.value : this.email?.value);
+    if (!identifier) {
+      this.errorMessage = 'No identifier available to resend OTP';
+      return;
+    }
+
+    this.authService.requestOtp(identifier).subscribe({
+      next: () => {
+        this.core.triggerToasrt('OTP resent successfully');
+
+        // Reset OTP inputs
+        this.otpDigits = ['', '', '', ''];
+
+        // Clear all input values
+        for (let i = 0; i < 4; i++) {
+          const input = document.getElementById(`otp-input-${i}`) as HTMLInputElement;
+          if (input) {
+            input.value = '';
+          }
+        }
+
+        // Focus first input
+        setTimeout(() => {
+          const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
+          if (firstInput) {
+            firstInput.focus();
+          }
+        }, 50);
+
+        // Persist identifier
+        this.requestedIdentifier = identifier;
+        try { if (this.requestedIdentifier) sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier); } catch (e) { }
+
+        // Restart timer
+        this.startOtpTimer();
+      },
+      error: (err) => {
+        console.error('Failed to resend OTP:', err);
+        this.core.triggerToasrt('Failed to resend OTP. Please try again.');
       }
-    }
-    
-    // Focus first input
-    const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
-    if (firstInput) {
-      firstInput.focus();
-    }
-    
-    // Restart timer
-    this.startOtpTimer();
+    });
   }
 
   private startOtpTimer(): void {
     this.canResendOtp = false;
     this.otpResendTimer = 300; // 5 minutes
-    
+
     this.resendInterval = setInterval(() => {
       this.otpResendTimer--;
       if (this.otpResendTimer <= 0) {
@@ -722,17 +844,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (!phoneControl || !phoneControl.value) {
       return '*******059'; // Fallback
     }
-    
+
     const phone = phoneControl.value;
     if (phone.length < 4) {
       return '*******' + phone;
     }
-    
+
     // Show first 2 and last 3 digits, mask the rest
     const firstTwo = phone.substring(0, 2);
     const lastThree = phone.substring(phone.length - 3);
     const maskedMiddle = '*'.repeat(Math.max(0, phone.length - 5));
-    
+
     return firstTwo + maskedMiddle + lastThree;
   }
 
@@ -753,11 +875,71 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   proceedWithPassword(): void {
     if (this.passwordForm.valid) {
       console.log('Password created:', this.password?.value);
+      // persist password in session
+      try { sessionStorage.setItem('signup_password', this.password?.value || ''); } catch (e) { }
+
       // Navigate to step 1 (role selection) after password creation
       this.router.navigate(['home/sign-up'], { queryParams: { step: 1 } });
     } else {
       this.core.triggerToasrt('Please enter a valid password (6-12 characters)');
     }
+  }
+
+  /**
+   * Assemble registration payload from session and current form values and call register API
+   */
+  registerFromSession(): void {
+    this.errorMessage = null;
+
+    // Collect values from session and forms
+    const profileStr = sessionStorage.getItem('signup_profile');
+    const password = sessionStorage.getItem('signup_password') || this.password?.value;
+    const role = sessionStorage.getItem('signup_role') || this.roleSelected;
+    const identifier = this.requestedIdentifier || this.email?.value || this.phone?.value;
+
+    let profile: any = {};
+    try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) { profile = {}; }
+
+    const payload: any = {
+      name: profile.name || this.profileForm.get('name')?.value,
+      gender: (profile.gender || this.gender || '').toUpperCase(),
+      relationship: (role || '').toUpperCase(),
+      password: password || undefined,
+    };
+
+    // include email or phone depending on loginMode or identifier content
+    if (this.loginMode === 'email' || (identifier && identifier.includes('@'))) {
+      payload.email = identifier;
+    } else {
+      payload.phone = identifier;
+    }
+
+    // dateOfBirth should be in milliseconds since epoch if available
+    const dobMs = profile.dob || (this.profileForm.get('dob')?.value ? new Date(this.profileForm.get('dob')?.value).getTime() : null);
+    if (dobMs) payload.dateOfBirth = dobMs;
+
+    // Call register API
+    this.authService.register(payload).subscribe({
+      next: (resp) => {
+        console.log('Registration success:', resp);
+        // Clear signup session data
+        try {
+          sessionStorage.removeItem('signup_profile');
+          sessionStorage.removeItem('signup_password');
+          sessionStorage.removeItem('signup_role');
+          sessionStorage.removeItem('signup_avatar');
+          sessionStorage.removeItem('requestedIdentifier');
+        } catch (e) { }
+
+        // Move to pet selection (step 4) on success
+        this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
+      },
+      error: (err) => {
+        console.error('Registration failed:', err);
+        const serverMsg = err?.error || 'Registration failed';
+        this.errorMessage = typeof serverMsg === 'string' ? serverMsg : 'Registration failed. Please try again.';
+      }
+    });
   }
 
   // Password visibility toggle

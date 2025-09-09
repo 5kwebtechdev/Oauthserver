@@ -112,6 +112,16 @@ export class AuthService {
     return this.http.post<string>(url, { identifier, newPassword, confirmPassword }, options);
   }
 
+  /**
+   * Register a new user.
+   * Expects payload with name, gender, relationship, email, phone, dateOfBirth (ms), password
+   */
+  register(payload: any) {
+    const url = `${this.apiUrl}/auth/register`;
+    // default JSON response
+    return this.http.post<any>(url, payload);
+  }
+
   logout(): void {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_id');
