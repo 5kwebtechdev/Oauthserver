@@ -100,7 +100,7 @@ export class ResetPasswordComponent {
 
         // If we're starting directly at step 2, initialize OTP timer
         if (this.step === 2) {
-              console.log('requestedIdentifier set (phone):', this.requestedIdentifier);
+          console.log('requestedIdentifier set (phone):', this.requestedIdentifier);
           this.startOtpTimer();
         }
 
@@ -175,12 +175,12 @@ export class ResetPasswordComponent {
         // Call API to request OTP with identifier = email
         const identifier = emailControl.value;
         this.authService.requestOtp(identifier).subscribe({
-            next: () => {
+          next: () => {
             this.step = 2; // Move to OTP screen
             // persist identifier for later steps
             this.requestedIdentifier = identifier;
-              // persist across navigation/reloads
-              try { if (this.requestedIdentifier) sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier); } catch(e) {}
+            // persist across navigation/reloads
+            try { if (this.requestedIdentifier) sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier); } catch (e) { }
             this.startOtpTimer(); // Start OTP timer
 
             // update URL so route contains current step and mode (use absolute path like signup)
@@ -200,11 +200,11 @@ export class ResetPasswordComponent {
         // const rawPhone = phoneControl.value;
         const identifier = phoneControl.value;
         this.authService.requestOtp(identifier).subscribe({
-            next: () => {
+          next: () => {
             this.step = 2; // Move to OTP screen
             // persist identifier with country code for later steps
             this.requestedIdentifier = identifier;
-              try { if (this.requestedIdentifier) sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier); } catch(e) {}
+            try { if (this.requestedIdentifier) sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier); } catch (e) { }
             this.startOtpTimer(); // Start OTP timer
             // update URL so route contains current step and mode (use absolute path like signup)
             this.router.navigate(['home/reset-password'], { queryParams: { step: this.step, mode: this.mode } });
@@ -247,7 +247,7 @@ export class ResetPasswordComponent {
               console.log('Password reset successful:', resp);
               this.resetError = null;
               // clear persisted identifier
-              try { sessionStorage.removeItem('requestedIdentifier'); } catch(e) {}
+              try { sessionStorage.removeItem('requestedIdentifier'); } catch (e) { }
               this.showPasswordResetSuccess();
             },
             error: (err) => {
