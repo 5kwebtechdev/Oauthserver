@@ -5,6 +5,7 @@ import { Component, OnInit } from '@angular/core';
   selector: 'challenge-card',
   templateUrl: './challenge-card.component.html',
   styleUrls: ['./challenge-card.component.scss'],
+  standalone: true
 })
 export class ChallengeCardComponent {
 

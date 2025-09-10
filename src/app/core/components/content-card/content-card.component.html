@@ -1,95 +1,27 @@
 <section class="content-section" aria-label="Curiosity highlights">
-  <!-- decorative banner icons (purely decorative) -->
   <img src="/assets/app-assets/Content-banner-bulb-icon-home.svg" class="content-banner content-banner--bulb" aria-hidden="true" role="presentation" />
   <img src="/assets/app-assets/Content-banner-puzzle-icon-home.svg" class="content-banner content-banner--puzzle" aria-hidden="true" role="presentation" />
   <img src="/assets/app-assets/Content-banner-book-icon-home.svg" class="content-banner content-banner--book" aria-hidden="true" role="presentation" />
   <img src="/assets/app-assets/Content-banner-blue-icon-home.svg" class="content-banner content-banner--blue" aria-hidden="true" role="presentation" />
   <header class="content-header">
     <div class="content-title">
-      <h2>Start Curious, Play, Conquer!</h2>
-      <p class="content-sub">Dive into brain-teasing quizzes, mind-bending puzzles, captivating stories, and insightful reads.</p>
+      <h2>{{ title || 'Start Curious, Play, Conquer!' }}</h2>
+      <p class="content-sub">{{ subtitle || 'Dive into brain-teasing quizzes, mind-bending puzzles, captivating stories, and insightful reads.' }}</p>
     </div>
   </header>
 
   <nav class="content-actions">
-    <button class="see-all content-section__view-all" aria-label="View all content">View all <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+    <button class="see-all content-section__view-all" aria-label="View all content" (click)="viewAll.emit()">View all <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
   </nav>
 
   <!-- horizontal swipe area: touch-friendly scroll + snap -->
-  <div class="slides" role="list" #slides>
-    <!-- Slide 1 -->
-    <article class="slide" role="listitem">
-      <div class="media">
-  <img src="/assets/images/Content-memory-maze-thumbnail.png" alt="The Memory Maze" />
-  <img src="/assets/app-assets/Content-difficulty-hard-badge.svg" class="difficulty-hard" alt="Hard difficulty badge" aria-hidden="true" role="presentation" />
-      </div>
+  <content-slides [items]="items" [showPager]="showPager" (itemSelected)="itemSelected.emit($event)">
+    <ng-content></ng-content>
+  </content-slides>
 
-      <div class="slide-body">
-        <div class="meta-row">
-          <h3 class="slide-title">The Memory Maze</h3>
-          <span class="tag">Puzzle</span>
-        </div>
-        <p class="slide-desc">Test your memory by finding matching pairs in the shortest time!</p>
-
-        <div class="slide-footer">
-          <div class="rewards">
-            <img src="/assets/app-assets/Coins-icon-common.svg" alt="token" class="icon token"> <span class="amount">50</span>
-            <img src="/assets/app-assets/Trophies-icon-common.svg" alt="trophy" class="icon trophy"> <span class="amount">2</span>
-          </div>
-          <button class="cta label">Finish in 5 min</button>
-        </div>
-      </div>
-    </article>
-
-    <!-- Slide 2 -->
-    <article class="slide" role="listitem">
-      <div class="media">
-  <img src="/assets/images/Content-riddle-royal-thumbnail.png" alt="Riddle Royale" />
-  <img src="/assets/app-assets/Content-difficulty-easy-badge.svg" class="difficulty-easy" alt="Easy difficulty badge" aria-hidden="true" role="presentation" />
-      </div>
-      <div class="slide-body">
-        <div class="meta-row">
-          <h3 class="slide-title">Riddle Royale</h3>
-          <span class="tag">Riddle</span>
-        </div>
-        <p class="slide-desc">Crack three mind-bending riddles to prove your wit</p>
-        <div class="slide-footer">
-          <div class="rewards">
-            <img src="/assets/app-assets/Coins-icon-common.svg" alt="token" class="icon token"> <span class="amount">70</span>
-            <img src="/assets/app-assets/Trophies-icon-common.svg" alt="trophy" class="icon trophy"> <span class="amount">4</span>
-          </div>
-          <button class="cta label">Solve in 2 min</button>
-        </div>
-      </div>
-    </article>
-
-    <!-- Slide 3 (duplicate as example) -->
-    <article class="slide" role="listitem">
-      <div class="media">
-  <img src="/assets/app-assets/content-riddle-royale.jpg" alt="Riddle Royale" />
-  <img src="/assets/app-assets/Content-difficulty-easy-badge.svg" class="difficulty-easy" alt="Easy difficulty badge" aria-hidden="true" role="presentation" />
-      </div>
-      <div class="slide-body">
-        <div class="meta-row">
-          <h3 class="slide-title">Riddle Royale</h3>
-          <span class="tag">Riddle</span>
-        </div>
-        <p class="slide-desc">Crack three mind-bending riddles to prove your wit</p>
-        <div class="slide-footer">
-          <div class="rewards">
-            <img src="/assets/app-assets/Coins-icon-common.svg" alt="token" class="icon token"> <span class="amount">70</span>
-            <img src="/assets/app-assets/Trophies-icon-common.svg" alt="trophy" class="icon trophy"> <span class="amount">4</span>
-          </div>
-          <button class="cta label">Solve in 2 min</button>
-        </div>
-      </div>
-    </article>
+  <div class="debug-indicator" *ngIf="items?.length" style="text-align:center;margin-top:8px;font-size:12px;color:#333;">
+    <!-- Slides items: {{ items.length }} -->
   </div>
 
-  <!-- simple pager dots -->
-  <div class="pager" aria-hidden="true" #pager>
-    <span class="dot active" (click)="goToSlide(0)"></span>
-    <span class="dot" (click)="goToSlide(1)"></span>
-    <span class="dot" (click)="goToSlide(2)"></span>
-  </div>
+  <!-- pager is handled by the content-slides component -->
 </section>

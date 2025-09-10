@@ -10,11 +10,12 @@ import {CoerceBoolean} from "../../coerceBoolean.decorator";
   selector: 'habit-card',
   templateUrl: './habit-card.component.html',
   styleUrls: ['./habit-card.component.scss'],
+  standalone: true,
   imports: [
     NgClass,
     NgIf,
-  LongPressDirective,
-  MindfulButtonComponent
+    LongPressDirective,
+    MindfulButtonComponent
   ]
 })
 export class HabitCardComponent  implements OnInit {

@@ -22,7 +22,6 @@ import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
 @NgModule({
   declarations: [
     AuthenticatedComponent,
-    TypicalPageComponent,
     ProfileComponent,
     ProfileHomeComponent,
     MindfulTimelineComponent,
@@ -30,21 +29,21 @@ import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
   AddCalendarComponent
   ],
   exports: [
-    TypicalPageComponent
+  MindfulTimelineComponent
   ],
   imports: [
     CommonModule,
     AuthenticatedRoutingModule,
-    HabitCardComponent,
-    LongPressDirective,
-    MindfulButtonComponent,
-    MindfulBadgeComponent,
-    ChallengeCardComponent,
-    IonicModule,
+  LongPressDirective,
+  MindfulButtonComponent,
+  MindfulBadgeComponent,
+  TypicalPageComponent,
+  HabitCardComponent,
+  ChallengeCardComponent,
   UserDashboardComponent,
-    FooterComponent,
-    MindfulInputsModule,
-    MindfulSelectorsComponent
+  IonicModule,
+  MindfulInputsModule,
+  MindfulSelectorsComponent
   ]
 })
 export class AuthenticatedModule { }

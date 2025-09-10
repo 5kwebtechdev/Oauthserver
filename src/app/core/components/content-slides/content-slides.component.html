@@ -1,0 +1,39 @@
+<div class="slides" role="list" #slides>
+  <ng-container *ngFor="let item of items; let i = index">
+    <article class="slide" role="listitem" (click)="onItemClick(item, i)">
+      <ng-container *ngIf="slideTemplate; else defaultSlide">
+        <ng-container *ngTemplateOutlet="slideTemplate; context: { $implicit: item, index: i }"></ng-container>
+      </ng-container>
+
+      <ng-template #defaultSlide>
+        <div class="media">
+          <img [src]="item.image || item.imageUrl || '/assets/images/Content-memory-maze-thumbnail.png'" [alt]="item.title || 'content'" />
+          <img *ngIf="item.difficultyBadge" [src]="item.difficultyBadge" class="difficulty-hard" alt="difficulty badge" aria-hidden="true" role="presentation" />
+        </div>
+
+        <div class="slide-body">
+          <div class="meta-row">
+            <h3 class="slide-title">{{ item.title }}</h3>
+            <span class="tag">{{ item.tag }}</span>
+          </div>
+          <p class="slide-desc">{{ item.desc }}</p>
+
+          <div class="slide-footer">
+            <div class="rewards">
+              <img src="/assets/app-assets/Coins-icon-common.svg" alt="token" class="icon token"> <span class="amount">{{ item.rewards?.coins }}</span>
+              <img src="/assets/app-assets/Trophies-icon-common.svg" alt="trophy" class="icon trophy"> <span class="amount">{{ item.rewards?.trophies }}</span>
+            </div>
+            <mindful-button type="plum" [text]="item.cta || 'Open'" (click)="onItemClick(item, i)"></mindful-button>
+          </div>
+        </div>
+      </ng-template>
+    </article>
+  </ng-container>
+</div>
+
+<!-- simple pager dots -->
+<div *ngIf="showPager" class="pager" aria-hidden="true" #pager>
+  <ng-container *ngFor="let _ of items; let idx = index">
+    <span class="dot" [class.active]="idx === 0" (click)="goToSlide(idx)"></span>
+  </ng-container>
+</div>

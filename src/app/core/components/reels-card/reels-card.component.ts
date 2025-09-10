@@ -21,10 +21,10 @@ export class ReelsCardComponent {
       duration: '20 sec',
       likes: '10K',
       tags: '#FunScience #DIYExperiment....',
-    image: '/assets/app-assets/reel-1-placeholder.jpg',
-    video: '',
-    isPlaying: false,
-    saved: false
+      image: '/assets/app-assets/reel-1-placeholder.jpg',
+      video: '',
+      isPlaying: false,
+      saved: false
     },
     {
       id: 2,
@@ -34,10 +34,10 @@ export class ReelsCardComponent {
       duration: '60 sec',
       likes: '1K',
       tags: '#LittleArtist #MessyFun....',
-  image: '/assets/app-assets/reel-2-placeholder.jpg',
-  video: '',
-  isPlaying: false,
-  saved: false
+      image: '/assets/app-assets/reel-2-placeholder.jpg',
+      video: '',
+      isPlaying: false,
+      saved: false
     },
     {
       id: 3,
@@ -47,10 +47,10 @@ export class ReelsCardComponent {
       duration: '60 sec',
       likes: '1K',
       tags: '#LittleArtist #MessyFun....',
-  image: '/assets/app-assets/reel-2-placeholder.jpg',
-  video: '',
-  isPlaying: false,
-  saved: false
+      image: '/assets/app-assets/reel-2-placeholder.jpg',
+      video: '',
+      isPlaying: false,
+      saved: false
     }
   ];
 

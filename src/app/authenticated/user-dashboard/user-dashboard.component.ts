@@ -18,6 +18,7 @@ import {AdBannerComponent} from "../../core/components/ad-banner/ad-banner.compo
   selector: 'app-user-dashboard',
   templateUrl: './user-dashboard.component.html',
   styleUrls: ['./user-dashboard.component.scss'],
+  standalone: true,
   imports: [
   CommonModule,
     HabitCardComponent,
