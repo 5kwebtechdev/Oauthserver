@@ -11,16 +11,10 @@
         <mindful-week></mindful-week>
     </div>
 
-    <!-- Single mode display for new habit -->
     <div *ngIf="showSingleMode && singleModeHabit" class="single-mode-container">
-        <habit-list 
-            [mode]="'single'" 
-            [habit]="singleModeHabit"
-            [showContent]="false">
-        </habit-list>
+        <habit-card mode="single" [habit]="singleModeHabit"></habit-card>
     </div>
 
-    <!-- Main Category Tabs -->
     <div class="container w-full" *ngIf="showContent">
         <div class="row toggler">
             <div class="col-6" (click)="selectMainTab('habits')" [ngClass]="currentMainTab === 'habits' ? 'active' : 'null'">Habits</div>
@@ -28,7 +22,6 @@
         </div>
     </div>
 
-    <!-- Dynamic Section for Current Type -->
     <div class="habit-journey-container">
       
     </div>

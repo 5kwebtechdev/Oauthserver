@@ -2,10 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { HabitCardComponent } from '../habit-card/habit-card.component';
-import { HabitListComponent } from '../habit-list/habit-list.component';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
-import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 import { HabitService } from '../habit.service';
 import { Habit } from '../habit.types';
@@ -17,7 +14,7 @@ import { Router } from '@angular/router';
   selector: 'habit-page',
   templateUrl: './habit-page.component.html',
   styleUrls: ['./habit-page.component.scss'],
-  imports: [CommonModule, IonicModule, HabitCardComponent, MindfulNavigatorComponent, MindfulInputsModule, HabitListComponent, MindfulBadgeComponent, AdBannerComponent]
+  imports: [CommonModule, IonicModule, HabitCardComponent, MindfulNavigatorComponent, MindfulInputsModule]
 })
 export class HabitPageComponent implements OnInit, OnDestroy {
   // Simple page scaffold for listing and managing habits
@@ -136,9 +133,7 @@ export class HabitPageComponent implements OnInit, OnDestroy {
   }
 
   onOpenCalendar() {
-    // Placeholder: open calendar modal or navigate to calendar view
-    // Implement real behaviour later as needed
-    // eslint-disable-next-line no-console
+
     console.log('Calendar button clicked');
   }
 }

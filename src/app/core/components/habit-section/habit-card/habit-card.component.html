@@ -24,3 +24,56 @@
         <mindful-button type="magenta-transparent" text="View All" large style="display:block; width:100%; margin-top: 10px" (click)="openHabitPage()"></mindful-button>
       </div>
   </div>
+
+  <!-- habit-task-card -->
+   <!-- <div class="container w-full" *ngIf="showContent">
+  <div class="row toggler">
+    <div class="col-4" (click)="currentActive = 'all'" [ngClass]="currentActive === 'all' ? 'active' : 'null'">All</div>
+    <div class="col-4" (click)="currentActive = 'habits'" [ngClass]="currentActive === 'habits' ? 'active' : 'null'">Habits</div>
+    <div class="col-4" (click)="currentActive = 'tasks'" [ngClass]="currentActive === 'tasks' ? 'active' : 'null'">Tasks</div>
+  </div>
+</div> -->
+
+<div class="container w-full" style="margin-top: 20px" *ngIf="showContent">
+  <habit-card [startTime]="1745484315000" [endTime]="1745489715000" inProgress mode="single"></habit-card>
+  <habit-card [startTime]="1745484315000" [endTime]="1745486115000" mode="single"></habit-card>
+  <habit-card [startTime]="1745484315000" [endTime]="1745486115000" inProgress mode="single"></habit-card>
+  <habit-card [startTime]="1745484315000" [endTime]="1745486115000" mode="single"></habit-card>
+</div>
+
+<!--  Card Mode -->
+    <div *ngIf="mode === 'single'" class="container w-full p-0">
+  <div class="habit-wrapper"
+       (tap)="toggle()" long-press
+       (press)="console.log('Long pressed')"
+       [ngClass]="{'expanded': expanded, 'isRunningLate': isRunningLate,'missedTime': missedTime}">
+    <div class="habit-tease">
+      <div class="container w-full p-0">
+        <div class="row">
+          <div class="col-8">
+            <h3>{{habit?.title || 'Habit'}}</h3>
+            <h4>{{getFormattedTime(habit?.startTimeStamp || startTime)}} - {{getFormattedTime(habit?.endTimeStamp || endTime)}}</h4>
+          </div>
+          <div class="col-4" style="position: relative">
+            <div class="badge">
+              {{habit?.selectedRoutine || 'Routine'}}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div #percentageWrapper class="habit-footer-progress"></div>
+    <div class="habit-footer">
+      <div class="container w-full p-0" style="background: white; height: 45px; border-radius: 0 0 20px 20px">
+        <div class="single-point-container">
+          <img class="score p-r-0" src="assets/icons/fire-slash-ball.svg" alt="">
+          <p class="score p-l-0">200</p>
+        </div>
+        <div class="single-point-container">
+          <img class="score" src="assets/icons/coin.svg" alt="">
+          <p class="score p-l-0">12</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
