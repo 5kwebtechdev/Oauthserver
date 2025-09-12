@@ -10,6 +10,14 @@ const routes: Routes = [
     loadChildren: () => import('./home/home.module').then( m => m.HomePageModule)
   },
   {
+    path: 'content',
+    loadComponent: () => import('./core/components/content-card/content-main/content-main.component').then(m => m.ContentMainComponent)
+  },
+  {
+    path: 'content/viewall',
+    loadComponent: () => import('./core/components/content-card/content-viewall/content-viewall.component').then(m => m.ContentViewallComponent)
+  },
+  {
     path: 'notes',
     component: NotesComponent
   },
@@ -25,6 +33,10 @@ const routes: Routes = [
     path: '',
     redirectTo: 'home',
     pathMatch: 'full'
+  },
+  {
+    path: 'reel-section',
+    loadComponent: () => import('./core/components/reel-section/reel-section.component').then(m => m.ReelSectionComponent)
   }
 ];
 
