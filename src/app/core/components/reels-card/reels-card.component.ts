@@ -1,13 +1,14 @@
 import { Component, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'reels-card',
   templateUrl: './reels-card.component.html',
   styleUrls: ['./reels-card.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule, RouterModule]
 })
 export class ReelsCardComponent {
   // lightweight presentational component for short reels/highlights
@@ -41,7 +42,7 @@ export class ReelsCardComponent {
     },
     {
       id: 3,
-      category: 'Creative Arts',
+      category: 'Comedy & Fun',
       author: 'ArtWhiz',
       title: 'Painting a Sunset with My Fingers!',
       duration: '60 sec',
@@ -88,6 +89,11 @@ export class ReelsCardComponent {
           (elSlide as HTMLElement).scrollIntoView({ behavior: 'smooth', inline: 'center' });
         }
       });
+    } catch (e) { /* ignore */ }
+    // also open the expanded/fullscreen player via global event for consistency
+    try {
+      const ev = new CustomEvent('openReelExpanded', { detail: slide });
+      window.dispatchEvent(ev);
     } catch (e) { /* ignore */ }
   }
 

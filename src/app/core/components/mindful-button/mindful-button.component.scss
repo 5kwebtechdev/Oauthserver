@@ -140,3 +140,13 @@ p{
   --button_border: 1px solid #F64D3D;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(254, 141, 130, 0.2), inset 0px -2px 2px #FFCDC8;
 }
+
+.btn-icon{
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  margin-right: 8px;
+  display: inline-block;
+}
+
+.button p { display: inline-block; vertical-align: middle; }

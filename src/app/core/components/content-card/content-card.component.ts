@@ -2,12 +2,13 @@ import { Component, Input, TemplateRef, ContentChild, EventEmitter, Output, OnIn
 import { NgIf, NgTemplateOutlet } from "@angular/common";
 import { ContentSlidesComponent } from '../content-slides/content-slides.component';
 import { IonicModule } from "@ionic/angular";
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'content-card',
   templateUrl: './content-card.component.html',
   styleUrls: ['./content-card.component.scss'],
-  imports: [NgIf, NgTemplateOutlet, IonicModule, ContentSlidesComponent],
+  imports: [NgIf, NgTemplateOutlet, IonicModule, ContentSlidesComponent, RouterModule],
   standalone: true
 })
 export class ContentCardComponent implements OnInit {
