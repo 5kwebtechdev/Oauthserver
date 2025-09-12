@@ -68,8 +68,9 @@
         </div>
       </aside>
 
-      <div class="digital-pet" aria-hidden="true">
-        <img src="/assets/app-assets/Digital-pet-panda.svg" alt="Digital Pet">
+      <div class="digital-pet" aria-hidden="false">
+        <!-- Reusable mindful-pet component: default pet is panda and age is 1 -->
+        <mindful-pet pet="panda" [age]="1"></mindful-pet>
       </div>
       </div>
     </section>
@@ -90,6 +91,9 @@
     -->
 
     <!-- Ad-banner -->
+    <div style="margin-top: 16px;">
+      <ad-banner></ad-banner>
+    </div>
 
     <!-- Content Card -->
     <div style="margin-top: 5vh; height: 450px;">

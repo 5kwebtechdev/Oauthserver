@@ -37,18 +37,25 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 
+
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
 
 :root{
   --error_color:  #bb2124;
+  --font-heading: 'Fredoka', sans-serif;
+  --font-sans: 'Nunito', sans-serif;
 }
 
-h1, h2, h3, h4,h5, h6, p, a{
-  font-family: 'Nunito', sans-serif;
+html, body {
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
 }
 
 .fredoka{
-  font-family: 'Fredoka', sans-serif;
+  font-family: var(--font-heading);
 }
 
 .w-full{

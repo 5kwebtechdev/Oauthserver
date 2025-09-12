@@ -1,0 +1,10 @@
+<div class="navigator-root">
+  <div class="navigator-inner">
+    <button class="back-button" (click)="goBack()" aria-label="Go back" [class.cancel]="backIcon === 'cancel'">
+      <img [src]="backIconSrc" [alt]="backIconAlt">
+      <span class="visually-hidden">{{ backIconAlt }}</span>
+    </button>
+    <h1 class="navigator-heading">{{ heading }}</h1>
+  </div>
+  <!-- spacer (first layer layout) -->
+</div>

@@ -1,0 +1,44 @@
+.habit-page{
+  padding: 16px;
+}
+
+.habit-list{
+  margin-top: 12px;
+}
+
+.habit-navigator {
+  display: inline-flex;
+  align-items: center;
+  gap: 149px;
+  margin-top: 16px;
+}
+
+.calendar-button {
+  width: 40px;
+  height: 40px;
+  aspect-ratio: 1/1;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.calendar-button img {
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
+}
+
+.habit-week{
+  margin-top: 16px;
+}
+
+.toggler {
+  margin-top: 16px;
+}
+
+.habit-journey-container{
+  margin-top: 40px;
+}

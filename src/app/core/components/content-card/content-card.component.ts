@@ -1,5 +1,5 @@
 import { Component, Input, TemplateRef, ContentChild, EventEmitter, Output, OnInit } from '@angular/core';
-import { NgIf, NgTemplateOutlet } from "@angular/common";
+import { NgIf } from "@angular/common";
 import { ContentSlidesComponent } from '../content-slides/content-slides.component';
 import { IonicModule } from "@ionic/angular";
 
@@ -7,7 +7,7 @@ import { IonicModule } from "@ionic/angular";
   selector: 'content-card',
   templateUrl: './content-card.component.html',
   styleUrls: ['./content-card.component.scss'],
-  imports: [NgIf, NgTemplateOutlet, IonicModule, ContentSlidesComponent],
+  imports: [NgIf, IonicModule, ContentSlidesComponent],
   standalone: true
 })
 export class ContentCardComponent implements OnInit {

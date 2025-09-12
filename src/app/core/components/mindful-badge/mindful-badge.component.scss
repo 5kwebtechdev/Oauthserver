@@ -1,6 +1,10 @@
 .badge{
-  display: inline-block;
-  padding: 5px 16.5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 34px;
+  padding: 0 16.5px;
   border-radius: 1000px !important;
   background: var(--background);
   border: 1px solid var(--border-color);
@@ -34,8 +38,9 @@
 
 .badge{
   &.medium{
-    padding: 8px 23.5px;
-    margin: 18px 3px;
+  /* keep medium font but ensure consistent height */
+  padding: 0 23.5px;
+  margin: 18px 3px;
 
     &:before{
       width: calc(100% + 4px);
@@ -121,8 +126,46 @@
   --stroke_gradient: #90214D;
 }
 
+/* Specific sizing and layout for status badges */
+.badge.pending {
+  display: inline-flex;
+  white-space: nowrap;
+  width: auto;
+  height: 34px;
+  padding: 10px 24px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge.ongoing {
+  display: inline-flex;
+  white-space: nowrap;
+  width: auto;
+  height: 34px;
+  padding: 10px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge.completed {
+  display: inline-flex;
+  white-space: nowrap;
+  width: auto;
+  height: 34px;
+  padding: 10px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
 .inactive{
   --background: white;
+  /* ensure inactive badges render with a visible border and readable text */
+  --text_color: #6B656A;
+  --border-color: #90214D;
+  --stroke_gradient: transparent;
 }
 
 .habit-input.inactive,
@@ -136,8 +179,8 @@
 }
 
 .circle{
-  aspect-ratio: 1;
-  width: 30px;
+  aspect-ratio: 1/1;
+  width: 34px;
   padding: 0;
   background: #DCDBDC;
   border: none;

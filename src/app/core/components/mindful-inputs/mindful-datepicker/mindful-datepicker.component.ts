@@ -21,6 +21,7 @@ import {
 })
 export class MindfulDatepickerComponent implements ControlValueAccessor {
   @Input() type: 'date' | 'range' = 'date';
+  @Input() placeholder: string = '';
 
   isOpen = false;
   currentMonth = new Date();

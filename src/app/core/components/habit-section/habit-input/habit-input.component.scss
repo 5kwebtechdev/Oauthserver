@@ -1,0 +1,423 @@
+.habit-input-root{
+  padding: 16px;
+}
+
+.habit-intput-header{
+  width: 393px;
+  height: 1076px;
+}
+
+.habit-input-header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.header-toggle{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-toggle-label{
+  font-size: 14px;
+  color: #6B656A;
+  margin-right: 6px;
+}
+
+.section.days-row .toggle-right ion-toggle{
+  --handle-background-checked: #90214D !important;
+  --background-checked: rgba(144,33,77,0.12) !important; /* subtle maroon track when checked */
+}
+
+.section.days-row .toggle-right ion-toggle{
+  --handle-background: #ffffff;
+  --background: #e6e6e6;
+}
+
+.section.days-row .toggle-right ion-toggle::part(handle){
+  background: #90214D !important;
+  box-shadow: none !important;
+}
+.section.days-row .toggle-right ion-toggle[aria-checked="false"]::part(handle){
+  background: #ffffff !important;
+}
+.section.days-row .toggle-right ion-toggle::part(track){
+  background: #e6e6e6 !important;
+}
+.section.days-row .toggle-right ion-toggle[aria-checked="true"]::part(track){
+  background: rgba(144,33,77,0.12) !important;
+}
+
+.toggler{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.toggler .col-4{
+  flex: 1 1 0;
+  text-align: center;
+  padding: 8px 6px;
+  color: #222;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+}
+
+.toggler .col-4.active:nth-child(1){
+  color: #898CCA;
+}
+.toggler .col-4.active:nth-child(2){
+  color: #F6AC72;
+}
+.toggler .col-4.active:nth-child(3){
+  color: #89B3B6;
+}
+
+.toggler div.active:before {
+ background: currentColor !important;
+}
+
+
+.form-card{
+ 
+  // margin: 24px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(16,24,40,0.04);
+  padding: 0;
+}
+
+.title-input{
+  display: inline-flex;
+  padding: 20px 36px 24px 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  border-bottom: 1px solid #7471BA;
+  width: 100%;
+}
+
+.input-label{
+  font-weight:600;
+  color:#777;
+ // margin-bottom:8px;
+  display:block;
+}
+
+.add-new-row{
+  margin-top: 0; 
+  width: 361px;
+ // flex: 0 0 361px; 
+}
+
+.add-new-row mindful-selectors,
+.add-new-row > mindful-selectors{
+  display: block;
+  width: 100%;
+}
+
+.routine-section{
+display: flex;
+width: 361px;
+padding: 20px 40px 15px 24px;
+justify-content: center;
+align-items: center;
+gap: 16px;
+ border-bottom: 1px solid #7471BA;
+  width: 100%;
+}
+
+.habit-input-root.habits .title-input,
+.habit-input-root.habits .routine-section{
+  border-bottom-color: #898CCA; /* habits color */
+}
+.habit-input-root.tasks .title-input,
+.habit-input-root.tasks .routine-section{
+  border-bottom-color: #F6AC72; /* tasks color */
+}
+.habit-input-root.timetable .title-input,
+.habit-input-root.timetable .routine-section{
+  border-bottom-color: #89B3B6; /* timetable color */
+}
+
+.timetable-header h3{
+  font-size: 18px;
+  font-weight: 600;
+  color: #6B656A;
+}
+
+.timetable-list{
+  margin-top: 8px;
+}
+
+.timetable-row{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.timetable-activity .mindful-input-group input{
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid #89B3B6;
+  padding: 8px 0;
+  font-size: 16px;
+  color: #bdbdbd; 
+}
+
+.timetable-activity .mindful-input-group input::placeholder{
+  color: #bdbdbd;
+}
+
+.timetable-time{
+  text-align: right;
+  min-width: 140px;
+}
+
+.timetable-time mindful-timepicker{
+  display: inline-block;
+}
+
+.timetable-time span{
+  display: inline-block;
+  margin: 0 6px;
+  color: #6B656A;
+}
+
+.add-more{
+  margin-top: 12px;
+}
+
+.days{
+  display:flex;
+  gap:8px;
+  margin-top:16px;
+}
+
+.days-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.everyday-label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.everyday-icon{
+  width:20px;
+  height:20px;
+  display:inline-block;
+}
+
+.day{
+  width:36px;
+  height:36px;
+  border-radius:18px;
+  background:#eee;
+  border:none;
+}
+
+.day.selected{
+  background: #90214D;
+  color: #ffffff;
+}
+
+.day:focus,
+.day:active{
+  outline: none;
+  box-shadow: none;
+}
+
+.start-end-row{
+  display:flex;
+  gap:20px;
+}
+
+.priority-row{
+  display:flex;
+  gap:12px;
+  margin-top:10px;
+}
+
+.priority-selection{
+  padding: 16px 24px;
+  border-bottom: 1px solid #7471BA;
+}
+
+.habit-input-root.habits .priority-selection{
+  border-bottom-color: #898CCA;
+}
+.habit-input-root.tasks .priority-selection{
+  border-bottom-color: #F6AC72;
+}
+.habit-input-root.timetable .priority-selection{
+  border-bottom-color: #89B3B6;
+}
+
+.notes textarea{
+  width:100%;
+  height:140px;
+  border-radius:10px;
+  border:1px solid #cfc9e6;
+  padding:12px;
+  transition: border-color 180ms ease-in-out, box-shadow 180ms ease-in-out;
+}
+
+.notes{
+  padding: 16px 24px;
+  border-bottom: 1px solid #7471BA;
+}
+
+.habit-input-root.habits .notes{
+  border-bottom-color: #898CCA;
+}
+.habit-input-root.tasks .notes{
+  border-bottom-color: #F6AC72;
+}
+.habit-input-root.timetable .notes{
+  border-bottom-color: #89B3B6;
+}
+
+.habit-input-root.habits .notes textarea{
+  border-color: #898CCA;
+}
+.habit-input-root.tasks .notes textarea{
+  border-color: #F6AC72;
+}
+.habit-input-root.timetable .notes textarea{
+  border-color: #89B3B6;
+}
+
+.submit-row{
+  margin-top:16px;
+}
+
+.char-count{
+  text-align:right;
+  color:#999;
+  margin-top:6px;
+}
+
+.mindful-input-group input{
+  background: none !important;
+}
+
+.form-card .mindful-input-group input,
+.form-card .mindful-input-group ion-input {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 12px 0 !important; 
+}
+
+.title-input .mindful-input-group input{
+  color: #6B656A;
+  font-family: 'Nunito', sans-serif;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%; /* 28px */
+  opacity: 0.5;
+  padding: 0px !important;
+}
+
+.title-input .mindful-input-group input::placeholder,
+.title-input .mindful-input-group input::-webkit-input-placeholder,
+.title-input .mindful-input-group input:-ms-input-placeholder,
+.title-input .mindful-input-group input::-ms-input-placeholder {
+  color: #6B656A;
+  font-family: 'Nunito', sans-serif;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%; /* 28px */
+  opacity: 0.5; /* requested transparency */
+}
+
+.habit-input-root .mindful-input-group input::placeholder,
+.habit-input-root .mindful-input-group input::-webkit-input-placeholder,
+.habit-input-root .mindful-input-group input:-ms-input-placeholder,
+.habit-input-root .mindful-input-group input::-ms-input-placeholder {
+  color: #6B656A;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  opacity: 1;
+}
+
+.habit-input-root ::ng-deep .mindful-input-group ion-input input::placeholder,
+.habit-input-root ::ng-deep mindful-datepicker input::placeholder,
+.habit-input-root ::ng-deep mindful-timepicker input::placeholder {
+  color: #6B656A;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  opacity: 1;
+}
+
+.start-end-row > div > label{
+  display: block;
+  margin-bottom: 6px;
+  color: #6B656A;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+}
+
+.mindful-input-group {
+  margin-bottom: 0px !important;
+}
+
+// .date-time-selection{
+//   padding: 8px 0 16px 0;
+//   border-bottom: 1px solid #7471BA;
+// }
+
+.habit-input-root.habits .date-time-selection{
+  border-bottom-color: #898CCA;
+}
+.habit-input-root.tasks .date-time-selection{
+  border-bottom-color: #F6AC72;
+}
+.habit-input-root.timetable .date-time-selection{
+  border-bottom-color: #89B3B6;
+}
+
+::ng-deep .add-new-row .badge,
+::ng-deep .add-new-row .badge.medium,
+::ng-deep .add-new-row-btn,
+::ng-deep .add-new-row .badge p,
+::ng-deep .add-new-row-btn p {
+  margin: 0 !important;
+}
+
+
+.datepicker-wrapper .mindful-input-group input, .mindful-input-group ion-input
+{
+  background: white !important; 
+}
+
+::ng-deep .datepicker-wrapper input {
+  background-color: #ffffff;
+}
+
+::ng-deep .mindful-timepicker-wrapper input {
+  background-color: #ffffff;
+}

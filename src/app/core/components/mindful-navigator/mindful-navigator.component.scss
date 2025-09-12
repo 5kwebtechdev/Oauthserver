@@ -1,0 +1,44 @@
+.navigator-root {
+  display: inline-flex;
+  align-items: center;
+  gap: 149px;
+  margin-left: 16px;
+}
+
+.navigator-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px; 
+}
+
+.back-button {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-button img {
+  width: 24px;
+  height: 24px;
+}
+
+/* smaller cancel icon size per design */
+.back-button.cancel img {
+  width: 11.314px;
+  height: 11.627px;
+}
+
+.navigator-heading {
+  color: #282527;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  margin: 0;
+}

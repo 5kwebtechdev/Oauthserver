@@ -22,6 +22,14 @@ const routes: Routes = [
     loadChildren: () => import('./authenticated/authenticated.module').then( m => m.AuthenticatedModule)
   },
   {
+    path: 'habit-page',
+    loadComponent: () => import('./core/components/habit-section/habit-page/habit-page.component').then(m => m.HabitPageComponent)
+  },
+  {
+    path: 'habit-input',
+    loadComponent: () => import('./core/components/habit-section/habit-input/habit-input.component').then(m => m.HabitInputComponent)
+  },
+  {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full'

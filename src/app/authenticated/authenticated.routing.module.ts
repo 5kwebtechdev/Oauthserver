@@ -24,6 +24,9 @@ const routes: Routes = [
     path: 'add-calendar',
     component: AddCalendarComponent
   },{
+    path: 'habit-input',
+    loadComponent: () => import('../core/components/habit-section/habit-input/habit-input.component').then(m => m.HabitInputComponent)
+  },{
     path: '',
     component: AuthenticatedComponent
   }

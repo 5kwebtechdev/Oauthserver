@@ -29,6 +29,7 @@ import {
 })
 export class MindfulTimepickerComponent implements ControlValueAccessor {
   @Input() disabled = false;
+  @Input() placeholder: string = 'Time';
 
   @ViewChild('popup') popupRef!: ElementRef;
   showPopup = false;
@@ -36,6 +37,7 @@ export class MindfulTimepickerComponent implements ControlValueAccessor {
   selectedMinute = 0;
   ampm: 'AM' | 'PM' = 'AM';
   selecting = 'hour'; // or 'minute'
+  hasValue = false; // whether a time has been confirmed / written
 
   onChange: any = () => {};
   onTouched: any = () => {};
@@ -53,6 +55,7 @@ export class MindfulTimepickerComponent implements ControlValueAccessor {
       this.selectedHour = hour;
       this.selectedMinute = minute;
       this.ampm = period as 'AM' | 'PM';
+  this.hasValue = true;
     }
   }
 
@@ -83,6 +86,7 @@ export class MindfulTimepickerComponent implements ControlValueAccessor {
       return;
     }
     this.onChange(this.timeString);
+  this.hasValue = true;
     this.showPopup = false;
     console.log('confirm clicekd' + this.showPopup);
   }

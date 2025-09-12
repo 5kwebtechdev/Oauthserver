@@ -21,13 +21,7 @@
   margin-left: 4vw;
 }
 
-.add-new-btn {
-  background: transparent;
-  border: none;
-  color: #8B8DCB;
-  font-weight: 500;
-  cursor: pointer;
-}
+
 
 .glance-subtitle {
   // margin-top: 1vw;
@@ -75,30 +69,10 @@
   max-width: 300px;
 }
 
-// .add-now-btn {
-//   /* Journal-post */
-//   display: flex;
-//   flex-direction: row;
-//   justify-content: center;
-//   align-items: center;
-//   padding: 10px 12px;
-//   gap: 8px;
-//   width: 361px;
-//   height: 42px;
-//   background: linear-gradient(270.94deg, #90214D 0.07%, #CD3578 99.93%);
-//   border: 1px solid #4A0D25;
-//   box-shadow: 0px 0px 1px 0.5px rgba(144, 33, 77, 0.2), inset 0px -2px 2px #EA7CB5;
-//   border-radius: 8px;
-//   color: white;
-//   font-size: 16px;
-//   font-weight: 500;
-//   cursor: pointer;
-//   flex: none;
-//   order: 1;
-//   align-self: center;
-//   flex-grow: 0;
-//   margin: 0 auto;
-// }
+.add-button-container {
+  margin-left: 16px;
+  margin-right: 16px;
+}
 
 .habit-wrapper{
   box-shadow: 0 0 8px 0 rgba(107, 101, 106, 0.25);

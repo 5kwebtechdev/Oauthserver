@@ -1,5 +1,21 @@
 // USER DASHBOARD STYLES
 
+:host {
+color: #282527;
+font-family: Nunito;
+font-size: 0.8125rem;
+font-style: normal;
+font-weight: 500;
+line-height: 140%}
+
+:host h1, :host h2, :host h3, :host h4, :host h5, :host h6 {
+color: #282527;
+font-family: Fredoka;
+font-size: 1.25rem;
+font-style: normal;
+font-weight: 500;
+line-height: 140%;}
+
 // ION-CONTENT & MAIN CONTAINER
 ion-content {
   --padding-start: 0;
@@ -250,11 +266,7 @@ ion-content {
   }
 
   @media (max-width: 480px) {
-    //padding: 16px 12px;
-
-    .profile-content {
-      // padding: 0 0px;
-    }
+  //padding: 16px 12px;
   }
 }
 

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import {AuthenticatedComponent} from "./authenticated.component";
 import {AuthenticatedRoutingModule} from "./authenticated.routing.module";
 import {FooterComponent} from "../core/components/footer/footer.component";
-import {HabitCardComponent} from "../core/components/habit-card/habit-card.component";
+import {HabitCardComponent} from "../core/components/habit-section/habit-card/habit-card.component";
 import {LongPressDirective} from "../core/directives/gestureControlDirective";
 import {MindfulButtonComponent} from "../core/components/mindful-button/mindful-button.component";
 import {IonicModule} from "@ionic/angular";
@@ -26,7 +26,7 @@ import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
     ProfileHomeComponent,
     MindfulTimelineComponent,
     TimelineComponent,
-  AddCalendarComponent
+  // AddCalendarComponent is now standalone and imported where needed
   ],
   exports: [
   MindfulTimelineComponent
@@ -35,10 +35,10 @@ import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
     CommonModule,
     AuthenticatedRoutingModule,
   LongPressDirective,
+  HabitCardComponent,
   MindfulButtonComponent,
   MindfulBadgeComponent,
   TypicalPageComponent,
-  HabitCardComponent,
   ChallengeCardComponent,
   UserDashboardComponent,
   IonicModule,

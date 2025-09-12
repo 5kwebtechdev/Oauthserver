@@ -1,4 +1,5 @@
 .mindful-selectors {
+  position: relative; /* ensure absolutely-positioned add button is positioned relative to this container */
   .label {
     font-size: 14px;
     font-weight: bold;
@@ -6,15 +7,209 @@
     display: block;
   }
 
+  .badges-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
   .badges-container {
     display: flex;
+    flex: 1 1 auto; /* take remaining space */
     flex-wrap: nowrap;
     gap: 10px;
     overflow-x: auto;
     padding: 5px 0;
+    box-sizing: border-box;
+    position: relative;
+    min-width: 0; /* allow flex container to shrink properly */
   }
 
   mindful-badge {
     cursor: pointer;
+  }
+
+  .tags-container{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex: 0 0 auto;
+  }
+
+  .tags-container > *{
+    flex: 0 0 auto;
+  }
+
+  .tag-wrapper{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .tag-popover{
+    display: inline-flex;
+    padding: 14px 18px;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 12px;
+    background: #FFF;
+    box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
+    position: absolute;
+    top: 44px;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 18px;
+  z-index: 9999;
+    min-width: 140px;
+  }
+
+  .pop-btn{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 8px;
+  }
+
+  .pop-btn img{
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .tags-add-inline {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    z-index: 10;
+  }
+
+  .add-new{
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
+  .add-wrapper{
+    display: inline-block;
+    pointer-events: auto;
+  }
+
+  /* Fixed popover rendered above everything */
+  .tag-popover-fixed{
+    position: fixed;
+    transform: translateX(-50%);
+    z-index: 99999;
+  }
+
+  .tag-popover-inner{
+    display: inline-flex;
+    padding: 14px 18px;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 12px;
+    background: #FFF;
+    box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
+    gap: 18px;
+    min-width: 140px;
+  }
+
+  .tag-edit-fixed{
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tag-edit-inner{
+    position: absolute;
+    transform: translateX(-50%);
+    z-index: 100001;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    min-width: 320px;
+  }
+
+  .tag-edit-inner .mindful-input-group{
+    flex: 1 1 auto;
+  }
+
+  /* Add popup styles */
+  .tag-add-fixed{
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100000;
+    display:flex;
+    align-items:flex-start;
+    justify-content:flex-end;
+    pointer-events: auto;
+  }
+
+  .tag-add-inner{
+    position: absolute;
+    transform: translateX(-50%);
+    z-index: 100001;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding: 12px 16px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    min-width: 320px;
+  }
+
+  .tag-add-inner .mindful-input-group{
+    flex: 1 1 auto;
+  }
+
+  .tag-add-inner input{
+    border: none;
+    outline: none;
+    font-size: 16px;
+    width: 100%;
+    padding: 8px 6px;
+    background: transparent;
+  }
+
+  .tag-edit-inner input{
+    border: none;
+    outline: none;
+    font-size: 16px;
+    width: 100%;
+    padding: 8px 6px;
+    background: transparent;
+    background-color: transparent;
+  }
+
+  /* Ensure the placeholder doesn't display a background on any browser */
+  .tag-edit-inner input::placeholder{ background: transparent; }
+  .tag-edit-inner input::-webkit-input-placeholder{ background: transparent; }
+  .tag-edit-inner input::-moz-placeholder{ background: transparent; opacity: 1; }
+  .tag-edit-inner input:-ms-input-placeholder{ background: transparent; }
+  .tag-edit-inner input::-ms-input-placeholder{ background: transparent; }
+
+  /* disable body scrolling when popover is active */
+  :global(.no-scroll){
+    overflow: hidden !important;
+    touch-action: none !important;
   }
 }

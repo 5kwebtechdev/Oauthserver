@@ -21,22 +21,14 @@ export class AdBannerComponent implements AfterViewInit, OnDestroy {
   @ViewChild('slidesContainer', { read: ElementRef }) slidesRef!: ElementRef<HTMLElement>;
   @ViewChild('pagerContainer', { read: ElementRef }) pagerRef!: ElementRef<HTMLElement>;
 
-  slides: BannerSlide[] = [
-    {
-      title: 'Become a Young Scientist!',
-      description: 'Discover fun experiments with the Science Explorer Kit!',
-      cta: 'Get yours today!',
-      image: '/assets/images/science-kid.png',
-      bg: '#F9D2DC'
-    },
-    {
-      title: 'Become a Young Scientist!',
-      description: 'Discover fun experiments with the Science Explorer Kit!',
-      cta: 'Get yours today!',
-      image: '/assets/images/science-kid.png',
-      bg: '#F9D2DC'
-    }
-  ];
+  // Default to 5 slides for layout preview; project may replace with dynamic slides later
+  slides: BannerSlide[] = Array.from({ length: 5 }).map((_, idx) => ({
+    title: `Become a Young Scientist!`,
+    description: `Discover fun experiments with the Science Explorer Kit!`,
+    cta: 'Get yours today!',
+    image: '/assets/images/science-kid.png',
+    bg: '#F9D2DC'
+  }));
 
   current = 0;
   private intervalId: any;
@@ -119,17 +111,27 @@ export class AdBannerComponent implements AfterViewInit, OnDestroy {
     if (!this.pagerRef) return;
     const container = this.pagerRef.nativeElement as HTMLElement;
     if (!container) return;
+    // Always show exactly 4 pagination dots under the banner
+    const dotsToShow = 4;
     const existing = container.querySelectorAll('.dot');
-    if (existing && existing.length === this.slides.length) return;
+    if (existing && existing.length === dotsToShow) return;
     container.innerHTML = '';
-    for (let i = 0; i < this.slides.length; i++) {
+    for (let i = 0; i < dotsToShow; i++) {
       const span = document.createElement('span');
-      span.className = 'dot' + (i === this.current ? ' active' : '');
-      const onClick = () => this.goTo(i);
+      span.className = 'dot' + (this.mapDotIndexToSlide(i, dotsToShow) === this.current ? ' active' : '');
+      const onClick = () => this.goTo(this.mapDotIndexToSlide(i, dotsToShow));
       span.addEventListener('click', onClick);
       this.paginationListeners.push(() => span.removeEventListener('click', onClick));
       container.appendChild(span);
     }
+  }
+
+  // Map a dot index to a slide index. Distribute slides across dots evenly.
+  private mapDotIndexToSlide(dotIndex: number, dots: number): number {
+    if (this.slides.length >= dots) return Math.min(dotIndex, this.slides.length - 1);
+    // distribute slides across dots (e.g., slides=2, dots=4 => [0,0,1,1])
+    const ratio = this.slides.length / dots;
+    return Math.min(Math.floor(dotIndex * ratio + 0.0001), this.slides.length - 1);
   }
 
   private updateManualDots(activeIndex: number) {
@@ -158,7 +160,20 @@ export class AdBannerComponent implements AfterViewInit, OnDestroy {
     const el = this.slidesRef.nativeElement;
     const children = Array.from(el.querySelectorAll('.banner-slide')) as HTMLElement[];
     const nextIndex = (this.current + 1) % children.length;
-    children[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+    // Scroll the slides container horizontally to the child's offset instead of
+    // using scrollIntoView which may cause the main viewport to scroll.
+    try {
+      const target = children[nextIndex];
+      if (typeof el.scrollTo === 'function') {
+        el.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
+      } else {
+        // Fallback to setting scrollLeft
+        el.scrollLeft = target.offsetLeft;
+      }
+    } catch (e) {
+      // As a last resort, fall back to scrollIntoView
+      try { children[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' }); } catch (err) { /* ignore */ }
+    }
     this.setActiveDot(nextIndex);
   }
 
@@ -179,7 +194,16 @@ export class AdBannerComponent implements AfterViewInit, OnDestroy {
     const children = Array.from(el.querySelectorAll('.banner-slide')) as HTMLElement[];
     const target = children[index];
     if (!target) return;
-    target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+    // Scroll the slides container horizontally to the target to avoid moving the page
+    try {
+      if (typeof el.scrollTo === 'function') {
+        el.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
+      } else {
+        el.scrollLeft = target.offsetLeft;
+      }
+    } catch (e) {
+      try { target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' }); } catch (err) { /* ignore */ }
+    }
     this.startAutoPlay();
     this.setActiveDot(index);
   }

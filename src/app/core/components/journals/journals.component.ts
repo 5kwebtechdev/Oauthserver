@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { NgStyle } from "@angular/common";
+// NgStyle removed because the template does not use ngStyle
 import { IonicModule } from "@ionic/angular";
 
 export interface JournalEntry {
@@ -16,7 +16,7 @@ export interface JournalEntry {
   selector: 'journals',
   templateUrl: './journals.component.html',
   styleUrls: ['./journals.component.scss'],
-  imports: [NgStyle, IonicModule],
+  imports: [IonicModule],
   standalone: true
 })
 export class JournalsComponent {

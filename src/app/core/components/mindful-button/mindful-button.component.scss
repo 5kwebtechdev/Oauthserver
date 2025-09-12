@@ -3,6 +3,7 @@
   padding: 9px 15.5px;
   float: left;
   margin: 5px 10px 5px 0;
+  box-sizing: border-box;
   /* Start-habit */
   border-radius: 4px;
   background: var(--button_background);
@@ -34,10 +35,14 @@ p{
 }
 
 .large{
+  /* Ensure large buttons can become full-width even if .button uses float */
   display: block;
+  float: none;
   border-radius: 12px;
   width: 100%;
   padding: 13px 10px;
+  margin: 0; /* allow full-width when host width is 100% */
+  box-sizing: border-box;
 }
 
 .large p{
@@ -49,6 +54,14 @@ p{
   --button_border: 1px solid #7471BA;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(139, 141, 203, 0.2), inset 0px -2px 2px #A1A7D8;
   --text_color: #FFFFFF;
+}
+
+.lavender-light{
+  --button_background: #8B8DCB;
+  --button_border: 1px solid #7471BA;
+  --button_box_shodow: 0 -2px 2px 0 #A1A7D8 inset, 0 0 1px 1px rgba(139, 141, 203, 0.20);
+  --text_color: #FFFFFF;
+  opacity: 0.5;
 }
 
 .lavendar-transparent{
@@ -78,6 +91,23 @@ p{
   --text_color: #F6AC72;
 }
 
+.orange-light{
+  --button_background: #F6AC72;
+  --button_border: 1px solid #F28745;
+  --button_box_shodow: 0 -2px 2px 0 #FAD2AE inset, 0 0 1px 0.5px rgba(246, 172, 114, 0.20);
+  --text_color: #FFFFFF;
+  opacity: 0.5;
+  display: flex;
+  width: 361px;
+  height: 42px;
+  padding: 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
 .green{
   --button_background: linear-gradient(132.16deg, #4CAF50 1.89%, #358438 98.11%);
   --button_border: 1px solid #358438;
@@ -85,9 +115,10 @@ p{
 }
 
 .magenta{
-  --button_background: linear-gradient(98.62deg, #E1527C 0.65%, #AC2456 99.35%);
-  --button_border: 1px solid #CF3359;
-  --button_box_shodow: 0px 0px 1px 0.5px rgba(225, 82, 124, 0.2), inset 0px -2px 2px #F4ADC6;
+  border-radius: 8px;
+  border: 1px solid #4A0D25;
+  background: linear-gradient(271deg, #90214D 0.07%, #CD3578 99.93%);
+  box-shadow: 0 0 1px 0.5px rgba(144, 33, 77, 0.20), 0 -2px 2px 0 #EA7CB5 inset;
 }
 
 .magenta-transparent{
@@ -125,6 +156,23 @@ p{
   --button_background: linear-gradient(89.99deg, #89B3B6 0.01%, #6E9EA2 99.99%);
   --button_border: 1px solid #3E5A60;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(137, 179, 182, 0.2), inset 0px -4px 6px #C5DADC;
+}
+
+.green-light{
+  --button_background: linear-gradient(90deg, #89B3B6 0.01%, #6E9EA2 99.99%);
+  --button_border: 1px solid #3E5A60;
+  --button_box_shodow: 0 -4px 6px 0 #C5DADC inset, 0 0 1px 0.5px rgba(137, 179, 182, 0.20);
+  --text_color: #FFFFFF;
+  opacity: 0.5;
+  display: flex;
+  width: 361px;
+  height: 42px;
+  padding: 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  border-radius: 4px;
 }
 
 

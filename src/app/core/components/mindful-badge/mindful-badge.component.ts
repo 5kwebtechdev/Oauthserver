@@ -5,6 +5,7 @@ import {CoerceBoolean} from "../../coerceBoolean.decorator";
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'mindful-badge',
+  standalone: true,
   templateUrl: './mindful-badge.component.html',
   styleUrls: ['./mindful-badge.component.scss'],
   imports: [

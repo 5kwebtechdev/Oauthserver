@@ -1,7 +1,8 @@
 <div class="mindful-timepicker-wrapper">
   <input
     type="text"
-    [value]="timeString"
+    [attr.placeholder]="placeholder"
+    [value]="hasValue ? timeString : ''"
     (click)="showPopup = true; clicked()"
     class="time-display-input"
   />

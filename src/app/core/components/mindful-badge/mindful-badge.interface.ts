@@ -12,5 +12,6 @@ export interface BadgeType {
     | 'red'
     | 'green'
     | 'yellow'
-    | 'pending';
+    | 'pending'
+    | 'tags';
 }

@@ -1,6 +1,38 @@
 .ad-banner { 
-  .slides-wrapper { display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; }
-  .banner-slide { min-width: 80%; scroll-snap-align:start; border-radius:12px; padding:12px; }
-  .dot { width:8px; height:8px; display:inline-block; margin:0 4px; background:#ccc; border-radius:50%; }
-  .dot.active { background:#333; }
+  /* fixed overall layout */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 361px;
+  height: 217px;
+  margin-left: 13px; /* align banner with page content */
+
+  .slides-wrapper {
+    display:flex;
+    gap:12px;
+    overflow-x: hidden; /* prevent manual scroll, navigation via dots */
+    padding-left: 0;
+    justify-content: center; /* center the slide inside the fixed container */
+    align-items: center;
+  }
+  /* fixed slide width per request */
+    .banner-slide{
+      flex: 0 0 361px;
+      width: 361px;
+      height: 216px;
+      align-self: stretch;
+      border-radius: 16px;
+      border: 1px solid #FDFDFD;
+      background: #F9D2DC;
+      box-sizing: border-box;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+    
+    .pager{ display:flex; justify-content:center; margin-top:0; gap:8px; }
+    .dot{ width:8px; height:8px; display:inline-block; background:#C8C8C8; border-radius:50%; }
+    .dot.active{ background:#6D3354; }
 }

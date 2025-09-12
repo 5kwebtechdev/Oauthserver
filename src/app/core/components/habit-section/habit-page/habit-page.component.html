@@ -1,0 +1,40 @@
+
+<ion-content class="habit-page" fullscreen>
+    <div class="habit-navigator">
+        <mindful-navigator heading="Your Universe"></mindful-navigator>
+        <button class="calendar-button" aria-label="Open calendar" (click)="onOpenCalendar()">
+            <img src="/assets/app-assets/Icon-calendar.svg" alt="Calendar">
+        </button>
+    </div>
+
+    <div class="habit-week">
+        <mindful-week></mindful-week>
+    </div>
+
+    <!-- Single mode display for new habit -->
+    <div *ngIf="showSingleMode && singleModeHabit" class="single-mode-container">
+        <habit-list 
+            [mode]="'single'" 
+            [habit]="singleModeHabit"
+            [showContent]="false">
+        </habit-list>
+    </div>
+
+    <!-- Main Category Tabs -->
+    <div class="container w-full" *ngIf="showContent">
+        <div class="row toggler">
+            <div class="col-6" (click)="selectMainTab('habits')" [ngClass]="currentMainTab === 'habits' ? 'active' : 'null'">Habits</div>
+            <div class="col-6" (click)="selectMainTab('tasks')" [ngClass]="currentMainTab === 'tasks' ? 'active' : 'null'">Tasks</div>
+        </div>
+    </div>
+
+    <!-- Dynamic Section for Current Type -->
+    <div class="habit-journey-container">
+      
+    </div>
+
+    <!--ad-banne-->
+    <!-- <div class="ad-banner-container">
+        <ad-banner></ad-banner>
+    </div> -->
+</ion-content>
