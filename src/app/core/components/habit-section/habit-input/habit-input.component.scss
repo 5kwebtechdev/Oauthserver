@@ -400,6 +400,11 @@ gap: 16px;
   border-bottom-color: #89B3B6;
 }
 
+/* Add top margin so the date/time selection has breathing room */
+.date-time-selection{
+  margin-top: 16px;
+}
+
 ::ng-deep .add-new-row .badge,
 ::ng-deep .add-new-row .badge.medium,
 ::ng-deep .add-new-row-btn,

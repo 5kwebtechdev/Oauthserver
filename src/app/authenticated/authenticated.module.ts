@@ -15,7 +15,7 @@ import {ProfileComponent} from "./profile/profile.component";
 import {ProfileHomeComponent} from "./profile/profile-home/profile-home.component";
 import {MindfulInputsModule} from "../core/components/mindful-inputs/mindful-inputs.module";
 import {MindfulTimelineComponent} from "../core/components/mindful-timeline/mindful-timeline.component";
-import {TimelineComponent} from "./timeline/timeline.component";
+import {TimelineComponent} from "../core/components/timeline/timeline.component";
 import {MindfulSelectorsComponent} from "../core/components/mindful-selectors/mindful-selectors.component";
 import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
 

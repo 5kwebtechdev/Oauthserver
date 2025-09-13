@@ -1,7 +1,5 @@
 <ion-content fullscreen>
   <div class="habit-input-root" [ngClass]="currentActive">
-
-    <!-- Header Section -->
     <div class="habit-input-header">
       <mindful-navigator heading="Create. Commit. Grow." backIcon="cancel"></mindful-navigator>
       <div class="header-toggle" aria-label="Private toggle">
@@ -12,7 +10,6 @@
       </div>
     </div>
 
-    <!-- Tab Toggle Section -->
     <div class="container w-full">
       <div class="row toggler">
         <div class="col-4" (click)="currentActive = 'habits'" [ngClass]="currentActive === 'habits' ? 'active' : ''">Habits</div>
@@ -21,10 +18,8 @@
       </div>
     </div>
 
-    <!-- Form Card Section for Habits -->
     <div *ngIf="currentActive === 'habits'" class="form-card">
 
-      <!-- Title Input and Add Button -->
       <div class="title-input">
         <div class="mindful-input-group">
           <input [(ngModel)]="title" placeholder="Habit Title" />
@@ -35,7 +30,6 @@
         </div>
       </div>
 
-      <!-- Routine Selector -->
       <div class="routine-section">
         <label>Routine</label>
         <mindful-selectors [options]="routineOptions" componentType="badge" [singleSelection]="true">
@@ -45,7 +39,6 @@
 
       <div class="date-time-selection">
   <div class="date-time-selection">
-  <!-- Days of the Week Selector -->
   <div class="section days-row">
         <div class="days-top">
           <div class="everyday-label">
@@ -53,7 +46,7 @@
             <label>Everyday</label>
           </div>
           <div class="toggle-right">
-            <ion-toggle [(ngModel)]="everyday"></ion-toggle>
+            <ion-toggle [(ngModel)]="everyday" (ionChange)="onEverydayChange($event)"></ion-toggle>
           </div>
         </div>
         <div class="days">
@@ -63,7 +56,6 @@
         </div>
       </div>
 
-      <!-- Start Date and Time -->
       <div class="start-end-row">
         <div>
           <label>Start Date</label>
@@ -78,7 +70,6 @@
         </div>
       </div>
 
-  <!-- End Date and Time -->
   <div class="start-end-row">
         <div>
           <label>End Date</label>
@@ -95,24 +86,21 @@
   </div>
       </div>
 
-      <!-- Priority Selection -->
-      <div class="priority-selection">
+  <div class="priority-selection priority-selectors">
         <label>Priority</label>
         <div class="priority-row">
-          <mindful-badge text="High" type="red" (click)="selectPriority('high')"></mindful-badge>
-          <mindful-badge text="Medium" type="yellow" (click)="selectPriority('medium')"></mindful-badge>
-          <mindful-badge text="Low" type="green" (click)="selectPriority('low')"></mindful-badge>
+          <mindful-badge text="High" type="red" [disabled]="priority !== 'high'" [active]="priority === 'high'" (click)="selectPriority('high')"></mindful-badge>
+          <mindful-badge text="Medium" type="yellow" [disabled]="priority !== 'medium'" [active]="priority === 'medium'" (click)="selectPriority('medium')"></mindful-badge>
+          <mindful-badge text="Low" type="green" [disabled]="priority !== 'low'" [active]="priority === 'low'" (click)="selectPriority('low')"></mindful-badge>
         </div>
       </div>
 
-      <!-- Notes Input -->
       <div class="section notes">
         <label>Add Notes</label>
         <textarea [(ngModel)]="notes" maxlength="250" placeholder="Add Notes....."></textarea>
         <div class="char-count">Max 250 Characters</div>
       </div>
 
-      <!-- Submit Button -->
       <div class="submit-row">
         <mindful-button type="lavender-light" text="Create Habit" large (click)="submit()">
         </mindful-button>
@@ -120,9 +108,7 @@
 
     </div> <!-- /form-card -->
 
-    <!-- Form Card Section for Tasks -->
     <div *ngIf="currentActive === 'tasks'" class="form-card">
-     <!-- Title Input and Add Button -->
       <div class="title-input">
         <div class="mindful-input-group">
           <input [(ngModel)]="title" placeholder="Task Title" />
@@ -133,7 +119,6 @@
         </div>
       </div>
 
-      <!-- Routine Selector -->
       <div class="routine-section">
         <label>Routine</label>
         <mindful-selectors [options]="routineOptions" componentType="badge" [singleSelection]="true">
@@ -142,7 +127,6 @@
 
 
   <div class="date-time-selection">
-  <!-- Days of the Week Selector -->
   <div class="section days-row">
         <div class="days-top">
           <div class="everyday-label">
@@ -160,7 +144,6 @@
         </div>
       </div>
 
-      <!-- Start Date and Time -->
       <div class="start-end-row">
         <div>
           <label>Start Date</label>
@@ -175,7 +158,6 @@
         </div>
       </div>
 
-  <!-- End Date and Time -->
   <div class="start-end-row">
         <div>
           <label>End Date</label>
@@ -192,34 +174,29 @@
   </div>
 
 
-      <!-- Priority Selection -->
-      <div class="priority-selection">
+  <div class="priority-selection priority-selectors">
         <label>Priority</label>
         <div class="priority-row">
-          <mindful-badge text="High" type="red" (click)="selectPriority('high')"></mindful-badge>
-          <mindful-badge text="Medium" type="yellow" (click)="selectPriority('medium')"></mindful-badge>
-          <mindful-badge text="Low" type="green" (click)="selectPriority('low')"></mindful-badge>
+          <mindful-badge text="High" type="red" [disabled]="priority !== 'high'" [active]="priority === 'high'" (click)="selectPriority('high')"></mindful-badge>
+          <mindful-badge text="Medium" type="yellow" [disabled]="priority !== 'medium'" [active]="priority === 'medium'" (click)="selectPriority('medium')"></mindful-badge>
+          <mindful-badge text="Low" type="green" [disabled]="priority !== 'low'" [active]="priority === 'low'" (click)="selectPriority('low')"></mindful-badge>
         </div>
       </div>
 
 
-      <!-- Notes Input -->
       <div class="section notes">
         <label>Add Notes</label>
         <textarea [(ngModel)]="notes" maxlength="250" placeholder="Add Notes....."></textarea>
         <div class="char-count">Max 250 Characters</div>
       </div>
 
-      <!-- Submit Button -->
       <div class="submit-row">
         <mindful-button type="orange-light" text="Create Task" large (click)="submit()">
         </mindful-button>
       </div>
     </div>
 
-    <!-- Form Card Section for Time Table -->
     <div *ngIf="currentActive === 'timetable'" class="form-card">
-     <!-- Title Input and Add Button -->
       <div class="title-input">
         <div class="mindful-input-group">
           <input [(ngModel)]="title" placeholder="Time Table Title" />
@@ -230,7 +207,6 @@
         </div>
       </div>
 
-      <!-- Time Table schedule layout (matches design) -->
       <div class="timetable-header" style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;">
         <h3 style="margin:0;font-weight:600;color:#6B656A">Add Your Perfect Schedule</h3>
         <div style="width:140px;text-align:right;">

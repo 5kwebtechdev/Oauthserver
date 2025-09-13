@@ -40,6 +40,10 @@ export class MindfulBadgeComponent {
   @CoerceBoolean()
   circle: boolean = false;
 
+  @Input({transform: booleanAttribute})
+  @CoerceBoolean()
+  active: boolean = false;
+
   constructor() { }
 
 }

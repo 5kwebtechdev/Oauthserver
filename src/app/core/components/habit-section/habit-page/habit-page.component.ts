@@ -3,18 +3,19 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { HabitCardComponent } from '../habit-card/habit-card.component';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 import { HabitService } from '../habit.service';
 import { Habit } from '../habit.types';
 import { Subscription } from 'rxjs';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   standalone: true,
   selector: 'habit-page',
   templateUrl: './habit-page.component.html',
   styleUrls: ['./habit-page.component.scss'],
-  imports: [CommonModule, IonicModule, HabitCardComponent, MindfulNavigatorComponent, MindfulInputsModule]
+  imports: [CommonModule, IonicModule, HabitCardComponent, MindfulNavigatorComponent, MindfulInputsModule, MindfulBadgeComponent, RouterModule]
 })
 export class HabitPageComponent implements OnInit, OnDestroy {
   // Simple page scaffold for listing and managing habits
@@ -25,9 +26,9 @@ export class HabitPageComponent implements OnInit, OnDestroy {
 
   // Sub-category filters
   public subFilter: 'journey' | 'priorities' | 'routine' | 'all' = 'all';
-  public journeySubFilter: 'pending' | 'ongoing' | 'completed' | 'all' = 'all';
-  public prioritySubFilter: 'high' | 'medium' | 'low' | 'all' = 'all';
-  public routineSubFilter: 'morning' | 'evening' | 'night' | 'all' = 'all';
+  public journeySubFilter: 'pending' | 'ongoing' | 'completed' | 'all' = 'pending';
+  public prioritySubFilter: 'high' | 'medium' | 'low' | 'all' = 'high';
+  public routineSubFilter: 'morning' | 'evening' | 'night' | 'all' = 'morning';
 
   public allHabits: Habit[] = [];
   public filteredHabits: Habit[] = [];
@@ -133,7 +134,7 @@ export class HabitPageComponent implements OnInit, OnDestroy {
   }
 
   onOpenCalendar() {
-
-    console.log('Calendar button clicked');
+    // Navigate to the Timeline route under the authenticated area (absolute)
+    this.router.navigateByUrl('/authed/timeline');
   }
 }

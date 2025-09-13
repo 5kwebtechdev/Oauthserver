@@ -9,7 +9,6 @@ import {CoerceBoolean} from "../../../coerceBoolean.decorator";
 import { Habit } from '../habit.types';
 
 @Component({
-  // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'habit-card',
   templateUrl: './habit-card.component.html',
   styleUrls: ['./habit-card.component.scss'],

@@ -168,6 +168,163 @@
   --stroke_gradient: transparent;
 }
 
+/* Active state: visually selected badge */
+.badge.active{
+  /* Use stroke gradient as the outer ring and fill with a solid background */
+  --stroke_gradient: linear-gradient(90deg, rgba(144,33,77,0.12), rgba(144,33,77,0.12));
+  /* keep the type's background for the fill when active */
+  box-shadow: none;
+  border: 1px solid transparent;
+}
+
+.badge.active:before{
+  /* make the outer stroke more subtle when active */
+  opacity: 1;
+}
+
+.badge.active p{
+  color: var(--text_color);
+}
+
+/* Habit-journey scoped visuals: only change colors/border for active vs not-active.
+   Do NOT override per-type padding/width: keep existing .badge.pending/.badge.ongoing/etc. */
+:host-context(.habit-journey-week) .badge:not(.active){
+  background: white;
+  border: 1px solid #90214D;
+}
+
+:host-context(.habit-journey-week) .badge.active{
+  background: #90214D;
+  border: none;
+}
+
+:host-context(.habit-journey-week) .badge p{
+  /* non-active journey badge typography & color */
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%; /* 18.2px */
+}
+
+:host-context(.habit-journey-week) .badge.active p{
+  /* active journey badge text color */
+  color: #FDFDFD;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%; /* 18.2px */
+}
+
+/* Priority selector visuals (used inside .priority-selectors) */
+:host-context(.priority-selectors) .badge.red{
+  /* unselected: border red */
+  background: white;
+  border: 1px solid #BB2124;
+}
+
+:host-context(.priority-selectors) .badge.red.active{
+  background: #BB2124;
+  border: none;
+}
+
+:host-context(.priority-selectors) .badge.yellow{
+  background: white;
+  border: 1px solid #F0AD4E;
+}
+
+:host-context(.priority-selectors) .badge.yellow.active{
+  background: #F0AD4E;
+  border: none;
+}
+
+:host-context(.priority-selectors) .badge.green{
+  background: white;
+  border: 1px solid #4CAF50;
+}
+
+:host-context(.priority-selectors) .badge.green.active{
+  background: #4CAF50;
+  border: none;
+}
+
+:host-context(.priority-selectors) .badge,
+:host-context(.priority-selectors) .badge p{
+  border-radius: 26px;
+}
+
+/* Non-active priority badge text styling */
+:host-context(.priority-selectors) .badge:not(.active) p{
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%; /* 18.2px */
+}
+
+/* Active priority badge text styling */
+:host-context(.priority-selectors) .badge.active p{
+  color: #FFFFFF;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%; /* 18.2px */
+}
+
+/* On the habit page, make routine badges match the ongoing/completed sizing */
+:host-context(.routine-selectors) .badge.morning,
+:host-context(.routine-selectors) .badge.evening,
+:host-context(.routine-selectors) .badge.night{
+  display: inline-flex;
+  white-space: nowrap;
+  width: auto;
+  height: 34px;
+  padding: 10px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 26px;
+}
+
+/* On this page: active = filled #90214D, inactive = white with #90214D border */
+:host-context(.routine-selectors) .badge.morning:not(.active),
+:host-context(.routine-selectors) .badge.evening:not(.active),
+:host-context(.routine-selectors) .badge.night:not(.active){
+  background: white;
+  border: 1px solid #90214D;
+}
+
+:host-context(.routine-selectors) .badge.morning.active,
+:host-context(.routine-selectors) .badge.evening.active,
+:host-context(.routine-selectors) .badge.night.active{
+  background: #90214D;
+  border: none;
+}
+
+:host-context(.routine-selectors) .badge p{
+  /* non-active routine badge typography & color (page-scoped) */
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%; /* 18.2px */
+}
+
+:host-context(.routine-selectors) .badge.active p{
+  /* active routine badge text color (page-scoped) */
+  color: #FDFDFD;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%; /* 18.2px */
+}
+
 .habit-input.inactive,
 .task-input.inactive,
 .school.inactive,

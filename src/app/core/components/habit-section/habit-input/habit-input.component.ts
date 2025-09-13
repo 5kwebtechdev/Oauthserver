@@ -21,14 +21,11 @@ import { Router } from '@angular/router';
 export class HabitInputComponent {
   title = '';
   notes = '';
-  // start/end date and time for habit
   startDate: Date | null = null;
   endDate: Date | null = null;
   startTime: string = '';
   endTime: string = '';
-  // track the currently active tab to reuse the same toggler behaviour as habit-card
   currentActive: 'habits' | 'tasks' | 'timetable' = 'habits';
-  // header toggle state
   isPrivate: boolean = false;
 
   routineOptions = [
@@ -38,7 +35,6 @@ export class HabitInputComponent {
   ];
   selectedRoutine = 'morning';
 
-  // default tags for the tag selector used in the title row
   routineTags = [
     { key: 'exercise', value: 'Exercise', type: 'default' },
     { key: 'running', value: 'running', type: 'default' },
@@ -50,7 +46,7 @@ export class HabitInputComponent {
   weekdays = ['S','M','T','W','Th','F','Sa'];
   selectedDays = new Set<string>([]);
 
-  priority: 'low' | 'medium' | 'high' = 'medium';
+  priority: 'low' | 'medium' | 'high' = 'high';
 
   // For timetable activities
   activities: { name: string; startTime: string; endTime: string }[] = [
@@ -71,7 +67,6 @@ export class HabitInputComponent {
       return;
     }
 
-    // Calculate timestamps
     let startTimeStamp = 0;
     let endTimeStamp = 0;
     if (this.startDate && this.startTime) {
@@ -107,7 +102,6 @@ export class HabitInputComponent {
     this.habitService.addHabit(habit);
     console.log('Habit created:', habit);
     
-    // Navigate to habit-page with the new habit data
     this.modalCtrl.dismiss();
     this.router.navigate(['/habit-page'], { 
       state: { newHabit: habit, showSingleMode: true } 
@@ -115,8 +109,23 @@ export class HabitInputComponent {
   }
 
   toggleDay(d: string) {
-    if (this.selectedDays.has(d)) this.selectedDays.delete(d);
-    else this.selectedDays.add(d);
+    if (this.selectedDays.has(d)) {
+      this.selectedDays.delete(d);
+      if (this.everyday) this.everyday = false;
+    } else {
+      this.selectedDays.add(d);
+      if (this.selectedDays.size === this.weekdays.length) this.everyday = true;
+    }
+  }
+
+  onEverydayChange(event: any) {
+    const checked = !!(event?.detail?.checked ?? event === true);
+    this.everyday = checked;
+    if (this.everyday) {
+      this.weekdays.forEach(d => this.selectedDays.add(d));
+    } else {
+      this.selectedDays.clear();
+    }
   }
 
   selectPriority(p: 'low'|'medium'|'high'){
