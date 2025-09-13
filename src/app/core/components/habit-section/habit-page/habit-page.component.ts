@@ -134,7 +134,7 @@ export class HabitPageComponent implements OnInit, OnDestroy {
   }
 
   onOpenCalendar() {
-    // Navigate to the Timeline route under the authenticated area (absolute)
-    this.router.navigateByUrl('/authed/timeline');
+   
+    this.router.navigateByUrl('/authed/add-calendar');
   }
 }
