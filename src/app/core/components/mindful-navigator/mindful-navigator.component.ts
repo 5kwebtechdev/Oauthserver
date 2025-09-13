@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { NavigationService } from '../../services/navigation.service';
 import { ModalController } from '@ionic/angular';
@@ -19,6 +19,24 @@ export class MindfulNavigatorComponent {
    */
   @Input() backIcon: 'arrow' | 'cancel' = 'arrow';
 
+  /** Optional right-side icon src. When provided a right-side button will render. */
+  @Input() rightIcon?: string;
+
+  /** Optional alt text for the right-side icon (accessibility). */
+  @Input() rightIconAlt: string = '';
+
+  /** Emits when the right-side icon/button is clicked. */
+  @Output() rightIconClick = new EventEmitter<void>();
+
+  /** Optional second right-side icon src (max 2 options). */
+  @Input() rightIcon2?: string;
+
+  /** Alt text for the second right-side icon. */
+  @Input() rightIcon2Alt: string = '';
+
+  /** Emits when the second right-side icon/button is clicked. */
+  @Output() rightIcon2Click = new EventEmitter<void>();
+
   constructor(private navigation: NavigationService, private location: Location, private modalCtrl: ModalController) {}
 
   async goBack() {
@@ -35,6 +53,14 @@ export class MindfulNavigatorComponent {
     } catch (e) {
       this.location.back();
     }
+  }
+
+  onRightClick() {
+    this.rightIconClick.emit();
+  }
+
+  onRight2Click() {
+    this.rightIcon2Click.emit();
   }
 
   /** Bound src for the back image based on `backIcon` */

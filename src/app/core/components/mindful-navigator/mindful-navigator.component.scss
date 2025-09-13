@@ -1,17 +1,52 @@
 .navigator-root {
-  display: inline-flex;
-  align-items: center;
-  gap: 149px;
-  margin-left: 16px;
+ display: inline-flex;
+ align-items: center;
+ gap: 149px;
+ margin-left: 16px;
+ margin-top: 36px;
 }
 
 .navigator-inner {
-  display: inline-flex;
+ display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 16px; 
+  gap: 16px;
 }
 
 .back-button {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  // border-radius: 48px;
+   background: none;
+  // box-shadow: 13px 14px 5px 0 rgba(107, 101, 106, 0.00), 8px 9px 5px 0 rgba(107, 101, 106, 0.01), 5px 5px 4px 0 rgba(107, 101, 106, 0.05), 2px 2px 3px 0 rgba(107, 101, 106, 0.09), 1px 1px 2px 0 rgba(107, 101, 106, 0.10);
+  // backdrop-filter: blur(8px);
+}
+
+// .back-button img {
+//  width: 24px;
+//   height: 0;
+//   flex-shrink: 0;
+//   stroke-width: 2px;
+//   stroke: #282527;
+// }
+
+.navigator-heading{
+  color: #282527;
+  font-family: Fredoka;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%; /* 22.4px */
+}
+/* smaller cancel icon size per design */
+.back-button.cancel img {
+  width: 11.314px;
+  height: 11.627px;
+}
+
+/* right-side action button (optional) */
+.right-button {
   width: 48px;
   height: 48px;
   padding: 0;
@@ -22,23 +57,23 @@
   justify-content: center;
 }
 
-.back-button img {
-  width: 24px;
-  height: 24px;
+.right-button img {
+  width: 40px;
+  height: 40px;
+  aspect-ratio: 1/1;
 }
 
-/* smaller cancel icon size per design */
-.back-button.cancel img {
-  width: 11.314px;
-  height: 11.627px;
+/* container for up to two right-side actions */
+.right-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px; /* space between two icons */
+  margin-left: auto; /* push actions to the right */
 }
 
-.navigator-heading {
-  color: #282527;
-  font-family: 'Fredoka', sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 140%;
-  margin: 0;
+/* slightly smaller secondary icon (left-most) */
+.right-button-2 img {
+  width: 32px;
+  height: 32px;
 }
+

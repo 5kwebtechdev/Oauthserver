@@ -6,5 +6,17 @@
     </button>
     <h1 class="navigator-heading">{{ heading }}</h1>
   </div>
-  <!-- spacer (first layer layout) -->
+
+  <!-- optional right-side icon buttons (support up to 2) -->
+  <div class="right-actions">
+    <button *ngIf="rightIcon2" class="right-button right-button-2" (click)="onRight2Click()" aria-label="Right action 2">
+      <img [src]="rightIcon2" [alt]="rightIcon2Alt || 'Action 2'">
+      <span class="visually-hidden">{{ rightIcon2Alt || 'Action 2' }}</span>
+    </button>
+
+    <button *ngIf="rightIcon" class="right-button" (click)="onRightClick()" aria-label="Right action">
+      <img [src]="rightIcon" [alt]="rightIconAlt || 'Action'">
+      <span class="visually-hidden">{{ rightIconAlt || 'Action' }}</span>
+    </button>
+  </div>
 </div>

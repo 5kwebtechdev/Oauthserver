@@ -1,9 +1,12 @@
 <ion-content class="habit-page" fullscreen>
     <div class="habit-navigator">
-        <mindful-navigator heading="Your Universe"></mindful-navigator>
-        <a class="calendar-button" aria-label="Open calendar" [routerLink]="['/authed/timeline']" (click)="onOpenCalendar()">
-            <img src="/assets/app-assets/Icon-calendar.svg" alt="Calendar">
-        </a>
+        <!-- use mindful-navigator's rightIcon to render the calendar and delegate click -->
+        <mindful-navigator
+            heading="Your Universe"
+            [rightIcon]="'/assets/app-assets/Icon-calendar.svg'"
+            rightIconAlt="Calendar"
+            (rightIconClick)="onOpenCalendar()"
+        ></mindful-navigator>
     </div>
 
     <div class="habit-week">
