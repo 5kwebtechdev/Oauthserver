@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { HabitCardComponent } from '../habit-card/habit-card.component';
+import { HabitListComponent } from './habit-list.component';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
@@ -15,7 +16,7 @@ import { Router, RouterModule } from '@angular/router';
   selector: 'habit-page',
   templateUrl: './habit-page.component.html',
   styleUrls: ['./habit-page.component.scss'],
-  imports: [CommonModule, IonicModule, HabitCardComponent, MindfulNavigatorComponent, MindfulInputsModule, MindfulBadgeComponent, RouterModule]
+  imports: [CommonModule, IonicModule, HabitCardComponent, HabitListComponent, MindfulNavigatorComponent, MindfulInputsModule, MindfulBadgeComponent, RouterModule]
 })
 export class HabitPageComponent implements OnInit, OnDestroy {
   // Simple page scaffold for listing and managing habits
@@ -38,7 +39,7 @@ export class HabitPageComponent implements OnInit, OnDestroy {
   public showSingleMode: boolean = false;
   public singleModeHabit: Habit | null = null;
 
-  constructor(private habitService: HabitService, private router: Router) {}
+  constructor(private habitService: HabitService, private router: Router) { }
 
   ngOnInit() {
     // Check for navigation state (new habit from habit-input)
@@ -134,7 +135,21 @@ export class HabitPageComponent implements OnInit, OnDestroy {
   }
 
   onOpenCalendar() {
-   
+
     this.router.navigateByUrl('/authed/add-calendar');
+  }
+
+  // Handler invoked when a habit row is opened from the habit-list component
+  onOpenHabit(habit: Habit) {
+    if (!habit) return;
+    this.singleModeHabit = habit;
+    this.showSingleMode = true;
+    this.showContent = false;
+  }
+
+  // Handler invoked when the Done button is clicked in the habit-list component
+  onDoneHabit(habit: Habit) {
+    // Placeholder: currently just logs. Replace with update/delete logic as needed.
+    console.log('Mark done called for habit:', habit?.id || habit?.title);
   }
 }

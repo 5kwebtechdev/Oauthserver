@@ -1,12 +1,8 @@
 <ion-content class="habit-page" fullscreen>
     <div class="habit-navigator">
         <!-- use mindful-navigator's rightIcon to render the calendar and delegate click -->
-        <mindful-navigator
-            heading="Your Universe"
-            [rightIcon]="'/assets/app-assets/Icon-calendar.svg'"
-            rightIconAlt="Calendar"
-            (rightIconClick)="onOpenCalendar()"
-        ></mindful-navigator>
+        <mindful-navigator heading="Your Universe" [rightIcon]="'/assets/app-assets/Icon-calendar.svg'"
+            rightIconAlt="Calendar" (rightIconClick)="onOpenCalendar()"></mindful-navigator>
     </div>
 
     <div class="habit-week">
@@ -19,8 +15,10 @@
 
     <div class="container w-full" *ngIf="showContent">
         <div class="row toggler">
-            <div class="col-6" (click)="selectMainTab('habits')" [ngClass]="currentMainTab === 'habits' ? 'active' : 'null'">Habits</div>
-            <div class="col-6" (click)="selectMainTab('tasks')" [ngClass]="currentMainTab === 'tasks' ? 'active' : 'null'">Tasks</div>
+            <div class="col-6" (click)="selectMainTab('habits')"
+                [ngClass]="currentMainTab === 'habits' ? 'active' : 'null'">Habits</div>
+            <div class="col-6" (click)="selectMainTab('tasks')"
+                [ngClass]="currentMainTab === 'tasks' ? 'active' : 'null'">Tasks</div>
         </div>
     </div>
 
@@ -28,62 +26,65 @@
         <ng-template #emptyStateTpl>
             <div class="empty-state">No habits found.</div>
         </ng-template>
-        <!-- Group: Journey, Priority, Routine selectors -->        
+        <!-- Group: Journey, Priority, Routine selectors -->
         <div class="habit-journey-container">
-        <div class="habit-journey">
-            <h2>Your Habit Journey</h2>
-            <div class="habit-journey-week">
-                <mindful-badge text="Pending" type="pending" [disabled]="journeySubFilter !== 'pending'" [active]="journeySubFilter === 'pending'" (click)="selectJourneySubFilter('pending')"></mindful-badge>
-                <mindful-badge text="Ongoing" type="inactive" [disabled]="journeySubFilter !== 'ongoing'" [active]="journeySubFilter === 'ongoing'" (click)="selectJourneySubFilter('ongoing')"></mindful-badge>
-                <mindful-badge text="Completed" type="inactive" [disabled]="journeySubFilter !== 'completed'" [active]="journeySubFilter === 'completed'" (click)="selectJourneySubFilter('completed')"></mindful-badge>
-            </div>
-        </div>
-        <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">
-            <div class="habit-list" *ngIf="filteredHabits?.length; else emptyStateTpl">
-                <div *ngFor="let h of filteredHabits">
-                    <habit-card [mode]="'list'" [habit]="h"></habit-card>
+            <div class="habit-journey">
+                <h2>Your Habit Journey</h2>
+                <div class="habit-journey-week">
+                    <mindful-badge text="Pending" type="pending" [disabled]="journeySubFilter !== 'pending'"
+                        [active]="journeySubFilter === 'pending'"
+                        (click)="selectJourneySubFilter('pending')"></mindful-badge>
+                    <mindful-badge text="Ongoing" type="inactive" [disabled]="journeySubFilter !== 'ongoing'"
+                        [active]="journeySubFilter === 'ongoing'"
+                        (click)="selectJourneySubFilter('ongoing')"></mindful-badge>
+                    <mindful-badge text="Completed" type="inactive" [disabled]="journeySubFilter !== 'completed'"
+                        [active]="journeySubFilter === 'completed'"
+                        (click)="selectJourneySubFilter('completed')"></mindful-badge>
                 </div>
             </div>
-            
-        </div>
+            <div class="habit-list-content" *ngIf="currentMainTab === 'habits'">
+                <habit-list [habits]="filteredHabits" (open)="onOpenHabit($event)"
+                    (done)="onDoneHabit($event)"></habit-list>
+            </div>
         </div>
 
         <div class="priority-container">
-        <div class="priority-header">
-            <h3>Navigate Your Priorities</h3>
-        </div>
-        <div class="priority-selectors">
-            <mindful-badge text="High" type="red" [disabled]="prioritySubFilter !== 'high'" [active]="prioritySubFilter === 'high'" (click)="selectPrioritySubFilter('high')"></mindful-badge>
-            <mindful-badge text="Medium" type="yellow" [disabled]="prioritySubFilter !== 'medium'" [active]="prioritySubFilter === 'medium'" (click)="selectPrioritySubFilter('medium')"></mindful-badge>
-            <mindful-badge text="Low" type="green" [disabled]="prioritySubFilter !== 'low'" [active]="prioritySubFilter === 'low'" (click)="selectPrioritySubFilter('low')"></mindful-badge>
-        </div>
-        <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">
-            <div class="habit-list" *ngIf="filteredHabits?.length; else emptyStateTpl">
-                <div *ngFor="let h of filteredHabits">
-                    <habit-card [mode]="'list'" [habit]="h"></habit-card>
-                </div>
+            <div class="priority-header">
+                <h3>Navigate Your Priorities</h3>
             </div>
-            
-        </div>
+            <div class="priority-selectors">
+                <mindful-badge text="High" type="red" [disabled]="prioritySubFilter !== 'high'"
+                    [active]="prioritySubFilter === 'high'" (click)="selectPrioritySubFilter('high')"></mindful-badge>
+                <mindful-badge text="Medium" type="yellow" [disabled]="prioritySubFilter !== 'medium'"
+                    [active]="prioritySubFilter === 'medium'"
+                    (click)="selectPrioritySubFilter('medium')"></mindful-badge>
+                <mindful-badge text="Low" type="green" [disabled]="prioritySubFilter !== 'low'"
+                    [active]="prioritySubFilter === 'low'" (click)="selectPrioritySubFilter('low')"></mindful-badge>
+            </div>
+            <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">
+                <habit-list [habits]="filteredHabits" (open)="onOpenHabit($event)"
+                    (done)="onDoneHabit($event)"></habit-list>
+            </div>
         </div>
 
         <div class="routine-container">
-        <div class="routine-header">
-            <h3>Your Daily Routines</h3>
-        </div>
-        <div class="routine-selectors">
-            <mindful-badge text="Morning" type="morning" [disabled]="routineSubFilter !== 'morning'" [active]="routineSubFilter === 'morning'" (click)="selectRoutineSubFilter('morning')"></mindful-badge>
-            <mindful-badge text="Evening" type="evening" [disabled]="routineSubFilter !== 'evening'" [active]="routineSubFilter === 'evening'" (click)="selectRoutineSubFilter('evening')"></mindful-badge>
-            <mindful-badge text="Night" type="night" [disabled]="routineSubFilter !== 'night'" [active]="routineSubFilter === 'night'" (click)="selectRoutineSubFilter('night')"></mindful-badge>
-        </div>
-        <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">
-            <div class="habit-list" *ngIf="filteredHabits?.length; else emptyStateTpl">
-                <div *ngFor="let h of filteredHabits">
-                    <habit-card [mode]="'list'" [habit]="h"></habit-card>
-                </div>
+            <div class="routine-header">
+                <h3>Your Daily Routines</h3>
             </div>
-            
-        </div>
+            <div class="routine-selectors">
+                <mindful-badge text="Morning" type="morning" [disabled]="routineSubFilter !== 'morning'"
+                    [active]="routineSubFilter === 'morning'"
+                    (click)="selectRoutineSubFilter('morning')"></mindful-badge>
+                <mindful-badge text="Evening" type="evening" [disabled]="routineSubFilter !== 'evening'"
+                    [active]="routineSubFilter === 'evening'"
+                    (click)="selectRoutineSubFilter('evening')"></mindful-badge>
+                <mindful-badge text="Night" type="night" [disabled]="routineSubFilter !== 'night'"
+                    [active]="routineSubFilter === 'night'" (click)="selectRoutineSubFilter('night')"></mindful-badge>
+            </div>
+            <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">
+                <habit-list [habits]="filteredHabits" (open)="onOpenHabit($event)"
+                    (done)="onDoneHabit($event)"></habit-list>
+            </div>
         </div>
     </div>
 

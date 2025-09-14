@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Habit } from './habit.types';
+import { HabitApi } from '../../api/habit.api';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +10,12 @@ export class HabitService {
   private habitsSubject = new BehaviorSubject<Habit[]>([]);
   public habits$ = this.habitsSubject.asObservable();
 
-  constructor() { }
+  // POST habit to backend (delegates to API layer)
+  createHabit(payload: any): Observable<any> {
+    return this.habitApi.createHabit(payload);
+  }
+
+  constructor(private habitApi: HabitApi) { }
 
   addHabit(habit: Habit): void {
     const currentHabits = this.habitsSubject.value;

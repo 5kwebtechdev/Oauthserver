@@ -1,8 +1,8 @@
-.habit-page{
+.habit-page {
   padding: 16px;
 }
 
-.habit-list{
+.habit-list {
   margin-top: 12px;
 }
 
@@ -11,6 +11,12 @@
   align-items: center;
   gap: 149px;
   margin-top: 16px;
+}
+
+.habit-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .calendar-button {
@@ -31,7 +37,7 @@
   object-fit: contain;
 }
 
-.habit-week{
+.habit-week {
   margin-top: 16px;
 }
 
@@ -39,18 +45,23 @@
   margin-top: 16px;
 }
 
-.habit-journey-container{
+.habit-journey-container {
   margin-top: 40px;
 }
 
-.habit-filters-container{
-  margin-left: 16px;
+.habit-filters-container {
+  padding-left: 16px;
+  padding-right: 16px;
 }
 
-.priority-container{
+.habit-list-content {
+  margin-top: 28px;
+}
+
+.priority-container {
   margin-top: 30px;
 }
 
-.routine-container{
+.routine-container {
   margin-top: 30px;
 }

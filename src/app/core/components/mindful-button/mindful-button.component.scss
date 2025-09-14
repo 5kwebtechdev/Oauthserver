@@ -1,4 +1,4 @@
-.button{
+.button {
   display: inline-block;
   padding: 9px 15.5px;
   float: left;
@@ -12,7 +12,7 @@
   --text_color: white;
 }
 
-p{
+p {
   font-size: 10px;
   font-family: 'Nunito', sans-serif;
   font-weight: bold;
@@ -21,42 +21,43 @@ p{
   color: var(--text_color);
 }
 
-.disabled{
+.disabled {
   filter: grayscale(0.8);
   pointer-events: none;
 }
 
-.medium{
+.medium {
   padding: 13px 10px;
 }
 
-.medium p{
+.medium p {
   font-size: 13px;
 }
 
-.large{
+.large {
   /* Ensure large buttons can become full-width even if .button uses float */
   display: block;
   float: none;
   border-radius: 12px;
   width: 100%;
   padding: 13px 10px;
-  margin: 0; /* allow full-width when host width is 100% */
+  margin: 0;
+  /* allow full-width when host width is 100% */
   box-sizing: border-box;
 }
 
-.large p{
+.large p {
   font-size: 16px;
 }
 
-.lavendar{
+.lavendar {
   --button_background: linear-gradient(103.97deg, #8B8DCB 2.07%, #6460A2 97.93%);
   --button_border: 1px solid #7471BA;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(139, 141, 203, 0.2), inset 0px -2px 2px #A1A7D8;
   --text_color: #FFFFFF;
 }
 
-.lavender-light{
+.lavender-light {
   --button_background: #8B8DCB;
   --button_border: 1px solid #7471BA;
   --button_box_shodow: 0 -2px 2px 0 #A1A7D8 inset, 0 0 1px 1px rgba(139, 141, 203, 0.20);
@@ -64,34 +65,43 @@ p{
   opacity: 0.5;
 }
 
-.lavendar-transparent{
+.lavender-complete {
+  --button_background: #8B8DCB;
+  --button_border: 1px solid #7471BA;
+  --button_box_shodow: 0 -2px 2px 0 #A1A7D8 inset, 0 0 1px 1px rgba(139, 141, 203, 0.20);
+  --text_color: #FFFFFF;
+  /* fully opaque when active */
+  opacity: 1;
+}
+
+.lavendar-transparent {
   --button_background: transparent;
   --button_border: 1px solid #7471BA;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(139, 141, 203, 0.2);
   --text_color: #898CCA
 }
 
-.violet{
+.violet {
   --button_background: linear-gradient(90.64deg, #7284B9 0.01%, #505D83 99.99%);
   --button_border: 0.5px solid #45506A;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(80, 93, 131, 0.2), inset 0px -2px 2px #8AA0CA;
 }
 
-.orange{
+.orange {
   --button_background: linear-gradient(103.36deg, #F6AC72 0.27%, #EE6621 99.73%);
   --button_border: 1px solid #F28745;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(246, 172, 114, 0.2), inset 0px -2px 2px #FAD2AE;
   --text_color: white;
 }
 
-.orange-transparent{
+.orange-transparent {
   --button_background: transparent;
   --button_border: 1px solid #F28745;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(139, 141, 203, 0.2);
   --text_color: #F6AC72;
 }
 
-.orange-light{
+.orange-light {
   --button_background: #F6AC72;
   --button_border: 1px solid #F28745;
   --button_box_shodow: 0 -2px 2px 0 #FAD2AE inset, 0 0 1px 0.5px rgba(246, 172, 114, 0.20);
@@ -108,57 +118,57 @@ p{
   border-radius: 4px;
 }
 
-.green{
+.green {
   --button_background: linear-gradient(132.16deg, #4CAF50 1.89%, #358438 98.11%);
   --button_border: 1px solid #358438;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(76, 175, 80, 0.2), inset 0px -2px 2px #6BBD6E;
 }
 
-.magenta{
+.magenta {
   border-radius: 8px;
   border: 1px solid #4A0D25;
   background: linear-gradient(271deg, #90214D 0.07%, #CD3578 99.93%);
   box-shadow: 0 0 1px 0.5px rgba(144, 33, 77, 0.20), 0 -2px 2px 0 #EA7CB5 inset;
 }
 
-.magenta-transparent{
+.magenta-transparent {
   --button_background: transparent;
   --button_border: 1px solid #BB2124;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(139, 141, 203, 0.2);
   --text_color: black;
 }
 
-.mango{
+.mango {
   --button_background: linear-gradient(99.2deg, #F2C452 1.32%, #D98F15 98.68%);
   --button_border: 1px solid #A25600;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(241, 168, 70, 0.2), inset 0px -4px 6px #F4D593;
 }
 
-.plum{
+.plum {
   --button_background: linear-gradient(270.94deg, #90214D 0.07%, #CD3578 99.93%);
   --button_border: 1px solid #4A0D25;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(144, 33, 77, 0.2), inset 0px -2px 2px #EA7CB5;
 }
 
-.red{
+.red {
   --button_background: linear-gradient(132.16deg, #772917 1.89%, #B93915 98.11%);
   --button_border: 1px solid #932E19;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(185, 57, 21, 0.2), inset 0px -4px 2px #DF4D17;
 }
 
-.gold{
+.gold {
   --button_background: linear-gradient(157.39deg, #FFD57E 14.87%, #F1A846 85.13%);
   --button_border: 1px solid #A25600;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(241, 168, 70, 0.2), inset 0px -4px 6px #F4D593;
 }
 
-.aqua{
+.aqua {
   --button_background: linear-gradient(89.99deg, #89B3B6 0.01%, #6E9EA2 99.99%);
   --button_border: 1px solid #3E5A60;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(137, 179, 182, 0.2), inset 0px -4px 6px #C5DADC;
 }
 
-.green-light{
+.green-light {
   --button_background: linear-gradient(90deg, #89B3B6 0.01%, #6E9EA2 99.99%);
   --button_border: 1px solid #3E5A60;
   --button_box_shodow: 0 -4px 6px 0 #C5DADC inset, 0 0 1px 0.5px rgba(137, 179, 182, 0.20);
@@ -176,14 +186,14 @@ p{
 }
 
 
-.aqua-transparent{
+.aqua-transparent {
   --button_background: transparent;
   --button_border: 1px solid #3E5A60;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(137, 179, 182, 0.2), inset 0px -4px 6px #C5DADC;
   --text_color: black;
 }
 
-.coral{
+.coral {
   --button_background: linear-gradient(90.76deg, #FE8D82 0.02%, #F64D3D 99.98%);
   --button_border: 1px solid #F64D3D;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(254, 141, 130, 0.2), inset 0px -2px 2px #FFCDC8;

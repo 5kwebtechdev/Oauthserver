@@ -9,7 +9,7 @@ describe('LoginComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ LoginComponent ],
+      declarations: [LoginComponent],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
@@ -23,6 +23,6 @@ describe('LoginComponent', () => {
   });
 });
 
-goBack() {
-  window.location.href = '/home';
-}
+// goBack() {
+//   window.location.href = '/home';
+// }

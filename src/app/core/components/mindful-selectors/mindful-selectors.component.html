@@ -2,81 +2,62 @@
   <h3 *ngIf="label" class="label">{{ label }}</h3>
   <div class="badges-row">
     <div class="badges-container">
-    <ng-container *ngIf="componentType === 'badge'">
-      <mindful-badge
-        *ngFor="let option of options"
-        [text]="option.value"
-        [type]="option.type"
-        [large]="size === 'large'"
-        [medium]="size === 'medium'"
-        [inactive]="!selectedKeys.includes(option.key)"
-        (click)="toggleSelection(option.key)"
-        [circle]="circle"
-      >
-      </mindful-badge>
-    </ng-container>
-    <ng-container *ngIf="componentType === 'tags'">
-      <div class="tags-container">
-        <div class="tag-wrapper" #tagEl *ngFor="let option of options">
-          <mindful-badge
-            class="tag"
-            *ngIf="option"
-            [text]="option.value"
-            [type]="option.type"
-            [large]="size === 'large'"
-            [medium]="size === 'medium'"
-            [inactive]="!selectedKeys.includes(option.key)"
-            (click)="toggleSelection(option.key)"
-            long-press
-            [delay]="1500"
-            (press)="openTagMenu(option.key, tagEl)"
-            (tap)="closeTagMenu()"
-          >
-          </mindful-badge>
+      <ng-container *ngIf="componentType === 'badge'">
+        <mindful-badge *ngFor="let option of options" [text]="option.value" [type]="option.type"
+          [large]="size === 'large'" [medium]="size === 'medium'" [inactive]="!selectedKeys.includes(option.key)"
+          (click)="toggleSelection(option.key)" [circle]="circle">
+        </mindful-badge>
+      </ng-container>
+      <ng-container *ngIf="componentType === 'tags'">
+        <div class="tags-container">
+          <div class="tag-wrapper" #tagEl *ngFor="let option of options">
+            <mindful-badge class="tag" *ngIf="option" [text]="option.value" [type]="option.type"
+              [large]="size === 'large'" [medium]="size === 'medium'" [inactive]="!selectedKeys.includes(option.key)"
+              (click)="toggleSelection(option.key)" long-press [delay]="1500" (press)="openTagMenu(option.key, tagEl)"
+              (tap)="closeTagMenu()">
+            </mindful-badge>
+          </div>
+        </div>
+      </ng-container>
+      <!-- Fixed popover rendered at computed coordinates -->
+      <div class="tag-popover-fixed" *ngIf="activeTagKey && popoverPosition"
+        [ngStyle]="{ left: popoverPosition.left + 'px', top: popoverPosition.top + 'px' }">
+        <div class="tag-popover-inner">
+          <button class="pop-btn edit" (click)="onEdit(activeTagKey)">
+            <img src="assets/app-assets/edit.svg" alt="Edit">
+          </button>
+          <button class="pop-btn delete" (click)="onDelete(activeTagKey)">
+            <img src="assets/app-assets/delete.svg" alt="Delete">
+          </button>
         </div>
       </div>
-    </ng-container>
-    <!-- Fixed popover rendered at computed coordinates -->
-    <div class="tag-popover-fixed" *ngIf="activeTagKey && popoverPosition"
-         [ngStyle]="{ left: popoverPosition.left + 'px', top: popoverPosition.top + 'px' }">
-      <div class="tag-popover-inner">
-        <button class="pop-btn edit" (click)="onEdit(activeTagKey)">
-          <img src="assets/app-assets/edit.svg" alt="Edit">
-        </button>
-        <button class="pop-btn delete" (click)="onDelete(activeTagKey)">
-          <img src="assets/app-assets/delete.svg" alt="Delete">
-        </button>
-      </div>
-    </div>
-    <!-- Edit popup (input + + button) rendered fixed near the tag -->
-    <div class="tag-edit-fixed" *ngIf="editingTagKey && editPosition" (click)="cancelEdit()">
-      <div class="tag-edit-inner" (click)="$event.stopPropagation()" [ngStyle]="{ left: editPosition.left + 'px', top: editPosition.top + 'px' }">
-        <div class="mindful-input-group">
-          <input type="text" [(ngModel)]="editingValue" placeholder="Edit tag" />
+      <!-- Edit popup (input + + button) rendered fixed near the tag -->
+      <div class="tag-edit-fixed" *ngIf="editingTagKey && editPosition" (click)="cancelEdit()">
+        <div class="tag-edit-inner" (click)="$event.stopPropagation()"
+          [ngStyle]="{ left: editPosition.left + 'px', top: editPosition.top + 'px' }">
+          <div class="mindful-input-group">
+            <input type="text" [(ngModel)]="editingValue" placeholder="Edit tag" />
+          </div>
+          <mindful-button type="plum" text="+" (click)="saveEdit()"></mindful-button>
         </div>
-        <mindful-button type="plum" text="+" (click)="saveEdit()"></mindful-button>
       </div>
-    </div>
-    <!-- Add new tag popup rendered under the Add new badge -->
-    <div class="tag-add-fixed" *ngIf="addingTag && addPosition" (click)="cancelAdd()">
-      <div class="tag-add-inner" (click)="$event.stopPropagation()" [ngStyle]="{ left: addPosition.left + 'px', top: addPosition.top + 'px' }">
-        <div class="mindful-input-group">
-          <!-- Use the app's mindful input styles; there is no exported standalone component, so use input styled with mindful-input-group -->
-          <input type="text" [(ngModel)]="addingValue" placeholder="Type the name here" />
+      <!-- Add new tag popup rendered under the Add new badge -->
+      <div class="tag-add-fixed" *ngIf="addingTag && addPosition" (click)="cancelAdd()">
+        <div class="tag-add-inner" (click)="$event.stopPropagation()"
+          [ngStyle]="{ left: addPosition.left + 'px', top: addPosition.top + 'px' }">
+          <div class="mindful-input-group">
+            <!-- Use the app's mindful input styles; there is no exported standalone component, so use input styled with mindful-input-group -->
+            <input type="text" [(ngModel)]="addingValue" placeholder="Type the name here" />
+          </div>
+          <mindful-button type="plum" text="Add" (click)="saveAdd()"></mindful-button>
         </div>
-        <mindful-button type="plum" text="Add" (click)="saveAdd()"></mindful-button>
       </div>
-    </div>
-    <ng-container *ngIf="componentType === 'button'">
-      <mindful-button
-        *ngFor="let option of options"
-        [text]="option.value"
-        [type]="selectedKeys.includes(option.key) ? option.type : option.type +'-transparent'"
-        [large]="size === 'large'"
-        [medium]="size === 'medium'"
-        (click)="toggleSelection(option.key)">
-      </mindful-button>
-    </ng-container>
+      <ng-container *ngIf="componentType === 'button'">
+        <mindful-button *ngFor="let option of options" [text]="option.value"
+          [type]="selectedKeys.includes(option.key) ? option.type : option.type +'-transparent'"
+          [large]="size === 'large'" [medium]="size === 'medium'" (click)="toggleSelection(option.key)">
+        </mindful-button>
+      </ng-container>
     </div>
     <!-- Add new badge inline to the right of the slider (not part of scrollable area) -->
     <div class="tags-add-inline" *ngIf="componentType === 'tags'">

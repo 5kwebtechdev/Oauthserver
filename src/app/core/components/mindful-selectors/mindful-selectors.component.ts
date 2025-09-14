@@ -1,12 +1,12 @@
-import {Component, Input, OnInit, Output, EventEmitter, NgModule, CUSTOM_ELEMENTS_SCHEMA, HostListener, OnDestroy, ElementRef} from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter, NgModule, CUSTOM_ELEMENTS_SCHEMA, HostListener, OnDestroy, ElementRef } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
-import {BadgeType} from "../mindful-badge/mindful-badge.interface";
-import {CommonModule, NgForOf} from "@angular/common";
+import { BadgeType } from "../mindful-badge/mindful-badge.interface";
+import { CommonModule, NgForOf } from "@angular/common";
 import { FormsModule } from '@angular/forms';
 import { LongPressDirective } from '../../directives/gestureControlDirective';
-import {MindfulBadgeComponent} from "../mindful-badge/mindful-badge.component";
-import {MindfulButtonComponent} from "../mindful-button/mindful-button.component";
-import {CoerceBoolean} from "../../coerceBoolean.decorator";
+import { MindfulBadgeComponent } from "../mindful-badge/mindful-badge.component";
+import { MindfulButtonComponent } from "../mindful-button/mindful-button.component";
+import { CoerceBoolean } from "../../coerceBoolean.decorator";
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
@@ -59,7 +59,7 @@ export class MindfulSelectorsComponent implements OnInit {
     }
   }
 
-  constructor(private el: ElementRef){
+  constructor(private el: ElementRef) {
     // bind doc click to handle closing popover when clicking outside
     this.onDocClick = (ev: any) => {
       // if a popover is open and the click target is outside this component, close it
@@ -71,14 +71,14 @@ export class MindfulSelectorsComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
-    if(this.onDocClick) document.removeEventListener('click', this.onDocClick);
+    if (this.onDocClick) document.removeEventListener('click', this.onDocClick);
   }
 
   toggleSelection(key: number): void {
     const control = this.formGroup?.get(this.formControlName) as FormControl;
-    if(this.singleSelection){
+    if (this.singleSelection) {
       this.selectedKeys = [key];
-    }else{
+    } else {
       if (this.selectedKeys.includes(key)) {
         this.selectedKeys = this.selectedKeys.filter(k => k !== key);
       } else {
@@ -123,10 +123,10 @@ export class MindfulSelectorsComponent implements OnInit {
     this.closeTagMenu();
   }
 
-  saveEdit(){
-    if(this.editingTagKey != null){
+  saveEdit() {
+    if (this.editingTagKey != null) {
       const idx = this.options.findIndex(o => o.key === this.editingTagKey);
-      if(idx > -1){
+      if (idx > -1) {
         this.options[idx].value = this.editingValue;
         this.edit.emit({ key: this.editingTagKey, value: this.editingValue });
       }
@@ -134,7 +134,7 @@ export class MindfulSelectorsComponent implements OnInit {
     this.cancelEdit();
   }
 
-  cancelEdit(){
+  cancelEdit() {
     this.editingTagKey = null;
     this.editingValue = '';
     this.editPosition = null;
@@ -146,11 +146,11 @@ export class MindfulSelectorsComponent implements OnInit {
     this.closeTagMenu();
   }
 
-  emitAdd(){
+  emitAdd() {
     this.add.emit();
   }
 
-  openAdd(elRef?: any){
+  openAdd(elRef?: any) {
     // show add input popup under the add badge
     this.addingTag = true;
     if (elRef && elRef.getBoundingClientRect) {
@@ -162,18 +162,18 @@ export class MindfulSelectorsComponent implements OnInit {
     document.body.classList.add('no-scroll');
   }
 
-  saveAdd(){
+  saveAdd() {
     const val = (this.addingValue || '').trim();
-    if(val){
+    if (val) {
       // generate a simple key; parent can reconcile proper ids
       const key = Date.now();
-  this.options.push({ key, value: val, type: ('default' as unknown) as BadgeType });
+      this.options.push({ key, value: val, type: 'habit-input' });
       this.add.emit();
     }
     this.cancelAdd();
   }
 
-  cancelAdd(){
+  cancelAdd() {
     this.addingTag = false;
     this.addingValue = '';
     this.addPosition = null;

@@ -3,18 +3,24 @@
     <div class="habit-input-header">
       <mindful-navigator heading="Create. Commit. Grow." backIcon="cancel"></mindful-navigator>
       <div class="header-toggle" aria-label="Private toggle">
-  <label class="header-toggle-label">Private</label>
-  <div class="toggle-right">
+        <label class="header-toggle-label">Private</label>
+        <div class="toggle-right">
           <ion-toggle [(ngModel)]="isPrivate"></ion-toggle>
         </div>
       </div>
     </div>
 
+    <!-- Embed Add Calendar standalone component -->
+    <!-- <app-add-calendar></app-add-calendar> -->
+
     <div class="container w-full">
       <div class="row toggler">
-        <div class="col-4" (click)="currentActive = 'habits'" [ngClass]="currentActive === 'habits' ? 'active' : ''">Habits</div>
-        <div class="col-4" (click)="currentActive = 'tasks'" [ngClass]="currentActive === 'tasks' ? 'active' : ''">Tasks</div>
-        <div class="col-4" (click)="currentActive = 'timetable'" [ngClass]="currentActive === 'timetable' ? 'active' : ''">Time Table</div>
+        <div class="col-4" (click)="currentActive = 'habits'" [ngClass]="currentActive === 'habits' ? 'active' : ''">
+          Habits</div>
+        <div class="col-4" (click)="currentActive = 'tasks'" [ngClass]="currentActive === 'tasks' ? 'active' : ''">Tasks
+        </div>
+        <div class="col-4" (click)="currentActive = 'timetable'"
+          [ngClass]="currentActive === 'timetable' ? 'active' : ''">Time Table</div>
       </div>
     </div>
 
@@ -25,8 +31,16 @@
           <input [(ngModel)]="title" placeholder="Habit Title" />
         </div>
         <div class="add-new-row">
-          <mindful-selectors [options]="routineTags" componentType="tags" [singleSelection]="false" size="medium" (selectedKeysChange)="onTagsChange($event)">
+          <mindful-selectors [options]="routineTags" componentType="tags" [singleSelection]="false" size="small"
+            (selectedKeysChange)="onTagsChange($event)">
           </mindful-selectors>
+          <!-- <mindful-selectors size="small" [options]="routineTags">
+          </mindful-selectors>
+          <div class="add-wrapper" #addEl>
+            <mindful-badge class="add-new" text="Add new +" type="habit-input" (click)="openAdd(addEl)"></mindful-badge>
+          </div> -->
+
+
         </div>
       </div>
 
@@ -38,60 +52,66 @@
 
 
       <div class="date-time-selection">
-  <div class="date-time-selection">
-  <div class="section days-row">
-        <div class="days-top">
-          <div class="everyday-label">
-            <img src="assets/app-assets/search_activity.svg" alt="search activity" class="everyday-icon" />
-            <label>Everyday</label>
+        <div class="date-time-selection">
+          <div class="section days-row">
+            <div class="days-top">
+              <div class="everyday-label">
+                <img src="assets/app-assets/search_activity.svg" alt="search activity" class="everyday-icon" />
+                <label>Everyday</label>
+              </div>
+              <div class="toggle-right">
+                <ion-toggle [(ngModel)]="everyday" (ionChange)="onEverydayChange($event)"></ion-toggle>
+              </div>
+            </div>
+            <div class="days">
+              <button *ngFor="let d of weekdays" class="day" (click)="toggleDay(d)"
+                [class.selected]="selectedDays.has(d)">
+                {{d}}
+              </button>
+            </div>
           </div>
-          <div class="toggle-right">
-            <ion-toggle [(ngModel)]="everyday" (ionChange)="onEverydayChange($event)"></ion-toggle>
+
+          <div class="start-end-row">
+            <div>
+              <label>Start Date</label>
+              <div class="mindful-input-group">
+                <mindful-datepicker type="date" [(ngModel)]="startDate"></mindful-datepicker>
+              </div>
+            </div>
+            <div>
+              <label>Time</label>
+              <div class="mindful-input-group">
+                <mindful-timepicker placeholder="" [(ngModel)]="startTime"></mindful-timepicker>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="days">
-          <button *ngFor="let d of weekdays" class="day" (click)="toggleDay(d)" [class.selected]="selectedDays.has(d)">
-            {{d}}
-          </button>
+
+          <div class="start-end-row">
+            <div>
+              <label>End Date</label>
+              <div class="mindful-input-group">
+                <mindful-datepicker type="date" [(ngModel)]="endDate"></mindful-datepicker>
+              </div>
+            </div>
+            <div>
+              <label>Time</label>
+              <div class="mindful-input-group">
+                <mindful-timepicker placeholder="" [(ngModel)]="endTime"></mindful-timepicker>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="start-end-row">
-        <div>
-          <label>Start Date</label>
-          <div class="mindful-input-group">
-            <mindful-datepicker type="date" [(ngModel)]="startDate"></mindful-datepicker>
-          </div>
-        </div>
-        <div>
-          <div class="mindful-input-group">
-            <mindful-timepicker placeholder="Time" [(ngModel)]="startTime"></mindful-timepicker>
-          </div>
-        </div>
-      </div>
-
-  <div class="start-end-row">
-        <div>
-          <label>End Date</label>
-          <div class="mindful-input-group">
-            <mindful-datepicker type="date" [(ngModel)]="endDate"></mindful-datepicker>
-          </div>
-        </div>
-        <div>
-          <div class="mindful-input-group">
-            <mindful-timepicker placeholder="Time" [(ngModel)]="endTime"></mindful-timepicker>
-          </div>
-        </div>
-  </div>
-  </div>
-      </div>
-
-  <div class="priority-selection priority-selectors">
+      <div class="priority-selection priority-selectors">
         <label>Priority</label>
         <div class="priority-row">
-          <mindful-badge text="High" type="red" [disabled]="priority !== 'high'" [active]="priority === 'high'" (click)="selectPriority('high')"></mindful-badge>
-          <mindful-badge text="Medium" type="yellow" [disabled]="priority !== 'medium'" [active]="priority === 'medium'" (click)="selectPriority('medium')"></mindful-badge>
-          <mindful-badge text="Low" type="green" [disabled]="priority !== 'low'" [active]="priority === 'low'" (click)="selectPriority('low')"></mindful-badge>
+          <mindful-badge text="High" type="red" [disabled]="priority !== 'high'" [active]="priority === 'high'"
+            (click)="selectPriority('high')"></mindful-badge>
+          <mindful-badge text="Medium" type="yellow" [disabled]="priority !== 'medium'" [active]="priority === 'medium'"
+            (click)="selectPriority('medium')"></mindful-badge>
+          <mindful-badge text="Low" type="green" [disabled]="priority !== 'low'" [active]="priority === 'low'"
+            (click)="selectPriority('low')"></mindful-badge>
         </div>
       </div>
 
@@ -102,7 +122,8 @@
       </div>
 
       <div class="submit-row">
-        <mindful-button type="lavender-light" text="Create Habit" large (click)="submit()">
+        <mindful-button [type]="isFormComplete ? 'lavender-complete' : 'lavender-light'" text="Create Habit" large
+          (click)="submit()">
         </mindful-button>
       </div>
 
@@ -114,8 +135,11 @@
           <input [(ngModel)]="title" placeholder="Task Title" />
         </div>
         <div class="add-new-row">
-          <mindful-selectors [options]="routineTags" componentType="tags" [singleSelection]="false" size="medium" (selectedKeysChange)="onTagsChange($event)">
+          <mindful-selectors [options]="routineTags" componentType="tags" [singleSelection]="false" size="small"
+            (selectedKeysChange)="onTagsChange($event)">
           </mindful-selectors>
+          <!-- <mindful-selectors size="small" [options]="routineTags">
+          </mindful-selectors> -->
         </div>
       </div>
 
@@ -126,60 +150,64 @@
       </div>
 
 
-  <div class="date-time-selection">
-  <div class="section days-row">
-        <div class="days-top">
-          <div class="everyday-label">
-            <img src="assets/app-assets/search_activity.svg" alt="search activity" class="everyday-icon" />
-            <label>Everyday</label>
+      <div class="date-time-selection">
+        <div class="section days-row">
+          <div class="days-top">
+            <div class="everyday-label">
+              <img src="assets/app-assets/search_activity.svg" alt="search activity" class="everyday-icon" />
+              <label>Everyday</label>
+            </div>
+            <div class="toggle-right">
+              <ion-toggle [(ngModel)]="everyday"></ion-toggle>
+            </div>
           </div>
-          <div class="toggle-right">
-            <ion-toggle [(ngModel)]="everyday"></ion-toggle>
+          <div class="days">
+            <button *ngFor="let d of weekdays" class="day" (click)="toggleDay(d)"
+              [class.selected]="selectedDays.has(d)">
+              {{d}}
+            </button>
           </div>
         </div>
-        <div class="days">
-          <button *ngFor="let d of weekdays" class="day" (click)="toggleDay(d)" [class.selected]="selectedDays.has(d)">
-            {{d}}
-          </button>
+
+        <div class="start-end-row">
+          <div>
+            <label>Start Date</label>
+            <div class="mindful-input-group">
+              <mindful-datepicker type="date" [(ngModel)]="startDate"></mindful-datepicker>
+            </div>
+          </div>
+          <div>
+            <div class="mindful-input-group">
+              <mindful-timepicker placeholder="Time" [(ngModel)]="startTime"></mindful-timepicker>
+            </div>
+          </div>
+        </div>
+
+        <div class="start-end-row">
+          <div>
+            <label>End Date</label>
+            <div class="mindful-input-group">
+              <mindful-datepicker type="date" [(ngModel)]="endDate"></mindful-datepicker>
+            </div>
+          </div>
+          <div>
+            <div class="mindful-input-group">
+              <mindful-timepicker placeholder="Time" [(ngModel)]="endTime"></mindful-timepicker>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="start-end-row">
-        <div>
-          <label>Start Date</label>
-          <div class="mindful-input-group">
-            <mindful-datepicker type="date" [(ngModel)]="startDate"></mindful-datepicker>
-          </div>
-        </div>
-        <div>
-          <div class="mindful-input-group">
-            <mindful-timepicker placeholder="Time" [(ngModel)]="startTime"></mindful-timepicker>
-          </div>
-        </div>
-      </div>
 
-  <div class="start-end-row">
-        <div>
-          <label>End Date</label>
-          <div class="mindful-input-group">
-            <mindful-datepicker type="date" [(ngModel)]="endDate"></mindful-datepicker>
-          </div>
-        </div>
-        <div>
-          <div class="mindful-input-group">
-            <mindful-timepicker placeholder="Time" [(ngModel)]="endTime"></mindful-timepicker>
-          </div>
-        </div>
-  </div>
-  </div>
-
-
-  <div class="priority-selection priority-selectors">
+      <div class="priority-selection priority-selectors">
         <label>Priority</label>
         <div class="priority-row">
-          <mindful-badge text="High" type="red" [disabled]="priority !== 'high'" [active]="priority === 'high'" (click)="selectPriority('high')"></mindful-badge>
-          <mindful-badge text="Medium" type="yellow" [disabled]="priority !== 'medium'" [active]="priority === 'medium'" (click)="selectPriority('medium')"></mindful-badge>
-          <mindful-badge text="Low" type="green" [disabled]="priority !== 'low'" [active]="priority === 'low'" (click)="selectPriority('low')"></mindful-badge>
+          <mindful-badge text="High" type="red" [disabled]="priority !== 'high'" [active]="priority === 'high'"
+            (click)="selectPriority('high')"></mindful-badge>
+          <mindful-badge text="Medium" type="yellow" [disabled]="priority !== 'medium'" [active]="priority === 'medium'"
+            (click)="selectPriority('medium')"></mindful-badge>
+          <mindful-badge text="Low" type="green" [disabled]="priority !== 'low'" [active]="priority === 'low'"
+            (click)="selectPriority('low')"></mindful-badge>
         </div>
       </div>
 
@@ -202,12 +230,16 @@
           <input [(ngModel)]="title" placeholder="Time Table Title" />
         </div>
         <div class="add-new-row">
-          <mindful-selectors [options]="routineTags" componentType="tags" [singleSelection]="false" size="medium" (selectedKeysChange)="onTagsChange($event)">
+          <mindful-selectors [options]="routineTags" componentType="tags" [singleSelection]="false" size="small"
+            (selectedKeysChange)="onTagsChange($event)">
           </mindful-selectors>
+          <!-- <mindful-selectors size="small" [options]="routineTags">
+          </mindful-selectors> -->
         </div>
       </div>
 
-      <div class="timetable-header" style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;">
+      <div class="timetable-header"
+        style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;">
         <h3 style="margin:0;font-weight:600;color:#6B656A">Add Your Perfect Schedule</h3>
         <div style="width:140px;text-align:right;">
           <mindful-datepicker type="date" [(ngModel)]="startDate"></mindful-datepicker>
@@ -216,7 +248,9 @@
 
       <div class="timetable-list" style="padding:0 24px 16px 24px;">
         <!-- Dynamic Activity Rows -->
-        <div class="timetable-row" style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;" *ngFor="let activity of activities; let i = index">
+        <div class="timetable-row"
+          style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;"
+          *ngFor="let activity of activities; let i = index">
           <div class="timetable-activity" style="flex:1 1 60%;">
             <div class="mindful-input-group">
               <input [(ngModel)]="activity.name" placeholder="Activity Name" />
@@ -229,10 +263,11 @@
           </div>
         </div>
 
-        <div class="add-more" style="padding:8px 0;color:#6B656A;font-weight:600;cursor:pointer;" (click)="addActivity()">+ Add more</div>
+        <div class="add-more" style="padding:8px 0;color:#6B656A;font-weight:600;cursor:pointer;"
+          (click)="addActivity()">+ Add more</div>
       </div>
 
-   
+
 
       <!-- Submit Button -->
       <div class="submit-row">

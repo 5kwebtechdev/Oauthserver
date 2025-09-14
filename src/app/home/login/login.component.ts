@@ -89,8 +89,8 @@ export class LoginComponent implements OnInit, OnDestroy {
       } else {
         // Format phone with country code
         const phoneNumber = this.signInForm.get('phone')?.value;
-        credentials.phone = phoneNumber;
-        // credentials.phone = this.selectedCountry.code + phoneNumber;
+        // credentials.phone = phoneNumber;
+        credentials.phone = this.selectedCountry.code + phoneNumber;
       }
 
       this.authService.login(credentials).subscribe({

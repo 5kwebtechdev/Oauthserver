@@ -1,6 +1,7 @@
 export type buttonStyles =
     'lavendar'
   | 'lavender-light'
+  | 'lavender-complete'
   | 'lavendar-transparent'
   | 'violet'
   | 'violet-transparent'
