@@ -1,0 +1,387 @@
+/* Adapted styles from reels-card for visual parity */
+.reel-section {
+  width: min(393px, 96vw);
+  margin: 5vh auto 0 auto;
+  background: #fff;
+  border-radius: 24px;
+  padding: 12px 16px;
+  box-sizing: border-box;
+  /* make the section independently scrollable */
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.reel-section .header {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 56px;
+}
+
+.reel-section .titles {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.reel-section .heading {
+  font-family: 'Fredoka', sans-serif;
+  font-size: clamp(16px, 3.2vw, 20px);
+  margin: 0;
+}
+
+.reel-section .tagline {
+  display: inflex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.9;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+}
+
+.reel-section .category-swiper {
+  padding: 6px 6px 18px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+}
+
+.reel-section .swiper-wrapper {
+  display: flex;
+  gap: 1vw;
+}
+
+.reel-section .swiper-slide {
+  width: 160px !important;
+  flex: 0 0 160px !important;
+  max-width: 160px !important;
+}
+
+.reel-section .reel {
+  flex: 0 0 160px;
+  width: 172px;
+  height: 240px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #d9d9d9;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.04);
+  scroll-snap-align: start;
+  position: relative;
+}
+
+.reel-section .card-media {
+  height: 180px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.reel-section .card-media .category {
+  position: absolute;
+  left: 8px;
+  top: 6px;
+  background: #FFA9A1;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 8px;
+  font-weight: 600;
+  color: #282527;
+}
+
+.reel-section .bookmark {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #FFE4E1;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reel-section .bookmark img.bookmark-icon { width: 12px; height: 16px; }
+
+.reel-section .bookmark.saved img.bookmark-icon { filter: none; }
+
+.reel-section .play {
+  position: absolute;
+  left: 50%;
+  top: 70%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #FFE4E1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.reel-section .reel-video {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 50;
+  background: black;
+}
+
+.reel-section .video-close {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  z-index: 60;
+  background: rgba(0,0,0,0.5);
+  border: none;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reel-section .reel-body { padding: 8px; height: calc(240px - 180px); }
+.reel-section .meta-row { display:flex; align-items:center; gap:8px; }
+.reel-section .avatar { width:16px; height:16px; border-radius:50%; background:#b8e3e9; }
+.reel-section .author { font-weight:600; font-size:10px; }
+.reel-section .title { font-family:'Fredoka', sans-serif; font-size:10px; margin:6px 0 4px 0; color:#FFFFFF; }
+.reel-section .bottom-row { display:flex; justify-content:space-between; align-items:center; font-size:10px; color:#e6e6e6; }
+
+/* responsive tweaks */
+@media (max-width: 420px) {
+  .reel-section { width: min(360px, 94vw); }
+  .reel-section .reel { width: 160px; height: 220px; }
+  .reel-section .card-media { height: 150px; }
+}
+
+/* Responsive rules */
+@media (max-width: 420px) {
+  .reel-section {
+    padding: 12px;
+    border-radius: 20px;
+  }
+
+  .header { gap: 12px; }
+
+  .overlay { width: 126px; height: 178px; }
+
+  .play-all { width: 100%; max-width: none; }
+}
+
+@media (min-width: 421px) and (max-width: 767px) {
+  .reel-section { padding: 16px; }
+  .overlay { width: 140px; height: 200px; }
+  .play-all { padding: 10px 18px; }
+}
+
+@media (min-width: 768px) {
+  .reel-section { max-width: 760px; padding: 20px; }
+  .overlay { width: 180px; height: 256px; }
+  .play-all { padding: 12px 24px; }
+  .category-block { display: block; }
+  .category-swiper { padding-bottom: 12px; }
+}
+.reels-screen {
+  width: 393px;
+  background: #FFFFFF;
+  border: 5px solid #0BC724;
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Header */
+.screen-header {
+  display: inline-flex;
+justify-content: center;
+align-items: center;
+gap: 56px;
+}
+
+.back-button,
+.bookmark-button {
+  background: #f1f1f1;
+  border: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.title-group {
+  flex-grow: 1;
+}
+
+.title {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 20px;
+  color: #282527;
+  margin: 0;
+}
+
+.tagline {
+  font-size: 13px;
+  color: #282527;
+  opacity: 0.7;
+  margin: 4px 0 0;
+}
+
+/* Reels Content */
+.reel-category {
+  margin-bottom: 24px;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.category-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #282527;
+  margin: 0;
+}
+
+.trending-tag {
+  background: #DCDBDC;
+  border-radius: 16px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Reel Grid */
+.reel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.reel-card {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 194px;
+  color: #FFFFFF;
+}
+
+.reel-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.reel-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(40, 37, 39, 0) 67%, rgba(40, 37, 39, 0.8) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.reel-card__header,
+.user-info,
+.reel-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-avatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.play-button-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.play-button {
+  background: #FE8D82;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.reel-card__footer {
+  font-size: 7px;
+}
+
+.reel-title {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 8px;
+  margin: 0 0 4px;
+}
+
+/* CTA Button */
+.cta-button {
+  width: 100%;
+  background: #FE8D82;
+  border: 1px solid #F64D3D;
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 12px;
+  cursor: pointer;
+  text-align: center;
+}
+
+/* page-level tweaks */
+.reels-content,
+.reels-screen main,
+.reels-screen .reel-category {
+  box-sizing: border-box;
+}
+
+/* minimal styling for the reel section page */
+h1 {
+  font-size: 24px;
+}
+
+/* Responsive tweak */
+@media (min-width: 768px) {
+  .reels-screen {
+    width: 100%;
+    max-width: 800px;
+    padding: 28px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .reel-title {
+    font-size: 10px;
+  }
+}

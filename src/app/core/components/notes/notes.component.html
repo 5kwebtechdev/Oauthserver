@@ -19,23 +19,69 @@
         <h3 class="empty-heading">No Notes Yet?</h3>
         <p class="empty-sub">Write what’s on your mind. Notes help you save ideas, feelings, and cool moments.</p>
 
-        <!-- Action button -->
-        <button expand="block" class="empty-action" (click)="go('input')">Write your first notes</button>
+  <!-- Action button -->
+  <mindful-button type="magenta" fullWidth="true" text="Write your first notes" (click)="go('input')"></mindful-button>
       </div>
     </div>
 
     <div *ngSwitchCase="'home'" class="notes-home">
-      <p class="muted">Your saved notes will appear here (demo).</p>
-      <!-- demo list -->
-      <ion-list>
-        <ion-item *ngIf="false">This is a placeholder for saved notes.</ion-item>
-      </ion-list>
+      <notes-home></notes-home>
     </div>
-
+ <!--Notes New-->
     <div *ngSwitchCase="'input'" class="notes-input">
-      <ion-item>
-        <ion-textarea [(ngModel)]="noteText" placeholder="Write your note..."></ion-textarea>
-      </ion-item>
+      <!-- Title row (back + title input) -->
+      <div class="input-header">
+        <button class="back-btn" aria-label="Back" (click)="go('empty')">
+          <img src="/assets/app-assets/Back-common-icon.svg" alt="Back" class="back-icon">
+        </button>
+        <div class="title-input">
+          <!-- show editable input when title is not collapsed; otherwise show truncated title -->
+          <ion-input *ngIf="!titleCollapsed" placeholder="Title" [(ngModel)]="noteTitle"></ion-input>
+          <h2 *ngIf="titleCollapsed" class="collapsed-title">{{ truncatedTitle }}</h2>
+        </div>
+      </div>
+
+      <!-- Tag row -->
+      <div class="input-tags">
+        <label class="tag-label">Tag</label>
+
+        <!-- render existing tags -->
+        <ng-container *ngFor="let t of tags; let i = index">
+          <mindful-badge type="task" text="{{t}}" (click)="toggleTagActions(i)"></mindful-badge>
+
+          <!-- when user clicks a tag show edit/delete bubble -->
+          <div class="tag-actions" *ngIf="activeTagIndex === i">
+            <button class="tag-action" (click)="startEditTag(i)">
+              <img src="/assets/app-assets/edit-icon.svg" alt="Edit">
+            </button>
+            <button class="tag-action" (click)="deleteTag(i)">
+              <img src="/assets/app-assets/delete-icon.svg" alt="Delete">
+            </button>
+          </div>
+
+          <!-- inline edit input -->
+          <div class="tag-edit" *ngIf="editIndex === i">
+            <ion-input [(ngModel)]="editName" (keydown.enter)="saveEditedTag(i)" (blur)="saveEditedTag(i)"></ion-input>
+          </div>
+        </ng-container>
+
+        <mindful-badge type="task" text="Add new +" inactive (click)="addTag()"></mindful-badge>
+
+        <!-- floating tag name input shown when adding a tag -->
+        <div class="tag-input" *ngIf="showTagInput">
+          <ion-input #tagInput placeholder="Type the name here" [(ngModel)]="newTagName" (keydown.enter)="confirmTag()" (blur)="confirmTag()"></ion-input>
+        </div>
+      </div>
+
+      <!-- Large notes input area -->
+      <div class="notes-textarea">
+        <ion-textarea autoGrow rows="6" [(ngModel)]="noteText" placeholder="Notes here...." (click)="onNotesClick()"></ion-textarea>
+      </div>
+
+      <!-- Bottom toolbar with simple formatting icons could be added here -->
+      <div class="input-actions">
+        <mindful-button type="magenta" text="Save" (click)="save()"></mindful-button>
+      </div>
     </div>
 
     <div *ngSwitchCase="'save'" class="notes-save">

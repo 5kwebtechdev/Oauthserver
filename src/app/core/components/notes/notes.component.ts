@@ -4,11 +4,14 @@ import { IonicModule, ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
+import { MindfulBadgeComponent } from '../mindful-badge/mindful-badge.component';
+import { NotesService, NoteModel } from './notes.service';
+import { NotesHomeComponent } from './notes-home.component';
 
 @Component({
   selector: 'notes',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, MindfulButtonComponent],
+  imports: [CommonModule, IonicModule, FormsModule, MindfulButtonComponent, MindfulBadgeComponent, NotesHomeComponent],
   templateUrl: './notes.component.html',
   styleUrls: ['./notes.component.scss']
 })
@@ -16,8 +19,20 @@ export class NotesComponent {
   // pages: 'empty' (default), 'home', 'input', 'save'
   public page: 'empty' | 'home' | 'input' | 'save' = 'empty';
   public noteText: string = '';
+  public noteTitle: string = '';
+  public showTagInput: boolean = false;
+  public newTagName: string = '';
+  public tags: string[] = [];
+  public titleCollapsed: boolean = false;
+  public notes: Array<{ title: string; text: string; tags: string[]; createdAt: string }> = [];
+  // tag action UI
+  public activeTagIndex: number | null = null;
+  public editIndex: number | null = null;
+  public editName: string = '';
 
-  constructor(private modalCtrl: ModalController, private router: Router) { }
+  constructor(private modalCtrl: ModalController, private router: Router, private notesService: NotesService) {
+    this.notes = this.notesService.getAll();
+  }
 
   close() {
     this.modalCtrl.dismiss();
@@ -34,10 +49,102 @@ export class NotesComponent {
   }
 
   save() {
-    // simple local save simulation — in a real app you'd persist via a service
-    this.noteText = this.noteText.trim();
-    if (!this.noteText) return;
-    // simulate save then show save page
-    this.page = 'save';
+    // keep old behavior for compatibility
+    this.saveNote();
+  }
+
+  saveNote() {
+    // simple local save simulation — persist a note object into `notes`
+    const text = (this.noteText || '').trim();
+    if (!text) return;
+    const title = (this.noteTitle || '').trim() || 'Untitled';
+    const note: NoteModel = {
+      title,
+      text,
+      tags: [...this.tags],
+      createdAt: new Date().toISOString()
+    };
+    this.notesService.add(note);
+    this.notes = this.notesService.getAll();
+    // clear current editing state
+    this.noteText = '';
+    this.noteTitle = '';
+    this.tags = [];
+    this.titleCollapsed = false;
+    this.showNotes();
+  }
+
+  showNotes() {
+    this.page = this.notesService.getAll().length ? 'home' : 'empty';
+  }
+
+  addTag() {
+    // show inline tag input overlay
+    this.showTagInput = true;
+    // when shown, newTagName will be bound to the input; focus handled in template if needed
+  }
+
+  confirmTag() {
+    const name = (this.newTagName || '').trim();
+    if (name) {
+      this.tags.push(name);
+    }
+    this.newTagName = '';
+    this.showTagInput = false;
+    // after adding a tag, collapse the title to show truncated form
+    this.updateTitleCollapsed();
+  }
+
+  toggleTagActions(index: number) {
+    if (this.activeTagIndex === index) {
+      this.activeTagIndex = null;
+    } else {
+      this.activeTagIndex = index;
+    }
+  }
+
+  startEditTag(index: number) {
+    this.editIndex = index;
+    this.editName = this.tags[index];
+    this.activeTagIndex = null;
+  }
+
+  saveEditedTag(index: number) {
+    const v = (this.editName || '').trim();
+    if (!v) return;
+    this.tags[index] = v;
+    this.editIndex = null;
+    this.editName = '';
+  }
+
+  deleteTag(index: number) {
+    this.tags.splice(index, 1);
+    this.activeTagIndex = null;
+    if (this.editIndex === index) {
+      this.editIndex = null;
+      this.editName = '';
+    }
+  }
+
+  onNotesClick() {
+    // when user taps the notes area, collapse the title
+    this.updateTitleCollapsed();
+  }
+
+  updateTitleCollapsed() {
+    // collapse title to first three words followed by ellipsis when title exists
+    if (this.noteTitle && this.noteTitle.trim().length > 0) {
+      const words = this.noteTitle.trim().split(/\s+/);
+      this.titleCollapsed = words.length > 3 || this.noteTitle.length > 20;
+    } else {
+      this.titleCollapsed = false;
+    }
+  }
+
+  get truncatedTitle(): string {
+    if (!this.noteTitle) return '';
+    const words = this.noteTitle.trim().split(/\s+/);
+    if (words.length <= 3 && this.noteTitle.length <= 20) return this.noteTitle;
+    return words.slice(0, 3).join(' ') + '...';
   }
 }

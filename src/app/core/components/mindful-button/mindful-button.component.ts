@@ -23,6 +23,10 @@ export class MindfulButtonComponent implements OnInit {
   @Input()
   text: string = "Undefined";
 
+  // optional icon path (web path, e.g. '/assets/app-assets/Coins-icon-common.svg')
+  @Input()
+  icon?: string;
+
   @Input({transform: booleanAttribute})
   @CoerceBoolean()
   medium: boolean = false;

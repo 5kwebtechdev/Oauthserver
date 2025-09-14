@@ -1,5 +1,11 @@
 <div *ngIf="type" class="button {{type}}" [ngClass]="{'medium': medium , 'large': large, 'disabled': disabled}">
-  <p>{{text}}</p>
+  <ng-container *ngIf="icon; else textOnly">
+    <img class="btn-icon" [src]="icon" alt=""/>
+    <p>{{text}}</p>
+  </ng-container>
+  <ng-template #textOnly>
+    <p>{{text}}</p>
+  </ng-template>
 </div>
 <ng-container *ngIf="!type">
   <p style="color: red; font-weight: bold; font-size:16px">
