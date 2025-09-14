@@ -2,3 +2,147 @@
 .notes-empty, .notes-home, .notes-input, .notes-save { text-align: center; }
 .muted { color: var(--ion-color-medium); }
 ion-textarea { min-height: 200px; }
+
+/* Notes input layout styles */
+.notes-input {
+	text-align: left;
+	padding: 0 16px;
+}
+
+.input-header {
+	display: inline-flex;
+	justify-content: flex-start;
+	align-items: center;
+	gap: 16px;
+	color: #6B656A; /* Title color */
+	margin-top: 8px;
+}
+
+.input-header .back-btn {
+	width: 48px;
+	height: 48px;
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
+	background: transparent;
+	border: none;
+	padding: 0;
+}
+
+.input-header .back-icon {
+	width: 24px;
+	height: 24px;
+	object-fit: contain;
+	filter: none;
+}
+
+.title-input ion-input {
+	--padding-start: 8px;
+	color: #6B656A;
+	font-family: 'Nunito', sans-serif;
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 28px; /* 140% of 20px */
+	opacity: 0.5;
+}
+
+.input-tags {
+	display: inline-flex;
+	justify-content: flex-start;
+	align-items: center;
+	gap: 32px;
+	margin-top: 20px;
+}
+
+.input-tags .tag-label {
+	color: #282527;
+	font-family: 'Nunito', sans-serif;
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 22.4px; /* 140% of 16px */
+}
+
+/* Mindful badge adjustments for Add new + */
+
+
+.notes-textarea ion-textarea {
+	margin-top: 24px;
+	color: #6B656A;
+	font-family: 'Nunito', sans-serif;
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 28px;
+	opacity: 0.5;
+	min-height: calc(100vh - 300px);
+}
+
+.input-actions {
+	margin-top: 16px;
+	display: flex;
+	justify-content: flex-end;
+}
+
+/* small tweak to make the back + title layout look like design */
+.input-header .title-input {
+	flex: 1 1 auto;
+}
+
+/* Notes home list and card styles */
+.notes-list {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	padding: 16px;
+}
+
+.note-card {
+	height: 162px;
+	align-self: stretch;
+	border-radius: 12px;
+	background: #FFF;
+	box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.note-preview {
+	color: #6B656A;
+	font-family: 'Nunito', sans-serif;
+	font-size: 18px;
+	line-height: 1.4;
+}
+
+.note-meta {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+}
+
+.note-title {
+	font-family: 'Nunito', sans-serif;
+	font-weight: 700;
+}
+
+.note-date {
+	color: var(--ion-color-medium);
+}
+
+/* tag action bubble */
+.tag-actions {
+	display: inline-flex;
+	gap: 16px;
+	background: #fff;
+	border-radius: 16px;
+	padding: 8px 12px;
+	box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
+	margin-left: 8px;
+	align-items: center;
+}
+
+.tag-action img { width: 24px; height: 24px; aspect-ratio: 1/1; }
+
+.tag-edit { display: inline-block; margin-left: 8px; }
+.tag-edit ion-input { --padding-start: 12px; --padding-end: 12px; }

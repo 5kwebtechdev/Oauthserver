@@ -1,14 +1,26 @@
 <ion-content class="notes-home-page ion-padding">
-  <div class="notes-list" style="width:24.5625rem; margin: 0 auto;">
-    <!-- Minimal placeholder list; you will redefine styles later -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Ideas for Rainy Days</ion-card-title>
-        <ion-card-subtitle>Mar 15, 2025</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        Build a pillow fort, indoor treasure hunt, or story time marathon...
-      </ion-card-content>
-    </ion-card>
+  <!-- Header area (back + title) -->
+      <div class="empty-header">
+        <button class="back-btn" aria-label="Back" (click)="close()">
+          <img src="/assets/app-assets/Back-common-icon.svg" alt="Back" class="back-icon">
+        </button>
+        <h2 class="empty-title">Quick Notes. Big Ideas</h2>
+      </div>
+        <!-- Dropdown button area (placed after header) -->
+  
+  <!-- List of notes -->
+  <div class="notes-list">
+    <div *ngFor="let n of notes" class="note-card">
+      <div class="note-preview">{{ n.text }}</div>
+      <div class="note-meta">
+        <div>
+          <div class="note-title">{{ n.title }}</div>
+          <div class="note-date">{{ n.createdAt | date:'MMM d, y' }}</div>
+        </div>
+        <div class="note-tags">
+          <mindful-badge *ngFor="let t of n.tags" [text]="t" type="task" large="true"></mindful-badge>
+        </div>
+      </div>
+    </div>
   </div>
 </ion-content>
