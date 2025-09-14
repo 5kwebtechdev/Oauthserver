@@ -2,8 +2,8 @@
   <div class="container w-full p-0" style="height: 100vh; overflow-y: scroll; padding-bottom: 50px">
     <!-- User Profile Section -->
     <section class="user-profile-section profile" aria-labelledby="profile-heading">
+      <div class="dasboard-wrapper">
       <div class="profile-content">
-        <h2 id="profile-heading" class="visually-hidden">Your profile</h2>
 
         <!-- Top Header with Avatar and Tools -->
       <header class="profile-header" role="banner">
@@ -59,20 +59,21 @@
           </div>
         </div>
       </div>
-
-      <!-- Speech bubble message card -->
-      <aside class="message-card bubble" role="status" aria-live="polite" aria-label="Greeting message">
-        <div class="bubble-inner">
-          <p class="greeting-text">Hey, <strong>{{ userName }}</strong>!</p>
-          <p class="message-text">I'll be right here helping you grow, learn, and celebrate every step!</p>
-        </div>
-      </aside>
-
-      <div class="digital-pet" aria-hidden="false">
+    </div>
+        
+        <!-- Speech bubble message card -->
+        <aside class="message-card bubble" role="status" aria-live="polite" aria-label="Greeting message">
+          <div class="bubble-inner">
+            <p class="greeting-text">Hey, <strong>{{ userName }}</strong>!</p>
+            <p class="message-text">I'll be right here helping you grow, learn, and celebrate every step!</p>
+          </div>
+        </aside>
+        
+        <div class="digital-pet" aria-hidden="false">
         <!-- Reusable mindful-pet component: default pet is panda and age is 1 -->
         <mindful-pet pet="panda" [age]="1"></mindful-pet>
       </div>
-      </div>
+    </div>
     </section>
 
     
@@ -82,13 +83,6 @@
 
     <!-- Habit Card -->
     <habit-card mode="list"></habit-card>
-
-    <!-- Ad-banner (commented out because mindful-banner component is missing) -->
-    <!--
-    <div style="margin-top: 16px;">
-      <mindful-banner></mindful-banner>
-    </div>
-    -->
 
     <!-- Ad-banner -->
     <div style="margin-top: 16px;">
