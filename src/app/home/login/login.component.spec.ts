@@ -23,6 +23,3 @@ describe('LoginComponent', () => {
   });
 });
 
-// goBack() {
-//   window.location.href = '/home';
-// }

@@ -30,7 +30,7 @@ import { AddCalendarComponent } from '../add-calendar/add-calendar.component';
         <h2 style="margin-top: 2rem">Tags demo (mindful-selectors)</h2>
         <mindful-selectors
           [options]="demoTags"
-          componentType="tags"
+          componentType="badge"
           [formGroup]="fg"
           formControlName="tags"
           (add)="onAdd()"
