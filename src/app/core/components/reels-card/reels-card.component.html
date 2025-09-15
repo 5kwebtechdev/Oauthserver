@@ -1,18 +1,14 @@
 <section class="reels-card">
-  <header class="reels-header">
-    <div class="titles">
-      <h3 class="heading">Made by Kids, for Kids!</h3>
-      <div class="tagline">
-        <span class="tag">Watch reels</span>
-        <span class="dot">•</span>
-        <span class="tag">Create</span>
-        <span class="dot">•</span>
-        <span class="tag">Get Inspired</span>
-      </div>
-    </div>
-
-  <button class="see-all" [routerLink]="['/reel-section']">View all <i class="fa-solid fa-chevron-right"></i></button>
-  </header>
+  <mindful-card-header
+    [title]="'Made by Kids, for Kids!'"
+    [subtitleLeft]="'Watch reels'"
+    [subtitleMiddle]="'Create'"
+    [subtitleRight]="'Get Inspired'">
+    <mindful-view-all mindful-header-actions
+      [routerLink]="['/reel-section']"
+      class="see-all">
+    </mindful-view-all>
+  </mindful-card-header>
 
   <div #reelsSwiper class="reels-swiper swiper-container">
     <div class="swiper-wrapper">

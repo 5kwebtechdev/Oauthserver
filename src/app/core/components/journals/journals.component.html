@@ -1,21 +1,14 @@
 <section class="journal-empty">
-	<header class="journal-empty__header">
-		<div class="journal-empty__title-block">
-			<h3 class="journal-empty__title">Your Journal, Your Journey</h3>
-			<div class="journal-empty__tagline">
-				<span>Track moods</span>
-				<span class="dot"></span>
-				<span>Save</span>
-				<span class="dot"></span>
-				<span>Feel Better</span>
-			</div>
-		</div>
-
-		<button class="journal-empty__view-all" (click)="onViewAllEntries()">
-			<span>View all</span>
-			<span class="chev" aria-hidden="true">›</span>
-		</button>
-	</header>
+	<mindful-card-header
+		[title]="'Your Journal, Your Journey'"
+		[subtitleLeft]="'Track moods'"
+		[subtitleMiddle]="'Save'"
+		[subtitleRight]="'Feel Better'">
+		<mindful-view-all mindful-header-actions
+			(clicked)="onViewAllEntries()"
+			class="journal-empty__view-all">
+		</mindful-view-all>
+	</mindful-card-header>
 
 	<div class="journal-empty__body">
 		<img class="journal-empty__illustration" src="/assets/app-assets/Journal-study.svg" alt="Panda with kids illustration">

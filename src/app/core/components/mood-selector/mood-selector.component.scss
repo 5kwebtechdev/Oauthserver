@@ -1,40 +1,38 @@
 .mood-card {
   display: flex;
-  align-items: center;
-  flex-direction: row;
+  width: 90vw;
   justify-content: space-between;
-  width: 100vw;
-  max-height: 58px;
-  background: transparent;
-  padding: 0 2vw;
+  align-items: center;
+  margin-left: 16px;
+  margin-right: 16px;
 }
 
 .mood-left {
   display: flex;
-  align-items: center;
-  flex-direction: row;
-  gap: 0;
-  margin-right: 3vw;
+  width: 267px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
-.mood-emoji {
-  font-size: 36px;
+.mood-text{
+  color: #282527;
+font-family: Fredoka;
+font-size: 16px;
+font-style: normal;
+font-weight: 400;
+line-height: 140%; /* 22.4px */
+}
+
+.mood-right {
   width: 56px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #ffecec;
-  cursor: pointer;
+  height: 58px;
+  flex-shrink: 0;
 }
 
 .mood-title {
-width: 265px;
-height: 22px;
-left: 0px;
-top: 0px;
-
 font-family: 'Fredoka';
 font-style: normal;
 font-weight: 400;
@@ -42,11 +40,18 @@ font-size: 16px;
 line-height: 140%;
 color: #282527;
 
-
 }
 
 .mood-highlight {
-  color: #d63663;
+  font-family: Fredoka;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  background: linear-gradient(180deg, #90214D 0%, #EC819D 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; /* 22.4px */
 }
 
 .mood-sub {
@@ -55,13 +60,6 @@ color: #282527;
   margin-top: 4px;
 }
 
-.mood-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  margin-left: 3vw;
-}
 
 .mood-options {
   display: flex;
@@ -92,13 +90,26 @@ color: #282527;
   background: rgba(0, 0, 0, 0.06);
   border-radius: 8px;
   overflow: hidden;
-  margin-left: 5.3vw;
 
   .bar {
-    display: block;
-    height: 100%;
-    background: #90214D;
+    width: 234px;
+height: 0;
+stroke-width: 3px;
+stroke: #90214D;
+opacity: 0.2;
   }
+}
+
+.mood-emoji {
+  font-size: 36px;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #ffecec;
+  cursor: pointer;
 }
 
 /* Mood Popup */
@@ -116,6 +127,7 @@ color: #282527;
   align-items: center;
   justify-content: center;
   animation: backdropIn 0.18s ease forwards;
+  
 }
 
 .mood-popup {

@@ -1,6 +1,8 @@
 import { Component, Input } from '@angular/core';
 // NgStyle removed because the template does not use ngStyle
 import { IonicModule } from "@ionic/angular";
+import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
+import { ViewAllComponent } from '../mindful-navigator/view-all/view-all.component';
 
 export interface JournalEntry {
   id: string;
@@ -16,7 +18,7 @@ export interface JournalEntry {
   selector: 'journals',
   templateUrl: './journals.component.html',
   styleUrls: ['./journals.component.scss'],
-  imports: [IonicModule],
+  imports: [IonicModule, MindfulCardHeaderComponent, ViewAllComponent],
   standalone: true
 })
 export class JournalsComponent {

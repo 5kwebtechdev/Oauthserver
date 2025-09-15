@@ -1,0 +1,187 @@
+/* Styles scoped for tutor-list component. Many classes mirror the }tutors-section__card rules so visuals remain consistent. */
+
+.tutor-list-root {
+  width: 100%;
+}
+
+.tutor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tutors-section__card {
+  display: flex;
+  padding: 16px 8px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+  border-radius: 12px;
+  background: #D6E3EF;
+  box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
+
+  .thumbnail {
+    width: 91.667px;
+height: 90px;
+flex-shrink: 0;
+aspect-ratio: 55/54;
+
+    .avatar {
+      width: 91.67px;
+      height: 90px;
+      background-size: cover;
+      background-position: center;
+      border-radius: 8px;
+    }
+  }
+
+  // .content {
+  //   position: absolute;
+  //   left: 108px;
+  //   top: 24px;
+  //   width: 245px;
+  //   height: 84px;
+  //   display: flex;
+  //   flex-direction: column;
+  //   gap: 16px;
+
+  //   .head { display: flex; justify-content: space-between; align-items: flex-end; }
+
+  //   .name-block { display: flex; flex-direction: column; gap: 2px; }
+
+  //   .name { font-family: 'Nunito', Arial; font-weight: 600; font-size: 13px; color: #282527; margin: 0; }
+  //   .role { font-family: 'Nunito', Arial; font-weight: 600; font-size: 10px; color: #282527; opacity: 0.7; margin: 0; }
+
+  //   .cta-row { display:flex; justify-content: space-between; align-items: center; gap: 26px; }
+
+  //   .profile-btn {
+  //     display: flex; align-items: center; justify-content: center;
+  //     padding: 8px 12px; gap: 8px; width: 88px; height: 34px;
+  //     background: linear-gradient(90.64deg, #7284B9 0.01%, #505D83 99.99%);
+  //     border: 0.5px solid #45506A; box-shadow: 0px 0px 1px 0.5px rgba(80,93,131,0.2), inset 0px -2px 2px #8AA0CA;
+  //     border-radius: 4px; color: #fff; font-family: 'Nunito', Arial; font-weight: 600; font-size: 10px; cursor: pointer;
+  //   }
+  // }
+}
+.content{
+  display: flex;
+width: 245px;
+flex-direction: column;
+align-items: flex-start;
+gap: 12px;
+}
+.head{
+  display: flex;
+justify-content: space-between;
+align-items: center;
+align-self: stretch;
+}
+.name-block{
+ display: flex;
+flex-direction: column;
+align-items: flex-start;
+gap: 2px;
+}
+
+.name{
+  color: #282527;
+font-family: Nunito;
+font-size: 13px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 18.2px */
+width: 136px;
+margin-bottom: 0px !important;
+}
+
+.role{
+  width: 107px;
+  color: #282527;
+  font-family: Nunito;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%; /* 14px */
+  margin-bottom: 0px !important;
+}
+.stats{
+  display: flex;
+justify-content: center;
+align-items: center;
+gap: 2px;
+}
+
+.icon heart-icon{
+  width: 16px;
+height: 16px;
+aspect-ratio: 1/1;
+}
+
+.meta{
+  color: #282527;
+text-align: center;
+font-family: Nunito;
+font-size: 13px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 18.2px */
+}
+
+.cta-row {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  align-self: stretch;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+
+}
+
+.info{
+  display: flex;
+justify-content: space-between;
+align-items: center;
+gap: 8px;
+width: 100%;
+
+  .time{
+    display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  }
+
+  .icon time-icon{
+    width: 16px;
+  height: 16px;
+  aspect-ratio: 1/1;
+  }
+}
+
+.info-sec{
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.txt{
+  color: #282527;
+font-family: Nunito;
+font-size: 8px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 11.2px */
+}
+
+.fees{
+  display: flex;
+justify-content: center;
+align-items: center;
+
+.icon fee-icon{
+  width: 16px;
+height: 16px;
+aspect-ratio: 1/1;
+}
+}

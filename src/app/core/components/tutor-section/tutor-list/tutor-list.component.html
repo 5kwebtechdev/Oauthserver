@@ -1,0 +1,74 @@
+<div class="tutor-list-root">
+  <div class="tutor-list" role="list">
+  <ng-container *ngIf="tutors && tutors.length > 0; else emptyState">
+      <article class="tutors-section__card" role="listitem" *ngFor="let t of tutors">
+        <div class="thumbnail">
+          <div class="avatar" [ngStyle]="{'background-image': 'url(' + (t.avatar || '/assets/images/Avatar.png') + ')'}" aria-hidden="true"></div>
+        </div>
+
+        <div class="content">
+          <div class="head">
+            <div class="name-block">
+              <p class="name">{{ t.name || 'Mr. Sharma' }}</p>
+              <p class="role">{{ t.description || 'Math & Science Wizard' }}</p>
+            </div>
+
+            <div class="stats" aria-hidden="true">
+              <img class="icon heart-icon" src="/assets/app-assets/Tutor-Likes-count-icon.svg" alt="Likes" aria-hidden="true" />
+              <span class="meta">{{ t.rating || 400 }} | {{ t.experience || '8+ yrs' }}</span>
+            </div>
+          </div>
+
+          <div class="cta-row">
+            <div class="info">
+              <div class="d-flex flex-col info-sec">
+                 <div class="time">
+                <img class="icon time-icon" src="/assets/app-assets/Tutor-timings-icon.svg" alt="Timings" aria-hidden="true" />
+                <span class="txt">5pm - 8pm</span>
+              </div>
+
+              <div class="fees">
+                <img class="icon fee-icon" src="/assets/app-assets/Tutor-fees-icon.svg" alt="Fees" aria-hidden="true" />
+                <span class="txt">₹ 800/subject</span>
+              </div>
+              </div>
+             
+              <mindful-button type="columbian-blue" medium [text]="'View Profile'" (click)="onViewProfile(t)" [attr.aria-label]="'View profile of ' + (t.name || 'Mr. Sharma')"></mindful-button>
+            </div>
+          </div>
+        </div>
+      </article>
+    </ng-container>
+    <ng-template #emptyState>
+      <!-- Show 3 placeholder cards so the section is visible when no data is provided -->
+      <article class="tutors-section__card placeholder" role="listitem" *ngFor="let _ of [1,2,3]">
+        <div class="thumbnail">
+          <div class="avatar" style="background-color: #e6edf6;" aria-hidden="true"></div>
+        </div>
+
+        <div class="content">
+          <div class="head">
+            <div class="name-block">
+              <p class="name">Loading...</p>
+              <p class="role">Loading role</p>
+            </div>
+
+            <div class="stats" aria-hidden="true">
+              <span class="meta">— | —</span>
+            </div>
+          </div>
+
+          <div class="cta-row">
+            <div class="info">
+              <div class="time"><span class="txt">—</span></div>
+              <div class="fees"><span class="txt">—</span></div>
+            </div>
+              <mindful-button type="violet" text="View Profile" [disabled]="true"></mindful-button>
+          </div>
+        </div>
+      </article>
+    </ng-template>
+
+    
+  </div>
+</div>

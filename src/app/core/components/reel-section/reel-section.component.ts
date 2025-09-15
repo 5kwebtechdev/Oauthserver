@@ -2,7 +2,7 @@ import { Component, AfterViewInit, ViewChildren, QueryList, ElementRef, ViewChil
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
-import { ReelsExpandComponent } from './reel-expand/reels-expand.component';
+// ReelsExpandComponent removed from imports — not used directly in template
 import { BookmarkReelsComponent } from './bookmark-reels.component';
 import { ReelGuidelinesComponent } from './reel-guidelines.component';
 import { NewReelsComponent } from './new-reels.component';
@@ -13,7 +13,7 @@ import { ShareReelComponent } from './share-reel.component';
   templateUrl: './reel-section.component.html',
   styleUrls: ['./reel-section.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, ReelsExpandComponent, BookmarkReelsComponent, ReelGuidelinesComponent, NewReelsComponent, ShareReelComponent]
+  imports: [CommonModule, IonicModule, RouterModule, BookmarkReelsComponent, ReelGuidelinesComponent, NewReelsComponent, ShareReelComponent]
 })
 export class ReelSectionComponent implements AfterViewInit {
   // sample slides - synced with reels-card component

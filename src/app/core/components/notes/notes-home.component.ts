@@ -3,12 +3,11 @@ import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { NotesService, NoteModel } from './notes.service';
 import { MindfulBadgeComponent } from '../mindful-badge/mindful-badge.component';
-import { MindfulDropdownComponent } from '../mindful-dropdown/mindful-dropdown.component';
 
 @Component({
   selector: 'notes-home',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulBadgeComponent, MindfulDropdownComponent],
+  imports: [CommonModule, IonicModule, MindfulBadgeComponent],
   templateUrl: './notes-home.component.html',
   styleUrls: ['./notes-home.component.scss']
 })

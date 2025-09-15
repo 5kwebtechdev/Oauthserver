@@ -7,7 +7,6 @@ import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module'
 import { MindfulSelectorsComponent } from '../../mindful-selectors/mindful-selectors.component';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { AddCalendarComponent } from '../../../../authenticated/add-calendar/add-calendar.component';
 import { HabitService } from '../habit.service';
 import { Habit } from '../habit.types';
 import { Router } from '@angular/router';
@@ -17,7 +16,7 @@ import { Router } from '@angular/router';
   selector: 'habit-input',
   templateUrl: './habit-input.component.html',
   styleUrls: ['./habit-input.component.scss'],
-  imports: [CommonModule, IonicModule, FormsModule, MindfulButtonComponent, MindfulInputsModule, MindfulSelectorsComponent, MindfulBadgeComponent, MindfulNavigatorComponent, AddCalendarComponent]
+  imports: [CommonModule, IonicModule, FormsModule, MindfulButtonComponent, MindfulInputsModule, MindfulSelectorsComponent, MindfulBadgeComponent, MindfulNavigatorComponent]
 })
 export class HabitInputComponent {
   title = '';
