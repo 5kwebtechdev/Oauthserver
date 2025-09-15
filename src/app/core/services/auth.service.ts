@@ -122,6 +122,52 @@ export class AuthService {
     return this.http.post<any>(url, payload);
   }
 
+  registerRequestOtp(identifier: string, isEmail: boolean, countryCode?: string) {
+    const headers = environment.apiAuthToken ? new HttpHeaders({
+      Authorization: environment.apiAuthToken,
+      'Content-Type': 'application/json'
+    }) : undefined;
+
+    const url = `${this.apiUrl}/auth/register/request-otp`;
+
+    const options: any = {
+      responseType: 'text'
+    };
+
+    if (headers) {
+      options.headers = headers;
+    }
+
+    const payload = isEmail
+      ? { email: identifier }
+      : { phone: countryCode ? `${countryCode}${identifier}` : identifier };
+
+    return this.http.post<string>(url, payload, options);
+  }
+
+  registerVerifyOtp(identifier: string, otp: string, isEmail: boolean, countryCode?: string) {
+    const url = `${this.apiUrl}/auth/register/verify-otp`;
+
+    const headers = environment.apiAuthToken ? new HttpHeaders({
+      Authorization: environment.apiAuthToken,
+      'Content-Type': 'application/json'
+    }) : undefined;
+
+    const options: any = {
+      responseType: 'text'
+    };
+
+    if (headers) {
+      options.headers = headers;
+    }
+
+    const payload = isEmail
+      ? { email: identifier, otp }
+      : { phone: countryCode ? `${countryCode}${identifier}` : identifier, otp };
+
+    return this.http.post<string>(url, payload, options);
+  }
+
   logout(): void {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_id');
