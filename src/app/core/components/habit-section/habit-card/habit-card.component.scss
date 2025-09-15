@@ -5,7 +5,57 @@
   padding: 0px;
   gap: 0px;
   width: 100%;
-  margin-top: 41px;
+  margin-bottom: 24px;
+}
+
+.glance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.glance-in-day {
+  font-weight: bold;
+  font-size: 24px;
+  margin-left: 4vw;
+}
+
+
+
+.glance-subtitle {
+  // margin-top: 1vw;
+  align-self: flex-start;
+  margin-left: 4vw;
+  margin-bottom: 20px;
+}
+
+// Tab Navigation
+.toggler {
+  display: flex;
+  background-color: #f5f5f5;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 0 16px 16px 16px;
+
+  .col-4 {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &.active {
+      background-color: #917DEC;
+      color: white;
+      font-weight: bold;
+    }
+  }
+}
+
+p {
+  color: #666;
+  font-size: 16px;
 }
 
 .empty-state {

@@ -35,4 +35,13 @@ export class HabitApi {
         const url = `${this.base}/habits/day?date=${date}`;
         return this.http.get(url, { headers: this.headers() });
     }
+
+    /**
+     * Get all habits for the user
+     * @returns Observable with all habits
+     */
+    getAllHabits(): Observable<any> {
+        const url = `${this.base}/habits/all`;
+        return this.http.get(url, { headers: this.headers() });
+    }
 }

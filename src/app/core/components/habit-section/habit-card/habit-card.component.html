@@ -7,7 +7,19 @@
     <img src="assets/app-assets/Time-management-home.svg" alt="View All" class="day-at-glance__view-all" (click)="openTimeline()" style="cursor:pointer;" />
   </mindful-card-header>
 
-    <div class="empty-state" *ngIf="isEmpty && !showContent">
+    <!-- Tab Navigation -->
+    <div class="container w-full">
+      <div class="row toggler">
+        <div class="col-4" (click)="switchTab('all')" [ngClass]="currentActive === 'all' ? 'active' : ''">All</div>
+        <div class="col-4" (click)="switchTab('habits')" [ngClass]="currentActive === 'habits' ? 'active' : ''">Habits
+        </div>
+        <div class="col-4" (click)="switchTab('tasks')" [ngClass]="currentActive === 'tasks' ? 'active' : ''">Tasks
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="isEmpty">
       <div class="empty-state-content">
         <div class="empty-state-image">
           <img src="assets/app-assets/yourGlance.svg" alt="Empty day illustration">
@@ -18,28 +30,32 @@
       </div>
     </div>
   </div>
-  <div class="add-button-container" *ngIf="isEmpty">
+
+  <!-- Habit Items -->
+  <div class="d-flex flex-column container w-full" style="margin-top: 20px; gap: 16px"
+    *ngIf="(currentActive === 'habits' || currentActive === 'all') && hasHabits">
+    <habit-card *ngFor="let habitItem of habits.slice(0, maxItemsToShow)" [habit]="habitItem"
+      [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
+      [inProgress]="isHabitInProgress(habitItem)" mode="single">
+    </habit-card>
+  </div>
+
+  <!-- Task Items -->
+  <div class="d-flex flex-column container w-full" style="margin-top: 20px; gap: 16px"
+    *ngIf="(currentActive === 'tasks' || currentActive === 'all') && hasTasks">
+    <habit-card *ngFor="let taskItem of tasks.slice(0, maxItemsToShow)" [habit]="taskItem"
+      [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
+      mode="single">
+    </habit-card>
+  </div>
+
+  <!-- CTA Buttons -->
+  <div class="add-button-container" [class.mt-4]="!isEmpty">
     <mindful-button type="magenta" text="+ Add new" large style="display:block; width:100%"
       (click)="openHabitInput()"></mindful-button>
     <mindful-button type="magenta-transparent" text="View All" large style="display:block; width:100%; margin-top: 10px"
       (click)="openHabitPage()"></mindful-button>
   </div>
-</div>
-
-
-<!-- <div class="container w-full" *ngIf="showContent">
-  <div class="row toggler">
-    <div class="col-4" (click)="currentActive = 'all'" [ngClass]="currentActive === 'all' ? 'active' : 'null'">All</div>
-    <div class="col-4" (click)="currentActive = 'habits'" [ngClass]="currentActive === 'habits' ? 'active' : 'null'">Habits</div>
-    <div class="col-4" (click)="currentActive = 'tasks'" [ngClass]="currentActive === 'tasks' ? 'active' : 'null'">Tasks</div>
-  </div>
-</div> -->
-
-<div class="container w-full" style="margin-top: 20px" *ngIf="showContent">
-  <habit-card [startTime]="1745484315000" [endTime]="1745489715000" inProgress mode="single"></habit-card>
-  <habit-card [startTime]="1745484315000" [endTime]="1745486115000" mode="single"></habit-card>
-  <habit-card [startTime]="1745484315000" [endTime]="1745486115000" inProgress mode="single"></habit-card>
-  <habit-card [startTime]="1745484315000" [endTime]="1745486115000" mode="single"></habit-card>
 </div>
 
 <!-- habit-task-card -->
