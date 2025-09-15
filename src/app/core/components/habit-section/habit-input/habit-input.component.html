@@ -238,12 +238,16 @@
         </div>
       </div>
 
-      <div class="timetable-header"
-        style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;">
-        <h3 style="margin:0;font-weight:600;color:#6B656A">Add Your Perfect Schedule</h3>
-        <div style="width:140px;text-align:right;">
-          <mindful-datepicker type="date" [(ngModel)]="startDate"></mindful-datepicker>
-        </div>
+      <div class="timetable-header">
+        <h3>Add Your Perfect Schedule</h3>
+        <div class="timetable-date-input">
+          <div class="timetable-datepicker">
+            <mindful-datepicker type="date" [(ngModel)]="startDate"></mindful-datepicker>
+            <div class="timetable-chevron">
+              <img src="assets/app-assets/Chevron-down-time-table-input-icon.svg" alt="open date picker" />
+            </div>
+          </div>
+      </div>
       </div>
 
       <div class="timetable-list" style="padding:0 24px 16px 24px;">

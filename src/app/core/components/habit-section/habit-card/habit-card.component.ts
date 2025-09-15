@@ -2,6 +2,8 @@ import { Component, Input, OnInit, ViewChild, ElementRef, booleanAttribute, Afte
 import { NgClass, NgIf, CommonModule } from "@angular/common";
 import { LongPressDirective } from "../../../directives/gestureControlDirective";
 import { MindfulButtonComponent } from "../../mindful-button/mindful-button.component";
+import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
+import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.component';
 import { ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { HabitCardService } from 'src/app/core/components/habit-section/habit-card/habit-card.service';
@@ -20,6 +22,8 @@ import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.compone
     NgClass,
     LongPressDirective,
     MindfulButtonComponent,
+  MindfulCardHeaderComponent,
+  ViewAllComponent,
     MindfulBadgeComponent
   ]
 })
@@ -83,6 +87,12 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
   async openHabitPage() {
     // Navigate to the habit page route so the user lands on the full Habit Page
     await this.router.navigateByUrl('/habit-page');
+  }
+
+  async openTimeline() {
+    // Navigate to the app timeline page. The AuthenticatedModule is mounted at '/authed'
+    // so the timeline route is available at '/authed/timeline'.
+    await this.router.navigateByUrl('/authed/timeline');
   }
 
   async openHabitInput() {

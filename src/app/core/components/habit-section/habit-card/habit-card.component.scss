@@ -5,34 +5,7 @@
   padding: 0px;
   gap: 0px;
   width: 100%;
-  margin-bottom: 24px;
-}
-
-.glance-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.glance-in-day {
-  font-weight: bold;
-  font-size: 24px;
-  margin-left: 4vw;
-}
-
-
-
-.glance-subtitle {
-  // margin-top: 1vw;
-  align-self: flex-start;
-  margin-left: 4vw;
-
-  p {
-    color: #666;
-    font-size: 16px;
-
-  }
+  margin-top: 41px;
 }
 
 .empty-state {

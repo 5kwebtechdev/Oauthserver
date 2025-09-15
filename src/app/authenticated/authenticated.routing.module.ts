@@ -3,7 +3,7 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import {AuthenticatedComponent} from "./authenticated.component";
 import {UserDashboardComponent} from "./user-dashboard/user-dashboard.component";
 import {ProfileComponent} from "./profile/profile.component";
-import {TimelineComponent} from "../core/components/timeline/timeline.component";
+import {TimelineComponent} from "../core/components/habit-section/timeline/timeline.component";
 import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
 
 

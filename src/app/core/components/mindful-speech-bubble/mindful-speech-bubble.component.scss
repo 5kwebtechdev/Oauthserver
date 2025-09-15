@@ -1,13 +1,6 @@
-// ==========================
-// VARIABLES
-// ==========================
 $bubble-bg: #fff;
 $bubble-text: #282527;
 
-
-// ==========================
-// BASE SPEECH BUBBLE
-// ==========================
 .speech-bubble {
   position: relative;
   display: inline-flex;
@@ -32,19 +25,13 @@ $bubble-text: #282527;
   overflow: visible;
   transition: background 0.2s;
 
-  /* Arrow positioning (default offset) */
   --arrow-offset: 100%;
 }
 
-
-// ==========================
-// SVG ARROW (uses inline SVG .bubble-arrow)
-// ==========================
-/* default CSS variables; can be overridden on the component */
 .speech-bubble {
-  --arrow-size: 12px;     /* vertical half-height */
-  --arrow-length: 20px;   /* horizontal length sticking out */
-  --arrow-offset: 50%;    /* percent along the side */
+  --arrow-size: 12px;
+  --arrow-length: 20px;
+  --arrow-offset: 50%;
   --arrow-angle: 0deg;
 }
 
@@ -61,38 +48,30 @@ $bubble-text: #282527;
   stroke: none;
 }
 
-/* bottom (default triangle points down in the SVG) */
 .speech-bubble[data-side="bottom"] .bubble-arrow {
   left: var(--arrow-offset, 50%);
   transform: translateX(-50%) rotate(var(--arrow-angle, 0deg));
   bottom: calc(var(--arrow-size) * -0.45);
 }
 
-/* top — rotate 180deg so triangle points up */
 .speech-bubble[data-side="top"] .bubble-arrow {
   left: var(--arrow-offset, 50%);
   transform: translateX(-50%) rotate(calc(180deg + var(--arrow-angle, 0deg)));
   top: calc(var(--arrow-size) * -0.45);
 }
 
-/* left — rotate -90deg so triangle points left */
 .speech-bubble[data-side="left"] .bubble-arrow {
   top: var(--arrow-offset, 50%);
   left: calc(var(--arrow-size) * -0.45);
   transform: translateY(-50%) rotate(calc(-90deg + var(--arrow-angle, 0deg)));
 }
 
-/* right — rotate 90deg so triangle points right */
 .speech-bubble[data-side="right"] .bubble-arrow {
   top: var(--arrow-offset, 50%);
   right: calc(var(--arrow-size) * -0.45);
   transform: translateY(-50%) rotate(calc(90deg + var(--arrow-angle, 0deg)));
 }
 
-
-// ==========================
-// THINKING BUBBLE
-// ==========================
 .speech-bubble.thinking {
   position: relative;
 
@@ -132,15 +111,11 @@ $bubble-text: #282527;
   bottom: -24px;
 }
 
-
-// ==========================
-// MESSAGE CONTENT
-// ==========================
 .bubble-message {
   position: relative;
   z-index: 2;
 
   display: block;
-  width: 288px; /* fixed width */
+  width: 288px;
   text-align: center;
 }

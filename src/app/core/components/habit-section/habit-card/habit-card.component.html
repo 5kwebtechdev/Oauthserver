@@ -1,13 +1,11 @@
 <!-- List Mode -->
 <div *ngIf="mode === 'list'">
   <div class="day-at-glance-container">
-    <div class="glance-header">
-      <h2 class="glance-in-day">Your Day at a Glance</h2>
-    </div>
-
-    <div class="glance-subtitle">
-      <p>Check tasks • Finish habits • Crush it</p>
-    </div>
+   <mindful-card-header
+    [title]="'Your Day at a Glance'"
+    [subtitleMiddle]="'Check tasks • Finish habits • Crush it'">
+    <img src="assets/app-assets/Time-management-home.svg" alt="View All" class="day-at-glance__view-all" (click)="openTimeline()" style="cursor:pointer;" />
+  </mindful-card-header>
 
     <div class="empty-state" *ngIf="isEmpty && !showContent">
       <div class="empty-state-content">

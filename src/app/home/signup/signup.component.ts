@@ -936,7 +936,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.loginMode === 'email' || (identifier && identifier.includes('@'))) {
       payload.email = identifier;
     } else {
-      payload.phone = identifier;
+      const contactNumber = sessionStorage.getItem('countryCode') || this.selectedCountry.code;
+      payload.phone = contactNumber + identifier;
     }
 
     // dateOfBirth should be in milliseconds since epoch if available

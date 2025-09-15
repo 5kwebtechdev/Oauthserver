@@ -167,12 +167,64 @@
   /* timetable color */
 }
 
-.timetable-header h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #6B656A;
+.timetable-header{
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 36px;
 }
 
+.timetable-header h3 {
+  color: #6B656A;
+  font-family: Nunito, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+}
+
+.timetable-date-input{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+}
+
+.timetable-datepicker {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  
+}
+
+.timetable-datepicker .date-text,
+.timetable-datepicker mindful-datepicker {
+  color: #282527;
+  font-family: Nunito, sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  padding:0px !important;
+}
+
+.timetable-chevron{
+  width: 16px;
+  height: 16px;
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timetable-chevron img{
+  width: 16px;
+  height: 16px;
+  transform: rotate(-90deg);
+  aspect-ratio: 1/1;
+  display: block;
+}
 .timetable-list {
   margin-top: 8px;
 }
