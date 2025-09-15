@@ -8,67 +8,7 @@
   margin-top: 8vh;
 }
 
-.reels-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 6px;
-}
-
-.titles {
-  display: flex;
-  flex-direction: column;
-}
-
-.heading {
-  font-family: 'Fredoka', sans-serif;
-  font-size: clamp(16px, 3.2vw, 20px);
-  margin: 0;
-}
-
-.tagline {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  opacity: 0.8;
-  font-family: 'Nunito', sans-serif;
-  font-size: 13px;
-}
-
-.see-all {
-  background: none;
-  border: 0;
-  color: #90214D;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 600;
-  font-size: 16px;
-  position: relative;
-  margin-top: -20px;
-
-
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 18px;
-    width: 77px;
-    height: 0;
-    border-top: 1px solid currentColor;
-    opacity: 0.9;
-    z-index: 2;
-  }
-}
-
-.see-all .fa-chevron-right,
-.see-all .fa-solid.fa-chevron-right {
-  display: inline-block;
-  width: 6px;
-  height: 10px;
-  font-size: 10px; /* match height */
-  line-height: 10px;
-  vertical-align: middle;
-  text-align: center;
-}
+/* Header styles removed — header now provided by mindful-card-header component */
 
 .reels-swiper {
   padding: 6px 6px 18px;

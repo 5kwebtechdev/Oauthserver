@@ -14,6 +14,10 @@ const routes: Routes = [
     loadComponent: () => import('./core/components/content-card/content-main/content-main.component').then(m => m.ContentMainComponent)
   },
   {
+    path: 'quizzes',
+    loadComponent: () => import('./core/components/content-card/content-quiz/content-quiz.component').then(m => m.ContentQuizComponent)
+  },
+  {
     path: 'content/viewall',
     loadComponent: () => import('./core/components/content-card/content-viewall/content-viewall.component').then(m => m.ContentViewallComponent)
   },

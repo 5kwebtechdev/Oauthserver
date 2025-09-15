@@ -6,13 +6,14 @@ import {HabitCardComponent} from "../../core/components/habit-section/habit-card
 // ChallengeCardComponent removed from imports because it's not used in the template
 import {ContentCardComponent} from "../../core/components/content-card/content-card.component";
 import {AdBannerComponent} from '../../core/components/ad-banner/ad-banner.component';
-import {TutorCardComponent} from "../../core/components/tutor-card/tutor-card.component";
+import {TutorCardComponent} from "../../core/components/tutor-section/tutor-card/tutor-card.component";
 import {ReelsCardComponent} from "../../core/components/reels-card/reels-card.component";
 import {JournalsComponent} from "../../core/components/journals/journals.component";
 import {AcademySectionComponent} from "../../core/components/academy-section/academy-section.component";
 import {IonicModule} from "@ionic/angular";
 import {MindfulInputsModule} from "../../core/components/mindful-inputs/mindful-inputs.module";
 import {MoodSelectorComponent} from "../../core/components/mood-selector/mood-selector.component";
+import { MindfulSpeechBubbleComponent } from '../../core/components/mindful-speech-bubble/mindful-speech-bubble.component';
 // AdBannerComponent import removed (not used)
 import {MindfulPetComponent} from '../../core/components/mindful-pet/mindful-pet.component';
 
@@ -22,18 +23,19 @@ import {MindfulPetComponent} from '../../core/components/mindful-pet/mindful-pet
   styleUrls: ['./user-dashboard.component.scss'],
   standalone: true,
   imports: [
-  CommonModule,
-  HabitCardComponent,
-  AdBannerComponent,
-  ContentCardComponent,
-  ReelsCardComponent,
-  TutorCardComponent,
-  JournalsComponent,
-  AcademySectionComponent,
-  IonicModule,
-  MoodSelectorComponent,
-  MindfulInputsModule,
-  MindfulPetComponent,
+    CommonModule,
+    HabitCardComponent,
+    AdBannerComponent,
+    ContentCardComponent,
+    ReelsCardComponent,
+    TutorCardComponent,
+    JournalsComponent,
+    AcademySectionComponent,
+    IonicModule,
+    MoodSelectorComponent,
+    MindfulInputsModule,
+    MindfulPetComponent,
+    MindfulSpeechBubbleComponent,
   ]
 })
 export class UserDashboardComponent implements OnInit {
@@ -57,6 +59,12 @@ export class UserDashboardComponent implements OnInit {
   }
 
   ngOnInit() {}
+
+  get greetingMessage(): string {
+    // build the message in TypeScript to avoid template parsing issues with quotes and newlines
+    const name = this.userName || 'there';
+    return `Hey ${name}, Still Panda! \n\n🌟 You've got 5 tasks, 2 habits, and a challenge waiting for you today. Let’s go!`;
+  }
 
   onMoodChange(mood: string) {
     this.selectedMood = mood;

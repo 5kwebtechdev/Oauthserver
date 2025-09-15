@@ -5,6 +5,8 @@ export type buttonStyles =
   | 'lavendar-transparent'
   | 'violet'
   | 'violet-transparent'
+  | 'columbian-blue'
+  | 'pink'
   | 'orange'
   | 'orange-light'
   | 'orange-transparent'

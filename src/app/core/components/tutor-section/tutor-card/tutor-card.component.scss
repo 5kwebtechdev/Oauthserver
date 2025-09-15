@@ -1,0 +1,24 @@
+ $primary-text: #282527;
+ $accent: #90214D;
+ $card-bg: #D6E3EF;
+ $heart-color: #E1527C;
+ $cta-grad-start: #7284B9;
+ $cta-grad-end: #505D83;
+
+.tutors-section {
+	display: flex;
+	width: 361px;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 12px;
+	margin-left: 16px;
+
+}
+@media (max-width: 420px) {
+	.tutors-section {
+		width: 92vw;
+		&__card { width: 100%; }
+		&__header { width: 100%; }
+	}
+}
+

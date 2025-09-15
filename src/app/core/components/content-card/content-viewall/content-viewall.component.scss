@@ -12,6 +12,7 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
+  padding: 12px;
   gap: 12px;
 }
 
@@ -64,7 +65,9 @@
 }
 
 .viewall-body {
-  margin-top: 18px;
+  width: 361px;
+height: 246px;
+flex-shrink: 0;
 }
 
 .challenges-list {
@@ -113,10 +116,10 @@
 .card-image {
   /* now an <img> element: make it fill the card width and crop via object-fit */
   display: block;
-  width: 100%;
+  width: 361.19px;
   height: 205px;
   flex-shrink: 0;
-  aspect-ratio: 37 / 21;
+  aspect-ratio: 37/21;
   object-fit: cover;
   object-position: 50% 50%;
   background-color: lightgray; /* shows while image is loading or if it fails */

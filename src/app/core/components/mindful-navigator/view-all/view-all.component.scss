@@ -1,0 +1,51 @@
+.view-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.btn-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-text {
+  color: #90214D;
+  font-family: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%; /* 22.4px */
+}
+
+.btn-icon {
+  width: 12px;
+  height: 12px;
+  aspect-ratio: 1/1;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+/* If the svg inside the file needs smaller internal sizing, the svg should be authored accordingly.
+   We still set the fill color in case the svg inherits 'currentColor'. */
+.btn-icon svg {
+  width: 6.211px;
+  height: 10.235px;
+  fill: #90214D;
+}
+
+.btn-underline {
+  width: 77px;
+  height: 0;
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  stroke-width: 0.5px;
+  border-bottom: 0.5px solid #90214D;
+}

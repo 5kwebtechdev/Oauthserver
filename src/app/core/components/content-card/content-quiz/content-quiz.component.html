@@ -1,0 +1,48 @@
+<section class="quiz-page">
+  <header class="quiz-header">
+    <div class="nav-left">
+      <img src="/assets/images/Close.png" class="close-icon" />
+      <h2 class="title">Title</h2>
+    </div>
+      <div class="timer">
+        <img src="/assets/images/timer.png" class="timer-icon" />
+        <p class="timer-value">05:00</p>
+      </div>
+  </header>
+
+  <div class="progress-row">
+    <div class="progress-bar">
+      <div class="progress" style="width:25%"></div>
+    </div>
+  </div>
+
+  <div class="question-area">
+    <mindful-pet pet="panda" sizePreset="96"></mindful-pet>
+    <div class="speech-bubble">{{ question }}</div>
+  </div>
+
+  <h3 class="prompt">Tap the correct answer</h3>
+
+  <div class="answers">
+    <div *ngFor="let a of answers" class="answer-row">
+      <mindful-button type="lavendar-transparent" large [text]="a.text" (click)="onSelect(a.id)"></mindful-button>
+    </div>
+  </div>
+
+  <div class="hint-row">
+    <div class="hint-left">
+      <div class="stuck">Stuck?</div>
+      <div class="hint-sub">Need a hint for 20 coins?</div>
+    </div>
+    <div class="hint-right">
+      <div class="hint-btn">
+        <mindful-button type="lavendar" text="Hint" (click)="onHint()"></mindful-button>
+      </div>
+      <div class="hints-left">2/2 remaining</div>
+    </div>
+  </div>
+
+  <div class="next-cta">
+    <mindful-button type="green" text="Next Question" large (click)="onNext()"></mindful-button>
+  </div>
+</section>

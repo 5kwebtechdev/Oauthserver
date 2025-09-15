@@ -1,0 +1,62 @@
+.mindful-card-header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 92vw;
+}
+
+.mindful-card-header__left{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  flex: 1 1 auto; 
+}
+
+.mindful-card-header__title{
+  margin:0;
+  font-family: Fredoka;
+  font-size: 20px;
+  font-weight: 500;
+  color: #282527;
+}
+
+.mindful-card-header__tagline{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  opacity:0.7;
+}
+
+.mindful-card-header__tagline .tag{
+  font-family: Nunito;
+  font-size:13px;
+  font-weight:500;
+  color: #282527;
+}
+
+.mindful-card-header__tagline .dot{
+  width:4px;
+  height:4px;
+}
+
+.mindful-card-header__actions{
+  display:flex;
+  gap:8px; /* space between projected actions */
+  align-items:center;
+  justify-content:flex-end;
+  min-width: 0;
+}
+
+.mindful-card-header__right{
+  display:flex;
+  align-items:center;
+  min-width: 0;
+  padding-right: 8px;
+  flex: 0 0 auto;
+  margin-top: -20px;
+
+}
+.mindful-card-header__actions > * {
+//   margin-left: 4px;
+  flex: 0 0 auto;
+}

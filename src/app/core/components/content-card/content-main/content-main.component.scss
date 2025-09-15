@@ -2,35 +2,37 @@
 .content-page {
 	width: 393px;
 	height: 2531px;
-	border-radius: 24px;
 	background: #fffcfc;
-	padding: 16px;
-	box-sizing: border-box;
 	overflow-x: hidden; /* prevent horizontal scroll when children are full-width */
 
 	/* ensure all descendants respect box-sizing so padding doesn't cause overflow */
 	&, & * , & *::before, & *::after { box-sizing: inherit; }
 
 		.content-main {
-			display: flex;
-			justify-content: center;
-			padding: 12px;
+			width: 393px;
+            height: 254px;
+            flex-shrink: 0;
+
+		
 
 			.card {
 				position: relative;
-				width: 393px; /* fill inner container (393 - 32 = 361px available) */
+			display: flex; /* ensure margin auto works as expected */
+			/* center inner content */
+			justify-content: center; /* center children horizontally */
+			align-items: center; /* center children vertically */
 				//max-width: 361px; /* explicit inner max to match padding */
-				height: 254px;
+				height: 254px; /* requested height */
 				flex-shrink: 0;
-				border-radius: 24px 24px 48px 48px;
+				border-radius: 24px 24px 48px 48px; /* requested radii */
 				overflow: hidden;
-				background: lightgray; /* fallback */
+				background: url('/assets/app-assets/Container bg.svg') lightgray 50% / cover no-repeat; /* requested background shorthand */
 
 				.card-bg {
 					position: absolute;
 					inset: 0;
 					/* use an existing banner asset as background; replace with a dedicated image if provided */
-				    background: url('/assets/app-assets/Elite-club-banner-original.svg') center/cover no-repeat;
+				    background: url('/assets/app-assets/Container bg.svg') center/cover no-repeat;
 					filter: none;
 					z-index: 0;
 				}
@@ -38,7 +40,7 @@
 				.card-content {
 					position: relative;
 					z-index: 2;
-					padding: 16px 12px; /* no horizontal padding because we use max-width on card */
+					padding: 16px; /* no horizontal padding because we use max-width on card */
 					display: flex;
 					flex-direction: column;
 					gap: 16px;
@@ -60,6 +62,7 @@
 				.search-row {
 					display: flex;
 					align-items: center;
+					padding: 16px;
 					gap: 12px;
 					width: 100%;
 					z-index: 2;
@@ -130,6 +133,7 @@
 			display: inline-flex;
 			justify-content: center; /* keep within width */
 			align-items: center;
+			padding: 16px;
 			gap: 24px; /* updated per spec */
 			margin-top: 16px;
 			max-width: 361px;
@@ -259,116 +263,105 @@
 			margin-right: auto;
 		}
 
-		.nav-footer {
-			width: 100%;
-			flex-shrink: 0;
-			display: flex;
-			justify-content: center;
-			align-items: flex-end;
-			position: relative;
-			margin-top: 24px;
-		}
-
-		.nav-inline {
-			width: 100%;
-			max-width: 361px;
-			height: 80px;
-			border-radius: 0 0 24px 24px;
-			background: #FDFDFD;
-			box-shadow: 0 0 12px 0 rgba(107, 101, 106, 0.15);
-			display: flex;
-			align-items: center;
-			justify-content: space-around;
-			padding: 0 12px;
-			margin-left: auto;
-			margin-right: auto;
-		}
-
-		.nav-item { text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 6px; opacity: 0.7; }
-
-		.content-item .content-icon, .coins-item .coin-icon, .tutors-item .tutor-icon, .analytics-item .analytics-icon { width: 24px; height: 24px; }
-
-		.content-item .nav-label { color: #90214D; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600; line-height: 140%; }
-
-		.coins-item { display: flex; width: auto; flex-direction: column; justify-content: center; align-items: center; gap: 6px; }
-
-		.coins-item .coins-label { color: #979396; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600; line-height: 140%; }
-
-		.center-item { display: flex; align-items: center; justify-content: center; margin-top: -28px; }
-
-		.center-item .center-circle { width: 72px; height: 72px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-
-		.tutors-item { display: flex; width: auto; flex-direction: column; align-items: center; gap: 6px; }
-
-		.tutors-item .tutors-label { color: #6B656A; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600; line-height: 140%; }
-
-		.analytics-item { display: inline-flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; }
-
-		.analytics-item .analytics-label { color: #6B656A; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600; line-height: 140%; }
+	
 	}
 
 /* Elite section styles (background image, blurred layer, content on top) */
 /* Elite section (single section) */
 .elite-section{
-  position: relative;
-  width: 100%;
+  width: 393px;
+  height: 650px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 /* title above image (not on top of background) */
-.elite-header{
-  width: 344px;
-  height: 28px;
-  max-width: 361px;
-  margin: 12px auto 8px;
-  font-family: 'Fredoka', sans-serif;
-  font-size: 16px;
-  color: #282527;
-  font-weight: 500;
-  text-align: center;
+
+.elite-title{
+color: #282527;
+font-family: Fredoka;
+font-size: 20px;
+padding: 16px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 28px */
 }
+
+
 
 /* container with blurred background as pseudo element */
 .elite-container{
-  position: relative;
-  width: 100%;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding: 18px 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 393px;
+	height: 495px;
+	flex-shrink: 0;
+	background: rgba(217, 143, 21, 0.70);
+	/* center horizontally within parent */
+	margin-left: auto;
+	margin-right: auto;
+	display: block; /* ensure margin auto works as expected */
+
 }
 
-.elite-container::before{
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 1055.314px;
-  height: 599px;
-  flex-shrink: 0;
-  aspect-ratio: 747 / 424;
-  background: linear-gradient(180deg, rgba(197,136,51,0.20) 0%, rgba(197,136,51,0.40) 100%), url('/assets/app-assets/generated-image 2.svg') lightgray 50% / cover no-repeat;
-  filter: blur(2px);
-  border-radius: 12px;
-  z-index: 0;
+.elite-banner{
+width: 393px;
+height: 495px;
+flex-shrink: 0;
+}
+.elite-club {
+	color: #FFF;
+font-family: Fredoka;
+text-align: center;
+font-size: 32px;
+font-style: normal;
+
+font-weight: 500;
+line-height: 140%; /* 44.8px */
 }
 
-/* content that sits above blurred layer */
-.elite-content{ position: relative; z-index: 2; display:flex; flex-direction:column; align-items:center; gap:12px; }
+.elite-desc{
+color: #FFF;
+text-align: center;
+font-family: Nunito;
+font-size: 13px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 18.2px */
+}
 
-/* title and description styles (as you requested) */
-.elite-title{ color:#FFF; font-family:'Fredoka',sans-serif; font-size:32px; font-weight:500; line-height:140%; margin:0; }
-.elite-desc{ width:312px; color:#FFF; text-align:center; font-family:'Nunito',sans-serif; font-size:13px; font-weight:500; line-height:140%; margin:0; }
+.elite-frame {
+flex-direction: column;
+gap: 2px;
+}
 
-/* frame and coin */
-.elite-frame{ display:flex; width:145px; flex-direction:column; align-items:center; gap:2px; margin-top:8px; }
-.frame-text{ align-self:stretch; color:#FFF; text-align:center; font-family:'Nunito',sans-serif; font-size:16px; font-weight:700; line-height:140%; }
-.price{ display:flex; align-items:center; gap:6px; }
-.coin{ width:24px; height:27px; aspect-ratio:8/9; background: url('/assets/images/Currency icon 2.png') lightgray -6.14px -2.755px / 148.837% 130.612% no-repeat; display:inline-block; }
-.price-value{ color:#FFF; font-family:'Nunito',sans-serif; font-size:13px; font-weight:600; line-height:140%; }
+.frame-text {
+	align-self: stretch;
+	color: #FFF;
+    text-align: center;
+    font-family: Nunito;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 140%; /* 22.4px */
+}
+
+.price {
+	color: #FFF;
+text-align: center;
+font-family: Nunito;
+text-align: center;
+font-size: 13px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 18.2px */
+}
+
+
+
 
 /* Upgrade button centered and overlapping bottom half of the background image */
 .upgrade-now-cta{

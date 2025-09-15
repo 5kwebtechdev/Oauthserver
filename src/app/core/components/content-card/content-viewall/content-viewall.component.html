@@ -1,6 +1,6 @@
 <!-- Header: Today's Challenge -->
-<section class="content-viewall-screen">
-  <header class="cv-header">
+<div class="content-viewall-screen">
+  <div class="cv-header">
     <button class="back-btn" (click)="goBack()" aria-label="Back">
       <!-- back icon -->
       <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
@@ -20,7 +20,7 @@
         <span class="chip">Grow daily</span>
       </div>
     </div>
-  </header>
+  </div>
   <!-- challenges list -->
   <div class="viewall-body">
     <div class="challenges-list">
@@ -28,7 +28,6 @@
       class="challenge-card"
       *ngFor="let challenge of challenges"
       (click)="onChallengeClick(challenge)">
-
       <div class="card-header">
         <div class="status-indicator" [style.background-color]="challenge.statusColor">
           <i class="fas fa-circle"></i>
@@ -77,4 +76,4 @@
     </div>
     </div>
   </div>
-</section>
+</div>

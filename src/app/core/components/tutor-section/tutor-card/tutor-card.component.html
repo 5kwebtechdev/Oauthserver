@@ -1,0 +1,18 @@
+<section class="tutors-section" aria-labelledby="tutors-title">
+  <mindful-card-header
+    [title]="'Your Guides to Greatness!'"
+    [subtitleLeft]="'Pick tutor'"
+    [subtitleMiddle]="'Learn'"
+    [subtitleRight]="'Level up'">
+    <mindful-view-all mindful-header-actions
+      href="/tutors"
+      (clicked)="onViewAll()"
+      class="tutors-section__view-all">
+    </mindful-view-all>
+  </mindful-card-header>
+
+  <div class="tutors-section__list" role="list">
+    <tutor-list [tutors]="tutors" (viewProfile)="onViewProfile($event)"></tutor-list>
+  </div>
+</section>
+

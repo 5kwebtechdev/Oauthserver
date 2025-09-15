@@ -1,0 +1,24 @@
+<header class="mindful-card-header">
+  <div class="mindful-card-header__left">
+    <h3 class="mindful-card-header__title">{{ title }}</h3>
+    <div class="mindful-card-header__tagline">
+      <span class="tag">{{ subtitleLeft }}</span>
+      <ng-container *ngIf="subtitleMiddle">
+        <img class="dot" src="/assets/app-assets/Ellipse 109.svg" alt="" aria-hidden="true"/>
+        <span class="tag">{{ subtitleMiddle }}</span>
+      </ng-container>
+      <ng-container *ngIf="subtitleRight">
+        <img class="dot" src="/assets/app-assets/Ellipse 109.svg" alt="" aria-hidden="true"/>
+        <span class="tag">{{ subtitleRight }}</span>
+      </ng-container>
+    </div>
+  </div>
+
+  <div class="mindful-card-header__right">
+    <div class="mindful-card-header__actions">
+      <ng-content select="[mindful-header-actions]"></ng-content>
+
+      <ng-content></ng-content>
+    </div>
+  </div>
+</header>

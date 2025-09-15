@@ -62,12 +62,20 @@
     </div>
         
         <!-- Speech bubble message card -->
-        <aside class="message-card bubble" role="status" aria-live="polite" aria-label="Greeting message">
-          <div class="bubble-inner">
-            <p class="greeting-text">Hey, <strong>{{ userName }}</strong>!</p>
-            <p class="message-text">I'll be right here helping you grow, learn, and celebrate every step!</p>
-          </div>
-        </aside>
+        <app-speech-bubble
+          [message]="greetingMessage"
+          type="talking"
+          arrowSide="right"
+          [arrowSize]="16"
+          arrowOffset="30px"
+          [arrowAngle]="10"
+          color="#fff"
+          textColor="#282527"
+          style="margin-bottom: 12px;"
+          aria-label="Greeting message"
+          role="status"
+          aria-live="polite"
+        ></app-speech-bubble>
         
         <div class="digital-pet" aria-hidden="false">
         <!-- Reusable mindful-pet component: default pet is panda and age is 1 -->

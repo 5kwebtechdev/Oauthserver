@@ -23,7 +23,7 @@
               <img src="/assets/app-assets/Coins-icon-common.svg" alt="token" class="icon token"> <span class="amount">{{ item.rewards?.coins }}</span>
               <img src="/assets/app-assets/Trophies-icon-common.svg" alt="trophy" class="icon trophy"> <span class="amount">{{ item.rewards?.trophies }}</span>
             </div>
-            <mindful-button type="plum" [text]="item.cta || 'Open'" (click)="onItemClick(item, i)"></mindful-button>
+            <mindful-button type="pink" [text]="item.cta || 'Open'" (click)="onItemClick(item, i); $event?.stopPropagation()"></mindful-button>
           </div>
         </div>
       </ng-template>
