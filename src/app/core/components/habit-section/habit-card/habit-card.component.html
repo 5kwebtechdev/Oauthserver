@@ -45,35 +45,50 @@
 </div>
 
 <!-- habit-task-card -->
-<div *ngIf="mode === 'single'" class="container w-full p-0">
-  <div class="habit-wrapper" (tap)="toggle()" long-press (press)="console.log('Long pressed')"
+<div *ngIf="mode === 'single'" class="container w-full h-full p-0">
+  <div class="habit-wrapper"
     [ngClass]="{'expanded': expanded, 'isRunningLate': isRunningLate,'missedTime': missedTime}">
-    <div class="habit-tease">
+    <div class="habit-header-container clickable" (tap)="toggle()" long-press (press)="console.log('Long pressed')">
       <div class="container w-full p-0">
-        <div class="row">
-          <div class="col-8">
+        <div class="d-flex justify-content-between">
+          <div class="flex-column d-flex gap-1">
             <h3>{{habit?.title || 'Habit'}}</h3>
-            <h4>{{getFormattedTime(habit?.startTimeStamp || startTime)}} - {{getFormattedTime(habit?.endTimeStamp ||
-              endTime)}}</h4>
+            <h4>{{habit?.startTime || getFormattedTime(startTime)}} - {{habit?.endTime || getFormattedTime(endTime)}}
+            </h4>
           </div>
-          <div class="col-4" style="position: relative">
+          <div class="d-flex gap-1 align-self-baseline">
+            <img class="mornig-sun" src="assets/sun.png" alt="" height="24" width="24">
             <div class="badge">
-              {{habit?.selectedRoutine || 'Routine'}}
+              {{getTagOrRoutine()}}
             </div>
+            <!-- Indicator that this is expandable -->
+            <!-- <div class="expand-indicator" [ngClass]="{'rotated': expanded}">
+              <span>+</span>
+            </div> -->
           </div>
         </div>
       </div>
     </div>
-    <div #percentageWrapper class="habit-footer-progress"></div>
-    <div class="habit-footer">
-      <div class="container w-full p-0" style="background: white; height: 45px; border-radius: 0 0 20px 20px">
-        <div class="single-point-container">
-          <img class="score p-r-0" src="assets/icons/fire-slash-ball.svg" alt="">
-          <p class="score p-l-0">200</p>
-        </div>
-        <div class="single-point-container">
-          <img class="score" src="assets/icons/coin.svg" alt="">
-          <p class="score p-l-0">12</p>
+    <!-- Expandable content wrapper with animation -->
+    <div class="habit-expandable-content" [ngClass]="{'expanded': expanded}">
+      <div #percentageWrapper class="habit-footer-progress"></div>
+      <div class="habit-footer-container">
+        <div class="container w-full justify-content-between d-flex"
+          style="background: white; height: 45px; border-radius: 0 0 20px 20px; padding: 0px; width: 100%;">
+          <div class="d-flex reward-section">
+            <div class="single-point-container">
+              <img class="score p-r-0" src="assets/icons/fire-slash-ball.svg" alt="">
+              <p class="score p-l-0">100</p>
+            </div>
+            <div class="single-point-container">
+              <img class="score" src="assets/icons/coin.svg" alt="">
+              <p class="score p-l-0">{{getCoinReward()}}</p>
+            </div>
+          </div>
+          <div class="d-flex footer-cta">
+            <mindful-button type="lavendar" text="Let`s Go" (click)="null"></mindful-button>
+            <mindful-button type="green" text="Done?" (click)="null"></mindful-button>
+          </div>
         </div>
       </div>
     </div>

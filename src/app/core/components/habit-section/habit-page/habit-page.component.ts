@@ -31,9 +31,16 @@ export class HabitPageComponent implements OnInit, OnDestroy {
   public prioritySubFilter: 'high' | 'medium' | 'low' | 'all' = 'high';
   public routineSubFilter: 'morning' | 'evening' | 'night' | 'all' = 'morning';
 
+  // Habits data
   public allHabits: Habit[] = [];
   public filteredHabits: Habit[] = [];
-  private subscription: Subscription = new Subscription();
+  public selectedDate: Date = new Date(); // Current selected date
+  public currentTimestamp: number = Date.now(); // Current timestamp for habit status
+  private subscriptions: Subscription = new Subscription();
+  public loading: boolean = false; // Track API loading state
+
+  // Timer to update current timestamp
+  private timestampInterval: any;
 
   // Single mode display
   public showSingleMode: boolean = false;
@@ -53,14 +60,59 @@ export class HabitPageComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.subscription = this.habitService.getHabits().subscribe(habits => {
-      this.allHabits = habits;
-      this.applyFilters();
-    });
+    // Subscribe to habit changes
+    this.subscriptions.add(
+      this.habitService.getHabits().subscribe(habits => {
+        this.allHabits = habits;
+        this.applyFilters();
+      })
+    );
+
+    // Load habits for today initially
+    this.loadHabitsForSelectedDate(new Date());
+
+    // Set up timer to update current timestamp every minute
+    this.timestampInterval = setInterval(() => {
+      this.currentTimestamp = Date.now();
+      this.applyFilters(); // Re-apply filters to update habit status
+    }, 60000); // Update every minute
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
+    this.subscriptions.unsubscribe();
+
+    // Clear the timestamp update interval
+    if (this.timestampInterval) {
+      clearInterval(this.timestampInterval);
+    }
+  }
+
+  /**
+   * Handle date selection from the mindful-week component
+   */
+  onDateSelected(date: Date) {
+    this.selectedDate = date;
+    this.loadHabitsForSelectedDate(date);
+  }
+
+  /**
+   * Load habits for the selected date
+   */
+  loadHabitsForSelectedDate(date: Date) {
+    this.loading = true;
+    const formattedDate = this.habitService.formatDateToYYYYMMDD(date);
+
+    this.subscriptions.add(
+      this.habitService.loadHabitsForDate(formattedDate).subscribe({
+        next: () => {
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error loading habits:', error);
+          this.loading = false;
+        }
+      })
+    );
   }
 
   selectMainTab(tab: 'habits' | 'tasks') {
@@ -135,7 +187,6 @@ export class HabitPageComponent implements OnInit, OnDestroy {
   }
 
   onOpenCalendar() {
-
     this.router.navigateByUrl('/authed/add-calendar');
   }
 

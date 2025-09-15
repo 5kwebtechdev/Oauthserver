@@ -6,7 +6,10 @@
     </div>
 
     <div class="habit-week">
-        <mindful-week></mindful-week>
+        <mindful-week (dateSelected)="onDateSelected($event)"></mindful-week>
+    </div>
+    <div *ngIf="loading" class="loading-indicator">
+        <ion-spinner></ion-spinner>
     </div>
 
     <div *ngIf="showSingleMode && singleModeHabit" class="single-mode-container">
@@ -43,8 +46,19 @@
                 </div>
             </div>
             <div class="habit-list-content" *ngIf="currentMainTab === 'habits'">
-                <habit-list [habits]="filteredHabits" (open)="onOpenHabit($event)"
-                    (done)="onDoneHabit($event)"></habit-list>
+                <div *ngIf="filteredHabits && filteredHabits.length > 0; else noHabitsTemplate"
+                    class="habit-list-content">
+                    <div *ngFor="let habit of filteredHabits">
+                        <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
+                            [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp">
+                        </habit-card>
+                    </div>
+                </div>
+                <ng-template #noHabitsTemplate>
+                    <div class="no-habits-message">
+                        <p>No habits found for this day and filter.</p>
+                    </div>
+                </ng-template>
             </div>
         </div>
 
@@ -62,8 +76,18 @@
                     [active]="prioritySubFilter === 'low'" (click)="selectPrioritySubFilter('low')"></mindful-badge>
             </div>
             <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">
-                <habit-list [habits]="filteredHabits" (open)="onOpenHabit($event)"
-                    (done)="onDoneHabit($event)"></habit-list>
+                <div *ngIf="filteredHabits && filteredHabits.length > 0; else noPriorityHabitsTemplate">
+                    <div *ngFor="let habit of filteredHabits">
+                        <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
+                            [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp">
+                        </habit-card>
+                    </div>
+                </div>
+                <ng-template #noPriorityHabitsTemplate>
+                    <div class="no-habits-message">
+                        <p>No habits with this priority found.</p>
+                    </div>
+                </ng-template>
             </div>
         </div>
 
@@ -82,8 +106,18 @@
                     [active]="routineSubFilter === 'night'" (click)="selectRoutineSubFilter('night')"></mindful-badge>
             </div>
             <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">
-                <habit-list [habits]="filteredHabits" (open)="onOpenHabit($event)"
-                    (done)="onDoneHabit($event)"></habit-list>
+                <div *ngIf="filteredHabits && filteredHabits.length > 0; else noRoutineHabitsTemplate">
+                    <div *ngFor="let habit of filteredHabits">
+                        <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
+                            [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp">
+                        </habit-card>
+                    </div>
+                </div>
+                <ng-template #noRoutineHabitsTemplate>
+                    <div class="no-habits-message">
+                        <p>No habits with this routine found.</p>
+                    </div>
+                </ng-template>
             </div>
         </div>
     </div>
