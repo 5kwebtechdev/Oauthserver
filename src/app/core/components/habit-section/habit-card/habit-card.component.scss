@@ -18,7 +18,6 @@
 .glance-in-day {
   font-weight: bold;
   font-size: 24px;
-  margin-left: 4vw;
 }
 
 
@@ -33,8 +32,8 @@
 // Tab Navigation
 .toggler {
   display: flex;
-  background-color: #f5f5f5;
-  border-radius: 20px;
+  // background-color: #f5f5f5;
+  // border-radius: 20px;
   overflow: hidden;
   margin: 0 16px 16px 16px;
 
@@ -46,8 +45,7 @@
     transition: all 0.3s ease;
 
     &.active {
-      background-color: #917DEC;
-      color: white;
+      color: 917DEC;
       font-weight: bold;
     }
   }
@@ -381,4 +379,10 @@ img.score {
 
 .toggler div:not(:last-child) {
   border-right: 1px solid black;
+}
+
+.d-flex flex-column .container w-full{
+  --bs-gutter-x: 0px !important;
+  margin-left: 0px!important;
+  padding-left: 0px !important;
 }

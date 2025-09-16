@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { ModalController } from '@ionic/angular';
+import { Router } from '@angular/router';
 import { NotesComponent } from '../../core/components/notes/notes.component';
 import {HabitCardComponent} from "../../core/components/habit-section/habit-card/habit-card.component";
 // ChallengeCardComponent removed from imports because it's not used in the template
@@ -48,7 +49,7 @@ export class UserDashboardComponent implements OnInit {
   // currently selected mood
   public selectedMood: string | null = 'happy';
 
-  constructor(private modalCtrl: ModalController) { }
+  constructor(private modalCtrl: ModalController, private router: Router) { }
 
   async openNotes() {
     const modal = await this.modalCtrl.create({
@@ -69,6 +70,11 @@ export class UserDashboardComponent implements OnInit {
   onMoodChange(mood: string) {
     this.selectedMood = mood;
     console.log('mood changed to', mood);
+  }
+
+  openCalendar() {
+    // Navigate to the calendar-main standalone component route
+    this.router.navigateByUrl('/calendar-main');
   }
 
   protected readonly console = console;

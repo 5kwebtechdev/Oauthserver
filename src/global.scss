@@ -479,6 +479,9 @@ ion-content {
   width: 100vw;
   min-height: 100vh;
   min-height: 100dvh;
+  /* allow vertical scrolling when content exceeds viewport */
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
   
   &.bg-mindful-primary {
     --background: #FFE9D6;

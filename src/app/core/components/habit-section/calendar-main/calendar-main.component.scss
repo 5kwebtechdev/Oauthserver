@@ -1,0 +1,89 @@
+.calendar-main-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.calendar-navigator {
+    /* cancel parent padding (16px) so the navigator sits flush to the left edge */
+    margin-left: -16px !important;
+}
+.calendar-component{
+    display: inline-flex;
+justify-content: center;
+align-items: center;
+gap: 24px;
+}
+
+.calendar-component__timetable,
+.calendar-component__tasks,
+.calendar-component__habits {
+    display: flex;
+justify-content: center;
+align-items: center;
+gap: 8px;
+align-self: stretch;
+}
+
+.item{
+    display: flex;
+justify-content: center;
+align-items: center;
+gap: 8px;
+align-self: stretch;
+}
+
+.item__text{
+    color: #6B656A;
+font-family: Nunito;
+font-size: 13px;
+font-style: normal;
+font-weight: 600;
+line-height: 120%; /* 15.6px */
+}
+
+.empty-calendar{
+    display: flex;
+flex-direction: column;
+align-items: center;
+gap: 8px;
+margin-top: 16px;
+
+}
+.empty-calendar-message{
+    display: flex;
+width: 278px;
+flex-direction: column;
+align-items: center;
+gap: 8px;
+}
+
+.empty-calendar-text{
+    display: flex;
+flex-direction: column;
+align-items: center;
+gap: 8px;
+align-self: stretch;
+}
+
+.empty-calendar-text h2{
+    color: #282527;
+text-align: center;
+font-family: Fredoka;
+font-size: 16px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 22.4px */
+align-self: stretch;
+}
+
+.empty-calendar-text{
+   color: #282527;
+text-align: center;
+font-family: Nunito;
+font-size: 13px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 18.2px */
+align-self: stretch;
+}

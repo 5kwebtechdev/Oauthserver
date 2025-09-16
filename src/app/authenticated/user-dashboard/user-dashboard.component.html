@@ -21,7 +21,7 @@
             <img src="/assets/app-assets/Notes-Icon-Home-Top.svg" alt="Notes" class="tool-icon">
            <!-- <span class="tool-label">Notes</span> -->
           </button>
-          <button class="tool-item" type="button" aria-label="Calendar">
+          <button class="tool-item" type="button" aria-label="Calendar" (click)="openCalendar()">
             <img src="/assets/app-assets/Icon-calendar.svg" alt="Calendar" class="tool-icon">
             <!-- <span class="tool-label">Calendar</span> -->
           </button>
@@ -84,7 +84,7 @@
     </div>
     </section>
 
-    
+  <div class="dashboard-content" style="padding: 0 16px;">  
     <div class="mood-selector">
       <mood-selector [value]="selectedMood" (valueChange)="onMoodChange($event)"></mood-selector>
     </div>
@@ -132,6 +132,7 @@
     <mindful-dropdown width="full-width" [options]="[{key: '1', value: 'Value 1'}, {key: '2', value: 'Value 2'}]" label="Test Label"></mindful-dropdown>
     <mindful-selectors (selectedKeysChange)="console.log($event)" [options]="[{key: '1', value: 'Value 1', type: 'habit'}, {key: '2', value: 'Value 2', type: 'task'}]" label="Test Selectors"></mindful-selectors> -->
   <!-- mood-selector moved above to the profile area -->
+  </div>
   </div>
 </ion-content>
 <!-- <footer></footer> -->

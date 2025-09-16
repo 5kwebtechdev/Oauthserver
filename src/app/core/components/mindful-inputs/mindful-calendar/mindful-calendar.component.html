@@ -1,0 +1,39 @@
+<div class="mindful-calendar">
+  <div class="calendar-header">
+    <div class="month-year" (click)="toggleMonthPicker()" role="button" tabindex="0">
+      <span class="month-text">{{ currentMonth | date: 'MMMM yyyy' }}</span>
+      <img class="chev" src="/assets/app-assets/Chevron-down-time-table-input-icon.svg" alt="toggle" />
+    </div>
+    <div class="toggle-mood-buttons">
+      <label class="mood-label">MOOD</label>
+      <button class="mood-toggle" (click)="toggleMood()">
+        <span [class.on]="moodOn"></span>
+      </button>
+    </div>
+
+    <div class="month-picker" *ngIf="showMonthPicker">
+      <div class="months">
+      <button *ngFor="let m of months; let i = index" (click)="pickMonth(i)">{{ m }}</button>
+      </div>
+      <div class="years">
+      <button *ngFor="let y of years" (click)="pickYear(y)">{{ y }}</button>
+      </div>
+    </div>
+  </div>
+  <div class="calendar-grid">
+    <div class="day" *ngFor="let d of ['Sun','Mon','Tue','Wed','Thur','Fri','Sat']">{{ d }}</div>
+
+    <button *ngFor="let date of getMonthDays()"
+            [class.isStartDate]="isStartOfRange(date)"
+            [class.isEndDate]="isEndOfRange(date)"
+            [class.currentMonth]="isDateinCurrentMonth(date)"
+            [class.selected]="isSameDay(date, startDate) || isSameDay(date, endDate)"
+            [class.in-range]="isInRange(date)"
+            (click)="selectDate(date)">
+      <p>{{ date.getDate() }}</p>
+      <!-- Mood emoji shown under the date when mood toggle is ON -->
+      <img *ngIf="moodOn" class="mood-emoji" src="/assets/app-assets/Mood-emoji-very-happy-home.svg" alt="smile" />
+    </button>
+  </div>
+
+</div>

@@ -1,0 +1,64 @@
+<ion-content>
+    <div class="calendar-main-container">
+<mindful-navigator class="calendar-navigator" heading="One Day at a Time!">
+</mindful-navigator>
+
+<!-- Calendar-main page placeholder: content for the calendar can be added below -->
+     <!-- calendar-component -->
+      <div class="calendar-main">
+          <mindful-calendar></mindful-calendar>
+      </div>
+      <div class="calendar-component">
+                <!-- Timetable section: add scheduling/calendar details here -->
+                <div class="calendar-component__timetable">
+                    <!-- TODO: Timetable content (week/day view, controls) -->
+                    <div class="item">
+                        <div class="item__dot">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="9" height="8" viewBox="0 0 9 8" fill="none">
+                                <circle cx="4.5" cy="4" r="4" fill="#89B3B6"/>
+                            </svg>
+                        </div>
+                        <div class="item__text">Timetable</div>
+                    </div>
+                </div>
+
+                <!-- Tasks section: upcoming or due tasks -->
+                <div class="calendar-component__tasks">
+                    <!-- TODO: Tasks list / quick actions -->
+                    <div class="item">                      
+                            <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 8 8" fill="none">
+  <circle cx="4" cy="4" r="4" fill="#F6AC72"/>
+</svg>                      
+                        <div class="item__text">Tasks</div>
+                    </div>
+                </div>
+
+                <!-- Habits section: habit streaks and quick log -->
+                <div class="calendar-component__habits">
+                    <!-- TODO: Habits overview (streaks, checkboxes) -->
+                    <div class="item">
+                        <div class="item__dot">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 8 8" fill="none">
+  <circle cx="4" cy="4" r="4" fill="#8B8DCB"/>
+</svg>
+                        </div>
+                        <div class="item__text">Habits</div>
+                    </div>
+                </div>
+            </div>
+
+        <div class="empty-calendar">
+            <div class="empty-calendar-message">
+            <div class="empty-calendar-image">
+                <img src="assets/app-assets/empty-calendar.png" alt="Empty calendar" width="208" height="121" style="width:208px;height:121px;aspect-ratio:208/121;object-fit:contain;" />
+            </div>
+            <div class="empty-calendar-text">
+                <h2>Your Calendar’s Looking Clear Today!</h2>
+                <p>No tasks or habits set for today yet. Get started by adding some tasks or habits to make the most of your day!</p>
+            </div>
+            </div>
+<mindful-button type="magenta" text="+ Add new" large style="display:block; width:100%"
+      (click)="openHabitInput()"></mindful-button>         </div>   
+      
+    </div>
+</ion-content>
