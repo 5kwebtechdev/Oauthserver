@@ -1,5 +1,5 @@
 <ion-content>
-  <div class="container w-full p-0" style="height: 100vh; overflow-y: scroll; padding-bottom: 50px">
+  <div class="container w-full p-0">
     <!-- User Profile Section -->
     <section class="user-profile-section profile" aria-labelledby="profile-heading">
       <div class="dasboard-wrapper">
@@ -28,37 +28,13 @@
         </nav>
       </header>
 
-      <!-- Centered Stats Row (icons above numbers, vertical dividers) -->
-      <div class="stats-row" role="list" aria-label="User stats">
-        <div class="stats-inner">
-          <div class="stat-col" role="listitem" aria-label="Coins">
-            <img src="/assets/app-assets/Coins-icon-common.svg" alt="Coins" class="stat-icon">
-            <div class="stat-value">{{ userCoins | number }}</div>
-            <span class="stat-label visually-hidden">Coins</span>
-          </div>
-          <span class="stat-divider-vertical" aria-hidden="true"></span>
-
-          <div class="stat-col" role="listitem" aria-label="Streaks">
-            <img src="/assets/app-assets/Trophies-icon-common.svg" alt="Streaks" class="stat-icon">
-            <div class="stat-value">{{ userStreaks }}</div>
-            <span class="stat-label visually-hidden">Streaks</span>
-          </div>
-          <span class="stat-divider-vertical" aria-hidden="true"></span>
-
-          <div class="stat-col" role="listitem" aria-label="Days">
-            <img src="/assets/app-assets/Steaks-icon-common.svg" alt="Days" class="stat-icon">
-            <div class="stat-value">{{ userDays }}</div>
-            <span class="stat-label visually-hidden">Days</span>
-          </div>
-          <span class="stat-divider-vertical" aria-hidden="true"></span>
-
-          <div class="stat-col" role="listitem" aria-label="Badges">
-            <img src="/assets/app-assets/Badge.svg" alt="Badges" class="stat-icon">
-            <div class="stat-value">{{ userBadges }}</div>
-            <span class="stat-label visually-hidden">Badges</span>
-          </div>
-        </div>
-      </div>
+      <!-- Centered Stats Row (moved to reusable component) -->
+      <mindful-coins-stats
+        [userCoins]="userCoins"
+        [userStreaks]="userStreaks"
+        [userDays]="userDays"
+        [userBadges]="userBadges"
+      ></mindful-coins-stats>
     </div>
         
         <!-- Speech bubble message card -->
@@ -84,7 +60,7 @@
     </div>
     </section>
 
-  <div class="dashboard-content" style="padding: 0 16px;">  
+  <div class="dashboard-content">  
     <div class="mood-selector">
       <mood-selector [value]="selectedMood" (valueChange)="onMoodChange($event)"></mood-selector>
     </div>
@@ -93,12 +69,12 @@
     <habit-card mode="list"></habit-card>
 
     <!-- Ad-banner -->
-    <div style="margin-top: 16px;">
+    <div>
       <ad-banner></ad-banner>
     </div>
 
     <!-- Content Card -->
-    <div style="margin-top: 5vh; height: 450px;">
+    <div>
       <content-card></content-card>
     </div>
 
@@ -108,7 +84,7 @@
     </div> -->
 
     <!-- Reels- card -->
-    <div style="margin-top: 5vh;">
+    <div>
       <reels-card></reels-card>
     </div>
 

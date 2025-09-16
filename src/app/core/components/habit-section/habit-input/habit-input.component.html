@@ -1,17 +1,16 @@
 <ion-content fullscreen>
-  <div class="habit-input-root" [ngClass]="currentActive">
-    <div class="habit-input-header">
-      <mindful-navigator heading="Create. Commit. Grow." backIcon="cancel"></mindful-navigator>
-      <div class="header-toggle" aria-label="Private toggle">
+  <!-- <div class="habit-input-header"> -->
+    <mindful-navigator heading="Create. Commit. Grow." backIcon="cancel">
+      <div right-actions class="header-toggle" aria-label="Private toggle">
         <label class="header-toggle-label">Private</label>
         <div class="toggle-right">
           <ion-toggle [(ngModel)]="isPrivate"></ion-toggle>
         </div>
       </div>
-    </div>
+    </mindful-navigator>
+    <div class="habit-input-root" [ngClass]="currentActive">
+    <!-- </div> -->
 
-    <!-- Embed Add Calendar standalone component -->
-    <!-- <app-add-calendar></app-add-calendar> -->
 
     <div class="container w-full">
       <div class="row toggler">

@@ -2,17 +2,16 @@
   padding: 16px;
 }
 
-.habit-intput-header {
-  width: 393px;
-  height: 1076px;
+
+/* Ensure navigator aligns nicely with the header and toggle */
+.habit-input-header mindful-navigator {
+  display: inline-flex;
+  align-items: center;
+  gap: 40px;
+  margin-left: 0px !important;
+  margin-top: 36px;
 }
 
-.habit-input-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
 
 .header-toggle {
   display: flex;

@@ -33,4 +33,14 @@ export class TimelineComponent  implements OnInit {
       // @ts-ignore
       return selection.includes('all') || selection.includes(event.type)});
   }
+
+  onNotesClick(): void {
+    // TODO: implement notes action (open notes modal/page)
+    console.log('Notes icon clicked');
+  }
+
+  onCalendarClick(): void {
+    // TODO: implement calendar action (open calendar or navigate)
+    console.log('Calendar icon clicked');
+  }
 }

@@ -18,6 +18,7 @@ import {MindfulTimelineComponent} from "../core/components/mindful-timeline/mind
 import {TimelineComponent} from "../core/components/habit-section/timeline/timeline.component";
 import {MindfulSelectorsComponent} from "../core/components/mindful-selectors/mindful-selectors.component";
 import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
+import {MindfulNavigatorComponent} from "../core/components/mindful-navigator/mindful-navigator.component";
 
 @NgModule({
   declarations: [
@@ -43,7 +44,8 @@ import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
   UserDashboardComponent,
   IonicModule,
   MindfulInputsModule,
-  MindfulSelectorsComponent
+  MindfulSelectorsComponent,
+  MindfulNavigatorComponent
   ]
 })
 export class AuthenticatedModule { }

@@ -17,6 +17,7 @@ import {MoodSelectorComponent} from "../../core/components/mood-selector/mood-se
 import { MindfulSpeechBubbleComponent } from '../../core/components/mindful-speech-bubble/mindful-speech-bubble.component';
 // AdBannerComponent import removed (not used)
 import {MindfulPetComponent} from '../../core/components/mindful-pet/mindful-pet.component';
+import {MindfulCoinsStatsComponent} from '../../core/components/mindful-coins-stats/mindful-coins-stats.component';
 
 @Component({
   selector: 'app-user-dashboard',
@@ -37,6 +38,7 @@ import {MindfulPetComponent} from '../../core/components/mindful-pet/mindful-pet
     MindfulInputsModule,
     MindfulPetComponent,
     MindfulSpeechBubbleComponent,
+    MindfulCoinsStatsComponent,
   ]
 })
 export class UserDashboardComponent implements OnInit {
