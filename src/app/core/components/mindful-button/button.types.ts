@@ -9,6 +9,7 @@ export type buttonStyles =
   | 'pink'
   | 'orange'
   | 'orange-light'
+  | 'orange-dark'
   | 'orange-transparent'
   | 'green'
   | 'green-light'

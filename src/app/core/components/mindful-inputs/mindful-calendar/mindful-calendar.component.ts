@@ -14,6 +14,7 @@ export class MindfulCalendarComponent {
   @Input() currentMonth: Date = new Date();
   @Input() startDate: Date | null = null;
   @Input() endDate: Date | null = null;
+  @Input() showMoodToggle: boolean = true;
 
   @Output() dateSelected = new EventEmitter<Date | {start: Date | null, end: Date | null}>();
   @Output() cancelled = new EventEmitter<void>();

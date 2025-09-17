@@ -1,30 +1,30 @@
 <div class="stats-row" role="list" aria-label="User stats">
   <div class="stats-inner">
-    <div class="stat-col" role="listitem" aria-label="Coins">
-      <img [src]="coinsIcon" alt="Coins" class="stat-icon">
-      <div class="stat-value">{{ userCoins | number }}</div>
-      <span class="stat-label visually-hidden">Coins</span>
+      <div class="stat-col" role="listitem" [attr.aria-label]="slot1">
+        <img [src]="getStatIcon(slot1)" [alt]="slot1" class="stat-icon">
+        <div class="stat-value">{{ getStatValue(slot1) }}</div>
+        <span class="stat-label visually-hidden">{{ slot1 }}</span>
+      </div>
+    <span class="stat-divider-vertical" aria-hidden="true"></span>
+
+    <div class="stat-col" role="listitem" [attr.aria-label]="slot2">
+      <img [src]="getStatIcon(slot2)" [alt]="slot2" class="stat-icon">
+      <div class="stat-value">{{ getStatValue(slot2) }}</div>
+      <span class="stat-label visually-hidden">{{ slot2 }}</span>
     </div>
     <span class="stat-divider-vertical" aria-hidden="true"></span>
 
-    <div class="stat-col" role="listitem" aria-label="Streaks">
-      <img [src]="streaksIcon" alt="Streaks" class="stat-icon">
-      <div class="stat-value">{{ userStreaks }}</div>
-      <span class="stat-label visually-hidden">Streaks</span>
+    <div class="stat-col" role="listitem" [attr.aria-label]="slot3">
+      <img [src]="getStatIcon(slot3)" [alt]="slot3" class="stat-icon">
+      <div class="stat-value">{{ getStatValue(slot3) }}</div>
+      <span class="stat-label visually-hidden">{{ slot3 }}</span>
     </div>
     <span class="stat-divider-vertical" aria-hidden="true"></span>
 
-    <div class="stat-col" role="listitem" aria-label="Days">
-      <img [src]="daysIcon" alt="Days" class="stat-icon">
-      <div class="stat-value">{{ userDays }}</div>
-      <span class="stat-label visually-hidden">Days</span>
-    </div>
-    <span class="stat-divider-vertical" aria-hidden="true"></span>
-
-    <div class="stat-col" role="listitem" aria-label="Badges">
-      <img [src]="badgesIcon" alt="Badges" class="stat-icon">
-      <div class="stat-value">{{ userBadges }}</div>
-      <span class="stat-label visually-hidden">Badges</span>
+    <div class="stat-col" role="listitem" [attr.aria-label]="slot4">
+      <img [src]="getStatIcon(slot4)" [alt]="slot4" class="stat-icon">
+      <div class="stat-value">{{ getStatValue(slot4) }}</div>
+      <span class="stat-label visually-hidden">{{ slot4 }}</span>
     </div>
   </div>
 </div>

@@ -30,9 +30,9 @@
           <input [(ngModel)]="title" placeholder="Habit Title" />
         </div>
         <div class="add-new-row">
-          <mindful-selectors [options]="routineTags" componentType="tags" [singleSelection]="false" size="small"
-            (selectedKeysChange)="onTagsChange($event)">
-          </mindful-selectors>
+          <mindful-tags [options]="routineTags" [singleSelection]="false" [size]="'small'"
+            (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)" (delete)="onTagDelete($event)">
+          </mindful-tags>
           <!-- <mindful-selectors size="small" [options]="routineTags">
           </mindful-selectors>
           <div class="add-wrapper" #addEl>
@@ -134,9 +134,9 @@
           <input [(ngModel)]="title" placeholder="Task Title" />
         </div>
         <div class="add-new-row">
-          <mindful-selectors [options]="routineTags" componentType="tags" [singleSelection]="false" size="small"
-            (selectedKeysChange)="onTagsChange($event)">
-          </mindful-selectors>
+          <mindful-tags [options]="routineTags" [singleSelection]="false" [size]="'small'"
+            (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)" (delete)="onTagDelete($event)">
+          </mindful-tags>
           <!-- <mindful-selectors size="small" [options]="routineTags">
           </mindful-selectors> -->
         </div>
@@ -218,7 +218,7 @@
       </div>
 
       <div class="submit-row">
-        <mindful-button type="orange-light" text="Create Task" large (click)="submit()">
+        <mindful-button [type]="isFormComplete ? 'orange-dark' : 'orange-light'" text="Create Task" large (click)="submit()">
         </mindful-button>
       </div>
     </div>
@@ -229,9 +229,9 @@
           <input [(ngModel)]="title" placeholder="Time Table Title" />
         </div>
         <div class="add-new-row">
-          <mindful-selectors [options]="routineTags" componentType="tags" [singleSelection]="false" size="small"
-            (selectedKeysChange)="onTagsChange($event)">
-          </mindful-selectors>
+          <mindful-tags [options]="routineTags" [singleSelection]="false" [size]="'small'"
+            (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)" (delete)="onTagDelete($event)">
+          </mindful-tags>
           <!-- <mindful-selectors size="small" [options]="routineTags">
           </mindful-selectors> -->
         </div>

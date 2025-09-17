@@ -1,26 +1,34 @@
 .navigator-root {
- display: inline-flex;
- align-items: center;
- gap: 40px;
- margin-left: 16px;
- margin-top: 36px;
+  width: 361px;
+  position: relative;
+  margin-left: 16px;
+  margin-top: 36px;
+  display: block;
 }
 
 .navigator-inner {
- display: flex;
-  justify-content: center;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  width: 100%;
+  padding-left: 8px;
+}
+
+.left-group {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+}
+
+.right-group {
+  display: flex;
+  align-items: center;
 }
 
 .back-button {
   width: 48px;
   height: 48px;
-  flex-shrink: 0;
-  // border-radius: 48px;
-   background: none;
-  // box-shadow: 13px 14px 5px 0 rgba(107, 101, 106, 0.00), 8px 9px 5px 0 rgba(107, 101, 106, 0.01), 5px 5px 4px 0 rgba(107, 101, 106, 0.05), 2px 2px 3px 0 rgba(107, 101, 106, 0.09), 1px 1px 2px 0 rgba(107, 101, 106, 0.10);
-  // backdrop-filter: blur(8px);
+  background: none;
 }
 
 // .back-button img {
@@ -34,10 +42,12 @@
 .navigator-heading{
   color: #282527;
   font-family: Fredoka;
-  font-size: 16px;
+  font-size: 20px;
   font-style: normal;
   font-weight: 500;
-  line-height: 140%; /* 22.4px */
+  line-height: 140%;
+  text-align: left;
+  margin: 12px 0;
 }
 /* smaller cancel icon size per design */
 .back-button.cancel img {
@@ -63,12 +73,42 @@
   aspect-ratio: 1/1;
 }
 
+/* custom layout for 'edit' action: centered eclipse with icon */
+.right-edit-layout {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+}
+
+.right-edit-layout .eclipse {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
+  border-radius: 48px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(98deg, rgba(226, 226, 226, 0.60) 8.57%, rgba(241, 241, 241, 0.30) 90.15%);
+  backdrop-filter: blur(8px);
+}
+
+.right-edit-layout .eclipse img {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
+}
+
 /* container for up to two right-side actions */
 .right-actions {
-  display: inline-flex;
+  height: 48px;
+  display: flex;
   align-items: center;
-  gap: 8px; /* space between two icons */
-  margin-left: auto; /* push actions to the right */
+  gap: 0;
+  padding-left: 0;
 }
 
 /* slightly smaller secondary icon (left-most) */

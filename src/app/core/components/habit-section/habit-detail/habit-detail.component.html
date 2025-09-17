@@ -1,0 +1,131 @@
+<ion-content class="habit-detail-page" fullscreen>
+  <mindful-navigator heading="" backIcon="arrow" [rightType]="'edit'" (rightIconClick)="onEdit()"></mindful-navigator>
+
+  <div class="detail-container">
+    <div class="detail-header">
+        <div class="detail-right">
+            <h2>{{ habit?.title }}</h2>
+            <div class="detailpriority">
+
+            </div>   
+          </div>
+         <div class="detail-left">
+            <div class="detail-routine-icon">
+
+            </div>
+            <div class="detail-tag">
+
+            </div>    
+        </div>
+    </div>
+    <div class="detail-datepicker">
+    </div>
+    <div class="detail-date-created">
+  </div>  
+    <div class="repeat-days">
+    <div class="repeat-head">
+        <img src="assets/app-assets/search_activity.svg" alt="repeat icon" class="repeat-icon" />
+        <p>Repeats</p>
+    </div>
+            <div class="repeat-weekday">days
+            </div>
+        </div>  
+    <div class="detail-message">
+        <div class="bubble-speech">
+            <app-speech-bubble [message]="'Your pops says \u201CRemember, every step counts! This task is all about learning and growing. \u2028\u2028You\'ve got this!\u201D'"></app-speech-bubble>
+        </div>
+        <div class="detail-pet">
+            <mindful-pet></mindful-pet>
+        </div>
+    </div>
+        <div class="detail-cta">
+            <mindful-button type="orange" medium text="Let's Go"></mindful-button>
+            <mindful-button type="green" medium text="Done?"></mindful-button>
+        </div>
+
+        <!-- decorative divider: replaced span with SVG for gradient stroke -->
+        <svg class="divider-svg" xmlns="http://www.w3.org/2000/svg" width="298" height="2" viewBox="0 0 298 2" fill="none" aria-hidden="true">
+            <path d="M1 1H297" stroke="url(#paint0_linear_4508_49608)" stroke-width="2" stroke-linecap="round"/>
+            <defs>
+                <linearGradient id="paint0_linear_4508_49608" x1="1" y1="1.5" x2="297" y2="1.5" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="white"/>
+                    <stop offset="0.5" stop-color="#7E787D"/>
+                    <stop offset="1" stop-color="white"/>
+                </linearGradient>
+            </defs>
+        </svg>
+
+ 
+        <mindful-coins-stats
+            [slot1]="'days'"
+            [slot2]="'coins'"
+            [slot3]="'total-streaks'"
+            [slot4]="'success'"
+            [userDays]="0"
+            [userCoins]="habit?.coinReward ?? 0"
+            [totalStreaks]="0"
+            [successPercentage]="0"
+        ></mindful-coins-stats>
+
+    <div class="detail-progress-header">
+        <h2>Almost There! Your Milestone Awaits</h2>
+    </div>
+
+    <div class="detail-progess-status">
+        <div class="total-progress">
+            <div class="progres-count">0</div>
+            <div class="progress-stat">
+                <div class="progress-circle">
+                    <img src="/assets/app-assets/habit-habit-master-icon.svg" alt="habit icon" class="progress-circle-img" />
+                </div>
+                <p class="progress-name">Consistency Champion</p>
+            </div>
+        </div>
+        <div class="total-progress">
+            <div class="progres-count">0</div>
+            <div class="progress-stat">
+                <div class="progress-circle">
+                    <img src="/assets/app-assets/habit-habit-master-icon.svg" alt="habit icon" class="progress-circle-img" />
+                </div>
+                <p class="progress-name">First Big Win</p>
+            </div>
+        </div>
+        <div class="total-progress">
+            <div class="progres-count">0</div>
+            <div class="progress-stat">
+                <div class="progress-circle">
+                    <img src="/assets/app-assets/habit-habit-master-icon.svg" alt="habit icon" class="progress-circle-img" />
+                </div>
+                <p class="progress-name">Habit Master</p>
+            </div>
+        </div>
+        <div class="total-progress">
+            <div class="progres-count">0</div>
+            <div class="progress-stat">
+                <div class="progress-circle">
+                    <img src="/assets/app-assets/habit-habit-master-icon.svg" alt="habit icon" class="progress-circle-img" />
+                </div>
+                <p class="progress-name">Comeback Star</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="your-journey-header">
+        <h2>Your Journey in Days</h2>
+    </div>
+
+    <div class="detail-calendar">
+        <mindful-calendar [showMoodToggle]="false"></mindful-calendar>
+    </div>
+
+    <div class="completion-days">
+        <div class="completedays-header">
+            <p>Completed</p>
+            <!-- <days-completed [daysCompleted]="15"> -->
+        </div>
+        <div class="skipped-days"> 
+            <p>Skipped</p>
+        </div>
+    </div>
+    </div>
+</ion-content>

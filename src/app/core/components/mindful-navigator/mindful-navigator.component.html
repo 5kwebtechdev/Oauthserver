@@ -1,22 +1,44 @@
 <div class="navigator-root">
   <div class="navigator-inner">
-    <button class="back-button" (click)="goBack()" aria-label="Go back" [class.cancel]="backIcon === 'cancel'">
-      <img [src]="backIconSrc" [alt]="backIconAlt">
-      <span class="visually-hidden">{{ backIconAlt }}</span>
-    </button>
-    <h1 class="navigator-heading">{{ heading }}</h1>
-  </div>
+    <div class="left-group">
+      <button class="back-button" (click)="goBack()" aria-label="Go back" [class.cancel]="backIcon === 'cancel'">
+        <img [src]="backIconSrc" [alt]="backIconAlt">
+        <span class="visually-hidden">{{ backIconAlt }}</span>
+      </button>
+      <h1 class="navigator-heading">{{ heading }}</h1>
+    </div>
+    <div class="right-group">
+      <div class="right-actions">
+        <ng-container *ngIf="rightActions && rightActions.length; else fallbackActions">
+          <ng-container *ngFor="let action of rightActions; let i = index">
+            <div *ngIf="action.type === 'edit'" class="right-edit-layout" (click)="onActionClick(i, action)" role="button" aria-label="Edit">
+              <div class="eclipse">
+                <img [src]="action.src || '/assets/app-assets/edit-icon.svg'" [alt]="action.alt || 'Edit'" />
+              </div>
+            </div>
+            <button *ngIf="action.type === 'icon'" class="right-button" (click)="onActionClick(i, action)" [attr.aria-label]="action.alt || 'Action'">
+              <img [src]="action.src" [alt]="action.alt || 'Action'">
+            </button>
+          </ng-container>
+        </ng-container>
+        <ng-template #fallbackActions>
+          <div *ngIf="rightType === 'edit'" class="right-edit-layout" (click)="onRightClick()" role="button" aria-label="Edit">
+            <div class="eclipse">
+              <img src="/assets/app-assets/edit-icon.svg" alt="Edit" />
+            </div>
+          </div>
 
-  <!-- optional right-side icon buttons (support up to 2) -->
-  <div class="right-actions">
-    <button *ngIf="rightIcon2" class="right-button right-button-2" (click)="onRight2Click()" aria-label="Right action 2">
-      <img [src]="rightIcon2" [alt]="rightIcon2Alt || 'Action 2'">
-      <span class="visually-hidden">{{ rightIcon2Alt || 'Action 2' }}</span>
-    </button>
+          <button *ngIf="rightIcon2" class="right-button right-button-2" (click)="onRight2Click()" aria-label="Right action 2">
+            <img [src]="rightIcon2" [alt]="rightIcon2Alt || 'Action 2'">
+            <span class="visually-hidden">{{ rightIcon2Alt || 'Action 2' }}</span>
+          </button>
 
-    <button *ngIf="rightIcon" class="right-button" (click)="onRightClick()" aria-label="Right action">
-      <img [src]="rightIcon" [alt]="rightIconAlt || 'Action'">
-      <span class="visually-hidden">{{ rightIconAlt || 'Action' }}</span>
-    </button>
+          <button *ngIf="rightIcon" class="right-button" (click)="onRightClick()" aria-label="Right action">
+            <img [src]="rightIcon" [alt]="rightIconAlt || 'Action'">
+            <span class="visually-hidden">{{ rightIconAlt || 'Action' }}</span>
+          </button>
+        </ng-template>
+      </div>
+    </div>
   </div>
 </div>

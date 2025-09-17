@@ -1,0 +1,129 @@
+.mindful-tags {
+  position: relative;
+}
+
+.tags-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tags-slider {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 300px; /* fixed slider width */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  padding: 6px 8px;
+}
+
+.tag-wrapper {
+  position: relative;
+  flex: 0 0 auto; /* prevent shrinking */
+  scroll-snap-align: start;
+}
+
+.tags-add-inline {
+  margin-left: 8px;
+  flex: 0 0 auto;
+}
+
+/* hide scrollbar but keep scrolling functionality */
+.tags-slider::-webkit-scrollbar {
+  height: 6px;
+}
+.tags-slider::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.08);
+  border-radius: 3px;
+}
+.tags-slider::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Firefox */
+.tags-slider {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.08) transparent;
+}
+
+.tag-popover-fixed {
+  position: fixed;
+  transform: translateX(-50%);
+  z-index: 99999;
+}
+
+.tag-popover-inner {
+ display: inline-flex;
+padding: 8px 12px;
+justify-content: center;
+align-items: center;
+border-radius: 16px;
+background: #FFF;
+box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
+}
+
+.tag-edit-fixed, .tag-add-fixed {
+  position: absolute;
+  transform: translateX(-50%);
+  z-index: 100001;
+  display: flex;
+  align-items: center;
+
+  width: 361px; /* expanded per request */
+  height: 48px;
+  padding: 0 12px;
+  background: #FFF;
+  border-radius: 16px;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+
+.tag-edit-inner, .tag-add-inner {
+  display: flex;
+justify-content: center;
+align-items: center;
+gap: 16px;
+}
+
+.custom-tag-input {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.custom-tag-input__field {
+  width: 100%;
+  height: 100%;
+  padding: 0 12px;
+  border-radius: 12px; /* slightly inset so it sits within parent */
+  border: none;
+  outline: none;
+  background: transparent; /* parent has the white background */
+  box-shadow: none;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+/* remove shadow while placeholder is shown (empty input) */
+.custom-tag-input__field:placeholder-shown {
+  box-shadow: none;
+}
+
+.pop-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 16px;
+}
+
+.pop-btn img {
+  width: 20px;
+  height: 20px;
+}

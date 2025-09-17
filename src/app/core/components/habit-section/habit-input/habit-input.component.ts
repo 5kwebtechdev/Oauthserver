@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 import { MindfulSelectorsComponent } from '../../mindful-selectors/mindful-selectors.component';
+import { MindfulTagsComponent } from '../../mindful-selectors/mindful-tags/mindful-tags.component';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { HabitService } from '../habit.service';
@@ -16,7 +17,7 @@ import { Router } from '@angular/router';
   selector: 'habit-input',
   templateUrl: './habit-input.component.html',
   styleUrls: ['./habit-input.component.scss'],
-  imports: [CommonModule, IonicModule, FormsModule, MindfulButtonComponent, MindfulInputsModule, MindfulSelectorsComponent, MindfulBadgeComponent, MindfulNavigatorComponent]
+  imports: [CommonModule, IonicModule, FormsModule, MindfulButtonComponent, MindfulInputsModule, MindfulSelectorsComponent, MindfulTagsComponent, MindfulBadgeComponent, MindfulNavigatorComponent]
 })
 export class HabitInputComponent {
   title = '';
@@ -79,6 +80,27 @@ export class HabitInputComponent {
     if (this.everyday) return true;
     if (this.selectedDays && this.selectedDays.size > 0) return true;
     return false;
+  }
+
+  // tag events from the new MindfulTags component
+  onTagAdd(event: any) {
+    // event contains { key, value }
+    if (event && event.key && event.value) {
+      this.routineTags.push({ key: event.key.toString(), value: event.value, type: 'habit-input' });
+    }
+  }
+
+  onTagEdit(event: any) {
+    // event contains { key, value }
+    if (event && event.key) {
+      const idx = this.routineTags.findIndex(t => t.key === event.key.toString());
+      if (idx > -1) this.routineTags[idx].value = event.value;
+    }
+  }
+
+  onTagDelete(key: any) {
+    if (key == null) return;
+    this.routineTags = this.routineTags.filter(t => t.key !== key.toString());
   }
 
   submit() {
@@ -170,38 +192,83 @@ export class HabitInputComponent {
       daysOfWeek = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
     }
 
-    // Build API payload in requested structure
-    const payload = {
-      habit: {
-        title: habit.title,
-        description: habit.notes,
-        priority: habit.priority.toUpperCase(),
-        routine: (habit.selectedRoutine || '').toUpperCase(),
-        startDate: startDateEpoch || 0,
-        startTime: formattedStartTime || '',
-        endDate: endDateEpoch || 0,
-        endTime: formattedEndTime || '',
-        daysOfWeek: daysOfWeek,
-        isEveryday: !!habit.everyday,
-        isEveryWeekend: false
-      },
-      coinReward: 5,
-      forUserId: null
-    };
+    // Build API payload depending on selected tab (habits | tasks | timetable)
+    let payload: any;
+
+    if (this.currentActive === 'tasks') {
+      // Task payload (matches screenshot structure / API expectations)
+      payload = {
+        task: {
+          title: habit.title,
+          description: habit.notes,
+          priority: habit.priority.toUpperCase(),
+          routine: (habit.selectedRoutine || '').toUpperCase(),
+          startDate: startDateEpoch || 0,
+          startTime: formattedStartTime || '',
+          endDate: endDateEpoch || 0,
+          endTime: formattedEndTime || '',
+          daysOfWeek: daysOfWeek,
+          isEveryday: !!habit.everyday,
+          isEveryWeekend: false
+        },
+        coinReward: 5,
+        forUserId: null
+      };
+    } else if (this.currentActive === 'timetable') {
+      // Reuse habit shape but attach activities
+      payload = {
+        habit: {
+          title: habit.title,
+          description: habit.notes,
+          priority: habit.priority.toUpperCase(),
+          routine: (habit.selectedRoutine || '').toUpperCase(),
+          startDate: startDateEpoch || 0,
+          startTime: formattedStartTime || '',
+          endDate: endDateEpoch || 0,
+          endTime: formattedEndTime || '',
+          daysOfWeek: daysOfWeek,
+          isEveryday: !!habit.everyday,
+          isEveryWeekend: false,
+          activities: habit.activities || []
+        },
+        coinReward: 5,
+        forUserId: null
+      };
+    } else {
+      // Default: habit payload (existing behaviour)
+      payload = {
+        habit: {
+          title: habit.title,
+          description: habit.notes,
+          priority: habit.priority.toUpperCase(),
+          routine: (habit.selectedRoutine || '').toUpperCase(),
+          startDate: startDateEpoch || 0,
+          startTime: formattedStartTime || '',
+          endDate: endDateEpoch || 0,
+          endTime: formattedEndTime || '',
+          daysOfWeek: daysOfWeek,
+          isEveryday: !!habit.everyday,
+          isEveryWeekend: false
+        },
+        coinReward: 5,
+        forUserId: null
+      };
+    }
 
     this.habitService.createHabit(payload).subscribe({
       next: (res) => {
-        console.log('API habit created:', res);
-        // update local store
+        console.log('API created:', res);
+        // update local store for habits/timetable; for tasks we may treat similarly
         this.habitService.addHabit(habit);
         this.modalCtrl.dismiss();
+        // navigate to habit page by default
         this.router.navigate(['/habit-page'], {
           state: { newHabit: habit, showSingleMode: true }
         });
       },
       error: (err) => {
-        console.error('Failed to create habit', err);
-        alert('Failed to create habit. Please try again.');
+        console.error('Failed to create item', err);
+        alert('Failed to create. Please try again.');
       }
     });
   }

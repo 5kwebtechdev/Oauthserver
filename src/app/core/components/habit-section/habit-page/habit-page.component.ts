@@ -187,7 +187,8 @@ export class HabitPageComponent implements OnInit, OnDestroy {
   }
 
   onOpenCalendar() {
-    this.router.navigateByUrl('/authed/add-calendar');
+    // Navigate to the new habit detail page (calendar/overview can be shown there)
+    this.router.navigateByUrl('/authed/habit-detail');
   }
 
   // Handler invoked when a habit row is opened from the habit-list component

@@ -5,6 +5,7 @@ import {UserDashboardComponent} from "./user-dashboard/user-dashboard.component"
 import {ProfileComponent} from "./profile/profile.component";
 import {TimelineComponent} from "../core/components/habit-section/timeline/timeline.component";
 import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
+import {HabitDetailComponent} from "../core/components/habit-section/habit-detail/habit-detail.component";
 
 
 const routes: Routes = [
@@ -23,6 +24,9 @@ const routes: Routes = [
   },{
     path: 'add-calendar',
     component: AddCalendarComponent
+  },{
+    path: 'habit-detail',
+    component: HabitDetailComponent
   },{
     path: 'habit-input',
     loadComponent: () => import('../core/components/habit-section/habit-input/habit-input.component').then(m => m.HabitInputComponent)
