@@ -1,0 +1,324 @@
+:host {
+	display: block;
+	height: 100vh;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+.content-main {
+						width: 100%;
+						height: auto;
+						flex-shrink: 0;
+
+		
+
+			.card {
+				position: relative;
+			display: flex; /* ensure margin auto works as expected */
+			/* center inner content */
+			justify-content: center; /* center children horizontally */
+			align-items: center; /* center children vertically */
+				//max-width: 361px; /* explicit inner max to match padding */
+				height: 254px; /* requested height */
+				flex-shrink: 0;
+				border-radius: 24px 24px 48px 48px; /* requested radii */
+				overflow: hidden;
+				background: url('/assets/app-assets/Container bg.svg') lightgray 50% / cover no-repeat; /* requested background shorthand */
+
+				.card-bg {
+					position: absolute;
+					inset: 0;
+					/* use an existing banner asset as background; replace with a dedicated image if provided */
+				    background: url('/assets/app-assets/Container bg.svg') center/cover no-repeat;
+					filter: none;
+					z-index: 0;
+				}
+
+				.card-content {
+					position: relative;
+					z-index: 2;
+					padding: 16px; /* no horizontal padding because we use max-width on card */
+					display: flex;
+					flex-direction: column;
+					gap: 16px;
+					width: 100%;
+				}
+
+				.card-title {
+					margin: 0;
+					color: #FDFDFD;
+					font-family: 'Fredoka', sans-serif;
+					font-size: 16px;
+					font-style: normal;
+					font-weight: 500;
+					line-height: 140%; /* 22.4px */
+					z-index: 2;
+					width: 100%;
+				}
+
+				.search-row {
+					display: flex;
+					align-items: center;
+					padding: 16px;
+					gap: 12px;
+					width: 100%;
+					z-index: 2;
+
+					.search-input {
+						display: flex;
+						align-items: center;
+						width: 100%; /* fluid inside card */
+						padding: 12px;
+						gap: 12px;
+						border-radius: 12px;
+						background: #FDFDFD;
+
+						.search-icon { margin-right: 8px; }
+
+						input {
+							border: none;
+							outline: none;
+							background: transparent;
+							flex: 1 1 auto;
+							font-family: 'Nunito', sans-serif;
+							font-size: 14px;
+						}
+					}
+
+					.mic {
+						background: transparent;
+						border: none;
+						font-size: 18px;
+						cursor: pointer;
+					}
+				}
+
+				.cheer {
+					position: absolute;
+					right: 12px;
+					bottom: 12px;
+					display: flex;
+					align-items: center;
+					gap: 8px;
+					z-index: 3;
+
+					.cheer-text {
+						max-width: calc(100% - 72px);
+						color: #282527;
+						font-family: 'Nunito', sans-serif;
+						font-size: 10px;
+						font-style: normal;
+						font-weight: 600;
+						line-height: 140%; /* 14px */
+						background: #FFFFFF;
+						padding: 6px 8px;
+						border-radius: 8px;
+						box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+					}
+
+					.cheer-img {
+						width: 56px;
+						height: 56px;
+						object-fit: contain;
+					}
+				}
+			}
+		}
+
+		/* categories and header sections are siblings inside .content-page */
+		.categories {
+			display: inline-flex;
+			justify-content: center; /* keep within width */
+			align-items: center;
+			padding: 24px 16px;
+			gap: 24px;
+			width: 336px;
+		}
+
+		.category {
+			display: inline-flex;
+			flex-direction: column;
+			align-items: center;
+			text-decoration: none;
+			color: #282527;
+			/* label typography is applied to the .label element below */
+			flex: 1 1 auto;
+			min-width: 0; /* allow text to truncate if needed */
+		}
+
+		.category .icon {
+			width: 48px;
+			height: 48px;
+			aspect-ratio: 1 / 1;
+			flex-shrink: 0;
+			border-radius: 8px;
+			background-repeat: no-repeat;
+			background-position: center;
+			background-size: contain; /* preserve SVG aspect */
+		}
+
+		/* per-category icon backgrounds (use center/contain to preserve aspect) */
+		.category.for-you .icon { background: url('/assets/app-assets/For-you-content-icon.svg') center/contain no-repeat; }
+		.category.puzzles .icon { background: url('/assets/app-assets/Puzzles-content-icon.svg') center/contain no-repeat; }
+		.category.quizzes .icon { background: url('/assets/app-assets/Quizes-content-icon.svg') center/contain no-repeat; }
+		.category.articles .icon { background: url('/assets/app-assets/Thinking-content-icon.svg') center/contain no-repeat; }
+
+		/* explicit label styling */
+		.category .label {
+			font-family: 'Nunito', sans-serif;
+			font-size: 13px;
+			font-weight: 700;
+			line-height: 140%;
+			color: #282527;
+			margin-top: 6px;
+		}
+
+		/* show a visible vertical separator between categories (use a solid stroke color) */
+		.sep {
+			display: inline-block;
+			width: 2px; /* stroke thickness */
+			height: 40px; /* visible length */
+			background: #6B656A; /* stroke color per spec */
+			border-radius: 1px;
+			flex-shrink: 0;
+			margin: 0 6px;
+			align-self: center; /* center between category rows */
+		}
+
+/* Content filter pill tabs (matches provided PNG) */
+.content-filter {
+	display: flex;
+	justify-content: center;
+	padding: 12px 16px 24px;
+}
+
+.pill-tabs {
+	display: inline-flex;
+	gap: 12px;
+	align-items: center;
+}
+
+.pill {
+	border: none;
+	padding: 10px 20px;
+	border-radius: 18px;
+	font-family: 'Nunito', sans-serif;
+	font-weight: 700;
+	font-size: 14px;
+	line-height: 20px;
+	cursor: pointer;
+	color: #000;
+	background: #F9F0F4; /* default light pink */
+	box-shadow: none;
+}
+
+.pill:focus {
+	outline: 2px solid rgba(0,0,0,0.08);
+	outline-offset: 2px;
+}
+
+.pill.active {
+	background: #E95A7A; /* filled pink for active */
+	color: #fff;
+}
+
+.pill[aria-selected="false"] {
+	background: #FDEBF0; /* slightly lighter */
+	color: #282527;
+}
+
+/* Puzzle card styles (image on top, white info area with rounded corners) */
+.puzzle-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+	gap: 20px;
+	padding: 8px 16px 32px;
+	width: 100%;
+}
+
+.puzzle-card {
+	border-radius: 16px;
+	overflow: hidden;
+	background: #ffffff;
+	box-shadow: 0 6px 18px rgba(4, 4, 4, 0.12);
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+.puzzle-media img {
+	width: 100%;
+	height: 160px;
+	object-fit: cover;
+	display: block;
+}
+
+.puzzle-info {
+	padding: 18px 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.puzzle-header {
+	display:flex;
+	justify-content: space-between;
+	align-items: flex-start;
+}
+
+.puzzle-title {
+	margin: 0;
+	font-family: 'Nunito', sans-serif;
+	font-size: 20px;
+	font-weight: 700;
+	color: #1F1F1F;
+}
+
+.difficulty {
+	background: #b71c1c; /* deep red */
+	color: #fff;
+	padding: 8px 14px;
+	border-radius: 20px;
+	font-weight: 700;
+	font-size: 13px;
+}
+
+.puzzle-desc {
+	margin: 0;
+	color: #6b6b6b;
+	font-size: 15px;
+}
+
+.puzzle-footer {
+	display:flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.rewards {
+	display:flex;
+	gap: 18px;
+	align-items: center;
+}
+
+.reward {
+	display:flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.reward img { width: 36px; height: 36px; }
+.reward .count { font-weight: 700; margin-left: 4px; }
+
+.cta {
+	background: linear-gradient(180deg, #ff6b8a 0%, #c24a6b 100%);
+	color: #fff;
+	border: none;
+	padding: 12px 22px;
+	border-radius: 12px;
+	font-weight: 700;
+	box-shadow: 0 6px 10px rgba(194, 74, 107, 0.24);
+	cursor: pointer;
+}
+
+.cta:active { transform: translateY(1px); }

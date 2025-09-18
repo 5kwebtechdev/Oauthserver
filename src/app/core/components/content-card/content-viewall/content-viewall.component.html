@@ -14,66 +14,46 @@
 
       <div class="header-chips">
         <span class="chip">Do task</span>
-        <svg class="dot" viewBox="0 0 5 4" xmlns="http://www.w3.org/2000/svg"><circle cx="2.5" cy="2" r="2"/></svg>
+        <svg class ="dot" xmlns="http://www.w3.org/2000/svg" width="5" height="4" viewBox="0 0 5 4" fill="none">
+  <circle cx="2.5" cy="2" r="2" fill="#282527"/>
+</svg>
         <span class="chip">Earn trophies</span>
-        <svg class="dot" viewBox="0 0 5 4" xmlns="http://www.w3.org/2000/svg"><circle cx="2.5" cy="2" r="2"/></svg>
+        <svg class = "dot" xmlns="http://www.w3.org/2000/svg" width="5" height="4" viewBox="0 0 5 4" fill="none">
+  <circle cx="2.5" cy="2" r="2" fill="#282527"/>
+</svg>
         <span class="chip">Grow daily</span>
       </div>
     </div>
   </div>
   <!-- challenges list -->
-  <div class="viewall-body">
-    <div class="challenges-list">
-    <div
-      class="challenge-card"
-      *ngFor="let challenge of challenges"
-      (click)="onChallengeClick(challenge)">
-      <div class="card-header">
-        <div class="status-indicator" [style.background-color]="challenge.statusColor">
-          <i class="fas fa-circle"></i>
-        </div>
+
+    <div class="challenge-card" *ngFor="let d of list">
+      <div class="challenge-media">
+        <img [src]="d.image" [alt]="d.title + ' cover'" />
       </div>
 
-      <!-- image area uses src binding and helper to normalize paths -->
-      <img
-        class="card-image"
-        [src]="getImagePath(challenge.image)"
-        [attr.alt]="challenge.title || 'challenge image'"
-        (error)="onImageError($event)"
-      />
+      <div class="challenge-info">
+        <div class="challenge-header">
+          <h3 class="challenge-title">{{ d.title }}</h3>
+          <div class="difficulty" aria-hidden="true">{{ d.difficulty }}</div>
+        </div>
 
-      <!-- content container (white panel) -->
-      <div class="card-content">
-        <div class="content-container">
-          <div class="items header-row">
-            <div class="challenge-title">{{ challenge.title }}</div>
-            <div class="label-puzzle">Puzzle</div>
-          </div>
-          <div class="challenge-description">{{ challenge.description }}</div>
+        <div class="challenge-desc">{{ d.description }}</div>
 
-          
-
-          <div class="items rewards">
-            <div class="reward">
-              <img src="assets/app-assets/currency-icon.png" alt="points" class="currency-icon" />
-              <span class="reward-value">{{ challenge.points }}</span>
+        <div class="challenge-footer">
+          <div class="rewards">
+            <div class="currency-reward">
+              <img src="/assets/app-assets/Currency-icon.svg" alt="points" />
+              <span class="count">{{ d.rewards?.points }}</span>
             </div>
-
-            <div class="reward">
-              <img src="assets/app-assets/trophy-icon.png" alt="trophies" class="trophies-icon" />
-              <span class="reward-value">{{ challenge.trophies }}</span>
+            <div class="currency-reward">
+              <img src="/assets/app-assets/Trophies-icon.svg" alt="trophies" />
+              <span class="count">{{ d.rewards?.trophies }}</span>
             </div>
-
-            <button
-              class="time-button"
-              [class.available]="challenge.status === 'available'"
-              [class.completed]="challenge.status === 'completed'">
-              {{ challenge.timeLimit }}
-            </button>
           </div>
+
+          <button class="time-cta" (click)="onPlay(d)">{{ d.durationLabel }}</button>
         </div>
       </div>
     </div>
-    </div>
-  </div>
 </div>

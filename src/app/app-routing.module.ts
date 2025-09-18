@@ -14,8 +14,20 @@ const routes: Routes = [
     loadComponent: () => import('./core/components/content-card/content-main/content-main.component').then(m => m.ContentMainComponent)
   },
   {
+    path: 'content/description',
+    loadComponent: () => import('./core/components/content-card/content-description/content-description.component').then(m => m.ContentDescriptionComponent)
+  },
+  {
     path: 'quizzes',
     loadComponent: () => import('./core/components/content-card/content-quiz/content-quiz.component').then(m => m.ContentQuizComponent)
+  },
+  {
+    path: 'articles',
+    loadComponent: () => import('./core/components/content-card/Content-Articles/content-articles.component').then(m => m.ContentArticlesComponent)
+  },
+  {
+    path: 'puzzles',
+    loadComponent: () => import('./core/components/content-card/content-puzzle/content-puzzle.component').then(m => m.ContentPuzzleComponent)
   },
   {
     path: 'content/viewall',
@@ -42,6 +54,14 @@ const routes: Routes = [
     loadComponent: () => import('./core/components/habit-section/habit-input/habit-input.component').then(m => m.HabitInputComponent)
   },
   {
+    path: 'journal-input',
+    loadComponent: () => import('./core/components/journals/journal-input/journal-input.component').then(m => m.JournalInputComponent)
+  },
+  {
+    path: 'journal-output',
+    loadComponent: () => import('./core/components/journals/journal-output/journal-output.component').then(m => m.JournalOutputComponent)
+  },
+  {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full'
@@ -49,6 +69,11 @@ const routes: Routes = [
   {
     path: 'reel-section',
     loadComponent: () => import('./core/components/reel-section/reel-section.component').then(m => m.ReelSectionComponent)
+  }
+  ,
+  {
+    path: 'reel-expand',
+    loadComponent: () => import('./core/components/reel-section/reel-expand/reels-expand.component').then(m => m.ReelsExpandComponent)
   }
 ];
 

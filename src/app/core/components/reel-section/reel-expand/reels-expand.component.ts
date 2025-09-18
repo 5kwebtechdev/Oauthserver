@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 
@@ -10,39 +10,116 @@ import { IonicModule } from '@ionic/angular';
   imports: [CommonModule, IonicModule]
 })
 export class ReelsExpandComponent implements OnInit, OnDestroy {
-  // small API for parent to control expansion state
-  @Input() expanded = false;
+  // whether overlay is visible
+  public expanded = false;
 
-  // currently opened reel detail for the expanded player
-  public current: any = null;
+  // playlist and current index for play-all behavior
+  public playlist: any[] = [];
+  public currentIndex = 0;
   public shareVisible = false;
 
-  // reference to the bound handler so we can remove it
-  private boundHandler: any;
+  @ViewChild('playerVideo', { static: false }) playerVideo!: ElementRef<HTMLVideoElement>;
+
+  private boundOpenSingle: any;
+  private boundOpenPlayAll: any;
 
   ngOnInit(): void {
-    // listen for a global CustomEvent 'openReelExpanded' dispatched by parent lists
-    this.boundHandler = (ev: any) => {
+    // open single reel
+    this.boundOpenSingle = (ev: any) => {
       try {
         const detail = ev && ev.detail;
         if (detail) {
-          this.current = detail;
+          this.playlist = [detail];
+          this.currentIndex = 0;
           this.expanded = true;
+          // allow view to render then start playback
+          setTimeout(() => this.playCurrent(), 50);
         }
       } catch (e) { /* ignore malformed events */ }
     };
-    window.addEventListener('openReelExpanded', this.boundHandler as EventListener);
+    window.addEventListener('openReelExpanded', this.boundOpenSingle as EventListener);
+
+    // open play-all for a category with slides array
+    this.boundOpenPlayAll = (ev: any) => {
+      try {
+        const detail = ev && ev.detail;
+        if (detail && Array.isArray(detail.slides)) {
+          this.playlist = detail.slides.slice();
+          this.currentIndex = 0;
+          this.expanded = true;
+          setTimeout(() => this.playCurrent(), 50);
+        }
+      } catch (e) { /* ignore */ }
+    };
+    window.addEventListener('openReelPlayAll', this.boundOpenPlayAll as EventListener);
   }
 
   ngOnDestroy(): void {
-    if (this.boundHandler) {
-      window.removeEventListener('openReelExpanded', this.boundHandler as EventListener);
+    if (this.boundOpenSingle) {
+      window.removeEventListener('openReelExpanded', this.boundOpenSingle as EventListener);
     }
+    if (this.boundOpenPlayAll) {
+      window.removeEventListener('openReelPlayAll', this.boundOpenPlayAll as EventListener);
+    }
+  }
+
+  get current() {
+    return this.playlist && this.playlist[this.currentIndex] ? this.playlist[this.currentIndex] : null;
   }
 
   close() {
     this.expanded = false;
-    this.current = null;
+    this.pauseVideo();
+    this.playlist = [];
+    this.currentIndex = 0;
+  }
+
+  playCurrent() {
+    this.pauseVideo();
+    const videoEl = this.playerVideo && this.playerVideo.nativeElement;
+    if (videoEl && this.current) {
+      // if current has a video URL use it, otherwise nothing to play
+      const src = this.current.video || this.current.image || '';
+      if (src) {
+        videoEl.src = this.current.video || this.current.image || '';
+        videoEl.load();
+        // autoplay where possible
+        const tryPlay = async () => {
+          try { await videoEl.play(); } catch (e) { /* ignore autoplay block */ }
+        };
+        tryPlay();
+      }
+    }
+  }
+
+  pauseVideo() {
+    const videoEl = this.playerVideo && this.playerVideo.nativeElement;
+    try { if (videoEl) { videoEl.pause(); videoEl.src = ''; } } catch (e) { /* ignore */ }
+  }
+
+  onVideoEnded() {
+    // move to next item or close when done
+    if (this.currentIndex < this.playlist.length - 1) {
+      this.currentIndex += 1;
+      setTimeout(() => this.playCurrent(), 120);
+    } else {
+      // finished playlist - keep open but stop playback
+      this.pauseVideo();
+    }
+  }
+
+  next() {
+    if (this.currentIndex < this.playlist.length - 1) {
+      this.currentIndex += 1;
+      this.playCurrent();
+    }
+  }
+
+  prev() {
+    if (this.currentIndex > 0) {
+      this.currentIndex -= 1;
+      this.playCurrent();
+    }
   }
 
   openShare(ev?: MouseEvent) {
@@ -59,10 +136,8 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
     if (!url) { return; }
     try {
       navigator.clipboard.writeText(url);
-      // optionally show a tiny feedback - here we just close the popup
       this.closeShare();
     } catch (e) {
-      // fallback for older browsers
       const ta = document.createElement('textarea');
       ta.value = url;
       document.body.appendChild(ta);
@@ -77,13 +152,11 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
     const url = encodeURIComponent(this.getCurrentLink() || window.location.href);
     const text = encodeURIComponent(`${this.current?.title || ''} - ${this.current?.author || ''}`);
     const shareUrl = `https://wa.me/?text=${text}%20${url}`;
-    // open in new window/tab
     window.open(shareUrl, '_blank');
     this.closeShare();
   }
 
   private getCurrentLink() {
-    // If the current item has an explicit link use it, otherwise default to current location
     return this.current && (this.current.link || this.current.url) ? (this.current.link || this.current.url) : window.location.href;
   }
 }

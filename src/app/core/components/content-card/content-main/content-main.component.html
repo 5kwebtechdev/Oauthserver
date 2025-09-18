@@ -1,4 +1,4 @@
-<section class="content-page">
+<div class="content-page">
 <!-- Main card with search and cheer -->
   <div class="content-main">
     <div class="card">
@@ -18,15 +18,17 @@
         <div class="cheer-text">I’m cheering for you! Let’s get things done!</div>
         <img src="/assets/app-assets/Digital-pet-panda.svg" alt="panda" class="cheer-img" />
       </div>
-    </div>
+      </div>
   </div>
   
 <!-- Categories -->
   <div class="categories">
+    <div class="for-you-label">
     <a class="category for-you" href="/for-you" target="_blank" rel="noopener noreferrer">
       <div class="icon" aria-hidden="true"></div>
       <div class="label">For You</div>
     </a>
+    </div>
     <div class="sep" aria-hidden="true"></div>
 
     <a class="category puzzles" href="/puzzles" target="_blank" rel="noopener noreferrer">
@@ -35,13 +37,13 @@
     </a>
     <div class="sep" aria-hidden="true"></div>
 
-    <a class="category quizzes" href="/quizzes" target="_blank" rel="noopener noreferrer">
+    <a class="category quizzes" routerLink="/content/description">
       <div class="icon" aria-hidden="true"></div>
       <div class="label">Quizzes</div>
     </a>
     <div class="sep" aria-hidden="true"></div>
 
-    <a class="category articles" href="/articles" target="_blank" rel="noopener noreferrer">
+    <a class="category articles" routerLink="/articles">
       <div class="icon" aria-hidden="true"></div>
       <div class="label">Articles</div>
     </a>
@@ -169,4 +171,5 @@
       <mindful-button type="green" text="Get it now" (click)="onConfirmUpgrade()"></mindful-button>
     </div>
   </div>
+</div>
 </div>

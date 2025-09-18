@@ -134,11 +134,8 @@
 			justify-content: center; /* keep within width */
 			align-items: center;
 			padding: 16px;
-			gap: 24px; /* updated per spec */
-			margin-top: 16px;
-			max-width: 361px;
-			margin-left: auto;
-			margin-right: auto;
+			gap: 24px;
+			width: 336px;
 		}
 
 		.category {
@@ -280,9 +277,12 @@
 /* title above image (not on top of background) */
 
 .elite-title{
+	display: flex;
+	justify-content: center;
 color: #282527;
 font-family: Fredoka;
 font-size: 20px;
+width: 363px;
 padding: 16px;
 font-style: normal;
 font-weight: 500;
@@ -331,6 +331,7 @@ font-size: 13px;
 font-style: normal;
 font-weight: 500;
 line-height: 140%; /* 18.2px */
+padding: 16px;
 }
 
 .elite-frame {
@@ -366,7 +367,8 @@ line-height: 140%; /* 18.2px */
 /* Upgrade button centered and overlapping bottom half of the background image */
 .upgrade-now-cta{
   position: relative;
-  display:flex;
+  display:inline-flex;
+  align-items: center;
   justify-content:center;
   width:100%;
   margin-top: -32px; /* move up so button sits half on background and half below */

@@ -93,6 +93,16 @@
 .share-action { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 8px; border: 1px solid #eee; background: #fafafa; color: #222; font-weight: 600; }
 .share-action.whatsapp { border-color: #dff4e6; background: #fff; }
 
+/* player controls (prev/next) */
+.player-meta .meta-row { display: flex; justify-content: space-between; align-items: center; }
+.controls { display: flex; gap: 8px; }
+.control { background: rgba(255,255,255,0.06); color: #fff; border: none; padding: 8px 10px; border-radius: 8px; font-size: 20px; }
+.control[disabled] { opacity: 0.45; }
+
+/* slightly larger media area for expanded playback */
+.expanded-player .player-content { max-width: 720px; }
+.expanded-player .media-wrap { height: 72vh; }
+
 @keyframes popIn {
 	from { transform: translateY(-6px) scale(0.98); opacity: 0; }
 	to { transform: translateY(0) scale(1); opacity: 1; }

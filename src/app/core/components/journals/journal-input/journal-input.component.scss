@@ -1,0 +1,269 @@
+
+/* Mindful navigator header styles */
+.journal-input-container {
+  width: 100%;
+  max-width: 393px;
+  /* make container responsive and allow scrolling instead of fixed height */
+  max-height: 100vh;
+  overflow-y: auto;
+  border-radius: 24px;
+  background: #FFF;
+  padding-bottom: 24px;
+}
+.mindful-navigator {
+	display: inline-flex;
+justify-content: center;
+align-items: center;
+gap: 16px;
+padding: 16px;
+}
+
+
+
+.nav-right {
+	width: 56px; /* reserve space for symmetry */
+	display: flex;
+	align-items: center;
+}
+
+.nav-center {
+	display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: flex-start;
+gap: 2px;
+}
+
+.navigator-title {
+	color: #282527;
+font-family: Fredoka;
+font-size: 20px;
+font-style: normal;
+font-weight: 500;
+width: 361px;
+line-height: 140%; /* 28px */
+}
+
+
+
+.navigator-subtitle {
+	display: flex;
+justify-content: center;
+align-items: center;
+gap: 4px;
+opacity: 0.7;
+color: #282527;
+font-family: Nunito;
+font-size: 13px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 18.2px */
+}
+
+.back-btn {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  stroke-width: 2px;
+  stroke: #282527;
+}
+
+.journal-input-container {
+  padding: 16px;
+}
+
+.timeline {
+  position: relative;
+  margin-left: 20px;
+  
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: -20px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #FCE7EB;; /* dark pink */
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.section {
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.section::before {
+  content: "";
+  position: absolute;
+  left: -27px;
+  top: 5px;
+  width: 16px;
+  height: 16px;
+  background: #8c2150;
+  border-radius: 50%;
+}
+
+.section h2 {
+  color: #282527;
+font-family: Nunito;
+font-size: 16px;
+font-style: normal;
+font-weight: 700;
+line-height: 140%; /* 22.4px */
+}
+
+.options {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: px;
+  flex-wrap: wrap;
+}
+
+.option {
+	display: flex;
+width: 72px;
+flex-direction: column;
+align-items: center;
+gap: 8px;
+align-self: stretch;
+color: #282527;
+text-align: center;
+font-family: Nunito;
+font-size: 13px;
+font-style: normal;
+font-weight: 700;
+line-height: 140%; /* 18.2px */
+
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.option img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.option span {
+  display: block;
+  margin-top: 5px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.option:hover {
+  transform: scale(1.05);
+}
+
+/* Notes textarea styling (matches attached mockup) */
+.note-area {
+  width: 100%;
+  display: flex;
+}
+
+.note-area textarea {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  padding: 18px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(40,37,39,0.08);
+  /* remove outer drop shadow so only the textarea border is visible */
+  box-shadow: none;
+  background: #FFFFFF;
+  font-family: Nunito, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-size: 15px;
+  color: #282527;
+  line-height: 1.4;
+}
+
+.note-area textarea::placeholder {
+  color: rgba(40,37,39,0.35);
+}
+
+.note-area textarea:focus {
+  outline: none;
+  border-color: #8c2150; /* theme color emphasis */
+  /* keep focus visual by changing border only; no outer shadow */
+  box-shadow: none;
+}
+
+/* Pin moment selector */
+.pin-moment {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1px solid rgba(40,37,39,0.08);
+  cursor: pointer;
+}
+
+.pin-moment:focus {
+  outline: none;
+  border-color: #8c2150;
+}
+
+.pin-inner {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+}
+
+/* Post button full width */
+
+/* post-button styles removed per request */
+
+.pin-text {
+  color: rgba(40,37,39,0.7);
+  font-family: Nunito;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.note-area {
+  padding: 16px;
+  border-radius: 8px;
+background: #FFF;
+box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+
+.post-button{
+  display: flex;
+width: 361px;
+padding: 10px 12px;
+justify-content: center;
+align-items: center;
+gap: 8px;
+border-radius: 8px;
+border: 1px solid #4A0D25;
+background: linear-gradient(271deg, #90214D 0.07%, #CD3578 99.93%);
+box-shadow: 0 0 1px 0.5px rgba(144, 33, 77, 0.20), 0 -2px 2px 0 #EA7CB5 inset;
+color: #FFF;
+font-family: Nunito;
+font-size: 16px;
+font-style: normal;
+font-weight: 700;
+line-height: 140%; /* 22.4px */
+}
+
+@media (min-width: 768px) {
+	.navigator-img {
+		height: 34px;
+	}
+	.navigator-subtitle {
+		font-size: 13px;
+	}
+}
+
+/* end mindful navigator */

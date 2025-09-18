@@ -1,27 +1,33 @@
-<section class="quiz-page">
-  <header class="quiz-header">
+<div class="quiz-page">
+  <div class="quiz-header">
     <div class="nav-left">
       <img src="/assets/images/Close.png" class="close-icon" />
-      <h2 class="title">Title</h2>
+      <div class="title">Title</div>
     </div>
       <div class="timer">
         <img src="/assets/images/timer.png" class="timer-icon" />
-        <p class="timer-value">05:00</p>
+        <div class="timer-value">05:00</div>
       </div>
-  </header>
+  </div>
+
+  <div class="question-count">Questions 01 of 05</div>
 
   <div class="progress-row">
     <div class="progress-bar">
-      <div class="progress" style="width:25%"></div>
+      <div class="progress">
+        <svg xmlns="http://www.w3.org/2000/svg" width="361" height="6" viewBox="0 0 361 6" fill="none">
+          <path opacity="0.2" d="M3 3L358 3" stroke="#4CAF50" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+      </div>
     </div>
   </div>
-
+<!--Question Area-->
   <div class="question-area">
-    <mindful-pet pet="panda" sizePreset="96"></mindful-pet>
+    <img src="/assets/images/question-image.png" alt="question-image" class="cheer-img" />
     <div class="speech-bubble">{{ question }}</div>
   </div>
 
-  <h3 class="prompt">Tap the correct answer</h3>
+  <div class="prompt">Tap the correct answer</div>
 
   <div class="answers">
     <div *ngFor="let a of answers" class="answer-row">
@@ -45,4 +51,4 @@
   <div class="next-cta">
     <mindful-button type="green" text="Next Question" large (click)="onNext()"></mindful-button>
   </div>
-</section>
+</div>

@@ -29,11 +29,9 @@ ion-textarea { min-height: 200px; }
 	padding: 0;
 }
 
-.input-header .back-icon {
-	width: 24px;
-	height: 24px;
-	object-fit: contain;
-	filter: none;
+.back-icon {
+	width: 48px;
+height: 48px;
 }
 
 .title-input ion-input {
@@ -144,5 +142,9 @@ ion-textarea { min-height: 200px; }
 
 .tag-action img { width: 24px; height: 24px; aspect-ratio: 1/1; }
 
-.tag-edit { display: inline-block; margin-left: 8px; }
+.tag-edit { display: flex;
+justify-content: center;
+align-items: center;
+gap: 16px;
+color: #282527; }
 .tag-edit ion-input { --padding-start: 12px; --padding-end: 12px; }

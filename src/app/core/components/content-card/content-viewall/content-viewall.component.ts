@@ -1,19 +1,17 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { Location, CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 
+interface Rewards { points: number; trophies: number; }
 interface Challenge {
   id: number;
   title: string;
+  difficulty: string;
   description: string;
+  rewards?: Rewards;
+  durationLabel: string;
   image: string;
-  points: number;
-  trophies: number;
-  timeLimit: string;
-  status: 'available' | 'completed' | 'locked';
-  statusColor: string;
 }
 
 @Component({
@@ -24,101 +22,86 @@ interface Challenge {
   imports: [CommonModule, IonicModule, RouterModule]
 })
 export class ContentViewallComponent implements OnInit {
-  challenges: Challenge[] = [
+  // public properties used by template
+  data: Challenge[] = [];      // optional external data source
+  puzzles: Challenge[] = [     // fallback sample items (six)
     {
       id: 1,
       title: 'The Memory Maze',
+      difficulty: 'Puzzle',
       description: 'Test your memory by finding matching pairs in the shortest time!',
-      image: 'assets/app-assets/Flux_Dev.svg',
-      points: 50,
-      trophies: 2,
-      timeLimit: 'Finish in 5 min',
-      status: 'available',
-      statusColor: '#ff4757'
+      rewards: { points: 50, trophies: 2 },
+      durationLabel: 'Finish in 5 min',
+      image: '/assets/app-assets/Flux_Dev_a_mesmerizing_surreal_and_vibrantly_colored_cinematic_2 1.svg'
     },
     {
       id: 2,
-      title: 'Riddle Royale',
-      description: 'Crack three mind-bending riddles!',
-      image: 'assets/app-assets/Flux_Dev_a_mesmerizing_surreal_and_vibrantly_colored_cinematic_2 1.svg',
-      points: 70,
-      trophies: 4,
-      timeLimit: 'Solve in 2 min',
-      status: 'available',
-      statusColor: '#2ed573'
+      title: 'Focus Flow',
+      difficulty: 'Easy',
+      description: 'Short tasks to help you sharpen attention and focus.',
+      rewards: { points: 30, trophies: 1 },
+      durationLabel: 'Finish in 3 min',
+      image: '/assets/app-assets/Flux_Dev_a_mesmerizing_surreal_and_vibrantly_colored_cinematic_2 1.svg'
     },
     {
       id: 3,
-      title: 'The Memory Maze',
-      description: 'Crack three mind-bending riddles!',
-      image: 'assets/app-assets/Flux_Dev.svg',
-      points: 60,
-      trophies: 3,
-      timeLimit: 'Solve in 3 min',
-      status: 'available',
-      statusColor: '#2ed573'
+      title: 'Pattern Pursuit',
+      difficulty: 'Medium',
+      description: 'Recognize and continue sequences under time pressure.',
+      rewards: { points: 45, trophies: 1 },
+      durationLabel: 'Finish in 7 min',
+      image: '/assets/app-assets/Flux_Dev_a_mesmerizing_surreal_and_vibrantly_colored_cinematic_2 1.svg'
     },
     {
       id: 4,
-      title: 'Riddle Royale',
-      description: 'Crack three mind-bending riddles!',
-      image: 'assets/app-assets/Flux_Dev_a_mesmerizing_surreal_and_vibrantly_colored_cinematic_2 1.svg',
-      points: 30,
-      trophies: 2,
-      timeLimit: 'Solve in 5 min',
-      status: 'available',
-      statusColor: '#2ed573'
+      title: 'Speed Math',
+      difficulty: 'Hard',
+      description: 'Solve quick mental arithmetic problems as fast as you can.',
+      rewards: { points: 60, trophies: 3 },
+      durationLabel: 'Finish in 4 min',
+      image: '/assets/app-assets/Flux_Dev_a_mesmerizing_surreal_and_vibrantly_colored_cinematic_2 1.svg'
+    },
+    {
+      id: 5,
+      title: 'Word Weave',
+      difficulty: 'Puzzle',
+      description: 'Form words from mixed letters to expand vocabulary and recall.',
+      rewards: { points: 35, trophies: 1 },
+      durationLabel: 'Finish in 6 min',
+      image: '/assets/app-assets/Flux_Dev_a_mesmerizing_surreal_and_vibrantly_colored_cinematic_2 1.svg'
+    },
+    {
+      id: 6,
+      title: 'Zen Balance',
+      difficulty: 'Relax',
+      description: 'Breathing and simple mindfulness micro-tasks for calm and clarity.',
+      rewards: { points: 20, trophies: 0 },
+      durationLabel: 'Finish in 2 min',
+      image: '/assets/app-assets/Flux_Dev_a_mesmerizing_surreal_and_vibrantly_colored_cinematic_2 1.svg'
     }
   ];
-  constructor(private router: Router) {}
 
-  ngOnInit(): void {}
+  constructor(private location: Location) {}
 
-  // Fallback placeholder in case an image fails to load
-  private readonly PLACEHOLDER = 'assets/app-assets/placeholder.svg';
-
-  /**
-   * Normalize image path for template use.
-   * - If empty -> placeholder
-   * - If starts with http(s) -> return as-is
-   * - If starts with 'assets/' -> return as-is
-   * - Otherwise prepend 'assets/' (handles filenames like 'app-assets/foo.png' or 'images/foo.jpg')
-   */
-  getImagePath(image?: string): string {
-    if (!image) return this.PLACEHOLDER;
-    const trimmed = image.trim();
-    if (!trimmed) return this.PLACEHOLDER;
-    const lower = trimmed.toLowerCase();
-    if (lower.startsWith('http://') || lower.startsWith('https://')) {
-      return trimmed;
+  ngOnInit(): void {
+    // Use puzzles as fallback if data not provided by parent/service
+    if (!this.data || !this.data.length) {
+      this.data = []; // keep empty to demonstrate fallback; template will use puzzles
     }
-    if (lower.startsWith('assets/')) return trimmed;
-    // encode spaces and other characters safely
-    const encoded = encodeURI(trimmed);
-    return `assets/${encoded}`;
+    // debug help: open browser console to see this log
+    console.log('ContentViewall initialized, data length:', this.data?.length, 'puzzles length:', this.puzzles?.length);
   }
 
-  onImageError(event: Event): void {
-    const target = event.target as HTMLImageElement;
-    if (target && target.src && !target.src.includes(this.PLACEHOLDER)) {
-      target.src = this.PLACEHOLDER;
-    }
-  }
-
-  onChallengeClick(challenge: Challenge): void {
-    if (challenge.status === 'available') {
-      console.log(`Starting challenge: ${challenge.title}`);
-      // Add your challenge start logic here
-    }
-  }
-
-  onPauseClick(challenge: Challenge): void {
-    console.log(`Pausing challenge: ${challenge.title}`);
-    // Add pause logic here
+  // explicit getter to use in template — safer than inline ternary logic
+  get list(): Challenge[] {
+    return (this.data && this.data.length) ? this.data : this.puzzles;
   }
 
   goBack(): void {
-    // navigate back to the content main page
-    this.router.navigate(['/content']);
+    this.location.back();
+  }
+
+  onPlay(challenge: Challenge): void {
+    console.log('Play challenge:', challenge);
   }
 }

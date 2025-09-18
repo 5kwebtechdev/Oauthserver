@@ -1,0 +1,43 @@
+<div class="content-description-screen">
+  <div class="back-title">
+  <mindful-navigator [heading]="heading" backIcon="arrow"></mindful-navigator>
+  </div>
+  <div class="desc-image">
+    <!-- Use a PNG hero; fall back to an asset if not provided -->
+    <img src="/assets/images/Quiz_Description_screen-Thumbnail.png" alt="Apple orchard" class="hero-image" />
+  </div>
+
+  <div class="meta-cards">
+    <div class="meta"> 
+      <div class="meta-value">
+        <img src="/assets/icons/time-icon.png" alt="time" class="meta-icon" />
+        5
+      </div>
+      <div class="meta-label">Minutes</div>
+    </div>
+    <div class="meta"> 
+      <div class="meta-value">
+        <img src="/assets/icons/mind-icon.png" alt="questions" class="meta-icon" />
+        5
+      </div>
+      <div class="meta-label">Questions</div>
+    </div>
+    <div class="meta"> 
+      <div class="meta-value">
+        <img src="/assets/icons/hard-icon.png" alt="difficulty" class="meta-icon" />
+        Hard
+      </div>
+      <div class="meta-label">Difficulty</div>
+    </div>
+  </div>
+
+  <div class="description">
+    <p>Transform yourself into a confident math problem-solver! This delightful apple-themed quiz will unlock your natural ability to think quickly and solve addition problems with ease.</p>
+
+    <p>As you work through each colorful scenario, you'll discover how math surrounds us in everyday life from counting fruits to managing your allowance.</p>
+
+    <p>Master this foundational skill and watch your confidence soar in more complex math challenges ahead.</p>
+  </div>
+
+  <button class="start-journey" (click)="startJourney()">Start your journey</button>
+</div>

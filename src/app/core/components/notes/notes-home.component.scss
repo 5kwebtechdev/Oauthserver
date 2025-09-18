@@ -4,10 +4,13 @@ height: 852px;
   padding: 1rem;
 }
 
-.empty-header { display: inline-flex; 
-  justify-content: center; 
-  align-items: center; 
-  gap: 16px; }
+.empty-header { 
+  display: inline-flex;
+justify-content: center;
+align-items: center;
+gap: 16px;
+padding: 16px;
+}
 
 .notes-list {
   height: 162px;

@@ -1,0 +1,106 @@
+.content-description-screen {
+  padding: 16px;
+  display: flex;
+width: 361px;
+flex-direction: column;
+align-items: flex-start;
+gap: 16px;
+
+  .back-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .desc-image {
+    margin: 8px 0 16px;
+    .hero-image {
+      width: 361px;
+height: 160px;
+      border-radius: 12px;
+      display: block;
+    }
+  }
+
+  .meta-cards {
+    display: flex;
+    padding: 8px;
+    align-items: flex-start;
+    gap: 24px;
+    align-self: stretch;
+
+    /* ensure each meta card looks like the design: icon + value + label */
+    .meta {
+      display: flex;
+      padding: 12px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      flex: 1 0 0;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 0 rgba(203, 49, 92, 0.12);
+      min-width: 92px;
+    }
+    
+    .meta-value {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: Nunito;
+      font-weight: 700;
+      font-size: 18px;
+      color: #282527;
+    }
+
+    .meta-icon {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+      display: inline-block;
+    }
+
+    .meta-label {
+      color: #282527;
+      font-family: Nunito;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 140%; /* 18.2px */
+      opacity: 0.7;
+    }
+  }
+
+  .description {
+    width: 358px;
+    color: #282527;
+font-family: Nunito;
+font-size: 16px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 22.4px */
+opacity: 0.7;
+  }
+
+  
+    .start-journey {
+      display: flex;
+width: 361px;
+height: 56px;
+color: #FFF;
+padding: 10px;
+justify-content: center;
+align-items: center;
+gap: 8px;
+flex-shrink: 0;
+border-radius: 8px;
+border: 1px solid #CF3359;
+background: linear-gradient(99deg, #E1527C 0.65%, #AC2456 99.35%);
+box-shadow: 0 -2px 2px 0 #F4ADC6 inset, 0 0 1px 0.5px rgba(225, 82, 124, 0.20);
+font-family: Nunito;
+font-size: 16px;
+font-style: normal;
+font-weight: 700;
+line-height: 140%; /* 22.4px */
+    }
+}
