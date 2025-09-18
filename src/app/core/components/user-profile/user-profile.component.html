@@ -1,0 +1,54 @@
+
+<ion-content fullscreen>
+  <mindful-navigator heading="My Profile" backIcon="arrow"></mindful-navigator>
+  <div class="profile">
+
+    <section class="user-profile-main">
+      <div class="user-profile">
+        <div class="avatar">
+          <img [src]="user?.avatarUrl || '/assets/app-assets/Default-avatar-home.svg'" alt="{{ user?.name || 'User' }} avatar" />
+          <div class="user-info">
+            <div class="user-name">{{ user?.name || 'You' }}</div>
+            <div class="user-age" *ngIf="user?.age">{{ user.age }} yrs</div>
+          </div>
+        </div>
+        <div class="user-stats">
+          <mindful-coins-stats
+          [userCoins]="userCoins"
+          [userStreaks]="userStreaks"
+          [userDays]="userDays"
+          [userBadges]="userBadges">
+        </mindful-coins-stats>
+      </div>
+    </div>
+    </section>
+
+    <section class="profile-content">
+      <profile-content-card iconName="profile" title="Edit Profile Info" subtitle="Avatar name, age, email, number ...." (select)="onEdit()"></profile-content-card>
+
+      <profile-content-card iconName="key" title="Password and security" subtitle="Change your password"></profile-content-card>
+
+      <profile-content-card iconName="owl" title="Change your pet" subtitle="Switch your buddy anytime you like!"></profile-content-card>
+
+      <profile-content-card iconName="creditCard" title="Manage Your Membership" subtitle="See your perks, upgrade, or cancel anytime"></profile-content-card>
+
+      <profile-content-card iconName="notification" title="Notifications" subtitle="Manage your notifications"></profile-content-card>
+
+      <profile-content-card iconName="gift" title="Refer a friend" subtitle="Refer this to friends for exciting rewards"></profile-content-card>
+
+      <profile-content-card iconName="link" title="My Family" subtitle="View your family details"></profile-content-card>
+
+      <profile-content-card iconName="lock" title="Parental Control" subtitle="View app restrictions and permissions"></profile-content-card>
+
+      <profile-content-card iconName="feedback" title="Feedback & Suggestions" subtitle="Share your thoughts to help us improve!"></profile-content-card>
+
+      <profile-content-card iconName="support" title="Help & Support" subtitle="FAQ's and chat support"></profile-content-card>
+
+      <profile-content-card iconName="policies" title="Our policies" subtitle="Learn how we follow the guidelines"></profile-content-card>
+    </section>
+    <!--Social media-->
+      <section class="profile-footer">
+        <social-media></social-media>
+      </section>
+  </div>
+</ion-content>

@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import {AuthenticatedComponent} from "./authenticated.component";
 import {AuthenticatedRoutingModule} from "./authenticated.routing.module";
 import {FooterComponent} from "../core/components/footer/footer.component";
@@ -19,6 +20,7 @@ import {TimelineComponent} from "../core/components/habit-section/timeline/timel
 import {MindfulSelectorsComponent} from "../core/components/mindful-selectors/mindful-selectors.component";
 import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
 import {MindfulNavigatorComponent} from "../core/components/mindful-navigator/mindful-navigator.component";
+import {UserProfileComponent} from "../core/components/user-profile/user-profile.component";
 
 @NgModule({
   declarations: [
@@ -34,6 +36,7 @@ import {MindfulNavigatorComponent} from "../core/components/mindful-navigator/mi
   ],
   imports: [
     CommonModule,
+    RouterModule,
     AuthenticatedRoutingModule,
   LongPressDirective,
   HabitCardComponent,
@@ -42,6 +45,7 @@ import {MindfulNavigatorComponent} from "../core/components/mindful-navigator/mi
   TypicalPageComponent,
   ChallengeCardComponent,
   UserDashboardComponent,
+  UserProfileComponent,
   IonicModule,
   MindfulInputsModule,
   MindfulSelectorsComponent,

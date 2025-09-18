@@ -1,0 +1,10 @@
+/* Minimal styles for edit profile */
+:host { display: block; }
+
+.edit-profile-container {
+display: flex;
+width: 361px;
+flex-direction: column;
+align-items: flex-start;
+gap: 20px;
+}

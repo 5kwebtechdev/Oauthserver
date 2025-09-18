@@ -1,0 +1,150 @@
+// .profile-card-main {
+//   width: 100%;
+//   text-align: left;
+//   border: none;
+//   background: transparent;
+//   padding: 10px 8px;
+//   display: flex;
+//   align-items: center;
+
+// }
+
+.profile-content-main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 76px;
+  align-self: stretch;
+    border-bottom: 0.5px solid rgba(40,37,39,0.4);
+      padding-bottom: 16px;
+
+
+}
+
+
+.icon-circle {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-circle img {
+  width: 28px;
+  height: 28px;
+  z-index: 100;
+}
+
+.content .title {
+  font-weight: 700;
+  color: #282527;
+  font-size: 16px;
+}
+
+.content .subtitle {
+  font-weight: 600;
+  color: rgba(40,37,39,0.6);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.chev {
+  color: rgba(40,37,39,0.6);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.content-left {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.content-text {
+  display: flex;
+  width: 209px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.content-text .heading {
+  color: #282527;
+  font-family: Nunito, Arial, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  align-self: stretch;
+}
+
+.content-text .paragraph {
+  align-self: stretch;
+  color: #282527;
+  font-family: Nunito, Arial, sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  margin: 0 !important;
+}
+
+.content-right {
+  width: 16px;
+}
+
+.content-icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
+  border-radius: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .eclipse {
+    width: 48px;
+    height: 48px;
+    border-radius: 48px;
+    /* use a semi-transparent background so child svg keeps its own opacity/color */
+    background: rgba(40,37,39,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ensure inline svg markup sizes correctly inside the eclipse */
+  .svg-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+  }
+
+  .svg-icon svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+    /* allow icon fill to use the original color; if you want theme color, use currentColor and set color on parent */
+  }
+
+  .eclipse img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+  }
+
+.chev-area { display:flex; align-items:center; justify-content:center; width:24px; }
+
+.chev { color: rgba(40,37,39,0.6); }
+.chev svg { width: 16px; height: 16px; }
+
+/* ensure file end */
+}

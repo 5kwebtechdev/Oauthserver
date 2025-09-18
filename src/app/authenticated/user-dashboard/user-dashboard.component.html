@@ -9,7 +9,9 @@
       <header class="profile-header" role="banner">
         <div class="user-info" role="group" aria-label="User info">
           <div class="user-avatar" aria-hidden="false">
-            <img src="/assets/app-assets/Default-avatar-home.svg" alt="{{ userName }} avatar">
+            <a [routerLink]="['/authed','user-profile']" aria-label="Open profile">
+              <img src="/assets/app-assets/Default-avatar-home.svg" alt="{{ userName }} avatar">
+            </a>
           </div>
           <div class="user-name-wrap">
             <span class="user-name">{{ userName }}</span>

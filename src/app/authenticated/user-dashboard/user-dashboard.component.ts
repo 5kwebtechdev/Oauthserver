@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { ModalController } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NotesComponent } from '../../core/components/notes/notes.component';
 import {HabitCardComponent} from "../../core/components/habit-section/habit-card/habit-card.component";
 // ChallengeCardComponent removed from imports because it's not used in the template
@@ -26,6 +26,7 @@ import {MindfulCoinsStatsComponent} from '../../core/components/mindful-coins-st
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     HabitCardComponent,
     AdBannerComponent,
     ContentCardComponent,

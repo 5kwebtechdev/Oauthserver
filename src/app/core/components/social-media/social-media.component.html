@@ -1,0 +1,8 @@
+<div class="social-media">
+  <div class="heading">FOLLOW US ON</div>
+  <div class="icons">
+    <button *ngFor="let l of links" class="icon-btn" (click)="open(l)" [attr.aria-label]="'Open ' + l.label">
+      <span class="icon {{ l.icon }}" aria-hidden="true"></span>
+    </button>
+  </div>
+</div>

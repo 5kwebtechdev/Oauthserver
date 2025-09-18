@@ -97,6 +97,23 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  /**
+   * Handle long-press (1.5s) by navigating to the habit detail page.
+   * If a habit is available, pass it through navigation state so the
+   * HabitDetailComponent can receive it via @Input or navigation extras.
+   */
+  async onLongPress() {
+    try {
+      if (this.habit) {
+        await this.router.navigateByUrl('/authed/habit-detail', { state: { habit: this.habit } } as any);
+      } else {
+        await this.router.navigateByUrl('/authed/habit-detail');
+      }
+    } catch (err) {
+      console.error('Navigation to habit-detail failed', err);
+    }
+  }
+
   async openHabitPage() {
     // Navigate to the habit page route so the user lands on the full Habit Page
     await this.router.navigateByUrl('/habit-page');

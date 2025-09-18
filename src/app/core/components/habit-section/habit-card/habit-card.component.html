@@ -62,7 +62,7 @@
 <div *ngIf="mode === 'single'" class="container w-full h-full p-0">
   <div class="habit-wrapper"
     [ngClass]="{'expanded': expanded, 'isRunningLate': isRunningLate,'missedTime': missedTime}">
-    <div class="habit-header-container clickable" (tap)="toggle()" long-press (press)="console.log('Long pressed')">
+  <div class="habit-header-container clickable" (tap)="toggle()" long-press [delay]="1500" (press)="onLongPress()">
       <div class="container w-full p-0">
         <div class="d-flex justify-content-between">
           <div class="flex-column d-flex gap-1">
