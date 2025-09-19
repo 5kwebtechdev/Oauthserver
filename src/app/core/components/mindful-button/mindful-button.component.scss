@@ -155,7 +155,7 @@ p {
 .green {
   --button_background: linear-gradient(132.16deg, #4CAF50 1.89%, #358438 98.11%);
   --button_border: 1px solid #358438;
-  --button_box_shodow: 0px 0px 1px 0.5px rgba(76, 175, 80, 0.2), inset 0px -2px 2px #6BBD6E;
+  --button_box_shodow: 0 0 1px 0.5px rgba(76, 175, 80, 0.20), 0 -4px 2px 0 #6BBD6E inset;
 }
 
 /* Specific medium size overrides for green */
@@ -172,6 +172,21 @@ p {
   border: 1px solid #358438;
   background: linear-gradient(132deg, #4CAF50 1.89%, #358438 98.11%);
   box-shadow: 0 -2px 2px 0 #6BBD6E inset, 0 0 1px 0.5px rgba(76, 175, 80, 0.20);
+}
+
+/* Large green variant matching requested exact style */
+.green.large {
+  display: flex;
+  height: 56px;
+  padding: 8px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+  border-radius: 8px;
+  border: 1px solid #358438;
+  background: linear-gradient(132deg, #4CAF50 1.89%, #358438 98.11%);
+  box-shadow: 0 0 1px 0.5px rgba(76, 175, 80, 0.20), 0 -4px 2px 0 #6BBD6E inset;
 }
 
 .magenta {

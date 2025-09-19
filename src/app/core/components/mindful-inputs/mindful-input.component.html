@@ -1,4 +1,6 @@
-<div class="mindful-input-group">
-  <ng-content></ng-content>
-  <div class="error-message" *ngIf="false"><!-- placeholder for projected error messages --></div>
-</div>
+<input
+  class="mindful-input__control"
+  [attr.type]="type"
+  [attr.placeholder]="placeholder"
+  [value]="value || ''"
+/>

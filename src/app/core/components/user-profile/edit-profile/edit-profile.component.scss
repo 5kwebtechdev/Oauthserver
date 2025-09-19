@@ -7,6 +7,7 @@ width: 361px;
 flex-direction: column;
 align-items: flex-start;
 gap: 33px;
+margin-left: 16px;
 }
 
 .edit-details{
@@ -50,8 +51,274 @@ font-weight: 700;
 line-height: 130%; /* 20.8px */
 }
 
-/* Scoped input styles for this component only */
-.edit-profile-container .mindful-input-group .input-container {
+.input-text{
+    display: flex;
+padding: 10px 56px 10px 24px !important;
+align-items: center;
+gap: 8px;
+align-self: stretch;
+border-radius: 12px;
+border: 1px solid rgba(40, 37, 39, 0.50);
+background: #FFF;
+
+width: 361px;
+  /* Placeholder and inner controls styling */
+  /* Ensure any native input/textarea inherit the container sizing */
+  input,
+  textarea {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font-family: inherit;
+    font-size: 14px;
+    color: #282527;
+    padding: 0; /* container handles padding */
+    margin: 0;
+    width: 312px;
+  appearance: none;
+  -webkit-appearance: none;
+  }
+
+  /* Placeholder color for inputs/textareas */
+  input::placeholder,
+  textarea::placeholder {
+    color: rgba(40, 37, 39, 0.40);
+    font-weight: 500;
+  }
+
+  /* Disabled state */
+  input:disabled,
+  textarea:disabled {
+    color: rgba(40, 37, 39, 0.40);
+    cursor: not-allowed;
+  }
+
+  /* Optional icon slot (e.g., leading icon) */
+  .input-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: rgba(40, 37, 39, 0.60);
+  }
+
+  /* Remove default focus outline on container and rely on custom focus from inner input */
+  &:focus-within {
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.12);
+    border-color: #4CAF50;
+  }
+
+  /* Make multi-line textarea look good inside container */
+  textarea {
+    resize: vertical;
+    min-height: 56px;
+  }
+
+  /* Small helper for readonly text */
+  .readonly-text {
+    color: rgba(40, 37, 39, 0.80);
+    font-size: 14px;
+  }
+
+
+}
+
+/* Gender row styling requested by user */
+.gender-row{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+  width: 100%;
+  gap: 16px;
+}
+
+.gender-button{
+  display: flex;
+  width: 173px;
+  height: 48px;
+  padding: 20px 56px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  border: 1px solid #4CAF50;
+  background: #fff;
+  cursor: pointer;
+  user-select: none;
+}
+
+.gender-button.active{
+  background: #E8F5E9; /* light green background when active */
+}
+
+/* Add input-group styles similar to signup page for email input */
+.input-group {
+  margin-bottom: 1rem;
+  position: relative;
+
+  input {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 10px !important;
+    font-size: 1rem;
+    background: #FAD2AE; /* same as signup email background */
+    border: 2px solid transparent;
+    transition: 0.2s;
+
+    &:focus,
+    &:active,
+    &:hover,
+    &:focus-visible {
+      border: 2px solid #ff823b;
+      outline: none;
+    }
+  }
+
+  input.error {
+    border-color: var(--error_color);
+  }
+}
+
+.button-row {
+  width: 100%;
+  display: flex;
+  justify-content: stretch;
+}
+
+.button-row mindful-button {
+  width: 100%;
+  display: block;
+}
+
+/* Phone input styles copied from login to allow local overrides */
+.phone-input-container {
+  display: flex;
+  width: 361px; /* requested width for phone number input layout */
+  height: 61px;
+  padding: 0; /* inner elements handle padding */
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 0 12px 12px 0;
+  border-top: 1px solid rgba(40, 37, 39, 0.50);
+  border-right: 1px solid rgba(40, 37, 39, 0.50);
+  border-bottom: 1px solid rgba(40, 37, 39, 0.50);
+  background: #FFF;
+  overflow: hidden;
+
+  &:focus-within {
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.12);
+  }
+
+  &.error {
+    border-color: var(--error_color);
+  }
+
+  /* Simplified country code selector to avoid dropdown-specific heavy styling.
+     The modal `.country-modal` will handle the expanded country list UI. */
+  .country-code-selector {
+    display: flex;
+    height: 61px;
+    padding: 0 8px;
+    align-items: center;
+    border-radius: 12px 0 0 12px;
+    border: 1px solid rgba(40, 37, 39, 0.50);
+    background: #FFF;
+    cursor: pointer;
+    gap: 8px;
+    min-width: 92px;
+    justify-content: flex-start;
+    transition: 0.12s ease;
+    flex-shrink: 0;
+
+    .flag-emoji { font-size: 1.1rem; line-height: 1; min-width: 20px; text-align: center; }
+    .country-code { color: #282527; font-weight: 600; font-size: 16px; font-family: Nunito, sans-serif; }
+    /* keep a small chevron if present but don't rely on heavy icon rules */
+    i { margin-left: 6px; color: rgba(40,37,39,0.6); }
+  }
+
+  input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 20px 8px 20px 8px; /* match vertical padding to requested 20px */
+    font-size: 16px; /* requested font size */
+    color: #282527; /* requested color */
+    font-family: Nunito, sans-serif;
+    font-weight: 500;
+    line-height: 130%; /* 20.8px */
+    border-radius: 0 12px 12px 0;
+    min-width: 0;
+    &:focus { outline: none; }
+    &::placeholder { color: rgba(40,37,39,0.4); font-weight: 500; }
+
+    /* Remove number input arrows */
+    &::-webkit-outer-spin-button, &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  &[type=number], &[type=tel] { -moz-appearance: textfield; appearance: none; }
+  &[type=tel] { -webkit-appearance: none; appearance: none; }
+  }
+}
+
+/* Country modal styling: white background and #4CAF50 accents as requested */
+.country-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 998;
+}
+
+.country-modal {
+  position: fixed;
+  left: 50%;
+  bottom: 0; /* anchor to bottom like login page */
+  transform: translateX(-50%);
+  width: 393px; /* match login page exact width */
+  max-height: 80vh;
+  background: #ffffff; /* white background */
+  border-radius: 12px 12px 0 0; /* rounded top corners */
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.12);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 12px);
+
+  &__header {
+    padding: 12px 16px;
+    background: #ffffff;
+    border-bottom: 1px solid rgba(40,37,39,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__title { color: #282527; font-family: Nunito, sans-serif; font-weight: 700; }
+
+  &__content { padding: 8px 12px; overflow: auto; }
+
+  .country-list { display: flex; flex-direction: column; gap: 4px; }
+
+  .country-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #282527;
+  }
+
+  .country-item.selected { background: rgba(76,175,80,0.08); border-left: 4px solid #4CAF50; }
+
+  &__footer { padding: 12px; display:flex; justify-content: flex-end; gap: 8px; background: #fff; border-top: 1px solid rgba(40,37,39,0.06); }
+
+  .country-modal__done-btn { background: #4CAF50; color: white; padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; }
+}
+
+  /* Email input group (match signup page layout) */
+  .input-group {
     display: flex;
     padding: 20px 56px 20px 24px;
     align-items: center;
@@ -60,12 +327,20 @@ line-height: 130%; /* 20.8px */
     border-radius: 12px;
     border: 1px solid rgba(40, 37, 39, 0.50);
     background: #FFF;
-    box-sizing: border-box;
-}
+    width:361px;
 
-/* Ensure the inner ion-input uses full width and inherits font styles */
-.edit-profile-container .mindful-input-group .input-container ion-input {
-    width: 100%;
-    --padding-start: 0px;
-    --padding-end: 0px;
-}
+    input[type="email"] {
+      border: none;
+      outline: none;
+      background: transparent;
+      width: 100%;
+      color: #282527;
+      font-family: Nunito, sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 130%; /* 20.8px */
+      padding: 0;
+    }
+
+    .error { margin-top: 8px; color: var(--error_color); font-size: 13px; }
+  }

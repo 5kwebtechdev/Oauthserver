@@ -1,0 +1,119 @@
+.change-pet-container{
+    padding: 16px;;
+}
+.carousel-wrapper {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  
+}
+.pet-card{
+    width: 305px;
+height: 480px;
+border-radius: 32px;
+border: 2px solid #4CAF50;
+
+h4{
+    color: #282527;
+font-family: Fredoka;
+font-size: 20px;
+font-style: normal;
+font-weight: 500;
+line-height: 130%; /* 26px */
+align-self: stretch;
+}
+
+p{
+    color: #282527;
+font-family: Nunito;
+font-size: 13px;
+font-style: normal;
+font-weight: 600;
+line-height: 130%; /* 16.9px */
+width: 217px;
+}
+}
+
+.carousel-track {
+  white-space: nowrap;
+  transition: transform 0.5s ease-in-out;
+  height: 100%;
+}
+
+.carousel-slide {
+  display: inline-block;
+  width: 100vw;
+  height: 100vh;
+  vertical-align: top;
+  background: none;
+  position: relative;
+}
+
+.slide-image {
+  width: 100%;
+  object-fit: contain;
+  position: relative;
+  top: -15px;
+}
+
+.text-content {
+  padding: 1.5rem;
+  text-align: left;
+}
+
+
+.text-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: #fff;
+}
+
+.text-content li {
+  margin-bottom: 0.5rem;
+  font-size: 22px;
+  font-family: 'Nunito', sans-serif;
+}
+
+.carousel-footer {
+  position: absolute;
+  bottom: 1rem;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ddd;
+  cursor: pointer;
+}
+
+.dots span.active {
+  background-color: none;
+}
+
+.next-btn {
+  background: #fff;
+  border-radius: 50%;
+  width: 60px;
+  aspect-ratio: 1;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 5px;
+  font-size: 24px;
+  transition: 0.4s;
+}

@@ -1,0 +1,29 @@
+<ion-content fullscreen>
+  <mindful-navigator heading="Password and security" backIcon="arrow"></mindful-navigator>
+
+  <div class="reset-password-root">
+    <profile-edit-input
+      title="Current Password"
+      description="To verify you"
+      type="password"
+      placeholder="Enter password"
+    ></profile-edit-input>
+
+     <profile-edit-input
+      title="New Password"
+      description="To change your password"
+      type="password"
+      placeholder="Enter password"
+    ></profile-edit-input>
+
+     <profile-edit-input
+      title="Retype New Password"
+      
+      type="password"
+      placeholder="Enter password"
+    ></profile-edit-input>
+
+
+  <mindful-button type="green" text="Change password" fullWidth="true" (click)="saveProfile()"></mindful-button>
+  </div>
+</ion-content>

@@ -4,24 +4,24 @@
 <ng-content (click)="open()"></ng-content>
 
 <div class="overlay" *ngIf="show">
-  <div class="popover">
+  <div class="popover" [ngClass]="variant ? 'variant-' + variant : ''">
     <div class="header">
       <span (click)="close()">✕</span>
     </div>
 
     <div class="picker">
       <div class="highlight-bar"></div>
-      <div #dayCol class="column" (scroll)="onScroll('day')">
+  <div #dayCol class="column day-column" (scroll)="onScroll('day')">
         <div *ngFor="let day of days; let i =index"
              [ngClass]="{ 'item': true, 'selected': i === getCurrentDayIndex() }">{{ day || '' }}</div>
       </div>
 
-      <div #monthCol class="column" (scroll)="onScroll('month')">
+  <div #monthCol class="column month-column" (scroll)="onScroll('month')">
         <div *ngFor="let month of months; let i = index"
              [ngClass]="{ 'item': true, 'selected': i === getCurrentMonthIndex() }">{{ month || '' }}</div>
       </div>
 
-      <div #yearCol class="column" (scroll)="onScroll('year')">
+  <div #yearCol class="column year-column" (scroll)="onScroll('year')">
         <div *ngFor="let year of years;let i = index"
              [ngClass]="{ 'item': true, 'selected': i === getCurrentYearIndex() }">{{ year || '' }}</div>
       </div>

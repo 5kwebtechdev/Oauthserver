@@ -23,6 +23,9 @@ const routes: Routes = [
     path: 'edit-profile',
     loadComponent: () => import('../core/components/user-profile/edit-profile/edit-profile.component').then(m => m.EditProfileComponent)
   },{
+    path: 'reset-pasword',
+    loadComponent: () => import('../core/components/user-profile/reset-pasword/reset-pasword.component').then(m => m.ResetPaswordComponent)
+  },{
     path: 'test',
     loadComponent: () => import('./test/test.component').then(m => m.TestComponent)
   },{

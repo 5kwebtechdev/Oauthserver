@@ -1,0 +1,16 @@
+<div class="input-content">
+  <div class="title">
+    <div class="title-head">{{ title }}</div>
+    <div class="title-desc">{{ description }}</div>
+  </div>
+
+  <input
+    class="profile-input"
+    [type]="type"
+    [placeholder]="placeholder"
+    [value]="value || ''"
+    (input)="onInput($event)"
+  />
+
+  <div *ngIf="showError && errorMessage" class="error">{{ errorMessage }}</div>
+</div>

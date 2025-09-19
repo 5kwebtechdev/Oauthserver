@@ -5,6 +5,7 @@
   background: #fff;
   font-size: 16px;
   cursor: pointer;
+  margin-left: 16px;
 }
 
 .overlay {
@@ -27,6 +28,16 @@
   border-radius: 20px 20px 0 0;
   padding-top: 10px;
   max-width: unset;
+}
+
+/* Variant: white-green (use by passing [variant]="'white-green'") */
+.popover.variant-white-green {
+  background: #FFFFFF; // main layout background as requested
+  border-radius: 15px 15px 0 0; // per supplied main layout
+  width: 393px; // fixed width as provided
+  height: 308px; // fixed height as provided
+  padding-top: 0;
+  margin: 0 auto; // center horizontally when possible
 }
 
 .header {
@@ -69,9 +80,13 @@
   border-radius: 6px;
 }
 
-.item:nth-child(n+3):nth-child(-n+999) {
-  // optional styling tweak
+/* Adjust selected item and highlight for white-green variant */
+.popover.variant-white-green .item.selected {
+  background: transparent; // remove solid green background per request
+  color: #FFFFFF;
 }
+
+// removed empty ruleset
 
 .highlight-bar {
   position: absolute;
@@ -83,6 +98,80 @@
   border-radius: 10px;
   background: #EE6621;
 }
+
+/* highlight for variant */
+.popover.variant-white-green .highlight-bar {
+  background: #4CAF50; // date selection area color
+  border-radius: 10px;
+}
+
+/* Done button styling for white-green variant */
+.popover.variant-white-green .footer button {
+  color: #4CAF50;
+  text-align: center;
+   font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 20px; /* 125% */
+  background: transparent;
+  border: none;
+  padding: 10px 24px;
+}
+
+/* Day / Month / Year typography & layout for white-green variant */
+.popover.variant-white-green .column .item {
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px; /* 90% */
+}
+
+.popover.variant-white-green .day-column .item {
+  width: 24.185px;
+  margin: 0 auto; /* center the fixed-width day item */
+  text-align: center;
+}
+
+
+/* Year right-aligned */
+.popover.variant-white-green .year-column .item {
+  text-align: center; /* center year as requested */
+}
+
+/* Center the month column items */
+.popover.variant-white-green .month-column .item {
+  text-align: center;
+}
+
+/* Selected month/year should appear in white with larger typography */
+.popover.variant-white-green .column .item.selected {
+  color: #FFFFFF;
+  /* Typography for selected date */
+  font-family: 'Nunito', sans-serif;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 400;
+  /* smaller line-height as requested (may visually overlap neighboring rows) */
+  line-height: 18px; /* 75% */
+  /* Experimental typographic properties left commented for compatibility */
+  /* -webkit-leading-trim: both; */
+  /* leading-trim: both; */
+  /* text-edge: cap; */
+}
+
+/* Experimental properties (leading-trim, text-edge) are commented out to avoid
+   lint errors; they express typographic intent and can be enabled if your build
+   system and target browsers support them. */
+/*
+.popover.variant-white-green .column .item {
+  -webkit-leading-trim: both;
+  leading-trim: both;
+  text-edge: cap;
+}
+*/
 
 .footer {
   padding: 16px;

@@ -20,13 +20,27 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
   }],
   standalone: false
 })
-export class MindfulBirthdaypickerComponent implements ControlValueAccessor, AfterViewInit {
+export class MindfulBirthdaypickerComponent implements ControlValueAccessor, AfterViewInit, OnChanges {
   @ViewChild('dayCol') dayCol!: ElementRef;
   @ViewChild('monthCol') monthCol!: ElementRef;
   @ViewChild('yearCol') yearCol!: ElementRef;
 
   @Input()
   public showTrigger: boolean = false;
+
+  /**
+   * Variant class for the picker. Example: 'white-green' to get white main layout and
+   * green date selection area as provided by the designer.
+   */
+  @Input()
+  public variant: string | undefined;
+
+  /**
+   * Allow parent to pass an initial date to set the picker to.
+   * Accepts a Date or ISO string.
+   */
+  @Input()
+  public initialDate: Date | string | undefined;
 
 
   // Emit selected Date
@@ -59,6 +73,20 @@ export class MindfulBirthdaypickerComponent implements ControlValueAccessor, Aft
     }
   }
 
+  /**
+   * Public API to set selected date programmatically.
+   */
+  public setSelectedDate(value: Date | string) {
+    if (!value) return;
+    this.selectedDate = value instanceof Date ? value : new Date(value);
+    // If view is ready, scroll to the new selection
+    try {
+      this.scrollToSelected();
+    } catch (e) {
+      // ignore if view not ready
+    }
+  }
+
   registerOnChange(fn: any) { this.onChange = fn; }
   registerOnTouched(fn: any) { this.onTouched = fn; }
 
@@ -78,12 +106,22 @@ export class MindfulBirthdaypickerComponent implements ControlValueAccessor, Aft
   }
 
   scrollToSelected() {
+    // Guard against ViewChild not being ready
+    if (!this.dayCol || !this.monthCol || !this.yearCol) return;
+
     const offset = 2 * this.rowHeight;
 
-    this.dayCol.nativeElement.scrollTop = (this.selectedDate.getDate() + 1) * this.rowHeight - offset;
-    this.monthCol.nativeElement.scrollTop = (this.selectedDate.getMonth() + 2) * this.rowHeight - offset;
+    // day() returns 1-31
+    const day = this.selectedDate.getDate();
+    this.dayCol.nativeElement.scrollTop = (day + 1) * this.rowHeight - offset;
+
+    const month = this.selectedDate.getMonth();
+    this.monthCol.nativeElement.scrollTop = (month + 2) * this.rowHeight - offset;
+
     const yearIndex = this.years.indexOf(this.selectedDate.getFullYear());
-    this.yearCol.nativeElement.scrollTop = (yearIndex) * this.rowHeight - offset;
+    if (yearIndex >= 0) {
+      this.yearCol.nativeElement.scrollTop = (yearIndex) * this.rowHeight - offset;
+    }
   }
 
   onScroll(type: 'day' | 'month' | 'year') {
@@ -126,6 +164,11 @@ export class MindfulBirthdaypickerComponent implements ControlValueAccessor, Aft
     if (changes['showTrigger'] && changes['showTrigger']?.currentValue === true) {
       // Only open when showTrigger becomes true
       this.open();
+    }
+
+    // If parent passed an initialDate, apply it
+    if (changes['initialDate'] && changes['initialDate'].currentValue) {
+      this.setSelectedDate(changes['initialDate'].currentValue);
     }
   }
 }
