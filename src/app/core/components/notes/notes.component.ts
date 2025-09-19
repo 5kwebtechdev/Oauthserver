@@ -5,13 +5,14 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
 import { MindfulBadgeComponent } from '../mindful-badge/mindful-badge.component';
+import { MindfulTagsComponent } from '../mindful-selectors/mindful-tags/mindful-tags.component';
 import { NotesService, NoteModel } from './notes.service';
 import { NotesHomeComponent } from './notes-home.component';
 
 @Component({
   selector: 'notes',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, MindfulButtonComponent, MindfulBadgeComponent, NotesHomeComponent],
+  imports: [CommonModule, IonicModule, FormsModule, MindfulButtonComponent, MindfulBadgeComponent, MindfulTagsComponent, NotesHomeComponent],
   templateUrl: './notes.component.html',
   styleUrls: ['./notes.component.scss']
 })
@@ -22,7 +23,7 @@ export class NotesComponent {
   public noteTitle: string = '';
   public showTagInput: boolean = false;
   public newTagName: string = '';
-  public tags: string[] = [];
+  public tags: { key: any; value: string }[] = [];
   public titleCollapsed: boolean = false;
   public notes: Array<{ title: string; text: string; tags: string[]; createdAt: string }> = [];
   // tag action UI
@@ -61,7 +62,7 @@ export class NotesComponent {
     const note: NoteModel = {
       title,
       text,
-      tags: [...this.tags],
+      tags: this.tags.map(t => t.value),
       createdAt: new Date().toISOString()
     };
     this.notesService.add(note);
@@ -87,7 +88,8 @@ export class NotesComponent {
   confirmTag() {
     const name = (this.newTagName || '').trim();
     if (name) {
-      this.tags.push(name);
+      const key = Date.now();
+      this.tags.push({ key, value: name });
     }
     this.newTagName = '';
     this.showTagInput = false;
@@ -105,14 +107,14 @@ export class NotesComponent {
 
   startEditTag(index: number) {
     this.editIndex = index;
-    this.editName = this.tags[index];
+    this.editName = this.tags[index] ? this.tags[index].value : '';
     this.activeTagIndex = null;
   }
 
   saveEditedTag(index: number) {
     const v = (this.editName || '').trim();
     if (!v) return;
-    this.tags[index] = v;
+    if (this.tags[index]) this.tags[index].value = v;
     this.editIndex = null;
     this.editName = '';
   }
@@ -139,6 +141,41 @@ export class NotesComponent {
     } else {
       this.titleCollapsed = false;
     }
+  }
+
+  // Handlers for MindfulTagsComponent events
+  onTagEdit(event: { key: any; value: string }) {
+    const key = event && event.key;
+    const idx = this.tags.findIndex(t => t.key === key);
+    if (idx > -1) {
+      this.tags[idx].value = event.value;
+    }
+  }
+
+  onTagDelete(key: any) {
+    const idx = this.tags.findIndex(t => t.key === key);
+    if (idx > -1) {
+      this.tags.splice(idx, 1);
+    }
+  }
+
+  onTagAdd(event: { key: any; value: string }) {
+    const val = (event && event.value) ? String(event.value) : '';
+    const key = event && event.key ? event.key : Date.now();
+    if (val) {
+      this.tags.push({ key, value: val });
+    }
+  }
+
+  onSelectedKeysChange(keys: any[]) {
+    // if external selection is needed, map selected keys to internal indices
+    // currently not used, but kept for future compatibility
+    // e.g., this.selectedTagIndices = keys;
+  }
+
+  // Provide options in the { key, value } shape expected by MindfulTagsComponent
+  get tagOptions(): { key: any; value: string }[] {
+    return this.tags.map(t => ({ key: t.key, value: t.value }));
   }
 
   get truncatedTitle(): string {

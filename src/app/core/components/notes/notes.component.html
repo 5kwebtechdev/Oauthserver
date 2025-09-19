@@ -41,36 +41,17 @@
         </div>
       </div>
 
-      <!-- Tag row -->
+      <!-- Tag row (replaced by mindful-tags component) -->
       <div class="input-tags">
         <label class="tag-label">Tag</label>
-
-        <!-- render existing tags -->
-        <ng-container *ngFor="let t of tags; let i = index">
-          <mindful-badge type="task" text="{{t}}" (click)="toggleTagActions(i)"></mindful-badge>
-
-          <!-- when user clicks a tag show edit/delete bubble -->
-          <div class="tag-actions" *ngIf="activeTagIndex === i">
-            <button class="tag-action" (click)="startEditTag(i)">
-              <img src="/assets/app-assets/edit-icon.svg" alt="Edit">
-            </button>
-            <button class="tag-action" (click)="deleteTag(i)">
-              <img src="/assets/app-assets/delete-icon.svg" alt="Delete">
-            </button>
-          </div>
-
-          <!-- inline edit input -->
-          <div class="tag-edit" *ngIf="editIndex === i">
-            <ion-input [(ngModel)]="editName" (keydown.enter)="saveEditedTag(i)" (blur)="saveEditedTag(i)"></ion-input>
-          </div>
-        </ng-container>
-
-        <mindful-badge type="task" text="Add new +" inactive (click)="addTag()"></mindful-badge>
-
-        <!-- floating tag name input shown when adding a tag -->
-        <div class="tag-input" *ngIf="showTagInput">
-          <ion-input #tagInput placeholder="Type the name here" [(ngModel)]="newTagName" (keydown.enter)="confirmTag()" (blur)="confirmTag()"></ion-input>
-        </div>
+        <button class="add-new-tag" (click)="tagsRef.openAdd()">Add new +</button>
+        <mindful-tags #tagsRef
+          [options]="tagOptions"
+          (edit)="onTagEdit($event)"
+          (delete)="onTagDelete($event)"
+          (add)="onTagAdd($event)"
+          (selectedKeysChange)="onSelectedKeysChange($event)"
+        ></mindful-tags>
       </div>
 
       <!-- Large notes input area -->
