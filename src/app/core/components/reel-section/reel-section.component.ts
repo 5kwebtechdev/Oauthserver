@@ -15,17 +15,7 @@ import { MindfulButtonComponent } from '../mindful-button/mindful-button.compone
   templateUrl: './reel-section.component.html',
   styleUrls: ['./reel-section.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    IonicModule,
-    RouterModule,
-    ReelsExpandComponent,
-    BookmarkReelsComponent,
-    ReelGuidelinesComponent,
-    NewReelsComponent,
-    ShareReelComponent,
-    MindfulButtonComponent
-  ]
+  imports: [CommonModule, IonicModule, RouterModule, ReelsExpandComponent, BookmarkReelsComponent, ReelGuidelinesComponent, NewReelsComponent, ShareReelComponent, MindfulButtonComponent]
 })
 export class ReelSectionComponent implements AfterViewInit {
   public slides = [
@@ -49,8 +39,103 @@ export class ReelSectionComponent implements AfterViewInit {
       title: 'Grow a Crystal at Home',
       duration: '30 sec',
       likes: '8.2K',
-      tags: '#Chemistry #STEM',
-      image: '/assets/images/reel-2-placeholder.png',
+      tags: '#ScienceAtHome #Crystals',
+      image: '/assets/images/reel-1-placeholder.png',
+      video: '',
+      isPlaying: false,
+      saved: false
+    },
+    {
+      id: 3,
+      category: 'Science Wonders',
+      author: 'CurioKid',
+      title: 'Magnet Tricks You Can Try',
+      duration: '25 sec',
+      likes: '6K',
+      tags: '#Magnets #FunFacts',
+      image: '/assets/images/reel-1-placeholder.png',
+      video: '',
+      isPlaying: false,
+      saved: false
+    },
+
+    // Creative Arts
+    {
+      id: 4,
+      category: 'Creative Arts',
+      author: 'ArtWhiz',
+      title: 'Painting a Sunset with My Fingers!',
+      duration: '60 sec',
+      likes: '1K',
+      tags: '#LittleArtist #MessyFun',
+      image: '/assets/images/reel-1-placeholder.png',
+      video: '',
+      isPlaying: false,
+      saved: false
+    },
+    {
+      id: 5,
+      category: 'Creative Arts',
+      author: 'DoodleStar',
+      title: 'Turn Scribbles into Characters',
+      duration: '40 sec',
+      likes: '4.5K',
+      tags: '#Drawing #KidsArt',
+      image: '/assets/images/reel-1-placeholder.png',
+      video: '',
+      isPlaying: false,
+      saved: false
+    },
+    {
+      id: 6,
+      category: 'Creative Arts',
+      author: 'CraftyBee',
+      title: 'Easy Paper Crafts for Rainy Days',
+      duration: '35 sec',
+      likes: '3.2K',
+      tags: '#Crafts #DIY',
+      image: '/assets/images/reel-1-placeholder.png',
+      video: '',
+      isPlaying: false,
+      saved: false
+    },
+
+    // Comedy & Fun
+    {
+      id: 7,
+      category: 'Comedy & Fun',
+      author: 'FunnyBones',
+      title: 'Silly Dance Moves to Try',
+      duration: '15 sec',
+      likes: '12K',
+      tags: '#Dance #Silly',
+      image: '/assets/images/reel-1-placeholder.png',
+      video: '',
+      isPlaying: false,
+      saved: false
+    },
+    {
+      id: 8,
+      category: 'Comedy & Fun',
+      author: 'GiggleGang',
+      title: 'Tiny Pranks (Nice Ones!)',
+      duration: '22 sec',
+      likes: '5K',
+      tags: '#Pranks #GoodVibes',
+      image: '/assets/images/reel-1-placeholder.png',
+      video: '',
+      isPlaying: false,
+      saved: false
+    },
+    {
+      id: 9,
+      category: 'Comedy & Fun',
+      author: 'SmileSquad',
+      title: 'Funny Face Challenge',
+      duration: '18 sec',
+      likes: '9K',
+      tags: '#Faces #Challenge',
+      image: '/assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -84,9 +169,11 @@ export class ReelSectionComponent implements AfterViewInit {
     return map;
   }
 
+  // categories used by the template
   public get categories(): string[] {
     return Object.keys(this.slidesByCategory);
   }
+
 
   public openReel(reel: any, event?: Event): void {
     event?.stopPropagation();
@@ -114,6 +201,13 @@ export class ReelSectionComponent implements AfterViewInit {
     const list = this.slidesByCategory[category] || [];
     for (const s of list) {
       s.isPlaying = true;
+    }
+    // also dispatch a global event for other parts of the app to respond to
+    try {
+      const ev = new CustomEvent('openReelPlayAll', { detail: { category, slides: list } });
+      window.dispatchEvent(ev);
+    } catch (e) {
+      // ignore in environments where CustomEvent may be restricted
     }
   }
 }
