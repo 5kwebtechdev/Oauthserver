@@ -18,6 +18,8 @@ export class JournalInputComponent implements OnInit {
   @Output() cancel = new EventEmitter<void>();
 
   text: string = '';
+  // Controls whether the attach permission popup is visible
+  showAttachPopup = false;
 
   constructor(private router: Router) {}
 
@@ -41,5 +43,23 @@ export class JournalInputComponent implements OnInit {
   goBack(): void {
     // The journals list is displayed in the authenticated user dashboard at /authed/home
     this.router.navigate(['/authed/home']);
+  }
+
+  // Open the attachment chooser popup (simulates native permission dialog)
+  openAttachPopup(): void {
+    this.showAttachPopup = true;
+  }
+
+  // Handle the user allowing access - stub for now to integrate with file picker
+  onAllowAttach(): void {
+    this.showAttachPopup = false;
+    // TODO: integrate a proper file picker or Capacitor Filesystem/Camera plugin here
+    console.log('User allowed attachment access');
+  }
+
+  // Handle the user denying access
+  onDenyAttach(): void {
+    this.showAttachPopup = false;
+    console.log('User denied attachment access');
   }
 }

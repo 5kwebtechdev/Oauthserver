@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { IonicModule } from "@ionic/angular";
 import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.component';
 import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
@@ -12,6 +13,7 @@ import { TutorListComponent, Tutor } from '../tutor-list/tutor-list.component';
   standalone: true
 })
 export class TutorCardComponent {
+  constructor(private router: Router) {}
   @Input() name: string = '';
   @Input() avatar: string = '';
   @Input() description: string = '';
@@ -32,7 +34,8 @@ export class TutorCardComponent {
   }
 
   onViewAll() {
-    console.log('View all tutors clicked');
+    // navigate to the tutors homepage
+    this.router.navigate(['/tutors']);
   }
   onViewProfile(tutor: Tutor) {
     console.log('View profile clicked for', tutor);

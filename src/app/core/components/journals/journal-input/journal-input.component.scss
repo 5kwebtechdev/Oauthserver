@@ -257,6 +257,57 @@ font-weight: 700;
 line-height: 140%; /* 22.4px */
 }
 
+/* Attach permission popup styles */
+.attach-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+
+.attach-popup {
+  width: min(480px, 92%);
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px 22px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+.attach-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.attach-title {
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.attach-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.attach-allow {
+  background: transparent;
+  border: none;
+  color: #007aff;
+  font-weight: 600;
+  padding: 10px 18px;
+}
+
+.attach-deny {
+  background: transparent;
+  border: none;
+  color: #007aff;
+  padding: 10px 18px;
+}
+
 @media (min-width: 768px) {
 	.navigator-img {
 		height: 34px;
