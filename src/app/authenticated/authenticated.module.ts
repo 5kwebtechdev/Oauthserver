@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import {AuthenticatedComponent} from "./authenticated.component";
 import {AuthenticatedRoutingModule} from "./authenticated.routing.module";
 import {FooterComponent} from "../core/components/footer/footer.component";
@@ -15,9 +16,11 @@ import {ProfileComponent} from "./profile/profile.component";
 import {ProfileHomeComponent} from "./profile/profile-home/profile-home.component";
 import {MindfulInputsModule} from "../core/components/mindful-inputs/mindful-inputs.module";
 import {MindfulTimelineComponent} from "../core/components/mindful-timeline/mindful-timeline.component";
-import {TimelineComponent} from "../core/components/timeline/timeline.component";
+import {TimelineComponent} from "../core/components/habit-section/timeline/timeline.component";
 import {MindfulSelectorsComponent} from "../core/components/mindful-selectors/mindful-selectors.component";
 import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
+import {MindfulNavigatorComponent} from "../core/components/mindful-navigator/mindful-navigator.component";
+import {UserProfileComponent} from "../core/components/user-profile/user-profile.component";
 
 @NgModule({
   declarations: [
@@ -33,6 +36,7 @@ import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
   ],
   imports: [
     CommonModule,
+    RouterModule,
     AuthenticatedRoutingModule,
   LongPressDirective,
   HabitCardComponent,
@@ -41,9 +45,11 @@ import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
   TypicalPageComponent,
   ChallengeCardComponent,
   UserDashboardComponent,
+  UserProfileComponent,
   IonicModule,
   MindfulInputsModule,
-  MindfulSelectorsComponent
+  MindfulSelectorsComponent,
+  MindfulNavigatorComponent
   ]
 })
 export class AuthenticatedModule { }

@@ -31,6 +31,12 @@ import { MindfulSelectorsComponent } from '../../core/components/mindful-selecto
 
       <h3>Selectors (singleSelection)</h3>
       <mindful-selectors [options]="[{key:'happy', value:'Happy', type:'lavendar'},{key:'sad', value:'Sad', type:'violet'},{key:'neutral', value:'Okay', type:'magenta'}]" [singleSelection]="true" componentType="button"></mindful-selectors>
+
+      <h3>Requested: Medium and Large Orange</h3>
+      <div style="display:flex; gap:8px; align-items:center; margin:12px 0">
+        <mindful-button type="orange" medium text="Let's Go (medium)" (click)="null"></mindful-button>
+        <mindful-button type="orange" large text="Let's Go (large)" (click)="null"></mindful-button>
+      </div>
     </section>
   `
 })

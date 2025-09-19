@@ -17,13 +17,7 @@ export class MindfulSpeechBubbleComponent {
   @Input() arrowAngle: number = 0;
   @Input() color: string = '#fff';
   @Input() textColor: string = '#282527';
-  /**
-   * Optional target element (or selector) the bubble should point to.
-   * If provided and `follow` is true, the component will compute the best
-   * side (left/right/top/bottom), offset and angle to point at the target.
-   */
   @Input() target: HTMLElement | string | null = null;
-  /** Enable runtime following of the target (lightweight). */
   @Input() follow: boolean = false;
 
   private _targetEl: HTMLElement | null = null;
@@ -52,7 +46,6 @@ export class MindfulSpeechBubbleComponent {
     return this.textColor;
   }
 
-  // Keep last applied values to avoid unnecessary style updates
   private _lastSide: 'left' | 'right' | 'top' | 'bottom' | null = null;
   private _lastOffset: string | null = null;
   private _lastAngle: number | null = null;
@@ -60,7 +53,6 @@ export class MindfulSpeechBubbleComponent {
   ngAfterViewInit(): void {
     if (!this.follow || !this.target) return;
     this.resolveTarget();
-    // Observe changes to target or host size and position
     if (window.ResizeObserver) {
       this._ro = new ResizeObserver(() => this.scheduleUpdate());
       if (this._targetEl) this._ro.observe(this._targetEl);
@@ -109,7 +101,6 @@ export class MindfulSpeechBubbleComponent {
 
     const hostRect = hostEl.getBoundingClientRect();
     const targetRect = targetEl.getBoundingClientRect();
-    // compute vector from host center to target center
     const hx = hostRect.left + hostRect.width / 2;
     const hy = hostRect.top + hostRect.height / 2;
     const tx = targetRect.left + targetRect.width / 2;
@@ -117,7 +108,6 @@ export class MindfulSpeechBubbleComponent {
     const dx = tx - hx;
     const dy = ty - hy;
 
-    // pick primary side (largest axis)
     const absDx = Math.abs(dx);
     const absDy = Math.abs(dy);
     let side: 'left' | 'right' | 'top' | 'bottom' = 'bottom';
@@ -127,16 +117,11 @@ export class MindfulSpeechBubbleComponent {
       side = dy > 0 ? 'bottom' : 'top';
     }
 
-    // compute arrow offset and (stable) angle
     let offset = '50%';
-    // We'll use a neutral angle (0deg) for stability; offset will move the arrow along the edge
     let angle = 0;
-    // For left/right sides offset is distance from top, for top/bottom it's distance from left
-    // We'll set arrowOffset as a percentage of the host edge (e.g., 25%) so it scales with bubble size.
     if (side === 'left' || side === 'right') {
       const raw = (targetRect.top + targetRect.height / 2) - hostRect.top;
       const pct = (raw / hostRect.height) * 100;
-      // clamp percentage to avoid arrow overlapping rounded corners (5%..95%)
       const clampedPct = Math.min(95, Math.max(5, pct));
       offset = `${Math.round(clampedPct)}%`;
     } else {
@@ -146,7 +131,6 @@ export class MindfulSpeechBubbleComponent {
       offset = `${Math.round(clampedPct)}%`;
     }
 
-    // Only update if changed to avoid DOM thrash
     if (side !== this._lastSide) {
       this.arrowSide = side;
       this._lastSide = side;

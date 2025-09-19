@@ -6,7 +6,10 @@
     </div>
 
     <div class="habit-week">
-        <mindful-week></mindful-week>
+        <mindful-week (dateSelected)="onDateSelected($event)"></mindful-week>
+    </div>
+    <div *ngIf="loading" class="loading-indicator">
+        <ion-spinner></ion-spinner>
     </div>
 
     <div *ngIf="showSingleMode && singleModeHabit" class="single-mode-container">
@@ -22,7 +25,7 @@
         </div>
     </div>
 
-    <div class="habit-filters-container">
+    <div class="habit-filters-container" *ngIf="currentMainTab === 'habits'">
         <ng-template #emptyStateTpl>
             <div class="empty-state">No habits found.</div>
         </ng-template>
@@ -42,9 +45,20 @@
                         (click)="selectJourneySubFilter('completed')"></mindful-badge>
                 </div>
             </div>
-            <div class="habit-list-content" *ngIf="currentMainTab === 'habits'">
-                <habit-list [habits]="filteredHabits" (open)="onOpenHabit($event)"
-                    (done)="onDoneHabit($event)"></habit-list>
+            <div class="habit-list-content" >
+                <div *ngIf="filteredHabits && filteredHabits.length > 0; else noHabitsTemplate"
+                    class="habit-list-content">
+                    <div *ngFor="let habit of filteredHabits">
+                        <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
+                            [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp">
+                        </habit-card>
+                    </div>
+                </div>
+                <ng-template #noHabitsTemplate>
+                    <div class="no-habits-message">
+                        <p>No habits found for this day and filter.</p>
+                    </div>
+                </ng-template>
             </div>
         </div>
 
@@ -62,8 +76,18 @@
                     [active]="prioritySubFilter === 'low'" (click)="selectPrioritySubFilter('low')"></mindful-badge>
             </div>
             <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">
-                <habit-list [habits]="filteredHabits" (open)="onOpenHabit($event)"
-                    (done)="onDoneHabit($event)"></habit-list>
+                <div *ngIf="filteredHabits && filteredHabits.length > 0; else noPriorityHabitsTemplate">
+                    <div *ngFor="let habit of filteredHabits">
+                        <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
+                            [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp">
+                        </habit-card>
+                    </div>
+                </div>
+                <ng-template #noPriorityHabitsTemplate>
+                    <div class="no-habits-message">
+                        <p>No habits with this priority found.</p>
+                    </div>
+                </ng-template>
             </div>
         </div>
 
@@ -82,11 +106,101 @@
                     [active]="routineSubFilter === 'night'" (click)="selectRoutineSubFilter('night')"></mindful-badge>
             </div>
             <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">
-                <habit-list [habits]="filteredHabits" (open)="onOpenHabit($event)"
-                    (done)="onDoneHabit($event)"></habit-list>
+                <div *ngIf="filteredHabits && filteredHabits.length > 0; else noRoutineHabitsTemplate">
+                    <div *ngFor="let habit of filteredHabits">
+                        <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
+                            [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp">
+                        </habit-card>
+                    </div>
+                </div>
+                <ng-template #noRoutineHabitsTemplate>
+                    <div class="no-habits-message">
+                        <p>No habits with this routine found.</p>
+                    </div>
+                </ng-template>
             </div>
         </div>
     </div>
+
+    <!-- Tasks layout mirrors Habits: Journey, Priority, Routine selectors and lists -->
+    <div class="task-filters-container" *ngIf="currentMainTab === 'tasks'">
+        <ng-template #noTasksTemplate>
+            <div class="empty-state">No tasks found.</div>
+        </ng-template>
+
+        <div class="habit-journey-container">
+            <div class="habit-journey">
+                <h2>Your Task Journey</h2>
+                <div class="habit-journey-week">
+                    <mindful-badge text="Pending" type="pending" [disabled]="journeySubFilter !== 'pending'"
+                        [active]="journeySubFilter === 'pending'" (click)="selectJourneySubFilter('pending')"></mindful-badge>
+                    <mindful-badge text="Ongoing" type="inactive" [disabled]="journeySubFilter !== 'ongoing'"
+                        [active]="journeySubFilter === 'ongoing'" (click)="selectJourneySubFilter('ongoing')"></mindful-badge>
+                    <mindful-badge text="Completed" type="inactive" [disabled]="journeySubFilter !== 'completed'"
+                        [active]="journeySubFilter === 'completed'" (click)="selectJourneySubFilter('completed')"></mindful-badge>
+                </div>
+            </div>
+
+            <div class="habit-list-content">
+                <div *ngIf="filteredTasks && filteredTasks.length > 0; else noTasksTemplate" class="habit-list-content">
+                    <div *ngFor="let task of filteredTasks">
+                        <habit-card [habit]="task.task ? task.task : task"
+                            [startTime]="task.startTimeStamp" [endTime]="task.endTimeStamp"
+                            [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp">
+                        </habit-card>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="priority-container">
+            <div class="priority-header">
+                <h3>Navigate Your Priorities</h3>
+            </div>
+            <div class="priority-selectors">
+                <mindful-badge text="High" type="red" [disabled]="prioritySubFilter !== 'high'"
+                    [active]="prioritySubFilter === 'high'" (click)="selectPrioritySubFilter('high')"></mindful-badge>
+                <mindful-badge text="Medium" type="yellow" [disabled]="prioritySubFilter !== 'medium'"
+                    [active]="prioritySubFilter === 'medium'" (click)="selectPrioritySubFilter('medium')"></mindful-badge>
+                <mindful-badge text="Low" type="green" [disabled]="prioritySubFilter !== 'low'"
+                    [active]="prioritySubFilter === 'low'" (click)="selectPrioritySubFilter('low')"></mindful-badge>
+            </div>
+            <div class="habit-list-container">
+                <div *ngIf="filteredTasks && filteredTasks.length > 0; else noTasksTemplate">
+                    <div *ngFor="let task of filteredTasks">
+                        <habit-card [habit]="task.task ? task.task : task" [startTime]="task.startTimeStamp"
+                            [endTime]="task.endTimeStamp" [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp">
+                        </habit-card>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="routine-container">
+            <div class="routine-header">
+                <h3>Your Daily Routines</h3>
+            </div>
+            <div class="routine-selectors">
+                <mindful-badge text="Morning" type="morning" [disabled]="routineSubFilter !== 'morning'"
+                    [active]="routineSubFilter === 'morning'" (click)="selectRoutineSubFilter('morning')"></mindful-badge>
+                <mindful-badge text="Evening" type="evening" [disabled]="routineSubFilter !== 'evening'"
+                    [active]="routineSubFilter === 'evening'" (click)="selectRoutineSubFilter('evening')"></mindful-badge>
+                <mindful-badge text="Night" type="night" [disabled]="routineSubFilter !== 'night'"
+                    [active]="routineSubFilter === 'night'" (click)="selectRoutineSubFilter('night')"></mindful-badge>
+            </div>
+            <div class="habit-list-container">
+                <div *ngIf="filteredTasks && filteredTasks.length > 0; else noTasksTemplate">
+                    <div *ngFor="let task of filteredTasks">
+                        <habit-card [habit]="task.task ? task.task : task" [startTime]="task.startTimeStamp"
+                            [endTime]="task.endTimeStamp" [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp">
+                        </habit-card>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 
     <!--ad-banner-->
     <!-- <div class="ad-banner-container">

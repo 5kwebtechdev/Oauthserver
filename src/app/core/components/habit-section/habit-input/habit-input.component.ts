@@ -5,9 +5,11 @@ import { FormsModule } from '@angular/forms';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 import { MindfulSelectorsComponent } from '../../mindful-selectors/mindful-selectors.component';
+import { MindfulTagsComponent } from '../../mindful-selectors/mindful-tags/mindful-tags.component';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { HabitService } from '../habit.service';
+import { TaskApi } from '../../../api/task.api';
 import { Habit } from '../habit.types';
 import { Router } from '@angular/router';
 
@@ -16,7 +18,7 @@ import { Router } from '@angular/router';
   selector: 'habit-input',
   templateUrl: './habit-input.component.html',
   styleUrls: ['./habit-input.component.scss'],
-  imports: [CommonModule, IonicModule, FormsModule, MindfulButtonComponent, MindfulInputsModule, MindfulSelectorsComponent, MindfulBadgeComponent, MindfulNavigatorComponent]
+  imports: [CommonModule, IonicModule, FormsModule, MindfulButtonComponent, MindfulInputsModule, MindfulSelectorsComponent, MindfulTagsComponent, MindfulBadgeComponent, MindfulNavigatorComponent]
 })
 export class HabitInputComponent {
   title = '';
@@ -66,7 +68,8 @@ export class HabitInputComponent {
   constructor(
     private modalCtrl: ModalController,
     private habitService: HabitService,
-    private router: Router
+    private router: Router,
+    private taskApi: TaskApi
   ) { }
 
   get isFormComplete(): boolean {
@@ -79,6 +82,27 @@ export class HabitInputComponent {
     if (this.everyday) return true;
     if (this.selectedDays && this.selectedDays.size > 0) return true;
     return false;
+  }
+
+  // tag events from the new MindfulTags component
+  onTagAdd(event: any) {
+    // event contains { key, value }
+    if (event && event.key && event.value) {
+      this.routineTags.push({ key: event.key.toString(), value: event.value, type: 'habit-input' });
+    }
+  }
+
+  onTagEdit(event: any) {
+    // event contains { key, value }
+    if (event && event.key) {
+      const idx = this.routineTags.findIndex(t => t.key === event.key.toString());
+      if (idx > -1) this.routineTags[idx].value = event.value;
+    }
+  }
+
+  onTagDelete(key: any) {
+    if (key == null) return;
+    this.routineTags = this.routineTags.filter(t => t.key !== key.toString());
   }
 
   submit() {
@@ -170,40 +194,119 @@ export class HabitInputComponent {
       daysOfWeek = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
     }
 
-    // Build API payload in requested structure
-    const payload = {
-      habit: {
-        title: habit.title,
-        description: habit.notes,
-        priority: habit.priority.toUpperCase(),
-        routine: (habit.selectedRoutine || '').toUpperCase(),
-        startDate: startDateEpoch || 0,
-        startTime: formattedStartTime || '',
-        endDate: endDateEpoch || 0,
-        endTime: formattedEndTime || '',
-        daysOfWeek: daysOfWeek,
-        isEveryday: !!habit.everyday,
-        isEveryWeekend: false
-      },
-      coinReward: 5,
-      forUserId: null
+    // Build API payload depending on selected tab (habits | tasks | timetable)
+    let payload: any;
+
+    // Helper to format Date -> YYYY-MM-DD
+    const formatDateStr = (d: Date | null) => {
+      if (!d) return '';
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     };
 
-    this.habitService.createHabit(payload).subscribe({
-      next: (res) => {
-        console.log('API habit created:', res);
-        // update local store
-        this.habitService.addHabit(habit);
-        this.modalCtrl.dismiss();
-        this.router.navigate(['/habit-page'], {
-          state: { newHabit: habit, showSingleMode: true }
-        });
-      },
-      error: (err) => {
-        console.error('Failed to create habit', err);
-        alert('Failed to create habit. Please try again.');
-      }
-    });
+    // Build tag names array from selectedTags (fallback empty)
+    const tags = Array.isArray(this.selectedTags) && this.selectedTags.length > 0 ? this.selectedTags.map(t => t.value || t.key) : [];
+
+    // Ensure priority and routine defaults
+    const priority = (habit.priority || 'medium').toString().toUpperCase();
+    const routine = ((habit.selectedRoutine || this.selectedRoutine) || 'MORNING').toString().toUpperCase();
+
+    if (this.currentActive === 'tasks') {
+      // Task payload as requested: inner `task` object + top-level date/time strings
+      payload = {
+        task: {
+          title: habit.title,
+          tags: tags,
+          description: habit.notes,
+          status: 'PENDING',
+          coinReward: 5,
+          isEveryday: !!habit.everyday,
+          isEveryWeekend: false,
+          daysOfWeek: daysOfWeek,
+          priority: priority,
+          routine: routine
+        },
+        startDate: formatDateStr(this.startDate),
+        startTime: formattedStartTime || '',
+        endDate: formatDateStr(this.endDate),
+        endTime: formattedEndTime || ''
+      };
+    } else if (this.currentActive === 'timetable') {
+      // Habit/timetable payload: inner `habit` object + top-level date/time strings
+      payload = {
+        habit: {
+          title: habit.title,
+          tags: tags,
+          description: habit.notes,
+          priority: priority,
+          routine: routine,
+          isEveryday: !!habit.everyday,
+          isEveryWeekend: false,
+          daysOfWeek: daysOfWeek,
+          activities: habit.activities || [],
+          coinReward: 5
+        },
+        startDate: formatDateStr(this.startDate),
+        startTime: formattedStartTime || '',
+        endDate: formatDateStr(this.endDate),
+        endTime: formattedEndTime || ''
+      };
+    } else {
+      // Default: habit payload (existing behaviour) but with requested structure
+      payload = {
+        habit: {
+          title: habit.title,
+          tags: tags,
+          description: habit.notes,
+          priority: priority,
+          routine: routine,
+          status: 'PENDING',
+          isEveryday: !!habit.everyday,
+          isEveryWeekend: false,
+          daysOfWeek: daysOfWeek,
+          coinReward: 5
+        },
+        startDate: formatDateStr(this.startDate),
+        startTime: formattedStartTime || '',
+        endDate: formatDateStr(this.endDate),
+        endTime: formattedEndTime || ''
+      };
+    }
+
+    // Use TaskApi for tasks, HabitApi for habits/timetable
+    if (this.currentActive === 'tasks') {
+      this.taskApi.createTask(payload).subscribe({
+        next: (res) => {
+          console.log('Task API created:', res);
+          // add to local store so UI updates immediately
+          this.habitService.addHabit(habit);
+          this.modalCtrl.dismiss();
+          this.router.navigate(['/habit-page'], {
+            state: { newHabit: habit, showSingleMode: true, initialTab: 'tasks' }
+          });
+        },
+        error: (err) => {
+          console.error('Failed to create task', err);
+          alert('Failed to create task. Please try again.');
+        }
+      });
+    } else {
+      this.habitService.createHabit(payload).subscribe({
+        next: (res) => {
+          console.log('API created:', res);
+          // update local store for habits/timetable
+          this.habitService.addHabit(habit);
+          this.modalCtrl.dismiss();
+          // navigate to habit page by default
+          this.router.navigate(['/habit-page'], {
+            state: { newHabit: habit, showSingleMode: true }
+          });
+        },
+        error: (err) => {
+          console.error('Failed to create item', err);
+          alert('Failed to create. Please try again.');
+        }
+      });
+    }
   }
 
   toggleDay(d: string) {
@@ -261,10 +364,6 @@ export class HabitInputComponent {
       this.selectedTags = [];
     }
 
-    // If singleSelection, set selectedRoutine to the first selected tag's key or value
-    if (this.selectedTags.length > 0) {
-      const s = this.selectedTags[0];
-      this.selectedRoutine = (s && (s.key || s.value)) || this.selectedRoutine;
-    }
+    // Do NOT overwrite selectedRoutine from tag selections; tags are independent.
   }
 }

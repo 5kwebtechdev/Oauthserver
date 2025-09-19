@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthApi } from './auth.api';
@@ -24,5 +24,24 @@ export class HabitApi {
     createHabit(payload: any): Observable<any> {
         const url = `${this.base}/habits/add`;
         return this.http.post(url, payload, { headers: this.headers() });
+    }
+
+    /**
+     * Get habits by date
+     * @param date The date in YYYY-MM-DD format
+     * @returns Observable with habits for the specified date
+     */
+    getHabitsByDate(date: string): Observable<any> {
+        const url = `${this.base}/habits/day?date=${date}`;
+        return this.http.get(url, { headers: this.headers() });
+    }
+
+    /**
+     * Get all habits for the user
+     * @returns Observable with all habits
+     */
+    getAllHabits(): Observable<any> {
+        const url = `${this.base}/habits/all`;
+        return this.http.get(url, { headers: this.headers() });
     }
 }

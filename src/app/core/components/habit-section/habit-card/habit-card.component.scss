@@ -18,7 +18,6 @@
 .glance-in-day {
   font-weight: bold;
   font-size: 24px;
-  margin-left: 4vw;
 }
 
 
@@ -27,12 +26,34 @@
   // margin-top: 1vw;
   align-self: flex-start;
   margin-left: 4vw;
-  
-  p {
-    color: #666;
-    font-size: 16px;
- 
+  margin-bottom: 20px;
+}
+
+// Tab Navigation
+.toggler {
+  display: flex;
+  // background-color: #f5f5f5;
+  // border-radius: 20px;
+  overflow: hidden;
+  margin: 0 16px 16px 16px;
+
+  .col-4 {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &.active {
+      color: 917DEC;
+      font-weight: bold;
+    }
   }
+}
+
+p {
+  color: #666;
+  font-size: 16px;
 }
 
 .empty-state {
@@ -48,8 +69,57 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  // padding: 24px;
 }
+
+/* Added styles for clickable habit header */
+.habit-header-container.clickable {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  border-radius: 12px;
+
+  &:hover {
+    background-color: #ffffff;
+  }
+
+  &:active {
+    background-color: #ffffff;
+    transform: scale(0.99);
+  }
+
+  &:active {
+    background-color: #ffffff;
+  }
+}
+
+.expand-indicator {
+  margin-left: 8px;
+  color: #90214D;
+  font-size: 18px;
+  font-weight: bold;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(144, 33, 77, 0.1);
+  transition: all 0.3s ease;
+
+  span {
+    line-height: 1;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+
+  &.rotated span {
+    transform: rotate(45deg);
+  }
+}
+
+// padding: 24px;
 
 .empty-state-image {
   margin-bottom: 24px;
@@ -74,27 +144,28 @@
   margin-right: 16px;
 }
 
-.habit-wrapper{
-  box-shadow: 0 0 8px 0 rgba(107, 101, 106, 0.25);
-  border-radius: 10px;
-  position: relative;
-  margin-top: 15px;
-  margin-bottom: 0px;
-  transition: 0.2s;
-
-  --card_primary: #8B8DCB;
-  --primary_text: rgb(82, 79, 132);
-  --badge_background: #E8ECF7;
-  --card_offset: 5px;
-  --offset_color: var(--card_primary);
-  --completionPercentage: 0%;
+.habit-wrapper {
+  display: flex;
+  width: 361px;
+  height: auto;
+  padding: 8px 12px 12px 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  border-left: 4px solid #8B8DCB;
+  background: #FDFDFD;
+  border-radius: 16px;
+  background: #FFF;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
 }
 
-.habit-wrapper.expanded{
-  margin-bottom: 28px;
-}
+// .habit-wrapper.expanded {
+//   margin-bottom: 28px;
+// }
 
-.habit-tease{
+.habit-tease {
   display: block;
   width: calc(100% - var(--card_offset));
   position: relative;
@@ -103,12 +174,16 @@
   background: white;
   padding: 10px;
   transition: 0.2s;
+
+  .col-8 {
+    padding-left: 24px !important;
+  }
 }
 
-.habit-tease:after{
+.habit-tease:after {
   content: '';
   position: absolute;
-  left: calc(var(--card_offset)* -1 );
+  left: calc(var(--card_offset)* -1);
   top: 0;
   border-radius: 10px;
   background: var(--offset_color);
@@ -117,18 +192,19 @@
   z-index: -1;
 }
 
-.expanded .habit-tease{
+.expanded .habit-tease {
   padding-bottom: 25px;
 }
 
-h3{
+h3 {
   font-family: 'Nunito', sans-serif;
   font-weight: bold;
   font-size: 16px;
   color: var(--primary_text);
+  margin-bottom: 0px !important;
 }
 
-h4{
+h4 {
   font-family: 'Nunito', sans-serif;
   font-weight: bold;
   font-size: 13px;
@@ -136,26 +212,41 @@ h4{
   color: var(--primary_text);
 }
 
-.expanded h4{
-  margin-bottom: 20px;
+.habit-expandable-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+  opacity: 0;
+
+  &.expanded {
+    width: 100%;
+    max-height: 500px;
+    /* Set this to a value that would accommodate your content */
+    opacity: 1;
+    transition: max-height 0.5s ease-in, opacity 0.3s ease-in;
+  }
 }
 
-.badge{
+.badge {
+  display: flex;
+  align-items: center;
+  padding: 5px 16px;
+  height: 24px;
   font-family: 'Nunito', sans-serif;
   font-weight: bold;
   font-size: 10px;
-  color: var(--primary_text);
-  background: var(--badge_background); // Use RGB equivalent
-  border: 1px solid var(--primary_text);
-  border-radius: 20px;
-  padding: 7px 14px;
-  position: absolute;
-  top: 0;
-  right: 10px;
+  color: #45456A;
+  border-radius: 16px;
+  border: 1px solid #524F84;
+  background: #E8ECF7;
+  // padding: 7px 14px;
+  // position: absolute;
+  // top: 0;
+  // right: 10px;
 }
 
 .habit-footer,
-.habit-footer-progress{
+.habit-footer-progress {
   position: absolute;
   opacity: 0;
   top: 40px;
@@ -164,71 +255,94 @@ h4{
   width: calc(100% - var(--card_offset));
   left: var(--card_offset);
   border-radius: 0 0 20px 20px;
-  box-shadow: 0 0 4px 0 rgba(0,0,0, 0.0);
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.0);
   transition: 0.2s;
+
 }
 
-.habit-footer:before{
+.habit-footer:before {
   content: '';
   position: absolute;
-  left: calc(var(--card_offset)* -1 );
+  left: calc(var(--card_offset)* -1);
   top: 0px;
   border-radius: 10px;
   background: var(--offset_color);
-  width:100%;
+  width: 100%;
   height: 100%;
   z-index: -1;
 }
 
 .expanded .habit-footer,
-.expanded .habit-footer-progress{
+.expanded .habit-footer-progress {
   top: 65px;
   opacity: 1;
-  box-shadow: 0 2px 4px 0 rgba(0,0,0, 0.15);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.15);
 }
 
 .expanded .habit-footer:before,
-.expanded .habit-tease:after{
+.expanded .habit-tease:after {
   border-radius: 20px;
 }
 
-.habit-footer-progress{
+.habit-footer-progress {
   z-index: 1;
-  height: 25px;
-  width: calc(var(--completionPercentage) - var(--card_offset));
+  height: 5px;
+  width: 234px !important;
+  margin-right: 103px !important;
+  position: absolute;
+  top: unset !important;
+  background: #4CAF50;
+  border-radius: 50px;
+   
 }
 
-.expanded .habit-footer-progress{
+.expanded .habit-footer-progress {
   box-shadow: 0 0 4px 0 rgb(110, 241, 110);
 }
 
-.expanded.isRunningLate .habit-footer-progress{
+.expanded.isRunningLate .habit-footer-progress {
   box-shadow: 0 0 4px 0 rgb(190, 10, 10, 0.6);
 }
 
-.expanded.missedTime .habit-footer-progress{
+.expanded.missedTime .habit-footer-progress {
   display: none !important;
 }
 
-.expanded.missedTime .habit-footer{
+.expanded.missedTime .habit-footer {
   box-shadow: 0 0 2px 0 rgb(190, 10, 10);
   border: 1px solid red;
 }
 
-.single-point-container{
+.single-point-container {
   display: inline-block;
   width: fit-content;
-  padding: 12px 10px 8px 9px;
+  padding: 12px 0px 8px 0px;
   float: left;
 }
 
-.score{
-  display: inline-block;
+.reward-section {
+  gap: 32px;
+}
+
+.footer-cta {
+  gap: 12px;
+}
+
+.habit-footer-container {
+  display: flex;
+  width: 100%;
+  position: relative;
+   margin-top: 12px !important;
+}
+
+.score {
+  display: block;
+  /* Changed from inline-block to block since float is used */
   float: left;
   margin-bottom: 0;
 }
 
-img.score{
+img.score {
   padding-top: 1px;
 }
 
@@ -270,4 +384,24 @@ img.score{
 
 .toggler div:not(:last-child) {
   border-right: 1px solid black;
+}
+
+.d-flex flex-column .container w-full{
+  --bs-gutter-x: 0px !important;
+  margin-left: 0px!important;
+  padding-left: 0px !important;
+}
+
+.habit-title{
+  color: #524F84;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 140%; /* 22.4px */
+}
+
+.habit-timing {
+  color: #BB2124;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 140%; /* 18.2px */
 }

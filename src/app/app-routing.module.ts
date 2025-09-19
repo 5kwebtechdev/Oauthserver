@@ -50,6 +50,10 @@ const routes: Routes = [
     loadComponent: () => import('./core/components/habit-section/habit-page/habit-page.component').then(m => m.HabitPageComponent)
   },
   {
+    path: 'calendar-main',
+    loadComponent: () => import('./core/components/habit-section/calendar-main/calendar-main.component').then(m => m.CalendarMainComponent)
+  },
+  {
     path: 'habit-input',
     loadComponent: () => import('./core/components/habit-section/habit-input/habit-input.component').then(m => m.HabitInputComponent)
   },

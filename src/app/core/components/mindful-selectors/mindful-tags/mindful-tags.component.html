@@ -1,0 +1,52 @@
+<div class="mindful-tags">
+  <div class="tags-row">
+    <div class="tags-slider" role="list">
+      <div class="tag-wrapper" #tagEl *ngFor="let option of options">
+        <mindful-badge class="tag" *ngIf="option" [text]="option.value || ''" [type]="option.type || ''"
+          [large]="size === 'large'" [medium]="size === 'medium'" [inactive]="!selectedKeys.includes(option.key)"
+          (click)="toggleSelection(option.key)" long-press [delay]="1500" (press)="openTagMenu(option.key, tagEl)"
+          (tap)="closeTagMenu()">
+        </mindful-badge>
+      </div>
+    </div>
+
+    <div class="tags-add-inline">
+      <div class="add-wrapper" #addEl>
+        <mindful-badge class="add-new" text="Add new +" type="habit-input" (click)="openAdd(addEl)"></mindful-badge>
+      </div>
+    </div>
+  </div>
+
+  <!-- Popover for edit/delete -->
+  <div class="tag-popover-fixed" *ngIf="activeTagKey && popoverPosition"
+    [ngStyle]="{ left: (popoverPosition?.left) + 'px', top: (popoverPosition?.top) + 'px' }">
+    <div class="tag-popover-inner">
+      <button class="pop-btn edit" (click)="onEdit(activeTagKey)">
+        <img src="assets/app-assets/edit.svg" alt="Edit">
+      </button>
+      <button class="pop-btn delete" (click)="onDelete(activeTagKey)">
+        <img src="assets/app-assets/delete.svg" alt="Delete">
+      </button>
+    </div>
+  </div>
+
+  <!-- Edit popup -->
+  <div class="tag-edit-fixed" *ngIf="editingTagKey && editPosition" (click)="cancelEdit()">
+  <div class="tag-edit-inner" (click)="$event.stopPropagation()" [ngStyle]="{ left: (editPosition?.left) + 'px', top: (editPosition?.top) + 'px' }">
+      <div class="custom-tag-input">
+        <input class="custom-tag-input__field" type="text" [(ngModel)]="editingValue" placeholder="Edit tag" />
+      </div>
+      <mindful-button type="plum" text="+" (click)="saveEdit()"></mindful-button>
+    </div>
+  </div>
+
+  <!-- Add popup -->
+  <div class="tag-add-fixed" *ngIf="addingTag && addPosition" (click)="cancelAdd()">
+  <div class="tag-add-inner" (click)="$event.stopPropagation()" [ngStyle]="{ left: (addPosition?.left) + 'px', top: (addPosition?.top) + 'px' }">
+      <div class="custom-tag-input">
+        <input class="custom-tag-input__field" type="text" [(ngModel)]="addingValue" placeholder="Type the name here" />
+      </div>
+      <mindful-button type="plum" text="Add" (click)="saveAdd()"></mindful-button>
+    </div>
+  </div>
+</div>

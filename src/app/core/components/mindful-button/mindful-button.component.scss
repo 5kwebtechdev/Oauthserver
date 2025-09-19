@@ -2,7 +2,7 @@
   display: inline-block;
   padding: 9px 15.5px;
   float: left;
-  margin: 5px 10px 5px 0;
+  margin: 5px 0px 5px 0;
   box-sizing: border-box;
   /* Start-habit */
   border-radius: 4px;
@@ -94,6 +94,22 @@ p {
   --text_color: white;
 }
 
+/* Specific medium size overrides for orange */
+.orange.medium {
+  display: flex;
+  width: 172.5px;
+  height: 42px;
+  padding: 10px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  border: 1px solid #F28745;
+  background: linear-gradient(103deg, #F6AC72 0.27%, #EE6621 99.73%);
+  box-shadow: 0 -2px 2px 0 #FAD2AE inset, 0 0 1px 0.5px rgba(246, 172, 114, 0.20);
+}
+
 .orange-transparent {
   --button_background: transparent;
   --button_border: 1px solid #F28745;
@@ -118,10 +134,44 @@ p {
   border-radius: 4px;
 }
 
+.orange-dark {
+  /* darker / fully opaque variant of orange used for active submit */
+  --button_background: linear-gradient(103.36deg, #F18A3A 0.27%, #D94A00 99.73%);
+  --button_border: 1px solid #D25816;
+  --button_box_shodow: 0px 0px 1px 0.5px rgba(209, 138, 84, 0.2), inset 0px -2px 2px #F2B085;
+  --text_color: #FFFFFF;
+  display: flex;
+  width: 361px;
+  height: 42px;
+  padding: 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  opacity: 1;
+}
+
 .green {
   --button_background: linear-gradient(132.16deg, #4CAF50 1.89%, #358438 98.11%);
   --button_border: 1px solid #358438;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(76, 175, 80, 0.2), inset 0px -2px 2px #6BBD6E;
+}
+
+/* Specific medium size overrides for green */
+.green.medium {
+  display: flex;
+  width: 172.5px;
+  height: 42px;
+  padding: 10px 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  border: 1px solid #358438;
+  background: linear-gradient(132deg, #4CAF50 1.89%, #358438 98.11%);
+  box-shadow: 0 -2px 2px 0 #6BBD6E inset, 0 0 1px 0.5px rgba(76, 175, 80, 0.20);
 }
 
 .magenta {

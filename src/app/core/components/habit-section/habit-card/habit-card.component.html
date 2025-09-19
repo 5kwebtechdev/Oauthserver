@@ -1,15 +1,25 @@
 <!-- List Mode -->
 <div *ngIf="mode === 'list'">
   <div class="day-at-glance-container">
-    <div class="glance-header">
-      <h2 class="glance-in-day">Your Day at a Glance</h2>
+   <mindful-card-header
+    [title]="'Your Day at a Glance'"
+    [subtitleMiddle]="'Check tasks • Finish habits • Crush it'">
+    <img src="assets/app-assets/Time-management-home.svg" alt="View All" class="day-at-glance__view-all" (click)="openTimeline()" style="cursor:pointer;" />
+  </mindful-card-header>
+
+    <!-- Tab Navigation -->
+    <div class="container w-full">
+      <div class="row toggler">
+        <div class="col-4" (click)="switchTab('all')" [ngClass]="currentActive === 'all' ? 'active' : ''">All</div>
+        <div class="col-4" (click)="switchTab('habits')" [ngClass]="currentActive === 'habits' ? 'active' : ''">Habits
+        </div>
+        <div class="col-4" (click)="switchTab('tasks')" [ngClass]="currentActive === 'tasks' ? 'active' : ''">Tasks
+        </div>
+      </div>
     </div>
 
-    <div class="glance-subtitle">
-      <p>Check tasks • Finish habits • Crush it</p>
-    </div>
-
-    <div class="empty-state" *ngIf="isEmpty && !showContent">
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="isEmpty">
       <div class="empty-state-content">
         <div class="empty-state-image">
           <img src="assets/app-assets/yourGlance.svg" alt="Empty day illustration">
@@ -20,7 +30,27 @@
       </div>
     </div>
   </div>
-  <div class="add-button-container" *ngIf="isEmpty">
+
+  <!-- Habit Items -->
+  <div class="d-flex flex-column container w-full" style="margin-top: 20px; gap: 16px"
+    *ngIf="(currentActive === 'habits' || currentActive === 'all') && hasHabits">
+    <habit-card *ngFor="let habitItem of habits.slice(0, maxItemsToShow)" [habit]="habitItem"
+      [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
+      [inProgress]="isHabitInProgress(habitItem)" mode="single">
+    </habit-card>
+  </div>
+
+  <!-- Task Items -->
+  <div class="d-flex flex-column container w-full" style="margin-top: 20px; gap: 16px"
+    *ngIf="(currentActive === 'tasks' || currentActive === 'all') && hasTasks">
+    <habit-card *ngFor="let taskItem of tasks.slice(0, maxItemsToShow)" [habit]="taskItem"
+      [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
+      mode="single">
+    </habit-card>
+  </div>
+
+  <!-- CTA Buttons -->
+  <div class="add-button-container" [class.mt-4]="!isEmpty">
     <mindful-button type="magenta" text="+ Add new" large style="display:block; width:100%"
       (click)="openHabitInput()"></mindful-button>
     <mindful-button type="magenta-transparent" text="View All" large style="display:block; width:100%; margin-top: 10px"
@@ -28,52 +58,51 @@
   </div>
 </div>
 
-
-<!-- <div class="container w-full" *ngIf="showContent">
-  <div class="row toggler">
-    <div class="col-4" (click)="currentActive = 'all'" [ngClass]="currentActive === 'all' ? 'active' : 'null'">All</div>
-    <div class="col-4" (click)="currentActive = 'habits'" [ngClass]="currentActive === 'habits' ? 'active' : 'null'">Habits</div>
-    <div class="col-4" (click)="currentActive = 'tasks'" [ngClass]="currentActive === 'tasks' ? 'active' : 'null'">Tasks</div>
-  </div>
-</div> -->
-
-<div class="container w-full" style="margin-top: 20px" *ngIf="showContent">
-  <habit-card [startTime]="1745484315000" [endTime]="1745489715000" inProgress mode="single"></habit-card>
-  <habit-card [startTime]="1745484315000" [endTime]="1745486115000" mode="single"></habit-card>
-  <habit-card [startTime]="1745484315000" [endTime]="1745486115000" inProgress mode="single"></habit-card>
-  <habit-card [startTime]="1745484315000" [endTime]="1745486115000" mode="single"></habit-card>
-</div>
-
 <!-- habit-task-card -->
-<div *ngIf="mode === 'single'" class="container w-full p-0">
-  <div class="habit-wrapper" (tap)="toggle()" long-press (press)="console.log('Long pressed')"
+<div *ngIf="mode === 'single'" class="container w-full h-full p-0">
+  <div class="habit-wrapper"
     [ngClass]="{'expanded': expanded, 'isRunningLate': isRunningLate,'missedTime': missedTime}">
-    <div class="habit-tease">
+  <div class="habit-header-container clickable" (tap)="toggle()" long-press [delay]="1500" (press)="onLongPress()">
       <div class="container w-full p-0">
-        <div class="row">
-          <div class="col-8">
-            <h3>{{habit?.title || 'Habit'}}</h3>
-            <h4>{{getFormattedTime(habit?.startTimeStamp || startTime)}} - {{getFormattedTime(habit?.endTimeStamp ||
-              endTime)}}</h4>
+        <div class="d-flex justify-content-between">
+          <div class="flex-column d-flex gap-1">
+            <h3 class="habit-title">{{habit?.title || 'Habit'}}</h3>
+            <h4 class="habit-timing">{{habit?.startTime || getFormattedTime(startTime)}} - {{habit?.endTime || getFormattedTime(endTime)}}
+            </h4>
           </div>
-          <div class="col-4" style="position: relative">
+          <div class="d-flex gap-1 align-self-baseline">
+            <img class="mornig-sun" src="assets/sun.png" alt="" height="24" width="24">
             <div class="badge">
-              {{habit?.selectedRoutine || 'Routine'}}
+              {{getTagOrRoutine()}}
             </div>
+            <!-- Indicator that this is expandable -->
+            <!-- <div class="expand-indicator" [ngClass]="{'rotated': expanded}">
+              <span>+</span>
+            </div> -->
           </div>
         </div>
       </div>
     </div>
-    <div #percentageWrapper class="habit-footer-progress"></div>
-    <div class="habit-footer">
-      <div class="container w-full p-0" style="background: white; height: 45px; border-radius: 0 0 20px 20px">
-        <div class="single-point-container">
-          <img class="score p-r-0" src="assets/icons/fire-slash-ball.svg" alt="">
-          <p class="score p-l-0">200</p>
-        </div>
-        <div class="single-point-container">
-          <img class="score" src="assets/icons/coin.svg" alt="">
-          <p class="score p-l-0">12</p>
+    <!-- Expandable content wrapper with animation -->
+    <div class="habit-expandable-content" [ngClass]="{'expanded': expanded}">
+      <div #percentageWrapper class="habit-footer-progress"></div>
+      <div class="habit-footer-container">
+        <div class="container w-full justify-content-between d-flex"
+          style="background: white; height: 45px; border-radius: 0 0 20px 20px; padding: 0px; width: 100%;">
+          <div class="d-flex reward-section">
+            <div class="single-point-container">
+              <img class="score p-r-0" src="assets/icons/fire-slash-ball.svg" alt="">
+              <p class="score p-l-0">100</p>
+            </div>
+            <div class="single-point-container">
+              <img class="score" src="assets/icons/coin.svg" alt="">
+              <p class="score p-l-0">{{getCoinReward()}}</p>
+            </div>
+          </div>
+          <div class="d-flex footer-cta">
+            <mindful-button type="lavendar" text="Let`s Go" (click)="null"></mindful-button>
+            <mindful-button type="green" text="Done?" (click)="null"></mindful-button>
+          </div>
         </div>
       </div>
     </div>

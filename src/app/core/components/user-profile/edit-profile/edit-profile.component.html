@@ -1,0 +1,55 @@
+<ion-content fullscreen>
+  <mindful-navigator heading="Edit Profile Info"></mindful-navigator>
+  <div class="edit-profile-container">
+
+    <div class="edit-details">
+      <div class="input-heading">
+        <h2 class="heading-text">Avatar Name</h2>
+        <div class="validation-text">Your in-app identity name</div>
+      </div>
+      <!--avatar input-->
+      <div class="mindful-input-group">
+        <div class="input-container">
+          <ion-input placeholder="Name" type="text"></ion-input>
+        </div>
+      </div>
+
+    </div>
+    <div class="edit-details">
+      <div class="input-heading">
+        <h2 class="heading-text">Full Name</h2>
+        <div class="validation-text">Just for setup. Never shown</div>
+      </div>
+      <app-mindful-input [variant]="'white-full'">
+        <div class="input-container">
+          <ion-input placeholder="Full Name" type="text"></ion-input>
+        </div>
+      </app-mindful-input>
+
+    </div>
+    <div class="edit-details">
+      <div class="input-heading">
+        <h2 class="heading-text">Date of Birth</h2>
+        <div class="birth-date"></div>
+      </div>
+    </div>
+    <div class="edit-details">
+      <div class="input-heading">
+        <h2 class="heading-text">Gender</h2>
+        <div class="validation-text">Used for small personalization touches</div>
+      </div>
+    </div>
+        <div class="edit-details">
+      <div class="input-heading">
+        <h2 class="heading-text">Phone number</h2>
+        <div class="validation-text">Only for login and safety</div>
+      </div>
+    </div>
+    <div class="edit-details">
+      <div class="input-heading">
+        <h2 class="heading-text">Email</h2>
+        <div class="validation-text">Used for login and recovery</div>
+      </div>
+    </div>
+  </div>
+</ion-content>

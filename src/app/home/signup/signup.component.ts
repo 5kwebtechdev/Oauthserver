@@ -254,19 +254,23 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.core.triggerToasrt('Please enter a valid phone number');
         return;
       }
-      // Call backend to request OTP with identifier = phone (include country code if needed)
       const identifier = this.phone?.value;
-      this.authService.requestOtp(identifier).subscribe({
+      const countryCode = this.selectedCountry.code;
+      this.authService.registerRequestOtp(identifier, false, countryCode).subscribe({
         next: (resp) => {
-          // Persist identifier for later verification
           this.requestedIdentifier = identifier;
-          try { if (this.requestedIdentifier) sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier); } catch (e) { }
+          try {
+            if (this.requestedIdentifier) {
+              sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier);
 
-          // Start OTP timer and navigate to OTP step
+              sessionStorage.setItem('loginMode', this.loginMode);
+              sessionStorage.setItem('countryCode', countryCode);
+            }
+          } catch (e) { }
+
           this.startOtpTimer();
           this.router.navigate(['home/sign-up'], { queryParams: { step: 0.2 } });
 
-          // Focus first OTP input after navigation
           setTimeout(() => {
             const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
             if (firstInput) {
@@ -284,12 +288,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.errorMessage = 'Please enter a valid email address';
         return;
       }
-      // Call backend to request OTP with identifier = email
       const identifier = this.email?.value;
-      this.authService.requestOtp(identifier).subscribe({
+      this.authService.registerRequestOtp(identifier, true).subscribe({
         next: (resp) => {
           this.requestedIdentifier = identifier;
-          try { if (this.requestedIdentifier) sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier); } catch (e) { }
+          try {
+            if (this.requestedIdentifier) {
+              sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier);
+
+              sessionStorage.setItem('loginMode', this.loginMode);
+            }
+          } catch (e) { }
 
           this.startOtpTimer();
           this.router.navigate(['home/sign-up'], { queryParams: { step: 0.2 } });
@@ -756,10 +765,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const otp = this.otpDigits.join('');
     console.log('Verifying OTP:', otp);
 
-    const identifier = this.requestedIdentifier || (this.loginMode === 'phone' ? this.phone?.value : this.email?.value);
+    // Get saved values from session storage if available
+    const savedLoginMode = sessionStorage.getItem('loginMode') as 'email' | 'phone' || this.loginMode;
+    const identifier = this.requestedIdentifier || (savedLoginMode === 'phone' ? this.phone?.value : this.email?.value);
+    const isEmail = savedLoginMode === 'email';
+    const countryCode = savedLoginMode === 'phone' ? (sessionStorage.getItem('countryCode') || this.selectedCountry.code) : undefined;
 
-    // Call backend to verify OTP
-    this.authService.verifyOtp(identifier || '', otp).subscribe({
+    this.authService.registerVerifyOtp(identifier || '', otp, isEmail, countryCode).subscribe({
       next: (resp) => {
         this.clearOtpTimer();
         // Proceed to password creation
@@ -775,13 +787,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   resendOtp(): void {
-    const identifier = this.requestedIdentifier || (this.loginMode === 'phone' ? this.phone?.value : this.email?.value);
+    const savedLoginMode = sessionStorage.getItem('loginMode') as 'email' | 'phone' || this.loginMode;
+    const identifier = this.requestedIdentifier || (savedLoginMode === 'phone' ? this.phone?.value : this.email?.value);
+    const isEmail = savedLoginMode === 'email';
+    const countryCode = savedLoginMode === 'phone' ? (sessionStorage.getItem('countryCode') || this.selectedCountry.code) : undefined;
+
     if (!identifier) {
       this.errorMessage = 'No identifier available to resend OTP';
       return;
     }
 
-    this.authService.requestOtp(identifier).subscribe({
+    this.authService.registerRequestOtp(identifier, isEmail, countryCode).subscribe({
       next: () => {
         this.core.triggerToasrt('OTP resent successfully');
 
@@ -804,9 +820,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           }
         }, 50);
 
-        // Persist identifier
+        // Persist identifier and related information
         this.requestedIdentifier = identifier;
-        try { if (this.requestedIdentifier) sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier); } catch (e) { }
+        try {
+          if (this.requestedIdentifier) {
+            sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier);
+
+            sessionStorage.setItem('loginMode', isEmail ? 'email' : 'phone');
+            if (countryCode) {
+              sessionStorage.setItem('countryCode', countryCode);
+            }
+          }
+        } catch (e) { }
 
         // Restart timer
         this.startOtpTimer();
@@ -911,7 +936,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.loginMode === 'email' || (identifier && identifier.includes('@'))) {
       payload.email = identifier;
     } else {
-      payload.phone = identifier;
+      const contactNumber = sessionStorage.getItem('countryCode') || this.selectedCountry.code;
+      payload.phone = contactNumber + identifier;
     }
 
     // dateOfBirth should be in milliseconds since epoch if available

@@ -1,17 +1,16 @@
 <ion-content fullscreen>
-  <div class="habit-input-root" [ngClass]="currentActive">
-    <div class="habit-input-header">
-      <mindful-navigator heading="Create. Commit. Grow." backIcon="cancel"></mindful-navigator>
-      <div class="header-toggle" aria-label="Private toggle">
+  <!-- <div class="habit-input-header"> -->
+    <mindful-navigator heading="Create. Commit. Grow." backIcon="cancel">
+      <div right-actions class="header-toggle" aria-label="Private toggle">
         <label class="header-toggle-label">Private</label>
         <div class="toggle-right">
           <ion-toggle [(ngModel)]="isPrivate"></ion-toggle>
         </div>
       </div>
-    </div>
+    </mindful-navigator>
+    <div class="habit-input-root" [ngClass]="currentActive">
+    <!-- </div> -->
 
-    <!-- Embed Add Calendar standalone component -->
-    <!-- <app-add-calendar></app-add-calendar> -->
 
     <div class="container w-full">
       <div class="row toggler">
@@ -31,9 +30,9 @@
           <input [(ngModel)]="title" placeholder="Habit Title" />
         </div>
         <div class="add-new-row">
-          <mindful-selectors [options]="routineTags" componentType="tags" [singleSelection]="false" size="small"
-            (selectedKeysChange)="onTagsChange($event)">
-          </mindful-selectors>
+          <mindful-tags [options]="routineTags" [singleSelection]="false" [size]="'small'"
+            (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)" (delete)="onTagDelete($event)">
+          </mindful-tags>
           <!-- <mindful-selectors size="small" [options]="routineTags">
           </mindful-selectors>
           <div class="add-wrapper" #addEl>
@@ -135,9 +134,9 @@
           <input [(ngModel)]="title" placeholder="Task Title" />
         </div>
         <div class="add-new-row">
-          <mindful-selectors [options]="routineTags" componentType="tags" [singleSelection]="false" size="small"
-            (selectedKeysChange)="onTagsChange($event)">
-          </mindful-selectors>
+          <mindful-tags [options]="routineTags" [singleSelection]="false" [size]="'small'"
+            (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)" (delete)="onTagDelete($event)">
+          </mindful-tags>
           <!-- <mindful-selectors size="small" [options]="routineTags">
           </mindful-selectors> -->
         </div>
@@ -219,7 +218,7 @@
       </div>
 
       <div class="submit-row">
-        <mindful-button type="orange-light" text="Create Task" large (click)="submit()">
+        <mindful-button [type]="isFormComplete ? 'orange-dark' : 'orange-light'" text="Create Task" large (click)="submit()">
         </mindful-button>
       </div>
     </div>
@@ -230,20 +229,24 @@
           <input [(ngModel)]="title" placeholder="Time Table Title" />
         </div>
         <div class="add-new-row">
-          <mindful-selectors [options]="routineTags" componentType="tags" [singleSelection]="false" size="small"
-            (selectedKeysChange)="onTagsChange($event)">
-          </mindful-selectors>
+          <mindful-tags [options]="routineTags" [singleSelection]="false" [size]="'small'"
+            (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)" (delete)="onTagDelete($event)">
+          </mindful-tags>
           <!-- <mindful-selectors size="small" [options]="routineTags">
           </mindful-selectors> -->
         </div>
       </div>
 
-      <div class="timetable-header"
-        style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;">
-        <h3 style="margin:0;font-weight:600;color:#6B656A">Add Your Perfect Schedule</h3>
-        <div style="width:140px;text-align:right;">
-          <mindful-datepicker type="date" [(ngModel)]="startDate"></mindful-datepicker>
-        </div>
+      <div class="timetable-header">
+        <h3>Add Your Perfect Schedule</h3>
+        <div class="timetable-date-input">
+          <div class="timetable-datepicker">
+            <mindful-datepicker type="date" [(ngModel)]="startDate"></mindful-datepicker>
+            <div class="timetable-chevron">
+              <img src="assets/app-assets/Chevron-down-time-table-input-icon.svg" alt="open date picker" />
+            </div>
+          </div>
+      </div>
       </div>
 
       <div class="timetable-list" style="padding:0 24px 16px 24px;">

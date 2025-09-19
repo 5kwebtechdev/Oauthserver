@@ -1,21 +1,12 @@
  
   <ion-content style="height: 100vh; overflow-y: scroll">
-  <div class="container w-full typical-header">
-    <div class="row">
-      <div class="col-2">
-        <img src="/assets/app-assets/Back-common-icon.svg" class="back-button" alt="">
-      </div>
-      <div class="col-7">
-
-      </div>
-      <div class="col-3 p-l-0">
-        <div class="container w-full p-0 flex-center" style="min-height: 45px">
-          <img src="/assets/app-assets/Notes-Icon-Home-Top.svg" alt="">
-          <img src="/assets/app-assets/Icon-calendar.svg" alt="">
-        </div>
-      </div>
-    </div>
-  </div>
+  <mindful-navigator
+    heading="Timeline"
+    [rightIcon]="'/assets/app-assets/Notes-Icon-Home-Top.svg'"
+    [rightIcon2]="'/assets/app-assets/Icon-calendar.svg'"
+    (rightIconClick)="onNotesClick()"
+    (rightIcon2Click)="onCalendarClick()"
+  ></mindful-navigator>
   <mindful-week></mindful-week>
   <div class="card container w-full" style="width: calc(100vw - 16px) !important;border-radius: 32px;margin: 17px auto 30px auto;">
     <div class="row" style="padding: 15px 0px;">

@@ -17,4 +17,6 @@ export interface Habit {
   priority: 'low' | 'medium' | 'high';
   createdAt: Date;
   activities?: { name: string; startTime: string; endTime: string }[]; // For timetable type
+  tags?: string[];
+  coinReward?: number;
 }
