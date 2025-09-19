@@ -364,52 +364,7 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Common Form Input Groups */
-.mindful-input-group {
-  margin-bottom: 24px;
-
-  input, ion-input {
-    width: 100%;
-    padding: 16px 20px;
-    border: 2px solid transparent;
-    border-radius: 12px;
-    background: #FAD2AE;
-    font-size: 16px;
-    font-family: 'Nunito', sans-serif;
-    color: #772817;
-    transition: all 0.3s ease;
-    box-sizing: border-box;
-
-    &::placeholder {
-      color: #772817;
-      opacity: 0.6;
-    }
-
-    &:focus {
-      outline: none;
-      border-color: #EE6621;
-      background: #FFE9D6;
-      box-shadow: 0 0 0 3px rgba(238, 102, 33, 0.1);
-    }
-
-    &.error, &.ng-invalid.ng-touched {
-      border-color: #e74c3c;
-      background: #ffeaea;
-    }
-
-    @media (max-width: 480px) {
-      padding: 14px 16px;
-      font-size: 15px;
-    }
-  }
-
-  .error-message {
-    margin-top: 8px;
-    font-size: 13px;
-    color: #e74c3c;
-  }
-
-}
+/* Common Form Input Groups moved to component stylesheet */
 
 /* (swiper imports are placed at the top of this file) */
 

@@ -6,6 +6,7 @@ import {MindfulTimepickerComponent} from "./mindful-timepicker/mindful-timepicke
 import {MindfulBirthdaypickerComponent} from "./mindful-birthdaypicker/mindful-birthdaypicker.component";
 import {MindfulWeekComponent} from "./mindful-week/mindful-week.component";
 import {MindfulCompletionComponent} from "./mindful-completion/mindful-completion.component";
+import {MindfulInputComponent} from './mindful-input.component';
 
 @NgModule({
   declarations: [

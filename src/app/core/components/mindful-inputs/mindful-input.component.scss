@@ -1,0 +1,161 @@
+/* Moved from src/global.scss - Mindful Buddy common input group styles */
+.mindful-input,
+.mindful-input-group {
+  margin-bottom: 24px;
+}
+
+/* ----- ORANGE (default) -----
+   Keep working with legacy markup: `.mindful-input-group` (no modifier)
+   and the new host modifier `mindful-input--orange` */
+.mindful-input-group input,
+.mindful-input--orange input,
+.mindful-input input,
+.mindful-input-group--orange input {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: #FAD2AE;
+  font-size: 16px;
+  font-family: 'Nunito', sans-serif;
+  color: #772817;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: #772817;
+    opacity: 0.6;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #EE6621;
+    background: #FFE9D6;
+    box-shadow: 0 0 0 3px rgba(238, 102, 33, 0.1);
+  }
+
+  &.error, &.ng-invalid.ng-touched {
+    border-color: #e74c3c;
+    background: #ffeaea;
+  }
+
+  @media (max-width: 480px) {
+    padding: 14px 16px;
+    font-size: 15px;
+  }
+}
+
+.mindful-input-group .error-message,
+.mindful-input--orange .error-message,
+.mindful-input .error-message,
+.mindful-input-group--orange .error-message {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #e74c3c;
+}
+
+/* ----- WHITE-FULL variant -----
+   Usage: <app-mindful-input [variant]="'white-full'"> or
+          <div class="mindful-input-group mindful-input-group--white-full"> */
+.mindful-input--white-full,
+.mindful-input-group--white-full {
+  display: flex;
+  padding: 20px 20px 20px 24px;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+  border-radius: 12px;
+  border: 1px solid rgba(40, 37, 39, 0.50);
+  background: #FFF;
+  box-sizing: border-box;
+}
+
+.mindful-input--white-full input,
+.mindful-input-group--white-full input,
+.mindful-input--white-full ion-input,
+.mindful-input-group--white-full ion-input {
+  /* make the input visually blend into the white container */
+  background: #FFFFFF; /* ensure input background is white */
+  border: none; /* remove any visible border/underline */
+  padding: 0; /* container provides padding */
+  margin: 0;
+  flex: 1 1 auto;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 130%;
+  color: #282527;
+  box-sizing: border-box;
+}
+
+.mindful-input--white-full input::placeholder,
+.mindful-input-group--white-full input::placeholder,
+.mindful-input--white-full ion-input input::placeholder,
+.mindful-input-group--white-full ion-input input::placeholder {
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 130%;
+  opacity: 0.5;
+  text-decoration: none; /* remove underline in some UA styles */
+}
+
+/* add focus state for inputs inside white-full */
+.mindful-input--white-full input:focus,
+.mindful-input-group--white-full input:focus,
+.mindful-input--white-full input:focus-visible,
+.mindful-input-group--white-full input:focus-visible,
+.mindful-input--white-full ion-input input:focus,
+.mindful-input-group--white-full ion-input input:focus,
+.mindful-input--white-full ion-input input:focus-visible,
+.mindful-input-group--white-full ion-input input:focus-visible {
+  outline: none;
+  box-shadow: none;
+  text-decoration: none;
+  background: #FFFFFF; /* ensure focus background stays white */
+}
+
+/* Ensure the white-full container doesn't show an underline/outline when any child is focused */
+.mindful-input--white-full:focus-within,
+.mindful-input-group--white-full:focus-within {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Target ion-input parts (Ionic exposes parts for inner native input in newer versions) */
+.mindful-input--white-full ion-input,
+.mindful-input-group--white-full ion-input {
+  --background: #FFFFFF; /* prefer CSS variable if supported */
+}
+
+.mindful-input--white-full ion-input::part(native),
+.mindful-input-group--white-full ion-input::part(native),
+.mindful-input--white-full ion-input::part(input),
+.mindful-input-group--white-full ion-input::part(input) {
+  background: #FFFFFF !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+
+/* Webkit/UA defensive rules */
+.mindful-input--white-full input::-webkit-text-decoration,
+.mindful-input-group--white-full input::-webkit-text-decoration {
+  text-decoration: none;
+}
+
+/* Remove textarea/input underline from some browsers (Android default styles) */
+.mindful-input--white-full input,
+.mindful-input-group--white-full input {
+  -webkit-appearance: none;
+  appearance: none;
+  text-decoration: none;
+}
+
+/* Ensure inner ion-input input inherits background */
+.mindful-input--white-full ion-input input,
+.mindful-input-group--white-full ion-input input {
+  background: #FFFFFF;
+}
