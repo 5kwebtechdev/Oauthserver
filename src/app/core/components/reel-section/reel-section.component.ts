@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule, Router } from '@angular/router';
 
-import { ReelsExpandComponent } from './reel-expand/reels-expand.component';
-import { BookmarkReelsComponent } from './bookmark-reels/bookmark-reels.component';
-import { ReelGuidelinesComponent } from './reel-guidelines/reel-guidelines.component';
-import { NewReelsComponent } from './new-reels.component';
-import { ShareReelComponent } from './share-reel.component';
-import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
+import { ReelsExpandComponent } from 'src/app/core/components/reel-section/reel-expand/reels-expand.component';
+import { BookmarkReelsComponent } from 'src/app/core/components/reel-section/bookmark-reels/bookmark-reels.component';
+import { ReelGuidelinesComponent } from 'src/app/core/components/reel-section/reel-guidelines/reel-guidelines.component';
+import { NewReelsComponent } from 'src/app/core/components/reel-section/new-reels.component';
+import { ShareReelComponent } from 'src/app/core/components/reel-section/share-reel.component';
+import { MindfulButtonComponent } from 'src/app/core/components/mindful-button/mindful-button.component';
 
 @Component({
   selector: 'reel-section',
