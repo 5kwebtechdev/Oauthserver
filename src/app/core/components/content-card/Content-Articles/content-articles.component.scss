@@ -1,0 +1,124 @@
+:host{ display:block; height:100vh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+
+.content-main { width:100%; height:auto; flex-shrink:0; }
+
+.card{ position:relative; display:flex; justify-content:center; align-items:center; height:254px; border-radius:24px 24px 48px 48px; overflow:hidden; background: url('/assets/app-assets/Container bg.svg') lightgray 50% / cover no-repeat; }
+.card-bg{ position:absolute; inset:0; background: url('/assets/app-assets/Container bg.svg') center/cover no-repeat; z-index:0; }
+.card-content{ position:relative; z-index:2; padding:16px; display:flex; flex-direction:column; gap:16px; width:100%; }
+.card-title{ margin:0; color:#FDFDFD; font-family:'Fredoka', sans-serif; font-size:16px; font-weight:500; }
+.search-row{ display:flex; align-items:center; padding:16px; gap:12px; width:100%; z-index:2; }
+.search-input{ display:flex; align-items:center; width:100%; padding:12px; gap:12px; border-radius:12px; background:#FDFDFD; }
+.search-input input{ border:none; outline:none; background:transparent; flex:1 1 auto; font-family:'Nunito', sans-serif; font-size:14px; }
+.cheer{ position:absolute; right:12px; bottom:12px; display:flex; align-items:center; gap:8px; z-index:3; }
+.cheer-text{ max-width:calc(100% - 72px); color:#282527; font-family:'Nunito', sans-serif; font-size:10px; font-weight:600; background:#FFF; padding:6px 8px; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.06); }
+.cheer-img{ width:56px; height:56px; object-fit:contain; }
+
+.categories{ display:inline-flex; justify-content:center; align-items:center; padding:24px 16px; gap:24px; width:336px; }
+.category{ display:inline-flex; flex-direction:column; align-items:center; text-decoration:none; color:#282527; flex:1 1 auto; min-width:0; }
+.category .icon{ width:48px; height:48px; aspect-ratio:1/1; border-radius:8px; background-repeat:no-repeat; background-position:center; background-size:contain; }
+.category.for-you .icon{ background: url('/assets/app-assets/For-you-content-icon.svg') center/contain no-repeat; }
+.category.puzzles .icon{ background: url('/assets/app-assets/Puzzles-content-icon.svg') center/contain no-repeat; }
+.category.quizzes .icon{ background: url('/assets/app-assets/Quizes-content-icon.svg') center/contain no-repeat; }
+.category.articles .icon{ background: url('/assets/app-assets/Thinking-content-icon.svg') center/contain no-repeat; }
+.category .label{ font-family:'Nunito', sans-serif; font-size:13px; font-weight:700; margin-top:6px; }
+.sep{ display:inline-block; width:2px; height:40px; background:#6B656A; border-radius:1px; margin:0 6px; }
+
+.content-filter{ display:flex; justify-content:center; padding:12px 16px 24px; }
+.pill-tabs{ display:inline-flex; gap:12px; align-items:center; }
+.pill{ border:none; padding:10px 20px; border-radius:18px; font-family:'Nunito', sans-serif; font-weight:700; font-size:14px; cursor:pointer; color:#000; background:#F9F0F4; }
+.pill.active{ background:#E95A7A; color:#fff; }
+.pill[aria-selected="false"]{ background:#FDEBF0; color:#282527; }
+
+.puzzle-cards{ 
+    display: flex;
+width: 361px;
+flex-direction: column;
+justify-content: center;
+align-items: flex-start;
+padding: 16px;
+gap: 16px;
+}
+
+.article-hero {
+    display: flex;
+height: 138px;
+justify-content: center;
+align-items: center;
+border-radius: 9.252px 9.252px 0 0;
+background: #D0D0D0;
+}
+
+/* Article card variant that mirrors the attached design */
+.article-content{ 
+    width: 361px;
+height: 130px;
+border-radius: 0 0 12px 12px;
+background: #FFF;
+box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+display: inline-flex;
+flex-direction: column;
+align-items: flex-start;
+gap: 12px;
+}
+.article-hero{ width:100%; height:180px; object-fit:cover; border-radius:12px 12px 0 0; display:block; }
+.article-pill{ 
+    display: flex;
+padding: 5px 16px;
+justify-content: center;
+align-items: center;
+gap: 8px;
+border-radius: 16px;
+border: 1px solid #E1527C;
+background: #FCF3F6;
+    color: #942038;
+font-family: Nunito;
+font-size: 10px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 14px */ }
+
+.article-title{ 
+    color: #282527;
+font-family: Nunito;
+width: 245px;
+font-size: 13px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 18.2px */
+}
+
+.desc-time {
+    display: flex;
+align-items: flex-start;
+gap: 43px;
+}
+
+.article-summary{ 
+    width: 206px;
+    color: #6B656A;
+font-family: Nunito;
+font-size: 10px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 14px */
+}
+.read-cta {
+    display: flex;
+height: 34px;
+padding: 10px;
+justify-content: center;
+align-items: center;
+gap: 8px;
+border-radius: 4px;
+border: 1px solid #CF3359;
+background: linear-gradient(99deg, #E1527C 0.65%, #AC2456 99.35%);
+box-shadow: 0 -2px 2px 0 #F4ADC6 inset, 0 0 1px 0.5px rgba(225, 82, 124, 0.20);
+color: #FFF;
+font-family: Nunito;
+font-size: 10px;
+font-style: normal;
+font-weight: 700;
+line-height: 140%; /* 14px */
+}
+
+.read-cta:active{ transform: translateY(1px); }

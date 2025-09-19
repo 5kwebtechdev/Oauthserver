@@ -1,8 +1,10 @@
 import { Component, Input } from '@angular/core';
 // NgStyle removed because the template does not use ngStyle
 import { IonicModule } from "@ionic/angular";
+import { Router } from '@angular/router';
 import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { ViewAllComponent } from '../mindful-navigator/view-all/view-all.component';
+import { JournalOutputComponent } from './journal-output/journal-output.component';
 
 export interface JournalEntry {
   id: string;
@@ -18,7 +20,7 @@ export interface JournalEntry {
   selector: 'journals',
   templateUrl: './journals.component.html',
   styleUrls: ['./journals.component.scss'],
-  imports: [IonicModule, MindfulCardHeaderComponent, ViewAllComponent],
+  imports: [IonicModule, MindfulCardHeaderComponent, ViewAllComponent, JournalOutputComponent],
   standalone: true
 })
 export class JournalsComponent {
@@ -57,12 +59,17 @@ export class JournalsComponent {
     }
   ];
 
-  constructor() {
+  constructor(private router: Router) {
     // Use sample data if no entries provided
     if (this.entries.length === 0) {
       this.entries = this.sampleEntries;
     }
   }
+
+  // If running in an Ionic environment, ModalController will be available via DI.
+  // We'll try to lazily resolve it using optional injection via the constructor signature is not present,
+  // so provide a private field and simple runtime guard in the method below.
+  // Note: For proper DI, add `private modalCtrl: ModalController` to the constructor if desired.
 
   getDisplayEntries(): JournalEntry[] {
     return this.entries.slice(0, this.maxDisplayEntries);
@@ -88,8 +95,8 @@ export class JournalsComponent {
   }
 
   onViewAllEntries(): void {
-    // Handle view all entries
-    console.log('View all journal entries');
+    // Navigate to journal-output route and pass entries via state so the component can render them
+    this.router.navigate(['/journal-output'], { state: { entries: this.entries } });
   }
 
   onEntryClick(entry: JournalEntry): void {

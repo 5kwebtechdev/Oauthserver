@@ -1,24 +1,24 @@
 import { Component, AfterViewInit, ViewChildren, QueryList, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { Router, RouterModule } from '@angular/router';
-// ReelsExpandComponent removed from imports — not used directly in template
-import { BookmarkReelsComponent } from './bookmark-reels.component';
-import { ReelGuidelinesComponent } from './reel-guidelines.component';
+import { RouterModule, Router } from '@angular/router';
+
+import { ReelsExpandComponent } from './reel-expand/reels-expand.component';
+import { BookmarkReelsComponent } from './bookmark-reels/bookmark-reels.component';
+import { ReelGuidelinesComponent } from './reel-guidelines/reel-guidelines.component';
 import { NewReelsComponent } from './new-reels.component';
 import { ShareReelComponent } from './share-reel.component';
+import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
 
 @Component({
   selector: 'reel-section',
   templateUrl: './reel-section.component.html',
   styleUrls: ['./reel-section.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, BookmarkReelsComponent, ReelGuidelinesComponent, NewReelsComponent, ShareReelComponent]
+  imports: [CommonModule, IonicModule, RouterModule, ReelsExpandComponent, BookmarkReelsComponent, ReelGuidelinesComponent, NewReelsComponent, ShareReelComponent, MindfulButtonComponent]
 })
 export class ReelSectionComponent implements AfterViewInit {
-  // sample slides - synced with reels-card component
   public slides = [
-    // Science Wonders
     {
       id: 1,
       category: 'Science Wonders',
@@ -27,7 +27,7 @@ export class ReelSectionComponent implements AfterViewInit {
       duration: '20 sec',
       likes: '10K',
       tags: '#FunScience #DIYExperiment',
-      image: '/assets/app-assets/reel-1-placeholder.jpg',
+      image: '/assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -40,7 +40,7 @@ export class ReelSectionComponent implements AfterViewInit {
       duration: '30 sec',
       likes: '8.2K',
       tags: '#ScienceAtHome #Crystals',
-      image: '/assets/app-assets/reel-3-placeholder.jpg',
+      image: '/assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -53,7 +53,7 @@ export class ReelSectionComponent implements AfterViewInit {
       duration: '25 sec',
       likes: '6K',
       tags: '#Magnets #FunFacts',
-      image: '/assets/app-assets/reel-4-placeholder.jpg',
+      image: '/assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -68,7 +68,7 @@ export class ReelSectionComponent implements AfterViewInit {
       duration: '60 sec',
       likes: '1K',
       tags: '#LittleArtist #MessyFun',
-      image: '/assets/app-assets/reel-2-placeholder.jpg',
+      image: '/assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -81,7 +81,7 @@ export class ReelSectionComponent implements AfterViewInit {
       duration: '40 sec',
       likes: '4.5K',
       tags: '#Drawing #KidsArt',
-      image: '/assets/app-assets/reel-5-placeholder.jpg',
+      image: '/assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -94,7 +94,7 @@ export class ReelSectionComponent implements AfterViewInit {
       duration: '35 sec',
       likes: '3.2K',
       tags: '#Crafts #DIY',
-      image: '/assets/app-assets/reel-6-placeholder.jpg',
+      image: '/assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -109,7 +109,7 @@ export class ReelSectionComponent implements AfterViewInit {
       duration: '15 sec',
       likes: '12K',
       tags: '#Dance #Silly',
-      image: '/assets/app-assets/reel-7-placeholder.jpg',
+      image: '/assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -122,7 +122,7 @@ export class ReelSectionComponent implements AfterViewInit {
       duration: '22 sec',
       likes: '5K',
       tags: '#Pranks #GoodVibes',
-      image: '/assets/app-assets/reel-8-placeholder.jpg',
+      image: '/assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -135,110 +135,80 @@ export class ReelSectionComponent implements AfterViewInit {
       duration: '18 sec',
       likes: '9K',
       tags: '#Faces #Challenge',
-      image: '/assets/app-assets/reel-9-placeholder.jpg',
+      image: '/assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
     }
   ];
 
-  public categories: string[] = [];
-  public slidesByCategory: { [k: string]: any[] } = {};
+  @ViewChildren('reelItem', { read: ElementRef }) reels!: QueryList<ElementRef>;
+  @ViewChild('player', { read: ElementRef }) playerRef!: ElementRef;
 
-  @ViewChildren('categorySwiper', { read: ElementRef }) swipers!: QueryList<ElementRef>;
-  @ViewChild('categorySwiper', { read: ElementRef, static: true }) categorySwiperRef!: ElementRef;
-
-  constructor(private router: Router) {
-    // derive categories from slides
-    this.categories = Array.from(new Set(this.slides.map(s => s.category)));
-    // build quick lookup to avoid arrow functions in template
-    this.categories.forEach(cat => {
-      this.slidesByCategory[cat] = this.slides.filter(s => s.category === cat);
-    });
-  }
-
-  // computed list for template bindings (avoid inline arrow functions inside template)
-  get savedSlides(): any[] {
-    return Array.isArray(this.slides) ? this.slides.filter(s => !!s && !!s.saved) : [];
-  }
+  constructor(private router: Router) {}
 
   ngAfterViewInit(): void {
-    const win = window as any;
-    if (win && typeof win.Swiper === 'function') {
-      // initialize a Swiper instance for every category container
-      this.swipers.forEach((ref: ElementRef) => {
-        try {
-          new win.Swiper(ref.nativeElement, {
-            slidesPerView: 2.2,
-            spaceBetween: 12,
-            centeredSlides: false
-          });
-        } catch (e) { /* ignore */ }
-      });
-    } else {
-      console.warn('Swiper bundle not found on window.');
+    // minimal initialization to keep component safe for compilation
+    if (this.reels && this.reels.length) {
+      // placeholder for future player setup
     }
   }
 
-  goBack() {
-    // navigate back to previous view; if there's no history, go to home
-    if (history.length > 1) {
-      history.back();
-    } else {
-      this.router.navigate(['/home']);
+  // Navigation / UI helpers used by the template
+  public goBack(): void {
+    window.history.back();
+  }
+
+  public get slidesByCategory(): Record<string, any[]> {
+    const map: Record<string, any[]> = {};
+    for (const s of this.slides) {
+      const cat = s.category || 'Uncategorized';
+      if (!map[cat]) map[cat] = [];
+      map[cat].push(s);
     }
+    return map;
   }
 
-  playAll(category: string) {
-    // mark all slides in this category as playing (simple demo action)
-    this.slides.forEach(s => s.isPlaying = (s.category === category));
+  // categories used by the template
+  public get categories(): string[] {
+    return Object.keys(this.slidesByCategory);
   }
 
-  // Start playback for a single reel (used by the card play button)
-  playReel(slide: any, event?: Event) {
-    if (event) { event.stopPropagation(); }
-    // stop others
-    this.slides.forEach(s => s.isPlaying = false);
-    slide.isPlaying = true;
-    // dispatch expand event for fullscreen handlers
+
+  public openReel(reel: any, event?: Event): void {
+    event?.stopPropagation();
+    // navigate to expand view (adjust route as needed)
+    this.router.navigate(['/reel-expand', reel.id]);
+  }
+
+  public toggleSave(reel: any, event?: Event): void {
+    event?.stopPropagation();
+    reel.saved = !reel.saved;
+  }
+
+  public playReel(reel: any, event?: Event): void {
+    event?.stopPropagation();
+    // simple play flag - replace with real player logic as needed
+    reel.isPlaying = true;
+  }
+
+  public stopReel(reel: any, event?: Event): void {
+    event?.stopPropagation();
+    reel.isPlaying = false;
+  }
+
+  public playAll(category: string): void {
+    const list = this.slidesByCategory[category] || [];
+    for (const s of list) {
+      s.isPlaying = true;
+    }
+    // also dispatch a global event for other parts of the app to respond to
     try {
-      const ev = new CustomEvent('openReelExpanded', { detail: slide });
+      const ev = new CustomEvent('openReelPlayAll', { detail: { category, slides: list } });
       window.dispatchEvent(ev);
-    } catch (e) { /* ignore */ }
-    // attempt to scroll the slide into view inside its swiper container
-    try {
-      const el = this.categorySwiperRef && this.categorySwiperRef.nativeElement as HTMLElement;
-      if (el) {
-        const slideEls = el.querySelectorAll('.swiper-slide');
-        slideEls.forEach((elSlide: any, idx: number) => {
-          if (this.slides[idx] && this.slides[idx].id === slide.id) {
-            (elSlide as HTMLElement).scrollIntoView({ behavior: 'smooth', inline: 'center' });
-          }
-        });
-      }
-    } catch (e) { /* ignore */ }
-  }
-
-  stopReel(slide: any, event?: Event) {
-    if (event) { event.stopPropagation(); }
-    slide.isPlaying = false;
-  }
-
-  toggleSave(slide: any, event?: Event) {
-    if (event) { event.stopPropagation(); }
-    slide.saved = !slide.saved;
-  }
-
-  openReel(slide: any, event?: Event) {
-    if (event) { event.stopPropagation(); }
-    // for now, just toggle the playing state (would open player in full app)
-    this.slides.forEach(s => s.isPlaying = false);
-    slide.isPlaying = true;
-    // dispatch a global event so the expand component can show the fullscreen player
-    try {
-      const ev = new CustomEvent('openReelExpanded', { detail: slide });
-      window.dispatchEvent(ev);
-    } catch (e) { /* ignore if CustomEvent is not available */ }
+    } catch (e) {
+      // ignore in environments where CustomEvent may be restricted
+    }
   }
 }
 

@@ -1,28 +1,31 @@
 <div class="reels-expand" [class.expanded]="expanded">
-  <button class="expand-toggle" (click)="expanded = !expanded">
-    {{ expanded ? 'Collapse' : 'Expand' }}
-  </button>
-  <ng-content></ng-content>
-
-  <!-- Fullscreen expanded player overlay -->
+  <!-- Expanded fullscreen player when active -->
   <div class="expanded-player" *ngIf="expanded && current">
     <div class="player-backdrop" (click)="close()"></div>
+
     <div class="player-content">
       <button class="player-close" aria-label="Close" (click)="close()">×</button>
 
-      <!-- If a video source is present use video element, otherwise show the image preview -->
       <div class="media-wrap">
-        <video *ngIf="current.video" controls autoplay>
+        <video #playerVideo class="reel-video" controls (ended)="onVideoEnded()" (click)="$event.stopPropagation()">
           <source [src]="current.video || current.image" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
-        <img *ngIf="!current.video" [src]="current.image" alt="{{ current.title }}" />
+        <img *ngIf="!current?.video" [src]="current?.image" alt="{{ current?.title }}" />
       </div>
 
       <div class="player-meta">
-        <div class="author">{{ current.author }}</div>
-        <h3 class="title">{{ current.title }}</h3>
-        <div class="tags">{{ current.tags }}</div>
+        <div class="meta-row">
+          <div class="author">{{ current?.author }}</div>
+          <div class="controls">
+            <button class="control prev" (click)="prev()" [disabled]="currentIndex === 0">‹</button>
+            <button class="control next" (click)="next()" [disabled]="currentIndex >= (playlist.length - 1)">›</button>
+          </div>
+        </div>
+
+        <h3 class="title">{{ current?.title }}</h3>
+        <div class="tags">{{ current?.tags }}</div>
+
         <div class="player-actions">
           <button class="share-btn" (click)="openShare($event)">Share</button>
         </div>
@@ -35,14 +38,13 @@
           <p class="share-sub">Share it so they can watch.</p>
 
           <div class="share-actions">
-+            <button class="share-action copy" (click)="copyLink()">
+            <button class="share-action copy" (click)="copyLink()">
               <i class="icon-clip"></i>
               Copy Link
             </button>
-+
             <button class="share-action whatsapp" (click)="shareWhatsapp()">
-+              <i class="icon-whatsapp"></i>
-+              Share through Whatsapp
+              <i class="icon-whatsapp"></i>
+              Share through Whatsapp
             </button>
           </div>
         </div>
