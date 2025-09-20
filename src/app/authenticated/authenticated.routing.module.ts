@@ -32,6 +32,12 @@ const routes: Routes = [
     path: 'refer-friend',
     loadComponent: () => import('../core/components/user-profile/refer-friend/refer-friend.component').then(m => m.ReferFriendComponent)
   },{
+    path: 'family-connection',
+    loadComponent: () => import('../core/components/user-profile/family-connection/family-connection.component').then(m => m.FamilyConnectionComponent)
+  },{
+    path: 'feedback-suggestion',
+    loadComponent: () => import('../core/components/user-profile/feedback-suggestion/feedback-suggestion.component').then(m => m.FeedbackSuggestionComponent)
+  },{
     path: 'test',
     loadComponent: () => import('./test/test.component').then(m => m.TestComponent)
   },{

@@ -1,0 +1,19 @@
+<ion-content>
+
+  <div class="facts">
+    <h2>FAQ's</h2>
+    <div class="fact-item-list">
+      <div class="fact-item" *ngFor="let f of faqs; let i = index">
+        <div class="fact-main">
+          <div class="fact-text">{{ f.question }}</div>
+          <div class="fact-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="9" height="6" viewBox="0 0 9 6" fill="none">
+              <path d="M8.14645 1.31441C8.34171 1.50968 8.34171 1.82626 8.14645 2.02152L4.85355 5.31442C4.65829 5.50968 4.34171 5.50968 4.14645 5.31442L0.853553 2.02152C0.658291 1.82626 0.658291 1.50968 0.853553 1.31442L1.07978 1.08819C1.27504 0.892927 1.59162 0.892926 1.78689 1.08819L4.14645 3.44775C4.34171 3.64301 4.65829 3.64301 4.85355 3.44775L7.21311 1.08819C7.40838 0.892926 7.72496 0.892927 7.92022 1.08819L8.14645 1.31441Z" fill="#282527"/>
+            </svg>
+          </div>
+        </div>
+        <div class="fact-answer" *ngIf="f.answer && f.answer.length">{{ f.answer }}</div>
+      </div>
+    </div>
+  </div>
+</ion-content>

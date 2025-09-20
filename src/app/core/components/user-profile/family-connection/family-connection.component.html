@@ -1,0 +1,61 @@
+<ion-content>
+  <mindful-navigator heading="My Family" backIcon="arrowSvg"></mindful-navigator>
+
+  <div class="family-connection">
+    <div class="family-container-main">
+        <div class="family-container">
+            <div class="family-info">
+                <div class="familyinformation">
+                <div class="family-name">
+                   <p>Family name:</p><h1>{{ familyName }}</h1>
+                </div>
+                <div class="family-status">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="4" height="5" viewBox="0 0 4 5" fill="none">
+                    <circle cx="2" cy="2.5" r="2" fill="#4CAF50"/>
+                    </svg>
+                    <p>active</p>
+                </div>
+                </div>
+                <div class="family-date">
+                    <p>Created on:</p><h1>12/08/2023</h1>
+                </div>
+            </div>
+            <div class="family-con-detail">
+                <div class="f-head">
+                    <div class="family-avatar">
+                        <div class="avatar-img">
+
+                        </div>
+                    </div>
+                    <div class="f-head">
+                        <h1>Chandran</h1>
+                        <p>age years old</p>
+                    </div>
+                </div>
+            </div>
+            <div class="family-members">
+                <family-member *ngFor="let m of members" [name]="m.name" [age]="m.age" [active]="m.active" (activeChange)="onMemberActiveChange(m.id, $event)"></family-member>
+            </div>            
+                </div>
+                </div>
+
+                <!--If child is removed-->
+                <div class="family-removed-container">
+                    <div class="family-removed-message">
+                        <mindful-pet pet="panda" [age]="4" mood="tired" (petClick)="onRemovedPetClick()"></mindful-pet>
+                        <div class="removed-message-text">
+                            <h1>You’re now in Self mode !</h1>
+                            <p>The family connection has been removed by the creator. Your account is still safe and all data is saved.</p>
+                        </div>
+                        <!--mindful button green-->
+                        <mindful-button type="green" large text="Continue with a new role?" (click)="continueWithNewRole()" style="display:block; width:100%; margin-top:12px"></mindful-button>
+                    </div>
+                </div>
+
+                <!--faqs-->
+                <div class="family-faqs">
+                    <profile-facts></profile-facts>
+                </div>
+
+                </div>
+</ion-content>

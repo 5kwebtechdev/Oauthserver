@@ -68,6 +68,16 @@ export class UserProfileComponent implements OnChanges {
     this.router.navigate(['/authed/refer-friend']).catch(() => {});
   }
 
+  onMyFamily() {
+    // navigate to the family connection page
+    this.router.navigate(['/authed/family-connection']).catch(() => {});
+  }
+
+  onFeedback() {
+    // navigate to the feedback suggestion page
+    this.router.navigate(['/authed/feedback-suggestion']).catch(() => {});
+  }
+
   onLogout() {
     this.logout.emit();
   }

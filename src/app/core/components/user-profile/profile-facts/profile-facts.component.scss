@@ -1,0 +1,56 @@
+.facts{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.facts h2{
+  text-align: center;
+  margin: 0 auto 8px auto;
+}
+
+.fact-item-list{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.fact-item .fact-main{
+  display: flex;
+  padding: 16px 10px;
+  justify-content: center;
+  align-items: center;
+  gap: 33px;
+  align-self: stretch;
+  border-radius: 4px;
+  background: #FFF;
+  box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
+}
+
+.fact-item .fact-text{
+  color: #282527;
+  font-family: Nunito;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  width: 293px;
+}
+
+.fact-item .fact-icon{
+  transform: rotate(-90deg);
+  flex-shrink: 0;
+  width: 4.933px;
+  height: 8px;
+  aspect-ratio: 4.93/8.00;
+}
+
+.fact-answer{
+  color: #282527;
+  text-align: center;
+  font-family: Nunito;
+  font-size: 14px;
+  margin: 6px 12px 0 12px;
+}
