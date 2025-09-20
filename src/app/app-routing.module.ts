@@ -58,6 +58,10 @@ const routes: Routes = [
     loadComponent: () => import('./core/components/habit-section/habit-input/habit-input.component').then(m => m.HabitInputComponent)
   },
   {
+    path: 'coin',
+    loadComponent: () => import('./core/components/coin-section/coin-page/coin-page.component').then(m => m.CoinPageComponent)
+  },
+  {
     path: 'journal-input',
     loadComponent: () => import('./core/components/journals/journal-input/journal-input.component').then(m => m.JournalInputComponent)
   },

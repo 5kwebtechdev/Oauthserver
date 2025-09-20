@@ -1,9 +1,18 @@
 <div class="stats-row" role="list" aria-label="User stats">
   <div class="stats-inner">
       <div class="stat-col" role="listitem" [attr.aria-label]="slot1">
-        <img [src]="getStatIcon(slot1)" [alt]="slot1" class="stat-icon">
-        <div class="stat-value">{{ getStatValue(slot1) }}</div>
-        <span class="stat-label visually-hidden">{{ slot1 }}</span>
+        <ng-container *ngIf="slot1 === 'coins'; else normal1">
+          <a [routerLink]="['/coin']" class="coin-link">
+            <img [src]="getStatIcon(slot1)" [alt]="slot1" class="stat-icon">
+            <div class="stat-value">{{ getStatValue(slot1) }}</div>
+          </a>
+          <span class="stat-label visually-hidden">{{ slot1 }}</span>
+        </ng-container>
+        <ng-template #normal1>
+          <img [src]="getStatIcon(slot1)" [alt]="slot1" class="stat-icon">
+          <div class="stat-value">{{ getStatValue(slot1) }}</div>
+          <span class="stat-label visually-hidden">{{ slot1 }}</span>
+        </ng-template>
       </div>
     <span class="stat-divider-vertical" aria-hidden="true"></span>
 

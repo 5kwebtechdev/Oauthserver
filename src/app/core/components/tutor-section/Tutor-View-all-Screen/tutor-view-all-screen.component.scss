@@ -1,0 +1,27 @@
+/* Styles scoped for Tutor View All Screen */
+.tutor-view-all-screen {
+  .tutor-list-section {
+    padding: 16px;
+  }
+  .title-tutor-list {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+
+    .back-btn {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      color: #222;
+      padding: 4px 6px;
+    }
+
+    .title-text {
+      font-size: 18px;
+    }
+  }
+}

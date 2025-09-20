@@ -1,0 +1,38 @@
+<div class="coin-page">
+    <!--Coin Header part-->
+  <div class="coin-card">
+    <!-- Heading -->
+    <div class="header">
+      <p>Ready to Treat Yourself?</p>
+      <img src="/assets/app-assets/Chatbot-assistance-icon-Coins-screen.svg" alt="Robot" class="robot-icon">
+    </div>
+
+    <!-- Coins Display -->
+    <div class="coins">
+      <img src="/assets/app-assets/Coins-icon-common.svg" alt="Coin" class="coin-icon">
+      <span class="coin-value">25,000</span>
+    </div>
+
+    <!-- Panda Message -->
+    <div class="panda-message">
+      <div class="speech">
+        Whoa! That’s a lot of coins! Let’s go dress me up or grab something shiny!
+      </div>
+      <img src="/assets/app-assets/Panda-icon-Coins-screen.svg" alt="Panda" class="panda-icon">
+    </div>
+
+    <!-- Redeem Button -->
+    <button class="redeem-btn">Redeem</button>
+  </div>
+  
+
+  <section class="coin-list-section">
+    <h2>{{ coinLabel }}</h2>
+    <coin-list
+      [icon]="'/assets/app-assets/Coins-icon-common.svg'"
+      [label]="coinLabel"
+      [count]="coinCount"
+      [date]="coinDate">
+    </coin-list>
+  </section>
+</div>

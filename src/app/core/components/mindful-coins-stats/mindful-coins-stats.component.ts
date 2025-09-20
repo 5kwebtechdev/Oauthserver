@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
@@ -7,7 +8,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './mindful-coins-stats.component.html',
   styleUrls: ['./mindful-coins-stats.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
 })
 export class MindfulCoinsStatsComponent {
   @Input() userCoins: number | string = 0;
