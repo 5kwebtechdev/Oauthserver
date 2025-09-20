@@ -13,7 +13,7 @@ background: #FFF;
   flex-shrink: 0;
   border-radius: 24px 24px 48px 48px;
   background: linear-gradient(109deg, #BE6F03 1.38%, #EBA235 50.47%, #CB7D0C 98.62%);
-  padding: 20px;
+  padding: 16px;
   box-sizing: border-box;
   position: relative;
   color: white;
@@ -24,6 +24,7 @@ background: #FFF;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 30px;
 }
 
 .header p {
@@ -45,7 +46,6 @@ aspect-ratio: 1/1;
 .coins {
   display: flex;
   align-items: center;
-  margin: 20px 0;
 }
 
 .coin-icon {
@@ -65,13 +65,15 @@ line-height: 140%; /* 44.8px */
 
 /* Panda Message */
 .panda-message {
-  display: flex;
+  display: inline-flex;
   align-items: flex-end;
+  padding-left: 120px;
   margin-bottom: 20px;
 }
 
-.speech {
+.speech p{
   color: #282527;
+  width: 188px;
 font-family: Nunito;
 font-size: 10px;
 font-style: normal;
@@ -101,4 +103,49 @@ background: linear-gradient(157deg, #FFD57E 14.87%, #F1A846 85.13%);
 box-shadow: 0 -4px 6px 0 #F4D593 inset, 0 0 1px 0.5px rgba(241, 168, 70, 0.20);
 }
 
-    
+.coin-list-section {
+  padding: 0 16px;
+  margin-top: 24px;
+}
+
+.blank-container {
+  display: flex;
+flex-direction: column;
+align-items: center;
+gap: 8px;
+}
+
+.home-blank {
+  width: 256px;
+height: 158px;
+aspect-ratio: 128/79;
+}
+
+.blank-text {
+  display: flex;
+flex-direction: column;
+align-items: center;
+gap: 8px;
+}
+.blank-text h1 {
+  width: 339px;
+  color: #282527;
+text-align: center;
+font-family: Fredoka;
+font-size: 16px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 22.4px */
+}
+.blank-text p {
+  width: 269px;
+  color: #282527;
+text-align: center;
+font-family: Nunito;
+font-size: 13px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 18.2px */
+opacity: 0.7;
+}
+  

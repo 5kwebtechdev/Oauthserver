@@ -18,4 +18,14 @@ export class CoinPageComponent {
   coinLabel = 'Panda Superhero Cape';
   coinDate = new Date('2025-04-11');
   coinCount = 23;
+
+  // dummy list of coin items (one original + 5 more)
+  coinItems = [
+    { icon: '/assets/app-assets/Panda Sitting Tired.svg', label: 'Panda Superhero Cape', count: 23, date: new Date('2025-04-11') },
+    { icon: '/assets/app-assets/Panda Sitting Tired.svg', label: 'Moonlight Mug', count: 120, date: new Date('2025-06-02') },
+    { icon: '/assets/app-assets/Panda Sitting Tired.svg', label: 'Zen Garden Kit', count: 75, date: new Date('2025-05-18') },
+    { icon: '/assets/app-assets/Panda Sitting Tired.svg', label: 'Cozy Blanket', count: 200, date: new Date('2025-03-30') },
+    { icon: '/assets/app-assets/Panda Sitting Tired.svg', label: 'Glow Stick Set', count: 40, date: new Date('2025-07-09') },
+    { icon: '/assets/app-assets/Panda Sitting Tired.svg', label: 'Starry Night Lamp', count: 150, date: new Date('2025-02-21') }
+  ];
 }

@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./coin-list.component.scss']
 })
 export class CoinListComponent {
-  @Input() icon = '/assets/app-assets/Coins-icon-common.svg';
+  @Input() icon = '/assets/app-assets/Panda Sitting Tired.svg';
   @Input() label = 'Coins';
   @Input() count: string | number = 0;
   @Input() date: Date | string | null = null;
