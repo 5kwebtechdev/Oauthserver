@@ -1,0 +1,15 @@
+<button
+  type="button"
+  class="mindful-toggle"
+  role="switch"
+  [attr.aria-checked]="checked"
+  [attr.aria-disabled]="disabled"
+  [disabled]="disabled"
+  (click)="toggle()"
+  (keydown)="onKeydown($event)"
+>
+  <span class="track" aria-hidden="true">
+    <span class="thumb" aria-hidden="true"></span>
+  </span>
+
+</button>

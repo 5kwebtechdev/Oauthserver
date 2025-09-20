@@ -1,21 +1,26 @@
 <ion-content fullscreen>
-    <mindful-navigator heading="Change your pet" backIcon="arrow"></mindful-navigator>
+    <mindful-navigator heading="Change your pet" backIcon="arrowSvg"></mindful-navigator>
 <div class="change-pet-container">
    
   <swiper-container slides-per-view="1.4" centered-slides="true" space-between="20" grab-cursor="true"
     (animationend)="onSlideChange()" (transitionend)="onSlideChange()" #swiperEl [style]="{ marginTop: '50px' }">
-    <swiper-slide *ngFor="let pet of pets; let i = index">
+    <swiper-slide class="pet-slide" *ngFor="let pet of pets; let i = index">
       <div class="pet-card">
-        <h4>{{ pet.name }}</h4>
-        <p>{{ pet.text[0] }}</p>
-        <p>{{ pet.text[1] }}</p>
+        <div class="pet-details">
+          <h4>{{ pet.name }}</h4>
+          <div class="pet-desc">
+          <p>{{ pet.text[0] }}</p>
+          <p>{{ pet.text[1] }}</p>
+        </div>
+        </div>
         <img [src]="pet.image" alt="{{pet.name}}" />
       </div>
     </swiper-slide>
   </swiper-container>
 
   <div class="change-pet-actions">
-    <mindful-button type="green" text="Update your pet" fullWidth="true" [large]="true" (click)="confirmSelection()"></mindful-button>
+    <mindful-button type="green" text="Update your pet" [large]="true" (click)="confirmSelection()"></mindful-button>
   </div>
+ 
 </div>
 </ion-content>

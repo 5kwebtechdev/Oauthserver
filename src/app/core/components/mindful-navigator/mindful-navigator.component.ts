@@ -13,7 +13,9 @@ import { ModalController } from '@ionic/angular';
 export class MindfulNavigatorComponent {
   @Input() heading: string = '';
 
-  @Input() backIcon: 'arrow' | 'cancel' = 'arrow';
+  // Backwards compatibility: some templates pass "arrow". Keep existing literal types
+  // but accept the legacy value 'arrow' and map it to the arrowSvg asset.
+  @Input() backIcon: 'cancel' | 'arrowSvg' | 'arrow' = 'arrowSvg';
 
   @Input() rightIcon?: string;
 
@@ -66,7 +68,9 @@ export class MindfulNavigatorComponent {
   }
 
   get backIconSrc(): string {
-    return this.backIcon === 'cancel' ? '/assets/app-assets/Cancel.svg' : '/assets/app-assets/Back-common-icon.svg';
+    // Map legacy 'arrow' to the same asset as 'arrowSvg'
+    const icon = this.backIcon === 'cancel' ? 'cancel' : (this.backIcon === 'arrow' ? 'arrowSvg' : this.backIcon);
+    return icon === 'cancel' ? '/assets/app-assets/Cancel.svg' : '/assets/app-assets/Back-common-icon.svg';
   }
 
   get backIconAlt(): string {

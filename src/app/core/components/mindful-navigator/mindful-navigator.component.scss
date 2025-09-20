@@ -11,7 +11,7 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding-left: 8px;
+
 }
 
 .left-group {
@@ -26,18 +26,23 @@
 }
 
 .back-button {
-  width: 48px;
-  height: 48px;
-  background: none;
+width: 48px;
+height: 48px;
+flex-shrink: 0;
+background: none;
 }
 
-// .back-button img {
-//  width: 24px;
-//   height: 0;
-//   flex-shrink: 0;
-//   stroke-width: 2px;
-//   stroke: #282527;
-// }
+.back-button .back-svg,
+.back-button img {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.back-button .back-svg path {
+  /* ensure fill color stays correct; stroke not used for filled path */
+  fill: #282527;
+}
 
 .navigator-heading{
   color: #282527;

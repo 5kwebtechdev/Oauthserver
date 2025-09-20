@@ -1,0 +1,14 @@
+.refer-container{
+  padding: 16px;
+}
+.share-box{
+  display:flex;
+  gap: 8px;
+  align-items:center;
+}
+.share-box input{
+  flex:1;
+  padding:8px;
+  border-radius:6px;
+  border:1px solid #ddd;
+}

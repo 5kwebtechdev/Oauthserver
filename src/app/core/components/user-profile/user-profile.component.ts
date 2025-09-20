@@ -59,6 +59,15 @@ export class UserProfileComponent implements OnChanges {
     this.router.navigate(['/authed/reset-pasword']).catch(() => {});
   }
 
+  onNotifications() {
+    // navigate to notifications page - route should exist in the app routing
+    this.router.navigate(['/authed/notifications']).catch(() => {});
+  }
+
+  onRefer() {
+    this.router.navigate(['/authed/refer-friend']).catch(() => {});
+  }
+
   onLogout() {
     this.logout.emit();
   }

@@ -1,6 +1,6 @@
 
 <ion-content fullscreen>
-  <mindful-navigator heading="My Profile" backIcon="arrow"></mindful-navigator>
+  <mindful-navigator heading="My Profile" backIcon="arrowSvg"></mindful-navigator>
   <div class="profile">
 
     <section class="user-profile-main">
@@ -32,9 +32,9 @@
 
       <profile-content-card iconName="creditCard" title="Manage Your Membership" subtitle="See your perks, upgrade, or cancel anytime"></profile-content-card>
 
-      <profile-content-card iconName="notification" title="Notifications" subtitle="Manage your notifications"></profile-content-card>
+  <profile-content-card iconName="notification" title="Notifications" subtitle="Manage your notifications" (select)="onNotifications()"></profile-content-card>
 
-      <profile-content-card iconName="gift" title="Refer a friend" subtitle="Refer this to friends for exciting rewards"></profile-content-card>
+  <profile-content-card iconName="gift" title="Refer a friend" subtitle="Refer this to friends for exciting rewards" (select)="onRefer()"></profile-content-card>
 
       <profile-content-card iconName="link" title="My Family" subtitle="View your family details"></profile-content-card>
 

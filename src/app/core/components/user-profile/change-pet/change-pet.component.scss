@@ -8,11 +8,26 @@
   position: relative;
   
 }
+
+.pet-slide{
+  display: inline-flex;
+align-items: center;
+gap: 16px;
+}
 .pet-card{
     width: 305px;
 height: 480px;
 border-radius: 32px;
 border: 2px solid #4CAF50;
+}
+.pet-details{
+display: flex;
+width: 228px;
+flex-direction: column;
+align-items: flex-start;
+gap: 12px;
+margin: 16px 16px 16px 16px;
+
 
 h4{
     color: #282527;
@@ -24,6 +39,13 @@ line-height: 130%; /* 26px */
 align-self: stretch;
 }
 
+}
+.pet-desc{
+  display: flex;
+flex-direction: column;
+align-items: flex-start;
+gap: 8px;
+align-self: stretch;
 p{
     color: #282527;
 font-family: Nunito;
@@ -116,4 +138,22 @@ width: 217px;
   padding-bottom: 5px;
   font-size: 24px;
   transition: 0.4s;
+}
+
+.change-pet-actions{
+  margin-top:34px;
+  margin-bottom: 16px;
+}
+
+/* Ensure mindful-button inside change-pet-actions spans the full width */
+.change-pet-actions mindful-button{
+  display: block;
+  width: 100%;
+}
+
+.change-pet-actions mindful-button .button{
+  width: 100%;
+  box-sizing: border-box;
+  float: none;
+  margin: 0;
 }

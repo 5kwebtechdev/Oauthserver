@@ -26,6 +26,12 @@ const routes: Routes = [
     path: 'reset-pasword',
     loadComponent: () => import('../core/components/user-profile/reset-pasword/reset-pasword.component').then(m => m.ResetPaswordComponent)
   },{
+    path: 'notifications',
+    loadComponent: () => import('../core/components/user-profile/notification/notification.component').then(m => m.NotificationComponent)
+  },{
+    path: 'refer-friend',
+    loadComponent: () => import('../core/components/user-profile/refer-friend/refer-friend.component').then(m => m.ReferFriendComponent)
+  },{
     path: 'test',
     loadComponent: () => import('./test/test.component').then(m => m.TestComponent)
   },{

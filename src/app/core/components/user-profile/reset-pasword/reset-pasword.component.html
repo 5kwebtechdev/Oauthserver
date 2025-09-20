@@ -1,5 +1,5 @@
 <ion-content fullscreen>
-  <mindful-navigator heading="Password and security" backIcon="arrow"></mindful-navigator>
+  <mindful-navigator heading="Password and security" backIcon="arrowSvg"></mindful-navigator>
 
   <div class="reset-password-root">
     <profile-edit-input
@@ -24,6 +24,8 @@
     ></profile-edit-input>
 
 
-  <mindful-button type="green" text="Change password" fullWidth="true" (click)="saveProfile()"></mindful-button>
   </div>
+<div class="button-row">
+  <mindful-button type="green" text="Change password" [large]="true" (click)="saveProfile()"></mindful-button>
+</div>
 </ion-content>
