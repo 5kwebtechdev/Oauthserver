@@ -1,61 +1,104 @@
 <ion-content>
-  <mindful-navigator heading="My Family" backIcon="arrowSvg"></mindful-navigator>
+    <mindful-navigator *ngIf="!showInstructions" heading="My Family" backIcon="arrowSvg"></mindful-navigator>
 
-  <div class="family-connection">
-    <div class="family-container-main">
-        <div class="family-container">
-            <div class="family-info">
-                <div class="familyinformation">
-                <div class="family-name">
-                   <p>Family name:</p><h1>{{ familyName }}</h1>
-                </div>
-                <div class="family-status">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="4" height="5" viewBox="0 0 4 5" fill="none">
-                    <circle cx="2" cy="2.5" r="2" fill="#4CAF50"/>
-                    </svg>
-                    <p>active</p>
-                </div>
-                </div>
-                <div class="family-date">
-                    <p>Created on:</p><h1>12/08/2023</h1>
-                </div>
-            </div>
-            <div class="family-con-detail">
-                <div class="f-head">
-                    <div class="family-avatar">
-                        <div class="avatar-img">
+    <main *ngIf="!showInstructions" class="family-connection" role="main" aria-labelledby="family-heading">
+        <section class="family-container-main">
+            <div class="family-container">
 
+                <header class="family-info" id="family-heading">
+                    <div class="familyinformation">
+                        <div class="family-name">
+                            <p>Family name:</p>
+                            <h1>{{ familyName }}</h1>
+                        </div>
+
+                        <div class="family-status" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="4" height="5" viewBox="0 0 4 5" fill="none" role="img" aria-label="active">
+                                <circle cx="2" cy="2.5" r="2" fill="#4CAF50"/>
+                            </svg>
+                            <p>active</p>
                         </div>
                     </div>
+
+                    <div class="family-date">
+                        <p>Created on:</p>
+                        <h1>12/08/2023</h1>
+                    </div>
+                </header>
+
+                <section class="family-con-detail" aria-label="Family details">
                     <div class="f-head">
-                        <h1>Chandran</h1>
-                        <p>age years old</p>
-                    </div>
-                </div>
-            </div>
-            <div class="family-members">
-                <family-member *ngFor="let m of members" [name]="m.name" [age]="m.age" [active]="m.active" (activeChange)="onMemberActiveChange(m.id, $event)"></family-member>
-            </div>            
-                </div>
-                </div>
-
-                <!--If child is removed-->
-                <div class="family-removed-container">
-                    <div class="family-removed-message">
-                        <mindful-pet pet="panda" [age]="4" mood="tired" (petClick)="onRemovedPetClick()"></mindful-pet>
-                        <div class="removed-message-text">
-                            <h1>You’re now in Self mode !</h1>
-                            <p>The family connection has been removed by the creator. Your account is still safe and all data is saved.</p>
+                        <div class="family-avatar">
+                            <div class="avatar-img" aria-hidden="true"></div>
                         </div>
-                        <!--mindful button green-->
-                        <mindful-button type="green" large text="Continue with a new role?" (click)="continueWithNewRole()" style="display:block; width:100%; margin-top:12px"></mindful-button>
+
+                        <div class="f-head">
+                            <h1>Chandran</h1>
+                            <p>age years old</p>
+                        </div>
                     </div>
+                </section>
+
+                <section class="family-members" aria-label="Family members">
+                    <family-member *ngFor="let m of members" [name]="m.name" [age]="m.age" [active]="m.active" (activeChange)="onMemberActiveChange(m.id, $event)">
+                    </family-member>
+                </section>
+
+            </div>
+        </section>
+
+        <!-- removed / self mode message -->
+        <aside class="family-removed-container" aria-live="polite">
+            <div class="family-removed-message">
+                <mindful-pet pet="panda" [age]="4" mood="tired" (petClick)="onRemovedPetClick()"></mindful-pet>
+
+                <div class="removed-message-text">
+                    <h1>You’re now in Self mode !</h1>
+                    <p>The family connection has been removed by the creator. Your account is still safe and all data is saved.</p>
                 </div>
 
-                <!--faqs-->
-                <div class="family-faqs">
-                    <profile-facts></profile-facts>
-                </div>
+                <mindful-button
+                    type="green"
+                    large
+                    text="Continue with a new role?"
+                    (click)="continueWithNewRole()"
+                    style="display:block; width:100%; margin-top:12px">
+                </mindful-button>
+            </div>
+        </aside>
 
+        <!-- faqs -->
+        <section class="family-faqs">
+            <profile-facts></profile-facts>
+        </section>
+
+    </main>
+    <!--intructions-->
+    <main *ngIf="showInstructions">
+        <mindful-navigator heading="Instructions" backIcon="arrowSvg" (back)="onInstructionsBack()"></mindful-navigator>
+                <div class="instructions-container">
+                    <div class="instruction-list" style="margin-top:16px;">
+                        <instructio-list [heading]="'When You Switch to Child Role'" [items]="instructionItems"></instructio-list>
+                        <instructio-list [heading]="'When You Switch to Parent Role'" [items]="instructionItemsParent"></instructio-list>
+                    </div>
+                    
+                    <div class="consent">
+                        <ion-checkbox slot="start" [(ngModel)]="consentChecked"></ion-checkbox>
+                        <p class="check-text"> I have read and understood that switching roles affects account linkage and data as described above.
+                        </p>
+                    </div>  
+                    <!--action button-->
+                        <mindful-button
+                            type="green"
+                            full
+                            large
+                            text="Next"
+                            [disabled]="!consentChecked"
+                            [style.opacity]="consentChecked ? 1 : 0.5"
+                            (click)="continueWithNewRole()">
+                        </mindful-button>
+                    
                 </div>
+    </main>
+
 </ion-content>

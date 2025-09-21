@@ -31,6 +31,8 @@ export class MindfulNavigatorComponent {
   @Input() rightType?: 'edit';
   @Input() rightActions?: Array<{ type: 'edit' | 'icon', src?: string, alt?: string }>;
   @Output() rightActionClick = new EventEmitter<{ index: number, action: any }>();
+  // Emit when the back button is clicked so parents can intercept navigation.
+  @Output() back = new EventEmitter<void>();
 
   // Programmatic helper: call from a page to configure which right actions to show.
   configureRightActions(actions: Array<{ type: 'edit' | 'icon', src?: string, alt?: string }>) {
@@ -40,6 +42,18 @@ export class MindfulNavigatorComponent {
   constructor(private navigation: NavigationService, private location: Location, private modalCtrl: ModalController) {}
 
   async goBack() {
+    // If a parent is listening to (back), let it handle navigation and do not perform
+    // the default modal/route navigation. EventEmitter exposes `observers` so we can
+    // check whether anyone subscribed.
+    try {
+      if (this.back && Array.isArray((this.back as any).observers) && (this.back as any).observers.length > 0) {
+        this.back.emit();
+        return;
+      }
+    } catch (e) {
+      // ignore emit errors and continue with default navigation
+    }
+
     try {
       await this.modalCtrl.dismiss();
       return;
