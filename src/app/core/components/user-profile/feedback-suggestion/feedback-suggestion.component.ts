@@ -13,13 +13,10 @@ import { MindfulButtonComponent } from '../../mindful-button/mindful-button.comp
   styleUrls: ['./feedback-suggestion.component.scss']
 })
 export class FeedbackSuggestionComponent {
-  // blank component scaffold for user profile feedback/suggestion UI
   showThankYouPopup: boolean = false;
 
   onSubmit() {
-    // TODO: collect form data and send to API or persistence layer
     console.log('Feedback submitted (stub)');
-    // Show thank-you popup after submit. If already shown (user clicked "Share another idea"), hide it.
     this.showThankYouPopup = !this.showThankYouPopup;
   }
 }

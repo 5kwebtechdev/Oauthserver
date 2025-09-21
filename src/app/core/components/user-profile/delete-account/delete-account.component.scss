@@ -1,0 +1,116 @@
+.delete-account-container{
+  padding: 16px;
+  display: flex;
+width: 336px;
+flex-direction: column;
+justify-content: center;
+align-items: flex-start;
+gap: 32px;
+ 
+}
+
+h1{
+    color: #282527;
+font-family: Nunito;
+font-size: 20px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 28px */
+margin-bottom: 0px;
+}
+
+p{
+    color: #282527;
+font-family: Nunito;
+font-size: 16px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 22.4px */
+opacity: 0.7;
+margin-bottom: 0px;
+}
+.warning{
+    color: #BB2124;
+text-align: center;
+font-family: Nunito;
+font-size: 16px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 22.4px */
+}
+
+.what-happens, .for-your-safety{
+    display: flex;
+width: 353px;
+flex-direction: column;
+align-items: flex-start;
+gap: 24px;
+}
+
+.explanation{
+    display: flex;
+width: 336px;
+flex-direction: column;
+justify-content: center;
+align-items: flex-start;
+gap: 16px;
+}
+
+.explanation-list{
+   display: flex;
+padding: 2px;
+justify-content: center;
+align-items: center;
+gap: 12px;
+}
+
+.list-count{
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    aspect-ratio: 1/1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* use inline SVG as background so we can control fill and opacity */
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'><circle cx='12' cy='12' r='12' fill='%23282527' opacity='0.2'/></svg>");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    /* center the number and ensure it's readable */
+    color: #282527;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    color: #282527;
+font-family: Nunito;
+font-size: 16px;
+font-style: normal;
+font-weight: 600;
+line-height: 130%; /* 20.8px */
+}
+
+.check-text{
+    color: #282527;
+font-family: Nunito;
+font-size: 16px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 22.4px */
+}
+
+.consent{
+    display: inline-flex;
+align-items: center;
+gap: 7px;
+}
+
+ion-checkbox {
+  --size: 16px;
+  --checkbox-background-checked: #4CAF50;
+}
+
+ion-checkbox::part(container) {
+  border-radius: 3px;
+  border: 2px solid #282527B2;
+}

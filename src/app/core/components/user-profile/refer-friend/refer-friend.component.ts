@@ -15,16 +15,13 @@ import { IonicModule } from '@ionic/angular';
 export class ReferFriendComponent implements OnInit {
   referralCode: string = '';
   shareLink: string = '';
-  // FAQ list to render reusable FAQ items in the template
   faqs: Array<{question: string, answer?: string}> = [];
 
   ngOnInit(): void {
-    // generate a temporary random referral code (6 uppercase alphanumeric)
-    this.referralCode = ReferFriendComponent.generateRandomCode(6);
+  this.referralCode = ReferFriendComponent.generateRandomCode(6);
     this.shareLink = `https://mindfulbuddy.app/referral?code=${this.referralCode}`;
 
-    // Populate FAQ list — kept here so the template can render reusable blocks via *ngFor
-    this.faqs = [
+  this.faqs = [
       { question: 'How does this work?', answer: '' },
       { question: 'The code is not working', answer: '' },
       { question: 'I cannot copy the code', answer: '' }
@@ -43,17 +40,16 @@ export class ReferFriendComponent implements OnInit {
   copyLink() {
     try {
       navigator.clipboard.writeText(this.shareLink);
-      // simple feedback could be added later
+      
     } catch (e) {
       console.warn('Clipboard not available', e);
     }
   }
 
-  // Attempt to share via Web Share API; fallback to copying to clipboard and opening WhatsApp web
   shareNow() {
     const message = `Join me on MindfulBuddy! Use my referral code ${this.referralCode} to sign up: ${this.shareLink}`;
 
-    // Web Share API
+    
     if (typeof navigator !== 'undefined' && (navigator as any).share) {
       (navigator as any).share({
         title: 'MindfulBuddy',
@@ -70,7 +66,7 @@ export class ReferFriendComponent implements OnInit {
   }
 
   private fallbackShare(message: string) {
-    // Try clipboard first
+    
     try {
       navigator.clipboard.writeText(message);
       console.info('Referral message copied to clipboard');
@@ -78,7 +74,7 @@ export class ReferFriendComponent implements OnInit {
       console.warn('Clipboard not available', e);
     }
 
-    // Open WhatsApp web with prefilled text as a convenient fallback for users on desktop
+    
     try {
       const encoded = encodeURIComponent(message);
       const whatsappUrl = `https://api.whatsapp.com/send?text=${encoded}`;

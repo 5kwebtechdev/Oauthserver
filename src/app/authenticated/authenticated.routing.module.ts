@@ -38,6 +38,15 @@ const routes: Routes = [
     path: 'feedback-suggestion',
     loadComponent: () => import('../core/components/user-profile/feedback-suggestion/feedback-suggestion.component').then(m => m.FeedbackSuggestionComponent)
   },{
+    path: 'help-support',
+    loadComponent: () => import('../core/components/user-profile/help-support/help-support.component').then(m => m.HelpSupportComponent)
+  },{
+    path: 'our-policies',
+    loadComponent: () => import('../core/components/user-profile/our-policies/our-policies.component').then(m => m.OurPoliciesComponent)
+  },{
+    path: 'delete-account',
+    loadComponent: () => import('../core/components/user-profile/delete-account/delete-account.component').then(m => m.DeleteAccountComponent)
+  },{
     path: 'test',
     loadComponent: () => import('./test/test.component').then(m => m.TestComponent)
   },{

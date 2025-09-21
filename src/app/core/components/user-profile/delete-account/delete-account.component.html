@@ -1,0 +1,37 @@
+<ion-content>
+  <mindful-navigator heading="Delete My Data" backIcon="arrowSvg"></mindful-navigator>
+
+  <div class="delete-account-container">
+    <span class="warning">This action is permanent. Think twice!</span>
+
+      <div class="what-happens">
+        <h1>What happens when I delete my data?</h1>
+        <div class="explanation">
+          <div class="explanation-list"><span class="list-count">1</span><p>All habits, progress, and pets erased.</p></div>
+          <div class="explanation-list"><span class="list-count">2</span><p>Parent connection and rewards removed.</p></div>
+          <div class="explanation-list"><span class="list-count">3</span><p>Account becomes inactive.</p></div>
+          <div class="explanation-list"><span class="list-count">4</span><p>Data cannot be recovered. </p></div>
+        </div>
+        
+      </div> 
+      <div class="for-your-safety">
+        <h1>For your safety</h1>
+        <div class="explanation">
+          <div class="explanation-list"><span class="list-count">1</span><p>All habits, progress, and pets erased.</p></div>
+          <div class="explanation-list"><span class="list-count">2</span><p>Parent connection and rewards removed.</p></div>
+          </div>
+        
+      </div> 
+
+      <div class="consent">
+        <ion-checkbox slot="start" [(ngModel)]="consentChecked"></ion-checkbox>
+        <p class="check-text">I understand this cannot be undone</p>
+      </div>
+
+      <!--delete button-->
+        <div class="delete-action">
+          <mindful-button type="bronze" text="Delete my data" [large]="true" [disabled]="!consentChecked" style="display:block; width:100%; margin-top:16px;" (click)="onDelete()"></mindful-button>
+        </div>
+      
+  </div>
+</ion-content>

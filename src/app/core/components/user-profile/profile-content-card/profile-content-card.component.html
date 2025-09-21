@@ -1,9 +1,8 @@
-<!-- profile-content-main: main row wrapper -->
 <div class="profile-content-main" role="button" (click)="onClick()">
-  <!-- Left block: icon -->
+  
   <div class="content-left">
     <div class="content-icon">
-      <!-- eclipse background with centered svg icon -->
+      
       <div class="eclipse">
           <ng-container *ngIf="sanitizedIcon; else imgTpl">
             <div class="svg-icon" [innerHTML]="sanitizedIcon" role="img" [attr.aria-label]="title || 'icon'"></div>

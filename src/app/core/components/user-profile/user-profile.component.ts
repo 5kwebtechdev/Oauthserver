@@ -43,9 +43,7 @@ export class UserProfileComponent implements OnChanges {
     const { data } = await modal.onWillDismiss();
     if (data && data.selected) {
       const selectedPet = data.selected;
-      // TODO: persist pet selection to user profile / backend
       console.log('Selected pet from modal:', selectedPet);
-      // Example: set a user property locally
       if (this.user) this.user.pet = selectedPet;
     }
   }
@@ -60,7 +58,6 @@ export class UserProfileComponent implements OnChanges {
   }
 
   onNotifications() {
-    // navigate to notifications page - route should exist in the app routing
     this.router.navigate(['/authed/notifications']).catch(() => {});
   }
 
@@ -69,13 +66,26 @@ export class UserProfileComponent implements OnChanges {
   }
 
   onMyFamily() {
-    // navigate to the family connection page
     this.router.navigate(['/authed/family-connection']).catch(() => {});
   }
 
   onFeedback() {
     // navigate to the feedback suggestion page
     this.router.navigate(['/authed/feedback-suggestion']).catch(() => {});
+  }
+
+  onHelpSupport() {
+    // navigate to the help & support page
+    this.router.navigate(['/authed/help-support']).catch(() => {});
+  }
+
+  onOurPolicies() {
+    // navigate to the Our Policies page
+    this.router.navigate(['/authed/our-policies']).catch(() => {});
+  }
+
+  onDeleteMyData() {
+    this.router.navigate(['/authed/delete-account']).catch(() => {});
   }
 
   onLogout() {

@@ -42,10 +42,16 @@
 
   <profile-content-card iconName="feedback" title="Feedback & Suggestions" subtitle="Share your thoughts to help us improve!" (select)="onFeedback()"></profile-content-card>
 
-      <profile-content-card iconName="support" title="Help & Support" subtitle="FAQ's and chat support"></profile-content-card>
+  <profile-content-card iconName="support" title="Help & Support" subtitle="FAQ's and chat support" (select)="onHelpSupport()"></profile-content-card>
 
-      <profile-content-card iconName="policies" title="Our policies" subtitle="Learn how we follow the guidelines"></profile-content-card>
+  <profile-content-card iconName="policies" title="Our policies" subtitle="Learn how we follow the guidelines" (select)="onOurPolicies()"></profile-content-card>
+
+  <profile-content-card iconName="danger" title="Delete My Data" subtitle="Erase all your info safely and permanently" (select)="onDeleteMyData()"></profile-content-card>
+
     </section>
-    <!--Social media-->
+
+    <!--social media-->
+    <social-media></social-media>
+    
   </div>
 </ion-content>

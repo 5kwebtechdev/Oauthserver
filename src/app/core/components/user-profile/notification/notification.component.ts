@@ -15,12 +15,10 @@ import { MindfulButtonComponent } from '../../mindful-button/mindful-button.comp
   styleUrls: ['./notification.component.scss']
 })
 export class NotificationComponent {
-  // future logic for notifications can be added here
   quietStart: string = '';
   quietEnd: string = '';
 
   saveProfile(): void {
-    // placeholder for the button action in the template
     console.log('saveProfile clicked');
   }
 }

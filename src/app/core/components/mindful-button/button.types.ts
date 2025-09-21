@@ -20,4 +20,7 @@ export type buttonStyles =
   | 'plum'
   | 'gold'
   | 'aqua'
-  | 'coral';
+  | 'coral'
+  | 'bronze';
+  
+

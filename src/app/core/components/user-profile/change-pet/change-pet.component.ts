@@ -45,7 +45,7 @@ export class ChangePetComponent {
   }
 
   ngOnInit() {
-    // default pets (copied from signup flow), can be overridden via componentProps
+    
     this.pets = [
       {
         name: 'Bubu the Panda',
@@ -66,9 +66,7 @@ export class ChangePetComponent {
   }
 
   onSlideChange() {
-    // placeholder used by template bindings; actual slide changes update via swiper events
-    // kept intentionally minimal — can be expanded if needed
-    // console.debug('slide change event (animation/transition)');
+    
   }
 
   ngAfterViewInit(): void {

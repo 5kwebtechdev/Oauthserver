@@ -2,7 +2,6 @@
   <mindful-navigator heading="Feedback & Suggestions" backIcon="arrowSvg"></mindful-navigator>
 
   <div class="feedback-suggestion">
-    <!-- Feedback / Suggestion UI placeholder -->
      <div class="feed-sugg">
         <p>1. How happy are you with the app?</p>
         <div class="select-emoji">
@@ -22,8 +21,6 @@
         <p>3. What would you like to see in our app?</p>
         <profile-edit-input placeholder="Write down your thoughts" type="text"></profile-edit-input>
      </div>
-       <!-- Submit button -->
-
           <mindful-button type="green" text="Submit" [large]="true" (click)="onSubmit()" style="display:block; width:100%;"></mindful-button>
         <div class="disclaimer">
             <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
@@ -38,7 +35,7 @@
         </div>
   </div>
 
-    <!--thank popup-->
+    
   <div class="thank-you-popup" *ngIf="showThankYouPopup">
     <div class="popup-content">
         <img class="mood-img" src="/assets/Images-Transparent/Image-Profile-Feedback.png" alt="Sad" data-mood="sad" role="button" tabindex="0" />
