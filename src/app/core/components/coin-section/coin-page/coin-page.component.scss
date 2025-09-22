@@ -116,6 +116,9 @@ box-shadow: 0 -4px 6px 0 #F4D593 inset, 0 0 1px 0.5px rgba(241, 168, 70, 0.20);
 .coin-list-section {
   padding: 0 16px;
   margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  row-gap: 16px; /* space between each coin-list */
 }
 
 .blank-container {
