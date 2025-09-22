@@ -7,7 +7,7 @@
 	/* allow the page area to scroll in browser */
 	max-height: 100vh;
 	overflow-y: auto;
-	-webkit-overflow-scrolling: touch;
+	//-webkit-overflow-scrolling: touch;
 }
 
 .cv-header {
@@ -16,6 +16,18 @@
   gap: 12px;
   padding: 20px 0;
 }
+
+.cv-header .back-btn{
+	background: transparent;
+	border: none;
+	padding: 0;
+	width: 48px;
+	height: 48px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+.cv-header .back-btn svg{ display:block; }
 
 .header-title { color: #282527; font-family: 'Fredoka', sans-serif; font-size: 20px; font-weight: 500; }
 .header-chips { display: flex; gap: 6px; align-items: center; opacity: 0.85; }
@@ -30,18 +42,18 @@
 	/* Responsive card: fixed preferred width but shrink on small screens and avoid overlap */
 	display: inline-block;
 	vertical-align: top;
-	width: min(361px, 100%);
+	width: 361px;
 	max-width: 361px;
 	height: auto; /* let content dictate height */
 	flex-shrink: 0;
 	padding: 8px;
 	box-sizing: border-box;
-	margin: 4px; /* gap between cards */
+	/* requested spacing: top/bottom 16px, left/right 16px */
 }
 
 .challenge-media{
 	display: flex;
-	width: 361px;
+	width: 100%; /* match the card's width responsively */
 	justify-content: center;
 	align-items: center;
 	border-radius: 12px 12px 0 0;
@@ -58,6 +70,7 @@
 
 .challenge-info {
 	width: 100%;
+	padding: 8px;
 	flex-shrink: 0;
 	border-radius: 0 0 12px 12px;
 	background: #FFF;

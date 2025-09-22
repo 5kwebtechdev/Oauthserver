@@ -11,6 +11,12 @@
           <div class="search-input">
             <span class="search-icon" aria-hidden="true">🔍</span>
             <input type="text" placeholder="Looking for a quiz?" aria-label="Search" />
+            <button type="button" class="mic" aria-label="Voice search">
+              <!-- inline mic SVG provided by designer -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="9.333" height="12.667" viewBox="0 0 10 13" fill="none" aria-hidden="true">
+                <path d="M5.00065 8.33398C4.4451 8.33398 3.97287 8.13954 3.58398 7.75065C3.1951 7.36176 3.00065 6.88954 3.00065 6.33398V2.33398C3.00065 1.77843 3.1951 1.30621 3.58398 0.917318C3.97287 0.528429 4.4451 0.333984 5.00065 0.333984C5.55621 0.333984 6.02843 0.528429 6.41732 0.917318C6.80621 1.30621 7.00065 1.77843 7.00065 2.33398V6.33398C7.00065 6.88954 6.80621 7.36176 6.41732 7.75065C6.02843 8.13954 5.55621 8.33398 5.00065 8.33398ZM4.33398 13.0007V10.9507C3.17843 10.7951 2.22287 10.2784 1.46732 9.40065C0.711762 8.52287 0.333984 7.50065 0.333984 6.33398H1.66732C1.66732 7.25621 1.99232 8.04232 2.64232 8.69232C3.29232 9.34232 4.07843 9.66732 5.00065 9.66732C5.92287 9.66732 6.70898 9.34232 7.35898 8.69232C8.00898 8.04232 8.33398 7.25621 8.33398 6.33398H9.66732C9.66732 7.50065 9.28954 8.52287 8.53398 9.40065C7.77843 10.2784 6.82287 10.7951 5.66732 10.9507V13.0007H4.33398ZM5.00065 7.00065C5.18954 7.00065 5.34787 6.93676 5.47565 6.80898C5.60343 6.68121 5.66732 6.52287 5.66732 6.33398V2.33398C5.66732 2.1451 5.60343 1.98676 5.47565 1.85898C5.34787 1.73121 5.18954 1.66732 5.00065 1.66732C4.81176 1.66732 4.65343 1.73121 4.52565 1.85898C4.39787 1.98676 4.33398 2.1451 4.33398 2.33398V6.33398C4.33398 6.52287 4.39787 6.68121 4.52565 6.80898C4.65343 6.93676 4.81176 7.00065 5.00065 7.00065Z" fill="#282527"/>
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -99,7 +105,14 @@
     </div>
   </div>
           <div class="upgrade-now-cta">
-            <mindful-button type="gold" text="Upgrade now" medium [icon]="'/assets/app-assets/Coins-icon-common.svg'" (click)="openUpgradePopup()"></mindful-button>
+            <div class="upgrade-btn-wrap" role="button" tabindex="0" aria-label="Upgrade to Elite Club" (click)="openUpgradePopup()" (keydown.enter)="openUpgradePopup()" (keydown.space)="$event.preventDefault(); openUpgradePopup()">
+              <mindful-button type="gold" text="Upgrade now" medium></mindful-button>
+
+              <div class="upgrade-badge" role="img" aria-label="price badge">
+                <img src="/assets/app-assets/Coins-icon-common.svg" alt="coin"/>
+                <span class="amount">12</span>
+              </div>
+            </div>
           </div>
 </div>
   

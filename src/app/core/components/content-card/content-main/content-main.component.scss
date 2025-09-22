@@ -57,7 +57,7 @@ line-height: 140%; /* 22.4px */
 				.search-row {
 					display: flex;
 					align-items: center;
-					padding: 16px;
+					padding: 12px 16px 0 16px;
 					gap: 12px;
 					width: 100%;
 					z-index: 2;
@@ -66,12 +66,16 @@ line-height: 140%; /* 22.4px */
 						display: flex;
 						align-items: center;
 						width: 100%; /* fluid inside card */
-						padding: 12px;
+						padding: 12px 12px;
 						gap: 12px;
-						border-radius: 12px;
-						background: #FDFDFD;
+						border-radius: 24px; /* pill */
+						background: #FFFFFF;
+						box-shadow: 0 8px 24px rgba(16, 18, 20, 0.08);
+						border: 1px solid rgba(16,18,20,0.04);
+						align-items: center;
+						position: relative;
 
-						.search-icon { margin-right: 8px; }
+						.search-icon { margin-right: 8px; font-size: 18px; opacity: 0.6; }
 
 						input {
 							border: none;
@@ -79,7 +83,36 @@ line-height: 140%; /* 22.4px */
 							background: transparent;
 							flex: 1 1 auto;
 							font-family: 'Nunito', sans-serif;
-							font-size: 14px;
+							font-size: 15px;
+							color: #282527;
+							padding-right: 12px; /* space before mic */
+						}
+
+						/* mic button on the right inside the pill */
+						.mic{
+							background: transparent;
+							border: none;
+							display: inline-flex;
+							align-items: center;
+							justify-content: center;
+							width: 36px;
+							height: 36px;
+							border-radius: 18px;
+							margin-left: 8px;
+							flex-shrink: 0;
+							cursor: pointer;
+						}
+
+						.mic svg{ width:9.333px; height:12.667px; display:block; }
+
+						/* small divider between input and mic */
+						.mic::before{
+							content: '';
+							display:block;
+							width:1px;
+							height:18px;
+							background: rgba(16,18,20,0.06);
+							margin-right:8px;
 						}
 					}
 
@@ -368,6 +401,76 @@ line-height: 140%; /* 18.2px */
   width:100%;
   margin-top: -32px; /* move up so button sits half on background and half below */
   z-index: 3;
+}
+
+/* New styles to match gold pill CTA from PNG */
+.upgrade-btn-wrap{
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 6px; /* spacing around button */
+	background: linear-gradient(180deg, #FFD891 0%, #E6A23A 100%);
+	//border-radius: 28px;
+	box-shadow: 0 6px 20px rgba(16, 18, 20, 0.12);
+	-webkit-backdrop-filter: blur(4px);
+	backdrop-filter: blur(4px);
+}
+
+.upgrade-btn-wrap[role="button"]{ cursor: pointer; }
+//.upgrade-btn-wrap[role="button"]:focus{ outline: 3px solid rgba(255,255,255,0.35); outline-offset: 4px; }
+
+.upgrade-btn-wrap .button.gold.medium{
+	background: transparent; /* let wrapper show through */
+	border: none;
+	box-shadow: none;
+	padding: 8px 18px;
+	min-width: 220px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+}
+
+.upgrade-btn-wrap .btn-icon{ /* ensure icon matches PNG size */
+	width: 22px;
+	height: 22px;
+	margin-right: 6px;
+}
+
+/* In upgrade pill we don't want the inner button to be independently clickable or show its icon twice */
+.upgrade-btn-wrap .button{ pointer-events: none; }
+.upgrade-btn-wrap .button .btn-icon{ display: none; }
+
+/* Remove any residual borders/lines around the button text */
+.upgrade-btn-wrap .button,
+.upgrade-btn-wrap .button p,
+.upgrade-btn-wrap .button * {
+	border: none !important;
+	box-shadow: none !important;
+	background: transparent !important;
+	-webkit-text-stroke: 0px !important;
+	text-shadow: none !important;
+	-webkit-text-fill-color: #FFFFFF !important; /* ensure text remains white */
+}
+
+.upgrade-badge{
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	background: linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+	padding: 6px 10px;
+	border-radius: 18px;
+	margin-left: 10px;
+	transform: translateY(-2px);
+}
+
+.upgrade-badge img{ width: 20px; height: 20px; }
+.upgrade-badge .amount{
+	font-family: 'Nunito', sans-serif;
+	font-weight: 700;
+	color: #3B1F00;
+	font-size: 14px;
 }
 
 /* Upgrade popup styles */
