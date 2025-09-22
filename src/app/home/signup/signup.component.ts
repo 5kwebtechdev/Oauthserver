@@ -940,9 +940,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       payload.phone = contactNumber + identifier;
     }
 
-    // dateOfBirth should be in milliseconds since epoch if available
-    const dobMs = profile.dob || (this.profileForm.get('dob')?.value ? new Date(this.profileForm.get('dob')?.value).getTime() : null);
-    if (dobMs) payload.dateOfBirth = dobMs;
+    // Change from milliseconds to YYYY-MM-DD format
+    const dobValue = profile.dob || this.profileForm.get('dob')?.value;
+    if (dobValue) {
+      const dobDate = new Date(dobValue);
+      payload.dateOfBirth = dobDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    }
 
     // Call register API
     this.authService.register(payload).subscribe({

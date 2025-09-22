@@ -293,7 +293,7 @@ h4 {
   top: unset !important;
   background: #4CAF50;
   border-radius: 50px;
-   
+
 }
 
 .expanded .habit-footer-progress {
@@ -332,7 +332,7 @@ h4 {
   display: flex;
   width: 100%;
   position: relative;
-   margin-top: 12px !important;
+  margin-top: 12px !important;
 }
 
 .score {
@@ -386,22 +386,24 @@ img.score {
   border-right: 1px solid black;
 }
 
-.d-flex flex-column .container w-full{
+.d-flex flex-column .container w-full {
   --bs-gutter-x: 0px !important;
-  margin-left: 0px!important;
+  margin-left: 0px !important;
   padding-left: 0px !important;
 }
 
-.habit-title{
+.habit-title {
   color: #524F84;
   font-size: 16px;
   font-weight: 700;
-  line-height: 140%; /* 22.4px */
+  line-height: 140%;
+  /* 22.4px */
 }
 
 .habit-timing {
   color: #BB2124;
   font-size: 13px;
   font-weight: 600;
-  line-height: 140%; /* 18.2px */
+  line-height: 140%;
+  /* 18.2px */
 }
