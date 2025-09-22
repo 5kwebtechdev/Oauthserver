@@ -42,6 +42,10 @@ const routes: Routes = [
     component: NotesHomeComponent
   },
   {
+    path: 'notes/new',
+    loadComponent: () => import('./core/components/notes/notes-new/notes-new.component').then(m => m.NotesNewComponent)
+  },
+  {
     path: 'authed',
     loadChildren: () => import('./authenticated/authenticated.module').then( m => m.AuthenticatedModule)
   },
@@ -87,6 +91,27 @@ const routes: Routes = [
   {
     path: 'tutors',
     loadComponent: () => import('./core/components/tutor-section/tutor-homepage/tutor-homepage.component').then(m => m.TutorHomepageComponent)
+  }
+  ,
+  {
+    path: 'academy',
+    loadComponent: () => import('./core/components/academy-section/academy-home/academy-home.component').then(m => m.AcademyHomeComponent)
+  }
+  ,
+  {
+    path: 'academy/managing-money',
+    loadComponent: () => import('./core/components/academy-section/academy-managing-money/academy-managing-money.component').then(m => m.AcademyManagingMoneyComponent)
+  }
+  ,
+  {
+    path: 'academy/course/:id',
+    loadComponent: () => import('./core/components/academy-section/academy-course/academy-course.component').then(m => m.AcademyCourseComponent)
+  }
+  ,
+  
+  {
+    path: 'trophies',
+    loadComponent: () => import('./core/components/trophy-section/trophy-page').then(m => m.TrophyPageComponent)
   }
 ];
 

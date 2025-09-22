@@ -19,8 +19,7 @@
 				position: relative;
 			display: flex; /* ensure margin auto works as expected */
 			/* center inner content */
-			justify-content: center; /* center children horizontally */
-			align-items: center; /* center children vertically */
+			 /* center children vertically */
 				//max-width: 361px; /* explicit inner max to match padding */
 				height: 254px; /* requested height */
 				flex-shrink: 0;
@@ -38,25 +37,21 @@
 				}
 
 				.card-content {
-					position: relative;
-					z-index: 2;
+					position: relative; 
 					padding: 16px; /* no horizontal padding because we use max-width on card */
 					display: flex;
-					flex-direction: column;
+					align-items: flex-start;
+					margin-top: 24px;
 					gap: 16px;
-					width: 100%;
 				}
 
 				.card-title {
-					margin: 0;
 					color: #FDFDFD;
-					font-family: 'Fredoka', sans-serif;
-					font-size: 16px;
-					font-style: normal;
-					font-weight: 500;
-					line-height: 140%; /* 22.4px */
-					z-index: 2;
-					width: 100%;
+font-family: Fredoka;
+font-size: 16px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 22.4px */
 				}
 
 				.search-row {

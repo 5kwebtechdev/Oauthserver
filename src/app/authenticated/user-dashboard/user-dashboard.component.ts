@@ -55,11 +55,8 @@ export class UserDashboardComponent implements OnInit {
   constructor(private modalCtrl: ModalController, private router: Router) { }
 
   async openNotes() {
-    const modal = await this.modalCtrl.create({
-      component: NotesComponent,
-      componentProps: {}
-    });
-    await modal.present();
+    // Navigate to the notes home page instead of opening the Notes modal
+    this.router.navigate(['/notes/home']);
   }
 
   ngOnInit() {}

@@ -4,7 +4,6 @@ import { IonicModule } from "@ionic/angular";
 import { Router } from '@angular/router';
 import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { ViewAllComponent } from '../mindful-navigator/view-all/view-all.component';
-import { JournalOutputComponent } from './journal-output/journal-output.component';
 
 export interface JournalEntry {
   id: string;
@@ -20,7 +19,7 @@ export interface JournalEntry {
   selector: 'journals',
   templateUrl: './journals.component.html',
   styleUrls: ['./journals.component.scss'],
-  imports: [IonicModule, MindfulCardHeaderComponent, ViewAllComponent, JournalOutputComponent],
+  imports: [IonicModule, MindfulCardHeaderComponent, ViewAllComponent],
   standalone: true
 })
 export class JournalsComponent {
@@ -95,8 +94,8 @@ export class JournalsComponent {
   }
 
   onViewAllEntries(): void {
-    // Navigate to journal-output route and pass entries via state so the component can render them
-    this.router.navigate(['/journal-output'], { state: { entries: this.entries } });
+    // Navigation to journal-output is now handled declaratively by the template via routerLink.
+    // If passing state is needed later, use Router.navigate with state from a dedicated action.
   }
 
   onEntryClick(entry: JournalEntry): void {

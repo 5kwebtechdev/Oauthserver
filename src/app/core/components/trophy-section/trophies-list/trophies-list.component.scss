@@ -1,0 +1,37 @@
+.trophy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 8px 0;
+}
+.trophy-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  margin-right: 12px;
+}
+.meta {
+  flex: 1 1 auto;
+}
+.title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #222;
+}
+.date {
+  color: #777;
+  font-size: 14px;
+}
+.difficulty {
+  font-size: 12px;
+  margin-left: 6px;
+  color: #e74c3c;
+}
+.difficulty.Easy { color: #2ecc71; }
+.difficulty.Medium { color: #f1c40f; }
+.points { font-weight: 700; margin-left: 12px; }

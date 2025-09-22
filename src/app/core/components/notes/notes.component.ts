@@ -25,7 +25,7 @@ export class NotesComponent {
   public newTagName: string = '';
   public tags: { key: any; value: string }[] = [];
   public titleCollapsed: boolean = false;
-  public notes: Array<{ title: string; text: string; tags: string[]; createdAt: string }> = [];
+  public notes: NoteModel[] = [];
   // tag action UI
   public activeTagIndex: number | null = null;
   public editIndex: number | null = null;

@@ -1,0 +1,134 @@
+.container {
+  width: 393px;
+  height: 1078px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.header {
+  /* span the full width of the card and extend to the card edges */
+  text-align: center;
+  /* pull the header to the left/right edges of the container (container padding is 16px) */
+  margin-left: -16px;
+  margin-right: -16px;
+  /* small top bleed above the card */
+  margin-top: -20px;
+  /* increase top padding so content stays vertically aligned */
+  padding: 26px 20px 16px;
+  /* top corners rounded as requested */
+  border-radius: 24px;
+  background: #FEF5C7;
+  margin-bottom: 16px;
+  position: relative; /* for absolute-positioned back button */
+}
+
+.back-arrow {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  left: 8px;
+  top: 8px;
+}
+
+.header img {
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.header h1 {
+  font-size: 22px;
+  margin: 8px 0 4px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.desc {
+  font-size: 14px;
+  color: #444;
+  margin-bottom: 20px;
+}
+
+.lesson {
+  border-top: 1px solid #eee;
+  padding: 12px 0;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.lesson-thumb {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.lesson-info {
+  flex: 1;
+
+  h3 {
+    font-size: 16px;
+    margin: 0 0 4px;
+    color: #333;
+  }
+
+  p {
+    font-size: 14px;
+    margin: 0 0 4px;
+    color: #555;
+  }
+
+  .time {
+    font-size: 12px;
+    color: #777;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .start-btn {
+    display: block;
+    margin-top: 8px;
+  }
+}
+
+.lesson-info p {
+  font-size: 14px;
+  margin: 0 0 4px;
+  color: #555;
+}
+
+.time {
+  font-size: 12px;
+  color: #777;
+}
+
+.start-btn {
+  margin-top: 8px;
+  padding: 8px 14px;
+  background: #e91e63;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
