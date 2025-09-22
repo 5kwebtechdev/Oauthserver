@@ -87,7 +87,6 @@
                         <p class="check-text"> I have read and understood that switching roles affects account linkage and data as described above.
                         </p>
                     </div>  
-                    <!--action button-->
                         <mindful-button
                             type="green"
                             full
@@ -95,8 +94,9 @@
                             text="Next"
                             [disabled]="!consentChecked"
                             [style.opacity]="consentChecked ? 1 : 0.5"
-                            (click)="continueWithNewRole()">
+                            (click)="goToRoleSelect()">
                         </mindful-button>
+
                     
                 </div>
     </main>

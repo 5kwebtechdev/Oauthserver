@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 
 @Component({
   selector: 'app-scan-qr',
@@ -14,7 +14,7 @@ export class ScanQrComponent implements OnInit {
   userRole: 'child' | 'parent' | 'self' = 'parent';
   returnTo: string = 'join-family';
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor(private router: Router, private route: ActivatedRoute, private location: Location) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
@@ -45,6 +45,17 @@ export class ScanQrComponent implements OnInit {
   }
 
   close() {
+    // Prefer navigating back in history so we return to the exact page that opened the scanner.
+    try {
+      if (typeof window !== 'undefined' && window.history && window.history.length > 1) {
+        this.location.back();
+        return;
+      }
+    } catch (e) {
+      // fall through to fallback navigation
+    }
+
+    // Fallback: navigate to the configured return route
     const targetRoute = this.returnTo === 'join-family2' ? '/home/join-family2' : '/home/join-family';
     this.router.navigate([targetRoute], { queryParams: { role: this.userRole } });
   }

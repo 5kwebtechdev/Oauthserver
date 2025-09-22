@@ -35,6 +35,9 @@ const routes: Routes = [
     path: 'family-connection',
     loadComponent: () => import('../core/components/user-profile/family-connection/family-connection.component').then(m => m.FamilyConnectionComponent)
   },{
+    path: 'select-role',
+    loadComponent: () => import('../core/components/user-profile/select-role/select-role.component').then(m => m.RoleSelectComponent)
+  },{
     path: 'feedback-suggestion',
     loadComponent: () => import('../core/components/user-profile/feedback-suggestion/feedback-suggestion.component').then(m => m.FeedbackSuggestionComponent)
   },{

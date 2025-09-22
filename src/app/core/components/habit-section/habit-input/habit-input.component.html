@@ -70,34 +70,37 @@
             </div>
           </div>
 
+          <div class="date-time--pick">
+          <div class="time-row">
+            <div class="pick-time">
+              <label>Start Time</label>
+              <div class="mindful-input-group">
+                <mindful-timepicker placeholder="" [(ngModel)]="startTime"></mindful-timepicker>
+              </div>
+            </div>
+            <div class="pick-time">
+              <label>End Time</label>
+              <div class="mindful-input-group">
+                <mindful-timepicker placeholder="" [(ngModel)]="endTime"></mindful-timepicker>
+              </div>
+            </div>
+          </div>
+
           <div class="start-end-row">
-            <div>
+             <div>
               <label>Start Date</label>
               <div class="mindful-input-group">
                 <mindful-datepicker type="date" [(ngModel)]="startDate"></mindful-datepicker>
               </div>
             </div>
             <div>
-              <label>Time</label>
-              <div class="mindful-input-group">
-                <mindful-timepicker placeholder="" [(ngModel)]="startTime"></mindful-timepicker>
-              </div>
-            </div>
-          </div>
-
-          <div class="start-end-row">
-            <div>
               <label>End Date</label>
               <div class="mindful-input-group">
                 <mindful-datepicker type="date" [(ngModel)]="endDate"></mindful-datepicker>
               </div>
             </div>
-            <div>
-              <label>Time</label>
-              <div class="mindful-input-group">
-                <mindful-timepicker placeholder="" [(ngModel)]="endTime"></mindful-timepicker>
-              </div>
-            </div>
+            
+          </div>
           </div>
         </div>
       </div>

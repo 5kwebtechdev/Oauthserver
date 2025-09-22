@@ -1,4 +1,4 @@
-<div *ngIf="type" class="button {{type}}" [ngClass]="{'medium': medium , 'large': large, 'disabled': disabled}">
+<div *ngIf="type" class="button {{type}}" [ngClass]="{'medium': medium , 'large': large, 'disabled': disabled}" [attr.role]="'button'" [attr.tabindex]="disabled ? -1 : 0">
   <ng-container *ngIf="icon; else textOnly">
     <img class="btn-icon" [src]="icon" alt=""/>
     <p>{{text}}</p>

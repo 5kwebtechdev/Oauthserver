@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -17,8 +18,8 @@ import { InstructioListComponent } from './instructio-list';
   styleUrls: ['./family-connection.component.scss']
 })
 export class FamilyConnectionComponent {
+  constructor(private router: Router) {}
   familyName: string = 'Your Family';
-  // When true, show the Instructions view instead of the family view
   showInstructions: boolean = false;
 
   instructionItems: string[] = [
@@ -49,18 +50,30 @@ export class FamilyConnectionComponent {
   }
 
   onRemovedPetClick() {
-    // placeholder for any future action when the removed pet is clicked
     console.log('Removed pet clicked');
   }
 
+  onFeedback() {
+    this.router.navigate(['/authed/select-role']).catch(() => {});
+  }
+
+
   continueWithNewRole() {
-    // Show the Instructions section when user chooses to continue with a new role
     console.log('Continue with a new role clicked');
     this.showInstructions = true;
   }
 
-  // Called when the Instructions navigator back button is pressed
   onInstructionsBack() {
     this.showInstructions = false;
+  }
+
+  goToRoleSelect() {
+    // navigate to the select-role page (global route)
+    console.log('Navigating to role selector');
+    this.router.navigate(['/select-role']).catch(err => {
+      console.error('Navigation to select-role failed', err);
+      // fallback to authed path if global path doesn't work
+      this.router.navigate(['/authed/select-role']).catch(() => {});
+    });
   }
 }

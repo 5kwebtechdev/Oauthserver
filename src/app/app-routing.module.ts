@@ -84,6 +84,11 @@ const routes: Routes = [
     path: 'tutors',
     loadComponent: () => import('./core/components/tutor-section/tutor-homepage/tutor-homepage.component').then(m => m.TutorHomepageComponent)
   }
+  ,
+  {
+    path: 'select-role',
+    loadComponent: () => import('./core/components/user-profile/select-role/select-role.component').then(m => m.RoleSelectComponent)
+  }
 ];
 
 @NgModule({

@@ -10,7 +10,7 @@ import { IonicModule } from '@ionic/angular';
   styleUrls: ['./profile-facts.component.scss']
 })
 export class ProfileFactsComponent implements OnInit {
-  @Input() faqs: Array<{ question: string; answer?: string }> = [];
+  @Input() faqs: Array<{ question: string; description?: string; answer?: string }> = [];
   @Input() heading: string = `FAQ's`;
 
   ngOnInit(): void {

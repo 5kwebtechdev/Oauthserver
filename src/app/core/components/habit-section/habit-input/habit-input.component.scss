@@ -311,24 +311,37 @@
   box-shadow: none;
 }
 
-.start-end-row {
+.time-row {
   display: flex;
-  gap: 20px;
-  text-align: center;
-  margin-top: 24px;
-  text-align-last: center;
-  justify-content: center;
-
-
+padding: 8px 0;
+align-items: center;
+gap: 55px;
+align-self: stretch;
 }
 
-.start-end-row:nth-child(3) {
-  margin-top: 16px;
+.pick-time{
+  display: flex;
+justify-content: center;
+align-items: center;
+gap: 16px;
+
+label{
+  color: #6B656A;
+font-family: Nunito;
+font-size: 13px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 18.2px */
+}
 }
 
-.start-end-row .mindful-timepicker-wrapper .time-display-input {
-  text-align: center !important;
-}
+// .time-row:nth-child(3) {
+//   margin-top: 16px;
+// }
+
+// .start-end-row .mindful-timepicker-wrapper .time-display-input {
+//   text-align: center !important;
+// }
 
 .priority-row {
   display: flex;
@@ -524,4 +537,12 @@
 
 ::ng-deep .mindful-timepicker-wrapper input {
   background-color: #ffffff;
+}
+
+.date-time--pick {
+  display: flex;
+width: 283.5px;
+flex-direction: column;
+align-items: flex-start;
+gap: 16px;
 }
