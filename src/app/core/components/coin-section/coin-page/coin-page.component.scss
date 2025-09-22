@@ -67,13 +67,23 @@ line-height: 140%; /* 44.8px */
 .panda-message {
   display: inline-flex;
   align-items: flex-end;
-  padding-left: 120px;
-  margin-bottom: 20px;
+  margin-left: 70px;
+  margin-bottom: 4px;
+  
+}
+
+.speech {
+  display: flex;
+  align-items: flex-end;
+  justify-content: right;
+  background: #FFFFFF;
+  width: 250px;
+  border-radius: 8px;
+  padding: 8px;
 }
 
 .speech p{
   color: #282527;
-  width: 188px;
 font-family: Nunito;
 font-size: 10px;
 font-style: normal;
