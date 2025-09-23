@@ -17,9 +17,18 @@
     <span class="stat-divider-vertical" aria-hidden="true"></span>
 
     <div class="stat-col" role="listitem" [attr.aria-label]="slot2">
-      <img [src]="getStatIcon(slot2)" [alt]="slot2" class="stat-icon">
-      <div class="stat-value">{{ getStatValue(slot2) }}</div>
-      <span class="stat-label visually-hidden">{{ slot2 }}</span>
+      <ng-container *ngIf="slot2 === 'streaks'; else normal2">
+        <a [routerLink]="['/streaks']" class="streak-link">
+          <img [src]="getStatIcon(slot2)" [alt]="slot2" class="stat-icon">
+          <div class="stat-value">{{ getStatValue(slot2) }}</div>
+        </a>
+        <span class="stat-label visually-hidden">{{ slot2 }}</span>
+      </ng-container>
+      <ng-template #normal2>
+        <img [src]="getStatIcon(slot2)" [alt]="slot2" class="stat-icon">
+        <div class="stat-value">{{ getStatValue(slot2) }}</div>
+        <span class="stat-label visually-hidden">{{ slot2 }}</span>
+      </ng-template>
     </div>
     <span class="stat-divider-vertical" aria-hidden="true"></span>
 

@@ -5,12 +5,12 @@ import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigato
 import { IonicModule } from '@ionic/angular';
 import { MindfulCoinsStatsComponent } from '../mindful-coins-stats/mindful-coins-stats.component';
 import { ProfileContentCardComponent } from './profile-content-card/profile-content-card.component';
-import { SocialMediaComponent } from '../social-media/social-media.component';
+// SocialMediaComponent intentionally omitted from imports when not used in template
 
 @Component({
   selector: 'user-profile',
   standalone: true,
-  imports: [CommonModule, MindfulNavigatorComponent, IonicModule, MindfulCoinsStatsComponent, ProfileContentCardComponent, SocialMediaComponent],
+  imports: [CommonModule, MindfulNavigatorComponent, IonicModule, MindfulCoinsStatsComponent, ProfileContentCardComponent],
   templateUrl: './user-profile.component.html',
   styleUrls: ['./user-profile.component.scss']
 })

@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import {AuthenticatedModule} from "./authenticated/authenticated.module";
+import { StreaksLeaderboardComponent } from './core/components/streaks-section/streaks-leaderboard/streaks-leaderboard.component';
 import { NotesComponent } from './core/components/notes/notes.component';
 import { NotesHomeComponent } from './core/components/notes/notes-home.component';
 
@@ -83,6 +84,10 @@ const routes: Routes = [
     loadComponent: () => import('./core/components/reel-section/reel-section.component').then(m => m.ReelSectionComponent)
   }
   ,
+  {
+    path: 'streaks',
+    loadComponent: () => import('./core/components/streaks-section/streaks-leaderboard/streaks-leaderboard.component').then(m => m.StreaksLeaderboardComponent)
+  },
   {
     path: 'reel-expand',
     loadComponent: () => import('./core/components/reel-section/reel-expand/reels-expand.component').then(m => m.ReelsExpandComponent)
