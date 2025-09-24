@@ -1,0 +1,148 @@
+.main-container {
+  width: 393px;
+  height: 852px;
+  background: #FFF;
+  padding: 16px;
+  font-family: Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.back-arrow {
+  display: inline-flex;
+  width: 48px;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  /* optional background to match other UI, remove if undesired */
+  background: transparent;
+
+  svg {
+    width: 48px;
+    height: 48px;
+    display: block;
+  }
+}
+
+.header-texts {
+  flex: 1;
+}
+
+.title {
+  align-self: stretch;
+  color: #282527;
+font-family: Fredoka;
+font-size: 20px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 28px */
+}
+
+.subtitle {
+  color: #282527;
+font-family: Nunito;
+font-size: 13px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 18.2px */
+}
+
+/* Lessons */
+.lesson-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lesson {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 12px;
+}
+
+.lesson-img {
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.lesson-info {
+  flex: 1;
+}
+
+.lesson-title {
+  color: #282527;
+font-family: Nunito;
+font-size: 16px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 22.4px */
+}
+
+.lesson-meta {
+  color: rgba(40, 37, 39, 0.70);
+font-family: Nunito;
+font-size: 13px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 18.2px */
+  margin: 2px 0;
+}
+
+.lesson-points {
+  font-size: 12px;
+  color: #444;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.point-icon-imag {
+  width: 24px;
+height: 27px;
+aspect-ratio: 8/9;
+}
+
+.points-value {
+  font-family: Nunito;
+font-size: 13px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 18.2px */
+color: #282527;
+}
+
+/* Badges */
+.badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid;
+  color: #282527;
+font-family: Nunito;
+font-size: 10px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 14px */
+}
+
+.badge.beginner {
+  color: #28a745;
+  border-color: #28a745;
+}
+
+.badge.pro {
+  color: #d9534f;
+  border-color: #d9534f;
+}

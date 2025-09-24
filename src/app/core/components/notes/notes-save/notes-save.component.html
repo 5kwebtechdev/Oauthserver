@@ -1,0 +1,23 @@
+<div class="note-view">
+  <div class="note-header">
+    <button class="back" (click)="onBack()">&#8592;</button>
+    <div class="title">{{ title }}</div>
+    <div class="header-actions">
+      <button class="circle" *ngIf="showDelete" (click)="onDelete()">🗑️</button>
+      <button class="circle" *ngIf="showShare" (click)="onShare()">🔗</button>
+    </div>
+  </div>
+<!--note content-->
+  <div class="note-content" [innerHTML]="contentHtml"></div>
+
+  <!-- Confirmation overlay -->
+  <div class="confirm-overlay" *ngIf="showConfirmDelete">
+    <div class="confirm-card">
+      <div class="confirm-title">Are you sure you want to delete this note?</div>
+      <div class="confirm-actions">
+        <button class="confirm-cancel" (click)="confirmCancel()">Cancel</button>
+        <button class="confirm-delete" (click)="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>

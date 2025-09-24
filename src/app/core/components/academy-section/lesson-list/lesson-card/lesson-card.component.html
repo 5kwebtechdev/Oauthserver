@@ -1,0 +1,12 @@
+<div class="lesson-card">
+  <div class="thumb">
+    <img [src]="lesson.image" [alt]="lesson.title" />
+  </div>
+
+  <div class="body">
+    <h3 class="title">{{ lesson.title }}</h3>
+    <p class="desc">{{ lesson.description }}</p>
+    <div class="meta">{{ lesson.type }} • {{ lesson.duration }}</div>
+    <button class="start">Start Lesson</button>
+  </div>
+</div>

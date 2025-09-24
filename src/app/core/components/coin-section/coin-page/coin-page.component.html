@@ -1,0 +1,51 @@
+<div class="coin-page">
+    <!--Coin Header part-->
+  <div class="coin-card">
+    <!-- Heading -->
+    <div class="header">
+      <p>Ready to Treat Yourself?</p>
+      <img src="/assets/app-assets/Chatbot-assistance-icon-Coins-screen.svg" alt="Robot" class="robot-icon">
+    </div>
+
+    <!-- Coins Display -->
+    <div class="coins">
+      <img src="/assets/app-assets/Coins-icon-common.svg" alt="Coin" class="coin-icon">
+      <span class="coin-value">25,000</span>
+    </div>
+
+    <!-- Panda Message -->
+    <div class="panda-message">
+      <div class="speech">
+        <p>Whoa! That’s a lot of coins! Let’s go dress me up or grab something shiny!</p>
+      </div>
+      <img src="/assets/app-assets/Panda Sitting Tired.svg" alt="Panda" class="panda-icon">
+    </div>
+
+    <!-- Redeem Button -->
+    <button class="redeem-btn">Redeem</button>
+  </div>
+  
+
+  <div class="coin-list-section">
+    <h2>Spent Smart, Spent Fun!</h2>
+    <!--if coin list blank show this -->
+    <ng-container *ngIf="coinItems.length === 0">
+      <div class="blank-container">
+      <img src="/assets/Images-Transparent/Image-Home-Blank.png" alt="Home-blank" class="home-blank">
+      <div class="blank-text">
+      <h1>No transactions yet!</h1>
+      <p>Your coins are ready to treat your pet with cool outfits and accessories.</p>
+      </div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngFor="let item of coinItems">
+      <coin-list
+        [icon]="item.icon"
+        [label]="item.label"
+        [count]="item.count"
+        [date]="item.date">
+      </coin-list>
+    </ng-container>
+  </div>
+</div>

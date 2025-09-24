@@ -1,0 +1,104 @@
+.note-new-container {
+  width: 393px;
+height: 852px;
+  background: #fff;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.header .back-arrow {
+  font-size: 20px;
+  cursor: pointer;
+  margin-right: 12px;
+}
+
+.header .title {
+  font-size: 16px;
+  color: #555;
+}
+
+/* Tag Section */
+.tag-section {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.tag-label {
+  font-size: 18px;
+  margin-right: 10px;
+  color: #444;
+}
+
+.add-btn {
+  padding: 6px 12px;
+  border: 1px solid #999;
+  border-radius: 20px;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Notes Section */
+.notes-section textarea {
+  width: 100%;
+  min-height: 300px;
+  border: none;
+  outline: none;
+  resize: none;
+  color: #6B656A;
+font-family: Nunito;
+font-size: 20px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 28px */
+}
+
+.notes-new__footer {
+  margin-top: 12px;
+  text-align: right;
+}
+
+.save-btn {
+  background: #b0004d;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.title-input {
+  width: calc(100% - 8px);
+  padding: 8px;
+  font-size: 20px;
+  border: none;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.tags-input {
+  width: calc(100% - 8px);
+  padding: 8px;
+  font-size: 18px;
+  border: none;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.back-arrow {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  margin-right: 8px;
+}

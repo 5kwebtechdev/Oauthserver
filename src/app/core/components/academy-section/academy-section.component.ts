@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { NgFor } from '@angular/common';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
 import { IonicModule } from '@ionic/angular';
+import { Router } from '@angular/router';
 
 export interface CourseCard {
   id: string;
@@ -33,8 +34,11 @@ export class AcademySectionComponent {
     }
   ];
 
+  constructor(private router: Router) {}
+
   onViewAll(): void {
-    console.log('View all courses');
+    // Navigate to the academy home page
+    this.router.navigate(['/academy']);
   }
 
   onStart(course: CourseCard): void {

@@ -1,0 +1,12 @@
+<div class="trophy-list">
+  <ng-container *ngFor="let trophy of trophies">
+    <div class="trophy-row">
+      <img class="thumb" [src]="trophy.image" alt="trophy" />
+      <div class="meta">
+        <div class="title">{{ trophy.title }} <span class="difficulty" [ngClass]="trophy.difficulty">• {{ trophy.difficulty }}</span></div>
+        <div class="date">Earned on {{ trophy.earnedOn | date:'MMM d' }}</div>
+      </div>
+      <div class="points">🏆 {{ trophy.points }}</div>
+    </div>
+  </ng-container>
+</div>

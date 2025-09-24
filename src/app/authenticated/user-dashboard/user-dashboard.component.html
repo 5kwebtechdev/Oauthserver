@@ -19,10 +19,10 @@
         </div>
 
         <nav class="header-tools" role="navigation" aria-label="Profile tools">
-          <button class="tool-item" type="button" aria-label="Notes" (click)="openNotes()">
+          <a class="tool-item" aria-label="Notes" [routerLink]="['/notes/home']">
             <img src="/assets/app-assets/Notes-Icon-Home-Top.svg" alt="Notes" class="tool-icon">
            <!-- <span class="tool-label">Notes</span> -->
-          </button>
+          </a>
           <button class="tool-item" type="button" aria-label="Calendar" (click)="openCalendar()">
             <img src="/assets/Icons-Neutral/Icon-Calendar.png" alt="Calendar" class="tool-icon">
             <!-- <span class="tool-label">Calendar</span> -->

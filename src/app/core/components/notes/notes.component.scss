@@ -1,4 +1,15 @@
-.empty-header { display: inline-flex; justify-content: center; align-items: center; gap: 16px; }
+.empty-header { 
+	display: inline-flex; 
+	gap: 8px;
+}
+.empty-title { 
+	color: #282527;
+font-family: Fredoka;
+font-size: 20px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 28px */
+}
 .notes-empty, .notes-home, .notes-input, .notes-save { text-align: center; }
 .muted { color: var(--ion-color-medium); }
 ion-textarea { min-height: 200px; }
@@ -58,6 +69,22 @@ height: 48px;
 	font-size: 16px;
 	font-weight: 600;
 	line-height: 22.4px; /* 140% of 16px */
+}
+.add-new-tag {
+	display: flex;
+width: 90px;
+padding: 12px;
+justify-content: center;
+align-items: center;
+gap: 8px;
+border-radius: 24px;
+border: 1px solid #6B656A;
+color: #282527;
+font-family: Nunito;
+font-size: 13px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 18.2px */
 }
 
 /* Mindful badge adjustments for Add new + */

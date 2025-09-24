@@ -1,0 +1,14 @@
+<div class="coin-list-main">
+  <div class="coin-detail">
+    <img [src]="icon" alt="{{ label }} icon" class="coin-icon">
+    <div class="coin-label">
+        <div class="item-title">{{ label }}</div>
+        <div class="item-date">{{ date | date:'mediumDate' }}</div>
+    </div>
+  </div>
+
+  <div class="coin-count">
+    <img [src]="coinIcon" alt="Coin icon" class="coin-count-icon">
+    <div class="count-value">{{ count }}</div>
+  </div>
+</div>

@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import {AuthenticatedModule} from "./authenticated/authenticated.module";
+import { StreaksLeaderboardComponent } from './core/components/streaks-section/streaks-leaderboard/streaks-leaderboard.component';
 import { NotesComponent } from './core/components/notes/notes.component';
 import { NotesHomeComponent } from './core/components/notes/notes-home.component';
 
@@ -42,6 +43,10 @@ const routes: Routes = [
     component: NotesHomeComponent
   },
   {
+    path: 'notes/new',
+    loadComponent: () => import('./core/components/notes/notes-new/notes-new.component').then(m => m.NotesNewComponent)
+  },
+  {
     path: 'authed',
     loadChildren: () => import('./authenticated/authenticated.module').then( m => m.AuthenticatedModule)
   },
@@ -56,6 +61,10 @@ const routes: Routes = [
   {
     path: 'habit-input',
     loadComponent: () => import('./core/components/habit-section/habit-input/habit-input.component').then(m => m.HabitInputComponent)
+  },
+  {
+    path: 'coin',
+    loadComponent: () => import('./core/components/coin-section/coin-page/coin-page.component').then(m => m.CoinPageComponent)
   },
   {
     path: 'journal-input',
@@ -76,6 +85,10 @@ const routes: Routes = [
   }
   ,
   {
+    path: 'streaks',
+    loadComponent: () => import('./core/components/streaks-section/streaks-leaderboard/streaks-leaderboard.component').then(m => m.StreaksLeaderboardComponent)
+  },
+  {
     path: 'reel-expand',
     loadComponent: () => import('./core/components/reel-section/reel-expand/reels-expand.component').then(m => m.ReelsExpandComponent)
   }
@@ -88,6 +101,25 @@ const routes: Routes = [
   {
     path: 'select-role',
     loadComponent: () => import('./core/components/user-profile/select-role/select-role.component').then(m => m.RoleSelectComponent)
+   },
+   { path: 'academy',
+    loadComponent: () => import('./core/components/academy-section/academy-home/academy-home.component').then(m => m.AcademyHomeComponent)
+  }
+  ,
+  {
+    path: 'academy/managing-money',
+    loadComponent: () => import('./core/components/academy-section/academy-managing-money/academy-managing-money.component').then(m => m.AcademyManagingMoneyComponent)
+  }
+  ,
+  {
+    path: 'academy/course/:id',
+    loadComponent: () => import('./core/components/academy-section/academy-course/academy-course.component').then(m => m.AcademyCourseComponent)
+  }
+  ,
+  
+  {
+    path: 'trophies',
+    loadComponent: () => import('./core/components/trophy-section/trophy-page').then(m => m.TrophyPageComponent)
   }
 ];
 

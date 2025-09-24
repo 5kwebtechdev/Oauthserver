@@ -4,7 +4,7 @@
       <div class="tag-wrapper" #tagEl *ngFor="let option of options">
         <mindful-badge class="tag" *ngIf="option" [text]="option.value || ''" [type]="option.type || ''"
           [large]="size === 'large'" [medium]="size === 'medium'" [inactive]="!selectedKeys.includes(option.key)"
-          (click)="toggleSelection(option.key)" long-press [delay]="1500" (press)="openTagMenu(option.key, tagEl)"
+          (click)="openTagMenu(option.key, tagEl)" long-press [delay]="1500" (press)="openTagMenu(option.key, tagEl)"
           (tap)="closeTagMenu()">
         </mindful-badge>
       </div>

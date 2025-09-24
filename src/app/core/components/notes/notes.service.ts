@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 
 export interface NoteModel {
   title: string;
-  text: string;
+  /** note text can be a string or an array of strings (checklist) */
+  text: string | string[];
   tags: string[];
   createdAt: string;
 }
