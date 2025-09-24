@@ -351,4 +351,18 @@ p {
   display: inline-block;
 }
 
+.peach {
+  display: flex;
+  width: 361px;
+  padding: 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  border: 1px solid #F64D3D;
+  background: #FE8D82;
+  box-shadow: 0 0 1px 0.5px rgba(254, 141, 130, 0.20), 0 -2px 2px 0 #FFCDC8 inset;
+  --text_color: #FFFFFF;
+}
+
 // .button p { display: inline-block; vertical-align: middle; }

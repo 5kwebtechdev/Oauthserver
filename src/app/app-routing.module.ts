@@ -72,7 +72,7 @@ const routes: Routes = [
   },
   {
     path: 'reel-section',
-    loadComponent: () => import('./core/components/reel-section/reel-section.component').then(m => m.ReelSectionComponent)
+    loadComponent: () => import('./core/components/reel-section/reel-category/reel-category.component').then(c => c.ReelCategoryComponent)
   }
   ,
   {

@@ -8,7 +8,7 @@ import {HabitCardComponent} from "../../core/components/habit-section/habit-card
 import {ContentCardComponent} from "../../core/components/content-card/content-card.component";
 import {AdBannerComponent} from '../../core/components/ad-banner/ad-banner.component';
 import {TutorCardComponent} from "../../core/components/tutor-section/tutor-card/tutor-card.component";
-import {ReelsCardComponent} from "../../core/components/reels-card/reels-card.component";
+import {ReelsCardComponent} from "../../core/components/reel-section/reels-card/reels-card.component";
 import {JournalsComponent} from "../../core/components/journals/journals.component";
 import {AcademySectionComponent} from "../../core/components/academy-section/academy-section.component";
 import {IonicModule} from "@ionic/angular";
@@ -18,6 +18,9 @@ import { MindfulSpeechBubbleComponent } from '../../core/components/mindful-spee
 // AdBannerComponent import removed (not used)
 import {MindfulPetComponent} from '../../core/components/mindful-pet/mindful-pet.component';
 import {MindfulCoinsStatsComponent} from '../../core/components/mindful-coins-stats/mindful-coins-stats.component';
+import {MindfulCardHeaderComponent} from '../../core/components/mindful-navigator/mindful-card-header/mindful-card-header.component';
+import { ViewAllComponent } from '../../core/components/mindful-navigator/view-all/view-all.component';
+
 
 @Component({
   selector: 'app-user-dashboard',
@@ -40,6 +43,8 @@ import {MindfulCoinsStatsComponent} from '../../core/components/mindful-coins-st
     MindfulPetComponent,
     MindfulSpeechBubbleComponent,
     MindfulCoinsStatsComponent,
+    MindfulCardHeaderComponent,
+    ViewAllComponent,
   ]
 })
 export class UserDashboardComponent implements OnInit {

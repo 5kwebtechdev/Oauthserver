@@ -2,8 +2,8 @@ import { Component, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
-import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
-import { ViewAllComponent } from '../mindful-navigator/view-all/view-all.component';
+import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
+import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.component';
 
 @Component({
   selector: 'reels-card',

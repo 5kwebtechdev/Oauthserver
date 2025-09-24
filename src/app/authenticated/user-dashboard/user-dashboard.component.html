@@ -10,7 +10,7 @@
         <div class="user-info" role="group" aria-label="User info">
           <div class="user-avatar" aria-hidden="false">
             <a [routerLink]="['/authed','user-profile']" aria-label="Open profile">
-              <img src="/assets/app-assets/Default-avatar-home.svg" alt="{{ userName }} avatar">
+              <img src="/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png" alt="{{ userName }} avatar">
             </a>
           </div>
           <div class="user-name-wrap">
@@ -24,7 +24,7 @@
            <!-- <span class="tool-label">Notes</span> -->
           </button>
           <button class="tool-item" type="button" aria-label="Calendar" (click)="openCalendar()">
-            <img src="/assets/app-assets/Icon-calendar.svg" alt="Calendar" class="tool-icon">
+            <img src="/assets/Icons-Neutral/Icon-Calendar.png" alt="Calendar" class="tool-icon">
             <!-- <span class="tool-label">Calendar</span> -->
           </button>
         </nav>
@@ -80,14 +80,21 @@
       <content-card></content-card>
     </div>
 
-    <!-- Challenge Card -->
-    <!-- <div style="margin-top: 5vh;">
-      <challenge-card></challenge-card>
-    </div> -->
-
     <!-- Reels- card -->
     <div>
+        <mindful-card-header
+    [title]="'Made by Kids, for Kids!'"
+    [subtitleLeft]="'Watch reels'"
+    [subtitleMiddle]="'Create'"
+    [subtitleRight]="'Get Inspired'">
+    <mindful-view-all mindful-header-actions
+      [routerLink]="['/reel-section']"
+      class="see-all">
+    </mindful-view-all>
+  </mindful-card-header>
+      <div style="margin-top: 10px;">
       <reels-card></reels-card>
+      </div>
     </div>
 
     <!-- Tutor card-->

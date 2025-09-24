@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ViewAllComponent } from '../view-all/view-all.component';
 
@@ -14,4 +14,10 @@ export class MindfulCardHeaderComponent {
   @Input() subtitleLeft?: string;
   @Input() subtitleMiddle?: string;
   @Input() subtitleRight?: string;
+  @Input() showBackArrow: boolean = false;
+  @Output() backClick = new EventEmitter<void>();
+
+  onBackClick() {
+    this.backClick.emit();
+  }
 }

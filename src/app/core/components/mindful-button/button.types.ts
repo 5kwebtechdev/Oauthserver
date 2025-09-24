@@ -21,6 +21,7 @@ export type buttonStyles =
   | 'gold'
   | 'aqua'
   | 'coral'
-  | 'bronze';
+  | 'bronze'
+  | 'peach';
   
 

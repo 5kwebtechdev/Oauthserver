@@ -3,7 +3,6 @@
     <h2 class="fredoka">
       <i (click)="goBack()" class="fa-solid fa-arrow-left">
       </i>
-      <!--{{ step === 1 ? "Who's using the app?" : (step === 0.1 ? "Add phone number or email address" : (step === 0.2 ? "Check your phone" : (step === 0.3 ? "Create Password" : "Create your Account"))) }}-->
       <span class="header-text">
         {{ step === 1 ? "Who's using the app?" : (step === 0.1 ? "Add phone number or email address" : (step === 0.2 ?
         loginMode === 'phone' ? "Check your phone" : "Check your email" : (step === 0.3 ? "Create Password" : "Create
@@ -161,9 +160,7 @@
 
     <!--//////////////////////// STEP 1 - Role Selection-->
     <div *ngIf="step === 1" [@slideIn]>
-      <div class="container w-full" style="height: 50px">
 
-      </div>
       <div class="role-selector container p-0" [ngClass]="{'active': roleSelected === 'child'}"
         (click)="roleSelected = 'child'">
         <div class="row">

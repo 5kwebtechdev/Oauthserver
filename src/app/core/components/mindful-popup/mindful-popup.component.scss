@@ -1,0 +1,275 @@
+// Backdrop overlay with gradient background
+.mindful-popup-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(180deg, rgba(40, 37, 39, 0.30) 0%, rgba(40, 37, 39, 0.30) 100%);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+// Main popup container with your specified layout
+.mindful-popup-container {
+  position: relative;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.12);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  
+  // Main layout as specified
+  display: inline-flex;
+  padding: 12px 24px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+}
+
+// Close button styling
+.mindful-popup-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  font-size: 24px;
+  z-index: 1;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+  }
+
+  ion-icon {
+    display: block;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// Content section with your specified layout for first div
+.mindful-popup-content {
+  display: inline-flex;
+  padding: 12px 24px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+}
+
+// Image styling as specified
+.mindful-popup-image {
+  width: 96px;
+  height: 88px;
+  aspect-ratio: 12/11;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+// Heading styling as specified
+.mindful-popup-heading {
+  color: #282527;
+  font-family: Fredoka, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%; /* 22.4px */
+  text-align: center;
+  margin: 0;
+}
+
+// Subtitle styling as specified
+.mindful-popup-subtitle {
+  color: #282527;
+  text-align: center;
+  font-family: Nunito, sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 140%; /* 18.2px */
+  margin: 0;
+}
+
+// Actions container
+.mindful-popup-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+// Single CTA - Full width mindful-button
+.mindful-popup-single-cta {
+  width: 100%;
+  
+  .mindful-button-full {
+    width: 100%;
+  }
+}
+
+// Two CTAs - Side by side layout as specified
+.mindful-popup-dual-cta {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+
+  .mindful-button {
+    flex: 1;
+  }
+}
+
+// Base mindful-button styles (customize based on your existing button component)
+.mindful-button {
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  font-family: Nunito, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  // Primary button styling
+  &.mindful-button-primary {
+    background: #6C63FF;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #5A52D8;
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+  }
+
+  // Secondary button styling
+  &.mindful-button-secondary {
+    background: transparent;
+    color: #6C63FF;
+    border: 2px solid #6C63FF;
+
+    &:hover:not(:disabled) {
+      background: #6C63FF;
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+  }
+}
+
+// Share button styling
+.mindful-popup-share {
+  background: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+    transform: scale(1.1);
+  }
+
+  ion-icon {
+    display: block;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .mindful-popup-container {
+    margin: 16px;
+    padding: 16px 20px;
+  }
+
+  .mindful-popup-content {
+    padding: 8px 16px;
+    gap: 16px;
+  }
+
+  .mindful-popup-dual-cta {
+    gap: 16px;
+    flex-direction: column;
+
+    .mindful-button {
+      width: 100%;
+    }
+  }
+
+  .mindful-popup-image {
+    width: 80px;
+    height: 72px;
+  }
+
+  .mindful-popup-heading {
+    font-size: 15px;
+  }
+
+  .mindful-popup-subtitle {
+    font-size: 12px;
+  }
+}
+
+// Animation classes for show/hide
+.mindful-popup-backdrop {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.mindful-popup-container {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

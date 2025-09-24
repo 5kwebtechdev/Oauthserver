@@ -9,15 +9,17 @@ import { ReelGuidelinesComponent } from 'src/app/core/components/reel-section/re
 import { NewReelsComponent } from 'src/app/core/components/reel-section/new-reels.component';
 import { ShareReelComponent } from 'src/app/core/components/reel-section/share-reel.component';
 import { MindfulButtonComponent } from 'src/app/core/components/mindful-button/mindful-button.component';
+import { MindfulCardHeaderComponent } from 'src/app/core/components/mindful-navigator/mindful-card-header/mindful-card-header.component';
+import { ReelsCardComponent } from 'src/app/core/components/reel-section/reels-card/reels-card.component';
 
 @Component({
-  selector: 'reel-section',
-  templateUrl: './reel-section.component.html',
-  styleUrls: ['./reel-section.component.scss'],
+  selector: 'reel-category',
+  templateUrl: './reel-category.component.html',
+  styleUrls: ['./reel-category.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, ReelsExpandComponent, BookmarkReelsComponent, ReelGuidelinesComponent, NewReelsComponent, ShareReelComponent, MindfulButtonComponent]
+  imports: [CommonModule, IonicModule, RouterModule, ReelsExpandComponent, BookmarkReelsComponent, ReelGuidelinesComponent, NewReelsComponent, ShareReelComponent, MindfulButtonComponent, MindfulCardHeaderComponent, ReelsCardComponent]
 })
-export class ReelSectionComponent implements AfterViewInit {
+export class ReelCategoryComponent implements AfterViewInit {
   public slides = [
     {
       id: 1,

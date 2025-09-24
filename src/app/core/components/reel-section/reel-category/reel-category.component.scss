@@ -1,0 +1,64 @@
+// Safe area spacing for mobile status bar
+.safe-area-top {
+  height: env(safe-area-inset-top);
+  min-height: 24px;
+  background: transparent;
+}
+
+ion-content {
+  --padding-top: max(24px, env(safe-area-inset-top));
+}
+
+.category-page{
+  display: flex;
+flex-direction: column;
+align-items: flex-start;
+gap: 32px;
+padding: 16px;
+}
+.reels-container{
+  display: flex;
+flex-direction: column;
+align-items: flex-start;
+gap: 16px;
+}
+
+.category-title{
+  display: inline-flex;
+justify-content: center;
+align-items: center;
+gap: 16px;
+
+h1{
+  color: #282527;
+font-family: Nunito;
+font-size: 16px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 22.4px */
+margin: 0px;
+}
+}
+
+
+.trending-badge{
+display: flex;
+width: 89px;
+padding: 6px;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+gap: 8px;
+border-radius: 16px;
+background: #DCDBDC;
+
+p{
+ color: #282527;
+font-family: Nunito;
+font-size: 13px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 18.2px */
+margin: 0px;
+}
+}
