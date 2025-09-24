@@ -32,7 +32,7 @@ height: 852px;
 }
 
 .tag-label {
-  font-size: 14px;
+  font-size: 18px;
   margin-right: 10px;
   color: #444;
 }
@@ -74,12 +74,26 @@ line-height: 140%; /* 28px */
   border-radius: 8px;
 }
 
-.title-input, .tags-input {
+.title-input {
   width: calc(100% - 8px);
   padding: 8px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  font-size: 20px;
+  border: none;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.tags-input {
+  width: calc(100% - 8px);
+  padding: 8px;
+  font-size: 18px;
+  border: none;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
 }
 
 .back-arrow {
