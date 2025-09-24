@@ -21,7 +21,7 @@ ion-content {
   --padding-start: 0;
   --padding-end: 0;
   --padding-top: 0;
-  --padding-bottom: 0;
+  --padding-bottom: 91px; // Footer height (75px) + margin (16px)
 }
 
 .container {
@@ -30,7 +30,7 @@ ion-content {
     padding: 0;
     height: 100vh;
     overflow-y: scroll;
-    padding-bottom: 50px;
+    padding-bottom: 107px; // Footer height (75px) + margin (16px) + extra space (16px)
   }
 }
 
@@ -439,4 +439,10 @@ ion-content {
     margin: 8px 10px;
     padding: 10px;
   }
+}
+
+// FOOTER STYLING
+footer {
+  margin: 16px;
+  margin-bottom: 0; // Keep footer at the very bottom
 }

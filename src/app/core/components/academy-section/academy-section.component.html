@@ -1,25 +1,34 @@
 <section class="academy">
-  <header class="academy__header">
-    <div class="academy__title">
-      <h3>Begin Your Life Skills Quest!</h3>
-      <div class="academy__subtitle">Real lessons • Life ready • Future strong</div>
-    </div>
-
-  <mindful-button class="academy__view" type="lavendar" text="View all ›" (click)="onViewAll()"></mindful-button>
-  </header>
+  <mindful-card-header [title]="'Begin Your Life Skills Quest!'" [subtitleLeft]="'Real lessons'"
+    [subtitleMiddle]="'Life ready'" [subtitleRight]="'Future strong'">
+    <mindful-view-all mindful-header-actions class="see-all" (clicked)="onViewAll()">
+    </mindful-view-all>
+  </mindful-card-header>
 
   <div class="academy__cards">
-    <article class="academy__card" *ngFor="let c of courses">
-      <img class="academy__img" [src]="c.image" alt="{{c.title}}">
-      <div class="academy__content">
-        <h4 class="title">{{c.title}}</h4>
-        <div class="meta">{{c.lessons}} lessons • {{c.duration}}</div>
-        <p class="desc">{{c.description}}</p>
-        <div class="card-footer">
-          <button class="start" (click)="onStart(c)">Start Course</button>
-          <span class="level">{{c.level}}</span>
-        </div>
-      </div>
-    </article>
+    <swiper-container class="academy-swiper" [slides-per-view]="'auto'" [space-between]="16" [pagination]="false"
+      [scrollbar]="false">
+      <swiper-slide class="academy-slide" *ngFor="let c of courses">
+        <article class="academy__card">
+          <div class="academy__content">
+            <div class="academy-main-title">
+              <img class="academy__img" [src]="c.image" alt="{{c.title}}">
+              <div class="title-time-level">
+                <div class="title-n-time">
+                  <h4 class="title">{{c.title}}</h4>
+                  <div class="meta">{{c.lessons}} lessons • {{c.duration}}</div>
+                </div>
+                <span class="level">{{c.level}}</span>
+              </div>
+            </div>
+            <p class="desc">{{c.description}}</p>
+            <div class="card-footer">
+              <mindful-button class="start" type="pink" size="medium" text="Start Course"
+                (click)="onStart(c)"></mindful-button>
+            </div>
+          </div>
+        </article>
+      </swiper-slide>
+    </swiper-container>
   </div>
 </section>

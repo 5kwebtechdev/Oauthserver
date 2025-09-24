@@ -5,55 +5,43 @@ $card-bg: #FFFFFF;
 
 .academy {
   width: 100%;
-  max-width: 900px;
-  display: block;
-  margin: 0 auto 24px;
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    padding: 0 8px;
-  }
-
-  &__title h3 {
-    font-family: 'Fredoka', Arial;
-    font-size: 24px;
-    font-weight: 500;
-    margin: 0 0 6px 0;
-    color: $primary;
-  }
-
-  &__subtitle {
-    font-family: 'Nunito', Arial;
-    font-size: 14px;
-    color: rgba(40,37,39,0.7);
-  }
-
-  &__view {
-    background: transparent;
-    border: none;
-    color: $accent;
-    font-weight: 600;
-    cursor: pointer;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 
   &__cards {
-    display: flex;
-    gap: 16px;
-    padding: 16px 8px 0 8px;
+    width: 100%;
+    max-width: 361px;
+    overflow: hidden;
+  }
+
+  .academy-swiper {
+    width: 100%;
+    padding: 0;
+    overflow: visible;
+    --swiper-slide-spacing: 16px;
+  }
+
+  .academy-slide {
+    width: auto !important;
+    max-width: 320px;
+    margin-right: 16px;
+
+    &:last-child {
+      margin-right: 0;
+    }
   }
 
   &__card {
+    width: 320px;
+    flex-shrink: 0;
     display: flex;
+    flex-direction: column;
     gap: 16px;
-    width: 100%;
-    max-width: 520px;
-    background: $card-bg;
-    border-radius: 18px;
-    padding: 18px;
-    box-shadow: 0 0 0 6px rgba(0,0,0,0.03), 0 0 8px rgba(0,0,0,0.08);
-    align-items: center;
+    padding: 8px 12px 12px 12px;
+    border-radius: 24px;
+    background: #FFF;
+    box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
 
     .academy__img {
       width: 90px;
@@ -63,36 +51,83 @@ $card-bg: #FFFFFF;
     }
 
     .academy__content {
-      flex: 1;
+      display: inline-flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-end;
 
-      .title { font-size: 20px; margin: 0 0 6px 0; color: $primary; }
-      .meta { color: rgba(40,37,39,0.6); margin-bottom: 12px; }
-      .desc { color: rgba(40,37,39,0.8); margin: 0 0 16px 0; }
-
-      .card-footer { display:flex; align-items:center; gap:16px; }
-
-      .start {
-        background: linear-gradient(180deg, #CD3578 0%, #90214D 100%);
-        color: #fff;
-        border: none;
-        padding: 10px 18px;
-        border-radius: 8px;
-        box-shadow: inset 0 -4px 6px rgba(0,0,0,0.15);
-        cursor: pointer;
+      .title {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0px !important;
+        color: $primary;
       }
+
+      .meta {
+        color: rgba(40, 37, 39, 0.70);
+        font-size: 13px;
+        font-weight: 500px;
+        // margin-bottom: 12px;
+      }
+
+      .desc {
+        color: #282527;
+        font-family: Nunito;
+        font-size: 13px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 140%;
+        /* 18.2px */
+        opacity: 0.7;
+        width: 220px;
+        margin-bottom: 0px !important;
+      }
+
+
 
       .level {
         margin-left: auto;
-        padding: 6px 12px;
-        border-radius: 999px;
-        border: 2px solid #2FA34A;
-        color: #2FA34A;
+        padding: 10px 12px;
+        border-radius: 26px;
+        border: 1px solid #4CAF50;
+        color: #282527;
         font-weight: 600;
+        font-size: 10px;
       }
     }
   }
 
-  @media (max-width: 720px) {
-    &__cards { flex-direction: column; }
-  }
+  // @media (max-width: 720px) {
+  //   &__cards { flex-direction: column; }
+  // }
+}
+
+.academy-main-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  align-self: stretch;
+}
+
+.title-time-level {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0px;
+  width: 100%;
+}
+
+.title-n-time {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.card-footer {
+  display: flex;
+  text-align: left;
+  align-self: flex-end;
+  width: 220px;
 }

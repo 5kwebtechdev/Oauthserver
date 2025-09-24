@@ -20,6 +20,7 @@ import {MindfulPetComponent} from '../../core/components/mindful-pet/mindful-pet
 import {MindfulCoinsStatsComponent} from '../../core/components/mindful-coins-stats/mindful-coins-stats.component';
 import {MindfulCardHeaderComponent} from '../../core/components/mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { ViewAllComponent } from '../../core/components/mindful-navigator/view-all/view-all.component';
+import { FooterComponent } from '../../core/components/footer/footer.component';
 
 
 @Component({
@@ -45,6 +46,7 @@ import { ViewAllComponent } from '../../core/components/mindful-navigator/view-a
     MindfulCoinsStatsComponent,
     MindfulCardHeaderComponent,
     ViewAllComponent,
+    FooterComponent,
   ]
 })
 export class UserDashboardComponent implements OnInit {
