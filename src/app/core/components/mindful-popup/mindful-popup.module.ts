@@ -4,12 +4,10 @@ import { IonicModule } from '@ionic/angular';
 import { MindfulPopupComponent } from './mindful-popup.component';
 
 @NgModule({
-  declarations: [
-    MindfulPopupComponent
-  ],
   imports: [
     CommonModule,
-    IonicModule
+    IonicModule,
+    MindfulPopupComponent
   ],
   exports: [
     MindfulPopupComponent

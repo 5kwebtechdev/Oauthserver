@@ -1,4 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { IonicModule } from '@ionic/angular';
 
 export interface MindfulPopupCTA {
   text: string;
@@ -22,6 +24,8 @@ export interface MindfulPopupConfig {
 
 @Component({
   selector: 'app-mindful-popup',
+  standalone: true,
+  imports: [CommonModule, IonicModule],
   templateUrl: './mindful-popup.component.html',
   styleUrls: ['./mindful-popup.component.scss']
 })
