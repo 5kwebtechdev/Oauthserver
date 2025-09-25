@@ -1,4 +1,4 @@
-.badge{
+.badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -14,7 +14,7 @@
   --text_color: white;
 }
 
-.badge:before{
+.badge:before {
   content: '';
   position: absolute;
   z-index: -1;
@@ -26,7 +26,7 @@
   background: var(--stroke_gradient);
 }
 
-.badge p{
+.badge p {
   font-family: 'Nunito', sans-serif;
   font-size: 10px;
   font-weight: 600;
@@ -36,92 +36,93 @@
   line-height: 140%;
 }
 
-.badge{
-  &.medium{
-  /* keep medium font but ensure consistent height */
-  padding: 0 23.5px;
-  margin: 18px 3px;
+.badge {
+  &.medium {
+    /* keep medium font but ensure consistent height */
+    padding: 0 23.5px;
+    margin: 18px 3px;
 
-    &:before{
+    &:before {
       width: calc(100% + 4px);
       height: calc(100% + 4px);
       top: -2px;
       left: -2px;
     }
 
-    p{
+    p {
       font-size: 13px;
     }
   }
 }
 
-.habit{
+.habit {
   --background: #E8ECF7;
   --border-color: #524F84;
   --text_color: #45456A;
 }
 
-.task{
+.task {
   --background: #FDEAD7;
   --border-color: #EE6621;
   --text_color: #772817;
 }
 
-.morning{
+.morning {
   --background: linear-gradient(97.59deg, #FDFEC9 5.22%, #EFF85E 94.78%);
   --text_color: #4B5611;
   --stroke_gradient: linear-gradient(-45deg, #C2D40E 0%, #E0EE2D 100%);
 }
 
-.evening{
+.evening {
   --background: linear-gradient(180deg, #F9F6F9 0%, #ECDEE9 100%);
   --text_color: #865473;
-  --stroke_gradient: linear-gradient(108.3deg, #B282A4 0%, #C6A0BC 100%);;
+  --stroke_gradient: linear-gradient(108.3deg, #B282A4 0%, #C6A0BC 100%);
+  ;
 }
 
-.night{
+.night {
   --background: linear-gradient(108.3deg, #F1F3FF 7.42%, #CFD5FF 92.58%);
   --text_color: #040273;
   --stroke_gradient: linear-gradient(-45deg, #7981FF 0%, #A9B2FF 100%);
 }
 
-.puzzle{
+.puzzle {
   --background: #E1527C;
   --stroke_gradient: #E1527C;
   --text_color: #942038;
 }
 
-.habit-input{
+.habit-input {
   --background: #46456A;
   --stroke_gradient: #46456A;
 }
 
-.task-input{
+.task-input {
   --background: #B93915;
   --stroke_gradient: #B93915;
 }
 
-.school{
+.school {
   --background: #3E5A60;
   --stroke_gradient: #3E5A60;
 }
 
-.red{
+.red {
   --background: #BB2124;
   --stroke_gradient: #BB2124;
 }
 
-.green{
+.green {
   --background: #4CAF50;
   --stroke_gradient: #4CAF50;
 }
 
-.yellow{
+.yellow {
   --background: #F0AD4E;
   --stroke_gradient: #F0AD4E;
 }
 
-.pending{
+.pending {
   --background: #90214D;
   --stroke_gradient: #90214D;
 }
@@ -160,7 +161,7 @@
   gap: 8px;
 }
 
-.inactive{
+.inactive {
   --background: white;
   /* ensure inactive badges render with a visible border and readable text */
   --text_color: #6B656A;
@@ -169,116 +170,120 @@
 }
 
 /* Active state: visually selected badge */
-.badge.active{
+.badge.active {
   /* Use stroke gradient as the outer ring and fill with a solid background */
-  --stroke_gradient: linear-gradient(90deg, rgba(144,33,77,0.12), rgba(144,33,77,0.12));
+  --stroke_gradient: linear-gradient(90deg, rgba(144, 33, 77, 0.12), rgba(144, 33, 77, 0.12));
   /* keep the type's background for the fill when active */
   box-shadow: none;
   border: 1px solid transparent;
 }
 
-.badge.active:before{
+.badge.active:before {
   /* make the outer stroke more subtle when active */
   opacity: 1;
 }
 
-.badge.active p{
+.badge.active p {
   color: var(--text_color);
 }
 
 /* Habit-journey scoped visuals: only change colors/border for active vs not-active.
    Do NOT override per-type padding/width: keep existing .badge.pending/.badge.ongoing/etc. */
-:host-context(.habit-journey-week) .badge:not(.active){
+:host-context(.habit-journey-week) .badge:not(.active) {
   background: white;
   border: 1px solid #90214D;
 }
 
-:host-context(.habit-journey-week) .badge.active{
+:host-context(.habit-journey-week) .badge.active {
   background: #90214D;
   border: none;
 }
 
-:host-context(.habit-journey-week) .badge p{
+:host-context(.habit-journey-week) .badge p {
   /* non-active journey badge typography & color */
   color: #282527;
   font-family: 'Nunito', sans-serif;
   font-size: 13px;
   font-style: normal;
   font-weight: 600;
-  line-height: 140%; /* 18.2px */
+  line-height: 140%;
+  /* 18.2px */
 }
 
-:host-context(.habit-journey-week) .badge.active p{
+:host-context(.habit-journey-week) .badge.active p {
   /* active journey badge text color */
   color: #FDFDFD;
   font-family: 'Nunito', sans-serif;
   font-size: 13px;
   font-style: normal;
   font-weight: 600;
-  line-height: 140%; /* 18.2px */
+  line-height: 140%;
+  /* 18.2px */
 }
 
 /* Priority selector visuals (used inside .priority-selectors) */
-:host-context(.priority-selectors) .badge.red{
+:host-context(.priority-selectors) .badge.red {
   /* unselected: border red */
   background: white;
   border: 1px solid #BB2124;
 }
 
-:host-context(.priority-selectors) .badge.red.active{
+:host-context(.priority-selectors) .badge.red.active {
   background: #BB2124;
   border: none;
 }
 
-:host-context(.priority-selectors) .badge.yellow{
+:host-context(.priority-selectors) .badge.yellow {
   background: white;
   border: 1px solid #F0AD4E;
 }
 
-:host-context(.priority-selectors) .badge.yellow.active{
+:host-context(.priority-selectors) .badge.yellow.active {
   background: #F0AD4E;
   border: none;
 }
 
-:host-context(.priority-selectors) .badge.green{
+:host-context(.priority-selectors) .badge.green {
   background: white;
   border: 1px solid #4CAF50;
 }
 
-:host-context(.priority-selectors) .badge.green.active{
+:host-context(.priority-selectors) .badge.green.active {
   background: #4CAF50;
   border: none;
 }
 
 :host-context(.priority-selectors) .badge,
-:host-context(.priority-selectors) .badge p{
+:host-context(.priority-selectors) .badge p {
   border-radius: 26px;
 }
 
 /* Non-active priority badge text styling */
-:host-context(.priority-selectors) .badge:not(.active) p{
+:host-context(.priority-selectors) .badge:not(.active) p {
   color: #282527;
   font-family: 'Nunito', sans-serif;
   font-size: 13px;
   font-style: normal;
   font-weight: 600;
-  line-height: 140%; /* 18.2px */
+  line-height: 140%;
+  /* 18.2px */
 }
 
 /* Active priority badge text styling */
-:host-context(.priority-selectors) .badge.active p{
+:host-context(.priority-selectors) .badge.active p {
   color: #FFFFFF;
   font-family: 'Nunito', sans-serif;
   font-size: 13px;
   font-style: normal;
   font-weight: 600;
-  line-height: 140%; /* 18.2px */
+  line-height: 140%;
+  /* 18.2px */
 }
 
 /* On the habit page, make routine badges match the ongoing/completed sizing */
 :host-context(.routine-selectors) .badge.morning,
 :host-context(.routine-selectors) .badge.evening,
-:host-context(.routine-selectors) .badge.night{
+:host-context(.routine-selectors) .badge.night {
   display: inline-flex;
   white-space: nowrap;
   width: auto;
@@ -293,36 +298,38 @@
 /* On this page: active = filled #90214D, inactive = white with #90214D border */
 :host-context(.routine-selectors) .badge.morning:not(.active),
 :host-context(.routine-selectors) .badge.evening:not(.active),
-:host-context(.routine-selectors) .badge.night:not(.active){
+:host-context(.routine-selectors) .badge.night:not(.active) {
   background: white;
   border: 1px solid #90214D;
 }
 
 :host-context(.routine-selectors) .badge.morning.active,
 :host-context(.routine-selectors) .badge.evening.active,
-:host-context(.routine-selectors) .badge.night.active{
+:host-context(.routine-selectors) .badge.night.active {
   background: #90214D;
   border: none;
 }
 
-:host-context(.routine-selectors) .badge p{
+:host-context(.routine-selectors) .badge p {
   /* non-active routine badge typography & color (page-scoped) */
   color: #282527;
   font-family: 'Nunito', sans-serif;
   font-size: 13px;
   font-style: normal;
   font-weight: 600;
-  line-height: 140%; /* 18.2px */
+  line-height: 140%;
+  /* 18.2px */
 }
 
-:host-context(.routine-selectors) .badge.active p{
+:host-context(.routine-selectors) .badge.active p {
   /* active routine badge text color (page-scoped) */
   color: #FDFDFD;
   font-family: 'Nunito', sans-serif;
   font-size: 13px;
   font-style: normal;
   font-weight: 600;
-  line-height: 140%; /* 18.2px */
+  line-height: 140%;
+  /* 18.2px */
 }
 
 .habit-input.inactive,
@@ -331,11 +338,11 @@
 .red.inactive,
 .yellow.inactive,
 .green.inactive,
-.pending.inactive{
+.pending.inactive {
   --text_color: #6B656A;
 }
 
-.circle{
+.circle {
   aspect-ratio: 1/1;
   width: 34px;
   padding: 0;
@@ -345,18 +352,83 @@
   --stroke_gradient: #DCDBDC;
   margin-right: 0;
 
-  p{
+  p {
     font-size: 16px;
     width: 100%;
     margin-top: 4px;
   }
 
-  &:not(.inactive){
+  &:not(.inactive) {
     background: #90214D;
     --stroke_gradient: #90214D;
 
-    p{
+    p {
       color: var(--text_color);
     }
   }
+}
+
+/* Variant styles for mindful-tags */
+.blue-selected {
+  border-radius: 26px;
+  border: 1px solid #46456A;
+  background: #46456A;
+  --text_color: white;
+  --stroke_gradient: #46456A;
+}
+
+.blue-unselected {
+  border-radius: 26px;
+  border: 1px solid #46456A;
+  background: transparent;
+  --text_color: #46456A;
+  --stroke_gradient: transparent;
+}
+
+.orange-selected {
+  border-radius: 26px;
+  border: 1px solid #B93915;
+  background: #B93915;
+  --text_color: white;
+  --stroke_gradient: #B93915;
+}
+
+.orange-unselected {
+  border-radius: 26px;
+  border: 1px solid #B93915;
+  background: transparent;
+  --text_color: #B93915;
+  --stroke_gradient: transparent;
+}
+
+.green-selected {
+  border-radius: 26px;
+  border: 1px solid #3E5A60;
+  background: #3E5A60;
+  --text_color: white;
+  --stroke_gradient: #3E5A60;
+}
+
+.green-unselected {
+  border-radius: 26px;
+  border: 1px solid #3E5A60;
+  background: transparent;
+  --text_color: #3E5A60;
+  --stroke_gradient: transparent;
+}
+
+.gray-selected {
+  border-radius: 26px;
+  border: 1px solid #6B656A;
+  background: #6B656A;
+  --text_color: white;
+  --stroke_gradient: #6B656A;
+}
+
+.gray-unselected {
+  border-radius: 26px;
+  border: 1px solid #6B656A;
+  background: transparent;
+  --text_color: #6B656A;
+  --stroke_gradient: transparent;
 }

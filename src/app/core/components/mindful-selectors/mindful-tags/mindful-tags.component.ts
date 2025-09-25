@@ -18,6 +18,7 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
   @Input() formControlName?: string;
   @Input() size: 'small' | 'medium' | 'large' = 'small';
   @Input() singleSelection: boolean = false;
+  @Input() variant: 'blue' | 'orange' | 'green' | 'gray' = 'blue';
 
   @Output() selectedKeysChange = new EventEmitter<any[]>();
   @Output() edit = new EventEmitter<any>();
@@ -154,5 +155,10 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
     this.closeTagMenu();
     this.cancelEdit();
     this.cancelAdd();
+  }
+
+  getBadgeType(option: any): string {
+    const isSelected = this.selectedKeys.includes(option.key);
+    return this.variant + (isSelected ? '-selected' : '-unselected');
   }
 }

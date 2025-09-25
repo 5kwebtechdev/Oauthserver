@@ -2,17 +2,17 @@
   <div class="tags-row">
     <div class="tags-slider" role="list">
       <div class="tag-wrapper" #tagEl *ngFor="let option of options">
-        <mindful-badge class="tag" *ngIf="option" [text]="option.value || ''" [type]="option.type || ''"
-          [large]="size === 'large'" [medium]="size === 'medium'" [inactive]="!selectedKeys.includes(option.key)"
-          (click)="openTagMenu(option.key, tagEl)" long-press [delay]="1500" (press)="openTagMenu(option.key, tagEl)"
-          (tap)="closeTagMenu()">
+        <mindful-badge class="tag" *ngIf="option" [text]="option.value || ''" [type]="getBadgeType(option)"
+          [large]="size === 'large'" [medium]="size === 'medium'" (click)="toggleSelection(option.key)" long-press
+          [delay]="1500" (press)="openTagMenu(option.key, tagEl)" (tap)="closeTagMenu()">
         </mindful-badge>
       </div>
     </div>
 
     <div class="tags-add-inline">
       <div class="add-wrapper" #addEl>
-        <mindful-badge class="add-new" text="Add new +" type="habit-input" (click)="openAdd(addEl)"></mindful-badge>
+        <mindful-badge class="add-new" text="Add new +" [type]="variant + '-selected'"
+          (click)="openAdd(addEl)"></mindful-badge>
       </div>
     </div>
   </div>
@@ -32,7 +32,8 @@
 
   <!-- Edit popup -->
   <div class="tag-edit-fixed" *ngIf="editingTagKey && editPosition" (click)="cancelEdit()">
-  <div class="tag-edit-inner" (click)="$event.stopPropagation()" [ngStyle]="{ left: (editPosition?.left) + 'px', top: (editPosition?.top) + 'px' }">
+    <div class="tag-edit-inner" (click)="$event.stopPropagation()"
+      [ngStyle]="{ left: (editPosition?.left) + 'px', top: (editPosition?.top) + 'px' }">
       <div class="custom-tag-input">
         <input class="custom-tag-input__field" type="text" [(ngModel)]="editingValue" placeholder="Edit tag" />
       </div>
@@ -42,7 +43,8 @@
 
   <!-- Add popup -->
   <div class="tag-add-fixed" *ngIf="addingTag && addPosition" (click)="cancelAdd()">
-  <div class="tag-add-inner" (click)="$event.stopPropagation()" [ngStyle]="{ left: (addPosition?.left) + 'px', top: (addPosition?.top) + 'px' }">
+    <div class="tag-add-inner" (click)="$event.stopPropagation()"
+      [ngStyle]="{ left: (addPosition?.left) + 'px', top: (addPosition?.top) + 'px' }">
       <div class="custom-tag-input">
         <input class="custom-tag-input__field" type="text" [(ngModel)]="addingValue" placeholder="Type the name here" />
       </div>

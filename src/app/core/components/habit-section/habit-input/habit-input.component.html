@@ -1,10 +1,10 @@
 <ion-content fullscreen>
-  <!-- <div class="habit-input-header"> -->
+  <!-- habit input header removed intentionally -->
   <mindful-navigator heading="Create. Commit. Grow." backIcon="cancel">
     <div right-actions class="header-toggle" aria-label="Private toggle">
       <label class="header-toggle-label">Private</label>
       <div class="toggle-right">
-        <ion-toggle [(ngModel)]="isPrivate"></ion-toggle>
+        <mindful-toggle [(checked)]="isPrivate"></mindful-toggle>
       </div>
     </div>
   </mindful-navigator>
@@ -30,7 +30,7 @@
           <input [(ngModel)]="title" placeholder="Habit Title" />
         </div>
         <div class="add-new-row">
-          <mindful-tags [options]="routineTags" [singleSelection]="false" [size]="'small'"
+          <mindful-tags [options]="routineTags" [singleSelection]="false" [size]="'small'" [variant]="'blue'"
             (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)"
             (delete)="onTagDelete($event)">
           </mindful-tags>
@@ -75,7 +75,7 @@
                   <label>Everyday</label>
                 </div>
                 <div class="toggle-right">
-                  <ion-toggle [(ngModel)]="everyday" (ionChange)="onEverydayChange($event)"></ion-toggle>
+                  <mindful-toggle [(checked)]="everyday" (checkedChange)="onEverydayChange($event)"></mindful-toggle>
                 </div>
               </div>
 
@@ -155,7 +155,7 @@
           <input [(ngModel)]="title" placeholder="Task Title" />
         </div>
         <div class="add-new-row">
-          <mindful-tags [options]="routineTags" [singleSelection]="false" [size]="'small'"
+          <mindful-tags [options]="routineTags" [singleSelection]="false" [size]="'small'" [variant]="'orange'"
             (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)"
             (delete)="onTagDelete($event)">
           </mindful-tags>
@@ -194,7 +194,7 @@
                 <label>Everyday</label>
               </div>
               <div class="toggle-right">
-                <ion-toggle [(ngModel)]="everyday"></ion-toggle>
+                <mindful-toggle [(checked)]="everyday" (checkedChange)="onEverydayChange($event)"></mindful-toggle>
               </div>
             </div>
 
@@ -274,7 +274,7 @@
           <input [(ngModel)]="title" placeholder="Time Table Title" />
         </div>
         <div class="add-new-row">
-          <mindful-tags [options]="routineTags" [singleSelection]="false" [size]="'small'"
+          <mindful-tags [options]="routineTags" [singleSelection]="false" [size]="'small'" [variant]="'green'"
             (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)"
             (delete)="onTagDelete($event)">
           </mindful-tags>
@@ -340,7 +340,7 @@
                 <label>Everyday</label>
               </div>
               <div class="toggle-right">
-                <ion-toggle [(ngModel)]="everyday"></ion-toggle>
+                <mindful-toggle [(checked)]="everyday" (checkedChange)="onEverydayChange($event)"></mindful-toggle>
               </div>
             </div>
 

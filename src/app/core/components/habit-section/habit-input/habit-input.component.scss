@@ -35,17 +35,20 @@
   }
 }
 
-.section.days-row .toggle-right ion-toggle {
+.section.days-row .toggle-right ion-toggle,
+.section.days-row .toggle-right mindful-toggle {
   --handle-background-checked: #90214D !important;
   --background-checked: rgba(144, 33, 77, 0.12) !important;
   /* subtle maroon track when checked */
 }
 
-.section.days-row .toggle-right ion-toggle {
+.section.days-row .toggle-right ion-toggle,
+.section.days-row .toggle-right mindful-toggle {
   --handle-background: #ffffff;
   --background: #e6e6e6;
 }
 
+/* ion-toggle parts */
 .section.days-row .toggle-right ion-toggle::part(handle) {
   background: #90214D !important;
   box-shadow: none !important;
@@ -61,6 +64,24 @@
 
 .section.days-row .toggle-right ion-toggle[aria-checked="true"]::part(track) {
   background: rgba(144, 33, 77, 0.12) !important;
+}
+
+/* mindful-toggle styling (button + inner elements) */
+.section.days-row .toggle-right .mindful-toggle .track {
+  background: #e6e6e6 !important;
+}
+
+.section.days-row .toggle-right .mindful-toggle .thumb {
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.section.days-row .toggle-right .mindful-toggle[aria-checked="true"] .track {
+  background: rgba(144, 33, 77, 0.12) !important;
+}
+
+.section.days-row .toggle-right .mindful-toggle[aria-checked="true"] .thumb {
+  background: #90214D !important;
 }
 
 .toggler {
