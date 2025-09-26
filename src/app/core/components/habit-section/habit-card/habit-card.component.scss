@@ -314,7 +314,7 @@ h4 {
 }
 
 .single-point-container {
-  display: inline-block;
+  display: block;
   width: fit-content;
   padding: 12px 0px 8px 0px;
   float: left;
@@ -406,4 +406,11 @@ img.score {
   font-weight: 600;
   line-height: 140%;
   /* 18.2px */
+}
+
+/* Size the header "view all" icon in the Day At A Glance card */
+.day-at-glance__view-all {
+  width: 40px;
+  height: auto;
+  margin-top: 20px;
 }

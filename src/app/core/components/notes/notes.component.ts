@@ -1,18 +1,18 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
 import { MindfulBadgeComponent } from '../mindful-badge/mindful-badge.component';
 import { MindfulTagsComponent } from '../mindful-selectors/mindful-tags/mindful-tags.component';
+import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { NotesService, NoteModel } from './notes.service';
-import { NotesHomeComponent } from './notes-home.component';
 
 @Component({
   selector: 'notes',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, MindfulButtonComponent, MindfulBadgeComponent, MindfulTagsComponent, NotesHomeComponent],
+  imports: [CommonModule, IonicModule, FormsModule, RouterModule, MindfulButtonComponent, MindfulBadgeComponent, MindfulTagsComponent, MindfulCardHeaderComponent],
   templateUrl: './notes.component.html',
   styleUrls: ['./notes.component.scss']
 })
@@ -33,6 +33,10 @@ export class NotesComponent {
 
   constructor(private modalCtrl: ModalController, private router: Router, private notesService: NotesService) {
     this.notes = this.notesService.getAll();
+    // subscribe to updates so the list refreshes when new notes are added
+    this.notesService.notes$.subscribe((list) => {
+      this.notes = list;
+    });
   }
 
   close() {
@@ -43,7 +47,7 @@ export class NotesComponent {
     if (page === 'home') {
       // navigate to notes home page
       this.modalCtrl.dismiss();
-      this.router.navigate(['/notes/home']);
+      this.router.navigate(['/authed/notes']);
       return;
     }
     this.page = page;
@@ -76,7 +80,16 @@ export class NotesComponent {
   }
 
   showNotes() {
-    this.page = this.notesService.getAll().length ? 'home' : 'empty';
+    // refresh cached notes from service
+    this.notes = this.notesService.getAll();
+    this.page = this.notes.length ? 'home' : 'empty';
+  }
+
+  /**
+   * Reload notes from service into local list.
+   */
+  reload() {
+    this.notes = this.notesService.getAll();
   }
 
   addTag() {
@@ -183,5 +196,45 @@ export class NotesComponent {
     const words = this.noteTitle.trim().split(/\s+/);
     if (words.length <= 3 && this.noteTitle.length <= 20) return this.noteTitle;
     return words.slice(0, 3).join(' ') + '...';
+  }
+
+  // Methods for the notes list template
+  trackByIndex(index: number, item: any): any {
+    return index;
+  }
+
+  isList(text: string | string[]): boolean {
+    if (typeof text === 'string') {
+      return text.trim().startsWith('- ') || text.includes('\n- ');
+    }
+    return false;
+  }
+
+  getList(note: NoteModel): string[] {
+    if (typeof note.text === 'string') {
+      return note.text.split('\n').filter((line: string) => line.trim().startsWith('- ')).map((line: string) => line.trim().substring(2));
+    }
+    return [];
+  }
+
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  }
+
+  primaryTag(note: NoteModel): string {
+    return note.tags && note.tags.length > 0 ? note.tags[0] : 'No Tag';
+  }
+
+  primaryTagClass(note: NoteModel): string {
+    // Return a class based on the tag, e.g., for styling
+    const tag = this.primaryTag(note);
+    if (tag === 'Work') return 'work-tag';
+    if (tag === 'Personal') return 'personal-tag';
+    return 'default-tag';
+  }
+
+  goToNewNote() {
+    this.router.navigate(['/authed/notes/new']);
   }
 }

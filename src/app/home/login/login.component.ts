@@ -98,7 +98,7 @@ export class LoginComponent implements OnInit, OnDestroy {
           this.loading = false;
           console.log('Login successful', response);
           // Navigate to dashboard or home page after successful login
-          this.router.navigate(['authed/home']);
+          this.router.navigate(['authed/user-dashboard']);
         },
         error: (error) => {
           this.loading = false;

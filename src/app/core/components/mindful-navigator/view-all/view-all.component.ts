@@ -18,8 +18,10 @@ export class ViewAllComponent {
 
   /** Emits when the button is clicked (after optional navigation) */
   @Output() clicked = new EventEmitter<void>();
+  /** Optional aria-label for accessibility; applied to the button as an attribute */
+  @Input() ariaLabel?: string = 'View all';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   async onClick() {
     try {

@@ -21,7 +21,7 @@ export class JournalInputComponent implements OnInit {
   // Controls whether the attach permission popup is visible
   showAttachPopup = false;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
     this.text = this.initialText || '';
@@ -41,8 +41,8 @@ export class JournalInputComponent implements OnInit {
    * Navigate back to the journals listing (user dashboard home).
    */
   goBack(): void {
-    // The journals list is displayed in the authenticated user dashboard at /authed/home
-    this.router.navigate(['/authed/home']);
+    // The journals list is displayed in the authenticated user dashboard at /authed/user-dashboard
+    this.router.navigate(['/authed/user-dashboard']);
   }
 
   // Open the attachment chooser popup (simulates native permission dialog)

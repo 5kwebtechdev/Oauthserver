@@ -7,8 +7,10 @@
 
       <ng-template #defaultSlide>
         <div class="media">
-          <img [src]="item.image || item.imageUrl || '/assets/images/Content-memory-maze-thumbnail.png'" [alt]="item.title || 'content'" />
-          <img *ngIf="item.difficultyBadge" [src]="item.difficultyBadge" class="difficulty-hard" alt="difficulty badge" aria-hidden="true" role="presentation" />
+          <img [src]="item.image || item.imageUrl || '/assets/images/Content-memory-maze-thumbnail.png'"
+            [alt]="item.title || 'content'" />
+          <img *ngIf="item.difficultyBadge" [src]="item.difficultyBadge" class="difficulty-hard" alt="difficulty badge"
+            aria-hidden="true" role="presentation" />
         </div>
 
         <div class="slide-body">
@@ -20,10 +22,13 @@
 
           <div class="slide-footer">
             <div class="rewards">
-              <img src="/assets/app-assets/Coins-icon-common.svg" alt="token" class="icon token"> <span class="amount">{{ item.rewards?.coins }}</span>
-              <img src="/assets/app-assets/Trophies-icon-common.svg" alt="trophy" class="icon trophy"> <span class="amount">{{ item.rewards?.trophies }}</span>
+              <img src="/assets/Icons-Neutral/Icons-Coins.png" alt="token" class="icon token"> <span class="amount">{{
+                item.rewards?.coins }}</span>
+              <img src="/assets/Icons-Neutral/Icon-Trophy.png" alt="trophy" class="icon trophy"> <span class="amount">{{
+                item.rewards?.trophies }}</span>
             </div>
-            <mindful-button type="pink" [text]="item.cta || 'Open'" (click)="onItemClick(item, i); $event?.stopPropagation()"></mindful-button>
+            <mindful-button type="pink" [text]="item.cta || 'Open'"
+              (click)="onItemClick(item, i); $event?.stopPropagation()"></mindful-button>
           </div>
         </div>
       </ng-template>

@@ -1,27 +1,31 @@
 <section class="content-section" aria-label="Curiosity highlights">
-  <img src="/assets/app-assets/Content-banner-bulb-icon-home.svg" class="content-banner content-banner--bulb" aria-hidden="true" role="presentation" />
-  <img src="/assets/app-assets/Content-banner-puzzle-icon-home.svg" class="content-banner content-banner--puzzle" aria-hidden="true" role="presentation" />
-  <img src="/assets/app-assets/Content-banner-book-icon-home.svg" class="content-banner content-banner--book" aria-hidden="true" role="presentation" />
-  <img src="/assets/app-assets/Content-banner-blue-icon-home.svg" class="content-banner content-banner--blue" aria-hidden="true" role="presentation" />
+  <img src="/assets/Images-Transparent/Image-Content-bg1.png" class="content-banner content-banner--bulb"
+    aria-hidden="true" role="presentation" />
+  <img src="/assets/Images-Transparent/Image-Content-bg4.png" class="content-banner content-banner--puzzle"
+    aria-hidden="true" role="presentation" />
+  <img src="/assets/Images-Transparent/Image-Content-bg2.png" class="content-banner content-banner--book"
+    aria-hidden="true" role="presentation" />
+  <img src="/assets/Images-Transparent/Image-Content-bg3.png" class="content-banner content-banner--blue"
+    aria-hidden="true" role="presentation" />
   <header class="content-header">
     <div class="content-title">
       <h2>{{ title || 'Start Curious, Play, Conquer!' }}</h2>
-      <p class="content-sub">{{ subtitle || 'Dive into brain-teasing quizzes, mind-bending puzzles, captivating stories, and insightful reads.' }}</p>
+      <p class="content-sub">{{ subtitle || 'Dive into brain-teasing quizzes, mind-bending puzzles, captivating stories,
+        and insightful reads.' }}</p>
     </div>
   </header>
 
   <nav class="content-actions">
-    <a class="see-all content-section__view-all" aria-label="View all content" routerLink="/content">View all <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></a>
+    <mindful-view-all class="see-all content-section__view-all" [ariaLabel]="'View all content'"
+      [routerLink]="['/content']"></mindful-view-all>
   </nav>
 
-  <!-- horizontal swipe area: touch-friendly scroll + snap -->
   <content-slides [items]="items" [showPager]="showPager" (itemSelected)="itemSelected.emit($event)">
     <ng-content></ng-content>
   </content-slides>
 
-  <div class="debug-indicator" *ngIf="items?.length" style="text-align:center;margin-top:8px;font-size:12px;color:#333;">
-    <!-- Slides items: {{ items.length }} -->
+  <div class="debug-indicator" *ngIf="items?.length"
+    style="text-align:center;margin-top:8px;font-size:12px;color:#333;">
   </div>
 
-  <!-- pager is handled by the content-slides component -->
 </section>

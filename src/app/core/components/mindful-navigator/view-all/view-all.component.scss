@@ -21,7 +21,8 @@
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
-  line-height: 140%; /* 22.4px */
+  line-height: 140%;
+  /* 22.4px */
 }
 
 .btn-icon {
@@ -32,11 +33,9 @@
   object-fit: contain;
 }
 
-/* If the svg inside the file needs smaller internal sizing, the svg should be authored accordingly.
-   We still set the fill color in case the svg inherits 'currentColor'. */
-.btn-icon svg {
-  width: 6.211px;
-  height: 10.235px;
+
+
+.btn-icon path {
   fill: #90214D;
 }
 

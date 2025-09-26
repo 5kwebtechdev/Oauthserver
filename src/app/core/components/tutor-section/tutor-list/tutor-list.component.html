@@ -1,9 +1,10 @@
 <div class="tutor-list-root">
   <div class="tutor-list" role="list">
-  <ng-container *ngIf="tutors && tutors.length > 0; else emptyState">
+    <ng-container *ngIf="tutors && tutors.length > 0; else emptyState">
       <article class="tutors-section__card" role="listitem" *ngFor="let t of tutors">
         <div class="thumbnail">
-          <div class="avatar" [ngStyle]="{'background-image': 'url(' + (t.avatar || '/assets/images/Avatar.png') + ')'}" aria-hidden="true"></div>
+          <div class="avatar" [ngStyle]="{'background-image': 'url(' + (t.avatar || '/assets/images/Avatar.png') + ')'}"
+            aria-hidden="true"></div>
         </div>
 
         <div class="content">
@@ -14,7 +15,8 @@
             </div>
 
             <div class="stats" aria-hidden="true">
-              <img class="icon heart-icon" src="/assets/app-assets/Tutor-Likes-count-icon.svg" alt="Likes" aria-hidden="true" />
+              <img class="icon heart-icon" src="/assets/Icons-Neutral/Icon-Tutor-Like.png" alt="Likes"
+                aria-hidden="true" />
               <span class="meta">{{ t.rating || 400 }} | {{ t.experience || '8+ yrs' }}</span>
             </div>
           </div>
@@ -22,18 +24,21 @@
           <div class="cta-row">
             <div class="info">
               <div class="d-flex flex-col info-sec">
-                 <div class="time">
-                <img class="icon time-icon" src="/assets/app-assets/Tutor-timings-icon.svg" alt="Timings" aria-hidden="true" />
-                <span class="txt">5pm - 8pm</span>
+                <div class="time">
+                  <img class="icon time-icon" src="/assets/Icons-Neutral/Icon-Tutor-Timings.png" alt="Timings"
+                    aria-hidden="true" />
+                  <span class="txt">5pm - 8pm</span>
+                </div>
+
+                <div class="fees">
+                  <img class="icon fee-icon" src="/assets/Icons-Neutral/Icon-Tutor-Fees.png" alt="Fees"
+                    aria-hidden="true" />
+                  <span class="txt">₹ 800/subject</span>
+                </div>
               </div>
 
-              <div class="fees">
-                <img class="icon fee-icon" src="/assets/app-assets/Tutor-fees-icon.svg" alt="Fees" aria-hidden="true" />
-                <span class="txt">₹ 800/subject</span>
-              </div>
-              </div>
-             
-              <mindful-button type="columbian-blue" medium [text]="'View Profile'" (click)="onViewProfile(t)" [attr.aria-label]="'View profile of ' + (t.name || 'Mr. Sharma')"></mindful-button>
+              <mindful-button type="columbian-blue" medium [text]="'View Profile'" (click)="onViewProfile(t)"
+                [attr.aria-label]="'View profile of ' + (t.name || 'Mr. Sharma')"></mindful-button>
             </div>
           </div>
         </div>
@@ -63,12 +68,12 @@
               <div class="time"><span class="txt">—</span></div>
               <div class="fees"><span class="txt">—</span></div>
             </div>
-              <mindful-button type="violet" text="View Profile" [disabled]="true"></mindful-button>
+            <mindful-button type="violet" text="View Profile" [disabled]="true"></mindful-button>
           </div>
         </div>
       </article>
     </ng-template>
 
-    
+
   </div>
 </div>

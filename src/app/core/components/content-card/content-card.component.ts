@@ -1,6 +1,7 @@
 import { Component, Input, TemplateRef, ContentChild, EventEmitter, Output, OnInit } from '@angular/core';
 import { NgIf } from "@angular/common";
 import { ContentSlidesComponent } from '../content-slides/content-slides.component';
+import { ViewAllComponent } from '../mindful-navigator/view-all/view-all.component';
 import { IonicModule } from "@ionic/angular";
 import { RouterModule } from '@angular/router';
 
@@ -8,7 +9,7 @@ import { RouterModule } from '@angular/router';
   selector: 'content-card',
   templateUrl: './content-card.component.html',
   styleUrls: ['./content-card.component.scss'],
-  imports: [NgIf, IonicModule, ContentSlidesComponent, RouterModule],
+  imports: [NgIf, IonicModule, ContentSlidesComponent, RouterModule, ViewAllComponent],
   standalone: true
 })
 export class ContentCardComponent implements OnInit {

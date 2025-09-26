@@ -1,11 +1,10 @@
 <!-- List Mode -->
 <div *ngIf="mode === 'list'">
   <div class="day-at-glance-container">
-   <mindful-card-header
-    [title]="'Your Day at a Glance'"
-    [subtitleMiddle]="'Check tasks • Finish habits • Crush it'">
-    <img src="assets/app-assets/Time-management-home.svg" alt="View All" class="day-at-glance__view-all" (click)="openTimeline()" style="cursor:pointer;" />
-  </mindful-card-header>
+    <mindful-card-header [title]="'Your Day at a Glance'" [subtitleMiddle]="'Check tasks • Finish habits • Crush it'">
+      <img src="/assets/Icons-Neutral/Icon-Time Management.png" alt="View All" class="day-at-glance__view-all"
+        (click)="openTimeline()" style="cursor:pointer;" />
+    </mindful-card-header>
 
     <!-- Tab Navigation -->
     <div class="container w-full">
@@ -62,12 +61,13 @@
 <div *ngIf="mode === 'single'" class="container w-full h-full p-0">
   <div class="habit-wrapper"
     [ngClass]="{'expanded': expanded, 'isRunningLate': isRunningLate,'missedTime': missedTime}">
-  <div class="habit-header-container clickable" (tap)="toggle()" long-press [delay]="1500" (press)="onLongPress()">
+    <div class="habit-header-container clickable" (tap)="toggle()" long-press [delay]="1500" (press)="onLongPress()">
       <div class="container w-full p-0">
         <div class="d-flex justify-content-between">
           <div class="flex-column d-flex gap-1">
             <h3 class="habit-title">{{habit?.title || 'Habit'}}</h3>
-            <h4 class="habit-timing">{{habit?.startTime || getFormattedTime(startTime)}} - {{habit?.endTime || getFormattedTime(endTime)}}
+            <h4 class="habit-timing">{{habit?.startTime || getFormattedTime(startTime)}} - {{habit?.endTime ||
+              getFormattedTime(endTime)}}
             </h4>
           </div>
           <div class="d-flex gap-1 align-self-baseline">

@@ -64,33 +64,33 @@
 
   .content-banner--bulb {
     width: 80.96px;
-    height: 80.96px;
-    left: -2vw;
-    top: 2vh;
+    height: auto;
+    left: 0vw;
+    top: 0vh;
     z-index: 0;
   }
 
   .content-banner--puzzle {
     width: 64px;
-    height: 64px;
-    left: 74vw;
+    height: auto;
+    left: 73vw;
     top: 24px;
     z-index: 0;
   }
 
   .content-banner--book {
-    width: 60px;
+    width: auto;
     height: 60px;
-    left: 9vw;
-    top: -1vh;
+    left: 7vw;
+    top: 0vh;
     z-index: 0;
   }
 
   .content-banner--blue {
-    width: 60px;
+    width: auto;
     height: 60px;
-    left: 66vw;
-    top: -13px;
+    left: 60vw;
+    top: 0px;
     z-index: 0;
   }
 

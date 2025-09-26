@@ -3,121 +3,99 @@
     <!-- User Profile Section -->
     <section class="user-profile-section profile" aria-labelledby="profile-heading">
       <div class="dasboard-wrapper">
-      <div class="profile-content">
+        <div class="profile-content">
 
-        <!-- Top Header with Avatar and Tools -->
-      <header class="profile-header" role="banner">
-        <div class="user-info" role="group" aria-label="User info">
-          <div class="user-avatar" aria-hidden="false">
-            <a [routerLink]="['/authed','user-profile']" aria-label="Open profile">
-              <img src="/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png" alt="{{ userName }} avatar">
-            </a>
-          </div>
-          <div class="user-name-wrap">
-            <span class="user-name">{{ userName }}</span>
-          </div>
+          <!-- Top Header with Avatar and Tools -->
+          <header class="profile-header" role="banner">
+            <div class="user-info" role="group" aria-label="User info">
+              <div class="user-avatar" aria-hidden="false">
+                <a [routerLink]="['/authed','user-profile']" aria-label="Open profile">
+                  <img src="/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png" alt="{{ userName }} avatar">
+                </a>
+              </div>
+              <div class="user-name-wrap">
+                <span class="user-name">{{ userName }}</span>
+              </div>
+            </div>
+
+            <nav class="header-tools" role="navigation" aria-label="Profile tools">
+              <a class="tool-item" aria-label="Notes" [routerLink]="['/notes/home']">
+                <img src="/assets/Icons-Neutral/Icon-Notes.png" alt="Notes" class="tool-icon">
+                <!-- <span class="tool-label">Notes</span> -->
+              </a>
+              <button class="tool-item" type="button" aria-label="Calendar" (click)="openCalendar()">
+                <img src="/assets/Icons-Neutral/Icon-Calendar.png" alt="Calendar" class="tool-icon">
+                <!-- <span class="tool-label">Calendar</span> -->
+              </button>
+            </nav>
+          </header>
+
+          <!-- Centered Stats Row (moved to reusable component) -->
+          <mindful-coins-stats [userCoins]="userCoins" [userStreaks]="userStreaks" [userDays]="userDays"
+            [userBadges]="userBadges"></mindful-coins-stats>
         </div>
 
-        <nav class="header-tools" role="navigation" aria-label="Profile tools">
-          <a class="tool-item" aria-label="Notes" [routerLink]="['/notes/home']">
-            <img src="/assets/app-assets/Notes-Icon-Home-Top.svg" alt="Notes" class="tool-icon">
-           <!-- <span class="tool-label">Notes</span> -->
-          </a>
-          <button class="tool-item" type="button" aria-label="Calendar" (click)="openCalendar()">
-            <img src="/assets/Icons-Neutral/Icon-Calendar.png" alt="Calendar" class="tool-icon">
-            <!-- <span class="tool-label">Calendar</span> -->
-          </button>
-        </nav>
-      </header>
-
-      <!-- Centered Stats Row (moved to reusable component) -->
-      <mindful-coins-stats
-        [userCoins]="userCoins"
-        [userStreaks]="userStreaks"
-        [userDays]="userDays"
-        [userBadges]="userBadges"
-      ></mindful-coins-stats>
-    </div>
-        
         <!-- Speech bubble message card -->
-        <app-speech-bubble
-          [message]="greetingMessage"
-          type="talking"
-          arrowSide="right"
-          [arrowSize]="16"
-          arrowOffset="30px"
-          [arrowAngle]="10"
-          color="#fff"
-          textColor="#282527"
-          style="margin-bottom: 12px;"
-          aria-label="Greeting message"
-          role="status"
-          aria-live="polite"
-        ></app-speech-bubble>
-        
+        <app-speech-bubble [message]="greetingMessage" type="talking" arrowSide="right" [arrowSize]="16"
+          arrowOffset="30px" [arrowAngle]="10" color="#fff" textColor="#282527" style="margin-bottom: 12px;"
+          aria-label="Greeting message" role="status" aria-live="polite"></app-speech-bubble>
+
         <div class="digital-pet" aria-hidden="false">
-        <!-- Reusable mindful-pet component: default pet is panda and age is 1 -->
-        <mindful-pet pet="panda" [age]="1"></mindful-pet>
+          <!-- Reusable mindful-pet component: default pet is panda and age is 1 -->
+          <mindful-pet pet="panda" [age]="1"></mindful-pet>
+        </div>
       </div>
-    </div>
     </section>
 
-  <div class="dashboard-content">  
-    <div class="mood-selector">
-      <mood-selector [value]="selectedMood" (valueChange)="onMoodChange($event)"></mood-selector>
-    </div>
-
-    <!-- Habit Card -->
-    <habit-card mode="list"></habit-card>
-
-    <!-- Ad-banner -->
-    <div>
-      <ad-banner></ad-banner>
-    </div>
-
-    <!-- Content Card -->
-    <div>
-      <content-card></content-card>
-    </div>
-
-    <!-- Reels- card -->
-    <div>
-        <mindful-card-header
-    [title]="'Made by Kids, for Kids!'"
-    [subtitleLeft]="'Watch reels'"
-    [subtitleMiddle]="'Create'"
-    [subtitleRight]="'Get Inspired'">
-    <mindful-view-all mindful-header-actions
-      [routerLink]="['/reel-section']"
-      class="see-all">
-    </mindful-view-all>
-  </mindful-card-header>
-      <div style="margin-top: 10px;">
-      <reels-card></reels-card>
+    <div class="dashboard-content">
+      <div class="mood-selector">
+        <mood-selector [value]="selectedMood" (valueChange)="onMoodChange($event)"></mood-selector>
       </div>
-    </div>
 
-    <!-- Tutor card-->
-    <tutor-card></tutor-card>
+      <!-- Habit Card -->
+      <habit-card mode="list"></habit-card>
 
-    <!-- Journals component-->
-    <journals 
-      [showCreateButton]="true" 
-      [maxDisplayEntries]="3">
-    </journals>
-    
-  <!--Academy section-->
-  <academy-section></academy-section>
+      <!-- Ad-banner -->
+      <div>
+        <ad-banner></ad-banner>
+      </div>
 
-    <!-- Development/Testing Components -->
-    <!-- <mindful-datepicker formControlName="dob" [type]="'date'"></mindful-datepicker>
+      <!-- Content Card -->
+      <div>
+        <content-card></content-card>
+      </div>
+
+      <!-- Reels- card -->
+      <div>
+        <mindful-card-header [title]="'Made by Kids, for Kids!'" [subtitleLeft]="'Watch reels'"
+          [subtitleMiddle]="'Create'" [subtitleRight]="'Get Inspired'">
+          <mindful-view-all mindful-header-actions [routerLink]="['/reel-section']" class="see-all">
+          </mindful-view-all>
+        </mindful-card-header>
+        <div style="margin-top: 10px;">
+          <reels-card></reels-card>
+        </div>
+      </div>
+
+      <!-- Tutor card-->
+      <tutor-card></tutor-card>
+
+      <!-- Journals component-->
+      <journals [showCreateButton]="true" [maxDisplayEntries]="3">
+      </journals>
+
+      <!--Academy section-->
+      <academy-section></academy-section>
+
+      <!-- Development/Testing Components -->
+      <!-- <mindful-datepicker formControlName="dob" [type]="'date'"></mindful-datepicker>
     <mindful-datepicker formControlName="eventRange" [type]="'range'"></mindful-datepicker>
     <mindful-timepicker></mindful-timepicker>
     <mindful-birthdaypicker></mindful-birthdaypicker>
     <mindful-dropdown width="full-width" [options]="[{key: '1', value: 'Value 1'}, {key: '2', value: 'Value 2'}]" label="Test Label"></mindful-dropdown>
     <mindful-selectors (selectedKeysChange)="console.log($event)" [options]="[{key: '1', value: 'Value 1', type: 'habit'}, {key: '2', value: 'Value 2', type: 'task'}]" label="Test Selectors"></mindful-selectors> -->
-  <!-- mood-selector moved above to the profile area -->
-  </div>
+      <!-- mood-selector moved above to the profile area -->
+    </div>
   </div>
 </ion-content>
 <footer></footer>
