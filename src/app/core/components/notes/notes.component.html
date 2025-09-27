@@ -1,9 +1,8 @@
 <ion-content class="notes-fullscreen">
 
-  <mindful-card-header [title]="'Quick Notes. Big Ideas'" [showBackArrow]="true"
-    (backClick)="close()"></mindful-card-header>
+  <mindful-navigator [heading]="'Quick Notes. Big Ideas'" [backIcon]="'arrowSvg'" (back)="close()"></mindful-navigator>
 
-  <div class="empty-notes-container">
+  <div class="empty-notes-container" *ngIf="!notes || notes.length === 0">
     <div class="empty-notes-content">
       <img class="notes-blank-image" src="/assets/Images-Transparent/Image-Notes-Blank.png" alt="Blank Notes">
       <div class="empty-notes-text">
@@ -16,11 +15,12 @@
   </div>
 
   <!--notes-->
-  <div class="note-container">
+  <div class="note-container" *ngIf="notes && notes.length > 0">
     <div class="sort-row">
       <details class="sort-dropdown" role="listbox">
         <summary class="sort-btn" aria-haspopup="listbox" aria-expanded="false">
-          <span class="sort-label">Date Created</span>
+          <span class="sort-label">{{ sortKey === 'created' ? 'Date Created' : sortKey === 'modified' ? 'Date Modified'
+            : sortKey === 'az' ? 'A - Z' : 'Z - A' }}</span>
           <!-- dropdown arrow SVG -->
           <span class="sort-arrow" aria-hidden="true">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -38,9 +38,10 @@
         </summary>
 
         <div class="sort-options" role="presentation">
-          <button class="sort-option selected" role="option">
+          <button class="sort-option" role="option" (click)="setSort('created')"
+            [class.selected]="sortKey === 'created'">
             <span>Date Created</span>
-            <span class="option-tick" aria-hidden="true">
+            <span class="option-tick" aria-hidden="true" *ngIf="sortKey === 'created'">
               <!-- tick SVG -->
               <svg xmlns="http://www.w3.org/2000/svg" width="8" height="7" viewBox="0 0 8 7" fill="none">
                 <path
@@ -50,16 +51,60 @@
             </span>
           </button>
 
-          <button class="sort-option" role="option">Date Modified</button>
-          <button class="sort-option" role="option">A-Z</button>
-          <button class="sort-option" role="option">Z-A</button>
+          <button class="sort-option" role="option" (click)="setSort('modified')"
+            [class.selected]="sortKey === 'modified'">
+            <span>Date Modified</span>
+            <span class="option-tick" aria-hidden="true" *ngIf="sortKey === 'modified'">
+              <svg xmlns="http://www.w3.org/2000/svg" width="8" height="7" viewBox="0 0 8 7" fill="none">
+                <path
+                  d="M3.02022 6.57962C2.82496 6.77488 2.50838 6.77488 2.31311 6.57962L0.353554 4.62006C0.158292 4.4248 0.158291 4.10821 0.353553 3.91295L0.57978 3.68672C0.775042 3.49146 1.09162 3.49146 1.28689 3.68672L2.31311 4.71295C2.50838 4.90821 2.82496 4.90821 3.02022 4.71295L6.71311 1.02006C6.90838 0.824796 7.22496 0.824795 7.42022 1.02006L7.64645 1.24628C7.84171 1.44155 7.84171 1.75813 7.64645 1.95339L3.02022 6.57962Z"
+                  fill="#1C1B1F" />
+              </svg>
+            </span>
+          </button>
+          <button class="sort-option" role="option" (click)="setSort('az')" [class.selected]="sortKey === 'az'">
+            <span>A-Z</span>
+            <span class="option-tick" aria-hidden="true" *ngIf="sortKey === 'az'">
+              <svg xmlns="http://www.w3.org/2000/svg" width="8" height="7" viewBox="0 0 8 7" fill="none">
+                <path
+                  d="M3.02022 6.57962C2.82496 6.77488 2.50838 6.77488 2.31311 6.57962L0.353554 4.62006C0.158292 4.4248 0.158291 4.10821 0.353553 3.91295L0.57978 3.68672C0.775042 3.49146 1.09162 3.49146 1.28689 3.68672L2.31311 4.71295C2.50838 4.90821 2.82496 4.90821 3.02022 4.71295L6.71311 1.02006C6.90838 0.824796 7.22496 0.824795 7.42022 1.02006L7.64645 1.24628C7.84171 1.44155 7.84171 1.75813 7.64645 1.95339L3.02022 6.57962Z"
+                  fill="#1C1B1F" />
+              </svg>
+            </span>
+          </button>
+          <button class="sort-option" role="option" (click)="setSort('za')" [class.selected]="sortKey === 'za'">
+            <span>Z-A</span>
+            <span class="option-tick" aria-hidden="true" *ngIf="sortKey === 'za'">
+              <svg xmlns="http://www.w3.org/2000/svg" width="8" height="7" viewBox="0 0 8 7" fill="none">
+                <path
+                  d="M3.02022 6.57962C2.82496 6.77488 2.50838 6.77488 2.31311 6.57962L0.353554 4.62006C0.158292 4.4248 0.158291 4.10821 0.353553 3.91295L0.57978 3.68672C0.775042 3.49146 1.09162 3.49146 1.28689 3.68672L2.31311 4.71295C2.50838 4.90821 2.82496 4.90821 3.02022 4.71295L6.71311 1.02006C6.90838 0.824796 7.22496 0.824795 7.42022 1.02006L7.64645 1.24628C7.84171 1.44155 7.84171 1.75813 7.64645 1.95339L3.02022 6.57962Z"
+                  fill="#1C1B1F" />
+              </svg>
+            </span>
+          </button>
         </div>
       </details>
     </div>
 
     <!-- Notes List -->
-    <ng-container *ngIf="notes && notes.length; else noNotes">
-      <div class="note-card" *ngFor="let note of notes; let i = index; trackBy: trackByIndex">
+    <!-- show loading -->
+    <ng-container *ngIf="loading">
+      <div class="notes-loading" style="padding: 20px; text-align: center;">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+    </ng-container>
+
+    <!-- show error -->
+    <ng-container *ngIf="!loading && loadError">
+      <div class="notes-error" style="padding: 16px; text-align: center; color: var(--ion-color-danger);">
+        <p>{{ loadError }}</p>
+        <mindful-button type="magenta" small text="Retry" (click)="loadFromServer()"></mindful-button>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!loading && notes && notes.length; else noNotes">
+      <div class="note-card" *ngFor="let note of notes; let i = index; trackBy: trackByIndex" (click)="openNote(note)"
+        role="button" tabindex="0">
         <ng-container *ngIf="isList(note.text); else plainText">
           <ul class="note-text">
             <li *ngFor="let item of getList(note)">{{ item }}</li>

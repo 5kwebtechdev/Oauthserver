@@ -6,13 +6,14 @@ import { FormsModule } from '@angular/forms';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
 import { MindfulBadgeComponent } from '../mindful-badge/mindful-badge.component';
 import { MindfulTagsComponent } from '../mindful-selectors/mindful-tags/mindful-tags.component';
-import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
+import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigator.component';
 import { NotesService, NoteModel } from './notes.service';
+import { NotesSaveComponent } from './notes-save/notes-save.component';
 
 @Component({
   selector: 'notes',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, RouterModule, MindfulButtonComponent, MindfulBadgeComponent, MindfulTagsComponent, MindfulCardHeaderComponent],
+  imports: [CommonModule, IonicModule, FormsModule, RouterModule, MindfulButtonComponent, MindfulBadgeComponent, MindfulTagsComponent, MindfulNavigatorComponent],
   templateUrl: './notes.component.html',
   styleUrls: ['./notes.component.scss']
 })
@@ -37,8 +38,91 @@ export class NotesComponent {
     this.notesService.notes$.subscribe((list) => {
       this.notes = list;
     });
+    // initial load from backend
+    this.loadFromServer();
   }
 
+  /**
+   * Open a note in the save/view modal. Uses Ionic Modal to present the NotesSaveComponent
+   * and passes the note data via componentProps. The modal can be dismissed by the save
+   * component via the injected close callback or by ModalController.dismiss().
+   */
+  async openNote(note: NoteModel) {
+    try {
+      const modal = await this.modalCtrl.create({
+        component: NotesSaveComponent,
+        componentProps: {
+          title: note.title,
+          content: note.text,
+          showDelete: true,
+          showShare: true,
+          noteId: (note as any).id || null,
+          // provide a small helper so the save component can close the modal without needing ModalController itself
+          closeModalFn: () => modal.dismiss()
+        }
+      });
+      await modal.present();
+    } catch (e) {
+      console.error('Failed to open note modal', e);
+      // fallback: navigate to a dedicated route if modal creation fails
+      this.router.navigate(['/authed/notes']);
+    }
+  }
+
+  // sorting state: 'created' | 'modified' | 'az' | 'za'
+  public sortKey: 'created' | 'modified' | 'az' | 'za' = 'created';
+  public loading: boolean = false;
+  public loadError: string | null = null;
+
+  public loadFromServer() {
+    this.loading = true;
+    this.loadError = null;
+    this.notesService.fetchAll().subscribe({
+      next: (list) => {
+        this.notes = list || [];
+        // apply current sort
+        this.applySort();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Failed to load notes', err);
+        this.loadError = 'Failed to load notes';
+        this.loading = false;
+      }
+    });
+  }
+
+  /**
+   * Called when user picks a sort option.
+   */
+  public setSort(key: 'created' | 'modified' | 'az' | 'za') {
+    this.sortKey = key;
+    this.applySort();
+    // close any open details automatically (if used) — template uses native <details>
+    try {
+      const details = document.querySelector('.sort-dropdown') as HTMLDetailsElement | null;
+      if (details && details.open) details.open = false;
+    } catch (e) { /* ignore DOM errors in SSR or test env */ }
+  }
+
+  private applySort() {
+    if (!this.notes || !this.notes.length) return;
+    const notesCopy = [...this.notes];
+    if (this.sortKey === 'created') {
+      notesCopy.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } else if (this.sortKey === 'modified') {
+      notesCopy.sort((a, b) => {
+        const at = a.updatedAt || a.createdAt;
+        const bt = b.updatedAt || b.createdAt;
+        return new Date(bt).getTime() - new Date(at).getTime();
+      });
+    } else if (this.sortKey === 'az') {
+      notesCopy.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    } else if (this.sortKey === 'za') {
+      notesCopy.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
+    }
+    this.notes = notesCopy;
+  }
   close() {
     this.modalCtrl.dismiss();
   }

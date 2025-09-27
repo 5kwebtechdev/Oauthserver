@@ -1,8 +1,13 @@
-import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, Optional } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { CommonModule } from '@angular/common';
+import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
+import { NotesApi } from '../../../api/notes.api';
 
 @Component({
   selector: 'app-notes-save',
+  standalone: true,
+  imports: [CommonModule, MindfulPopupComponent],
   templateUrl: './notes-save.component.html',
   styleUrls: ['./notes-save.component.scss']
 })
@@ -17,11 +22,18 @@ export class NotesSaveComponent implements OnChanges {
   @Output() back = new EventEmitter<void>();
   @Output() delete = new EventEmitter<void>();
   @Output() share = new EventEmitter<void>();
+  // When opened inside an Ionic modal we may receive a close callback
+  @Input() closeModalFn?: () => void;
+  // optional id of the note (if opened from list/modal)
+  @Input() noteId?: any;
 
   contentHtml: SafeHtml = '' as any;
-  showConfirmDelete: boolean = false;
+  // legacy flag removed in favor of MindfulPopup
+  // showConfirmDelete: boolean = false;
+  // Use MindfulPopup for confirmation UI
+  showMindfulPopup: boolean = false;
 
-  constructor(private sanitizer: DomSanitizer) {}
+  constructor(private sanitizer: DomSanitizer, @Optional() private notesApi?: NotesApi) { }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['content']) {
@@ -30,12 +42,16 @@ export class NotesSaveComponent implements OnChanges {
   }
 
   onBack() {
-    this.back.emit();
+    if (this.closeModalFn) {
+      try { this.closeModalFn(); } catch (e) { /* ignore */ }
+    } else {
+      this.back.emit();
+    }
   }
 
   onDelete() {
-    // open confirmation by default
-    this.showConfirmDelete = true;
+    // show confirmation popup (MindfulPopup)
+    this.showMindfulPopup = true;
   }
 
   onShare() {
@@ -92,11 +108,31 @@ export class NotesSaveComponent implements OnChanges {
 
   // Confirmation dialog handlers
   confirmCancel() {
-    this.showConfirmDelete = false;
+    this.showMindfulPopup = false;
   }
 
   confirmDelete() {
-    this.showConfirmDelete = false;
-    this.delete.emit();
+    // hide popup first
+    this.showMindfulPopup = false;
+    // If we have a noteId and NotesApi available, call backend delete first
+    const id = this.noteId;
+    if (id && this.notesApi?.deleteNote) {
+      this.notesApi.deleteNote(id).subscribe({
+        next: () => {
+          if (this.closeModalFn) { try { this.closeModalFn(); } catch (e) { /* ignore */ } }
+          this.delete.emit();
+        },
+        error: (err: any) => {
+          // still emit delete so UI can update; optionally surface error in UI
+          console.error('Failed to delete note via API', err);
+          if (this.closeModalFn) { try { this.closeModalFn(); } catch (e) { /* ignore */ } }
+          this.delete.emit();
+        }
+      });
+    } else {
+      // fallback: just emit delete so caller can remove locally
+      if (this.closeModalFn) { try { this.closeModalFn(); } catch (e) { /* ignore */ } }
+      this.delete.emit();
+    }
   }
 }

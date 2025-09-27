@@ -9,6 +9,10 @@ export interface NoteModel {
   text: string | string[];
   tags: string[];
   createdAt: string;
+  /** optional last-updated timestamp from backend */
+  updatedAt?: string;
+  /** optional id from backend */
+  id?: any;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -45,15 +49,56 @@ export class NotesService {
       tap((res: any) => {
         // If server returns the created note object, use it; otherwise use payload
         const created = res && (res.data || res) ? (res.data || res) : payload;
+        const createdAtVal = created.createdDate ? (created.createdTime ? `${created.createdDate}T${created.createdTime}` : created.createdDate) : (payload.createdAt || new Date().toISOString());
+        const updatedAtVal = created.updatedDate ? (created.updatedTime ? `${created.updatedDate}T${created.updatedTime}` : created.updatedDate) : (created.updatedAt || payload.updatedAt || undefined);
         const note: NoteModel = {
           title: created.title || payload.title || 'Untitled',
           text: created.content || created.text || payload.text || '',
           tags: created.tags || payload.tags || [],
-          createdAt: created.createdDate || created.createdAt || new Date().toISOString()
+          createdAt: createdAtVal,
+          updatedAt: updatedAtVal
+          ,
+          id: created.id || created.noteId || created._id || payload.id || undefined
         };
         this.addLocal(note);
       })
     );
+  }
+
+  /**
+   * Fetch all notes from backend and update local cache.
+   * Returns observable so callers can react to loading/error if desired.
+   */
+  fetchAll(): Observable<NoteModel[]> {
+    return new Observable<NoteModel[]>((subscriber) => {
+      this.notesApi.getAll().subscribe({
+        next: (res: any) => {
+          // API may return { data: [...] } or [...] directly
+          const raw = res && (res.data || res) ? (res.data || res) : [];
+          // map to NoteModel shape
+          this.notes = (raw || []).map((item: any) => {
+            const createdAt = item.createdDate ? (item.createdTime ? `${item.createdDate}T${item.createdTime}` : item.createdDate) : (item.createdAt || new Date().toISOString());
+            const updatedAt = item.updatedDate ? (item.updatedTime ? `${item.updatedDate}T${item.updatedTime}` : item.updatedDate) : (item.updatedAt || undefined);
+            return {
+              title: item.title || item.name || 'Untitled',
+              text: item.content || item.text || '',
+              tags: item.tags || [],
+              createdAt,
+              updatedAt
+              ,
+              id: item.id || item.noteId || item._id || undefined
+            } as NoteModel;
+          });
+          // notify subscribers and emit
+          this.notesChanged.next(this.notes.slice());
+          subscriber.next(this.notes.slice());
+          subscriber.complete();
+        },
+        error: (err) => {
+          subscriber.error(err);
+        }
+      });
+    });
   }
 
   getAll(): NoteModel[] {
