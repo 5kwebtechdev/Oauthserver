@@ -129,3 +129,136 @@ $muted: rgba(40, 37, 39, 0.7);
 		}
 	}
 }
+
+/* Post card styles modeled after the provided PNG */
+.entries {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 16px;
+}
+
+.post-card {
+	width: 361px;
+	min-height: 305px;
+	/* allow the card to grow vertically when content increases */
+	height: auto;
+	flex-shrink: 0;
+	border-radius: 24px;
+	background: #FFF;
+	box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+	padding: 16px;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.post-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.post-date {
+	color: #6B656A;
+	text-align: center;
+	font-family: Nunito;
+	font-size: 16px;
+	font-style: normal;
+	font-weight: 700;
+	line-height: 140%;
+	/* 22.4px */
+}
+
+.post-time {
+	color: #6B656A;
+	text-align: center;
+	font-family: Nunito;
+	font-size: 13px;
+	font-style: normal;
+	font-weight: 700;
+	line-height: 140%;
+	/* 18.2px */
+}
+
+.post-body {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+}
+
+.emoji {
+	width: 65.722px;
+	height: 52px;
+	aspect-ratio: 65.72/52.00;
+}
+
+.post-content {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.post-mood {
+	color: #282527;
+	font-family: Nunito;
+	font-size: 20px;
+	font-style: normal;
+	font-weight: 700;
+	line-height: 140%;
+	/* 28px */
+}
+
+.post-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px 18px;
+	align-items: center;
+}
+
+.tag {
+	color: #282527;
+	text-align: center;
+	font-family: Nunito;
+	font-size: 13px;
+	font-style: normal;
+	font-weight: 600;
+	line-height: 140%;
+	/* 18.2px */
+}
+
+.tag::after {
+	/* dot separator — rely on gap, but add small decorative dot after each tag except last */
+	content: '';
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	background: #7fb6b4;
+	border-radius: 50%;
+	margin-left: 10px;
+}
+
+.post-tags .tag:last-child::after {
+	content: none;
+}
+
+.post-text {
+	color: #282527;
+	font-family: Nunito;
+	font-size: 16px;
+	font-style: normal;
+	font-weight: 600;
+	line-height: 140%;
+	/* 22.4px */
+	/* allow text to wrap and expand the card */
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+
+.post-images img {
+	width: 62.986px;
+	height: 55.606px;
+	flex-shrink: 0;
+}

@@ -11,21 +11,50 @@
       <div class="section">
         <h2>Emotions</h2>
         <div class="options">
-          <div class="option">
+          <div class="option" tabindex="0" role="button" aria-pressed="false" (click)="selectOption('emotions', 0)"
+            (keydown.enter)="selectOption('emotions', 0)" [class.selected]="isSelected('emotions',0)">
             <img src="/assets/Images-Thumbnails/Image-Journal-Emotions1.jpg" alt="Happy">
             <span>Happy</span>
+            <span class="check" *ngIf="isSelected('emotions',0)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="8" height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg>
+            </span>
           </div>
-          <div class="option">
+          <div class="option" tabindex="0" role="button" aria-pressed="false" (click)="selectOption('emotions', 1)"
+            (keydown.enter)="selectOption('emotions', 1)" [class.selected]="isSelected('emotions',1)">
             <img src="/assets/Images-Thumbnails/Image-Journal-Emotions2.jpg" alt="Excited">
             <span>Excited</span>
+            <span class="check" *ngIf="isSelected('emotions',1)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
+          <div class="option" tabindex="0" role="button" aria-pressed="false" (click)="selectOption('emotions', 2)"
+            (keydown.enter)="selectOption('emotions', 2)" [class.selected]="isSelected('emotions',2)">
             <img src="/assets/Images-Thumbnails/Image-Journal-Emotions3.jpg" alt="Angry">
             <span>Angry</span>
+            <span class="check" *ngIf="isSelected('emotions',2)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
+          <div class="option" tabindex="0" role="button" aria-pressed="false" (click)="selectOption('emotions', 3)"
+            (keydown.enter)="selectOption('emotions', 3)" [class.selected]="isSelected('emotions',3)">
             <img src="/assets/Images-Thumbnails/Image-Journal-Emotions4.jpg" alt="Sad">
             <span>Sad</span>
+            <span class="check" *ngIf="isSelected('emotions',3)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
         </div>
       </div>
@@ -34,21 +63,49 @@
       <div class="section">
         <h2>Sleep</h2>
         <div class="options">
-          <div class="option">
+          <div class="option" tabindex="0" role="button" (click)="selectOption('sleep',0)"
+            (keydown.enter)="selectOption('sleep',0)" [class.selected]="isSelected('sleep',0)">
             <img src="/assets/Images-Thumbnails/Image-Journal-Sleep1.jpg" alt="Good">
             <span>Good</span>
+            <span class="check" *ngIf="isSelected('sleep',0)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
+          <div class="option" tabindex="0" role="button" (click)="selectOption('sleep',1)"
+            (keydown.enter)="selectOption('sleep',1)" [class.selected]="isSelected('sleep',1)">
             <img src="/assets/Images-Thumbnails/Image-Journal-Sleep2.jpg" alt="Bad">
             <span>Bad</span>
+            <span class="check" *ngIf="isSelected('sleep',1)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
+          <div class="option" tabindex="0" role="button" (click)="selectOption('sleep',2)"
+            (keydown.enter)="selectOption('sleep',2)" [class.selected]="isSelected('sleep',2)">
             <img src="/assets/Images-Thumbnails/Image-Journal-Sleep3.jpg" alt="Medium">
             <span>Medium</span>
+            <span class="check" *ngIf="isSelected('sleep',2)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
+          <div class="option" tabindex="0" role="button" (click)="selectOption('sleep',3)"
+            (keydown.enter)="selectOption('sleep',3)" [class.selected]="isSelected('sleep',3)">
             <img src="/assets/Images-Thumbnails/Image-Journal-Sleep4.jpg" alt="Early">
             <span>Early</span>
+            <span class="check" *ngIf="isSelected('sleep',3)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
         </div>
       </div>
@@ -57,21 +114,53 @@
       <div class="section">
         <h2>Health</h2>
         <div class="options">
-          <div class="option">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('health',0)"
+            (click)="selectOption('health',0)" (keydown.enter)="selectOption('health',0)"
+            [class.selected]="isSelected('health',0)">
             <img src="/assets/Images-Thumbnails/Image-Journal-Health1.jpg" alt="Good">
             <span>Good</span>
+            <span class="check" *ngIf="isSelected('health',0)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('health',1)"
+            (click)="selectOption('health',1)" (keydown.enter)="selectOption('health',1)"
+            [class.selected]="isSelected('health',1)">
             <img src="/assets/Images-Thumbnails/Image-Journal-Health2.jpg" alt="Bad">
             <span>Bad</span>
+            <span class="check" *ngIf="isSelected('health',1)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('health',2)"
+            (click)="selectOption('health',2)" (keydown.enter)="selectOption('health',2)"
+            [class.selected]="isSelected('health',2)">
             <img src="/assets/Images-Thumbnails/Image-Journal-Health3.jpg" alt="Sick">
             <span>Sick</span>
+            <span class="check" *ngIf="isSelected('health',2)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('health',3)"
+            (click)="selectOption('health',3)" (keydown.enter)="selectOption('health',3)"
+            [class.selected]="isSelected('health',3)">
             <img src="/assets/Images-Thumbnails/Image-Journal-Health4.jpg" alt="Healthy">
             <span>Healthy</span>
+            <span class="check" *ngIf="isSelected('health',3)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
         </div>
       </div>
@@ -80,21 +169,54 @@
       <div class="section">
         <h2>Hobbies</h2>
         <div class="options">
-          <div class="option">
-            <img src="/assets/Images-Thumbnails/Image-Journal-Hobbies1.jpg" alt="Good">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('hobbies',0)"
+            (click)="selectOption('hobbies',0)" (keydown.enter)="selectOption('hobbies',0)"
+            [class.selected]="isSelected('hobbies',0)">
+            <img src="/assets/Images-Thumbnails/Image-Journal-Hobbies1.jpg" alt="Reading">
             <span>Reading</span>
+            <span class="check" *ngIf="isSelected('hobbies',0)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
-            <img src="/assets/Images-Thumbnails/Image-Journal-Hobbies2.jpg" alt="Bad">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('hobbies',1)"
+            (click)="selectOption('hobbies',1)" (keydown.enter)="selectOption('hobbies',1)"
+            [class.selected]="isSelected('hobbies',1)">
+            <img src="/assets/Images-Thumbnails/Image-Journal-Hobbies2.jpg" alt="Sports">
             <span>Sports</span>
+            <span class="check" *ngIf="isSelected('hobbies',1)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="8" height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg>
+            </span>
           </div>
-          <div class="option">
-            <img src="/assets/Images-Thumbnails/Image-Journal-Hobbies3.jpg" alt="Sick">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('hobbies',2)"
+            (click)="selectOption('hobbies',2)" (keydown.enter)="selectOption('hobbies',2)"
+            [class.selected]="isSelected('hobbies',2)">
+            <img src="/assets/Images-Thumbnails/Image-Journal-Hobbies3.jpg" alt="Music">
             <span>Music</span>
+            <span class="check" *ngIf="isSelected('hobbies',2)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
-            <img src="/assets/Images-Thumbnails/Image-Journal-Hobbies4.jpg" alt="Healthy">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('hobbies',3)"
+            (click)="selectOption('hobbies',3)" (keydown.enter)="selectOption('hobbies',3)"
+            [class.selected]="isSelected('hobbies',3)">
+            <img src="/assets/Images-Thumbnails/Image-Journal-Hobbies4.jpg" alt="Travel">
             <span>Travel</span>
+            <span class="check" *ngIf="isSelected('hobbies',3)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
         </div>
       </div>
@@ -103,21 +225,53 @@
       <div class="section">
         <h2>Food</h2>
         <div class="options">
-          <div class="option">
-            <img src="/assets/Images-Thumbnails/Image-Journal-Food1.jpg" alt="Good">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('food',0)"
+            (click)="selectOption('food',0)" (keydown.enter)="selectOption('food',0)"
+            [class.selected]="isSelected('food',0)">
+            <img src="/assets/Images-Thumbnails/Image-Journal-Food1.jpg" alt="Healthy">
             <span>Healthy</span>
+            <span class="check" *ngIf="isSelected('food',0)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
-            <img src="/assets/Images-Thumbnails/Image-Journal-Food2.jpg" alt="Bad">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('food',1)"
+            (click)="selectOption('food',1)" (keydown.enter)="selectOption('food',1)"
+            [class.selected]="isSelected('food',1)">
+            <img src="/assets/Images-Thumbnails/Image-Journal-Food2.jpg" alt="Unhealthy">
             <span>Unhealthy</span>
+            <span class="check" *ngIf="isSelected('food',1)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
-            <img src="/assets/Images-Thumbnails/Image-Journal-Food3.jpg" alt="Sick">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('food',2)"
+            (click)="selectOption('food',2)" (keydown.enter)="selectOption('food',2)"
+            [class.selected]="isSelected('food',2)">
+            <img src="/assets/Images-Thumbnails/Image-Journal-Food3.jpg" alt="Home cooked">
             <span>Home cooked</span>
+            <span class="check" *ngIf="isSelected('food',2)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
-            <img src="/assets/Images-Thumbnails/Image-Journal-Food4.jpg" alt="Healthy">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('food',3)"
+            (click)="selectOption('food',3)" (keydown.enter)="selectOption('food',3)"
+            [class.selected]="isSelected('food',3)">
+            <img src="/assets/Images-Thumbnails/Image-Journal-Food4.jpg" alt="Fast Food">
             <span>Fast Food</span>
+            <span class="check" *ngIf="isSelected('food',3)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
         </div>
       </div>
@@ -126,21 +280,53 @@
       <div class="section">
         <h2>Social</h2>
         <div class="options">
-          <div class="option">
-            <img src="/assets/Images-Thumbnails/Image-Journal-Social1.jpg" alt="Good">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('social',0)"
+            (click)="selectOption('social',0)" (keydown.enter)="selectOption('social',0)"
+            [class.selected]="isSelected('social',0)">
+            <img src="/assets/Images-Thumbnails/Image-Journal-Social1.jpg" alt="Friends">
             <span>Friends</span>
+            <span class="check" *ngIf="isSelected('social',0)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
-            <img src="/assets/Images-Thumbnails/Image-Journal-Social2.jpg" alt="Bad">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('social',1)"
+            (click)="selectOption('social',1)" (keydown.enter)="selectOption('social',1)"
+            [class.selected]="isSelected('social',1)">
+            <img src="/assets/Images-Thumbnails/Image-Journal-Social2.jpg" alt="Family">
             <span>Family</span>
+            <span class="check" *ngIf="isSelected('social',1)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
-            <img src="/assets/Images-Thumbnails/Image-Journal-Social3.jpg" alt="Sick">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('social',2)"
+            (click)="selectOption('social',2)" (keydown.enter)="selectOption('social',2)"
+            [class.selected]="isSelected('social',2)">
+            <img src="/assets/Images-Thumbnails/Image-Journal-Social3.jpg" alt="Alone">
             <span>Alone</span>
+            <span class="check" *ngIf="isSelected('social',2)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
-            <img src="/assets/Images-Thumbnails/Image-Journal-Social4.jpg" alt="Healthy">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('social',3)"
+            (click)="selectOption('social',3)" (keydown.enter)="selectOption('social',3)"
+            [class.selected]="isSelected('social',3)">
+            <img src="/assets/Images-Thumbnails/Image-Journal-Social4.jpg" alt="Party">
             <span>Party</span>
+            <span class="check" *ngIf="isSelected('social',3)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
         </div>
       </div>
@@ -149,21 +335,53 @@
       <div class="section">
         <h2>School</h2>
         <div class="options">
-          <div class="option">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('school',0)"
+            (click)="selectOption('school',0)" (keydown.enter)="selectOption('school',0)"
+            [class.selected]="isSelected('school',0)">
             <img src="/assets/Images-Thumbnails/Image-Journal-School1.jpg" alt="Good">
             <span>Good</span>
+            <span class="check" *ngIf="isSelected('school',0)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('school',1)"
+            (click)="selectOption('school',1)" (keydown.enter)="selectOption('school',1)"
+            [class.selected]="isSelected('school',1)">
             <img src="/assets/Images-Thumbnails/Image-Journal-School2.jpg" alt="Bad">
             <span>Bad</span>
+            <span class="check" *ngIf="isSelected('school',1)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
-            <img src="/assets/Images-Thumbnails/Image-Journal-School3.jpg" alt="Sick">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('school',2)"
+            (click)="selectOption('school',2)" (keydown.enter)="selectOption('school',2)"
+            [class.selected]="isSelected('school',2)">
+            <img src="/assets/Images-Thumbnails/Image-Journal-School3.jpg" alt="Study">
             <span>Study</span>
+            <span class="check" *ngIf="isSelected('school',2)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
-          <div class="option">
-            <img src="/assets/Images-Thumbnails/Image-Journal-School4.jpg" alt="Healthy">
+          <div class="option" tabindex="0" role="button" [attr.aria-pressed]="isSelected('school',3)"
+            (click)="selectOption('school',3)" (keydown.enter)="selectOption('school',3)"
+            [class.selected]="isSelected('school',3)">
+            <img src="/assets/Images-Thumbnails/Image-Journal-School4.jpg" alt="Exam">
             <span>Exam</span>
+            <span class="check" *ngIf="isSelected('school',3)"><svg xmlns="http://www.w3.org/2000/svg" width="8"
+                height="6" viewBox="0 0 8 6" fill="none">
+                <path
+                  d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+                  fill="white" />
+              </svg></span>
           </div>
         </div>
       </div>
@@ -172,7 +390,7 @@
       <div class="section">
         <h2>A Quick Note</h2>
         <div class="note-area">
-          <textarea placeholder="Your notes goes here..." rows="4"></textarea>
+          <textarea placeholder="Your notes goes here..." rows="4" [(ngModel)]="text" name="journalNotes"></textarea>
         </div>
       </div>
 
@@ -211,3 +429,5 @@
     </div>
   </div>
 </div>
+<!-- hidden file input triggered after user allows attach -->
+<input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" hidden />
