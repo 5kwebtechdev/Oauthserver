@@ -1,11 +1,25 @@
-.facts{
+.facts {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
 }
 
-.facts-heading{
+/* Requested front/facts text styling */
+.facts,
+.fact-item .fact-text,
+.fact-answer {
+  color: #282527;
+  text-align: center;
+  font-family: Nunito;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  /* 18.2px */
+}
+
+.facts-heading {
   margin: 0 0 12px 0;
   font-family: Nunito;
   font-weight: 700;
@@ -13,21 +27,21 @@
   color: #282527;
 }
 
-.fact-item-list{
+.fact-item-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
 /* Card look for details */
-.fact-item{
+.fact-item {
   border-radius: 4px;
   background: #FFF;
   box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
   overflow: hidden;
 }
 
-.fact-item summary.fact-main{
+.fact-item summary.fact-main {
   list-style: none;
   display: flex;
   padding: 16px 10px;
@@ -38,9 +52,11 @@
 }
 
 /* remove default disclosure triangle in some browsers */
-.fact-item summary::-webkit-details-marker{ display:none; }
+.fact-item summary::-webkit-details-marker {
+  display: none;
+}
 
-.fact-item .fact-text{
+.fact-item .fact-text {
   color: #282527;
   font-family: Nunito;
   font-size: 13px;
@@ -50,38 +66,38 @@
   width: calc(100% - 40px);
 }
 
-.fact-question{
+.fact-question {
   font-weight: 700;
 }
 
-.fact-desc{
+.fact-desc {
   font-weight: 400;
   font-size: 12px;
   color: #666;
   margin-top: 4px;
 }
 
-.fact-item .fact-icon{
-  display:flex;
-  align-items:center;
-  justify-content:center;
+.fact-item .fact-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   width: 40px;
-  height: 40px;
+  // height: 40px;
 }
 
-.fact-item .chev{
+.fact-item .chev {
   transition: transform 180ms ease-in-out;
   transform: rotate(-90deg);
   width: 16px;
   height: 16px;
 }
 
-.fact-item[open] .chev{
+.fact-item[open] .chev {
   transform: rotate(0deg);
 }
 
-.fact-answer{
+.fact-answer {
   color: #282527;
   text-align: left;
   font-family: Nunito;
@@ -89,7 +105,7 @@
   margin: 6px 12px 12px 12px;
 }
 
-.fact-answer p{
+.fact-answer p {
   margin: 0;
   padding: 0;
 }

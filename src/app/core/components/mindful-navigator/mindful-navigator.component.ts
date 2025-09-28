@@ -29,7 +29,7 @@ export class MindfulNavigatorComponent {
 
   @Output() rightIcon2Click = new EventEmitter<void>();
   @Input() rightType?: 'edit';
-  @Input() rightActions?: Array<{ type: 'edit' | 'icon', src?: string, alt?: string }>;
+  @Input() rightActions?: Array<{ type: 'edit' | 'icon' | 'iconWithCount' | 'heart', src?: string, alt?: string, count?: number }>;
   @Output() rightActionClick = new EventEmitter<{ index: number, action: any }>();
   // Emit when the back button is clicked so parents can intercept navigation.
   @Output() back = new EventEmitter<void>();
@@ -39,7 +39,7 @@ export class MindfulNavigatorComponent {
     this.rightActions = actions;
   }
 
-  constructor(private navigation: NavigationService, private location: Location, private modalCtrl: ModalController) {}
+  constructor(private navigation: NavigationService, private location: Location, private modalCtrl: ModalController) { }
 
   async goBack() {
     // If a parent is listening to (back), let it handle navigation and do not perform

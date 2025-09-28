@@ -13,7 +13,7 @@ import { TutorListComponent, Tutor } from '../tutor-list/tutor-list.component';
   standalone: true
 })
 export class TutorCardComponent {
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
   @Input() name: string = '';
   @Input() avatar: string = '';
   @Input() description: string = '';
@@ -35,7 +35,7 @@ export class TutorCardComponent {
 
   onViewAll() {
     // navigate to the tutors homepage
-    this.router.navigate(['/tutors']);
+    this.router.navigate(['/authed', 'tutors']);
   }
   onViewProfile(tutor: Tutor) {
     console.log('View profile clicked for', tutor);

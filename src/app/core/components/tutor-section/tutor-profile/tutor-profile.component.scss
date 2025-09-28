@@ -1,4 +1,89 @@
-.tutor-profile-root{padding:16px 20px}.hero{display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:8px}.avatar{width:140px;height:140px;border-radius:50%;background-size:cover;background-position:center;box-shadow:0 6px 20px rgba(0,0,0,0.08)}.name{font-size:22px;font-weight:700;margin:0}.role{color:#6b6b6b;margin:0}.subjects{display:flex;gap:8px;margin-top:8px}.pill{background:#d6e3ef;padding:8px 12px;border-radius:999px}.meta-row{display:flex;gap:24px;margin-top:8px}.meta{display:flex;align-items:center;gap:8px}.card{width:100%;background:#f3f6f8;padding:16px;border-radius:12px;margin-top:16px}.card h3{margin:0 0 6px 0}.faq-section{margin-top:22px}.faq-section h3{text-align:center;margin-bottom:12px}
+.tutor-profile-container {
+	padding: 16px;
+}
+
+.hero {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	padding-top: 8px
+}
+
+.avatar {
+	width: 140px;
+	height: 140px;
+	border-radius: 50%;
+	background-size: cover;
+	background-position: center;
+	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08)
+}
+
+.name {
+	font-size: 22px;
+	font-weight: 700;
+	margin: 0
+}
+
+.role {
+	color: #6b6b6b;
+	margin: 0
+}
+
+.subjects {
+	display: flex;
+	gap: 8px;
+	margin-top: 8px
+}
+
+.pill {
+	background: #d6e3ef;
+	padding: 8px 12px;
+	border-radius: 999px
+}
+
+.meta-row {
+	display: flex;
+	gap: 24px;
+	margin-top: 8px
+}
+
+.meta {
+	display: flex;
+	align-items: center;
+	gap: 8px
+}
+
+/* size the small neutral icons (likes, experience, timings, fees) */
+.meta img,
+.time-fees .item img,
+.meta-row .meta img {
+	width: 24px;
+	height: 24px;
+	aspect-ratio: 1/1;
+	flex-shrink: 0;
+}
+
+.card {
+	width: 100%;
+	background: #f3f6f8;
+	padding: 16px;
+	border-radius: 12px;
+	margin-top: 16px
+}
+
+.card h3 {
+	margin: 0 0 6px 0
+}
+
+.faq-section {
+	margin-top: 22px
+}
+
+.faq-section h3 {
+	text-align: center;
+	margin-bottom: 12px
+}
 
 /* Header heart (favorite) button styling - circular white icon */
 .tutor-profile-root ion-toolbar {
@@ -12,16 +97,18 @@
 	min-width: var(--toolbar-btn-size);
 	padding: 0;
 	border-radius: 999px;
-	background: #fff; /* white background */
-	border: 1px solid rgba(40,37,39,0.08);
-	box-shadow: 0 2px 6px rgba(16,16,16,0.08), 0 0 0 6px rgba(0,0,0,0.02) inset;
+	background: #fff;
+	/* white background */
+	border: 1px solid rgba(40, 37, 39, 0.08);
+	box-shadow: 0 2px 6px rgba(16, 16, 16, 0.08), 0 0 0 6px rgba(0, 0, 0, 0.02) inset;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 }
 
 .tutor-profile-root ion-toolbar .button.columbian-blue p {
-	color: #282527; /* dark heart color */
+	color: #282527;
+	/* dark heart color */
 	font-size: 16px;
 	line-height: 1;
 	margin: 0;
@@ -34,69 +121,75 @@
 }
 
 .card {
-    width: 312px;
-flex-shrink: 0;
-border-radius: 12px;
-background: #F3F6FA;
-box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+	width: 312px;
+	flex-shrink: 0;
+	border-radius: 12px;
+	background: #F3F6FA;
+	box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
 }
 
 .card-intro {
-    display: grid;
-    align-items: center;
-    justify-items: center;
+	display: grid;
+	align-items: center;
+	justify-items: center;
 }
 
 .card-intro h3 {
-    align-self: stretch;
-    color: #282527;
-font-family: Nunito;
-font-size: 16px;
-font-style: normal;
-font-weight: 600;
-line-height: 140%; /* 22.4px */
+	align-self: stretch;
+	color: #282527;
+	font-family: Nunito;
+	font-size: 16px;
+	font-style: normal;
+	font-weight: 600;
+	line-height: 140%;
+	/* 22.4px */
 }
 
 .card-intro p {
-    align-self: stretch;
-    color: #282527;
-font-family: Nunito;
-font-size: 13px;
-font-style: normal;
-font-weight: 600;
-line-height: 140%; /* 18.2px */
+	align-self: stretch;
+	color: #282527;
+	font-family: Nunito;
+	font-size: 13px;
+	font-style: normal;
+	font-weight: 600;
+	line-height: 140%;
+	/* 18.2px */
 }
 
 .name {
-    color: #282527;
-font-family: Nunito;
-font-size: 20px;
-font-style: normal;
-font-weight: 700;
-line-height: 140%; /* 28px */
+	color: #282527;
+	font-family: Nunito;
+	font-size: 20px;
+	font-style: normal;
+	font-weight: 700;
+	line-height: 140%;
+	/* 28px */
 }
 
 
 .pill {
-    background: #9BB2D4;
-    border-radius: 24px;
-border: 1px solid #505D83;
-    color: #FFF;
+	background: #9BB2D4;
+	border-radius: 24px;
+	border: 1px solid #505D83;
+	color: #FFF;
 
-font-family: Nunito;
-font-size: 10px;
-font-style: normal;
-font-weight: 600;
-line-height: 140%; /* 14px */
+	font-family: Nunito;
+	font-size: 10px;
+	font-style: normal;
+	font-weight: 600;
+	line-height: 140%;
+	/* 14px */
 }
 
 .level {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
-.row {
-    display: inline-flexbox;
-    justify-content: space-between;
+.time-fees {
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
+	gap: 40px;
 }

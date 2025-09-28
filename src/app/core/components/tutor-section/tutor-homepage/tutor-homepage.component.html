@@ -1,33 +1,39 @@
-<div class="tutor-homepage">
+<ion-content fullscreen class="tutor-homepage">
   <!--tutor home page header-->
   <div class="tutor-header">
     <!-- Heading and Button -->
     <div class="header-top">
-  <h2>Your Guides to Greatness!</h2>
-  <button class="refer-btn" (click)="openReferModal()">Refer a Tutor</button>
+      <h2>Your Guides to Greatness!</h2>
+      <button class="refer-btn" (click)="openReferModal()">Refer a Tutor</button>
     </div>
 
     <!-- Search Bar -->
     <div class="search-bar">
       <span class="search-icon" aria-hidden="true">
         <!-- inline search SVG -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-          <path d="M11.0667 12L6.86667 7.8C6.53333 8.06667 6.15 8.27778 5.71667 8.43333C5.28333 8.58889 4.82222 8.66667 4.33333 8.66667C3.12222 8.66667 2.09722 8.24722 1.25833 7.40833C0.419445 6.56944 0 5.54444 0 4.33333C0 3.12222 0.419445 2.09722 1.25833 1.25833C2.09722 0.419445 3.12222 0 4.33333 0C5.54444 0 6.56944 0.419445 7.40833 1.25833C8.24722 2.09722 8.66667 3.12222 8.66667 4.33333C8.66667 4.82222 8.58889 5.28333 8.43333 5.71667C8.27778 6.15 8.06667 6.53333 7.8 6.86667L12 11.0667L11.0667 12ZM4.33333 7.33333C5.16667 7.33333 5.875 7.04167 6.45833 6.45833C7.04167 5.875 7.33333 5.16667 7.33333 4.33333C7.33333 3.5 7.04167 2.79167 6.45833 2.20833C5.875 1.625 5.16667 1.33333 4.33333 1.33333C3.5 1.33333 2.79167 1.625 2.20833 2.20833C1.625 2.79167 1.33333 3.5 1.33333 4.33333C1.33333 5.16667 1.625 5.875 2.20833 6.45833C2.79167 7.04167 3.5 7.33333 4.33333 7.33333Z" fill="#6B656A"/>
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"
+          aria-hidden="true">
+          <path
+            d="M11.0667 12L6.86667 7.8C6.53333 8.06667 6.15 8.27778 5.71667 8.43333C5.28333 8.58889 4.82222 8.66667 4.33333 8.66667C3.12222 8.66667 2.09722 8.24722 1.25833 7.40833C0.419445 6.56944 0 5.54444 0 4.33333C0 3.12222 0.419445 2.09722 1.25833 1.25833C2.09722 0.419445 3.12222 0 4.33333 0C5.54444 0 6.56944 0.419445 7.40833 1.25833C8.24722 2.09722 8.66667 3.12222 8.66667 4.33333C8.66667 4.82222 8.58889 5.28333 8.43333 5.71667C8.27778 6.15 8.06667 6.53333 7.8 6.86667L12 11.0667L11.0667 12ZM4.33333 7.33333C5.16667 7.33333 5.875 7.04167 6.45833 6.45833C7.04167 5.875 7.33333 5.16667 7.33333 4.33333C7.33333 3.5 7.04167 2.79167 6.45833 2.20833C5.875 1.625 5.16667 1.33333 4.33333 1.33333C3.5 1.33333 2.79167 1.625 2.20833 2.20833C1.625 2.79167 1.33333 3.5 1.33333 4.33333C1.33333 5.16667 1.625 5.875 2.20833 6.45833C2.79167 7.04167 3.5 7.33333 4.33333 7.33333Z"
+            fill="#6B656A" />
         </svg>
       </span>
       <input type="text" placeholder="Looking for a math hero?">
       <span class="divider" aria-hidden="true"></span>
       <button class="mic" aria-label="Use voice search">
         <!-- inline mic SVG -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="13" viewBox="0 0 10 13" fill="none" aria-hidden="true">
-          <path d="M5.00065 8.33203C4.4451 8.33203 3.97287 8.13759 3.58398 7.7487C3.1951 7.35981 3.00065 6.88759 3.00065 6.33203V2.33203C3.00065 1.77648 3.1951 1.30425 3.58398 0.915365C3.97287 0.526476 4.4451 0.332031 5.00065 0.332031C5.55621 0.332031 6.02843 0.526476 6.41732 0.915365C6.80621 1.30425 7.00065 1.77648 7.00065 2.33203V6.33203C7.00065 6.88759 6.80621 7.35981 6.41732 7.7487C6.02843 8.13759 5.55621 8.33203 5.00065 8.33203ZM4.33398 12.9987V10.9487C3.17843 10.7931 2.22287 10.2765 1.46732 9.3987C0.711762 8.52092 0.333984 7.4987 0.333984 6.33203H1.66732C1.66732 7.25425 1.99232 8.04037 2.64232 8.69036C3.29232 9.34037 4.07843 9.66537 5.00065 9.66537C5.92287 9.66537 6.70898 9.34037 7.35898 8.69036C8.00898 8.04037 8.33398 7.25425 8.33398 6.33203H9.66732C9.66732 7.4987 9.28954 8.52092 8.53398 9.3987C7.77843 10.2765 6.82287 10.7931 5.66732 10.9487V12.9987H4.33398ZM5.00065 6.9987C5.18954 6.9987 5.34787 6.93481 5.47565 6.80703C5.60343 6.67925 5.66732 6.52092 5.66732 6.33203V2.33203C5.66732 2.14314 5.60343 1.98481 5.47565 1.85703C5.34787 1.72925 5.18954 1.66536 5.00065 1.66536C4.81176 1.66536 4.65343 1.72925 4.52565 1.85703C4.39787 1.98481 4.33398 2.14314 4.33398 2.33203V6.33203C4.33398 6.52092 4.39787 6.67925 4.52565 6.80703C4.65343 6.93481 4.81176 6.9987 5.00065 6.9987Z" fill="#282527"/>
+        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="13" viewBox="0 0 10 13" fill="none"
+          aria-hidden="true">
+          <path
+            d="M5.00065 8.33203C4.4451 8.33203 3.97287 8.13759 3.58398 7.7487C3.1951 7.35981 3.00065 6.88759 3.00065 6.33203V2.33203C3.00065 1.77648 3.1951 1.30425 3.58398 0.915365C3.97287 0.526476 4.4451 0.332031 5.00065 0.332031C5.55621 0.332031 6.02843 0.526476 6.41732 0.915365C6.80621 1.30425 7.00065 1.77648 7.00065 2.33203V6.33203C7.00065 6.88759 6.80621 7.35981 6.41732 7.7487C6.02843 8.13759 5.55621 8.33203 5.00065 8.33203ZM4.33398 12.9987V10.9487C3.17843 10.7931 2.22287 10.2765 1.46732 9.3987C0.711762 8.52092 0.333984 7.4987 0.333984 6.33203H1.66732C1.66732 7.25425 1.99232 8.04037 2.64232 8.69036C3.29232 9.34037 4.07843 9.66537 5.00065 9.66537C5.92287 9.66537 6.70898 9.34037 7.35898 8.69036C8.00898 8.04037 8.33398 7.25425 8.33398 6.33203H9.66732C9.66732 7.4987 9.28954 8.52092 8.53398 9.3987C7.77843 10.2765 6.82287 10.7931 5.66732 10.9487V12.9987H4.33398ZM5.00065 6.9987C5.18954 6.9987 5.34787 6.93481 5.47565 6.80703C5.60343 6.67925 5.66732 6.52092 5.66732 6.33203V2.33203C5.66732 2.14314 5.60343 1.98481 5.47565 1.85703C5.34787 1.72925 5.18954 1.66536 5.00065 1.66536C4.81176 1.66536 4.65343 1.72925 4.52565 1.85703C4.39787 1.98481 4.33398 2.14314 4.33398 2.33203V6.33203C4.33398 6.52092 4.39787 6.67925 4.52565 6.80703C4.65343 6.93481 4.81176 6.9987 5.00065 6.9987Z"
+            fill="#282527" />
         </svg>
       </button>
     </div>
 
     <!-- Panda Message -->
     <div class="panda-box">
-      
+
       <p class="panda-text">
         Sniffed out the best tutors just for you, <br>
         ready to fetch your favorite?
@@ -43,23 +49,27 @@
     </button>
 
     <div class="sort-wrapper" (click)="$event.stopPropagation()">
-      <button class="sort-btn" (click)="toggleSortMenu()" [attr.aria-expanded]="isSortOpen"> 
+      <button class="sort-btn" (click)="toggleSortMenu()" [attr.aria-expanded]="isSortOpen">
         <span>{{ currentSortLabel }} ▾</span>
       </button>
 
       <ul class="sort-menu" *ngIf="isSortOpen" role="menu" aria-label="Sort options">
-        <li class="sort-item" role="menuitem" [class.active]="currentSort === 'alphabets'" (click)="selectSort('alphabets')">Alphabets <span *ngIf="currentSort === 'alphabets'">✓</span></li>
-        <li class="sort-item" role="menuitem" [class.active]="currentSort === 'mostLiked'" (click)="selectSort('mostLiked')">Most Liked <span *ngIf="currentSort === 'mostLiked'">✓</span></li>
-        <li class="sort-item" role="menuitem" [class.active]="currentSort === 'experience'" (click)="selectSort('experience')">Experience <span *ngIf="currentSort === 'experience'">✓</span></li>
-        <li class="sort-item" role="menuitem" [class.active]="currentSort === 'recent'" (click)="selectSort('recent')">Recently added <span *ngIf="currentSort === 'recent'">✓</span></li>
+        <li class="sort-item" role="menuitem" [class.active]="currentSort === 'alphabets'"
+          (click)="selectSort('alphabets')">Alphabets <span *ngIf="currentSort === 'alphabets'">✓</span></li>
+        <li class="sort-item" role="menuitem" [class.active]="currentSort === 'mostLiked'"
+          (click)="selectSort('mostLiked')">Most Liked <span *ngIf="currentSort === 'mostLiked'">✓</span></li>
+        <li class="sort-item" role="menuitem" [class.active]="currentSort === 'experience'"
+          (click)="selectSort('experience')">Experience <span *ngIf="currentSort === 'experience'">✓</span></li>
+        <li class="sort-item" role="menuitem" [class.active]="currentSort === 'recent'" (click)="selectSort('recent')">
+          Recently added <span *ngIf="currentSort === 'recent'">✓</span></li>
       </ul>
     </div>
   </div>
 
-<!--tutor list-->
-<div class="tutor-list-section">
-  <div class="title-tutor-list">Top picks, trusted by many</div>
-  <tutor-list [tutors]="tutors" (viewProfile)="onViewProfile($event)"></tutor-list>
+  <!--tutor list-->
+  <div class="tutor-list-section">
+    <div class="title-tutor-list">Top picks, trusted by many</div>
+    <tutor-list [tutors]="tutors" (viewProfile)="onViewProfile($event)"></tutor-list>
   </div>
 
   <!--view all button-->
@@ -70,7 +80,8 @@
   <!-- Refer a Tutor Modal -->
   <div class="modal-backdrop" *ngIf="isReferModalOpen" (click)="closeReferModal()" aria-hidden="true"></div>
 
-  <aside id="referModal" class="refer-modal" role="dialog" aria-modal="true" aria-labelledby="referModalTitle" *ngIf="isReferModalOpen">
+  <aside id="referModal" class="refer-modal" role="dialog" aria-modal="true" aria-labelledby="referModalTitle"
+    *ngIf="isReferModalOpen">
     <header class="modal-header">
       <h4 id="referModalTitle">Refer a Tutor</h4>
       <button class="modal-close" (click)="closeReferModal()" aria-label="Close">✕</button>
@@ -85,5 +96,4 @@
       </div>
     </div>
   </aside>
-</div>
- 
+</ion-content>
