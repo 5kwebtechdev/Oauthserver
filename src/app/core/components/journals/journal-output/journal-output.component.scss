@@ -4,16 +4,16 @@
   background: #fff;
   border-radius: 16px;
   padding: 16px;
-  box-shadow: 0 0 2px rgba(0,0,0,0.04);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.04);
 }
 
 .journal-output-header {
   /* Make the header act like a small navigator: centered label with chevrons */
-display: inline-flex;
-justify-content: center;
-align-items: center;
-gap: 150px;
-padding-bottom: 24px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 150px;
+  padding-bottom: 24px;
 }
 
 
@@ -22,65 +22,66 @@ padding-bottom: 24px;
 
 .arrow {
   width: 48px;
-height: 48px;
+  height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
   background: transparent;
   border: none;
-  color: rgba(40,37,39,0.9);
+  color: rgba(40, 37, 39, 0.9);
   font-size: 18px;
   cursor: pointer;
 }
 
 .back-btn:focus {
-  outline: 2px solid rgba(140,33,80,0.15);
+  outline: 2px solid rgba(140, 33, 80, 0.15);
 }
 
 /* Month navigator center block */
 .month-navigator {
   display: flex;
-justify-content: center;
-align-items: center;
-gap: 24px;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
 }
 
 .month-prev,
 .month-next {
   width: 16px;
-height: 16px;
-aspect-ratio: 1/1;
+  height: 16px;
+  aspect-ratio: 1/1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   background: transparent;
   border: none;
-  color: rgba(40,37,39,0.9);
+  color: rgba(40, 37, 39, 0.9);
   font-size: 18px;
   cursor: pointer;
 }
 
 .month-label {
   color: #282527;
-font-family: Nunito;
-font-size: 16px;
-font-style: normal;
-font-weight: 500;
-line-height: 140%; /* 22.4px */
+  font-family: Nunito;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  /* 22.4px */
 }
 
 .subtitle {
   margin: 0;
   font-size: 13px;
-  color: rgba(40,37,39,0.7);
+  color: rgba(40, 37, 39, 0.7);
 }
 
 .empty {
   padding: 24px 12px;
   text-align: center;
-  color: rgba(40,37,39,0.6);
+  color: rgba(40, 37, 39, 0.6);
 }
 
 .entries {
@@ -96,8 +97,8 @@ line-height: 140%; /* 22.4px */
   border-radius: 12px;
   padding: 12px;
   background: #FFF;
-  border: 1px solid rgba(40,37,39,0.06);
-  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+  border: 1px solid rgba(40, 37, 39, 0.06);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
 }
 
 .entry-meta {
@@ -110,7 +111,7 @@ line-height: 140%; /* 22.4px */
 
 .entry-date {
   font-size: 13px;
-  color: rgba(40,37,39,0.8);
+  color: rgba(40, 37, 39, 0.8);
 }
 
 .entry-mood {
@@ -135,7 +136,8 @@ line-height: 140%; /* 22.4px */
 
 .post-card {
   width: 361px;
-  min-height: 305px; /* allow the card to grow vertically when content increases */
+  min-height: 305px;
+  /* allow the card to grow vertically when content increases */
   height: auto;
   flex-shrink: 0;
   border-radius: 24px;
@@ -156,22 +158,24 @@ line-height: 140%; /* 22.4px */
 
 .post-date {
   color: #6B656A;
-text-align: center;
-font-family: Nunito;
-font-size: 16px;
-font-style: normal;
-font-weight: 700;
-line-height: 140%; /* 22.4px */
+  text-align: center;
+  font-family: Nunito;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 140%;
+  /* 22.4px */
 }
 
 .post-time {
   color: #6B656A;
-text-align: center;
-font-family: Nunito;
-font-size: 13px;
-font-style: normal;
-font-weight: 700;
-line-height: 140%; /* 18.2px */
+  text-align: center;
+  font-family: Nunito;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 140%;
+  /* 18.2px */
 }
 
 .post-body {
@@ -182,8 +186,8 @@ line-height: 140%; /* 18.2px */
 
 .emoji {
   width: 65.722px;
-height: 52px;
-aspect-ratio: 65.72/52.00;
+  height: 52px;
+  aspect-ratio: 65.72/52.00;
 }
 
 .post-content {
@@ -195,11 +199,12 @@ aspect-ratio: 65.72/52.00;
 
 .post-mood {
   color: #282527;
-font-family: Nunito;
-font-size: 20px;
-font-style: normal;
-font-weight: 700;
-line-height: 140%; /* 28px */
+  font-family: Nunito;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 140%;
+  /* 28px */
 }
 
 .post-tags {
@@ -211,12 +216,13 @@ line-height: 140%; /* 28px */
 
 .tag {
   color: #282527;
-text-align: center;
-font-family: Nunito;
-font-size: 13px;
-font-style: normal;
-font-weight: 600;
-line-height: 140%; /* 18.2px */
+  text-align: center;
+  font-family: Nunito;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  /* 18.2px */
 }
 
 .tag::after {
@@ -236,11 +242,12 @@ line-height: 140%; /* 18.2px */
 
 .post-text {
   color: #282527;
-font-family: Nunito;
-font-size: 16px;
-font-style: normal;
-font-weight: 600;
-line-height: 140%; /* 22.4px */
+  font-family: Nunito;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  /* 22.4px */
   /* allow text to wrap and expand the card */
   white-space: normal;
   overflow-wrap: anywhere;
@@ -248,6 +255,32 @@ line-height: 140%; /* 22.4px */
 
 .post-images img {
   width: 62.986px;
-height: 55.606px;
-flex-shrink: 0;
+  height: 55.606px;
+  flex-shrink: 0;
+}
+
+/* Floating button fixed to bottom-right */
+.journal-floating-post {
+  position: fixed;
+  right: 16px;
+  bottom: 24px;
+  z-index: 9999;
+  /* ensure above other content */
+  width: 48px;
+  /* make it visually small */
+  height: 48px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Since mindful-button adds its own .button and size styles, make the inner content fit */
+.journal-floating-post .button,
+.journal-floating-post .btn-icon,
+.journal-floating-post p {
+  height: 100%;
+  margin: 0;
+  line-height: 1;
 }

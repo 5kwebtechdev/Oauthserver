@@ -1,7 +1,8 @@
 <section class="journal-empty">
 	<mindful-card-header [title]="'Your Journal, Your Journey'" [subtitleLeft]="'Track moods'" [subtitleMiddle]="'Save'"
 		[subtitleRight]="'Feel Better'">
-		<mindful-view-all mindful-header-actions [routerLink]="'/journal-output'" class="journal-empty__view-all">
+		<mindful-view-all mindful-header-actions [routerLink]="['/authed/journal-output']"
+			class="journal-empty__view-all">
 		</mindful-view-all>
 	</mindful-card-header>
 
@@ -14,8 +15,7 @@
 			<p class="sub">Post your journal to keep your story alive</p>
 		</div>
 
-		<button class="journal-empty__post" (click)="onCreateNewEntry()" aria-label="Post now">
-			<span class="journal-empty__post-text">Post now</span>
-		</button>
+		<mindful-button class="journal-empty__post" type="magenta" large text="Post now"
+			style="display:block; width:100%" (click)="onCreateNewEntry()" aria-label="Post now"></mindful-button>
 	</div>
 </section>

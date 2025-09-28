@@ -4,6 +4,7 @@ import { IonicModule } from "@ionic/angular";
 import { Router } from '@angular/router';
 import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { ViewAllComponent } from '../mindful-navigator/view-all/view-all.component';
+import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
 
 export interface JournalEntry {
   id: string;
@@ -19,7 +20,7 @@ export interface JournalEntry {
   selector: 'journals',
   templateUrl: './journals.component.html',
   styleUrls: ['./journals.component.scss'],
-  imports: [IonicModule, MindfulCardHeaderComponent, ViewAllComponent],
+  imports: [IonicModule, MindfulCardHeaderComponent, ViewAllComponent, MindfulButtonComponent],
   standalone: true
 })
 export class JournalsComponent {
@@ -89,8 +90,8 @@ export class JournalsComponent {
   }
 
   onCreateNewEntry(): void {
-    // Handle create new journal entry
-    console.log('Create new journal entry');
+    // Navigate to the journal input route within the authenticated area
+    this.router.navigate(['/authed/journal-input']).catch(() => { /* swallow navigation errors */ });
   }
 
   onViewAllEntries(): void {
@@ -104,8 +105,8 @@ export class JournalsComponent {
   }
 
   formatDate(date: Date): string {
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
       day: 'numeric',
       year: 'numeric'
     });

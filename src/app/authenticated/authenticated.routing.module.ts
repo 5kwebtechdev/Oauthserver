@@ -19,6 +19,9 @@ const routes: Routes = [
         path: 'user-dashboard',
         component: UserDashboardComponent
       }, {
+        path: 'parent-account',
+        loadComponent: () => import('./parent-account/parent-account.component').then(m => m.ParentAccountComponent)
+      }, {
         path: 'profile/:section',
         component: ProfileComponent
       }, {

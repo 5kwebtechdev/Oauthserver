@@ -3,11 +3,13 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
+import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 
 @Component({
   selector: 'app-journal-input',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, MindfulCardHeaderComponent, MindfulButtonComponent],
   templateUrl: './journal-input.component.html',
   styleUrls: ['./journal-input.component.scss']
 })

@@ -1,6 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 export interface JournalOutputEntry {
   id?: string | number;
   date?: string | Date;
@@ -14,7 +17,7 @@ export interface JournalOutputEntry {
 @Component({
   selector: 'app-journal-output',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent],
   templateUrl: './journal-output.component.html',
   styleUrls: ['./journal-output.component.scss']
 })
@@ -24,7 +27,7 @@ export class JournalOutputComponent implements OnInit {
    */
   @Input() entries: JournalOutputEntry[] = [];
 
-  constructor() {}
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
     // If no entries were provided as an @Input(), try to read from navigation state
@@ -96,5 +99,13 @@ export class JournalOutputComponent implements OnInit {
     };
     return map[(entry.mood || '').toLowerCase()] || '📝';
   }
+
+  /**
+   * Navigate to the journal input page when the floating + button is clicked.
+   */
+  openJournalInput(): void {
+    this.router.navigate(['/authed/journal-input']).catch(() => { /* ignore navigation errors */ });
+  }
+
 }
 

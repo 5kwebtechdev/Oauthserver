@@ -1,49 +1,54 @@
-<div class="journal-output-container">
-  <div class="journal-output-header">
-    <div class="output-back-arrow">
-      <button class="back-btn" type="button" aria-label="Go back">
-        <span class="arrow" aria-hidden="true">←</span>
-      </button>
-    </div>
+<ion-content fullscreen>
+  <div class="journal-output-container">
+    <div class="journal-output-header">
+      <div class="journal-output-header-row"
+        style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+        <mindful-navigator class="output-back-navigator" heading=""></mindful-navigator>
 
-    <div class="month-navigator" role="group" aria-label="Month navigator">
-      <button class="month-prev" type="button" aria-label="Previous month">‹</button>
-      <div class="month-label">April, 2025</div>
-      <button class="month-next" type="button" aria-label="Next month">›</button>
-    </div>
-  </div>
-
-  <div *ngIf="!entries || entries.length === 0" class="empty">
-    <p>No journal entries yet. Try adding one!</p>
-  </div>
-<!-- All post note cards -->
-  <div class="entries" *ngIf="entries && entries.length">
-    <div *ngFor="let entry of entries; trackBy: trackById" class="post-card">
-      <div class="post-header">
-        <div class="post-date">{{ formatHeaderDate(entry.date) }}</div>
-        <div class="post-time">{{ formatTime(entry.date) }}</div>
+        <div class="month-navigator" role="group" aria-label="Month navigator">
+          <button class="month-prev" type="button" aria-label="Previous month">‹</button>
+          <div class="month-label">April, 2025</div>
+          <button class="month-next" type="button" aria-label="Next month">›</button>
+        </div>
       </div>
+    </div>
 
-      <div class="post-body">
-        <div class="emoji">{{ getEmoji(entry) }}</div>
-        <div class="post-content">
-          <div class="post-mood">{{ entry.mood || 'Mood' }}</div>
+    <div *ngIf="!entries || entries.length === 0" class="empty">
+      <p>No journal entries yet. Try adding one!</p>
+    </div>
+    <!-- All post note cards -->
+    <div class="entries" *ngIf="entries && entries.length">
+      <div *ngFor="let entry of entries; trackBy: trackById" class="post-card">
+        <div class="post-header">
+          <div class="post-date">{{ formatHeaderDate(entry.date) }}</div>
+          <div class="post-time">{{ formatTime(entry.date) }}</div>
+        </div>
 
-          <div class="post-tags">
-            <ng-container *ngFor="let tag of joinTags(entry.tags); let i = index">
-              <span class="tag">{{ tag }}</span>
-            </ng-container>
-          </div>
+        <div class="post-body">
+          <div class="emoji">{{ getEmoji(entry) }}</div>
+          <div class="post-content">
+            <div class="post-mood">{{ entry.mood || 'Mood' }}</div>
 
-          <div class="post-text">
-            {{ entry.text }}
-          </div>
+            <div class="post-tags">
+              <ng-container *ngFor="let tag of joinTags(entry.tags); let i = index">
+                <span class="tag">{{ tag }}</span>
+              </ng-container>
+            </div>
 
-          <div class="post-images" *ngIf="entry.images && entry.images.length">
-            <img [src]="entry.images[0]" alt="attachment" />
+            <div class="post-text">
+              {{ entry.text }}
+            </div>
+
+            <div class="post-images" *ngIf="entry.images && entry.images.length">
+              <img [src]="entry.images[0]" alt="attachment" />
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+</ion-content>
+
+<!-- Floating Post Button (small, magenta) -->
+<mindful-button type="magenta" text="+" large class="journal-floating-post"
+  (click)="openJournalInput()"></mindful-button>
