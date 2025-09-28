@@ -1,16 +1,19 @@
 .note-new-container {
   width: 393px;
-height: 852px;
+  height: 852px;
   background: #fff;
   padding: 16px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 /* Header */
 .header {
   display: flex;
   align-items: center;
-  margin-bottom: 24px;
+  padding-top: 24px;
 }
 
 .header .back-arrow {
@@ -54,11 +57,13 @@ height: 852px;
   outline: none;
   resize: none;
   color: #6B656A;
-font-family: Nunito;
-font-size: 20px;
-font-style: normal;
-font-weight: 600;
-line-height: 140%; /* 28px */
+  font-family: Nunito;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  padding-top: 16px;
+  /* 28px */
 }
 
 .notes-new__footer {

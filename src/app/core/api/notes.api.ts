@@ -28,4 +28,21 @@ export class NotesApi {
         const url = `${this.base}/notes/add`;
         return this.http.post(url, payload, { headers: this.headers() });
     }
+
+    /**
+     * Fetch all notes from the backend.
+     * Expected endpoint: GET {base}/notes/all
+     */
+    getAll(): Observable<any> {
+        const url = `${this.base}/notes/all`;
+        return this.http.get(url, { headers: this.headers() });
+    }
+
+    /**
+     * Delete a note by id. Expected endpoint: DELETE {base}/notes/delete/{id}
+     */
+    deleteNote(id: any): Observable<any> {
+        const url = `${this.base}/notes/delete/${id}`;
+        return this.http.delete(url, { headers: this.headers() });
+    }
 }

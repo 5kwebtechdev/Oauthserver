@@ -16,7 +16,7 @@ const routes: Routes = [
     children: [
 
       {
-        path: 'home',
+        path: 'user-dashboard',
         component: UserDashboardComponent
       }, {
         path: 'profile/:section',

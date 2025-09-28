@@ -2,6 +2,29 @@
   display: flex;
   flex-direction: column;
   padding: 1rem 1rem 3rem 1rem;
+
+  .mindful-popup-container {
+    display: inline-flex;
+    padding: 12px 24px !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .mindful-popup-dual-cta {
+
+    /* penetrate child component styles to override mindful-button's width */
+    ::ng-deep .button.bronze.large {
+      width: auto !important;
+      /* let content size the button */
+      max-width: 240px !important;
+      /* prevent it from becoming too wide in popups */
+      min-width: 120px !important;
+      /* keep a reasonable touch target */
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+    }
+  }
 }
 
 .note-header {
@@ -9,6 +32,15 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 0;
+  width: 100%;
+  justify-content: space-between;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 60%;
+  }
 }
 
 .note-header .back {
@@ -19,12 +51,12 @@
 }
 
 .note-header .title {
-  flex: 1 1 auto;
   font-weight: 600;
   font-size: 1.15rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: 145px !important;
 }
 
 .header-actions {
@@ -40,7 +72,7 @@
   align-items: center;
   justify-content: center;
   background: #fff;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06), inset 0 -2px 0 rgba(0,0,0,0.02);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06), inset 0 -2px 0 rgba(0, 0, 0, 0.02);
   border: none;
   cursor: pointer;
   font-size: 1.05rem;
@@ -72,7 +104,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,0.25);
+  background: rgba(0, 0, 0, 0.25);
   z-index: 1100;
 }
 
@@ -81,7 +113,7 @@
   background: #fff;
   border-radius: 16px;
   padding: 28px 32px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   text-align: center;
 }
 
@@ -113,7 +145,7 @@
   border: none;
   background: linear-gradient(#b23a1d, #8a230f);
   color: #fff;
-  box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.15);
   font-size: 1rem;
   cursor: pointer;
 }

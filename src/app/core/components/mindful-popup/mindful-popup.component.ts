@@ -1,6 +1,8 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
+import { buttonStyles } from '../mindful-button/button.types';
 
 export interface MindfulPopupCTA {
   text: string;
@@ -8,6 +10,10 @@ export interface MindfulPopupCTA {
   callback?: () => void;
   type?: 'primary' | 'secondary';
   disabled?: boolean;
+  // optional: if provided, popup will render a <mindful-button> with these options
+  buttonStyle?: buttonStyles;
+  buttonMedium?: boolean;
+  buttonLarge?: boolean;
 }
 
 export interface MindfulPopupConfig {
@@ -25,14 +31,14 @@ export interface MindfulPopupConfig {
 @Component({
   selector: 'app-mindful-popup',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, MindfulButtonComponent],
   templateUrl: './mindful-popup.component.html',
   styleUrls: ['./mindful-popup.component.scss']
 })
 export class MindfulPopupComponent implements OnInit {
   @Input() config: MindfulPopupConfig = {};
   @Input() isVisible: boolean = false;
-  
+
   // Individual properties for backwards compatibility and direct usage
   @Input() image?: string;
   @Input() imageAlt?: string = 'Mindful Buddy';
@@ -98,9 +104,9 @@ export class MindfulPopupComponent implements OnInit {
     return this.hasImage || this.hasHeading || this.hasSubtitle;
   }
 
-  constructor() {}
+  constructor() { }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   onPrimaryClick(): void {
     const cta = this.finalConfig.primaryCTA;

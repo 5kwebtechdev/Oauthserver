@@ -1,7 +1,7 @@
-import {booleanAttribute, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {NgClass, NgIf} from "@angular/common";
-import {buttonStyles} from "./button.types";
-import {CoerceBoolean} from "../../coerceBoolean.decorator";
+import { booleanAttribute, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { NgClass, NgIf } from "@angular/common";
+import { buttonStyles } from "./button.types";
+import { CoerceBoolean } from "../../coerceBoolean.decorator";
 
 @Component({
   standalone: true,
@@ -18,34 +18,34 @@ import {CoerceBoolean} from "../../coerceBoolean.decorator";
 export class MindfulButtonComponent implements OnInit {
 
   @Input()
-  type !: buttonStyles;
+  type?: buttonStyles;
 
   @Input()
-  text: string = "Undefined";
+  text?: string = "Undefined";
 
   // optional icon path (web path, e.g. '/assets/app-assets/Coins-icon-common.svg')
   @Input()
   icon?: string;
 
-  @Input({transform: booleanAttribute})
+  @Input({ transform: booleanAttribute })
   @CoerceBoolean()
   medium: boolean = false;
 
-  @Input({transform: booleanAttribute})
+  @Input({ transform: booleanAttribute })
   @CoerceBoolean()
   large: boolean = false
 
   // @Input()
   // width: string = "auto";
 
-  @Input({transform: booleanAttribute})
+  @Input({ transform: booleanAttribute })
   @CoerceBoolean()
   disabled: boolean = false
 
   constructor() { }
 
   ngOnInit(): void {
-    if(!this.type){
+    if (!this.type) {
       console.error("MindfulButtonComponent: type is required", this.text);
     }
   }
