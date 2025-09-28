@@ -1,5 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
+import { AuthApi } from '../../api/auth.api';
 
 export interface MoodOption { key: string; label: string; emoji?: string }
 
@@ -42,12 +45,47 @@ export class MoodSelectorComponent {
   openPopup() { this.popupSelection = null; this.showPopup = true }
   closePopup() { this.showPopup = false }
   choosePopup(src: string) { this.popupSelection = src }
+  constructor(private http: HttpClient, private authApi: AuthApi) { }
+
   setVibe() {
     if (!this.popupSelection) return;
-    // replace active emoji with chosen asset by emitting its src as a special key
-    this.value = 'asset:' + this.popupSelection;
-    this.valueChange.emit(this.value);
-    this.showPopup = false;
+
+    const opt = this.popupOptions.find(p => p.src === this.popupSelection);
+    let vibeKey = '';
+    if (opt && opt.label) {
+      const lab = opt.label.toLowerCase();
+      if (lab.includes('happy')) vibeKey = 'happy';
+      else if (lab.includes('excited')) vibeKey = 'excited';
+      else if (lab.includes('sad')) vibeKey = 'sad';
+      else if (lab.includes('nervous') || lab.includes('neutral')) vibeKey = 'neutral';
+      else vibeKey = lab.replace(/\s+/g, '_');
+    }
+
+    if (!vibeKey && this.value && !String(this.value).startsWith('asset:')) {
+      vibeKey = String(this.value);
+    }
+
+    const url = `${environment.apiUrl}/mood/vibes/set`;
+    const body = { vibe: vibeKey || 'neutral' };
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    let token = this.authApi?.getToken?.() || (environment && environment.apiAuthToken) || null;
+
+    console.debug('[MoodSelector] sending vibe', body, 'token present?', !!token);
+    if (token) headers = headers.set('Authorization', token.startsWith('Bearer ') ? token : `Bearer ${token}`);
+
+    this.http.post(url, body, { headers }).subscribe({
+      next: () => {
+        this.value = 'asset:' + this.popupSelection;
+        this.valueChange.emit(this.value);
+        this.showPopup = false;
+      },
+      error: (err) => {
+        console.error('Failed to set vibe', err);
+        this.value = 'asset:' + this.popupSelection;
+        this.valueChange.emit(this.value);
+        this.showPopup = false;
+      }
+    });
   }
 
   // Helpers to determine active asset vs unicode emoji
