@@ -279,6 +279,7 @@ p {
   background: linear-gradient(132deg, #772917 1.89%, #B93915 98.11%);
   box-shadow: 0 0 1px 0.5px rgba(185, 57, 21, 0.20), 0 -4px 2px 0 #DF4D17 inset;
 }
+
 /* Large bronze variant (mirrors .green.large style structure) */
 .bronze.large {
   display: flex;
@@ -300,7 +301,8 @@ p {
 .button.bronze.disabled {
   /* reset the global grayscale filter for bronze so colors stay exact */
   filter: none;
-  pointer-events: none; /* keep it non-interactive */
+  pointer-events: none;
+  /* keep it non-interactive */
   opacity: 0.5;
 }
 
@@ -323,7 +325,6 @@ p {
   background: linear-gradient(91deg, #7284B9 0.01%, #505D83 99.99%);
   box-shadow: 0 0 1px 0.5px rgba(80, 93, 131, 0.20), 0 -2px 2px 0 #8AA0CA inset;
   display: flex;
-  width: 88px;
   height: 34px;
   padding: 8px 12px;
   justify-content: center;
@@ -339,11 +340,12 @@ p {
   font-size: 10px;
   font-style: normal;
   font-weight: 600;
-  line-height: 140%; /* 14px */
+  line-height: 140%;
+  /* 14px */
   margin: 0;
 }
 
-.btn-icon{
+.btn-icon {
   width: 18px;
   height: 18px;
   vertical-align: middle;

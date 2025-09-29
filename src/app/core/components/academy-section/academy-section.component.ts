@@ -34,7 +34,7 @@ export class AcademySectionComponent {
       duration: '20 min',
       level: 'Beginner',
       description: 'Learn simple steps to plan, track, and adjust your money so you can reach your goals with confidence.',
-      image: '/assets/app-assets/Budget-basic.svg'
+      image: '/assets/Images-Transparent/Academy-Course-Thubmnail3.png'
     },
     {
       id: 'communication-1',
@@ -43,7 +43,7 @@ export class AcademySectionComponent {
       duration: '15 min',
       level: 'Intermediate',
       description: 'Master the art of clear communication and build stronger relationships in all areas of life.',
-      image: '/assets/app-assets/Communication.svg'
+      image: '/assets/Images-Transparent/Academy-Course-Thubmnail4.png'
     },
     {
       id: 'time-management-1',
@@ -52,7 +52,7 @@ export class AcademySectionComponent {
       duration: '25 min',
       level: 'Beginner',
       description: 'Discover effective strategies to organize your time and boost productivity while maintaining balance.',
-      image: '/assets/app-assets/Time-management.svg'
+      image: '/assets/Images-Transparent/Academy-Course-Thubmnail5.png'
     }
   ];
 
@@ -60,7 +60,7 @@ export class AcademySectionComponent {
 
   onViewAll(): void {
     // Navigate to the academy home page
-    this.router.navigate(['/academy']);
+    this.router.navigate(['/authed/academy']);
   }
 
   onStart(course: CourseCard): void {

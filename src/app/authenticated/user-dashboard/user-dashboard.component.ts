@@ -80,8 +80,8 @@ export class UserDashboardComponent implements OnInit {
   }
 
   openCalendar() {
-    // Navigate to the calendar-main standalone component route
-    this.router.navigateByUrl('/calendar-main');
+    // Navigate to the calendar-main component route
+    this.router.navigate(['/authed/calendar-main']);
   }
 
   protected readonly console = console;

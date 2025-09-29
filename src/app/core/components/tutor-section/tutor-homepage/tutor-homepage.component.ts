@@ -7,11 +7,13 @@ import { TutorListComponent, Tutor } from '../tutor-list/tutor-list.component';
 import { TutorAllFilterComponent } from '../tutor-all-filter/tutor-all-filter.component';
 import { TutorViewAllScreenComponent } from '../Tutor-View-all-Screen/tutor-view-all-screen.component';
 import { TutorProfileComponent } from '../tutor-profile/tutor-profile.component';
+import { FooterComponent } from '../../footer/footer.component';
+import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
 
 @Component({
   selector: 'tutor-homepage',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulButtonComponent, TutorListComponent, MindfulPetComponent, TutorViewAllScreenComponent],
+  imports: [CommonModule, IonicModule, MindfulButtonComponent, TutorListComponent, MindfulPetComponent, TutorViewAllScreenComponent, TutorAllFilterComponent, FooterComponent, MindfulPopupComponent],
   templateUrl: './tutor-homepage.component.html',
   styleUrls: ['./tutor-homepage.component.scss']
 })
@@ -62,13 +64,13 @@ export class TutorHomepageComponent {
   isSortOpen = false;
   currentSort: 'alphabets' | 'mostLiked' | 'experience' | 'recent' = 'alphabets';
 
-  constructor(private modalCtrl: ModalController) {}
+  constructor(private modalCtrl: ModalController) { }
 
   async openAllFilters() {
     const modal = await this.modalCtrl.create({
       component: TutorAllFilterComponent,
       componentProps: {
-        filters: ['Mathematics','Science','English','Computer Science','Social Studies','Hindi','Art & Craft']
+        filters: ['Mathematics', 'Science', 'English', 'Computer Science', 'Social Studies', 'Hindi', 'Art & Craft']
       }
     });
     await modal.present();

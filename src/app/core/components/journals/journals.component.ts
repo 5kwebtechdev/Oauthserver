@@ -156,7 +156,7 @@ export class JournalsComponent {
         this.loading = false;
         console.error('Failed to load journal entries', err);
         // fallback to sample entries so UI still shows something
-        this.entries = this.sampleEntries;
+        // this.entries = this.sampleEntries;
       }
     });
   }

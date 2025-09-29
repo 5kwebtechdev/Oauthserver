@@ -124,7 +124,15 @@ export class NotesComponent {
     this.notes = notesCopy;
   }
   close() {
-    this.modalCtrl.dismiss();
+    this.modalCtrl.getTop().then(modal => {
+      if (modal) {
+        this.modalCtrl.dismiss();
+      } else {
+        this.router.navigate(['/authed/user-dashboard']);
+      }
+    }).catch(() => {
+      this.router.navigate(['/authed/user-dashboard']);
+    });
   }
 
   go(page: 'empty' | 'home' | 'input' | 'save') {

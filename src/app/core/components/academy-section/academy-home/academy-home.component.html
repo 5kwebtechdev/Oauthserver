@@ -1,48 +1,48 @@
-<div class="main-container">
-  <!-- Header -->
-  <div class="header">
-    <div class="back-arrow">←</div>
-    <div class="header-texts">
-      <h2 class="title">Welcome to Your Life<br>Skills Quest!</h2>
-      <p class="subtitle">Real lessons • Life ready • Future strong</p>
-    </div>
-  </div>
+<ion-content [fullscreen]="true">
+  <div class="main-container">
+    <!-- Header -->
+    <mindful-card-header [title]="'Welcome to Your Life Skills Quest!'" [subtitleLeft]="'Real lessons'"
+      [subtitleMiddle]="'Life ready'" [subtitleRight]="'Future strong'" [showBackArrow]="true"
+      (backClick)="onBackClick()">
+    </mindful-card-header>
 
-  <!-- Panda Section -->
-  <div class="panda-section">
-    <img src="/assets/app-assets/Digital-pet-panda.svg" alt="Panda" class="panda-img">
-    <div class="speech-bubble">
-      These lessons are like superpowers for your real world!
+    <!-- Panda Section -->
+    <div class="panda-section">
+      <img src="/assets/Images-Transparent/Image-Academy-Cat1.png" alt="Panda" class="panda-img">
+      <div class="speech-bubble">
+        These lessons are like superpowers for your real world!
+      </div>
     </div>
-  </div>
 
-  <!-- Question -->
-  <div class="question">
-    Where do you want to grow today?
-  </div>
+    <!-- Question -->
+    <div class="question">
+      Where do you want to grow today?
+    </div>
 
-  <!-- Cards Section -->
-  <div class="cards">
-    <div class="card yellow" (click)="openManagingMoney()">
-      <img src="/assets/app-assets/Academy-Managing-money.svg" alt="Managing Money">
-      <p>Managing<br>Money</p>
+    <!-- Cards Section -->
+    <div class="cards">
+      <div class="card yellow" (click)="openManagingMoney()">
+        <img src="/assets/Images-Transparent/Image-Academy-Cat1.png" alt="Managing Money" (click)="openManagingMoney()">
+        <p>Managing<br>Money</p>
+      </div>
+      <div class="card purple">
+        <img src="/assets/Images-Transparent/Image-Academy-Cat2.png" alt="Communication">
+        <p>Communication</p>
+      </div>
+      <div class="card pink">
+        <img src="/assets/Images-Transparent/Image-Academy-Cat3.png" alt="Meditation">
+        <p>Meditation</p>
+      </div>
+      <div class="card green">
+        <img src="/assets/Images-Transparent/Image-Academy-Cat4.png" alt="Cultural Values">
+        <p>Cultural<br>Values</p>
+      </div>
     </div>
-    <div class="card purple">
-      <img src="/assets/app-assets/Academy-communication.svg" alt="Communication">
-      <p>Communication</p>
-    </div>
-    <div class="card pink">
-      <img src="/assets/app-assets/Academy-meditation.svg" alt="Meditation">
-      <p>Meditation</p>
-    </div>
-    <div class="card green">
-      <img src="/assets/app-assets/Academy-cultural-values.svg" alt="Cultural Values">
-      <p>Cultural<br>Values</p>
-    </div>
-  </div>
 
-  <!-- Footer -->
-  <div class="footer-note">
-    Tap a card to learn real-life stuff!
+    <!-- Footer -->
+    <div class="footer-note">
+      Tap a card to learn real-life stuff!
+    </div>
   </div>
-</div>
+</ion-content>
+<footer></footer>

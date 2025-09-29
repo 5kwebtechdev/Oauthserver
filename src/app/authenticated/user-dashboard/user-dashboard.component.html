@@ -23,10 +23,10 @@
                 <img src="/assets/Icons-Neutral/Icon-Notes.png" alt="Notes" class="tool-icon">
                 <!-- <span class="tool-label">Notes</span> -->
               </a>
-              <button class="tool-item" type="button" aria-label="Calendar" (click)="openCalendar()">
+              <a class="tool-item" type="button" aria-label="Calendar" (click)="openCalendar()">
                 <img src="/assets/Icons-Neutral/Icon-Calendar.png" alt="Calendar" class="tool-icon">
                 <!-- <span class="tool-label">Calendar</span> -->
-              </button>
+              </a>
             </nav>
           </header>
 
@@ -69,7 +69,7 @@
       <div>
         <mindful-card-header [title]="'Made by Kids, for Kids!'" [subtitleLeft]="'Watch reels'"
           [subtitleMiddle]="'Create'" [subtitleRight]="'Get Inspired'">
-          <mindful-view-all mindful-header-actions [routerLink]="['/reel-section']" class="see-all">
+          <mindful-view-all mindful-header-actions [routerLink]="['/authed/reel-section']" class="see-all">
           </mindful-view-all>
         </mindful-card-header>
         <div style="margin-top: 10px;">

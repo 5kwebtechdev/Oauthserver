@@ -3,6 +3,7 @@
   align-items: center;
   justify-content: space-between;
   width: 92vw;
+  margin-top: 60px;
 }
 
 .mindful-card-header__left {
@@ -36,6 +37,11 @@
 .mindful-card-header__tagline .dot {
   width: 4px;
   height: 4px;
+  background-color: #282527;
+  border-radius: 50%;
+  margin: 0 8px;
+  opacity: 0.7;
+  flex-shrink: 0;
 }
 
 .mindful-card-header__actions {

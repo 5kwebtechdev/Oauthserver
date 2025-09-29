@@ -1,26 +1,27 @@
-<div class="filters-page">
+<ion-content fullscreen>
 
-    <!-- Top Bar -->
-    <div class="top-bar">
-  <span class="back-arrow" (click)="close()">←</span>
-      <h2>All Filters</h2>
-      <button class="apply-btn">Apply filters</button>
-    </div>
+  <div class="filters-page">
+
+    <!--navigator header-->
+    <mindful-navigator [heading]="'All Filters'" (back)="close()">
+      <mindful-button slot="end" type="columbian-blue" text="Apply filters" class="small"
+        (click)="apply()"></mindful-button>
+    </mindful-navigator>
 
     <!-- Content Section -->
     <div class="content">
       <!-- Sidebar -->
       <div class="sidebar">
-        <div class="sidebar-item active">
-          <img src="/assets/app-assets/Tutor-all-filters-subjects-icon.svg" alt="Subjects">
+        <div class="sidebar-item" [class.active]="selectedCategory === 'Subjects'" (click)="selectCategory('Subjects')">
+          <img src="/assets/Icons-Neutral/Icon-Tutor-Subjects.png" alt="Subjects">
           <span>Subjects</span>
         </div>
-        <div class="sidebar-item">
-          <img src="/assets/app-assets/Tutor-all-filters-hobbies-icon.svg" alt="Hobbies">
+        <div class="sidebar-item" [class.active]="selectedCategory === 'Hobbies'" (click)="selectCategory('Hobbies')">
+          <img src="/assets/Icons-Neutral/Icon-Tutor-Hobbies.png" alt="Hobbies">
           <span>Hobbies</span>
         </div>
-        <div class="sidebar-item">
-          <img src="/assets/app-assets/Tutor-all-filters-sports-icon.svg" alt="Sports">
+        <div class="sidebar-item" [class.active]="selectedCategory === 'Sports'" (click)="selectCategory('Sports')">
+          <img src="/assets/Icons-Neutral/Icon-Tutor-Sports.png" alt="Sports">
           <span>Sports</span>
         </div>
       </div>
@@ -28,48 +29,107 @@
       <!-- Filters -->
       <div class="filters">
         <div class="dropdowns">
-          <select>
-            <option>In-Person</option>
-            <option>Online</option>
-          </select>
-          <select>
-            <option>First</option>
-            <option>Second</option>
-            <option>Third</option>
-            <option>Fourth</option>
-            <option>Fifth</option>
-            <option>Sixth</option>
-            <option>Seventh</option>
-            <option>Eighth</option>
-            <option>Ninth</option>
-            <option>Tenth</option>
-            <option>Eleventh</option>
-            <option>Twelfth</option>
-          </select>
-          <select>
-            <option>Nearby</option>
-            <option>All</option>
-            <option>Chennai</option>
-            <option>Mumbai</option>
-            <option>Delhi</option>
-            <option>Bangalore</option>
-            <option>Kolkata</option>
-            <option>Hyderabad</option>
-          </select>
+          <button class="dropdown-btn" (click)="toggleDropdown('mode', $event)">
+            {{ mode === 'in-person' ? 'In-Person' : 'Online' }}
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <mask id="mask0_1323_23524" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="16"
+                height="16">
+                <rect y="16" width="16" height="16" rx="0.5" transform="rotate(-90 0 16)" fill="#F3F8F8" />
+              </mask>
+              <g mask="url(#mask0_1323_23524)">
+                <path
+                  d="M11.6464 6.31441C11.8417 6.50968 11.8417 6.82626 11.6464 7.02152L8.35355 10.3144C8.15829 10.5097 7.84171 10.5097 7.64645 10.3144L4.35355 7.02152C4.15829 6.82626 4.15829 6.50968 4.35355 6.31442L4.57978 6.08819C4.77504 5.89293 5.09162 5.89293 5.28689 6.08819L7.64645 8.44775C7.84171 8.64301 8.15829 8.64301 8.35355 8.44775L10.7131 6.08819C10.9084 5.89293 11.225 5.89293 11.4202 6.08819L11.6464 6.31441Z"
+                  fill="#282527" />
+              </g>
+            </svg>
+          </button>
+
+          <button class="dropdown-btn" (click)="toggleDropdown('grade', $event)">
+            {{ grade | titlecase }}
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <mask id="mask0_1323_23524" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="16"
+                height="16">
+                <rect y="16" width="16" height="16" rx="0.5" transform="rotate(-90 0 16)" fill="#F3F8F8" />
+              </mask>
+              <g mask="url(#mask0_1323_23524)">
+                <path
+                  d="M11.6464 6.31441C11.8417 6.50968 11.8417 6.82626 11.6464 7.02152L8.35355 10.3144C8.15829 10.5097 7.84171 10.5097 7.64645 10.3144L4.35355 7.02152C4.15829 6.82626 4.15829 6.50968 4.35355 6.31442L4.57978 6.08819C4.77504 5.89293 5.09162 5.89293 5.28689 6.08819L7.64645 8.44775C7.84171 8.64301 8.15829 8.64301 8.35355 8.44775L10.7131 6.08819C10.9084 5.89293 11.225 5.89293 11.4202 6.08819L11.6464 6.31441Z"
+                  fill="#282527" />
+              </g>
+            </svg>
+          </button>
+
+          <button class="dropdown-btn" (click)="toggleDropdown('location', $event)">
+            {{ location | titlecase }}
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <mask id="mask0_1323_23524" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="16"
+                height="16">
+                <rect y="16" width="16" height="16" rx="0.5" transform="rotate(-90 0 16)" fill="#F3F8F8" />
+              </mask>
+              <g mask="url(#mask0_1323_23524)">
+                <path
+                  d="M11.6464 6.31441C11.8417 6.50968 11.8417 6.82626 11.6464 7.02152L8.35355 10.3144C8.15829 10.5097 7.84171 10.5097 7.64645 10.3144L4.35355 7.02152C4.15829 6.82626 4.15829 6.50968 4.35355 6.31442L4.57978 6.08819C4.77504 5.89293 5.09162 5.89293 5.28689 6.08819L7.64645 8.44775C7.84171 8.64301 8.15829 8.64301 8.35355 8.44775L10.7131 6.08819C10.9084 5.89293 11.225 5.89293 11.4202 6.08819L11.6464 6.31441Z"
+                  fill="#282527" />
+              </g>
+            </svg>
+          </button>
+
+          <!-- custom popover -->
+          <div *ngIf="openDropdown === 'mode'" class="custom-popover"
+            [class.bottom-popover]="popoverPosition==='bottom'" [ngStyle]="popoverStyle">
+            <ul>
+              <li (click)="selectDropdown('mode','in-person')">In-Person <span *ngIf="mode==='in-person'">✓</span></li>
+              <li (click)="selectDropdown('mode','online')">Online <span *ngIf="mode==='online'">✓</span></li>
+            </ul>
+          </div>
+
+          <div *ngIf="openDropdown === 'grade'" class="custom-popover"
+            [class.bottom-popover]="popoverPosition==='bottom'" [ngStyle]="popoverStyle">
+            <ul>
+              <li
+                *ngFor="let g of ['first','second','third','fourth','fifth','sixth','seventh','eighth','ninth','tenth','eleventh','twelfth']"
+                (click)="selectDropdown('grade', g)">
+                {{ g | titlecase }} <span *ngIf="grade===g">✓</span>
+              </li>
+            </ul>
+          </div>
+
+          <div *ngIf="openDropdown === 'location'" class="custom-popover"
+            [class.bottom-popover]="popoverPosition==='bottom'" [ngStyle]="popoverStyle">
+            <ul>
+              <li (click)="selectDropdown('location','nearby')">Nearby <span *ngIf="location==='nearby'">✓</span></li>
+              <li (click)="selectDropdown('location','all')">All <span *ngIf="location==='all'">✓</span></li>
+              <li (click)="selectDropdown('location','chennai')">Chennai <span *ngIf="location==='chennai'">✓</span>
+              </li>
+              <li (click)="selectDropdown('location','mumbai')">Mumbai <span *ngIf="location==='mumbai'">✓</span></li>
+              <li (click)="selectDropdown('location','delhi')">Delhi <span *ngIf="location==='delhi'">✓</span></li>
+              <li (click)="selectDropdown('location','bangalore')">Bangalore <span
+                  *ngIf="location==='bangalore'">✓</span></li>
+              <li (click)="selectDropdown('location','kolkata')">Kolkata <span *ngIf="location==='kolkata'">✓</span>
+              </li>
+              <li (click)="selectDropdown('location','hyderabad')">Hyderabad <span
+                  *ngIf="location==='hyderabad'">✓</span></li>
+            </ul>
+          </div>
         </div>
 
+        <!-- backdrop shown when a dropdown is open -->
+        <div *ngIf="openDropdown" class="popover-backdrop" (click)="openDropdown = null" aria-hidden="true"></div>
+
         <ul class="filter-list">
-          <li><label><input type="checkbox"> Mathematics</label></li>
-          <li><label><input type="checkbox"> Science</label></li>
-          <li><label><input type="checkbox"> English</label></li>
-          <li><label><input type="checkbox"> Computer Science</label></li>
-          <li><label><input type="checkbox"> Social Studies</label></li>
-          <li><label><input type="checkbox"> Hindi</label></li>
-          <li><label><input type="checkbox"> Environmental Studies</label></li>
-          <li><label><input type="checkbox"> Regional Language</label></li>
-          <li><label><input type="checkbox"> General Knowledge</label></li>
-          <li><label><input type="checkbox"> Art & Craft</label></li>
+          <li><label>Mathematics</label><input type="checkbox"></li>
+          <li><label>Science</label><input type="checkbox"></li>
+          <li><label>English</label><input type="checkbox"></li>
+          <li><label>Computer Science</label><input type="checkbox"></li>
+          <li><label>Social Studies</label><input type="checkbox"></li>
+          <li><label>Hindi</label><input type="checkbox"></li>
+          <li><label>Environmental Studies</label><input type="checkbox"></li>
+          <li><label>Regional Language</label><input type="checkbox"></li>
+          <li><label>General Knowledge</label><input type="checkbox"></li>
+          <li><label>Art & Craft</label><input type="checkbox"></li>
         </ul>
       </div>
     </div>
   </div>
+
+</ion-content>

@@ -464,6 +464,14 @@
   padding: 12px 0 !important;
 }
 
+.form-card .mindful-input-group input:focus,
+.form-card .mindful-input-group input:active,
+.form-card .mindful-input-group ion-input:focus,
+.form-card .mindful-input-group ion-input:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 .title-input .mindful-input-group input {
   color: #6B656A;
   font-family: 'Nunito', sans-serif;
@@ -474,6 +482,12 @@
   /* 28px */
   opacity: 0.5;
   padding: 0px !important;
+}
+
+.title-input .mindful-input-group input:focus,
+.title-input .mindful-input-group input:active {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .title-input .mindful-input-group input::placeholder,

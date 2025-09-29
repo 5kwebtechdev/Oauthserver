@@ -6,7 +6,12 @@
   min-height: 100vh;
   /* ensures there's space for scrolling */
   --section-gap: 20px;
-  overflow: scroll
+  /* use auto for natural scrollbars and ensure content isn't covered by the fixed footer */
+  overflow: auto;
+  /* safe bottom spacing to clear the fixed footer (footer height 80px + small gap) */
+  padding-bottom: 96px;
+  /* if device has a safe-area inset (iOS), include it too */
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
 }
 
 .tutor-header {
@@ -193,6 +198,30 @@
   border: none;
   cursor: pointer;
   font-weight: 600;
+}
+
+/* Sort label and item typography (exact values requested) */
+.sort-label {
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  /* 18.2px */
+}
+
+.sort-item {
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 
@@ -393,7 +422,6 @@
   text-decoration: underline;
   /* ensure it's underlined across browsers */
   text-decoration-thickness: auto;
-  text-underline-offset: 2px;
 }
 
 .view-all-btn:focus {

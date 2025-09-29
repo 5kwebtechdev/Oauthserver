@@ -135,6 +135,29 @@
   }
 }
 
+/* Custom white CTA style (requested) */
+.mindful-button-white {
+  border-radius: 6px;
+  background: #FFF;
+  box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
+  display: flex;
+  height: 42px;
+  padding: 8px 24px;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  align-self: stretch;
+  color: #282527;
+  font-family: Nunito, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mindful-popup-single-cta .mindful-button-full.mindful-button-white,
+.mindful-popup-dual-cta .mindful-button.mindful-button-white {
+  width: 100%;
+}
+
 // Base mindful-button styles (customize based on your existing button component)
 .mindful-button {
   padding: 12px 24px;

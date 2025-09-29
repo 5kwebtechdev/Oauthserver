@@ -11,6 +11,7 @@ import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navig
 import { MindfulToggleComponent } from '../../mindful-selectors/mindful-toggle/mindful-toggle.component';
 import { HabitService } from '../habit.service';
 import { TaskApi } from '../../../api/task.api';
+import { CalendarApi } from '../../../api/calendar.api';
 import { Habit } from '../habit.types';
 import { Router } from '@angular/router';
 
@@ -70,7 +71,8 @@ export class HabitInputComponent {
     private modalCtrl: ModalController,
     private habitService: HabitService,
     private router: Router,
-    private taskApi: TaskApi
+    private taskApi: TaskApi,
+    private calendarApi: CalendarApi
   ) { }
 
   get isFormComplete(): boolean {
@@ -232,24 +234,21 @@ export class HabitInputComponent {
         endTime: formattedEndTime || ''
       };
     } else if (this.currentActive === 'timetable') {
-      // Habit/timetable payload: inner `habit` object + top-level date/time strings
+      // Calendar/timetable payload: use the JSON structure from the API screenshot
       payload = {
-        habit: {
-          title: habit.title,
-          tags: tags,
-          description: habit.notes,
-          priority: priority,
-          routine: routine,
-          isEveryday: !!habit.everyday,
-          isEveryWeekend: false,
-          daysOfWeek: daysOfWeek,
-          activities: habit.activities || [],
-          coinReward: 5
-        },
-        startDate: formatDateStr(this.startDate),
-        startTime: formattedStartTime || '',
-        endDate: formatDateStr(this.endDate),
-        endTime: formattedEndTime || ''
+        title: habit.title,
+        description: habit.notes || habit.title,
+        topic: habit.title,
+        type: "event",
+        completed: false,
+        startDate: formatDateStr(this.startDate) || "2024-08-24",
+        endDate: formatDateStr(this.endDate) || "2024-08-24",
+        startTime: formattedStartTime || "09:00",
+        endTime: formattedEndTime || "10:00",
+        tags: tags,
+        daysOfWeek: daysOfWeek,
+        isEveryday: !!habit.everyday,
+        priority: priority
       };
     } else {
       // Default: habit payload (existing behaviour) but with requested structure
@@ -273,7 +272,7 @@ export class HabitInputComponent {
       };
     }
 
-    // Use TaskApi for tasks, HabitApi for habits/timetable
+    // Use TaskApi for tasks, CalendarApi for timetable, HabitApi for habits
     if (this.currentActive === 'tasks') {
       this.taskApi.createTask(payload).subscribe({
         next: (res) => {
@@ -290,11 +289,27 @@ export class HabitInputComponent {
           alert('Failed to create task. Please try again.');
         }
       });
+    } else if (this.currentActive === 'timetable') {
+      this.calendarApi.addCalendarEvent(payload).subscribe({
+        next: (res) => {
+          console.log('Calendar API created:', res);
+          // add to local store so UI updates immediately
+          this.habitService.addHabit(habit);
+          this.modalCtrl.dismiss();
+          this.router.navigate(['/habit-page'], {
+            state: { newHabit: habit, showSingleMode: true, initialTab: 'timetable' }
+          });
+        },
+        error: (err) => {
+          console.error('Failed to create calendar event', err);
+          alert('Failed to create timetable. Please try again.');
+        }
+      });
     } else {
       this.habitService.createHabit(payload).subscribe({
         next: (res) => {
-          console.log('API created:', res);
-          // update local store for habits/timetable
+          console.log('Habit API created:', res);
+          // update local store for habits
           this.habitService.addHabit(habit);
           this.modalCtrl.dismiss();
           // navigate to habit page by default
@@ -303,8 +318,8 @@ export class HabitInputComponent {
           });
         },
         error: (err) => {
-          console.error('Failed to create item', err);
-          alert('Failed to create. Please try again.');
+          console.error('Failed to create habit', err);
+          alert('Failed to create habit. Please try again.');
         }
       });
     }

@@ -12,8 +12,19 @@
           </svg>
         </ng-container>
         <ng-template #imgIcon>
-          <img [src]="backIconSrc" [alt]="backIconAlt">
-          <span class="visually-hidden">{{ backIconAlt }}</span>
+          <!-- Render inline 'cancel' SVG when backIcon is 'cancel', otherwise use the provided image src -->
+          <ng-container *ngIf="backIcon === 'cancel'; else imageFallback">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none"
+              aria-hidden="true">
+              <path d="M1 1.5L12.3137 12.8137" stroke="#282527" stroke-width="2" stroke-linecap="round" />
+              <path d="M1 12.5L12.3137 1.18629" stroke="#282527" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <span class="visually-hidden">{{ backIconAlt }}</span>
+          </ng-container>
+          <ng-template #imageFallback>
+            <img [src]="backIconSrc" [alt]="backIconAlt">
+            <span class="visually-hidden">{{ backIconAlt }}</span>
+          </ng-template>
         </ng-template>
       </button>
       <h1 class="navigator-heading">{{ heading }}</h1>
@@ -49,6 +60,9 @@
             </div>
           </ng-container>
         </ng-container>
+
+        <!-- allow explicit projected content for slot="end" (e.g., <mindful-button slot="end">) -->
+        <ng-content select="[slot='end']"></ng-content>
         <ng-template #fallbackActions>
           <div *ngIf="rightType === 'edit'" class="right-edit-layout" (click)="onRightClick()" role="button"
             aria-label="Edit">

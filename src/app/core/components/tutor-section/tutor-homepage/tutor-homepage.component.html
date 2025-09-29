@@ -1,10 +1,10 @@
-<ion-content fullscreen class="tutor-homepage">
+<ion-content fullscreen class="tutor-homepage" style="--padding-bottom: calc(96px + env(safe-area-inset-bottom));">
   <!--tutor home page header-->
   <div class="tutor-header">
     <!-- Heading and Button -->
     <div class="header-top">
       <h2>Your Guides to Greatness!</h2>
-      <button class="refer-btn" (click)="openReferModal()">Refer a Tutor</button>
+      <mindful-button type="columbian-blue" text="Refer a Tutor" (click)="openReferModal()"></mindful-button>
     </div>
 
     <!-- Search Bar -->
@@ -43,14 +43,17 @@
   </div>
   <!--Tutor filter and Sort Button-->
   <div class="controls-row">
-    <button class="filter-btn" (click)="openAllFilters()">
-      <span class="filter-icon">☰</span>
-      <span class="filter-text">All Filters</span>
-    </button>
+    <mindful-button type="columbian-blue" text="All Filters" icon="/assets/icons/menu.svg"
+      (click)="openAllFilters()"></mindful-button>
 
     <div class="sort-wrapper" (click)="$event.stopPropagation()">
       <button class="sort-btn" (click)="toggleSortMenu()" [attr.aria-expanded]="isSortOpen">
-        <span>{{ currentSortLabel }} ▾</span>
+        <span class="sort-label">{{ currentSortLabel }} </span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="8" height="6" viewBox="0 0 8 6" fill="none" aria-hidden="true">
+          <path
+            d="M7.64645 1.31441C7.84171 1.50968 7.84171 1.82626 7.64645 2.02152L4.35355 5.31442C4.15829 5.50968 3.84171 5.50968 3.64645 5.31442L0.353553 2.02152C0.158291 1.82626 0.158291 1.50968 0.353553 1.31442L0.57978 1.08819C0.775042 0.892927 1.09162 0.892926 1.28689 1.08819L3.64645 3.44775C3.84171 3.64301 4.15829 3.64301 4.35355 3.44775L6.71311 1.08819C6.90838 0.892926 7.22496 0.892927 7.42022 1.08819L7.64645 1.31441Z"
+            fill="#282527" />
+        </svg>
       </button>
 
       <ul class="sort-menu" *ngIf="isSortOpen" role="menu" aria-label="Sort options">
@@ -77,23 +80,18 @@
     <button class="view-all-btn" (click)="viewAllTutors()">View All</button>
   </div>
 
-  <!-- Refer a Tutor Modal -->
-  <div class="modal-backdrop" *ngIf="isReferModalOpen" (click)="closeReferModal()" aria-hidden="true"></div>
+  <!-- Refer a Tutor - use shared mindful popup -->
+  <app-mindful-popup [isVisible]="isReferModalOpen" [config]="{
+      heading: 'Refer a Tutor',
+      subtitle: 'Know a tutor who should be here? Share our form so they can join',
+      showCloseButton: true,
+      backdrop: true,
+      primaryCTA: { text: '📎 Copy Link' },
+      secondaryCTA: { text: '🟢 Share through Whatsapp' }
+    }" (backdropClick)="closeReferModal()" (primaryAction)="copyLink()" (secondaryAction)="shareWhatsapp()"
+    (closeAction)="closeReferModal()">
+  </app-mindful-popup>
 
-  <aside id="referModal" class="refer-modal" role="dialog" aria-modal="true" aria-labelledby="referModalTitle"
-    *ngIf="isReferModalOpen">
-    <header class="modal-header">
-      <h4 id="referModalTitle">Refer a Tutor</h4>
-      <button class="modal-close" (click)="closeReferModal()" aria-label="Close">✕</button>
-    </header>
-
-    <div class="modal-body">
-      <p class="modal-sub">Know a tutor who should be here? Share our form so they can join</p>
-
-      <div class="modal-actions">
-        <button class="action-btn copy" (click)="copyLink()">📎 Copy Link</button>
-        <button class="action-btn whatsapp" (click)="shareWhatsapp()">🟢 Share through Whatsapp</button>
-      </div>
-    </div>
-  </aside>
+  <!--footer-->
 </ion-content>
+<footer></footer>
