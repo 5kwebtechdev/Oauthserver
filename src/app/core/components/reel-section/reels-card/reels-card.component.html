@@ -2,42 +2,7 @@
   <div #reelsSwiper class="reels-swiper swiper-container">
     <div class="swiper-wrapper">
       <div class="swiper-slide" *ngFor="let s of slides">
-        <article class="reel">
-          <div class="card-media" [style.backgroundImage]="'url(' + s.image + ')'">
-            <div class="category">{{ s.category }}</div>
-            <button class="bookmark" [class.saved]="s.saved" (click)="toggleSave(s); $event.stopPropagation()" aria-label="Save" [attr.aria-pressed]="s.saved">
-              <img src="/assets/app-assets/FaBookmark.svg" alt="" class="bookmark-icon" aria-hidden="true" />
-            </button>
-
-            <button class="play" type="button" (click)="playReel(s); $event.stopPropagation()" aria-label="Play">
-              <i class="fa-solid fa-play"></i>
-            </button>
-
-            <video *ngIf="s.isPlaying" class="reel-video" controls autoplay (click)="$event.stopPropagation()">
-              <source [src]="s.video || s.image" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-
-            <button *ngIf="s.isPlaying" class="video-close" type="button" (click)="stopReel(s); $event.stopPropagation()" aria-label="Close video">
-              <i class="fa-solid fa-times"></i>
-            </button>
-          </div>
-
-          <div class="reel-body">
-            <div class="meta-row">
-              <div class="avatar"></div>
-              <div class="author">{{ s.author }}</div>
-            </div>
-            <h4 class="title">{{ s.title }}</h4>
-            <div class="bottom-row">
-              <div class="tags">{{ s.tags }}</div>
-              <div class="stats">
-                <span class="duration">{{ s.duration }}</span>
-                <span class="likes">{{ s.likes }}</span>
-              </div>
-            </div>
-          </div>
-        </article>
+        <reel-frame [s]="s" (play)="playReel($event)" (toggleSave)="toggleSave($event)"></reel-frame>
       </div>
     </div>
   </div>

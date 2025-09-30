@@ -286,17 +286,16 @@ h1, h2, h3, h4, h5, h6 {
         top: 50%;
         transform: translateY(-50%);
         transition: transform 0.3s ease;
-        width: 16px;
-        height: 16px;
-        background-image: url('assets/icons/chevron_left.svg');
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: contain;
+        width: 0;
+        height: 0;
+        border-left: 6px solid #772817;
+        border-top: 4px solid transparent;
+        border-bottom: 4px solid transparent;
       }
     }
 
     &[open] summary::after {
-      transform: translateY(-50%) rotate(180deg);
+      transform: translateY(-50%) rotate(90deg);
     }
 
     p {
@@ -516,3 +515,24 @@ ion-content {
 .text-mindful-primary { color: #772817; }
 .text-mindful-secondary { color: #6b3d2b; }
 .text-mindful-accent { color: #EE6621; }
+
+/* Global footer hiding for reel expand mode */
+body.reel-expanded {
+  footer,
+  ion-tab-bar,
+  ion-tabs,
+  .footer,
+  [class*="footer"],
+  [id*="footer"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    z-index: -9999 !important;
+    position: absolute !important;
+    top: -9999px !important;
+    pointer-events: none !important;
+  }
+}

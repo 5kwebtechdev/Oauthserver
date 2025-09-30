@@ -20,6 +20,8 @@ export class ViewAllComponent {
   @Output() clicked = new EventEmitter<void>();
   /** Optional aria-label for accessibility; applied to the button as an attribute */
   @Input() ariaLabel?: string = 'View all';
+  /** Optional custom text to display for the button. Defaults to 'View all' */
+  @Input() text?: string = 'View all';
 
   constructor(private router: Router) { }
 

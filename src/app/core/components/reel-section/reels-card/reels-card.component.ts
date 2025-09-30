@@ -4,13 +4,14 @@ import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.component';
+import { ReelFrameComponent } from '../reel-frame/reel-frame.component';
 
 @Component({
   selector: 'reels-card',
   templateUrl: './reels-card.component.html',
   styleUrls: ['./reels-card.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, MindfulCardHeaderComponent, ViewAllComponent]
+  imports: [CommonModule, IonicModule, RouterModule, MindfulCardHeaderComponent, ViewAllComponent, ReelFrameComponent]
 })
 export class ReelsCardComponent {
   public slides = [
@@ -21,11 +22,12 @@ export class ReelsCardComponent {
       title: 'Epic Volcano Eruption Experiment!',
       duration: '20 sec',
       likes: '10K',
+      views: '25K',
       tags: '#FunScience #DIYExperiment....',
       image: '/assets/app-assets/reel-1-placeholder.jpg',
-      video: '',
-      isPlaying: false,
-      saved: false
+      video: 'https://sample-videos.com/zip/10/mp4/480/mp4/SampleVideo_480x270_1mb.mp4',
+      saved: false,
+      liked: false
     },
     {
       id: 2,
@@ -34,24 +36,26 @@ export class ReelsCardComponent {
       title: 'Painting a Sunset with My Fingers!',
       duration: '60 sec',
       likes: '1K',
+      views: '5.2K',
       tags: '#LittleArtist #MessyFun....',
       image: '/assets/app-assets/reel-2-placeholder.jpg',
-      video: '',
-      isPlaying: false,
-      saved: false
+      video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+      saved: true,
+      liked: false
     },
     {
       id: 3,
       category: 'Comedy & Fun',
-      author: 'ArtWhiz',
-      title: 'Painting a Sunset with My Fingers!',
-      duration: '60 sec',
-      likes: '1K',
-      tags: '#LittleArtist #MessyFun....',
+      author: 'FunnyKid',
+      title: 'Dancing with My Pet!',
+      duration: '45 sec',
+      likes: '2.5K',
+      views: '8.1K',
+      tags: '#PetLove #DanceFun....',
       image: '/assets/app-assets/reel-2-placeholder.jpg',
-      video: '',
-      isPlaying: false,
-      saved: false
+      video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+      saved: false,
+      liked: true
     }
   ];
 
@@ -74,31 +78,13 @@ export class ReelsCardComponent {
     }
   }
 
-  // Play the selected reel (toggle a flag on the slide). In a real app you'd open a player modal or navigate.
+  // Play the selected reel by opening full-screen expand view
   playReel(slide: any) {
-    // stop any other playing reels
-    this.slides.forEach(s => s.isPlaying = false);
-    slide.isPlaying = true;
-
-    // attempt to scroll the card into view
-    try {
-      const el = this.reelsSwiperRef.nativeElement as HTMLElement;
-      const slideEls = el.querySelectorAll('.swiper-slide');
-      slideEls.forEach((elSlide: any, idx: number) => {
-        if (this.slides[idx] && this.slides[idx].id === slide.id) {
-          (elSlide as HTMLElement).scrollIntoView({ behavior: 'smooth', inline: 'center' });
-        }
-      });
-    } catch (e) { /* ignore */ }
-    // also open the expanded/fullscreen player via global event for consistency
+    // Don't set any playing state - just open the expanded view
     try {
       const ev = new CustomEvent('openReelExpanded', { detail: slide });
       window.dispatchEvent(ev);
     } catch (e) { /* ignore */ }
-  }
-
-  stopReel(slide: any) {
-    slide.isPlaying = false;
   }
 
   toggleSave(slide: any) {

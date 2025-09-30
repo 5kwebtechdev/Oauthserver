@@ -140,8 +140,9 @@ p {
 }
 
 .add-button-container {
-  margin-left: 16px;
-  margin-right: 16px;
+  display: flex;
+align-items: center;
+gap: 189px;
 }
 
 .habit-wrapper {
@@ -413,4 +414,34 @@ img.score {
   width: 40px;
   height: auto;
   margin-top: 20px;
+}
+
+/* Text 'View All' button replaced from mindful-button */
+.text-view-all {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left; /* keep same alignment as other CTAs */
+  color: #282527;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 140%; /* 22.4px */
+  cursor: pointer;
+
+  /* subtle hover effect */
+  transition: color 0.15s ease, transform 0.06s ease;
+
+  &:hover {
+    color: darken(#282527, 8%);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 }

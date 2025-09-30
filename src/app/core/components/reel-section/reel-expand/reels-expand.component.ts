@@ -1,13 +1,16 @@
-import { Component, OnDestroy, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, ElementRef, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
+import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 
 @Component({
   selector: 'reels-expand',
   templateUrl: './reels-expand.component.html',
   styleUrls: ['./reels-expand.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, MindfulButtonComponent],
+  encapsulation: ViewEncapsulation.None
 })
 export class ReelsExpandComponent implements OnInit, OnDestroy {
   // whether overlay is visible
@@ -17,6 +20,13 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
   public playlist: any[] = [];
   public currentIndex = 0;
   public shareVisible = false;
+  public videoProgress = 0;
+  
+  // play/pause state management
+  public isPlaying = false;
+  public showPlayPauseIndicator = false;
+  private indicatorTimeout: any;
+  private wasPlayingBeforeShare = false; // Track if video was playing before share popup
 
   @ViewChild('playerVideo', { static: false }) playerVideo!: ElementRef<HTMLVideoElement>;
 
@@ -32,6 +42,10 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
           this.playlist = [detail];
           this.currentIndex = 0;
           this.expanded = true;
+          
+          // Add body class when opening
+          document.body.classList.add('reel-expanded');
+          
           // allow view to render then start playback
           setTimeout(() => this.playCurrent(), 50);
         }
@@ -47,6 +61,10 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
           this.playlist = detail.slides.slice();
           this.currentIndex = 0;
           this.expanded = true;
+          
+          // Add body class when opening
+          document.body.classList.add('reel-expanded');
+          
           setTimeout(() => this.playCurrent(), 50);
         }
       } catch (e) { /* ignore */ }
@@ -61,6 +79,14 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
     if (this.boundOpenPlayAll) {
       window.removeEventListener('openReelPlayAll', this.boundOpenPlayAll as EventListener);
     }
+    
+    // Clear any pending timeout
+    if (this.indicatorTimeout) {
+      clearTimeout(this.indicatorTimeout);
+    }
+    
+    // Clean up body class on destroy
+    document.body.classList.remove('reel-expanded');
   }
 
   get current() {
@@ -72,6 +98,9 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
     this.pauseVideo();
     this.playlist = [];
     this.currentIndex = 0;
+    
+    // Remove body class when closing
+    document.body.classList.remove('reel-expanded');
   }
 
   playCurrent() {
@@ -81,11 +110,55 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
       // if current has a video URL use it, otherwise nothing to play
       const src = this.current.video || this.current.image || '';
       if (src) {
+        // Set video source
         videoEl.src = this.current.video || this.current.image || '';
         videoEl.load();
+        
+        // Define event handlers
+        const handleTimeUpdate = () => {
+          if (videoEl.duration) {
+            this.videoProgress = (videoEl.currentTime / videoEl.duration) * 100;
+          }
+        };
+        
+        const handleLoadedMetadata = () => {
+          this.videoProgress = 0;
+        };
+        
+        const handlePlay = () => {
+          this.isPlaying = true;
+        };
+        
+        const handlePause = () => {
+          this.isPlaying = false;
+        };
+        
+        const handleEnded = () => {
+          this.onVideoEnded();
+        };
+        
+        // Remove existing listeners and add new ones
+        videoEl.removeEventListener('timeupdate', handleTimeUpdate);
+        videoEl.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        videoEl.removeEventListener('play', handlePlay);
+        videoEl.removeEventListener('pause', handlePause);
+        videoEl.removeEventListener('ended', handleEnded);
+        
+        videoEl.addEventListener('timeupdate', handleTimeUpdate);
+        videoEl.addEventListener('loadedmetadata', handleLoadedMetadata);
+        videoEl.addEventListener('play', handlePlay);
+        videoEl.addEventListener('pause', handlePause);
+        videoEl.addEventListener('ended', handleEnded);
+        
         // autoplay where possible
         const tryPlay = async () => {
-          try { await videoEl.play(); } catch (e) { /* ignore autoplay block */ }
+          try { 
+            await videoEl.play();
+            this.isPlaying = true;
+          } catch (e) { 
+            this.isPlaying = false;
+            /* ignore autoplay block */ 
+          }
         };
         tryPlay();
       }
@@ -94,7 +167,50 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
 
   pauseVideo() {
     const videoEl = this.playerVideo && this.playerVideo.nativeElement;
-    try { if (videoEl) { videoEl.pause(); videoEl.src = ''; } } catch (e) { /* ignore */ }
+    try { 
+      if (videoEl) { 
+        videoEl.pause(); 
+        this.isPlaying = false;
+        videoEl.src = ''; 
+      } 
+    } catch (e) { /* ignore */ }
+  }
+
+  // New method for toggle play/pause on screen tap
+  togglePlayPause(event: Event) {
+    event.stopPropagation();
+    const videoEl = this.playerVideo && this.playerVideo.nativeElement;
+    
+    if (!videoEl || !this.current?.video) {
+      return;
+    }
+    
+    // Check actual video state instead of relying on isPlaying flag
+    if (videoEl.paused) {
+      // Video is paused, so play it
+      videoEl.play().then(() => {
+        this.isPlaying = true;
+      }).catch((error) => {
+        this.isPlaying = false;
+      });
+    } else {
+      // Video is playing, so pause it
+      videoEl.pause();
+      this.isPlaying = false;
+    }
+    
+    // Show play/pause indicator briefly
+    this.showPlayPauseIndicator = true;
+    
+    // Clear any existing timeout
+    if (this.indicatorTimeout) {
+      clearTimeout(this.indicatorTimeout);
+    }
+    
+    // Hide indicator after 800ms
+    this.indicatorTimeout = setTimeout(() => {
+      this.showPlayPauseIndicator = false;
+    }, 800);
   }
 
   onVideoEnded() {
@@ -124,11 +240,36 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
 
   openShare(ev?: MouseEvent) {
     if (ev) { ev.stopPropagation(); }
+    
+    // Store current playing state and pause video
+    const videoEl = this.playerVideo && this.playerVideo.nativeElement;
+    if (videoEl && !videoEl.paused) {
+      this.wasPlayingBeforeShare = true;
+      videoEl.pause();
+      this.isPlaying = false;
+    } else {
+      this.wasPlayingBeforeShare = false;
+    }
+    
     this.shareVisible = true;
   }
 
   closeShare() {
     this.shareVisible = false;
+    
+    // Resume video if it was playing before share popup opened
+    if (this.wasPlayingBeforeShare) {
+      const videoEl = this.playerVideo && this.playerVideo.nativeElement;
+      if (videoEl) {
+        videoEl.play().then(() => {
+          this.isPlaying = true;
+        }).catch(() => {
+          this.isPlaying = false;
+        });
+      }
+    }
+    
+    this.wasPlayingBeforeShare = false;
   }
 
   copyLink() {
@@ -154,6 +295,35 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
     const shareUrl = `https://wa.me/?text=${text}%20${url}`;
     window.open(shareUrl, '_blank');
     this.closeShare();
+  }
+
+  shareFacebook() {
+    const url = encodeURIComponent(this.getCurrentLink() || window.location.href);
+    const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+    window.open(shareUrl, '_blank');
+    this.closeShare();
+  }
+
+  shareTwitter() {
+    const url = encodeURIComponent(this.getCurrentLink() || window.location.href);
+    const text = encodeURIComponent(`${this.current?.title || ''} by ${this.current?.author || ''}`);
+    const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+    window.open(shareUrl, '_blank');
+    this.closeShare();
+  }
+
+  toggleLike() {
+    if (this.current) {
+      this.current.liked = !this.current.liked;
+      // Here you could also emit an event or call a service to persist the like
+    }
+  }
+
+  toggleSave() {
+    if (this.current) {
+      this.current.saved = !this.current.saved;
+      // Here you could also emit an event or call a service to persist the save
+    }
   }
 
   private getCurrentLink() {

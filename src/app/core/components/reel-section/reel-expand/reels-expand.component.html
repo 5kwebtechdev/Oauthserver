@@ -4,49 +4,151 @@
     <div class="player-backdrop" (click)="close()"></div>
 
     <div class="player-content">
-      <button class="player-close" aria-label="Close" (click)="close()">×</button>
+      <!-- Top navigation with back arrow and bookmark -->
+      <div class="top-navigation">
+        <mindful-card-header 
+          [showBackArrow]="true" 
+          (backClick)="close()"
+          title="">
+          <div mindful-header-actions>
+            <button class="bookmark-nav-btn" [class.saved]="current?.saved" (click)="toggleSave(); $event.stopPropagation()" aria-label="Save">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <circle cx="24" cy="24" r="24" fill="#EDECED"/>
+                <mask id="mask0_5002_39037" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="6" y="6" width="36" height="36">
+                  <rect x="6" y="6" width="36" height="36" fill="#D9D9D9"/>
+                </mask>
+                <g mask="url(#mask0_5002_39037)">
+                  <path d="M14.7617 35.25V14.4232C14.7617 13.7327 14.9926 13.1562 15.4544 12.6938C15.9163 12.2313 16.4919 12 17.1814 12H30.3156C31.005 12 31.5807 12.2313 32.0425 12.6938C32.5043 13.1562 32.7352 13.7327 32.7352 14.4232V35.25L23.7485 31.3845L14.7617 35.25ZM16.2595 32.925L23.7485 29.7L31.2375 32.925V14.4232C31.2375 14.1922 31.1415 13.9806 30.9495 13.7884C30.7575 13.5961 30.5462 13.5 30.3156 13.5H17.1814C16.9507 13.5 16.7394 13.5961 16.5475 13.7884C16.3555 13.9806 16.2595 14.1922 16.2595 14.4232V32.925Z" [attr.fill]="current?.saved ? '#BB2124' : '#1C1B1F'"/>
+                </g>
+              </svg>
+            </button>
+          </div>
+        </mindful-card-header>
+      </div>
 
-      <div class="media-wrap">
-        <video #playerVideo class="reel-video" controls (ended)="onVideoEnded()" (click)="$event.stopPropagation()">
+      <!-- Video container -->
+      <div class="media-wrap" (click)="togglePlayPause($event)">
+        <video #playerVideo class="reel-video" (ended)="onVideoEnded()">
           <source [src]="current.video || current.image" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         <img *ngIf="!current?.video" [src]="current?.image" alt="{{ current?.title }}" />
+        
+        <!-- Play/Pause overlay indicator -->
+        <div class="play-pause-overlay" [class.show]="showPlayPauseIndicator">
+          <div class="play-pause-icon">
+            <svg *ngIf="isPlaying" xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="white">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+            </svg>
+            <svg *ngIf="!isPlaying" xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="white">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </div>
+        </div>
       </div>
 
-      <div class="player-meta">
-        <div class="meta-row">
-          <div class="author">{{ current?.author }}</div>
-          <div class="controls">
-            <button class="control prev" (click)="prev()" [disabled]="currentIndex === 0">‹</button>
-            <button class="control next" (click)="next()" [disabled]="currentIndex >= (playlist.length - 1)">›</button>
-          </div>
+      <!-- Right side action buttons -->
+      <div class="right-actions">
+        <!-- Like button -->
+        <div class="action-item">
+          <button class="action-btn-right like-btn" [class.liked]="current?.liked" (click)="toggleLike()">
+            <!-- Liked state - filled heart -->
+            <svg *ngIf="current?.liked" xmlns="http://www.w3.org/2000/svg" width="33" height="32" viewBox="0 0 33 32" fill="none">
+              <path d="M27.6 9.99991H18.538V4.53791C18.686 2.07791 17.978 0.00190769 16.466 0.00390769C13.834 0.00790769 13.908 2.12991 13.908 2.12991C13.44 9.65991 6.5 11.9999 6.5 11.9999V27.9999L7.422 28.1239C14.988 28.1239 10.448 31.9999 22.88 31.9999C32.32 31.9999 32.5 23.6919 32.5 17.9999C32.5 12.3079 29.906 9.99991 27.6 9.99991ZM2.5 29.9999C3.03043 29.9999 3.53914 29.7892 3.91421 29.4141C4.28929 29.039 4.5 28.5303 4.5 27.9999V12.0619C4.5 11.5315 4.28929 11.0228 3.91421 10.6477C3.53914 10.2726 3.03043 10.0619 2.5 10.0619C1.96957 10.0619 1.46086 10.2726 1.08579 10.6477C0.710714 11.0228 0.5 11.5315 0.5 12.0619L0.5 27.9999C0.5 28.5303 0.710714 29.039 1.08579 29.4141C1.46086 29.7892 1.96957 29.9999 2.5 29.9999Z" fill="#BB2124"/>
+            </svg>
+            <!-- Unliked state - outlined heart -->
+            <svg *ngIf="!current?.liked" xmlns="http://www.w3.org/2000/svg" width="33" height="32" viewBox="0 0 33 32" fill="none">
+              <g clip-path="url(#clip0_1323_22844)">
+                <path d="M15.4082 2.11816C15.4087 2.109 15.4104 2.08546 15.416 2.05273C15.4287 1.97861 15.4542 1.89517 15.4951 1.8252C15.5293 1.76682 15.579 1.70665 15.6777 1.65234C15.7817 1.59524 16.0138 1.50466 16.4678 1.50391C16.4717 1.5039 16.461 1.49563 16.4824 1.51367C16.5263 1.55059 16.6309 1.66408 16.7422 1.92871C16.9703 2.47098 17.1068 3.35482 17.041 4.44824L17.0381 4.49316V11.5H27.5996C28.2231 11.5 29.0164 11.8053 29.7012 12.7471C30.3984 13.7061 31 15.3666 31 18C31 20.9007 30.934 24.0783 29.8564 26.5312C29.3367 27.7143 28.6008 28.6754 27.5518 29.3525C26.4998 30.0315 25.017 30.5 22.8799 30.5C16.8333 30.5 15.2101 29.5601 14.1943 28.8389C13.6705 28.4669 12.9026 27.8004 11.8809 27.3545C10.9023 26.9274 9.70192 26.6782 8 26.6328V12.9854C8.08712 12.9432 8.17994 12.9005 8.27539 12.8516C9.01157 12.4745 9.99684 11.8858 11.001 11.0312C13.0227 9.31076 15.14 6.4903 15.4053 2.22266L15.4092 2.15039L15.4082 2.11816ZM2.5 11.5615C2.63252 11.5615 2.75977 11.6144 2.85352 11.708C2.94719 11.8017 2.9999 11.9291 3 12.0615V28C2.99998 28.1326 2.94726 28.2598 2.85352 28.3535C2.75975 28.4473 2.63259 28.5 2.5 28.5C2.36741 28.5 2.24025 28.4473 2.14648 28.3535C2.05274 28.2598 2.00002 28.1326 2 28V12.0615C2.0001 11.9291 2.05281 11.8017 2.14648 11.708C2.24023 11.6144 2.36748 11.5615 2.5 11.5615Z" stroke="#282527" fill="none" stroke-width="3"/>
+              </g>
+              <defs>
+                <clipPath id="clip0_1323_22844">
+                  <rect width="32" height="32" fill="white" transform="translate(0.5)"/>
+                </clipPath>
+              </defs>
+            </svg>
+          </button>
+          <span class="action-count">{{ current?.likes }}</span>
         </div>
 
-        <h3 class="title">{{ current?.title }}</h3>
-        <div class="tags">{{ current?.tags }}</div>
-
-        <div class="player-actions">
-          <button class="share-btn" (click)="openShare($event)">Share</button>
+        <!-- Share button -->
+        <div class="action-item">
+          <button class="action-btn-right share-btn" (click)="openShare($event)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="33" height="32" viewBox="0 0 33 32" fill="none">
+              <mask id="mask0_1323_22853" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="33" height="32">
+                <rect x="0.5" width="32" height="32" fill="#282527"/>
+              </mask>
+              <g mask="url(#mask0_1323_22853)">
+                <path d="M21.8346 22.668L19.9346 20.8013L26.068 14.668L19.9346 8.53464L21.8346 6.66797L29.8346 14.668L21.8346 22.668ZM3.16797 25.3346V20.0013C3.16797 18.1569 3.81797 16.5846 5.11797 15.2846C6.41797 13.9846 7.99019 13.3346 9.83463 13.3346H18.068L13.268 8.53464L15.168 6.66797L23.168 14.668L15.168 22.668L13.268 20.8013L18.068 16.0013H9.83463C8.72352 16.0013 7.77908 16.3902 7.0013 17.168C6.22352 17.9457 5.83464 18.8902 5.83464 20.0013V25.3346H3.16797Z" fill="#282527"/>
+              </g>
+            </svg>
+          </button>
         </div>
 
-        <!-- Share popup -->
-        <div class="share-popup-backdrop" *ngIf="shareVisible" (click)="closeShare()"></div>
-        <div class="share-popup" *ngIf="shareVisible" role="dialog" aria-modal="true" aria-label="Share reel">
-          <button class="share-close" aria-label="Close share" (click)="closeShare()">×</button>
-          <h4 class="share-heading">Know someone who'll love this reel?</h4>
-          <p class="share-sub">Share it so they can watch.</p>
+        <!-- Navigation controls -->
+        <div class="controls">
+          <button class="control prev" (click)="prev()" [disabled]="currentIndex === 0" aria-label="Previous">‹</button>
+          <button class="control next" (click)="next()" [disabled]="currentIndex >= (playlist.length - 1)" aria-label="Next">›</button>
+        </div>
+      </div>
 
-          <div class="share-actions">
-            <button class="share-action copy" (click)="copyLink()">
-              <i class="icon-clip"></i>
-              Copy Link
-            </button>
-            <button class="share-action whatsapp" (click)="shareWhatsapp()">
-              <i class="icon-whatsapp"></i>
-              Share through Whatsapp
+      <!-- Bottom content area -->
+      <div class="bottom-content">
+        <div class="user-info">
+          <!-- User info row -->
+          <div class="user-row">
+            <div class="avatar"></div>
+            <div class="author">{{ current?.author }}</div>
+          </div>
+
+          <!-- Title and tags row -->
+          <div class="content-info">
+            <h3 class="title">{{ current?.title }}</h3>
+            <div class="tags">{{ current?.tags }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Video progress bar at bottom -->
+      <div class="video-progress-bottom">
+        <div class="progress-bar" [style.width.%]="videoProgress"></div>
+      </div>
+
+      <!-- Share popup -->
+      <div class="share-popup-backdrop" *ngIf="shareVisible" (click)="closeShare()"></div>
+      <div class="share-popup" *ngIf="shareVisible" role="dialog" aria-modal="true" aria-label="Share reel">
+        <div class="share-content">
+          <div class="share-header">
+            <div class="share-title">Know someone who'll love this reel?</div>
+            <button class="share-close" aria-label="Close share" (click)="closeShare()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <g opacity="0.7">
+                  <mask id="mask0_5006_39070" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="4" y="4" width="24" height="24">
+                    <rect x="4" y="4" width="24" height="24" fill="#D9D9D9"/>
+                  </mask>
+                  <g mask="url(#mask0_5006_39070)">
+                    <path d="M10.7536 22.6464C10.5583 22.8417 10.2417 22.8417 10.0464 22.6464L9.35355 21.9536C9.15829 21.7583 9.15829 21.4417 9.35355 21.2464L14.2464 16.3536C14.4417 16.1583 14.4417 15.8417 14.2464 15.6464L9.35355 10.7536C9.15829 10.5583 9.15829 10.2417 9.35355 10.0464L10.0464 9.35355C10.2417 9.15829 10.5583 9.15829 10.7536 9.35355L15.6464 14.2464C15.8417 14.4417 16.1583 14.4417 16.3536 14.2464L21.2464 9.35355C21.4417 9.15829 21.7583 9.15829 21.9536 9.35355L22.6464 10.0464C22.8417 10.2417 22.8417 10.5583 22.6464 10.7536L17.7536 15.6464C17.5583 15.8417 17.5583 16.1583 17.7536 16.3536L22.6464 21.2464C22.8417 21.4417 22.8417 21.7583 22.6464 21.9536L21.9536 22.6464C21.7583 22.8417 21.4417 22.8417 21.2464 22.6464L16.3536 17.7536C16.1583 17.5583 15.8417 17.5583 15.6464 17.7536L10.7536 22.6464Z" fill="#282527"/>
+                  </g>
+                </g>
+              </svg>
             </button>
           </div>
+          <div class="share-subtitle">Share it so they can watch.</div>
+        </div>
+
+        <div class="share-actions">
+          <mindful-button 
+            type="white" 
+            text="Copy Link" 
+            [large]="true"
+            (click)="copyLink()">
+          </mindful-button>
+          <mindful-button 
+            type="white" 
+            text="Share through Whatsapp" 
+            [large]="true"
+            (click)="shareWhatsapp()">
+          </mindful-button>
         </div>
       </div>
     </div>

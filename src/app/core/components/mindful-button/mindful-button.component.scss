@@ -367,4 +367,30 @@ p {
   --text_color: #FFFFFF;
 }
 
+.white {
+  display: flex;
+  height: 42px;
+  padding: 8px 24px;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  align-self: stretch;
+  border-radius: 6px;
+  background: #FFF;
+  box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
+  border: none;
+  --text_color: #282527;
+}
+
+.white p {
+  color: #282527;
+  text-align: center;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  margin: 0;
+}
+
 // .button p { display: inline-block; vertical-align: middle; }

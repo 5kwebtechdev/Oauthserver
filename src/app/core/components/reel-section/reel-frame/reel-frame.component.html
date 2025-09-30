@@ -1,0 +1,29 @@
+<article class="reel">
+  <div class="card-media" [style.backgroundImage]="'url(' + s.image + ')'">
+    <div class="category">{{ s.category }}</div>
+    <button class="bookmark" [class.saved]="s.saved" (click)="onToggleSave($event)" aria-label="Save" [attr.aria-pressed]="s.saved">
+      <img src="/assets/app-assets/FaBookmark.svg" alt="" class="bookmark-icon" aria-hidden="true" />
+    </button>
+
+    <button class="play" type="button" (click)="onPlay($event)" aria-label="Play">
+      <i class="fa-solid fa-play"></i>
+    </button>
+
+    <!-- Removed inline video - only play in full screen -->
+  </div>
+
+  <div class="reel-body">
+    <div class="meta-row">
+      <div class="avatar"></div>
+      <div class="author">{{ s.author }}</div>
+    </div>
+    <h4 class="title">{{ s.title }}</h4>
+    <div class="bottom-row">
+      <div class="tags">{{ s.tags }}</div>
+      <div class="stats">
+        <span class="duration">{{ s.duration }}</span>
+        <span class="likes">{{ s.likes }}</span>
+      </div>
+    </div>
+  </div>
+</article>

@@ -50,10 +50,8 @@
 
   <!-- CTA Buttons -->
   <div class="add-button-container" [class.mt-4]="!isEmpty">
-    <mindful-button type="magenta" text="+ Add new" large style="display:block; width:100%"
-      (click)="openHabitInput()"></mindful-button>
-    <mindful-button type="magenta-transparent" text="View All" large style="display:block; width:100%; margin-top: 10px"
-      (click)="openHabitPage()"></mindful-button>
+    <button class="text-view-all" (click)="openHabitPage()">View All</button>
+    <mindful-view-all [text]="'Add New +'" (clicked)="openHabitInput()"></mindful-view-all>
   </div>
 </div>
 
