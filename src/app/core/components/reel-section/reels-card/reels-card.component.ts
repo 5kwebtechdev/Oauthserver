@@ -80,11 +80,16 @@ export class ReelsCardComponent {
 
   // Play the selected reel by opening full-screen expand view
   playReel(slide: any) {
+    console.log('playReel called with slide:', slide);
     // Don't set any playing state - just open the expanded view
     try {
       const ev = new CustomEvent('openReelExpanded', { detail: slide });
+      console.log('Dispatching openReelExpanded event:', ev);
       window.dispatchEvent(ev);
-    } catch (e) { /* ignore */ }
+      console.log('Event dispatched successfully');
+    } catch (e) { 
+      console.error('Error dispatching openReelExpanded event:', e);
+    }
   }
 
   toggleSave(slide: any) {

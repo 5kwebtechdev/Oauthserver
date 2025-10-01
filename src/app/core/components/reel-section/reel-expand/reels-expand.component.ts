@@ -103,6 +103,27 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
     document.body.classList.remove('reel-expanded');
   }
 
+  // Debug method to test if the component is working
+  testExpand() {
+    console.log('🧪 TEST EXPAND: Testing reel expand component');
+    const testSlide = {
+      id: 999,
+      title: 'Test Video',
+      video: 'https://sample-videos.com/zip/10/mp4/480/mp4/SampleVideo_480x270_1mb.mp4',
+      image: '/assets/app-assets/reel-1-placeholder.jpg'
+    };
+    
+    this.playlist = [testSlide];
+    this.currentIndex = 0;
+    this.expanded = true;
+    document.body.classList.add('reel-expanded');
+    
+    setTimeout(() => {
+      console.log('🧪 TEST EXPAND: Calling playCurrent after timeout');
+      this.playCurrent();
+    }, 100);
+  }
+
   playCurrent() {
     this.pauseVideo();
     const videoEl = this.playerVideo && this.playerVideo.nativeElement;
