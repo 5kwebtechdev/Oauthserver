@@ -2,51 +2,58 @@
   <mindful-navigator heading="Feedback & Suggestions" backIcon="arrowSvg"></mindful-navigator>
 
   <div class="feedback-suggestion">
-     <div class="feed-sugg">
-        <p>1. How happy are you with the app?</p>
-        <div class="select-emoji">
-          <img class="mood-img" src="/assets/Images-Transparent/Image-Mood-Very happy.png" alt="Very happy" data-mood="very-happy" role="button" tabindex="0" />
-          <img class="mood-img" src="/assets/Images-Transparent/Image-Mood-Happy.png" alt="Happy" data-mood="happy" role="button" tabindex="0" />
-          <img class="mood-img" src="/assets/Images-Transparent/Image-Mood-Upset.png" alt="Upset" data-mood="upset" role="button" tabindex="0" />
-          <img class="mood-img" src="/assets/Images-Transparent/Image-Mood-Sad.png" alt="Sad" data-mood="sad" role="button" tabindex="0" />
-        </div>
-     </div>
+    <div class="feed-sugg">
+      <p>1. How happy are you with the app?</p>
+      <div class="select-emoji">
+        <img class="mood-img" src="/assets/Images-Transparent/Image-Mood-Very happy.png" alt="Very happy"
+          data-mood="very-happy" role="button" tabindex="0" />
+        <img class="mood-img" src="/assets/Images-Transparent/Image-Mood-Happy.png" alt="Happy" data-mood="happy"
+          role="button" tabindex="0" />
+        <img class="mood-img" src="/assets/Images-Transparent/Image-Mood-Upset.png" alt="Upset" data-mood="upset"
+          role="button" tabindex="0" />
+        <img class="mood-img" src="/assets/Images-Transparent/Image-Mood-Sad.png" alt="Sad" data-mood="sad"
+          role="button" tabindex="0" />
+      </div>
+    </div>
 
-     <div class="feed-sugg">
-        <p>2. Tell us more about our app?</p>
-        <profile-edit-input placeholder="What’s working? What’s not?" type="text"></profile-edit-input>
-     </div>
+    <div class="feed-sugg">
+      <p>2. Tell us more about our app?</p>
+      <profile-edit-input placeholder="What’s working? What’s not?" type="text"></profile-edit-input>
+    </div>
 
-     <div class="feed-sugg">
-        <p>3. What would you like to see in our app?</p>
-        <profile-edit-input placeholder="Write down your thoughts" type="text"></profile-edit-input>
-     </div>
-          <mindful-button type="green" text="Submit" [large]="true" (click)="onSubmit()" style="display:block; width:100%;"></mindful-button>
-        <div class="disclaimer">
-            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
-  <mask id="mask0_2355_9224" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="4" y="4" width="17" height="16">
-    <rect x="4.5" y="4" width="16" height="16" fill="#D9D9D9"/>
-  </mask>
-  <g mask="url(#mask0_2355_9224)">
-    <path d="M12.5026 15.332C12.6915 15.332 12.8498 15.2681 12.9776 15.1404C13.1054 15.0126 13.1693 14.8543 13.1693 14.6654C13.1693 14.4765 13.1054 14.3181 12.9776 14.1904C12.8498 14.0626 12.6915 13.9987 12.5026 13.9987C12.3137 13.9987 12.1554 14.0626 12.0276 14.1904C11.8998 14.3181 11.8359 14.4765 11.8359 14.6654C11.8359 14.8543 11.8998 15.0126 12.0276 15.1404C12.1554 15.2681 12.3137 15.332 12.5026 15.332ZM11.8359 12.6654H13.1693V8.66536H11.8359V12.6654ZM12.5026 18.6654C11.5804 18.6654 10.7137 18.4904 9.9026 18.1404C9.09149 17.7904 8.38594 17.3154 7.78594 16.7154C7.18594 16.1154 6.71094 15.4098 6.36094 14.5987C6.01094 13.7876 5.83594 12.9209 5.83594 11.9987C5.83594 11.0765 6.01094 10.2098 6.36094 9.3987C6.71094 8.58759 7.18594 7.88203 7.78594 7.28203C8.38594 6.68203 9.09149 6.20703 9.9026 5.85703C10.7137 5.50703 11.5804 5.33203 12.5026 5.33203C13.4248 5.33203 14.2915 5.50703 15.1026 5.85703C15.9137 6.20703 16.6193 6.68203 17.2193 7.28203C17.8193 7.88203 18.2943 8.58759 18.6443 9.3987C18.9943 10.2098 19.1693 11.0765 19.1693 11.9987C19.1693 12.9209 18.9943 13.7876 18.6443 14.5987C18.2943 15.4098 17.8193 16.1154 17.2193 16.7154C16.6193 17.3154 15.9137 17.7904 15.1026 18.1404C14.2915 18.4904 13.4248 18.6654 12.5026 18.6654ZM12.5026 17.332C13.9915 17.332 15.2526 16.8154 16.2859 15.782C17.3193 14.7487 17.8359 13.4876 17.8359 11.9987C17.8359 10.5098 17.3193 9.2487 16.2859 8.21536C15.2526 7.18203 13.9915 6.66536 12.5026 6.66536C11.0137 6.66536 9.7526 7.18203 8.71927 8.21536C7.68594 9.2487 7.16927 10.5098 7.16927 11.9987C7.16927 13.4876 7.68594 14.7487 8.71927 15.782C9.7526 16.8154 11.0137 17.332 12.5026 17.332Z" fill="#282527"/>
-  </g>
-</svg>
-            <span class="dis-text">These informations will only be used by us to create better experience</span>
-        </div>
+    <div class="feed-sugg">
+      <p>3. What would you like to see in our app?</p>
+      <profile-edit-input placeholder="Write down your thoughts" type="text"></profile-edit-input>
+    </div>
+    <mindful-button type="green" text="Submit" [large]="true" (click)="onSubmit()"
+      style="display:block; width:100%;"></mindful-button>
+    <div class="disclaimer">
+      <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
+        <mask id="mask0_2355_9224" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="4" y="4" width="17"
+          height="16">
+          <rect x="4.5" y="4" width="16" height="16" fill="#D9D9D9" />
+        </mask>
+        <g mask="url(#mask0_2355_9224)">
+          <path
+            d="M12.5026 15.332C12.6915 15.332 12.8498 15.2681 12.9776 15.1404C13.1054 15.0126 13.1693 14.8543 13.1693 14.6654C13.1693 14.4765 13.1054 14.3181 12.9776 14.1904C12.8498 14.0626 12.6915 13.9987 12.5026 13.9987C12.3137 13.9987 12.1554 14.0626 12.0276 14.1904C11.8998 14.3181 11.8359 14.4765 11.8359 14.6654C11.8359 14.8543 11.8998 15.0126 12.0276 15.1404C12.1554 15.2681 12.3137 15.332 12.5026 15.332ZM11.8359 12.6654H13.1693V8.66536H11.8359V12.6654ZM12.5026 18.6654C11.5804 18.6654 10.7137 18.4904 9.9026 18.1404C9.09149 17.7904 8.38594 17.3154 7.78594 16.7154C7.18594 16.1154 6.71094 15.4098 6.36094 14.5987C6.01094 13.7876 5.83594 12.9209 5.83594 11.9987C5.83594 11.0765 6.01094 10.2098 6.36094 9.3987C6.71094 8.58759 7.18594 7.88203 7.78594 7.28203C8.38594 6.68203 9.09149 6.20703 9.9026 5.85703C10.7137 5.50703 11.5804 5.33203 12.5026 5.33203C13.4248 5.33203 14.2915 5.50703 15.1026 5.85703C15.9137 6.20703 16.6193 6.68203 17.2193 7.28203C17.8193 7.88203 18.2943 8.58759 18.6443 9.3987C18.9943 10.2098 19.1693 11.0765 19.1693 11.9987C19.1693 12.9209 18.9943 13.7876 18.6443 14.5987C18.2943 15.4098 17.8193 16.1154 17.2193 16.7154C16.6193 17.3154 15.9137 17.7904 15.1026 18.1404C14.2915 18.4904 13.4248 18.6654 12.5026 18.6654ZM12.5026 17.332C13.9915 17.332 15.2526 16.8154 16.2859 15.782C17.3193 14.7487 17.8359 13.4876 17.8359 11.9987C17.8359 10.5098 17.3193 9.2487 16.2859 8.21536C15.2526 7.18203 13.9915 6.66536 12.5026 6.66536C11.0137 6.66536 9.7526 7.18203 8.71927 8.21536C7.68594 9.2487 7.16927 10.5098 7.16927 11.9987C7.16927 13.4876 7.68594 14.7487 8.71927 15.782C9.7526 16.8154 11.0137 17.332 12.5026 17.332Z"
+            fill="#282527" />
+        </g>
+      </svg>
+      <span class="dis-text">These informations will only be used by us to create better experience</span>
+    </div>
   </div>
 
-    
-  <div class="thank-you-popup" *ngIf="showThankYouPopup">
-    <div class="popup-content">
-        <img class="mood-img" src="/assets/Images-Transparent/Image-Profile-Feedback.png" alt="Sad" data-mood="sad" role="button" tabindex="0" />
-      <h2>Thanks for making us better!</h2>
-      <p>Your thoughts help us to improve your experience</p>
-          <mindful-button type="green" text="Share another idea" [large]="true" (click)="onSubmit()" style="display:block; width:100%;"></mindful-button>
-    </div>
-    </div>
+
+  <!-- Replaced inline thank-you markup with reusable mindful popup -->
+  <app-mindful-popup [isVisible]="showThankYouPopup" [config]="{
+      image: '/assets/Images-Transparent/Image-Profile-Feedback.png',
+      imageAlt: 'Feedback image',
+      heading: 'Thanks for making us better!',
+      subtitle: 'Your thoughts help us to improve your experience',
+      primaryCTA: { text: 'Share another idea', callback: onSubmit.bind(this), buttonLarge: true, buttonStyle: 'green' },
+      backdrop: true
+    }" (primaryAction)="onSubmit()" (backdropClick)="showThankYouPopup = false"
+    (closeAction)="showThankYouPopup = false"></app-mindful-popup>
 
   <span class="privacy">PRIVACY POLICY</span>
-  </ion-content>
-
-
-
+</ion-content>

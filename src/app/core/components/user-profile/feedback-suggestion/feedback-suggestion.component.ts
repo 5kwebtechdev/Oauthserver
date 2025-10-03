@@ -4,11 +4,12 @@ import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-input.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
 
 @Component({
   standalone: true,
   selector: 'feedback-suggestion',
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, ProfileEditInputComponent, MindfulButtonComponent],
+  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, ProfileEditInputComponent, MindfulButtonComponent, MindfulPopupComponent],
   templateUrl: './feedback-suggestion.component.html',
   styleUrls: ['./feedback-suggestion.component.scss']
 })

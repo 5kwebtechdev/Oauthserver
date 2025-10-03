@@ -14,5 +14,5 @@ export class CoinListComponent {
   @Input() label = 'Coins';
   @Input() count: string | number = 0;
   @Input() date: Date | string | null = null;
-  @Input() coinIcon: string = '/assets/app-assets/Coins-icon-common.svg';
+  @Input() coinIcon: string = '/assets/Icons-Neutral/Icons-Coins.png';
 }

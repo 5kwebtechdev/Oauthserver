@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
@@ -11,6 +11,7 @@ import { RouterModule } from '@angular/router';
   imports: [CommonModule, RouterModule],
 })
 export class MindfulCoinsStatsComponent {
+  constructor(private router: Router) { }
   @Input() userCoins: number | string = 0;
   @Input() userStreaks: number | string = 0;
   @Input() userDays: number | string = 0;
@@ -67,6 +68,20 @@ export class MindfulCoinsStatsComponent {
         return this.totalStreaksIcon;
       default:
         return '';
+    }
+  }
+
+  async openCoinPageIf(slot: string) {
+    if (slot === 'coins') {
+      // Navigate to the coin page inside the authenticated area
+      await this.router.navigateByUrl('/authed/coin', { state: { coins: this.userCoins } } as any);
+    }
+  }
+
+  async openTrophyPageIf(slot: string) {
+    if (slot === 'trophy') {
+      // Navigate to the trophies page inside the authenticated area
+      await this.router.navigateByUrl('/authed/trophies');
     }
   }
 }

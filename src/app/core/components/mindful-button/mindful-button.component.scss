@@ -295,6 +295,40 @@ p {
   box-shadow: 0 0 1px 0.5px rgba(185, 57, 21, 0.20), 0 -4px 2px 0 #DF4D17 inset;
 }
 
+/* Small bronze variant suitable for popup buttons (requested)
+   Apply when button is NOT medium or large (i.e., small/default) */
+.bronze:not(.medium):not(.large) {
+  display: flex;
+  width: 73px;
+  height: 42px;
+  padding: 8px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 1px solid #932E19;
+  background: linear-gradient(132deg, #772917 1.89%, #B93915 98.11%);
+  box-shadow: 0 0 1px 0.5px rgba(185, 57, 21, 0.20), 0 -4px 2px 0 #DF4D17 inset;
+}
+
+/* Bronze transparent style for cancel button (requested) */
+.bronze-transparent {
+  display: flex;
+  width: 73px;
+  height: 42px;
+  padding: 8px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 4px;
+  border: 1px solid #BB2124;
+  box-shadow: 0 0 1px 0.5px rgba(139, 141, 203, 0.20);
+  background: transparent;
+  --text_color: #282527;
+}
+
+
 /* Bronze disabled: only change opacity, do not alter colors or border */
 .bronze.disabled,
 .bronze[disabled],

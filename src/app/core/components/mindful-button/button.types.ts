@@ -1,5 +1,5 @@
 export type buttonStyles =
-    'lavendar'
+  'lavendar'
   | 'lavender-light'
   | 'lavender-complete'
   | 'lavendar-transparent'
@@ -22,7 +22,8 @@ export type buttonStyles =
   | 'aqua'
   | 'coral'
   | 'bronze'
+  | 'bronze-transparent'
   | 'peach'
   | 'white';
-  
+
 

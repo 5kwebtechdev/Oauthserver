@@ -3,6 +3,7 @@ import { FormGroup, FormControl, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
 import { LongPressDirective } from '../../../directives/gestureControlDirective';
 
 @Component({
@@ -10,7 +11,7 @@ import { LongPressDirective } from '../../../directives/gestureControlDirective'
   selector: 'mindful-tags',
   templateUrl: './mindful-tags.component.html',
   styleUrls: ['./mindful-tags.component.scss'],
-  imports: [CommonModule, FormsModule, MindfulBadgeComponent, MindfulButtonComponent, LongPressDirective]
+  imports: [CommonModule, FormsModule, MindfulBadgeComponent, MindfulButtonComponent, MindfulPopupComponent, LongPressDirective]
 })
 export class MindfulTagsComponent implements OnInit, OnDestroy {
   @Input() options: { key: any; value: string; type?: string }[] = [];
@@ -39,6 +40,17 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
   addPosition: { left: number; top: number } | null = null;
 
   private onDocClick?: any;
+  // Delete confirmation popup state
+  showDeleteConfirm: boolean = false;
+  pendingDeleteKey: any = null;
+  deleteConfirmConfig: any = {
+    heading: 'Are you sure?',
+    subtitle: 'This action cannot be undone',
+    primaryCTA: { text: 'Delete', type: 'primary' },
+    secondaryCTA: { text: 'Cancel', type: 'secondary' },
+    showCloseButton: false,
+    backdrop: true
+  };
 
   constructor(private el: ElementRef) {
     this.onDocClick = (ev: any) => {
@@ -121,6 +133,56 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
   onDelete(key: any) {
     this.delete.emit(key);
     this.closeTagMenu();
+  }
+
+  /** Open the delete confirmation popup for a specific tag key */
+  openDeleteConfirm(key: any) {
+    this.pendingDeleteKey = key;
+    const tag = this.options.find(o => o.key === key);
+    const title = tag && tag.value ? `Are you sure you want to delete “${tag.value}” Tag?` : 'Are you sure you want to delete this Tag?';
+
+    // Build a config tailored for this delete confirmation with button styles
+    this.deleteConfirmConfig = {
+      heading: '',
+      subtitle: title,
+      primaryCTA: {
+        text: 'Delete',
+        type: 'primary',
+        // Render as bronze small
+        buttonStyle: 'bronze',
+        buttonLarge: false,
+        buttonMedium: false
+      },
+      secondaryCTA: {
+        text: 'Cancel',
+        type: 'secondary',
+        // Render cancel as bronze-transparent small
+        buttonStyle: 'bronze-transparent',
+        buttonLarge: false,
+        buttonMedium: false
+      },
+      backdrop: true,
+      showCloseButton: false
+    };
+
+    this.showDeleteConfirm = true;
+    document.body.classList.add('no-scroll');
+    this.closeTagMenu();
+  }
+
+  /** Cancel the delete confirmation */
+  cancelConfirmDelete() {
+    this.pendingDeleteKey = null;
+    this.showDeleteConfirm = false;
+    document.body.classList.remove('no-scroll');
+  }
+
+  /** Confirm and perform the delete */
+  confirmDelete() {
+    if (this.pendingDeleteKey != null) {
+      this.onDelete(this.pendingDeleteKey);
+    }
+    this.cancelConfirmDelete();
   }
 
   openAdd(elRef?: any) {

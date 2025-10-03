@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { CoinListComponent } from '../coin-list/coin-list.component';
@@ -14,6 +15,9 @@ import { MindfulButtonComponent } from '../../mindful-button/mindful-button.comp
 export class CoinPageComponent {
   message = 'Hello from Coin Page!';
 
+  // coinTotal can be provided from router state when navigating here
+  coinTotal: number | string = 0;
+
   // values provided to the coin-list in the template
   coinLabel = 'Panda Superhero Cape';
   coinDate = new Date('2025-04-11');
@@ -28,4 +32,12 @@ export class CoinPageComponent {
     { icon: '/assets/app-assets/Panda Sitting Tired.svg', label: 'Glow Stick Set', count: 40, date: new Date('2025-07-09') },
     { icon: '/assets/app-assets/Panda Sitting Tired.svg', label: 'Starry Night Lamp', count: 150, date: new Date('2025-02-21') }
   ];
+
+  constructor(private router: Router) {
+    // Try to read coins value passed via router state
+    const nav = this.router.getCurrentNavigation?.();
+    if (nav && nav.extras && (nav.extras as any).state && (nav.extras as any).state.coins !== undefined) {
+      this.coinTotal = (nav.extras as any).state.coins;
+    }
+  }
 }
