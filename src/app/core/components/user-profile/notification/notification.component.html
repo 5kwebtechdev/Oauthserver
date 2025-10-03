@@ -2,10 +2,12 @@
   <mindful-navigator heading="Notification" backIcon="arrowSvg"></mindful-navigator>
 
   <div class="notification-container">
-   <div class="notification-card">
+    <div class="notification-card">
       <div class="n-card-content">
         <div class="n-head">
-          <div class="n-title"><h2>Habit Reminders</h2></div>
+          <div class="n-title">
+            <h2>Habit Reminders</h2>
+          </div>
           <mindful-toggle [checked]="true"></mindful-toggle>
         </div>
 
@@ -15,26 +17,32 @@
     <div class="notification-card">
       <div class="n-card-content">
         <div class="n-head">
-          <div class="n-title"><h2>Goal Progress</h2></div>
+          <div class="n-title">
+            <h2>Goal Progress</h2>
+          </div>
           <mindful-toggle [checked]="true"></mindful-toggle>
         </div>
 
         <p class="n-desc">Get nudges for habits (e.g., study, exercise). Your panda will cheer you on!</p>
       </div>
     </div>
-     <div class="notification-card">
+    <div class="notification-card">
       <div class="n-card-content">
         <div class="n-head">
-          <div class="n-title"><h2>Goal Progress</h2></div>
+          <div class="n-title">
+            <h2>Goal Progress</h2>
+          </div>
           <mindful-toggle [checked]="true"></mindful-toggle>
         </div>
         <p class="n-desc">Celebrate milestones! Get alerts when you’re close to unlocking rewards</p>
       </div>
     </div>
- <div class="notification-card">
+    <div class="notification-card">
       <div class="n-card-content">
         <div class="n-head">
-          <div class="n-title"><h2>App Updates</h2></div>
+          <div class="n-title">
+            <h2>App Updates</h2>
+          </div>
           <mindful-toggle [checked]="true"></mindful-toggle>
         </div>
         <p class="n-desc">Stay in the loop about new features, pets, and accessories.</p>
@@ -43,34 +51,37 @@
     <div class="notification-card">
       <div class="n-card-content">
         <div class="n-head">
-          <div class="n-title"><h2>Friend Activity</h2></div>
+          <div class="n-title">
+            <h2>Friend Activity</h2>
+          </div>
           <mindful-toggle [checked]="true"></mindful-toggle>
         </div>
         <p class="n-desc">Stay in the loop about your friends' activities and achievements.</p>
       </div>
     </div>
-    <div class="notification-card">
+    <div class="notification-card quiet-hours">
       <div class="n-card-content">
         <div class="time-head">
-          <div class="n-title"><h2>Quiet Hours</h2></div>
+          <div class="n-title">
+            <h2>Quiet Hours</h2>
+          </div>
           <div class="quiet-hours-picker">
             <div class="time-main">
               <div class="time-input">
-                <input type="text" [ngModel]="quietStart" placeholder="" readonly />
-                   <mindful-timepicker [(ngModel)]="quietStart" placeholder="Start"></mindful-timepicker>
+                <mindful-timepicker [(ngModel)]="quietStart" placeholder="Start"></mindful-timepicker>
               </div>
               <div class="sep">-</div>
               <div class="time-input">
-                <input type="text" [ngModel]="quietEnd" placeholder="" readonly />
-                   <mindful-timepicker [(ngModel)]="quietEnd" placeholder="End"></mindful-timepicker>
+                <mindful-timepicker [(ngModel)]="quietEnd" placeholder="End"></mindful-timepicker>
               </div>
             </div>
           </div>
         </div>
-        <p class="n-desc">No alerts between [22:30] and [7:30]</p>
+        <p class="n-desc">No alerts between [{{ formatTo24(quietStart) || '—' }}] and [{{ formatTo24(quietEnd) || '—'
+          }}]</p>
       </div>
     </div>
-  <mindful-button type="green" text="Save changes" large (click)="saveProfile()"></mindful-button>
+    <mindful-button type="green" text="Save changes" large (click)="saveProfile()"></mindful-button>
 
   </div>
 </ion-content>

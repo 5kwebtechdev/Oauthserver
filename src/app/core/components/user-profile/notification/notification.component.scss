@@ -1,12 +1,12 @@
 .notification-container {
   padding: 16px;
   display: flex;
-flex-direction: column;
-align-items: flex-start;
-gap: 16px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
 }
 
-.notification-container h2{
+.notification-container h2 {
   font-family: 'Fredoka', sans-serif;
   font-size: 20px;
   margin: 8px 0 12px;
@@ -28,11 +28,21 @@ gap: 16px;
   box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
 }
 
+.quiet-hours {
+  padding: 16px 16px 33px 16px;
+  width: 100%;
+
+  .n-title h2 {
+    width: auto;
+  }
+}
+
 .n-card-content {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
+  width: 100%;
 }
 
 .n-head {
@@ -59,7 +69,8 @@ gap: 16px;
   font-size: 13px;
   font-style: normal;
   font-weight: 500;
-  line-height: 130%; /* 16.9px */
+  line-height: 130%;
+  /* 16.9px */
   width: 232px;
   margin: 0;
 }
@@ -70,14 +81,31 @@ gap: 16px;
 }
 
 .quiet-hours-picker {
-  margin-top: 4px;
+  .time-input {
+    padding: 0px !important;
+    width: auto !important;
+  }
+
+  ::ng-deep .mindful-timepicker-wrapper .time-display-input {
+    padding: 0px !important;
+    font-size: 13px !important;
+    color: #282527 !important;
+    font-weight: 600 !important;
+    width: 38px !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: clip !important;
+    padding: 0px 2px !important;
+
+  }
+
 }
 
 .time-main {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .time-input {
@@ -101,11 +129,12 @@ gap: 16px;
   justify-content: center;
 }
 
-.time-head{
-   display: flex;
+.time-head {
+  display: flex;
   align-items: center;
   gap: 50px;
   align-self: stretch;
+  justify-content: space-between;
 }
 
 /* Ensure any mindful-button placed inside the notification container fills the available width */
@@ -118,6 +147,8 @@ mindful-button {
 mindful-button .button {
   width: 100%;
   box-sizing: border-box;
-  float: none; /* override any float that might be set globally */
-  margin: 0; /* align with container spacing */
+  float: none;
+  /* override any float that might be set globally */
+  margin: 0;
+  /* align with container spacing */
 }

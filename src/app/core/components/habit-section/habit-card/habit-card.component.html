@@ -3,11 +3,11 @@
   <div class="day-at-glance-container">
     <mindful-card-header title="Your Day at a Glance" subtitleMiddle="Check tasks • Finish habits • Crush it">
       <img src="/assets/Icons-Neutral/Icon-Time Management.png" alt="View All" class="day-at-glance__view-all"
-        (click)="openTimeline()" style="cursor:pointer;" />
+        (click)="openTimeline()" style="cursor:pointer;" *ngIf="!isEmpty" />
     </mindful-card-header>
 
     <!-- Tab Navigation -->
-    <div class="container w-full">
+    <div class="container w-full" *ngIf="!isEmpty">
       <div class="row toggler">
         <div class="col-4" (click)="switchTab('all')" [ngClass]="currentActive === 'all' ? 'active' : ''">All</div>
         <div class="col-4" (click)="switchTab('habits')" [ngClass]="currentActive === 'habits' ? 'active' : ''">Habits
@@ -49,7 +49,11 @@
   </div>
 
   <!-- CTA Buttons -->
-  <div class="add-button-container" [class.mt-4]="!isEmpty">
+  <div class="add-button-container" [class.mt-4]="!isEmpty" class="empty-add-btn">
+    <mindful-button type="magenta" large style="display:block; width:100%" text="Add New"
+      (click)="openHabitInput()"></mindful-button>
+  </div>
+  <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
     <button class="text-view-all" [routerLink]="['/authed/habit-page']">View All</button>
     <mindful-view-all [text]="'Add New +'" (clicked)="openHabitInput()"></mindful-view-all>
   </div>

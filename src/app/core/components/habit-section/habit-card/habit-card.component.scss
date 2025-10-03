@@ -3,7 +3,7 @@
   flex-direction: column;
   align-items: center;
   padding: 0px;
-  gap: 0px;
+  gap: 24px;
   width: 100%;
   margin-bottom: 24px;
 }
@@ -133,9 +133,9 @@ p {
 
 .empty-state-description {
   color: #666;
-  font-size: 16px;
+  font-size: 13px;
   line-height: 1.5;
-  margin-bottom: 24px;
+  margin-bottom: 0px !important;
   max-width: 300px;
 }
 
@@ -146,6 +146,10 @@ p {
   width: 100%;
   padding-left: 16px;
   padding-right: 16px;
+
+  .empty-add-btn {
+    padding: 0px !important;
+  }
 }
 
 .habit-wrapper {
