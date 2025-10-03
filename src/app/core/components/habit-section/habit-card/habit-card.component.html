@@ -1,7 +1,7 @@
 <!-- List Mode -->
 <div *ngIf="mode === 'list'">
   <div class="day-at-glance-container">
-    <mindful-card-header [title]="'Your Day at a Glance'" [subtitleMiddle]="'Check tasks • Finish habits • Crush it'">
+    <mindful-card-header title="Your Day at a Glance" subtitleMiddle="Check tasks • Finish habits • Crush it">
       <img src="/assets/Icons-Neutral/Icon-Time Management.png" alt="View All" class="day-at-glance__view-all"
         (click)="openTimeline()" style="cursor:pointer;" />
     </mindful-card-header>
@@ -50,7 +50,7 @@
 
   <!-- CTA Buttons -->
   <div class="add-button-container" [class.mt-4]="!isEmpty">
-    <button class="text-view-all" (click)="openHabitPage()">View All</button>
+    <button class="text-view-all" [routerLink]="['/authed/habit-page']">View All</button>
     <mindful-view-all [text]="'Add New +'" (clicked)="openHabitInput()"></mindful-view-all>
   </div>
 </div>
@@ -93,7 +93,8 @@
               <p class="score p-l-0">100</p>
             </div>
             <div class="single-point-container">
-              <img class="score" src="assets/Icons-Neutral/Icons-Coins.png" alt="">
+              <img class="score" src="assets/Icons-Neutral/Icons-Coins.png" alt=""
+                style="width:24px;height:27px;aspect-ratio:8/9;">
               <p class="score p-l-0">{{getCoinReward()}}</p>
             </div>
           </div>

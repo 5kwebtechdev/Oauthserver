@@ -46,7 +46,8 @@
 
       <div class="routine-section">
         <label>Routine</label>
-        <mindful-selectors [options]="routineOptions" componentType="badge" [singleSelection]="true">
+        <mindful-selectors [options]="routineOptions" componentType="badge" [singleSelection]="true"
+          (selectedKeysChange)="onRoutineSelected($event)">
         </mindful-selectors>
       </div>
 

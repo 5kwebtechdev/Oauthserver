@@ -1,69 +1,44 @@
- 
-  <ion-content style="height: 100vh; overflow-y: scroll">
-  <mindful-navigator
-    heading="Timeline"
-    [rightIcon]="'/assets/app-assets/Notes-Icon-Home-Top.svg'"
-    [rightIcon2]="'/assets/app-assets/Icon-calendar.svg'"
-    (rightIconClick)="onNotesClick()"
-    (rightIcon2Click)="onCalendarClick()"
-  ></mindful-navigator>
-  <mindful-week></mindful-week>
-  <div class="card container w-full" style="width: calc(100vw - 16px) !important;border-radius: 32px;margin: 17px auto 30px auto;">
-    <div class="row" style="padding: 15px 0px;">
+<ion-content style="height: 100vh; overflow-y: scroll">
+  <mindful-navigator heading="Timeline" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
+    [rightIcon2]="'/assets/Icons-Neutral/Icon-Notes.png'" (rightIconClick)="onNotesClick()"
+    (rightIcon2Click)="onCalendarClick()"></mindful-navigator>
+  <mindful-week (dateSelected)="onDateSelected($event)"></mindful-week>
+  <div class="card timeline-score-card container w-full">
+    <div class="row ">
       <div class="col-3 p-0">
-        <mindful-completion
-          [completionPercentage]="80"
-          [borderColor]="'#4CAF50'"
-          [innerText]="'80%'"
-          [belowText]="'Completion Text'">
+        <mindful-completion [completionPercentage]="80" [borderColor]="'#4CAF50'" [innerText]="'80%'"
+          [belowText]="'Total habits completed'">
         </mindful-completion>
       </div>
       <div class="col-3 p-0">
-        <mindful-completion
-          [completionPercentage]="60"
-          [borderColor]="'#F0AD4E'"
-          [innerText]="'60'"
-          [belowText]="'Consistency Score'">
+        <mindful-completion [completionPercentage]="60" [borderColor]="'#F0AD4E'" [innerText]="'60'"
+          [belowText]="'Total tasks completed'">
         </mindful-completion>
       </div>
       <div class="col-3 p-0">
-        <mindful-completion
-          [completionPercentage]="42"
-          [borderColor]="'#BB2124'"
-          [innerText]="'42'"
-          [belowText]="'Improvement Score'">
+        <mindful-completion [completionPercentage]="42" [borderColor]="'#BB2124'" [innerText]="'42'"
+          [belowText]="'Habit completion rate'">
         </mindful-completion>
       </div>
       <div class="col-3 p-0">
-        <mindful-completion
-          [completionPercentage]="74"
-          [borderColor]="'#F0AD4E'"
-          [innerText]="'74'"
-          [belowText]="'App Score'">
+        <mindful-completion [completionPercentage]="74" [borderColor]="'#F0AD4E'" [innerText]="'74'"
+          [belowText]="'Task completion rate'">
         </mindful-completion>
       </div>
     </div>
   </div>
   <div class="container p-0" style="width: fit-content;transform: scale(1.1); margin-bottom: 20px">
-    <mindful-selectors
-      [options]="[
+    <mindful-selectors [options]="[
     {key: 'all', value: 'All', type: 'magenta'},
     {key: 'habit', value: 'Habits', type: 'lavendar'},
     {key: 'task', value: 'Tasks', type: 'orange'},
     {key: 'timetable', value: 'Time Table', type: 'aqua'},
-    ]"
-      componentType="button"
-      size="small"
-      [singleSelection]="true"
-      style="transform: scale(1.5)"
-      (selectedKeysChange)="keysUpdated($event)"
-    >
+    ]" componentType="button" size="small" [singleSelection]="true" style="transform: scale(1.5)"
+      (selectedKeysChange)="keysUpdated($event)">
     </mindful-selectors>
   </div>
   <div class="container w-full p-0" style="overflow:hidden ">
-    <mindful-timeline
-      [events]="filteredEvents"
-    ></mindful-timeline>
+    <mindful-timeline [events]="filteredEvents"></mindful-timeline>
   </div>
 
 </ion-content>

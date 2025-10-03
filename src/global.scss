@@ -1,103 +1,81 @@
-/*
- * App Global CSS
- * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
- */
-
-/* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
 
-/* Basic CSS for apps built with Ionic */
 @import "@ionic/angular/css/normalize.css";
 @import "@ionic/angular/css/structure.css";
 @import "@ionic/angular/css/typography.css";
 @import "@ionic/angular/css/display.css";
-
-/* Optional CSS utils that can be commented out */
 @import "@ionic/angular/css/padding.css";
 @import "@ionic/angular/css/float-elements.css";
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
-
-/* Swiper imports removed - using native scroll-snap slider implementation */
-
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-
-
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
 
-:root{
-  --error_color:  #bb2124;
+:root {
+  --error_color: #bb2124;
   --font-heading: 'Fredoka', sans-serif;
   --font-sans: 'Nunito', sans-serif;
 }
 
-html, body {
+html,
+body {
   font-family: var(--font-sans);
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
 }
 
-.fredoka{
+.fredoka {
   font-family: var(--font-heading);
 }
 
-.w-full{
+.w-full {
   width: 100%;
   max-width: unset;
 }
 
-.p-0{
+.p-0 {
   padding: 0 !important;
 }
 
-.p-l-0{
+.p-l-0 {
   padding-left: 0 !important;
 }
 
-.p-r-0{
+.p-r-0 {
   padding-right: 0 !important;
 }
 
-.flex-center{
+.flex-center {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-:root{
+:root {
   --footer_text: #6B656A;
 }
 
-.card{
+.card {
   background: #FDFDFD;
   box-shadow: 0px 0px 8px 2px rgba(107, 101, 106, 0.15);
   border-radius: 32px;
 }
 
-.typical-header{
+.typical-header {
   top: 0;
   left: 0;
   width: 100vw;
   min-height: 60px;
 
-  h3{
+  h3 {
     font-family: 'Fredoka', sans-serif;
     font-size: 20px;
     font-weight: 500;
@@ -105,16 +83,16 @@ h1, h2, h3, h4, h5, h6 {
     margin: 0;
   }
 
-  p{
+  p {
     margin: 0;
   }
 }
 
-.toggler{
+.toggler {
   margin-top: 25px;
 }
 
-.toggler div{
+.toggler div {
   text-align: center;
   font-size: 18px;
   font-family: 'Nunito', sans-serif;
@@ -124,11 +102,11 @@ h1, h2, h3, h4, h5, h6 {
   padding: 8px 0;
 }
 
-.toggler div.active{
+.toggler div.active {
   color: #8B8DCB;
 }
 
-.toggler div.active:before{
+.toggler div.active:before {
   position: absolute;
   content: '';
   width: 60%;
@@ -138,13 +116,10 @@ h1, h2, h3, h4, h5, h6 {
   background: #8B8DCB;
 }
 
-.toggler div:not(:last-child){
+.toggler div:not(:last-child) {
   border-right: 1px solid black;
 }
 
-/* ===== MINDFUL BUDDY COMMON COMPONENT STYLES ===== */
-
-/* Common Page Container */
 .mindful-page-container {
   padding: 20px;
   min-height: 100vh;
@@ -164,7 +139,6 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Common Header with Back Button */
 .mindful-header {
   font-family: 'Fredoka', sans-serif;
   font-weight: 500;
@@ -179,7 +153,7 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 21px;
     cursor: pointer;
     transition: color 0.3s ease;
-    
+
     &:hover {
       color: #EE6621;
     }
@@ -190,7 +164,6 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Common Button Styles */
 .mindful-btn {
   width: 100%;
   padding: 16px;
@@ -243,7 +216,6 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Common FAQ Styles */
 .mindful-faq {
   margin-bottom: 40px;
 
@@ -313,7 +285,6 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Common Instructions List */
 .mindful-instructions {
   margin-bottom: 40px;
 
@@ -363,14 +334,9 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Common Form Input Groups moved to component stylesheet */
-
-/* (swiper imports are placed at the top of this file) */
-
-/* Common Step Indicator */
 .mindful-step-indicator {
   margin-bottom: 30px;
-  
+
   &__step {
     font-weight: 600;
     font-size: 16px;
@@ -403,63 +369,76 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Common Background Colors - Fully Responsive */
 .bg-mindful-primary,
 .bg-mindful-secondary,
 .bg-mindful-accent {
   min-height: 100vh;
-  min-height: 100dvh; /* Dynamic viewport height for mobile */
+  min-height: 100dvh;
   width: 100vw;
   position: relative;
   box-sizing: border-box;
   overflow-x: hidden;
 }
 
-.bg-mindful-primary { 
+.bg-mindful-primary {
   background: #FFE9D6;
 }
 
-.bg-mindful-secondary { 
+.bg-mindful-secondary {
   background: #FDEAD7;
 }
 
-.bg-mindful-accent { 
+.bg-mindful-accent {
   background: #FAD2AE;
 }
 
-/* Ensure ion-content fills full viewport with proper background coverage */
 ion-content {
   --background: transparent;
   width: 100vw;
   min-height: 100vh;
   min-height: 100dvh;
-  /* allow vertical scrolling when content exceeds viewport */
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch;
-  
+  padding-top: calc(36px + env(safe-area-inset-top));
+
+  >* {
+    margin-top: 0 !important;
+  }
+
+  .container>*:first-child,
+  .signup-container>*:first-child,
+  .mindful-page-container>*:first-child {
+    margin-top: 0 !important;
+  }
+
   &.bg-mindful-primary {
     --background: #FFE9D6;
   }
-  
+
   &.bg-mindful-secondary {
     --background: #FDEAD7;
   }
-  
+
   &.bg-mindful-accent {
     --background: #FAD2AE;
   }
-  
+
   .mindful-page-container {
     min-height: 100vh;
     min-height: 100dvh;
     width: 100%;
     position: relative;
+    padding-top: calc(36px + env(safe-area-inset-top));
+
+    >* {
+      margin-top: 0 !important;
+    }
   }
 }
 
-/* Fix for iOS safe areas */
 @supports (padding: max(0px)) {
   ion-content {
+
     &.bg-mindful-primary,
     &.bg-mindful-secondary,
     &.bg-mindful-accent {
@@ -473,16 +452,17 @@ ion-content {
   }
 }
 
-/* Responsive adjustments for different screen sizes */
 @media (max-width: 768px) {
+
   .bg-mindful-primary,
   .bg-mindful-secondary,
   .bg-mindful-accent {
     min-height: 100vh;
     min-height: 100dvh;
   }
-  
+
   ion-content {
+
     &.bg-mindful-primary,
     &.bg-mindful-secondary,
     &.bg-mindful-accent {
@@ -492,15 +472,16 @@ ion-content {
   }
 }
 
-/* Fix for landscape mode on mobile */
 @media (orientation: landscape) and (max-height: 500px) {
+
   .bg-mindful-primary,
   .bg-mindful-secondary,
   .bg-mindful-accent {
     min-height: 100vh;
   }
-  
+
   ion-content {
+
     &.bg-mindful-primary,
     &.bg-mindful-secondary,
     &.bg-mindful-accent {
@@ -511,13 +492,20 @@ ion-content {
   }
 }
 
-/* Common Text Colors */
-.text-mindful-primary { color: #772817; }
-.text-mindful-secondary { color: #6b3d2b; }
-.text-mindful-accent { color: #EE6621; }
+.text-mindful-primary {
+  color: #772817;
+}
 
-/* Global footer hiding for reel expand mode */
+.text-mindful-secondary {
+  color: #6b3d2b;
+}
+
+.text-mindful-accent {
+  color: #EE6621;
+}
+
 body.reel-expanded {
+
   footer,
   ion-tab-bar,
   ion-tabs,

@@ -1,1 +1,12 @@
-/* empty */
+.timeline-score-card {
+    display: flex;
+    padding: 16px;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    border-radius: 32px;
+    background: #FDFDFD;
+    box-shadow: 0 0 8px 2px rgba(107, 101, 106, 0.15);
+    margin-top: 32px;
+    margin-bottom: 32px;
+}

@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, ViewChild, ElementRef, booleanAttribute, AfterViewInit, OnDestroy } from '@angular/core';
 import { NgClass, NgIf, CommonModule, NgForOf } from "@angular/common";
+import { RouterModule } from '@angular/router';
 import { LongPressDirective } from "../../../directives/gestureControlDirective";
 import { MindfulButtonComponent } from "../../mindful-button/mindful-button.component";
 import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
@@ -26,8 +27,9 @@ import { Subscription } from 'rxjs';
     NgForOf,
     LongPressDirective,
     MindfulButtonComponent,
-  MindfulCardHeaderComponent,
-  ViewAllComponent,
+    MindfulCardHeaderComponent,
+    ViewAllComponent,
+    RouterModule,
     MindfulBadgeComponent
   ]
 })
@@ -353,5 +355,20 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   getCoinReward(): number {
     return this.habit && this.habit.coinReward ? this.habit.coinReward : 0;
+  }
+
+  /**
+   * Return the asset path for the routine icon based on habit.selectedRoutine.
+   * Accepts values like 'morning', 'evening', 'night'. Falls back to Morning.
+   */
+  getRoutineIcon(): string {
+    try {
+      const routine = (this.habit && this.habit.selectedRoutine) ? String(this.habit.selectedRoutine).toLowerCase() : 'morning';
+      // Normalize to expected filename casing: Icon-Routine-Morning.png etc.
+      const name = 'Icon-Routine-' + routine.charAt(0).toUpperCase() + routine.slice(1) + '.png';
+      return `/assets/Icons-Neutral/${name}`;
+    } catch (e) {
+      return '/assets/Icons-Neutral/Icon-Routine-Morning.png';
+    }
   }
 }

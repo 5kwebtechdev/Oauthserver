@@ -2,7 +2,8 @@
   <div #reelsSwiper class="reels-swiper swiper-container">
     <div class="swiper-wrapper">
       <div class="swiper-slide" *ngFor="let s of slides">
-        <reel-frame [s]="s" (play)="playReel($event)" (toggleSave)="toggleSave($event)"></reel-frame>
+        <reel-frame [s]="s" [hideCategory]="hideCategory" (play)="playReel($event)"
+          (toggleSave)="toggleSave($event)"></reel-frame>
       </div>
     </div>
   </div>

@@ -176,7 +176,7 @@
         </div>
       </div>
       <div class="role-selector container p-0" [ngClass]="{'active': roleSelected === 'parent'}"
-        (click)="roleSelected = 'parent'" style="margin-top: 25px">
+        (click)="roleSelected = 'parent'">
         <div class="row">
           <div class="col-6 p-l-0">
             <img src="/assets/app-assets/Onboarding-role-selection-parent.svg" alt="">
@@ -191,7 +191,7 @@
       </div>
 
       <div class="role-selector container p-0" [ngClass]="{'active': roleSelected === 'self'}"
-        (click)="roleSelected = 'self'" style="margin-top: 25px">
+        (click)="roleSelected = 'self'">
         <div class="row">
           <div class="col-6">
             <h2>Self</h2>
@@ -205,7 +205,7 @@
         </div>
       </div>
 
-      <button class="signup-btn" style="margin-top: 25px" [disabled]="!roleSelected" (click)="proceedWithRole()">Save
+      <button class="signup-btn" [disabled]="!roleSelected" (click)="proceedWithRole()">Save
         &
         Continue</button>
     </div>

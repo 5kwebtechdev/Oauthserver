@@ -24,7 +24,7 @@ export class MindfulSelectorsComponent implements OnInit {
   @Input() formControlName!: string;
   @Input() componentType: 'button' | 'badge' | 'tags' = 'badge';
   @Input() size: 'small' | 'medium' | 'large' = 'small';
-  @Output() selectedKeysChange = new EventEmitter<number[]>();
+  @Output() selectedKeysChange = new EventEmitter<string[]>();
 
   @Input()
   @CoerceBoolean()

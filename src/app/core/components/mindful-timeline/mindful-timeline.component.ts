@@ -1,10 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 
-interface TimetableEvent {
-  startTime: string; // "HH:mm"
-  endTime: string;   // "HH:mm"
-  title: string;
-  type: string;
+import { TimelineEvent } from '../../models/calendar.model';
+
+interface EventPosition extends TimelineEvent {
   _top?: number;
   _height?: number;
   _column?: number;
@@ -19,7 +17,7 @@ interface TimetableEvent {
   standalone: false
 })
 export class MindfulTimelineComponent implements OnInit {
-  @Input() events: TimetableEvent[] = [];
+  @Input() events: EventPosition[] = [];
 
   timeSlots: string[] = [];
   compressedSlots: { startHour: number, count: number }[] = [];
@@ -46,8 +44,8 @@ export class MindfulTimelineComponent implements OnInit {
     // Sort events by start time
     this.events.sort((a, b) => this.parseTime(a.startTime) - this.parseTime(b.startTime));
 
-    const groups: TimetableEvent[][] = [];
-    let currentGroup: TimetableEvent[] = [];
+    const groups: EventPosition[][] = [];
+    let currentGroup: EventPosition[] = [];
 
     for (const event of this.events) {
       const eventStart = this.parseTime(event.startTime);
@@ -77,8 +75,8 @@ export class MindfulTimelineComponent implements OnInit {
     });
   }
 
-  assignColumns(events: TimetableEvent[]) {
-    const slots: TimetableEvent[][] = [];
+  assignColumns(events: EventPosition[]) {
+    const slots: EventPosition[][] = [];
 
     for (const event of events) {
       let placed = false;

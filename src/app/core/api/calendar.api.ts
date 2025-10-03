@@ -21,7 +21,7 @@ export class CalendarApi {
     }
 
     addCalendarEvent(payload: any): Observable<any> {
-        const url = `${this.base}/api/calendar/events`;
+        const url = `${this.base}/calendar/add`;
         return this.http.post(url, payload, { headers: this.headers() });
     }
 

@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, AfterViewInit, ElementRef, ViewChild, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
@@ -14,6 +14,10 @@ import { ReelFrameComponent } from '../reel-frame/reel-frame.component';
   imports: [CommonModule, IonicModule, RouterModule, MindfulCardHeaderComponent, ViewAllComponent, ReelFrameComponent]
 })
 export class ReelsCardComponent {
+  // When true the per-slide category labels rendered by ReelFrame will be hidden
+  // Parent components can set this to hide category on specific pages.
+  @Input() public hideCategory = false;
+
   public slides = [
     {
       id: 1,
@@ -87,7 +91,7 @@ export class ReelsCardComponent {
       console.log('Dispatching openReelExpanded event:', ev);
       window.dispatchEvent(ev);
       console.log('Event dispatched successfully');
-    } catch (e) { 
+    } catch (e) {
       console.error('Error dispatching openReelExpanded event:', e);
     }
   }

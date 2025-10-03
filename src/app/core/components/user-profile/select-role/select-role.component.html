@@ -2,14 +2,9 @@
 	<div class="step step-1" *ngIf="currentStep === 1">
 		<mindful-navigator heading="Select the role" backIcon="arrowSvg"></mindful-navigator>
 
-		<div class="role-selector container p-0"
-			 data-role="child"
-			 role="button"
-			 tabindex="0"
-			 (click)="selectRole('child')"
-			 (keydown)="onKeySelect($event, 'child')"
-			 [class.active]="selectedRole === 'child'"
-			 [attr.aria-pressed]="selectedRole === 'child'">
+		<div class="role-selector container p-0" data-role="child" role="button" tabindex="0"
+			(click)="selectRole('child')" (keydown)="onKeySelect($event, 'child')"
+			[class.active]="selectedRole === 'child'" [attr.aria-pressed]="selectedRole === 'child'">
 
 			<div class="row">
 				<div class="col-6">
@@ -25,15 +20,9 @@
 			</div>
 		</div>
 
-		<div class="role-selector container p-0"
-			 data-role="parent"
-			 style="margin-top: 25px"
-			 role="button"
-			 tabindex="0"
-			 (click)="selectRole('parent')"
-			 (keydown)="onKeySelect($event, 'parent')"
-			 [class.active]="selectedRole === 'parent'"
-			 [attr.aria-pressed]="selectedRole === 'parent'">
+		<div class="role-selector container p-0" data-role="parent" role="button" tabindex="0"
+			(click)="selectRole('parent')" (keydown)="onKeySelect($event, 'parent')"
+			[class.active]="selectedRole === 'parent'" [attr.aria-pressed]="selectedRole === 'parent'">
 
 			<div class="row">
 				<div class="col-6 p-l-0">
@@ -65,15 +54,9 @@
 		</div>
 		-->
 
-		<div style="margin-top: 33px">
-			<mindful-button
-				type="green"
-				full
-				large
-				text="Save & Continue"
-				[disabled]="!selectedRole"
-				[style.opacity]="selectedRole ? 1 : 0.5"
-				(click)="save()"></mindful-button>
+		<div>
+			<mindful-button type="green" full large text="Save & Continue" [disabled]="!selectedRole"
+				[style.opacity]="selectedRole ? 1 : 0.5" (click)="save()"></mindful-button>
 		</div>
 	</div>
 
@@ -97,31 +80,28 @@
 		<div class="container w-full p-0" style="display: flex; justify-content: center; align-items: center;">
 			<div class="container w-full p-0" style="padding: 20px 0px !important; max-width:420px; width:100%">
 				<div class="toggle-buttons">
-					<button [class.active]="selectedFamilyAction === 'create'" (click)="setFamilyAction('create')">Create Family</button>
-					<button [class.active]="selectedFamilyAction === 'join'" (click)="setFamilyAction('join')">Join Family</button>
+					<button [class.active]="selectedFamilyAction === 'create'"
+						(click)="setFamilyAction('create')">Create Family</button>
+					<button [class.active]="selectedFamilyAction === 'join'" (click)="setFamilyAction('join')">Join
+						Family</button>
 				</div>
 
 				<div style="position:relative;">
-					<profile-edit-input
-						desc="For naming your family"
+					<profile-edit-input desc="For naming your family"
 						[placeholder]="selectedFamilyAction === 'create' ? 'Set family name' : 'Enter family code or scan QR'"></profile-edit-input>
 
-					<button *ngIf="selectedFamilyAction === 'join'"
-							(click)="onScanQr()"
-							aria-label="Scan QR"
-							style="position:absolute; right:8px; top:50%; transform:translateY(-50%); border:none; background:transparent; padding:6px; display:flex; align-items:center;">
+					<button *ngIf="selectedFamilyAction === 'join'" (click)="onScanQr()" aria-label="Scan QR"
+						style="position:absolute; right:8px; top:50%; transform:translateY(-50%); border:none; background:transparent; padding:6px; display:flex; align-items:center;">
 						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
-							<path d="M0 8V0H8V8H0ZM2 6H6V2H2V6ZM0 18V10H8V18H0ZM2 16H6V12H2V16ZM10 8V0H18V8H10ZM12 6H16V2H12V6ZM16 18V16H18V18H16ZM10 12V10H12V12H10ZM12 14V12H14V14H12ZM10 16V14H12V16H10ZM12 18V16H14V18H12ZM14 16V14H16V16H14ZM14 12V10H16V12H14ZM16 14V12H18V14H16Z"
-								  fill="#282527"/>
+							<path
+								d="M0 8V0H8V8H0ZM2 6H6V2H2V6ZM0 18V10H8V18H0ZM2 16H6V12H2V16ZM10 8V0H18V8H10ZM12 6H16V2H12V6ZM16 18V16H18V18H16ZM10 12V10H12V12H10ZM12 14V12H14V14H12ZM10 16V14H12V16H10ZM12 18V16H14V18H12ZM14 16V14H16V16H14ZM14 12V10H16V12H14ZM16 14V12H18V14H16Z"
+								fill="#282527" />
 						</svg>
 					</button>
 				</div>
 
 				<div style="margin-top:20px; text-align:center;">
-					<mindful-button
-						type="green"
-						full
-						large
+					<mindful-button type="green" full large
 						[text]="selectedFamilyAction === 'create' ? 'Create Family' : 'Join Family'"
 						(click)="save()"></mindful-button>
 				</div>
@@ -133,5 +113,5 @@
 		</div>
 	</div>
 
-	
+
 </ion-content>

@@ -10,6 +10,8 @@ import { CommonModule } from '@angular/common';
 })
 export class ReelFrameComponent {
   @Input() s: any;
+  // when true the per-slide category label will be hidden
+  @Input() hideCategory = false;
   @Output() play = new EventEmitter<any>();
   @Output() toggleSave = new EventEmitter<any>();
 

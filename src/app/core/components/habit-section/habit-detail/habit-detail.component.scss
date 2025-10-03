@@ -10,135 +10,146 @@
   gap: 32px;
 }
 
-h2{
+h2 {
   color: #282527;
-font-family: Fredoka;
-font-size: 16px;
-font-style: normal;
-font-weight: 500;
-line-height: 140%; /* 22.4px */
-}
-.detail-header{
-  display: flex;
-align-items: center;
-gap: 119px;
+  font-family: Fredoka;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  /* 22.4px */
 }
 
-.detail-header{
+.detail-header {
   display: flex;
-justify-content: center;
-align-items: center;
-gap: 12px;
+  align-items: center;
+  gap: 119px;
 }
 
-.detail-right h2{
+.detail-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail-right h2 {
   color: #282527;
-font-family: Nunito;
-font-size: 20px;
-font-style: normal;
-font-weight: 700;
-line-height: 140%; /* 28px */
+  font-family: Nunito;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 140%;
+  /* 28px */
 }
 
-.detail-left{
+.detail-left {
   display: flex;
-align-items: center;
-gap: 8px;
+  align-items: center;
+  gap: 8px;
 }
 
-.detail-cta{
+.detail-cta {
   display: flex;
-width: 360.5px;
-justify-content: space-between;
-align-items: center;
+  width: 360.5px;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.repeat-days{
-display: flex;
-width: 360.5px;
-justify-content: space-between;
-align-items: center;
+.repeat-days {
+  display: flex;
+  width: 360.5px;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.repeat-head{
+.repeat-head {
   display: inline-flex;
-// align-items: center;
-gap: 12px;
+  // align-items: center;
+  gap: 12px;
 
-p{
-  color: #282527;
-font-family: Nunito;
-font-size: 16px;
-font-style: normal;
-font-weight: 600;
-line-height: 140%; /* 22.4px */
-}
+  p {
+    color: #282527;
+    font-family: Nunito;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 140%;
+    /* 22.4px */
+  }
 }
 
-.repeat-icon{
+.repeat-icon {
   width: 20px;
   height: 20px;
   display: inline-block;
 }
 
-.detail-message{
+.detail-message {
   display: flex;
-width: 360.5px;
-justify-content: space-between;
-align-items: center;
+  width: 360.5px;
+  justify-content: space-between;
+  align-items: center;
 }
 
 
-.completion-days{
+.completion-days {
   display: inline-flex;
   justify-content: center;
   align-items: center;
   gap: 40px;
-  width: 360.5px; /* match other blocks */
+  width: 360.5px;
+  /* match other blocks */
   max-width: 100%;
-  margin: 16px auto; /* center horizontally */
+  margin: 16px auto;
+  /* center horizontally */
 }
 
-.completedays-header,.skipped-days{
+.completedays-header,
+.skipped-days {
   display: flex;
-width: 81px;
-flex-direction: column;
-justify-content: center;
-align-items: center;
-gap: 2px;
+  width: 81px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
 
-p{
-  color: #6B656A;
-font-family: Nunito;
-font-size: 13px;
-font-style: normal;
-font-weight: 600;
-line-height: 120%; /* 15.6px */
-}
+  p {
+    color: #6B656A;
+    font-family: Nunito;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 120%;
+    /* 15.6px */
+  }
 }
 
 /* Divider SVG styling: center and make responsive */
-.divider-svg{
-  display: block; /* centers with auto margins */
-  margin: 20px auto; /* vertical spacing + center horizontally */
+.divider-svg {
+  display: block;
+  /* centers with auto margins */
+  margin: 20px auto;
+  /* vertical spacing + center horizontally */
   width: 298px;
   height: 2px;
-  max-width: 100%; /* prevent overflow on small screens */
+  max-width: 100%;
+  /* prevent overflow on small screens */
 }
 
-.detail-progess-status{
+.detail-progess-status {
   display: inline-flex;
-padding: 16px;
-justify-content: center;
-align-items: center;
-gap: 24px;
-border-radius: 32px;
-opacity: 0.5;
-background: #FDFDFD;
-box-shadow: 0 0 8px 2px rgba(107, 101, 106, 0.15);
+  padding: 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  border-radius: 32px;
+  opacity: 0.5;
+  background: #FDFDFD;
+  box-shadow: 0 0 8px 2px rgba(107, 101, 106, 0.15);
 }
 
-.total-progress{
+.total-progress {
   display: flex;
   width: 64px;
   flex-direction: column;
@@ -146,40 +157,42 @@ box-shadow: 0 0 8px 2px rgba(107, 101, 106, 0.15);
   gap: 6px;
   /* visual defaults so the block is visible until real content is added */
   min-height: 40px;
-  background: rgba(0,0,0,0.03);
+  background: rgba(0, 0, 0, 0.03);
   border-radius: 8px;
 }
 
-.progres-count{
+.progres-count {
   color: #282527;
   text-align: center;
   font-family: Nunito;
   font-size: 13px;
   font-style: normal;
   font-weight: 600;
-  line-height: 140%; /* 18.2px */
+  line-height: 140%;
+  /* 18.2px */
   align-self: stretch;
 }
 
-.progress-stat{
+.progress-stat {
   height: 99px;
   align-self: stretch;
 }
 
-.progress-circle{
+.progress-circle {
   width: 64px;
   height: 64px;
   flex-shrink: 0;
   aspect-ratio: 1/1;
   border-radius: 50%;
-  background: rgba(0,0,0,0.06); /* subtle placeholder */
+  background: rgba(0, 0, 0, 0.06);
+  /* subtle placeholder */
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
 }
 
-.progress-circle-img{
+.progress-circle-img {
   width: 23.275px;
   height: 38px;
   flex-shrink: 0;
@@ -189,14 +202,38 @@ box-shadow: 0 0 8px 2px rgba(107, 101, 106, 0.15);
   object-position: center center;
 }
 
-.progress-name{
+.progress-name {
   color: #282527;
   text-align: center;
   font-family: Nunito;
   font-size: 10px;
   font-style: normal;
   font-weight: 700;
-  line-height: 140%; /* 14px */
+  line-height: 140%;
+  /* 14px */
   width: 51px;
   margin: 6px auto 0 auto;
+}
+
+/* custom edit button projected into mindful-navigator slot */
+.right-custom-edit {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
+  border-radius: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(98deg, rgba(226, 226, 226, 0.60) 8.57%, rgba(241, 241, 241, 0.30) 90.15%);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: none;
+  padding: 0;
+}
+
+.right-custom-edit svg {
+  width: 18px;
+  height: 18px;
+  display: block;
 }

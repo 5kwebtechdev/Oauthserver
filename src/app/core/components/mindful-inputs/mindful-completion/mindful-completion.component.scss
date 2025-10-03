@@ -4,13 +4,15 @@
   align-items: center;
   justify-content: center;
   text-align: center;
+  padding: 0px !important
 }
 
 .circle-wrapper {
-  width: 100%;
-  max-width: 300px; // Optional limit
-  aspect-ratio: 1 / 1;
   position: relative;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
 }
 
 .progress-ring {
@@ -37,6 +39,9 @@
 
 .below-text {
   margin-top: 12px;
-  font-size: 14px;
-  color: #666;
+  color: #282527;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 140%;
 }

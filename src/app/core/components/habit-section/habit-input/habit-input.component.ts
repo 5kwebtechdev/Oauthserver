@@ -223,7 +223,6 @@ export class HabitInputComponent {
           status: 'PENDING',
           coinReward: 5,
           isEveryday: !!habit.everyday,
-          isEveryWeekend: false,
           daysOfWeek: daysOfWeek,
           priority: priority,
           routine: routine
@@ -234,20 +233,18 @@ export class HabitInputComponent {
         endTime: formattedEndTime || ''
       };
     } else if (this.currentActive === 'timetable') {
-      // Calendar/timetable payload: use the JSON structure from the API screenshot
+      // Timetable payload: use the exact structure from your Postman body
       payload = {
         title: habit.title,
-        description: habit.notes || habit.title,
-        topic: habit.title,
-        type: "event",
-        completed: false,
-        startDate: formatDateStr(this.startDate) || "2024-08-24",
-        endDate: formatDateStr(this.endDate) || "2024-08-24",
-        startTime: formattedStartTime || "09:00",
-        endTime: formattedEndTime || "10:00",
+        notes: habit.notes || '',
         tags: tags,
-        daysOfWeek: daysOfWeek,
-        isEveryday: !!habit.everyday,
+        everyday: !!habit.everyday,
+        everyWeekend: false,
+        daysOfWeek: this.everyday ? [] : daysOfWeek,
+        startTime: formattedStartTime || '',
+        endTime: formattedEndTime || '',
+        startDate: formatDateStr(this.startDate) || '',
+        endDate: formatDateStr(this.endDate) || '',
         priority: priority
       };
     } else {
@@ -261,7 +258,6 @@ export class HabitInputComponent {
           routine: routine,
           status: 'PENDING',
           isEveryday: !!habit.everyday,
-          isEveryWeekend: false,
           daysOfWeek: daysOfWeek,
           coinReward: 5
         },
@@ -331,7 +327,9 @@ export class HabitInputComponent {
       if (this.everyday) this.everyday = false;
     } else {
       this.selectedDays.add(d);
-      if (this.selectedDays.size === this.weekdays.length) this.everyday = true;
+      if (this.selectedDays.size === this.weekdays.length) {
+        this.everyday = true;
+      }
     }
   }
 
@@ -381,5 +379,22 @@ export class HabitInputComponent {
     }
 
     // Do NOT overwrite selectedRoutine from tag selections; tags are independent.
+  }
+
+  /**
+   * Handle routine selector changes. The `mindful-selectors` component emits
+   * an array of selected keys. For singleSelection this will be a single-item
+   * array containing 'morning' | 'evening' | 'night'. Update the component
+   * level `selectedRoutine` so the created habit/task gets the correct value.
+   */
+  onRoutineSelected(payload: any) {
+    if (!Array.isArray(payload)) return;
+    if (payload.length === 0) return;
+    try {
+      this.selectedRoutine = String(payload[0]);
+    } catch (e) {
+      // fallback - keep existing selectedRoutine
+      console.warn('Failed to parse routine selection', e);
+    }
   }
 }

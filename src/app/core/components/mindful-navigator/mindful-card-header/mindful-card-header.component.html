@@ -10,13 +10,19 @@
   <div class="mindful-card-header__left">
     <h3 class="mindful-card-header__title">{{ title }}</h3>
     <div class="mindful-card-header__tagline">
-      <span class="tag">{{ subtitleLeft }}</span>
+      <ng-container *ngIf="subtitleLeft">
+        <span class="tag">{{ subtitleLeft }}</span>
+      </ng-container>
+
       <ng-container *ngIf="subtitleMiddle">
-        <span class="dot"></span>
+        <!-- Render dot only if there was a previous subtitle to separate from -->
+        <span *ngIf="subtitleLeft" class="dot"></span>
         <span class="tag">{{ subtitleMiddle }}</span>
       </ng-container>
+
       <ng-container *ngIf="subtitleRight">
-        <span class="dot"></span>
+        <!-- For right subtitle, show dot if either left or middle exists -->
+        <span *ngIf="subtitleLeft || subtitleMiddle" class="dot"></span>
         <span class="tag">{{ subtitleRight }}</span>
       </ng-container>
     </div>

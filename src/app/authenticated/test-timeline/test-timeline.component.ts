@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthenticatedModule } from '../authenticated.module';
+import { TimelineEvent } from '../../core/models/calendar.model';
 
 @Component({
   selector: 'test-timeline',
@@ -14,10 +15,10 @@ import { AuthenticatedModule } from '../authenticated.module';
   `
 })
 export class TestTimelineComponent {
-  events = [
-    { startTime: '08:00', endTime: '09:00', title: 'Morning Routine', type: 'lavendar' },
-    { startTime: '09:30', endTime: '10:15', title: 'Standup', type: 'violet' },
-    { startTime: '11:00', endTime: '12:30', title: 'Deep Work', type: 'magenta' },
-    { startTime: '14:00', endTime: '15:00', title: 'Meeting', type: 'orange' }
+  events: TimelineEvent[] = [
+    { id: 1, startTime: '08:00', endTime: '09:00', title: 'Morning Routine', type: 'habit' },
+    { id: 2, startTime: '09:30', endTime: '10:15', title: 'Standup', type: 'event' },
+    { id: 3, startTime: '11:00', endTime: '12:30', title: 'Deep Work', type: 'task' },
+    { id: 4, startTime: '14:00', endTime: '15:00', title: 'Meeting', type: 'event' }
   ];
 }

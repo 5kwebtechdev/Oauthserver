@@ -23,7 +23,7 @@ export class MindfulCoinsStatsComponent {
   @Input() trophyIcon: string = '/assets/Icons-Neutral/Icon-Trophy.png';
   @Input() streakIcon: string = '/assets/Icons-Neutral/Icon-Streak.png';
   @Input() badgesIcon: string = '/assets/Icons-Neutral/Icon-Badge.png';
-  @Input() successIcon: string = '/assets/Icons-Neutral/Icons-Habit-Success-Percentage.png';
+  @Input() successIcon: string = '/assets/Icons-Neutral/Icon-SuccessRate.png';
   @Input() totalStreaksIcon: string = '/assets/Icons-Neutral/Icon-BestStreak.png';
 
 

@@ -1,12 +1,13 @@
-.reels-expand { 
-  display: block; 
+.reels-expand {
+  display: block;
 }
 
 /* expanded fullscreen player */
 .expanded-player {
   position: fixed;
   inset: 0;
-  z-index: 99999; /* Higher z-index to ensure it's above everything */
+  z-index: 99999;
+  /* Higher z-index to ensure it's above everything */
   display: flex;
   flex-direction: column;
   background: rgba(0, 0, 0, 1);
@@ -46,10 +47,10 @@ body.reel-expanded app-academy-home footer {
 }
 
 /* Hide all possible footer selectors */
-.reels-expand.expanded ~ footer,
-.reels-expand.expanded ~ * footer,
-.reels-expand.expanded ~ ion-tab-bar,
-.reels-expand.expanded ~ * ion-tab-bar {
+.reels-expand.expanded~footer,
+.reels-expand.expanded~* footer,
+.reels-expand.expanded~ion-tab-bar,
+.reels-expand.expanded~* ion-tab-bar {
   display: none !important;
 }
 
@@ -81,8 +82,8 @@ body.reel-expanded {
 }
 
 .expanded-player .player-backdrop {
-  position: absolute; 
-  inset: 0; 
+  position: absolute;
+  inset: 0;
   background: rgba(0, 0, 0, 0.3);
   z-index: -1;
 }
@@ -116,25 +117,25 @@ body.reel-expanded {
   align-items: center;
   justify-content: center;
   transition: transform 0.2s ease;
-  
+
   &:active {
     transform: scale(0.95);
   }
-  
+
   /* When saved - change both circle and bookmark icon */
   &.saved svg circle {
     fill: #BB2124 !important;
   }
-  
+
   &.saved svg path {
     fill: #fff !important;
   }
-  
+
   /* Default state */
   svg circle {
     fill: #EDECED;
   }
-  
+
   svg path {
     fill: #1C1B1F;
   }
@@ -154,7 +155,8 @@ body.reel-expanded {
   user-select: none;
 }
 
-.expanded-player img, .expanded-player video {
+.expanded-player img,
+.expanded-player video {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -170,7 +172,7 @@ body.reel-expanded {
   transition: opacity 0.3s ease;
   pointer-events: none;
   z-index: 5;
-  
+
   &.show {
     opacity: 1;
   }
@@ -185,7 +187,7 @@ body.reel-expanded {
   background: rgba(0, 0, 0, 0.6);
   border-radius: 50%;
   backdrop-filter: blur(10px);
-  
+
   svg {
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
   }
@@ -230,11 +232,11 @@ body.reel-expanded {
   align-items: center;
   justify-content: center;
   transition: transform 0.2s ease;
-  
+
   &:active {
     transform: scale(0.9);
   }
-  
+
   // Like button specific styles
   &.like-btn.liked {
     svg {
@@ -271,7 +273,7 @@ body.reel-expanded {
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(10px);
-  
+
   &[disabled] {
     opacity: 0.3;
   }
@@ -288,7 +290,7 @@ body.reel-expanded {
   padding: 32px 16px 24px;
 }
 
-.user-info {
+.reel-user-info {
   display: flex;
   width: 330px;
   flex-direction: column;
@@ -363,9 +365,9 @@ body.reel-expanded {
 
 /* Enhanced share popup */
 .share-popup-backdrop {
-  position: fixed; 
-  inset: 0; 
-  background: rgba(0, 0, 0, 0.6); 
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
   z-index: 10001;
   display: flex;
   align-items: center;
@@ -412,12 +414,13 @@ body.reel-expanded {
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
-  line-height: 140%; /* 22.4px */
+  line-height: 140%;
+  /* 22.4px */
 }
 
 .share-close {
-  background: transparent; 
-  border: none; 
+  background: transparent;
+  border: none;
   padding: 0;
   width: 32px;
   height: 32px;
@@ -434,16 +437,17 @@ body.reel-expanded {
   font-size: 13px;
   font-style: normal;
   font-weight: 500;
-  line-height: 140%; /* 18.2px */
+  line-height: 140%;
+  /* 18.2px */
 }
 
-.share-actions { 
+.share-actions {
   display: flex;
   width: 251px;
   flex-direction: column;
   align-items: stretch;
   gap: 16px;
-  
+
   mindful-button {
     width: 100%;
   }
@@ -486,11 +490,11 @@ body.reel-expanded {
   }
 }
 
-.share-action.whatsapp { 
-  border-color: #25d366; 
+.share-action.whatsapp {
+  border-color: #25d366;
   background: #f0f9f4;
   color: #059669;
-  
+
   &:hover {
     background: #dcfce7;
   }
@@ -500,7 +504,7 @@ body.reel-expanded {
   border-color: #1877f2;
   background: #eff6ff;
   color: #1d4ed8;
-  
+
   &:hover {
     background: #dbeafe;
   }
@@ -510,7 +514,7 @@ body.reel-expanded {
   border-color: #1da1f2;
   background: #eff6ff;
   color: #1d4ed8;
-  
+
   &:hover {
     background: #dbeafe;
   }
@@ -518,17 +522,17 @@ body.reel-expanded {
 
 /* Mobile optimizations */
 @media (max-width: 768px) {
-  .user-info {
+  .reel-user-info {
     width: 100%;
     max-width: 330px;
   }
-  
+
   .right-actions {
     right: 12px;
     bottom: 100px;
     gap: 20px;
   }
-  
+
   .action-btn-right svg {
     width: 28px;
     height: 26px;
@@ -536,24 +540,27 @@ body.reel-expanded {
 }
 
 @keyframes slideUp {
-  from { 
-    transform: translateY(20px) scale(0.9); 
-    opacity: 0; 
+  from {
+    transform: translateY(20px) scale(0.9);
+    opacity: 0;
   }
-  to { 
-    transform: translateY(0) scale(1); 
-    opacity: 1; 
+
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
   }
 }
 
 @keyframes likeAnimation {
-  0% { 
-    transform: scale(1); 
+  0% {
+    transform: scale(1);
   }
-  50% { 
-    transform: scale(1.2); 
+
+  50% {
+    transform: scale(1.2);
   }
-  100% { 
-    transform: scale(1); 
+
+  100% {
+    transform: scale(1);
   }
 }
