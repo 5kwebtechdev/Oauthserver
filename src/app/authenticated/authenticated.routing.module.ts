@@ -43,6 +43,9 @@ const routes: Routes = [
         path: 'family-connection',
         loadComponent: () => import('../core/components/user-profile/family-connection/family-connection.component').then(m => m.FamilyConnectionComponent)
       }, {
+        path: 'parental-control',
+        loadComponent: () => import('../core/components/user-profile/parental-control/parental-control-child/parental-control-child.component').then(m => m.ParentalControlChildComponent)
+      }, {
         path: 'select-role',
         loadComponent: () => import('../core/components/user-profile/select-role/select-role.component').then(m => m.RoleSelectComponent)
       }, {

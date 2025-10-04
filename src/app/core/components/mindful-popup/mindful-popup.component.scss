@@ -1,4 +1,3 @@
-// Backdrop overlay with gradient background
 .mindful-popup-backdrop {
   position: fixed;
   top: 0;
@@ -14,7 +13,6 @@
   -webkit-backdrop-filter: blur(2px);
 }
 
-// Main popup container with your specified layout
 .mindful-popup-container {
   position: relative;
   background: #FFFFFF;
@@ -22,7 +20,6 @@
   box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.12);
   overflow-y: auto;
 
-  // Main layout as specified
   display: inline-flex;
   padding: 12px 24px;
   flex-direction: column;
@@ -31,7 +28,6 @@
   gap: 24px;
 }
 
-// Close button styling
 .mindful-popup-close {
   position: absolute;
   top: 12px;
@@ -58,7 +54,6 @@
   }
 }
 
-// Content section with your specified layout for first div
 .mindful-popup-content {
   display: inline-flex;
   padding: 12px 24px;
@@ -68,7 +63,6 @@
   gap: 24px;
 }
 
-// Image styling as specified
 .mindful-popup-image {
   width: 96px;
   height: 88px;
@@ -77,7 +71,6 @@
   border-radius: 8px;
 }
 
-// Heading styling as specified
 .mindful-popup-heading {
   color: #282527;
   font-family: Fredoka, sans-serif;
@@ -85,12 +78,10 @@
   font-style: normal;
   font-weight: 500;
   line-height: 140%;
-  /* 22.4px */
   text-align: center;
   margin: 0;
 }
 
-// Subtitle styling as specified
 .mindful-popup-subtitle {
   color: #282527;
   text-align: center;
@@ -99,41 +90,43 @@
   font-style: normal;
   font-weight: 400;
   line-height: 140%;
-  /* 18.2px */
   margin: 0;
 }
 
-// Actions container
 .mindful-popup-actions {
   width: 100%;
   display: flex;
-  // flex-direction: column;
+  justify-content: center;
   align-items: center;
   gap: 16px;
 }
 
-// Single CTA - Full width mindful-button
 .mindful-popup-single-cta {
-  width: 100%;
+  width: auto;
+  display: flex;
+  justify-content: center;
 
   .mindful-button-full {
-    width: 100%;
+    width: auto;
+    min-width: 160px;
+    display: inline-flex;
+    justify-content: center;
   }
 }
 
-// Two CTAs - Side by side layout as specified
 .mindful-popup-dual-cta {
   display: flex;
   align-items: center;
   gap: 24px;
-  width: 100%;
+  width: auto;
+  justify-content: center;
 
   .mindful-button {
-    flex: 1;
+    flex: none;
+    min-width: 120px;
   }
 }
 
-/* Custom white CTA style (requested) */
 .mindful-button-white {
   border-radius: 6px;
   background: #FFF;
@@ -156,7 +149,6 @@
   width: 100%;
 }
 
-// Base mindful-button styles (customize based on your existing button component)
 .mindful-button {
   padding: 12px 24px;
   border-radius: 12px;
@@ -177,40 +169,37 @@
     cursor: not-allowed;
   }
 
-  // Primary button styling
-  &.mindful-button-primary {
-    background: #6C63FF;
-    color: white;
+  // &.mindful-button-primary {
+  //   background: #6C63FF;
+  //   color: white;
 
-    &:hover:not(:disabled) {
-      background: #5A52D8;
-      transform: translateY(-1px);
-    }
+  //   &:hover:not(:disabled) {
+  //     background: #5A52D8;
+  //     transform: translateY(-1px);
+  //   }
 
-    &:active:not(:disabled) {
-      transform: translateY(0);
-    }
-  }
+  //   &:active:not(:disabled) {
+  //     transform: translateY(0);
+  //   }
+  // }
 
-  // Secondary button styling
-  &.mindful-button-secondary {
-    background: transparent;
-    color: #6C63FF;
-    border: 2px solid #6C63FF;
+  // &.mindful-button-secondary {
+  //   background: transparent;
+  //   color: #6C63FF;
+  //   border: 2px solid #6C63FF;
 
-    &:hover:not(:disabled) {
-      background: #6C63FF;
-      color: white;
-      transform: translateY(-1px);
-    }
+  //   &:hover:not(:disabled) {
+  //     background: #6C63FF;
+  //     color: white;
+  //     transform: translateY(-1px);
+  //   }
 
-    &:active:not(:disabled) {
-      transform: translateY(0);
-    }
-  }
+  //   &:active:not(:disabled) {
+  //     transform: translateY(0);
+  //   }
+  // }
 }
 
-// Share button styling
 .mindful-popup-share {
   background: transparent;
   border: none;
@@ -233,7 +222,6 @@
   }
 }
 
-// Responsive design
 @media (max-width: 768px) {
   .mindful-popup-container {
     margin: 16px;
@@ -267,7 +255,6 @@
   }
 }
 
-// Animation classes for show/hide
 .mindful-popup-backdrop {
   animation: fadeIn 0.3s ease-out;
 }

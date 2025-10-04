@@ -50,9 +50,9 @@
     <div class="tag-edit-inner" (click)="$event.stopPropagation()"
       [ngStyle]="{ left: (editPosition?.left) + 'px', top: (editPosition?.top) + 'px' }">
       <div class="custom-tag-input">
-        <input class="custom-tag-input__field" type="text" [(ngModel)]="editingValue" placeholder="Edit tag" />
+        <input class="custom-tag-input__field" type="text" [(ngModel)]="editingValue" placeholder="Edit tag"
+          (keydown.enter)="saveEdit()" (blur)="saveEdit()" #editInput />
       </div>
-      <mindful-button type="plum" text="+" (click)="saveEdit()"></mindful-button>
     </div>
   </div>
 

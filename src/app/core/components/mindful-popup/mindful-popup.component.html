@@ -1,13 +1,9 @@
-<!-- Backdrop overlay -->
 <div class="mindful-popup-backdrop" *ngIf="isVisible && finalConfig.backdrop" (click)="onBackdropClick($event)">
 
-  <!-- Main popup container -->
   <div class="mindful-popup-container" *ngIf="isVisible">
 
-    <!-- Close button -->
     <button class="mindful-popup-close" *ngIf="finalConfig.showCloseButton" (click)="onCloseClick()"
       aria-label="Close popup">
-      <!-- custom close SVG -->
       <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
         <g opacity="0.7">
           <mask id="popup-close-mask" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="4" y="4" width="24"
@@ -23,48 +19,31 @@
       </svg>
     </button>
 
-    <!-- Content section -->
     <div class="mindful-popup-content" *ngIf="hasAnyContent">
-
-      <!-- Image -->
       <img *ngIf="hasImage" [src]="finalConfig.image" [alt]="finalConfig.imageAlt" class="mindful-popup-image">
-
-      <!-- Heading -->
-      <h2 *ngIf="hasHeading" class="mindful-popup-heading">
-        {{ finalConfig.heading }}
+      <h2 *ngIf="hasHeading" class="mindful-popup-heading" [innerHTML]="headingHtml">
       </h2>
-
-      <!-- Subtitle -->
       <p *ngIf="hasSubtitle" class="mindful-popup-subtitle">
         {{ finalConfig.subtitle }}
       </p>
     </div>
-
-    <!-- Action buttons section -->
     <div class="mindful-popup-actions" *ngIf="hasPrimaryCTA || hasSecondaryCTA || finalConfig.showShareButton">
-
-      <!-- Single CTA - Full width -->
       <div class="mindful-popup-single-cta" *ngIf="hasOneCTA">
-        <!-- Primary CTA as mindful-button when provided -->
         <mindful-button *ngIf="hasPrimaryCTA && finalConfig.primaryCTA?.buttonStyle"
           [type]="finalConfig.primaryCTA?.buttonStyle" [text]="finalConfig.primaryCTA?.text"
           [medium]="finalConfig.primaryCTA?.buttonMedium" [large]="finalConfig.primaryCTA?.buttonLarge"
           (click)="onPrimaryClick()"></mindful-button>
-
-        <!-- Fallback native button for primary CTA -->
         <button *ngIf="hasPrimaryCTA && !finalConfig.primaryCTA?.buttonStyle"
           class="mindful-button mindful-button-full mindful-button-white" [disabled]="finalConfig.primaryCTA?.disabled"
           (click)="onPrimaryClick()">
           {{ finalConfig.primaryCTA?.text }}
         </button>
 
-        <!-- Secondary CTA as mindful-button when provided and no primary exists -->
         <mindful-button *ngIf="hasSecondaryCTA && !hasPrimaryCTA && finalConfig.secondaryCTA?.buttonStyle"
           [type]="finalConfig.secondaryCTA?.buttonStyle" [text]="finalConfig.secondaryCTA?.text"
           [medium]="finalConfig.secondaryCTA?.buttonMedium" [large]="finalConfig.secondaryCTA?.buttonLarge"
           (click)="onSecondaryClick()"></mindful-button>
 
-        <!-- Fallback native button for secondary CTA -->
         <button *ngIf="hasSecondaryCTA && !hasPrimaryCTA && !finalConfig.secondaryCTA?.buttonStyle"
           class="mindful-button mindful-button-full mindful-button-white"
           [disabled]="finalConfig.secondaryCTA?.disabled" (click)="onSecondaryClick()">
@@ -72,9 +51,7 @@
         </button>
       </div>
 
-      <!-- Two CTAs - Side by side -->
       <div class="mindful-popup-dual-cta" *ngIf="hasTwoCTAs">
-        <!-- Secondary CTA: prefer mindful-button if style provided -->
         <mindful-button *ngIf="finalConfig.secondaryCTA?.buttonStyle" [type]="finalConfig.secondaryCTA?.buttonStyle"
           [text]="finalConfig.secondaryCTA?.text" [medium]="finalConfig.secondaryCTA?.buttonMedium"
           [large]="finalConfig.secondaryCTA?.buttonLarge" (click)="onSecondaryClick()"></mindful-button>
@@ -84,7 +61,6 @@
           {{ finalConfig.secondaryCTA?.text }}
         </button>
 
-        <!-- Primary CTA: prefer mindful-button if style provided -->
         <mindful-button *ngIf="finalConfig.primaryCTA?.buttonStyle" [type]="finalConfig.primaryCTA?.buttonStyle"
           [text]="finalConfig.primaryCTA?.text" [medium]="finalConfig.primaryCTA?.buttonMedium"
           [large]="finalConfig.primaryCTA?.buttonLarge" (click)="onPrimaryClick()"></mindful-button>
@@ -95,7 +71,6 @@
         </button>
       </div>
 
-      <!-- Share button -->
       <button *ngIf="finalConfig.showShareButton" class="mindful-popup-share" (click)="onShareClick()"
         aria-label="Share">
         <ion-icon name="share-outline"></ion-icon>

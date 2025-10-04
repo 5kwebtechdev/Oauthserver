@@ -1,4 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
@@ -104,7 +105,14 @@ export class MindfulPopupComponent implements OnInit {
     return this.hasImage || this.hasHeading || this.hasSubtitle;
   }
 
-  constructor() { }
+  constructor(private sanitizer: DomSanitizer) { }
+
+  /** Return heading HTML with newlines converted to <br/> and marked safe for innerHTML binding */
+  get headingHtml(): SafeHtml {
+    const h = this.finalConfig.heading || '';
+    const html = h.replace(/\n/g, '<br/>');
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
 
   ngOnInit(): void { }
 

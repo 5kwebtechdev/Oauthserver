@@ -27,7 +27,7 @@ export class UserProfileComponent implements OnChanges {
 
   @Output() logout = new EventEmitter<void>();
 
-  constructor(private router: Router, private modalCtrl: ModalController) {}
+  constructor(private router: Router, private modalCtrl: ModalController) { }
 
   async onChangePet() {
     const slides = [
@@ -50,42 +50,46 @@ export class UserProfileComponent implements OnChanges {
 
   onEdit() {
     this.edit.emit();
-    this.router.navigate(['/authed/edit-profile']).catch(() => {});
+    this.router.navigate(['/authed/edit-profile']).catch(() => { });
   }
 
   onPassword() {
-    this.router.navigate(['/authed/reset-pasword']).catch(() => {});
+    this.router.navigate(['/authed/reset-pasword']).catch(() => { });
   }
 
   onNotifications() {
-    this.router.navigate(['/authed/notifications']).catch(() => {});
+    this.router.navigate(['/authed/notifications']).catch(() => { });
   }
 
   onRefer() {
-    this.router.navigate(['/authed/refer-friend']).catch(() => {});
+    this.router.navigate(['/authed/refer-friend']).catch(() => { });
   }
 
   onMyFamily() {
-    this.router.navigate(['/authed/family-connection']).catch(() => {});
+    this.router.navigate(['/authed/family-connection']).catch(() => { });
+  }
+
+  onParentalControl() {
+    this.router.navigate(['/authed/parental-control']).catch(() => { });
   }
 
   onFeedback() {
     // navigate to the feedback suggestion page
-    this.router.navigate(['/authed/feedback-suggestion']).catch(() => {});
+    this.router.navigate(['/authed/feedback-suggestion']).catch(() => { });
   }
 
   onHelpSupport() {
     // navigate to the help & support page
-    this.router.navigate(['/authed/help-support']).catch(() => {});
+    this.router.navigate(['/authed/help-support']).catch(() => { });
   }
 
   onOurPolicies() {
     // navigate to the Our Policies page
-    this.router.navigate(['/authed/our-policies']).catch(() => {});
+    this.router.navigate(['/authed/our-policies']).catch(() => { });
   }
 
   onDeleteMyData() {
-    this.router.navigate(['/authed/delete-account']).catch(() => {});
+    this.router.navigate(['/authed/delete-account']).catch(() => { });
   }
 
   onLogout() {

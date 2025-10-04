@@ -1,4 +1,3 @@
-
 <ion-content fullscreen>
   <mindful-navigator heading="My Profile" backIcon="arrowSvg"></mindful-navigator>
   <div class="profile">
@@ -6,52 +5,62 @@
     <section class="user-profile-main">
       <div class="user-profile">
         <div class="avatar">
-          <img [src]="user?.avatarUrl || '/assets/app-assets/Default-avatar-home.svg'" alt="{{ user?.name || 'User' }} avatar" />
+          <img [src]="user?.avatarUrl || '/assets/app-assets/Default-avatar-home.svg'"
+            alt="{{ user?.name || 'User' }} avatar" />
           <div class="user-info">
             <div class="user-name">{{ user?.name || 'You' }}</div>
             <div class="user-age" *ngIf="user?.age">{{ user.age }} yrs</div>
           </div>
         </div>
         <div class="user-stats">
-          <mindful-coins-stats
-          [userCoins]="userCoins"
-          [userStreaks]="userStreaks"
-          [userDays]="userDays"
-          [userBadges]="userBadges">
-        </mindful-coins-stats>
+          <mindful-coins-stats [userCoins]="userCoins" [userStreaks]="userStreaks" [userDays]="userDays"
+            [userBadges]="userBadges">
+          </mindful-coins-stats>
+        </div>
       </div>
-    </div>
     </section>
 
     <section class="profile-content">
-      <profile-content-card iconName="profile" title="Edit Profile Info" subtitle="Avatar name, age, email, number ...." (select)="onEdit()"></profile-content-card>
+      <profile-content-card iconName="profile" title="Edit Profile Info" subtitle="Avatar name, age, email, number ...."
+        (select)="onEdit()"></profile-content-card>
 
-  <profile-content-card iconName="key" title="Password and security" subtitle="Change your password" (select)="onPassword()"></profile-content-card>
+      <profile-content-card iconName="key" title="Password and security" subtitle="Change your password"
+        (select)="onPassword()"></profile-content-card>
 
-  <profile-content-card iconName="owl" title="Change your pet" subtitle="Switch your buddy anytime you like!" (select)="onChangePet()"></profile-content-card>
+      <profile-content-card iconName="owl" title="Change your pet" subtitle="Switch your buddy anytime you like!"
+        (select)="onChangePet()"></profile-content-card>
 
-      <profile-content-card iconName="creditCard" title="Manage Your Membership" subtitle="See your perks, upgrade, or cancel anytime"></profile-content-card>
+      <profile-content-card iconName="creditCard" title="Manage Your Membership"
+        subtitle="See your perks, upgrade, or cancel anytime"></profile-content-card>
 
-  <profile-content-card iconName="notification" title="Notifications" subtitle="Manage your notifications" (select)="onNotifications()"></profile-content-card>
+      <profile-content-card iconName="notification" title="Notifications" subtitle="Manage your notifications"
+        (select)="onNotifications()"></profile-content-card>
 
-  <profile-content-card iconName="gift" title="Refer a friend" subtitle="Refer this to friends for exciting rewards" (select)="onRefer()"></profile-content-card>
+      <profile-content-card iconName="gift" title="Refer a friend" subtitle="Refer this to friends for exciting rewards"
+        (select)="onRefer()"></profile-content-card>
 
-  <profile-content-card iconName="link" title="My Family" subtitle="View your family details" (select)="onMyFamily()"></profile-content-card>
+      <profile-content-card iconName="link" title="My Family" subtitle="View your family details"
+        (select)="onMyFamily()"></profile-content-card>
 
-      <profile-content-card iconName="lock" title="Parental Control" subtitle="View app restrictions and permissions"></profile-content-card>
+      <profile-content-card iconName="lock" title="Parental Control" subtitle="View app restrictions and permissions"
+        (select)="onParentalControl()"></profile-content-card>
 
-  <profile-content-card iconName="feedback" title="Feedback & Suggestions" subtitle="Share your thoughts to help us improve!" (select)="onFeedback()"></profile-content-card>
+      <profile-content-card iconName="feedback" title="Feedback & Suggestions"
+        subtitle="Share your thoughts to help us improve!" (select)="onFeedback()"></profile-content-card>
 
-  <profile-content-card iconName="support" title="Help & Support" subtitle="FAQ's and chat support" (select)="onHelpSupport()"></profile-content-card>
+      <profile-content-card iconName="support" title="Help & Support" subtitle="FAQ's and chat support"
+        (select)="onHelpSupport()"></profile-content-card>
 
-  <profile-content-card iconName="policies" title="Our policies" subtitle="Learn how we follow the guidelines" (select)="onOurPolicies()"></profile-content-card>
+      <profile-content-card iconName="policies" title="Our policies" subtitle="Learn how we follow the guidelines"
+        (select)="onOurPolicies()"></profile-content-card>
 
-  <profile-content-card iconName="danger" title="Delete My Data" subtitle="Erase all your info safely and permanently" (select)="onDeleteMyData()"></profile-content-card>
+      <profile-content-card iconName="danger" title="Delete My Data"
+        subtitle="Erase all your info safely and permanently" (select)="onDeleteMyData()"></profile-content-card>
 
     </section>
 
     <!--social media-->
     <social-media></social-media>
-    
+
   </div>
 </ion-content>

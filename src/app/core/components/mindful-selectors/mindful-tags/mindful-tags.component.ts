@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ElementRef, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ElementRef, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { FormGroup, FormControl, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
@@ -14,6 +14,8 @@ import { LongPressDirective } from '../../../directives/gestureControlDirective'
   imports: [CommonModule, FormsModule, MindfulBadgeComponent, MindfulButtonComponent, MindfulPopupComponent, LongPressDirective]
 })
 export class MindfulTagsComponent implements OnInit, OnDestroy {
+  @ViewChild('editInput') editInputRef?: ElementRef<HTMLInputElement>;
+
   @Input() options: { key: any; value: string; type?: string }[] = [];
   @Input() formGroup?: FormGroup;
   @Input() formControlName?: string;
@@ -110,6 +112,14 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
     this.editingValue = tag ? tag.value : '';
     this.editPosition = this.popoverPosition ? { ...this.popoverPosition } : null;
     this.closeTagMenu();
+
+    // Auto-focus the input after the view updates
+    setTimeout(() => {
+      if (this.editInputRef) {
+        this.editInputRef.nativeElement.focus();
+        this.editInputRef.nativeElement.select(); // Select all text for easy replacement
+      }
+    }, 0);
   }
 
   saveEdit() {
@@ -135,20 +145,19 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
     this.closeTagMenu();
   }
 
-  /** Open the delete confirmation popup for a specific tag key */
   openDeleteConfirm(key: any) {
     this.pendingDeleteKey = key;
     const tag = this.options.find(o => o.key === key);
-    const title = tag && tag.value ? `Are you sure you want to delete “${tag.value}” Tag?` : 'Are you sure you want to delete this Tag?';
+    const title = tag && tag.value
+      ? `Are you sure you want to\ndelete “${tag.value}” Tag?`
+      : 'Are you sure you want to\ndelete this Tag?';
 
-    // Build a config tailored for this delete confirmation with button styles
     this.deleteConfirmConfig = {
-      heading: '',
-      subtitle: title,
+      heading: title,
+      subtitle: '',
       primaryCTA: {
         text: 'Delete',
         type: 'primary',
-        // Render as bronze small
         buttonStyle: 'bronze',
         buttonLarge: false,
         buttonMedium: false
@@ -156,7 +165,6 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
       secondaryCTA: {
         text: 'Cancel',
         type: 'secondary',
-        // Render cancel as bronze-transparent small
         buttonStyle: 'bronze-transparent',
         buttonLarge: false,
         buttonMedium: false
@@ -170,14 +178,12 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
     this.closeTagMenu();
   }
 
-  /** Cancel the delete confirmation */
   cancelConfirmDelete() {
     this.pendingDeleteKey = null;
     this.showDeleteConfirm = false;
     document.body.classList.remove('no-scroll');
   }
 
-  /** Confirm and perform the delete */
   confirmDelete() {
     if (this.pendingDeleteKey != null) {
       this.onDelete(this.pendingDeleteKey);
