@@ -1,4 +1,124 @@
-.bookmark-reels { display:flex; gap:12px; flex-wrap:wrap; }
-.bookmark-reels .bookmark-item { width: 120px; }
-.bookmark-reels img { width:100%; height:80px; object-fit:cover; border-radius:6px; }
-.bookmark-reels .empty { color:#666; font-size:13px }
+.safe-area-top {
+    height: env(safe-area-inset-top);
+    background: transparent;
+}
+
+.bookmark-reels-page {
+    padding: 20px 16px;
+    min-height: calc(100vh - 100px);
+}
+
+.categories-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: flex-start;
+}
+
+.category-item {
+    display: flex;
+    width: 168px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.reels-collage {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 4px;
+    width: 168px;
+    height: 168px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #f5f5f5;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reels-collage:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.reels-collage:active {
+    transform: scale(0.98);
+}
+
+.collage-item {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.collage-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.category-name {
+    color: #282527;
+    font-family: Nunito, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 140%;
+    width: 100%;
+    text-align: left;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.empty-state .empty-icon {
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.empty-state h2 {
+    color: #282527;
+    font-family: Fredoka, sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+}
+
+.empty-state p {
+    color: #6B656A;
+    font-family: Nunito, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+    max-width: 300px;
+}
+
+@media (min-width: 768px) {
+    .categories-container {
+        gap: 32px;
+    }
+
+    .category-item {
+        width: 180px;
+    }
+
+    .reels-collage {
+        width: 180px;
+        height: 180px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .bookmark-reels-page {
+        padding: 24px 32px;
+    }
+}

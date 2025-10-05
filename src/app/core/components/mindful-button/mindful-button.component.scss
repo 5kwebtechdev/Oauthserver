@@ -12,6 +12,28 @@
   --text_color: white;
 }
 
+/* Icons inside button */
+.btn-icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.btn-icon.end {
+  width: 24px;
+  height: 27px;
+  aspect-ratio: 8/9;
+  margin-left: 8px;
+}
+
+.btn-count {
+  font-family: Nunito, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 140%;
+  color: inherit;
+  /* inherit from button (gold sets white) */
+}
+
 p {
   font-size: 10px;
   font-family: 'Nunito', sans-serif;
@@ -237,9 +259,38 @@ p {
 }
 
 .gold {
-  --button_background: linear-gradient(157.39deg, #FFD57E 14.87%, #F1A846 85.13%);
-  --button_border: 1px solid #A25600;
-  --button_box_shodow: 0px 0px 1px 0.5px rgba(241, 168, 70, 0.2), inset 0px -4px 6px #F4D593;
+  /* Gold (redesigned) */
+  display: inline-flex;
+  height: 42px;
+  padding: 12px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  border: 1px solid #A25600;
+  background: linear-gradient(99deg, #F2C452 1.32%, #D98F15 98.68%);
+  box-shadow: 0 0 1px 0.5px rgba(241, 168, 70, 0.20), 0 -4px 6px 0 #F4D593 inset;
+  /* Text styles requested */
+  color: #FFF;
+  font-family: Nunito, sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 140%;
+  --text_color: #FFF;
+}
+
+/* Hover / focus / active states for accessibility and tactile feedback */
+.gold:not(.disabled):hover,
+.gold:not(.disabled):focus {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08), 0 0 1px 0.5px rgba(241, 168, 70, 0.25), inset 0 -4px 6px #F4D593;
+}
+
+.gold:not(.disabled):active {
+  transform: translateY(0);
+  box-shadow: 0 0 1px 0.5px rgba(241, 168, 70, 0.18), inset 0 -2px 3px #F4D593;
 }
 
 .aqua {
@@ -279,7 +330,6 @@ p {
   --button_box_shodow: 0px 0px 1px 0.5px rgba(254, 141, 130, 0.2), inset 0px -2px 2px #FFCDC8;
 }
 
-/* Bronze button style (requested) */
 .bronze {
   display: flex;
   width: 361px;
@@ -295,7 +345,6 @@ p {
   box-shadow: 0 0 1px 0.5px rgba(185, 57, 21, 0.20), 0 -4px 2px 0 #DF4D17 inset;
 }
 
-/* Large bronze variant (mirrors .green.large style structure) */
 .bronze.large {
   display: flex;
   height: 56px;
@@ -310,8 +359,6 @@ p {
   box-shadow: 0 0 1px 0.5px rgba(185, 57, 21, 0.20), 0 -4px 2px 0 #DF4D17 inset;
 }
 
-/* Small bronze variant suitable for popup buttons (requested)
-   Apply when button is NOT medium or large (i.e., small/default) */
 .bronze:not(.medium):not(.large) {
   display: flex;
   width: 73px;
@@ -327,11 +374,9 @@ p {
   box-shadow: 0 0 1px 0.5px rgba(185, 57, 21, 0.20), 0 -4px 2px 0 #DF4D17 inset;
 }
 
-/* Bronze transparent style for cancel button (requested) */
 .bronze-transparent {
   display: flex;
   width: 73px;
-  height: 42px;
   padding: 8px 16px;
   justify-content: center;
   align-items: center;
@@ -343,7 +388,6 @@ p {
   --text_color: #282527;
 }
 
-/* Explicit small variant for bronze-transparent to match requested layout */
 .bronze-transparent.small {
   display: flex;
   height: 42px;
@@ -414,7 +458,6 @@ p {
   width: 18px;
   height: 18px;
   vertical-align: middle;
-  margin-right: 8px;
   display: inline-block;
 }
 

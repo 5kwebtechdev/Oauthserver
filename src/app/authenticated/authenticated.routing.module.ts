@@ -119,6 +119,12 @@ const routes: Routes = [
         path: 'reel-section',
         loadComponent: () => import('../core/components/reel-section/reel-category/reel-category.component').then(c => c.ReelCategoryComponent)
       }, {
+        path: 'upload-reel',
+        loadComponent: () => import('../core/components/reel-section/upload-reel/upload-reel.component').then(m => m.UploadReelComponent)
+      }, {
+        path: 'bookmark-reels',
+        loadComponent: () => import('../core/components/reel-section/bookmark-reels/bookmark-reels.component').then(m => m.BookmarkReelsComponent)
+      }, {
         path: 'streaks',
         loadComponent: () => import('../core/components/streaks-section/streaks-leaderboard/streaks-leaderboard.component').then(m => m.StreaksLeaderboardComponent)
       }, {

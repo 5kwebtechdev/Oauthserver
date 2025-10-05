@@ -16,12 +16,12 @@ import { IonicModule } from "@ionic/angular";
 import { MindfulInputsModule } from "../../core/components/mindful-inputs/mindful-inputs.module";
 import { MoodSelectorComponent } from "../../core/components/mood-selector/mood-selector.component";
 import { MindfulSpeechBubbleComponent } from '../../core/components/mindful-speech-bubble/mindful-speech-bubble.component';
-// AdBannerComponent import removed (not used)
 import { MindfulPetComponent } from '../../core/components/mindful-pet/mindful-pet.component';
 import { MindfulCoinsStatsComponent } from '../../core/components/mindful-coins-stats/mindful-coins-stats.component';
 import { MindfulCardHeaderComponent } from '../../core/components/mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { ViewAllComponent } from '../../core/components/mindful-navigator/view-all/view-all.component';
 import { FooterComponent } from '../../core/components/footer/footer.component';
+import { PetMessagesService, PetMessage, PetMood } from '../../core/services/pet-messages.service';
 
 
 @Component({
@@ -60,15 +60,33 @@ export class UserDashboardComponent implements OnInit {
   public userBadges: number = 0;
   // currently selected mood
   public selectedMood: string | null = 'happy';
+  // Pet message and mood
+  public currentPetMessage: PetMessage | undefined = undefined;
+  public petMood: PetMood | 'anger' = 'happy';
 
-  constructor(private modalCtrl: ModalController, private router: Router) { }
+  constructor(
+    private modalCtrl: ModalController,
+    private router: Router,
+    private petMessagesService: PetMessagesService
+  ) { }
 
   async openNotes() {
     // Navigate to the notes home page instead of opening the Notes modal
     this.router.navigate(['/authed/notes']);
   }
 
-  ngOnInit() { }
+  ngOnInit() {
+    // Initialize pet message for home page
+    this.currentPetMessage = this.petMessagesService.getMessage('home', {
+      userName: this.userName,
+      tasksCount: 5, // This should come from your data service
+      habitsCount: 2, // This should come from your data service
+      streakDays: this.userStreaks
+    });
+
+    // Set pet mood based on the message
+    this.petMood = this.currentPetMessage.mood;
+  }
 
   get greetingMessage(): string {
     // build the message in TypeScript to avoid template parsing issues with quotes and newlines

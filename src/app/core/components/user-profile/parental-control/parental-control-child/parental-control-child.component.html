@@ -148,7 +148,6 @@
                 </div>
             </div>
 
-            <!-- Overlay for request extend popup -->
             <div class="request-extend-overlay" *ngIf="showRequestPopup">
                 <div class="request-extend-backdrop" (click)="closeRequestPopup()"></div>
                 <div class="request-extend-popup" role="dialog" aria-modal="true">
@@ -178,10 +177,10 @@
                     </div>
 
                     <div class="send-request-btn">
-                        <mindful-button type="bronze-transparent" small text="Cancel" style="width: 100%; display: block;"
-                            (click)="closeRequestPopup()"></mindful-button>
-                        <mindful-button type="green" small text="Send Request"
-                            style="width: 100%; display: block;" (click)="sendRequest()"></mindful-button>
+                        <mindful-button type="bronze-transparent" small text="Cancel"
+                            style="width: 100%; display: block;" (click)="closeRequestPopup()"></mindful-button>
+                        <mindful-button type="green" small text="Send Request" style="width: 100%; display: block;"
+                            (click)="sendRequest()"></mindful-button>
                     </div>
                 </div>
             </div>

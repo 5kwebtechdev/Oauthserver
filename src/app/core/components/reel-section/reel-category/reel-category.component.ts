@@ -5,8 +5,7 @@ import { RouterModule, Router } from '@angular/router';
 
 import { ReelsExpandComponent } from 'src/app/core/components/reel-section/reel-expand/reels-expand.component';
 import { BookmarkReelsComponent } from 'src/app/core/components/reel-section/bookmark-reels/bookmark-reels.component';
-import { ReelGuidelinesComponent } from 'src/app/core/components/reel-section/reel-guidelines/reel-guidelines.component';
-import { NewReelsComponent } from 'src/app/core/components/reel-section/new-reels/new-reels.component';
+import { UploadReelComponent } from 'src/app/core/components/reel-section/upload-reel/upload-reel.component';
 import { ShareReelComponent } from 'src/app/core/components/reel-section/share-reel.component';
 import { MindfulButtonComponent } from 'src/app/core/components/mindful-button/mindful-button.component';
 import { MindfulCardHeaderComponent } from 'src/app/core/components/mindful-navigator/mindful-card-header/mindful-card-header.component';
@@ -17,7 +16,7 @@ import { ReelsCardComponent } from 'src/app/core/components/reel-section/reels-c
   templateUrl: './reel-category.component.html',
   styleUrls: ['./reel-category.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, ReelsExpandComponent, BookmarkReelsComponent, ReelGuidelinesComponent, NewReelsComponent, ShareReelComponent, MindfulButtonComponent, MindfulCardHeaderComponent, ReelsCardComponent]
+  imports: [CommonModule, IonicModule, RouterModule, ReelsExpandComponent, BookmarkReelsComponent, UploadReelComponent, ShareReelComponent, MindfulButtonComponent, MindfulCardHeaderComponent, ReelsCardComponent]
 })
 export class ReelCategoryComponent implements AfterViewInit {
   public slides = [
@@ -147,7 +146,9 @@ export class ReelCategoryComponent implements AfterViewInit {
   @ViewChildren('reelItem', { read: ElementRef }) reels!: QueryList<ElementRef>;
   @ViewChild('player', { read: ElementRef }) playerRef!: ElementRef;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
+
+  // UI helpers
 
   ngAfterViewInit(): void {
     // minimal initialization to keep component safe for compilation
@@ -159,6 +160,10 @@ export class ReelCategoryComponent implements AfterViewInit {
   // Navigation / UI helpers used by the template
   public goBack(): void {
     window.history.back();
+  }
+
+  public goToBookmarks(): void {
+    this.router.navigate(['/authed/bookmark-reels']);
   }
 
   public get slidesByCategory(): Record<string, any[]> {
@@ -211,6 +216,11 @@ export class ReelCategoryComponent implements AfterViewInit {
     } catch (e) {
       // ignore in environments where CustomEvent may be restricted
     }
+  }
+
+  public openUpload(): void {
+    // Navigate to authenticated upload-reel page
+    this.router.navigate(['/authed/upload-reel']);
   }
 }
 

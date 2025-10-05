@@ -1,11 +1,19 @@
-<div *ngIf="type" class="button {{type}}" [ngClass]="{'medium': medium , 'large': large, 'disabled': disabled}" [attr.role]="'button'" [attr.tabindex]="disabled ? -1 : 0">
-  <ng-container *ngIf="icon; else textOnly">
-    <img class="btn-icon" [src]="icon" alt=""/>
+<div *ngIf="type" class="button {{type}}" [ngClass]="{'medium': medium , 'large': large, 'disabled': disabled}"
+  [attr.role]="'button'" [attr.tabindex]="disabled ? -1 : 0">
+  <!-- start icon or text-only -->
+  <ng-container *ngIf="icon && iconPosition === 'start'; else textOnlyStart">
+    <img class="btn-icon start" [src]="icon" alt="" />
     <p>{{text}}</p>
   </ng-container>
-  <ng-template #textOnly>
+  <ng-template #textOnlyStart>
     <p>{{text}}</p>
   </ng-template>
+
+  <!-- trailing icon + count when requested -->
+  <ng-container *ngIf="icon && iconPosition === 'end'">
+    <img class="btn-icon end" [src]="icon" alt="" />
+    <span class="btn-count" *ngIf="count !== null">{{count}}</span>
+  </ng-container>
 </div>
 <ng-container *ngIf="!type">
   <p style="color: red; font-weight: bold; font-size:16px">

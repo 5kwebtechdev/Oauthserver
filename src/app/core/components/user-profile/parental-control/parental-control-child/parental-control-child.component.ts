@@ -15,25 +15,21 @@ import { MindfulInputsModule } from '../../../mindful-inputs/mindful-inputs.modu
 })
 export class ParentalControlChildComponent {
     showParentalControlBlank: boolean = false;
-    // Controls the visibility of the request extend popup
     showRequestPopup: boolean = false;
-    // Tracks which app the user is requesting an extension for
     requestTargetAppId: string | null = null;
 
-    // Blocked / tracked apps displayed in the App Blocker list
     blockedApps: Array<{
         id: string;
         name: string;
         iconType: 'svg' | 'img';
-        svg?: string; // inline svg string (if iconType === 'svg')
-        imgSrc?: string; // asset path (if iconType === 'img')
+        svg?: string;
+        imgSrc?: string;
         time: string;
     }> = [
             {
                 id: 'youtube',
                 name: 'YouTube',
                 iconType: 'svg',
-                // we will keep the inline svg markup in the template where appropriate
                 svg: 'youtube',
                 time: '1hr 5min'
             },
@@ -79,30 +75,24 @@ export class ParentalControlChildComponent {
     }
 
     requestExtend(appId: string) {
-        // Open the request popup and remember which app was targeted
         this.requestTargetAppId = appId;
         this.showRequestPopup = true;
     }
 
     selectDuration(duration: any) {
-        // Deselect all options first
         this.durationOptions.forEach(option => option.selected = false);
-        // Select the clicked option
         duration.selected = true;
     }
 
     closeRequestPopup() {
-        // Close the popup and reset selection/target
         this.showRequestPopup = false;
         this.requestTargetAppId = null;
         this.durationOptions.forEach(option => option.selected = false);
     }
 
     sendRequest() {
-        // Implement the actual send request flow here (API call / notification)
         const selected = this.durationOptions.find(d => d.selected);
         console.log('Sending request for', this.requestTargetAppId, 'duration:', selected?.label);
-        // For now, just close the popup after "sending"
         this.closeRequestPopup();
     }
 }

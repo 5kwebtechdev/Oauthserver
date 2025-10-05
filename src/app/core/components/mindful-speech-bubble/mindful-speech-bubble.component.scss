@@ -24,25 +24,25 @@ $bubble-text: #282527;
   box-shadow: 0 2px 8px rgba(40, 37, 39, 0.07);
   overflow: visible;
   transition: background 0.2s;
-
-  --arrow-offset: 100%;
 }
 
-.speech-bubble {
+.speech-bubble.talking {
   --arrow-size: 12px;
   --arrow-length: 20px;
   --arrow-offset: 50%;
   --arrow-angle: 0deg;
+  padding: 15px;
 }
 
 .speech-bubble .bubble-arrow {
   position: absolute;
-  width: calc(var(--arrow-length) );
+  width: calc(var(--arrow-length));
   height: calc(var(--arrow-size) * 1);
   pointer-events: none;
   transform-origin: center center;
   z-index: 1;
 }
+
 .speech-bubble .bubble-arrow path {
   fill: var(--bubble-bg, $bubble-bg);
   stroke: none;

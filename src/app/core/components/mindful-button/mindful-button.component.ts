@@ -27,6 +27,12 @@ export class MindfulButtonComponent implements OnInit {
   @Input()
   icon?: string;
 
+  @Input()
+  iconPosition?: 'start' | 'end' = 'start';
+
+  @Input()
+  count?: number | null = null;
+
   @Input({ transform: booleanAttribute })
   @CoerceBoolean()
   medium: boolean = false;

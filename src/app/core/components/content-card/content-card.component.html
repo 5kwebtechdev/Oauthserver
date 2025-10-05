@@ -17,7 +17,7 @@
 
   <nav class="content-actions">
     <mindful-view-all class="see-all content-section__view-all" [ariaLabel]="'View all content'"
-      [routerLink]="['/content']"></mindful-view-all>
+      [routerLink]="['/authed','content']"></mindful-view-all>
   </nav>
 
   <content-slides [items]="items" [showPager]="showPager" (itemSelected)="itemSelected.emit($event)">

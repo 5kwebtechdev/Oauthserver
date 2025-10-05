@@ -6,6 +6,30 @@
   padding: 16px;
 }
 
+.bookmark-button {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
 .reels-container {
   display: flex;
   flex-direction: column;
@@ -53,4 +77,17 @@
     /* 18.2px */
     margin: 0px;
   }
+}
+
+/* floating add button sizing */
+.floating-add-button mindful-button.small {
+  --button-padding: 6px 8px;
+  /* custom CSS variable fallback if button uses CSS vars */
+  font-size: 18px;
+  /* make + icon/text smaller */
+  height: 40px;
+  width: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }

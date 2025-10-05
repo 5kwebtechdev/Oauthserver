@@ -3,7 +3,7 @@
   <mindful-card-header title="Made by Kids, for Kids!" subtitleLeft="Watch reels" subtitleMiddle="Create"
     subtitleRight="Get Inspired" [showBackArrow]="true" (backClick)="goBack()">
     <div mindful-header-actions>
-      <button class="bookmark-button" aria-label="Bookmarks">
+      <button class="bookmark-button" aria-label="Bookmarks" (click)="goToBookmarks()">
         <!-- bookmark svg -->
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
           <mask id="mask0" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
@@ -78,4 +78,7 @@
 
   <!-- Add reel-expand component for full-screen video playback -->
   <reels-expand></reels-expand>
+  <div class="floating-add-button" style="position: fixed; right: 16px; bottom: 16px; z-index: 1100;">
+    <mindful-button class="small" type="magenta" text="+" (click)="openUpload()"></mindful-button>
+  </div>
 </ion-content>

@@ -1,11 +1,9 @@
 <ion-content>
   <div class="container w-full p-0">
-    <!-- User Profile Section -->
     <section class="user-profile-section profile" aria-labelledby="profile-heading">
       <div class="dasboard-wrapper">
         <div class="profile-content">
 
-          <!-- Top Header with Avatar and Tools -->
           <header class="profile-header" role="banner">
             <div class="user-info" role="group" aria-label="User info">
               <div class="user-avatar" aria-hidden="false">
@@ -21,28 +19,25 @@
             <nav class="header-tools" role="navigation" aria-label="Profile tools">
               <a class="tool-item" aria-label="Notes" [routerLink]="['/authed/notes']">
                 <img src="/assets/Icons-Neutral/Icon-Notes.png" alt="Notes" class="tool-icon">
-                <!-- <span class="tool-label">Notes</span> -->
               </a>
               <a class="tool-item" type="button" aria-label="Calendar" (click)="openCalendar()">
                 <img src="/assets/Icons-Neutral/Icon-Calendar.png" alt="Calendar" class="tool-icon">
-                <!-- <span class="tool-label">Calendar</span> -->
               </a>
             </nav>
           </header>
 
-          <!-- Centered Stats Row (moved to reusable component) -->
           <mindful-coins-stats [userCoins]="userCoins" [userStreaks]="userStreaks" [userDays]="userDays"
             [userBadges]="userBadges"></mindful-coins-stats>
         </div>
 
-        <!-- Speech bubble message card -->
-        <app-speech-bubble [message]="greetingMessage" type="talking" arrowSide="right" [arrowSize]="16"
-          arrowOffset="30px" [arrowAngle]="10" color="#fff" textColor="#282527" style="margin-bottom: 12px;"
-          aria-label="Greeting message" role="status" aria-live="polite"></app-speech-bubble>
+        <app-speech-bubble [message]="greetingMessage" [petMessage]="currentPetMessage" type="talking" arrowSide="right"
+          [arrowSize]="16" arrowOffset="30px" [arrowAngle]="10" color="#fff" textColor="#282527"
+          style="margin-bottom: 12px;" aria-label="Greeting message" role="status" aria-live="polite">
+        </app-speech-bubble>
 
         <div class="digital-pet" aria-hidden="false">
-          <!-- Reusable mindful-pet component: default pet is panda and age is 1 -->
-          <mindful-pet pet="panda" [age]="1"></mindful-pet>
+          <mindful-pet pet="panda" [age]="1" [mood]="petMood">
+          </mindful-pet>
         </div>
       </div>
     </section>
@@ -97,8 +92,5 @@
       <!-- mood-selector moved above to the profile area -->
     </div>
   </div>
-
-  <!-- Add reel-expand component for full-screen video playback -->
-  <reels-expand></reels-expand>
+  <app-footer></app-footer>
 </ion-content>
-<footer></footer>

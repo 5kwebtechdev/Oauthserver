@@ -1,7 +1,7 @@
 import { Component, Input, TemplateRef, ContentChild, EventEmitter, Output, OnInit } from '@angular/core';
 import { NgIf } from "@angular/common";
-import { ContentSlidesComponent } from '../content-slides/content-slides.component';
-import { ViewAllComponent } from '../mindful-navigator/view-all/view-all.component';
+import { ContentSlidesComponent } from 'src/app/core/components/content-card/content-slides/content-slides.component';
+import { ViewAllComponent } from 'src/app/core/components/mindful-navigator/view-all/view-all.component';
 import { IonicModule } from "@ionic/angular";
 import { RouterModule } from '@angular/router';
 

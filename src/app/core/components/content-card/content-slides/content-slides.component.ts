@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, ViewChild, AfterViewInit, Renderer2, OnDestroy, TemplateRef, ContentChild, EventEmitter, Output } from '@angular/core';
 import { NgForOf, NgTemplateOutlet, NgIf } from '@angular/common';
-import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
+import { MindfulButtonComponent } from 'src/app/core/components/mindful-button/mindful-button.component';
 import { IonicModule } from '@ionic/angular';
 
 @Component({
@@ -22,7 +22,7 @@ export class ContentSlidesComponent implements AfterViewInit, OnDestroy {
 
   private scrollHandler?: () => void;
 
-  constructor(private renderer: Renderer2) {}
+  constructor(private renderer: Renderer2) { }
 
   ngAfterViewInit(): void {
     if (!this.slidesRef) return;

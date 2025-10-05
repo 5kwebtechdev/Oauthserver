@@ -1,326 +1,316 @@
+.sections-content {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.content-items-main {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 16px;
+}
 
 .content-page {
 	width: 393px;
 	height: 2531px;
 	background: #fffcfc;
-	overflow-x: hidden; /* prevent horizontal scroll when children are full-width */
 
-	/* ensure all descendants respect box-sizing so padding doesn't cause overflow */
-	&, & * , & *::before, & *::after { box-sizing: inherit; }
+	&,
+	& *,
+	& *::before,
+	& *::after {
+		box-sizing: inherit;
+	}
 
-		.content-main {
-			width: 393px;
-            height: 254px;
-            flex-shrink: 0;
+	.content-main {
+		width: 393px;
+		height: 254px;
+		flex-shrink: 0;
 
-		
 
-			.card {
+
+		.card {
+			position: relative;
+			display: flex;
+			/* ensure margin auto works as expected */
+			height: 254px;
+			/* requested height */
+			flex-shrink: 0;
+			border-radius: 24px 24px 48px 48px;
+			/* requested radii */
+			overflow: hidden;
+			background: url('/assets/Images-Thumbnails/Background-Content.png') center/cover no-repeat;
+
+
+			.card-bg {
+				position: absolute;
+				inset: 0;
+				filter: none;
+				z-index: 0;
+			}
+
+			.card-content {
 				position: relative;
-			display: flex; /* ensure margin auto works as expected */
-			/* center inner content */
-			 /* center children vertically */
-				//max-width: 361px; /* explicit inner max to match padding */
-				height: 254px; /* requested height */
-				flex-shrink: 0;
-				border-radius: 24px 24px 48px 48px; /* requested radii */
-				overflow: hidden;
-				background: url('/assets/app-assets/Container bg.svg') lightgray 50% / cover no-repeat; /* requested background shorthand */
+				padding: 16px;
+				/* no horizontal padding because we use max-width on card */
+				display: flex;
+				align-items: flex-start;
+				margin-top: 24px;
+				gap: 16px;
+			}
 
-				.card-bg {
-					position: absolute;
-					inset: 0;
-					/* use an existing banner asset as background; replace with a dedicated image if provided */
-				    background: url('/assets/app-assets/Container bg.svg') center/cover no-repeat;
-					filter: none;
-					z-index: 0;
-				}
+			.card-title {
+				color: #FDFDFD;
+				font-family: Fredoka;
+				font-size: 16px;
+				font-style: normal;
+				font-weight: 500;
+				line-height: 140%;
+				/* 22.4px */
+			}
 
-				.card-content {
-					position: relative; 
-					padding: 16px; /* no horizontal padding because we use max-width on card */
-					display: flex;
-					align-items: flex-start;
-					margin-top: 24px;
-					gap: 16px;
-				}
+			.search-row {
+				display: flex;
+				align-items: center;
+				padding: 12px 16px 0 16px;
+				gap: 12px;
+				width: 100%;
+				z-index: 2;
 
-				.card-title {
-					color: #FDFDFD;
-font-family: Fredoka;
-font-size: 16px;
-font-style: normal;
-font-weight: 500;
-line-height: 140%; /* 22.4px */
-				}
-
-				.search-row {
+				.search-input {
 					display: flex;
 					align-items: center;
-					padding: 12px 16px 0 16px;
-					gap: 12px;
 					width: 100%;
-					z-index: 2;
+					/* fluid inside card */
+					padding: 12px 12px;
+					gap: 12px;
+					border-radius: 24px;
+					/* pill */
+					background: #FFFFFF;
+					box-shadow: 0 8px 24px rgba(16, 18, 20, 0.08);
+					border: 1px solid rgba(16, 18, 20, 0.04);
+					align-items: center;
+					position: relative;
 
-					.search-input {
-						display: flex;
-						align-items: center;
-						width: 100%; /* fluid inside card */
-						padding: 12px 12px;
-						gap: 12px;
-						border-radius: 24px; /* pill */
-						background: #FFFFFF;
-						box-shadow: 0 8px 24px rgba(16, 18, 20, 0.08);
-						border: 1px solid rgba(16,18,20,0.04);
-						align-items: center;
-						position: relative;
-
-						.search-icon { margin-right: 8px; font-size: 18px; opacity: 0.6; }
-
-						input {
-							border: none;
-							outline: none;
-							background: transparent;
-							flex: 1 1 auto;
-							font-family: 'Nunito', sans-serif;
-							font-size: 15px;
-							color: #282527;
-							padding-right: 12px; /* space before mic */
-						}
-
-						/* mic button on the right inside the pill */
-						.mic{
-							background: transparent;
-							border: none;
-							display: inline-flex;
-							align-items: center;
-							justify-content: center;
-							width: 36px;
-							height: 36px;
-							border-radius: 18px;
-							margin-left: 8px;
-							flex-shrink: 0;
-							cursor: pointer;
-						}
-
-						.mic svg{ width:9.333px; height:12.667px; display:block; }
-
-						/* small divider between input and mic */
-						.mic::before{
-							content: '';
-							display:block;
-							width:1px;
-							height:18px;
-							background: rgba(16,18,20,0.06);
-							margin-right:8px;
-						}
+					.search-icon {
+						margin-right: 8px;
+						font-size: 18px;
+						opacity: 0.6;
 					}
 
+					input {
+						border: none;
+						outline: none;
+						background: transparent;
+						flex: 1 1 auto;
+						font-family: 'Nunito', sans-serif;
+						font-size: 15px;
+						color: #282527;
+						padding-right: 12px;
+						/* space before mic */
+					}
+
+					/* mic button on the right inside the pill */
 					.mic {
 						background: transparent;
 						border: none;
-						font-size: 18px;
+						display: inline-flex;
+						align-items: center;
+						justify-content: center;
+						width: 36px;
+						height: 36px;
+						border-radius: 18px;
+						margin-left: 8px;
+						flex-shrink: 0;
 						cursor: pointer;
+					}
+
+					.mic svg {
+						width: 9.333px;
+						height: 12.667px;
+						display: block;
+					}
+
+					/* small divider between input and mic */
+					.mic::before {
+						content: '';
+						display: block;
+						width: 1px;
+						height: 18px;
+						background: rgba(16, 18, 20, 0.06);
+						margin-right: 8px;
 					}
 				}
 
-				.cheer {
-					position: absolute;
-					right: 12px;
-					bottom: 12px;
-					display: flex;
-					align-items: center;
-					gap: 8px;
-					z-index: 3;
+				.mic {
+					background: transparent;
+					border: none;
+					font-size: 18px;
+					cursor: pointer;
+				}
+			}
 
-					.cheer-text {
-						max-width: calc(100% - 72px);
-						color: #282527;
-						font-family: 'Nunito', sans-serif;
-						font-size: 10px;
-						font-style: normal;
-						font-weight: 600;
-						line-height: 140%; /* 14px */
-						background: #FFFFFF;
-						padding: 6px 8px;
-						border-radius: 8px;
-						box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-					}
+			.cheer {
+				position: absolute;
+				right: 12px;
+				bottom: 12px;
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				z-index: 3;
 
-					.cheer-img {
-						width: 56px;
-						height: 56px;
-						object-fit: contain;
-					}
+				.cheer-text {
+					max-width: calc(100% - 72px);
+					color: #282527;
+					font-family: 'Nunito', sans-serif;
+					font-size: 10px;
+					font-style: normal;
+					font-weight: 600;
+					line-height: 140%;
+					/* 14px */
+					background: #FFFFFF;
+					padding: 6px 8px;
+					border-radius: 8px;
+					box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+				}
+
+				.cheer-img {
+					width: 56px;
+					height: 56px;
+					object-fit: contain;
 				}
 			}
 		}
-
-		/* categories and header sections are siblings inside .content-page */
-		.categories {
-			display: inline-flex;
-			justify-content: center; /* keep within width */
-			align-items: center;
-			padding: 16px;
-			gap: 24px;
-			width: 336px;
-		}
-
-		.category {
-			display: inline-flex;
-			flex-direction: column;
-			align-items: center;
-			text-decoration: none;
-			color: #282527;
-			/* label typography is applied to the .label element below */
-			flex: 1 1 auto;
-			min-width: 0; /* allow text to truncate if needed */
-		}
-
-		.category .icon {
-			width: 48px;
-			height: 48px;
-			aspect-ratio: 1 / 1;
-			flex-shrink: 0;
-			border-radius: 8px;
-			background-repeat: no-repeat;
-			background-position: center;
-			background-size: contain; /* preserve SVG aspect */
-		}
-
-		/* per-category icon backgrounds (use center/contain to preserve aspect) */
-		.category.for-you .icon { background: url('/assets/app-assets/For-you-content-icon.svg') center/contain no-repeat; }
-		.category.puzzles .icon { background: url('/assets/app-assets/Puzzles-content-icon.svg') center/contain no-repeat; }
-		.category.quizzes .icon { background: url('/assets/app-assets/Quizes-content-icon.svg') center/contain no-repeat; }
-		.category.articles .icon { background: url('/assets/app-assets/Thinking-content-icon.svg') center/contain no-repeat; }
-
-		/* explicit label styling */
-		.category .label {
-			font-family: 'Nunito', sans-serif;
-			font-size: 13px;
-			font-weight: 700;
-			line-height: 140%;
-			color: #282527;
-			margin-top: 6px;
-		}
-
-		/* show a visible vertical separator between categories (use a solid stroke color) */
-		.sep {
-			display: inline-block;
-			width: 2px; /* stroke thickness */
-			height: 40px; /* visible length */
-			background: #6B656A; /* stroke color per spec */
-			border-radius: 1px;
-			flex-shrink: 0;
-			margin: 0 6px;
-			align-self: center; /* center between category rows */
-		}
-
-		.header-1, .header-2, .header-3, .header-4 {
-			margin-top: 18px;
-			display: flex;
-			justify-content: center;
-			width: 100%;
-		}
-
-		.header-row {
-			display: flex;
-			width: 100%;
-			max-width: 361px;
-			justify-content: space-between;
-			align-items: flex-start;
-			gap: 12px;
-		}
-
-		/* Slider wrapper to keep slides inside the 361px inner width */
-		.slides-wrap {
-		  width: 100%;
-		  max-width: 361px;
-		  margin: 12px auto 0 auto;
-		  padding: 8px 0;
-		  overflow: hidden;
-		  display: block;
-		}
-	
-		/* target the content-slides web component/class if present */
-		.slides-wrap .slides-component,
-		.slides-wrap content-slides {
-		  display: block;
-		  width: 100%;
-		  box-sizing: border-box;
-		}
-
-		.header-left { display: flex; flex-direction: column; }
-
-		.headline {
-			margin: 0;
-			color: #282527;
-			font-family: 'Fredoka', sans-serif;
-			font-size: 20px;
-			font-weight: 500;
-			line-height: 140%; /* 28px */
-		}
-
-		.chips { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
-
-		.chip { color: #282527; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 500; }
-
-		.dot { width: 4px; height: 4px; flex-shrink: 0; border-radius: 50%; background: #282527; display: inline-block; }
-
-		.header-right .view-all {
-			color: #90214D;
-			font-family: 'Nunito', sans-serif;
-			font-size: 16px;
-			font-weight: 600;
-			text-decoration-line: underline;
-		}
-
-		.gold-standard {
-			color: #282527;
-			font-family: 'Fredoka', sans-serif;
-			font-size: 20px;
-			font-style: normal;
-			font-weight: 500;
-			line-height: 140%; /* 28px */
-			margin: 12px 0 20px 0;
-			max-width: 361px;
-			margin-left: auto;
-			margin-right: auto;
-		}
-
-	
 	}
 
-/* Elite section styles (background image, blurred layer, content on top) */
-/* Elite section (single section) */
-.elite-section{
-  width: 393px;
-  height: 650px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+	.categories {
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+		gap: 24px;
+		padding: 16px;
+	}
+
+	.category {
+		display: inline-flex;
+		flex-direction: column;
+		align-items: center;
+		text-decoration: none;
+		color: #282527;
+		flex: 1 1 auto;
+		min-width: 0;
+		background: transparent;
+		border: none;
+		padding: 0;
+		appearance: none;
+		-webkit-appearance: none;
+		cursor: pointer;
+	}
+
+	.category .icon {
+		height: 48px;
+		flex-shrink: 0;
+		align-self: stretch;
+		aspect-ratio: 1/1;
+		border-radius: 8px;
+		background-repeat: no-repeat;
+		background-position: center;
+		background-size: contain;
+	}
+
+	.category.for-you .icon {
+		background: url('/assets/Icons-Neutral/Icon-Content-ForYou.png') center/contain no-repeat;
+	}
+
+	.category.for-you {
+		display: flex;
+		width: 48px;
+		height: 80px;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		gap: 2px;
+		background: transparent;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+	}
+
+	.category.puzzles .icon {
+		background: url('/assets/Icons-Neutral/Icon-Content-Puzzle.png') center/contain no-repeat;
+	}
+
+	.category.quizzes .icon {
+		background: url('/assets/Icons-Neutral/Icon-Content-Quiz.png') center/contain no-repeat;
+	}
+
+	.category.articles .icon {
+		background: url('/assets/Icons-Neutral/Icon-Content-Articles.png') center/contain no-repeat;
+	}
+
+	/* explicit label styling */
+	.category .label {
+		font-family: 'Nunito', sans-serif;
+		font-size: 13px;
+		font-weight: 700;
+		line-height: 140%;
+		color: #282527;
+		margin-top: 6px;
+	}
+
+	.category.selected {
+		border-radius: 2px;
+		box-shadow: inset 0 -2px 0 0 #90214D;
+	}
+
+	.sep {
+		display: inline-block;
+		width: 2px;
+		height: 42px;
+		flex-shrink: 0;
+		align-self: center;
+		background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='2' height='42' viewBox='0 0 2 42' fill='none'><path d='M1 1L1 41' stroke='%236B656A' stroke-linecap='round'/></svg>") center/contain no-repeat;
+	}
+
+	.gold-standard {
+		color: #282527;
+		font-family: 'Fredoka', sans-serif;
+		font-size: 20px;
+		font-style: normal;
+		font-weight: 500;
+		line-height: 140%;
+		/* 28px */
+		margin: 12px 0 20px 0;
+		max-width: 361px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+
 }
 
-/* title above image (not on top of background) */
+.elite-section {
+	width: 393px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
 
-.elite-title{
+.elite-title {
 	display: flex;
 	justify-content: center;
-color: #282527;
-font-family: Fredoka;
-font-size: 20px;
-width: 363px;
-padding: 16px;
-font-style: normal;
-font-weight: 500;
-line-height: 140%; /* 28px */
+	color: #282527;
+	font-family: Fredoka;
+	font-size: 20px;
+	width: 363px;
+	padding: 16px;
+	font-style: normal;
+	font-weight: 500;
+	line-height: 140%;
 }
 
-
-
-/* container with blurred background as pseudo element */
-.elite-container{
+.elite-container {
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -328,176 +318,170 @@ line-height: 140%; /* 28px */
 	height: 495px;
 	flex-shrink: 0;
 	background: rgba(217, 143, 21, 0.70);
-	/* center horizontally within parent */
 	margin-left: auto;
 	margin-right: auto;
-	display: block; /* ensure margin auto works as expected */
-
 }
 
-.elite-banner{
-width: 393px;
-height: 495px;
-flex-shrink: 0;
+.elite-banner {
+	width: 393px;
+	height: 495px;
+	flex-shrink: 0;
 }
+
 .elite-club {
 	color: #FFF;
-font-family: Fredoka;
-text-align: center;
-font-size: 32px;
-font-style: normal;
+	font-family: Fredoka;
+	text-align: center;
+	font-size: 32px;
+	font-style: normal;
 
-font-weight: 500;
-line-height: 140%; /* 44.8px */
+	font-weight: 500;
+	line-height: 140%;
+	/* 44.8px */
 }
 
-.elite-desc{
-color: #FFF;
-text-align: center;
-font-family: Nunito;
-font-size: 13px;
-font-style: normal;
-font-weight: 500;
-line-height: 140%; /* 18.2px */
-padding: 16px;
+.elite-desc {
+	color: #FFF;
+	text-align: center;
+	font-family: Nunito;
+	font-size: 13px;
+	font-style: normal;
+	font-weight: 500;
+	line-height: 140%;
+	/* 18.2px */
+	padding: 16px;
 }
 
 .elite-frame {
-flex-direction: column;
-gap: 2px;
+	flex-direction: column;
+	gap: 2px;
 }
 
 .frame-text {
 	align-self: stretch;
 	color: #FFF;
-    text-align: center;
-    font-family: Nunito;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: 140%; /* 22.4px */
+	text-align: center;
+	font-family: Nunito;
+	font-size: 16px;
+	font-style: normal;
+	font-weight: 700;
+	line-height: 140%;
+	/* 22.4px */
 }
 
 .price {
 	color: #FFF;
-text-align: center;
-font-family: Nunito;
-text-align: center;
-font-size: 13px;
-font-style: normal;
-font-weight: 600;
-line-height: 140%; /* 18.2px */
+	text-align: center;
+	font-family: Nunito;
+	font-size: 13px;
+	font-style: normal;
+	font-weight: 600;
+	line-height: 140%;
+	/* 18.2px */
 }
 
-
-
-
-/* Upgrade button centered and overlapping bottom half of the background image */
-.upgrade-now-cta{
-  position: relative;
-  display:inline-flex;
-  align-items: center;
-  justify-content:center;
-  width:100%;
-  margin-top: -32px; /* move up so button sits half on background and half below */
-  z-index: 3;
-}
-
-/* New styles to match gold pill CTA from PNG */
-.upgrade-btn-wrap{
+.upgrade-now-cta {
 	position: relative;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	padding: 6px; /* spacing around button */
-	background: linear-gradient(180deg, #FFD891 0%, #E6A23A 100%);
-	//border-radius: 28px;
-	box-shadow: 0 6px 20px rgba(16, 18, 20, 0.12);
-	-webkit-backdrop-filter: blur(4px);
-	backdrop-filter: blur(4px);
+	width: 100%;
+	margin-top: -32px;
+	z-index: 3;
 }
 
-.upgrade-btn-wrap[role="button"]{ cursor: pointer; }
-//.upgrade-btn-wrap[role="button"]:focus{ outline: 3px solid rgba(255,255,255,0.35); outline-offset: 4px; }
 
-.upgrade-btn-wrap .button.gold.medium{
-	background: transparent; /* let wrapper show through */
-	border: none;
-	box-shadow: none;
-	padding: 8px 18px;
-	min-width: 220px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	gap: 10px;
-}
 
-.upgrade-btn-wrap .btn-icon{ /* ensure icon matches PNG size */
-	width: 22px;
-	height: 22px;
-	margin-right: 6px;
-}
-
-/* In upgrade pill we don't want the inner button to be independently clickable or show its icon twice */
-.upgrade-btn-wrap .button{ pointer-events: none; }
-.upgrade-btn-wrap .button .btn-icon{ display: none; }
-
-/* Remove any residual borders/lines around the button text */
-.upgrade-btn-wrap .button,
-.upgrade-btn-wrap .button p,
-.upgrade-btn-wrap .button * {
-	border: none !important;
-	box-shadow: none !important;
-	background: transparent !important;
-	-webkit-text-stroke: 0px !important;
-	text-shadow: none !important;
-	-webkit-text-fill-color: #FFFFFF !important; /* ensure text remains white */
-}
-
-.upgrade-badge{
+.upgrade-badge {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	background: linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+	background: linear-gradient(90deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
 	padding: 6px 10px;
 	border-radius: 18px;
 	margin-left: 10px;
 	transform: translateY(-2px);
 }
 
-.upgrade-badge img{ width: 20px; height: 20px; }
-.upgrade-badge .amount{
+.upgrade-badge img {
+	width: 20px;
+	height: 20px;
+}
+
+.upgrade-badge .amount {
 	font-family: 'Nunito', sans-serif;
 	font-weight: 700;
 	color: #3B1F00;
 	font-size: 14px;
 }
 
-/* Upgrade popup styles */
 .upgrade-popup-backdrop {
 	position: fixed;
 	inset: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: rgba(0,0,0,0.35);
+	background: rgba(0, 0, 0, 0.35);
 	z-index: 1100;
 }
+
 .upgrade-popup {
 	width: 360px;
 	max-width: calc(100% - 40px);
 	background: #fff;
 	border-radius: 12px;
 	padding: 28px 24px;
-	box-shadow: 0 24px 48px rgba(0,0,0,0.2);
+	box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
 	text-align: center;
 }
-.upgrade-popup .upgrade-top{ width: 84px; height: 84px; object-fit: contain; margin: 0 auto 18px auto; }
-.upgrade-title { font-family: 'Fredoka', sans-serif; font-size: 20px; margin: 0 0 8px 0; }
-.upgrade-title .gold { color: #D18B2A; font-weight: 700; }
-.upgrade-sub { color: #6B656A; margin: 0 0 12px 0; }
-.upgrade-coins { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom: 18px; }
-.upgrade-coins img{ width: 36px; height: 36px; }
-.upgrade-coins .amount{ font-weight: 700; font-size: 20px; }
-.upgrade-actions{ display:flex; gap: 14px; justify-content:center; }
-.upgrade-actions mindful-button{ display:inline-block; }
+
+.upgrade-popup .upgrade-top {
+	width: 84px;
+	height: 84px;
+	object-fit: contain;
+	margin: 0 auto 18px auto;
+}
+
+.upgrade-title {
+	font-family: 'Fredoka', sans-serif;
+	font-size: 20px;
+	margin: 0 0 8px 0;
+}
+
+.upgrade-title .gold {
+	color: #D18B2A;
+	font-weight: 700;
+}
+
+.upgrade-sub {
+	color: #6B656A;
+	margin: 0 0 12px 0;
+}
+
+.upgrade-coins {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	margin-bottom: 18px;
+}
+
+.upgrade-coins img {
+	width: 36px;
+	height: 36px;
+}
+
+.upgrade-coins .amount {
+	font-weight: 700;
+	font-size: 20px;
+}
+
+.upgrade-actions {
+	display: flex;
+	gap: 14px;
+	justify-content: center;
+}
+
+.upgrade-actions mindful-button {
+	display: inline-block;
+}

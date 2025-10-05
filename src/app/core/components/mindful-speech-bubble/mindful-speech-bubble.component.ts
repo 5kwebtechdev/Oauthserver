@@ -1,5 +1,6 @@
 import { Component, Input, HostBinding, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { PetMessage } from '../../services/pet-messages.service';
 
 @Component({
   selector: 'app-speech-bubble',
@@ -10,6 +11,7 @@ import { CommonModule } from '@angular/common';
 })
 export class MindfulSpeechBubbleComponent {
   @Input() message: string = '';
+  @Input() petMessage?: PetMessage;
   @Input() type: 'talking' | 'thinking' = 'talking';
   @Input() arrowSide: 'left' | 'right' | 'top' | 'bottom' = 'bottom';
   @Input() arrowSize: number = 12;
@@ -20,16 +22,19 @@ export class MindfulSpeechBubbleComponent {
   @Input() target: HTMLElement | string | null = null;
   @Input() follow: boolean = false;
 
+  get displayMessage(): string {
+    return this.petMessage?.message || this.message;
+  }
+
   private _targetEl: HTMLElement | null = null;
   private _ro: ResizeObserver | null = null;
   private _running = false;
   private _rafId = 0;
 
-  constructor(private hostRef: ElementRef<HTMLElement>) {}
+  constructor(private hostRef: ElementRef<HTMLElement>) { }
 
-  @HostBinding('attr.arrowSide') get hostArrowSide() {
-    return this.type === 'talking' ? this.arrowSide : null;
-  }
+  // data-side is applied to the inner .speech-bubble element in the template.
+  // We intentionally do not bind it on the host element here.
   @HostBinding('style.--arrow-size') get hostArrowSize() {
     return this.type === 'talking' ? `${this.arrowSize}px` : null;
   }
