@@ -20,7 +20,8 @@
     </button>
 
     <div class="mindful-popup-content" *ngIf="hasAnyContent">
-      <img *ngIf="hasImage" [src]="finalConfig.image" [alt]="finalConfig.imageAlt" class="mindful-popup-image">
+      <img *ngIf="hasImage" [src]="finalConfig.image" [alt]="finalConfig.imageAlt" class="mindful-popup-image"
+        [class.mindful-popup-image--reel-success]="isReelSuccessImage">
       <h2 *ngIf="hasHeading" class="mindful-popup-heading" [innerHTML]="headingHtml">
       </h2>
       <p *ngIf="hasSubtitle" class="mindful-popup-subtitle">

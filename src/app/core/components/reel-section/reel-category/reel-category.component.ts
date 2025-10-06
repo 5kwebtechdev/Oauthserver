@@ -6,7 +6,6 @@ import { RouterModule, Router } from '@angular/router';
 import { ReelsExpandComponent } from 'src/app/core/components/reel-section/reel-expand/reels-expand.component';
 import { BookmarkReelsComponent } from 'src/app/core/components/reel-section/bookmark-reels/bookmark-reels.component';
 import { UploadReelComponent } from 'src/app/core/components/reel-section/upload-reel/upload-reel.component';
-import { ShareReelComponent } from 'src/app/core/components/reel-section/share-reel.component';
 import { MindfulButtonComponent } from 'src/app/core/components/mindful-button/mindful-button.component';
 import { MindfulCardHeaderComponent } from 'src/app/core/components/mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { ReelsCardComponent } from 'src/app/core/components/reel-section/reels-card/reels-card.component';
@@ -16,7 +15,7 @@ import { ReelsCardComponent } from 'src/app/core/components/reel-section/reels-c
   templateUrl: './reel-category.component.html',
   styleUrls: ['./reel-category.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, ReelsExpandComponent, BookmarkReelsComponent, UploadReelComponent, ShareReelComponent, MindfulButtonComponent, MindfulCardHeaderComponent, ReelsCardComponent]
+  imports: [CommonModule, IonicModule, RouterModule, ReelsExpandComponent, BookmarkReelsComponent, UploadReelComponent, MindfulButtonComponent, MindfulCardHeaderComponent, ReelsCardComponent]
 })
 export class ReelCategoryComponent implements AfterViewInit {
   public slides = [

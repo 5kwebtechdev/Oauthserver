@@ -524,3 +524,7 @@ body.reel-expanded {
     pointer-events: none !important;
   }
 }
+/* Category popover border radius */
+ion-popover {
+    --border-radius: 20px;
+}

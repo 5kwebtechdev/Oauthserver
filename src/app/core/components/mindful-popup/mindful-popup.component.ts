@@ -77,6 +77,16 @@ export class MindfulPopupComponent implements OnInit {
     return !!(this.finalConfig.image);
   }
 
+  /**
+   * Detect whether the configured image is the reel upload success image.
+   * We use this to apply a special sizing class so that only this image
+   * renders at the requested 178x121px size.
+   */
+  get isReelSuccessImage(): boolean {
+    const img = this.finalConfig.image || '';
+    return img.includes('Image-Reel-Success.png');
+  }
+
   get hasHeading(): boolean {
     return !!(this.finalConfig.heading);
   }

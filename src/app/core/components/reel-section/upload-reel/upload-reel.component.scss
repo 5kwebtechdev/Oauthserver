@@ -1,0 +1,233 @@
+.reel-upload-guidlines {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+    padding: 16px;
+}
+
+.guidlines-steps-list {
+    display: flex;
+    width: 361px;
+    padding: 16px 0;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 12px;
+    background: rgba(40, 37, 39, 0.05);
+    gap: 32px;
+}
+
+.uploading-guidline,
+.not-allowed-guidline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    align-self: stretch;
+}
+
+.uploading-guidline span {
+    color: #282527;
+    text-align: center;
+    font-family: Nunito;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 130%;
+    /* 16.9px */
+}
+
+.not-allowed-guidline span {
+    color: #BB2124;
+    text-align: center;
+    font-family: Nunito;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 130%;
+    /* 16.9px */
+}
+
+.uploading-guidline .upload-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.uploading-guidline span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.guidelines-list {
+    display: flex;
+    width: 256px;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+
+    li {
+        color: #282527;
+        text-align: center;
+        font-family: Nunito;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 140%;
+        /* 22.4px */
+    }
+}
+
+.not-allowed-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+.reel-meta-data {
+    padding: 0px 16px;
+}
+
+.meta-detail-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+}
+
+.reel-showcase {
+    width: 235.953px;
+    height: 333.817px;
+    flex-shrink: 0;
+    border-radius: 24px;
+    align-self: center;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.80) 0%, rgba(255, 255, 255, 0.20) 24.57%), url('/assets/icons/Frame41196.png') lightgray 50% / cover no-repeat;
+    overflow: hidden;
+    position: relative;
+
+    .reel-video-preview {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 24px;
+        background: #000;
+    }
+}
+
+.reel-meta-data-inputs {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    align-self: stretch;
+    border-bottom: 1px solid rgba(40, 37, 39, 0.20);
+}
+
+.meta-title {
+    margin: 0;
+    color: #282527;
+    text-align: center;
+    font-family: Nunito;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 140%;
+    opacity: 0.7;
+}
+
+.reel-meta-data-inputs input.mindful-input {
+    border: none;
+    padding: 0;
+    border-radius: 0;
+    outline: none;
+    transition: box-shadow 120ms ease, border-color 120ms ease;
+    color: #282527;
+    font-family: Nunito, sans-serif;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 140%;
+    align-self: stretch;
+    opacity: 0.7;
+}
+
+.input-with-counter {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.input-with-counter input.mindful-input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    /* give space for counter inside the input */
+    padding-right: 56px;
+    padding-left: 0;
+    height: 36px;
+    /* small fixed height to align counter vertically */
+    line-height: 36px;
+}
+
+.alpha-counter {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: Nunito, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(40, 37, 39, 0.5);
+    pointer-events: none;
+    /* clicks go to input */
+}
+
+.reel-meta-data-inputs input.mindful-input:focus,
+.reel-meta-data-inputs input.mindful-input:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.ai-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    align-self: stretch;
+
+
+    .ai-label-text {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+
+        h1 {
+            color: #282527;
+            text-align: center;
+            font-family: Nunito;
+            font-size: 13px;
+            font-style: normal;
+            font-weight: 600;
+            line-height: 140%;
+            /* 18.2px */
+        }
+
+        p {
+            color: #282527;
+            font-family: Nunito;
+            font-size: 13px;
+            font-style: normal;
+            font-weight: 600;
+            line-height: 140%;
+            opacity: 0.7;
+            width: 264px;
+        }
+    }
+}

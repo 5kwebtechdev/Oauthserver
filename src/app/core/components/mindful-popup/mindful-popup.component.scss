@@ -71,6 +71,14 @@
   border-radius: 8px;
 }
 
+/* Specific sizing for the Reel upload success image requested by design */
+.mindful-popup-image--reel-success {
+  width: 178px !important;
+  height: 105px !important;
+  object-fit: contain !important;
+  border-radius: 8px;
+}
+
 .mindful-popup-heading {
   color: #282527;
   font-family: Fredoka, sans-serif;
