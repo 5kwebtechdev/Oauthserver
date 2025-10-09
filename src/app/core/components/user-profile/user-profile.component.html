@@ -57,10 +57,32 @@
       <profile-content-card iconName="danger" title="Delete My Data"
         subtitle="Erase all your info safely and permanently" (select)="onDeleteMyData()"></profile-content-card>
 
+      <div class="logout-section" (click)="openLogoutPopup()">
+        <ion-icon name="log-out-outline"></ion-icon>
+        <div class="log-out-outline-text">
+          <span>Logout</span>
+          <p>See you next time!</p>
+        </div>
+      </div>
+
+
     </section>
 
     <!--social media-->
     <social-media></social-media>
+
+    <!--mindful-popup-->
+    <app-mindful-popup [isVisible]="showLogoutPopup" [config]="{
+      image: '/assets/Images-Transparent/logout.png',
+      imageAlt: 'Logout image',
+      heading: 'Leaving already?',
+      subtitle: 'You can come back anytime to continue your adventure.',
+      primaryCTA: { text: 'Logout', callback: confirmLogout.bind(this), buttonStyle: 'bronze' },
+      secondaryCTA: { text: 'Stay Here', callback: closeLogoutPopup.bind(this), buttonStyle: 'bronze-transparent' },
+      backdrop: true,
+      showCloseButton: true
+    }" (primaryAction)="confirmLogout()" (secondaryAction)="closeLogoutPopup()" (backdropClick)="closeLogoutPopup()"
+      (closeAction)="closeLogoutPopup()"></app-mindful-popup>
 
   </div>
 </ion-content>

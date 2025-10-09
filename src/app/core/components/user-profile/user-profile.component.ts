@@ -7,11 +7,13 @@ import { MindfulCoinsStatsComponent } from '../mindful-coins-stats/mindful-coins
 import { ProfileContentCardComponent } from './profile-content-card/profile-content-card.component';
 import { SocialMediaComponent } from '../social-media/social-media.component';
 import { ChangePetComponent } from './change-pet/change-pet.component';
+import { MindfulPopupComponent } from '../mindful-popup/mindful-popup.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'user-profile',
   standalone: true,
-  imports: [CommonModule, MindfulNavigatorComponent, IonicModule, MindfulCoinsStatsComponent, ProfileContentCardComponent, SocialMediaComponent],
+  imports: [CommonModule, MindfulNavigatorComponent, IonicModule, MindfulCoinsStatsComponent, ProfileContentCardComponent, SocialMediaComponent, MindfulPopupComponent],
   templateUrl: './user-profile.component.html',
   styleUrls: ['./user-profile.component.scss']
 })
@@ -27,7 +29,14 @@ export class UserProfileComponent implements OnChanges {
 
   @Output() logout = new EventEmitter<void>();
 
-  constructor(private router: Router, private modalCtrl: ModalController) { }
+  // popup state for confirming logout
+  showLogoutPopup: boolean = false;
+
+  constructor(
+    private router: Router,
+    private modalCtrl: ModalController,
+    private authService: AuthService
+  ) { }
 
   async onChangePet() {
     const slides = [
@@ -94,6 +103,32 @@ export class UserProfileComponent implements OnChanges {
 
   onLogout() {
     this.logout.emit();
+  }
+
+  openLogoutPopup() {
+    this.showLogoutPopup = true;
+  }
+
+  confirmLogout() {
+    // Close the popup first for smooth transition
+    this.showLogoutPopup = false;
+
+    // Clear authentication data
+    this.authService.logout();
+
+    // Navigate to login page with animation
+    this.router.navigate(['/home/login'], {
+      replaceUrl: true // Replace history so user can't go back to authenticated pages
+    }).catch((err) => {
+      console.error('Navigation error:', err);
+    });
+
+    // Emit logout event for parent components if needed
+    this.onLogout();
+  }
+
+  closeLogoutPopup() {
+    this.showLogoutPopup = false;
   }
 
   ngOnChanges(changes: SimpleChanges) {

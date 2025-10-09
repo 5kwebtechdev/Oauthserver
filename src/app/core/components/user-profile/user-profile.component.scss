@@ -1,30 +1,31 @@
-.profile{
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 24px;
-flex-shrink: 0;
+.profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
 }
 
 .user-profile-main {
-display: flex;
-width: 351px;
-padding: 20px 16px;
-justify-content: center;
-align-items: center;
-border-radius: 24px;
-background: #FFF;
-box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+  display: flex;
+  width: 351px;
+  padding: 20px 16px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 24px;
+  background: #FFF;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
 }
 
-.user-profile{
+.user-profile {
   display: flex;
-width: 319px;
-flex-direction: column;
-align-items: center;
-gap: 16px;
-flex-shrink: 0;
+  width: 319px;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
 }
+
 .avatar {
   width: 48px;
   height: 48px;
@@ -55,13 +56,56 @@ flex-shrink: 0;
 
 .user-age {
   font-size: 12px;
-  color: rgba(40,37,39,0.6);
+  color: rgba(40, 37, 39, 0.6);
 }
 
-.profile-content{
+.profile-content {
   display: flex;
-width: 361px;
-flex-direction: column;
-align-items: flex-start;
-gap: 16px;
+  width: 361px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.logout-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.logout-section ion-icon {
+  width: 48px;
+  height: 48px;
+  font-size: 48px;
+  color: #BB2124;
+}
+
+.log-out-outline-text {
+  display: flex;
+  width: 209px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.log-out-outline-text>span {
+  color: #BB2124;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  align-self: stretch;
+}
+
+.log-out-outline-text>p {
+  color: #BB2124;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  opacity: 0.7;
+  margin: 0;
 }

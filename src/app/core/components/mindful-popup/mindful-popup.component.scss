@@ -71,6 +71,15 @@
   border-radius: 8px;
 }
 
+/* Specific sizing for the logout image */
+.mindful-popup-image[src*="logout.png"] {
+  width: 69px !important;
+  height: 88px !important;
+  aspect-ratio: 69/88 !important;
+  object-fit: contain !important;
+  border-radius: 8px;
+}
+
 /* Specific sizing for the Reel upload success image requested by design */
 .mindful-popup-image--reel-success {
   width: 178px !important;

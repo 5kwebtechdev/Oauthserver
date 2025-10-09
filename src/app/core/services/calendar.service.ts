@@ -8,7 +8,7 @@ import { environment } from 'src/environments/environment';
     providedIn: 'root'
 })
 export class CalendarService {
-    private readonly apiUrl = `${environment.apiUrl}/v1/calendar`;
+    private readonly apiUrl = `${environment.apiUrl}/calendar`;
 
     constructor(private http: HttpClient) { }
 
