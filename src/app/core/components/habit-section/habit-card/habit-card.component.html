@@ -73,7 +73,13 @@
             </h4>
           </div>
           <div class="d-flex gap-1 align-self-baseline">
-            <img class="mornig-sun" src="/assets/Icons-Neutral/Icon-Routine-Morning.png" alt="" height="24" width="24">
+
+            <img *ngIf="getRoutine() === 'MORNING'" class="morning-sun"
+              src="/assets/Icons-Neutral/Icon-Routine-Morning.png" alt="" height="24" width="24">
+            <img *ngIf="getRoutine() === 'EVENING'" class="morning-sun"
+              src="/assets/Icons-Neutral/Icon-Routine-Evening.png" alt="" height="24" width="24">
+            <img *ngIf="getRoutine() === 'NIGHT'" class="morning-sun" src="/assets/Icons-Neutral/Icon-Routine-Night.png"
+              alt="" height="24" width="24">
             <div class="badge">
               {{getTagOrRoutine()}}
             </div>

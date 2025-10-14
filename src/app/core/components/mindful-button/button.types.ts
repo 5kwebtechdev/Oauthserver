@@ -24,6 +24,7 @@ export type buttonStyles =
   | 'bronze'
   | 'bronze-transparent'
   | 'peach'
-  | 'white';
+  | 'white'
+  | 'add';
 
 

@@ -14,7 +14,6 @@ export interface LoginCredentials {
 export interface AuthResponse {
   token: string;
   userId: number;
-  // Add other fields as needed
 }
 
 @Injectable({
@@ -28,29 +27,40 @@ export class AuthService {
   login(credentials: LoginCredentials): Observable<AuthResponse> {
     console.log('[AuthService] Login attempt with:', {
       endpoint: `${this.apiUrl}/auth/login`,
-      credentials: { ...credentials, password: '***' }
+      credentials: { ...credentials, password: '***' },
+      timestamp: new Date().toISOString()
     });
 
     return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, credentials)
       .pipe(
-        tap(response => {
-          console.log('[AuthService] Login successful:', { userId: response.userId, hasToken: !!response.token });
-          // Store the token in localStorage for future API requests
-          if (response && response.token) {
-            localStorage.setItem('auth_token', response.token);
-            localStorage.setItem('user_id', response.userId.toString());
-            console.log('[AuthService] Token stored in localStorage');
+        tap({
+          next: (response) => {
+            console.log('[AuthService] Login successful:', {
+              userId: response.userId,
+              hasToken: !!response.token,
+              timestamp: new Date().toISOString()
+            });
+            if (response && response.token) {
+              localStorage.setItem('auth_token', response.token);
+              localStorage.setItem('user_id', response.userId.toString());
+              console.log('[AuthService] Token stored in localStorage');
+            }
+          },
+          error: (error) => {
+            console.error('[AuthService] Login failed:', {
+              status: error.status,
+              statusText: error.statusText,
+              message: error.message,
+              url: error.url,
+              error: error.error,
+              timestamp: new Date().toISOString()
+            });
           }
         })
       );
   }
 
-  /**
-   * Request a forgot-password OTP for an identifier (email or phone).
-   * Payload: { identifier: string }
-   */
   requestOtp(identifier: string) {
-    // If an API auth token is configured in environment, include it in headers
     const headers = environment.apiAuthToken ? new HttpHeaders({
       Authorization: environment.apiAuthToken,
       'Content-Type': 'application/json'
@@ -58,8 +68,6 @@ export class AuthService {
 
     const url = `${this.apiUrl}/auth/forgot-password/request-otp`;
 
-    // The endpoint returns plain text (e.g. 'OTP sent to your registered email/phone.').
-    // Configure HttpClient to expect a text response to avoid JSON parse errors.
     const options: any = {
       responseType: 'text'
     };
@@ -71,11 +79,6 @@ export class AuthService {
     return this.http.post<string>(url, { identifier }, options);
   }
 
-  /**
-   * Verify the OTP for a given identifier (email or phone).
-   * Payload: { identifier: string, otp: string }
-   * Returns plain text message from server.
-   */
   verifyOtp(identifier: string, otp: string) {
     const url = `${this.apiUrl}/auth/forgot-password/verify-otp`;
 
@@ -95,11 +98,6 @@ export class AuthService {
     return this.http.post<string>(url, { identifier, otp }, options);
   }
 
-  /**
-   * Reset the user's password after OTP verification.
-   * Payload: { identifier: string, newPassword: string, confirmPassword: string }
-   * Returns plain text message from server.
-   */
   resetPassword(identifier: string, newPassword: string, confirmPassword: string) {
     const url = `${this.apiUrl}/auth/forgot-password/reset`;
 
@@ -119,13 +117,8 @@ export class AuthService {
     return this.http.post<string>(url, { identifier, newPassword, confirmPassword }, options);
   }
 
-  /**
-   * Register a new user.
-   * Expects payload with name, gender, relationship, email, phone, dateOfBirth (ms), password
-   */
   register(payload: any) {
     const url = `${this.apiUrl}/auth/register`;
-    // default JSON response
     return this.http.post<any>(url, payload);
   }
 

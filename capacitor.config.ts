@@ -6,7 +6,11 @@ const config: CapacitorConfig = {
   webDir: 'www',
   server: {
     cleartext: true,
-    androidScheme: 'https'
+    androidScheme: 'http',
+    allowNavigation: [
+      'ec2-13-126-1-142.ap-south-1.compute.amazonaws.com',
+      'localhost'
+    ]
   },
   android: {
     allowMixedContent: true

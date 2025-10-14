@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CalendarService } from '../../../services/calendar.service';
 import { TimelineEvent } from '../../../models/calendar.model';
 
@@ -14,7 +15,10 @@ export class TimelineComponent implements OnInit {
   selectedDate: string = this.formatDate(new Date());
   selectedType: string = 'all';
 
-  constructor(private calendarService: CalendarService) { }
+  constructor(
+    private calendarService: CalendarService,
+    private router: Router
+  ) { }
 
   ngOnInit() {
     this.loadEvents();
@@ -66,5 +70,9 @@ export class TimelineComponent implements OnInit {
   onDateSelected(date: Date): void {
     this.selectedDate = this.formatDate(date);
     this.loadEvents();
+  }
+
+  onAddClick(): void {
+    this.router.navigateByUrl('/authed/habit-input');
   }
 }

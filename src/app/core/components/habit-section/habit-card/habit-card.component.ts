@@ -350,6 +350,15 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  getRoutine(): string {
+    // this.console.log('Current routine:', this.habit?.selectedRoutine);
+    if (this.habit && this.habit.selectedRoutine) {
+      // this.console.log('Current routine:', this.habit.selectedRoutine);
+      return this.habit.selectedRoutine;
+    }
+    return '';
+  }
+
   /**
    * Safely get the coin reward
    */

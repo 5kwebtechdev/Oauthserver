@@ -10,3 +10,11 @@
     margin-top: 32px;
     margin-bottom: 32px;
 }
+
+.add-button-fixed {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+    cursor: pointer;
+}
