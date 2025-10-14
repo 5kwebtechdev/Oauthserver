@@ -93,22 +93,39 @@ export class LoginComponent implements OnInit, OnDestroy {
         credentials.phone = this.selectedCountry.code + phoneNumber;
       }
 
+      console.log('[LoginComponent] Attempting login with credentials:', {
+        mode: this.loginMode,
+        email: credentials.email,
+        phone: credentials.phone,
+        hasPassword: !!credentials.password
+      });
+
       this.authService.login(credentials).subscribe({
         next: (response) => {
           this.loading = false;
-          console.log('Login successful', response);
+          console.log('[LoginComponent] Login successful', response);
+          console.log('[LoginComponent] Token received:', !!response.token);
+          console.log('[LoginComponent] UserId:', response.userId);
           // Navigate to dashboard or home page after successful login
           this.router.navigate(['authed/user-dashboard']);
         },
         error: (error) => {
           this.loading = false;
-          console.error('Login error', error);
+          console.error('[LoginComponent] Login error', {
+            status: error.status,
+            statusText: error.statusText,
+            message: error.message,
+            error: error.error,
+            url: error.url
+          });
 
           // Handle different error scenarios
           if (error.status === 401) {
             this.loginError = 'Invalid email/phone or password. Please try again.';
           } else if (error.status === 404) {
             this.loginError = 'User not found. Please check your credentials.';
+          } else if (error.status === 0) {
+            this.loginError = 'Cannot connect to server. Please check your internet connection.';
           } else {
             this.loginError = 'An error occurred during login. Please try again later.';
           }

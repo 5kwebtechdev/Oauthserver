@@ -524,7 +524,32 @@ body.reel-expanded {
     pointer-events: none !important;
   }
 }
+
 /* Category popover border radius */
 ion-popover {
-    --border-radius: 20px;
+  --border-radius: 20px;
+}
+
+/* Barcode Scanner Active State */
+body.barcode-scanner-active {
+
+  /* Hide the web UI when scanner is active on mobile */
+  .qr-scanner {
+    background: transparent !important;
+
+    .header,
+    .scanner-viewport,
+    .upload-gallery-btn,
+    .divider-section {
+      z-index: 9999 !important;
+      position: fixed !important;
+    }
+  }
+
+  /* Make the background transparent so camera view shows through */
+  ion-app,
+  ion-content {
+    background: transparent !important;
+    --background: transparent !important;
+  }
 }

@@ -6,6 +6,37 @@
     padding: 16px;
 }
 
+.progress-container {
+    width: 100%;
+    padding: 16px;
+    background: rgba(40, 37, 39, 0.05);
+    border-radius: 8px;
+    margin-bottom: 16px;
+
+    ion-progress-bar {
+        height: 6px;
+        border-radius: 3px;
+        margin-bottom: 8px;
+    }
+
+    .progress-text {
+        color: #282527;
+        font-family: Nunito;
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0 0 4px 0;
+        text-align: center;
+    }
+
+    .progress-details {
+        color: #666;
+        font-family: Nunito;
+        font-size: 12px;
+        margin: 0;
+        text-align: center;
+    }
+}
+
 .guidlines-steps-list {
     display: flex;
     width: 361px;

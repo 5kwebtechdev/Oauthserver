@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 
 import { TimelineEvent } from '../../models/calendar.model';
 
@@ -16,7 +16,7 @@ interface EventPosition extends TimelineEvent {
   styleUrls: ['./mindful-timeline.component.scss'],
   standalone: false
 })
-export class MindfulTimelineComponent implements OnInit {
+export class MindfulTimelineComponent implements OnInit, OnChanges {
   @Input() events: EventPosition[] = [];
 
   timeSlots: string[] = [];
@@ -24,6 +24,16 @@ export class MindfulTimelineComponent implements OnInit {
   hourHeight = 60;
 
   ngOnInit(): void {
+    this.initializeTimeline();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['events'] && !changes['events'].firstChange) {
+      this.initializeTimeline();
+    }
+  }
+
+  initializeTimeline(): void {
     this.generateTimeSlots();
     this.compressEmptyBlocks();
     this.assignEventPositions();
@@ -103,6 +113,12 @@ export class MindfulTimelineComponent implements OnInit {
   }
 
   compressEmptyBlocks() {
+    // If no events, don't compress - show full timeline
+    if (!this.events || this.events.length === 0) {
+      this.compressedSlots = [];
+      return;
+    }
+
     const occupied = new Set<number>();
     this.events.forEach(e => {
       const startHour = Math.floor(this.parseTime(e.startTime) / 60);
@@ -133,24 +149,30 @@ export class MindfulTimelineComponent implements OnInit {
 
   getCompressedTop(minutes: number): number {
     const hour = Math.floor(minutes / 60);
-    const minuteOffset = minutes % 60;
-    const skipHeight = 60;
-
+    const skipHeight = 60; // compressed block height
     let top = 0;
-    let compressedOffset = 0;
 
-    let blocksSkipped = 0;
-    let countSkippped = 0;
+    // Calculate top position considering compressed blocks
+    for (let h = 0; h < hour; h++) {
+      const compressedBlock = this.compressedSlots.find(
+        block => h >= block.startHour && h < block.startHour + block.count
+      );
 
-    this.compressedSlots.filter((block) => block.startHour < hour).forEach(block => {
-      blocksSkipped++;
-      countSkippped += block.count;
-    })
+      if (compressedBlock && h === compressedBlock.startHour) {
+        // Add compressed height for the entire block
+        top += skipHeight;
+        h += compressedBlock.count - 1; // Skip the rest of compressed hours
+      } else if (!compressedBlock) {
+        // Add normal hour height
+        top += this.hourHeight;
+      }
+    }
 
-    console.log(hour, countSkippped, blocksSkipped, minutes, this.compressedSlots);
-    minutes = minutes - (countSkippped * 60) + (blocksSkipped * 60);
-    console.log(minutes);
-    return minutes;
+    // Add the minutes offset for the current hour
+    const minuteOffset = minutes % 60;
+    top += (minuteOffset / 60) * this.hourHeight;
+
+    return top;
   }
 
 

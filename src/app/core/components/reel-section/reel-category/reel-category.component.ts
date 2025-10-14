@@ -8,6 +8,7 @@ import { BookmarkReelsComponent } from 'src/app/core/components/reel-section/boo
 import { UploadReelComponent } from 'src/app/core/components/reel-section/upload-reel/upload-reel.component';
 import { MindfulButtonComponent } from 'src/app/core/components/mindful-button/mindful-button.component';
 import { MindfulCardHeaderComponent } from 'src/app/core/components/mindful-navigator/mindful-card-header/mindful-card-header.component';
+import { ViewAllComponent } from 'src/app/core/components/mindful-navigator/view-all/view-all.component';
 import { ReelsCardComponent } from 'src/app/core/components/reel-section/reels-card/reels-card.component';
 
 @Component({
@@ -15,7 +16,7 @@ import { ReelsCardComponent } from 'src/app/core/components/reel-section/reels-c
   templateUrl: './reel-category.component.html',
   styleUrls: ['./reel-category.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, ReelsExpandComponent, BookmarkReelsComponent, UploadReelComponent, MindfulButtonComponent, MindfulCardHeaderComponent, ReelsCardComponent]
+  imports: [CommonModule, IonicModule, RouterModule, ReelsExpandComponent, MindfulButtonComponent, MindfulCardHeaderComponent, ViewAllComponent, ReelsCardComponent]
 })
 export class ReelCategoryComponent implements AfterViewInit {
   public slides = [
@@ -162,6 +163,15 @@ export class ReelCategoryComponent implements AfterViewInit {
   }
 
   public goToBookmarks(): void {
+    // Attach a query param to indicate this came from "My Reels" so the bookmark page can adjust title
+    this.router.navigate(['/authed/bookmark-reels'], { queryParams: { source: 'my-reels' } });
+  }
+
+  /**
+   * Navigate to bookmark page without marking source. This is used by the header
+   * bookmark button so the bookmark page will show the default "Bookmarked Reels" title.
+   */
+  public openBookmarks(): void {
     this.router.navigate(['/authed/bookmark-reels']);
   }
 
@@ -220,6 +230,13 @@ export class ReelCategoryComponent implements AfterViewInit {
   public openUpload(): void {
     // Navigate to authenticated upload-reel page
     this.router.navigate(['/authed/upload-reel']);
+  }
+
+  /** Handler for the "View all" action in the header. Navigates to a reels listing.
+   * Assumption: route for listing reels is '/authed/reels'. Adjust if different. */
+  public onViewAll(): void {
+    // navigate to a reels listing or category view
+    this.router.navigate(['/authed/reels']);
   }
 }
 

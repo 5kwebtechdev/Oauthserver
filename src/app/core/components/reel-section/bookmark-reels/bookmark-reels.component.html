@@ -1,7 +1,9 @@
 <ion-content [fullscreen]="true" class="ion-padding-top">
   <div class="safe-area-top"></div>
 
-  <mindful-card-header title="Bookmarked Reels" [showBackArrow]="true" (backClick)="goBack()">
+  <mindful-card-header [title]="title" [showBackArrow]="true" (backClick)="goBack()">
+    <div mindful-header-actions *ngIf="title === 'My Reels'">
+    </div>
   </mindful-card-header>
 
   <div class="bookmark-reels-page">

@@ -6,7 +6,7 @@
         <img src="assets/icons/close.svg" alt="Close">
       </button>
       <div class="header-actions">
-        <button class="flashlight-btn">
+        <button class="flashlight-btn" (click)="toggleFlashlight()" [class.active]="isFlashlightOn">
           <img src="assets/icons/flashlight_on.png" alt="Flashlight">
         </button>
       </div>
@@ -17,11 +17,13 @@
       <div class="scanner-frame">
         <!-- Scanner SVG Icon -->
         <img src="assets/icons/scanner.svg" alt="QR Scanner" class="scanner-icon">
+        <p class="scanner-text" *ngIf="isScanning">Scanning for QR code...</p>
+        <p class="scanner-text" *ngIf="!isScanning && !scannerSupported">Scanner not supported on this device</p>
       </div>
     </div>
 
     <!-- Upload from Gallery Button -->
-    <button class="upload-gallery-btn">
+    <button class="upload-gallery-btn" (click)="openGallery()">
       <img src="assets/icons/filter.svg" alt="Gallery" class="gallery-icon">
       <span>Upload from gallery</span>
     </button>
@@ -33,7 +35,7 @@
         <span class="divider-text">OR</span>
         <div class="divider-line"></div>
       </div>
-      
+
       <div class="manual-entry">
         <p class="error-text">
           Facing errors?<br>

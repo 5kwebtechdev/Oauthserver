@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MindfulCardHeaderComponent } from 'src/app/core/components/mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { MindfulNavigatorComponent } from 'src/app/core/components/mindful-navigator/mindful-navigator.component';
@@ -8,6 +8,11 @@ import { MindfulPopupComponent, MindfulPopupConfig } from '../../mindful-popup/m
 import { FormsModule } from '@angular/forms';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 import { IonicModule, ToastController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { VideoCompressionService, CompressionProgress } from 'src/app/core/services/video/video-compression.service';
+import { VideoUploadService, UploadProgress } from 'src/app/core/services/video/video-upload.service';
+import { Subscription } from 'rxjs';
+import { ActiveConfig } from 'src/app/core/config/video.config';
 
 @Component({
     selector: 'upload-reel',
@@ -16,7 +21,7 @@ import { IonicModule, ToastController } from '@ionic/angular';
     standalone: true,
     imports: [CommonModule, IonicModule, FormsModule, MindfulCardHeaderComponent, MindfulButtonComponent, MindfulNavigatorComponent, MindfulInputsModule, MindfulToggleComponent, MindfulPopupComponent]
 })
-export class UploadReelComponent {
+export class UploadReelComponent implements OnDestroy {
     @Input() items: any[] = [];
     @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -24,6 +29,34 @@ export class UploadReelComponent {
     selectedVideoFile: File | null = null;
     videoPreviewUrl: string | null = null;
     showMetaPage: boolean = false;
+
+    // Compressed video data
+    compressedVideoBlob: Blob | null = null;
+    thumbnailBlob: Blob | null = null;
+
+    // Progress tracking
+    compressionProgress: CompressionProgress = {
+        percentage: 0,
+        time: 0,
+        speed: 0,
+        status: 'Idle'
+    };
+    uploadProgress: UploadProgress = {
+        percentage: 0,
+        loaded: 0,
+        total: 0,
+        speed: 0,
+        estimatedTimeRemaining: 0,
+        status: 'Idle'
+    };
+    isCompressing: boolean = false;
+    isUploading: boolean = false;
+
+    // Subscriptions
+    private compressionSub?: Subscription;
+    private uploadSub?: Subscription;
+    private compressionProgressSub?: Subscription;
+    private uploadProgressSub?: Subscription;
 
     // Validation constants
     readonly MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB in bytes
@@ -45,7 +78,21 @@ export class UploadReelComponent {
         'Daily Inspiration'
     ];
 
-    constructor(private toastController: ToastController) { }
+    constructor(
+        private toastController: ToastController,
+        private compressionService: VideoCompressionService,
+        private uploadService: VideoUploadService
+    ) {
+        // Subscribe to compression progress
+        this.compressionProgressSub = this.compressionService.progress$.subscribe(
+            progress => this.compressionProgress = progress
+        );
+
+        // Subscribe to upload progress
+        this.uploadProgressSub = this.uploadService.uploadProgress$.subscribe(
+            progress => this.uploadProgress = progress
+        );
+    }
 
     // Keep only alphabets and spaces (if you want to disallow spaces remove the space from the regex)
     private filterToAlphabets(value: string) {
@@ -205,7 +252,7 @@ export class UploadReelComponent {
     /**
      * Process valid video file and navigate to metadata page
      */
-    private processVideo(file: File): void {
+    private async processVideo(file: File): Promise<void> {
         // Clean up previous video preview URL if exists
         if (this.videoPreviewUrl) {
             URL.revokeObjectURL(this.videoPreviewUrl);
@@ -220,6 +267,110 @@ export class UploadReelComponent {
 
         // Scroll to top for better UX
         this.scrollToTop();
+
+        // Start video compression in background
+        this.startVideoCompression(file);
+    }
+
+    /**
+     * Start video compression
+     */
+    private startVideoCompression(file: File): void {
+        this.isCompressing = true;
+
+        // Check if we're on web platform
+        const isWeb = Capacitor.getPlatform() === 'web';
+
+        if (isWeb) {
+            console.log('Running on web platform - compression will be skipped');
+        }
+
+        this.compressionSub = this.compressionService.compressVideo(file, {
+            quality: ActiveConfig.compression.quality,
+            preset: ActiveConfig.compression.preset,
+            maxWidth: ActiveConfig.compression.maxResolution.width,
+            maxHeight: ActiveConfig.compression.maxResolution.height
+        }).subscribe({
+            next: (result) => {
+                // Enhanced logging with platform info
+                if (isWeb) {
+                    console.log('📱 WEB PLATFORM - Original file used (no compression):', {
+                        platform: 'Web Browser',
+                        fileSize: this.formatBytes(result.originalSize),
+                        compressionStatus: 'Skipped (FFmpeg not available on web)',
+                        note: 'Compression will work on Android/iOS device'
+                    });
+                } else {
+                    console.log('📱 NATIVE PLATFORM - Compression complete:', {
+                        platform: Capacitor.getPlatform(),
+                        originalSize: this.formatBytes(result.originalSize),
+                        compressedSize: this.formatBytes(result.compressedSize),
+                        reduction: ((1 - result.compressionRatio) * 100).toFixed(0) + '%',
+                        time: (result.processingTime / 1000).toFixed(1) + 's'
+                    });
+                }
+
+                this.compressedVideoBlob = result.outputBlob;
+                this.isCompressing = false;
+
+                // Extract thumbnail if enabled
+                if (ActiveConfig.features.enableThumbnails) {
+                    this.extractThumbnail(file);
+                }
+
+                // Show appropriate message based on platform
+                if (isWeb) {
+                    this.showToast(
+                        '✅ Video ready! (Compression works on mobile app)',
+                        'success'
+                    );
+                } else if (result.compressionRatio < 1.0) {
+                    this.showToast(
+                        `✅ Video compressed! Size reduced by ${((1 - result.compressionRatio) * 100).toFixed(0)}%`,
+                        'success'
+                    );
+                } else {
+                    this.showToast('✅ Video ready for upload!', 'success');
+                }
+            },
+            error: (error) => {
+                console.error('❌ Compression error:', error);
+                console.log('Platform:', Capacitor.getPlatform());
+                this.isCompressing = false;
+
+                if (isWeb) {
+                    console.log('ℹ️ Using original video (expected on web platform)');
+                    this.showToast('✅ Using original video (compression works on mobile)', 'success');
+                } else {
+                    console.error('⚠️ Native compression failed - using original file as fallback');
+                    this.showToast('⚠️ Compression failed. Using original file.', 'warning');
+                }
+
+                // Fallback: use original file as blob
+                this.compressedVideoBlob = file;
+            }
+        });
+    }
+
+    /**
+     * Extract thumbnail from video
+     */
+    private extractThumbnail(file: File): void {
+        this.compressionService.extractThumbnail(file, {
+            timeInSeconds: ActiveConfig.thumbnail.extractionTime,
+            width: ActiveConfig.thumbnail.width,
+            height: ActiveConfig.thumbnail.height,
+            quality: ActiveConfig.thumbnail.quality
+        }).subscribe({
+            next: (blob) => {
+                this.thumbnailBlob = blob;
+                console.log('Thumbnail extracted successfully');
+            },
+            error: (error) => {
+                console.error('Thumbnail extraction error:', error);
+                // Non-critical - continue without thumbnail
+            }
+        });
     }
 
     /**
@@ -231,8 +382,19 @@ export class UploadReelComponent {
             URL.revokeObjectURL(this.videoPreviewUrl);
         }
 
+        // Cancel any ongoing operations
+        if (this.isCompressing) {
+            this.compressionService.cancelCompression();
+        }
+
+        // Unsubscribe from active subscriptions
+        this.compressionSub?.unsubscribe();
+        this.uploadSub?.unsubscribe();
+
         this.selectedVideoFile = null;
         this.videoPreviewUrl = null;
+        this.compressedVideoBlob = null;
+        this.thumbnailBlob = null;
         this.showMetaPage = false;
         this.reelTitle = '';
         this.letterCount = 0;
@@ -240,6 +402,8 @@ export class UploadReelComponent {
         this.hashtagCount = 0;
         this.reelCategory = '';
         this.aiLabel = false;
+        this.isCompressing = false;
+        this.isUploading = false;
     }
 
     /**
@@ -277,7 +441,7 @@ export class UploadReelComponent {
     };
 
     // Called when the user clicks Share - show the success popup
-    onShare() {
+    async onShare() {
         // Validate required fields
         if (!this.selectedVideoFile) {
             this.showToast('Please select a video first', 'warning');
@@ -289,12 +453,85 @@ export class UploadReelComponent {
             return;
         }
 
-        // In a real app, you'd upload the video file here
-        // For now, just show success
-        this.showUploadSuccess = true;
+        // Wait for compression if still in progress
+        if (this.isCompressing) {
+            this.showToast('Please wait for video compression to complete...', 'warning');
+            return;
+        }
 
-        // TODO: Implement actual upload logic
-        // this.uploadVideoToServer(this.selectedVideoFile);
+        // Use compressed video if available, otherwise use original
+        const videoToUpload = this.compressedVideoBlob || this.selectedVideoFile;
+
+        // Start upload
+        this.isUploading = true;
+
+        // Get API endpoint from config
+        const API_ENDPOINT = ActiveConfig.upload.apiEndpoint;
+
+        this.uploadSub = this.uploadService.uploadVideo(API_ENDPOINT, {
+            videoBlob: videoToUpload,
+            thumbnailBlob: this.thumbnailBlob || undefined,
+            title: this.reelTitle,
+            hashtags: this.reelHashtags,
+            category: this.reelCategory,
+            aiLabel: this.aiLabel
+        }).subscribe({
+            next: (response) => {
+                console.log('Upload response:', response);
+                this.isUploading = false;
+
+                // Show success popup
+                this.showUploadSuccess = true;
+
+                // Reset upload state after a delay
+                setTimeout(() => {
+                    this.resetUpload();
+                }, 2000);
+            },
+            error: (error) => {
+                console.error('Upload error:', error);
+                this.isUploading = false;
+
+                // For demo purposes, show success anyway
+                // Remove this in production
+                this.showToast('Upload failed. Check console for details.', 'danger');
+
+                // Uncomment for demo mode:
+                // this.showUploadSuccess = true;
+            }
+        });
+    }
+
+    /**
+     * Format bytes to human-readable string
+     */
+    formatBytes(bytes: number, decimals: number = 2): string {
+        if (bytes === 0) return '0 Bytes';
+
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+
+    /**
+     * Format time to human-readable string
+     */
+    formatTime(seconds: number): string {
+        if (seconds < 60) {
+            return `${Math.round(seconds)}s`;
+        } else if (seconds < 3600) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.round(seconds % 60);
+            return `${minutes}m ${secs}s`;
+        } else {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            return `${hours}h ${minutes}m`;
+        }
     }
 
     /**
@@ -304,6 +541,17 @@ export class UploadReelComponent {
         // Clean up blob URLs to prevent memory leaks
         if (this.videoPreviewUrl) {
             URL.revokeObjectURL(this.videoPreviewUrl);
+        }
+
+        // Unsubscribe from all subscriptions
+        this.compressionSub?.unsubscribe();
+        this.uploadSub?.unsubscribe();
+        this.compressionProgressSub?.unsubscribe();
+        this.uploadProgressSub?.unsubscribe();
+
+        // Cancel any ongoing operations
+        if (this.isCompressing) {
+            this.compressionService.cancelCompression();
         }
     }
 }

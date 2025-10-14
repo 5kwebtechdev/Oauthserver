@@ -48,6 +48,23 @@
     <!--reel meta data-->
     <main class="reel-meta-data" *ngIf="showMetaPage">
         <mindful-navigator heading="New Reel" (back)="goBack()"></mindful-navigator>
+
+        <!-- Compression Progress Indicator -->
+        <div class="progress-container" *ngIf="isCompressing">
+            <ion-progress-bar [value]="compressionProgress.percentage / 100" color="primary"></ion-progress-bar>
+            <p class="progress-text">{{ compressionProgress.status }}</p>
+        </div>
+
+        <!-- Upload Progress Indicator -->
+        <div class="progress-container" *ngIf="isUploading">
+            <ion-progress-bar [value]="uploadProgress.percentage / 100" color="success"></ion-progress-bar>
+            <p class="progress-text">{{ uploadProgress.status }}</p>
+            <p class="progress-details" *ngIf="uploadProgress.speed > 0">
+                Speed: {{ formatBytes(uploadProgress.speed) }}/s |
+                ETA: {{ formatTime(uploadProgress.estimatedTimeRemaining) }}
+            </p>
+        </div>
+
         <div class="meta-detail-container">
             <div class="reel-showcase">
                 <!-- Video Preview -->
@@ -85,7 +102,8 @@
             </div>
         </div>
 
-        <mindful-button type="peach" [large]="true" full text="Share" (click)="onShare()"></mindful-button>
+        <mindful-button type="peach" [large]="true" full text="Share" [disabled]="isCompressing || isUploading"
+            (click)="onShare()"></mindful-button>
         <app-mindful-popup [isVisible]="showUploadSuccess" [config]="uploadSuccessConfig"
             (closeAction)="showUploadSuccess = false" (backdropClick)="showUploadSuccess = false">
         </app-mindful-popup>

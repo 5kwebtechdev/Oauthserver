@@ -119,6 +119,9 @@ const routes: Routes = [
         path: 'reel-section',
         loadComponent: () => import('../core/components/reel-section/reel-category/reel-category.component').then(c => c.ReelCategoryComponent)
       }, {
+        path: 'reels',
+        loadComponent: () => import('../core/components/reel-section/all-reels/all-reels.component').then(m => m.AllReelsComponent)
+      }, {
         path: 'upload-reel',
         loadComponent: () => import('../core/components/reel-section/upload-reel/upload-reel.component').then(m => m.UploadReelComponent)
       }, {

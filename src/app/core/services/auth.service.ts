@@ -26,13 +26,20 @@ export class AuthService {
   constructor(private http: HttpClient) { }
 
   login(credentials: LoginCredentials): Observable<AuthResponse> {
+    console.log('[AuthService] Login attempt with:', {
+      endpoint: `${this.apiUrl}/auth/login`,
+      credentials: { ...credentials, password: '***' }
+    });
+
     return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, credentials)
       .pipe(
         tap(response => {
+          console.log('[AuthService] Login successful:', { userId: response.userId, hasToken: !!response.token });
           // Store the token in localStorage for future API requests
           if (response && response.token) {
             localStorage.setItem('auth_token', response.token);
             localStorage.setItem('user_id', response.userId.toString());
+            console.log('[AuthService] Token stored in localStorage');
           }
         })
       );

@@ -3,8 +3,19 @@ import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthApi {
-    // Simple token accessor. In a real app replace with secure storage or AuthService.
+    /**
+     * Get authentication token with priority:
+     * 1. Token from localStorage (set after successful login)
+     * 2. Fallback to environment.apiAuthToken
+     */
     getToken(): string | null {
+        // First, try to get the token from localStorage (user logged in)
+        const userToken = localStorage.getItem('auth_token');
+        if (userToken) {
+            return userToken;
+        }
+
+        // Fallback to environment token if no user token is found
         return environment.apiAuthToken || null;
     }
 }

@@ -24,9 +24,9 @@ export class CalendarService {
             timelineEvents.push({
                 id: event.id,
                 title: event.title,
-                startTime: event.startTime,
-                endTime: event.endTime,
-                type: 'event',
+                startTime: event.startTime.slice(0, 5), // Convert "HH:mm:ss" to "HH:mm"
+                endTime: event.endTime.slice(0, 5),
+                type: 'timetable', // Changed from 'event' to 'timetable' to match the filter
                 description: event.description,
                 tags: event.tags,
                 priority: event.priority
@@ -38,8 +38,8 @@ export class CalendarService {
             timelineEvents.push({
                 id: task.id,
                 title: task.title,
-                startTime: task.startTime,
-                endTime: task.endTime,
+                startTime: task.startTime.slice(0, 5),
+                endTime: task.endTime.slice(0, 5),
                 type: 'task',
                 description: task.description,
                 tags: task.tags,

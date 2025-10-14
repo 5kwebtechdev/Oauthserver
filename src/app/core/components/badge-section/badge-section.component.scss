@@ -1,0 +1,357 @@
+// Badge Section Component Styles
+:host {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+// Status Bar
+.badge-header {
+    --background: #ffffff;
+    --border-width: 0;
+
+    .status-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 24px;
+        width: 100%;
+
+        .time {
+            font-family: 'General Sans', sans-serif;
+            font-weight: 500;
+            font-size: 13px;
+            color: #282527;
+            line-height: normal;
+            margin: 0;
+        }
+
+        .status-icons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            ion-icon {
+                width: 20px;
+                height: 20px;
+                color: #282527;
+            }
+        }
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 0 24px 16px 24px;
+
+        .back-button {
+            --padding-start: 0;
+            --padding-end: 0;
+            margin: 0;
+            width: 48px;
+            height: 48px;
+
+            ion-icon {
+                width: 48px;
+                height: 48px;
+                color: #282527;
+            }
+        }
+
+        .title-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+
+            .page-title {
+                font-family: 'Fredoka', sans-serif;
+                font-weight: 500;
+                font-size: 20px;
+                color: #282527;
+                line-height: 1.4;
+                margin: 0;
+                font-variation-settings: 'wdth' 100;
+            }
+
+            .tagline {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                opacity: 0.7;
+
+                span {
+                    font-family: 'Nunito', sans-serif;
+                    font-weight: 500;
+                    font-size: 13px;
+                    color: #282527;
+                    line-height: 1.4;
+                }
+
+                .separator {
+                    width: 4px;
+                    height: 4px;
+                    border-radius: 50%;
+                    background-color: #282527;
+                }
+            }
+        }
+    }
+}
+
+// Content Area
+ion-content {
+    --background: #ffffff;
+    --padding-start: 0;
+    --padding-end: 0;
+    --padding-top: 0;
+    --padding-bottom: 0;
+}
+
+// Recent Achievement Card
+.recent-achievement-card {
+    background: #fce7eb;
+    border-radius: 24px;
+    padding: 24px;
+    margin: 16px;
+    height: 124px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    .achievement-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        width: 100%;
+
+        .achievement-icon-wrapper {
+            position: relative;
+            width: 56px;
+            height: 56px;
+            flex-shrink: 0;
+
+            .icon-background {
+                position: absolute;
+                inset: 0;
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                background: #e0b3c0;
+            }
+
+            .achievement-icon {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 48px;
+                height: 48px;
+                object-fit: cover;
+                object-position: center;
+            }
+        }
+
+        .achievement-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+
+            .achievement-text {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+
+                .achievement-title {
+                    font-family: 'Nunito', sans-serif;
+                    font-weight: 600;
+                    font-size: 13px;
+                    color: #282527;
+                    line-height: 1.4;
+                    margin: 0;
+                }
+
+                .achievement-message {
+                    font-family: 'Nunito', sans-serif;
+                    font-weight: 500;
+                    font-size: 13px;
+                    color: #282527;
+                    line-height: 1.4;
+                    opacity: 0.7;
+                    margin: 0;
+                }
+            }
+
+            .share-button {
+                --background: #90214d;
+                --color: #fdfdfd;
+                --border-radius: 5.307px;
+                --padding-start: 12px;
+                --padding-end: 12px;
+                height: 34px;
+                width: 88px;
+                font-family: 'Nunito', sans-serif;
+                font-weight: 600;
+                font-size: 13px;
+                text-transform: capitalize;
+                margin: 0;
+            }
+        }
+    }
+}
+
+// Badge Grid
+.badge-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px 15px;
+    padding: 16px;
+
+    .badge-card {
+        background: #fdfdfd;
+        border-radius: 24px;
+        box-shadow: 0px 0px 2px 2px rgba(107, 101, 106, 0.1);
+        height: 192px;
+        overflow: hidden;
+        position: relative;
+
+        &.locked {
+            opacity: 0.7;
+
+            .lock-icon {
+                position: absolute;
+                top: 6px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 24px;
+                height: 24px;
+                color: #282527;
+                z-index: 10;
+            }
+        }
+
+        .badge-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            width: 141px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+
+            .badge-info {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                width: 81px;
+
+                .progress-text {
+                    font-family: 'Nunito', sans-serif;
+                    font-weight: 600;
+                    font-size: 13px;
+                    color: #282527;
+                    line-height: 1.4;
+                    margin: 0;
+
+                    &.hidden {
+                        opacity: 0;
+                    }
+                }
+
+                .badge-visual {
+                    position: relative;
+                    width: 80px;
+                    height: 80px;
+                    display: grid;
+                    grid-template-columns: max-content;
+                    grid-template-rows: max-content;
+                    place-items: start;
+                    line-height: 0;
+
+                    .badge-icon-container {
+                        grid-area: 1 / 1;
+                        width: 56px;
+                        height: 56px;
+                        margin-left: 12px;
+                        margin-top: 12px;
+                        position: relative;
+                        z-index: 1;
+
+                        .badge-icon {
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                            object-position: center;
+
+                            &.blurred {
+                                filter: blur(2px);
+                            }
+                        }
+                    }
+
+                    mindful-completion {
+                        grid-area: 1 / 1;
+                        width: 80px;
+                        height: 80px;
+                        margin: 0;
+                        position: relative;
+                        z-index: 2;
+                        pointer-events: none;
+                    }
+                }
+
+                .badge-name {
+                    font-family: 'Nunito', sans-serif;
+                    font-weight: 600;
+                    font-size: 16px;
+                    color: #282527;
+                    line-height: 1.4;
+                    text-align: center;
+                    margin: 0;
+                    width: 100%;
+                    min-width: 100%;
+                }
+            }
+
+            .badge-description {
+                font-family: 'Nunito', sans-serif;
+                font-weight: 500;
+                font-size: 13px;
+                color: #90214d;
+                line-height: 1.4;
+                text-align: center;
+                opacity: 0.7;
+                margin: 0;
+                width: 100%;
+                min-width: 100%;
+            }
+        }
+    }
+}
+
+// Safe Area Bottom
+.safe-area-bottom {
+    background: #ffffff;
+    height: 24px;
+    border-radius: 0 0 24px 24px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 16px;
+
+    .home-indicator {
+        width: 88px;
+        height: 6px;
+        background: #6b656a;
+        border-radius: 19px;
+    }
+}

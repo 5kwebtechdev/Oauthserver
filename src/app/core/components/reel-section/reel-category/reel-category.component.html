@@ -3,7 +3,7 @@
   <mindful-card-header title="Made by Kids, for Kids!" subtitleLeft="Watch reels" subtitleMiddle="Create"
     subtitleRight="Get Inspired" [showBackArrow]="true" (backClick)="goBack()">
     <div mindful-header-actions>
-      <button class="bookmark-button" aria-label="Bookmarks" (click)="goToBookmarks()">
+      <button class="bookmark-button" aria-label="Bookmarks" (click)="openBookmarks()">
         <!-- bookmark svg -->
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
           <mask id="mask0" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
@@ -20,6 +20,20 @@
   </mindful-card-header>
 
   <main class="category-page">
+    <div class="reels-container">
+      <div class="category-title">
+        <mindful-card-header [title]="'My Reels'" [showBackArrow]="false">
+          <div mindful-header-actions>
+            <!-- When View all is clicked for My Reels, go to the bookmarks page and mark source -->
+            <mindful-view-all [text]="'View all'" (clicked)="goToBookmarks()"></mindful-view-all>
+          </div>
+        </mindful-card-header>
+
+      </div>
+      <reels-card [hideCategory]="true"></reels-card>
+      <mindful-button type="peach" text="Play All" [large]="true"></mindful-button>
+    </div>
+
     <div class="reels-container">
       <div class="category-title">
         <h1>Science Wonders</h1>

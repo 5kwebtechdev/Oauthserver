@@ -1,6 +1,27 @@
 .timetable-container {
   display: flex;
   font-family: sans-serif;
+  padding-top: 10px !important;
+  min-height: 500px;
+
+  &.empty-state {
+    .event-area {
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 0%, rgba(249, 249, 249, 0.3) 100%);
+    }
+
+    .grid-line {
+      border-top: 1px solid #E0E0E0;
+    }
+
+    .separator-line {
+      background-color: #BDBDBD;
+    }
+
+    .time-slot p {
+      color: #757575;
+      font-weight: 500;
+    }
+  }
 }
 
 .time-labels {
@@ -16,7 +37,7 @@
   line-height: 60px;
   position: relative;
 
-  p{
+  p {
     font-size: 14px;
     color: #666;
     position: absolute;
@@ -49,6 +70,7 @@
 .event-area {
   flex: 1;
   position: relative;
+  min-height: 1440px; // 24 hours * 60px
 }
 
 .time-grid {
@@ -57,49 +79,65 @@
 }
 
 .grid-line {
-  border-top: 1px solid #999;
+  border-top: 1px solid #E8E8E8;
+  transition: border-color 0.2s ease;
 }
 
 .event-box {
   position: absolute;
   background: white;
-  padding: 15px 5px;
+  padding: 8px 10px;
   border-left: 4px solid #89B3B6;
   box-sizing: border-box;
-  margin-right: 5px;
-  margin-left: 10px;
   overflow: hidden;
   border-radius: 15px;
   box-shadow: 0px 0px 8px rgba(107, 101, 106, 0.25);
+  min-width: 140px;
 
 
-  h4{
+  h4 {
     font-size: 14px;
-    margin: 0;
+    margin: 0 0 4px 0;
     color: #89B3B6;
     font-family: Nunito, sans-serif;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  h5{
+  h5 {
     font-size: 11px;
     margin: 0;
     color: #89B3B6;
     font-family: Nunito, sans-serif;
+    font-weight: 400;
   }
 
-  &.habit{
+  &.habit {
     border-left: 4px solid #8B8DCB;
 
-    h4, h5{
+    h4,
+    h5 {
       color: #8B8DCB;
     }
   }
 
-  &.task{
+  &.task {
     border-left: 4px solid #F6AC72;
 
-    h4, h5{
+    h4,
+    h5 {
       color: #F6AC72;
+    }
+  }
+
+  &.timetable {
+    border-left: 4px solid #89B3B6;
+
+    h4,
+    h5 {
+      color: #89B3B6;
     }
   }
 

@@ -1,56 +1,34 @@
-  <div class="timetable-container">
-    <div class="time-labels">
+<div class="timetable-container" [class.empty-state]="!events || events.length === 0">
+  <div class="time-labels">
+    <ng-container *ngFor="let time of timeSlots; let i = index">
+      <div *ngIf="!isCompressedSlot(i)" class="time-slot" [style.height.px]="hourHeight">
+        <p>{{ time }}</p>
+      </div>
+      <div *ngIf="isCompressedSlot(i)" class="compressed-gap" [style.height.px]="getCompressedHeight(i)">
+        <div class="dotted-line"></div>
+      </div>
+    </ng-container>
+  </div>
+
+  <div class="separator-line"></div>
+
+  <div class="event-area" style="overflow-x: auto;">
+    <div class="time-grid">
       <ng-container *ngFor="let time of timeSlots; let i = index">
-        <div
-          *ngIf="!isCompressedSlot(i)"
-          class="time-slot"
-          [style.height.px]="hourHeight"
-        >
-          <p>{{ time }}</p>
-        </div>
-        <div
-          *ngIf="isCompressedSlot(i)"
-          class="compressed-gap"
-          [style.height.px]="getCompressedHeight(i)"
-        >
-          <div class="dotted-line"></div>
+        <div *ngIf="!isCompressedSlot(i)" class="grid-line" [style.height.px]="hourHeight" [attr.custom]="i"></div>
+        <div *ngIf="isCompressedSlot(i)" [style.height.px]="getCompressedHeight(i)"></div>
+      </ng-container>
+
+      <ng-container *ngFor="let event of events">
+        <div class="event-box {{event.type}}" [style.top.px]="event._top" [style.height.px]="event._height"
+          [style.left]="'calc(' + ((event._column || 0) / (event._columnCount || 1) * 100) + '% + 10px)'"
+          [style.width]="'calc(' + (100 / (event._columnCount || 1)) + '% - 15px)'">
+          <div class="container w-full p-0">
+            <h4>{{ event.title }}</h4>
+            <h5>{{ event.startTime }} - {{ event.endTime }}</h5>
+          </div>
         </div>
       </ng-container>
     </div>
-
-    <div class="separator-line"></div>
-
-    <div class="event-area" style="overflow-x: auto;">
-      <div class="time-grid">
-        <ng-container *ngFor="let time of timeSlots; let i = index">
-          <div
-            *ngIf="!isCompressedSlot(i)"
-            class="grid-line"
-            [style.height.px]="hourHeight"
-            [attr.custom]="i"
-          ></div>
-          <div
-            *ngIf="isCompressedSlot(i)"
-            [style.height.px]="getCompressedHeight(i)"
-          ></div>
-        </ng-container>
-
-        <ng-container *ngFor="let event of events">
-          <div
-            class="event-box {{event.type}}"
-            [style.top.px]="event._top"
-            [style.height.px]="event._height"
-            [style.left.px]="(event._column || 0) * 180"
-            [style.width.px]="(100 / (event._columnCount || 0)) + '%'"
-            [style.minWidth.px]="150"
-          >
-            <div class="container w-full p-0">
-              <h4>{{ event.title }}</h4>
-              <h5>{{ event.startTime }} - {{ event.endTime }}</h5>
-            </div>
-          </div>
-        </ng-container>
-      </div>
-    </div>
   </div>
-
+</div>

@@ -1,0 +1,30 @@
+.safe-area-top {
+    height: env(safe-area-inset-top);
+    background: transparent;
+}
+
+.all-reels-page {
+    padding: 20px 16px;
+    min-height: calc(100vh - 100px);
+}
+
+.reels-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.reel-cell {
+    width: 100%;
+}
+
+/* Larger screens: keep two columns but increase spacing */
+@media (min-width: 768px) {
+    .all-reels-page {
+        padding: 24px 32px;
+    }
+
+    .reels-grid {
+        gap: 24px;
+    }
+}

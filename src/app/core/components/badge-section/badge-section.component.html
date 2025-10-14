@@ -1,0 +1,77 @@
+<ion-header class="badge-header">
+    <div class="status-bar">
+        <p class="time">5.15</p>
+        <div class="status-icons">
+            <ion-icon name="cellular-outline"></ion-icon>
+            <ion-icon name="wifi-outline"></ion-icon>
+            <ion-icon name="battery-full-outline"></ion-icon>
+        </div>
+    </div>
+
+    <div class="header-content">
+        <ion-button fill="clear" class="back-button" (click)="onBackClick()">
+            <ion-icon name="arrow-back-outline"></ion-icon>
+        </ion-button>
+        <div class="title-section">
+            <h1 class="page-title">Your Badge Quest</h1>
+            <div class="tagline">
+                <span>Earn badges</span>
+                <span class="separator"></span>
+                <span>Level up</span>
+                <span class="separator"></span>
+                <span>Show the world</span>
+            </div>
+        </div>
+    </div>
+</ion-header>
+
+<ion-content>
+    <!-- Recent Achievement Card -->
+    <div class="recent-achievement-card" *ngIf="recentAchievement">
+        <div class="achievement-content">
+            <div class="achievement-icon-wrapper">
+                <div class="icon-background"></div>
+                <img [src]="recentAchievement.iconUrl" [alt]="recentAchievement.badgeName" class="achievement-icon" />
+            </div>
+            <div class="achievement-details">
+                <div class="achievement-text">
+                    <p class="achievement-title">Shine Bright!</p>
+                    <p class="achievement-message">{{ recentAchievement.message }}</p>
+                </div>
+                <ion-button class="share-button" size="small" (click)="onShareClick()">
+                    Share now
+                </ion-button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Badge Grid -->
+    <div class="badge-grid">
+        <div *ngFor="let badge of badges; let i = index" class="badge-card" [class.locked]="badge.isLocked">
+            <div class="badge-content">
+                <div class="badge-info">
+                    <p class="progress-text" [class.hidden]="badge.isLocked">
+                        {{ badge.currentProgress }}/{{ badge.targetProgress }}
+                    </p>
+                    <div class="badge-visual">
+                        <div class="badge-icon-container">
+                            <img [src]="badge.iconUrl" [alt]="badge.name" class="badge-icon"
+                                [class.blurred]="badge.isLocked" />
+                        </div>
+                        <mindful-completion [completionPercentage]="getCompletionPercentage(badge)"
+                            [borderColor]="badge.progressColor || '#4CAF50'" [innerText]="''"
+                            [belowText]="''"></mindful-completion>
+                        <ion-icon *ngIf="badge.isLocked" name="lock-closed-outline" class="lock-icon"></ion-icon>
+                    </div>
+                    <p class="badge-name">{{ badge.name }}</p>
+                </div>
+                <p class="badge-description">{{ badge.description }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Safe Area -->
+    <div class="safe-area-bottom">
+        <div class="home-indicator"></div>
+    </div>
+</ion-content>

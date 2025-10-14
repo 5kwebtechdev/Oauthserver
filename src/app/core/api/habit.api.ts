@@ -17,6 +17,10 @@ export class HabitApi {
             // Ensure token already contains 'Bearer ' prefix in env; if not, add it.
             const value = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
             headers = headers.set('Authorization', value);
+        } else if (environment.apiAuthToken) {
+            // Fallback to environment token if no token is available
+            const envValue = environment.apiAuthToken.startsWith('Bearer ') ? environment.apiAuthToken : `Bearer ${environment.apiAuthToken}`;
+            headers = headers.set('Authorization', envValue);
         }
         return headers;
     }

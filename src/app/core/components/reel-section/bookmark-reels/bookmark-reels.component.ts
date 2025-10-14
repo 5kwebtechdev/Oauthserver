@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
 
 @Component({
@@ -13,7 +14,9 @@ import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card
 })
 export class BookmarkReelsComponent implements OnInit {
   @Input() items: any[] = [];
+  title = 'Bookmarked Reels';
 
+  constructor(private router: Router, private route: ActivatedRoute) { }
   // Bookmarked categories with their reels
   bookmarkedCategories = [
     {
@@ -54,19 +57,38 @@ export class BookmarkReelsComponent implements OnInit {
     }
   ];
 
-  constructor(private router: Router) { }
-
   ngOnInit() {
     // Load bookmarked reels from a service or local storage
     // For now, using mock data above
+
+    // Detect if we came from My Reels (router set query param) so header reads "My Reels"
+    const src = this.route.snapshot.queryParamMap.get('source');
+    if (src === 'my-reels') {
+      this.title = 'My Reels';
+    }
   }
 
   goBack(): void {
     window.history.back();
   }
 
-  openReel(reel: any): void {
-    // Navigate to reel detail or play reel
-    console.log('Opening reel:', reel);
+  onViewAll(): void {
+    // Navigate to the global reels listing (adjust route if needed)
+    this.router.navigate(['/authed/reels']);
+  }
+
+  openReel(reelOrCategory: any): void {
+    // If this looks like a category object, navigate to the all-reels listing
+    // passing the category name as a route parameter so AllReelsComponent
+    // can read it via route.paramMap.get('category').
+    if (reelOrCategory && reelOrCategory.category) {
+      const cat = reelOrCategory.category;
+      // Use matrix param so paramMap will contain 'category'
+      this.router.navigate(['/authed/reels', { category: encodeURIComponent(cat) }]);
+      return;
+    }
+
+    // Otherwise treat it as a single reel selection (placeholder behavior)
+    console.log('Opening reel:', reelOrCategory);
   }
 }
