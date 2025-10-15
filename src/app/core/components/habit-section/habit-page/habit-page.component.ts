@@ -76,14 +76,13 @@ export class HabitPageComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.habitService.getHabits().subscribe(habits => {
         this.allHabits = habits;
-        this.applyFilters();
       })
     );
 
-  // Load habits for today initially
-  this.loadHabitsForSelectedDate(new Date());
-  // Load tasks for today initially
-  this.loadTasksForSelectedDate(new Date());
+    // Load habits for today initially
+    this.loadHabits();
+    // Load tasks for today initially
+    this.loadTasksForSelectedDate(new Date());
 
     // Set up timer to update current timestamp every minute
     this.timestampInterval = setInterval(() => {
@@ -106,21 +105,21 @@ export class HabitPageComponent implements OnInit, OnDestroy {
    */
   onDateSelected(date: Date) {
     this.selectedDate = date;
-    this.loadHabitsForSelectedDate(date);
+    this.loadHabits();
     this.loadTasksForSelectedDate(date);
   }
 
   /**
-   * Load habits for the selected date
+   * Load habits using the search API with current filters
    */
-  loadHabitsForSelectedDate(date: Date) {
+  loadHabits() {
     this.loading = true;
-    const formattedDate = this.habitService.formatDateToYYYYMMDD(date);
-
+    const filters = this.buildFilters();
     this.subscriptions.add(
-      this.habitService.loadHabitsForDate(formattedDate).subscribe({
+      this.habitService.loadHabitsBySearch(filters).subscribe({
         next: () => {
           this.loading = false;
+          this.applyFilters();
         },
         error: (error) => {
           console.error('Error loading habits:', error);
@@ -192,22 +191,22 @@ export class HabitPageComponent implements OnInit, OnDestroy {
 
   selectSubFilter(filter: 'journey' | 'priorities' | 'routine' | 'all') {
     this.subFilter = filter;
-    this.applyFilters();
+    this.loadHabits();
   }
 
   selectJourneySubFilter(filter: 'pending' | 'ongoing' | 'completed' | 'all') {
     this.journeySubFilter = filter;
-    this.applyFilters();
+    this.loadHabits();
   }
 
   selectPrioritySubFilter(filter: 'high' | 'medium' | 'low' | 'all') {
     this.prioritySubFilter = filter;
-    this.applyFilters();
+    this.loadHabits();
   }
 
   selectRoutineSubFilter(filter: 'morning' | 'evening' | 'night' | 'all') {
     this.routineSubFilter = filter;
-    this.applyFilters();
+    this.loadHabits();
   }
 
   private applyFilters() {
@@ -241,50 +240,55 @@ export class HabitPageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Default habits filtering (unchanged)
+    // Default habits filtering (client-side for date and status)
     let filtered = [...this.allHabits];
 
-    // First filter by main tab (type)
-    filtered = filtered.filter(habit => habit.type === this.currentMainTab);
+    // First filter by date
+    filtered = this.filterByDate(filtered);
+
+    // Then filter by main tab (type)
+    console.log('Filtering by type. Expected:', this.currentMainTab, 'Available types:', filtered.map(h => h.type));
+    if (this.currentMainTab === 'habits') {
+      // Habits from search API are all habits, no need to filter by type
+      filtered = filtered;
+    } else {
+      filtered = filtered.filter(habit => habit.type === this.currentMainTab);
+    }
+    console.log('After type filter:', filtered.length);
 
     // Then apply sub-filter
-    switch (this.subFilter) {
-      case 'journey':
-        if (this.journeySubFilter !== 'all') {
-          filtered = this.filterByJourney(filtered, this.journeySubFilter);
-        }
-        break;
-      case 'priorities':
-        if (this.prioritySubFilter !== 'all') {
-          filtered = filtered.filter(habit => habit.priority === this.prioritySubFilter);
-        }
-        break;
-      case 'routine':
-        if (this.routineSubFilter !== 'all') {
-          filtered = filtered.filter(habit => habit.selectedRoutine.toLowerCase() === this.routineSubFilter);
-        }
-        break;
-      case 'all':
-        // No additional filtering
-        break;
+    if (this.subFilter === 'journey' && this.journeySubFilter !== 'all') {
+      filtered = this.filterByJourney(filtered, this.journeySubFilter);
     }
+    // For priorities and routine, already filtered server-side
+    // For 'all', no additional filtering
 
     this.filteredHabits = filtered;
   }
 
   private filterByJourney(habits: Habit[], status: 'pending' | 'ongoing' | 'completed'): Habit[] {
-    const now = new Date().getTime();
+    return habits.filter(habit => habit.status === status);
+  }
 
-    switch (status) {
-      case 'pending':
-        return habits.filter(habit => habit.startTimeStamp > now);
-      case 'ongoing':
-        return habits.filter(habit => habit.startTimeStamp <= now && habit.endTimeStamp >= now);
-      case 'completed':
-        return habits.filter(habit => habit.endTimeStamp < now);
-      default:
-        return habits;
+  private buildFilters(): any {
+    const filters: any = {};
+    if (this.subFilter === 'priorities' && this.prioritySubFilter !== 'all') {
+      filters.priority = this.prioritySubFilter.toUpperCase();
+    } else if (this.subFilter === 'routine' && this.routineSubFilter !== 'all') {
+      filters.routine = this.routineSubFilter.toUpperCase();
     }
+    // Status is filtered client-side
+    return filters;
+  }
+
+  private filterByDate(habits: Habit[]): Habit[] {
+    const selectedDate = new Date(this.selectedDate);
+    return habits.filter(habit => {
+      const start = habit.startDate ? new Date(habit.startDate) : new Date(0);
+      const end = habit.endDate ? new Date(habit.endDate) : new Date(Number.MAX_SAFE_INTEGER);
+      const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+      return start <= selectedDate && selectedDate <= end && habit.selectedDays.includes(dayOfWeek);
+    });
   }
 
   onOpenCalendar() {

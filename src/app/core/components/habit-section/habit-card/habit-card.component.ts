@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 import { HabitCardService } from 'src/app/core/components/habit-section/habit-card/habit-card.service';
 import { HabitApi } from 'src/app/core/api/habit.api';
 import { TaskApi } from 'src/app/core/api/task.api';
+import { HabitService } from '../habit.service';
 import { CoerceBoolean } from "../../../coerceBoolean.decorator";
 import { Habit } from '../habit.types';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
@@ -77,7 +78,7 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private lastUpdateTime: number = 0;
 
-  public maxItemsToShow: number = 3;  // percentageWrapper is inside the single-card template which is rendered conditionally,
+  public maxItemsToShow: number = 6;  // percentageWrapper is inside the single-card template which is rendered conditionally,
   // so query it with static: false and guard access in code.
   @ViewChild('percentageWrapper', { static: false }) percentageWrapper?: ElementRef;
 
@@ -87,6 +88,7 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
     private habitCardService: HabitCardService,
     private habitApi: HabitApi,
     private taskApi: TaskApi,
+    private habitService: HabitService,
     private modalCtrl: ModalController,
     private router: Router
   ) {
@@ -97,6 +99,74 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.expanded = false;
       }
     });
+  }
+
+  /**
+   * Called when user taps "Let's Go" - set status to ONGOING
+   */
+  onStartHabit() {
+    if (!this.habit) return;
+    const payload = this.buildUpdatePayload(this.habit, 'ONGOING');
+    this.habitApi.updateHabit(this.habit.id, payload).subscribe({
+      next: (res) => {
+        // update local store and UI
+        const updated = { ...this.habit!, status: 'ongoing' } as Habit;
+        this.habitService.updateHabit(updated);
+        this.habit = updated;
+      },
+      error: (err) => {
+        console.error('Failed to start habit', err);
+      }
+    });
+  }
+
+  /**
+   * Called when user taps "Done?" - set status to COMPLETED
+   */
+  onCompleteHabit() {
+    if (!this.habit) return;
+    const payload = this.buildUpdatePayload(this.habit, 'COMPLETED');
+    this.habitApi.updateHabit(this.habit.id, payload).subscribe({
+      next: (res) => {
+        const updated = { ...this.habit!, status: 'completed' } as Habit;
+        this.habitService.updateHabit(updated);
+        this.habit = updated;
+      },
+      error: (err) => {
+        console.error('Failed to complete habit', err);
+      }
+    });
+  }
+
+  /**
+   * Build a payload matching the backend expected shape. Keep other fields intact but set status.
+   */
+  private buildUpdatePayload(habit: Habit, status: 'ONGOING' | 'COMPLETED' | 'PENDING') {
+    // The API expects a top-level structure with 'habit' containing only metadata
+    // and scheduling/reward fields at the top level. Match the example payload.
+    const routineVal = (habit.selectedRoutine || habit.routine || '')?.toString() || '';
+    return {
+      habit: {
+        title: habit.title,
+        tags: habit.tags || [],
+        description: habit.notes || '',
+        status: status || 'PENDING',
+        priority: habit.priority ? habit.priority.toUpperCase() : undefined,
+        routine: routineVal ? routineVal.toUpperCase() : undefined
+      },
+      rewardCoins: habit.coinReward || 0,
+      startDate: habit.startDate ? this.formatDateForApi(habit.startDate) : undefined,
+      startTime: habit.startTime ? `${habit.startTime}:00` : undefined,
+      endDate: habit.endDate ? this.formatDateForApi(habit.endDate) : undefined,
+      endTime: habit.endTime ? `${habit.endTime}:00` : undefined,
+      everyday: (habit as any).everyday || false,
+      everyWeekend: (habit as any).everyWeekend || false,
+      daysOfWeek: habit.selectedDays || []
+    };
+  }
+
+  private formatDateForApi(date: Date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   }
 
   /**
@@ -159,14 +229,10 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
    * Load habits from the API
    */
   loadHabits() {
-    // Get current date in YYYY-MM-DD format
-    const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0];
-
-    // Get all habits using the API
-    this.habitApi.getAllHabits().subscribe({
-      next: (habits) => {
-        this.habits = habits || [];
+    // Get all habits using the service
+    this.habitService.loadHabitsBySearch({}).subscribe({
+      next: () => {
+        this.habits = this.habitService.getCurrentHabits();
         this.hasHabits = this.habits.length > 0;
         this.updateEmptyState();
       },

@@ -15,6 +15,8 @@ export interface Habit {
   everyday: boolean;
   selectedDays: string[]; // Array from Set
   priority: 'low' | 'medium' | 'high';
+  routine: string;
+  status: 'pending' | 'ongoing' | 'completed';
   createdAt: Date;
   activities?: { name: string; startTime: string; endTime: string }[]; // For timetable type
   tags?: string[];

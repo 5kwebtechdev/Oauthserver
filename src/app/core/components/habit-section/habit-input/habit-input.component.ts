@@ -176,6 +176,8 @@ export class HabitInputComponent {
       everyday: this.everyday,
       selectedDays: Array.from(this.selectedDays),
       priority: this.priority,
+      routine: this.selectedRoutine,
+      status: 'pending',
       createdAt: new Date(),
       activities: this.currentActive === 'timetable' ? this.activities.filter(a => a.name.trim()) : undefined
     };

@@ -40,6 +40,26 @@ export class HabitApi {
         return this.http.get(url, { headers: this.headers() });
     }
 
+    getHabitsBySearch(filters?: any): Observable<any> {
+        const url = `${this.base}/habits/search`;
+        let params = new HttpParams();
+        if (filters) {
+            Object.keys(filters).forEach(key => {
+                const value = filters[key];
+                if (value !== null && value !== undefined && value !== '') {
+                    if (Array.isArray(value)) {
+                        value.forEach(v => params = params.append(key, v));
+                    } else {
+                        params = params.set(key, value.toString());
+                    }
+                }
+            });
+        }
+        return this.http.get(url, { headers: this.headers(), params });
+    }
+
+
+
     /**
      * Get all habits for the user
      * @returns Observable with all habits
@@ -47,5 +67,15 @@ export class HabitApi {
     getAllHabits(): Observable<any> {
         const url = `${this.base}/habits/all`;
         return this.http.get(url, { headers: this.headers() });
+    }
+
+    /**
+     * Update a habit by id
+     * @param id Habit id
+     * @param payload Body to send to the update endpoint
+     */
+    updateHabit(id: string, payload: any): Observable<any> {
+        const url = `${this.base}/habits/update/${id}`;
+        return this.http.put(url, payload, { headers: this.headers() });
     }
 }

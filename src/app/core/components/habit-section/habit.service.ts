@@ -41,6 +41,22 @@ export class HabitService {
     );
   }
 
+  loadHabitsBySearch(filters: any): Observable<any> {
+    return this.habitApi.getHabitsBySearch(filters).pipe(
+      tap(response => {
+        if (response && response.habits) {
+          const habits = this.mapApiResponseToHabits(response.habits);
+          this.habitsSubject.next(habits);
+        }
+      }),
+      catchError(error => {
+        console.error('Error fetching habits by search:', error);
+        this.habitsSubject.next([]);
+        return of([]);
+      })
+    );
+  }
+
   private mapApiResponseToHabits(response: any[]): Habit[] {
     if (!Array.isArray(response)) {
       return [];
@@ -65,11 +81,13 @@ export class HabitService {
         endTimeStamp: endTimeStamp,
         type: item.type || 'habits',
         isPrivate: !!item.isPrivate,
-        selectedRoutine: item.routine || 'MORNING',
+        selectedRoutine: item.getRoutine,
         routineTags: item.routineTags || [],
         everyday: item.everyday || false,
         selectedDays: item.daysOfWeek || [],
-        priority: item.priority || 'high',
+        priority: item.priority,
+        routine: item.routine,
+        status: item.status,
         tags: item.tags || [],
         coinReward: item.coinReward || 0,
         createdAt: new Date(item.createdAt || Date.now())
@@ -90,6 +108,10 @@ export class HabitService {
 
   getHabits(): Observable<Habit[]> {
     return this.habits$;
+  }
+
+  getCurrentHabits(): Habit[] {
+    return this.habitsSubject.value;
   }
 
   getHabitById(id: string): Habit | undefined {
