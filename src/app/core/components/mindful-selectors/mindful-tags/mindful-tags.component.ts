@@ -100,18 +100,54 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
     document.body.classList.add('no-scroll');
   }
 
+  /**
+   * Open the edit popup directly from a click on the tag element.
+   * Computes viewport coordinates from the element rect and focuses the input.
+   */
+  openEditFromClick(key: any, elRef?: any) {
+    const tag = this.options.find(o => o.key === key);
+    this.editingTagKey = key;
+    this.editingValue = tag ? tag.value : '';
+    if (elRef && elRef.getBoundingClientRect) {
+      const rect = elRef.getBoundingClientRect();
+      // Use viewport coords so the fixed-position popup aligns correctly
+      this.editPosition = { left: rect.left + rect.width / 2, top: rect.bottom + 8 };
+    } else {
+      this.editPosition = null;
+    }
+    document.body.classList.add('no-scroll');
+
+    // Auto-focus the input after the view updates
+    setTimeout(() => {
+      if (this.editInputRef) {
+        this.editInputRef.nativeElement.focus();
+        this.editInputRef.nativeElement.select();
+      }
+    }, 0);
+  }
+
   closeTagMenu() {
     this.activeTagKey = null;
     this.popoverPosition = null;
     document.body.classList.remove('no-scroll');
   }
 
-  onEdit(key: any) {
+  onEdit(key: any, ev?: Event) {
+    if (ev) ev.stopPropagation();
     const tag = this.options.find(o => o.key === key);
     this.editingTagKey = key;
     this.editingValue = tag ? tag.value : '';
+
+    // Use the current popover position as the starting point for the edit popup
     this.editPosition = this.popoverPosition ? { ...this.popoverPosition } : null;
-    this.closeTagMenu();
+
+    // Hide the popover but do NOT call closeTagMenu() because that removes the
+    // body no-scroll class and clears state we rely on for the edit popup.
+    this.activeTagKey = null;
+    this.popoverPosition = null;
+
+    // Ensure body no-scroll is present while editing
+    document.body.classList.add('no-scroll');
 
     // Auto-focus the input after the view updates
     setTimeout(() => {
@@ -141,7 +177,25 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
   }
 
   onDelete(key: any) {
-    this.delete.emit(key);
+    // Remove the option locally
+    const idx = this.options.findIndex(o => o.key === key);
+    if (idx > -1) {
+      const removed = this.options.splice(idx, 1)[0];
+      // If the deleted tag was selected, remove it from selectedKeys
+      if (this.selectedKeys && this.selectedKeys.includes(key)) {
+        this.selectedKeys = this.selectedKeys.filter(k => k !== key);
+        const control = this.formGroup?.get(this.formControlName || '') as FormControl;
+        if (control) control.setValue(this.selectedKeys);
+        this.selectedKeysChange.emit(this.selectedKeys);
+      }
+
+      // Emit delete event with removed item payload for parent components
+      this.delete.emit({ key, value: removed?.value });
+    } else {
+      // If not found, still emit a simple delete event
+      this.delete.emit(key);
+    }
+
     this.closeTagMenu();
   }
 

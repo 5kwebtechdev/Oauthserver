@@ -12,7 +12,8 @@
   display: flex;
   gap: 8px;
   align-items: center;
-  width: 300px; /* fixed slider width */
+  width: 300px;
+  /* fixed slider width */
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x mandatory;
@@ -21,7 +22,8 @@
 
 .tag-wrapper {
   position: relative;
-  flex: 0 0 auto; /* prevent shrinking */
+  flex: 0 0 auto;
+  /* prevent shrinking */
   scroll-snap-align: start;
 }
 
@@ -30,22 +32,22 @@
   flex: 0 0 auto;
 }
 
-/* hide scrollbar but keep scrolling functionality */
 .tags-slider::-webkit-scrollbar {
   height: 6px;
 }
+
 .tags-slider::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.08);
+  background: rgba(0, 0, 0, 0.08);
   border-radius: 3px;
 }
+
 .tags-slider::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* Firefox */
 .tags-slider {
   scrollbar-width: thin;
-  scrollbar-color: rgba(0,0,0,0.08) transparent;
+  scrollbar-color: rgba(0, 0, 0, 0.08) transparent;
 }
 
 .tag-popover-fixed {
@@ -55,36 +57,53 @@
 }
 
 .tag-popover-inner {
- display: inline-flex;
-padding: 8px 12px;
-justify-content: center;
-align-items: center;
-border-radius: 16px;
-background: #FFF;
-box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
+  display: inline-flex;
+  padding: 8px 12px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 16px;
+  background: #FFF;
+  box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
 }
 
-.tag-edit-fixed, .tag-add-fixed {
-  position: absolute;
+.tag-edit-fixed {
+  position: fixed;
   transform: translateX(-50%);
   z-index: 100001;
-  display: flex;
   align-items: center;
   gap: 8px;
-  width: 150px;
+  width: 194px;
+  height: 48px;
+  flex-shrink: 0;
+  padding: 12px 8px;
+  background: #FFF;
+  border-radius: 16px;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
+}
+
+.tag-add-fixed {
+  position: fixed;
+  left: 273px;
+  top: 178px;
+  transform: translateX(-50%);
+  z-index: 100001;
+  align-items: center;
+  gap: 8px;
+  width: 194px;
   height: 48px;
   flex-shrink: 0;
   padding: 0 8px;
   background: #FFF;
   border-radius: 16px;
-  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
 }
 
-.tag-edit-inner, .tag-add-inner {
+.tag-edit-inner,
+.tag-add-inner {
   display: flex;
-justify-content: center;
-align-items: center;
-gap: 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
 }
 
 .custom-tag-input {
@@ -99,10 +118,12 @@ gap: 16px;
   width: 100%;
   height: 100%;
   padding: 0 8px;
-  border-radius: 12px; /* slightly inset so it sits within parent */
+  border-radius: 12px;
+  /* slightly inset so it sits within parent */
   border: none;
   outline: none;
-  background: transparent; /* parent has the white background */
+  background: transparent;
+  /* parent has the white background */
   box-shadow: none;
   font-size: 14px;
   box-sizing: border-box;
