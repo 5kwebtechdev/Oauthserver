@@ -20,13 +20,10 @@ import { Router, RouterModule } from '@angular/router';
   imports: [CommonModule, IonicModule, HabitCardComponent, HabitListComponent, MindfulNavigatorComponent, MindfulInputsModule, MindfulBadgeComponent, RouterModule]
 })
 export class HabitPageComponent implements OnInit, OnDestroy {
-  // Simple page scaffold for listing and managing habits
   public title = 'Habits';
-  // Main category tabs (types)
   public currentMainTab: 'habits' | 'tasks' = 'habits';
   public showContent: boolean = true;
 
-  // Sub-category filters
   public subFilter: 'journey' | 'priorities' | 'routine' | 'all' = 'all';
   public journeySubFilter: 'pending' | 'ongoing' | 'completed' | 'all' = 'pending';
   public prioritySubFilter: 'high' | 'medium' | 'low' | 'all' = 'high';
@@ -34,36 +31,29 @@ export class HabitPageComponent implements OnInit, OnDestroy {
 
   public allHabits: Habit[] = [];
   public filteredHabits: Habit[] = [];
-  // Tasks loaded for the selected date
   public tasks: any[] = [];
   public filteredTasks: any[] = [];
   public selectedDate: Date = new Date(); // Current selected date
   public currentTimestamp: number = Date.now(); // Current timestamp for habit status
-  // Expose a safe max value to templates (templates cannot directly access global Number)
   public MAX_SAFE_INTEGER: number = Number.MAX_SAFE_INTEGER;
   private subscriptions: Subscription = new Subscription();
   public loading: boolean = false; // Track API loading state
 
-  // Timer to update current timestamp
   private timestampInterval: any;
-
-  // Single mode display
   public showSingleMode: boolean = false;
   public singleModeHabit: Habit | null = null;
 
   constructor(private habitService: HabitService, private router: Router, private taskApi: TaskApi) { }
 
   ngOnInit() {
-    // Check for navigation state (new habit from habit-input)
     const navigation = this.router.getCurrentNavigation();
     if (navigation?.extras?.state) {
       const state = navigation.extras.state as any;
       if (state.newHabit && state.showSingleMode) {
         this.singleModeHabit = state.newHabit;
         this.showSingleMode = true;
-        this.showContent = false; // Hide the filter UI in single mode
+        this.showContent = false;
       }
-      // If caller requested an initial tab (e.g., 'tasks'), honor it
       if ((navigation.extras.state as any).initialTab) {
         const t = (navigation.extras.state as any).initialTab as string;
         if (t === 'tasks' || t === 'habits') {
@@ -72,46 +62,36 @@ export class HabitPageComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Subscribe to habit changes
     this.subscriptions.add(
       this.habitService.getHabits().subscribe(habits => {
         this.allHabits = habits;
       })
     );
 
-    // Load habits for today initially
     this.loadHabits();
-    // Load tasks for today initially
     this.loadTasksForSelectedDate(new Date());
 
-    // Set up timer to update current timestamp every minute
     this.timestampInterval = setInterval(() => {
       this.currentTimestamp = Date.now();
-      this.applyFilters(); // Re-apply filters to update habit status
-    }, 60000); // Update every minute
+      this.applyFilters();
+    }, 60000);
   }
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
 
-    // Clear the timestamp update interval
     if (this.timestampInterval) {
       clearInterval(this.timestampInterval);
     }
   }
 
-  /**
-   * Handle date selection from the mindful-week component
-   */
   onDateSelected(date: Date) {
     this.selectedDate = date;
     this.loadHabits();
     this.loadTasksForSelectedDate(date);
   }
 
-  /**
-   * Load habits using the search API with current filters
-   */
+
   loadHabits() {
     this.loading = true;
     const filters = this.buildFilters();
@@ -137,7 +117,6 @@ export class HabitPageComponent implements OnInit, OnDestroy {
         next: (res: any) => {
           const list = res?.data || res?.tasks || res || [];
           this.tasks = Array.isArray(list) ? list : [];
-          // Annotate tasks with numeric timestamps for easier filtering & rendering
           this.tasks = this.tasks.map((t: any) => ({
             ...t,
             startTimeStamp: this.getTaskStartTimestamp(t),
@@ -240,28 +219,21 @@ export class HabitPageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Default habits filtering (client-side for date and status)
     let filtered = [...this.allHabits];
 
-    // First filter by date
     filtered = this.filterByDate(filtered);
 
-    // Then filter by main tab (type)
     console.log('Filtering by type. Expected:', this.currentMainTab, 'Available types:', filtered.map(h => h.type));
     if (this.currentMainTab === 'habits') {
-      // Habits from search API are all habits, no need to filter by type
       filtered = filtered;
     } else {
       filtered = filtered.filter(habit => habit.type === this.currentMainTab);
     }
     console.log('After type filter:', filtered.length);
 
-    // Then apply sub-filter
     if (this.subFilter === 'journey' && this.journeySubFilter !== 'all') {
       filtered = this.filterByJourney(filtered, this.journeySubFilter);
     }
-    // For priorities and routine, already filtered server-side
-    // For 'all', no additional filtering
 
     this.filteredHabits = filtered;
   }
@@ -292,11 +264,9 @@ export class HabitPageComponent implements OnInit, OnDestroy {
   }
 
   onOpenCalendar() {
-    // Navigate to the new habit detail page (calendar/overview can be shown there)
     this.router.navigateByUrl('/authed/habit-detail');
   }
 
-  // Handler invoked when a habit row is opened from the habit-list component
   onOpenHabit(habit: Habit) {
     if (!habit) return;
     this.singleModeHabit = habit;
@@ -304,9 +274,7 @@ export class HabitPageComponent implements OnInit, OnDestroy {
     this.showContent = false;
   }
 
-  // Handler invoked when the Done button is clicked in the habit-list component
   onDoneHabit(habit: Habit) {
-    // Placeholder: currently just logs. Replace with update/delete logic as needed.
     console.log('Mark done called for habit:', habit?.id || habit?.title);
   }
 }

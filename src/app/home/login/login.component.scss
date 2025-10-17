@@ -23,8 +23,9 @@
   }
 
   .login-header-toggle-wrapper {
-        align-items: center;
+    align-items: center;
   }
+
   .login-toggle-form-wrapper {
     display: flex !important;
     flex-direction: column;
@@ -53,6 +54,8 @@
     flex: none;
     order: 0;
     flex-grow: 0;
+    margin-top: 20px;
+
   }
 
   // .toggle-buttons {
@@ -141,7 +144,7 @@
       border: 2px solid transparent;
       border-radius: 10px !important;
       font-size: 1rem;
-      background: #FAD2AE; 
+      background: #FAD2AE;
       color: #772817;
 
       &::placeholder {
@@ -150,8 +153,8 @@
       }
     }
 
-    input.error{
-      border-color:var(--error_color);
+    input.error {
+      border-color: var(--error_color);
     }
 
     .phone-input-container {
@@ -232,7 +235,7 @@
         border-radius: 0 8px 8px 0;
         min-width: 0;
         font-family: 'Nunito', sans-serif;
-        
+
         &:focus {
           outline: none;
           border: none;
@@ -263,24 +266,26 @@
       }
     }
 
-   .input-group {
-  position: relative; /* container for absolute positioning */
-  display: flex;
-  align-items: center;
-}
+    .input-group {
+      position: relative;
+      /* container for absolute positioning */
+      display: flex;
+      align-items: center;
+    }
 
-.input-group input {
-  width: 100%;
-  padding-right: 40px; /* leaves space so text doesn't overlap the icon */
-}
+    .input-group input {
+      width: 100%;
+      padding-right: 40px;
+      /* leaves space so text doesn't overlap the icon */
+    }
 
-.toggle-eye {
-   position: absolute;
+    .toggle-eye {
+      position: absolute;
       transform: translateY(-50%);
       cursor: pointer;
       top: 28px;
       right: 15px;
-}
+    }
 
     .error {
       color: var(--error_color);
@@ -396,7 +401,7 @@
 
   .login-header {
     font-family: 'Fredoka';
-    font-style: normal; 
+    font-style: normal;
     font-weight: 500;
     font-size: 25px;
     line-height: 130%;
@@ -462,6 +467,7 @@
   from {
     transform: translateY(100%);
   }
+
   to {
     transform: translateY(0);
   }
@@ -492,7 +498,7 @@
   padding: 8px;
   border-radius: 50%;
   transition: 0.2s;
-  
+
   &:hover {
     background: rgba(119, 40, 23, 0.1);
   }
@@ -516,15 +522,15 @@
   cursor: pointer;
   transition: 0.2s;
   border-bottom: 1px solid rgba(238, 102, 33, 0.1);
-  
+
   &:hover {
     background: rgba(238, 102, 33, 0.1);
   }
-  
+
   &.selected {
     background: #EE6621;
     color: white;
-    
+
     .country-name,
     .country-code {
       color: white;
@@ -575,7 +581,7 @@
   font-size: 16px;
   cursor: pointer;
   transition: 0.2s;
-  
+
   &:hover {
     background: #d55a1e;
   }
@@ -586,32 +592,32 @@
   .country-modal {
     max-height: 85vh;
   }
-  
+
   .country-modal__header {
     padding: 16px 20px;
   }
-  
+
   .country-modal__title {
     font-size: 18px;
   }
-  
+
   .country-item {
     padding: 14px 20px;
   }
-  
+
   .country-flag {
     font-size: 18px;
     margin-right: 14px;
   }
-  
+
   .country-name {
     font-size: 15px;
   }
-  
+
   .country-item .country-code {
     font-size: 15px;
   }
-  
+
   .country-modal__footer {
     padding: 16px 20px;
   }
@@ -622,20 +628,20 @@
         .country-code-selector {
           min-width: 70px;
           padding: 0.7rem 0.5rem;
-          
+
           .flag-emoji {
             font-size: 1rem;
           }
-          
+
           .country-code {
             font-size: 0.85rem;
           }
-          
+
           i {
             font-size: 0.7rem;
           }
         }
-        
+
         input {
           padding: 0.7rem;
           font-size: 0.95rem;
@@ -652,7 +658,7 @@
       .phone-input-container {
         .country-code-selector {
           min-width: 65px;
-          
+
           .country-code {
             font-size: 0.8rem;
           }
@@ -701,8 +707,10 @@
 
   display: block;
   margin-top: 4px;
-  text-align: right;   /* align text inside */
-  width: 100%;         /* take full row so it can push text right */
+  text-align: right;
+  /* align text inside */
+  width: 100%;
+  /* take full row so it can push text right */
 }
 
 .helper-text {
@@ -710,15 +718,17 @@
   color: #EE6621;
   margin-top: 0.3rem;
   display: block;
-  text-align: right;  /* ⬅️ pushes text to rightmost */
-  width: 100%;       /* take full row so it can push text right */
+  text-align: right;
+  /* ⬅️ pushes text to rightmost */
+  width: 100%;
+  /* take full row so it can push text right */
 }
 
 .signup-link {
   display: flex;
   justify-content: center;
   align-items: center;
-  
+
   p {
     font-family: 'Nunito', sans-serif;
     font-size: 14px;
@@ -727,8 +737,8 @@
     margin: 0;
 
     a {
-      font-weight: 700;   // Bold for emphasis
-      color: inherit;     // Inherit parent text color (#772817)
+      font-weight: 700; // Bold for emphasis
+      color: inherit; // Inherit parent text color (#772817)
       text-decoration: underline;
       cursor: pointer;
 

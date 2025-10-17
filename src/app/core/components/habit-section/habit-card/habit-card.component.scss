@@ -45,10 +45,43 @@
     transition: all 0.3s ease;
 
     &.active {
-      color: 917DEC;
+      color: #8B8DCB;
       font-weight: bold;
     }
   }
+}
+
+/* Mode-specific styles: change active color and underline based on selected mode */
+.toggler .col-4 {
+  position: relative;
+}
+
+.toggler.habits-active .col-4.active {
+  color: #8B8DCB;
+}
+
+.toggler.habits-active .col-4.active::before {
+  content: "";
+  position: absolute;
+  left: 20%;
+  bottom: 0;
+  width: 60%;
+  height: 2px;
+  background: #8B8DCB;
+}
+
+.toggler.tasks-active .col-4.active {
+  color: #F6AC72;
+}
+
+.toggler.tasks-active .col-4.active::before {
+  content: "";
+  position: absolute;
+  left: 20%;
+  bottom: 0;
+  width: 60%;
+  height: 2px;
+  background: #F6AC72;
 }
 
 p {
@@ -162,11 +195,17 @@ p {
   gap: 2px;
   flex-shrink: 0;
   border-radius: 16px;
+  /* default (habit) left border */
   border-left: 4px solid #8B8DCB;
   background: #FDFDFD;
   border-radius: 16px;
   background: #FFF;
   box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+
+/* Task variant: use orange left border */
+.habit-wrapper.task {
+  border-left: 4px solid #F6AC72;
 }
 
 // .habit-wrapper.expanded {
@@ -212,6 +251,11 @@ h3 {
   margin-bottom: 0px !important;
 }
 
+/* Task title color override */
+.habit-wrapper.task h3 {
+  color: #E04D16;
+}
+
 h4 {
   font-family: 'Nunito', sans-serif;
   font-weight: bold;
@@ -251,6 +295,14 @@ h4 {
   // position: absolute;
   // top: 0;
   // right: 10px;
+}
+
+/* Task-specific badge styling (routine badge) */
+.habit-wrapper.task .badge {
+  border-radius: 16px;
+  border: 1px solid #EE6621;
+  background: #FDEAD7;
+  color: #772817;
 }
 
 .habit-footer,

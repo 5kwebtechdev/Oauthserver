@@ -31,7 +31,7 @@ import { Subscription } from 'rxjs';
     MindfulCardHeaderComponent,
     ViewAllComponent,
     RouterModule,
-    MindfulBadgeComponent
+    // MindfulBadgeComponent (not used in template)
   ]
 })
 export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {

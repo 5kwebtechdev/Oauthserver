@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import {Router} from "@angular/router";
+import { Router } from "@angular/router";
 
 @Component({
   selector: 'app-home',
@@ -28,11 +28,11 @@ export class HomePage {
     },
     {
       image: 'assets/onboarding/onboarding_2.svg',
-      title: 'Level Up Your Day!',
+      title: 'Grow with your pet!',
       subtitle: [
-        'Custom challenges.',
-        'Daily streaks.',
-        'Crush your goals.'
+        'Finish tasks.',
+        'Level up.',
+        'Grow together.'
       ],
       background: 'linear-gradient(169.84deg, #ED84A0 0%, #F4ADBF 52.35%, #E1527C 98.8%)',
       color: '#7C1F47',
@@ -40,11 +40,11 @@ export class HomePage {
     },
     {
       image: 'assets/onboarding/onboarding_3.svg',
-      title: 'Join the Club!',
+      title: 'Earn coins daily',
       subtitle: [
-        'Share progress.',
-        'Stay motivated.',
-        'Celebrate wins.'
+        'Track progress daily.',
+        'Earn cool rewards.',
+        'Spend in real.'
       ],
       background: 'linear-gradient(169.84deg, #8B8DCB 0%, #A1A7D8 52.35%, #7471BA 98.8%)',
       color: '#46456A',
@@ -83,7 +83,7 @@ export class HomePage {
   nextSlide() {
     if (this.currentSlide < this.slides.length - 1) {
       this.currentSlide++;
-    }else{
+    } else {
       this.router.navigateByUrl('home/login');
     }
   }

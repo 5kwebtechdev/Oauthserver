@@ -8,7 +8,8 @@
 
     <!-- Tab Navigation -->
     <div class="container w-full" *ngIf="!isEmpty">
-      <div class="row toggler">
+      <div class="row toggler"
+        [ngClass]="{ 'habits-active': currentActive === 'habits', 'tasks-active': currentActive === 'tasks' }">
         <div class="col-4" (click)="switchTab('all')" [ngClass]="currentActive === 'all' ? 'active' : ''">All</div>
         <div class="col-4" (click)="switchTab('habits')" [ngClass]="currentActive === 'habits' ? 'active' : ''">Habits
         </div>
@@ -62,7 +63,7 @@
 <!-- habit-task-card -->
 <div *ngIf="mode === 'single'" class="container w-full h-full p-0">
   <div class="habit-wrapper"
-    [ngClass]="{'expanded': expanded, 'isRunningLate': isRunningLate,'missedTime': missedTime}">
+    [ngClass]="{'expanded': expanded, 'isRunningLate': isRunningLate,'missedTime': missedTime, 'task': habit?.type === 'tasks'}">
     <div class="habit-header-container clickable" (tap)="toggle()" long-press [delay]="1500" (press)="onLongPress()">
       <div class="container w-full p-0">
         <div class="d-flex justify-content-between">

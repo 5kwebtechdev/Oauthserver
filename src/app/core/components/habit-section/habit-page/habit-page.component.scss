@@ -71,6 +71,49 @@
   margin-top: 16px;
 }
 
+/* When the toggler indicates the Habits tab is active, color the .active element with the habits color */
+.toggler.habits-active {
+  .active {
+    color: #8B8DCB;
+    /* habits color */
+  }
+}
+
+/* When the toggler indicates the Tasks tab is active, color the .active element with the tasks color */
+.toggler.tasks-active {
+  .active {
+    color: #F6AC72;
+    /* tasks color */
+  }
+}
+
+/* Make tab cells relative to place the underline pseudo-element */
+.toggler .col-6 {
+  position: relative;
+}
+
+/* Underline pseudo-element for active tab when Habits is selected */
+.toggler.habits-active .col-6.active::before {
+  position: absolute;
+  content: "";
+  width: 60%;
+  height: 2px;
+  left: 20%;
+  bottom: 0;
+  background: #8B8DCB;
+}
+
+/* Underline pseudo-element for active tab when Tasks is selected */
+.toggler.tasks-active .col-6.active::before {
+  position: absolute;
+  content: "";
+  width: 60%;
+  height: 2px;
+  left: 20%;
+  bottom: 0;
+  background: #F6AC72;
+}
+
 .habit-journey-container {
   margin-top: 40px;
   display: flex;
@@ -78,7 +121,8 @@
   gap: 28px;
 }
 
-.habit-filters-container, .task-filters-container {
+.habit-filters-container,
+.task-filters-container {
   padding-left: 16px;
   padding-right: 16px;
 }

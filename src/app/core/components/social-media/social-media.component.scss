@@ -20,6 +20,32 @@
     justify-content: center;
 }
 
+/* login-with variant styles */
+.login-with {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    /* requested spacing */
+}
+
+.login-icon {
+    background: transparent;
+    border: none;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.login-icon svg {
+    width: auto;
+    height: 32px;
+    /* match provided SVG heights */
+    display: block;
+}
+
 .icon-btn {
     background: transparent;
     /* no background color */

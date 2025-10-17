@@ -9,15 +9,18 @@ import { TestDropdownsComponent } from '../test-dropdowns/test-dropdowns.compone
 import { TestSelectorsComponent } from '../test-selectors/test-selectors.component';
 import { MindfulSelectorsComponent } from 'src/app/core/components/mindful-selectors/mindful-selectors.component';
 import { TestTimelineComponent } from '../test-timeline/test-timeline.component';
+import { SupermeLoadingComponent } from 'src/app/core/components/superme-loading/superme-loading.component';
 import { AddCalendarComponent } from '../add-calendar/add-calendar.component';
 import { MindfulPopupComponent, MindfulPopupConfig } from 'src/app/core/components/mindful-popup/mindful-popup.component';
 
 @Component({
   selector: 'app-test',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IonicModule, TestButtonsComponent, TestBadgesComponent, TestInputsComponent, TestDropdownsComponent, TestSelectorsComponent, TestTimelineComponent, AddCalendarComponent, MindfulSelectorsComponent, MindfulPopupComponent],
+  imports: [CommonModule, ReactiveFormsModule, IonicModule, TestButtonsComponent, TestBadgesComponent, TestInputsComponent, TestDropdownsComponent, TestSelectorsComponent, TestTimelineComponent, AddCalendarComponent, MindfulSelectorsComponent, MindfulPopupComponent, SupermeLoadingComponent],
   template: `
     <ion-content>
+      <!-- always-on loader for testing -->
+      <app-superme-loading [visible]="true"></app-superme-loading>
       <div style="padding:1rem;">
         <h1>Test Page</h1>
         
@@ -72,9 +75,9 @@ import { MindfulPopupComponent, MindfulPopupConfig } from 'src/app/core/componen
 // add runtime demo data for selectors
 export class TestComponent {
   fg: FormGroup;
-  demoTags = Array.from({length: 10}).map((_, i) => ({ key: i + 1, value: 'Tag ' + (i + 1), type: 'habit' }));
+  demoTags = Array.from({ length: 10 }).map((_, i) => ({ key: i + 1, value: 'Tag ' + (i + 1), type: 'habit' }));
   selected: any[] = [];
-  
+
   // Mindful Popup properties
   showPopup = false;
   popupConfig: MindfulPopupConfig = {};
@@ -84,23 +87,23 @@ export class TestComponent {
     this.fg.get('tags')!.valueChanges.subscribe(v => this.selected = v || []);
   }
 
-  onAdd(){
+  onAdd() {
     // naive add: push a new tag and update form control
     const nextKey = this.demoTags.length + 1;
     this.demoTags.push({ key: nextKey, value: `Tag ${nextKey}`, type: 'habit' });
   }
 
-  onEdit(key: any){
+  onEdit(key: any) {
     // simple edit: append ' (edited)'
     const idx = this.demoTags.findIndex(t => t.key === key);
-    if(idx > -1) this.demoTags[idx].value += ' (edited)';
+    if (idx > -1) this.demoTags[idx].value += ' (edited)';
   }
 
-  onDelete(key: any){
+  onDelete(key: any) {
     this.demoTags = this.demoTags.filter(t => t.key !== key);
     // also remove from selected if present
     const ctrl = this.fg.get('tags');
-    if(ctrl){
+    if (ctrl) {
       const newVal = (ctrl.value || []).filter((k: any) => k !== key);
       ctrl.setValue(newVal);
     }

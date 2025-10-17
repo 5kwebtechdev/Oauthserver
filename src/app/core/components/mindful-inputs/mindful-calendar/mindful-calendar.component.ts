@@ -1,34 +1,46 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { IonicModule } from '@ionic/angular';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'mindful-calendar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IonicModule],
   templateUrl: './mindful-calendar.component.html',
   styleUrls: ['./mindful-calendar.component.scss']
 })
-export class MindfulCalendarComponent {
+export class MindfulCalendarComponent implements OnChanges {
   @Input() type: 'date' | 'range' = 'date';
   @Input() currentMonth: Date = new Date();
   @Input() startDate: Date | null = null;
   @Input() endDate: Date | null = null;
   @Input() showMoodToggle: boolean = true;
+  @Input() useArrowNavigation: boolean = false; // New input to control navigation style
+  @Input() dateActivities: { [key: string]: { timetable?: boolean, task?: boolean, habit?: boolean } } = {}; // Activity data for each date
+  @Input() useCalendarMainStyle: boolean = false; // New input for calendar-main specific styling
 
-  @Output() dateSelected = new EventEmitter<Date | {start: Date | null, end: Date | null}>();
+  @Output() dateSelected = new EventEmitter<Date | { start: Date | null, end: Date | null }>();
+  @Output() moodToggled = new EventEmitter<boolean>();
   @Output() cancelled = new EventEmitter<void>();
   @Output() confirmed = new EventEmitter<void>();
 
   selectingStart = true;
   showMonthPicker = false;
-  moodOn = false;
-  months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  moodOn = false; // Mood toggle OFF by default so activity dots show
+  months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   years: number[] = [];
 
   constructor() {
     const currentYear = new Date().getFullYear();
     for (let y = currentYear - 5; y <= currentYear + 5; y++) this.years.push(y);
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['dateActivities']) {
+      console.log('dateActivities changed:', this.dateActivities);
+      console.log('Number of dates with activities:', Object.keys(this.dateActivities).length);
+    }
   }
 
   toggleMonthPicker() {
@@ -47,6 +59,15 @@ export class MindfulCalendarComponent {
 
   toggleMood() {
     this.moodOn = !this.moodOn;
+    this.moodToggled.emit(this.moodOn);
+  }
+
+  previousMonth() {
+    this.currentMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() - 1, 1);
+  }
+
+  nextMonth() {
+    this.currentMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() + 1, 1);
   }
 
   selectDate(date: Date) {
@@ -108,7 +129,7 @@ export class MindfulCalendarComponent {
 
   isDateinCurrentMonth(date: Date) {
     return date.getFullYear() === this.currentMonth.getFullYear() &&
-           date.getMonth() === this.currentMonth.getMonth();
+      date.getMonth() === this.currentMonth.getMonth();
   }
 
   isStartOfRange(date: Date) {
@@ -117,5 +138,29 @@ export class MindfulCalendarComponent {
 
   isEndOfRange(date: Date) {
     return this.endDate && this.isSameDay(date, this.endDate);
+  }
+
+  getDateKey(date: Date): string {
+    // Format date as YYYY-MM-DD in local timezone
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  getActivitiesForDate(date: Date) {
+    const key = this.getDateKey(date);
+    const activities = this.dateActivities[key] || {};
+    // Log only if there are activities
+    if (activities.timetable || activities.task || activities.habit) {
+      console.log(`Activities for ${key}:`, activities);
+    }
+    return activities;
+  }
+
+  hasActivities(date: Date): boolean {
+    const activities = this.getActivitiesForDate(date);
+    const has = !!(activities.timetable || activities.task || activities.habit);
+    return has;
   }
 }

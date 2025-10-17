@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -9,6 +9,8 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./social-media.component.scss']
 })
 export class SocialMediaComponent {
+  /** variant controls rendering behavior; "login-with" shows provider icons for sign-in */
+  @Input() variant?: string;
   links = [
     { name: 'facebook', label: 'Facebook', icon: 'facebook', url: 'https://www.facebook.com' },
     { name: 'instagram', label: 'Instagram', icon: 'instagram', url: 'https://www.instagram.com/supermeappofficial/' },
