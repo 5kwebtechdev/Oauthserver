@@ -12,4 +12,8 @@ import { CommonModule } from '@angular/common';
 export class SupermeLoadingComponent {
     // show/hide via input
     @Input() visible = false;
+    /** size in pixels (square) - controls loader width/height */
+    @Input() size = 100;
+    /** optional accessibility / UI message shown below the loader */
+    @Input() message?: string;
 }

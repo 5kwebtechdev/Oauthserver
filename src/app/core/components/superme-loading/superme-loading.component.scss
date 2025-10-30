@@ -1,103 +1,102 @@
-.sb-loader-overlay {
+.mb-loader-overlay {
+    /* full-screen, centered overlay */
     position: fixed;
     inset: 0;
+    /* top:0; right:0; bottom:0; left:0; */
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.55);
     z-index: 99999;
+    pointer-events: auto;
+    padding: 12px;
+}
 
-    /* backdrop layer with a punched transparent hole centered on the loader */
-    &::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        /* overlay removed — keep transparent so only the ring shows */
-        background: transparent;
+.mb-loader {
+    /* container size is controlled inline via [style.width.px] / [style.height.px] */
+    position: relative;
+    display: block;
+}
+
+.mb-dot-wrap {
+    /* wrapper holds the persistent rotation so animation transforms on the dot
+       (translate/scale) don't override the rotation */
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    top: 0;
+    left: 0;
+    transform: rotate(45deg);
+    transform-origin: center;
+}
+
+.mb-dot {
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    will-change: transform;
+    animation: mb-move 2s cubic-bezier(.2, .9, .2, .9) infinite;
+}
+
+.mb-dot--yellow {
+    background-color: #f7b768;
+    /* peach/orange */
+    animation-delay: 0s;
+}
+
+.mb-dot--blue {
+    background: #33CCFF;
+    animation-delay: -0.5s;
+}
+
+.mb-dot--red {
+    background: #FF5050;
+    animation-delay: -1s;
+}
+
+.mb-dot--green {
+    background: #8bc34a;
+    animation-delay: -1.5s;
+}
+
+@keyframes mb-move {
+    0% {
+        transform: translate(0, 0) scale(1);
     }
 
-    .sb-loader {
-        width: 80px;
-        height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        /* for ring pseudo-element */
-        perspective: 900px;
-        /* enable subtle 3D tilt */
+    25% {
+        transform: translate(100%, 0) scale(0.6);
     }
 
-    .sb-ring {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        position: relative;
-        /* inner bevel and base depth */
-        box-shadow:
-            0 18px 40px rgba(16, 24, 40, 0.15),
-            /* outer soft shadow */
-            0 2px 0 rgba(255, 255, 255, 0.02) inset,
-            0 -6px 18px rgba(0, 0, 0, 0.12) inset;
-        background: transparent;
-        /* gradient provided via pseudo-element which will be masked */
-        transform-style: preserve-3d;
-        /* subtle tilt to sell the 3D effect */
-        transform: rotateX(14deg);
+    50% {
+        transform: translate(100%, 100%) scale(1);
     }
 
-    /* gradient ring is drawn in ::before and then masked so the center is transparent */
-    .sb-ring::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        border-radius: 50%;
-        background: conic-gradient(from 0deg,
-                #b2f5ea 0deg,
-                #c3f2c9 60deg,
-                #ffd5a6 120deg,
-                #ffb6c2 185deg,
-                #d7b2ff 250deg,
-                #9bd0ff 310deg,
-                #b2f5ea 360deg);
-        /* mask out the inner area so the ring is hollow */
-        -webkit-mask: radial-gradient(circle at center, transparent 36%, black 37%);
-        mask: radial-gradient(circle at center, transparent 36%, black 37%);
-        /* slightly blur and nudge to create thickness */
-        filter: blur(0.6px);
-        transform: translateZ(20px) rotateX(0deg);
+    75% {
+        transform: translate(0, 100%) scale(0.6);
     }
 
-    /* glossy highlight and inner rim to enhance 3D look */
-    .sb-ring::after {
-        content: '';
-        position: absolute;
-        left: 6%;
-        top: 6%;
-        width: 88%;
-        height: 88%;
-        border-radius: 50%;
-        pointer-events: none;
-        /* soft radial shadow to create inner rim depth */
-        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12) inset, 0 -6px 10px rgba(255, 255, 255, 0.06) inset;
-        /* glossy sheen at top-left */
-        background: radial-gradient(120% 80% at 20% 18%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.08) 18%, rgba(255, 255, 255, 0) 30%);
-        mix-blend-mode: overlay;
-        transform: translateZ(22px);
+    100% {
+        transform: translate(0, 0) scale(1);
     }
+}
 
-    /* subtle slow rotation for a living feel */
-    .sb-ring {
-        animation: sb-rotate 6s linear infinite;
+.mb-loader-message {
+    color: #ffffff;
+    font-size: 0.9rem;
+    text-align: center;
+    opacity: 0.95;
+    max-width: 80vw;
+}
+
+/* small tweak for very small loader sizes */
+@media (max-width: 420px) {
+    .mb-loader-message {
+        font-size: 0.85rem;
     }
-
-    @keyframes sb-rotate {
-        from {
-            transform: rotate(0deg);
-        }
-
-        to {
-            transform: rotate(360deg);
-        }
-    }
-
 }
