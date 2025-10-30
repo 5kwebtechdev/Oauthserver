@@ -128,7 +128,7 @@ export class AuthService {
       'Content-Type': 'application/json'
     }) : undefined;
 
-    const url = `${this.apiUrl}/auth/register/request-otp`;
+    const url = `${this.apiUrl}/auth/register/generate-otp`;
 
     const options: any = {
       responseType: 'text'
@@ -139,8 +139,8 @@ export class AuthService {
     }
 
     const payload = isEmail
-      ? { email: identifier }
-      : { phone: countryCode ? `${countryCode}${identifier}` : identifier };
+      ? { email: identifier, "identifierType": "EMAIL" }
+      : { phone: identifier, "identifierType": "PHONE" };
 
     return this.http.post<string>(url, payload, options);
   }
@@ -162,8 +162,8 @@ export class AuthService {
     }
 
     const payload = isEmail
-      ? { email: identifier, otp }
-      : { phone: countryCode ? `${countryCode}${identifier}` : identifier, otp };
+      ? { email: identifier, otp, "identifierType": "EMAIL" }
+      : { phone: identifier, otp, "identifierType": "PHONE" };
 
     return this.http.post<string>(url, payload, options);
   }

@@ -244,7 +244,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       if (identifier) sessionStorage.setItem('requestedIdentifier', identifier);
     } catch (e) { }
 
-    this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
+    // Decide next step based on selected role:
+    // - If user is a parent (last screen), perform registration now.
+    // - If user is self/child, navigate to pet selection (step 4) and register from there.
+    const savedRole = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;
+    if (savedRole === 'parent') {
+      // Parent: register immediately
+      this.registerFromSession();
+    } else {
+      // Self/Child: go to pet selection screen before registering
+      this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
+    }
   }
 
   signupFromLogin() {
@@ -279,8 +289,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           }, 100);
         },
         error: (err) => {
-          console.error('Failed to request OTP:', err);
-          this.errorMessage = 'Failed to send OTP. Please try again.';
+          console.error('Failed to request OTP:', err.error);
+          const msg = err && err.error && (err.error.message || err.error)
+            ? (err.error.message || String(err.error))
+            : 'Failed to send OTP. Please try again.';
+          this.errorMessage = msg;
+          console.error("faledcbcfgfgh------------", msg.message);
+          try { this.core.triggerToasrt(msg); } catch (e) { /* swallow */ }
         }
       });
     } else {
@@ -312,7 +327,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('Failed to request OTP:', err);
-          this.core.triggerToasrt('Failed to send OTP. Please try again.');
+          const msg = err && err.error && (err.error.message || err.error)
+            ? (err.error.message || String(err.error))
+            : 'Failed to send OTP. Please try again.';
+          this.errorMessage = msg;
+          try { this.core.triggerToasrt(msg); } catch (e) { /* swallow */ }
         }
       });
     }
@@ -342,7 +361,20 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // persist avatar
     try { sessionStorage.setItem('signup_avatar', String(this.avatarSelected)); } catch (e) { }
 
-    // If role is 'self', complete signup and go to step 4 (pet selection)
+    // If we're currently on the pet selection step (step 4), persist selected pet and finalize signup
+    if (this.step === 4) {
+      // Use currentImage (set by swiper) as selected pet; fallback to first pet
+      const petName = (this.currentImage && (this.currentImage.name || this.currentImage))
+        ? (this.currentImage.name || String(this.currentImage))
+        : (this.pets && this.pets.length ? this.pets[0].name : undefined);
+      try { if (petName) sessionStorage.setItem('signup_pet', String(petName)); } catch (e) { }
+
+      // Proceed to register using session + selected pet
+      this.registerFromSession();
+      return;
+    }
+
+    // If role is 'self', go to pet selection (step 4)
     if (this.roleSelected === 'self') {
       this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
       return;
@@ -947,6 +979,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       payload.dateOfBirth = dobDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
     }
 
+    // Include selected pet name if available (from session or current selection)
+    try {
+      const storedPet = sessionStorage.getItem('signup_pet');
+      const petName = storedPet || (this.currentImage && this.currentImage.name) || undefined;
+      if (petName) {
+        payload.petName = petName;
+      }
+    } catch (e) {
+      // ignore session errors
+    }
+
     // Call register API
     this.authService.register(payload).subscribe({
       next: (resp) => {
@@ -960,12 +1003,20 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           sessionStorage.removeItem('requestedIdentifier');
         } catch (e) { }
 
-        // Move to pet selection (step 4) on success
-        this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
+        // After successful registration, route depending on role:
+        // - If parent, send to parent instructions (final screen)
+        // - If self/child, move to pet selection (step 4) so they can pick a pet
+        const roleSaved = (role || this.roleSelected) as string | undefined;
+        const roleUpper = roleSaved ? roleSaved.toUpperCase() : '';
+        if (roleUpper === 'PARENT') {
+          this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
+        } else {
+          this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
+        }
       },
       error: (err) => {
         console.error('Registration failed:', err);
-        const serverMsg = err?.error || 'Registration failed';
+        const serverMsg = err?.error.error || 'Registration failed';
         this.errorMessage = typeof serverMsg === 'string' ? serverMsg : 'Registration failed. Please try again.';
       }
     });
