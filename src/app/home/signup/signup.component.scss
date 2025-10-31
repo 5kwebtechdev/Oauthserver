@@ -370,15 +370,11 @@
     background: #FAD2AE;
     border-radius: 25px;
     overflow: hidden;
-    padding: 25px 15px 0 15px;
+    padding: 0px 0px 0px 15px;
     position: relative;
     border: 5px solid transparent;
     transition: 0.2s;
-    display: flex;
-    width: 337px;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 24px;
+
 
     h2 {
       font-family: 'Fredoka', sans-serif;
@@ -398,7 +394,6 @@
     }
 
     &:nth-child(2) {
-      margin-top: 15px;
       padding: 25px 15px 0 0;
 
       h2,

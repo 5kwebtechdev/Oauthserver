@@ -153,27 +153,27 @@
     </div>
 
     <!--//////////////////////// STEP 1 - Role Selection-->
-    <div *ngIf="step === 1" [@slideIn]>
+    <div class="role-selection d-flex flex-column gap-3" *ngIf="step === 1" [@slideIn]>
 
-      <div class="role-selector container p-0" [ngClass]="{'active': roleSelected === 'child'}"
+      <div class="role-selector d-flex" [ngClass]="{'active': roleSelected === 'child'}"
         (click)="roleSelected = 'child'">
-        <div class="row">
-          <div class="col-6">
+        <div class="role-selection-info d-flex stretch">
+          <div class="text-role d-flex flex-column">
             <h2>Child</h2>
             <h4>Learn and grow</h4>
             <h4>Link with your parents</h4>
             <h4>Earn rewards together</h4>
           </div>
-          <div class="col-6">
-            <img src="/assets/app-assets/Onboarding-role-selection-child.svg" alt="">
-          </div>
+
+          <img src="assets/Images-Transparent/Image-Role-Child.png" alt="">
+
         </div>
       </div>
-      <div class="role-selector container p-0" [ngClass]="{'active': roleSelected === 'parent'}"
+      <div class="role-selector d-flex" [ngClass]="{'active': roleSelected === 'parent'}"
         (click)="roleSelected = 'parent'">
         <div class="row">
           <div class="col-6 p-l-0">
-            <img src="/assets/app-assets/Onboarding-role-selection-parent.svg" alt="">
+            <img src="assets/Images-Transparent/Image-Role-Parent.png" alt="">
           </div>
           <div class="col-6">
             <h2>Parent</h2>
@@ -184,17 +184,16 @@
         </div>
       </div>
 
-      <div class="role-selector container p-0" [ngClass]="{'active': roleSelected === 'self'}"
-        (click)="roleSelected = 'self'">
-        <div class="row">
-          <div class="col-6">
+      <div class="role-selector " [ngClass]="{'active': roleSelected === 'self'}" (click)="roleSelected = 'self'">
+        <div class="self-role d-flex">
+          <div class="text-role">
             <h2>Self</h2>
             <h4>Personal Journey</h4>
             <h4>Daily Reflections</h4>
             <h4>Mindful Growth</h4>
           </div>
-          <div class="col-6">
-            <img src="/assets/app-assets/Onboarding-role-selection-self.svg" alt="">
+          <div class="role-img">
+            <img src="assets/Images-Transparent/Image-Role-Self.png" alt="">
           </div>
         </div>
       </div>

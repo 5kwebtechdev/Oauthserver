@@ -15,7 +15,7 @@ export class HomePage {
 
   slides = [
     {
-      image: 'assets/onboarding/onboarding_1.svg',
+      image: 'assets/Images-Thumbnails/Image-Onboarding1.jpg',
       title: 'Stick to cool habits!',
       subtitle: [
         'Track your tasks.',
@@ -27,7 +27,7 @@ export class HomePage {
       next_color: "#FAD2AE"
     },
     {
-      image: 'assets/onboarding/onboarding_2.svg',
+      image: 'assets/Images-Thumbnails/Image-Onboarding2.jpg',
       title: 'Grow with your pet!',
       subtitle: [
         'Finish tasks.',
@@ -39,7 +39,7 @@ export class HomePage {
       next_color: "#F9D2DC"
     },
     {
-      image: 'assets/onboarding/onboarding_3.svg',
+      image: 'assets/Images-Thumbnails/Image-Onboarding3.jpg',
       title: 'Earn coins daily',
       subtitle: [
         'Track progress daily.',
