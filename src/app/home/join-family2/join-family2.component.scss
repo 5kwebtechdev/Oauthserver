@@ -1,6 +1,7 @@
 .mindful-page-container {
-  margin-top: 68px; 
+  margin-top: 65px;
 }
+
 .mode-selection {
   margin-bottom: 40px;
 
@@ -20,7 +21,6 @@
       margin: 6px;
       background: transparent;
       color: #772817;
-      font-family: 'Nunito', sans-serif;
       font-size: 16px;
 
       &.active {
@@ -62,7 +62,7 @@
   input[formControlName="familyName"] {
     background: #FAD2AE !important;
   }
-  
+
   .custom-create-btn {
     width: 100%;
     padding: 16px;
@@ -74,7 +74,6 @@
     font-size: 16px;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-family: 'Nunito', sans-serif;
     margin-bottom: 16px;
 
     &:hover:not(:disabled) {
@@ -88,7 +87,7 @@
       cursor: not-allowed;
       transform: none;
     }
-    
+
     @media (max-width: 480px) {
       padding: 14px;
       font-size: 15px;
@@ -135,7 +134,7 @@
     &:hover {
       background: rgba(238, 102, 33, 0.1);
       transform: translateY(-50%) scale(1.05);
-      
+
       img {
         filter: brightness(0) saturate(100%) invert(49%) sepia(75%) saturate(3540%) hue-rotate(16deg) brightness(97%) contrast(85%);
       }
@@ -184,7 +183,6 @@
     margin-bottom: 32px;
 
     .success-title {
-      font-family: 'Fredoka', sans-serif;
       font-weight: 500;
       font-size: 20px;
       color: #4CAF50;
@@ -215,7 +213,6 @@
       min-width: 200px;
 
       .code-text {
-        font-family: 'Nunito', sans-serif;
         font-weight: 700;
         font-size: 24px;
         color: #772817;
@@ -264,10 +261,9 @@
       padding: 0 16px;
       position: relative;
       z-index: 1;
-      
+
       width: 24px;
       height: 21px;
-      font-family: 'Nunito', sans-serif;
       font-style: normal;
       font-weight: 600;
       font-size: 16px;
@@ -305,7 +301,7 @@
         .qr-pattern {
           width: 140px;
           height: 140px;
-          background-image: 
+          background-image:
             repeating-linear-gradient(0deg, #000, #000 3px, transparent 3px, transparent 6px),
             repeating-linear-gradient(90deg, #000, #000 3px, transparent 3px, transparent 6px),
             repeating-linear-gradient(45deg, #000, #000 2px, transparent 2px, transparent 8px);
@@ -321,7 +317,6 @@
       border-radius: 25px;
       padding: 12px 24px;
       color: #772817;
-      font-family: 'Nunito', sans-serif;
       font-weight: 500;
       font-size: 13px;
       cursor: pointer;

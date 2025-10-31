@@ -4,9 +4,9 @@
   width: 100%;
   align-items: center;
   margin: 0 auto;
-  padding: 2rem 1.2rem 0 1.2rem;
+  padding: 65px 1.2rem 0 1.2rem;
   background: #FDEAD7;
-  font-family: "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
   color: #532b19;
   min-height: 100vh;
   // min-width: 360px;
@@ -140,12 +140,12 @@
 
     input {
       width: 100%;
-      padding: 0.8rem;
-      border: 2px solid transparent;
-      border-radius: 10px !important;
+      padding: 1rem;
+      border-radius: 12px !important;
       font-size: 1rem;
       background: #FAD2AE;
-      color: #772817;
+      border: 2px solid transparent;
+      transition: 0.2s;
 
       &::placeholder {
         color: #772817;
@@ -216,7 +216,6 @@
         .country-code {
           font-weight: 600;
           font-size: 0.9rem;
-          font-family: 'Nunito', sans-serif;
         }
 
         i {
@@ -234,7 +233,6 @@
         font-size: 1rem;
         border-radius: 0 8px 8px 0;
         min-width: 0;
-        font-family: 'Nunito', sans-serif;
 
         &:focus {
           outline: none;
@@ -262,6 +260,13 @@
         &[type=tel] {
           -webkit-appearance: none;
           appearance: none;
+          width: 100%;
+          padding: 1rem;
+          border-radius: 12px !important;
+          font-size: 1rem;
+          background: #FAD2AE;
+          /* border: 2px solid transparent; */
+          transition: 0.2s;
         }
       }
     }
@@ -429,7 +434,6 @@
 
     .login-title {
       color: #772817;
-      font-family: 'Fredoka';
       font-style: normal;
       font-weight: 500;
       font-size: 25px;
@@ -550,14 +554,12 @@
 
 .country-name {
   flex: 1;
-  font-family: 'Nunito', sans-serif;
   font-weight: 500;
   font-size: 16px;
   color: #772817;
 }
 
 .country-item .country-code {
-  font-family: 'Nunito', sans-serif;
   font-weight: 600;
   font-size: 16px;
   color: #772817;
@@ -576,7 +578,6 @@
   border: none;
   border-radius: 12px;
   padding: 16px;
-  font-family: 'Nunito', sans-serif;
   font-weight: 700;
   font-size: 16px;
   cursor: pointer;
@@ -697,7 +698,6 @@
 }*/
 
 .forgot-password {
-  font-family: 'Nunito';
   font-style: normal;
   font-weight: 600;
   font-size: 13px;
@@ -730,7 +730,6 @@
   align-items: center;
 
   p {
-    font-family: 'Nunito', sans-serif;
     font-size: 14px;
     font-weight: 500;
     color: #772817; // SAME color for both

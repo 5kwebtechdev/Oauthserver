@@ -1,7 +1,9 @@
-
-.step-1, .step-2, .step-3 {
+.step-1,
+.step-2,
+.step-3 {
   padding: 16px;
 }
+
 .select-role {
   .select-role__container {
     max-width: 420px;
@@ -50,7 +52,6 @@
   transition: 0.2s;
 
   h2 {
-    font-family: 'Fredoka', sans-serif;
     font-weight: 500;
     font-size: 40px;
     text-align: left;
@@ -59,7 +60,6 @@
   }
 
   h4 {
-    font-family: 'Nunito', sans-serif;
     font-weight: 400;
     font-size: 20px;
     text-align: left;
@@ -110,8 +110,8 @@
 .toggle-buttons {
   display: flex;
   margin-bottom: 20px;
-border-radius: 40px;
-background: rgba(76, 175, 80, 0.20);
+  border-radius: 40px;
+  background: rgba(76, 175, 80, 0.20);
 
   button {
     flex: 1;
@@ -123,6 +123,7 @@ background: rgba(76, 175, 80, 0.20);
     margin: 6px;
     background: transparent;
     color: #282527;
+
     &.active {
       background: #4CAF50;
       color: white;

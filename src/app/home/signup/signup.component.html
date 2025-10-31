@@ -1,6 +1,6 @@
 <ion-content class="bg-mindful-secondary">
   <div class="signup-container">
-    <h2 class="fredoka">
+    <h2>
       <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true"
         (click)="goBack()">
         <path
@@ -9,8 +9,9 @@
       </svg>
       <span class="header-text">
         {{ step === 1 ? "Who's using the app?" : (step === 0.1 ? "Add phone number or email address" : (step === 0.2 ?
-        loginMode === 'phone' ? "Check your phone" : "Check your email" : (step === 0.3 ? "Create Password" : "Create
-        your Account"))) }}
+        loginMode === 'phone' ? "Check your phone" : "Check your email" : (step === 0.3 ? "Create Password" : "Let's set
+        you up!
+        "))) }}
         <p *ngIf="step === 0.2 && loginMode === 'phone'" class="otp-subtitle">We've sent an OTP to the
           number<br>{{getMaskedPhoneNumber()}}</p>
         <p *ngIf="step === 0.2 && loginMode === 'email'" class="otp-subtitle">We've sent an OTP to the
@@ -275,7 +276,7 @@
               </div>
             </ng-container>
             <ng-container *ngIf="loginMode === 'phone'">
-              <div class="input-group">
+              <div class="input-group ">
                 <div class="phone-input-container" [ngClass]="{'error' : !isPhoneValid(phone?.value) && phone?.dirty }">
                   <div class="country-code-selector" (click)="openCountryCodeModal()">
                     <span class="flag-emoji">{{selectedCountry.flag}}</span>
@@ -322,7 +323,7 @@
       <swiper-container slides-per-view="1.4" centered-slides="true" space-between="20" grab-cursor="true"
         (animationend)="onSlideChange()" (transitionend)="onSlideChange()" #swiperEl [style]="{ marginTop: '50px' }">
         <swiper-slide *ngFor="let pet of pets">
-          <div class="pet-card">
+          <div class="pet-card d-flex flex-column">
             <h4>{{pet.name}}</h4>
             <p>{{pet.text[0]}}</p>
             <p>{{pet.text[1]}}</p>

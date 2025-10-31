@@ -1,6 +1,6 @@
 <ion-content>
 	<div class="step step-1" *ngIf="currentStep === 1">
-		<mindful-navigator heading="Select the role" backIcon="arrowSvg"></mindful-navigator>
+		<mindful-navigator heading="Select the role" backIcon="arrowSvg" (back)="goBack()"></mindful-navigator>
 
 		<div class="role-selector container p-0" data-role="child" role="button" tabindex="0"
 			(click)="selectRole('child')" (keydown)="onKeySelect($event, 'child')"

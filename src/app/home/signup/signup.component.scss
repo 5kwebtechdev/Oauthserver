@@ -3,8 +3,8 @@
   flex-direction: column;
   gap: 32px;
   margin: auto;
-  padding: 32px 20px 0 20px;
-  font-family: "Segoe UI", sans-serif;
+  padding: 65px 20px 0 20px;
+  font-family: var(--font-sans);
   color: #532b19;
   min-height: 100dvh;
   width: 100%;
@@ -34,7 +34,6 @@
   }
 
   .step-text {
-    font-family: 'Nunito', sans-serif;
     font-size: 16px;
     font-weight: 500;
     color: #6b3d2b;
@@ -118,8 +117,9 @@
 
     input {
       width: 100%;
-      padding: 0.8rem;
-      border-radius: 10px !important;
+
+      padding: 1rem;
+      border-radius: 12px !important;
       font-size: 1rem;
       background: #FAD2AE;
       border: 2px solid transparent;
@@ -196,7 +196,6 @@
         .country-code {
           font-weight: 600;
           font-size: 0.9rem;
-          font-family: 'Nunito', sans-serif;
         }
 
         i {
@@ -214,7 +213,6 @@
         font-size: 1rem;
         border-radius: 0 8px 8px 0;
         min-width: 0;
-        font-family: 'Nunito', sans-serif;
 
         &:focus {
           outline: none;
@@ -241,6 +239,13 @@
         &[type=tel] {
           -webkit-appearance: none;
           appearance: none;
+          width: 100%;
+          padding: 1rem;
+          border-radius: 12px !important;
+          font-size: 1rem;
+          background: #FAD2AE;
+          /* border: 2px solid transparent; */
+          transition: 0.2s;
         }
       }
     }
@@ -382,7 +387,6 @@
 
 
     h2 {
-      font-family: 'Fredoka', sans-serif;
       font-weight: 500;
       font-size: 40px;
       text-align: left;
@@ -391,7 +395,6 @@
     }
 
     h4 {
-      font-family: 'Nunito', sans-serif;
       font-weight: 400;
       font-size: 20px;
       text-align: left;
@@ -473,7 +476,6 @@
     justify-content: center;
     align-items: center;
     background: #FAD2AE;
-    font-family: 'Nunito', sans-serif;
     font-size: 16px;
     border-radius: 15px;
     height: 50px;
@@ -545,7 +547,6 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .pet-card h4 {
-  font-family: 'Fredoka', sans-serif;
   font-weight: 500;
   font-size: 20px;
   line-height: 130%;
@@ -553,7 +554,6 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .pet-card p {
-  font-family: 'Nunito', sans-serif;
   font-size: 13px;
   color: white;
 }
@@ -604,7 +604,6 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .age-modal__subtitle {
-  font-family: 'Nunito', sans-serif;
   font-weight: 500;
   font-size: 14px;
   line-height: 1.4;
@@ -630,7 +629,6 @@ swiper-slide.swiper-slide-active .pet-card {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-family: 'Nunito', sans-serif;
   font-weight: 700;
   font-size: 14px;
   transition: all 0.2s ease;
@@ -657,7 +655,6 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .age-modal__footer {
-  font-family: 'Nunito', sans-serif;
   font-weight: 400;
   font-size: 12px;
   line-height: 1.4;
@@ -804,7 +801,6 @@ swiper-slide.swiper-slide-active .pet-card {
 
 .country-name {
   flex: 1;
-  font-family: 'Nunito', sans-serif;
   font-weight: 500;
   font-size: 16px;
   color: #772817;
@@ -820,7 +816,6 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .country-item .country-code {
-  font-family: 'Nunito', sans-serif;
   font-weight: 600;
   font-size: 16px;
   color: #772817;
@@ -839,7 +834,6 @@ swiper-slide.swiper-slide-active .pet-card {
   border: none;
   border-radius: 12px;
   padding: 16px;
-  font-family: 'Nunito', sans-serif;
   font-weight: 700;
   font-size: 16px;
   cursor: pointer;
@@ -944,7 +938,6 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .otp-subtitle {
-  font-family: 'Nunito', sans-serif;
   font-weight: 400;
   font-size: 16px;
   color: #772817;
@@ -955,7 +948,6 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .otp-instruction {
-  font-family: 'Nunito', sans-serif;
   font-weight: 300;
   font-size: 12px;
   color: #999;
@@ -988,7 +980,6 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .otp-timer {
-  font-family: 'Nunito', sans-serif;
   font-weight: 400;
   font-size: 14px;
   color: #EE6621;
@@ -1002,7 +993,6 @@ swiper-slide.swiper-slide-active .pet-card {
   border: 2px solid #EE6621;
   border-radius: 12px;
   background: #fdead7;
-  font-family: 'Nunito', sans-serif;
   font-weight: 600;
   font-size: 24px;
   color: #772817;
@@ -1012,7 +1002,7 @@ swiper-slide.swiper-slide-active .pet-card {
 
   &:focus {
     border-color: #ff823b;
-    background: #ffffff;
+    background: #fdead7;
     box-shadow: 0 0 0 3px rgba(238, 102, 33, 0.1);
   }
 
@@ -1040,7 +1030,6 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .otp-resend {
-  font-family: 'Nunito', sans-serif;
   font-size: 14px;
   color: #772817;
 
@@ -1119,7 +1108,6 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .password-description {
-  font-family: 'Nunito', sans-serif;
   font-weight: 400;
   font-size: 16px;
   color: #772817;
@@ -1130,7 +1118,6 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .password-label {
-  font-family: 'Nunito', sans-serif;
   font-weight: 600;
   font-size: 16px;
   color: #772817;
@@ -1145,7 +1132,6 @@ swiper-slide.swiper-slide-active .pet-card {
   border: 2px solid #EE6621;
   border-radius: 8px;
   background: #FAD2AE;
-  font-family: 'Nunito', sans-serif;
   font-weight: 400;
   font-size: 16px;
   color: #772817;
@@ -1154,7 +1140,7 @@ swiper-slide.swiper-slide-active .pet-card {
 
   &:focus {
     border-color: #ff823b;
-    background: #ffffff;
+    background: #fdead7;
     box-shadow: 0 0 0 3px rgba(238, 102, 33, 0.1);
   }
 
@@ -1164,7 +1150,6 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .password-info {
-  font-family: 'Nunito', sans-serif;
   font-weight: 400;
   font-size: 12px;
   color: #999;

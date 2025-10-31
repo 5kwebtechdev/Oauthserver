@@ -5,7 +5,6 @@
   min-height: 100dvh;
   background: #FFFFFF;
   overflow: hidden;
-  font-family: 'Nunito', sans-serif;
   display: flex;
   flex-direction: column;
 
@@ -129,7 +128,6 @@
         bottom: -40px;
         left: 50%;
         transform: translateX(-50%);
-        font-family: 'Nunito', sans-serif;
         font-weight: 600;
         font-size: 14px;
         color: #772817;
@@ -177,7 +175,6 @@
     }
 
     span {
-      font-family: 'Nunito', sans-serif;
       font-weight: 600;
       font-size: 14px;
       line-height: 130%;
@@ -216,7 +213,6 @@
       .divider-text {
         width: 24px;
         height: 21px;
-        font-family: 'Nunito', sans-serif;
         font-style: normal;
         font-weight: 600;
         font-size: 16px;
@@ -241,7 +237,6 @@
       max-width: 280px;
 
       .error-text {
-        font-family: 'Nunito', sans-serif;
         font-weight: 500;
         font-size: 15px;
         line-height: 130%;
@@ -252,7 +247,6 @@
       }
 
       .enter-code-btn {
-        font-family: 'Nunito', sans-serif;
         font-weight: 700;
         font-size: 16px;
         line-height: 130%;

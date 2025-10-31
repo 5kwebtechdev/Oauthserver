@@ -107,15 +107,19 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   pets: any[] = [{
     name: 'Bubu the Panda',
-    image: 'assets/app-assets/Onboarding-pet-selection-panda.svg',
+    image: 'assets/Images-Pet/Panda-Age1-Happy.png',
     text: ['Loves quiet focus and gentle growth', 'Loves quiet focus and gentle growth']
   }, {
-    name: 'Kiko the sky fox',
-    image: 'assets/app-assets/Onboarding-pet-selection-sky-fox.svg',
+    name: 'Kiko the Llama',
+    image: 'assets/Images-Pet/Llama-Age1-Happy.png',
     text: ['Loves quiet focus and gentle growth', 'Loves quiet focus and gentle growth']
   }, {
     name: 'Gradon the dragon',
-    image: 'assets/app-assets/Onboarding-pet-selection-neon-dragon.svg',
+    image: 'assets/Images-Pet/Dragon-Age1-Happy.png',
+    text: ['Loves quiet focus and gentle growth', 'Loves quiet focus and gentle growth']
+  }, {
+    name: 'Olly the Owl',
+    image: 'assets/Images-Pet/Owl-Age1-Happy.png',
     text: ['Loves quiet focus and gentle growth', 'Loves quiet focus and gentle growth']
   }]
 
@@ -476,6 +480,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       // From step 0.2, go back to step 0.1
       this.clearOtpTimer();
       this.router.navigate(['home/sign-up'], { queryParams: { step: 0.1 } });
+    } else if (this.step === 0.3) {
+      // From step 0.3 (password creation), go back to step 0.2 (OTP verification)
+      this.router.navigate(['home/sign-up'], { queryParams: { step: 0.2 } });
+    } else if (this.step === 1) {
+      // From step 1 (role selection), go back to step 0.3 (password creation)
+      this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
     } else if (this.step > 1) {
       this.router.navigate(['home/sign-up'], { queryParams: { step: this.step - 1 } });
     }

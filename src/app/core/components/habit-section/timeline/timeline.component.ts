@@ -58,8 +58,7 @@ export class TimelineComponent implements OnInit {
   }
 
   onNotesClick(): void {
-    // TODO: implement notes action (open notes modal/page)
-    console.log('Notes icon clicked');
+    this.router.navigateByUrl('/authed/notes');
   }
 
   onCalendarClick(): void {

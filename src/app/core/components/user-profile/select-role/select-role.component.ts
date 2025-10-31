@@ -7,6 +7,7 @@ import { MindfulButtonComponent } from '../../mindful-button/mindful-button.comp
 import { InstructioListComponent } from '../family-connection/instructio-list';
 import { ProfileFactsComponent } from '../profile-facts/profile-facts.component';
 import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-input.component';
+import { NavigationService } from '../../../services/navigation.service';
 
 @Component({
   standalone: true,
@@ -53,14 +54,14 @@ export class RoleSelectComponent {
   onScanQr() {
     // prefer Router navigation to match app conventions
     try {
-      this.router.navigate(['/home/scan-qr']).catch(() => {});
+      this.router.navigate(['/home/scan-qr']).catch(() => { });
     } catch (e) {
       // fallback log
       console.log('QR scan navigation requested', e);
     }
   }
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private navigationService: NavigationService) { }
 
   selectRole(role: string) {
     this.selectedRole = role;
@@ -112,6 +113,11 @@ export class RoleSelectComponent {
     // Finalize account creation / family join or creation
     console.log('Finishing flow. Family action:', this.selectedFamilyAction);
     // TODO: wire actual API calls and navigation
+  }
+
+  goBack() {
+    // Use the app's navigation service for proper back navigation
+    this.navigationService.back();
   }
 }
 

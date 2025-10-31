@@ -1,4 +1,4 @@
-.profile-card{
+.profile-card {
   /* Frame 39788 */
   width: 100%;
   background: #FFFFFF;
@@ -6,7 +6,7 @@
   border-radius: 24px;
   padding: 20px;
 
-  img{
+  img {
     display: block;
     margin: auto;
     width: 100%;
@@ -14,7 +14,7 @@
     border-radius: 1000px;
     position: relative;
 
-    &::before{
+    &::before {
       position: absolute;
       // Edit icon from front awesome
       content: "\f044";
@@ -27,8 +27,7 @@
     }
   }
 
-  h3{
-    font-family: 'Fredoka', sans-serif;
+  h3 {
     font-weight: 500;
     font-size: 16px;
     line-height: 140%;
@@ -37,8 +36,7 @@
     margin-bottom: 0;
   }
 
-  h4{
-    font-family: 'Nunito', sans-serif;
+  h4 {
     color: 28252799;
     font-size: 14px;
     line-height: 140%;

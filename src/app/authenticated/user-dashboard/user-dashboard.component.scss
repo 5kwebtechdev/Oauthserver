@@ -2,7 +2,6 @@
 
 :host {
   color: #282527;
-  font-family: Nunito;
   font-size: 0.8125rem;
   font-style: normal;
   font-weight: 500;
@@ -16,7 +15,6 @@
 :host h5,
 :host h6 {
   color: #282527;
-  font-family: Fredoka;
   font-size: 1.25rem;
   font-style: normal;
   font-weight: 500;
@@ -35,7 +33,7 @@ ion-content {
   &.w-full.p-0 {
     width: 100%;
     padding: 0;
-    height: 100vh;
+    height: 140%;
     overflow-y: scroll;
     padding-bottom: 107px; // Footer height (75px) + margin (16px) + extra space (16px)
   }
@@ -123,7 +121,6 @@ ion-content {
     .user-name-wrap {
       .user-name {
         color: #282527;
-        font-family: Fredoka;
         font-size: 16px;
         font-style: normal;
         font-weight: 400;
@@ -159,7 +156,6 @@ ion-content {
         position: relative;
         background: #ffffff;
         color: #000000;
-        font-family: Arial;
         font-size: 10px;
         line-height: 24px;
         //box-shadow: 0px 0px 1px 1px rgba(163, 163, 163, 0.87);

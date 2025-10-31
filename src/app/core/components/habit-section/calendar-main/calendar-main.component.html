@@ -46,8 +46,8 @@
         <div *ngIf="(!habitsForSelectedDate?.length && !tasksForSelectedDate?.length)" class="empty-calendar">
             <div class="empty-calendar-message">
                 <div class="empty-calendar-image">
-                    <img src="assets/app-assets/empty-calendar.png" alt="Empty calendar" width="208" height="121"
-                        style="width:208px;height:121px;aspect-ratio:208/121;object-fit:contain;" />
+                    <img src="assets/Images-Transparent/Image-Calendar-Blank.png" alt="Empty calendar" width="208"
+                        height="121" style="width:208px;height:121px;aspect-ratio:208/121;object-fit:contain;" />
                 </div>
                 <div class="empty-calendar-text">
                     <h2>Your Calendar’s Looking Clear Today!</h2>
@@ -59,8 +59,9 @@
                 (click)="openHabitInput()"></mindful-button>
         </div>
 
-        <div *ngIf="habitsForSelectedDate?.length || tasksForSelectedDate?.length" class="selected-date-cards">
-            <div *ngIf="habitsForSelectedDate?.length">
+        <div *ngIf="habitsForSelectedDate?.length || tasksForSelectedDate?.length"
+            class="selected-date-cards d-flex flex-column gap-2">
+            <div *ngIf="habitsForSelectedDate?.length" class="selected-date-cards d-flex flex-column gap-2">
                 <div *ngFor="let habit of habitsForSelectedDate">
                     <!-- Use the app's habit-card component to render habits -->
                     <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"

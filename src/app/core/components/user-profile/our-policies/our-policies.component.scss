@@ -1,20 +1,20 @@
-.policies-container{
+.policies-container {
     padding: 16px;
 }
 
-.policies-header{
+.policies-header {
     display: inline-flex;
     align-items: center;
     gap: 16px;
 }
 
-.policies-tabs{
+.policies-tabs {
     display: inline-flex;
     align-items: center;
     gap: 16px;
 }
 
-.policies-tab{
+.policies-tab {
     display: flex;
     width: 172px;
     padding: 0px 0px 15px 0px;
@@ -31,12 +31,12 @@
 
 }
 
-.policies-tab:focus{
+.policies-tab:focus {
     outline: none;
     // box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
 }
 
-.policies-tab.active::after{
+.policies-tab.active::after {
     content: '';
     position: absolute;
     left: 12px;
@@ -47,40 +47,42 @@
     border-radius: 2px;
 }
 
-.policies-tab span{
+.policies-tab span {
     pointer-events: none;
-   color: #282527;
-font-family: Nunito;
-font-size: 13px;
-font-style: normal;
-font-weight: 700;
-line-height: 140%; /* 18.2px */
+    color: #282527;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 140%;
+    /* 18.2px */
 }
 
-.terms-and-conditions, .privacy-policy{
+.terms-and-conditions,
+.privacy-policy {
     display: flex;
-flex-direction: column;
-align-items: flex-start;
-gap: 4px;
-align-self: stretch;
-margin: 40px 0px 89px 0px;
-    h1{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    align-self: stretch;
+    margin: 40px 0px 89px 0px;
+
+    h1 {
         color: #282527;
-font-family: Nunito;
-font-size: 20px;
-font-style: normal;
-font-weight: 600;
-line-height: 140%; /* 28px */
+        font-size: 20px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: 140%;
+        /* 28px */
     }
 
-    p{
-       color: #282527;
-font-family: Nunito;
-font-size: 16px;
-font-style: normal;
-font-weight: 500;
-line-height: 140%; /* 22.4px */
-width: 354px;
-opacity: 0.7;
+    p {
+        color: #282527;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 140%;
+        /* 22.4px */
+        width: 354px;
+        opacity: 0.7;
     }
 }

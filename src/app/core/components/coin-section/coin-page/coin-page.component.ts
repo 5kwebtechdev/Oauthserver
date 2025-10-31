@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { CoinListComponent } from '../coin-list/coin-list.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { FooterComponent } from '../../footer/footer.component';
 
 @Component({
   selector: 'app-coin-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, CoinListComponent, MindfulButtonComponent],
+  imports: [CommonModule, IonicModule, CoinListComponent, MindfulButtonComponent, FooterComponent],
   templateUrl: './coin-page.component.html',
   styleUrls: ['./coin-page.component.scss']
 })

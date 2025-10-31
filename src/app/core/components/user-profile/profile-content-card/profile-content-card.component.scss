@@ -4,7 +4,7 @@
   align-items: center;
   gap: 76px;
   align-self: stretch;
-  border-bottom: 0.5px solid rgba(40,37,39,0.4);
+  border-bottom: 0.5px solid rgba(40, 37, 39, 0.4);
   padding-bottom: 16px;
 }
 
@@ -13,7 +13,7 @@
   height: 56px;
   min-width: 56px;
   border-radius: 50%;
-  background: rgba(0,0,0,0.06);
+  background: rgba(0, 0, 0, 0.06);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -33,13 +33,13 @@
 
 .content .subtitle {
   font-weight: 600;
-  color: rgba(40,37,39,0.6);
+  color: rgba(40, 37, 39, 0.6);
   font-size: 12px;
   margin-top: 2px;
 }
 
 .chev {
-  color: rgba(40,37,39,0.6);
+  color: rgba(40, 37, 39, 0.6);
   font-size: 22px;
   line-height: 1;
 }
@@ -61,7 +61,6 @@
 
 .content-text .heading {
   color: #282527;
-  font-family: Nunito, Arial, sans-serif;
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
@@ -72,7 +71,6 @@
 .content-text .paragraph {
   align-self: stretch;
   color: #282527;
-  font-family: Nunito, Arial, sans-serif;
   font-size: 13px;
   font-style: normal;
   font-weight: 500;
@@ -98,13 +96,13 @@
     width: 48px;
     height: 48px;
     border-radius: 48px;
-    background: rgba(40,37,39,0.08);
+    background: rgba(40, 37, 39, 0.08);
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  
+
   .svg-icon {
     display: inline-flex;
     align-items: center;
@@ -125,9 +123,20 @@
     object-fit: contain;
   }
 
-.chev-area { display:flex; align-items:center; justify-content:center; width:24px; }
+  .chev-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+  }
 
-.chev { color: rgba(40,37,39,0.6); }
-.chev svg { width: 16px; height: 16px; }
+  .chev {
+    color: rgba(40, 37, 39, 0.6);
+  }
+
+  .chev svg {
+    width: 16px;
+    height: 16px;
+  }
 
 }

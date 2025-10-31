@@ -49,7 +49,6 @@
             width: 275px;
             /* requested width */
             color: #6B656A;
-            font-family: 'Nunito', sans-serif;
             font-size: 13px;
             font-style: normal;
             font-weight: 600;
@@ -106,7 +105,6 @@
 
 .item__text {
   color: #6B656A;
-  font-family: Nunito;
   font-size: 13px;
   font-style: normal;
   font-weight: 600;
@@ -142,7 +140,6 @@
 .empty-calendar-text h2 {
   color: #282527;
   text-align: center;
-  font-family: Fredoka;
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
@@ -154,7 +151,6 @@
 .empty-calendar-text {
   color: #282527;
   text-align: center;
-  font-family: Nunito;
   font-size: 13px;
   font-style: normal;
   font-weight: 500;
@@ -187,7 +183,6 @@
 .status-header h2 {
   width: 300px;
   color: #282527;
-  font-family: Fredoka;
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
@@ -225,7 +220,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-top: 12px;
+
 }
 
 .habit-card,
