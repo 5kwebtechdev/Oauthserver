@@ -81,18 +81,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   ]
 
   public avatars = [
-    { key: 1, gender: 'female', value: 'assets/app-assets/Onboarding-Avatars-female-1.svg' },
-    { key: 2, gender: 'female', value: 'assets/app-assets/Onboarding-Avatars-female-2.svg' },
-    { key: 3, gender: 'female', value: 'assets/app-assets/Onboarding-Avatars-female-3.svg' },
-    { key: 4, gender: 'female', value: 'assets/app-assets/Onbarding-Avatars-female-4.svg' },
-    { key: 5, gender: 'female', value: 'assets/app-assets/Onboarding-Avatars-female-5.svg' },
-    { key: 6, gender: 'female', value: 'assets/app-assets/Onboarding-Avatars-female-6.svg' },
-    { key: 7, gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-1.svg' },
-    { key: 8, gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-2.svg' },
-    { key: 9, gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-3.svg' },
-    { key: 10, gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-4.svg' },
-    { key: 11, gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-5.svg' },
-    { key: 12, gender: 'male', value: 'assets/app-assets/Onboarding-Avatars-male-6.svg' },
+    { key: 1, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png' },
+    { key: 2, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female2.png' },
+    { key: 3, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female3.png' },
+    { key: 4, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female4.png' },
+    { key: 5, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female5.png' },
+    { key: 6, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female6.png' },
+    { key: 7, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png' },
+    { key: 8, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male2.png' },
+    { key: 9, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male3.png' },
+    { key: 10, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male4.png' },
+    { key: 11, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male5.png' },
+    { key: 12, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male6.png' },
   ]
 
   @ViewChild('swiperEl', { static: false }) swiperEl?: ElementRef;
