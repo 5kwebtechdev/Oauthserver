@@ -372,8 +372,13 @@
     overflow: hidden;
     padding: 0px 0px 0px 15px;
     position: relative;
-    border: 5px solid transparent;
+    // border: 5px solid transparent;
     transition: 0.2s;
+
+    .role-selection-info {
+      width: 100%;
+      justify-content: space-between;
+    }
 
 
     h2 {
@@ -428,6 +433,16 @@
 
     &.active::before {
       opacity: 1;
+    }
+
+    .row {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .self-role {
+      width: 100%;
+      justify-content: space-between;
     }
   }
 
