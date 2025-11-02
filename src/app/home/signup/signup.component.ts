@@ -369,7 +369,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // persist avatar
     try { sessionStorage.setItem('signup_avatar', String(this.avatarSelected)); } catch (e) { }
 
-    // If we're currently on the pet selection step (step 4), persist selected pet and finalize signup
+    // If we're currently on the pet selection step (step 4), persist selected pet and navigate to welcome step
     if (this.step === 4) {
       // Use currentImage (set by swiper) as selected pet; fallback to first pet
       const petName = (this.currentImage && (this.currentImage.name || this.currentImage))
@@ -377,8 +377,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         : (this.pets && this.pets.length ? this.pets[0].name : undefined);
       try { if (petName) sessionStorage.setItem('signup_pet', String(petName)); } catch (e) { }
 
-      // Proceed to register using session + selected pet
-      this.registerFromSession();
+      // Navigate to welcome step (step 5)
+      this.router.navigate(['home/sign-up'], { queryParams: { step: 5 } });
       return;
     }
 
@@ -1058,4 +1058,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   // Password visibility toggle
   public hidePassword: boolean = true;
+
+  // Navigate to authenticated area after welcome step and complete registration
+  onBegin() {
+    // Complete the registration with all session data
+    this.registerFromSession();
+  }
 }

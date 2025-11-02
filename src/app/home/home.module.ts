@@ -9,6 +9,7 @@ import { LoginComponent } from "./login/login.component";
 import { SignupComponent } from "./signup/signup.component";
 import { MindfulSelectorsComponent } from "../core/components/mindful-selectors/mindful-selectors.component";
 import { MindfulInputsModule } from "../core/components/mindful-inputs/mindful-inputs.module";
+import { MindfulButtonComponent } from "../core/components/mindful-button/mindful-button.component";
 import { SocialMediaComponent } from '../core/components/social-media/social-media.component';
 import { InstructionsForChildComponent } from "./instructions-for-child/instructions-for-child.component";
 import { InstructionsForParentComponent } from "./instructions-for-parent/instructions-for-parent.component";
@@ -26,6 +27,7 @@ import { ResetPasswordComponent } from "./reset-password/reset-password.componen
     ReactiveFormsModule,
     MindfulSelectorsComponent,
     MindfulInputsModule,
+    MindfulButtonComponent,
     ScanQrComponent,
     ResetPasswordComponent,
     SocialMediaComponent

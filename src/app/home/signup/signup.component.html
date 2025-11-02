@@ -335,6 +335,25 @@
         started</button>
     </div>
 
+    <!-- Step 5: Welcome -->
+    <div *ngIf="step === 5" [@slideIn]
+      class="welcome-page d-flex flex-column align-items-center justify-content-center gap-3">
+      <img src="assets/Images-Transparent/Image-Onboarding-Pet2.png" alt="Onboarding pet" class="onboarding-image" />
+
+      <div class="welcome-content d-flex flex-column justify-content-center align-items-center gap-2"
+        style="width:361px;">
+        <h1 style="font-size: 20px;">What's One Thing You'd Like to Do?</h1>
+        <p class="subtitle" style="width:281px;">Add something to keep track of — for now, soon, or later. It's your
+          call.</p>
+
+        <div class="begin-action" style="width:100%;">
+          <!-- Make the button full-width of its parent -->
+          <mindful-button type="magenta" text="Begin My Journey" large class="w-100 d-block"
+            style="display:block; width:100%;" (click)="onBegin()"></mindful-button>
+        </div>
+      </div>
+    </div>
+
     <!-- Age Suggestion Modal -->
     <div class="age-modal-backdrop" *ngIf="showAgeSuggestionModal" (click)="closeAgeSuggestionModal()"></div>
     <div class="age-modal" *ngIf="showAgeSuggestionModal" role="dialog" aria-modal="true">

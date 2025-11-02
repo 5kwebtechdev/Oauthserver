@@ -1203,3 +1203,33 @@ swiper-slide.swiper-slide-active .pet-card {
   font-family: 'Fredoka', sans-serif;
   width: 242px;
 }
+
+/* Welcome Step Styles */
+.welcome-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 16px;
+}
+
+.welcome-content {
+  text-align: center;
+  max-width: 420px;
+}
+
+.welcome-content .subtitle {
+  color: #6b6b6b;
+}
+
+.begin-action {
+  display: flex;
+  justify-content: center;
+}
+
+.onboarding-image {
+  display: block;
+  margin: 0 auto 20px;
+  max-width: 280px;
+  width: 100%;
+  height: auto;
+}
