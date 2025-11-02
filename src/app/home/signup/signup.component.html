@@ -324,7 +324,7 @@
         (animationend)="onSlideChange()" (transitionend)="onSlideChange()" #swiperEl [style]="{ marginTop: '50px' }">
         <swiper-slide *ngFor="let pet of pets">
           <div class="pet-card d-flex flex-column">
-            <h4>{{pet.name}}</h4>
+            <h4>{{pet.displayName}}</h4>
             <p>{{pet.text[0]}}</p>
             <p>{{pet.text[1]}}</p>
             <img [src]="pet.image" alt="" />

@@ -106,19 +106,23 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   ];
 
   pets: any[] = [{
-    name: 'Bubu the Panda',
+    displayName: 'Bubu the Panda',
+    name: 'Panda',
     image: 'assets/Images-Pet/Panda-Age1-Happy.png',
     text: ['Loves quiet focus and gentle growth', 'Loves quiet focus and gentle growth']
   }, {
-    name: 'Kiko the Llama',
+    displayName: 'Kiko the Llama',
+    name: 'Llama',
     image: 'assets/Images-Pet/Llama-Age1-Happy.png',
     text: ['Loves quiet focus and gentle growth', 'Loves quiet focus and gentle growth']
   }, {
-    name: 'Gradon the dragon',
+    displayName: 'Gradon the dragon',
+    name: 'Dragon',
     image: 'assets/Images-Pet/Dragon-Age1-Happy.png',
     text: ['Loves quiet focus and gentle growth', 'Loves quiet focus and gentle growth']
   }, {
-    name: 'Olly the Owl',
+    displayName: 'Olly the Owl',
+    name: 'Owl',
     image: 'assets/Images-Pet/Owl-Age1-Happy.png',
     text: ['Loves quiet focus and gentle growth', 'Loves quiet focus and gentle growth']
   }]
@@ -468,7 +472,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       sessionStorage.setItem('signup_profile', JSON.stringify(profile));
     } catch (e) { }
 
-    // Now attempt registration using collected session/form data
+    // For self role, go to pet selection instead of registering
+    const role = sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self' || this.roleSelected;
+    if (role === 'self') {
+      this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
+      return;
+    }
+
+    // For other roles, attempt registration using collected session/form data
     this.registerFromSession();
   }
 
@@ -972,6 +983,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       gender: (profile.gender || this.gender || '').toUpperCase(),
       relationship: (role || '').toUpperCase(),
       password: password || undefined,
+      avatarName: `avatar${profile.avatar || this.avatarSelected}`,
     };
 
     // include email or phone depending on loginMode or identifier content
@@ -992,7 +1004,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // Include selected pet name if available (from session or current selection)
     try {
       const storedPet = sessionStorage.getItem('signup_pet');
-      const petName = storedPet || (this.currentImage && this.currentImage.name) || undefined;
+      // First try to get from stored pet
+      let petName = storedPet;
+
+      // If no stored pet, get from current selection
+      if (!petName && this.currentImage) {
+        // Use the simplified name instead of display name
+        petName = this.currentImage.name;
+      }
+
       if (petName) {
         payload.petName = petName;
       }
@@ -1014,13 +1034,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         } catch (e) { }
 
         // After successful registration, route depending on role:
-        // - If parent, send to parent instructions (final screen)
-        // - If self/child, move to pet selection (step 4) so they can pick a pet
+        // - If parent, send to parent instructions
+        // - If self, go to user dashboard
+        // - If child, move to pet selection (step 4)
         const roleSaved = (role || this.roleSelected) as string | undefined;
         const roleUpper = roleSaved ? roleSaved.toUpperCase() : '';
         if (roleUpper === 'PARENT') {
           this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
+        } else if (roleUpper === 'SELF') {
+          this.router.navigate(['/user-dashboard']);
         } else {
+          // For child role, continue to pet selection
           this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
         }
       },
