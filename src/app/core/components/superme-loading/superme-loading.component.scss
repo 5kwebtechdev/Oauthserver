@@ -18,6 +18,8 @@
     /* container size is controlled inline via [style.width.px] / [style.height.px] */
     position: relative;
     display: block;
+    left: 7%;
+
 }
 
 .mb-dot-wrap {
@@ -44,23 +46,23 @@
 }
 
 .mb-dot--yellow {
-    background-color: #f7b768;
+    background-color: #fac681;
     /* peach/orange */
     animation-delay: 0s;
 }
 
 .mb-dot--blue {
-    background: #33CCFF;
+    background: #989bee;
     animation-delay: -0.5s;
 }
 
 .mb-dot--red {
-    background: #FF5050;
+    background: #f4b6bc;
     animation-delay: -1s;
 }
 
 .mb-dot--green {
-    background: #8bc34a;
+    background: #87abac;
     animation-delay: -1.5s;
 }
 
