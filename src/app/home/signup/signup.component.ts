@@ -1120,7 +1120,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         if (roleUpper === 'PARENT') {
           this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
         } else if (roleUpper === 'SELF') {
-          this.router.navigate(['authed/user-dashboard']);
+          this.router.navigate(['home/login']);
         } else {
           // For child role, continue to pet selection
           this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
