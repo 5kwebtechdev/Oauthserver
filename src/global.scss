@@ -420,7 +420,7 @@ ion-content {
     min-height: 100dvh;
     width: 100%;
     position: relative;
-    padding-top: calc(36px + env(safe-area-inset-top));
+    padding-top: calc(36px + env(safe-area-inset-top)) !important;
 
     >* {
       margin-top: 0 !important;

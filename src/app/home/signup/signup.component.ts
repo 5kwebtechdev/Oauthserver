@@ -307,12 +307,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('Failed to request OTP:', err.error);
-          const msg = err && err.error && (err.error.message || err.error)
-            ? (err.error.message || String(err.error))
-            : 'Failed to send OTP. Please try again.';
-          this.errorMessage = msg;
-          console.error("faledcbcfgfgh------------", msg.message);
-          try { this.core.triggerToasrt(msg); } catch (e) { /* swallow */ }
+          this.errorMessage = 'Failed to send OTP. Please enter valid email or phone number.';
         }
       });
     } else {
@@ -329,6 +324,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
               sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier);
 
               sessionStorage.setItem('loginMode', this.loginMode);
+              this.errorMessage = '';
             }
           } catch (e) { }
 
@@ -371,12 +367,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   proceedWithAvatar() {
-    if (!this.avatarSelected) {
+    // Only validate avatar selection if we're not on the pet selection step
+    if (this.step !== 4 && !this.avatarSelected) {
       this.core.triggerToasrt('Please select an avatar');
       return;
     }
-    // persist avatar
-    try { sessionStorage.setItem('signup_avatar', String(this.avatarSelected)); } catch (e) { }
+    
+    // persist avatar if one is selected
+    if (this.avatarSelected) {
+      try { sessionStorage.setItem('signup_avatar', String(this.avatarSelected)); } catch (e) { }
+    }
 
     // If we're currently on the pet selection step (step 4), persist selected pet and navigate to welcome step
     if (this.step === 4) {
@@ -507,15 +507,23 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       sessionStorage.setItem('signup_profile', JSON.stringify(profile));
     } catch (e) { }
 
-    // For self role, go to pet selection instead of registering
+    // Get the role from session storage or current selection
     const role = sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self' || this.roleSelected;
-    if (role === 'self') {
+
+    // Route based on role
+    if (role === 'child') {
+      // For child role, go to child instructions
+      this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
+      return;
+    } else if (role === 'parent') {
+      // For parent role, go to parent instructions
+      this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
+      return;
+    } else if (role === 'self') {
+      // For self role, go to pet selection
       this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
       return;
     }
-
-    // For other roles, attempt registration using collected session/form data
-    this.registerFromSession();
   }
 
   goBack() {
@@ -1121,7 +1129,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
         } else if (roleUpper === 'SELF') {
           this.router.navigate(['home/login']);
-        } else {
+        } else if (roleUpper === 'CHILD') {
+          // For child role, continue to pet selection
+          this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
+        }
+        else {
           // For child role, continue to pet selection
           this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
         }
