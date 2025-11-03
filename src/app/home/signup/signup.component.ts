@@ -372,7 +372,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.core.triggerToasrt('Please select an avatar');
       return;
     }
-    
+
     // persist avatar if one is selected
     if (this.avatarSelected) {
       try { sessionStorage.setItem('signup_avatar', String(this.avatarSelected)); } catch (e) { }

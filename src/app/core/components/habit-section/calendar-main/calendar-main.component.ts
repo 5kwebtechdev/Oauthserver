@@ -71,19 +71,17 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   }
 
   loadCalendarData() {
-    // Load data for the current month
+    // Load data for the first day of current month only
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
 
-    // Load data for each day in the current month and adjacent months
-    const startDate = new Date(year, month - 1, 1); // Previous month
-    const endDate = new Date(year, month + 2, 0); // Next month
+    // Create date for first day of current month
+    const firstDayOfMonth = new Date(year, month, 1);
+    const dateStr = this.formatDateToYYYYMMDD(firstDayOfMonth);
 
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      const dateStr = this.formatDateToYYYYMMDD(new Date(d));
-      this.loadDayData(dateStr);
-    }
+    // Load data for first day of month
+    this.loadDayData(dateStr);
   }
 
   loadDayData(dateStr: string) {
