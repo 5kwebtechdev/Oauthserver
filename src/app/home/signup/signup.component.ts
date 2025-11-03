@@ -138,14 +138,23 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // Wait until Swiper instance is ready
     swiperEl.addEventListener('swiperinit', () => {
       const swiperInstance = swiperEl.swiper;
-      this.currentImage = this.images[swiperInstance.realIndex];
+      // Initialize with first pet
+      this.currentImage = this.pets[0];
+      // Store the selected pet name
+      try {
+        sessionStorage.setItem('signup_pet', this.pets[0].name);
+      } catch (e) { }
     });
 
     swiperEl.addEventListener('swiperslidechange', () => {
       const swiperInstance = swiperEl.swiper;
       const realIndex = swiperInstance.realIndex;
       this.currentImage = this.pets[realIndex];
-      console.log('Current image:', this.currentImage);
+      // Store the selected pet name whenever it changes
+      try {
+        sessionStorage.setItem('signup_pet', this.pets[realIndex].name);
+      } catch (e) { }
+      console.log('Selected pet:', this.pets[realIndex].name);
     });
   }
 
@@ -371,11 +380,37 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // If we're currently on the pet selection step (step 4), persist selected pet and navigate to welcome step
     if (this.step === 4) {
-      // Use currentImage (set by swiper) as selected pet; fallback to first pet
-      const petName = (this.currentImage && (this.currentImage.name || this.currentImage))
-        ? (this.currentImage.name || String(this.currentImage))
-        : (this.pets && this.pets.length ? this.pets[0].name : undefined);
-      try { if (petName) sessionStorage.setItem('signup_pet', String(petName)); } catch (e) { }
+      console.log('Current swiper ref:', this.swiperRef);
+      const swiperInstance = this.swiperRef?.nativeElement?.swiper;
+      console.log('Swiper instance:', swiperInstance);
+
+      let selectedPetName;
+      if (swiperInstance) {
+        const currentIndex = swiperInstance.realIndex;
+        console.log('Current swiper index:', currentIndex);
+        selectedPetName = this.pets[currentIndex]?.name;
+        console.log('Selected pet from swiper:', selectedPetName);
+      } else {
+        console.log('No swiper instance, using currentImage:', this.currentImage);
+        selectedPetName = this.currentImage?.name;
+      }
+
+      // If still no pet name, check session storage
+      if (!selectedPetName) {
+        selectedPetName = sessionStorage.getItem('signup_pet');
+        console.log('Pet name from session:', selectedPetName);
+      }
+
+      // Last resort: use first pet
+      if (!selectedPetName && this.pets.length > 0) {
+        selectedPetName = this.pets[0].name;
+        console.log('Using default pet:', selectedPetName);
+      }
+
+      if (selectedPetName) {
+        console.log('Final pet name for registration:', selectedPetName);
+        sessionStorage.setItem('signup_pet', selectedPetName);
+      }
 
       // Navigate to welcome step (step 5)
       this.router.navigate(['home/sign-up'], { queryParams: { step: 5 } });
@@ -521,10 +556,32 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   onSlideChange() {
-    console.log('Swiper slide change');
-  }
+    console.log('Slide change event fired');
+    if (!this.swiperRef?.nativeElement) {
+      console.log('No swiper reference available');
+      return;
+    }
 
-  openBirthdayPickerNow() {
+    const swiperInstance = this.swiperRef.nativeElement.swiper;
+    if (swiperInstance) {
+      const currentIndex = swiperInstance.realIndex;
+      console.log('Swiper current index:', currentIndex);
+
+      this.currentImage = this.pets[currentIndex];
+      console.log('Current image updated to:', this.currentImage);
+
+      // Store the selected pet name
+      if (this.pets[currentIndex]) {
+        const petName = this.pets[currentIndex].name;
+        sessionStorage.setItem('signup_pet', petName);
+        console.log('Pet name stored in session:', petName);
+      } else {
+        console.log('No pet found at index:', currentIndex);
+      }
+    } else {
+      console.log('No swiper instance available');
+    }
+  } openBirthdayPickerNow() {
     // explicitly open the birthday picker only when user clicks the input
     this.openBirthdayPicker = true;
   }
@@ -1003,24 +1060,45 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // Include selected pet name if available (from session or current selection)
     try {
-      const storedPet = sessionStorage.getItem('signup_pet');
-      // First try to get from stored pet
-      let petName = storedPet;
+      console.log('=== Pet Selection Debug ===');
 
-      // If no stored pet, get from current selection
+      // Try to get current swiper selection first
+      let petName;
+      const swiperInstance = this.swiperRef?.nativeElement?.swiper;
+      if (swiperInstance) {
+        const currentIndex = swiperInstance.realIndex;
+        petName = this.pets[currentIndex]?.name;
+        console.log('Pet from current swiper position:', petName);
+      }
+
+      // If no pet from swiper, try session storage
+      if (!petName) {
+        petName = sessionStorage.getItem('signup_pet');
+        console.log('Pet from session storage:', petName);
+      }
+
+      // If still no pet, try current image
       if (!petName && this.currentImage) {
-        // Use the simplified name instead of display name
         petName = this.currentImage.name;
+        console.log('Pet from currentImage:', petName);
+      }
+
+      // Last resort: use first pet
+      if (!petName && this.pets.length > 0) {
+        petName = this.pets[0].name;
+        console.log('Using default pet:', petName);
       }
 
       if (petName) {
         payload.petName = petName;
+        console.log('Final pet name for payload:', petName);
       }
-    } catch (e) {
-      // ignore session errors
-    }
 
-    // Call register API
+      console.log('=== End Pet Selection Debug ===');
+    } catch (e) {
+      console.error('Error setting pet name:', e);
+      // If all else fails, don't set a pet name
+    }    // Call register API
     this.authService.register(payload).subscribe({
       next: (resp) => {
         console.log('Registration success:', resp);
@@ -1042,7 +1120,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         if (roleUpper === 'PARENT') {
           this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
         } else if (roleUpper === 'SELF') {
-          this.router.navigate(['/user-dashboard']);
+          this.router.navigate(['authed/user-dashboard']);
         } else {
           // For child role, continue to pet selection
           this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });

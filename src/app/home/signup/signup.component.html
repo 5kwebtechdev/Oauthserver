@@ -321,7 +321,7 @@
     </div>
     <div *ngIf="step === 4" [@slideIn]>
       <swiper-container slides-per-view="1.4" centered-slides="true" space-between="20" grab-cursor="true"
-        (animationend)="onSlideChange()" (transitionend)="onSlideChange()" #swiperEl [style]="{ marginTop: '50px' }">
+        (slidechange)="onSlideChange()" (swiperstateupdate)="onSlideChange()" #swiperEl [style]="{ marginTop: '50px' }">
         <swiper-slide *ngFor="let pet of pets">
           <div class="pet-card d-flex flex-column">
             <h4>{{pet.displayName}}</h4>
