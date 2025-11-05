@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
 import { CountriesService, Country } from "../../core/services/countries.service";
 import { AuthService, LoginCredentials } from "../../core/services/auth.service";
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -23,13 +23,15 @@ export class LoginComponent implements OnInit, OnDestroy {
   public selectedCountry: Country;
   public countries: Country[] = [];
   private subscription = new Subscription();
+  private returnUrl: string = '/authed/user-dashboard';
 
 
   constructor(
     private fb: FormBuilder,
     private countriesService: CountriesService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -106,8 +108,10 @@ export class LoginComponent implements OnInit, OnDestroy {
           console.log('[LoginComponent] Login successful', response);
           console.log('[LoginComponent] Token received:', !!response.token);
           console.log('[LoginComponent] UserId:', response.userId);
-          // Navigate to dashboard or home page after successful login
-          this.router.navigate(['authed/user-dashboard']);
+
+          // Navigate to return URL if available, otherwise go to dashboard
+          console.log('[LoginComponent] Navigating to:', this.returnUrl);
+          this.router.navigateByUrl(this.returnUrl);
         },
         error: (error) => {
           this.loading = false;
@@ -135,6 +139,10 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Get return URL from route parameters or default to dashboard
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/authed/user-dashboard';
+    console.log('[LoginComponent] Return URL set to:', this.returnUrl);
+
     // Initialize login mode and its validators
     this.switchMode('phone');
     console.log('LoginComponent initialized');

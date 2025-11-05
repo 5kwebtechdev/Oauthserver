@@ -10,11 +10,15 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { environment } from '../../../environments/environment';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
 
-  constructor(private authService: AuthService) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) { }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     // Skip adding auth header if the request already has one (from API services)
@@ -59,6 +63,16 @@ export class AuthInterceptor implements HttpInterceptor {
             url: error.url,
             message: error.message
           });
+
+          // Handle authentication errors
+          if (error.status === 401) {
+            console.warn('[AuthInterceptor] Unauthorized - Session expired, logging out');
+            this.authService.logout();
+          } else if (error.status === 403) {
+            console.warn('[AuthInterceptor] Forbidden - Access denied');
+            this.router.navigate(['/home']);
+          }
+
           return throwError(() => error);
         })
       );
@@ -74,6 +88,13 @@ export class AuthInterceptor implements HttpInterceptor {
           url: error.url,
           message: error.message
         });
+
+        // Handle authentication errors even when no token is present
+        if (error.status === 401 && this.authService.isLoggedIn()) {
+          console.warn('[AuthInterceptor] Unauthorized - Logging out');
+          this.authService.logout();
+        }
+
         return throwError(() => error);
       })
     );

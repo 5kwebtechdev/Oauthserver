@@ -9,6 +9,7 @@ import { JoinFamilyComponent } from "./join-family/join-family.component";
 import { JoinFamily2Component } from "./join-family2/join-family2.component";
 import { ScanQrComponent } from './scan-qr/scan-qr.component';
 import { ResetPasswordComponent } from "./reset-password/reset-password.component";
+import { guestGuard } from "../core/authe-guard/authe-guard";
 
 const routes: Routes = [
   {
@@ -16,10 +17,12 @@ const routes: Routes = [
     component: HomePage,
   }, {
     path: 'login',
-    component: LoginComponent
+    component: LoginComponent,
+    canActivate: [guestGuard]
   }, {
     path: 'sign-up',
-    component: SignupComponent
+    component: SignupComponent,
+    canActivate: [guestGuard]
   },
   {
     path: 'reset-password',

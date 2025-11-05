@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, timer } from 'rxjs';
+import { tap, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 export interface LoginCredentials {
   email?: string;
@@ -16,14 +17,137 @@ export interface AuthResponse {
   userId: number;
 }
 
+export interface UserSession {
+  userId: number;
+  token: string;
+  loginTime: number;
+  lastActivity: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) { }
+  // Observable to track authentication state
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasValidSession());
+  public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
+  // Observable to track current user
+  private currentUserSubject = new BehaviorSubject<UserSession | null>(this.getCurrentSession());
+  public currentUser$ = this.currentUserSubject.asObservable();
+
+  // Session timeout configuration (in milliseconds)
+  private readonly SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+  private readonly TOKEN_REFRESH_INTERVAL = 5 * 60 * 1000; // Check every 5 minutes
+
+  // Storage keys
+  private readonly TOKEN_KEY = 'auth_token';
+  private readonly USER_ID_KEY = 'user_id';
+  private readonly LOGIN_TIME_KEY = 'login_time';
+  private readonly LAST_ACTIVITY_KEY = 'last_activity';
+
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {
+    this.initSessionMonitoring();
+  }
+
+  /**
+   * Initialize session monitoring to track user activity and session expiration
+   */
+  private initSessionMonitoring(): void {
+    // Check session validity periodically
+    timer(0, this.TOKEN_REFRESH_INTERVAL).subscribe(() => {
+      this.checkSessionValidity();
+    });
+
+    // Track user activity
+    if (typeof window !== 'undefined') {
+      ['click', 'keypress', 'scroll', 'touchstart'].forEach(event => {
+        window.addEventListener(event, () => this.updateLastActivity(), { passive: true });
+      });
+    }
+  }
+
+  /**
+   * Check if there's a valid session in localStorage
+   */
+  private hasValidSession(): boolean {
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    const lastActivity = localStorage.getItem(this.LAST_ACTIVITY_KEY);
+
+    if (!token || !lastActivity) {
+      return false;
+    }
+
+    const lastActivityTime = parseInt(lastActivity, 10);
+    const currentTime = Date.now();
+    const timeSinceLastActivity = currentTime - lastActivityTime;
+
+    return timeSinceLastActivity < this.SESSION_TIMEOUT;
+  }
+
+  /**
+   * Get current session from localStorage
+   */
+  private getCurrentSession(): UserSession | null {
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    const userId = localStorage.getItem(this.USER_ID_KEY);
+    const loginTime = localStorage.getItem(this.LOGIN_TIME_KEY);
+    const lastActivity = localStorage.getItem(this.LAST_ACTIVITY_KEY);
+
+    if (!token || !userId) {
+      return null;
+    }
+
+    return {
+      userId: parseInt(userId, 10),
+      token,
+      loginTime: loginTime ? parseInt(loginTime, 10) : Date.now(),
+      lastActivity: lastActivity ? parseInt(lastActivity, 10) : Date.now()
+    };
+  }
+
+  /**
+   * Check session validity and handle expiration
+   */
+  private checkSessionValidity(): void {
+    const isValid = this.hasValidSession();
+
+    if (!isValid && this.isAuthenticatedSubject.value) {
+      console.log('[AuthService] Session expired, logging out');
+      this.logout();
+    } else if (isValid !== this.isAuthenticatedSubject.value) {
+      this.isAuthenticatedSubject.next(isValid);
+      this.currentUserSubject.next(this.getCurrentSession());
+    }
+  }
+
+  /**
+   * Update last activity timestamp
+   */
+  private updateLastActivity(): void {
+    if (this.isLoggedIn()) {
+      const currentTime = Date.now().toString();
+      localStorage.setItem(this.LAST_ACTIVITY_KEY, currentTime);
+
+      // Update current user subject
+      const currentSession = this.currentUserSubject.value;
+      if (currentSession) {
+        this.currentUserSubject.next({
+          ...currentSession,
+          lastActivity: Date.now()
+        });
+      }
+    }
+  }
+
+  /**
+   * Login user with credentials
+   */
   login(credentials: LoginCredentials): Observable<AuthResponse> {
     console.log('[AuthService] Login attempt with:', {
       endpoint: `${this.apiUrl}/auth/login`,
@@ -40,10 +164,9 @@ export class AuthService {
               hasToken: !!response.token,
               timestamp: new Date().toISOString()
             });
+
             if (response && response.token) {
-              localStorage.setItem('auth_token', response.token);
-              localStorage.setItem('user_id', response.userId.toString());
-              console.log('[AuthService] Token stored in localStorage');
+              this.setSession(response);
             }
           },
           error: (error) => {
@@ -58,6 +181,32 @@ export class AuthService {
           }
         })
       );
+  }
+
+  /**
+   * Set user session after successful login
+   */
+  private setSession(authResponse: AuthResponse): void {
+    const currentTime = Date.now().toString();
+
+    localStorage.setItem(this.TOKEN_KEY, authResponse.token);
+    localStorage.setItem(this.USER_ID_KEY, authResponse.userId.toString());
+    localStorage.setItem(this.LOGIN_TIME_KEY, currentTime);
+    localStorage.setItem(this.LAST_ACTIVITY_KEY, currentTime);
+
+    console.log('[AuthService] Session established:', {
+      userId: authResponse.userId,
+      loginTime: new Date(parseInt(currentTime)).toISOString()
+    });
+
+    // Update observables
+    this.isAuthenticatedSubject.next(true);
+    this.currentUserSubject.next({
+      userId: authResponse.userId,
+      token: authResponse.token,
+      loginTime: parseInt(currentTime, 10),
+      lastActivity: parseInt(currentTime, 10)
+    });
   }
 
   requestOtp(identifier: string) {
@@ -168,20 +317,89 @@ export class AuthService {
     return this.http.post<string>(url, payload, options);
   }
 
-  logout(): void {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_id');
+  /**
+   * Logout user and clear session
+   */
+  logout(redirectToLogin: boolean = true): void {
+    console.log('[AuthService] Logging out user');
+
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_ID_KEY);
+    localStorage.removeItem(this.LOGIN_TIME_KEY);
+    localStorage.removeItem(this.LAST_ACTIVITY_KEY);
+
+    this.isAuthenticatedSubject.next(false);
+    this.currentUserSubject.next(null);
+
+    if (redirectToLogin) {
+      this.router.navigate(['/home/login']);
+    }
   }
 
+  /**
+   * Check if user is currently logged in
+   */
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('auth_token');
+    return this.hasValidSession();
   }
 
+  /**
+   * Get authentication token
+   */
   getToken(): string | null {
-    return localStorage.getItem('auth_token');
+    if (this.hasValidSession()) {
+      return localStorage.getItem(this.TOKEN_KEY);
+    }
+    return null;
   }
 
+  /**
+   * Get current user ID
+   */
   getUserId(): string | null {
-    return localStorage.getItem('user_id');
+    if (this.hasValidSession()) {
+      return localStorage.getItem(this.USER_ID_KEY);
+    }
+    return null;
+  }
+
+  /**
+   * Get current user session
+   */
+  getUserSession(): UserSession | null {
+    return this.currentUserSubject.value;
+  }
+
+  /**
+   * Get session remaining time in milliseconds
+   */
+  getSessionRemainingTime(): number {
+    const lastActivity = localStorage.getItem(this.LAST_ACTIVITY_KEY);
+
+    if (!lastActivity) {
+      return 0;
+    }
+
+    const lastActivityTime = parseInt(lastActivity, 10);
+    const currentTime = Date.now();
+    const timeSinceLastActivity = currentTime - lastActivityTime;
+    const remainingTime = this.SESSION_TIMEOUT - timeSinceLastActivity;
+
+    return remainingTime > 0 ? remainingTime : 0;
+  }
+
+  /**
+   * Check if session is about to expire (within 5 minutes)
+   */
+  isSessionExpiringSoon(): boolean {
+    const remainingTime = this.getSessionRemainingTime();
+    return remainingTime > 0 && remainingTime < 5 * 60 * 1000;
+  }
+
+  /**
+   * Manually refresh session activity
+   */
+  refreshSession(): void {
+    this.updateLastActivity();
   }
 }
