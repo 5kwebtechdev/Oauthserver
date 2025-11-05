@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CoreService } from '../../core/services/core.service';
+import { FamilyService } from '../../core/services/family.service';
 
 @Component({
   selector: 'app-join-family2',
@@ -24,7 +25,8 @@ export class JoinFamily2Component implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private fb: FormBuilder,
-    private core: CoreService
+    private core: CoreService,
+    private familyService: FamilyService
   ) {
     this.familyForm = this.fb.group({
       familyName: ['', [
@@ -47,13 +49,13 @@ export class JoinFamily2Component implements OnInit {
     this.route.queryParams.subscribe(params => {
       const role = params['role'];
       const scannedCode = params['scannedCode'];
-      
+
       if (role && ['child', 'parent', 'self'].includes(role)) {
         this.userRole = role;
       } else {
         this.userRole = 'parent'; // Default fallback
       }
-      
+
       if (scannedCode) {
         this.selectedMode = 'join';
         this.joinFamilyForm.patchValue({
@@ -98,6 +100,18 @@ export class JoinFamily2Component implements OnInit {
     this.isLoading = true;
     const familyCode = this.joinFamilyForm.get('familyCode')?.value;
 
+    this.familyService.joinFamily(familyCode).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        this.core.triggerToasrt('Successfully joined family!');
+        this.router.navigate(['/home/auth'], { queryParams: { role: this.userRole } });
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.core.triggerToasrt(error.error?.message || 'Failed to join family. Please try again.');
+      }
+    });
+
     setTimeout(() => {
       this.isLoading = false;
       this.core.triggerToasrt(`Successfully joined family with code: ${familyCode}`);
@@ -108,12 +122,12 @@ export class JoinFamily2Component implements OnInit {
   openQRScanner() {
     console.log('QR Scanner button clicked - join-family2 component');
     console.log('User role:', this.userRole);
-    
-    this.router.navigate(['/home/scan-qr'], { 
-      queryParams: { 
+
+    this.router.navigate(['/home/scan-qr'], {
+      queryParams: {
         role: this.userRole,
         returnTo: 'join-family2'
-      } 
+      }
     }).then(success => {
       console.log('Navigation to scan-qr successful:', success);
     }).catch(error => {
@@ -132,15 +146,19 @@ export class JoinFamily2Component implements OnInit {
     const familyName = this.familyForm.get('familyName')?.value;
     this.createdFamilyName = familyName;
 
-    setTimeout(() => {
-      this.isLoading = false;
-      this.familyCreated = true;
-      
-      this.familyCode = this.generateFamilyCode();
-      
-      this.qrCodeData = this.familyCode;
-      
-    }, 2000);
+    this.familyService.createFamily(familyName).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        this.familyCreated = true;
+        this.familyCode = response.familyCode || this.generateFamilyCode();
+        this.qrCodeData = this.familyCode;
+        this.core.triggerToasrt('Family created successfully!');
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.core.triggerToasrt(error.error?.message || 'Failed to create family. Please try again.');
+      }
+    });
   }
 
   private generateFamilyCode(): string {
