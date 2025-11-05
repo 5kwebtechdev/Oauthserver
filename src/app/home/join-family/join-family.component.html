@@ -4,7 +4,7 @@
       <i (click)="goBack()" class="fa-solid fa-arrow-left back-icon"></i>
       Join Your Family
     </h2>
-    
+
     <div class="mindful-step-indicator">
       <p class="mindful-step-indicator__step">Step 3 of 4</p>
       <h3 class="mindful-step-indicator__title">Enter your family code or scan the QR</h3>
@@ -16,12 +16,9 @@
     <form [formGroup]="form" (ngSubmit)="submit()">
       <div class="mindful-input-group">
         <div class="input-container">
-          <ion-input formControlName="code" placeholder="Enter code" type="text" inputmode="numeric" [attr.maxlength]="8"></ion-input>
-          <button 
-            type="button" 
-            class="qr-icon" 
-            (click)="openScanner()" 
-            (touchstart)="openScanner()" 
+          <ion-input formControlName="code" placeholder="Enter code" type="text" inputmode="numeric"
+            [attr.maxlength]="8"></ion-input>
+          <button type="button" class="qr-icon" (click)="openScanner()" (touchstart)="openScanner()"
             aria-label="Scan QR">
             <img src="assets/icons/qr_code.svg" alt="QR Code">
           </button>
@@ -31,14 +28,17 @@
           <small *ngIf="f.code.errors?.required">Code is required.</small>
           <small *ngIf="f.code.errors?.pattern">Code must be 8 digits</small>
         </div>
-        
+
         <p class="note-text"><strong>Note:</strong> Double-check the code before entering</p>
       </div>
 
-      <button class="mindful-btn mindful-btn--primary" type="submit" [disabled]="form.invalid">Join Family</button>
+      <button class="mindful-btn mindful-btn--primary" type="submit" [disabled]="form.invalid || isLoading">
+        <span *ngIf="!isLoading">Join Family</span>
+        <span *ngIf="isLoading">Joining...</span>
+      </button>
     </form>
 
-    <div class="mindful-faq">
+    <div class="mindful-faq mt-9" style="margin-top:36px !important">
       <h3 class="mindful-faq__title">FAQ's</h3>
       <details class="mindful-faq__item">
         <summary>What if I don't have the family code or QR yet?</summary>
