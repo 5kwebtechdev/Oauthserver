@@ -2,8 +2,7 @@ import { NgModule } from '@angular/core';
 import { MindfulSpeechBubbleComponent } from './mindful-speech-bubble.component';
 
 @NgModule({
-	declarations: [MindfulSpeechBubbleComponent],
+	imports: [MindfulSpeechBubbleComponent],
 	exports: [MindfulSpeechBubbleComponent]
 })
 export class MindfulSpeechBubbleModule {}
-
