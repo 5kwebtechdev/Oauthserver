@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from "@angular/router";
+import { AuthService } from '../core/services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -7,11 +8,12 @@ import { Router } from "@angular/router";
   styleUrls: ['home.page.scss'],
   standalone: false,
 })
-export class HomePage {
+export class HomePage implements OnInit {
 
   currentSlide = 0;
   touchStartX = 0;
   touchEndX = 0;
+  isAuthenticated = false;
 
   slides = [
     {
@@ -52,10 +54,22 @@ export class HomePage {
     }
   ];
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {
     // Initialize the first slide
     this.currentSlide = 0;
+  }
 
+  ngOnInit() {
+    // Check if user is already logged in
+    this.isAuthenticated = this.authService.isLoggedIn();
+
+    if (this.isAuthenticated) {
+      console.log('User is already logged in, redirecting to dashboard...');
+      this.router.navigate(['/authed/user-dashboard'], { replaceUrl: true });
+    }
   }
 
   onTouchStart(event: TouchEvent) {

@@ -308,6 +308,43 @@
     text-align: center;
   }
 
+  .remember-me-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+    padding: 8px 4px;
+    cursor: pointer;
+
+    ion-checkbox {
+      --size: 22px;
+      --background: #FAD2AE;
+      --background-checked: #EE6621;
+      --border-color: #ff823b;
+      --border-color-checked: #EE6621;
+      --checkmark-color: white;
+      margin: 0;
+      flex-shrink: 0;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #772817;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      margin: 0;
+      transition: color 0.2s;
+
+      &:hover {
+        color: #ee6621;
+      }
+    }
+  }
+
   .signup-btn {
     width: 100%;
     background: #ff9a5a;

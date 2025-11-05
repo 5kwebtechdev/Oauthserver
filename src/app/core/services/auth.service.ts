@@ -5,16 +5,19 @@ import { tap, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { Platform } from '@ionic/angular';
 
 export interface LoginCredentials {
   email?: string;
   phone?: string;
   password: string;
+  rememberMe?: boolean; // Optional remember me flag
 }
 
 export interface AuthResponse {
   token: string;
   userId: number;
+  expiresIn?: number; // Optional expiration time from backend
 }
 
 export interface UserSession {
@@ -22,6 +25,8 @@ export interface UserSession {
   token: string;
   loginTime: number;
   lastActivity: number;
+  rememberMe: boolean;
+  platform: 'web' | 'mobile';
 }
 
 @Injectable({
@@ -38,33 +43,71 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<UserSession | null>(this.getCurrentSession());
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  // Session timeout configuration (in milliseconds)
-  private readonly SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
-  private readonly TOKEN_REFRESH_INTERVAL = 5 * 60 * 1000; // Check every 5 minutes
+  // Session timeout configuration
+  private readonly WEB_SESSION_TIMEOUT = 2 * 60 * 1000; // 2 minutes for web testing (change to 30 * 60 * 1000 for production)
+  private readonly MOBILE_SESSION_TIMEOUT = 30 * 24 * 60 * 60 * 1000; // 30 days for mobile
+  private readonly REMEMBER_ME_TIMEOUT = 30 * 24 * 60 * 60 * 1000; // 30 days when "Remember Me" is checked
+  private readonly TOKEN_REFRESH_INTERVAL = 30 * 1000; // Check every 30 seconds for testing (change to 5 * 60 * 1000 for production)
 
   // Storage keys
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_ID_KEY = 'user_id';
   private readonly LOGIN_TIME_KEY = 'login_time';
   private readonly LAST_ACTIVITY_KEY = 'last_activity';
+  private readonly REMEMBER_ME_KEY = 'remember_me';
+  private readonly PLATFORM_KEY = 'platform';
+
+  private isMobilePlatform: boolean = false;
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private platform: Platform
   ) {
+    this.detectPlatform();
     this.initSessionMonitoring();
+  }
+
+  /**
+   * Detects the current platform (mobile or web)
+   */
+  private detectPlatform(): void {
+    this.isMobilePlatform = this.platform.is('cordova') ||
+      this.platform.is('capacitor') ||
+      this.platform.is('android') ||
+      this.platform.is('ios');
+    console.log('Platform detected:', this.isMobilePlatform ? 'Mobile' : 'Web');
+  }
+
+  /**
+   * Returns the appropriate session timeout based on platform and remember me setting
+   */
+  private getSessionTimeout(): number {
+    const rememberMe = localStorage.getItem(this.REMEMBER_ME_KEY) === 'true';
+
+    if (this.isMobilePlatform) {
+      return this.MOBILE_SESSION_TIMEOUT;
+    }
+
+    return rememberMe ? this.REMEMBER_ME_TIMEOUT : this.WEB_SESSION_TIMEOUT;
   }
 
   /**
    * Initialize session monitoring to track user activity and session expiration
    */
   private initSessionMonitoring(): void {
-    // Check session validity periodically
+    // On mobile platforms, skip periodic checks and activity tracking to save battery
+    if (this.isMobilePlatform) {
+      console.log('Mobile platform detected - session persists until logout');
+      return;
+    }
+
+    // Check session validity periodically (web only)
     timer(0, this.TOKEN_REFRESH_INTERVAL).subscribe(() => {
       this.checkSessionValidity();
     });
 
-    // Track user activity
+    // Track user activity (web only)
     if (typeof window !== 'undefined') {
       ['click', 'keypress', 'scroll', 'touchstart'].forEach(event => {
         window.addEventListener(event, () => this.updateLastActivity(), { passive: true });
@@ -83,11 +126,16 @@ export class AuthService {
       return false;
     }
 
+    // On mobile platforms, session is valid as long as token exists
+    if (this.isMobilePlatform) {
+      return true;
+    }
+
     const lastActivityTime = parseInt(lastActivity, 10);
     const currentTime = Date.now();
     const timeSinceLastActivity = currentTime - lastActivityTime;
 
-    return timeSinceLastActivity < this.SESSION_TIMEOUT;
+    return timeSinceLastActivity < this.getSessionTimeout();
   }
 
   /**
@@ -98,6 +146,8 @@ export class AuthService {
     const userId = localStorage.getItem(this.USER_ID_KEY);
     const loginTime = localStorage.getItem(this.LOGIN_TIME_KEY);
     const lastActivity = localStorage.getItem(this.LAST_ACTIVITY_KEY);
+    const rememberMe = localStorage.getItem(this.REMEMBER_ME_KEY) === 'true';
+    const platform = (localStorage.getItem(this.PLATFORM_KEY) || 'web') as 'web' | 'mobile';
 
     if (!token || !userId) {
       return null;
@@ -106,8 +156,10 @@ export class AuthService {
     return {
       userId: parseInt(userId, 10),
       token,
-      loginTime: loginTime ? parseInt(loginTime, 10) : Date.now(),
-      lastActivity: lastActivity ? parseInt(lastActivity, 10) : Date.now()
+      loginTime: parseInt(loginTime || '0', 10),
+      lastActivity: parseInt(lastActivity || '0', 10),
+      rememberMe,
+      platform
     };
   }
 
@@ -151,7 +203,7 @@ export class AuthService {
   login(credentials: LoginCredentials): Observable<AuthResponse> {
     console.log('[AuthService] Login attempt with:', {
       endpoint: `${this.apiUrl}/auth/login`,
-      credentials: { ...credentials, password: '***' },
+      credentials: { ...credentials, password: '***', rememberMe: credentials.rememberMe },
       timestamp: new Date().toISOString()
     });
 
@@ -166,7 +218,7 @@ export class AuthService {
             });
 
             if (response && response.token) {
-              this.setSession(response);
+              this.setSession(response, credentials.rememberMe || false);
             }
           },
           error: (error) => {
@@ -186,17 +238,24 @@ export class AuthService {
   /**
    * Set user session after successful login
    */
-  private setSession(authResponse: AuthResponse): void {
+  private setSession(authResponse: AuthResponse, rememberMe: boolean = false): void {
     const currentTime = Date.now().toString();
+    const platformType = this.isMobilePlatform ? 'mobile' : 'web';
 
     localStorage.setItem(this.TOKEN_KEY, authResponse.token);
     localStorage.setItem(this.USER_ID_KEY, authResponse.userId.toString());
     localStorage.setItem(this.LOGIN_TIME_KEY, currentTime);
     localStorage.setItem(this.LAST_ACTIVITY_KEY, currentTime);
+    localStorage.setItem(this.REMEMBER_ME_KEY, rememberMe.toString());
+    localStorage.setItem(this.PLATFORM_KEY, platformType);
 
     console.log('[AuthService] Session established:', {
       userId: authResponse.userId,
-      loginTime: new Date(parseInt(currentTime)).toISOString()
+      loginTime: new Date(parseInt(currentTime)).toISOString(),
+      platform: platformType,
+      rememberMe: rememberMe,
+      sessionTimeout: this.isMobilePlatform ? 'No timeout (mobile)' :
+        rememberMe ? '30 days' : '2 minutes (testing)'
     });
 
     // Update observables
@@ -205,7 +264,9 @@ export class AuthService {
       userId: authResponse.userId,
       token: authResponse.token,
       loginTime: parseInt(currentTime, 10),
-      lastActivity: parseInt(currentTime, 10)
+      lastActivity: parseInt(currentTime, 10),
+      rememberMe: rememberMe,
+      platform: platformType
     });
   }
 
@@ -371,7 +432,7 @@ export class AuthService {
   }
 
   /**
-   * Get session remaining time in milliseconds
+   * Get remaining time for the current session (in milliseconds)
    */
   getSessionRemainingTime(): number {
     const lastActivity = localStorage.getItem(this.LAST_ACTIVITY_KEY);
@@ -380,10 +441,15 @@ export class AuthService {
       return 0;
     }
 
+    // On mobile, return max timeout value as there's no automatic expiration
+    if (this.isMobilePlatform) {
+      return this.MOBILE_SESSION_TIMEOUT;
+    }
+
     const lastActivityTime = parseInt(lastActivity, 10);
     const currentTime = Date.now();
     const timeSinceLastActivity = currentTime - lastActivityTime;
-    const remainingTime = this.SESSION_TIMEOUT - timeSinceLastActivity;
+    const remainingTime = this.getSessionTimeout() - timeSinceLastActivity;
 
     return remainingTime > 0 ? remainingTime : 0;
   }
@@ -392,6 +458,11 @@ export class AuthService {
    * Check if session is about to expire (within 5 minutes)
    */
   isSessionExpiringSoon(): boolean {
+    // On mobile, sessions don't expire
+    if (this.isMobilePlatform) {
+      return false;
+    }
+
     const remainingTime = this.getSessionRemainingTime();
     return remainingTime > 0 && remainingTime < 5 * 60 * 1000;
   }
@@ -401,5 +472,43 @@ export class AuthService {
    */
   refreshSession(): void {
     this.updateLastActivity();
+  }
+
+  /**
+   * Check if running on mobile platform
+   */
+  isMobile(): boolean {
+    return this.isMobilePlatform;
+  }
+
+  /**
+   * Get detailed session information
+   */
+  getSessionInfo(): {
+    isActive: boolean;
+    platform: 'web' | 'mobile';
+    rememberMe: boolean;
+    timeout: number;
+    remainingTime: number;
+    expiresAt: Date | null;
+  } {
+    const session = this.getCurrentSession();
+    const isActive = this.hasValidSession();
+    const timeout = this.getSessionTimeout();
+    const remainingTime = this.getSessionRemainingTime();
+
+    let expiresAt: Date | null = null;
+    if (isActive && !this.isMobilePlatform && session) {
+      expiresAt = new Date(session.lastActivity + timeout);
+    }
+
+    return {
+      isActive,
+      platform: this.isMobilePlatform ? 'mobile' : 'web',
+      rememberMe: session?.rememberMe || false,
+      timeout,
+      remainingTime,
+      expiresAt
+    };
   }
 }

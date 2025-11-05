@@ -13,6 +13,7 @@
     </div>
     <div class="login-toggle-form-wrapper">
       <div class="toggle-buttons">
+        <h1>test3</h1>
         <button [class.active]="loginMode === 'phone'" (click)="switchMode('phone')">
           Phone Number
         </button>
@@ -70,6 +71,12 @@
         <!-- Show error message if login fails -->
         <div class="error-message" *ngIf="loginError">
           {{ loginError }}
+        </div>
+
+        <!-- Remember Me checkbox (for web users - extends session to 30 days) -->
+        <div class="remember-me-item">
+          <ion-checkbox [(ngModel)]="rememberMe" [ngModelOptions]="{standalone: true}"></ion-checkbox>
+          <label (click)="rememberMe = !rememberMe">Remember me for 30 days</label>
         </div>
 
         <button class="signup-btn" [disabled]="!isLoginFormValid() || loading">

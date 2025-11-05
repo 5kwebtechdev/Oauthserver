@@ -1,12 +1,6 @@
-<div
-  class="carousel-wrapper"
-  (touchstart)="onTouchStart($event)"
-  (touchend)="onTouchEnd($event)"
->
-  <div
-    class="carousel-track"
-    [style.transform]="'translateX(-' + currentSlide * 100 + 'vw)'"
-  >
+<div *ngIf="!isAuthenticated" class="carousel-wrapper" (touchstart)="onTouchStart($event)"
+  (touchend)="onTouchEnd($event)">
+  <div class="carousel-track" [style.transform]="'translateX(-' + currentSlide * 100 + 'vw)'">
     <div class="carousel-slide" [style.background-image]="slide.background" *ngFor="let slide of slides">
       <img [src]="slide.image" alt="Slide Image" class="slide-image" />
 
@@ -21,12 +15,10 @@
 
   <div class="carousel-footer">
     <div class="dots">
-      <span
-        *ngFor="let slide of slides; let i = index"
-        [class.active]="i === currentSlide"
-        (click)="setSlide(i)"
-      ></span>
+      <span *ngFor="let slide of slides; let i = index" [class.active]="i === currentSlide"
+        (click)="setSlide(i)"></span>
     </div>
-    <button class="next-btn" [style.background-color]="slides[currentSlide].next_color" [style.color]="slides[currentSlide].color" (click)="nextSlide()">→</button>
+    <button class="next-btn" [style.background-color]="slides[currentSlide].next_color"
+      [style.color]="slides[currentSlide].color" (click)="nextSlide()">→</button>
   </div>
 </div>
