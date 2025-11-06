@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { FamilyService } from '../../core/services/family.service';
+import { CoreService } from '../../core/services/core.service';
 
 @Component({
   selector: 'app-join-family',
@@ -11,11 +13,18 @@ import { Router, ActivatedRoute } from '@angular/router';
 export class JoinFamilyComponent implements OnInit {
   form: FormGroup;
   submitted = false;
+  isLoading = false;
   userRole: 'child' | 'parent' | 'self' = 'child';
 
-  constructor(private fb: FormBuilder, private router: Router, private route: ActivatedRoute) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private route: ActivatedRoute,
+    private familyService: FamilyService,
+    private core: CoreService
+  ) {
     this.form = this.fb.group({
-      code: ['', [Validators.required, Validators.pattern(/^\d{8}$/)]]
+      code: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9]{8}$/)]]
     });
   }
 
@@ -23,11 +32,11 @@ export class JoinFamilyComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       const role = params['role'];
       const scannedCode = params['scannedCode'];
-      
+
       if (role && ['child', 'parent', 'self'].includes(role)) {
         this.userRole = role;
       }
-      
+
       if (scannedCode) {
         this.form.patchValue({ code: scannedCode });
         this.router.navigate([], {
@@ -55,12 +64,12 @@ export class JoinFamilyComponent implements OnInit {
   openScanner() {
     console.log('QR Scanner button clicked - join-family component');
     console.log('User role:', this.userRole);
-    
-    this.router.navigate(['/home/scan-qr'], { 
-      queryParams: { 
+
+    this.router.navigate(['/home/scan-qr'], {
+      queryParams: {
         role: this.userRole,
         returnTo: 'join-family'
-      } 
+      }
     }).then(success => {
       console.log('Navigation to scan-qr successful:', success);
     }).catch(error => {
@@ -74,9 +83,21 @@ export class JoinFamilyComponent implements OnInit {
     if (this.form.invalid) {
       return;
     }
+    this.isLoading = true;
+    const familyCode = this.form.get('code')?.value;
+    console.log('Joining family with code:', familyCode);
+    this.familyService.joinFamily(familyCode).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        this.core.triggerToasrt('Successfully joined family!');
+        this.router.navigate(['home', 'sign-up'], { queryParams: { step: 4 } });
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.core.triggerToasrt(error.error?.message || 'Failed to join family. Please try again.');
+      }
+    });
 
-    const code = this.form.value.code;
-    console.log('Joining family with code:', code);
-    this.router.navigate(['home', 'sign-up'], { queryParams: { step: 4 } });
+
   }
 }
