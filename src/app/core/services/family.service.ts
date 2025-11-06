@@ -16,9 +16,7 @@ export class FamilyService {
         const headers = environment.apiAuthToken ? new HttpHeaders({
             Authorization: environment.apiAuthToken,
         }) : undefined;
-        return this.http.post(`${this.baseUrl}/family/create`, {
-            params: { familyName },
-        }, { headers });
+        return this.http.post(`${this.baseUrl}/family/create?familyName=${familyName}`, {}, { headers });
     }
 
     joinFamily(token: string): Observable<any> {

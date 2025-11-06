@@ -149,20 +149,4 @@ export class MindfulSpeechBubbleComponent {
       this._lastAngle = angle;
     }
   }
-
-  /**
-   * Handle bubble click - trigger pop animation
-   */
-  onBubbleClick(event: Event): void {
-    const bubbleEl = this.hostRef.nativeElement.querySelector('.speech-bubble') as HTMLElement;
-    if (!bubbleEl) return;
-
-    // Add pop class
-    bubbleEl.classList.add('popping');
-
-    // Remove class after animation completes
-    setTimeout(() => {
-      bubbleEl.classList.remove('popping');
-    }, 300);
-  }
 }
