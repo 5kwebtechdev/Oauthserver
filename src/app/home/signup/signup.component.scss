@@ -1233,3 +1233,38 @@ swiper-slide.swiper-slide-active .pet-card {
   width: 100%;
   height: auto;
 }
+
+/* Step 5 specific styles - white background */
+.step-5-container {
+  background: #ffffff !important;
+  margin-top: 50px !important;
+}
+
+/* White background for ion-content on step 5 */
+ion-content.bg-white {
+  --background: #ffffff !important;
+}
+
+/* Step 5 cancel button */
+.step5-cancel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  line-height: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  svg {
+    display: block;
+  }
+}

@@ -545,6 +545,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
   }
 
+  onCancel() {
+    this.router.navigate(['home']);
+  }
+
   returnSameNumber(num: any) {
     if (num === 1) {
       return 'one';
