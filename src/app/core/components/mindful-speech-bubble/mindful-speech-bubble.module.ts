@@ -5,4 +5,4 @@ import { MindfulSpeechBubbleComponent } from './mindful-speech-bubble.component'
 	imports: [MindfulSpeechBubbleComponent],
 	exports: [MindfulSpeechBubbleComponent]
 })
-export class MindfulSpeechBubbleModule {}
+export class MindfulSpeechBubbleModule { }

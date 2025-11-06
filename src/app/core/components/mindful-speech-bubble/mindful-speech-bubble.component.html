@@ -1,11 +1,25 @@
-<div class="speech-bubble" [ngClass]="type" [attr.data-side]="type === 'talking' ? arrowSide : null">
-  <svg *ngIf="type === 'talking'" class="bubble-arrow" viewBox="0 0 20 10" aria-hidden="true" focusable="false">
-    <path d="M0 0 L20 5 L0 10 Z" />
-  </svg>
-  <span class="bubble-message">{{ displayMessage }}</span>
-  <ng-container *ngIf="type === 'thinking'">
-    <span class="thinking-dot dot1"></span>
-    <span class="thinking-dot dot2"></span>
-    <span class="thinking-dot dot3"></span>
-  </ng-container>
+<!-- Speech Bubble Component Template -->
+<div class="speech-bubble-container" [class.animate-in]="true" [attr.data-arrow-direction]="arrowSide" [ngClass]="type">
+
+  <!-- Speech Bubble -->
+  <div class="speech-bubble" #speechBubble [attr.data-side]="type === 'talking' ? arrowSide : null">
+
+    <!-- Message Content -->
+    <div class="bubble-content">
+      <p class="message-text">{{ displayMessage }}</p>
+    </div>
+
+    <!-- Arrow pointing to character -->
+    <div *ngIf="type === 'talking'" class="bubble-arrow" [class.arrow-left]="arrowSide === 'left'"
+      [class.arrow-right]="arrowSide === 'right'" [class.arrow-top]="arrowSide === 'top'"
+      [class.arrow-bottom]="arrowSide === 'bottom'">
+    </div>
+
+    <!-- Thinking bubbles -->
+    <ng-container *ngIf="type === 'thinking'">
+      <span class="thinking-dot dot1"></span>
+      <span class="thinking-dot dot2"></span>
+      <span class="thinking-dot dot3"></span>
+    </ng-container>
+  </div>
 </div>

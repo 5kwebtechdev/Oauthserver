@@ -8,16 +8,14 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { AppComponent } from './app.component';
 import { SupermeLoadingComponent } from './core/components/superme-loading/superme-loading.component';
 import { AppRoutingModule } from './app-routing.module';
-import { StreaksLeaderboardComponent } from './core/components/streaks-section/streaks-leaderboard/streaks-leaderboard.component';
-import { StreaksListComponent } from './core/components/streaks-section/streaks-list/streaks-list.component';
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 
 @NgModule({
   declarations: [
     AppComponent,
-
   ],
+
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, BrowserAnimationsModule, HttpClientModule, SupermeLoadingComponent],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },

@@ -1,0 +1,31 @@
+<div class="superme-timer">
+    <div class="timer-wrap">
+        <!-- SVG ring for progress -->
+        <svg class="progress-ring" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+                <filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feDropShadow dx="0" dy="2" stdDeviation="8" flood-color="#000" flood-opacity="0.18" />
+                </filter>
+            </defs>
+            <circle class="ring-bg" cx="160" cy="160" [attr.r]="radius" [attr.stroke-width]="stroke" fill="none">
+            </circle>
+            <circle class="ring-progress" cx="160" cy="160" [attr.r]="radius" [attr.stroke-width]="stroke"
+                stroke-linecap="round" fill="none" [attr.stroke-dasharray]="circumference"
+                [attr.stroke-dashoffset]="dashOffset"></circle>
+        </svg>
+
+        <!-- inner face with gradient -->
+        <div class="face">
+            <div class="ticks">
+                <span *ngFor="let t of ticks; let i = index" [style.transform]="'rotate('+ (i * 30) + 'deg)'"
+                    class="tick"></span>
+            </div>
+
+            <div class="time">{{ formattedTime }}</div>
+        </div>
+    </div>
+
+    <div class="cta">
+        <mindful-button type="bronze" text="Back to home" large (click)="onBack()"></mindful-button>
+    </div>
+</div>

@@ -44,7 +44,7 @@ export class AppComponent implements OnInit {
   private recordDailyAppOpen(): void {
     const result = this.petAgeService.recordAppOpen();
     const petData = this.petAgeService.getCurrentPetData();
-    
+
     // Check if pet aged up today
     if (result.ageIncreased && result.newAge) {
       console.log(`🎉 Your pet grew to Age ${result.newAge}! You earned ${result.coinsEarned} coins!`);

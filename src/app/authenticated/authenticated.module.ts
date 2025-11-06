@@ -1,26 +1,29 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import {AuthenticatedComponent} from "./authenticated.component";
-import {AuthenticatedRoutingModule} from "./authenticated.routing.module";
-import {FooterComponent} from "../core/components/footer/footer.component";
-import {HabitCardComponent} from "../core/components/habit-section/habit-card/habit-card.component";
-import {LongPressDirective} from "../core/directives/gestureControlDirective";
-import {MindfulButtonComponent} from "../core/components/mindful-button/mindful-button.component";
-import {IonicModule} from "@ionic/angular";
-import {MindfulBadgeComponent} from "../core/components/mindful-badge/mindful-badge.component";
-import {UserDashboardComponent} from "./user-dashboard/user-dashboard.component";
-import {ChallengeCardComponent} from "../core/components/challenge-card/challenge-card.component";
-import {TypicalPageComponent} from "../core/components/typical-page/typical-page.component";
-import {ProfileComponent} from "./profile/profile.component";
-import {ProfileHomeComponent} from "./profile/profile-home/profile-home.component";
-import {MindfulInputsModule} from "../core/components/mindful-inputs/mindful-inputs.module";
-import {MindfulTimelineComponent} from "../core/components/mindful-timeline/mindful-timeline.component";
-import {TimelineComponent} from "../core/components/habit-section/timeline/timeline.component";
-import {MindfulSelectorsComponent} from "../core/components/mindful-selectors/mindful-selectors.component";
-import {AddCalendarComponent} from "./add-calendar/add-calendar.component";
-import {MindfulNavigatorComponent} from "../core/components/mindful-navigator/mindful-navigator.component";
-import {UserProfileComponent} from "../core/components/user-profile/user-profile.component";
+import { AuthenticatedComponent } from "./authenticated.component";
+import { AuthenticatedRoutingModule } from "./authenticated.routing.module";
+import { FooterComponent } from "../core/components/footer/footer.component";
+import { HabitCardComponent } from "../core/components/habit-section/habit-card/habit-card.component";
+import { LongPressDirective } from "../core/directives/gestureControlDirective";
+import { MindfulButtonComponent } from "../core/components/mindful-button/mindful-button.component";
+import { IonicModule } from "@ionic/angular";
+import { MindfulBadgeComponent } from "../core/components/mindful-badge/mindful-badge.component";
+import { UserDashboardComponent } from "./user-dashboard/user-dashboard.component";
+import { ChallengeCardComponent } from "../core/components/challenge-card/challenge-card.component";
+import { TypicalPageComponent } from "../core/components/typical-page/typical-page.component";
+import { ProfileComponent } from "./profile/profile.component";
+import { ProfileHomeComponent } from "./profile/profile-home/profile-home.component";
+import { MindfulInputsModule } from "../core/components/mindful-inputs/mindful-inputs.module";
+import { MindfulTimelineComponent } from "../core/components/mindful-timeline/mindful-timeline.component";
+import { TimelineComponent } from "../core/components/habit-section/timeline/timeline.component";
+import { MindfulSelectorsComponent } from "../core/components/mindful-selectors/mindful-selectors.component";
+import { AddCalendarComponent } from "./add-calendar/add-calendar.component";
+import { MindfulNavigatorComponent } from "../core/components/mindful-navigator/mindful-navigator.component";
+import { UserProfileComponent } from "../core/components/user-profile/user-profile.component";
+import { SupermeTimerComponent } from '../core/components/superme-timer/superme-timer.component';
+import { StreaksLeaderboardComponent } from '../core/components/streaks-section/streaks-leaderboard/streaks-leaderboard.component';
+import { StreaksListComponent } from '../core/components/streaks-section/streaks-list/streaks-list.component';
 
 @NgModule({
   declarations: [
@@ -29,27 +32,30 @@ import {UserProfileComponent} from "../core/components/user-profile/user-profile
     ProfileHomeComponent,
     MindfulTimelineComponent,
     TimelineComponent,
-  // AddCalendarComponent is now standalone and imported where needed
+    // AddCalendarComponent is now standalone and imported where needed
   ],
   exports: [
-  MindfulTimelineComponent
+    MindfulTimelineComponent
   ],
   imports: [
     CommonModule,
     RouterModule,
     AuthenticatedRoutingModule,
-  LongPressDirective,
-  HabitCardComponent,
-  MindfulButtonComponent,
-  MindfulBadgeComponent,
-  TypicalPageComponent,
-  ChallengeCardComponent,
-  UserDashboardComponent,
-  UserProfileComponent,
-  IonicModule,
-  MindfulInputsModule,
-  MindfulSelectorsComponent,
-  MindfulNavigatorComponent
+    LongPressDirective,
+    HabitCardComponent,
+    MindfulButtonComponent,
+    MindfulBadgeComponent,
+    TypicalPageComponent,
+    ChallengeCardComponent,
+    UserDashboardComponent,
+    UserProfileComponent,
+    IonicModule,
+    MindfulInputsModule,
+    MindfulSelectorsComponent,
+    SupermeTimerComponent,
+    StreaksLeaderboardComponent,
+    StreaksListComponent,
+    MindfulNavigatorComponent
   ]
 })
 export class AuthenticatedModule { }

@@ -8,7 +8,7 @@
   .toggle-buttons {
     display: flex;
     margin-bottom: 40px;
-    background: #f7c29b;
+    background: #FAD2AE;
     border-radius: 40px;
 
     button {
@@ -59,8 +59,35 @@
 
 /* Family name input specific styling */
 .family-creation-section {
-  input[formControlName="familyName"] {
-    background: #FAD2AE !important;
+
+  input[formControlName="familyName"],
+  .mindful-input-group input {
+    width: 100%;
+
+    padding: 1rem;
+    border-radius: 12px !important;
+    font-size: 1rem;
+    background: #FAD2AE;
+    border: 2px solid transparent;
+    transition: 0.2s;
+    box-sizing: border-box;
+
+    &::placeholder {
+      color: rgba(119, 40, 23, 0.6);
+    }
+  }
+
+  .mindful-input-group input:focus,
+  .mindful-input-group input:active,
+  .mindful-input-group input:hover,
+  .mindful-input-group input:focus-visible {
+    border: 2px solid #ff823b;
+    outline: none;
+  }
+
+  .mindful-input-group input.error,
+  input[formControlName="familyName"].error {
+    border-color: var(--error_color);
   }
 
   .custom-create-btn {
@@ -99,8 +126,35 @@
   position: relative;
   margin-bottom: 12px;
 
-  input {
+  /* Ensure the family code input matches signup styling */
+  input,
+  input[formControlName="familyCode"] {
+    width: 100%;
+
+    padding: 1rem;
+    border-radius: 12px !important;
+    font-size: 1rem;
+    background: #FAD2AE;
+    border: 2px solid transparent;
+    transition: 0.2s;
+    box-sizing: border-box;
     padding-right: 60px !important;
+
+    &::placeholder {
+      color: rgba(119, 40, 23, 0.6);
+    }
+  }
+
+  input[formControlName="familyCode"]:focus,
+  input[formControlName="familyCode"]:active,
+  input[formControlName="familyCode"]:hover,
+  input[formControlName="familyCode"]:focus-visible {
+    border: 2px solid #ff823b;
+    outline: none;
+  }
+
+  input[formControlName="familyCode"].error {
+    border-color: var(--error_color);
   }
 
   .qr-scanner-btn {

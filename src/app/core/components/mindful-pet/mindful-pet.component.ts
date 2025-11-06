@@ -37,7 +37,7 @@ export class MindfulPetComponent implements OnInit, OnChanges {
 
   currentImage = '';
 
-  constructor(private petAgeService: PetAgeService) {}
+  constructor(private petAgeService: PetAgeService) { }
 
   /**
    * Get image path based on pet type, age, mood, and animation state
@@ -57,7 +57,7 @@ export class MindfulPetComponent implements OnInit, OnChanges {
     // Build image filename based on structure
     const prefix = this.animated ? `${petCapitalized}-Move` : petCapitalized;
     const filename = `${prefix}-Age${ageValue}-${moodCapitalized}.png`;
-    
+
     return `assets/Images-Pet/${filename}`;
   }
 
@@ -91,7 +91,7 @@ export class MindfulPetComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.updateImage();
-    
+
     // If no age is provided, use the current pet age from service
     if (!this.age || this.age === 1) {
       const petData = this.petAgeService.getCurrentPetData();
