@@ -9,6 +9,7 @@ import { SocialMediaComponent } from '../social-media/social-media.component';
 import { ChangePetComponent } from './change-pet/change-pet.component';
 import { MindfulPopupComponent } from '../mindful-popup/mindful-popup.component';
 import { AuthService } from '../../services/auth.service';
+import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'user-profile',
@@ -19,6 +20,9 @@ import { AuthService } from '../../services/auth.service';
 })
 export class UserProfileComponent implements OnChanges {
   @Input() user: any = {};
+  
+  // Local user avatar URL
+  userAvatarUrl: string = '/assets/app-assets/Default-avatar-home.svg';
 
   @Input() userCoins: number | string = 0;
   @Input() userStreaks: number | string = 0;
@@ -35,8 +39,24 @@ export class UserProfileComponent implements OnChanges {
   constructor(
     private router: Router,
     private modalCtrl: ModalController,
-    private authService: AuthService
-  ) { }
+    private authService: AuthService,
+    private userService: UserService
+  ) {
+    // Subscribe to user profile changes
+    this.userService.getUserProfile$().subscribe(profile => {
+      if (profile) {
+        this.userAvatarUrl = this.userService.getUserAvatarUrl();
+        // Update user object if not provided via Input
+        if (!this.user || Object.keys(this.user).length === 0) {
+          this.user = {
+            name: profile.name,
+            age: profile.age,
+            avatarUrl: this.userAvatarUrl
+          };
+        }
+      }
+    });
+  }
 
   async onChangePet() {
     const slides = [

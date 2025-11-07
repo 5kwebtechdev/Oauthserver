@@ -1,6 +1,10 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StreaksListComponent, StreakItem } from '../streaks-list/streaks-list.component';
+import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { IonicModule } from '@ionic/angular';
+import { MindfulSpeechBubbleComponent } from '../../mindful-speech-bubble/mindful-speech-bubble.component';
+import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
 
 @Component({
   selector: 'app-streaks-leaderboard',
@@ -8,7 +12,7 @@ import { StreaksListComponent, StreakItem } from '../streaks-list/streaks-list.c
   styleUrls: ['./streaks-leaderboard.component.scss']
   ,
   standalone: true,
-  imports: [CommonModule, StreaksListComponent]
+  imports: [CommonModule, IonicModule, StreaksListComponent, MindfulNavigatorComponent, MindfulSpeechBubbleComponent, MindfulPetComponent]
 })
 export class StreaksLeaderboardComponent {
   @Input() title: string = 'Top Streakers';

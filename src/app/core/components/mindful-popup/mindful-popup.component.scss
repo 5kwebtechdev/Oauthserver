@@ -144,6 +144,21 @@
   }
 }
 
+/* Column layout modifier: stack CTAs vertically and stretch full width */
+.mindful-popup-dual-cta.column {
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  gap: 12px;
+
+  .mindful-button,
+  .mindful-button-full,
+  mindful-button,
+  .button {
+    width: 100% !important;
+  }
+}
+
 .mindful-button-white {
   border-radius: 6px;
   background: #FFF;

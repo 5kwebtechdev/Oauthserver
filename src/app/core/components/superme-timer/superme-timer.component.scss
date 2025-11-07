@@ -35,8 +35,8 @@
         }
 
         .face {
-            width: 86%;
-            height: 86%;
+            width: 260px;
+            height: 260px;
             border-radius: 50%;
             position: relative;
             z-index: 2;
@@ -59,14 +59,14 @@
 
             .tick {
                 position: absolute;
-                top: 14px;
+                top: -10px;
                 left: 50%;
                 display: block;
                 width: 2px;
-                height: 16px;
+                height: 14px;
                 background: rgba(0, 0, 0, 0.6);
-                transform-origin: center 150px;
-                /* rotate around center */
+                transform-origin: 1px 122px;
+                /* rotate around face center: (260px / 2) - 8px top offset = 122px */
                 border-radius: 2px;
                 margin-left: -1px;
                 opacity: 0.9;
@@ -93,6 +93,16 @@
         .timer-wrap {
             width: 280px;
             height: 280px;
+        }
+
+        .face {
+            width: 227px;
+            height: 227px;
+        }
+
+        .face .tick {
+            transform-origin: 1px 106.5px;
+            /* adjusted for smaller face: (227px / 2) - 8px = 105.5px */
         }
 
         .face .time {

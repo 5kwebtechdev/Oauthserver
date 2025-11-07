@@ -44,7 +44,7 @@
         </div>
         <div class="detail-message">
             <div class="bubble-speech">
-                <app-speech-bubble
+                <app-speech-bubble [arrowSide]="'right'" [arrowOffset]="'50%'"
                     [message]="'Your pops says \u201CRemember, every step counts! This task is all about learning and growing. \u2028\u2028You\'ve got this!\u201D'"></app-speech-bubble>
             </div>
             <div class="detail-pet">
@@ -81,43 +81,55 @@
 
         <div class="detail-progess-status">
             <div class="total-progress">
-                <div class="progres-count">0</div>
+                <div class="progres-count">4/7</div>
                 <div class="progress-stat">
-                    <div class="progress-circle">
-                        <img src="/assets/app-assets/habit-habit-master-icon.svg" alt="habit icon"
-                            class="progress-circle-img" />
+                    <div class="progress-circle-wrapper">
+                        <mindful-completion [completionPercentage]="57" [borderColor]="'#4CAF50'" [innerText]="''"
+                            [belowText]="''">
+                        </mindful-completion>
+                        <img src="assets/Icons-Neutral/Icon-Badge-StreakKeeper.png" alt="Streak Keeper"
+                            class="progress-badge-icon" />
                     </div>
-                    <p class="progress-name">Consistency Champion</p>
+                    <p class="progress-name">Streak Keeper</p>
                 </div>
             </div>
             <div class="total-progress">
-                <div class="progres-count">0</div>
+                <div class="progres-count">250/500</div>
                 <div class="progress-stat">
-                    <div class="progress-circle">
-                        <img src="/assets/app-assets/habit-habit-master-icon.svg" alt="habit icon"
-                            class="progress-circle-img" />
+                    <div class="progress-circle-wrapper">
+                        <mindful-completion [completionPercentage]="50" [borderColor]="'#4CAF50'" [innerText]="''"
+                            [belowText]="''">
+                        </mindful-completion>
+                        <img src="assets/Icons-Neutral/Icon-Badge-CoinCollector.png" alt="Coin Collector"
+                            class="progress-badge-icon" />
                     </div>
-                    <p class="progress-name">First Big Win</p>
+                    <p class="progress-name">Coin Collector</p>
                 </div>
             </div>
             <div class="total-progress">
-                <div class="progres-count">0</div>
+                <div class="progres-count">10/50</div>
                 <div class="progress-stat">
-                    <div class="progress-circle">
-                        <img src="/assets/app-assets/habit-habit-master-icon.svg" alt="habit icon"
-                            class="progress-circle-img" />
+                    <div class="progress-circle-wrapper">
+                        <mindful-completion [completionPercentage]="20" [borderColor]="'#F5A623'" [innerText]="''"
+                            [belowText]="''">
+                        </mindful-completion>
+                        <img src="assets/Icons-Neutral/Icon-Badges-TaskTerminator.png" alt="Task Terminator"
+                            class="progress-badge-icon" />
+                    </div>
+                    <p class="progress-name">Task Terminator</p>
+                </div>
+            </div>
+            <div class="total-progress">
+                <div class="progres-count">60/100</div>
+                <div class="progress-stat">
+                    <div class="progress-circle-wrapper">
+                        <mindful-completion [completionPercentage]="60" [borderColor]="'#F5A623'" [innerText]="''"
+                            [belowText]="''">
+                        </mindful-completion>
+                        <img src="assets/Icons-Neutral/Icon-Badge-HabitMaster.png" alt="Habit Master"
+                            class="progress-badge-icon" />
                     </div>
                     <p class="progress-name">Habit Master</p>
-                </div>
-            </div>
-            <div class="total-progress">
-                <div class="progres-count">0</div>
-                <div class="progress-stat">
-                    <div class="progress-circle">
-                        <img src="/assets/app-assets/habit-habit-master-icon.svg" alt="habit icon"
-                            class="progress-circle-img" />
-                    </div>
-                    <p class="progress-name">Comeback Star</p>
                 </div>
             </div>
         </div>

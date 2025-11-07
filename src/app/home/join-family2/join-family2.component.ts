@@ -144,6 +144,7 @@ export class JoinFamily2Component implements OnInit {
 
     this.isLoading = true;
     const familyName = this.familyForm.get('familyName')?.value;
+    sessionStorage.setItem('familyName', familyName);
     this.createdFamilyName = familyName;
 
     this.familyService.createFamily(familyName).subscribe({
@@ -153,6 +154,7 @@ export class JoinFamily2Component implements OnInit {
         this.familyCode = response.familyCode || this.generateFamilyCode();
         this.qrCodeData = this.familyCode;
         this.core.triggerToasrt('Family created successfully!');
+
       },
       error: (error) => {
         this.isLoading = false;

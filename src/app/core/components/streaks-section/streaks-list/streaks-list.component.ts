@@ -1,5 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { UserService } from '../../../services/user.service';
 
 export interface StreakItem {
   rank: number;
@@ -17,7 +18,7 @@ export interface StreakItem {
   standalone: true,
   imports: [CommonModule]
 })
-export class StreaksListComponent {
+export class StreaksListComponent implements OnInit {
   // sample data — replace or bind to an API as needed
   items: StreakItem[] = [
     { rank: 1, name: 'Penguin', days: 105, avatar: 'assets/avatars/penguin.png', change: 'up' },
@@ -31,6 +32,29 @@ export class StreaksListComponent {
     { rank: 9, name: 'You', days: 56, avatar: 'assets/avatars/you.png' },
     { rank: 10, name: 'Panda', days: 52, avatar: 'assets/avatars/panda.png' }
   ];
+
+  constructor(private userService: UserService) {}
+
+  ngOnInit(): void {
+    // Update 'You' item with current user's avatar
+    this.updateUserAvatar();
+    
+    // Subscribe to user profile changes
+    this.userService.getUserProfile$().subscribe(() => {
+      this.updateUserAvatar();
+    });
+  }
+
+  private updateUserAvatar(): void {
+    const userItem = this.items.find(item => item.name === 'You');
+    if (userItem) {
+      userItem.avatar = this.userService.getUserAvatarUrl();
+      const userName = this.userService.getUserName();
+      if (userName && userName !== 'User') {
+        userItem.name = userName;
+      }
+    }
+  }
 
   // allow parent components to pass a list of streaks; falls back to internal sample data
   @Input('streaks')

@@ -84,4 +84,18 @@ export class MindfulCoinsStatsComponent {
       await this.router.navigateByUrl('/authed/trophies');
     }
   }
+
+  async openStreakPageIf(slot: string) {
+    if (slot === 'streak') {
+      // Navigate to the streaks leaderboard inside the authenticated area
+      await this.router.navigateByUrl('/authed/streaks');
+    }
+  }
+
+  async openBadgesPageIf(slot: string) {
+    if (slot === 'badges') {
+      // Navigate to the badges page inside the authenticated area
+      await this.router.navigateByUrl('/authed/badges');
+    }
+  }
 }

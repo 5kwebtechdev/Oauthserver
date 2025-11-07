@@ -1,31 +1,6 @@
-<ion-header class="badge-header">
-    <div class="status-bar">
-        <p class="time">5.15</p>
-        <div class="status-icons">
-            <ion-icon name="cellular-outline"></ion-icon>
-            <ion-icon name="wifi-outline"></ion-icon>
-            <ion-icon name="battery-full-outline"></ion-icon>
-        </div>
-    </div>
-
-    <div class="header-content">
-        <ion-button fill="clear" class="back-button" (click)="onBackClick()">
-            <ion-icon name="arrow-back-outline"></ion-icon>
-        </ion-button>
-        <div class="title-section">
-            <h1 class="page-title">Your Badge Quest</h1>
-            <div class="tagline">
-                <span>Earn badges</span>
-                <span class="separator"></span>
-                <span>Level up</span>
-                <span class="separator"></span>
-                <span>Show the world</span>
-            </div>
-        </div>
-    </div>
-</ion-header>
-
 <ion-content>
+    <mindful-card-header [title]="'Your Badge Quest'" [subtitleLeft]="'Earn badges'" [subtitleMiddle]="'Level up'"
+        [subtitleRight]="'Show the world'" [showBackArrow]="true" (backClick)="onBackClick()"></mindful-card-header>
     <!-- Recent Achievement Card -->
     <div class="recent-achievement-card" *ngIf="recentAchievement">
         <div class="achievement-content">
@@ -63,8 +38,8 @@
                             [belowText]="''"></mindful-completion>
                         <ion-icon *ngIf="badge.isLocked" name="lock-closed-outline" class="lock-icon"></ion-icon>
                     </div>
-                    <p class="badge-name">{{ badge.name }}</p>
                 </div>
+                <p class="badge-name">{{ badge.name }}</p>
                 <p class="badge-description">{{ badge.description }}</p>
             </div>
         </div>
@@ -75,3 +50,8 @@
         <div class="home-indicator"></div>
     </div>
 </ion-content>
+
+<!-- Share Popup -->
+<app-mindful-popup [isVisible]="sharePopupVisible" [config]="sharePopupConfig"
+  (closeAction)="sharePopupVisible=false" (backdropClick)="sharePopupVisible=false">
+</app-mindful-popup>

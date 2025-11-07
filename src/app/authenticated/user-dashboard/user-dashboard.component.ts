@@ -22,6 +22,7 @@ import { MindfulCardHeaderComponent } from '../../core/components/mindful-naviga
 import { ViewAllComponent } from '../../core/components/mindful-navigator/view-all/view-all.component';
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { PetMessagesService, PetMessage, PetMood } from '../../core/services/pet-messages.service';
+import { UserService } from '../../core/services/user.service';
 
 
 @Component({
@@ -54,6 +55,7 @@ import { PetMessagesService, PetMessage, PetMood } from '../../core/services/pet
 export class UserDashboardComponent implements OnInit {
   // Minimal properties used by the template
   public userName: string = 'User';
+  public userAvatarUrl: string = '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
   public userCoins: number = 0;
   public userStreaks: number = 0;
   public userDays: number = 0;
@@ -67,7 +69,8 @@ export class UserDashboardComponent implements OnInit {
   constructor(
     private modalCtrl: ModalController,
     private router: Router,
-    private petMessagesService: PetMessagesService
+    private petMessagesService: PetMessagesService,
+    private userService: UserService
   ) { }
 
   async openNotes() {
@@ -76,6 +79,14 @@ export class UserDashboardComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Load user profile from service
+    this.userService.getUserProfile$().subscribe(profile => {
+      if (profile) {
+        this.userName = profile.name || 'User';
+        this.userAvatarUrl = this.userService.getUserAvatarUrl();
+      }
+    });
+
     // Initialize pet message for home page
     this.currentPetMessage = this.petMessagesService.getMessage('home', {
       userName: this.userName,

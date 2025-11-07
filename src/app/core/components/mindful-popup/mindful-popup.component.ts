@@ -15,6 +15,8 @@ export interface MindfulPopupCTA {
   buttonStyle?: buttonStyles;
   buttonMedium?: boolean;
   buttonLarge?: boolean;
+  icon?: string;
+  iconPosition?: 'start' | 'end';
 }
 
 export interface MindfulPopupConfig {
@@ -27,6 +29,7 @@ export interface MindfulPopupConfig {
   showShareButton?: boolean;
   showCloseButton?: boolean;
   backdrop?: boolean;
+  ctaDirection?: 'row' | 'column';
 }
 
 @Component({
@@ -69,7 +72,8 @@ export class MindfulPopupComponent implements OnInit {
       secondaryCTA: this.config.secondaryCTA || this.secondaryCTA,
       showShareButton: this.config.showShareButton ?? this.showShareButton,
       showCloseButton: this.config.showCloseButton ?? this.showCloseButton,
-      backdrop: this.config.backdrop ?? this.backdrop
+      backdrop: this.config.backdrop ?? this.backdrop,
+      ctaDirection: this.config.ctaDirection || 'row'
     };
   }
 

@@ -9,18 +9,17 @@ import { TestDropdownsComponent } from '../test-dropdowns/test-dropdowns.compone
 import { TestSelectorsComponent } from '../test-selectors/test-selectors.component';
 import { MindfulSelectorsComponent } from 'src/app/core/components/mindful-selectors/mindful-selectors.component';
 import { TestTimelineComponent } from '../test-timeline/test-timeline.component';
-import { SupermeLoadingComponent } from 'src/app/core/components/superme-loading/superme-loading.component';
 import { AddCalendarComponent } from '../add-calendar/add-calendar.component';
 import { MindfulPopupComponent, MindfulPopupConfig } from 'src/app/core/components/mindful-popup/mindful-popup.component';
+import { SupermeTimerComponent } from 'src/app/core/components/superme-timer/superme-timer.component';
 
 @Component({
   selector: 'app-test',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IonicModule, TestButtonsComponent, TestBadgesComponent, TestInputsComponent, TestDropdownsComponent, TestSelectorsComponent, TestTimelineComponent, AddCalendarComponent, MindfulSelectorsComponent, MindfulPopupComponent, SupermeLoadingComponent],
+  imports: [CommonModule, ReactiveFormsModule, IonicModule, TestButtonsComponent, TestBadgesComponent, TestInputsComponent, TestDropdownsComponent, TestSelectorsComponent, TestTimelineComponent, AddCalendarComponent, MindfulSelectorsComponent, MindfulPopupComponent, SupermeTimerComponent],
   template: `
     <ion-content>
       <!-- always-on loader for testing -->
-      <app-superme-loading [visible]="true"></app-superme-loading>
       <div style="padding:1rem;">
         <h1>Test Page</h1>
         
@@ -34,6 +33,12 @@ import { MindfulPopupComponent, MindfulPopupConfig } from 'src/app/core/componen
           <p style="margin-top: 0.5rem; font-size: 0.9em; color: #666;">
             Click to open popup with random content and Academy lesson image
           </p>
+        </div>
+
+        <!-- Superme Timer Test Section -->
+        <div style="margin-bottom: 2rem; padding: 1rem; border: 1px solid #ccc; border-radius: 8px;">
+          <h2>Superme Timer Test (5 min)</h2>
+          <app-superme-timer [totalSeconds]="300"></app-superme-timer>
         </div>
 
         <test-buttons></test-buttons>

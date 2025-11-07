@@ -44,16 +44,34 @@
     <span class="stat-divider-vertical" aria-hidden="true"></span>
 
     <div class="stat-col" role="listitem" [attr.aria-label]="slot3">
-      <img [src]="getStatIcon(slot3)" [alt]="slot3" class="stat-icon">
-      <div class="stat-value">{{ getStatValue(slot3) }}</div>
-      <span class="stat-label visually-hidden">{{ slot3 }}</span>
+      <ng-container *ngIf="slot3 === 'streak'; else normal3">
+        <button (click)="openStreakPageIf(slot3)" class="coin-link" aria-label="Open streaks" type="button">
+          <img [src]="getStatIcon(slot3)" [alt]="slot3" class="stat-icon">
+          <div class="stat-value">{{ getStatValue(slot3) }}</div>
+        </button>
+        <span class="stat-label visually-hidden">{{ slot3 }}</span>
+      </ng-container>
+      <ng-template #normal3>
+        <img [src]="getStatIcon(slot3)" [alt]="slot3" class="stat-icon">
+        <div class="stat-value">{{ getStatValue(slot3) }}</div>
+        <span class="stat-label visually-hidden">{{ slot3 }}</span>
+      </ng-template>
     </div>
     <span class="stat-divider-vertical" aria-hidden="true"></span>
 
     <div class="stat-col" role="listitem" [attr.aria-label]="slot4">
-      <img [src]="getStatIcon(slot4)" [alt]="slot4" class="stat-icon">
-      <div class="stat-value">{{ getStatValue(slot4) }}</div>
-      <span class="stat-label visually-hidden">{{ slot4 }}</span>
+      <ng-container *ngIf="slot4 === 'badges'; else normal4">
+        <button (click)="openBadgesPageIf(slot4)" class="coin-link" aria-label="Open badges" type="button">
+          <img [src]="getStatIcon(slot4)" [alt]="slot4" class="stat-icon">
+          <div class="stat-value">{{ getStatValue(slot4) }}</div>
+        </button>
+        <span class="stat-label visually-hidden">{{ slot4 }}</span>
+      </ng-container>
+      <ng-template #normal4>
+        <img [src]="getStatIcon(slot4)" [alt]="slot4" class="stat-icon">
+        <div class="stat-value">{{ getStatValue(slot4) }}</div>
+        <span class="stat-label visually-hidden">{{ slot4 }}</span>
+      </ng-template>
     </div>
   </div>
 </div>

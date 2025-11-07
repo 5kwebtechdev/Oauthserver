@@ -148,6 +148,9 @@ const routes: Routes = [
       }, {
         path: 'trophies',
         loadComponent: () => import('../core/components/trophy-section/trophy-page/trophy-page.component').then(m => m.TrophyPageComponent)
+      }, {
+        path: 'badges',
+        loadComponent: () => import('../core/components/badge-section/badge-section.component').then(m => m.BadgeSectionComponent)
       }
     ]
   }

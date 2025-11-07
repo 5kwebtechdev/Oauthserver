@@ -3,6 +3,7 @@ import { Router, ActivatedRoute } from "@angular/router";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { CoreService } from "../../core/services/core.service";
 import { AuthService } from '../../core/services/auth.service';
+import { UserService } from '../../core/services/user.service';
 import { CountriesService, Country } from "../../core/services/countries.service";
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Subscription } from 'rxjs';
@@ -200,7 +201,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     private router: Router,
     private core: CoreService,
     private countriesService: CountriesService,
-    private authService: AuthService
+    private authService: AuthService,
+    private userService: UserService
   ) {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -1114,6 +1116,20 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.authService.register(payload).subscribe({
       next: (resp) => {
         console.log('Registration success:', resp);
+        
+        // Save user profile to UserService
+        this.userService.setUserProfile({
+          name: payload.name,
+          email: payload.email,
+          phone: payload.phone,
+          gender: payload.gender?.toLowerCase() as 'male' | 'female',
+          dob: payload.dateOfBirth,
+          avatarName: payload.avatarName,
+          avatarUrl: this.getAvatarUrlFromSelection(profile.avatar || this.avatarSelected, payload.gender?.toLowerCase()),
+          relationship: payload.relationship as 'CHILD' | 'PARENT' | 'SELF',
+          pet: payload.petName
+        });
+        
         // Clear signup session data
         try {
           sessionStorage.removeItem('signup_profile');
@@ -1157,5 +1173,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   onBegin() {
     // Complete the registration with all session data
     this.registerFromSession();
+  }
+
+  /**
+   * Get avatar URL from avatar selection number
+   */
+  private getAvatarUrlFromSelection(avatarNumber: number, gender?: string): string {
+    const genderPrefix = gender === 'male' ? 'Male' : 'Female';
+    return `/assets/Images-Transparent/Image-Onboarding-Avatar-${genderPrefix}${avatarNumber}.png`;
   }
 }
