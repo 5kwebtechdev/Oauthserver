@@ -65,13 +65,34 @@
   /* 44.8px */
 }
 
-/* Panda Message */
 .panda-message {
   display: inline-flex;
-  align-items: flex-end;
-  margin-left: 70px;
-  margin-bottom: 4px;
+  // align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
 
+}
+
+/* Constrain speech bubble sizing for this page */
+.panda-message app-speech-bubble {
+  max-width: 300px;
+}
+
+/* Reduce internal padding/height of the speech bubble component on this page */
+:host ::ng-deep app-speech-bubble .speech-bubble {
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+:host ::ng-deep app-speech-bubble .message-text {
+  font-size: 10px;
+  line-height: 140%;
+}
+
+.panda-message mindful-pet {
+  width: 43px;
+  height: 73px;
+  flex-shrink: 0;
 }
 
 .speech {
@@ -79,7 +100,9 @@
   align-items: flex-end;
   justify-content: right;
   background: #FFFFFF;
-  width: 250px;
+  width: 280px;
+  height: 60px;
+  padding: 4px 8px;
   border-radius: 8px;
   padding: 8px;
 }

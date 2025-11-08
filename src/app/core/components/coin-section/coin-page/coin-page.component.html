@@ -14,11 +14,13 @@
     </div>
 
     <!-- Panda Message -->
-    <div class="panda-message">
-      <div class="speech">
-        <p>Whoa! That’s a lot of coins! Let’s go dress me up or grab something shiny!</p>
-      </div>
-      <img src="/assets/app-assets/Panda Sitting Tired.svg" alt="Panda" class="panda-icon">
+    <div class="panda-message d-flex align-items-center gap-2">
+      <app-speech-bubble
+        [message]="'Whoa! That’s a lot of coins! Let’s go dress me up or grab something shiny!'"
+        type="talking"
+        arrowSide="right">
+      </app-speech-bubble>
+      <mindful-pet></mindful-pet>
     </div>
 
     <!-- Redeem Button -->

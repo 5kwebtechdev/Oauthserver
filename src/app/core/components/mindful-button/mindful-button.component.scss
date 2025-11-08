@@ -116,6 +116,36 @@ p {
   --text_color: white;
 }
 
+.orange-onboard {
+  --button_background: #EE6621;
+  --button_border: none;
+  --button_box_shodow: none;
+  --text_color: #FFFFFF;
+
+  display: flex;
+  padding: 8px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  width: 361px;
+  height: 56px;
+}
+
+.orange-onboard p {
+  color: #FFF;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.orange-onboard.disabled,
+.button.orange-onboard.disabled {
+  filter: none;
+  opacity: 0.5;
+}
+
 /* Specific medium size overrides for orange */
 .orange.medium {
   display: flex;
