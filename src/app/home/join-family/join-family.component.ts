@@ -83,20 +83,22 @@ export class JoinFamilyComponent implements OnInit {
     if (this.form.invalid) {
       return;
     }
-    this.isLoading = true;
+    // this.isLoading = true;
     const familyCode = this.form.get('code')?.value;
     console.log('Joining family with code:', familyCode);
-    this.familyService.joinFamily(familyCode).subscribe({
-      next: (response) => {
-        this.isLoading = false;
-        this.core.triggerToasrt('Successfully joined family!');
-        this.router.navigate(['home', 'sign-up'], { queryParams: { step: 4 } });
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.core.triggerToasrt(error.error?.message || 'Failed to join family. Please try again.');
-      }
-    });
+    sessionStorage.setItem('familyCode', familyCode);
+    this.router.navigate(['home', 'sign-up'], { queryParams: { step: 4 } });
+    // this.familyService.joinFamily(familyCode).subscribe({
+    //   next: (response) => {
+    //     this.isLoading = false;
+    //     this.core.triggerToasrt('Successfully joined family!');
+    //     this.router.navigate(['home', 'sign-up'], { queryParams: { step: 4 } });
+    //   },
+    //   error: (error) => {
+    //     this.isLoading = false;
+    //     this.core.triggerToasrt(error.error?.message || 'Failed to join family. Please try again.');
+    //   }
+    // });
 
 
   }

@@ -36,6 +36,37 @@ export class MoodSelectorComponent {
     { src: '/assets/Images-Transparent/Image-Mood-Nervous.png', label: 'Neutral' }
   ];
 
+  ngOnInit() {
+    this.getTodayVibe();
+  }
+
+  getTodayVibe() {
+    const url = `${environment.apiUrl}/mood/vibes/today`;
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const token = this.authApi?.getToken?.() || environment.apiAuthToken || null;
+    if (token) headers = headers.set('Authorization', token.startsWith('Bearer ') ? token : `Bearer ${token}`);
+
+    this.http.get<{ mood: string; imagePath?: string; date?: string }>(url, { headers }).subscribe({
+      next: (res) => {
+        console.debug('[MoodSelector] Today’s vibe:', res);
+        if (res.imagePath) {
+          // set the mood as an asset image
+          this.value = 'asset:' + res.imagePath;
+        } else if (res.mood) {
+          // fallback to emoji key
+          this.value = res.mood;
+        } else {
+          this.value = 'neutral';
+        }
+        this.valueChange.emit(this.value);
+      },
+      error: (err) => {
+        console.error('Failed to fetch today’s vibe', err);
+        this.value = 'neutral';
+      }
+    });
+  }
+
   select(m: MoodOption) {
     this.value = m.key;
     this.valueChange.emit(this.value);

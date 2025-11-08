@@ -97,26 +97,28 @@ export class JoinFamily2Component implements OnInit {
       return;
     }
 
-    this.isLoading = true;
+    // this.isLoading = true;
     const familyCode = this.joinFamilyForm.get('familyCode')?.value;
+    sessionStorage.setItem('familyCode', familyCode);
+    this.router.navigate(['home', 'sign-up'], { queryParams: { step: 4 } });
 
-    this.familyService.joinFamily(familyCode).subscribe({
-      next: (response) => {
-        this.isLoading = false;
-        this.core.triggerToasrt('Successfully joined family!');
-        this.router.navigate(['/home/auth'], { queryParams: { role: this.userRole } });
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.core.triggerToasrt(error.error?.message || 'Failed to join family. Please try again.');
-      }
-    });
+    // this.familyService.joinFamily(familyCode).subscribe({
+    //   next: (response) => {
+    //     this.isLoading = false;
+    //     this.core.triggerToasrt('Successfully joined family!');
+    //     this.router.navigate(['/home/auth'], { queryParams: { role: this.userRole } });
+    //   },
+    //   error: (error) => {
+    //     this.isLoading = false;
+    //     this.core.triggerToasrt(error.error?.message || 'Failed to join family. Please try again.');
+    //   }
+    // });
 
-    setTimeout(() => {
-      this.isLoading = false;
-      this.core.triggerToasrt(`Successfully joined family with code: ${familyCode}`);
-      this.router.navigate(['/home/auth'], { queryParams: { role: this.userRole } });
-    }, 2000);
+    // setTimeout(() => {
+    //   this.isLoading = false;
+    //   this.core.triggerToasrt(`Successfully joined family with code: ${familyCode}`);
+    //   this.router.navigate(['/home/auth'], { queryParams: { role: this.userRole } });
+    // }, 2000);
   }
 
   openQRScanner() {
@@ -146,6 +148,7 @@ export class JoinFamily2Component implements OnInit {
     const familyName = this.familyForm.get('familyName')?.value;
     sessionStorage.setItem('familyName', familyName);
     this.createdFamilyName = familyName;
+    sessionStorage.setItem('familyName', familyName);
 
     this.familyService.createFamily(familyName).subscribe({
       next: (response) => {
@@ -154,7 +157,7 @@ export class JoinFamily2Component implements OnInit {
         this.familyCode = response.familyCode || this.generateFamilyCode();
         this.qrCodeData = this.familyCode;
         this.core.triggerToasrt('Family created successfully!');
-
+        sessionStorage.setItem('familyCode', this.familyCode);
       },
       error: (error) => {
         this.isLoading = false;
@@ -221,11 +224,11 @@ export class JoinFamily2Component implements OnInit {
   }
 
   childCompleted() {
-    this.router.navigate(['/home/auth'], { queryParams: { role: this.userRole } });
+    this.router.navigate(['home', 'sign-up'], { queryParams: { step: 4 } });
   }
 
   continueWithoutFamily() {
-    this.router.navigate(['/home/auth'], { queryParams: { role: this.userRole } });
+    this.router.navigate(['home', 'sign-up'], { queryParams: { step: 4 } });
   }
 
   get familyName() {
