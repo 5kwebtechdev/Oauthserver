@@ -1045,6 +1045,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const password = sessionStorage.getItem('signup_password') || this.password?.value;
     const role = sessionStorage.getItem('signup_role') || this.roleSelected;
     const identifier = this.requestedIdentifier || this.email?.value || this.phone?.value;
+    const familyCode = sessionStorage.getItem('familyCode');
+    const familyName = sessionStorage.getItem('familyName');
 
     let profile: any = {};
     try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) { profile = {}; }
@@ -1055,6 +1057,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       relationship: (role || '').toUpperCase(),
       password: password || undefined,
       avatarName: `avatar${profile.avatar || this.avatarSelected}`,
+      familyCode: familyCode || '',
+      familyName: familyName || ''
     };
 
     // include email or phone depending on loginMode or identifier content
@@ -1116,7 +1120,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.authService.register(payload).subscribe({
       next: (resp) => {
         console.log('Registration success:', resp);
-        
+
         // Save user profile to UserService
         this.userService.setUserProfile({
           name: payload.name,
@@ -1129,7 +1133,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           relationship: payload.relationship as 'CHILD' | 'PARENT' | 'SELF',
           pet: payload.petName
         });
-        
+
         // Clear signup session data
         try {
           sessionStorage.removeItem('signup_profile');
@@ -1137,6 +1141,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           sessionStorage.removeItem('signup_role');
           sessionStorage.removeItem('signup_avatar');
           sessionStorage.removeItem('requestedIdentifier');
+          sessionStorage.removeItem('familyCode');
+          sessionStorage.removeItem('familyName');
         } catch (e) { }
 
         // After successful registration, route depending on role:
@@ -1146,12 +1152,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         const roleSaved = (role || this.roleSelected) as string | undefined;
         const roleUpper = roleSaved ? roleSaved.toUpperCase() : '';
         if (roleUpper === 'PARENT') {
-          this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
+          // this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
+          this.router.navigate(['/home/login']);
         } else if (roleUpper === 'SELF') {
           this.router.navigate(['home/login']);
         } else if (roleUpper === 'CHILD') {
           // For child role, continue to pet selection
-          this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
+          // this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
+          this.router.navigate(['/home/login']);
         }
         else {
           // For child role, continue to pet selection
@@ -1173,6 +1181,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   onBegin() {
     // Complete the registration with all session data
     this.registerFromSession();
+    this.router.navigate(['/home/login']);
   }
 
   /**
