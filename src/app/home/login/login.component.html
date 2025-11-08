@@ -10,10 +10,11 @@
         </svg>
       </span>
       <span class="login-title">Login your account</span>
+      <h1>test3</h1>
     </div>
     <div class="login-toggle-form-wrapper">
       <div class="toggle-buttons">
-        <h1>test3</h1>
+
         <button [class.active]="loginMode === 'phone'" (click)="switchMode('phone')">
           Phone Number
         </button>
@@ -76,7 +77,7 @@
         <!-- Remember Me checkbox (for web users - extends session to 30 days) -->
         <div class="remember-me-item">
           <ion-checkbox [(ngModel)]="rememberMe" [ngModelOptions]="{standalone: true}"></ion-checkbox>
-          <label (click)="rememberMe = !rememberMe">Remember me for 30 days</label>
+          <label (click)="rememberMe = !rememberMe">Remember me</label>
         </div>
 
         <button class="signup-btn" [disabled]="!isLoginFormValid() || loading">

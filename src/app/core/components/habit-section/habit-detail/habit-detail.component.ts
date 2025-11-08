@@ -9,13 +9,14 @@ import { MindfulCoinsStatsComponent } from '../../mindful-coins-stats/mindful-co
 import { MindfulCalendarComponent } from '../../mindful-inputs/mindful-calendar/mindful-calendar.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
+import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
 
 @Component({
   standalone: true,
   selector: 'habit-detail',
   templateUrl: './habit-detail.component.html',
   styleUrls: ['./habit-detail.component.scss'],
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulSpeechBubbleComponent, MindfulPetComponent, MindfulCoinsStatsComponent, MindfulCalendarComponent, MindfulButtonComponent, MindfulInputsModule]
+  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulSpeechBubbleComponent, MindfulPetComponent, MindfulCoinsStatsComponent, MindfulCalendarComponent, MindfulButtonComponent, MindfulInputsModule, MindfulBadgeComponent]
 })
 export class HabitDetailComponent {
   public title: string = 'Habit Details';

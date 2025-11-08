@@ -2,6 +2,10 @@
   padding: 16px;
 }
 
+p {
+  margin: 0px
+}
+
 .detail-container {
   padding: 16px;
   // margin-left:16px;
@@ -75,7 +79,6 @@ h2 {
     font-style: normal;
     font-weight: 600;
     line-height: 140%;
-    /* 22.4px */
   }
 }
 
@@ -123,6 +126,25 @@ h2 {
     line-height: 120%;
     /* 15.6px */
   }
+}
+
+/* Completion/skipped indicator dots */
+.completedays-header>span,
+.skipped-days>span {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.completedays-header>span {
+  background: #4CAF50;
+  /* complete */
+}
+
+.skipped-days>span {
+  background: #BB2124;
+  /* skipped */
 }
 
 /* Divider SVG styling: center and make responsive */
@@ -246,4 +268,39 @@ h2 {
   width: 18px;
   height: 18px;
   display: block;
+}
+
+/* Pill badge next to the title (High) */
+.priority-badge {
+  display: flex;
+  padding: 6px 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 6px;
+  background: #BB2124;
+  color: #FDFDFD;
+}
+
+/* Title and date typography */
+.habit-title {
+  h1 {
+    color: #282527;
+    font-family: Nunito;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    margin: 0;
+    /* keep tight layout */
+  }
+
+  >span:first-of-type {
+    color: #282527;
+    font-family: Nunito;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 140%;
+    /* 22.4px */
+  }
 }

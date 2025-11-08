@@ -127,8 +127,44 @@
   --stroke_gradient: #90214D;
 }
 
+/* Orange badge variant (and alias used on habit detail) */
+.orange,
+.habit-detail-orange {
+  --background: #FDEAD7;
+  --border-color: #EE6621;
+  --text_color: #772817;
+  --stroke_gradient: transparent;
+}
+
+.badge.orange,
+.badge.habit-detail-orange {
+  display: inline-flex;
+  padding: 5px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 16px !important;
+  border: 1px solid var(--border-color);
+}
+
+.badge.orange p,
+.badge.habit-detail-orange p {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  color: var(--text_color);
+}
+
+.badge.orange:before,
+.badge.habit-detail-orange:before {
+  display: none;
+}
+
 /* Specific sizing and layout for status badges */
 .badge.pending {
+  
   display: inline-flex;
   white-space: nowrap;
   width: auto;
