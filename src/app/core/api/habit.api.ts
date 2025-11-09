@@ -40,6 +40,12 @@ export class HabitApi {
         return this.http.get(url, { headers: this.headers() });
     }
 
+    getHabitById(id: number): Observable<any> {
+        const headers = this.headers();
+        const url = `${this.base}/habits/${id}`;
+        return this.http.get(url, { headers: this.headers() });
+    }
+
     getHabitsBySearch(filters?: any): Observable<any> {
         const url = `${this.base}/habits/search`;
         let params = new HttpParams();

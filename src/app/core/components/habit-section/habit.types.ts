@@ -21,4 +21,6 @@ export interface Habit {
   activities?: { name: string; startTime: string; endTime: string }[]; // For timetable type
   tags?: string[];
   coinReward?: number;
+  daysOfWeek?: string[]; // e.g., ['Monday', 'Wednesday']
+  everyWeekend?: boolean;
 }

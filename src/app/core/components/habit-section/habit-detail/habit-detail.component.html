@@ -1,5 +1,5 @@
 <ion-content class="habit-detail-page" fullscreen>
-    <mindful-navigator heading="" backIcon="arrowSvg" (rightIconClick)="onEdit()">
+    <mindful-navigator backIcon="arrowSvg" (rightIconClick)="onEdit()">
         <div slot="end">
             <button class="right-custom-edit" aria-label="Edit" (click)="onEdit()" type="button"
                 style="background:none;border:0;padding:0;display:flex;align-items:center;">
@@ -13,20 +13,25 @@
         </div>
     </mindful-navigator>
 
-    <div class="detail-container">
+    <div class="detail-container" *ngIf="habit">
         <div class="habit-detail-header d-flex justify-content-between align-items-start align-self-stretch">
             <div class="habit-title d-flex flex-column gap-2">
                 <div class="habit-title-priority d-flex  align-items-center gap-3">
-                    <h1>Reading</h1>
-                    <span class="priority-badge">High</span>
+                    <h1>{{ habit.title }}</h1>
+                    <span class="priority-badge">{{ habit.priority | titlecase }}</span>
                 </div>
-                <span>March 10. 10.00-12.00</span>
-                <span style="color:#6B656A;">Created on Mar 5, 2025</span>
+                <span>
+                    {{ habit.startDate | date:'MMM d' }}.
+                    {{ habit.startTime }} - {{ habit.endTime }}
+                </span>
+                <span style="color:#6B656A;">Created on {{ habit.createdAt | date:'MMM d, y' }}</span>
             </div>
             <div class="habit-detail-focus d-flex  align-items-center gap-2">
-                <img class="routine-icon" src="assets/Icons-Neutral/Icon-Routine-Morning.png"
-                    alt="Routine Morning Icon" />
-                <mindful-badge type="habit-detail-orange" text="Focus"></mindful-badge>
+                <img class="routine-icon"
+                    [src]="'assets/Icons-Neutral/Icon-Routine-' + (habit.routine || 'Morning') + '.png'"
+                    alt="Routine Icon" />
+                <mindful-badge *ngIf="habit?.tags?.[0]" type="habit-detail-orange" [text]="habit?.tags?.[0] || 'Focus'">
+                </mindful-badge>
             </div>
         </div>
         <div class="repeat-days">
@@ -44,7 +49,8 @@
                 </svg>
                 <p>Repeats</p>
             </div>
-            <div class="repeat-weekday">days
+            <div class="repeat-weekday">
+                {{ shortDaysOfWeek }}
             </div>
         </div>
         <div class="detail-message">

@@ -174,16 +174,35 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
    * If a habit is available, pass it through navigation state so the
    * HabitDetailComponent can receive it via @Input or navigation extras.
    */
-  async onLongPress() {
-    try {
-      if (this.habit) {
-        await this.router.navigateByUrl('/authed/habit-detail', { state: { habit: this.habit } } as any);
-      } else {
-        await this.router.navigateByUrl('/authed/habit-detail');
-      }
-    } catch (err) {
-      console.error('Navigation to habit-detail failed', err);
+  // async onLongPress() {
+  //   try {
+  //     if (this.habit) {
+  //       await this.router.navigateByUrl(`/authed/habit-detail/1'`, { state: { habit: this.habit } } as any);
+  //     } else {
+  //       await this.router.navigateByUrl(`/authed/habit-detail/1`);
+  //     }
+  //   } catch (err) {
+  //     console.error('Navigation to habit-detail failed', err);
+  //   }
+  // }
+
+  onLongPress() {
+    if (!this.habit?.id) {
+      console.warn('No habit ID found for long press');
+      return;
     }
+
+    // Fetch detail directly from API
+    this.habitApi.getHabitById(Number(this.habit.id)).subscribe({
+      next: (res) => {
+        console.log('Habit detail fetched on long press:', res);
+        // Navigate to habit detail page, passing the full detail via state
+        this.router.navigate(['/authed/habit-detail', res.id], { state: { habit: res } });
+      },
+      error: (err) => {
+        console.error('Error fetching habit detail:', err);
+      }
+    });
   }
 
   async openHabitPage() {

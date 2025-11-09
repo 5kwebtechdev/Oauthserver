@@ -70,7 +70,7 @@ const routes: Routes = [
         path: 'add-calendar',
         component: AddCalendarComponent
       }, {
-        path: 'habit-detail',
+        path: 'habit-detail/:id',
         component: HabitDetailComponent
       }, {
         path: 'habit-input',
