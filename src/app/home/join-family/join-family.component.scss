@@ -1,8 +1,35 @@
 .input-container {
   position: relative;
-  
+  display: flex;
+  align-items: center;
+  background: #FAD2AE;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  transition: 0.2s;
+  box-sizing: border-box;
+
   ion-input {
-    --padding-end: 50px;
+    --padding-start: 16px;
+    --padding-end: 56px; /* leave room for QR button */
+    --highlight-color-focused: transparent; /* remove default underline */
+    --background: transparent; /* use container background */
+  }
+
+  /* Native input text + placeholder like signup */
+  ion-input::part(native) {
+    padding: 1rem 0; /* vertical padding handled here, horizontal via CSS vars */
+    font-size: 1rem;
+    border-radius: 12px; /* match visual */
+  }
+
+  ion-input::part(native)::placeholder {
+    color: rgba(119, 40, 23, 0.6);
+    opacity: 1;
+  }
+
+  /* Focus ring like signup */
+  &:focus-within {
+    border: 2px solid #ff823b;
   }
   
   .qr-icon {
@@ -30,6 +57,17 @@
       height: 24px;
       filter: brightness(0) saturate(100%) invert(28%) sepia(57%) saturate(1234%) hue-rotate(16deg) brightness(92%) contrast(85%);
       transition: filter 0.3s ease;
+      pointer-events: none;
+    }
+
+    /* Bootstrap icon replacement */
+    i.bi.bi-qr-code {
+      color: #B87D62;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+      display: inline-block;
       pointer-events: none;
     }
 

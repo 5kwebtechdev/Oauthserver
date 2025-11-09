@@ -160,56 +160,56 @@ label {
   }
 }
 
-.mindful-btn {
-  width: 100%;
-  padding: 16px;
-  border: none;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+// .mindful-btn {
+//   width: 100%;
+//   padding: 16px;
+//   border: none;
+//   border-radius: 12px;
+//   font-weight: 700;
+//   font-size: 16px;
+//   cursor: pointer;
+//   transition: all 0.3s ease;
 
-  &--primary {
-    background: #EE6621;
-    color: #FFFFFF;
+//   &--primary {
+//     background: #EE6621;
+//     color: #FFFFFF;
 
-    &:hover:not(:disabled) {
-      background: #d55a1e;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(238, 102, 33, 0.3);
-    }
+//     &:hover:not(:disabled) {
+//       background: #d55a1e;
+//       transform: translateY(-2px);
+//       box-shadow: 0 4px 12px rgba(238, 102, 33, 0.3);
+//     }
 
-    &:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-      transform: none;
-    }
-  }
+//     &:disabled {
+//       background: #ccc;
+//       cursor: not-allowed;
+//       transform: none;
+//     }
+//   }
 
-  &--secondary {
-    background: transparent;
-    border: 2px solid #772817;
-    color: #772817;
-    font-weight: 600;
-    font-size: 14px;
-    padding: 12px;
+//   &--secondary {
+//     background: transparent;
+//     border: 2px solid #772817;
+//     color: #772817;
+//     font-weight: 600;
+//     font-size: 14px;
+//     padding: 12px;
 
-    &:hover {
-      background: #772817;
-      color: #FFE9D6;
-    }
-  }
+//     &:hover {
+//       background: #772817;
+//       color: #FFE9D6;
+//     }
+//   }
 
-  @media (max-width: 480px) {
-    padding: 14px;
-    font-size: 15px;
+//   @media (max-width: 480px) {
+//     padding: 14px;
+//     font-size: 15px;
 
-    &.mindful-btn--secondary {
-      font-size: 13px;
-    }
-  }
-}
+//     &.mindful-btn--secondary {
+//       font-size: 13px;
+//     }
+//   }
+// }
 
 .mindful-faq {
   margin-bottom: 40px;

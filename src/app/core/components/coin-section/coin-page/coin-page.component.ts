@@ -5,11 +5,13 @@ import { IonicModule } from '@ionic/angular';
 import { CoinListComponent } from '../coin-list/coin-list.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { FooterComponent } from '../../footer/footer.component';
+import { MindfulSpeechBubbleComponent } from '../../mindful-speech-bubble/mindful-speech-bubble.component';
+import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
 
 @Component({
   selector: 'app-coin-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, CoinListComponent, MindfulButtonComponent, FooterComponent],
+  imports: [CommonModule, IonicModule, CoinListComponent, MindfulButtonComponent, FooterComponent, MindfulSpeechBubbleComponent, MindfulPetComponent],
   templateUrl: './coin-page.component.html',
   styleUrls: ['./coin-page.component.scss']
 })

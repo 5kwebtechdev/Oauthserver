@@ -65,7 +65,7 @@
               </svg>
             </button>
           </div>
-          <p class="note-text">Note: Double-check the code before entering</p>
+          <p class="note-text">Note:Double-check the code before entering</p>
           <div class="error-message" *ngIf="familyCodeControl?.invalid && familyCodeControl?.touched">
             <span *ngIf="familyCodeControl?.errors?.['required']">Family code is required</span>
             <span *ngIf="familyCodeControl?.errors?.['minlength']">Family code must be at least 6 characters</span>

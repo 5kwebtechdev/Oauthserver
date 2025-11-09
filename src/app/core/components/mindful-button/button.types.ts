@@ -8,6 +8,7 @@ export type buttonStyles =
   | 'columbian-blue'
   | 'pink'
   | 'orange'
+  | 'orange-onboard'
   | 'orange-light'
   | 'orange-dark'
   | 'orange-transparent'
