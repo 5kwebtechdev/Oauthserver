@@ -1,44 +1,44 @@
 <ion-content>
 	<div class="step step-1" *ngIf="currentStep === 1">
 		<mindful-navigator heading="Select the role" backIcon="arrowSvg" (back)="goBack()"></mindful-navigator>
+		<div class="d-flex flex-column gap-4">
+			<div class="role-selector container p-0" data-role="child" role="button" tabindex="0"
+				(click)="selectRole('child')" (keydown)="onKeySelect($event, 'child')"
+				[class.active]="selectedRole === 'child'" [attr.aria-pressed]="selectedRole === 'child'">
 
-		<div class="role-selector container p-0" data-role="child" role="button" tabindex="0"
-			(click)="selectRole('child')" (keydown)="onKeySelect($event, 'child')"
-			[class.active]="selectedRole === 'child'" [attr.aria-pressed]="selectedRole === 'child'">
+				<div class="row">
+					<div class="col-6">
+						<h2>Child</h2>
+						<h4>Learn and grow</h4>
+						<h4>Link with your parents</h4>
+						<h4>Earn rewards together</h4>
+					</div>
 
-			<div class="row">
-				<div class="col-6">
-					<h2>Child</h2>
-					<h4>Learn and grow</h4>
-					<h4>Link with your parents</h4>
-					<h4>Earn rewards together</h4>
-				</div>
-
-				<div class="col-6">
-					<img src="/assets/app-assets/Onboarding-role-selection-child.svg" alt="">
-				</div>
-			</div>
-		</div>
-
-		<div class="role-selector container p-0" data-role="parent" role="button" tabindex="0"
-			(click)="selectRole('parent')" (keydown)="onKeySelect($event, 'parent')"
-			[class.active]="selectedRole === 'parent'" [attr.aria-pressed]="selectedRole === 'parent'">
-
-			<div class="row">
-				<div class="col-6 p-l-0">
-					<img src="/assets/app-assets/Onboarding-role-selection-parent.svg" alt="">
-				</div>
-
-				<div class="col-6">
-					<h2>Parent</h2>
-					<h4>Grow together</h4>
-					<h4>Link with child</h4>
-					<h4>Track progress</h4>
+					<div class="col-6">
+						<img src="assets/Images-Transparent/Image-Role-Child.png" alt="">
+					</div>
 				</div>
 			</div>
-		</div>
 
-		<!--
+			<div class="role-selector container p-0" data-role="parent" role="button" tabindex="0"
+				(click)="selectRole('parent')" (keydown)="onKeySelect($event, 'parent')"
+				[class.active]="selectedRole === 'parent'" [attr.aria-pressed]="selectedRole === 'parent'">
+
+				<div class="row">
+					<div class="col-6 p-l-0">
+						<img src="assets/Images-Transparent/Image-Role-Parent.png" alt="">
+					</div>
+
+					<div class="col-6">
+						<h2>Parent</h2>
+						<h4>Grow together</h4>
+						<h4>Link with child</h4>
+						<h4>Track progress</h4>
+					</div>
+				</div>
+			</div>
+
+			<!--
 		<div class="role-selector container p-0" data-role="self" style="margin-top: 25px">
 			<div class="row">
 				<div class="col-6">
@@ -53,10 +53,10 @@
 			</div>
 		</div>
 		-->
-
-		<div>
-			<mindful-button type="green" full large text="Save & Continue" [disabled]="!selectedRole"
-				[style.opacity]="selectedRole ? 1 : 0.5" (click)="save()"></mindful-button>
+			<div>
+				<mindful-button type="green" full large text="Save & Continue" [disabled]="!selectedRole"
+					[style.opacity]="selectedRole ? 1 : 0.5" (click)="save()"></mindful-button>
+			</div>
 		</div>
 	</div>
 

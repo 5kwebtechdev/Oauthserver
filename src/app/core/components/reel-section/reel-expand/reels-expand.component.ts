@@ -21,12 +21,14 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
   public currentIndex = 0;
   public shareVisible = false;
   public videoProgress = 0;
+  public optionsVisible = false;
   
   // play/pause state management
   public isPlaying = false;
   public showPlayPauseIndicator = false;
   private indicatorTimeout: any;
   private wasPlayingBeforeShare = false; // Track if video was playing before share popup
+  private wasPlayingBeforeOptions = false;
 
   @ViewChild('playerVideo', { static: false }) playerVideo!: ElementRef<HTMLVideoElement>;
 
@@ -291,6 +293,50 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
     }
     
     this.wasPlayingBeforeShare = false;
+  }
+
+  openOptions(ev?: MouseEvent) {
+    if (ev) { ev.stopPropagation(); }
+    console.log('[ReelsExpand] openOptions clicked. optionsVisible(before)=', this.optionsVisible);
+    const videoEl = this.playerVideo && this.playerVideo.nativeElement;
+    if (videoEl && !videoEl.paused) {
+      this.wasPlayingBeforeOptions = true;
+      videoEl.pause();
+      this.isPlaying = false;
+      console.log('[ReelsExpand] Video was playing. Paused video for options.');
+    } else {
+      this.wasPlayingBeforeOptions = false;
+      console.log('[ReelsExpand] Video was not playing before options.');
+    }
+    this.optionsVisible = true;
+    console.log('[ReelsExpand] optionsVisible(after)=', this.optionsVisible);
+  }
+
+  closeOptions() {
+    console.log('[ReelsExpand] closeOptions called.');
+    this.optionsVisible = false;
+    console.log('[ReelsExpand] optionsVisible(after close)=', this.optionsVisible);
+    if (this.wasPlayingBeforeOptions) {
+      const videoEl = this.playerVideo && this.playerVideo.nativeElement;
+      if (videoEl) {
+        videoEl.play().then(() => {
+          this.isPlaying = true;
+        }).catch(() => {
+          this.isPlaying = false;
+        });
+      }
+    }
+    this.wasPlayingBeforeOptions = false;
+  }
+
+  editReel() {
+    this.closeOptions();
+    console.log('Edit Reel clicked', this.current);
+  }
+
+  deleteReel() {
+    this.closeOptions();
+    console.log('Delete Reel clicked', this.current);
   }
 
   copyLink() {
