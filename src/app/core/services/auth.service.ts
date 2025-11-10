@@ -16,8 +16,18 @@ export interface LoginCredentials {
 
 export interface AuthResponse {
   token: string;
-  userId: number;
-  expiresIn?: number; // Optional expiration time from backend
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    phone?: string;
+    role?: string;
+    family?: any;
+    familyMembers?: any[];
+    avatar?: string | null;
+    pet?: string | null;
+  };
+  expiresIn?: number;
 }
 
 export interface UserSession {
@@ -211,34 +221,37 @@ export class AuthService {
       .pipe(
         tap({
           next: (response) => {
+            const userId = response.user?.id;
+
             console.log('[AuthService] Login successful:', {
-              userId: response.userId,
+              userId,
               hasToken: !!response.token,
-              timestamp: new Date().toISOString()
+              timestamp: new Date().toISOString(),
             });
 
-            if (response && response.token) {
-              this.setSession(response, credentials.rememberMe || false);
+            if (response && response.token && userId) {
+              this.setSession(
+                {
+                  token: response.token,
+                  userId: userId,
+                  expiresIn: response.expiresIn,
+                },
+                credentials.rememberMe || false
+              );
+            } else {
+              console.error('[AuthService] Invalid login response structure:', response);
             }
           },
-          error: (error) => {
-            console.error('[AuthService] Login failed:', {
-              status: error.status,
-              statusText: error.statusText,
-              message: error.message,
-              url: error.url,
-              error: error.error,
-              timestamp: new Date().toISOString()
-            });
-          }
         })
+
       );
   }
 
   /**
    * Set user session after successful login
    */
-  private setSession(authResponse: AuthResponse, rememberMe: boolean = false): void {
+  private setSession(authResponse: { token: string; userId: number; expiresIn?: number; user?: any }, rememberMe: boolean = false)
+    : void {
     const currentTime = Date.now().toString();
     const platformType = this.isMobilePlatform ? 'mobile' : 'web';
 
@@ -248,6 +261,8 @@ export class AuthService {
     localStorage.setItem(this.LAST_ACTIVITY_KEY, currentTime);
     localStorage.setItem(this.REMEMBER_ME_KEY, rememberMe.toString());
     localStorage.setItem(this.PLATFORM_KEY, platformType);
+    localStorage.setItem('user_data', JSON.stringify(authResponse.user));
+
 
     console.log('[AuthService] Session established:', {
       userId: authResponse.userId,
