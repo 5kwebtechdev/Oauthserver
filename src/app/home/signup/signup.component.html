@@ -75,10 +75,9 @@
 
 
 
-            <button type="button" class="signup-btn" (click)="signupFromLogin()"
-              [ngClass]="{'active-bg': phone?.value || email?.value}">
-              Sign Up
-            </button>
+            <mindful-button type="orange-onboard" [text]="'Sign Up'"
+              [disabled]="!(phone?.value || email?.value)" (click)="signupFromLogin()">
+            </mindful-button>
 
             <div class="error-message" *ngIf="errorMessage">
               {{ errorMessage }}
@@ -120,9 +119,8 @@
           </div>
         </div>
 
-        <button type="button" class="signup-btn otp-next-btn" [disabled]="!isOtpComplete()" (click)="verifyOtp()">
-          Next
-        </button>
+        <mindful-button type="orange-onboard" [text]="'Next'" [disabled]="!isOtpComplete()" (click)="verifyOtp()">
+        </mindful-button>
         <div class="error-message" *ngIf="errorMessage">
           {{ errorMessage }}
         </div>
@@ -151,10 +149,9 @@
           </div>
         </form>
 
-        <button type="button" class="signup-btn password-next-btn" [disabled]="!passwordForm.valid"
+        <mindful-button type="orange-onboard" [text]="'Next'" [disabled]="!passwordForm.valid"
           (click)="proceedWithPassword()">
-          Next
-        </button>
+        </mindful-button>
       </div>
     </div>
 
@@ -204,9 +201,9 @@
         </div>
       </div>
 
-      <button class="signup-btn" [disabled]="!roleSelected" (click)="proceedWithRole()">Save
-        &
-        Continue</button>
+      <mindful-button type="orange-onboard" [text]="'Save & Continue'" [disabled]="!roleSelected"
+        (click)="proceedWithRole()">
+      </mindful-button>
     </div>
     <!--//////////////////////// STEP 2 - Profile Information-->
     <div *ngIf="step === 2" [@slideIn]>
@@ -257,8 +254,8 @@
         </ng-container>
       </div>
       <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
-      <button class="signup-btn" style="margin-top: 25px" [disabled]="false" (click)="registerOrProceed()">Save &
-        Continue</button>
+      <mindful-button type="orange-onboard" [text]="'Save & Continue'" (click)="registerOrProceed()">
+      </mindful-button>
 
     </div>
     <!--//////////////////////// STEP 3 - Account Creation-->
@@ -300,7 +297,8 @@
 
 
 
-            <button type="button" class="signup-btn" (click)="signup()">Sign Up</button>
+            <mindful-button type="orange-onboard" [text]="'Sign Up'" (click)="signup()">
+            </mindful-button>
           </form>
 
           <div class="or-divider"><span>OR</span></div>
@@ -336,8 +334,9 @@
           </div>
         </swiper-slide>
       </swiper-container>
-      <button class="signup-btn" style="margin-top: 25px" [disabled]="false" (click)="proceedWithAvatar()">Let's get
-        started</button>
+      <mindful-button type="orange-onboard" [text]="'Let\'s get started'" (click)="proceedWithAvatar()">
+      </mindful-button>
+
     </div>
 
     <!-- Step 5: Welcome -->

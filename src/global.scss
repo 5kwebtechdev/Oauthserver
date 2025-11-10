@@ -11,6 +11,54 @@
 @import "@ionic/angular/css/flex-utils.css";
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
 
+// SVG Icon System - Store all icon paths in one place
+$svg-icons: (
+  back: '/assets/icons/back.svg',
+  menu: '/assets/icons/menu.svg',
+  close: '/assets/icons/close.svg',
+  delete: '/assets/icons/delete.svg',
+  share: '/assets/icons/share.svg',
+  edit: '/assets/icons/edit.svg',
+  heart: '/assets/icons/heart.svg',
+  search: '/assets/icons/search.svg'
+);
+
+// Function to get icon URL by type
+@function icon-url($name) {
+  $path: map-get($svg-icons, $name);
+  @if $path == null {
+    @error "Unknown icon `#{$name}`. Add it to $svg-icons map in global.scss";
+  }
+  @return url(#{$path});
+}
+
+// Mixin to apply SVG icon as background or mask
+@mixin svg-icon($name, $size: 20px, $color: null) {
+  $path: map-get($svg-icons, $name);
+  @if $path == null {
+    @error "Unknown icon `#{$name}`. Add it to $svg-icons map in global.scss";
+  }
+
+  width: $size;
+  height: $size;
+  display: inline-block;
+
+  @if $color == null {
+    background: icon-url($name) no-repeat center/contain;
+  } @else {
+    -webkit-mask: url(#{$path}) no-repeat center/contain;
+    mask: url(#{$path}) no-repeat center/contain;
+    background-color: $color;
+  }
+}
+
+// Optional: Generate utility classes for each icon
+@each $name, $path in $svg-icons {
+  .icon-#{$name} {
+    @include svg-icon($name);
+  }
+}
+
 :root {
   --error_color: #bb2124;
   --font-heading: 'Fredoka', sans-serif;

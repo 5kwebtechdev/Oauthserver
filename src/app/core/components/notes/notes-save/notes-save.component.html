@@ -1,99 +1,13 @@
 <div class="note-view">
-  <div class="note-header">
-    <div class="header-left">
-      <button class="back" (click)="onBack()">&#8592;</button>
-      <div class="title">{{ title }}</div>
-    </div>
-
-    <div class="header-actions">
-      <button class="circle" (click)="onDelete()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60" fill="none">
-          <g filter="url(#filter0_d_1316_16666)">
-            <foreignObject x="-10" y="-10" width="80" height="80">
-              <div xmlns="http://www.w3.org/1999/xhtml"
-                style="backdrop-filter:blur(8px);clip-path:url(#bgblur_0_1316_16666_clip_path);height:100%;width:100%">
-              </div>
-            </foreignObject>
-            <circle data-figma-bg-blur-radius="16" cx="30" cy="30" r="24" fill="url(#paint0_linear_1316_16666)" />
-            <mask id="mask0_1316_16666" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="18" y="18" width="24"
-              height="24">
-              <rect x="18" y="18" width="24" height="24" fill="#D9D9D9" />
-            </mask>
-            <g mask="url(#mask0_1316_16666)">
-              <path
-                d="M25 39C24.45 39 23.9792 38.8042 23.5875 38.4125C23.1958 38.0208 23 37.55 23 37V24H22V22H27V21H33V22H38V24H37V37C37 37.55 36.8042 38.0208 36.4125 38.4125C36.0208 38.8042 35.55 39 35 39H25ZM35 24H25V37H35V24ZM27 35H29V26H27V35ZM31 35H33V26H31V35Z"
-                fill="#1C1B1F" />
-            </g>
-          </g>
-          <defs>
-            <filter id="filter0_d_1316_16666" x="0" y="0" width="60" height="60" filterUnits="userSpaceOnUse"
-              color-interpolation-filters="sRGB">
-              <feFlood flood-opacity="0" result="BackgroundImageFix" />
-              <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                result="hardAlpha" />
-              <feOffset />
-              <feGaussianBlur stdDeviation="3" />
-              <feComposite in2="hardAlpha" operator="out" />
-              <feColorMatrix type="matrix" values="0 0 0 0 0.419608 0 0 0 0 0.396078 0 0 0 0 0.415686 0 0 0 0.15 0" />
-              <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1316_16666" />
-              <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1316_16666" result="shape" />
-            </filter>
-            <clipPath id="bgblur_0_1316_16666_clip_path" transform="translate(10 10)">
-              <circle cx="30" cy="30" r="24" />
-            </clipPath>
-            <linearGradient id="paint0_linear_1316_16666" x1="9.58209" y1="13.7143" x2="53.5707" y2="20.2268"
-              gradientUnits="userSpaceOnUse">
-              <stop stop-color="#E2E2E2" stop-opacity="0.6" />
-              <stop offset="1" stop-color="#F1F1F1" stop-opacity="0.3" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </button>
-      <button class="circle" (click)="onShare()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60" fill="none">
-          <g filter="url(#filter0_d_1316_16672)">
-            <foreignObject x="-10" y="-10" width="80" height="80">
-              <div xmlns="http://www.w3.org/1999/xhtml"
-                style="backdrop-filter:blur(8px);clip-path:url(#bgblur_0_1316_16672_clip_path);height:100%;width:100%">
-              </div>
-            </foreignObject>
-            <circle data-figma-bg-blur-radius="16" cx="30" cy="30" r="24" fill="url(#paint0_linear_1316_16672)" />
-            <mask id="mask0_1316_16672" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="18" y="18" width="24"
-              height="24">
-              <rect x="18" y="18" width="24" height="24" fill="#D9D9D9" />
-            </mask>
-            <g mask="url(#mask0_1316_16672)">
-              <path
-                d="M35 40C34.1667 40 33.4583 39.7083 32.875 39.125C32.2917 38.5417 32 37.8333 32 37C32 36.9 32.025 36.6667 32.075 36.3L25.05 32.2C24.7833 32.45 24.475 32.6458 24.125 32.7875C23.775 32.9292 23.4 33 23 33C22.1667 33 21.4583 32.7083 20.875 32.125C20.2917 31.5417 20 30.8333 20 30C20 29.1667 20.2917 28.4583 20.875 27.875C21.4583 27.2917 22.1667 27 23 27C23.4 27 23.775 27.0708 24.125 27.2125C24.475 27.3542 24.7833 27.55 25.05 27.8L32.075 23.7C32.0417 23.5833 32.0208 23.4708 32.0125 23.3625C32.0042 23.2542 32 23.1333 32 23C32 22.1667 32.2917 21.4583 32.875 20.875C33.4583 20.2917 34.1667 20 35 20C35.8333 20 36.5417 20.2917 37.125 20.875C37.7083 21.4583 38 22.1667 38 23C38 23.8333 37.7083 24.5417 37.125 25.125C36.5417 25.7083 35.8333 26 35 26C34.6 26 34.225 25.9292 33.875 25.7875C33.525 25.6458 33.2167 25.45 32.95 25.2L25.925 29.3C25.9583 29.4167 25.9792 29.5292 25.9875 29.6375C25.9958 29.7458 26 29.8667 26 30C26 30.1333 25.9958 30.2542 25.9875 30.3625C25.9792 30.4708 25.9583 30.5833 25.925 30.7L32.95 34.8C33.2167 34.55 33.525 34.3542 33.875 34.2125C34.225 34.0708 34.6 34 35 34C35.8333 34 36.5417 34.2917 37.125 34.875C37.7083 35.4583 38 36.1667 38 37C38 37.8333 37.7083 38.5417 37.125 39.125C36.5417 39.7083 35.8333 40 35 40ZM35 38C35.2833 38 35.5208 37.9042 35.7125 37.7125C35.9042 37.5208 36 37.2833 36 37C36 36.7167 35.9042 36.4792 35.7125 36.2875C35.5208 36.0958 35.2833 36 35 36C34.7167 36 34.4792 36.0958 34.2875 36.2875C34.0958 36.4792 34 36.7167 34 37C34 37.2833 34.0958 37.5208 34.2875 37.7125C34.4792 37.9042 34.7167 38 35 38ZM23 31C23.2833 31 23.5208 30.9042 23.7125 30.7125C23.9042 30.5208 24 30.2833 24 30C24 29.7167 23.9042 29.4792 23.7125 29.2875C23.5208 29.0958 23.2833 29 23 29C22.7167 29 22.4792 29.0958 22.2875 29.2875C22.0958 29.4792 22 29.7167 22 30C22 30.2833 22.0958 30.5208 22.2875 30.7125C22.4792 30.9042 22.7167 31 23 31ZM35 24C35.2833 24 35.5208 23.9042 35.7125 23.7125C35.9042 23.5208 36 23.2833 36 23C36 22.7167 35.9042 22.4792 35.7125 22.2875C35.5208 22.0958 35.2833 22 35 22C34.7167 22 34.4792 22.0958 34.2875 22.2875C34.0958 22.4792 34 22.7167 34 23C34 23.2833 34.0958 23.5208 34.2875 23.7125C34.4792 23.9042 34.7167 24 35 24Z"
-                fill="#1C1B1F" />
-            </g>
-          </g>
-          <defs>
-            <filter id="filter0_d_1316_16672" x="0" y="0" width="60" height="60" filterUnits="userSpaceOnUse"
-              color-interpolation-filters="sRGB">
-              <feFlood flood-opacity="0" result="BackgroundImageFix" />
-              <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                result="hardAlpha" />
-              <feOffset />
-              <feGaussianBlur stdDeviation="3" />
-              <feComposite in2="hardAlpha" operator="out" />
-              <feColorMatrix type="matrix" values="0 0 0 0 0.419608 0 0 0 0 0.396078 0 0 0 0 0.415686 0 0 0 0.15 0" />
-              <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1316_16672" />
-              <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1316_16672" result="shape" />
-            </filter>
-            <clipPath id="bgblur_0_1316_16672_clip_path" transform="translate(10 10)">
-              <circle cx="30" cy="30" r="24" />
-            </clipPath>
-            <linearGradient id="paint0_linear_1316_16672" x1="9.58209" y1="13.7143" x2="53.5707" y2="20.2268"
-              gradientUnits="userSpaceOnUse">
-              <stop stop-color="#E2E2E2" stop-opacity="0.6" />
-              <stop offset="1" stop-color="#F1F1F1" stop-opacity="0.3" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </button>
-    </div>
-  </div>
+  <mindful-navigator 
+    [heading]="title" 
+    [rightActions]="[
+      { type: 'icon', src: '/assets/icons/delete.svg', alt: 'Delete' },
+      { type: 'icon', src: '/assets/icons/share.svg', alt: 'Share' }
+    ]"
+    (back)="onBack()"
+    (rightActionClick)="onNavigatorAction($event)">
+  </mindful-navigator>
   <!--note content-->
   <div class="note-content"> {{content}} </div>
 

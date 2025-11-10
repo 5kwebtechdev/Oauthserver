@@ -2,12 +2,13 @@ import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, Optio
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
+import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { NotesApi } from '../../../api/notes.api';
 
 @Component({
   selector: 'app-notes-save',
   standalone: true,
-  imports: [CommonModule, MindfulPopupComponent],
+  imports: [CommonModule, MindfulPopupComponent, MindfulNavigatorComponent],
   templateUrl: './notes-save.component.html',
   styleUrls: ['./notes-save.component.scss']
 })
@@ -133,6 +134,15 @@ export class NotesSaveComponent implements OnChanges {
       // fallback: just emit delete so caller can remove locally
       if (this.closeModalFn) { try { this.closeModalFn(); } catch (e) { /* ignore */ } }
       this.delete.emit();
+    }
+  }
+
+  onNavigatorAction(event: { index: number, action: any }) {
+    // index 0 = delete, index 1 = share
+    if (event.index === 0) {
+      this.onDelete();
+    } else if (event.index === 1) {
+      this.onShare();
     }
   }
 }
