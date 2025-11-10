@@ -45,7 +45,7 @@
   }
 
   .login-header-toggle-wrapper {
-    display: flex;
+    // display: flex;
     flex-direction: column;
     padding: 0;
     gap: 32px;
@@ -455,6 +455,7 @@
     width: 100%;
     // width: 278px;
     height: 48px;
+    margin-bottom: 32px;
 
     // Inside auto layout
     flex: none;
