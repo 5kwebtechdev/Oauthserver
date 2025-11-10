@@ -110,7 +110,7 @@ export class LoginComponent implements OnInit, OnDestroy {
           this.loading = false;
           console.log('[LoginComponent] Login successful', response);
           console.log('[LoginComponent] Token received:', !!response.token);
-          console.log('[LoginComponent] UserId:', response.userId);
+          console.log('[LoginComponent] UserId:', response.user?.id);
 
           // Navigate to return URL if available, otherwise go to dashboard
           console.log('[LoginComponent] Navigating to:', this.returnUrl);
