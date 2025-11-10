@@ -80,12 +80,13 @@
           <label (click)="rememberMe = !rememberMe">Remember me</label>
         </div>
 
-        <button class="signup-btn" [disabled]="!isLoginFormValid() || loading">
-          <span *ngIf="!loading">Login</span>
-          <span *ngIf="loading">
-            <i class="fa-solid fa-spinner fa-spin"></i> Logging in...
-          </span>
-        </button>
+        <mindful-button type="orange-onboard"
+          [text]="loading ? 'Logging in...' : 'Login'"
+          [disabled]="!isLoginFormValid() || loading"
+          (click)="onSubmit()">
+        </mindful-button>
+        <button type="submit" style="display:none"></button>
+
       </form>
     </div>
   </div>
