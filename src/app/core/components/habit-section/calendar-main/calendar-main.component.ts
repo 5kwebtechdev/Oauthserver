@@ -7,6 +7,8 @@ import { MindfulButtonComponent } from '../../mindful-button/mindful-button.comp
 import { HabitCardComponent } from '../habit-card/habit-card.component';
 import { ModalController } from '@ionic/angular';
 import { CalendarService } from '../../../services/calendar.service';
+import { MoodService } from '../../../services/mood.service';
+import { MoodTransition, MoodData } from '../../../models/mood.model';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -23,11 +25,14 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   tasksForSelectedDate: any[] = [];
   moodOn: boolean = false;
   showMoodPopup: boolean = false;
+  moodData: MoodData = {}; // Mood transitions keyed by date
+  selectedMoodTransition: MoodTransition | null = null; // Mood data for selected date
   private destroy$ = new Subject<void>();
 
   constructor(
     private modalCtrl: ModalController,
-    private calendarService: CalendarService
+    private calendarService: CalendarService,
+    private moodService: MoodService
   ) {
     console.log('CalendarMainComponent initialized');
   }
@@ -35,6 +40,7 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   ngOnInit() {
     console.log('CalendarMainComponent ngOnInit');
     this.loadCalendarData();
+    this.loadMoodData();
     // Populate habits/tasks for the initial selected date
     this.updateHabitsAndTasksForSelectedDate();
   }
@@ -50,6 +56,9 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     // Load habits/tasks for the selected date
     this.updateHabitsAndTasksForSelectedDate();
 
+    // Load mood data for selected date
+    this.loadMoodForSelectedDate();
+
     // If mood toggle is on, show the mood popup; otherwise ensure it's hidden
     if (this.moodOn) {
       this.showMoodPopup = true;
@@ -62,12 +71,90 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   onMoodToggled(state: boolean) {
     this.moodOn = state;
     // If mood is turned off, hide the popup
-    if (!this.moodOn) this.showMoodPopup = false;
+    if (!this.moodOn) {
+      this.showMoodPopup = false;
+    } else {
+      // If mood is turned on and we have a selected date, load its mood data
+      this.loadMoodForSelectedDate();
+    }
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * Load mood transition data for the current month
+   */
+  loadMoodData() {
+    const year = this.selectedDate.getFullYear();
+    const month = this.selectedDate.getMonth() + 1; // JavaScript months are 0-indexed
+
+    this.moodService.getMoodTransitionsMonthly(year, month)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (transitions) => {
+          console.log('Mood transitions loaded:', transitions);
+          this.moodData = this.moodService.transformToMoodData(transitions);
+          // Load mood for currently selected date if mood toggle is on
+          if (this.moodOn) {
+            this.loadMoodForSelectedDate();
+          }
+        },
+        error: (error) => {
+          console.error('Error loading mood data:', error);
+          this.moodData = {};
+        }
+      });
+  }
+
+  /**
+   * Load mood transition for the currently selected date
+   */
+  loadMoodForSelectedDate() {
+    const dateStr = this.formatDateToYYYYMMDD(this.selectedDate);
+    this.selectedMoodTransition = this.moodData[dateStr] || null;
+    
+    console.log('Selected mood transition for', dateStr, ':', this.selectedMoodTransition);
+    
+    // Show popup only if mood toggle is on and we have mood data for this date
+    if (this.moodOn && this.selectedMoodTransition) {
+      this.showMoodPopup = true;
+    } else if (this.moodOn && !this.selectedMoodTransition) {
+      // Mood is on but no data for this date
+      this.showMoodPopup = false;
+    }
+  }
+
+  /**
+   * Get mood emoji path for a specific mood name
+   */
+  getMoodEmoji(moodName: string): string {
+    return this.moodService.getMoodEmojiPath(moodName);
+  }
+
+  /**
+   * Validate a mood content line: must be non-empty and not equal to 'NA' (case-insensitive)
+   */
+  isValidLine(text?: string | null): boolean {
+    if (text == null) return false;
+    const t = String(text).trim();
+    if (!t) return false;
+    // Normalize by removing common separators and punctuation
+    const normalized = t.replace(/[\s._\-/\\]+/g, '').toLowerCase();
+    const placeholders = new Set(['na', 'n/a', 'null', 'none', 'nil', '-', '--', 'na-', '-na']);
+    if (placeholders.has(normalized)) return false;
+    // If after stripping non-alphanumerics nothing remains, treat as invalid
+    const alnum = normalized.replace(/[^a-z0-9]/g, '');
+    return alnum.length > 0;
+  }
+
+  /**
+   * Return a safe display string for a mood line; returns '' if invalid
+   */
+  displayLine(text?: string | null): string {
+    return this.isValidLine(text) ? String(text).trim() : '';
   }
 
   loadCalendarData() {

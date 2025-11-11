@@ -1,7 +1,10 @@
 <div class="mood-card" role="group" aria-label="Mood selector">
   <div class="mood-left">
     <div class="mood-text">
-      <div class="mood-title">You’re glowing with <span class="mood-highlight">{{activeLabel}}</span> now!</div>
+      <div class="mood-title" *ngIf="currentVibe && currentVibe.title; else defaultTitle">{{currentVibe.title}}</div>
+      <ng-template #defaultTitle>
+        <div class="mood-title">You're glowing with <span class="mood-highlight">{{activeLabel}}</span> now!</div>
+      </ng-template>
       <div class="mood-sub">{{activeSubtitle}}</div>
     </div>
     <div class="mood-progress" aria-hidden="true"><span class="bar" [style.width.%]="progressPercent"></span></div>

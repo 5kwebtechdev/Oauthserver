@@ -40,16 +40,18 @@
           </div>
         </div>
 
-        <button type="submit" class="custom-create-btn" [disabled]="familyForm.invalid || isLoading">
-          <span *ngIf="!isLoading">Create Family</span>
-          <span *ngIf="isLoading">Creating...</span>
-        </button>
+        <mindful-button
+          type="orange-onboard"
+          [text]="isLoading ? 'Creating...' : 'Create Family'"
+          [disabled]="familyForm.invalid || isLoading"
+          (click)="createFamily()">
+        </mindful-button>
       </form>
     </div>
 
     <!-- Family Join Section -->
     <div class="family-join-section" *ngIf="selectedMode === 'join'">
-      <form [formGroup]="joinFamilyForm" (ngSubmit)="joinFamily()">
+      <form [formGroup]="joinFamilyForm" class="d-flex flex-column gap-4">
         <div class="mindful-input-group">
           <div class="code-input-container">
             <input type="text" formControlName="familyCode" placeholder="Enter code"
@@ -73,10 +75,12 @@
           </div>
         </div>
 
-        <button type="submit" class="mindful-btn mindful-btn--primary" [disabled]="joinFamilyForm.invalid || isLoading">
-          <span *ngIf="!isLoading">Join Family</span>
-          <span *ngIf="isLoading">Joining...</span>
-        </button>
+        <mindful-button
+          type="orange-onboard"
+          [text]="isLoading ? 'Joining...' : 'Join Family'"
+          [disabled]="joinFamilyForm.invalid || isLoading"
+          (click)="joinFamily()">
+        </mindful-button>
       </form>
     </div>
 

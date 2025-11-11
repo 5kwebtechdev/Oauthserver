@@ -42,9 +42,9 @@
       (click)="selectDate(date)">
       <p>{{ date.getDate() }}</p>
 
-      <!-- Mood emoji shown under the date when mood toggle is ON -->
-      <img *ngIf="moodOn && showMoodToggle" class="mood-emoji" src="assets/Images-Transparent/Image-Mood-Very happy.png"
-        alt="smile" />
+      <!-- Mood emoji shown under the date when mood toggle is ON and mood data exists -->
+      <img *ngIf="moodOn && showMoodToggle && hasMoodData(date)" class="mood-emoji" [src]="getMoodEmoji(date)"
+        alt="mood" />
 
       <!-- Activity dots shown when mood toggle is OFF -->
       <div *ngIf="!moodOn && showMoodToggle && hasActivities(date)" class="activity-dots">

@@ -252,6 +252,23 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return this.profileForm.get('name');
   }
 
+  // Determine current role from session or selection
+  get currentRole(): 'child' | 'parent' | 'self' | undefined {
+    const stored = sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self' | null;
+    return stored || this.roleSelected;
+  }
+
+  // Generate initial from name for parent avatar placeholder
+  getNameInitial(): string {
+    try {
+      const fullName: string = (this.profileForm.get('name')?.value || '').trim();
+      if (!fullName) return '?';
+      return fullName.charAt(0).toUpperCase();
+    } catch {
+      return '?';
+    }
+  }
+
   switchMode(mode: 'email' | 'phone') {
     this.loginMode = mode;
   }
@@ -369,16 +386,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   proceedWithAvatar() {
-    // Only validate avatar selection if we're not on the pet selection step
-    if (this.step !== 4 && !this.avatarSelected) {
+    // Only validate avatar selection if not on pet selection AND role is not parent
+    if (this.step !== 4 && this.currentRole !== 'parent' && !this.avatarSelected) {
       this.core.triggerToasrt('Please select an avatar');
       return;
     }
 
-    // persist avatar if one is selected
-    if (this.avatarSelected) {
-      try { sessionStorage.setItem('signup_avatar', String(this.avatarSelected)); } catch (e) { }
-    }
+    // persist avatar or initial when applicable
+    try {
+      const avatarValue = this.currentRole === 'parent' ? this.getNameInitial() : (this.avatarSelected ?? '');
+      if (avatarValue) sessionStorage.setItem('signup_avatar', String(avatarValue));
+    } catch (e) { }
 
     // If we're currently on the pet selection step (step 4), persist selected pet and navigate to welcome step
     if (this.step === 4) {
@@ -464,13 +482,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
-    // persist profile details in session (name, dob, gender)
+    // persist profile details in session (name, dob, gender, avatar/initial)
     try {
       const profile = {
         name: this.profileForm.get('name')?.value,
         dob: parsedDob ? parsedDob.getTime() : null,
         gender: this.gender,
-        avatar: this.avatarSelected
+        avatar: this.currentRole === 'parent' ? this.getNameInitial() : this.avatarSelected
       };
       sessionStorage.setItem('signup_profile', JSON.stringify(profile));
     } catch (e) { }
@@ -483,8 +501,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
    * Called from profile Save & Continue when user should be registered immediately
    */
   registerOrProceed(): void {
-    // First run the same validations/persistence as proceedWithAvatar
-    if (!this.avatarSelected) {
+    // Skip avatar requirement for parent; require for others
+    if (this.currentRole !== 'parent' && !this.avatarSelected) {
       this.core.triggerToasrt('Please select an avatar');
       return;
     }
@@ -498,31 +516,38 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
-    // persist profile details
+    // persist profile details (store initial as avatar for parent)
     try {
       const profile = {
         name: this.profileForm.get('name')?.value,
         dob: parsedDob ? parsedDob.getTime() : null,
         gender: this.gender,
-        avatar: this.avatarSelected
+        avatar: this.currentRole === 'parent' ? this.getNameInitial() : this.avatarSelected
       };
       sessionStorage.setItem('signup_profile', JSON.stringify(profile));
     } catch (e) { }
 
     // Get the role from session storage or current selection
-    const role = sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self' || this.roleSelected;
+    const role = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;
 
-    // Route based on role
+    // Apply age-based routing rules
     if (role === 'child') {
-      // For child role, go to child instructions
-      this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
-      return;
+      if (age !== null && age < 24) {
+        this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
+        return;
+      } else {
+        this.showAgeSuggestionModal = true;
+        return;
+      }
     } else if (role === 'parent') {
-      // For parent role, go to parent instructions
-      this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
-      return;
+      if (age !== null && age >= 24) {
+        this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
+        return;
+      } else {
+        this.showAgeSuggestionModal = true;
+        return;
+      }
     } else if (role === 'self') {
-      // For self role, go to pet selection
       this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
       return;
     }

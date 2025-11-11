@@ -19,6 +19,7 @@ export class MindfulCalendarComponent implements OnChanges {
   @Input() useArrowNavigation: boolean = false; // New input to control navigation style
   @Input() dateActivities: { [key: string]: { timetable?: boolean, task?: boolean, habit?: boolean } } = {}; // Activity data for each date
   @Input() useCalendarMainStyle: boolean = false; // New input for calendar-main specific styling
+  @Input() moodData: { [key: string]: any } = {}; // Mood data keyed by date (YYYY-MM-DD)
 
   @Output() dateSelected = new EventEmitter<Date | { start: Date | null, end: Date | null }>();
   @Output() moodToggled = new EventEmitter<boolean>();
@@ -162,5 +163,42 @@ export class MindfulCalendarComponent implements OnChanges {
     const activities = this.getActivitiesForDate(date);
     const has = !!(activities.timetable || activities.task || activities.habit);
     return has;
+  }
+
+  /**
+   * Check if a date has mood data
+   */
+  hasMoodData(date: Date): boolean {
+    const key = this.getDateKey(date);
+    return !!this.moodData[key];
+  }
+
+  /**
+   * Get mood emoji for a specific date
+   */
+  getMoodEmoji(date: Date): string {
+    const key = this.getDateKey(date);
+    const mood = this.moodData[key];
+    if (!mood) return '';
+    
+    // Use toMood as the displayed mood (the final mood state)
+    const moodName = mood.toMood || mood.fromMood || 'Neutral';
+    return this.getMoodEmojiPath(moodName);
+  }
+
+  /**
+   * Get mood emoji path based on mood name
+   */
+  private getMoodEmojiPath(moodName: string): string {
+    const moodMap: { [key: string]: string } = {
+      'Happy': 'assets/Images-Transparent/Image-Mood-Happy.png',
+      'Very Happy': 'assets/Images-Transparent/Image-Mood-Very happy.png',
+      'Excited': 'assets/Images-Transparent/Image-Mood-Excited.png',
+      'Sad': 'assets/Images-Transparent/Image-Mood-Sad.png',
+      'Upset': 'assets/Images-Transparent/Image-Mood-Upset.png',
+      'Nervous': 'assets/Images-Transparent/Image-Mood-Nervous.png',
+    };
+
+    return moodMap[moodName] || 'assets/Images-Transparent/Image-Mood-Happy.png';
   }
 }

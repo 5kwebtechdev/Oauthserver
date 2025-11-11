@@ -6,11 +6,11 @@
         <!-- calendar-component -->
         <div class="calendar-main">
             <mindful-calendar [useArrowNavigation]="true" [dateActivities]="dateActivities"
-                [useCalendarMainStyle]="true" [startDate]="selectedDate" (dateSelected)="onDateSelected($event)"
-                (moodToggled)="onMoodToggled($event)">
+                [useCalendarMainStyle]="true" [startDate]="selectedDate" [moodData]="moodData"
+                (dateSelected)="onDateSelected($event)" (moodToggled)="onMoodToggled($event)">
             </mindful-calendar>
         </div>
-        <div class="calendar-component">
+        <div class="calendar-component" *ngIf="!moodOn">
             <div class="calendar-component__timetable">
                 <div class="item">
                     <div class="item__dot">
@@ -43,7 +43,8 @@
             </div>
         </div>
 
-        <div *ngIf="(!habitsForSelectedDate?.length && !tasksForSelectedDate?.length)" class="empty-calendar">
+        <div *ngIf="(!habitsForSelectedDate?.length && !tasksForSelectedDate?.length) && !moodOn"
+            class="empty-calendar">
             <div class="empty-calendar-message">
                 <div class="empty-calendar-image">
                     <img src="assets/Images-Transparent/Image-Calendar-Blank.png" alt="Empty calendar" width="208"
@@ -59,7 +60,7 @@
                 (click)="openHabitInput()"></mindful-button>
         </div>
 
-        <div *ngIf="habitsForSelectedDate?.length || tasksForSelectedDate?.length"
+        <div *ngIf="(habitsForSelectedDate?.length || tasksForSelectedDate?.length) && !moodOn"
             class="selected-date-cards d-flex flex-column gap-2">
             <div *ngIf="habitsForSelectedDate?.length" class="selected-date-cards d-flex flex-column gap-2">
                 <div *ngFor="let habit of habitsForSelectedDate">
@@ -80,30 +81,33 @@
     </div>
 
     <!-- Mood popup: hidden by default, slides up when showMoodPopup is true -->
-    <div class="calendar-mood-satus-popup" [class.show]="showMoodPopup">
+    <div class="calendar-mood-satus-popup" [class.show]="showMoodPopup" *ngIf="selectedMoodTransition">
         <div class="daily-mood-status" [class.visible]="showMoodPopup">
             <div class="emoji-status">
+                <!-- Display both from and to mood emojis -->
+                <img [src]="getMoodEmoji(selectedMoodTransition.fromMood)" alt="from mood" class="mood-emoji-large"
+                    style="width:40px;height:auto;" />
+                <img [src]="getMoodEmoji(selectedMoodTransition.toMood)" alt="to mood" class="mood-emoji-large"
+                    style="width:40px;height:auto;" />
             </div>
             <div class="status-header">
-                <h2>Your emotions took a little rollercoaster ride today! </h2>
+                <h2>{{ selectedMoodTransition.title }}</h2>
             </div>
             <div class="mood-staus-message">
                 <div class="mood-meesage">
-                    <div class="mood-message-item">
+                    <div class="mood-message-item" *ngIf="isValidLine(selectedMoodTransition?.firstLine)">
                         <div class="mood-left">
                             <span class="dot"></span>
-                            <span class="connector"></span>
+                            <span class="connector" *ngIf="isValidLine(selectedMoodTransition?.secondLine)"></span>
                         </div>
-                        <div class="mood-content">I felt a little anxious after the meeting, but a short walk helped
-                            calm me down.</div>
+                        <div class="mood-content">{{ displayLine(selectedMoodTransition.firstLine) }}</div>
                     </div>
 
-                    <div class="mood-message-item">
+                    <div class="mood-message-item" *ngIf="isValidLine(selectedMoodTransition?.secondLine)">
                         <div class="mood-left">
                             <span class="dot"></span>
                         </div>
-                        <div class="mood-content">Had a joyful moment with my sibling which brightened the afternoon.
-                        </div>
+                        <div class="mood-content">{{ displayLine(selectedMoodTransition.secondLine) }}</div>
                     </div>
                 </div>
             </div>

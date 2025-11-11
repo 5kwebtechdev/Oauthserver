@@ -5,6 +5,23 @@ import { environment } from '../../../../environments/environment';
 import { AuthApi } from '../../api/auth.api';
 
 export interface MoodOption { key: string; label: string; emoji?: string }
+export interface VibeDisplayItem {
+  userId: number;
+  userName: string;
+  relationship: string | null;
+  mood: string | null;
+  audience: string | null;
+  title: string | null;
+  description: string | null;
+  emptyStateDescription: string | null;
+  completedStateDescription: string | null;
+  totalHabits: number;
+  completedHabits: number;
+  totalTasks: number;
+  completedTasks: number;
+  progressPercentage: number;
+  message: string | null;
+}
 
 @Component({
   selector: 'mood-selector',
@@ -23,6 +40,9 @@ export class MoodSelectorComponent {
   @Input() value: string | null = null;
   @Output() valueChange = new EventEmitter<string>();
 
+  vibes: VibeDisplayItem[] = [];
+  private setsToday = 0;
+
   // popup state
   showPopup = false;
   popupSelection: string | null = null;
@@ -38,30 +58,32 @@ export class MoodSelectorComponent {
 
   ngOnInit() {
     this.getTodayVibe();
+    this.loadDailySetCount();
   }
 
   getTodayVibe() {
-    const url = `${environment.apiUrl}/mood/vibes/today`;
+    const url = `${environment.apiUrl}/mood/vibes/display`;
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const token = this.authApi?.getToken?.() || environment.apiAuthToken || null;
     if (token) headers = headers.set('Authorization', token.startsWith('Bearer ') ? token : `Bearer ${token}`);
 
-    this.http.get<{ mood: string; imagePath?: string; date?: string }>(url, { headers }).subscribe({
+    this.http.get<VibeDisplayItem[]>(url, { headers }).subscribe({
       next: (res) => {
-        console.debug('[MoodSelector] Today’s vibe:', res);
-        if (res.imagePath) {
-          // set the mood as an asset image
-          this.value = 'asset:' + res.imagePath;
-        } else if (res.mood) {
-          // fallback to emoji key
-          this.value = res.mood;
+        console.debug('[MoodSelector] Vibes display:', res);
+        this.vibes = Array.isArray(res) ? res : [];
+
+        // Derive a simple current value for the existing header from the first item
+        const first = this.vibes[0];
+        if (first && first.mood) {
+          this.value = first.mood?.toLowerCase?.() || 'neutral';
         } else {
           this.value = 'neutral';
         }
-        this.valueChange.emit(this.value);
+        this.valueChange.emit(this.value || 'neutral');
       },
       error: (err) => {
-        console.error('Failed to fetch today’s vibe', err);
+        console.error('Failed to fetch vibes display', err);
+        this.vibes = [];
         this.value = 'neutral';
       }
     });
@@ -73,7 +95,10 @@ export class MoodSelectorComponent {
   }
 
   // Popup helpers
-  openPopup() { this.popupSelection = null; this.showPopup = true }
+  openPopup() {
+    if (!this.canSetVibe) return;
+    this.popupSelection = null; this.showPopup = true;
+  }
   closePopup() { this.showPopup = false }
   choosePopup(src: string) { this.popupSelection = src }
   constructor(private http: HttpClient, private authApi: AuthApi) { }
@@ -106,14 +131,15 @@ export class MoodSelectorComponent {
 
     this.http.post(url, body, { headers }).subscribe({
       next: () => {
+        // Only update UI on success
         this.value = 'asset:' + this.popupSelection;
         this.valueChange.emit(this.value);
+        this.incrementDailySetCount();
         this.showPopup = false;
       },
       error: (err) => {
         console.error('Failed to set vibe', err);
-        this.value = 'asset:' + this.popupSelection;
-        this.valueChange.emit(this.value);
+        // Do NOT change mood on error; keep previous state
         this.showPopup = false;
       }
     });
@@ -133,17 +159,90 @@ export class MoodSelectorComponent {
     return m?.emoji || '🙂';
   }
   get activeLabel() {
+    const vibe = this.vibes[0];
+    if (vibe && vibe.mood) {
+      return vibe.mood;
+    }
     const m = this.options.find(x => x.key === this.value) || this.options[0];
     return m?.label || '';
   }
   get activeSubtitle() {
-    // Simple subtitle based on mood — small reusable text
-    return `${this.options.length} habits & 3 quests await.`;
+    const vibe = this.vibes[0];
+    if (!vibe) return '';
+
+    const totalHabits = Number(vibe.totalHabits || 0);
+    const totalTasks = Number(vibe.totalTasks || 0);
+    const completedHabits = Number(vibe.completedHabits || 0);
+    const completedTasks = Number(vibe.completedTasks || 0);
+
+    const hasCounts = totalHabits > 0 || totalTasks > 0;
+    const allCompleted = hasCounts && (completedHabits === totalHabits) && (completedTasks === totalTasks);
+
+    if (hasCounts) {
+      if (allCompleted && vibe.completedStateDescription) {
+        return vibe.completedStateDescription;
+      }
+      // Exact phrasing requested
+      return `${totalHabits} habits & ${totalTasks} tasks awaits.`;
+    }
+
+    if (!hasCounts && vibe.emptyStateDescription) {
+      return vibe.emptyStateDescription;
+    }
+
+    if (vibe.description) {
+      return vibe.description;
+    }
+
+    return '';
   }
   get progressPercent() {
-    // Map mood index to percent for visual bar
+    const vibe = this.vibes[0];
+    if (vibe) {
+      const total = Number(vibe.totalHabits || 0) + Number(vibe.totalTasks || 0);
+      const done = Number(vibe.completedHabits || 0) + Number(vibe.completedTasks || 0);
+      if (total > 0) {
+        const pct = Math.max(0, Math.min(100, (done / total) * 100));
+        return Math.round(pct);
+      }
+      if (typeof vibe.progressPercentage === 'number') {
+        return Math.round(Math.max(0, Math.min(100, vibe.progressPercentage)));
+      }
+    }
+    // Fallback: Map mood index to percent for visual bar
     const idx = this.options.findIndex(x => x.key === this.value);
     const pos = idx === -1 ? 0 : idx;
     return Math.round(((pos + 1) / this.options.length) * 100);
+  }
+
+  get currentVibe(): VibeDisplayItem | null {
+    return this.vibes[0] || null;
+  }
+
+  trackByUserId = (_: number, item: VibeDisplayItem) => item?.userId ?? _;
+
+  // Daily set limit helpers (max 2 per day)
+  get canSetVibe(): boolean {
+    return this.setsToday < 2;
+  }
+  private loadDailySetCount() {
+    try {
+      const key = this.dailyKey();
+      const raw = localStorage.getItem(key);
+      this.setsToday = raw ? parseInt(raw, 10) || 0 : 0;
+    } catch { this.setsToday = 0; }
+  }
+  private incrementDailySetCount() {
+    try {
+      this.setsToday = Math.min(2, (this.setsToday || 0) + 1);
+      localStorage.setItem(this.dailyKey(), String(this.setsToday));
+    } catch { /* ignore */ }
+  }
+  private dailyKey() {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `vibe_sets_${yyyy}-${mm}-${dd}`;
   }
 }

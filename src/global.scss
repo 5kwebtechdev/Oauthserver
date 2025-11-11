@@ -24,18 +24,21 @@ $svg-icons: (
 );
 
 // Function to get icon URL by type
-@function icon-url($name) {
-  $path: map-get($svg-icons, $name);
-  @if $path == null {
-    @error "Unknown icon `#{$name}`. Add it to $svg-icons map in global.scss";
-  }
-  @return url(#{$path});
+@function icon-url($name){
+$path: map-get($svg-icons, $name);
+
+@if $path ==null {
+  @error "Unknown icon `#{$name}`. Add it to $svg-icons map in global.scss";
+}
+
+@return url(#{$path});
 }
 
 // Mixin to apply SVG icon as background or mask
 @mixin svg-icon($name, $size: 20px, $color: null) {
   $path: map-get($svg-icons, $name);
-  @if $path == null {
+
+  @if $path ==null {
     @error "Unknown icon `#{$name}`. Add it to $svg-icons map in global.scss";
   }
 
@@ -43,9 +46,11 @@ $svg-icons: (
   height: $size;
   display: inline-block;
 
-  @if $color == null {
+  @if $color ==null {
     background: icon-url($name) no-repeat center/contain;
-  } @else {
+  }
+
+  @else {
     -webkit-mask: url(#{$path}) no-repeat center/contain;
     mask: url(#{$path}) no-repeat center/contain;
     background-color: $color;
@@ -261,6 +266,8 @@ label {
 
 .mindful-faq {
   margin-bottom: 40px;
+  font-family: Nunito;
+
 
   &__title {
     font-weight: 500;

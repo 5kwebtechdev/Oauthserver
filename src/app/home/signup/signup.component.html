@@ -2,7 +2,9 @@
   <div class="signup-container" [ngClass]="{'step-5-container': step === 5}">
     <button *ngIf="step === 5" class="step5-cancel" type="button" (click)="onCancel()" aria-label="Cancel">
       <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 17 17" fill="none">
-        <path d="M1.89652 16.9394C1.70126 17.1347 1.38468 17.1347 1.18942 16.9394L0.146522 15.8965C-0.0487404 15.7013 -0.04874 15.3847 0.146522 15.1894L6.43942 8.89652C6.63468 8.70126 6.63468 8.38468 6.43942 8.18941L0.146522 1.89652C-0.0487406 1.70126 -0.04874 1.38468 0.146522 1.18942L1.18942 0.146522C1.38468 -0.0487404 1.70126 -0.04874 1.89652 0.146522L8.18942 6.43942C8.38468 6.63468 8.70126 6.63468 8.89652 6.43942L15.1894 0.146522C15.3847 -0.0487406 15.7013 -0.04874 15.8965 0.146522L16.9394 1.18942C17.1347 1.38468 17.1347 1.70126 16.9394 1.89652L10.6465 8.18942C10.4513 8.38468 10.4513 8.70126 10.6465 8.89652L16.9394 15.1894C17.1347 15.3847 17.1347 15.7013 16.9394 15.8965L15.8965 16.9394C15.7013 17.1347 15.3847 17.1347 15.1894 16.9394L8.89652 10.6465C8.70126 10.4513 8.38468 10.4513 8.18941 10.6465L1.89652 16.9394Z" fill="#282527"/>
+        <path
+          d="M1.89652 16.9394C1.70126 17.1347 1.38468 17.1347 1.18942 16.9394L0.146522 15.8965C-0.0487404 15.7013 -0.04874 15.3847 0.146522 15.1894L6.43942 8.89652C6.63468 8.70126 6.63468 8.38468 6.43942 8.18941L0.146522 1.89652C-0.0487406 1.70126 -0.04874 1.38468 0.146522 1.18942L1.18942 0.146522C1.38468 -0.0487404 1.70126 -0.04874 1.89652 0.146522L8.18942 6.43942C8.38468 6.63468 8.70126 6.63468 8.89652 6.43942L15.1894 0.146522C15.3847 -0.0487406 15.7013 -0.04874 15.8965 0.146522L16.9394 1.18942C17.1347 1.38468 17.1347 1.70126 16.9394 1.89652L10.6465 8.18942C10.4513 8.38468 10.4513 8.70126 10.6465 8.89652L16.9394 15.1894C17.1347 15.3847 17.1347 15.7013 16.9394 15.8965L15.8965 16.9394C15.7013 17.1347 15.3847 17.1347 15.1894 16.9394L8.89652 10.6465C8.70126 10.4513 8.38468 10.4513 8.18941 10.6465L1.89652 16.9394Z"
+          fill="#282527" />
       </svg>
     </button>
     <h2 *ngIf="step !== 5">
@@ -75,8 +77,8 @@
 
 
 
-            <mindful-button type="orange-onboard" [text]="'Sign Up'"
-              [disabled]="!(phone?.value || email?.value)" (click)="signupFromLogin()">
+            <mindful-button type="orange-onboard" [text]="'Sign Up'" [disabled]="!(phone?.value || email?.value)"
+              (click)="signupFromLogin()">
             </mindful-button>
 
             <div class="error-message" *ngIf="errorMessage">
@@ -242,15 +244,26 @@
           </div>
         </form>
         <ng-container *ngIf="gender">
-          <h4 style="margin-top: 15px">Choose an avatar </h4>
-          <div class="row">
-            <ng-container *ngFor="let avatar of avatars">
-              <div class="col-4 single-avatar" *ngIf="avatar.gender === gender" (click)="avatarSelected = avatar.key"
-                [ngClass]="avatarSelected === avatar.key ? 'active' : null">
-                <img src="{{avatar.value}}" alt="">
-              </div>
-            </ng-container>
-          </div>
+          <!-- For parent role, show auto-generated initial avatar and skip selection -->
+          <ng-container *ngIf="currentRole === 'parent'; else nonParentAvatar">
+            <h4 style="margin-top: 15px">Profile picture</h4>
+            <div class="initial-avatar-preview">
+              <div class="initial-avatar-circle">{{ getNameInitial() }}</div>
+              <p class="initial-avatar-hint">This will be used as your profile picture</p>
+            </div>
+          </ng-container>
+          <!-- For child/self roles, keep avatar selection -->
+          <ng-template #nonParentAvatar>
+            <h4 style="margin-top: 15px">Choose an avatar </h4>
+            <div class="row">
+              <ng-container *ngFor="let avatar of avatars">
+                <div class="col-4 single-avatar" *ngIf="avatar.gender === gender" (click)="avatarSelected = avatar.key"
+                  [ngClass]="avatarSelected === avatar.key ? 'active' : null">
+                  <img src="{{avatar.value}}" alt="">
+                </div>
+              </ng-container>
+            </div>
+          </ng-template>
         </ng-container>
       </div>
       <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
@@ -289,25 +302,13 @@
                     inputmode="numeric" (input)="onPhoneInput($event)" (keypress)="onKeyPress($event)"
                     placeholder="Enter {{currentPhoneLength}} digit number" />
                 </div>
-                <div class="error" *ngIf="!isPhoneValid(phone?.value) && phone?.dirty ">
-                  {{getPhoneErrorMessage()}}
-                </div>
               </div>
             </ng-container>
-
-
-
-            <mindful-button type="orange-onboard" [text]="'Sign Up'" (click)="signup()">
-            </mindful-button>
           </form>
 
-          <div class="or-divider"><span>OR</span></div>
-
-          <div class="container w-full p-0">
-            <div class="container p-0" style="width: fit-content !important;">
-              <social-media [variant]="'login-with'"></social-media>
-            </div>
-          </div>
+          <mindful-button type="orange-onboard" [text]="'Sign Up'" (click)="signup()"
+            [disabled]="loginMode === 'email' ? email?.invalid : !isPhoneValid(phone?.value)">
+          </mindful-button>
 
           <p class="login-text">Don't have and Account ?<a href="#"> Sign In</a></p>
         </div>
