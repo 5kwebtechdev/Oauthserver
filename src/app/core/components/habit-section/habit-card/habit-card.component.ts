@@ -78,7 +78,7 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private lastUpdateTime: number = 0;
 
-  public maxItemsToShow: number = 6;  // percentageWrapper is inside the single-card template which is rendered conditionally,
+  public maxItemsToShow: number = 4;  // percentageWrapper is inside the single-card template which is rendered conditionally,
   // so query it with static: false and guard access in code.
   @ViewChild('percentageWrapper', { static: false }) percentageWrapper?: ElementRef;
 
@@ -251,7 +251,13 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Get all habits using the service
     this.habitService.loadHabitsBySearch({}).subscribe({
       next: () => {
-        this.habits = this.habitService.getCurrentHabits();
+        this.habits = this.habitService.getCurrentHabits()
+          .sort((a: Habit, b: Habit) => {
+            const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return bTime - aTime; // newest first
+          })
+          .slice(0, this.maxItemsToShow);
         this.hasHabits = this.habits.length > 0;
         this.updateEmptyState();
       },
@@ -270,17 +276,20 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
   loadTasks() {
     this.taskApi.getAllTasks().subscribe({
       next: (tasks) => {
-        // Ensure tasks have the required properties for display
-        this.tasks = (tasks || []).map((task: any) => {
-          // Make sure task has the needed properties to be displayed as a Habit
-          return {
+        this.tasks = (tasks || [])
+          .map((task: any) => ({
             ...task,
-            type: 'tasks', // Set type to 'tasks'
+            type: 'tasks',
             startTimeStamp: task.startTimeStamp || (task.startDate ? new Date(task.startDate).getTime() : 0),
             endTimeStamp: task.endTimeStamp || (task.endDate ? new Date(task.endDate).getTime() : 0),
-            // Add any other required properties
-          };
-        });
+            createdAt: task.createdAt ? new Date(task.createdAt) : new Date()
+          }))
+          .sort((a: any, b: any) => {
+            const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return bTime - aTime; // newest first
+          })
+          .slice(0, this.maxItemsToShow);
 
         this.hasTasks = this.tasks.length > 0;
         this.updateEmptyState();
