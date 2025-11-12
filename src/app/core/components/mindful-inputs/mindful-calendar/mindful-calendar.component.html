@@ -18,9 +18,7 @@
 
     <div class="toggle-mood-buttons" *ngIf="showMoodToggle">
       <label class="mood-label">MOOD</label>
-      <button class="mood-toggle" (click)="toggleMood()">
-        <span [class.on]="moodOn"></span>
-      </button>
+      <mindful-toggle [checked]="moodOn" (checkedChange)="onMoodChange($event)"></mindful-toggle>
     </div>
 
     <div class="month-picker" *ngIf="showMonthPicker && !useArrowNavigation">

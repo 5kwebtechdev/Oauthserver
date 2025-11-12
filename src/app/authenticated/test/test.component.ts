@@ -12,13 +12,15 @@ import { TestTimelineComponent } from '../test-timeline/test-timeline.component'
 import { AddCalendarComponent } from '../add-calendar/add-calendar.component';
 import { MindfulPopupComponent, MindfulPopupConfig } from 'src/app/core/components/mindful-popup/mindful-popup.component';
 import { SupermeTimerComponent } from 'src/app/core/components/superme-timer/superme-timer.component';
+import { SupermeLoadingComponent } from 'src/app/core/components/superme-loading/superme-loading.component';
 
 @Component({
   selector: 'app-test',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IonicModule, TestButtonsComponent, TestBadgesComponent, TestInputsComponent, TestDropdownsComponent, TestSelectorsComponent, TestTimelineComponent, AddCalendarComponent, MindfulSelectorsComponent, MindfulPopupComponent, SupermeTimerComponent],
+  imports: [CommonModule, ReactiveFormsModule, IonicModule, TestButtonsComponent, TestBadgesComponent, TestInputsComponent, TestDropdownsComponent, TestSelectorsComponent, TestTimelineComponent, AddCalendarComponent, MindfulSelectorsComponent, MindfulPopupComponent, SupermeTimerComponent, SupermeLoadingComponent],
   template: `
     <ion-content>
+      <app-superme-loading [visible]="true" [size]="140" message="Testing loader..."></app-superme-loading>
       <!-- always-on loader for testing -->
       <div style="padding:1rem;">
         <h1>Test Page</h1>

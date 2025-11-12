@@ -1,4 +1,4 @@
-<header class="mindful-card-header">
+<header class="mindful-card-header" [class.no-back]="!showBackArrow">
   <button *ngIf="showBackArrow" class="back-arrow-button" (click)="onBackClick()" aria-label="Go back">
     <svg xmlns="http://www.w3.org/2000/svg" class="back-arrow-svg" width="24" height="24" viewBox="0 0 48 48"
       fill="none" aria-hidden="true">

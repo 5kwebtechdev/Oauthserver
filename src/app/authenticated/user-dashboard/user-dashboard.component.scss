@@ -60,34 +60,34 @@ ion-content {
   background-repeat: no-repeat;
   background-position: center;
   border-radius: 24px 24px 48px 48px;
-  padding: 20px 0px;
+  // padding: 20px 0px;
   margin-bottom: 24px;
   flex-shrink: 0;
 
   // Center the content both horizontally and vertically
   display: flex;
   align-items: center;
-  justify-content: center;
+  // justify-content: center;
 }
 
 .dasboard-wrapper {
   display: flex;
-  width: 376px;
-  padding-bottom: 8px;
+  /* padding-bottom: 8px; */
   flex-direction: column;
-  align-items: center; // Changed from flex-start to center
+  /* align-items: center; */
   gap: 24px;
-  // margin-left: 16px;
+  width: 100%;
 }
 
 
 .profile-content {
   display: flex;
-  width: 92vw;
-  max-width: 376px; // Match the wrapper width for consistency
+  /* width: 92vw; */
+  /* max-width: 376px; */
   flex-direction: column;
   align-items: center;
   gap: 16px;
+  padding: 0px 16px;
 }
 
 // PROFILE HEADER
@@ -268,10 +268,7 @@ ion-content {
 
 // DIGITAL PET
 .digital-pet {
-  position: absolute;
-  right: 1vw;
-  bottom: 1vh;
-  z-index: 10;
+  margin-top: 20px;
 
   img {
     width: 68px;
@@ -293,8 +290,8 @@ ion-content {
 
 @media (max-width: 480px) {
   .dasboard-wrapper {
-    width: 90vw;
-    max-width: 350px;
+    width: 100%;
+    // max-width: 350px;
   }
 
   .profile-content {

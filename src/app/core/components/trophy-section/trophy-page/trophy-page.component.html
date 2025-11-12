@@ -1,30 +1,26 @@
-<div class="trophy-page-container">
-<div class="trophy-header">
-  <div class="back-arrow">←</div>
-  
-  <div class="title-section">
-    <div class="title">Your Trophy Trail</div>
-    <div class="subtitle">See wins • Know dates • Keep going</div>
-  </div>
+<ion-content class="trophy-content">
+  <div class="header-spacer"></div>
+  <mindful-card-header [title]="pageTitle" [subtitleMiddle]="'See wins • Know dates • Keep going'"
+    [showBackArrow]="true" (backClick)="onBack()">
+    <div mindful-header-actions class="trophy-section">
+      <span class="trophy-icon">🏆</span>
+      <span class="trophy-count">{{ trophyCount }}</span>
+    </div>
+  </mindful-card-header>
+  <div class="trophy-page-container">
 
-  <div class="trophy-section">
-    <span class="trophy-icon">🏆</span>
-    <span class="trophy-count">129</span>
-  </div>
-</div>
+    <div class="empty-state" *ngIf="!grouped?.length">
+      <img class="empty-art" src="/assets/app-assets/trophy-empty.png" alt="No trophies illustration" />
+      <h2 class="empty-title">No Trophies Yet!</h2>
+      <p class="empty-sub">Your journey is just beginning. Earn some cool trophies and show them off here!</p>
+      <ion-button expand="block" class="earn-btn" aria-label="Earn Trophies">Earn Trophies</ion-button>
+    </div>
 
-<!-- if there is no trophy earned show this message -->
-<div class="empty-state" *ngIf="!grouped?.length">
-  <img class="empty-art" src="/assets/app-assets/trophy-empty.png" alt="No trophies illustration" />
-  <h2 class="empty-title">No Trophies Yet!</h2>
-  <p class="empty-sub">Your journey is just beginning. Earn some cool trophies and show them off here!</p>
-  <ion-button expand="block" class="earn-btn" aria-label="Earn Trophies">Earn Trophies</ion-button>
-</div>
-
-  <div class="section" *ngIf="grouped?.length">
-    <ng-container *ngFor="let g of grouped">
-      <h3>{{ g.title }}</h3>
-      <app-trophies-list [items]="g.items"></app-trophies-list>
-    </ng-container>
+    <div class="section" *ngIf="grouped?.length">
+      <ng-container *ngFor="let g of grouped">
+        <h3>{{ g.title }}</h3>
+        <app-trophies-list [items]="g.items"></app-trophies-list>
+      </ng-container>
+    </div>
   </div>
-</div>
+</ion-content>

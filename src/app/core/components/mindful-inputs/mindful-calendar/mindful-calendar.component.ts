@@ -1,12 +1,13 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { MindfulToggleComponent } from '../../mindful-selectors/mindful-toggle/mindful-toggle.component';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'mindful-calendar',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, MindfulToggleComponent],
   templateUrl: './mindful-calendar.component.html',
   styleUrls: ['./mindful-calendar.component.scss']
 })
@@ -60,6 +61,11 @@ export class MindfulCalendarComponent implements OnChanges {
 
   toggleMood() {
     this.moodOn = !this.moodOn;
+    this.moodToggled.emit(this.moodOn);
+  }
+
+  onMoodChange(checked: boolean) {
+    this.moodOn = checked;
     this.moodToggled.emit(this.moodOn);
   }
 

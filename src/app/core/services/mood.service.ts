@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import { MoodTransition, MoodData } from '../models/mood.model';
+import { MoodTransition, MoodData, MOOD_EMOJI_MAP } from '../models/mood.model';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -43,16 +43,36 @@ export class MoodService {
    * @returns Path to the mood emoji image
    */
   getMoodEmojiPath(moodName: string): string {
-    // Mapping for the six available mood images
-    const moodMap: { [key: string]: string } = {
-      'Happy': 'assets/Images-Transparent/Image-Mood-Happy.png',
-      'Very Happy': 'assets/Images-Transparent/Image-Mood-Very happy.png',
-      'Excited': 'assets/Images-Transparent/Image-Mood-Excited.png',
-      'Sad': 'assets/Images-Transparent/Image-Mood-Sad.png',
-      'Upset': 'assets/Images-Transparent/Image-Mood-Upset.png',
-      'Nervous': 'assets/Images-Transparent/Image-Mood-Nervous.png',
+    // Normalize input from backend: handle case/spacing/underscores/dashes consistently
+    const normalize = (s: string) => s
+      .trim()
+      .toLowerCase()
+      .replace(/[_\-\s]+/g, ' ') // collapse separators to single space
+      .replace(/\s+/g, ' ');
+
+    const canonicalByNormalized: { [key: string]: keyof typeof MOOD_EMOJI_MAP } = {
+      'happy': 'Happy',
+      'very happy': 'Very Happy',
+      'excited': 'Excited',
+      'sad': 'Sad',
+      'upset': 'Upset',
+      'nervous': 'Nervous',
     };
 
-    return moodMap[moodName] || 'assets/Images-Transparent/Image-Mood-Happy.png';
+    const DEFAULT = MOOD_EMOJI_MAP['Happy'];
+    if (!moodName) return DEFAULT;
+
+    const norm = normalize(String(moodName));
+    const canonical = canonicalByNormalized[norm];
+    if (canonical && MOOD_EMOJI_MAP[canonical]) {
+      return MOOD_EMOJI_MAP[canonical];
+    }
+
+    // Fallback: try direct key match (if already properly cased)
+    if (MOOD_EMOJI_MAP[moodName as keyof typeof MOOD_EMOJI_MAP]) {
+      return MOOD_EMOJI_MAP[moodName as keyof typeof MOOD_EMOJI_MAP];
+    }
+
+    return DEFAULT;
   }
 }

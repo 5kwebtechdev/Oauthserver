@@ -163,8 +163,7 @@ export class BadgeSectionComponent {
     }
 
     onBackClick(): void {
-        // Navigation logic to be implemented
-        console.log('Back button clicked');
+        window.history.back();
     }
 
     // Share popup state and config

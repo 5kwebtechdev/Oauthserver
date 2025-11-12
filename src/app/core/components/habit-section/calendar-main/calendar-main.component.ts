@@ -115,9 +115,9 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   loadMoodForSelectedDate() {
     const dateStr = this.formatDateToYYYYMMDD(this.selectedDate);
     this.selectedMoodTransition = this.moodData[dateStr] || null;
-    
+
     console.log('Selected mood transition for', dateStr, ':', this.selectedMoodTransition);
-    
+
     // Show popup only if mood toggle is on and we have mood data for this date
     if (this.moodOn && this.selectedMoodTransition) {
       this.showMoodPopup = true;
@@ -228,6 +228,7 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
             const end = this.extractTimestamp(t, ['endTime', 'end_time', 'end', 'to', 'scheduledEnd', 'endTimeStamp']);
             return {
               ...(t || {}),
+              type: t?.type || 'tasks',
               title: t.title || t.name || t.taskName || 'Task',
               startTimeStamp: start || t.startTimeStamp || 0,
               endTimeStamp: end || t.endTimeStamp || 0

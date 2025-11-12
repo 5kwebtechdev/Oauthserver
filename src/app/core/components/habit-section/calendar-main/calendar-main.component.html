@@ -69,7 +69,7 @@
                         [inProgress]="isItemInProgress(habit)" mode="single"></habit-card>
                 </div>
             </div>
-            <div *ngIf="tasksForSelectedDate?.length">
+            <div *ngIf="tasksForSelectedDate?.length" class="d-flex flex-column gap-2">
                 <div *ngFor="let task of tasksForSelectedDate">
                     <!-- Reuse habit-card for tasks; the component supports tasks shape in practice -->
                     <habit-card [habit]="task" [startTime]="task.startTimeStamp" [endTime]="task.endTimeStamp"

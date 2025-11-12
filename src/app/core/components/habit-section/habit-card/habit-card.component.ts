@@ -431,6 +431,17 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  formatTimeString(t?: string | null): string {
+    if (!t) return '';
+    const m = t.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+    if (m) {
+      const hh = m[1].padStart(2, '0');
+      const mm = m[2];
+      return `${hh}:${mm}`;
+    }
+    return t.slice(0, 5);
+  }
+
   /**
    * Safely get the first tag or routine name
    */
