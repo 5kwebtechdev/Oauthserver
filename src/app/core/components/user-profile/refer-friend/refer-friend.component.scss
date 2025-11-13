@@ -69,6 +69,12 @@
   gap: 8px;
   align-self: stretch;
   align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 0 4px 2px rgba(107, 101, 106, 0.15);
+  }
 
   h2 {
     color: #4CAF50;
@@ -87,6 +93,7 @@
     flex-shrink: 0;
     margin-right: 12px;
   }
+
 }
 
 .how-works {

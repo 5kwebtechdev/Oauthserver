@@ -1,147 +1,128 @@
-<div class="signup-container">
-  <div class="login-header-toggle-wrapper">
-    <div class="login-header">
-      <span class="back-arrow" (click)="goBack()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="16" viewBox="0 0 26 16" fill="none"
-          aria-hidden="true">
-          <path
-            d="M0.292893 7.29289C-0.0976311 7.68342 -0.0976311 8.31658 0.292893 8.70711L6.65685 15.0711C7.04738 15.4616 7.68054 15.4616 8.07107 15.0711C8.46159 14.6805 8.46159 14.0474 8.07107 13.6569L2.41421 8L8.07107 2.34315C8.46159 1.95262 8.46159 1.31946 8.07107 0.928932C7.68054 0.538408 7.04738 0.538408 6.65685 0.928932L0.292893 7.29289ZM25 9C25.5523 9 26 8.55228 26 8C26 7.44772 25.5523 7 25 7V8V9ZM1 8V9H25V8V7H1V8Z"
-            fill="#772817" />
-        </svg>
-      </span>
-      <span class="login-title">Login your account</span>
-      <h1>test5</h1>
-    </div>
-    <div class="login-toggle-form-wrapper">
-      <div class="toggle-buttons">
-
-        <button [class.active]="loginMode === 'phone'" (click)="switchMode('phone')">
-          Phone Number
-        </button>
-        <button [class.active]="loginMode === 'email'" (click)="switchMode('email')">
-          Email
-        </button>
+<ion-content>
+  <div class="signup-container">
+    <div class="login-header-toggle-wrapper">
+      <div class="login-header">
+        <span class="back-arrow" (click)="goBack()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="16" viewBox="0 0 26 16" fill="none"
+            aria-hidden="true">
+            <path
+              d="M0.292893 7.29289C-0.0976311 7.68342 -0.0976311 8.31658 0.292893 8.70711L6.65685 15.0711C7.04738 15.4616 7.68054 15.4616 8.07107 15.0711C8.46159 14.6805 8.46159 14.0474 8.07107 13.6569L2.41421 8L8.07107 2.34315C8.46159 1.95262 8.46159 1.31946 8.07107 0.928932C7.68054 0.538408 7.04738 0.538408 6.65685 0.928932L0.292893 7.29289ZM25 9C25.5523 9 26 8.55228 26 8C26 7.44772 25.5523 7 25 7V8V9ZM1 8V9H25V8V7H1V8Z"
+              fill="#772817" />
+          </svg>
+        </span>
+        <span class="login-title">Login your account</span>
+        <h1>test5</h1>
       </div>
-      <!-- Helper text -->
-      <small class="helper-text">Only for login and safety</small>
-      <form [formGroup]="signInForm" (ngSubmit)="onSubmit()" class="login-form-fields">
-        <ng-container *ngIf="loginMode === 'email'">
-          <div class="input-group">
-            <input [ngClass]="{'error' : email?.invalid && (email?.dirty)}" formControlName="email" type="email"
-              placeholder="Email" />
-            <div class="error" *ngIf="email?.invalid && (email?.dirty)">
-              Oops! That email looks off. Please check it again.
-            </div>
-          </div>
-        </ng-container>
+      <div class="login-toggle-form-wrapper">
+        <div class="toggle-buttons">
 
-        <ng-container *ngIf="loginMode === 'phone'">
-          <div class="input-group">
-            <div class="phone-input-container" [ngClass]="{'error' : !isPhoneValid(phone?.value) && phone?.dirty }">
-              <div class="country-code-selector" (click)="openCountryCodeModal()">
-                <span class="flag-emoji">{{selectedCountry.flag}}</span>
-                <span class="country-code">{{selectedCountry.code}}</span>
-                <i class="fa-solid fa-chevron-down"></i>
+          <button [class.active]="loginMode === 'phone'" (click)="switchMode('phone')">
+            Phone Number
+          </button>
+          <button [class.active]="loginMode === 'email'" (click)="switchMode('email')">
+            Email
+          </button>
+        </div>
+        <!-- Helper text -->
+        <small class="helper-text">Only for login and safety</small>
+        <form [formGroup]="signInForm" (ngSubmit)="onSubmit()" class="login-form-fields">
+          <ng-container *ngIf="loginMode === 'email'">
+            <div class="input-group">
+              <input [ngClass]="{'error' : email?.invalid && (email?.dirty)}" formControlName="email" type="email"
+                placeholder="Email" />
+              <div class="error" *ngIf="email?.invalid && (email?.dirty)">
+                Oops! That email looks off. Please check it again.
               </div>
-              <input formControlName="phone" type="tel" [maxlength]="currentPhoneLength" pattern="[0-9]*"
-                inputmode="numeric" (input)="onPhoneInput($event)" (keypress)="onKeyPress($event)"
-                placeholder="Enter {{currentPhoneLength}} digit number" />
             </div>
-            <div class="error" *ngIf="!isPhoneValid(phone?.value) && phone?.dirty ">
-              {{getPhoneErrorMessage()}}
+          </ng-container>
+
+          <ng-container *ngIf="loginMode === 'phone'">
+            <div class="input-group">
+              <div class="phone-input-container" [ngClass]="{'error' : !isPhoneValid(phone?.value) && phone?.dirty }">
+                <div class="country-code-selector" (click)="openCountryCodeModal()">
+                  <span class="flag-emoji">{{selectedCountry.flag}}</span>
+                  <span class="country-code">{{selectedCountry.code}}</span>
+                  <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <input formControlName="phone" type="tel" [maxlength]="currentPhoneLength" pattern="[0-9]*"
+                  inputmode="numeric" (input)="onPhoneInput($event)" (keypress)="onKeyPress($event)"
+                  placeholder="Enter {{currentPhoneLength}} digit number" />
+              </div>
+              <div class="error" *ngIf="!isPhoneValid(phone?.value) && phone?.dirty ">
+                {{getPhoneErrorMessage()}}
+              </div>
             </div>
+          </ng-container>
+
+          <div class="input-group">
+            <input formControlName="password"
+              [ngClass]="{'error' : (password?.invalid || password?.value.length < 8) && password?.dirty }"
+              [type]="hidePassword ? 'password' : 'text'" placeholder="Password" />
+            <span class="toggle-eye" (click)="hidePassword = !hidePassword">
+              <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+            </span>
+
+            <div class="error" *ngIf="(password?.invalid || password?.value.length < 8) && password?.dirty">
+              Password should be atleast 8 characters long
+            </div>
+            <!-- Forgot password link -->
+            <a class="forgot-password" [routerLink]="['/home/reset-password']"
+              [queryParams]="{ mode: loginMode }">Forgot
+              password?</a>
           </div>
-        </ng-container>
 
-        <div class="input-group">
-          <input formControlName="password"
-            [ngClass]="{'error' : (password?.invalid || password?.value.length < 8) && password?.dirty }"
-            [type]="hidePassword ? 'password' : 'text'" placeholder="Password" />
-          <span class="toggle-eye" (click)="hidePassword = !hidePassword">
-            <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-          </span>
-
-          <div class="error" *ngIf="(password?.invalid || password?.value.length < 8) && password?.dirty">
-            Password should be atleast 8 characters long
+          <!-- Show error message if login fails -->
+          <div class="error-message" *ngIf="loginError">
+            {{ loginError }}
           </div>
-          <!-- Forgot password link -->
-          <a class="forgot-password" [routerLink]="['/home/reset-password']" [queryParams]="{ mode: loginMode }">Forgot
-            password?</a>
-        </div>
 
-        <!-- Show error message if login fails -->
-        <div class="error-message" *ngIf="loginError">
-          {{ loginError }}
-        </div>
+          <!-- Remember Me checkbox (for web users - extends session to 30 days) -->
+          <div class="remember-me-item">
+            <ion-checkbox [(ngModel)]="rememberMe" [ngModelOptions]="{standalone: true}"></ion-checkbox>
+            <label (click)="rememberMe = !rememberMe">Remember me</label>
+          </div>
 
-        <!-- Remember Me checkbox (for web users - extends session to 30 days) -->
-        <div class="remember-me-item">
-          <ion-checkbox [(ngModel)]="rememberMe" [ngModelOptions]="{standalone: true}"></ion-checkbox>
-          <label (click)="rememberMe = !rememberMe">Remember me</label>
-        </div>
+          <mindful-button type="orange-onboard" [text]="loading ? 'Logging in...' : 'Login'"
+            [disabled]="!isLoginFormValid() || loading" (click)="onSubmit()">
+          </mindful-button>
+          <button type="submit" style="display:none"></button>
 
-        <mindful-button type="orange-onboard"
-          [text]="loading ? 'Logging in...' : 'Login'"
-          [disabled]="!isLoginFormValid() || loading"
-          (click)="onSubmit()">
-        </mindful-button>
-        <button type="submit" style="display:none"></button>
-
-      </form>
-    </div>
-  </div>
-
-  <div class="signup-link">
-    <p>Don’t have an account? <a href="home/sign-up?step=0.1">Sign up</a></p>
-  </div>
-
-  <!--<div class="container w-full p-0" style="height: calc(100vh - 200px); display: flex; justify-content: center; align-items: center;">
-    <div class="container w-full p-0">
-      <div class="or-divider"><span>OR</span></div>
- 
-      <div class="container w-full p-0">
-        <div class="container p-0" style="width: fit-content !important;">
-         <div class="social-logins">
-            <button class="social-btn google"><img src="/assets/app-assets/Onbaording-common-google-icon.svg" alt=""></button>
-            <button class="social-btn apple"><img src="/assets/app-assets/Onbaording-common-apple-icon.svg" alt=""></button>
-            <button class="social-btn facebook"><img src="/assets/app-assets/Onbaording-common-facebook-icon.svg" alt=""></button>
-          </div> 
-        </div>
-      </div> 
-
-      <p class="login-text">Don't have and Account ?<a href="home/sign-up?step=0.1"> Sign Up</a></p>
-    </div>
-  </div> -->
-  <!-- <div class="container w-full p-0 terms-condition">
-    <label class="whatsapp-checkbox">
-      <input type="checkbox" [(ngModel)]="whatsappConsent" />
-      Receive offers, updates and reminders on <b><i class="fa-brands fa-whatsapp"></i> WhatsApp</b>.
-    </label>
-
-    <p class="terms">By continuing you accept our <a href="#">Privacy Policy</a> and <a href="#">Terms of Use</a>.</p>
-  </div> -->
-
-  <!-- Country Code Modal -->
-  <div class="country-modal-backdrop" *ngIf="showCountryCodeModal" (click)="closeCountryCodeModal()"></div>
-  <div class="country-modal" *ngIf="showCountryCodeModal" role="dialog" aria-modal="true">
-    <div class="country-modal__header">
-      <h3 class="country-modal__title">Country code</h3>
-      <button class="country-modal__close" (click)="closeCountryCodeModal()">
-        <i class="fa-solid fa-times"></i>
-      </button>
-    </div>
-    <div class="country-modal__content">
-      <div class="country-list">
-        <div class="country-item" *ngFor="let country of countries" (click)="selectCountry(country)"
-          [class.selected]="selectedCountry.code === country.code">
-          <span class="country-flag">{{country.flag}}</span>
-          <span class="country-name">{{country.name}}</span>
-          <span class="country-code">{{country.code}}</span>
-        </div>
+        </form>
       </div>
     </div>
-    <div class="country-modal__footer">
-      <button class="country-modal__done-btn" (click)="closeCountryCodeModal()">Done</button>
+
+    <div class="container w-full p-0" style="max-width: 360px; align-self: center;">
+      <div class="or-divider"><span>OR</span></div>
+      <social-media [variant]="'login-with'"></social-media>
+    </div>
+    <div class="signup-link">
+      <p>Don’t have an account? <a href="home/sign-up?step=0.1">Sign up</a></p>
+    </div>
+
+
+
+    <!-- Country Code Modal -->
+    <div class="country-modal-backdrop" *ngIf="showCountryCodeModal" (click)="closeCountryCodeModal()"></div>
+    <div class="country-modal" *ngIf="showCountryCodeModal" role="dialog" aria-modal="true">
+      <div class="country-modal__header">
+        <h3 class="country-modal__title">Country code</h3>
+        <button class="country-modal__close" (click)="closeCountryCodeModal()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      <div class="country-modal__content">
+        <div class="country-list">
+          <div class="country-item" *ngFor="let country of countries" (click)="selectCountry(country)"
+            [class.selected]="selectedCountry.code === country.code">
+            <span class="country-flag">{{country.flag}}</span>
+            <span class="country-name">{{country.name}}</span>
+            <span class="country-code">{{country.code}}</span>
+          </div>
+        </div>
+      </div>
+      <div class="country-modal__footer">
+        <button class="country-modal__done-btn" (click)="closeCountryCodeModal()">Done</button>
+      </div>
     </div>
   </div>
-</div>
+</ion-content>

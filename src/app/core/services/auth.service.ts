@@ -30,6 +30,10 @@ export interface AuthResponse {
   expiresIn?: number;
 }
 
+export interface ReferralCodeResponse {
+  referralCode: string;
+}
+
 export interface UserSession {
   userId: number;
   token: string;
@@ -525,5 +529,47 @@ export class AuthService {
       remainingTime,
       expiresAt
     };
+  }
+
+  /**
+   * Generate referral code for the authenticated user
+   */
+  generateReferralCode(): Observable<ReferralCodeResponse> {
+    const token = this.getToken();
+    
+    if (!token) {
+      throw new Error('User not authenticated');
+    }
+
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    const url = `${this.apiUrl}/auth/users/generate-referral`;
+
+    console.log('[AuthService] Generating referral code:', {
+      endpoint: url,
+      timestamp: new Date().toISOString()
+    });
+
+    return this.http.post<ReferralCodeResponse>(url, {}, { headers })
+      .pipe(
+        tap({
+          next: (response) => {
+            console.log('[AuthService] Referral code generated successfully:', {
+              hasReferralCode: !!response.referralCode,
+              timestamp: new Date().toISOString()
+            });
+          },
+          error: (error) => {
+            console.error('[AuthService] Failed to generate referral code:', {
+              error: error.message,
+              status: error.status,
+              timestamp: new Date().toISOString()
+            });
+          }
+        })
+      );
   }
 }

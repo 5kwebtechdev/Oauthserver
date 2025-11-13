@@ -385,9 +385,10 @@
       content: '';
       display: inline-block;
       height: 1px;
-      background: #c08464;
+      background: linear-gradient(90deg, rgba(119, 40, 23, 0.2) 0%, rgba(119, 40, 23, 1) 50%, rgba(119, 40, 23, 0.2) 100%);
       width: 40%;
       vertical-align: middle;
+      border-radius: 1px;
     }
   }
 
