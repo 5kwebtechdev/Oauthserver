@@ -1,7 +1,7 @@
 <ion-content fullscreen>
-  <!-- habit input header removed intentionally -->
-  <mindful-navigator heading="Create. Commit. Grow." backIcon="cancel">
-    <div right-actions class="header-toggle" aria-label="Private toggle">
+  <mindful-navigator [heading]="editingId ? 'Update Activity' : 'Create. Commit. Grow.'" backIcon="cancel"
+    [rightActions]="navigatorActions" (rightActionClick)="onNavigatorAction($event)">
+    <div slot="end" class="header-toggle" aria-label="Private toggle">
       <label class="header-toggle-label">Private</label>
       <div class="toggle-right">
         <mindful-toggle [(checked)]="isPrivate"></mindful-toggle>
@@ -9,9 +9,6 @@
     </div>
   </mindful-navigator>
   <div class="habit-input-root" [ngClass]="currentActive">
-    <!-- </div> -->
-
-
     <div class="container w-full">
       <div class="row toggler">
         <div class="col-4" (click)="currentActive = 'habits'" [ngClass]="currentActive === 'habits' ? 'active' : ''">
@@ -24,7 +21,6 @@
     </div>
 
     <div *ngIf="currentActive === 'habits'" class="form-card">
-
       <div class="title-input">
         <div class="mindful-input-group">
           <input [(ngModel)]="title" placeholder="Habit Title" />
@@ -34,13 +30,6 @@
             (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)"
             (delete)="onTagDelete($event)">
           </mindful-tags>
-          <!-- <mindful-selectors size="small" [options]="routineTags">
-          </mindful-selectors>
-          <div class="add-wrapper" #addEl>
-            <mindful-badge class="add-new" text="Add new +" type="habit-input" (click)="openAdd(addEl)"></mindful-badge>
-          </div> -->
-
-
         </div>
       </div>
 
@@ -50,7 +39,6 @@
           (selectedKeysChange)="onRoutineSelected($event)">
         </mindful-selectors>
       </div>
-
 
       <div class="date-time-selection">
         <div class="section days-row">
@@ -71,7 +59,6 @@
             </div>
             <div class="everyday-toggle">
               <div class="everyday-label">
-                <!-- <img src="assets/app-assets/search_activity.svg" alt="search activity" class="everyday-icon" /> -->
                 <label>Everyday</label>
               </div>
               <div class="toggle-right">
@@ -135,7 +122,6 @@
       </div>
 
       <div class="section notes">
-        <!-- <label>Add Notes</label> -->
         <textarea [(ngModel)]="notes" maxlength="250" placeholder="Add Notes....."></textarea>
         <div class="char-count">Max 250 Characters</div>
       </div>
@@ -145,8 +131,7 @@
           (click)="submit()">
         </mindful-button>
       </div>
-
-    </div> <!-- /form-card -->
+    </div>
 
     <div *ngIf="currentActive === 'tasks'" class="form-card">
       <div class="title-input">
@@ -158,8 +143,7 @@
             (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)"
             (delete)="onTagDelete($event)">
           </mindful-tags>
-          <!-- <mindful-selectors size="small" [options]="routineTags">
-          </mindful-selectors> -->
+
         </div>
       </div>
 
@@ -189,7 +173,6 @@
             </div>
             <div class="everyday-toggle">
               <div class="everyday-label">
-                <!-- <img src="assets/app-assets/search_activity.svg" alt="search activity" class="everyday-icon" /> -->
                 <label>Everyday</label>
               </div>
               <div class="toggle-right">
@@ -253,7 +236,6 @@
       </div>
 
       <div class="section notes">
-        <!-- <label>Add Notes</label> -->
         <textarea [(ngModel)]="notes" maxlength="250" placeholder="Add Notes....."></textarea>
         <div class="char-count">Max 250 Characters</div>
       </div>
@@ -275,44 +257,9 @@
             (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)"
             (delete)="onTagDelete($event)">
           </mindful-tags>
-          <!-- <mindful-selectors size="small" [options]="routineTags">
-          </mindful-selectors> -->
+
         </div>
       </div>
-
-      <!-- <div class="timetable-header">
-        <h3>Add Your Perfect Schedule</h3>
-        <div class="timetable-date-input">
-          <div class="timetable-datepicker">
-            <mindful-datepicker type="date" [(ngModel)]="startDate"></mindful-datepicker>
-            <div class="timetable-chevron">
-              <img src="assets/app-assets/Chevron-down-time-table-input-icon.svg" alt="open date picker" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="timetable-list" style="padding:0 24px 16px 24px;">
-
-        <div class="timetable-row"
-          style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;"
-          *ngFor="let activity of activities; let i = index">
-          <div class="timetable-activity" style="flex:1 1 60%;">
-            <div class="mindful-input-group">
-              <input [(ngModel)]="activity.name" placeholder="Activity Name" />
-            </div>
-          </div>
-          <div class="timetable-time" style="flex:1 1 35%;display:flex;gap:12px;align-items:center;">
-            <mindful-timepicker [(ngModel)]="activity.startTime" placeholder="Start"></mindful-timepicker>
-            <span style="color:#999;">-</span>
-            <mindful-timepicker [(ngModel)]="activity.endTime" placeholder="End"></mindful-timepicker>
-          </div>
-        </div>
-
-        <div class="add-more" style="padding:8px 0;color:#6B656A;font-weight:600;cursor:pointer;"
-          (click)="addActivity()">+ Add more</div>
-      </div> -->
-
 
       <div class="date-time-selection">
         <div class="section days-row">
@@ -333,7 +280,6 @@
             </div>
             <div class="everyday-toggle">
               <div class="everyday-label">
-                <!-- <img src="assets/app-assets/search_activity.svg" alt="search activity" class="everyday-icon" /> -->
                 <label>Everyday</label>
               </div>
               <div class="toggle-right">
@@ -398,16 +344,14 @@
 
 
       <div class="section notes">
-        <!-- <label>Add Notes</label> -->
         <textarea [(ngModel)]="notes" maxlength="250" placeholder="Add Notes....."></textarea>
         <div class="char-count">Max 250 Characters</div>
       </div>
-      <!-- Submit Button -->
       <div class="submit-row">
         <mindful-button type="green-light" text="Create Time Table" large (click)="submit()">
         </mindful-button>
       </div>
     </div>
 
-  </div> <!-- /habit-input-root -->
+  </div>
 </ion-content>

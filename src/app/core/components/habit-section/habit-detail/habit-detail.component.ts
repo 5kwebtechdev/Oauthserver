@@ -93,7 +93,12 @@ export class HabitDetailComponent {
   }
 
   onEdit() {
-    // TODO: wire editing flow (open habit-input modal or navigate to edit page)
-    console.log('Edit action triggered for habit detail');
+    // Navigate to the habit-input page and pass the current habit in navigation state
+    if (this.habit) {
+      this.router.navigate(['/authed/habit-input'], { state: { habit: this.habit } });
+    } else {
+      console.log('Edit action triggered but no habit is loaded');
+      this.router.navigate(['/authed/habit-input']);
+    }
   }
 }

@@ -2,8 +2,6 @@
   padding: 16px;
 }
 
-
-/* Ensure navigator aligns nicely with the header and toggle */
 .habit-input-header mindful-navigator {
   display: inline-flex;
   align-items: center;
@@ -11,7 +9,6 @@
   margin-left: 0px !important;
   margin-top: 36px;
 }
-
 
 .header-toggle {
   display: flex;
@@ -29,26 +26,21 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-
-  .days-top {
-    width: 100%;
-  }
 }
 
+.section.days-row .days-top {
+  width: 100%;
+}
+
+/* Toggle appearance (ion-toggle and mindful-toggle) */
 .section.days-row .toggle-right ion-toggle,
 .section.days-row .toggle-right mindful-toggle {
   --handle-background-checked: #90214D !important;
   --background-checked: rgba(144, 33, 77, 0.12) !important;
-  /* subtle maroon track when checked */
-}
-
-.section.days-row .toggle-right ion-toggle,
-.section.days-row .toggle-right mindful-toggle {
   --handle-background: #ffffff;
   --background: #e6e6e6;
 }
 
-/* ion-toggle parts */
 .section.days-row .toggle-right ion-toggle::part(handle) {
   background: #90214D !important;
   box-shadow: none !important;
@@ -66,7 +58,6 @@
   background: rgba(144, 33, 77, 0.12) !important;
 }
 
-/* mindful-toggle styling (button + inner elements) */
 .section.days-row .toggle-right .mindful-toggle .track {
   background: #e6e6e6 !important;
 }
@@ -124,10 +115,7 @@
   left: 0% !important;
 }
 
-
 .form-card {
-
-  // margin: 24px;
   background: white;
   border-radius: 8px;
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
@@ -136,7 +124,7 @@
 
 .title-input {
   display: inline-flex;
-  padding: 20px 36px 24px 0px;
+  padding: 10px 0px;
   flex-direction: column;
   align-items: flex-start;
   gap: 16px;
@@ -147,14 +135,12 @@
 .input-label {
   font-weight: 600;
   color: #777;
-  // margin-bottom:8px;
   display: block;
 }
 
 .add-new-row {
   margin-top: 0;
-  width: 361px;
-  // flex: 0 0 361px; 
+  width: 100%;
 }
 
 .add-new-row mindful-selectors,
@@ -165,7 +151,6 @@
 
 .routine-section {
   display: flex;
-  width: 361px;
   padding: 20px 40px 15px 24px;
   justify-content: center;
   align-items: center;
@@ -177,19 +162,16 @@
 .habit-input-root.habits .title-input,
 .habit-input-root.habits .routine-section {
   border-bottom-color: #7471BA;
-  /* habits color */
 }
 
 .habit-input-root.tasks .title-input,
 .habit-input-root.tasks .routine-section {
   border-bottom-color: #F6AC72;
-  /* tasks color */
 }
 
 .habit-input-root.timetable .title-input,
 .habit-input-root.timetable .routine-section {
   border-bottom-color: #89B3B6;
-  /* timetable color */
 }
 
 .timetable-header {
@@ -220,7 +202,6 @@
   justify-content: center;
   align-items: center;
   gap: 8px;
-
 }
 
 .timetable-datepicker .date-text,
@@ -356,16 +337,15 @@
   align-items: center;
   gap: 16px;
   width: 50%;
+}
 
-  label {
-    color: #6B656A;
-    font-family: Nunito;
-    font-size: 13px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 140%;
-    /* 18.2px */
-  }
+.pick-time label {
+  color: #6B656A;
+  font-family: Nunito;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
 }
 
 .habit-input-root .pick-time .mindful-input-group .mindful-timepicker-wrapper .time-display-input,
@@ -373,14 +353,6 @@
   width: 80px !important;
   min-width: 80px !important;
 }
-
-// .time-row:nth-child(3) {
-//   margin-top: 16px;
-// }
-
-// .start-end-row .mindful-timepicker-wrapper .time-display-input {
-//   text-align: center !important;
-// }
 
 .priority-row {
   display: flex;
@@ -480,7 +452,6 @@
   font-style: normal;
   font-weight: 600;
   line-height: 140%;
-  /* 28px */
   opacity: 0.5;
   padding: 0px !important;
 }
@@ -501,9 +472,7 @@
   font-style: normal;
   font-weight: 600;
   line-height: 140%;
-  /* 28px */
   opacity: 0.5;
-  /* requested transparency */
 }
 
 .habit-input-root .mindful-input-group input::placeholder,
@@ -553,11 +522,6 @@
   margin-bottom: 0px !important;
 }
 
-// .date-time-selection{
-//   padding: 8px 0 16px 0;
-//   border-bottom: 1px solid #7471BA;
-// }
-
 .habit-input-root.habits .date-time-selection {
   border-bottom-color: #898CCA;
   border-bottom: 1px solid #7471BA;
@@ -573,7 +537,6 @@
   border-bottom: 1px solid #89B3B6;
 }
 
-/* Add top margin so the date/time selection has breathing room */
 .date-time-selection {
   margin-top: 16px;
 }
@@ -586,7 +549,6 @@
   margin: 0 !important;
 }
 
-
 .datepicker-wrapper .mindful-input-group input,
 .mindful-input-group ion-input {
   background: white !important;
@@ -594,7 +556,6 @@
 
 ::ng-deep .datepicker-wrapper input {
   background-color: #ffffff;
-  // margin-left: 24px;
 }
 
 ::ng-deep .mindful-timepicker-wrapper input {

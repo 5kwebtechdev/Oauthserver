@@ -55,14 +55,13 @@ h2 {
 
 .detail-cta {
   display: flex;
-  width: 360.5px;
   justify-content: space-between;
   align-items: center;
+  gap: 16px
 }
 
 .repeat-days {
   display: flex;
-  width: 360.5px;
   justify-content: space-between;
   align-items: center;
 }
@@ -90,7 +89,6 @@ h2 {
 
 .detail-message {
   display: flex;
-  width: 360.5px;
   justify-content: space-between;
   align-items: center;
 }
