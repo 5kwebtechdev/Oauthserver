@@ -55,6 +55,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   public avatarSelected: any;
 
   public errorMessage: string | null = null;
+  // Referral code UI and value
+  public showReferral: boolean = false;
+  public referralCode: string = '';
 
   // Use an accessor so we can defensively guard and log unexpected changes
   private _openBirthdayPicker = false;
@@ -525,6 +528,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         avatar: this.currentRole === 'parent' ? this.getNameInitial() : this.avatarSelected
       };
       sessionStorage.setItem('signup_profile', JSON.stringify(profile));
+      // Persist referral code (if provided) using existing familyCode key expected elsewhere
+      if (this.referralCode && this.referralCode.length > 0) {
+        try { sessionStorage.setItem('familyCode', this.referralCode); } catch (e) { }
+      }
     } catch (e) { }
 
     // Get the role from session storage or current selection
@@ -734,6 +741,33 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return false;
     }
     return true;
+  }
+
+  // Toggle the referral code input visibility
+  toggleReferral(): void {
+    this.showReferral = !this.showReferral;
+    // If hiding the input, clear stored code
+    if (!this.showReferral) {
+      this.referralCode = '';
+      try { sessionStorage.removeItem('familyCode'); } catch (e) { }
+    }
+    // If showing, focus the input after a short delay
+    if (this.showReferral) {
+      setTimeout(() => {
+        const input = document.querySelector('.referral-input-wrapper input') as HTMLInputElement;
+        if (input) input.focus();
+      }, 50);
+    }
+  }
+
+  // Handle referral input: allow only alphanumeric and max length 8
+  onReferralInput(event: any): void {
+    const raw = (event.target.value || '') as string;
+    const cleaned = raw.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
+    this.referralCode = cleaned;
+    // Update input value to cleaned value (prevents caret jump)
+    try { event.target.value = cleaned; } catch (e) { }
+    try { sessionStorage.setItem('familyCode', this.referralCode); } catch (e) { }
   }
 
   // Handle phone input to ensure only numbers

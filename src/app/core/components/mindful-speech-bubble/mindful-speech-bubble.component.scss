@@ -104,16 +104,11 @@
   font-weight: 600;
   word-wrap: break-word;
   text-align: center;
-
-  // Animation for text
   animation: textFadeIn 0.4s ease 0.2s both;
-
-  // Kid-friendly font styling
   font-family: Nunito, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
-// Arrow base styles
 .bubble-arrow {
   position: absolute;
   width: 0;
@@ -121,10 +116,8 @@
   border-style: solid;
   z-index: 1;
 
-  // filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.06));
 }
 
-// Arrow pointing LEFT (bubble is on the right of character)
 .bubble-arrow.arrow-left {
   left: -13px;
   top: var(--arrow-offset, 50%);

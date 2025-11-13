@@ -32,7 +32,7 @@
   </div>
 
   <!-- Habit Items -->
-  <div class="d-flex flex-column container w-full" style="margin-top: 20px; gap: 16px"
+  <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="(currentActive === 'habits' || currentActive === 'all') && hasHabits">
     <habit-card *ngFor="let habitItem of habits.slice(0, maxItemsToShow)" [habit]="habitItem"
       [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
@@ -41,7 +41,7 @@
   </div>
 
   <!-- Task Items -->
-  <div class="d-flex flex-column container w-full" style="margin-top: 20px; gap: 16px"
+  <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="(currentActive === 'tasks' || currentActive === 'all') && hasTasks">
     <habit-card *ngFor="let taskItem of tasks.slice(0, maxItemsToShow)" [habit]="taskItem"
       [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"

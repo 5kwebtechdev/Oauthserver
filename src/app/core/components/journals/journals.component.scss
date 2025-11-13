@@ -5,7 +5,7 @@ $muted: rgba(40, 37, 39, 0.7);
 
 .journal-empty {
 	position: relative;
-	width: 361px;
+
 	display: flex;
 	flex-direction: column;
 	gap: 24px;
@@ -139,7 +139,6 @@ $muted: rgba(40, 37, 39, 0.7);
 }
 
 .post-card {
-	width: 361px;
 	min-height: 305px;
 	/* allow the card to grow vertically when content increases */
 	height: auto;

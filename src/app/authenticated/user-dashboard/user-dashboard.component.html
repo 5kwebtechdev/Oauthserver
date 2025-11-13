@@ -44,25 +44,25 @@
     </section>
 
     <div class="dashboard-content">
-      <div class="mood-selector">
+      <div class="mood-selector w-full">
         <mood-selector [value]="selectedMood" (valueChange)="onMoodChange($event)"></mood-selector>
       </div>
 
       <!-- Habit Card -->
-      <habit-card mode="list"></habit-card>
+      <habit-card style="width: 100%;" mode="list"></habit-card>
 
       <!-- Ad-banner -->
-      <div>
+      <div class="w-full">
         <ad-banner></ad-banner>
       </div>
 
       <!-- Content Card -->
-      <div>
+      <div class="w-full" style="width: 100%;">
         <content-card></content-card>
       </div>
 
       <!-- Reels- card -->
-      <div>
+      <div class="w-full">
         <mindful-card-header [title]="'Made by Kids, for Kids!'" [subtitleLeft]="'Watch reels'"
           [subtitleMiddle]="'Create'" [subtitleRight]="'Get Inspired'">
           <mindful-view-all mindful-header-actions [routerLink]="['/authed/reel-section']" class="see-all">
@@ -74,23 +74,16 @@
       </div>
 
       <!-- Tutor card-->
-      <tutor-card></tutor-card>
+      <tutor-card style="width: 100%;"></tutor-card>
 
       <!-- Journals component-->
-      <journals [showCreateButton]="true" [maxDisplayEntries]="3">
+      <journals class="w-full" [showCreateButton]="true" [maxDisplayEntries]="3">
       </journals>
 
       <!--Academy section-->
-      <academy-section></academy-section>
+      <academy-section class="w-full"></academy-section>
 
-      <!-- Development/Testing Components -->
-      <!-- <mindful-datepicker formControlName="dob" [type]="'date'"></mindful-datepicker>
-    <mindful-datepicker formControlName="eventRange" [type]="'range'"></mindful-datepicker>
-    <mindful-timepicker></mindful-timepicker>
-    <mindful-birthdaypicker></mindful-birthdaypicker>
-    <mindful-dropdown width="full-width" [options]="[{key: '1', value: 'Value 1'}, {key: '2', value: 'Value 2'}]" label="Test Label"></mindful-dropdown>
-    <mindful-selectors (selectedKeysChange)="console.log($event)" [options]="[{key: '1', value: 'Value 1', type: 'habit'}, {key: '2', value: 'Value 2', type: 'task'}]" label="Test Selectors"></mindful-selectors> -->
-      <!-- mood-selector moved above to the profile area -->
+
     </div>
   </div>
   <app-footer></app-footer>

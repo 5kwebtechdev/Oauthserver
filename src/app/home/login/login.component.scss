@@ -29,6 +29,7 @@
   .login-toggle-form-wrapper {
     display: flex !important;
     flex-direction: column;
+    align-items: center;
   }
 
   .terms-condition {
@@ -42,6 +43,13 @@
   .subheading {
     margin-bottom: 1rem;
     font-weight: 500;
+  }
+
+  .login-form-fields {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .login-header-toggle-wrapper {
@@ -115,6 +123,8 @@
     margin-bottom: 40px;
     background: #fad2ae;
     border-radius: 40px;
+    width: 100%;
+    max-width: 600px;
 
     button {
       flex: 1;

@@ -6,8 +6,8 @@
   </mindful-card-header>
 
   <div class="academy__cards">
-    <swiper-container class="academy-swiper" [slides-per-view]="'auto'" [space-between]="16" [pagination]="false"
-      [scrollbar]="false">
+    <swiper-container class="academy-swiper" [slides-per-view]="'auto'" [space-between]="10" [pagination]="false"
+      [scrollbar]="false" [centeredSlides]="false" [freeMode]="true">
       <swiper-slide class="academy-slide" *ngFor="let c of courses">
         <article class="academy__card">
           <div class="academy__content">

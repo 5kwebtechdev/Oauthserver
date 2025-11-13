@@ -266,9 +266,40 @@
           </ng-template>
         </ng-container>
       </div>
+
+      <!-- Referral code: collapsible section -->
+      <div class="referral-section">
+        <div class="referral-toggle" role="button" tabindex="0" (click)="toggleReferral()"
+          (keydown)="$event.key==='Enter' && toggleReferral()">
+          <div class="referral-text">
+            <h4>Got a Referral Code?</h4>
+            <span>Tap to earn 100 bonus coins!</span>
+          </div>
+          <div class="referral-arrow" [ngClass]="{'open': showReferral}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="7" viewBox="0 0 12 7" fill="none"
+              aria-hidden="true">
+              <path
+                d="M11.4394 0.839806C11.6347 1.03507 11.6347 1.35165 11.4394 1.54691L6.14652 6.83981C5.95126 7.03507 5.63468 7.03507 5.43942 6.83981L0.146522 1.54691C-0.04874 1.35165 -0.0487401 1.03507 0.146522 0.839806L0.839416 0.146913C1.03468 -0.0483499 1.35126 -0.0483494 1.54652 0.146913L5.43942 4.03981C5.63468 4.23507 5.95126 4.23507 6.14652 4.03981L10.0394 0.146913C10.2347 -0.0483494 10.5513 -0.0483494 10.7465 0.146913L11.4394 0.839806Z"
+                fill="#772817" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="referral-input-wrapper" *ngIf="showReferral">
+          <div class="input-group">
+            <input type="text" [value]="referralCode" (input)="onReferralInput($event)" placeholder="Code"
+              maxlength="8" />
+            <div class="error" *ngIf="referralCode && referralCode.length > 8">Referral code must be up to 8 characters
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
-      <mindful-button type="orange-onboard" [text]="'Save & Continue'" (click)="registerOrProceed()">
-      </mindful-button>
+      <div class="profile-button-wrapper">
+        <mindful-button type="orange-onboard" [text]="'Save & Continue'" (click)="registerOrProceed()">
+        </mindful-button>
+      </div>
 
     </div>
     <!--//////////////////////// STEP 3 - Account Creation-->

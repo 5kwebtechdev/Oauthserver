@@ -55,7 +55,9 @@
       align-items: center;
       justify-content: center;
       gap: 4px;
-      width: 41px;
+
+      min-width: 41px;
+      justify-self: center;
 
       p {
         font-weight: 500;
@@ -148,7 +150,6 @@
   /* Header: month/year + mood toggle */
   .calendar-header {
     display: flex;
-    width: 317px;
     justify-content: space-between;
     align-items: center;
 

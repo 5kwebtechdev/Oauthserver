@@ -98,20 +98,17 @@
 
 .how-works {
   display: flex;
-  width: 361px;
+  width: 100%;
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  margin-top: 50px;
 
   h2 {
     color: #282527;
     font-size: 25px;
     font-style: normal;
     font-weight: 500;
-    line-height: 140%;
-    /* 35px */
-    margin-bottom: 16px;
+
   }
 }
 
@@ -138,7 +135,7 @@
 
 .step {
   display: flex;
-  width: 301px;
+  width: 100%;
   flex-direction: column;
   align-items: center;
   gap: 0px;

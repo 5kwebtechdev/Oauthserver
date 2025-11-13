@@ -190,15 +190,12 @@
   /* 22.4px */
 }
 
-/* Slide-up animation for mood popup */
 .calendar-mood-satus-popup {
   position: fixed;
   left: 0;
   right: 0;
   bottom: -100%;
-  /* hidden by default below screen */
   display: flex;
-  justify-content: center;
   align-items: flex-end;
   transition: bottom 300ms ease-in-out, opacity 300ms ease-in-out;
   opacity: 0;

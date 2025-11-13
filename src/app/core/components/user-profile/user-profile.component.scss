@@ -4,11 +4,12 @@
   align-items: center;
   gap: 24px;
   flex-shrink: 0;
+  padding: 0px 16px;
 }
 
 .user-profile-main {
   display: flex;
-  width: 351px;
+  width: 100%;
   padding: 20px 16px;
   justify-content: center;
   align-items: center;
@@ -59,12 +60,17 @@
   color: rgba(40, 37, 39, 0.6);
 }
 
+profile-content-card {
+  width: 100%;
+}
+
 .profile-content {
   display: flex;
-  width: 361px;
+  width: 100%;
   flex-direction: column;
   align-items: flex-start;
   gap: 16px;
+
 }
 
 .logout-section {

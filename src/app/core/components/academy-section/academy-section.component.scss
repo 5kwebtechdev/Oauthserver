@@ -7,25 +7,23 @@ $card-bg: #FFFFFF;
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 15px;
 
   &__cards {
     width: 100%;
-    max-width: 361px;
     overflow: hidden;
   }
 
   .academy-swiper {
     width: 100%;
-    padding: 0;
+    padding: 0 16px;
     overflow: visible;
-    --swiper-slide-spacing: 16px;
   }
 
   .academy-slide {
-    width: auto !important;
-    max-width: 320px;
-    margin-right: 16px;
+    width: 320px !important;
+    flex-shrink: 0;
+    margin-right: 10px;
 
     &:last-child {
       margin-right: 0;

@@ -82,7 +82,7 @@
             <label (click)="rememberMe = !rememberMe">Remember me</label>
           </div>
 
-          <mindful-button type="orange-onboard" [text]="loading ? 'Logging in...' : 'Login'"
+          <mindful-button style="align-self: center;" type="orange-onboard" [text]="loading ? 'Logging in...' : 'Login'"
             [disabled]="!isLoginFormValid() || loading" (click)="onSubmit()">
           </mindful-button>
           <button type="submit" style="display:none"></button>
@@ -91,7 +91,7 @@
       </div>
     </div>
 
-    <div class="container w-full p-0" style="max-width: 360px; align-self: center;">
+    <div class="container w-full p-0" style="align-self: center;">
       <div class="or-divider"><span>OR</span></div>
       <social-media [variant]="'login-with'"></social-media>
     </div>

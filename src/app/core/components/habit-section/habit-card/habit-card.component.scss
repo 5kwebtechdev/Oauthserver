@@ -1,7 +1,7 @@
 .day-at-glance-container {
   display: flex;
   flex-direction: column;
-  padding: 0px 16px;
+  // padding: 0px 16px;
   gap: 24px;
   width: 100%;
   margin-bottom: 24px;
@@ -186,7 +186,6 @@ p {
 
 .habit-wrapper {
   display: flex;
-  width: 361px;
   height: auto;
   padding: 8px 12px 12px 24px;
   flex-direction: column;
@@ -194,7 +193,6 @@ p {
   gap: 2px;
   flex-shrink: 0;
   border-radius: 16px;
-  /* default (habit) left border */
   border-left: 4px solid #8B8DCB;
   background: #FDFDFD;
   border-radius: 16px;

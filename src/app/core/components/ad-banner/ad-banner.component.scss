@@ -1,6 +1,5 @@
 .ad-banner {
   display: flex;
-  width: 361px;
   flex-direction: column;
   align-items: center;
   gap: 16px;
@@ -10,7 +9,7 @@
 .ad-banner .slides-wrapper {
   width: 100%;
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 12px;
@@ -91,14 +90,14 @@
   border-radius: 8px;
   position: relative;
   overflow: hidden;
-  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.08));
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.08));
 }
 
 .ad-banner .slide-image::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(249,210,220,0.9) 0%, rgba(249,210,220,0.35) 40%, rgba(249,210,220,0.0) 100%);
+  background: linear-gradient(90deg, rgba(249, 210, 220, 0.9) 0%, rgba(249, 210, 220, 0.35) 40%, rgba(249, 210, 220, 0.0) 100%);
   pointer-events: none;
 }
 
@@ -124,7 +123,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: rgba(0,0,0,0.12);
+  background: rgba(0, 0, 0, 0.12);
   border: none;
   padding: 0;
   cursor: pointer;
@@ -136,6 +135,6 @@
 
 .ad-banner .dot:focus,
 .ad-banner .cta:focus {
-  outline: 2px solid rgba(82,34,61,0.2);
+  outline: 2px solid rgba(82, 34, 61, 0.2);
   outline-offset: 2px;
 }
