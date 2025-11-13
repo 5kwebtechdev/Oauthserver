@@ -9,7 +9,7 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-
+  padding: 0px 5px 0px 0px;
 }
 
 .left-group {
@@ -131,16 +131,14 @@
   flex-shrink: 0;
 }
 
-/* container for up to two right-side actions */
 .right-actions {
   height: 48px;
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: 16px;
   padding-left: 0;
 }
 
-/* slightly smaller secondary icon (left-most) */
 .right-button-2 img {
   width: 32px;
   height: 32px;

@@ -362,8 +362,8 @@ p {
 
 .bronze {
   display: flex;
-  width: 361px;
-  height: 56px;
+  height: 100%;
+  width: 100%;
   padding: 8px 16px;
   justify-content: center;
   align-items: center;
@@ -411,7 +411,7 @@ p {
   justify-content: center;
   align-items: center;
   gap: 8px;
-  border-radius: 4px;
+  border-radius: 8px;
   border: 1px solid #BB2124;
   box-shadow: 0 0 1px 0.5px rgba(139, 141, 203, 0.20);
   background: transparent;

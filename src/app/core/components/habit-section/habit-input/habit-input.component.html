@@ -1,7 +1,7 @@
 <ion-content fullscreen>
   <mindful-navigator [heading]="editingId ? 'Update Activity' : 'Create. Commit. Grow.'" backIcon="cancel"
     [rightActions]="navigatorActions" (rightActionClick)="onNavigatorAction($event)">
-    <div slot="end" class="header-toggle" aria-label="Private toggle">
+    <div slot="end" class="header-toggle d-flex flex-column gap-2" aria-label="Private toggle">
       <label class="header-toggle-label">Private</label>
       <div class="toggle-right">
         <mindful-toggle [(checked)]="isPrivate"></mindful-toggle>
@@ -355,3 +355,7 @@
 
   </div>
 </ion-content>
+
+<app-mindful-popup [isVisible]="deletePopupVisible" [config]="deletePopupConfig" (primaryAction)="confirmDelete()"
+  (secondaryAction)="cancelDelete()" (backdropClick)="cancelDelete()"
+  (closeAction)="cancelDelete()"></app-mindful-popup>

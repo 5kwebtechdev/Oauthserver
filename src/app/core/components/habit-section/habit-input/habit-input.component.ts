@@ -9,6 +9,7 @@ import { MindfulTagsComponent } from '../../mindful-selectors/mindful-tags/mindf
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulToggleComponent } from '../../mindful-selectors/mindful-toggle/mindful-toggle.component';
+import { MindfulPopupComponent, MindfulPopupConfig } from '../../mindful-popup/mindful-popup.component';
 import { HabitService } from '../habit.service';
 import { HabitApi } from '../../../api/habit.api';
 import { TaskApi } from '../../../api/task.api';
@@ -21,7 +22,7 @@ import { Router } from '@angular/router';
   selector: 'habit-input',
   templateUrl: './habit-input.component.html',
   styleUrls: ['./habit-input.component.scss'],
-  imports: [CommonModule, IonicModule, FormsModule, MindfulButtonComponent, MindfulInputsModule, MindfulSelectorsComponent, MindfulTagsComponent, MindfulBadgeComponent, MindfulNavigatorComponent, MindfulToggleComponent]
+  imports: [CommonModule, IonicModule, FormsModule, MindfulButtonComponent, MindfulInputsModule, MindfulSelectorsComponent, MindfulTagsComponent, MindfulBadgeComponent, MindfulNavigatorComponent, MindfulToggleComponent, MindfulPopupComponent]
 })
 export class HabitInputComponent implements OnInit, AfterViewInit {
   title = '';
@@ -68,6 +69,37 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
 
   editingId?: string;
   originalHabit: any = null;
+
+  // Delete confirmation popup state
+  deletePopupVisible = false;
+  deletePopupConfig: MindfulPopupConfig = {};
+  // internal guard to prevent double-delete
+  private deleting = false;
+
+  // runtime asset path (served from /assets)
+  private readonly DELETE_IMAGE_PATH = 'assets/Images-Transparent/Image-Input-Delete.png';
+
+  // use PNG assets for icons (18px width, height auto)
+  private readonly _coinSvg = `<img src="assets/Icons-Neutral/Icons-Coins.png" alt="Coins" style="width:18px;height:auto;"/>`;
+  private readonly _streakSvg = `<img src="assets/Icons-Neutral/Icon-Streak.png" alt="Streak" style="width:18px;height:auto;"/>`;
+
+  private buildDeletePopupConfig(coin: number, streak: number): MindfulPopupConfig {
+    const headingHtml = `Delete this activity?<br/><div style="margin-top:12px;font-size:14px;color:#6b656a">You are about to lose:<div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">` +
+      `<div style="display:flex;align-items:center;gap:8px">${this._coinSvg}<div style=\"flex:1;\">Coins</div><div style=\"font-weight:600;\">${coin}</div></div>` +
+      `<div style="display:flex;align-items:center;gap:8px">${this._streakSvg}<div style=\"flex:1;\">Streak</div><div style=\"font-weight:600;\">${streak}</div></div>` +
+      `</div></div>`;
+
+    return {
+      image: this.DELETE_IMAGE_PATH,
+      imageAlt: 'Delete activity',
+      heading: headingHtml,
+      subtitle: '',
+      primaryCTA: { text: 'Delete', buttonStyle: 'bronze', buttonMedium: true },
+      secondaryCTA: { text: 'Cancel', buttonStyle: 'bronze-transparent', buttonMedium: true },
+      backdrop: true,
+      ctaDirection: 'row'
+    } as MindfulPopupConfig;
+  }
 
   constructor(
     private modalCtrl: ModalController,
@@ -202,7 +234,34 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   toggleDay(d: string) { if (this.selectedDays.has(d)) { this.selectedDays.delete(d); if (this.everyday) this.everyday = false; } else { this.selectedDays.add(d); if (this.selectedDays.size === this.weekdays.length) this.everyday = true; } }
   onEverydayChange(event: any) { const checked = !!(event?.detail?.checked ?? event === true); this.everyday = checked; if (this.everyday) this.weekdays.forEach(d => this.selectedDays.add(d)); else this.selectedDays.clear(); }
 
-  onDelete() { if (!this.editingId) return; const confirmed = confirm('Delete this activity?'); if (!confirmed) return; try { this.habitService.deleteHabit(this.editingId); try { this.modalCtrl.dismiss(); } catch { } this.router.navigate(['/habit-page'], { state: { deletedId: this.editingId } }); } catch (e) { console.error('Failed to delete habit', e); alert('Failed to delete habit. Please try again.'); } }
+  onDelete() {
+    if (!this.editingId) return;
+    const coin = Number(this.originalHabit?.coinReward ?? this.originalHabit?.coin ?? 0);
+    const streak = Number(this.originalHabit?.streak ?? this.originalHabit?.streakCount ?? 0);
+    this.deletePopupConfig = this.buildDeletePopupConfig(coin, streak);
+    this.deletePopupVisible = true;
+  }
+
+  confirmDelete() {
+    if (!this.editingId || this.deleting) return;
+    this.deleting = true;
+    try {
+      // HabitService.deleteHabit is sync (updates local subject)
+      this.habitService.deleteHabit(this.editingId);
+      try { this.modalCtrl.dismiss(); } catch { /* ignore if not modal */ }
+      this.deletePopupVisible = false;
+      this.router.navigate(['/habit-page'], { state: { deletedId: this.editingId } });
+    } catch (e) {
+      console.error('Failed to delete habit', e);
+      alert('Failed to delete habit. Please try again.');
+    } finally {
+      this.deleting = false;
+    }
+  }
+
+  cancelDelete() {
+    this.deletePopupVisible = false;
+  }
 
   selectPriority(p: 'low' | 'medium' | 'high') { this.priority = p; }
   addActivity() { this.activities.push({ name: '', startTime: '', endTime: '' }); }
