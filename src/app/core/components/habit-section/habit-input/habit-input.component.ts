@@ -94,7 +94,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       imageAlt: 'Delete activity',
       heading: headingHtml,
       subtitle: '',
-      primaryCTA: { text: 'Delete', buttonStyle: 'bronze', buttonMedium: true },
+      primaryCTA: { text: 'Delete', buttonStyle: 'bronze' },
       secondaryCTA: { text: 'Cancel', buttonStyle: 'bronze-transparent', buttonMedium: true },
       backdrop: true,
       ctaDirection: 'row'
@@ -245,18 +245,97 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   confirmDelete() {
     if (!this.editingId || this.deleting) return;
     this.deleting = true;
-    try {
-      // HabitService.deleteHabit is sync (updates local subject)
-      this.habitService.deleteHabit(this.editingId);
+
+    const possibleIds = [
+      this.originalHabit?.id,
+      this.originalHabit?.eventId,
+      this.originalHabit?.calendarEventId,
+      this.originalHabit?.calendarId,
+      this.editingId
+    ].filter(Boolean).map(String);
+
+    const backendId = possibleIds.length ? possibleIds[0] : undefined;
+
+    const finalizeLocalDelete = (idToRemove?: string) => {
+      try { this.habitService.deleteHabit((idToRemove || this.editingId) as string); } catch (e) { console.warn('Local delete failed', e); }
       try { this.modalCtrl.dismiss(); } catch { /* ignore if not modal */ }
       this.deletePopupVisible = false;
-      this.router.navigate(['/habit-page'], { state: { deletedId: this.editingId } });
-    } catch (e) {
-      console.error('Failed to delete habit', e);
-      alert('Failed to delete habit. Please try again.');
-    } finally {
+      this.router.navigate(['/habit-page'], { state: { deletedId: idToRemove || this.editingId } });
+    };
+
+    if (!backendId) {
+      // No backend id available; fall back to local-only deletion
+      finalizeLocalDelete(this.editingId);
       this.deleting = false;
+      return;
     }
+
+    if (this.currentActive === 'habits') {
+      this.habitApi.deleteHabit(backendId).subscribe({
+        next: () => {
+          finalizeLocalDelete(this.editingId);
+          this.deleting = false;
+        },
+        error: (err) => {
+          console.error('Failed to delete habit on server', err);
+          alert('Failed to delete habit on server. Please try again.');
+          this.deleting = false;
+        }
+      });
+      return;
+    }
+
+    if (this.currentActive === 'tasks') {
+      this.taskApi.deleteTask(backendId).subscribe({
+        next: () => {
+          finalizeLocalDelete(this.editingId);
+          this.deleting = false;
+        },
+        error: (err) => {
+          console.error('Failed to delete task on server', err);
+          alert('Failed to delete task on server. Please try again.');
+          this.deleting = false;
+        }
+      });
+      return;
+    }
+
+    if (this.currentActive === 'timetable') {
+      this.calendarApi.deleteCalendarEvent(backendId).subscribe({
+        next: () => {
+          finalizeLocalDelete(this.editingId);
+          this.deleting = false;
+        },
+        error: (err) => {
+          console.warn('Primary calendar delete failed, trying alternate path', err);
+          // Try alternate delete path
+          this.calendarApi.deleteCalendarEventV2(backendId).subscribe({
+            next: () => {
+              finalizeLocalDelete(this.editingId);
+              this.deleting = false;
+            },
+            error: (err2) => {
+              console.error('Failed to delete calendar event on server', err2);
+              alert('Failed to delete timetable on server. Please try again.');
+              this.deleting = false;
+            }
+          });
+        }
+      });
+      return;
+    }
+
+    this.habitApi.deleteHabit(backendId).subscribe({
+      next: () => {
+        finalizeLocalDelete(this.editingId);
+        this.deleting = false;
+      },
+      error: (err) => {
+        console.error('Failed to delete on server (fallback)', err);
+        alert('Failed to delete item on server. Please try again.');
+        this.deleting = false;
+      }
+    });
   }
 
   cancelDelete() {

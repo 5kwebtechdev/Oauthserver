@@ -84,4 +84,13 @@ export class HabitApi {
         const url = `${this.base}/habits/update/${id}`;
         return this.http.put(url, payload, { headers: this.headers() });
     }
+
+    /**
+     * Delete a habit by id
+     * @param id Habit id
+     */
+    deleteHabit(id: string): Observable<any> {
+        const url = `${this.base}/habits/delete/${id}`;
+        return this.http.delete(url, { headers: this.headers() });
+    }
 }

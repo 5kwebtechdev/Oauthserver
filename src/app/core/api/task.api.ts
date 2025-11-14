@@ -53,4 +53,13 @@ export class TaskApi {
         const url = `${this.base}/tasks/add`;
         return this.http.post(url, payload, { headers: this.headers() });
     }
+
+    /**
+     * Delete a task by id
+     * @param id Task id
+     */
+    deleteTask(id: string): Observable<any> {
+        const url = `${this.base}/tasks/delete/${id}`;
+        return this.http.delete(url, { headers: this.headers() });
+    }
 }

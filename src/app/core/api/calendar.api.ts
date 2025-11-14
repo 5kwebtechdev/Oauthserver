@@ -48,4 +48,13 @@ export class CalendarApi {
         const url = `${this.base}/api/calendar/events/${eventId}`;
         return this.http.delete(url, { headers: this.headers() });
     }
+
+    /**
+     * Alternate delete path (some backends provide this route):
+     * /calendar/delete/{eventId}
+     */
+    deleteCalendarEventV2(eventId: string): Observable<any> {
+        const url = `${this.base}/calendar/delete/${eventId}`;
+        return this.http.delete(url, { headers: this.headers() });
+    }
 }
