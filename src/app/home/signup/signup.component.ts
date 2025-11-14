@@ -1250,4 +1250,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const genderPrefix = gender === 'male' ? 'Male' : 'Female';
     return `/assets/Images-Transparent/Image-Onboarding-Avatar-${genderPrefix}${avatarNumber}.png`;
   }
+
+  /**
+   * Navigate to Privacy Policy page (no login required)
+   */
+  navigateToPrivacyPolicy(): void {
+    this.router.navigate(['/our-policies'], { queryParams: { tab: 'privacy' } });
+  }
+
+  /**
+   * Navigate to Terms of Use page (no login required)
+   */
+  navigateToTermsOfUse(): void {
+    this.router.navigate(['/our-policies'], { queryParams: { tab: 'terms' } });
+  }
 }

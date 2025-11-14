@@ -3,6 +3,7 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AuthenticatedModule } from "./authenticated/authenticated.module";
 import { StreaksLeaderboardComponent } from './core/components/streaks-section/streaks-leaderboard/streaks-leaderboard.component';
 import { authGuard } from './core/authe-guard/authe-guard';
+import { OurPoliciesComponent } from './core/components/user-profile/our-policies/our-policies.component';
 
 const routes: Routes = [
   {
@@ -13,6 +14,10 @@ const routes: Routes = [
     path: 'authed',
     loadChildren: () => import('./authenticated/authenticated.module').then(m => m.AuthenticatedModule),
     canActivate: [authGuard]
+  },
+  {
+    path: 'our-policies',
+    component: OurPoliciesComponent
   },
   {
     path: '',
