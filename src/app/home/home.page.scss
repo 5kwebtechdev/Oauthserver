@@ -24,7 +24,55 @@
   width: 100%;
   object-fit: contain;
   position: relative;
-  top: -15px;
+  border-radius: 32px;
+}
+
+/* Image container exists in DOM but only styled on tablet so mobile layout stays the same */
+.image-container {
+  display: block;
+}
+
+/* Tablet-specific rules: center image, don't stretch it, give rounded corners, and fixed footer */
+@media (min-width: 768px) {
+  .carousel-slide {
+    /* stack content vertically and center image without changing its intrinsic size */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+
+  .image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 32px;
+    overflow: hidden;
+    /* ensure rounded corners clip image */
+    background: transparent;
+  }
+
+  .image-container .slide-image {
+    width: auto;
+    /* don't force full width */
+    height: auto;
+    max-width: 90%;
+    /* allow scaling down on very large screens but not up */
+    display: block;
+    border-radius: 32px;
+  }
+
+  /* Make footer fixed on tablet so it remains visible */
+  .carousel-footer {
+    position: fixed;
+    left: 0;
+    bottom: 1rem;
+    width: 100%;
+    z-index: 1200;
+  }
 }
 
 .text-content {

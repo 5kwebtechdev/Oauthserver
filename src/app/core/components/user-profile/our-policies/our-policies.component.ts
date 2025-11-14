@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { ActivatedRoute } from '@angular/router';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 
 @Component({
@@ -10,12 +11,25 @@ import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navig
   templateUrl: './our-policies.component.html',
   styleUrls: ['./our-policies.component.scss']
 })
-export class OurPoliciesComponent {
+export class OurPoliciesComponent implements OnInit {
   @Input() compact = false;
 
   selectedTab: 'terms' | 'privacy' = 'terms';
 
-  selectTab(tab: 'terms' | 'privacy'){
+  constructor(private route: ActivatedRoute) { }
+
+  ngOnInit() {
+    // Check for tab query parameter
+    this.route.queryParams.subscribe(params => {
+      if (params['tab'] === 'privacy') {
+        this.selectedTab = 'privacy';
+      } else if (params['tab'] === 'terms') {
+        this.selectedTab = 'terms';
+      }
+    });
+  }
+
+  selectTab(tab: 'terms' | 'privacy') {
     this.selectedTab = tab;
   }
 

@@ -23,7 +23,6 @@
     margin: 0;
   }
 
-  /* Initial-based avatar preview for parent role */
   .initial-avatar-preview {
     display: flex;
     align-items: center;
@@ -172,25 +171,29 @@
       display: flex;
       background: #FAD2AE;
       border-radius: 10px;
-      border: 2px solid transparent;
-      transition: 0.2s;
+      transition: none;
+      box-sizing: border-box;
       overflow: hidden;
       width: 100%;
       position: relative;
+      border: 2px solid #FAD2AE;
 
       &:focus-within {
         border: 2px solid #ff823b;
+        transition: none;
+        box-sizing: border-box;
       }
 
       &.error {
         border-color: var(--error_color);
+        border-radius: 10px;
       }
 
       .country-code-selector {
         display: flex;
         align-items: center;
         padding: 0.8rem 0.6rem;
-        background: #ff823b;
+        background: #EE6621;
         color: white;
         cursor: pointer;
         gap: 0.3rem;
@@ -250,8 +253,7 @@
         }
 
         &::placeholder {
-          color: #772817;
-          opacity: 0.6;
+          color: rgba(119, 40, 23, 0.6);
         }
 
         &::-webkit-outer-spin-button,
@@ -274,8 +276,7 @@
           border-radius: 12px !important;
           font-size: 1rem;
           background: #FAD2AE;
-          /* border: 2px solid transparent; */
-          transition: 0.2s;
+          transition: none;
         }
       }
     }
@@ -302,7 +303,7 @@
 
     .error {
       color: var(--error_color);
-      // font-size: 0.8rem;
+      font-size: 0.9rem;
       margin-top: 0.3rem;
     }
   }
@@ -325,7 +326,7 @@
 
   .or-divider {
     text-align: center;
-    margin: 1rem 0;
+    padding: 24px 0px;
 
     span {
       background: #ffe9db;
@@ -389,7 +390,6 @@
     gap: 4px;
   }
 
-
   .terms {
     font-size: 16px;
     text-align: center;
@@ -399,6 +399,20 @@
       color: #772817;
       font-weight: bold;
     }
+  }
+
+  .terms-consent-fixed {
+    position: fixed;
+    bottom: 72px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 40px);
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0.5;
+    z-index: 10;
   }
 
   .role-selection {
@@ -421,7 +435,6 @@
       width: 100%;
       justify-content: space-between;
     }
-
 
     h2 {
       font-weight: 500;
@@ -603,7 +616,6 @@ swiper-slide.swiper-slide-active .pet-card {
   color: white;
 }
 
-/* Age Validation Modal */
 .age-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -709,7 +721,6 @@ swiper-slide.swiper-slide-active .pet-card {
   margin-top: -8px;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .signup-container {
     padding: 1rem;
@@ -736,7 +747,6 @@ swiper-slide.swiper-slide-active .pet-card {
   }
 }
 
-/* Country Code Modal */
 .country-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -889,7 +899,6 @@ swiper-slide.swiper-slide-active .pet-card {
   }
 }
 
-/* Mobile optimizations for country modal */
 @media (max-width: 480px) {
   .country-modal {
     max-height: 85vh;
@@ -972,7 +981,6 @@ swiper-slide.swiper-slide-active .pet-card {
   }
 }
 
-/* OTP Section Styles */
 .otp-container {
   display: flex;
   flex-direction: column;
@@ -1089,7 +1097,6 @@ swiper-slide.swiper-slide-active .pet-card {
   }
 }
 
-/* Mobile optimizations for OTP */
 @media (max-width: 480px) {
   .otp-container {
     padding: 1.5rem 1rem;
@@ -1128,7 +1135,6 @@ swiper-slide.swiper-slide-active .pet-card {
   }
 }
 
-/* Password Creation Section Styles */
 .password-container {
   display: flex;
   flex-direction: column;
@@ -1141,7 +1147,6 @@ swiper-slide.swiper-slide-active .pet-card {
     width: 100%;
   }
 }
-
 
 .password-title {
   font-family: 'Fredoka', sans-serif;
@@ -1218,7 +1223,6 @@ swiper-slide.swiper-slide-active .pet-card {
   }
 }
 
-/* Mobile optimizations for Password */
 @media (max-width: 480px) {
   .password-container {
     padding: 1.5rem 1rem;
@@ -1249,7 +1253,6 @@ swiper-slide.swiper-slide-active .pet-card {
   width: 242px;
 }
 
-/* Welcome Step Styles */
 .welcome-page {
   display: flex;
   justify-content: center;
@@ -1279,18 +1282,15 @@ swiper-slide.swiper-slide-active .pet-card {
   height: auto;
 }
 
-/* Step 5 specific styles - white background */
 .step-5-container {
   background: #ffffff !important;
   margin-top: 50px !important;
 }
 
-/* White background for ion-content on step 5 */
 ion-content.bg-white {
   --background: #ffffff !important;
 }
 
-/* Step 5 cancel button */
 .step5-cancel {
   position: absolute;
   top: 16px;
@@ -1314,7 +1314,6 @@ ion-content.bg-white {
   }
 }
 
-/* Referral code collapsible section */
 .referral-section {
   margin: 0.75rem 0 1rem 0;
 
@@ -1382,7 +1381,6 @@ ion-content.bg-white {
 
     .input-group {
       input {
-        /* reuse existing input tokens */
         width: 100%;
         padding: 0.9rem;
         border-radius: 12px !important;
@@ -1391,8 +1389,7 @@ ion-content.bg-white {
         border: 2px solid transparent;
 
         &::placeholder {
-          color: #772817;
-          opacity: 0.6;
+          color: rgba(119, 40, 23, 0.6);
         }
 
         &:focus {

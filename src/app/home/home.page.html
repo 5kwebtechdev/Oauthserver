@@ -2,7 +2,10 @@
   (touchend)="onTouchEnd($event)">
   <div class="carousel-track" [style.transform]="'translateX(-' + currentSlide * 100 + 'vw)'">
     <div class="carousel-slide" [style.background-image]="slide.background" *ngFor="let slide of slides">
-      <img [src]="slide.image" alt="Slide Image" class="slide-image" />
+      <!-- Image wrapper: only styled on tablet via CSS so mobile layout remains unchanged -->
+      <div class="image-container">
+        <img [src]="slide.image" alt="Slide Image" class="slide-image" />
+      </div>
 
       <div class="text-content">
         <h2 [style.color]="slide.color">{{ slide.title }}</h2>
@@ -21,4 +24,12 @@
     <button class="next-btn" [style.background-color]="slides[currentSlide].next_color"
       [style.color]="slides[currentSlide].color" (click)="nextSlide()">→</button>
   </div>
+</div>
+
+<div *ngIf="isTablet" class="carousel-footer tablet-footer">
+  <div class="dots">
+    <span *ngFor="let slide of slides; let i = index" [class.active]="i === currentSlide" (click)="setSlide(i)"></span>
+  </div>
+  <button class="next-btn" [style.background-color]="slides[currentSlide].next_color"
+    [style.color]="slides[currentSlide].color" (click)="nextSlide()">→</button>
 </div>

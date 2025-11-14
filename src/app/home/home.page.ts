@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { Router } from "@angular/router";
 import { AuthService } from '../core/services/auth.service';
 
@@ -14,6 +14,7 @@ export class HomePage implements OnInit {
   touchStartX = 0;
   touchEndX = 0;
   isAuthenticated = false;
+  isTablet = false;
 
   slides = [
     {
@@ -66,10 +67,22 @@ export class HomePage implements OnInit {
     // Check if user is already logged in
     this.isAuthenticated = this.authService.isLoggedIn();
 
+    // initial detection for tablet widths (>=768px)
+    try {
+      this.isTablet = window.innerWidth >= 768;
+    } catch (e) {
+      this.isTablet = false;
+    }
+
     if (this.isAuthenticated) {
       console.log('User is already logged in, redirecting to dashboard...');
       this.router.navigate(['/authed/user-dashboard'], { replaceUrl: true });
     }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.isTablet = event.target.innerWidth >= 768;
   }
 
   onTouchStart(event: TouchEvent) {

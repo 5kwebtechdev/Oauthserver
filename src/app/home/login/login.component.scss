@@ -155,11 +155,20 @@
       font-size: 1rem;
       background: #FAD2AE;
       transition: 0.2s;
+      border: 2px solid #FAD2AE;
 
       &::placeholder {
         color: #772817;
         opacity: 0.6;
       }
+    }
+
+    /* Highlight email/password inputs on focus (phone handled via .phone-input-container:focus-within) */
+    >input:focus {
+      outline: none;
+      box-sizing: border-box;
+      border: 2px solid #ff823b;
+      transition: border-color 0.12s ease-in-out, box-shadow 0.12s ease-in-out;
     }
 
     input.error {
@@ -170,13 +179,19 @@
       display: flex;
       background: #FAD2AE;
       border-radius: 10px;
-      transition: 0.2s;
+      /* disable transition so border appears immediately on tap/click */
+      transition: none;
+      box-sizing: border-box;
       overflow: hidden;
       width: 100%;
       position: relative;
+      border: 2px solid #FAD2AE;
 
       &:focus-within {
+        /* show solid border immediately without animation */
         border: 2px solid #ff823b;
+        transition: none;
+        box-sizing: border-box;
       }
 
       &.error {
@@ -188,7 +203,7 @@
         display: flex;
         align-items: center;
         padding: 0.8rem 0.6rem;
-        background: #ff823b;
+        background: #EE6621;
         color: white;
         cursor: pointer;
         gap: 0.3rem;
@@ -274,7 +289,8 @@
           font-size: 1rem;
           background: #FAD2AE;
           /* border: 2px solid transparent; */
-          transition: 0.2s;
+          /* disable transition for tel input to avoid animated focus */
+          transition: none;
         }
       }
     }
@@ -302,7 +318,7 @@
 
     .error {
       color: var(--error_color);
-      // font-size: 0.8rem;
+      font-size: 0.9rem;
       margin-top: 0.3rem;
     }
   }
@@ -322,6 +338,8 @@
     gap: 12px;
     padding: 8px 4px;
     cursor: pointer;
+    width: 100%;
+    justify-content: flex-start;
 
     ion-checkbox {
       --size: 22px;
@@ -345,6 +363,7 @@
       -ms-user-select: none;
       margin: 0;
       transition: color 0.2s;
+      text-align: left;
 
       &:hover {
         color: #ee6621;
@@ -766,9 +785,8 @@
   margin-top: 0.3rem;
   display: block;
   text-align: right;
-  /* ⬅️ pushes text to rightmost */
   width: 100%;
-  /* take full row so it can push text right */
+  font-weight: 500;
 }
 
 .signup-link {

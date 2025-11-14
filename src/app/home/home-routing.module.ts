@@ -44,6 +44,9 @@ const routes: Routes = [
     path: 'scan-qr',
     component: ScanQrComponent
   }, {
+    path: 'our-policies',
+    loadComponent: () => import('../core/components/user-profile/our-policies/our-policies.component').then(m => m.OurPoliciesComponent)
+  }, {
     path: 'auth',
     // Rpoute to authenticated module
     loadChildren: () => import('../authenticated/authenticated.module').then(m => m.AuthenticatedModule)
