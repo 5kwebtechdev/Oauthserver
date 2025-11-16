@@ -46,7 +46,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   // OTP related properties
   public otpDigits: string[] = ['', '', '', ''];
   public canResendOtp = false;
-  public otpResendTimer = 300; // 5 minutes
+  public otpResendTimer = 120; // 2 minutes
   private resendInterval: any;
   private isFromUserInput = false; // Track if input is from user typing vs auto-fill
 
@@ -1028,7 +1028,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   private startOtpTimer(): void {
     this.canResendOtp = false;
-    this.otpResendTimer = 300; // 5 minutes
+    this.otpResendTimer = 120; // 2 minutes
 
     this.resendInterval = setInterval(() => {
       this.otpResendTimer--;

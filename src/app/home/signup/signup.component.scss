@@ -167,6 +167,23 @@
       }
     }
 
+    input[type="email"] {
+      &::placeholder {
+        color: #772817;
+        opacity: 0.5;
+      }
+
+      &::-webkit-input-placeholder {
+        color: #772817;
+        opacity: 0.5;
+      }
+
+      &:-ms-input-placeholder {
+        color: #772817;
+        opacity: 0.5;
+      }
+    }
+
     .phone-input-container {
       display: flex;
       background: #FAD2AE;
@@ -403,7 +420,7 @@
 
   .terms-consent-fixed {
     position: fixed;
-    bottom: 72px;
+    bottom: 1%;
     left: 50%;
     transform: translateX(-50%);
     width: calc(100% - 40px);
@@ -587,6 +604,16 @@
       }
     }
   }
+}
+
+.helper-text {
+  font-size: 0.75rem;
+  color: #EE6621;
+  margin-top: 0.3rem;
+  display: block;
+  text-align: right;
+  width: 100%;
+  font-weight: 500;
 }
 
 swiper-slide.swiper-slide-active .pet-card {
@@ -988,6 +1015,7 @@ swiper-slide.swiper-slide-active .pet-card {
   padding: 0px !important;
   text-align: center;
   justify-content: center;
+  gap: 32px;
 }
 
 .otp-subtitle {
@@ -1012,16 +1040,10 @@ swiper-slide.swiper-slide-active .pet-card {
 .otp-inputs-container {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  padding: 0px;
-  gap: 4px;
-  width: 377px;
-  height: 117px;
+  gap: 10px;
   flex: none;
   order: 0;
-  align-self: stretch;
   flex-grow: 0;
-  margin-bottom: 3rem;
 }
 
 .otp-inputs {
@@ -1033,11 +1055,11 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .otp-timer {
+  display: flex;
   font-weight: 400;
   font-size: 14px;
   color: #EE6621;
   align-self: flex-end;
-  margin-top: 8px;
 }
 
 .otp-digit {
@@ -1113,7 +1135,7 @@ swiper-slide.swiper-slide-active .pet-card {
   }
 
   .otp-inputs {
-    gap: 8px;
+    gap: 13px;
   }
 
   .otp-digit {

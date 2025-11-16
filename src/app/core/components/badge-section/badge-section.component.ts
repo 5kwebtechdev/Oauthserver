@@ -5,13 +5,14 @@ import { MindfulInputsModule } from '../mindful-inputs/mindful-inputs.module';
 import { Badge, RecentAchievement } from './badge-section.interface';
 import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { MindfulPopupComponent, MindfulPopupConfig } from '../mindful-popup/mindful-popup.component';
+import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
 
 @Component({
     selector: 'app-badge-section',
     templateUrl: './badge-section.component.html',
     styleUrls: ['./badge-section.component.scss'],
     standalone: true,
-    imports: [CommonModule, IonicModule, MindfulInputsModule, MindfulCardHeaderComponent, MindfulPopupComponent]
+    imports: [CommonModule, IonicModule, MindfulInputsModule, MindfulCardHeaderComponent, MindfulPopupComponent, MindfulButtonComponent]
 })
 export class BadgeSectionComponent {
     recentAchievement: RecentAchievement = {
@@ -207,5 +208,34 @@ export class BadgeSectionComponent {
         const link = encodeURIComponent(window.location.href);
         window.open(`https://wa.me/?text=${link}`, '_blank');
         this.sharePopupVisible = false;
+    }
+
+    // Congratulatory popup state
+    congratsVisible: boolean = false;
+
+    // The badge currently shown in the congrats popup
+    selectedBadge?: Badge;
+
+    onTestClick(): void {
+        // Default to the first badge (Coin Collector) for now
+        this.selectedBadge = this.badges[0];
+        this.congratsVisible = true;
+    }
+
+    onViewAllBadges(): void {
+        this.congratsVisible = false;
+        this.selectedBadge = undefined;
+        // Future: navigate to badges page if needed
+    }
+
+    onAwesomeClick(): void {
+        this.congratsVisible = false;
+        this.selectedBadge = undefined;
+    }
+
+    // Close congrats popup and clear selection
+    closeCongrats(): void {
+        this.congratsVisible = false;
+        this.selectedBadge = undefined;
     }
 }

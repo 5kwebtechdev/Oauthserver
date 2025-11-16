@@ -121,15 +121,21 @@ p {
   --button_border: none;
   --button_box_shodow: none;
   --text_color: #FFFFFF;
-
   display: flex;
   padding: 8px 16px;
   justify-content: center;
   align-items: center;
   gap: 8px;
   border-radius: 8px;
-  width: 361px;
+  width: 100%;
   height: 56px;
+}
+
+
+:host([type="orange-onboard"]) {
+  display: block;
+  align-self: center;
+  width: 100%;
 }
 
 .orange-onboard p {

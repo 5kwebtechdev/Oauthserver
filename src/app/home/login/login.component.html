@@ -82,7 +82,7 @@
             <label (click)="rememberMe = !rememberMe">Remember me</label>
           </div>
 
-          <mindful-button style="align-self: center;" type="orange-onboard" [text]="loading ? 'Logging in...' : 'Login'"
+          <mindful-button type="orange-onboard" [text]="loading ? 'Logging in...' : 'Login'"
             [disabled]="!isLoginFormValid() || loading" (click)="onSubmit()">
           </mindful-button>
           <button type="submit" style="display:none"></button>
