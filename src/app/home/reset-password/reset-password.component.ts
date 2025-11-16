@@ -77,15 +77,12 @@ export class ResetPasswordComponent {
   }
 
   ngOnInit(): void {
-    console.log('Initial Form State:', this.resetPasswordForm);
-    console.log('Initial Form Validity:', this.resetPasswordForm.valid);
 
     // Restore requested identifier if present (helps when component is recreated during navigation)
     const savedIdentifier = sessionStorage.getItem('requestedIdentifier');
     if (savedIdentifier) {
       this.requestedIdentifier = savedIdentifier;
-      console.log('Restored requestedIdentifier from sessionStorage:', this.requestedIdentifier);
-    }
+      }
 
     // Get mode from query params (passed from login page)
     this.route.queryParams.subscribe((params) => {
@@ -100,7 +97,6 @@ export class ResetPasswordComponent {
 
         // If we're starting directly at step 2, initialize OTP timer
         if (this.step === 2) {
-          console.log('requestedIdentifier set (phone):', this.requestedIdentifier);
           this.startOtpTimer();
         }
 
@@ -133,7 +129,6 @@ export class ResetPasswordComponent {
 
   private applyModeValidators(): void {
     const emailControl = this.resetPasswordForm.get('email');
-    console.log('requestedIdentifier before reset:', this.requestedIdentifier);
     const phoneControl = this.resetPasswordForm.get('phone');
 
     if (this.mode === 'email') {
@@ -167,8 +162,7 @@ export class ResetPasswordComponent {
    * Proceeds to the next step based on the current form validation.
    */
   proceedToNextStep(): void {
-    console.log('Form Validity:', this.resetPasswordForm.valid);
-
+    
     if (this.step === 1 && this.mode === 'email') {
       const emailControl = this.resetPasswordForm.get('email');
       if (emailControl?.valid) {
@@ -237,14 +231,12 @@ export class ResetPasswordComponent {
             ? this.resetPasswordForm.get('email')?.value
             : this.resetPasswordForm.get('phone')?.value);
 
-          console.log('Using identifier for password reset:', identifier);
 
           const newPassword = newPasswordControl.value;
           const confirmPassword = confirmPasswordControl.value;
 
           this.authService.resetPassword(identifier, newPassword, confirmPassword).subscribe({
             next: (resp) => {
-              console.log('Password reset successful:', resp);
               this.resetError = null;
               // clear persisted identifier
               try { sessionStorage.removeItem('requestedIdentifier'); } catch (e) { }
@@ -342,43 +334,39 @@ export class ResetPasswordComponent {
     // Only allow numeric input
     const numericValue = inputValue.replace(/[^0-9]/g, '');
 
-    // Clear the input immediately to prevent interference
-    inputElement.value = '';
-
-    if (numericValue.length > 0) {
-      // Take only the first digit and put it ONLY in current input
-      const digit = numericValue.charAt(0);
-      this.otpDigits[index] = digit;
-      inputElement.value = digit; // Set value only to current input
-
-      // Update the OTP form control after any change to otpDigits
-      this.updateOtpFormControl();
-
-      // Auto-advance to next input (move cursor only, don't copy value)
-      // Only move if:
-      // 1. User manually typed (not auto-fill)
-      // 2. Value actually changed
-      // 3. Not the last input
-      if (this.isFromUserInput &&
-        previousValue !== digit &&
-        index < this.otpDigits.length - 1) {
-
-        setTimeout(() => {
-          const nextInput = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
-          if (nextInput) {
-            nextInput.focus(); // Just move cursor, value will be empty
-            // Ensure next input is empty
-            nextInput.value = this.otpDigits[index + 1] || '';
-          }
-        }, 10);
-      }
-    } else {
-      // Handle deletion
+    // If input is being cleared (empty or only non-numeric), handle deletion
+    if (!numericValue || numericValue.length === 0) {
       this.otpDigits[index] = '';
       inputElement.value = '';
-
-      // Update the OTP form control
       this.updateOtpFormControl();
+      return;
+    }
+
+    // Take only the first digit and put it ONLY in current input
+    const digit = numericValue.charAt(0);
+    this.otpDigits[index] = digit;
+    inputElement.value = digit; // Set value only to current input
+
+    // Update the OTP form control after any change to otpDigits
+    this.updateOtpFormControl();
+
+    // Auto-advance to next input (move cursor only, don't copy value)
+    // Only move if:
+    // 1. User manually typed (not auto-fill)
+    // 2. Value actually changed
+    // 3. Not the last input
+    if (this.isFromUserInput &&
+      previousValue !== digit &&
+      index < this.otpDigits.length - 1) {
+
+      setTimeout(() => {
+        const nextInput = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
+        if (nextInput) {
+          nextInput.focus(); // Just move cursor, value will be empty
+          // Ensure next input is empty
+          nextInput.value = this.otpDigits[index + 1] || '';
+        }
+      }, 10);
     }
 
     // Reset the flag after processing
@@ -395,18 +383,50 @@ export class ResetPasswordComponent {
     if (event.key === 'Backspace') {
       event.preventDefault();
 
-      // If current input has value, clear it
-      if (this.otpDigits[index]) {
+      const currentInput = event.target as HTMLInputElement;
+      // Check both array value and input element value to handle sync issues
+      const arrayValue = this.otpDigits[index];
+      const inputValue = currentInput.value.trim();
+      const hasValue = arrayValue || inputValue;
+
+      // If current input has value, clear it and immediately move to previous field for continuous deletion
+      if (hasValue) {
         this.otpDigits[index] = '';
-        (event.target as HTMLInputElement).value = '';
+        currentInput.value = '';
+        this.updateOtpFormControl();
+        
+        // Immediately move to previous field if it exists (enables continuous deletion when holding backspace)
+        if (index > 0) {
+          const prevInput = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
+          if (prevInput) {
+            // Use setTimeout to ensure the value is cleared before focusing
+            setTimeout(() => {
+              prevInput.focus();
+            }, 0);
+          }
+        }
       } else if (index > 0) {
         // If current input is empty, move to previous input and clear it
         const prevInput = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
         if (prevInput) {
-          this.otpDigits[index - 1] = '';
-          prevInput.value = '';
-          prevInput.focus();
+          const prevHasValue = this.otpDigits[index - 1] || prevInput.value.trim();
+          if (prevHasValue) {
+            this.otpDigits[index - 1] = '';
+            prevInput.value = '';
+            this.updateOtpFormControl();
+            // Use setTimeout to ensure the value is cleared before focusing
+            setTimeout(() => {
+              prevInput.focus();
+            }, 0);
+          } else {
+            // Previous field is also empty, move focus but don't clear
+            setTimeout(() => {
+              prevInput.focus();
+              }, 0);
+          }
         }
+      } else {
+        console.log(`[OTP Backspace] Already on first field (${index}), nothing to clear`);
       }
     }
 
@@ -480,8 +500,7 @@ export class ResetPasswordComponent {
     }
 
     const otp = this.otpDigits.join('');
-    console.log('Verifying OTP:', otp);
-
+    
     // Call backend to verify OTP
     const identifier = this.mode === 'email'
       ? this.resetPasswordForm.get('email')?.value
@@ -489,7 +508,6 @@ export class ResetPasswordComponent {
 
     this.authService.verifyOtp(identifier, otp).subscribe({
       next: (resp) => {
-        console.log('OTP verified response:', resp);
         this.otpIncorrect = false;
         this.otpError = null;
         this.step = 3; // Move to new password screen
@@ -567,7 +585,7 @@ export class ResetPasswordComponent {
    */
   showPasswordResetSuccess(): void {
     // You can implement a toast or modal notification here
-    console.log('Password reset successful!');
+   
 
     // Wait a moment before redirecting
     setTimeout(() => {
@@ -583,7 +601,6 @@ export class ResetPasswordComponent {
     const otpControl = this.resetPasswordForm.get('otp');
     if (otpControl) {
       otpControl.setValue(otpValue);
-      console.log('OTP form control updated:', otpValue);
     }
   }
 
@@ -615,6 +632,5 @@ export class ResetPasswordComponent {
     this.startOtpTimer();
 
     // Simulate sending a new OTP (replace with actual API call)
-    console.log('Resending OTP to:', this.getMaskedPhoneNumber());
   }
 }

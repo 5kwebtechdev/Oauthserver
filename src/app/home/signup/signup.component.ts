@@ -158,7 +158,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       try {
         sessionStorage.setItem('signup_pet', this.pets[realIndex].name);
       } catch (e) { }
-      console.log('Selected pet:', this.pets[realIndex].name);
     });
   }
 
@@ -171,7 +170,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.countriesService.getCountries().subscribe({
         next: (countries) => {
           this.countries = countries;
-          console.log('Countries loaded:', countries.length);
         },
         error: (error) => {
           console.error('Error loading countries:', error);
@@ -182,14 +180,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     );
 
     // Debug: check if flag is properly loaded
-    console.log('Selected country flag:', this.selectedCountry.flag);
-    console.log('Selected country code:', this.selectedCountry.code);
 
     // Restore requested identifier if present (helps when component is recreated during navigation)
     const savedIdentifier = sessionStorage.getItem('requestedIdentifier');
     if (savedIdentifier) {
       this.requestedIdentifier = savedIdentifier;
-      console.log('Restored requestedIdentifier from sessionStorage:', this.requestedIdentifier);
     }
   }
 
@@ -403,35 +398,27 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // If we're currently on the pet selection step (step 4), persist selected pet and navigate to welcome step
     if (this.step === 4) {
-      console.log('Current swiper ref:', this.swiperRef);
       const swiperInstance = this.swiperRef?.nativeElement?.swiper;
-      console.log('Swiper instance:', swiperInstance);
 
       let selectedPetName;
       if (swiperInstance) {
         const currentIndex = swiperInstance.realIndex;
-        console.log('Current swiper index:', currentIndex);
         selectedPetName = this.pets[currentIndex]?.name;
-        console.log('Selected pet from swiper:', selectedPetName);
       } else {
-        console.log('No swiper instance, using currentImage:', this.currentImage);
         selectedPetName = this.currentImage?.name;
       }
 
       // If still no pet name, check session storage
       if (!selectedPetName) {
         selectedPetName = sessionStorage.getItem('signup_pet');
-        console.log('Pet name from session:', selectedPetName);
       }
 
       // Last resort: use first pet
       if (!selectedPetName && this.pets.length > 0) {
         selectedPetName = this.pets[0].name;
-        console.log('Using default pet:', selectedPetName);
-      }
+        }
 
       if (selectedPetName) {
-        console.log('Final pet name for registration:', selectedPetName);
         sessionStorage.setItem('signup_pet', selectedPetName);
       }
 
@@ -597,35 +584,26 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   onSubmit() {
     if (this.signupForm.valid) {
-      console.log(this.signupForm.value);
     }
   }
 
   onSlideChange() {
-    console.log('Slide change event fired');
     if (!this.swiperRef?.nativeElement) {
-      console.log('No swiper reference available');
       return;
     }
 
     const swiperInstance = this.swiperRef.nativeElement.swiper;
     if (swiperInstance) {
       const currentIndex = swiperInstance.realIndex;
-      console.log('Swiper current index:', currentIndex);
 
       this.currentImage = this.pets[currentIndex];
-      console.log('Current image updated to:', this.currentImage);
 
       // Store the selected pet name
       if (this.pets[currentIndex]) {
         const petName = this.pets[currentIndex].name;
         sessionStorage.setItem('signup_pet', petName);
-        console.log('Pet name stored in session:', petName);
-      } else {
-        console.log('No pet found at index:', currentIndex);
       }
     } else {
-      console.log('No swiper instance available');
     }
   } openBirthdayPickerNow() {
     // explicitly open the birthday picker only when user clicks the input
@@ -817,37 +795,35 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // Only allow numeric input
     const numericValue = inputValue.replace(/[^0-9]/g, '');
 
-    // Clear the input immediately to prevent interference
-    inputElement.value = '';
-
-    if (numericValue.length > 0) {
-      // Take only the first digit and put it ONLY in current input
-      const digit = numericValue.charAt(0);
-      this.otpDigits[index] = digit;
-      inputElement.value = digit; // Set value only to current input
-
-      // Auto-advance to next input (move cursor only, don't copy value)
-      // Only move if:
-      // 1. User manually typed (not auto-fill)
-      // 2. Value actually changed
-      // 3. Not the last input
-      if (this.isFromUserInput &&
-        previousValue !== digit &&
-        index < this.otpDigits.length - 1) {
-
-        setTimeout(() => {
-          const nextInput = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
-          if (nextInput) {
-            nextInput.focus(); // Just move cursor, value will be empty
-            // Ensure next input is empty
-            nextInput.value = this.otpDigits[index + 1] || '';
-          }
-        }, 10);
-      }
-    } else {
-      // Handle deletion
+    // If input is being cleared (empty or only non-numeric), handle deletion
+    if (!numericValue || numericValue.length === 0) {
       this.otpDigits[index] = '';
       inputElement.value = '';
+      return;
+    }
+
+    // Take only the first digit and put it ONLY in current input
+    const digit = numericValue.charAt(0);
+    this.otpDigits[index] = digit;
+    inputElement.value = digit; // Set value only to current input
+
+    // Auto-advance to next input (move cursor only, don't copy value)
+    // Only move if:
+    // 1. User manually typed (not auto-fill)
+    // 2. Value actually changed
+    // 3. Not the last input
+    if (this.isFromUserInput &&
+      previousValue !== digit &&
+      index < this.otpDigits.length - 1) {
+
+      setTimeout(() => {
+        const nextInput = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
+        if (nextInput) {
+          nextInput.focus(); // Just move cursor, value will be empty
+          // Ensure next input is empty
+          nextInput.value = this.otpDigits[index + 1] || '';
+        }
+      }, 10);
     }
 
     // Reset the flag after processing
@@ -864,18 +840,49 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (event.key === 'Backspace') {
       event.preventDefault();
 
-      // If current input has value, clear it
-      if (this.otpDigits[index]) {
+      const currentInput = event.target as HTMLInputElement;
+      // Check both array value and input element value to handle sync issues
+      const arrayValue = this.otpDigits[index];
+      const inputValue = currentInput.value.trim();
+      const hasValue = arrayValue || inputValue;
+
+
+      // If current input has value, clear it and immediately move to previous field for continuous deletion
+      if (hasValue) {
         this.otpDigits[index] = '';
-        (event.target as HTMLInputElement).value = '';
+        currentInput.value = '';
+        
+        // Immediately move to previous field if it exists (enables continuous deletion when holding backspace)
+        if (index > 0) {
+          const prevInput = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
+          if (prevInput) {
+            // Use setTimeout to ensure the value is cleared before focusing
+            setTimeout(() => {
+              prevInput.focus();
+            }, 0);
+          }
+        }
       } else if (index > 0) {
         // If current input is empty, move to previous input and clear it
         const prevInput = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
         if (prevInput) {
-          this.otpDigits[index - 1] = '';
-          prevInput.value = '';
-          prevInput.focus();
+          const prevHasValue = this.otpDigits[index - 1] || prevInput.value.trim();
+          if (prevHasValue) {
+            this.otpDigits[index - 1] = '';
+            prevInput.value = '';
+            // Use setTimeout to ensure the value is cleared before focusing
+            setTimeout(() => {
+              prevInput.focus();
+            }, 0);
+          } else {
+            // Previous field is also empty, move focus but don't clear
+            setTimeout(() => {
+              prevInput.focus();
+            }, 0);
+          }
         }
+      } else {
+        console.log(`[OTP Backspace] Already on first field (${index}), nothing to clear`);
       }
     }
 
@@ -946,8 +953,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     const otp = this.otpDigits.join('');
-    console.log('Verifying OTP:', otp);
-
+    
     // Get saved values from session storage if available
     const savedLoginMode = sessionStorage.getItem('loginMode') as 'email' | 'phone' || this.loginMode;
     const identifier = this.requestedIdentifier || (savedLoginMode === 'phone' ? this.phone?.value : this.email?.value);
@@ -1082,7 +1088,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   proceedWithPassword(): void {
     if (this.passwordForm.valid) {
-      console.log('Password created:', this.password?.value);
       // persist password in session
       try { sessionStorage.setItem('signup_password', this.password?.value || ''); } catch (e) { }
 
@@ -1137,7 +1142,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // Include selected pet name if available (from session or current selection)
     try {
-      console.log('=== Pet Selection Debug ===');
 
       // Try to get current swiper selection first
       let petName;
@@ -1145,40 +1149,33 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       if (swiperInstance) {
         const currentIndex = swiperInstance.realIndex;
         petName = this.pets[currentIndex]?.name;
-        console.log('Pet from current swiper position:', petName);
       }
 
       // If no pet from swiper, try session storage
       if (!petName) {
         petName = sessionStorage.getItem('signup_pet');
-        console.log('Pet from session storage:', petName);
       }
 
       // If still no pet, try current image
       if (!petName && this.currentImage) {
         petName = this.currentImage.name;
-        console.log('Pet from currentImage:', petName);
       }
 
       // Last resort: use first pet
       if (!petName && this.pets.length > 0) {
         petName = this.pets[0].name;
-        console.log('Using default pet:', petName);
       }
 
       if (petName) {
         payload.petName = petName;
-        console.log('Final pet name for payload:', petName);
       }
 
-      console.log('=== End Pet Selection Debug ===');
     } catch (e) {
       console.error('Error setting pet name:', e);
       // If all else fails, don't set a pet name
     }    // Call register API
     this.authService.register(payload).subscribe({
       next: (resp) => {
-        console.log('Registration success:', resp);
 
         // Save user profile to UserService
         this.userService.setUserProfile({
@@ -1226,7 +1223,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         }
       },
       error: (err) => {
-        console.error('Registration failed:', err);
         const serverMsg = err?.error.error || 'Registration failed';
         this.errorMessage = typeof serverMsg === 'string' ? serverMsg : 'Registration failed. Please try again.';
       }
