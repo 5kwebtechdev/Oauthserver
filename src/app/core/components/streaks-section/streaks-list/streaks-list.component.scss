@@ -1,11 +1,11 @@
 // Visual styles to match the provided screenshots
 .streaks-card {
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
   padding: 10px 8px;
   max-width: 420px;
   margin: 0 auto;
+  border-radius: 8px;
+  background: #FDFDFD;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
 }
 
 .streaks-list {
@@ -19,7 +19,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 12px;
-  border-bottom: 1px solid rgba(0,0,0,0.04);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .left {
@@ -32,13 +32,13 @@
   text-align: center;
   font-weight: 700;
   color: #4a4a4a;
-  margin-right: 8px;
+  // margin-right: 8px;
   font-size: 18px;
 }
 
 .trend {
   width: 14px;
-  margin-right: 8px;
+  // margin-right: 8px;
 }
 
 .triangle {
@@ -50,20 +50,23 @@
 }
 
 .triangle.up {
-  border-bottom: 10px solid #33a853; /* green */
+  border-bottom: 10px solid #33a853;
+  /* green */
 }
 
 .triangle.down {
-  border-top: 10px solid #d23f3f; /* red */
+  border-top: 10px solid #d23f3f;
+  /* red */
 }
 
 .avatar-wrap {
   width: 44px;
   height: 44px;
-  margin-right: 12px;
+  margin-right: 8px;
   border-radius: 50%;
   padding: 3px;
-  box-shadow: 0 0 0 4px rgba(255, 200, 80, 0.12); /* decorative ring */
+  box-shadow: 0 0 0 4px rgba(255, 200, 80, 0.12);
+  /* decorative ring */
 }
 
 .avatar {
@@ -92,8 +95,22 @@
 }
 
 @media (max-width: 420px) {
-  .streaks-card { padding: 6px; }
-  .streak-item { padding: 10px 8px; }
-  .name, .days, .rank { font-size: 16px; }
-  .avatar-wrap { width: 40px; height: 40px; }
+  .streaks-card {
+    padding: 6px;
+  }
+
+  .streak-item {
+    padding: 10px 8px;
+  }
+
+  .name,
+  .days,
+  .rank {
+    font-size: 16px;
+  }
+
+  .avatar-wrap {
+    width: 40px;
+    height: 40px;
+  }
 }

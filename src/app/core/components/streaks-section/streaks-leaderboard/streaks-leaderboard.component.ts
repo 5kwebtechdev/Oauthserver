@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StreaksListComponent, StreakItem } from '../streaks-list/streaks-list.component';
+import { StreaksService } from '../../../services/streaks.service';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { IonicModule } from '@ionic/angular';
 import { MindfulSpeechBubbleComponent } from '../../mindful-speech-bubble/mindful-speech-bubble.component';
@@ -9,26 +10,26 @@ import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
 @Component({
   selector: 'app-streaks-leaderboard',
   templateUrl: './streaks-leaderboard.component.html',
-  styleUrls: ['./streaks-leaderboard.component.scss']
-  ,
+  styleUrls: ['./streaks-leaderboard.component.scss'],
   standalone: true,
   imports: [CommonModule, IonicModule, StreaksListComponent, MindfulNavigatorComponent, MindfulSpeechBubbleComponent, MindfulPetComponent]
 })
-export class StreaksLeaderboardComponent {
+export class StreaksLeaderboardComponent implements OnInit {
   @Input() title: string = 'Top Streakers';
   @Input() showRankBanner: boolean = true;
+  streaks: StreakItem[] = [];
 
-  // sample data — use the StreakItem shape so binding is type-safe
-  @Input() streaks: StreakItem[] = [
-    { rank: 1, name: 'Penguin', days: 105, avatar: 'assets/app-assets/Child Avatar.png', change: 'up' },
-    { rank: 2, name: 'Lion', days: 100, avatar: 'assets/app-assets/Child Avatar.png', change: 'up' },
-    { rank: 3, name: 'Fox', days: 90, avatar: 'assets/app-assets/Child Avatar.png', change: 'down' },
-    { rank: 4, name: 'Koala', days: 85, avatar: 'assets/app-assets/Child Avatar.png' },
-    { rank: 5, name: 'Giraffe', days: 80, avatar: 'assets/app-assets/Child Avatar.png' }
-  ];
+  constructor(private streaksService: StreaksService) { }
 
-  // minor helper
-  getDaysLabel(days:number){
-    return `${days} days`;
+  ngOnInit(): void {
+    this.streaksService.getLeaderboard().subscribe({
+      next: (data: StreakItem[]) => {
+        this.streaks = data;
+      },
+      error: (err: any) => {
+        // Optionally handle error, fallback to empty or show message
+        this.streaks = [];
+      }
+    });
   }
 }
