@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { MindfulInputsModule } from '../mindful-inputs/mindful-inputs.module';
@@ -6,6 +6,7 @@ import { Badge, RecentAchievement } from './badge-section.interface';
 import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { MindfulPopupComponent, MindfulPopupConfig } from '../mindful-popup/mindful-popup.component';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
+import { BadgeApi } from '../../api/badge.api';
 
 @Component({
     selector: 'app-badge-section',
@@ -14,7 +15,7 @@ import { MindfulButtonComponent } from '../mindful-button/mindful-button.compone
     standalone: true,
     imports: [CommonModule, IonicModule, MindfulInputsModule, MindfulCardHeaderComponent, MindfulPopupComponent, MindfulButtonComponent]
 })
-export class BadgeSectionComponent {
+export class BadgeSectionComponent implements OnInit {
     recentAchievement: RecentAchievement = {
         id: '1',
         badgeName: 'Streak Keeper',
@@ -23,138 +24,80 @@ export class BadgeSectionComponent {
         iconUrl: 'assets/Icons-Neutral/Icon-Badge-StreakKeeper.png'
     };
 
-    badges: Badge[] = [
-        {
-            id: '1',
-            name: 'Coin Collector',
-            description: '100 more coins to earn this badge',
-            iconUrl: 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png',
-            currentProgress: 400,
-            targetProgress: 500,
-            isLocked: false,
-            progressColor: '#4CAF50'
-        },
-        {
-            id: '2',
-            name: 'Quiz Ace',
-            description: '2 more quiz to earn this badge',
-            iconUrl: 'assets/Icons-Neutral/Icon-Badge-QuizAce.png',
-            currentProgress: 8,
-            targetProgress: 10,
-            isLocked: false,
-            progressColor: '#4CAF50'
-        },
-        {
-            id: '3',
-            name: 'Pet Collector',
-            description: 'Collect 3 more pets to earn this badge',
-            iconUrl: 'assets/Icons-Neutral/Icon-Badge-PetCollector.png',
-            currentProgress: 2,
-            targetProgress: 3,
-            isLocked: false,
-            progressColor: '#FF9800'
-        },
-        {
-            id: '4',
-            name: 'Content Creator',
-            description: '1 more reel to earn this badge',
-            iconUrl: 'assets/Icons-Neutral/Icon-Badge-ContentCreator.png',
-            currentProgress: 4,
-            targetProgress: 5,
-            isLocked: false,
-            progressColor: '#FF9800'
-        },
-        {
-            id: '5',
-            name: 'Knowledge Seeker',
-            description: '10 more articles to earn this badge',
-            iconUrl: 'assets/Icons-Neutral/Icon-Badge-KnowledgeSeeker.png',
-            currentProgress: 15,
-            targetProgress: 25,
-            isLocked: false,
-            progressColor: '#FF9800'
-        },
-        {
-            id: '6',
-            name: 'Habit Master',
-            description: '20 more habits to earn this badge',
-            iconUrl: 'assets/Icons-Neutral/Icon-Badge-HabitMaster.png',
-            currentProgress: 80,
-            targetProgress: 100,
-            isLocked: false,
-            progressColor: '#E91E63'
-        },
-        {
-            id: '7',
-            name: 'Daily Champion',
-            description: '3 more days to earn this badge',
-            iconUrl: 'assets/Icons-Neutral/Icon-Badge-DailyChampion.png',
-            currentProgress: 2,
-            targetProgress: 5,
-            isLocked: false,
-            progressColor: '#FF9800'
-        },
-        {
-            id: '8',
-            name: 'Feature Explorer',
-            description: '6 more features to be explored to earn this badge',
-            iconUrl: 'assets/Icons-Neutral/Icon-Badge-FeatureExploerer.png',
-            currentProgress: 4,
-            targetProgress: 10,
-            isLocked: false,
-            progressColor: '#2196F3'
-        },
-        {
-            id: '9',
-            name: 'Puzzle Master',
-            description: '8 more puzzles to earn this badge',
-            iconUrl: 'assets/Icons-Neutral/Icon-Badge-PuzzleMaster.png',
-            currentProgress: 10,
-            targetProgress: 80,
-            isLocked: false,
-            progressColor: '#FF9800'
-        },
-        {
-            id: '10',
-            name: 'Pet Stylist',
-            description: '12 more pet styles to earn this badge',
-            iconUrl: 'assets/Icons-Neutral/Icon-Badge-PetStylist.png',
-            currentProgress: 2,
-            targetProgress: 14,
-            isLocked: false,
-            progressColor: '#FF9800'
-        },
-        {
-            id: '11',
-            name: 'Task Terminator',
-            description: '14 more tasks to earn this badge',
-            iconUrl: 'assets/Icons-Neutral/Icon-Badges-TaskTerminator.png',
-            currentProgress: 16,
-            targetProgress: 30,
-            isLocked: false,
-            progressColor: '#E91E63'
-        },
-        {
-            id: '12',
-            name: 'Learning Enthusiast',
-            description: '12 more courses to earn this badge',
-            iconUrl: 'assets/Icons-Neutral/Icon-Badge-LearningEnthusiast.png',
-            currentProgress: 2,
-            targetProgress: 14,
-            isLocked: false,
-            progressColor: '#9C27B0'
-        },
-        {
-            id: '13',
-            name: 'Social Star',
-            description: '90 more social interactions to earn this badge',
-            iconUrl: 'assets/Icons-Neutral/Icon-Badge-SocialStar.png',
-            currentProgress: 10,
-            targetProgress: 100,
-            isLocked: false,
-            progressColor: '#9C27B0'
-        }
-    ];
+    badges: Badge[] = [];
+
+    constructor(private badgeApi: BadgeApi) {}
+
+    ngOnInit(): void {
+        this.loadBadges();
+    }
+
+    /**
+     * Maps badge title to the original icon path
+     */
+    private getBadgeIcon(title: string): string {
+        const iconMap: { [key: string]: string } = {
+            'Coin Collector': 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png',
+            'Quiz Ace': 'assets/Icons-Neutral/Icon-Badge-QuizAce.png',
+            'Pet Collector': 'assets/Icons-Neutral/Icon-Badge-PetCollector.png',
+            'Content Creator': 'assets/Icons-Neutral/Icon-Badge-ContentCreator.png',
+            'Knowledge Seeker': 'assets/Icons-Neutral/Icon-Badge-KnowledgeSeeker.png',
+            'Habit Master': 'assets/Icons-Neutral/Icon-Badge-HabitMaster.png',
+            'Daily Champion': 'assets/Icons-Neutral/Icon-Badge-DailyChampion.png',
+            'Feature Explorer': 'assets/Icons-Neutral/Icon-Badge-FeatureExploerer.png',
+            'Puzzle Master': 'assets/Icons-Neutral/Icon-Badge-PuzzleMaster.png',
+            'Pet Stylist': 'assets/Icons-Neutral/Icon-Badge-PetStylist.png',
+            'Task Terminator': 'assets/Icons-Neutral/Icon-Badges-TaskTerminator.png',
+            'Learning Enthusiast': 'assets/Icons-Neutral/Icon-Badge-LearningEnthusiast.png',
+            'Social Star': 'assets/Icons-Neutral/Icon-Badge-SocialStar.png'
+        };
+        return iconMap[title] || 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png'; // Default fallback
+    }
+
+    loadBadges(): void {
+        this.badgeApi.getBadgeProgress().subscribe({
+            next: (response: any) => {
+                // Handle array response
+                const badgeData = Array.isArray(response) ? response : (response.data || []);
+                
+                // Map API response to Badge interface
+                this.badges = badgeData.map((item: any, index: number) => {
+                    const completionPercentage = item.target > 0 
+                        ? Math.round((item.progress / item.target) * 100) 
+                        : 0;
+                    
+                    // Determine progress color based on completion percentage
+                    let progressColor = '#4CAF50'; // Default green
+                    if (completionPercentage >= 100) {
+                        progressColor = '#4CAF50'; // Green for completed
+                    } else if (completionPercentage >= 50) {
+                        progressColor = '#FF9800'; // Orange for halfway
+                    } else if (completionPercentage > 0) {
+                        progressColor = '#2196F3'; // Blue for started
+                    } else {
+                        progressColor = '#9E9E9E'; // Gray for not started
+                    }
+
+                    const badgeTitle = item.title || '';
+                    return {
+                        id: String(index + 1),
+                        name: badgeTitle,
+                        description: item.description || '',
+                        iconUrl: this.getBadgeIcon(badgeTitle), // Use original icon mapping
+                        currentProgress: item.progress || 0,
+                        targetProgress: item.target || 0,
+                        isLocked: !item.earned, // If not earned, it's locked
+                        progressColor: progressColor
+                    };
+                });
+            },
+            error: (error) => {
+                console.error('Error loading badges:', error);
+                // Keep empty array or show error message
+                this.badges = [];
+            }
+        });
+    }
 
     getCompletionPercentage(badge: Badge): number {
         if (badge.isLocked || badge.targetProgress === 0) {
