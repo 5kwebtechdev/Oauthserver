@@ -1019,7 +1019,7 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .otp-subtitle {
-  font-weight: 400;
+  font-weight: 600;
   font-size: 16px;
   color: #772817;
   margin: 0 0 1rem 0;
@@ -1056,10 +1056,11 @@ swiper-slide.swiper-slide-active .pet-card {
 
 .otp-timer {
   display: flex;
-  font-weight: 400;
-  font-size: 14px;
+  font-weight: 600;
+  font-size: 13px;
   color: #EE6621;
   align-self: flex-end;
+  width: 51px;
 }
 
 .otp-digit {
@@ -1069,8 +1070,8 @@ swiper-slide.swiper-slide-active .pet-card {
   border-radius: 12px;
   background: #fdead7;
   font-weight: 600;
-  font-size: 24px;
-  color: #772817;
+  font-size: 32px;
+  color: #000;
   text-align: center;
   transition: all 0.2s ease;
   outline: none;
@@ -1125,7 +1126,7 @@ swiper-slide.swiper-slide-active .pet-card {
   }
 
   .otp-subtitle {
-    font-size: 14px;
+    font-size: 16px;
     text-align: left;
   }
 
@@ -1141,7 +1142,7 @@ swiper-slide.swiper-slide-active .pet-card {
   .otp-digit {
     width: 50px;
     height: 50px;
-    font-size: 20px;
+    font-size: 32px;
   }
 }
 
@@ -1153,7 +1154,7 @@ swiper-slide.swiper-slide-active .pet-card {
   .otp-digit {
     width: 45px;
     height: 45px;
-    font-size: 18px;
+    font-size: 32px;
   }
 }
 
