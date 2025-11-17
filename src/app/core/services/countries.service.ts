@@ -51,7 +51,24 @@ export class CountriesService {
    * Load countries from local JSON file
    */
   private loadFromJson(): Observable<Country[]> {
-    return this.http.get<Country[]>('/assets/data/countries.json').pipe(
+    interface JsonCountry {
+      name: string;
+      flag: string;
+      code: string; // ISO code
+      dial_code: string; // Phone code
+    }
+
+    return this.http.get<JsonCountry[]>('/assets/data/countries.json').pipe(
+      map((jsonCountries: JsonCountry[]) => {
+        // Transform JSON data to Country interface and add phoneLength
+        return jsonCountries.map(jsonCountry => ({
+          name: jsonCountry.name,
+          code: jsonCountry.dial_code, // dial_code becomes code
+          flag: jsonCountry.flag,
+          phoneLength: this.getPhoneLength(jsonCountry.code), // Use ISO code to get phone length
+          iso: jsonCountry.code // code becomes iso
+        })).sort((a, b) => a.name.localeCompare(b.name));
+      }),
       catchError(error => {
         console.error('Error loading countries from JSON:', error);
         return of(this.fallbackCountries);
@@ -143,13 +160,30 @@ export class CountriesService {
   }
 
   /**
-   * Get phone length for country (you can expand this)
+   * Get phone length for country
    */
   private getPhoneLength(countryCode: string): number {
     const phoneLengths: { [key: string]: number } = {
-      'US': 10, 'CA': 10, 'GB': 10, 'IN': 10, 'AU': 9,
-      'DE': 11, 'FR': 10, 'JP': 10, 'CN': 11, 'BR': 11,
-      // Add more as needed
+      // North America
+      'US': 10, 'CA': 10, 'MX': 10,
+      // Europe
+      'GB': 10, 'DE': 11, 'FR': 10, 'IT': 10, 'ES': 9, 'NL': 9, 'BE': 9,
+      'CH': 9, 'AT': 10, 'SE': 9, 'NO': 8, 'DK': 8, 'FI': 9, 'PL': 9,
+      'PT': 9, 'GR': 10, 'IE': 9, 'CZ': 9, 'HU': 9, 'RO': 10, 'BG': 9,
+      // Asia
+      'IN': 10, 'CN': 11, 'JP': 10, 'KR': 10, 'SG': 8, 'MY': 9, 'TH': 9,
+      'PH': 10, 'ID': 9, 'VN': 10, 'BD': 10, 'PK': 10, 'TR': 10, 'SA': 9,
+      'AE': 9, 'IL': 9, 'HK': 8, 'TW': 9,
+      // Oceania
+      'AU': 9, 'NZ': 9,
+      // South America
+      'BR': 11, 'AR': 10, 'CL': 9, 'CO': 10, 'PE': 9, 'VE': 10,
+      // Africa
+      'ZA': 9, 'EG': 10, 'NG': 10, 'KE': 9, 'GH': 9,
+      // Middle East
+      'IR': 10, 'IQ': 10, 'KW': 8, 'QA': 8, 'OM': 8, 'BH': 8, 'JO': 9,
+      // Other
+      'RU': 10, 'UA': 9, 'KZ': 10
     };
     return phoneLengths[countryCode] || 10; // Default to 10
   }
