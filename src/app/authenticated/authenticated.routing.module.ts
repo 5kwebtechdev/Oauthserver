@@ -108,7 +108,7 @@ const routes: Routes = [
         loadComponent: () => import('../core/components/habit-section/calendar-main/calendar-main.component').then(m => m.CalendarMainComponent)
       }, {
         path: 'coin',
-        loadComponent: () => import('../core/components/coin-section/coin-page/coin-page.component').then(m => m.CoinPageComponent)
+        loadComponent: () => import('../core/components/coin-section/coin-section.component').then(m => m.CoinSectionComponent)
       }, {
         path: 'journal-input',
         loadComponent: () => import('../core/components/journals/journal-input/journal-input.component').then(m => m.JournalInputComponent)
@@ -129,7 +129,7 @@ const routes: Routes = [
         loadComponent: () => import('../core/components/reel-section/bookmark-reels/bookmark-reels.component').then(m => m.BookmarkReelsComponent)
       }, {
         path: 'streaks',
-        loadComponent: () => import('../core/components/streaks-section/streaks-leaderboard/streaks-leaderboard.component').then(m => m.StreaksLeaderboardComponent)
+        loadComponent: () => import('../core/components/streaks-section/streaks-section.component').then(m => m.StreaksSectionComponent)
       }, {
         path: 'reel-expand',
         loadComponent: () => import('../core/components/reel-section/reel-expand/reels-expand.component').then(m => m.ReelsExpandComponent)
@@ -147,7 +147,7 @@ const routes: Routes = [
         loadComponent: () => import('../core/components/academy-section/academy-course/academy-course.component').then(m => m.AcademyCourseComponent)
       }, {
         path: 'trophies',
-        loadComponent: () => import('../core/components/trophy-section/trophy-page/trophy-page.component').then(m => m.TrophyPageComponent)
+        loadComponent: () => import('../core/components/trophy-section/trophy-page.component').then(m => m.TrophyPageComponent)
       }, {
         path: 'badges',
         loadComponent: () => import('../core/components/badge-section/badge-section.component').then(m => m.BadgeSectionComponent)

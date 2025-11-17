@@ -20,7 +20,7 @@ import { UserService } from '../../services/user.service';
 })
 export class UserProfileComponent implements OnChanges {
   @Input() user: any = {};
-  
+
   // Local user avatar URL
   userAvatarUrl: string = '/assets/app-assets/Default-avatar-home.svg';
 
@@ -36,6 +36,25 @@ export class UserProfileComponent implements OnChanges {
   // popup state for confirming logout
   showLogoutPopup: boolean = false;
 
+  // avatar picker popup state
+  showAvatarPicker: boolean = false;
+
+  // Avatars (reuse same assets as signup)
+  public avatars = [
+    { key: 1, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png' },
+    { key: 2, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female2.png' },
+    { key: 3, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female3.png' },
+    { key: 4, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female4.png' },
+    { key: 5, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female5.png' },
+    { key: 6, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female6.png' },
+    { key: 7, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png' },
+    { key: 8, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male2.png' },
+    { key: 9, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male3.png' },
+    { key: 10, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male4.png' },
+    { key: 11, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male5.png' },
+    { key: 12, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male6.png' },
+  ];
+
   constructor(
     private router: Router,
     private modalCtrl: ModalController,
@@ -46,13 +65,19 @@ export class UserProfileComponent implements OnChanges {
     this.userService.getUserProfile$().subscribe(profile => {
       if (profile) {
         this.userAvatarUrl = this.userService.getUserAvatarUrl();
-        // Update user object if not provided via Input
+        // Merge service-provided avatar into local `user` object.
+        // If `user` wasn't provided as an Input, create it from the profile.
         if (!this.user || Object.keys(this.user).length === 0) {
           this.user = {
             name: profile.name,
             age: profile.age,
             avatarUrl: this.userAvatarUrl
           };
+        } else {
+          // If the consumer did not supply an avatarUrl (or it's empty), populate it
+          if (!this.user.avatarUrl || this.user.avatarUrl === '') {
+            this.user = { ...this.user, avatarUrl: this.userAvatarUrl };
+          }
         }
       }
     });
@@ -121,6 +146,10 @@ export class UserProfileComponent implements OnChanges {
     this.router.navigate(['/authed/delete-account']).catch(() => { });
   }
 
+  onBack() {
+    this.router.navigate(['/authed/user-dashboard']).catch(() => { });
+  }
+
   onLogout() {
     this.logout.emit();
   }
@@ -149,6 +178,40 @@ export class UserProfileComponent implements OnChanges {
 
   closeLogoutPopup() {
     this.showLogoutPopup = false;
+  }
+
+  /** Avatar picker methods */
+  openAvatarPicker(event?: Event) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    this.showAvatarPicker = true;
+  }
+
+  closeAvatarPicker() {
+    this.showAvatarPicker = false;
+  }
+
+  get avatarsToShow() {
+    const gender = (this.user && this.user.gender) ? this.user.gender : 'male';
+    return this.avatars.filter(a => a.gender === gender).slice(0, 6);
+  }
+
+  selectAvatar(avatar: any) {
+    if (!avatar) return;
+    // Update local view
+    if (!this.user) this.user = {};
+    this.user.avatarUrl = avatar.value;
+
+    // Persist using UserService so other parts of app update
+    try {
+      this.userService.updateUserAvatar(avatar.value, `avatar${avatar.key}`);
+    } catch (e) {
+      console.error('Failed to update avatar in UserService', e);
+    }
+
+    this.closeAvatarPicker();
   }
 
   ngOnChanges(changes: SimpleChanges) {

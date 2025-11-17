@@ -1,8 +1,6 @@
 .mb-loader-overlay {
-    /* full-screen, centered overlay */
     position: fixed;
     inset: 0;
-    /* top:0; right:0; bottom:0; left:0; */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -16,25 +14,28 @@
 
 .mb-loader {
     position: relative;
-    display: block;
-    left: 10%;
-
+    display: inline-block;
+    margin: 0 auto;
+    width: var(--mb-loader-size, 88px);
+    height: var(--mb-loader-size, 88px);
+    min-width: 44px;
+    min-height: 44px;
 }
 
 .mb-dot-wrap {
     position: absolute;
-    width: 50%;
-    height: 50%;
-    top: 0;
-    left: 0;
-    transform: rotate(45deg);
+    top: 50%;
+    left: 50%;
+    width: 80%;
+    height: 80%;
+    transform: translate(-50%, -50%) rotate(45deg);
     transform-origin: center;
 }
 
 .mb-dot {
     width: 60%;
     height: 60%;
-    border-radius: 15px;
+    border-radius: 10px;
     position: absolute;
     top: 0;
     left: 0;
@@ -44,7 +45,6 @@
 
 .mb-dot--yellow {
     background-color: #fac681;
-    /* peach/orange */
     animation-delay: 0s;
 }
 

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
+import { MindfulSpeechBubbleComponent } from '../../mindful-speech-bubble/mindful-speech-bubble.component';
 import { TutorListComponent, Tutor } from '../tutor-list/tutor-list.component';
 import { TutorAllFilterComponent } from '../tutor-all-filter/tutor-all-filter.component';
 import { TutorViewAllScreenComponent } from '../Tutor-View-all-Screen/tutor-view-all-screen.component';
@@ -13,7 +14,7 @@ import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.compone
 @Component({
   selector: 'tutor-homepage',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulButtonComponent, TutorListComponent, MindfulPetComponent, TutorViewAllScreenComponent, TutorAllFilterComponent, FooterComponent, MindfulPopupComponent],
+  imports: [CommonModule, IonicModule, MindfulButtonComponent, TutorListComponent, MindfulPetComponent, MindfulSpeechBubbleComponent, TutorViewAllScreenComponent, TutorAllFilterComponent, FooterComponent, MindfulPopupComponent],
   templateUrl: './tutor-homepage.component.html',
   styleUrls: ['./tutor-homepage.component.scss']
 })

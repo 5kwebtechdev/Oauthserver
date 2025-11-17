@@ -1,30 +1,20 @@
 /* Cleaned, responsive styles for the Tutor Homepage component */
 .tutor-homepage {
-  /* Fluid layout up to design width */
-  width: 393px;
   margin: 0 auto;
   min-height: 100vh;
-  /* ensures there's space for scrolling */
   --section-gap: 20px;
-  /* use auto for natural scrollbars and ensure content isn't covered by the fixed footer */
   overflow: auto;
-  /* safe bottom spacing to clear the fixed footer (footer height 80px + small gap) */
   padding-bottom: 96px;
-  /* if device has a safe-area inset (iOS), include it too */
   padding-bottom: calc(96px + env(safe-area-inset-bottom));
 }
 
 .tutor-header {
-  width: 393px;
   height: 254px;
-  /* requested fixed height */
   flex-shrink: 0;
-  /* prefer the provided JPG background; keep the SVG as a fallback in comments */
   background-image: url('/assets/Images-Thumbnails/Imgae-Tutor-TopBg.jpg');
   background-repeat: no-repeat;
   background-position: center center;
   background-size: cover;
-  /* fallback (previous): background: url('/assets/app-assets/tutor-home-header.svg') no-repeat center center/cover; */
   padding: 16px;
   box-sizing: border-box;
   position: relative;
@@ -35,7 +25,6 @@
 /* Top heading & button */
 .header-top {
   display: flex;
-  width: 361px;
   justify-content: space-between;
   align-items: center;
 }
@@ -130,33 +119,7 @@
   cursor: pointer;
 }
 
-/* Panda Message */
-.panda-box {
-  /* position inside the .tutor-header container */
-  position: absolute;
-  right: 15px;
-  /* 15px gap from the right */
-  bottom: 15px;
-  /* 15px gap from the bottom */
-  display: flex;
-  align-items: flex-end;
-}
 
-.panda-img {
-  width: auto;
-  height: 70px;
-  /* slightly taller than the text bubble */
-  flex-shrink: 0;
-}
-
-.panda-text {
-  background: white;
-  padding: 4px;
-  border-radius: 10px;
-  font-size: 13px;
-  line-height: 1.3;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
 
 .controls-row {
   display: flex;
@@ -385,42 +348,14 @@
   float: right;
 }
 
-.view-all-container {
-  color: #90214D;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 140%;
-  /* 22.4px */
-  text-decoration-line: underline;
-  text-decoration-style: solid;
-  text-decoration-skip-ink: none;
-  text-decoration-thickness: auto;
-  text-underline-offset: auto;
-  text-underline-position: from-font;
-  display: flex;
-  justify-content: center;
-  margin: 20px 0;
-}
+
 
 /* Explicit button styling to inherit underline and typography while keeping clickable area */
 .view-all-btn {
-  background: transparent;
-  border: none;
-  color: inherit;
-  /* use container color */
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  line-height: inherit;
-  padding: 6px 8px;
-  cursor: pointer;
-  text-decoration: underline;
-  /* ensure it's underlined across browsers */
-  text-decoration-thickness: auto;
-}
+  color: #90214D;
+  font-family: Nunito;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
 
-.view-all-btn:focus {
-  outline: 2px solid rgba(144, 33, 77, 0.15);
-  outline-offset: 2px;
 }

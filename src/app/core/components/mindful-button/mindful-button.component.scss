@@ -298,6 +298,7 @@ p {
   /* Gold (redesigned) */
   display: inline-flex;
   height: 42px;
+  width: 100%;
   padding: 12px 16px;
   justify-content: center;
   align-items: center;
@@ -307,14 +308,20 @@ p {
   border: 1px solid #A25600;
   background: linear-gradient(99deg, #F2C452 1.32%, #D98F15 98.68%);
   box-shadow: 0 0 1px 0.5px rgba(241, 168, 70, 0.20), 0 -4px 6px 0 #F4D593 inset;
-  /* Text styles requested */
-  color: #FFF;
+  color: #6A3900;
   font-family: Nunito, sans-serif;
-  font-size: 13px;
+  font-size: 16px;
   font-style: normal;
   font-weight: 700;
   line-height: 140%;
-  --text_color: #FFF;
+  --text_color: #6A3900;
+}
+
+.gold p {
+  color: #6A3900;
+  font-family: Nunito, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 /* Hover / focus / active states for accessibility and tactile feedback */
