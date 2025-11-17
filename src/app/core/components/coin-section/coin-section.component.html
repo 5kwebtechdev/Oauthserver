@@ -1,0 +1,52 @@
+<ion-content>
+    <div class="coin-page">
+        <div class="coin-card">
+            <div class="header">
+                <p>Ready to Treat Yourself?</p>
+                <img src="assets/Icons-Neutral/Icon-Chatbot.png" alt="Robot" class="robot-icon">
+            </div>
+
+            <div class="coins">
+                <img src="\assets\Icons-Neutral\Icons-Coins.png" alt="Coin" class="coin-icon">
+                <span class="coin-value">{{ coinTotal || '0' }}</span>
+            </div>
+
+            <div class="panda-message d-flex space-between w-100">
+                <app-speech-bubble [message]="message" type="talking" arrowSide="right">
+                </app-speech-bubble>
+                <mindful-pet></mindful-pet>
+            </div>
+
+            <mindful-button text="Redeem" type="gold"></mindful-button>
+        </div>
+
+        <div class="coin-list-section">
+            <h2>Spent Smart, Spent Fun!</h2>
+            <ng-container *ngIf="coinItems.length === 0">
+                <div class="blank-container">
+                    <img src="/assets/Images-Transparent/Image-Home-Blank.png" alt="Home-blank" class="home-blank">
+                    <div class="blank-text">
+                        <h1>No transactions yet!</h1>
+                        <p>Your coins are ready to treat your pet with cool outfits and accessories.</p>
+                    </div>
+                </div>
+            </ng-container>
+
+            <div *ngFor="let item of coinItems" class="coin-list-item">
+                <div class="coin-detail">
+                    <img [src]="item.icon" alt="{{ item.label }} icon" class="item-icon">
+                    <div class="coin-label">
+                        <div class="item-title">{{ item.label }}</div>
+                        <div class="item-date">{{ item.date | date:'mediumDate' }}</div>
+                    </div>
+                </div>
+
+                <div class="coin-count">
+                    <img src="/assets/Icons-Neutral/Icons-Coins.png" alt="Coin" class="count-icon">
+                    <div class="count-value">{{ item.count }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</ion-content>
+<app-footer></app-footer>

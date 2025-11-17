@@ -13,9 +13,9 @@
                     <p class="achievement-title">Shine Bright!</p>
                     <p class="achievement-message">{{ recentAchievement.message }}</p>
                 </div>
-                <ion-button class="share-button" size="small" (click)="onShareClick()">
+                <button type="button" class="share-button" (click)="onShareClick()">
                     Share now
-                </ion-button>
+                </button>
                 <ion-button class="test-button" size="small" (click)="onTestClick()">
                     test now
                 </ion-button>
@@ -24,22 +24,20 @@
     </div>
 
     <!-- Badge Grid -->
-    <div class="badge-grid">
-        <div *ngFor="let badge of badges; let i = index" class="badge-card" [class.locked]="badge.isLocked">
+    <div class="badge-grid w-100">
+        <div *ngFor="let badge of badges; let i = index" class="badge-card w-100">
             <div class="badge-content">
                 <div class="badge-info">
-                    <p class="progress-text" [class.hidden]="badge.isLocked">
+                    <p class="progress-text">
                         {{ badge.currentProgress }}/{{ badge.targetProgress }}
                     </p>
                     <div class="badge-visual">
                         <div class="badge-icon-container">
-                            <img [src]="badge.iconUrl" [alt]="badge.name" class="badge-icon"
-                                [class.blurred]="badge.isLocked" />
+                            <img [src]="badge.iconUrl" [alt]="badge.name" class="badge-icon" />
                         </div>
                         <mindful-completion [completionPercentage]="getCompletionPercentage(badge)"
                             [borderColor]="badge.progressColor || '#4CAF50'" [innerText]="''"
                             [belowText]="''"></mindful-completion>
-                        <ion-icon *ngIf="badge.isLocked" name="lock-closed-outline" class="lock-icon"></ion-icon>
                     </div>
                 </div>
                 <p class="badge-name">{{ badge.name }}</p>

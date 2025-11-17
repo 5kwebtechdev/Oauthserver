@@ -28,6 +28,18 @@
   }
 }
 
+.footer-item.active {
+  opacity: 1;
+
+  svg path {
+    stroke: #90214D;
+  }
+
+  .footer-text {
+    color: #90214D;
+  }
+}
+
 .footer-text {
   color: #6B656A;
   font-family: Nunito;

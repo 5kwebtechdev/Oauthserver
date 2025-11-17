@@ -22,8 +22,7 @@ import { AddCalendarComponent } from "./add-calendar/add-calendar.component";
 import { MindfulNavigatorComponent } from "../core/components/mindful-navigator/mindful-navigator.component";
 import { UserProfileComponent } from "../core/components/user-profile/user-profile.component";
 import { SupermeTimerComponent } from '../core/components/superme-timer/superme-timer.component';
-import { StreaksLeaderboardComponent } from '../core/components/streaks-section/streaks-leaderboard/streaks-leaderboard.component';
-import { StreaksListComponent } from '../core/components/streaks-section/streaks-list/streaks-list.component';
+import { StreaksSectionComponent } from '../core/components/streaks-section/streaks-section.component';
 
 @NgModule({
   declarations: [
@@ -53,8 +52,7 @@ import { StreaksListComponent } from '../core/components/streaks-section/streaks
     MindfulInputsModule,
     MindfulSelectorsComponent,
     SupermeTimerComponent,
-    StreaksLeaderboardComponent,
-    StreaksListComponent,
+    StreaksSectionComponent,
     MindfulNavigatorComponent
   ]
 })

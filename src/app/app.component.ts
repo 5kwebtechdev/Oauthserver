@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError, Event } from '@angular/router';
 import { PetAgeService } from './core/services/pet-age.service';
+import { LoadingService } from './core/services/loading.service';
 
 @Component({
   selector: 'app-root',
@@ -11,10 +12,12 @@ import { PetAgeService } from './core/services/pet-age.service';
 })
 export class AppComponent implements OnInit {
   loading = false;
+  private _navToken?: string;
   constructor(
     private platform: Platform,
     private router: Router,
     private petAgeService: PetAgeService,
+    private loadingService: LoadingService,
   ) { }
 
   ngOnInit() {
@@ -26,13 +29,20 @@ export class AppComponent implements OnInit {
       window.history.back();
     })
 
-    // show loading on navigation
+    // show loading on navigation using LoadingService to centralize behaviour
     this.router.events.subscribe((event: Event) => {
       if (event instanceof NavigationStart) {
+        // start nav loader (returns token)
+        this._navToken = this.loadingService.show(undefined, { delayMs: 80, minVisibleMs: 120 });
         this.loading = true;
       }
       if (event instanceof NavigationEnd || event instanceof NavigationCancel || event instanceof NavigationError) {
-        // small delay to avoid flicker on super-fast navigations
+        // hide nav loader
+        if (this._navToken) {
+          this.loadingService.hide(this._navToken);
+          this._navToken = undefined;
+        }
+        // small delay to avoid flicker in UI (spinner overlay may remain for minVisible)
         setTimeout(() => this.loading = false, 80);
       }
     });

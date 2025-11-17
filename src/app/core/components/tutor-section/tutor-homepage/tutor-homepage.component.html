@@ -32,13 +32,11 @@
     </div>
 
     <!-- Panda Message -->
-    <div class="panda-box">
-
-      <p class="panda-text">
-        Sniffed out the best tutors just for you, <br>
-        ready to fetch your favorite?
-      </p>
-      <img src="/assets/app-assets/Panda Sitting Tired.svg" alt="Panda" class="panda-img">
+    <div class="panda-box d-flex">
+      <app-speech-bubble [message]="'Sniffed out the best tutors just for you, ready to fetch your favorite?'"
+        type="talking" arrowSide="right">
+      </app-speech-bubble>
+      <mindful-pet></mindful-pet>
     </div>
   </div>
   <!--Tutor filter and Sort Button-->
@@ -75,10 +73,9 @@
     <tutor-list [tutors]="tutors" (viewProfile)="onViewProfile($event)"></tutor-list>
   </div>
 
-  <!--view all button-->
-  <div class="view-all-container">
-    <button class="view-all-btn" (click)="viewAllTutors()">View All</button>
-  </div>
+
+  <a class="view-all-btn d-block text-center" (click)="viewAllTutors()">Expand</a>
+
 
   <!-- Refer a Tutor - use shared mindful popup -->
   <app-mindful-popup [isVisible]="isReferModalOpen" [config]="{
