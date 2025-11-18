@@ -294,6 +294,14 @@ h4 {
   // right: 10px;
 }
 
+/* Routine icon styling */
+.morning-sun {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 /* Task-specific badge styling (routine badge) */
 .habit-wrapper.task .badge {
   border-radius: 16px;

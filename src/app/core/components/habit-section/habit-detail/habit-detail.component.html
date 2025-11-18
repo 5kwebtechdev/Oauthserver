@@ -29,9 +29,8 @@
                 <span style="color:#6B656A;">Created on {{ habit.createdAt | date:'MMM d, y' }}</span>
             </div>
             <div class="habit-detail-focus d-flex  align-items-center gap-2">
-                <img class="routine-icon"
-                    [src]="'assets/Icons-Neutral/Icon-Routine-' + (habit.routine || 'Morning') + '.png'"
-                    alt="Routine Icon" />
+                <img class="routine-icon" [src]="getRoutineIcon()" [alt]="getRoutineName() + ' Routine Icon'" width="24"
+                    height="24" />
                 <mindful-badge *ngIf="habit?.tags?.[0]" type="habit-detail-orange" [text]="habit?.tags?.[0] || 'Focus'">
                 </mindful-badge>
             </div>

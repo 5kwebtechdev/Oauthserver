@@ -332,6 +332,29 @@ ion-content {
     width: 100%;
 }
 
+.badge-level-text {
+    font-family: $font-nunito;
+    font-weight: 600;
+    font-size: 13px;
+    color: $accent;
+    line-height: 1.4;
+    text-align: center;
+    margin: 2px 0 0;
+    width: 100%;
+    opacity: 0.8;
+}
+
+.badge-achievement {
+    font-family: $font-nunito;
+    font-weight: 500;
+    font-size: 12px;
+    color: $green;
+    line-height: 1.4;
+    text-align: center;
+    margin: 4px 0 0;
+    width: 100%;
+}
+
 .safe-area-bottom {
     background: $bg;
     height: 24px;
@@ -470,6 +493,14 @@ ion-content {
             font-size: 16px;
             font-weight: 600;
             margin: 0;
+        }
+
+        .level-info {
+            color: $accent;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.8;
+            margin-top: 8px;
         }
     }
 

@@ -53,7 +53,8 @@ export class MoodSelectorComponent {
     { src: '/assets/Images-Transparent/Image-Mood-Excited.png', label: 'Excited' },
     { src: '/assets/Images-Transparent/Image-Mood-Sad.png', label: 'Sad' },
     { src: '/assets/Images-Transparent/Image-Mood-Upset.png', label: 'Very sad' },
-    { src: '/assets/Images-Transparent/Image-Mood-Nervous.png', label: 'Neutral' }
+    { src: '/assets/Images-Transparent/Image-Mood-Nervous.png', label: 'Nervous' },
+    { src: '/assets/Images-Transparent/Mood-emoji-neutral-home.png', label: 'neutral' }
   ];
 
   ngOnInit() {

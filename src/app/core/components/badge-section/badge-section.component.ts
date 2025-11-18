@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { MindfulInputsModule } from '../mindful-inputs/mindful-inputs.module';
-import { Badge, RecentAchievement } from './badge-section.interface';
+import { Badge, RecentAchievement, BadgeProgressResponse, CelebrationCard } from './badge-section.interface';
 import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { MindfulPopupComponent, MindfulPopupConfig } from '../mindful-popup/mindful-popup.component';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
@@ -16,94 +16,141 @@ import { BadgeApi } from '../../api/badge.api';
     imports: [CommonModule, IonicModule, MindfulInputsModule, MindfulCardHeaderComponent, MindfulPopupComponent, MindfulButtonComponent]
 })
 export class BadgeSectionComponent implements OnInit {
-    recentAchievement: RecentAchievement = {
-        id: '1',
-        badgeName: 'Streak Keeper',
-        message: 'You just earned the "Streak Keeper" badge! Show it off to your friends.',
-        timestamp: new Date(),
-        iconUrl: 'assets/Icons-Neutral/Icon-Badge-StreakKeeper.png'
+    recentAchievement: RecentAchievement | null = null;
+    badges: Badge[] = [];
+    celebrationCard: CelebrationCard | null = null;
+    private currentShareMessage: string = '';
+
+    // Icon mapping for badge titles
+    private readonly BADGE_ICON_MAP: Readonly<Record<string, string>> = {
+        'Coin Collector': 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png',
+        'Quiz Ace': 'assets/Icons-Neutral/Icon-Badge-QuizAce.png',
+        'Pet Collector': 'assets/Icons-Neutral/Icon-Badge-PetCollector.png',
+        'Content Creator': 'assets/Icons-Neutral/Icon-Badge-ContentCreator.png',
+        'Knowledge Seeker': 'assets/Icons-Neutral/Icon-Badge-KnowledgeSeeker.png',
+        'Habit Master': 'assets/Icons-Neutral/Icon-Badge-HabitMaster.png',
+        'Daily Champion': 'assets/Icons-Neutral/Icon-Badge-DailyChampion.png',
+        'Feature Explorer': 'assets/Icons-Neutral/Icon-Badge-FeatureExploerer.png',
+        'Puzzle Master': 'assets/Icons-Neutral/Icon-Badge-PuzzleMaster.png',
+        'Pet Stylist': 'assets/Icons-Neutral/Icon-Badge-PetStylist.png',
+        'Task Terminator': 'assets/Icons-Neutral/Icon-Badges-TaskTerminator.png',
+        'Learning Enthusiast': 'assets/Icons-Neutral/Icon-Badge-LearningEnthusiast.png',
+        'Social Star': 'assets/Icons-Neutral/Icon-Badge-SocialStar.png',
+        'Streak Keeper': 'assets/Icons-Neutral/Icon-Badge-StreakKeeper.png'
     };
 
-    badges: Badge[] = [];
-
-    constructor(private badgeApi: BadgeApi) {}
+    constructor(private badgeApi: BadgeApi) { }
 
     ngOnInit(): void {
         this.loadBadges();
     }
 
     /**
-     * Maps badge title to the original icon path
+     * Maps badge title to the local icon path
+     * Falls back to a default icon if title not found
      */
     private getBadgeIcon(title: string): string {
-        const iconMap: { [key: string]: string } = {
-            'Coin Collector': 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png',
-            'Quiz Ace': 'assets/Icons-Neutral/Icon-Badge-QuizAce.png',
-            'Pet Collector': 'assets/Icons-Neutral/Icon-Badge-PetCollector.png',
-            'Content Creator': 'assets/Icons-Neutral/Icon-Badge-ContentCreator.png',
-            'Knowledge Seeker': 'assets/Icons-Neutral/Icon-Badge-KnowledgeSeeker.png',
-            'Habit Master': 'assets/Icons-Neutral/Icon-Badge-HabitMaster.png',
-            'Daily Champion': 'assets/Icons-Neutral/Icon-Badge-DailyChampion.png',
-            'Feature Explorer': 'assets/Icons-Neutral/Icon-Badge-FeatureExploerer.png',
-            'Puzzle Master': 'assets/Icons-Neutral/Icon-Badge-PuzzleMaster.png',
-            'Pet Stylist': 'assets/Icons-Neutral/Icon-Badge-PetStylist.png',
-            'Task Terminator': 'assets/Icons-Neutral/Icon-Badges-TaskTerminator.png',
-            'Learning Enthusiast': 'assets/Icons-Neutral/Icon-Badge-LearningEnthusiast.png',
-            'Social Star': 'assets/Icons-Neutral/Icon-Badge-SocialStar.png'
-        };
-        return iconMap[title] || 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png'; // Default fallback
+        return this.BADGE_ICON_MAP[title] || 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png';
     }
 
+    /**
+     * Calculates progress color based on completion percentage
+     */
+    private getProgressColor(completionPercentage: number): string {
+        if (completionPercentage >= 100) return '#4CAF50'; // Green - completed
+        if (completionPercentage >= 50) return '#FF9800';  // Orange - halfway
+        if (completionPercentage > 0) return '#2196F3';    // Blue - started
+        return '#9E9E9E';                                   // Gray - not started
+    }
+
+    /**
+     * Load badge progress from API and map to UI models
+     */
     loadBadges(): void {
         this.badgeApi.getBadgeProgress().subscribe({
-            next: (response: any) => {
-                // Handle array response
-                const badgeData = Array.isArray(response) ? response : (response.data || []);
-                
-                // Map API response to Badge interface
-                this.badges = badgeData.map((item: any, index: number) => {
-                    const completionPercentage = item.target > 0 
-                        ? Math.round((item.progress / item.target) * 100) 
-                        : 0;
-                    
-                    // Determine progress color based on completion percentage
-                    let progressColor = '#4CAF50'; // Default green
-                    if (completionPercentage >= 100) {
-                        progressColor = '#4CAF50'; // Green for completed
-                    } else if (completionPercentage >= 50) {
-                        progressColor = '#FF9800'; // Orange for halfway
-                    } else if (completionPercentage > 0) {
-                        progressColor = '#2196F3'; // Blue for started
-                    } else {
-                        progressColor = '#9E9E9E'; // Gray for not started
-                    }
-
-                    const badgeTitle = item.title || '';
-                    return {
-                        id: String(index + 1),
-                        name: badgeTitle,
-                        description: item.description || '',
-                        iconUrl: this.getBadgeIcon(badgeTitle), // Use original icon mapping
-                        currentProgress: item.progress || 0,
-                        targetProgress: item.target || 0,
-                        isLocked: !item.earned, // If not earned, it's locked
-                        progressColor: progressColor
-                    };
-                });
+            next: (response: BadgeProgressResponse) => {
+                this.processBadgeResponse(response);
             },
             error: (error) => {
                 console.error('Error loading badges:', error);
-                // Keep empty array or show error message
                 this.badges = [];
+                this.recentAchievement = null;
             }
         });
     }
 
+    /**
+     * Process the badge API response and update UI state
+     */
+    private processBadgeResponse(response: BadgeProgressResponse): void {
+        // Handle celebration card
+        if (response.celebrationCard?.showCelebration) {
+            this.celebrationCard = response.celebrationCard;
+            this.recentAchievement = {
+                id: 'celebration-card',
+                badgeName: response.celebrationCard.title,
+                message: response.celebrationCard.message,
+                timestamp: new Date(),
+                iconUrl: this.getRecentAchievementIcon(response.celebrationCard.earnedBadges),
+                shareMessage: response.celebrationCard.shareMessage
+            };
+            this.currentShareMessage = response.celebrationCard.shareMessage;
+        } else {
+            this.recentAchievement = null;
+        }
+
+        // Map badges to UI model
+        this.badges = response.badges.map((apiBadge, index) => {
+            const completionPercentage = this.calculateCompletionPercentage(apiBadge.progress, apiBadge.target);
+
+            return {
+                id: String(index + 1),
+                name: apiBadge.title,
+                description: apiBadge.description,
+                iconUrl: this.getBadgeIcon(apiBadge.title),
+                currentProgress: apiBadge.progress,
+                targetProgress: apiBadge.target,
+                isLocked: !apiBadge.isEarned,
+                progressColor: this.getProgressColor(completionPercentage),
+                levelText: apiBadge.levelText,
+                achievementText: apiBadge.achievementText,
+                isEarned: apiBadge.isEarned,
+                isMaxLevel: apiBadge.isMaxLevel,
+                currentLevel: apiBadge.currentLevel,
+                totalLevels: apiBadge.totalLevels,
+                celebrationTitle: apiBadge.celebrationTitle,
+                celebrationMessage: apiBadge.celebrationMessage,
+                shareMessage: apiBadge.shareMessage
+            };
+        });
+    }
+
+    /**
+     * Get icon for recent achievement from earned badges
+     */
+    private getRecentAchievementIcon(earnedBadges: any[]): string {
+        if (earnedBadges && earnedBadges.length > 0) {
+            const latestBadge = earnedBadges[0];
+            return this.getBadgeIcon(latestBadge.title || latestBadge.name);
+        }
+        return 'assets/Icons-Neutral/Icon-Badge-StreakKeeper.png';
+    }
+
+    /**
+     * Calculate completion percentage
+     */
+    private calculateCompletionPercentage(progress: number, target: number): number {
+        return target > 0 ? Math.round((progress / target) * 100) : 0;
+    }
+
+    /**
+     * Get completion percentage for display
+     */
     getCompletionPercentage(badge: Badge): number {
         if (badge.isLocked || badge.targetProgress === 0) {
             return 0;
         }
-        return Math.round((badge.currentProgress / badge.targetProgress) * 100);
+        return this.calculateCompletionPercentage(badge.currentProgress, badge.targetProgress);
     }
 
     onBackClick(): void {
@@ -135,21 +182,37 @@ export class BadgeSectionComponent implements OnInit {
         }
     };
 
+    /**
+     * Opens share popup with current share message
+     */
     onShareClick(): void {
         this.sharePopupVisible = true;
     }
 
+    /**
+     * Copy share link with message to clipboard
+     */
     copyShareLink(): void {
-        const link = window.location.href;
+        const shareText = this.currentShareMessage || this.recentAchievement?.shareMessage || 'Check out my progress on SuperMe!';
+        const link = `${shareText} ${window.location.href}`;
+
         if (navigator.clipboard) {
-            navigator.clipboard.writeText(link);
+            navigator.clipboard.writeText(link).then(() => {
+                console.log('Share link copied to clipboard');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
         }
         this.sharePopupVisible = false;
     }
 
+    /**
+     * Share via WhatsApp with message
+     */
     shareWhatsapp(): void {
-        const link = encodeURIComponent(window.location.href);
-        window.open(`https://wa.me/?text=${link}`, '_blank');
+        const shareText = this.currentShareMessage || this.recentAchievement?.shareMessage || 'Check out my progress on SuperMe!';
+        const message = encodeURIComponent(`${shareText} ${window.location.href}`);
+        window.open(`https://wa.me/?text=${message}`, '_blank');
         this.sharePopupVisible = false;
     }
 
@@ -159,26 +222,48 @@ export class BadgeSectionComponent implements OnInit {
     // The badge currently shown in the congrats popup
     selectedBadge?: Badge;
 
-    onTestClick(): void {
-        // Default to the first badge (Coin Collector) for now
-        this.selectedBadge = this.badges[0];
+    /**
+     * Show congratulations popup for a specific badge
+     */
+    showBadgeCongratulation(badge: Badge): void {
+        this.selectedBadge = badge;
         this.congratsVisible = true;
+        this.currentShareMessage = badge.shareMessage || `I earned the ${badge.name} badge on SuperMe! 🚀`;
     }
 
+    /**
+     * Test method to show congrats for first badge
+     */
+    onTestClick(): void {
+        if (this.badges.length > 0) {
+            this.showBadgeCongratulation(this.badges[0]);
+        }
+    }
+
+    /**
+     * View all badges - close congrats popup
+     */
     onViewAllBadges(): void {
         this.congratsVisible = false;
         this.selectedBadge = undefined;
-        // Future: navigate to badges page if needed
+        this.currentShareMessage = this.celebrationCard?.shareMessage || '';
     }
 
+    /**
+     * Awesome clicked - close congrats popup
+     */
     onAwesomeClick(): void {
         this.congratsVisible = false;
         this.selectedBadge = undefined;
+        this.currentShareMessage = this.celebrationCard?.shareMessage || '';
     }
 
-    // Close congrats popup and clear selection
+    /**
+     * Close congrats popup and clear selection
+     */
     closeCongrats(): void {
         this.congratsVisible = false;
         this.selectedBadge = undefined;
+        this.currentShareMessage = this.celebrationCard?.shareMessage || '';
     }
 }

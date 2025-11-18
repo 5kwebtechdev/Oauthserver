@@ -47,6 +47,19 @@ h2 {
   /* 28px */
 }
 
+.routine-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.habit-detail-focus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .detail-left {
   display: flex;
   align-items: center;

@@ -456,10 +456,12 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getRoutine(): string {
-    // this.console.log('Current routine:', this.habit?.selectedRoutine);
-    if (this.habit && this.habit.selectedRoutine) {
-      // this.console.log('Current routine:', this.habit.selectedRoutine);
-      return this.habit.selectedRoutine;
+    // Handle both routine and selectedRoutine from backend
+    if (this.habit) {
+      const routine = this.habit.routine || this.habit.selectedRoutine;
+      if (routine) {
+        return routine.toUpperCase();
+      }
     }
     return '';
   }
@@ -472,16 +474,25 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Return the asset path for the routine icon based on habit.selectedRoutine.
-   * Accepts values like 'morning', 'evening', 'night'. Falls back to Morning.
+   * Return the asset path for the routine icon based on habit.routine or habit.selectedRoutine.
+   * Accepts values like 'MORNING', 'EVENING', 'NIGHT' from backend. Falls back to Morning.
    */
   getRoutineIcon(): string {
     try {
-      const routine = (this.habit && this.habit.selectedRoutine) ? String(this.habit.selectedRoutine).toLowerCase() : 'morning';
-      // Normalize to expected filename casing: Icon-Routine-Morning.png etc.
-      const name = 'Icon-Routine-' + routine.charAt(0).toUpperCase() + routine.slice(1) + '.png';
-      return `/assets/Icons-Neutral/${name}`;
+      // Get routine from either routine or selectedRoutine field
+      const routineValue = this.habit?.routine || this.habit?.selectedRoutine;
+      if (!routineValue) {
+        return '/assets/Icons-Neutral/Icon-Routine-Morning.png';
+      }
+
+      // Convert to lowercase and capitalize first letter for filename
+      const routine = String(routineValue).toLowerCase();
+      const capitalizedRoutine = routine.charAt(0).toUpperCase() + routine.slice(1);
+      const fileName = `Icon-Routine-${capitalizedRoutine}.png`;
+
+      return `/assets/Icons-Neutral/${fileName}`;
     } catch (e) {
+      console.error('Error getting routine icon:', e);
       return '/assets/Icons-Neutral/Icon-Routine-Morning.png';
     }
   }

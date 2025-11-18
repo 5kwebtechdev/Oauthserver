@@ -101,4 +101,33 @@ export class HabitDetailComponent {
       this.router.navigate(['/authed/habit-input']);
     }
   }
+
+  //routine handler
+  getRoutineIcon(): string {
+    try {
+      const routineValue = this.habit?.routine;
+      if (!routineValue) {
+        return 'assets/Icons-Neutral/Icon-Routine-Morning.png';
+      }
+
+      // Convert to proper case for filename
+      const routine = String(routineValue).toLowerCase();
+      const capitalizedRoutine = routine.charAt(0).toUpperCase() + routine.slice(1);
+      const fileName = `Icon-Routine-${capitalizedRoutine}.png`;
+
+      return `assets/Icons-Neutral/${fileName}`;
+    } catch (e) {
+      console.error('Error getting routine icon:', e);
+      return 'assets/Icons-Neutral/Icon-Routine-Morning.png';
+    }
+  }
+
+
+  getRoutineName(): string {
+    const routineValue = this.habit?.routine;
+    if (!routineValue) return 'Morning';
+
+    const routine = String(routineValue).toLowerCase();
+    return routine.charAt(0).toUpperCase() + routine.slice(1);
+  }
 }
