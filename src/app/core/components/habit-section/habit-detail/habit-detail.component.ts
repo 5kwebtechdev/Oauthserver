@@ -36,9 +36,9 @@ export class HabitDetailComponent implements OnChanges {
   ) { }
 
   ngOnInit() {
-    const nav = this.router.getCurrentNavigation();
-    const stateHabit = nav?.extras?.state?.['habit'];
-    const habitType = nav?.extras?.state?.['type'] || stateHabit?.type;
+    // Try to get state from router's current navigation state
+    const stateHabit = history.state?.['habit'];
+    const habitType = history.state?.['type'] || stateHabit?.type;
 
     if (stateHabit) {
       this.habit = stateHabit;
