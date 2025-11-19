@@ -281,7 +281,6 @@ h2 {
   display: block;
 }
 
-/* Eclipse backdrop used behind edit/delete actions */
 .eclipse {
   display: inline-flex;
   align-items: center;
@@ -294,7 +293,6 @@ h2 {
   flex-shrink: 0;
 }
 
-/* When an edit button is placed inside the eclipse, make the button transparent so the backdrop shows */
 .eclipse .right-custom-edit {
   background: transparent;
   border-radius: 999px;
@@ -303,7 +301,6 @@ h2 {
   padding: 0;
 }
 
-/* Pill badge next to the title (High) */
 .priority-badge {
   display: flex;
   padding: 6px 12px;
@@ -313,9 +310,24 @@ h2 {
   border-radius: 6px;
   background: #BB2124;
   color: #FDFDFD;
+  font-family: Nunito;
+  font-size: 10px;
 }
 
-/* Title and date typography */
+/* Priority-specific overrides */
+.priority-badge.priority-high {
+  background: #BB2124;
+}
+
+.priority-badge.priority-medium {
+  background: #F0AD4E;
+}
+
+.priority-badge.priority-low {
+  background: #4CAF50;
+}
+
+
 .habit-title {
   h1 {
     color: #282527;
@@ -324,7 +336,6 @@ h2 {
     font-style: normal;
     font-weight: 700;
     margin: 0;
-    /* keep tight layout */
   }
 
   >span:first-of-type {

@@ -23,6 +23,8 @@ import { ViewAllComponent } from '../../core/components/mindful-navigator/view-a
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { PetMessagesService, PetMessage, PetMood } from '../../core/services/pet-messages.service';
 import { UserService } from '../../core/services/user.service';
+import { MoodService } from '../../core/services/mood.service';
+import { VibesDisplayResponse } from '../../core/models/mood.model';
 
 
 @Component({
@@ -70,7 +72,8 @@ export class UserDashboardComponent implements OnInit {
     private modalCtrl: ModalController,
     private router: Router,
     private petMessagesService: PetMessagesService,
-    private userService: UserService
+    private userService: UserService,
+    private moodService: MoodService
   ) { }
 
   async openNotes() {
@@ -87,6 +90,9 @@ export class UserDashboardComponent implements OnInit {
       }
     });
 
+    // Fetch user stats (coins, streaks, badges, etc.) from backend
+    this.loadUserStats();
+
     // Initialize pet message for home page
     this.currentPetMessage = this.petMessagesService.getMessage('home', {
       userName: this.userName,
@@ -97,6 +103,28 @@ export class UserDashboardComponent implements OnInit {
 
     // Set pet mood based on the message
     this.petMood = this.currentPetMessage.mood;
+  }
+
+  /**
+   * Load user statistics from the vibes/display endpoint
+   */
+  private loadUserStats(): void {
+    this.moodService.getVibesDisplay().subscribe({
+      next: (data: VibesDisplayResponse[]) => {
+        // The API returns an array, get the first item (current user's data)
+        if (data && data.length > 0) {
+          const userStats = data[0];
+          this.userCoins = userStats.coins || 0;
+          this.userStreaks = userStats.streak || 0;
+          this.userDays = userStats.trophies || 0; // Map trophies to days
+          this.userBadges = userStats.badges || 0;
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load user stats:', error);
+        // Keep default values (0) on error
+      }
+    });
   }
 
   get greetingMessage(): string {

@@ -55,6 +55,16 @@ export class TaskApi {
     }
 
     /**
+     * Get task by id
+     * @param id Task id
+     * @returns Observable with task details
+     */
+    getTaskById(id: number): Observable<any> {
+        const url = `${this.base}/tasks/${id}`;
+        return this.http.get(url, { headers: this.headers() });
+    }
+
+    /**
      * Delete a task by id
      * @param id Task id
      */

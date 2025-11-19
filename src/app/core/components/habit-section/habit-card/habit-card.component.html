@@ -97,16 +97,14 @@
     <div class="habit-expandable-content" [ngClass]="{'expanded': expanded}">
       <div #percentageWrapper class="habit-footer-progress"></div>
       <div class="habit-footer-container">
-        <div class="container w-full justify-content-between d-flex"
-          style="background: white; height: 45px; border-radius: 0 0 20px 20px; padding: 0px; width: 100%;">
-          <div class="d-flex reward-section">
-            <div class="single-point-container">
-              <img class="score p-r-0" src="assets/icons/fire-slash-ball.svg" alt="">
+        <div class="container w-full justify-content-between d-flex p-0 align-items-center">
+          <div class=" d-flex reward-section">
+            <div class="single-point-container d-flex p-0 align-items-center">
+              <img class="score p-r-0" src="assets/Icons-Neutral/Icon-Streak.png" alt="">
               <p class="score p-l-0">100</p>
             </div>
             <div class="single-point-container">
-              <img class="score" src="assets/Icons-Neutral/Icons-Coins.png" alt=""
-                style="width:24px;height:27px;aspect-ratio:8/9;">
+              <img class="score" src="assets/Icons-Neutral/Icons-Coins.png" alt="" style="width:24px;height:auto;">
               <p class="score p-l-0">{{getCoinReward()}}</p>
             </div>
           </div>

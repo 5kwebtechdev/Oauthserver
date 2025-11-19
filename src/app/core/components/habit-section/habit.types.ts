@@ -23,4 +23,24 @@ export interface Habit {
   coinReward?: number;
   daysOfWeek?: string[]; // e.g., ['Monday', 'Wednesday']
   everyWeekend?: boolean;
+  // Additional optional analytics fields fetched from backend
+  description?: string;
+  streak?: number;
+  highestStreak?: number;
+  coinsEarned?: number;
+  completionPercentage?: number;
+  totalScheduledDays?: number;
+  totalCompletedDays?: number;
+  milestoneBadges?: any[];
+  // Task-specific fields
+  assignedToId?: number;
+  assignedToName?: string;
+  createdById?: number;
+  createdByName?: string;
+  createdBy?: string;
+  sharedWithParents?: boolean;
+  completed?: boolean;
+  rewardCoins?: number;
+  familyId?: number | null;
+  updatedAt?: string | null;
 }

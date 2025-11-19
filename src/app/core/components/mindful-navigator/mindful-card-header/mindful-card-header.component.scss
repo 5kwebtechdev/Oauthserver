@@ -3,9 +3,11 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  margin-top: 72px;
 }
 
 .mindful-card-header.no-back {
+  margin-top: 0;
 
   .mindful-card-header__right {
     margin-top: -20px;

@@ -66,8 +66,8 @@ export class HabitService {
       const startTimeStamp = item.startDate ? new Date(item.startDate).getTime() : Date.now();
       const endTimeStamp = item.endDate ? new Date(item.endDate).getTime() : Date.now() + 3600000;
 
-      const startTimeFormatted = item.startTime || "07:00:00";
-      const endTimeFormatted = item.endTime || "08:00:00";
+      const startTimeFormatted = item.startTime || item.start_time || "07:00:00";
+      const endTimeFormatted = item.endTime || item.end_time || "08:00:00";
 
       return {
         id: item.id || '',
@@ -75,8 +75,9 @@ export class HabitService {
         notes: item.description || '',
         startDate: new Date(item.startDate || startTimeStamp),
         endDate: new Date(item.endDate || endTimeStamp),
-        startTime: startTimeFormatted.substring(0, 5),
-        endTime: endTimeFormatted.substring(0, 5),
+        // Keep HH:MM:SS format; many UI locations expect HH:MM or HH:MM:SS, so keep full seconds
+        startTime: startTimeFormatted,
+        endTime: endTimeFormatted,
         startTimeStamp: startTimeStamp,
         endTimeStamp: endTimeStamp,
         type: item.type || 'habits',
@@ -84,17 +85,41 @@ export class HabitService {
         selectedRoutine: item.getRoutine,
         routineTags: item.routineTags || [],
         everyday: item.everyday || false,
-        selectedDays: item.daysOfWeek || [],
+        selectedDays: this.normalizeDaysOfWeek(item.daysOfWeek || item.selectedDays || []),
         priority: item.priority,
         routine: item.routine,
         status: item.status,
         tags: item.tags || [],
         coinReward: item.coinReward || 0,
+        coinsEarned: item.coinsEarned || item.coins || 0,
+        streak: item.streak || item.streakCount || 0,
+        highestStreak: item.highestStreak || item.topStreak || 0,
+        completionPercentage: item.completionPercentage || item.completionRate || 0,
+        totalCompletedDays: item.totalCompletedDays || item.completedDays || 0,
+        milestoneBadges: item.milestoneBadges || item.badges || [],
         createdAt: new Date(item.createdAt || Date.now())
       };
     });
   } private formatTime(date: Date): string {
     return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  }
+
+  private normalizeDaysOfWeek(days: any[]): string[] {
+    if (!Array.isArray(days)) return [];
+    const mapFullToCanonical: Record<string, string> = {
+      SUN: 'SUNDAY', SUNDAY: 'SUNDAY', 'S': 'SUNDAY',
+      MON: 'MONDAY', MONDAY: 'MONDAY', 'M': 'MONDAY',
+      TUE: 'TUESDAY', TUESDAY: 'TUESDAY', 'T': 'TUESDAY',
+      WED: 'WEDNESDAY', WEDNESDAY: 'WEDNESDAY', 'W': 'WEDNESDAY',
+      THU: 'THURSDAY', THURSDAY: 'THURSDAY', 'TH': 'THURSDAY', 'THUR': 'THURSDAY',
+      FRI: 'FRIDAY', FRIDAY: 'FRIDAY', 'F': 'FRIDAY',
+      SAT: 'SATURDAY', SATURDAY: 'SATURDAY', 'SA': 'SATURDAY'
+    };
+    return days.map(d => {
+      if (!d) return d;
+      const s = String(d).trim().toUpperCase();
+      return mapFullToCanonical[s] || s;
+    }).filter(Boolean);
   }
 
   formatDateToYYYYMMDD(date: Date): string {

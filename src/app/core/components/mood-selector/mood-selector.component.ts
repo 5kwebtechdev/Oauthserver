@@ -3,25 +3,10 @@ import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { AuthApi } from '../../api/auth.api';
+import { MoodService } from '../../services/mood.service';
+import { VibesDisplayResponse } from '../../models/mood.model';
 
 export interface MoodOption { key: string; label: string; emoji?: string }
-export interface VibeDisplayItem {
-  userId: number;
-  userName: string;
-  relationship: string | null;
-  mood: string | null;
-  audience: string | null;
-  title: string | null;
-  description: string | null;
-  emptyStateDescription: string | null;
-  completedStateDescription: string | null;
-  totalHabits: number;
-  completedHabits: number;
-  totalTasks: number;
-  completedTasks: number;
-  progressPercentage: number;
-  message: string | null;
-}
 
 @Component({
   selector: 'mood-selector',
@@ -40,7 +25,7 @@ export class MoodSelectorComponent {
   @Input() value: string | null = null;
   @Output() valueChange = new EventEmitter<string>();
 
-  vibes: VibeDisplayItem[] = [];
+  vibes: VibesDisplayResponse[] = [];
   private setsToday = 0;
 
   // popup state
@@ -63,12 +48,9 @@ export class MoodSelectorComponent {
   }
 
   getTodayVibe() {
-    const url = `${environment.apiUrl}/mood/vibes/display`;
-    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    const token = this.authApi?.getToken?.() || environment.apiAuthToken || null;
-    if (token) headers = headers.set('Authorization', token.startsWith('Bearer ') ? token : `Bearer ${token}`);
-
-    this.http.get<VibeDisplayItem[]>(url, { headers }).subscribe({
+    // Use the shared MoodService instead of making a direct HTTP call
+    // This will share the same API request with UserDashboardComponent
+    this.moodService.getVibesDisplay().subscribe({
       next: (res) => {
         console.debug('[MoodSelector] Vibes display:', res);
         this.vibes = Array.isArray(res) ? res : [];
@@ -102,7 +84,11 @@ export class MoodSelectorComponent {
   }
   closePopup() { this.showPopup = false }
   choosePopup(src: string) { this.popupSelection = src }
-  constructor(private http: HttpClient, private authApi: AuthApi) { }
+  constructor(
+    private http: HttpClient,
+    private authApi: AuthApi,
+    private moodService: MoodService
+  ) { }
 
   setVibe() {
     if (!this.popupSelection) return;
@@ -137,6 +123,8 @@ export class MoodSelectorComponent {
         this.valueChange.emit(this.value);
         this.incrementDailySetCount();
         this.showPopup = false;
+        // Clear the cache so next call fetches fresh data
+        this.moodService.clearVibesDisplayCache();
       },
       error: (err) => {
         console.error('Failed to set vibe', err);
@@ -216,11 +204,11 @@ export class MoodSelectorComponent {
     return Math.round(((pos + 1) / this.options.length) * 100);
   }
 
-  get currentVibe(): VibeDisplayItem | null {
+  get currentVibe(): VibesDisplayResponse | null {
     return this.vibes[0] || null;
   }
 
-  trackByUserId = (_: number, item: VibeDisplayItem) => item?.userId ?? _;
+  trackByUserId = (_: number, item: VibesDisplayResponse) => item?.userId ?? _;
 
   // Daily set limit helpers (max 2 per day)
   get canSetVibe(): boolean {

@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
@@ -20,7 +20,7 @@ export interface JournalOutputEntry {
 @Component({
   selector: 'app-journal-output',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent],
+  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, MindfulButtonComponent],
   templateUrl: './journal-output.component.html',
   styleUrls: ['./journal-output.component.scss']
 })
@@ -188,6 +188,13 @@ export class JournalOutputComponent implements OnInit {
    */
   openJournalInput(): void {
     this.router.navigate(['/authed/journal-input']).catch(() => { /* ignore navigation errors */ });
+  }
+
+  /**
+   * Navigate back when the back arrow is clicked
+   */
+  goBack(): void {
+    this.router.navigate(['/authed/user-dashboard']).catch(() => { /* ignore navigation errors */ });
   }
 
 }

@@ -192,17 +192,37 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // Fetch detail directly from API
-    this.habitApi.getHabitById(Number(this.habit.id)).subscribe({
-      next: (res) => {
-        console.log('Habit detail fetched on long press:', res);
-        // Navigate to habit detail page, passing the full detail via state
-        this.router.navigate(['/authed/habit-detail', res.id], { state: { habit: res } });
-      },
-      error: (err) => {
-        console.error('Error fetching habit detail:', err);
-      }
-    });
+    const itemType = this.habit.type || 'habits';
+    const itemId = Number(this.habit.id);
+
+    // Fetch detail from appropriate API based on type
+    if (itemType === 'tasks') {
+      this.taskApi.getTaskById(itemId).subscribe({
+        next: (res) => {
+          console.log('Task detail fetched on long press:', res);
+          // Navigate to habit detail page, passing type and full detail via state
+          this.router.navigate(['/authed/habit-detail', res.id], {
+            state: { habit: res, type: 'tasks' }
+          });
+        },
+        error: (err) => {
+          console.error('Error fetching task detail:', err);
+        }
+      });
+    } else {
+      this.habitApi.getHabitById(itemId).subscribe({
+        next: (res) => {
+          console.log('Habit detail fetched on long press:', res);
+          // Navigate to habit detail page, passing type and full detail via state
+          this.router.navigate(['/authed/habit-detail', res.id], {
+            state: { habit: res, type: 'habits' }
+          });
+        },
+        error: (err) => {
+          console.error('Error fetching habit detail:', err);
+        }
+      });
+    }
   }
 
   async openHabitPage() {

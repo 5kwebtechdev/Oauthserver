@@ -127,8 +127,9 @@
       </div>
 
       <div class="submit-row">
-        <mindful-button [type]="isFormComplete ? 'lavender-complete' : 'lavender-light'" text="Create Habit" large
-          (click)="submit()">
+        <mindful-button [type]="isFormComplete ? 'lavender-complete' : 'lavender-light'"
+          [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Habit' : 'Create Habit')"
+          large [disabled]="!isFormComplete || isSubmitting" (click)="submit()">
         </mindful-button>
       </div>
     </div>
@@ -241,8 +242,9 @@
       </div>
 
       <div class="submit-row">
-        <mindful-button [type]="isFormComplete ? 'orange-dark' : 'orange-light'" text="Create Task" large
-          (click)="submit()">
+        <mindful-button [type]="isFormComplete ? 'orange-dark' : 'orange-light'"
+          [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Task' : 'Create Task')"
+          large [disabled]="!isFormComplete || isSubmitting" (click)="submit()">
         </mindful-button>
       </div>
     </div>
@@ -348,7 +350,9 @@
         <div class="char-count">Max 250 Characters</div>
       </div>
       <div class="submit-row">
-        <mindful-button type="green-light" text="Create Time Table" large (click)="submit()">
+        <mindful-button type="green-light"
+          [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Timetable' : 'Create Time Table')"
+          large [disabled]="!isFormComplete || isSubmitting" (click)="submit()">
         </mindful-button>
       </div>
     </div>

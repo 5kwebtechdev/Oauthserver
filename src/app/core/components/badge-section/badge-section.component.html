@@ -1,6 +1,6 @@
+<mindful-card-header [title]="'Your Badge Quest'" [subtitleLeft]="'Earn badges'" [subtitleMiddle]="'Level up'"
+    [subtitleRight]="'Show the world'" [showBackArrow]="true" (backClick)="onBackClick()"></mindful-card-header>
 <ion-content>
-    <mindful-card-header [title]="'Your Badge Quest'" [subtitleLeft]="'Earn badges'" [subtitleMiddle]="'Level up'"
-        [subtitleRight]="'Show the world'" [showBackArrow]="true" (backClick)="onBackClick()"></mindful-card-header>
     <!-- Recent Achievement Card -->
     <div class="recent-achievement-card" *ngIf="recentAchievement">
         <div class="achievement-content">
@@ -50,10 +50,8 @@
         </div>
     </div>
 
-    <!-- Bottom Safe Area -->
-    <div class="safe-area-bottom">
-        <div class="home-indicator"></div>
-    </div>
+
+
 </ion-content>
 
 <!-- Share Popup -->

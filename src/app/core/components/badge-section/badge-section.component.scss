@@ -21,7 +21,7 @@ ion-content {
     --background: $bg;
     --padding-start: 0;
     --padding-end: 0;
-    --padding-top: 66px;
+    --padding-top: 0px;
     --padding-bottom: 0;
 }
 
@@ -355,24 +355,6 @@ ion-content {
     width: 100%;
 }
 
-.safe-area-bottom {
-    background: $bg;
-    height: 24px;
-    border-radius: 0 0 $radius $radius;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 16px;
-
-    .home-indicator {
-        width: 88px;
-        height: 6px;
-        background: #6b656a;
-        border-radius: 19px;
-    }
-}
-
-/* Congrats popup */
 .congrats-popup {
     position: fixed;
     inset: 0;

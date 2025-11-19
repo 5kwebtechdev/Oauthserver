@@ -1,59 +1,11 @@
 .journal-output-container {
   width: 100%;
-  max-width: 393px;
   background: #fff;
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.04);
 }
 
-.journal-output-header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin-top: 36px;
-
-  /* stronger override: target the mindful-navigator host as well as the nested class
-     and unset any max/min width that might keep it fixed. */
-  ::ng-deep mindful-navigator.output-back-navigator .navigator-root,
-  ::ng-deep .output-back-navigator .navigator-root {
-    width: auto !important;
-    margin-top: 0 !important;
-  }
-}
-
-.journal-output-header {
-  /* Make the header act like a small navigator: centered label with chevrons */
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  gap: 150px;
-  padding-bottom: 24px;
-  width: 100%;
-}
-
-
-/* Left/back button (matches journal-input style) */
-
-
-.arrow {
-  width: 48px;
-  height: 48px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: transparent;
-  border: none;
-  color: rgba(40, 37, 39, 0.9);
-  font-size: 18px;
-  cursor: pointer;
-}
-
-.back-btn:focus {
-  outline: 2px solid rgba(140, 33, 80, 0.15);
-}
 
 /* Month navigator center block */
 .month-navigator {

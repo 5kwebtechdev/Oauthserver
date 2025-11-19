@@ -264,7 +264,7 @@ h4 {
 .habit-expandable-content {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease-out;
+  transition: max-height 0.0s ease-out;
   opacity: 0;
 
   &.expanded {
@@ -272,7 +272,7 @@ h4 {
     max-height: 500px;
     /* Set this to a value that would accommodate your content */
     opacity: 1;
-    transition: max-height 0.5s ease-in, opacity 0.3s ease-in;
+    transition: max-height 0.5s ease-in, opacity 0s ease-in;
   }
 }
 
@@ -378,13 +378,6 @@ h4 {
   border: 1px solid red;
 }
 
-.single-point-container {
-  display: block;
-  width: fit-content;
-  padding: 12px 0px 8px 0px;
-  float: left;
-}
-
 .reward-section {
   gap: 32px;
 }
@@ -401,14 +394,19 @@ h4 {
 }
 
 .score {
-  display: block;
-  /* Changed from inline-block to block since float is used */
-  float: left;
-  margin-bottom: 0;
+  display: inline-block;
+  margin: 0px;
+  vertical-align: middle;
 }
 
-img.score {
+.single-point-container img.score {
+  width: 24px;
+  height: auto;
+  object-fit: contain;
+  display: inline-block;
+  margin: 0;
   padding-top: 1px;
+  vertical-align: middle;
 }
 
 // List mode styles

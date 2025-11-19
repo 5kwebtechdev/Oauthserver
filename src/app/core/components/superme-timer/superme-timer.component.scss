@@ -22,13 +22,13 @@
             overflow: visible;
 
             .ring-bg {
-                stroke: #e0e0e0;
+                stroke: #DCDBDC;
                 /* outer gray ring */
                 filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.08));
             }
 
             .ring-progress {
-                stroke: #8b8b8b;
+                stroke: #4CAF50;
                 /* running progress color (gray) */
                 transition: stroke-dashoffset 0.5s linear;
             }

@@ -1,14 +1,5 @@
 /* Mindful navigator header styles */
-.journal-input-container {
-  width: 100%;
-  max-width: 393px;
-  /* make container responsive and allow scrolling instead of fixed height */
-  max-height: 100vh;
-  overflow-y: auto;
-  border-radius: 24px;
-  background: #FFF;
-  padding-bottom: 24px;
-}
+.journal-input-container {}
 
 .mindful-navigator {
   display: inline-flex;
@@ -179,9 +170,8 @@
 
 .options {
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  flex-wrap: wrap;
   flex-wrap: wrap;
 }
 

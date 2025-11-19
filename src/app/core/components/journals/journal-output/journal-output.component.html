@@ -1,16 +1,14 @@
+<mindful-card-header class="output-back-navigator" [title]="'Your Journal, Your Journey'" [subtitleLeft]="'Track moods'"
+  [subtitleMiddle]="'Save'" [subtitleRight]="'Feel Better'" [showBackArrow]="true" (backClick)="goBack()">
+</mindful-card-header>
 <ion-content fullscreen>
-  <div class="journal-output-container">
-    <div class="journal-output-header">
-      <div class="journal-output-header-row">
-        <mindful-navigator class="output-back-navigator" heading=""></mindful-navigator>
-
-        <div class="month-navigator" role="group" aria-label="Month navigator">
-          <button class="month-prev" type="button" aria-label="Previous month" (click)="prevMonth()">‹</button>
-          <div class="month-label">{{ monthLabel }}</div>
-          <button class="month-next" type="button" aria-label="Next month" (click)="nextMonth()">›</button>
-        </div>
-      </div>
+  <div class="journal-output-container d-flex flex-column align-items-center">
+    <div class="month-navigator" role="group" aria-label="Month navigator">
+      <button class="month-prev" type="button" aria-label="Previous month" (click)="prevMonth()">‹</button>
+      <div class="month-label">{{ monthLabel }}</div>
+      <button class="month-next" type="button" aria-label="Next month" (click)="nextMonth()">›</button>
     </div>
+
 
     <div *ngIf="!filteredEntries || filteredEntries.length === 0" class="empty">
       <!-- <p>No journal entries yet. Try adding one!</p> -->
@@ -58,6 +56,7 @@
       </div>
     </div>
   </div>
+
 </ion-content>
 
 <!-- Floating Post Button (small, magenta) -->

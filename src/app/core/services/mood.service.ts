@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
-import { MoodTransition, MoodData, MOOD_EMOJI_MAP } from '../models/mood.model';
+import { Observable, map, shareReplay } from 'rxjs';
+import { MoodTransition, MoodData, MOOD_EMOJI_MAP, VibesDisplayResponse } from '../models/mood.model';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -9,6 +9,7 @@ import { environment } from 'src/environments/environment';
 })
 export class MoodService {
   private readonly apiUrl = `${environment.apiUrl}/mood`;
+  private vibesDisplayCache$: Observable<VibesDisplayResponse[]> | null = null;
 
   constructor(private http: HttpClient) { }
 
@@ -74,5 +75,27 @@ export class MoodService {
     }
 
     return DEFAULT;
+  }
+
+  /**
+   * Fetch vibes display data containing user stats (coins, trophies, streaks, badges, etc.)
+   * Uses caching to prevent duplicate API calls - multiple subscribers will share the same request
+   * @returns Observable of VibesDisplayResponse array
+   */
+  getVibesDisplay(): Observable<VibesDisplayResponse[]> {
+    if (!this.vibesDisplayCache$) {
+      this.vibesDisplayCache$ = this.http.get<VibesDisplayResponse[]>(`${this.apiUrl}/vibes/display`).pipe(
+        shareReplay(1) // Cache the result and share it with all subscribers
+      );
+    }
+    return this.vibesDisplayCache$;
+  }
+
+  /**
+   * Clear the vibes display cache to force a fresh API call on next request
+   * Call this after updating mood or when you need fresh data
+   */
+  clearVibesDisplayCache(): void {
+    this.vibesDisplayCache$ = null;
   }
 }

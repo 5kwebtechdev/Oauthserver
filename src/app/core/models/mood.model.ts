@@ -14,6 +14,31 @@ export interface MoodData {
   [date: string]: MoodTransition; // Key is date in YYYY-MM-DD format
 }
 
+export interface VibesDisplayResponse {
+  userId: number;
+  userName: string;
+  relationship: string;
+  mood: string;
+  audience: string;
+  title: string;
+  description: string;
+  emptyStateDescription: string;
+  completedStateDescription: string;
+  totalHabits: number;
+  completedHabits: number;
+  totalTasks: number;
+  completedTasks: number;
+  progressPercentage: number;
+  coins: number;
+  trophies: number;
+  streak: number;
+  badges: number;
+  completionRate: number;
+  consistencyRate: number;
+  improvementRate: number;
+  appScore: number;
+}
+
 // Mood emoji mapping - only six available mood images
 export const MOOD_EMOJI_MAP: { [key: string]: string } = {
   'Happy': 'assets/Images-Transparent/Image-Mood-Happy.png',

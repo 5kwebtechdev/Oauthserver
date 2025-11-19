@@ -20,7 +20,8 @@
             <div class="habit-title d-flex flex-column gap-2">
                 <div class="habit-title-priority d-flex  align-items-center gap-3">
                     <h1>{{ habit.title }}</h1>
-                    <span class="priority-badge">{{ habit.priority | titlecase }}</span>
+                    <span class="priority-badge priority-{{ habit.priority | lowercase }}">{{ habit.priority | titlecase
+                        }}</span>
                 </div>
                 <span>
                     {{ habit.startDate | date:'MMM d' }}.
@@ -57,7 +58,7 @@
         <div class="detail-message">
             <div class="bubble-speech">
                 <app-speech-bubble [arrowSide]="'right'" [arrowOffset]="'50%'"
-                    [message]="'Your pops says \u201CRemember, every step counts! This task is all about learning and growing. \u2028\u2028You\'ve got this!\u201D'"></app-speech-bubble>
+                    [message]="speechMessage"></app-speech-bubble>
             </div>
             <div class="detail-pet">
                 <mindful-pet></mindful-pet>
@@ -84,64 +85,25 @@
 
 
         <mindful-coins-stats [slot1]="'streak'" [slot2]="'coins'" [slot3]="'total-streaks'" [slot4]="'success'"
-            [userDays]="0" [userCoins]="habit?.coinReward ?? 0" [totalStreaks]="0"
-            [successPercentage]="0"></mindful-coins-stats>
+            [userDays]="coinStats.userDays" [userCoins]="coinStats.userCoins" [totalStreaks]="coinStats.totalStreaks"
+            [successPercentage]="coinStats.successPercentage" [userStreaks]="coinStats.userStreaks"
+            [userBadges]="coinStats.userBadges"></mindful-coins-stats>
 
         <div class="detail-progress-header">
             <h2>Almost There! Your Milestone Awaits</h2>
         </div>
 
-        <div class="detail-progess-status">
-            <div class="total-progress">
-                <div class="progres-count">4/7</div>
+        <div class="detail-progess-status" *ngIf="badgeList && badgeList.length">
+            <div class="total-progress" *ngFor="let b of badgeList">
+                <div class="progres-count">{{ b.currentProgress }}/{{ b.targetProgress }}</div>
                 <div class="progress-stat">
                     <div class="progress-circle-wrapper">
-                        <mindful-completion [completionPercentage]="57" [borderColor]="'#4CAF50'" [innerText]="''"
-                            [belowText]="''">
+                        <mindful-completion [completionPercentage]="b.completionPercent" [borderColor]="b.progressColor"
+                            [innerText]="''" [belowText]="''">
                         </mindful-completion>
-                        <img src="assets/Icons-Neutral/Icon-Badge-StreakKeeper.png" alt="Streak Keeper"
-                            class="progress-badge-icon" />
+                        <img [src]="b.iconUrl" [alt]="b.name" class="progress-badge-icon" />
                     </div>
-                    <p class="progress-name">Streak Keeper</p>
-                </div>
-            </div>
-            <div class="total-progress">
-                <div class="progres-count">250/500</div>
-                <div class="progress-stat">
-                    <div class="progress-circle-wrapper">
-                        <mindful-completion [completionPercentage]="50" [borderColor]="'#4CAF50'" [innerText]="''"
-                            [belowText]="''">
-                        </mindful-completion>
-                        <img src="assets/Icons-Neutral/Icon-Badge-CoinCollector.png" alt="Coin Collector"
-                            class="progress-badge-icon" />
-                    </div>
-                    <p class="progress-name">Coin Collector</p>
-                </div>
-            </div>
-            <div class="total-progress">
-                <div class="progres-count">10/50</div>
-                <div class="progress-stat">
-                    <div class="progress-circle-wrapper">
-                        <mindful-completion [completionPercentage]="20" [borderColor]="'#F5A623'" [innerText]="''"
-                            [belowText]="''">
-                        </mindful-completion>
-                        <img src="assets/Icons-Neutral/Icon-Badges-TaskTerminator.png" alt="Task Terminator"
-                            class="progress-badge-icon" />
-                    </div>
-                    <p class="progress-name">Task Terminator</p>
-                </div>
-            </div>
-            <div class="total-progress">
-                <div class="progres-count">60/100</div>
-                <div class="progress-stat">
-                    <div class="progress-circle-wrapper">
-                        <mindful-completion [completionPercentage]="60" [borderColor]="'#F5A623'" [innerText]="''"
-                            [belowText]="''">
-                        </mindful-completion>
-                        <img src="assets/Icons-Neutral/Icon-Badge-HabitMaster.png" alt="Habit Master"
-                            class="progress-badge-icon" />
-                    </div>
-                    <p class="progress-name">Habit Master</p>
+                    <p class="progress-name">{{ b.name }}</p>
                 </div>
             </div>
         </div>
