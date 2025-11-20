@@ -2,6 +2,12 @@ export interface CalendarResponse {
     events: CalendarEvent[];
     tasks: CalendarTask[];
     habits: CalendarHabit[];
+    totalTasks?: number;
+    totalTasksCompleted?: number;
+    taskCompletionRate?: number;
+    totalHabits?: number;
+    totalHabitsCompleted?: number;
+    habitCompletionRate?: number;
 }
 
 export interface CalendarEvent {

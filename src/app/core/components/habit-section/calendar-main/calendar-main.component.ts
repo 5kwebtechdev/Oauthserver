@@ -162,7 +162,7 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   }
 
   loadCalendarData() {
-    // Load data for the first day of current month only
+    // Load data for the current month
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
@@ -171,7 +171,7 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     const firstDayOfMonth = new Date(year, month, 1);
     const dateStr = this.formatDateToYYYYMMDD(firstDayOfMonth);
 
-    // Load data for first day of month
+    // Load data and process date ranges
     this.loadDayData(dateStr);
   }
 
@@ -181,24 +181,100 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           console.log(`Calendar data for ${dateStr}:`, response);
-          const hasTimeTable = response.events && response.events.length > 0;
-          const hasTask = response.tasks && response.tasks.length > 0;
-          const hasHabit = response.habits && response.habits.length > 0;
 
-          // Always set the date activities, even if empty
-          this.dateActivities[dateStr] = {
-            timetable: hasTimeTable,
-            task: hasTask,
-            habit: hasHabit
-          };
+          // Clear existing activities for this month
+          this.dateActivities = {};
 
-          console.log(`Activities for ${dateStr}:`, this.dateActivities[dateStr]);
+          // Process events (timetable)
+          if (response.events && response.events.length > 0) {
+            response.events.forEach((event: any) => {
+              const dates = this.getDateRangeFromItem(event);
+              dates.forEach(date => {
+                if (!this.dateActivities[date]) {
+                  this.dateActivities[date] = {};
+                }
+                this.dateActivities[date].timetable = true;
+              });
+            });
+          }
+
+          // Process tasks
+          if (response.tasks && response.tasks.length > 0) {
+            response.tasks.forEach((task: any) => {
+              const dates = this.getDateRangeFromItem(task);
+              dates.forEach(date => {
+                if (!this.dateActivities[date]) {
+                  this.dateActivities[date] = {};
+                }
+                this.dateActivities[date].task = true;
+              });
+            });
+          }
+
+          // Process habits
+          if (response.habits && response.habits.length > 0) {
+            response.habits.forEach((habit: any) => {
+              const dates = this.getDateRangeFromItem(habit);
+              dates.forEach(date => {
+                if (!this.dateActivities[date]) {
+                  this.dateActivities[date] = {};
+                }
+                this.dateActivities[date].habit = true;
+              });
+            });
+          }
+
           console.log('All dateActivities:', this.dateActivities);
         },
         error: (error) => {
           console.error(`Error loading calendar data for ${dateStr}:`, error);
         }
       });
+  }
+
+  /**
+   * Extract all dates from an item's date range, considering daysOfWeek if present
+   */
+  private getDateRangeFromItem(item: any): string[] {
+    const dates: string[] = [];
+
+    // Get start and end dates
+    const startDateStr = item.startDate || item.start_date || item.date;
+    const endDateStr = item.endDate || item.end_date || item.date;
+
+    if (!startDateStr) return dates;
+
+    const startDate = new Date(startDateStr);
+    const endDate = endDateStr ? new Date(endDateStr) : startDate;
+
+    // If item has daysOfWeek, only include those specific days
+    const daysOfWeek = item.daysOfWeek;
+    const dayMap: { [key: string]: number } = {
+      'SUNDAY': 0, 'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3,
+      'THURSDAY': 4, 'FRIDAY': 5, 'SATURDAY': 6
+    };
+
+    // Iterate through all dates in range
+    const current = new Date(startDate);
+    while (current <= endDate) {
+      // If daysOfWeek is specified, check if current day is included
+      if (daysOfWeek && Array.isArray(daysOfWeek) && daysOfWeek.length > 0) {
+        const currentDayOfWeek = current.getDay();
+        const isIncluded = daysOfWeek.some((day: string) => dayMap[day] === currentDayOfWeek);
+
+        if (isIncluded) {
+          dates.push(this.formatDateToYYYYMMDD(current));
+        }
+      } else {
+        // No daysOfWeek restriction, include all dates
+        dates.push(this.formatDateToYYYYMMDD(current));
+      }
+
+      // Move to next day
+      current.setDate(current.getDate() + 1);
+    }
+
+    return dates;
   }
 
   formatDateToYYYYMMDD(date: Date): string {
@@ -212,32 +288,38 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          // Use the raw habit/task objects but ensure they contain timestamps and titles
+          // Use the raw habit/task objects but filter them by selected date
           const rawHabits = response.habits || [];
           const rawTasks = response.tasks || [];
 
-          this.habitsForSelectedDate = rawHabits.map((h: any) => {
-            const start = this.extractTimestamp(h, ['startTime', 'start_time', 'start', 'from', 'scheduledAt', 'time', 'startTimeStamp']);
-            const end = this.extractTimestamp(h, ['endTime', 'end_time', 'end', 'to', 'scheduledEnd', 'endTimeStamp']);
-            return {
-              ...(h || {}),
-              title: h.title || h.name || h.habitName || 'Habit',
-              startTimeStamp: start || h.startTimeStamp || 0,
-              endTimeStamp: end || h.endTimeStamp || 0
-            };
-          });
+          // Filter habits to only those scheduled for the selected date
+          this.habitsForSelectedDate = rawHabits
+            .filter((h: any) => this.isItemScheduledForDate(h, dateStr))
+            .map((h: any) => {
+              const start = this.extractTimestamp(h, ['startTime', 'start_time', 'start', 'from', 'scheduledAt', 'time', 'startTimeStamp']);
+              const end = this.extractTimestamp(h, ['endTime', 'end_time', 'end', 'to', 'scheduledEnd', 'endTimeStamp']);
+              return {
+                ...(h || {}),
+                title: h.title || h.name || h.habitName || 'Habit',
+                startTimeStamp: start || h.startTimeStamp || 0,
+                endTimeStamp: end || h.endTimeStamp || 0
+              };
+            });
 
-          this.tasksForSelectedDate = rawTasks.map((t: any) => {
-            const start = this.extractTimestamp(t, ['startTime', 'start_time', 'start', 'from', 'scheduledAt', 'time', 'startTimeStamp']);
-            const end = this.extractTimestamp(t, ['endTime', 'end_time', 'end', 'to', 'scheduledEnd', 'endTimeStamp']);
-            return {
-              ...(t || {}),
-              type: t?.type || 'tasks',
-              title: t.title || t.name || t.taskName || 'Task',
-              startTimeStamp: start || t.startTimeStamp || 0,
-              endTimeStamp: end || t.endTimeStamp || 0
-            };
-          });
+          // Filter tasks to only those scheduled for the selected date
+          this.tasksForSelectedDate = rawTasks
+            .filter((t: any) => this.isItemScheduledForDate(t, dateStr))
+            .map((t: any) => {
+              const start = this.extractTimestamp(t, ['startTime', 'start_time', 'start', 'from', 'scheduledAt', 'time', 'startTimeStamp']);
+              const end = this.extractTimestamp(t, ['endTime', 'end_time', 'end', 'to', 'scheduledEnd', 'endTimeStamp']);
+              return {
+                ...(t || {}),
+                type: t?.type || 'tasks',
+                title: t.title || t.name || t.taskName || 'Task',
+                startTimeStamp: start || t.startTimeStamp || 0,
+                endTimeStamp: end || t.endTimeStamp || 0
+              };
+            });
         },
         error: (err) => {
           console.error('Error loading items for selected date', err);
@@ -245,6 +327,14 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
           this.tasksForSelectedDate = [];
         }
       });
+  }
+
+  /**
+   * Check if an item (habit/task/event) is scheduled for a specific date
+   */
+  private isItemScheduledForDate(item: any, targetDateStr: string): boolean {
+    const scheduledDates = this.getDateRangeFromItem(item);
+    return scheduledDates.includes(targetDateStr);
   }
 
   // Extract a numeric timestamp from the first matching candidate field on the item

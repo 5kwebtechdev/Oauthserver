@@ -49,11 +49,23 @@ export class CalendarService {
 
         // Transform habits
         response.habits.forEach(habit => {
+            const startTime = habit.startTime.slice(0, 5); // Convert "HH:mm:ss" to "HH:mm"
+            let endTime = habit.endTime.slice(0, 5);
+
+            // Fix endTime if it appears to be before startTime (likely AM/PM issue)
+            const [startHour] = startTime.split(':').map(Number);
+            const [endHour] = endTime.split(':').map(Number);
+
+            if (endHour < startHour && endHour < 12) {
+                // Convert to PM by adding 12 hours
+                endTime = `${(endHour + 12).toString().padStart(2, '0')}:${endTime.split(':')[1]}`;
+            }
+
             timelineEvents.push({
                 id: habit.id,
                 title: habit.title,
-                startTime: habit.startTime.slice(0, 5), // Convert "HH:mm:ss" to "HH:mm"
-                endTime: habit.endTime.slice(0, 5),
+                startTime: startTime,
+                endTime: endTime,
                 type: 'habit',
                 description: habit.description,
                 tags: habit.tags,

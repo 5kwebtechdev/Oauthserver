@@ -16,6 +16,14 @@ export class TimelineComponent implements OnInit {
   selectedDate: string = this.formatDate(new Date());
   selectedType: string = 'all';
 
+  // Completion statistics
+  totalHabits: number = 0;
+  totalHabitsCompleted: number = 0;
+  habitCompletionRate: number = 0;
+  totalTasks: number = 0;
+  totalTasksCompleted: number = 0;
+  taskCompletionRate: number = 0;
+
   constructor(
     private calendarService: CalendarService,
     private router: Router,
@@ -31,6 +39,14 @@ export class TimelineComponent implements OnInit {
       next: (response) => {
         this.allEvents = this.calendarService.transformToTimelineEvents(response);
         this.filterEvents();
+
+        // Update completion statistics
+        this.totalHabits = response.totalHabits || 0;
+        this.totalHabitsCompleted = response.totalHabitsCompleted || 0;
+        this.habitCompletionRate = response.habitCompletionRate || 0;
+        this.totalTasks = response.totalTasks || 0;
+        this.totalTasksCompleted = response.totalTasksCompleted || 0;
+        this.taskCompletionRate = response.taskCompletionRate || 0;
       },
       error: (error) => {
         console.error('Error fetching calendar events:', error);
