@@ -302,6 +302,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       const countryCode = this.selectedCountry.code;
       this.authService.registerRequestOtp(identifier, false, countryCode).subscribe({
         next: (resp) => {
+          this.errorMessage = null; // Clear any previous errors
           this.requestedIdentifier = identifier;
           try {
             if (this.requestedIdentifier) {
@@ -335,13 +336,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       const identifier = this.email?.value;
       this.authService.registerRequestOtp(identifier, true).subscribe({
         next: (resp) => {
+          this.errorMessage = null; // Clear any previous errors
           this.requestedIdentifier = identifier;
           try {
             if (this.requestedIdentifier) {
               sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier);
 
               sessionStorage.setItem('loginMode', this.loginMode);
-              this.errorMessage = '';
             }
           } catch (e) { }
 
@@ -376,6 +377,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.core.triggerToasrt('Please select a role');
       return;
     }
+    this.errorMessage = null; // Clear any previous errors
     // persist role selection
     try { sessionStorage.setItem('signup_role', this.roleSelected); } catch (e) { }
 
@@ -416,7 +418,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       // Last resort: use first pet
       if (!selectedPetName && this.pets.length > 0) {
         selectedPetName = this.pets[0].name;
-        }
+      }
 
       if (selectedPetName) {
         sessionStorage.setItem('signup_pet', selectedPetName);
@@ -441,11 +443,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (age !== null) {
       // Child role: age < 24 is valid, age >= 24 shows popup
       if (this.roleSelected === 'child') {
-        if (age < 24) {
+        if (age < 18) {
+          console.warn('Child age is below 18, which may not be allowed depending on regulations.');
           // Valid age for child role - go to child instructions
           this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
           return;
         } else {
+          console
           // Age >= 24 - show suggestion popup
           this.showAgeSuggestionModal = true;
           return;
@@ -455,10 +459,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       // Parent role: age >= 24 is valid, age < 24 shows popup
       if (this.roleSelected === 'parent') {
         if (age >= 24) {
+          console
           // Valid age for parent role - go to parent instructions
           this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
           return;
         } else {
+          console.warn('Parent age is below 24, which may not be allowed depending on regulations.');
           // Age < 24 - show suggestion popup repeatedly until correct age
           this.showAgeSuggestionModal = true;
           return;
@@ -526,19 +532,21 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // Apply age-based routing rules
     if (role === 'child') {
-      if (age !== null && age < 24) {
-        this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
+      // For child: if age >= 18, show suggestion modal, else go to instructions
+      if (age !== null && age >= 18) {
+        this.showAgeSuggestionModal = true;
         return;
       } else {
-        this.showAgeSuggestionModal = true;
+        this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
         return;
       }
     } else if (role === 'parent') {
-      if (age !== null && age >= 24) {
-        this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
+      // For parent: if age < 24, show suggestion modal, else go to instructions
+      if (age !== null && age < 24) {
+        this.showAgeSuggestionModal = true;
         return;
       } else {
-        this.showAgeSuggestionModal = true;
+        this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
         return;
       }
     } else if (role === 'self') {
@@ -644,32 +652,24 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   closeAgeSuggestionModal(): void {
     this.showAgeSuggestionModal = false;
-    // Reset the age modal state so it doesn't appear when navigating back to step 2
-    // but can appear again if user clicks Save & Continue with wrong age
   }
 
   selectSelfRole(): void {
     this.roleSelected = 'self';
     this.showAgeSuggestionModal = false;
-    // proceed directly to step 4 for Self role (pet selection)
-    this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
+    // Update role in session storage
+    try { sessionStorage.setItem('signup_role', 'self'); } catch (e) { }
+    // Navigate back to step 1 (role selection)
+    this.router.navigate(['home/sign-up'], { queryParams: { step: 1 } });
   }
 
   selectParentRole(): void {
     this.roleSelected = 'parent';
     this.showAgeSuggestionModal = false;
-    // For child users switching to parent role, check age again
-    const dobVal = this.profileForm.get('dob')?.value;
-    const parsedDob = dobVal ? new Date(dobVal) : null;
-    const age = parsedDob ? this.calculateAge(parsedDob) : null;
-
-    if (age !== null && age >= 24) {
-      // Age is valid for parent role, proceed to parent instructions
-      this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
-    } else {
-      // Stay on current step (step 3) so user can update their age
-      // The validation will trigger again when they click Save & Continue
-    }
+    // Update role in session storage
+    try { sessionStorage.setItem('signup_role', 'parent'); } catch (e) { }
+    // Navigate back to step 1 (role selection)
+    this.router.navigate(['home/sign-up'], { queryParams: { step: 1 } });
   }
 
   openCountryCodeModal(): void {
@@ -851,7 +851,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       if (hasValue) {
         this.otpDigits[index] = '';
         currentInput.value = '';
-        
+
         // Immediately move to previous field if it exists (enables continuous deletion when holding backspace)
         if (index > 0) {
           const prevInput = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
@@ -953,7 +953,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     const otp = this.otpDigits.join('');
-    
+
     // Get saved values from session storage if available
     const savedLoginMode = sessionStorage.getItem('loginMode') as 'email' | 'phone' || this.loginMode;
     const identifier = this.requestedIdentifier || (savedLoginMode === 'phone' ? this.phone?.value : this.email?.value);
@@ -962,6 +962,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     this.authService.registerVerifyOtp(identifier || '', otp, isEmail, countryCode).subscribe({
       next: (resp) => {
+        this.errorMessage = null; // Clear any previous errors
         this.clearOtpTimer();
         // Proceed to password creation
         this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
@@ -988,6 +989,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     this.authService.registerRequestOtp(identifier, isEmail, countryCode).subscribe({
       next: () => {
+        this.errorMessage = null; // Clear any previous errors
         this.core.triggerToasrt('OTP resent successfully');
 
         // Reset OTP inputs
@@ -1088,6 +1090,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   proceedWithPassword(): void {
     if (this.passwordForm.valid) {
+      this.errorMessage = null; // Clear any previous errors
       // persist password in session
       try { sessionStorage.setItem('signup_password', this.password?.value || ''); } catch (e) { }
 
@@ -1176,6 +1179,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }    // Call register API
     this.authService.register(payload).subscribe({
       next: (resp) => {
+        this.errorMessage = null; // Clear any previous errors
 
         // Save user profile to UserService
         this.userService.setUserProfile({
