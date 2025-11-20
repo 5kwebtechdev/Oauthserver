@@ -200,8 +200,17 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     console.log(`Long press detected - navigating to ${itemType} detail:`, itemId);
 
-    // Navigate immediately with existing habit data
-    // This avoids the extra API call and loader conflict
+    // Push navigation context so callers (habit-input/habit-detail) can return here
+    // after edits/deletes. Use the current URL as the returnUrl and include a
+    // minimal returnState so navigation back can restore relevant info.
+    try {
+      this.navigationContext.pushContext(this.router.url, { fromLongPress: true, habitId: this.habit.id, type: itemType }, false);
+    } catch (pushErr) {
+      console.warn('Failed to push navigation context before long-press navigation', pushErr);
+    }
+
+    // Navigate immediately with existing habit data. The detail page will
+    // read `history.state` as before to render immediate UI.
     this.router.navigate(['/authed/habit-detail', itemId], {
       state: { habit: this.habit, type: itemType, fromLongPress: true },
       queryParams: { type: itemType }

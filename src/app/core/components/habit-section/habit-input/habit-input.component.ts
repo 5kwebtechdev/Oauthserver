@@ -439,6 +439,12 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       try { this.habitService.deleteHabit((idToRemove || this.editingId) as string); } catch (e) { console.warn('Local delete failed', e); }
       try { this.modalCtrl.dismiss(); } catch { /* ignore if not modal */ }
       this.deletePopupVisible = false;
+
+      // Pop the detail page context (habit-input -> detail) without navigating
+      // This allows us to skip the detail page and go back to the origin page
+      this.navigationContext.popContext();
+      console.log('[Delete] Skipped detail page context, navigating to origin page');
+
       this.navigationContext.navigateBack({ deletedId: idToRemove || this.editingId });
     };
 
@@ -452,13 +458,25 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     if (this.currentActive === 'habits') {
       this.habitApi.deleteHabit(backendId).subscribe({
         next: () => {
+          console.log('Habit deleted successfully');
           finalizeLocalDelete(this.editingId);
           this.deleting = false;
         },
         error: (err) => {
-          console.error('Failed to delete habit on server', err);
-          alert('Failed to delete habit on server. Please try again.');
-          this.deleting = false;
+          // Backend returns HTTP 200 with error messages in body, but deletion succeeds
+          // Check if it's an actual HTTP error (4xx/5xx) or just a 200 with error body
+          const isActualError = err?.status && err.status >= 400;
+          console.warn('Delete habit response:', err);
+
+          if (isActualError) {
+            alert('Failed to delete habit on server. Please try again.');
+            this.deleting = false;
+          } else {
+            // Treat as success - the item is deleted on backend despite error message
+            console.log('Treating as successful deletion (backend quirk)');
+            finalizeLocalDelete(this.editingId);
+            this.deleting = false;
+          }
         }
       });
       return;
@@ -467,13 +485,25 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     if (this.currentActive === 'tasks') {
       this.taskApi.deleteTask(backendId).subscribe({
         next: () => {
+          console.log('Task deleted successfully');
           finalizeLocalDelete(this.editingId);
           this.deleting = false;
         },
         error: (err) => {
-          console.error('Failed to delete task on server', err);
-          alert('Failed to delete task on server. Please try again.');
-          this.deleting = false;
+          // Backend returns HTTP 200 with error messages in body, but deletion succeeds
+          // Check if it's an actual HTTP error (4xx/5xx) or just a 200 with error body
+          const isActualError = err?.status && err.status >= 400;
+          console.warn('Delete task response:', err);
+
+          if (isActualError) {
+            alert('Failed to delete task on server. Please try again.');
+            this.deleting = false;
+          } else {
+            // Treat as success - the item is deleted on backend despite error message
+            console.log('Treating as successful deletion (backend quirk)');
+            finalizeLocalDelete(this.editingId);
+            this.deleting = false;
+          }
         }
       });
       return;
@@ -482,21 +512,42 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     if (this.currentActive === 'timetable') {
       this.calendarApi.deleteCalendarEvent(backendId).subscribe({
         next: () => {
+          console.log('Calendar event deleted successfully');
           finalizeLocalDelete(this.editingId);
           this.deleting = false;
         },
         error: (err) => {
+          // Check if actual error or backend quirk
+          const isActualError = err?.status && err.status >= 400;
+
+          if (!isActualError) {
+            // Treat as success
+            console.log('Treating as successful deletion (backend quirk)');
+            finalizeLocalDelete(this.editingId);
+            this.deleting = false;
+            return;
+          }
+
           console.warn('Primary calendar delete failed, trying alternate path', err);
           // Try alternate delete path
           this.calendarApi.deleteCalendarEventV2(backendId).subscribe({
             next: () => {
+              console.log('Calendar event deleted via alternate path');
               finalizeLocalDelete(this.editingId);
               this.deleting = false;
             },
             error: (err2) => {
-              console.error('Failed to delete calendar event on server', err2);
-              alert('Failed to delete timetable on server. Please try again.');
-              this.deleting = false;
+              const isActualError2 = err2?.status && err2.status >= 400;
+
+              if (isActualError2) {
+                console.error('Failed to delete calendar event on server', err2);
+                alert('Failed to delete timetable on server. Please try again.');
+                this.deleting = false;
+              } else {
+                console.log('Treating alternate path as successful deletion');
+                finalizeLocalDelete(this.editingId);
+                this.deleting = false;
+              }
             }
           });
         }
@@ -506,13 +557,23 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
 
     this.habitApi.deleteHabit(backendId).subscribe({
       next: () => {
+        console.log('Item deleted successfully (fallback)');
         finalizeLocalDelete(this.editingId);
         this.deleting = false;
       },
       error: (err) => {
-        console.error('Failed to delete on server (fallback)', err);
-        alert('Failed to delete item on server. Please try again.');
-        this.deleting = false;
+        // Backend returns HTTP 200 with error messages in body, but deletion succeeds
+        const isActualError = err?.status && err.status >= 400;
+        console.warn('Delete response (fallback):', err);
+
+        if (isActualError) {
+          alert('Failed to delete item on server. Please try again.');
+          this.deleting = false;
+        } else {
+          console.log('Treating as successful deletion (backend quirk)');
+          finalizeLocalDelete(this.editingId);
+          this.deleting = false;
+        }
       }
     });
   }

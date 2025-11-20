@@ -117,11 +117,21 @@ export class HabitPageComponent implements OnInit, OnDestroy {
         next: (res: any) => {
           const list = res?.data || res?.tasks || res || [];
           this.tasks = Array.isArray(list) ? list : [];
-          this.tasks = this.tasks.map((t: any) => ({
-            ...t,
-            startTimeStamp: this.getTaskStartTimestamp(t),
-            endTimeStamp: this.getTaskEndTimestamp(t)
-          }));
+          // Ensure each task item and any nested `task.task` object has a `type` so
+          // `habit-card` can apply the correct task styles (checks `habit?.type === 'tasks'`).
+          this.tasks = this.tasks.map((t: any) => {
+            const base = {
+              ...t,
+              type: t.type || 'tasks',
+              startTimeStamp: this.getTaskStartTimestamp(t),
+              endTimeStamp: this.getTaskEndTimestamp(t)
+            };
+            // If API returns a nested `task` object, ensure it also carries `type: 'tasks'`.
+            if (base.task && typeof base.task === 'object') {
+              base.task = { ...base.task, type: base.task.type || 'tasks' };
+            }
+            return base;
+          });
           this.loading = false;
           this.applyFilters();
         },
