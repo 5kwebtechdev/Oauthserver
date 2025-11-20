@@ -22,7 +22,6 @@ export interface Habit {
   tags?: string[];
   coinReward?: number;
   daysOfWeek?: string[]; // e.g., ['Monday', 'Wednesday']
-  everyWeekend?: boolean;
   // Additional optional analytics fields fetched from backend
   description?: string;
   streak?: number;

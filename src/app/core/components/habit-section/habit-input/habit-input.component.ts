@@ -16,6 +16,7 @@ import { TaskApi } from '../../../api/task.api';
 import { CalendarApi } from '../../../api/calendar.api';
 import { Habit } from '../habit.types';
 import { Router } from '@angular/router';
+import { NavigationContextService } from '../../../services/navigation-context.service';
 
 @Component({
   standalone: true,
@@ -108,7 +109,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     private router: Router,
     private taskApi: TaskApi,
     private calendarApi: CalendarApi,
-    private habitApi: HabitApi
+    private habitApi: HabitApi,
+    private navigationContext: NavigationContextService
   ) { }
 
   get navigatorActions(): Array<{ type: 'edit' | 'icon', src?: string, alt?: string }> {
@@ -211,13 +213,13 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     const selectedShortDays = Array.from(this.selectedDays);
     let daysOfWeek: string[] = selectedShortDays.map(d => dayMap[d] || d.toString().toUpperCase());
     if (this.everyday) daysOfWeek = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
-    const isWeekendOnly = daysOfWeek.length === 2 && daysOfWeek.includes('SATURDAY') && daysOfWeek.includes('SUNDAY');
 
     const formatDateStr = (d: Date | null) => d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : '';
     const tags = Array.isArray(this.selectedTags) && this.selectedTags.length ? this.selectedTags.map(t => t.value || t.key) : [];
     const priority = (habit.priority || 'medium').toString().toUpperCase();
     const routine = ((habit.selectedRoutine || this.selectedRoutine) || 'MORNING').toString().toUpperCase();
 
+    const fullWeekDays = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
     let payload: any;
     if (this.currentActive === 'tasks') {
       // Build API payload to match /tasks/add endpoint (top-level fields)
@@ -233,12 +235,11 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         endDate: formatDateStr(this.endDate) || '',
         endTime: formattedEndTime || '',
         everyday: !!habit.everyday,
-        everyWeekend: !!isWeekendOnly,
         rewardCoins: habit.coinReward ?? 5,
-        daysOfWeek: this.everyday ? [] : daysOfWeek
+        daysOfWeek: this.everyday ? fullWeekDays : daysOfWeek
       };
     } else if (this.currentActive === 'timetable') {
-      payload = { title: habit.title, notes: habit.notes || '', tags, everyday: !!habit.everyday, everyWeekend: false, daysOfWeek: this.everyday ? [] : daysOfWeek, startTime: formattedStartTime || '', endTime: formattedEndTime || '', startDate: formatDateStr(this.startDate) || '', endDate: formatDateStr(this.endDate) || '', priority };
+      payload = { title: habit.title, notes: habit.notes || '', tags, everyday: !!habit.everyday, daysOfWeek: this.everyday ? fullWeekDays : daysOfWeek, startTime: formattedStartTime || '', endTime: formattedEndTime || '', startDate: formatDateStr(this.startDate) || '', endDate: formatDateStr(this.endDate) || '', priority };
     } else {
       // Habit API expects top level fields; keep contract consistent
       payload = {
@@ -253,7 +254,6 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         endDate: formatDateStr(this.endDate) || '',
         endTime: formattedEndTime || '',
         everyday: !!habit.everyday,
-        everyWeekend: !!isWeekendOnly,
         coinReward: 5,
         daysOfWeek: this.everyday ? ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'] : daysOfWeek
       };
@@ -281,7 +281,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
               selectedRoutine: created?.routine ?? habit.selectedRoutine,
               routineTags: this.routineTags,
               everyday: !!created?.everyday,
-              selectedDays: Array.isArray(created?.daysOfWeek) ? created.daysOfWeek : (this.everyday ? this.weekdays : Array.from(this.selectedDays)),
+              selectedDays: Array.isArray(created?.daysOfWeek) ? created.daysOfWeek : (this.everyday ? fullWeekDays : daysOfWeek),
               priority: (created?.priority ?? habit.priority) as any,
               routine: created?.routine ?? habit.routine,
               status: created?.status ?? habit.status,
@@ -295,12 +295,11 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
               completionPercentage: created?.completionPercentage ?? created?.completionRate ?? 0,
               totalCompletedDays: created?.totalCompletedDays ?? created?.completedDays ?? 0,
               milestoneBadges: created?.milestoneBadges ?? created?.badgeList ?? null,
-              daysOfWeek: Array.isArray(created?.daysOfWeek) ? created.daysOfWeek : this.everyday ? [] : daysOfWeek,
-              everyWeekend: !!created?.everyWeekend
+              daysOfWeek: Array.isArray(created?.daysOfWeek) ? created.daysOfWeek : (this.everyday ? fullWeekDays : daysOfWeek)
             };
             this.habitService.addHabit(createdTaskHabit);
             this.modalCtrl.dismiss();
-            this.router.navigate(['/habit-page'], { state: { newHabit: createdTaskHabit, showSingleMode: true, initialTab: 'tasks' } });
+            this.navigationContext.navigateBack({ newHabit: createdTaskHabit, showSingleMode: true, initialTab: 'tasks' });
           } finally {
             this.isSubmitting = false;
           }
@@ -315,7 +314,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       this.isSubmitting = true;
       this.calendarApi.addCalendarEvent(payload).subscribe({
         next: (res) => {
-          try { this.habitService.addHabit(habit); this.modalCtrl.dismiss(); this.router.navigate(['/habit-page'], { state: { newHabit: habit, showSingleMode: true, initialTab: 'timetable' } }); }
+          try { this.habitService.addHabit(habit); this.modalCtrl.dismiss(); this.navigationContext.navigateBack({ newHabit: habit, showSingleMode: true, initialTab: 'timetable' }); }
           finally { this.isSubmitting = false; }
         },
         error: (err) => { this.isSubmitting = false; console.error('Failed to create calendar event', err); alert('Failed to create timetable. Please try again.'); }
@@ -359,7 +358,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
               };
               this.habitService.updateHabit(updated);
               this.modalCtrl.dismiss();
-              this.router.navigate(['/habit-page'], { state: { updatedHabit: updated, showSingleMode: true } });
+              this.navigationContext.navigateBack({ updatedHabit: updated, showSingleMode: true });
             } finally { this.isSubmitting = false; }
           },
           error: (err) => { this.isSubmitting = false; console.error('Failed to update habit', err); alert('Failed to update habit. Please try again.'); }
@@ -402,7 +401,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
               };
               this.habitService.addHabit(createdHabit);
               this.modalCtrl.dismiss();
-              this.router.navigate(['/habit-page'], { state: { newHabit: createdHabit, showSingleMode: true } });
+              this.navigationContext.navigateBack({ newHabit: createdHabit, showSingleMode: true });
             } finally { this.isSubmitting = false; }
           },
           error: (err) => { this.isSubmitting = false; console.error('Failed to create habit', err); alert('Failed to create habit. Please try again.'); }
@@ -440,7 +439,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       try { this.habitService.deleteHabit((idToRemove || this.editingId) as string); } catch (e) { console.warn('Local delete failed', e); }
       try { this.modalCtrl.dismiss(); } catch { /* ignore if not modal */ }
       this.deletePopupVisible = false;
-      this.router.navigate(['/habit-page'], { state: { deletedId: idToRemove || this.editingId } });
+      this.navigationContext.navigateBack({ deletedId: idToRemove || this.editingId });
     };
 
     if (!backendId) {

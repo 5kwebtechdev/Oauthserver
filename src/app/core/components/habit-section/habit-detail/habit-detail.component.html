@@ -32,7 +32,9 @@
             <div class="habit-detail-focus d-flex  align-items-center gap-2">
                 <img class="routine-icon" [src]="getRoutineIcon()" [alt]="getRoutineName() + ' Routine Icon'" width="24"
                     height="24" />
-                <mindful-badge *ngIf="habit?.tags?.[0]" type="habit-detail-orange" [text]="habit?.tags?.[0] || 'Focus'">
+                <mindful-badge *ngIf="habit"
+                    [type]="cameFromLongPress && navigationOriginType === 'habits' ? 'habit' : 'habit-detail-orange'"
+                    [text]="habit?.tags?.[0] || 'Focus'">
                 </mindful-badge>
             </div>
         </div>
@@ -65,7 +67,11 @@
             </div>
         </div>
         <div class="detail-cta">
-            <mindful-button class="w-full" type="orange" medium text="Let's Go"></mindful-button>
+            <mindful-button [ngClass]="cameFromLongPress && navigationOriginType === 'habits' ? 'w-100' : 'w-full'"
+                [type]="cameFromLongPress && navigationOriginType === 'habits' ? 'lavendar' : 'orange'"
+                [style.width]="cameFromLongPress && navigationOriginType === 'habits' ? '100%' : null" medium
+                text="Let's Go">
+            </mindful-button>
             <mindful-button class="w-full" type="green" medium text="Done?"></mindful-button>
         </div>
 

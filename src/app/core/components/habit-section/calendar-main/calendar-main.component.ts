@@ -10,6 +10,8 @@ import { CalendarService } from '../../../services/calendar.service';
 import { MoodService } from '../../../services/mood.service';
 import { MoodTransition, MoodData } from '../../../models/mood.model';
 import { Subject, takeUntil } from 'rxjs';
+import { NavigationContextService } from '../../../services/navigation-context.service';
+import { Router } from '@angular/router';
 
 @Component({
   standalone: true,
@@ -32,7 +34,9 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   constructor(
     private modalCtrl: ModalController,
     private calendarService: CalendarService,
-    private moodService: MoodService
+    private moodService: MoodService,
+    private navigationContext: NavigationContextService,
+    private router: Router
   ) {
     console.log('CalendarMainComponent initialized');
   }
@@ -320,12 +324,22 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   }
 
   async openHabitInput() {
+    // Store context - calendar opened as modal
+    this.navigationContext.pushContext('/authed/calendar', { selectedDate: this.selectedDate }, true);
+
     const { HabitInputComponent } = await import('../habit-input/habit-input.component');
     const modal = await this.modalCtrl.create({
       component: HabitInputComponent,
       componentProps: {}
     });
     await modal.present();
+
+    // Reload calendar data when modal is dismissed
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      this.loadCalendarData();
+      this.updateHabitsAndTasksForSelectedDate();
+    }
   }
 
   // Determine if an item (habit or task) is currently in progress based on start/end timestamps

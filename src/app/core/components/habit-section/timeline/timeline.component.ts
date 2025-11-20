@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CalendarService } from '../../../services/calendar.service';
 import { TimelineEvent } from '../../../models/calendar.model';
+import { NavigationContextService } from '../../../services/navigation-context.service';
 
 @Component({
   selector: 'app-timeline',
@@ -17,7 +18,8 @@ export class TimelineComponent implements OnInit {
 
   constructor(
     private calendarService: CalendarService,
-    private router: Router
+    private router: Router,
+    private navigationContext: NavigationContextService
   ) { }
 
   ngOnInit() {
@@ -72,6 +74,8 @@ export class TimelineComponent implements OnInit {
   }
 
   onAddClick(): void {
+    // Store the timeline route context before navigating
+    this.navigationContext.pushContext('/authed/timeline', { selectedDate: this.selectedDate, selectedType: this.selectedType });
     this.router.navigateByUrl('/authed/habit-input');
   }
 }

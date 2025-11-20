@@ -15,6 +15,7 @@ import { CoerceBoolean } from "../../../coerceBoolean.decorator";
 import { Habit } from '../habit.types';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
 import { Subscription } from 'rxjs';
+import { NavigationContextService } from '../../../services/navigation-context.service';
 
 @Component({
   selector: 'habit-card',
@@ -90,7 +91,8 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
     private taskApi: TaskApi,
     private habitService: HabitService,
     private modalCtrl: ModalController,
-    private router: Router
+    private router: Router,
+    private navigationContext: NavigationContextService
   ) {
     this.habitCardService.lastToggled$.subscribe((data: any) => {
       if (!data) return;
@@ -160,7 +162,6 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
       endDate: habit.endDate ? this.formatDateForApi(habit.endDate) : undefined,
       endTime: habit.endTime ? `${habit.endTime}:00` : undefined,
       everyday: (habit as any).everyday || false,
-      everyWeekend: (habit as any).everyWeekend || false,
       daysOfWeek: habit.selectedDays || []
     };
   }
@@ -192,37 +193,21 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    // Simply navigate with the current habit data we already have
+    // The detail page will load fresh data if needed
     const itemType = this.habit.type || 'habits';
     const itemId = Number(this.habit.id);
 
-    // Fetch detail from appropriate API based on type
-    if (itemType === 'tasks') {
-      this.taskApi.getTaskById(itemId).subscribe({
-        next: (res) => {
-          console.log('Task detail fetched on long press:', res);
-          // Navigate to habit detail page, passing type and full detail via state
-          this.router.navigate(['/authed/habit-detail', res.id], {
-            state: { habit: res, type: 'tasks' }
-          });
-        },
-        error: (err) => {
-          console.error('Error fetching task detail:', err);
-        }
-      });
-    } else {
-      this.habitApi.getHabitById(itemId).subscribe({
-        next: (res) => {
-          console.log('Habit detail fetched on long press:', res);
-          // Navigate to habit detail page, passing type and full detail via state
-          this.router.navigate(['/authed/habit-detail', res.id], {
-            state: { habit: res, type: 'habits' }
-          });
-        },
-        error: (err) => {
-          console.error('Error fetching habit detail:', err);
-        }
-      });
-    }
+    console.log(`Long press detected - navigating to ${itemType} detail:`, itemId);
+
+    // Navigate immediately with existing habit data
+    // This avoids the extra API call and loader conflict
+    this.router.navigate(['/authed/habit-detail', itemId], {
+      state: { habit: this.habit, type: itemType, fromLongPress: true },
+      queryParams: { type: itemType }
+    }).catch(err => {
+      console.error('Navigation to habit detail failed:', err);
+    });
   }
 
   async openHabitPage() {
@@ -237,6 +222,10 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async openHabitInput() {
+    // Store context - habit-card can be on various pages, use current URL
+    const currentUrl = this.router.url;
+    this.navigationContext.pushContext(currentUrl, { currentActive: this.currentActive }, true);
+
     // Open the habit input as a modal
     const { HabitInputComponent } = await import('../habit-input/habit-input.component');
     const modal = await this.modalCtrl.create({
@@ -244,6 +233,12 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
       componentProps: {}
     });
     await modal.present();
+
+    // Reload habits/tasks when modal is dismissed
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      this.switchTab(this.currentActive);
+    }
   }
 
   ngOnInit() {

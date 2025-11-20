@@ -13,6 +13,8 @@ import { MindfulCalendarComponent } from '../../mindful-inputs/mindful-calendar/
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
+import { NavigationContextService } from '../../../services/navigation-context.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   standalone: true,
@@ -25,6 +27,11 @@ import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.compone
 export class HabitDetailComponent implements OnChanges {
   public title: string = 'Habit Details';
 
+  // true when navigated from a long-press on a card
+  public cameFromLongPress: boolean = false;
+  // 'habits' | 'tasks' | 'timetable' - origin type from navigation state
+  public navigationOriginType: string = '';
+
   @Input()
   public habit: Habit | null = null;
 
@@ -32,13 +39,18 @@ export class HabitDetailComponent implements OnChanges {
     private router: Router,
     private route: ActivatedRoute,
     private HabitApi: HabitApi,
-    private TaskApi: TaskApi
+    private TaskApi: TaskApi,
+    private navigationContext: NavigationContextService
   ) { }
 
   ngOnInit() {
     // Try to get state from router's current navigation state
     const stateHabit = history.state?.['habit'];
     const habitType = history.state?.['type'] || stateHabit?.type;
+
+    // Detect whether we arrived here via a long-press navigation
+    this.cameFromLongPress = !!history.state?.['fromLongPress'];
+    this.navigationOriginType = String(history.state?.['type'] || stateHabit?.type || habitType || 'habits');
 
     if (stateHabit) {
       this.habit = stateHabit;
@@ -70,7 +82,12 @@ export class HabitDetailComponent implements OnChanges {
   loadDetail(id: number, type: 'habits' | 'tasks' | 'timetable') {
     const api$ = type === 'tasks' ? this.TaskApi.getTaskById(id) : this.HabitApi.getHabitById(id);
 
-    api$.subscribe({
+    api$.pipe(
+      finalize(() => {
+        // Ensure any cleanup happens even if there's an error
+        console.log(`Completed loading ${type} detail (success or error)`);
+      })
+    ).subscribe({
       next: (res) => {
         this.habit = this.normalizeResponse(res, type);
         // Setup computed display values
@@ -80,6 +97,7 @@ export class HabitDetailComponent implements OnChanges {
       },
       error: (err) => {
         console.error(`Error loading ${type} detail:`, err);
+        // Could show error message to user here
       }
     });
   }
@@ -102,7 +120,6 @@ export class HabitDetailComponent implements OnChanges {
       selectedRoutine: res.routine || '',
       routineTags: [],
       everyday: res.everyday || false,
-      everyWeekend: res.everyWeekend || false,
       selectedDays: res.daysOfWeek || [],
       daysOfWeek: res.daysOfWeek || [],
       priority: (res.priority?.toLowerCase() || 'medium') as 'low' | 'medium' | 'high',
@@ -233,10 +250,7 @@ export class HabitDetailComponent implements OnChanges {
       return 'Everyday';
     }
 
-    // 2️⃣ If everyWeekend flag true (explicit)
-    if (this.habit?.everyWeekend) {
-      return 'Sat, Sun';
-    }
+    // 2️⃣ No special weekend flag — rely on daysOfWeek or everyday
 
     // 3️⃣ Normalize and format the days in canonical Mon..Sun order
     const canonicalOrder = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
@@ -261,6 +275,9 @@ export class HabitDetailComponent implements OnChanges {
   }
 
   onEdit() {
+    // Store the current route context before navigating
+    this.navigationContext.pushContext('/authed/habit-detail', { habit: this.habit });
+
     // Navigate to the habit-input page and pass the current habit/task in navigation state
     if (this.habit) {
       this.router.navigate(['/authed/habit-input'], {

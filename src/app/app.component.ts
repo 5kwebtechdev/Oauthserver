@@ -44,6 +44,12 @@ export class AppComponent implements OnInit {
         }
         // small delay to avoid flicker in UI (spinner overlay may remain for minVisible)
         setTimeout(() => this.loading = false, 80);
+
+        // Extra safety: if navigation failed, ensure loader is reset
+        if (event instanceof NavigationError) {
+          console.warn('[AppComponent] Navigation error detected, ensuring loader is reset');
+          setTimeout(() => this.loadingService.reset(), 200);
+        }
       }
     });
   }

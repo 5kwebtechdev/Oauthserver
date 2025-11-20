@@ -31,15 +31,27 @@ export class MoodSelectorComponent {
   // popup state
   showPopup = false;
   popupSelection: string | null = null;
-  // Exact icon files found in the repo
+
+  // Mood to asset mapping (backend mood -> asset path)
+  private readonly moodAssetMap: Record<string, string> = {
+    'HAPPY': '/assets/Images-Transparent/Image-Mood-Happy.png',
+    'VERY HAPPY': '/assets/Images-Transparent/Image-Mood-Very happy.png',
+    'EXCITED': '/assets/Images-Transparent/Image-Mood-Excited.png',
+    'SAD': '/assets/Images-Transparent/Image-Mood-Sad.png',
+    'VERY SAD': '/assets/Images-Transparent/Image-Mood-Upset.png',
+    'UPSET': '/assets/Images-Transparent/Image-Mood-Upset.png',
+    'NERVOUS': '/assets/Images-Transparent/Image-Mood-Nervous.png',
+    'NEUTRAL': '/assets/Images-Transparent/Mood-emoji-neutral-home.png'
+  };
+
+  // Popup options - Neutral is NOT shown in popup, only as default
   popupOptions = [
-    { src: '/assets/Images-Transparent/Image-Mood-Very happy.png', label: 'Very happy' },
-    { src: '/assets/Images-Transparent/Image-Mood-Happy.png', label: 'Happy' },
-    { src: '/assets/Images-Transparent/Image-Mood-Excited.png', label: 'Excited' },
-    { src: '/assets/Images-Transparent/Image-Mood-Sad.png', label: 'Sad' },
-    { src: '/assets/Images-Transparent/Image-Mood-Upset.png', label: 'Very sad' },
-    { src: '/assets/Images-Transparent/Image-Mood-Nervous.png', label: 'Nervous' },
-    { src: '/assets/Images-Transparent/Mood-emoji-neutral-home.png', label: 'neutral' }
+    { src: '/assets/Images-Transparent/Image-Mood-Very happy.png', label: 'Very happy', vibe: 'VERY HAPPY' },
+    { src: '/assets/Images-Transparent/Image-Mood-Happy.png', label: 'Happy', vibe: 'HAPPY' },
+    { src: '/assets/Images-Transparent/Image-Mood-Excited.png', label: 'Excited', vibe: 'EXCITED' },
+    { src: '/assets/Images-Transparent/Image-Mood-Sad.png', label: 'Sad', vibe: 'SAD' },
+    { src: '/assets/Images-Transparent/Image-Mood-Upset.png', label: 'Very sad', vibe: 'VERY SAD' },
+    { src: '/assets/Images-Transparent/Image-Mood-Nervous.png', label: 'Nervous', vibe: 'NERVOUS' }
   ];
 
   ngOnInit() {
@@ -55,19 +67,30 @@ export class MoodSelectorComponent {
         console.debug('[MoodSelector] Vibes display:', res);
         this.vibes = Array.isArray(res) ? res : [];
 
-        // Derive a simple current value for the existing header from the first item
+        // Map backend mood to asset path
         const first = this.vibes[0];
         if (first && first.mood) {
-          this.value = first.mood?.toLowerCase?.() || 'neutral';
+          const moodUpper = first.mood.toUpperCase();
+          const assetPath = this.moodAssetMap[moodUpper];
+
+          if (assetPath) {
+            // Set as asset reference
+            this.value = 'asset:' + assetPath;
+          } else {
+            // Fallback to neutral asset if mood not found
+            this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
+          }
         } else {
-          this.value = 'neutral';
+          // No mood set, use neutral asset as default
+          this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
         }
-        this.valueChange.emit(this.value || 'neutral');
+        this.valueChange.emit(this.value);
       },
       error: (err) => {
         console.error('Failed to fetch vibes display', err);
         this.vibes = [];
-        this.value = 'neutral';
+        // On error, show neutral asset
+        this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
       }
     });
   }
@@ -94,22 +117,13 @@ export class MoodSelectorComponent {
     if (!this.popupSelection) return;
 
     const opt = this.popupOptions.find(p => p.src === this.popupSelection);
-    let vibeKey = '';
-    if (opt && opt.label) {
-      const lab = opt.label.toLowerCase();
-      if (lab.includes('happy')) vibeKey = 'happy';
-      else if (lab.includes('excited')) vibeKey = 'excited';
-      else if (lab.includes('sad')) vibeKey = 'sad';
-      else if (lab.includes('nervous') || lab.includes('neutral')) vibeKey = 'neutral';
-      else vibeKey = lab.replace(/\s+/g, '_');
-    }
+    if (!opt) return;
 
-    if (!vibeKey && this.value && !String(this.value).startsWith('asset:')) {
-      vibeKey = String(this.value);
-    }
+    // Use the vibe property from popup option for accurate backend mapping
+    const vibeKey = opt.vibe || 'NEUTRAL';
 
     const url = `${environment.apiUrl}/mood/vibes/set`;
-    const body = { vibe: vibeKey || 'neutral' };
+    const body = { vibe: vibeKey };
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     let token = this.authApi?.getToken?.() || (environment && environment.apiAuthToken) || null;
 
@@ -125,6 +139,8 @@ export class MoodSelectorComponent {
         this.showPopup = false;
         // Clear the cache so next call fetches fresh data
         this.moodService.clearVibesDisplayCache();
+        // Refresh vibe display to get updated data
+        this.getTodayVibe();
       },
       error: (err) => {
         console.error('Failed to set vibe', err);

@@ -18,6 +18,8 @@ export class LoadingService {
     private _activeCount = 0;
     private _showStart = 0;
     private _currentMinVisible = 0;
+    private _safetyTimer?: any;
+    private readonly SAFETY_TIMEOUT = 30000; // 30 seconds - auto-hide stuck loaders
 
     get isLoading$(): Observable<boolean> {
         return this._visible$.asObservable();
@@ -53,6 +55,9 @@ export class LoadingService {
                 this._showStart = Date.now();
                 this._currentMinVisible = minVisible;
                 this._visible$.next(true);
+
+                // Start safety timer to auto-hide if loader gets stuck
+                this._startSafetyTimer();
             }
         }, delay);
 
@@ -95,8 +100,32 @@ export class LoadingService {
 
     private _finalizeHide() {
         if (this._activeCount === 0 && this._pending.size === 0) {
+            this._clearSafetyTimer();
             this._message$.next(undefined);
             this._visible$.next(false);
+        }
+    }
+
+    /**
+     * Start a safety timer to auto-hide loader if it gets stuck
+     */
+    private _startSafetyTimer() {
+        this._clearSafetyTimer();
+        this._safetyTimer = setTimeout(() => {
+            if (this._visible$.value) {
+                console.warn('[LoadingService] Safety timeout triggered - force hiding stuck loader');
+                this.reset();
+            }
+        }, this.SAFETY_TIMEOUT);
+    }
+
+    /**
+     * Clear the safety timer
+     */
+    private _clearSafetyTimer() {
+        if (this._safetyTimer) {
+            clearTimeout(this._safetyTimer);
+            this._safetyTimer = undefined;
         }
     }
 
@@ -107,6 +136,7 @@ export class LoadingService {
         this._pending.forEach(r => r.showTimer && clearTimeout(r.showTimer));
         this._pending.clear();
         this._activeCount = 0;
+        this._clearSafetyTimer();
         this._message$.next(undefined);
         this._visible$.next(false);
     }

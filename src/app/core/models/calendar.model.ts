@@ -21,7 +21,6 @@ export interface CalendarEvent {
     daysOfWeek: string[];
     priority: 'HIGH' | 'MEDIUM' | 'LOW';
     everyday: boolean;
-    everyWeekend: boolean;
 }
 
 export interface CalendarHabit {
@@ -41,7 +40,6 @@ export interface CalendarHabit {
     updatedAt: string;
     coinReward: number;
     everyday: boolean;
-    everyWeekend: boolean;
     tags: string[];
 }
 
