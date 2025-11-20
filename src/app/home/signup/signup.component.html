@@ -211,7 +211,7 @@
     <div *ngIf="step === 2" [@slideIn]>
       <div class="profile">
         <form [formGroup]="profileForm">
-          <h4>Full Name <span>Just for Setup. Never Shown</span></h4>
+          <h4>Full Name <span>Helps us address you respectfully.</span></h4>
           <div class="input-group">
             <input [ngClass]="{'error' : name?.invalid && (email?.dirty)}" formControlName="name" type="text"
               placeholder="Full Name" />
@@ -219,7 +219,7 @@
               Oops! That email looks off. Please check it again.
             </div>
           </div>
-          <h4>Date of Birth <span>To Match Content to your Age</span></h4>
+          <h4>Date of Birth <span></span></h4>
           <div class="input-group">
             <!--            <input  formControlName="dob" type="text" placeholder="Date of Birth" />-->
             <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" [showTrigger]="openBirthdayPicker"
@@ -227,7 +227,7 @@
               <input type="text" formControlName="dob" (click)="openBirthdayPickerNow()" placeholder="Date of Birth" />
             </mindful-birthdaypicker>
           </div>
-          <h4>Gender <span>Used for small personalisation touches</span></h4>
+          <h4>Gender <span>Used for identifying relation</span></h4>
           <div class="row">
             <div class="col-6">
               <div class="gender-select-button" (click)="gender = 'male'"

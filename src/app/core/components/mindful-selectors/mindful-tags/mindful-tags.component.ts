@@ -260,7 +260,6 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
     const val = (this.addingValue || '').trim();
     if (val) {
       const key = Date.now();
-      this.options.push({ key, value: val, type: 'habit-input' });
       this.add.emit({ key, value: val });
     }
     this.cancelAdd();

@@ -22,6 +22,10 @@ import {
 export class MindfulDatepickerComponent implements ControlValueAccessor {
   @Input() type: 'date' | 'range' = 'date';
   @Input() placeholder: string = '';
+  @Input() minDate: Date | null = null;
+  // Optional external range endpoints to allow highlighting when this is used as a single-date picker
+  @Input() rangeStart: Date | null = null;
+  @Input() rangeEnd: Date | null = null;
 
   isOpen = false;
   currentMonth = new Date();
@@ -29,13 +33,29 @@ export class MindfulDatepickerComponent implements ControlValueAccessor {
   startDate: Date | null = null;
   endDate: Date | null = null;
 
-  private onChange = (_: any) => {};
-  private onTouched = () => {};
+  private onChange = (_: any) => { };
+  private onTouched = () => { };
 
-  constructor(private eRef: ElementRef) {}
+  constructor(private eRef: ElementRef) { }
 
   toggleCalendar() {
+    const wasOpen = this.isOpen;
     this.isOpen = !this.isOpen;
+
+    if (!wasOpen && this.isOpen) {
+      // When opening, set currentMonth to show the appropriate month
+      if (this.startDate) {
+        this.currentMonth = new Date(this.startDate.getFullYear(), this.startDate.getMonth(), 1);
+      } else {
+        this.currentMonth = new Date();
+      }
+
+      // For single-date pickers with no value, pre-select minDate or today
+      if (this.type === 'date' && !this.startDate) {
+        const defaultDate = this.minDate ? new Date(this.minDate) : new Date();
+        this.startDate = new Date(defaultDate.getFullYear(), defaultDate.getMonth(), defaultDate.getDate());
+      }
+    }
   }
 
   prevMonth() {
@@ -48,9 +68,16 @@ export class MindfulDatepickerComponent implements ControlValueAccessor {
 
   selectDate(date: Date) {
     date = new Date(date); // Ensure it's a new Date instance
+    // normalize incoming date to date-only
+    date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    if (this.minDate) {
+      const min = new Date(this.minDate.getFullYear(), this.minDate.getMonth(), this.minDate.getDate());
+      if (date < min) return; // do not select past dates
+    }
     if (this.type === 'date') {
+      // For single-date instances, set the internal startDate and emit immediately for live preview
       this.startDate = date;
-      this.endDate = null;
+      this.onChange(this.startDate);
     } else {
       if (this.selectingStart) {
         this.startDate = date;
@@ -112,15 +139,42 @@ export class MindfulDatepickerComponent implements ControlValueAccessor {
     return days;
   }
 
+  isDisabled(date: Date): boolean {
+    if (!this.minDate) return false;
+    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const min = new Date(this.minDate.getFullYear(), this.minDate.getMonth(), this.minDate.getDate());
+    return d < min;
+  }
+
+  private normalize(d: Date | null): Date | null {
+    if (!d) return null;
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  getEffectiveStart(): Date | null {
+    // Prefer external provided rangeStart when present, otherwise internal startDate
+    return this.normalize(this.rangeStart ?? this.startDate);
+  }
+
+  getEffectiveEnd(): Date | null {
+    // Prefer external provided rangeEnd when present, otherwise internal endDate
+    return this.normalize(this.rangeEnd ?? this.endDate);
+  }
+
   isInRange(date: Date): boolean {
-    if (this.startDate && this.endDate) {
-      return date >= this.startDate && date <= this.endDate;
+    const start = this.getEffectiveStart();
+    const end = this.getEffectiveEnd();
+    if (start && end) {
+      return date >= start && date <= end;
     }
     return false;
   }
 
   isSameDay(date1: Date, date2: any): boolean {
-    return date1 && date2 && date1.toDateString() === date2.toDateString();
+    if (!date1 || !date2) return false;
+    const d1 = this.normalize(date1);
+    const d2 = this.normalize(new Date(date2));
+    return d1!.toDateString() === d2!.toDateString();
   }
 
   @HostListener('document:click', ['$event'])
@@ -133,16 +187,16 @@ export class MindfulDatepickerComponent implements ControlValueAccessor {
   isDateinCurrentMonth(date: Date) {
     // Check if the date is in the current month
     return date.getFullYear() === this.currentMonth.getFullYear() &&
-           date.getMonth() === this.currentMonth.getMonth();
+      date.getMonth() === this.currentMonth.getMonth();
   }
 
   isStartOfRange(date: Date) {
-    // Check if the date is the start of the selected range
-    return this.startDate && this.isSameDay(date, this.startDate);
+    const start = this.getEffectiveStart();
+    return start && this.isSameDay(date, start);
   }
 
   isEndOfRange(date: Date) {
-    // Check if the date is the end of the selected range
-    return this.endDate && this.isSameDay(date, this.endDate);
+    const end = this.getEffectiveEnd();
+    return end && this.isSameDay(date, end);
   }
 }

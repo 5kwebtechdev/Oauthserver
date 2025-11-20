@@ -95,13 +95,15 @@
             <div class="d-flex align-items-center gap-2 justify-content-between w-100">
               <label>Start Date</label>
               <div class="mindful-input-group">
-                <mindful-datepicker type="date" [(ngModel)]="startDate"></mindful-datepicker>
+                <mindful-datepicker type="date" [(ngModel)]="startDate" [minDate]="today" [rangeStart]="startDate"
+                  [rangeEnd]="endDate"></mindful-datepicker>
               </div>
             </div>
             <div class="d-flex align-items-center gap-2 justify-content-between w-100">
               <label>End Date</label>
               <div class="mindful-input-group">
-                <mindful-datepicker type="date" [(ngModel)]="endDate"></mindful-datepicker>
+                <mindful-datepicker type="date" [(ngModel)]="endDate" [minDate]="startDate || today"
+                  [rangeStart]="startDate" [rangeEnd]="endDate"></mindful-datepicker>
               </div>
             </div>
 
@@ -210,13 +212,15 @@
             <div class="d-flex align-items-center gap-2 justify-content-between w-100">
               <label>Start Date</label>
               <div class="mindful-input-group">
-                <mindful-datepicker type="date" [(ngModel)]="startDate"></mindful-datepicker>
+                <mindful-datepicker type="date" [(ngModel)]="startDate" [minDate]="today" [rangeStart]="startDate"
+                  [rangeEnd]="endDate"></mindful-datepicker>
               </div>
             </div>
             <div class="d-flex align-items-center gap-2 justify-content-between w-100">
               <label>End Date</label>
               <div class="mindful-input-group">
-                <mindful-datepicker type="date" [(ngModel)]="endDate"></mindful-datepicker>
+                <mindful-datepicker type="date" [(ngModel)]="endDate" [minDate]="startDate || today"
+                  [rangeStart]="startDate" [rangeEnd]="endDate"></mindful-datepicker>
               </div>
             </div>
 
@@ -318,13 +322,15 @@
             <div class="d-flex align-items-center gap-2 justify-content-between w-100">
               <label>Start Date</label>
               <div class="mindful-input-group">
-                <mindful-datepicker type="date" [(ngModel)]="startDate"></mindful-datepicker>
+                <mindful-datepicker type="date" [(ngModel)]="startDate" [minDate]="today" [rangeStart]="startDate"
+                  [rangeEnd]="endDate"></mindful-datepicker>
               </div>
             </div>
             <div class="d-flex align-items-center gap-2 justify-content-between w-100">
               <label>End Date</label>
               <div class="mindful-input-group">
-                <mindful-datepicker type="date" [(ngModel)]="endDate"></mindful-datepicker>
+                <mindful-datepicker type="date" [(ngModel)]="endDate" [minDate]="startDate || today"
+                  [rangeStart]="startDate" [rangeEnd]="endDate"></mindful-datepicker>
               </div>
             </div>
 

@@ -1,8 +1,6 @@
 <mindful-navigator heading="Your Universe" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
     rightIconAlt="Calendar" (rightIconClick)="onOpenCalendar()"></mindful-navigator>
 <ion-content class="habit-page" fullscreen>
-    <div class="habit-navigator">
-    </div>
 
     <div class="habit-week">
         <mindful-week (dateSelected)="onDateSelected($event)"></mindful-week>

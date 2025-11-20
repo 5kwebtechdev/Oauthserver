@@ -1,7 +1,7 @@
 <div class="datepicker-wrapper">
   <input type="text" [attr.placeholder]="placeholder"
-         [value]="startDate ? (type === 'range' && endDate ? startDate.toDateString() + ' - ' + endDate.toDateString() : startDate.toDateString()) : ''"
-         (click)="toggleCalendar()" readonly />
+    [value]="startDate ? (type === 'range' && endDate ? startDate.toDateString() + ' - ' + endDate.toDateString() : startDate.toDateString()) : ''"
+    (click)="toggleCalendar()" readonly />
 
   <div class="calendar-overlay" *ngIf="isOpen">
     <div class="calendar-popup">
@@ -26,13 +26,11 @@
 
       <div class="calendar-grid">
         <div class="day" *ngFor="let d of ['Sun','Mon','Tue','Wed','Thur','Fri','Sat']">{{ d }}</div>
-        <button *ngFor="let date of getMonthDays()"
-                [class.isStartDate] = "isStartOfRange(date)"
-                [class.isEndDate] = "isEndOfRange(date)"
-                [class.currentMonth]="isDateinCurrentMonth(date)"
-                [class.selected]="isSameDay(date, startDate) || isSameDay(date, endDate)"
-                [class.in-range]="isInRange(date)"
-                (click)="selectDate(date)">
+        <button *ngFor="let date of getMonthDays()" [class.isStartDate]="isStartOfRange(date)"
+          [class.isEndDate]="isEndOfRange(date)" [class.currentMonth]="isDateinCurrentMonth(date)"
+          [class.selected]="isSameDay(date, getEffectiveStart()) || isSameDay(date, getEffectiveEnd())"
+          [class.in-range]="isInRange(date)" [class.disabled]="isDisabled(date)" [disabled]="isDisabled(date)"
+          (click)="selectDate(date)">
           <p>{{ date.getDate() }}</p>
         </button>
       </div>

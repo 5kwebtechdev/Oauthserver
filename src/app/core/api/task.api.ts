@@ -65,6 +65,16 @@ export class TaskApi {
     }
 
     /**
+     * Update a task by id
+     * @param id Task id
+     * @param payload Body to send to the update endpoint
+     */
+    updateTask(id: string, payload: any): Observable<any> {
+        const url = `${this.base}/tasks/update/${id}`;
+        return this.http.put(url, payload, { headers: this.headers() });
+    }
+
+    /**
      * Delete a task by id
      * @param id Task id
      */
