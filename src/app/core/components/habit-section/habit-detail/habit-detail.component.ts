@@ -44,29 +44,29 @@ export class HabitDetailComponent implements OnChanges {
   ) { }
 
   ngOnInit() {
-    // Try to get state from router's current navigation state
-    const stateHabit = history.state?.['habit'];
-    const habitType = history.state?.['type'] || stateHabit?.type;
-
     // Detect whether we arrived here via a long-press navigation
     this.cameFromLongPress = !!history.state?.['fromLongPress'];
-    this.navigationOriginType = String(history.state?.['type'] || stateHabit?.type || habitType || 'habits');
 
-    if (stateHabit) {
-      this.habit = stateHabit;
-      // Prepare UI fields now
-      this.prepareCoinStats();
-      this.prepareMilestoneBadges();
-      console.log('Loaded habit/task from navigation state:', this.habit);
+    // Get ID and type from either navigation state or URL params
+    const stateHabit = history.state?.['habit'];
+    const habitType = history.state?.['type'] || stateHabit?.type;
+    this.navigationOriginType = String(habitType || 'habits');
+
+    // Get ID from state or URL
+    const idFromState = stateHabit?.id;
+    const idFromUrl = this.route.snapshot.paramMap.get('id');
+    const id = idFromState || idFromUrl;
+
+    // Get type from state or URL query params
+    const typeFromState = history.state?.['type'] || stateHabit?.type;
+    const typeFromUrl = this.route.snapshot.queryParamMap.get('type');
+    const type = (typeFromState || typeFromUrl || 'habits') as 'habits' | 'tasks' | 'timetable';
+
+    // Always call API to get fresh data
+    if (id) {
+      this.loadDetail(+id, type);
     } else {
-      const id = this.route.snapshot.paramMap.get('id');
-      const type = this.route.snapshot.queryParamMap.get('type') || 'habits';
-      if (id) {
-        console.log(`Loading ${type} by id from URL:`, id);
-        this.loadDetail(+id, type as 'habits' | 'tasks' | 'timetable');
-      } else {
-        console.warn('No habit/task data found in navigation or params');
-      }
+      console.warn('❌ No ID found in navigation state or URL params');
     }
   }
 
@@ -78,26 +78,20 @@ export class HabitDetailComponent implements OnChanges {
     }
   }
 
-  /** Fetch detail from API based on type */
   loadDetail(id: number, type: 'habits' | 'tasks' | 'timetable') {
     const api$ = type === 'tasks' ? this.TaskApi.getTaskById(id) : this.HabitApi.getHabitById(id);
 
     api$.pipe(
       finalize(() => {
-        // Ensure any cleanup happens even if there's an error
-        console.log(`Completed loading ${type} detail (success or error)`);
       })
     ).subscribe({
       next: (res) => {
         this.habit = this.normalizeResponse(res, type);
-        // Setup computed display values
         this.prepareCoinStats();
         this.prepareMilestoneBadges();
-        console.log(`Fetched ${type} detail:`, this.habit);
       },
       error: (err) => {
         console.error(`Error loading ${type} detail:`, err);
-        // Could show error message to user here
       }
     });
   }
@@ -287,7 +281,6 @@ export class HabitDetailComponent implements OnChanges {
         }
       });
     } else {
-      console.log('Edit action triggered but no habit/task is loaded');
       this.router.navigate(['/authed/habit-input']);
     }
   }
@@ -307,7 +300,6 @@ export class HabitDetailComponent implements OnChanges {
 
       return `assets/Icons-Neutral/${fileName}`;
     } catch (e) {
-      console.error('Error getting routine icon:', e);
       return 'assets/Icons-Neutral/Icon-Routine-Morning.png';
     }
   }
