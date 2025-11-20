@@ -15,7 +15,7 @@ export class TimelineComponent implements OnInit {
   filteredEvents: TimelineEvent[] = [];
   selectedDate: string = this.formatDate(new Date());
   selectedType: string = 'all';
-  
+
   // Completion statistics
   totalHabits: number = 0;
   totalHabitsCompleted: number = 0;
@@ -39,7 +39,7 @@ export class TimelineComponent implements OnInit {
       next: (response) => {
         this.allEvents = this.calendarService.transformToTimelineEvents(response);
         this.filterEvents();
-        
+
         // Update completion statistics
         this.totalHabits = response.totalHabits || 0;
         this.totalHabitsCompleted = response.totalHabitsCompleted || 0;

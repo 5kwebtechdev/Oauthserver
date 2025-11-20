@@ -6,31 +6,25 @@
   <div class="card timeline-score-card container w-full">
     <div class="row ">
       <div class="col-3 p-0">
-        <mindful-completion [completionPercentage]="totalHabits > 0 ? (totalHabitsCompleted / totalHabits * 100) : 0" 
-          [borderColor]="'#4CAF50'" 
-          [innerText]="totalHabitsCompleted + '/' + totalHabits"
+        <mindful-completion [completionPercentage]="totalHabits > 0 ? (totalHabitsCompleted / totalHabits * 100) : 0"
+          [borderColor]="'#4CAF50'" [innerText]="totalHabitsCompleted + '/' + totalHabits"
           [belowText]="'Total habits completed'">
         </mindful-completion>
       </div>
       <div class="col-3 p-0">
-        <mindful-completion [completionPercentage]="totalTasks > 0 ? (totalTasksCompleted / totalTasks * 100) : 0" 
-          [borderColor]="'#F0AD4E'" 
-          [innerText]="totalTasksCompleted + '/' + totalTasks"
+        <mindful-completion [completionPercentage]="totalTasks > 0 ? (totalTasksCompleted / totalTasks * 100) : 0"
+          [borderColor]="'#F0AD4E'" [innerText]="totalTasksCompleted + '/' + totalTasks"
           [belowText]="'Total tasks completed'">
         </mindful-completion>
       </div>
       <div class="col-3 p-0">
-        <mindful-completion [completionPercentage]="habitCompletionRate" 
-          [borderColor]="'#BB2124'" 
-          [innerText]="habitCompletionRate + '%'"
-          [belowText]="'Habit completion rate'">
+        <mindful-completion [completionPercentage]="habitCompletionRate" [borderColor]="'#BB2124'"
+          [innerText]="habitCompletionRate + '%'" [belowText]="'Habit completion rate'">
         </mindful-completion>
       </div>
       <div class="col-3 p-0">
-        <mindful-completion [completionPercentage]="taskCompletionRate" 
-          [borderColor]="'#F0AD4E'" 
-          [innerText]="taskCompletionRate + '%'"
-          [belowText]="'Task completion rate'">
+        <mindful-completion [completionPercentage]="taskCompletionRate" [borderColor]="'#F0AD4E'"
+          [innerText]="taskCompletionRate + '%'" [belowText]="'Task completion rate'">
         </mindful-completion>
       </div>
     </div>

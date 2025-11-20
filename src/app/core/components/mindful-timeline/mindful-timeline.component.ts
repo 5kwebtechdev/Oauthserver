@@ -121,9 +121,19 @@ export class MindfulTimelineComponent implements OnInit, OnChanges {
 
     const occupied = new Set<number>();
     this.events.forEach(e => {
-      const startHour = Math.floor(this.parseTime(e.startTime) / 60);
-      const endHour = Math.ceil(this.parseTime(e.endTime) / 60);
-      for (let h = startHour; h < endHour; h++) {
+      const startMinutes = this.parseTime(e.startTime);
+      const endMinutes = this.parseTime(e.endTime);
+
+      let startHour = Math.floor(startMinutes / 60);
+      let endHour = Math.ceil(endMinutes / 60);
+
+      // Handle case where endTime is before startTime (spans to next day or wrong format)
+      // If end is less than start, assume it's meant to be PM (add 12 hours if < 12)
+      if (endMinutes < startMinutes && endHour < 12) {
+        endHour += 12;
+      }
+
+      for (let h = startHour; h <= endHour && h < 24; h++) {
         occupied.add(h);
       }
     });
