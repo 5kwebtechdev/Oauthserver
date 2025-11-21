@@ -156,4 +156,9 @@ export class HabitService {
     const currentHabits = this.habitsSubject.value;
     this.habitsSubject.next(currentHabits.filter(h => h.id !== id));
   }
+
+  completeHabit(id: string): void {
+    const currentHabits = this.habitsSubject.value;
+    this.habitsSubject.next(currentHabits.filter(h => h.id !== id));
+  }
 }

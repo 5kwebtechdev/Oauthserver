@@ -1,6 +1,6 @@
-<mindful-navigator heading="Your Universe" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
-    rightIconAlt="Calendar" (rightIconClick)="onOpenCalendar()"></mindful-navigator>
-<ion-content class="habit-page" fullscreen>
+<ion-content>
+    <mindful-navigator heading="Your Universe" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
+        rightIconAlt="Calendar" (rightIconClick)="onOpenCalendar()"></mindful-navigator>
 
     <div class="habit-week">
         <mindful-week (dateSelected)="onDateSelected($event)"></mindful-week>
@@ -93,13 +93,13 @@
                 <h3>Your Daily Routines</h3>
             </div>
             <div class="routine-selectors">
-                <mindful-badge text="Morning" type="morning" [disabled]="routineSubFilter !== 'morning'"
+                <mindful-badge text="Morning" type="pending" [disabled]="routineSubFilter !== 'morning'"
                     [active]="routineSubFilter === 'morning'"
                     (click)="selectRoutineSubFilter('morning')"></mindful-badge>
-                <mindful-badge text="Evening" type="evening" [disabled]="routineSubFilter !== 'evening'"
+                <mindful-badge text="Evening" type="ongoing" [disabled]="routineSubFilter !== 'evening'"
                     [active]="routineSubFilter === 'evening'"
                     (click)="selectRoutineSubFilter('evening')"></mindful-badge>
-                <mindful-badge text="Night" type="night" [disabled]="routineSubFilter !== 'night'"
+                <mindful-badge text="Night" type="completed" [disabled]="routineSubFilter !== 'night'"
                     [active]="routineSubFilter === 'night'" (click)="selectRoutineSubFilter('night')"></mindful-badge>
             </div>
             <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">

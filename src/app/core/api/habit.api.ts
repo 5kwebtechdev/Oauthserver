@@ -93,4 +93,13 @@ export class HabitApi {
         const url = `${this.base}/habits/delete/${id}`;
         return this.http.delete(url, { headers: this.headers() });
     }
+
+    /**
+     * Toggle habit completion status
+     * @param id Habit id
+     */
+    completeHabit(id: string): Observable<any> {
+        const url = `${this.base}/habits/complete/${id}`;
+        return this.http.post(url, {}, { headers: this.headers() });
+    }
 }

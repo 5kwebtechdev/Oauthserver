@@ -127,11 +127,10 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   onCompleteHabit() {
     if (!this.habit) return;
-    const payload = this.buildUpdatePayload(this.habit, 'COMPLETED');
-    this.habitApi.updateHabit(this.habit.id, payload).subscribe({
+    this.habitApi.completeHabit(this.habit.id).subscribe({
       next: (res) => {
         const updated = { ...this.habit!, status: 'completed' } as Habit;
-        this.habitService.updateHabit(updated);
+        this.habitService.completeHabit(updated.id);
         this.habit = updated;
       },
       error: (err) => {

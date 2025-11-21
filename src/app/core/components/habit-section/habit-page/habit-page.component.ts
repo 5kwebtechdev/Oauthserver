@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { HabitCardComponent } from '../habit-card/habit-card.component';
-import { HabitListComponent } from './habit-list.component';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
@@ -17,7 +16,7 @@ import { Router, RouterModule } from '@angular/router';
   selector: 'habit-page',
   templateUrl: './habit-page.component.html',
   styleUrls: ['./habit-page.component.scss'],
-  imports: [CommonModule, IonicModule, HabitCardComponent, HabitListComponent, MindfulNavigatorComponent, MindfulInputsModule, MindfulBadgeComponent, RouterModule]
+  imports: [CommonModule, IonicModule, HabitCardComponent, MindfulNavigatorComponent, MindfulInputsModule, MindfulBadgeComponent, RouterModule]
 })
 export class HabitPageComponent implements OnInit, OnDestroy {
   public title = 'Habits';
