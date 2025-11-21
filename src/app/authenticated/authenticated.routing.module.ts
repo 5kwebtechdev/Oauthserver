@@ -78,22 +78,10 @@ const routes: Routes = [
       },
       {
         path: 'content',
-        loadComponent: () => import('../core/components/content-card/content-main/content-main.component').then(m => m.ContentMainComponent)
+        loadComponent: () => import('../core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent)
       }, {
         path: 'content/description',
-        loadComponent: () => import('../core/components/content-card/content-description/content-description.component').then(m => m.ContentDescriptionComponent)
-      }, {
-        path: 'quizzes',
-        loadComponent: () => import('../core/components/content-card/content-quiz/content-quiz.component').then(m => m.ContentQuizComponent)
-      }, {
-        path: 'articles',
-        loadComponent: () => import('../core/components/content-card/Content-Articles/content-articles.component').then(m => m.ContentArticlesComponent)
-      }, {
-        path: 'puzzles',
-        loadComponent: () => import('../core/components/content-card/content-puzzle/content-puzzle.component').then(m => m.ContentPuzzleComponent)
-      }, {
-        path: 'content/viewall',
-        loadComponent: () => import('../core/components/content-card/content-viewall/content-viewall.component').then(m => m.ContentViewallComponent)
+        loadComponent: () => import('../core/components/learning-section/learning-description/learning-description.component').then(m => m.LearningDescriptionComponent)
       }, {
         path: 'notes',
         loadComponent: () => import('../core/components/notes/notes.component').then(m => m.NotesComponent)

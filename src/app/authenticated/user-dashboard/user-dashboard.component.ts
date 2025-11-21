@@ -4,8 +4,7 @@ import { ModalController } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { NotesComponent } from '../../core/components/notes/notes.component';
 import { HabitCardComponent } from "../../core/components/habit-section/habit-card/habit-card.component";
-// ChallengeCardComponent removed from imports because it's not used in the template
-import { ContentCardComponent } from "../../core/components/content-card/content-card.component";
+import { LearningSectionComponent } from "../../core/components/learning-section/learning-section.component";
 import { AdBannerComponent } from '../../core/components/ad-banner/ad-banner.component';
 import { TutorCardComponent } from "../../core/components/tutor-section/tutor-card/tutor-card.component";
 import { ReelsCardComponent } from "../../core/components/reel-section/reels-card/reels-card.component";
@@ -37,7 +36,7 @@ import { VibesDisplayResponse } from '../../core/models/mood.model';
     RouterModule,
     HabitCardComponent,
     AdBannerComponent,
-    ContentCardComponent,
+    LearningSectionComponent,
     ReelsCardComponent,
     ReelsExpandComponent,
     TutorCardComponent,

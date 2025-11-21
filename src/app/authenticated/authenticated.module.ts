@@ -10,7 +10,6 @@ import { MindfulButtonComponent } from "../core/components/mindful-button/mindfu
 import { IonicModule } from "@ionic/angular";
 import { MindfulBadgeComponent } from "../core/components/mindful-badge/mindful-badge.component";
 import { UserDashboardComponent } from "./user-dashboard/user-dashboard.component";
-import { ChallengeCardComponent } from "../core/components/challenge-card/challenge-card.component";
 import { TypicalPageComponent } from "../core/components/typical-page/typical-page.component";
 import { ProfileComponent } from "./profile/profile.component";
 import { ProfileHomeComponent } from "./profile/profile-home/profile-home.component";
@@ -45,7 +44,6 @@ import { StreaksSectionComponent } from '../core/components/streaks-section/stre
     MindfulButtonComponent,
     MindfulBadgeComponent,
     TypicalPageComponent,
-    ChallengeCardComponent,
     UserDashboardComponent,
     UserProfileComponent,
     IonicModule,

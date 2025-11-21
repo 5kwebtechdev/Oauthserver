@@ -1,32 +1,9 @@
-.sections-content {
-	display: flex;
-	flex-direction: column;
-	gap: 20px;
-}
-
-.content-items-main {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	padding: 16px;
-}
+/* sections-content and content-items-main removed (content slides + upgrade popup removed) */
 
 .content-page {
-	width: 393px;
-	height: 2531px;
-	background: #fffcfc;
 
-	&,
-	& *,
-	& *::before,
-	& *::after {
-		box-sizing: inherit;
-	}
 
 	.content-main {
-		width: 393px;
-		height: 254px;
-		flex-shrink: 0;
 
 
 
@@ -71,44 +48,31 @@
 			}
 
 			.search-row {
-				display: flex;
+
 				align-items: center;
-				padding: 12px 16px 0 16px;
-				gap: 12px;
-				width: 100%;
-				z-index: 2;
+				padding: 0 16px;
+
 
 				.search-input {
 					display: flex;
 					align-items: center;
 					width: 100%;
-					/* fluid inside card */
 					padding: 12px 12px;
 					gap: 12px;
-					border-radius: 24px;
-					/* pill */
+					border-radius: 12px;
 					background: #FFFFFF;
 					box-shadow: 0 8px 24px rgba(16, 18, 20, 0.08);
 					border: 1px solid rgba(16, 18, 20, 0.04);
 					align-items: center;
 					position: relative;
 
-					.search-icon {
-						margin-right: 8px;
-						font-size: 18px;
-						opacity: 0.6;
-					}
-
 					input {
+						color: #6B656A;
+						font-family: Nunito;
+						font-size: 13px;
+						font-weight: 600;
+						width: 100%;
 						border: none;
-						outline: none;
-						background: transparent;
-						flex: 1 1 auto;
-						font-family: 'Nunito', sans-serif;
-						font-size: 15px;
-						color: #282527;
-						padding-right: 12px;
-						/* space before mic */
 					}
 
 					/* mic button on the right inside the pill */
@@ -189,7 +153,8 @@
 		justify-content: center;
 		align-items: center;
 		gap: 24px;
-		padding: 16px;
+		padding: 0px 30px;
+		width: 100%;
 	}
 
 	.category {
@@ -237,18 +202,6 @@
 		cursor: pointer;
 	}
 
-	.category.puzzles .icon {
-		background: url('/assets/Icons-Neutral/Icon-Content-Puzzle.png') center/contain no-repeat;
-	}
-
-	.category.quizzes .icon {
-		background: url('/assets/Icons-Neutral/Icon-Content-Quiz.png') center/contain no-repeat;
-	}
-
-	.category.articles .icon {
-		background: url('/assets/Icons-Neutral/Icon-Content-Articles.png') center/contain no-repeat;
-	}
-
 	/* explicit label styling */
 	.category .label {
 		font-family: 'Nunito', sans-serif;
@@ -290,198 +243,9 @@
 
 }
 
-.elite-section {
-	width: 393px;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
+.digital-pet {
+	width: 56px;
+	height: auto;
 }
 
-.elite-title {
-	display: flex;
-	justify-content: center;
-	color: #282527;
-	font-family: Fredoka;
-	font-size: 20px;
-	width: 363px;
-	padding: 16px;
-	font-style: normal;
-	font-weight: 500;
-	line-height: 140%;
-}
-
-.elite-container {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	width: 393px;
-	height: 495px;
-	flex-shrink: 0;
-	background: rgba(217, 143, 21, 0.70);
-	margin-left: auto;
-	margin-right: auto;
-}
-
-.elite-banner {
-	width: 393px;
-	height: 495px;
-	flex-shrink: 0;
-}
-
-.elite-club {
-	color: #FFF;
-	font-family: Fredoka;
-	text-align: center;
-	font-size: 32px;
-	font-style: normal;
-
-	font-weight: 500;
-	line-height: 140%;
-	/* 44.8px */
-}
-
-.elite-desc {
-	color: #FFF;
-	text-align: center;
-	font-family: Nunito;
-	font-size: 13px;
-	font-style: normal;
-	font-weight: 500;
-	line-height: 140%;
-	/* 18.2px */
-	padding: 16px;
-}
-
-.elite-frame {
-	flex-direction: column;
-	gap: 2px;
-}
-
-.frame-text {
-	align-self: stretch;
-	color: #FFF;
-	text-align: center;
-	font-family: Nunito;
-	font-size: 16px;
-	font-style: normal;
-	font-weight: 700;
-	line-height: 140%;
-	/* 22.4px */
-}
-
-.price {
-	color: #FFF;
-	text-align: center;
-	font-family: Nunito;
-	font-size: 13px;
-	font-style: normal;
-	font-weight: 600;
-	line-height: 140%;
-	/* 18.2px */
-}
-
-.upgrade-now-cta {
-	position: relative;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 100%;
-	margin-top: -32px;
-	z-index: 3;
-}
-
-
-
-.upgrade-badge {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	background: linear-gradient(90deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
-	padding: 6px 10px;
-	border-radius: 18px;
-	margin-left: 10px;
-	transform: translateY(-2px);
-}
-
-.upgrade-badge img {
-	width: 20px;
-	height: 20px;
-}
-
-.upgrade-badge .amount {
-	font-family: 'Nunito', sans-serif;
-	font-weight: 700;
-	color: #3B1F00;
-	font-size: 14px;
-}
-
-.upgrade-popup-backdrop {
-	position: fixed;
-	inset: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: rgba(0, 0, 0, 0.35);
-	z-index: 1100;
-}
-
-.upgrade-popup {
-	width: 360px;
-	max-width: calc(100% - 40px);
-	background: #fff;
-	border-radius: 12px;
-	padding: 28px 24px;
-	box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
-	text-align: center;
-}
-
-.upgrade-popup .upgrade-top {
-	width: 84px;
-	height: 84px;
-	object-fit: contain;
-	margin: 0 auto 18px auto;
-}
-
-.upgrade-title {
-	font-family: 'Fredoka', sans-serif;
-	font-size: 20px;
-	margin: 0 0 8px 0;
-}
-
-.upgrade-title .gold {
-	color: #D18B2A;
-	font-weight: 700;
-}
-
-.upgrade-sub {
-	color: #6B656A;
-	margin: 0 0 12px 0;
-}
-
-.upgrade-coins {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 8px;
-	margin-bottom: 18px;
-}
-
-.upgrade-coins img {
-	width: 36px;
-	height: 36px;
-}
-
-.upgrade-coins .amount {
-	font-weight: 700;
-	font-size: 20px;
-}
-
-.upgrade-actions {
-	display: flex;
-	gap: 14px;
-	justify-content: center;
-}
-
-.upgrade-actions mindful-button {
-	display: inline-block;
-}
+/* Elite / upgrade popup styles removed */

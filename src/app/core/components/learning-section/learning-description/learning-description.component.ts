@@ -5,15 +5,15 @@ import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navig
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 
 @Component({
-  selector: 'app-content-description',
+  selector: 'app-learning-description',
   standalone: true,
   imports: [CommonModule, MindfulNavigatorComponent, MindfulButtonComponent],
-  templateUrl: './content-description.component.html',
-  styleUrls: ['./content-description.component.scss']
+  templateUrl: './learning-description.component.html',
+  styleUrls: ['./learning-description.component.scss']
 })
-export class ContentDescriptionComponent {
+export class LearningDescriptionComponent {
   heading: string = 'Apple Orchard Math Challenge';
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   startJourney() {
     // navigate to the existing quizzes route
