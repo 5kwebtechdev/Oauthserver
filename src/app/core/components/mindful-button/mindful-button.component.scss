@@ -45,8 +45,8 @@ p {
 }
 
 .disabled {
-  filter: grayscale(0.8);
   pointer-events: none;
+  opacity: 0.5;
 }
 
 .medium {
