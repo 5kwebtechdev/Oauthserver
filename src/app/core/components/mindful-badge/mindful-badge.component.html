@@ -1,5 +1,11 @@
-<div *ngIf="type" class="badge {{type}}" [ngClass]="{'medium': medium , 'large': large, 'disabled': disabled, 'inactive': inactive, 'circle': circle, 'active': active}">
+<div *ngIf="type" class="badge {{type}}"
+  [ngClass]="{'medium': medium , 'large': large, 'disabled': disabled, 'inactive': inactive, 'circle': circle, 'active': active}">
   <p>{{text}}</p>
+
+  <!-- time-range sublabel for routine badges -->
+  <span *ngIf="type === 'morning'" class="badge-sub">5:00am-12:00pm</span>
+  <span *ngIf="type === 'evening'" class="badge-sub">12:00pm-7:00pm</span>
+  <span *ngIf="type === 'night'" class="badge-sub">7:00pm-5:00am</span>
 </div>
 <ng-container *ngIf="!type">
   <p style="color: red; font-weight: bold; font-size:16px">

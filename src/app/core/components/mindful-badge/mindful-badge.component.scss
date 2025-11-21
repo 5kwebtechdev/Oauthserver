@@ -36,6 +36,19 @@
   line-height: 140%;
 }
 
+/* Sub-label shown under p for morning/evening/night badges. Matches p styles except smaller font-size */
+.badge .badge-sub {
+  display: block;
+  font-family: 'Nunito', sans-serif;
+  font-size: 6px;
+  font-weight: 600;
+  color: var(--text_color);
+  margin: 0;
+  text-align: center;
+  line-height: 140%;
+  margin-top: 0px;
+}
+
 .badge {
   &.medium {
     /* keep medium font but ensure consistent height */
@@ -84,6 +97,16 @@
   --background: linear-gradient(108.3deg, #F1F3FF 7.42%, #CFD5FF 92.58%);
   --text_color: #040273;
   --stroke_gradient: linear-gradient(-45deg, #7981FF 0%, #A9B2FF 100%);
+}
+
+/* Stack the main label and sublabel vertically for routine badges */
+.badge.morning,
+.badge.evening,
+.badge.night {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
 }
 
 .puzzle {
@@ -164,7 +187,7 @@
 
 /* Specific sizing and layout for status badges */
 .badge.pending {
-  
+
   display: inline-flex;
   white-space: nowrap;
   width: auto;

@@ -129,7 +129,7 @@
       </div>
 
       <div class="submit-row">
-        <mindful-button [type]="isFormComplete ? 'lavender-complete' : 'lavender-light'"
+        <mindful-button [type]="isFormComplete ? 'lavendar' : 'lavender-light'"
           [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Habit' : 'Create Habit')"
           large [disabled]="!isFormComplete || isSubmitting" (click)="submit()">
         </mindful-button>
@@ -246,7 +246,7 @@
       </div>
 
       <div class="submit-row">
-        <mindful-button [type]="isFormComplete ? 'orange-dark' : 'orange-light'"
+        <mindful-button [type]="isFormComplete ? 'orange' : 'orange-light'"
           [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Task' : 'Create Task')"
           large [disabled]="!isFormComplete || isSubmitting" (click)="submit()">
         </mindful-button>
@@ -356,7 +356,7 @@
         <div class="char-count">Max 250 Characters</div>
       </div>
       <div class="submit-row">
-        <mindful-button type="green-light"
+        <mindful-button [type]="isFormComplete ? 'aqua' : 'aqua-light'"
           [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Timetable' : 'Create Time Table')"
           large [disabled]="!isFormComplete || isSubmitting" (click)="submit()">
         </mindful-button>

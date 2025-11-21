@@ -21,6 +21,7 @@ export type buttonStyles =
   | 'plum'
   | 'gold'
   | 'aqua'
+  | 'aqua-light'
   | 'coral'
   | 'bronze'
   | 'bronze-transparent'
