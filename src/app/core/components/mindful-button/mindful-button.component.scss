@@ -591,6 +591,32 @@ p {
   margin: 0;
 }
 
+/* New variant: white-black */
+.white-black {
+  display: flex;
+  height: 42px;
+  padding: 10px 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+  border-radius: 8px;
+  border: 1px solid rgba(40, 37, 39, 0.70);
+  background: #FFFFFF;
+  --text_color: #282527;
+}
+
+.white-black p {
+  color: var(--text_color);
+  text-align: center;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  margin: 0;
+}
+
 .add {
   width: 56px;
   height: 56px;

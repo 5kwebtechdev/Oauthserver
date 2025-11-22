@@ -1,0 +1,98 @@
+/* Styles for the inline timer projected into the mindful-navigator */
+.navigator-timer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.navigator-timer svg {
+    display: block;
+}
+
+.navigator-timer .timer-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #282527;
+}
+
+.questions-container {
+    padding: 16px;
+}
+
+.quiz-puz-page {
+    padding: 16px;
+}
+
+.questions-count {
+    position: relative;
+    padding-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.questions-count span {
+    color: #282527;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* progress track (unfilled) shown behind the filled progress */
+.questions-count::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 6px;
+    /* stroke-width equivalent */
+    background: #4CAF50;
+    opacity: 0.2;
+    /* uncompleted progress appearance */
+    border-radius: 6px;
+}
+
+/* filled progress element - width is controlled inline by Angular */
+.questions-count .progress {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 6px;
+    /* stroke-width equivalent */
+    background: #4CAF50;
+    /* stroke color */
+    border-radius: 6px;
+    transition: width 260ms ease-in-out;
+}
+
+.content-img {
+    width: 100%;
+    height: 144px;
+    flex-shrink: 0;
+}
+
+.content-img img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.content-quest {
+    color: #282527;
+    font-family: Nunito;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.answers-list {
+    h1 {
+        color: #282527;
+        font-family: Nunito;
+        font-size: 20px;
+        font-weight: 600;
+    }
+}
