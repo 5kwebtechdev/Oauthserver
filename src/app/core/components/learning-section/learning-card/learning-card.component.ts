@@ -1,11 +1,14 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { MindfulButtonComponent } from 'src/app/core/components/mindful-button/mindful-button.component';
+import { NgIf } from '@angular/common';
+import { LearningChallengeCardComponent } from './learning-challenge-card.component';
+import { LearningArticleCardComponent } from './learning-article-card.component';
 
 @Component({
     selector: 'learning-card',
+    host: { 'class': 'slide' },
     templateUrl: './learning-card.component.html',
     styleUrls: ['./learning-card.component.scss'],
-    imports: [MindfulButtonComponent],
+    imports: [NgIf, LearningChallengeCardComponent, LearningArticleCardComponent],
     standalone: true
 })
 export class LearningCardComponent {

@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  height: 34px;
+  // height: 34px;
   padding: 0 16.5px;
   border-radius: 1000px !important;
   background: var(--background);
@@ -109,10 +109,17 @@
 
 }
 
-.puzzle {
-  --background: #E1527C;
-  --stroke_gradient: #E1527C;
+.puzzle,
+.quiz {
+  --background: #FCF3F6;
+  margin: 0 !important;
+  box-sizing: border-box;
+
+  padding: 5px 16px !important;
+  background: var(--background);
   --text_color: #942038;
+  border: 1px solid #E1527C;
+
 }
 
 .habit-input {

@@ -1,16 +1,8 @@
-/* sections-content and content-items-main removed (content slides + upgrade popup removed) */
-
 .content-page {
-
-
 	.content-main {
-
-
-
 		.card {
 			position: relative;
 			display: flex;
-			/* ensure margin auto works as expected */
 			height: 254px;
 			/* requested height */
 			flex-shrink: 0;
@@ -30,7 +22,6 @@
 			.card-content {
 				position: relative;
 				padding: 16px;
-				/* no horizontal padding because we use max-width on card */
 				display: flex;
 				align-items: flex-start;
 				margin-top: 24px;
@@ -96,7 +87,6 @@
 						display: block;
 					}
 
-					/* small divider between input and mic */
 					.mic::before {
 						content: '';
 						display: block;
@@ -131,8 +121,6 @@
 					font-size: 10px;
 					font-style: normal;
 					font-weight: 600;
-					line-height: 140%;
-					/* 14px */
 					background: #FFFFFF;
 					padding: 6px 8px;
 					border-radius: 8px;
@@ -184,10 +172,6 @@
 		background-size: contain;
 	}
 
-	.category.for-you .icon {
-		background: url('/assets/Icons-Neutral/Icon-Content-ForYou.png') center/contain no-repeat;
-	}
-
 	.category.for-you {
 		display: flex;
 		width: 48px;
@@ -202,7 +186,6 @@
 		cursor: pointer;
 	}
 
-	/* explicit label styling */
 	.category .label {
 		font-family: 'Nunito', sans-serif;
 		font-size: 13px;
@@ -232,14 +215,27 @@
 		font-size: 20px;
 		font-style: normal;
 		font-weight: 500;
-		line-height: 140%;
-		/* 28px */
 		margin: 12px 0 20px 0;
 		max-width: 361px;
 		margin-left: auto;
 		margin-right: auto;
 	}
 
+	.learning-content {
+		padding: 24px 16px 90px 16px;
+	}
+
+	.cards-section {
+		margin-bottom: 32px;
+	}
+
+
+	.cards-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(263px, 1fr));
+		gap: 16px;
+		padding: 0 8px;
+	}
 
 }
 
@@ -247,5 +243,3 @@
 	width: 56px;
 	height: auto;
 }
-
-/* Elite / upgrade popup styles removed */

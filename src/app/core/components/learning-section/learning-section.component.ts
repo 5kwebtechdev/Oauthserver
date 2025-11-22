@@ -325,29 +325,47 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
     // If no items provided by the consumer, provide a small default set so the slides render
     if (!this.items || this.items.length === 0) {
       this.items = [
+        // Quiz (challenge) card
         {
-          title: 'Memory Maze',
-          desc: 'Sharpen your memory with quick puzzles.',
-          image: '/assets/images/Content-memory-maze-thumbnail.png',
-          tag: 'Puzzle',
-          rewards: { coins: 50, trophies: 1 },
-          cta: 'Finish in 5 min'
-        },
-        {
-          title: 'Story Time',
-          desc: 'Short stories to spark curiosity.',
-          image: '/assets/images/Content-memory-maze-thumbnail.png',
-          tag: 'Story',
-          rewards: { coins: 30, trophies: 0 },
-          cta: 'Solve in 2 min'
-        },
-        {
-          title: 'Brain Teasers',
-          desc: 'Try these fun brain teasers.',
-          image: '/assets/images/Content-memory-maze-thumbnail.png',
+          id: 'quiz-1',
+          type: 'challenge',
+          subType: 'quiz',
+          title: 'Quick Quiz: Animal Facts',
+          description: 'Test your knowledge with a short 5-question quiz.',
+          image: '/assets/images/Content-quiz-thumbnail.png',
+          difficulty: 'Easy',
+          difficultyImage: '/assets/images/difficulty-easy.png',
           tag: 'Quiz',
-          rewards: { coins: 40, trophies: 1 },
-          cta: 'Solve in 2 min'
+          coins: 40,
+          trophy: 1,
+          buttonText: 'Play Quiz'
+        },
+
+        // Puzzle (challenge) card
+        {
+          id: 'puzzle-1',
+          type: 'challenge',
+          subType: 'puzzle',
+          title: 'Memory Maze',
+          description: 'Sharpen your memory with a quick puzzle.',
+          image: '/assets/images/Content-memory-maze-thumbnail.png',
+          difficulty: 'Medium',
+          difficultyImage: '/assets/images/difficulty-medium.png',
+          tag: 'Puzzle',
+          coins: 50,
+          trophy: 1,
+          buttonText: 'Play Puzzle'
+        },
+
+        // Article card
+        {
+          id: 'article-1',
+          type: 'article',
+          title: '5 Science-Backed Study Hacks That Actually Work',
+          description: 'Boost focus and retention in 10 minutes or less. Backed by standford researchers.',
+          image: '/assets/images/Content-story-thumbnail.png',
+          coins: 30,
+          buttonText: 'Read Article'
         }
       ];
     }

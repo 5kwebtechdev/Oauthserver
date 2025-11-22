@@ -1,6 +1,5 @@
 <ion-content fullscreen>
   <div class="content-page">
-    <!-- Main card with search and cheer -->
     <div class="content-main">
       <div class="card">
         <div class="card-bg" role="img" aria-label="Content background"></div>
@@ -20,7 +19,6 @@
             </span>
             <input type="text" placeholder="Looking for a quiz?" aria-label="Search" />
             <button type="button" class="mic" aria-label="Voice search">
-              <!-- inline mic SVG provided by designer -->
               <svg xmlns="http://www.w3.org/2000/svg" width="9.333" height="12.667" viewBox="0 0 10 13" fill="none"
                 aria-hidden="true">
                 <path
@@ -43,12 +41,13 @@
       </div>
     </div>
 
-    <!-- Categories -->
     <div class="categories">
       <div class="for-you-label">
         <button class="category for-you" type="button" (click)="selectCategory('for-you'); openForYou()"
           [class.selected]="selectedCategory === 'for-you'" aria-label="Open For You">
-          <div class="icon" aria-hidden="true"></div>
+          <div class="icon" aria-hidden="true">
+            <img src="/assets/Icons-Neutral/Icon-Content-ForYou.png" alt="For You" />
+          </div>
           <div class="label">For You</div>
         </button>
       </div>
@@ -56,22 +55,54 @@
 
       <button class="category puzzles" type="button" (click)="selectCategory('puzzles'); openPuzzles()"
         [class.selected]="selectedCategory === 'puzzles'" aria-label="Open Puzzles">
-        <div class="icon" aria-hidden="true"></div>
+        <div class="icon" aria-hidden="true">
+          <img src="/assets/Icons-Neutral/Icon-Content-Puzzle.png" alt="Puzzles" />
+        </div>
         <div class="label">Puzzles</div>
       </button>
       <div class="sep" aria-hidden="true"></div>
 
       <button class="category quizzes" type="button" (click)="selectCategory('quizzes'); openQuizzes()"
         [class.selected]="selectedCategory === 'quizzes'" aria-label="Open Quizzes">
-        <div class="icon" aria-hidden="true"></div>
+        <div class="icon" aria-hidden="true">
+          <img src="/assets/Icons-Neutral/Icon-Content-Quiz.png" alt="Quizzes" />
+        </div>
         <div class="label">Quizzes</div>
       </button>
       <div class="sep" aria-hidden="true"></div>
-
+      <button class="category articles" type="button" (click)="selectCategory('articles'); openArticles()"
+        [class.selected]="selectedCategory === 'articles'" aria-label="Open Articles">
+        <div class="icon" aria-hidden="true">
+          <img src="/assets/Icons-Neutral/Icon-Content-Articles.png" alt="Articles" />
+        </div>
+        <div class="label">Articles</div>
+      </button>
     </div>
+    <div class="learning-content">
+      <div *ngIf="selectedCategory === 'for-you' || selectedCategory === 'puzzles'" class="cards-section">
+        <div class="cards-grid">
+          <learning-challenge-card *ngFor="let card of puzzleCards; let i = index" [item]="card" [index]="i"
+            (cardClick)="onCardClick($event)">
+          </learning-challenge-card>
+        </div>
+      </div>
 
+      <div *ngIf="selectedCategory === 'for-you' || selectedCategory === 'quizzes'" class="cards-section">
+        <div class="cards-grid">
+          <learning-challenge-card *ngFor="let card of quizCards; let i = index" [item]="card" [index]="i"
+            (cardClick)="onCardClick($event)">
+          </learning-challenge-card>
+        </div>
+      </div>
 
-    <!-- content slides and upgrade popup removed per request -->
+      <div *ngIf="selectedCategory === 'for-you' || selectedCategory === 'articles'" class="cards-section">
+        <div class="cards-grid">
+          <learning-article-card *ngFor="let card of articleCards; let i = index" [item]="card" [index]="i"
+            (cardClick)="onCardClick($event)">
+          </learning-article-card>
+        </div>
+      </div>
+    </div>
   </div>
   <app-footer></app-footer>
 </ion-content>

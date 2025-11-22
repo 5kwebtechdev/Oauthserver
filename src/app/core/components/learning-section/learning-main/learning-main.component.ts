@@ -1,45 +1,64 @@
 import { Component, Input, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { FooterComponent } from 'src/app/core/components/footer/footer.component';
 import { MindfulPetComponent } from 'src/app/core/components/mindful-pet/mindful-pet.component';
 import { MindfulSpeechBubbleComponent } from 'src/app/core/components/mindful-speech-bubble/mindful-speech-bubble.component';
+import { LearningChallengeCardComponent } from '../learning-card/learning-challenge-card.component';
+import { LearningArticleCardComponent } from '../learning-card/learning-article-card.component';
 
 @Component({
   selector: 'learning-main',
   templateUrl: './learning-main.component.html',
   styleUrls: ['./learning-main.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, FooterComponent, MindfulSpeechBubbleComponent, MindfulPetComponent]
+  imports: [CommonModule, IonicModule, RouterModule, FooterComponent, MindfulSpeechBubbleComponent, MindfulPetComponent, LearningChallengeCardComponent, LearningArticleCardComponent]
 })
 export class LearningMainComponent {
   @Input() title: string = '';
   @Input() body: string = '';
 
+  selectedCategory: 'for-you' | 'puzzles' | 'quizzes' | 'articles' | null = 'for-you';
 
-  // track which category is selected so we can show the bottom border only on the selected one
-  selectedCategory: 'for-you' | 'puzzles' | 'quizzes' | null = null;
+  puzzleCards = [
+    { title: 'Word Search Challenge', description: 'Find hidden words in the grid', image: '/assets/placeholder-puzzle.jpg', coins: 50, trophy: 10, difficulty: 'Easy', buttonText: 'Start Puzzle', type: 'puzzle' },
+    { title: 'Logic Grid Puzzle', description: 'Solve the logic grid', image: '/assets/placeholder-puzzle.jpg', coins: 75, trophy: 15, difficulty: 'Medium', buttonText: 'Start Puzzle', type: 'puzzle' }
+  ];
 
-  selectCategory(cat: 'for-you' | 'puzzles' | 'quizzes') {
+  quizCards = [
+    { title: 'Mindfulness Quiz', description: 'Test your mindfulness knowledge', image: '/assets/placeholder-quiz.jpg', coins: 40, trophy: 8, difficulty: 'Easy', buttonText: 'Take Quiz', type: 'quiz' },
+    { title: 'Memory Challenge', description: 'How good is your memory?', image: '/assets/placeholder-quiz.jpg', coins: 60, trophy: 12, difficulty: 'Hard', buttonText: 'Take Quiz', type: 'quiz' }
+  ];
+
+  articleCards = [
+    { title: 'Benefits of Meditation', description: 'Learn how meditation can improve your life', image: '/assets/placeholder-article.jpg', coins: 30 },
+    { title: 'Stress Management Tips', description: 'Practical tips for managing daily stress', image: '/assets/placeholder-article.jpg', coins: 25 }
+  ];
+
+  selectCategory(cat: 'for-you' | 'puzzles' | 'quizzes' | 'articles') {
     this.selectedCategory = cat;
   }
 
-  // inject Router to navigate within the app
-  constructor(private router: Router) { }
+  constructor() { }
 
   openForYou() {
-    // open the For You page in a new tab, same behavior as the previous anchor
-    window.open('/for-you', '_blank', 'noopener');
+    this.selectCategory('for-you');
   }
 
   openPuzzles() {
-    // puzzles is an external page in this app; open in new tab to preserve previous behavior
-    window.open('/puzzles', '_blank', 'noopener');
+    this.selectCategory('puzzles');
   }
 
   openQuizzes() {
-    // quizzes route lives under content/description; navigate internally
-    this.router.navigate(['/content', 'description']);
+    this.selectCategory('quizzes');
+  }
+
+  openArticles() {
+    this.selectCategory('articles');
+  }
+
+  onCardClick(event: any) {
+    console.log('Card clicked:', event);
   }
 }

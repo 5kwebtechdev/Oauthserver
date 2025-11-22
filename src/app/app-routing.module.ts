@@ -19,6 +19,10 @@ const routes: Routes = [
     component: OurPoliciesComponent
   },
   {
+    path: 'learning-description',
+    loadComponent: () => import('./core/components/learning-section/learning-description/learning-description.component').then(m => m.LearningDescriptionComponent)
+  },
+  {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full'

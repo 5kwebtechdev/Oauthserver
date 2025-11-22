@@ -1,0 +1,33 @@
+<div class="card-root">
+    <div class="media">
+        <img [src]="item.image || '/assets/icons/Flux_Dev_a_surreal_and_vibrant_cinematic_photo_of_A_minimal_ye_3%201.jpg'"
+            [alt]="item.title" loading="lazy" (error)="onImageError($event)" />
+        <div class="difficulty" *ngIf="difficultyImageSrc">
+            <img [src]="difficultyImageSrc" [alt]="item.difficulty" />
+        </div>
+    </div>
+
+    <div class="slide-body d-flex flex-column ">
+        <div class="head">
+            <div>
+                <h3>{{ item.title }}</h3>
+                <div class="tag" *ngIf="item.tag">{{ item.tag }}</div>
+            </div>
+            <mindful-badge [type]="item.type"></mindful-badge>
+
+        </div>
+
+
+        <p class="desc">{{ item.description }}</p>
+
+        <div class="meta-row">
+            <div class="meta-left">
+                <span class="coins"><img src="/assets/Icons-Neutral/Icons-Coins.png" alt="coins"
+                        style="width:24px;height:auto;" /> {{ item.coins || 0 }}</span>
+                <span class="trophy"><img src="/assets/Icons-Neutral/Icon-Trophy.png" alt="trophy"
+                        style="width:24px;height:auto;" /> {{ item.trophy || 0 }}</span>
+            </div>
+            <mindful-button [type]="'pink'" [text]="item.buttonText" (click)="onCardClick()"></mindful-button>
+        </div>
+    </div>
+</div>

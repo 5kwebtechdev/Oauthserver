@@ -1,8 +1,8 @@
-<div class="media">
-    <img [src]="item.image" [alt]="item.title" />
-</div>
-<div class="slide-body">
-    <h3>{{ item.title }}</h3>
-    <p>{{ item.description }}</p>
-    <mindful-button [type]="'lavendar'" [text]="item.buttonText" (click)="onCardClick()"></mindful-button>
-</div>
+<ng-container *ngIf="item?.type === 'article'; else challenge">
+    <learning-article-card [item]="item" [index]="index" (cardClick)="cardClick.emit($event)"></learning-article-card>
+</ng-container>
+
+<ng-template #challenge>
+    <learning-challenge-card [item]="item" [index]="index"
+        (cardClick)="cardClick.emit($event)"></learning-challenge-card>
+</ng-template>

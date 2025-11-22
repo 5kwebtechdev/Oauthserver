@@ -1,0 +1,71 @@
+:host {
+    display: block
+}
+
+.card-root {
+    flex: 0 0 263px;
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.media {
+    position: relative;
+    height: 138px;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover
+    }
+}
+
+.article-body {
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    align-self: stretch;
+}
+
+/* Title styles requested by user */
+.article-body h3,
+.head h3 {
+    color: #282527;
+    /* text-align: center; */
+    font-family: "Nunito", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+    width: 245px;
+}
+
+.desc {
+    margin: 0;
+    color: #6B656A;
+    font-family: 'Nunito', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    width: 247px;
+}
+
+.meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.coins {
+    font-weight: 700
+}
+
+.coins img {
+    width: 24px;
+    height: auto;
+    margin-right: 0.35rem
+}
