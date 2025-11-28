@@ -3,17 +3,40 @@
 
 <ion-content>
   <div class="result-container">
-    <!-- Mindful Pet in the middle of the page -->
-    <div class="pet-section">
+
+      <div class="pet-section">
       <mindful-pet 
         [name]="'Buddy'" 
         [pet]="'panda'" 
-        [mood]="'happy'" 
-        [age]="2" 
+        [mood]="petMood" 
+        [age]="petAge" 
         [sizePreset]="96"
         (petClick)="onPetClick()">
       </mindful-pet>
-      <h2 class="pet-message">Great job!</h2>
+    <!-- Results Summary -->
+    <div class="results-summary">
+      <h2 class="score-title">Great Job!</h2>
+      <div class="score-circle">
+        <span class="score-percentage">{{ scorePercentage }}%</span>
+        <span class="score-label">Score</span>
+      </div>
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-value">{{ correctAnswers }}/{{ totalQuestions }}</span>
+          <span class="stat-label">Correct</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">{{ timeTaken }}</span>
+          <span class="stat-label">Time</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mindful Pet in the middle of the page -->
+  
+      <h2 class="pet-message" *ngIf="scorePercentage >= 80">Amazing work!</h2>
+      <h2 class="pet-message" *ngIf="scorePercentage >= 60 && scorePercentage < 80">Good effort!</h2>
+      <h2 class="pet-message" *ngIf="scorePercentage < 60">Keep practicing!</h2>
     </div>
 
     <!-- Badges Section -->
@@ -21,7 +44,7 @@
       <h3 class="section-title">Badges Earned</h3>
       <div class="badges-container">
         <!-- Quiz Ace Badge -->
-        <div class="badge-card" *ngIf="quizAceBadge">
+        <div class="badge-card" *ngIf="scorePercentage >= 80">
           <img [src]="quizAceBadge.iconUrl" [alt]="quizAceBadge.name" class="badge-icon" />
           <div class="badge-info">
             <h4 class="badge-name">{{ quizAceBadge.name }}</h4>
@@ -30,12 +53,17 @@
         </div>
 
         <!-- Puzzle Master Badge -->
-        <div class="badge-card" *ngIf="puzzleMasterBadge">
+        <div class="badge-card" *ngIf="scorePercentage >= 90">
           <img [src]="puzzleMasterBadge.iconUrl" [alt]="puzzleMasterBadge.name" class="badge-icon" />
           <div class="badge-info">
             <h4 class="badge-name">{{ puzzleMasterBadge.name }}</h4>
             <p class="badge-description">{{ puzzleMasterBadge.description }}</p>
           </div>
+        </div>
+
+        <!-- Encouragement Message -->
+        <div class="encouragement-message" *ngIf="scorePercentage < 80">
+          <p>Keep practicing and you'll earn badges soon!</p>
         </div>
       </div>
     </div>

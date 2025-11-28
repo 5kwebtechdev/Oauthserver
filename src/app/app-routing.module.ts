@@ -23,6 +23,10 @@ const routes: Routes = [
     loadComponent: () => import('./core/components/learning-section/learning-description/learning-description.component').then(m => m.LearningDescriptionComponent)
   },
   {
+    path: 'result-page',
+    loadComponent: () => import('./core/components/learning-section/result-page/result-page.component').then(m => m.ResultPageComponent)
+  },
+  {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full'

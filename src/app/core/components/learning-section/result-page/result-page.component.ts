@@ -32,10 +32,28 @@ export class ResultPageComponent implements OnInit {
     iconUrl: 'assets/Icons-Neutral/Icon-Badge-PuzzleMaster.png'
   };
 
+  // Dummy results data
+  totalQuestions = 5;
+  correctAnswers = 4;
+  scorePercentage = 80;
+  timeTaken = '2:30';
+
+  // Pet mood based on performance
+  petMood: 'happy' | 'playful' | 'curious' | 'base' | 'tired' | 'anger' = 'happy';
+  petAge = 2;
+
   constructor(private router: Router) { }
 
   ngOnInit(): void {
     // In a real implementation, you would fetch the actual badge data here
+    // Set pet mood based on performance
+    if (this.scorePercentage >= 80) {
+      this.petMood = 'happy';
+    } else if (this.scorePercentage >= 60) {
+      this.petMood = 'playful';
+    } else {
+      this.petMood = 'curious';
+    }
   }
 
   onCancel(): void {
