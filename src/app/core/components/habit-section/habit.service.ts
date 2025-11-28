@@ -89,8 +89,8 @@ export class HabitService {
         id: item.id || '',
         title: item.title || '',
         notes: item.description || '',
-        startDate: new Date(item.startDate || startTimeStamp),
-        endDate: new Date(item.endDate || endTimeStamp),
+        startDate: item.startDate ? new Date(item.startDate) : null,
+        endDate: item.endDate ? new Date(item.endDate) : null,
         // Keep HH:MM:SS format; many UI locations expect HH:MM or HH:MM:SS, so keep full seconds
         startTime: startTimeFormatted,
         endTime: endTimeFormatted,
@@ -116,7 +116,8 @@ export class HabitService {
         createdAt: new Date(item.createdAt || Date.now())
       };
     });
-  } private formatTime(date: Date): string {
+  }
+  private formatTime(date: Date): string {
     return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   }
 

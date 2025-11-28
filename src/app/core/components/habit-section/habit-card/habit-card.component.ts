@@ -1,8 +1,10 @@
-import { Component, Input, OnInit, ViewChild, ElementRef, booleanAttribute, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, ViewChild, ElementRef, booleanAttribute, AfterViewInit, OnDestroy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { NgClass, NgIf, CommonModule, NgForOf } from "@angular/common";
 import { RouterModule } from '@angular/router';
 import { LongPressDirective } from "../../../directives/gestureControlDirective";
 import { MindfulButtonComponent } from "../../mindful-button/mindful-button.component";
+import { MindfulPetComponent } from "../../mindful-pet/mindful-pet.component";
+
 import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.component';
 import { ModalController } from '@ionic/angular';
@@ -13,7 +15,6 @@ import { TaskApi } from 'src/app/core/api/task.api';
 import { HabitService } from '../habit.service';
 import { CoerceBoolean } from "../../../coerceBoolean.decorator";
 import { Habit } from '../habit.types';
-import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
 import { Subscription } from 'rxjs';
 import { NavigationContextService } from '../../../services/navigation-context.service';
 
@@ -29,19 +30,26 @@ import { NavigationContextService } from '../../../services/navigation-context.s
     NgForOf,
     LongPressDirective,
     MindfulButtonComponent,
+    MindfulPetComponent,
+
     MindfulCardHeaderComponent,
     ViewAllComponent,
     RouterModule,
-    // MindfulBadgeComponent (not used in template)
   ]
 })
-export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
+export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
 
   @Input()
   habit: Habit | null = null;
 
   @Input()
-  mode: 'single' | 'list' = 'single';
+  mode: 'single' | 'list' | 'recent' = 'single';
+
+  @Input()
+  recentHabits: Habit[] = [];
+
+  @Input()
+  recentTasks: any[] = [];
 
   @Input()
   expanded: boolean = false;
@@ -61,7 +69,7 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
   endTime !: number;
 
   // Properties for list mode
-  public currentActive: string = 'habits';
+  public currentActive: string = 'all';
   public showContent: boolean = false;
 
   public isRunningLate: boolean = false;
@@ -93,7 +101,8 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
     private habitService: HabitService,
     private modalCtrl: ModalController,
     private router: Router,
-    private navigationContext: NavigationContextService
+    private navigationContext: NavigationContextService,
+    private cdr: ChangeDetectorRef
   ) {
     this.habitCardService.lastToggled$.subscribe((data: any) => {
       if (!data) return;
@@ -104,68 +113,119 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  startProgress() {
+  startProgress(): void {
     this.clearProgress(); // Clear old timers
 
+    // Initialize percentage to 0 when starting
     this.percentageCompleted = 0;
-    if (this.percentageWrapper?.nativeElement) {
-      this.percentageWrapper.nativeElement.style.width = `0%`;
-    }
 
-    this.progressInterval = setInterval(() => {
-      this.calculatePercentageCompleted();
+    // Start progress updater immediately
+    this.startProgressUpdater();
 
-      if (this.percentageCompleted >= 100) {
-        this.clearProgress();
-      }
-    }, 1000);
+    // Also trigger an immediate update to ensure the progress bar starts
+    this.percentageCompleted = this.calculateProgressPercentage();
   }
-
 
   /**
    * Called when user taps "Let's Go" - set status to ONGOING
    */
   onStartHabit() {
     if (!this.habit) return;
-    // const payload = this.buildUpdatePayload(this.habit, 'ONGOING');
-    this.habitApi.letsGoHabit(this.habit.id).subscribe({
-      next: (res) => {
-        // update local store and UI
-        const updated = { ...this.habit!, status: 'ongoing' } as Habit;
-        this.habitService.updateHabit(updated);
-        this.habit = updated;
-        this.startProgress();
-        this.loadHabits();
-      },
-      error: (err) => {
-        console.error('Failed to start habit', err);
-      }
-    });
+
+    // Check if this is a task or habit and call the appropriate API
+    if (this.habit.type === 'tasks') {
+      // Call task API for tasks
+      this.taskApi.letsGoTask(this.habit.id).subscribe({
+        next: (res: any) => {
+          // update local store and UI
+          const updated = { ...this.habit!, status: 'ongoing' } as any;
+          // For tasks, we might need to update differently
+          // You might need to implement a task service similar to habitService
+          this.habit = updated;
+          // Start progress with proper initialization
+          this.startProgress();
+          this.loadTodayTasks(); // This might need adjustment for tasks
+          // Trigger change detection to update button states in other components
+          this.cdr.detectChanges();
+        },
+        error: (err: any) => {
+          console.error('Failed to start task', err);
+        }
+      });
+    } else {
+      // Call habit API for habits (existing code)
+      this.habitApi.letsGoHabit(this.habit.id).subscribe({
+        next: (res: any) => {
+          // update local store and UI
+          const updated = { ...this.habit!, status: 'ongoing' } as Habit;
+          this.habitService.updateHabit(updated);
+          this.habit = updated;
+          // Start progress with proper initialization
+          this.startProgress();
+          this.loadHabits();
+          // Trigger change detection to update button states in other components
+          this.cdr.detectChanges();
+        },
+        error: (err: any) => {
+          console.error('Failed to start habit', err);
+        }
+      });
+    }
   }
 
   onAbortHabit() {
     this.console.log('Abort habit clicked');
     if (!this.habit) return;
-    this.habitApi.abortHabit(this.habit.id).subscribe({
-      next: (res) => {
-        const updated = { ...this.habit!, status: 'skipped' } as Habit;
-        this.habitService.abortHabit(updated.id);
-        this.habit = updated;
-        this.resetProgress();
-        this.loadHabits();
-      },
-      error: (err) => {
-        console.error('Failed to abort habit', err);
-      }
-    });
+
+    // Check if this is a task or habit and call the appropriate API
+    if (this.habit.type === 'tasks') {
+      // Call task API for tasks
+      this.taskApi.abortTask(this.habit.id).subscribe({
+        next: (res: any) => {
+          const updated = { ...this.habit!, status: 'skipped' } as any;
+          // For tasks, we might need to update differently
+          this.habit = updated;
+          // Reset progress when aborting
+          this.percentageCompleted = 0;
+          this.resetProgress();
+          this.loadTodayTasks();
+          // Trigger change detection to update button states in other components
+          this.cdr.detectChanges();
+        },
+        error: (err: any) => {
+          console.error('Failed to abort task', err);
+        }
+      });
+    } else {
+      // Call habit API for habits (existing code)
+      this.habitApi.abortHabit(this.habit.id).subscribe({
+        next: (res: any) => {
+          const updated = { ...this.habit!, status: 'skipped' } as Habit;
+          this.habitService.abortHabit(updated.id);
+          this.habit = updated;
+          // Reset progress when aborting
+          this.percentageCompleted = 0;
+          this.resetProgress();
+          this.loadHabits();
+          // Trigger change detection to update button states in other components
+          this.cdr.detectChanges();
+        },
+        error: (err: any) => {
+          console.error('Failed to abort habit', err);
+        }
+      });
+    }
   }
 
-  resetProgress() {
+  resetProgress(): void {
     this.clearProgress();
     this.percentageCompleted = 0;
+  }
 
-    if (this.percentageWrapper?.nativeElement) {
-      this.percentageWrapper.nativeElement.style.width = `0%`;
+  clearProgress(): void {
+    if (this.progressInterval) {
+      clearInterval(this.progressInterval);
+      this.progressInterval = null;
     }
   }
 
@@ -174,32 +234,226 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   onCompleteHabit() {
     if (!this.habit) return;
-    this.habitApi.completeHabit(this.habit.id).subscribe({
-      next: (res) => {
-        const updated = { ...this.habit!, status: 'completed' } as Habit;
-        this.habitService.completeHabit(updated.id);
-        this.habit = updated;
-        this.percentageCompleted = 100;
-        if (this.percentageWrapper?.nativeElement) {
-          this.percentageWrapper.nativeElement.style.width = `100%`;
+
+    // Check if this is a task or habit and call the appropriate API
+    if (this.habit.type === 'tasks') {
+      // For tasks, use updateTask to mark as completed
+      const payload = {
+        status: 'completed'
+      };
+
+      this.taskApi.completeTask(this.habit.id).subscribe({
+        next: (res: any) => {
+          const updated = { ...this.habit!, status: 'completed' } as any;
+          // For tasks, we might need to update differently
+          this.habit = updated;
+          // Set progress to 100% when completed
+          this.percentageCompleted = 100;
+          this.loadTodayTasks();
+          this.clearProgress();
+          // Trigger change detection to update button states in other components
+          this.cdr.detectChanges();
+        },
+        error: (err: any) => {
+          console.error('Failed to complete task', err);
         }
-        this.loadHabits();
-
-        this.clearProgress();
-      },
-      error: (err) => {
-        console.error('Failed to complete habit', err);
-      }
-    });
-  }
-
-  clearProgress() {
-    if (this.progressInterval) {
-      clearInterval(this.progressInterval);
-      this.progressInterval = null;
+      });
+    } else {
+      // Call habit API for habits (existing code)
+      this.habitApi.completeHabit(this.habit.id).subscribe({
+        next: (res: any) => {
+          const updated = { ...this.habit!, status: 'completed' } as Habit;
+          this.habitService.completeHabit(updated.id);
+          this.habit = updated;
+          // Set progress to 100% when completed
+          this.percentageCompleted = 100;
+          this.loadHabits();
+          this.clearProgress();
+          // Trigger change detection to update button states in other components
+          this.cdr.detectChanges();
+        },
+        error: (err: any) => {
+          console.error('Failed to complete habit', err);
+        }
+      });
     }
   }
 
+  /**
+   * Calculate progress percentage based on current time relative to start and end times
+   * @returns number between 0 and 100 representing completion percentage
+   */
+  calculateProgressPercentage(): number {
+    if (!this.habit) {
+      return 0;
+    }
+
+    const now = Date.now();
+    const start = this.habit.startTimeStamp;
+    const end = this.habit.endTimeStamp;
+
+    // If no valid timestamps, return 0
+    if (!start || !end) {
+      return 0;
+    }
+
+    // If not started yet, return 0
+    if (now < start) {
+      return 0;
+    }
+
+    // If already ended, return 100
+    if (now > end) {
+      return 100;
+    }
+
+    // Calculate progress percentage
+    const totalTime = end - start;
+    const elapsedTime = now - start;
+    const percentage = (elapsedTime / totalTime) * 100;
+
+    // Ensure percentage is between 0 and 100
+    return Math.max(0, Math.min(100, percentage));
+  }
+
+  /**
+   * Start periodic updates for progress bar
+   */
+  startProgressUpdater(): void {
+    // Clear any existing interval
+    this.clearProgress();
+
+    // Update progress immediately when starting
+    this.percentageCompleted = this.calculateProgressPercentage();
+
+    // Update progress every second
+    this.progressInterval = setInterval(() => {
+      // Update the percentageCompleted property which will trigger change detection
+      this.percentageCompleted = this.calculateProgressPercentage();
+    }, 1000);
+  }
+
+  /**
+   * Check if habit/task is currently in progress
+   * @returns boolean
+   */
+  isCurrentlyInProgress(): boolean {
+    if (!this.habit) return false;
+
+    const now = Date.now();
+    const start = this.habit.startTimeStamp;
+    const end = this.habit.endTimeStamp;
+
+    return start <= now && now <= end;
+  }
+
+  ngOnInit() {
+    console.log('HabitCardComponent ngOnInit, mode:', this.mode);
+
+    // If habit is provided, set properties from it
+    if (this.habit) {
+      this.startTime = this.habit.startTimeStamp;
+      this.endTime = this.habit.endTimeStamp;
+      this.inProgress = this.habit.type === 'habits'; // Example, adjust as needed
+      this.isEmpty = false;
+    }
+
+    // Initialize percentage to 0 for new habits/tasks
+    // For ongoing habits, it will be updated when startProgress is called
+    this.percentageCompleted = 0;
+
+    if (this.habit?.status === 'ongoing') {
+      this.startProgress();
+    }
+
+    // If in list mode, load data based on current active tab
+    if (this.mode === 'list') {
+      this.isEmpty = true; // Default to empty until we know otherwise
+
+      // Load data for current active tab
+      this.switchTab(this.currentActive);
+    }
+
+    // If in recent mode, check if we have recent habits/tasks (excluding completed ones)
+    if (this.mode === 'recent') {
+      this.hasHabits = this.filteredRecentHabits.length > 0;
+      this.hasTasks = this.filteredRecentTasks.length > 0;
+      this.isEmpty = !this.hasHabits && !this.hasTasks;
+      this.showContent = !this.isEmpty;
+
+      // Force change detection
+      this.cdr.detectChanges();
+    }
+
+    // Start progress updater for ongoing habits
+    if (this.habit && this.habit.status === 'ongoing') {
+      this.startProgressUpdater();
+    }
+
+    // Set up interval to periodically check button states
+    this.setupButtonStateChecker();
+  }
+
+  private buttonStateCheckerInterval: any;
+
+  /**
+   * Set up interval to periodically check button states
+   */
+  private setupButtonStateChecker(): void {
+    // Clear any existing interval
+    if (this.buttonStateCheckerInterval) {
+      clearInterval(this.buttonStateCheckerInterval);
+    }
+
+    // Check button states every second
+    this.buttonStateCheckerInterval = setInterval(() => {
+      // Trigger change detection to update button states
+      this.cdr.detectChanges();
+    }, 1000);
+  }
+
+  ngAfterViewInit(): void {
+    // Initialize percentage to 0
+    this.percentageCompleted = 0;
+
+    // For ongoing habits, make sure the progress updater is running
+    if (this.habit && this.habit.status === 'ongoing') {
+      // If progress updater is not running, start it
+      if (!this.progressInterval) {
+        this.startProgressUpdater();
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this._intervalId) {
+      clearInterval(this._intervalId);
+    }
+
+    if (this.progressInterval) {
+      clearInterval(this.progressInterval);
+    }
+
+    // Clear button state checker interval
+    if (this.buttonStateCheckerInterval) {
+      clearInterval(this.buttonStateCheckerInterval);
+    }
+
+    // Unsubscribe from subscriptions
+    if (this.habitSubscription) {
+      this.habitSubscription.unsubscribe();
+    }
+
+    if (this.taskSubscription) {
+      this.taskSubscription.unsubscribe();
+    }
+  }
+
+  calculatePercentageCompleted() {
+    this.percentageCompleted = this.calculateProgressPercentage();
+
+    // Removed manual DOM manipulation to avoid conflicts with Angular binding
+  }
 
   /**
    * Build a payload matching the backend expected shape. Keep other fields intact but set status.
@@ -311,37 +565,32 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  ngOnInit() {
-
-
-    // If habit is provided, set properties from it
-    if (this.habit) {
-      this.startTime = this.habit.startTimeStamp;
-      this.endTime = this.habit.endTimeStamp;
-      this.inProgress = this.habit.type === 'habits'; // Example, adjust as needed
-      this.isEmpty = false;
-
-      this.habit = {
-        ...this.habit,
-        status: "ongoing",
-        startTimeStamp: Date.now() - 20000,
-        endTimeStamp: Date.now() + 40000
-      };
+  ngOnChanges(changes: SimpleChanges) {
+    // If in recent mode and recent habits or tasks change, update the display
+    if (this.mode === 'recent' && (changes['recentHabits'] || changes['recentTasks'])) {
+      this.updateRecentDisplay();
+      // Trigger change detection to update button states
+      this.cdr.detectChanges();
     }
+  }
 
-    if (this.habit?.status === 'ongoing') {
-      this.calculateAndStartProgress();
+  /**
+   * Update the display when recent habits or tasks change
+   */
+  public updateRecentDisplay(): void {
+    if (this.mode === 'recent') {
+      // Use filtered arrays to determine if we have habits/tasks
+      this.hasHabits = this.filteredRecentHabits.length > 0;
+      this.hasTasks = this.filteredRecentTasks.length > 0;
+      this.isEmpty = !this.hasHabits && !this.hasTasks;
+      this.showContent = !this.isEmpty;
+
+      // Force change detection
+      this.cdr.detectChanges();
     }
+  }
 
-    // If in list mode, load data based on current active tab
-    if (this.mode === 'list') {
-      this.isEmpty = true; // Default to empty until we know otherwise
-
-      // Load data for current active tab
-      this.switchTab(this.currentActive);
-    }
-
-  }  /**
+  /**
    * Load habits from the API
    */
   loadHabits() {
@@ -358,12 +607,16 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
           .slice(0, this.maxItemsToShow);
         this.hasHabits = this.habits.length > 0;
         this.updateEmptyState();
+        // Trigger change detection to update button states
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error fetching habits:', error);
         this.habits = [];
         this.hasHabits = false;
         this.updateEmptyState();
+        // Trigger change detection to update button states
+        this.cdr.detectChanges();
       }
     });
   }
@@ -391,12 +644,16 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
 
         this.hasTasks = this.tasks.length > 0;
         this.updateEmptyState();
+        // Trigger change detection to update button states
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error fetching tasks:', error);
         this.tasks = [];
         this.hasTasks = false;
         this.updateEmptyState();
+        // Trigger change detection to update button states
+        this.cdr.detectChanges();
       }
     });
   }
@@ -421,12 +678,16 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
 
         this.hasTasks = this.tasks.length > 0;
         this.updateEmptyState();
+        // Trigger change detection to update button states
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error fetching tasks:', error);
         this.tasks = [];
         this.hasTasks = false;
         this.updateEmptyState();
+        // Trigger change detection to update button states
+        this.cdr.detectChanges();
       }
     });
   }
@@ -466,7 +727,19 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
   switchTab(tab: string) {
     this.currentActive = tab;
 
-    // Load data if needed
+    // For recent mode, we don't need to load data as it's already provided
+    // Just update the UI state using filtered arrays
+    if (this.mode === 'recent') {
+      this.hasHabits = this.filteredRecentHabits.length > 0;
+      this.hasTasks = this.filteredRecentTasks.length > 0;
+      this.isEmpty = !this.hasHabits && !this.hasTasks;
+      this.showContent = !this.isEmpty;
+      // Trigger change detection to update button states
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // Load data if needed (for list mode)
     if (tab === 'habits' && this.habits.length === 0) {
       this.loadHabits();
     } else if (tab === 'tasks' && this.tasks.length === 0) {
@@ -477,55 +750,8 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.updateEmptyState();
-  } ngAfterViewInit(): void {
-    // run calculation after view (and the percentageWrapper element) is available
-    this.calculatePercentageCompleted();
-    this._intervalId = setInterval(() => {
-      this.calculatePercentageCompleted();
-    }, 6000);
-  }
-
-  ngOnDestroy(): void {
-    if (this._intervalId) {
-      clearInterval(this._intervalId);
-    }
-
-    if (this.progressInterval) clearInterval(this.progressInterval);
-
-    // Unsubscribe from subscriptions
-    if (this.habitSubscription) {
-      this.habitSubscription.unsubscribe();
-    }
-
-    if (this.taskSubscription) {
-      this.taskSubscription.unsubscribe();
-    }
-  } calculatePercentageCompleted() {
-    if (this.startTime < new Date().getTime()) {
-      let duration = this.endTime - this.startTime;
-      this.percentageCompleted = Math.floor((new Date().getTime() - this.startTime) / duration * 100);
-
-      if (this.percentageCompleted > 100) {
-        this.percentageCompleted = 100;
-      }
-      if (this.percentageCompleted < 0) {
-        this.percentageCompleted = 0;
-      }
-
-      this.percentageCompleted = Math.floor(this.percentageCompleted);
-      // Guard the element reference in case the template didn't render the single-card view
-      if (this.percentageWrapper && this.percentageWrapper.nativeElement) {
-        this.percentageWrapper.nativeElement.style.width = `calc(${this.percentageCompleted}% - var(--card_offset) - 4px)`;
-      }
-
-      if (!this.inProgress) {
-        if (this.endTime < new Date().getTime()) {
-          this.missedTime = true;
-        } else {
-          this.isRunningLate = true;
-        }
-      }
-    }
+    // Trigger change detection to update button states
+    this.cdr.detectChanges();
   }
 
   toggle() {
@@ -540,6 +766,8 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   calculateAndStartProgress() {
+    // Initialize to 0% when starting
+    this.percentageCompleted = 0;
     this.calculatePercentage(); // initial fill
 
     this.progressInterval = setInterval(() => {
@@ -565,10 +793,8 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.percentageCompleted =
       Math.min(100, Math.max(0, (completed / total) * 100));
 
-    if (this.percentageWrapper?.nativeElement) {
-      this.percentageWrapper.nativeElement.style.width =
-        this.percentageCompleted + "%";
-    }
+    // Removed manual DOM manipulation to avoid conflicts with Angular binding
+    // The percentageCompleted property will automatically update the UI
   }
 
   showContentNow() {
@@ -666,4 +892,214 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
       return '/assets/Icons-Neutral/Icon-Routine-Morning.png';
     }
   }
+
+  /**
+   * Get filtered recent habits excluding completed and skipped ones
+   */
+  get filteredRecentHabits(): Habit[] {
+    if (!this.recentHabits) return [];
+    return this.recentHabits.filter(habit => {
+      const status = (habit.status || '').toLowerCase();
+      return status !== 'completed' && status !== 'skipped';
+    });
+  }
+
+  /**
+   * Get filtered recent tasks excluding completed and skipped ones
+   */
+  get filteredRecentTasks(): any[] {
+    if (!this.recentTasks) return [];
+    return this.recentTasks.filter(task => {
+      const status = (task.status || '').toLowerCase();
+      return status !== 'completed' && status !== 'skipped';
+    });
+  }
+
+  /**
+   * Check if there's any ongoing habit or task in the current list
+   */
+  private hasAnyOngoingActivity(): boolean {
+    // For single mode, check if there are any ongoing activities in the recent lists
+    if (this.mode === 'single') {
+      // Check recent habits passed from parent
+      if (this.recentHabits && this.recentHabits.some(habit =>
+        habit.status === 'ongoing')) {
+        return true;
+      }
+      // Check recent tasks passed from parent
+      if (this.recentTasks && this.recentTasks.some(task =>
+        task.status === 'ongoing')) {
+        return true;
+      }
+    }
+
+    // Check in list mode
+    if (this.mode === 'list') {
+      // Check habits
+      if (this.habits && this.habits.some(habit =>
+        habit.status === 'ongoing')) {
+        return true;
+      }
+      // Check tasks
+      if (this.tasks && this.tasks.some(task =>
+        task.status === 'ongoing')) {
+        return true;
+      }
+    }
+
+    // Check in recent mode
+    if (this.mode === 'recent') {
+      // Check recent habits
+      if (this.recentHabits && this.recentHabits.some(habit =>
+        habit.status === 'ongoing')) {
+        return true;
+      }
+      // Check recent tasks
+      if (this.recentTasks && this.recentTasks.some(task =>
+        task.status === 'ongoing')) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if there's any ongoing habit or task in the current list EXCEPT the current habit/task
+   */
+  private hasOtherOngoingActivity(): boolean {
+    // For single mode, check if there are other ongoing activities in the recent lists
+    if (this.mode === 'single') {
+      // Check recent habits passed from parent (excluding current habit if it exists)
+      if (this.recentHabits && this.recentHabits.some(habit =>
+        habit.status === 'ongoing' &&
+        (!this.habit || habit.id !== this.habit.id))) {
+        return true;
+      }
+      // Check recent tasks passed from parent (excluding current task if it exists)
+      if (this.recentTasks && this.recentTasks.some(task =>
+        task.status === 'ongoing' &&
+        (!this.habit || task.id !== this.habit.id))) {
+        return true;
+      }
+    }
+
+    // Check in list mode
+    if (this.mode === 'list') {
+      // Check habits (excluding current habit if it exists)
+      if (this.habits && this.habits.some(habit =>
+        habit.status === 'ongoing' &&
+        (!this.habit || habit.id !== this.habit.id))) {
+        return true;
+      }
+      // Check tasks (excluding current task if it exists)
+      if (this.tasks && this.tasks.some(task =>
+        task.status === 'ongoing' &&
+        (!this.habit || task.id !== this.habit.id))) {
+        return true;
+      }
+    }
+
+    // Check in recent mode
+    if (this.mode === 'recent') {
+      // Check recent habits (excluding current habit if it exists)
+      if (this.recentHabits && this.recentHabits.some(habit =>
+        habit.status === 'ongoing' &&
+        (!this.habit || habit.id !== this.habit.id))) {
+        return true;
+      }
+      // Check recent tasks (excluding current task if it exists)
+      if (this.recentTasks && this.recentTasks.some(task =>
+        task.status === 'ongoing' &&
+        (!this.habit || task.id !== this.habit.id))) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if the current habit/task is within the "Let's Go" window
+   * (5 minutes before start time to 5 minutes after start time)
+   */
+  private isWithinLetsGoWindow(): boolean {
+    if (!this.habit) return false;
+
+    const now = Date.now();
+    const startTime = this.habit.startTimeStamp;
+
+    // Check if we're within 5 minutes before or after start time
+    const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+    return (now >= (startTime - fiveMinutes)) && (now <= (startTime + fiveMinutes));
+  }
+
+  /**
+   * Check if the current time is after the end time
+   */
+  private isAfterEndTime(): boolean {
+    if (!this.habit) return false;
+
+    const now = Date.now();
+    const endTime = this.habit.endTimeStamp;
+
+    return now > endTime;
+  }
+
+  /**
+   * Check if "Let's Go" button should be enabled
+   */
+  isLetsGoEnabled(): boolean {
+    // If there's already another ongoing activity, disable this button
+    if (this.hasOtherOngoingActivity()) {
+      return false;
+    }
+
+    // Check if we're within the "Let's Go" window
+    return this.isWithinLetsGoWindow();
+  }
+
+  /**
+   * Check if "Let's Go" button should be visible
+   */
+  isLetsGoVisible(): boolean {
+    // Hide if we're after end time
+    if (this.isAfterEndTime()) {
+      return false;
+    }
+
+    // Hide if current habit/task is ongoing (show Abort instead)
+    if (this.habit && this.habit.status === 'ongoing') {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Check if "Abort" button should be visible
+   */
+  isAbortVisible(): boolean {
+    // Show abort button only if current habit/task is ongoing
+    return !!(this.habit && this.habit.status === 'ongoing');
+  }
+
+  /**
+   * Check if "Done" button should be enabled
+   */
+  isDoneEnabled(): boolean {
+    // If current habit/task is ongoing, always enable Done button
+    if (this.habit && this.habit.status === 'ongoing') {
+      return true;
+    }
+
+    // If there's already another ongoing activity, disable this button
+    if (this.hasOtherOngoingActivity()) {
+      return false;
+    }
+
+    // Enable if we're NOT within the "Let's Go" window
+    return !this.isWithinLetsGoWindow();
+  }
+
 }

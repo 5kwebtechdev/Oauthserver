@@ -24,7 +24,10 @@ import { PetMessagesService, PetMessage, PetMood } from '../../core/services/pet
 import { UserService } from '../../core/services/user.service';
 import { MoodService } from '../../core/services/mood.service';
 import { VibesDisplayResponse } from '../../core/models/mood.model';
-
+import { HabitService } from '../../core/components/habit-section/habit.service';
+import { Habit } from '../../core/components/habit-section/habit.types';
+import { TaskApi } from '../../core/api/task.api';
+import { HabitApi } from '../../core/api/habit.api';
 
 @Component({
   selector: 'app-user-dashboard',
@@ -67,12 +70,19 @@ export class UserDashboardComponent implements OnInit {
   public currentPetMessage: PetMessage | undefined = undefined;
   public petMood: PetMood | 'anger' = 'happy';
 
+  // Recent habits and tasks
+  public recentHabits: Habit[] = [];
+  public recentTasks: any[] = [];
+
   constructor(
     private modalCtrl: ModalController,
     private router: Router,
     private petMessagesService: PetMessagesService,
     private userService: UserService,
-    private moodService: MoodService
+    private moodService: MoodService,
+    private habitService: HabitService,
+    private taskApi: TaskApi,
+    private habitApi: HabitApi
   ) { }
 
   async openNotes() {
@@ -92,6 +102,9 @@ export class UserDashboardComponent implements OnInit {
     // Fetch user stats (coins, streaks, badges, etc.) from backend
     this.loadUserStats();
 
+    // Load recent habits and tasks
+    this.loadRecentHabitsAndTasks();
+
     // Initialize pet message for home page
     this.currentPetMessage = this.petMessagesService.getMessage('home', {
       userName: this.userName,
@@ -102,6 +115,164 @@ export class UserDashboardComponent implements OnInit {
 
     // Set pet mood based on the message
     this.petMood = this.currentPetMessage.mood;
+  }
+
+  /**
+   * Load recent habits and tasks
+   */
+  private loadRecentHabitsAndTasks(): void {
+    // Load today's habits (not all habits)
+    this.habitService.loadTodayHabits().subscribe({
+      next: (response: any) => {
+        // Get habits from the service
+        let habitsData = this.habitService.getCurrentHabits();
+
+        // Filter out completed and skipped habits (case-insensitive)
+        habitsData = habitsData.filter((habit: Habit) => {
+          const status = (habit.status || '').toLowerCase();
+          return status !== 'completed' && status !== 'skipped';
+        });
+
+        // Since createdAt field is not available in the API response, 
+        // we'll sort by id (assuming higher id means more recent)
+        // or by completionDate if available
+        this.recentHabits = [...habitsData]
+          .sort((a: Habit, b: Habit) => {
+            // Try to sort by id first (assuming higher id means more recent)
+            const aId = parseInt(a.id || '0', 10);
+            const bId = parseInt(b.id || '0', 10);
+
+            // If ids are available, sort by id (descending)
+            if (aId > 0 && bId > 0) {
+              return bId - aId;
+            }
+
+            // Fallback to completionDate if available
+            if (a.completionDate && b.completionDate) {
+              const aDate = new Date(a.completionDate).getTime();
+              const bDate = new Date(b.completionDate).getTime();
+              return bDate - aDate;
+            }
+
+            // Last resort: sort by start date
+            if (a.startDate && b.startDate) {
+              const aStartDate = new Date(a.startDate).getTime();
+              const bStartDate = new Date(b.startDate).getTime();
+              return bStartDate - aStartDate;
+            }
+
+            // If all else fails, keep original order
+            return 0;
+          })
+          // Take only the first 4 items
+          .slice(0, 4);
+
+        // Force change detection
+        setTimeout(() => {
+          this.recentHabits = [...this.recentHabits];
+        }, 0);
+      },
+      error: (error) => {
+        console.error('Failed to load habits:', error);
+      }
+    });
+
+    // Load today's tasks
+    this.taskApi.getTodayTasks().subscribe({
+      next: (response: any) => {
+        if (response && Array.isArray(response.data || response)) {
+          const tasksData = response.data || response;
+          // Filter out completed and skipped tasks and map them (case-insensitive)
+          const filteredTasks = tasksData
+            .filter((item: any) => {
+              const status = (item.status || '').toLowerCase();
+              return status !== 'completed' && status !== 'skipped';
+            })
+            .map((item: any) => {
+              return {
+                id: item.id || '',
+                title: item.title || '',
+                notes: item.description || '',
+                startDate: item.startDate ? new Date(item.startDate) : new Date(),
+                endDate: item.endDate ? new Date(item.endDate) : new Date(),
+                startTime: item.startTime || "07:00:00",
+                endTime: item.endTime || "08:00:00",
+                startTimeStamp: item.startDate ? new Date(item.startDate).getTime() : Date.now(),
+                endTimeStamp: item.endDate ? new Date(item.endDate).getTime() : Date.now() + 3600000,
+                type: 'tasks',
+                isPrivate: !!item.isPrivate,
+                selectedRoutine: item.getRoutine,
+                routineTags: item.routineTags || [],
+                everyday: item.everyday || false,
+                selectedDays: item.daysOfWeek || item.selectedDays || [],
+                priority: item.priority,
+                routine: item.routine,
+                status: item.status,
+                tags: item.tags || [],
+                coinReward: item.coinReward || 0,
+                coinsEarned: item.coinsEarned || item.coins || 0,
+                streak: item.streak || item.streakCount || 0,
+                highestStreak: item.highestStreak || item.topStreak || 0,
+                completionPercentage: item.completionPercentage || item.completionRate || 0,
+                totalCompletedDays: item.totalCompletedDays || item.completedDays || 0,
+                milestoneBadges: item.milestoneBadges || item.badges || [],
+                createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
+                completionDate: item.completionDate ? new Date(item.completionDate) : null,
+                assignedToId: item.assignedToId,
+                assignedToName: item.assignedToName,
+                createdById: item.createdById,
+                createdByName: item.createdByName,
+                createdBy: item.createdBy || item.createdByName,
+                sharedWithParents: item.sharedWithParents || false,
+                completed: item.completed || false,
+                rewardCoins: item.rewardCoins || 0,
+                familyId: item.familyId,
+                updatedAt: item.updatedAt
+              };
+            })
+            // Sort by id (assuming higher id means more recent)
+            .sort((a: any, b: any) => {
+              // Try to sort by id first (assuming higher id means more recent)
+              const aId = parseInt(a.id || '0', 10);
+              const bId = parseInt(b.id || '0', 10);
+
+              // If ids are available, sort by id (descending)
+              if (aId > 0 && bId > 0) {
+                return bId - aId;
+              }
+
+              // Fallback to completionDate if available
+              if (a.completionDate && b.completionDate) {
+                const aDate = new Date(a.completionDate).getTime();
+                const bDate = new Date(b.completionDate).getTime();
+                return bDate - aDate;
+              }
+
+              // Last resort: sort by start date
+              if (a.startDate && b.startDate) {
+                const aStartDate = new Date(a.startDate).getTime();
+                const bStartDate = new Date(b.startDate).getTime();
+                return bStartDate - aStartDate;
+              }
+
+              // If all else fails, keep original order
+              return 0;
+            })
+            // Take only the first 4 items
+            .slice(0, 4);
+
+          this.recentTasks = filteredTasks;
+
+          // Force change detection
+          setTimeout(() => {
+            this.recentTasks = [...this.recentTasks];
+          }, 0);
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load tasks:', error);
+      }
+    });
   }
 
   /**

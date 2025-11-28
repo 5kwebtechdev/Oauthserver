@@ -32,7 +32,7 @@ export class HabitPageComponent implements OnInit, OnDestroy {
   public showContent: boolean = true;
 
   public subFilter: 'journey' | 'priorities' | 'routine' | 'all' = 'all';
-  public journeySubFilter: 'pending' | 'ongoing' | 'completed' | 'all' = 'pending';
+  public journeySubFilter: 'pending' | 'ongoing' | 'completed' | 'all' = 'all';
   public prioritySubFilter: 'high' | 'medium' | 'low' | 'all' = 'high';
   public routineSubFilter: 'morning' | 'evening' | 'night' | 'all' = 'morning';
 
@@ -62,7 +62,9 @@ export class HabitPageComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.habitService.getHabits().subscribe(habits => {
         if (!habits?.length) return;
+        console.log("Received habits from service:", habits);
         this.allHabits = habits;
+        this.applyFilters();
       })
     );
 
@@ -87,24 +89,34 @@ export class HabitPageComponent implements OnInit, OnDestroy {
   }
   loadHabits() {
     this.loading = true;
+    const formattedDate = this.habitService.formatDateToYYYYMMDD(this.selectedDate);
+    console.log("Loading habits for date:", formattedDate, "Selected date:", this.selectedDate);
+    
     this.subscriptions.add(
-      this.habitService.loadTodayHabits().subscribe({
+      this.habitService.loadHabitsForDate(formattedDate).subscribe({
         next: (res: any) => {
-          console.log("LOADED HABITS:", this.allHabits);
-
-          this.allHabits = res?.data?.map((h: any) => ({
+          console.log("LOADED HABITS:", res);
+          
+          // Handle both cases: response might be directly an array or have a data property
+          const habitData = Array.isArray(res) ? res : (res?.data || []);
+          
+          this.allHabits = habitData.map((h: any) => ({
             ...h,
             status: h.status?.trim().toLowerCase(),
             priority: h.priority?.trim().toLowerCase(),
             routine: h.routine?.trim().toLowerCase(),
           })) || [];
 
+          console.log("Mapped habits:", this.allHabits);
+          console.log("Current filters - subFilter:", this.subFilter, "journeySubFilter:", this.journeySubFilter);
           this.loading = false;
           this.applyFilters();
 
         },
-        error: () => {
+        error: (err) => {
+          console.error("Error loading habits:", err);
           this.loading = false;
+          this.allHabits = [];
         }
       })
     );
@@ -184,31 +196,37 @@ export class HabitPageComponent implements OnInit, OnDestroy {
 
   private filterHabits(): Habit[] {
     let list = this.filterByDate(this.allHabits);
+    console.log("After date filtering:", list);
 
     switch (this.subFilter) {
       case 'journey':
         if (this.journeySubFilter !== 'all') {
           list = list.filter(h => h.status === this.journeySubFilter);
+          console.log("After journey filtering (" + this.journeySubFilter + "):", list);
         }
         break;
 
       case 'priorities':
         if (this.prioritySubFilter !== 'all') {
           list = list.filter(h => (h.priority || '').toLowerCase() === this.prioritySubFilter);
+          console.log("After priority filtering (" + this.prioritySubFilter + "):", list);
         }
         break;
 
       case 'routine':
         if (this.routineSubFilter !== 'all') {
           list = list.filter(h => (h.routine || '').toLowerCase() === this.routineSubFilter);
+          console.log("After routine filtering (" + this.routineSubFilter + "):", list);
         }
         break;
 
       default:
         // 'all' => no extra filter
+        console.log("No additional filtering (showing all)");
         break;
     }
 
+    console.log("Final filtered habits:", list);
     return list;
   }
 
@@ -257,12 +275,27 @@ export class HabitPageComponent implements OnInit, OnDestroy {
       .toLocaleDateString('en-US', { weekday: 'long' })
       .toUpperCase();
 
+    console.log("Filtering by date:", selected, "Day of week:", day);
+    
     return habits.filter(h => {
+      // Make sure we're handling the dates correctly
       const start = h.startDate ? new Date(h.startDate) : selected;
       const end = h.endDate ? new Date(h.endDate) : selected;
-      return start <= selected &&
-        selected <= end &&
-        (h.selectedDays?.includes(day) ?? true);
+      
+      // Log for debugging
+      console.log("Checking habit:", h.title, "Start:", start, "End:", end, "Selected:", selected, "Day:", day);
+      console.log("Habit selectedDays:", h.selectedDays);
+      console.log("Start date valid:", !isNaN(start.getTime()), "End date valid:", !isNaN(end.getTime()));
+      
+      const isInRange = start <= selected && selected <= end;
+      const hasCorrectDay = h.selectedDays && h.selectedDays.length > 0 ? h.selectedDays.includes(day) : true;
+      
+      console.log("Is in range:", isInRange, "Has correct day:", hasCorrectDay);
+      
+      const result = isInRange && hasCorrectDay;
+      console.log("Including habit:", h.title, "?", result);
+      
+      return result;
     });
   }
 

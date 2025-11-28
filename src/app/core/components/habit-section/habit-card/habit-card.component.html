@@ -60,6 +60,67 @@
   </div>
 </div>
 
+<!-- Recent Mode -->
+<div *ngIf="mode === 'recent'" class="d-flex flex-column gap-4">
+  <div class="day-at-glance-container">
+    <mindful-card-header title="Your Day at a Glance" subtitleMiddle="Check tasks • Finish habits • Crush it">
+      <img src="/assets/Icons-Neutral/Icon-Time Management.png" alt="View All" class="day-at-glance__view-all"
+        (click)="openTimeline()" style="cursor:pointer;" *ngIf="!isEmpty" />
+    </mindful-card-header>
+
+    <!-- Tab Navigation -->
+    <div class="container w-full" *ngIf="!isEmpty">
+      <div class="row toggler"
+        [ngClass]="{ 'habits-active': currentActive === 'habits', 'tasks-active': currentActive === 'tasks' }">
+        <div class="col-4" (click)="switchTab('all')" [ngClass]="currentActive === 'all' ? 'active' : ''">All</div>
+        <div class="col-4" (click)="switchTab('habits')" [ngClass]="currentActive === 'habits' ? 'active' : ''">Habits
+        </div>
+        <div class="col-4" (click)="switchTab('tasks')" [ngClass]="currentActive === 'tasks' ? 'active' : ''">Tasks
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="isEmpty">
+      <div class="empty-state-content">
+        <div class="empty-state-image">
+          <img src="/assets/Images-Transparent/Image-Home-Blank.png" alt="Empty day illustration">
+        </div>
+        <h3 class="empty-state-title">Nothing added yet!</h3>
+        <p class="empty-state-description">Add tasks and habits to see them appear here.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Habit Items -->
+  <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
+    *ngIf="(currentActive === 'habits' || currentActive === 'all') && hasHabits">
+    <habit-card *ngFor="let habitItem of filteredRecentHabits" [habit]="habitItem"
+      [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
+      [inProgress]="isHabitInProgress(habitItem)" mode="single">
+    </habit-card>
+  </div>
+
+  <!-- Recent Task Items -->
+  <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
+    *ngIf="(currentActive === 'tasks' || currentActive === 'all') && hasTasks">
+    <habit-card *ngFor="let taskItem of filteredRecentTasks" [habit]="taskItem"
+      [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
+      mode="single">
+    </habit-card>
+  </div>
+
+  <!-- CTA Buttons -->
+  <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="isEmpty">
+    <mindful-button type="magenta" large style="display:block; width:100%" text="Add New"
+      (click)="openHabitInput()"></mindful-button>
+  </div>
+  <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
+    <button class="text-view-all" [routerLink]="['/authed/habit-page']">View All</button>
+    <mindful-view-all [text]="'Add New +'" (clicked)="openHabitInput()"></mindful-view-all>
+  </div>
+</div>
+
 <!-- habit-task-card -->
 <div *ngIf="mode === 'single'" class="container w-full h-full p-0">
   <div class="habit-wrapper"
@@ -69,7 +130,8 @@
         <div class="d-flex justify-content-between">
           <div class="flex-column d-flex gap-1">
             <h3 class="habit-title">{{habit?.title || 'Habit'}}</h3>
-            <h4 class="habit-timing">{{ formatTimeString(habit?.startTime) || getFormattedTime(startTime) }} - {{
+            <h4 [ngClass]="habit?.type === 'tasks' ? 'task-timing' : 'habit-timing'">{{
+              formatTimeString(habit?.startTime) || getFormattedTime(startTime) }} - {{
               formatTimeString(habit?.endTime) ||
               getFormattedTime(endTime) }}
             </h4>
@@ -96,7 +158,7 @@
     <!-- Expandable content wrapper with animation -->
     <div class="habit-expandable-content" [ngClass]="{'expanded': expanded}">
       <div class="habit-footer-progress-box" *ngIf="getStatus() === 'ongoing'">
-        <div class="habit-footer-progress" #percentageWrapper></div>
+        <div class="habit-footer-progress" #percentageWrapper [style.width.%]="percentageCompleted"></div>
       </div>
       <div class="habit-footer-container">
         <div class="container w-full justify-content-between d-flex p-0 align-items-center">
@@ -111,12 +173,18 @@
             </div>
           </div>
           <div class="d-flex footer-cta">
-            <mindful-button *ngIf="getStatus() === 'pending'" [type]="habit?.type === 'tasks' ? 'orange' : 'lavendar'"
-              text="Let`s Go" (click)="onStartHabit()"></mindful-button>
-            <mindful-button *ngIf="getStatus() === 'ongoing'"
+            <mindful-button *ngIf="isLetsGoVisible()" [type]="habit?.type === 'tasks' ? 'orange' : 'lavendar'"
+              text="Let`s Go" (click)="onStartHabit()" [disabled]="!isLetsGoEnabled()"></mindful-button>
+            <mindful-button *ngIf="isAbortVisible()"
               [type]="habit?.type === 'tasks' ? 'orange-transparent' : 'lavendar-transparent'" text="Abort"
               (click)="onAbortHabit()"></mindful-button>
-            <mindful-button type="green" text="Done?" (click)="onCompleteHabit()"></mindful-button>
+            <mindful-button *ngIf="getStatus() !== 'completed'" type="green" text="Done?" (click)="onCompleteHabit()"
+              [disabled]="!isDoneEnabled() || getStatus() === 'skipped'"></mindful-button>
+            <!-- <div class="d-flex gap-2" *ngIf="getStatus() === 'completed'">
+              <div class="bubble">You did it</div>
+              <mindful-pet pet="panda" mood="tired" [size]="44"></mindful-pet>
+            </div> -->
+
           </div>
         </div>
       </div>

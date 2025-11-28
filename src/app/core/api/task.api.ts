@@ -87,4 +87,19 @@ export class TaskApi {
         const url = `${this.base}/tasks/delete/${id}`;
         return this.http.delete(url, { headers: this.headers() });
     }
+
+    letsGoTask(id: string): Observable<any> {
+        const url = `${this.base}/tasks/lets-go/${id}`;
+        return this.http.post(url, {}, { headers: this.headers() });
+    }
+
+    abortTask(id: string): Observable<any> {
+        const url = `${this.base}/tasks/abort/${id}`;
+        return this.http.post(url, {}, { headers: this.headers() });
+    }
+
+    completeTask(id: string): Observable<any> {
+        const url = `${this.base}/tasks/complete/${id}`;
+        return this.http.post(url, {}, { headers: this.headers() });
+    }
 }
