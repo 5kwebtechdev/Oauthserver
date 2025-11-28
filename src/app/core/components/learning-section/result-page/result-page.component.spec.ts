@@ -48,4 +48,18 @@ describe('ResultPageComponent', () => {
     component.onContinue();
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
   });
+
+  it('should set pet mood based on score', () => {
+    component.scorePercentage = 85;
+    component.ngOnInit();
+    expect(component.petMood).toBe('happy');
+
+    component.scorePercentage = 70;
+    component.ngOnInit();
+    expect(component.petMood).toBe('playful');
+
+    component.scorePercentage = 50;
+    component.ngOnInit();
+    expect(component.petMood).toBe('curious');
+  });
 });
