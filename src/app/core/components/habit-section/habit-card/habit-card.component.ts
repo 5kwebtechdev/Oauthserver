@@ -55,9 +55,6 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
   isEmpty: boolean = true;
 
   @Input()
-  percentageCompleted: number = 0;
-
-  @Input()
   startTime !: number;
 
   @Input()
@@ -69,7 +66,7 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public isRunningLate: boolean = false;
   public missedTime: boolean = false;
-  public isHabitStarted: boolean = false;
+  // public isHabitStarted: boolean = false;
 
   public habits: Habit[] = [];
   public tasks: any[] = [];
@@ -79,6 +76,9 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
   private taskSubscription?: Subscription;
 
   private lastUpdateTime: number = 0;
+  percentageCompleted: number = 0;
+  progressInterval: any;
+
 
   public maxItemsToShow: number = 4;  // percentageWrapper is inside the single-card template which is rendered conditionally,
   // so query it with static: false and guard access in code.
@@ -104,6 +104,24 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  startProgress() {
+    this.clearProgress(); // Clear old timers
+
+    this.percentageCompleted = 0;
+    if (this.percentageWrapper?.nativeElement) {
+      this.percentageWrapper.nativeElement.style.width = `0%`;
+    }
+
+    this.progressInterval = setInterval(() => {
+      this.calculatePercentageCompleted();
+
+      if (this.percentageCompleted >= 100) {
+        this.clearProgress();
+      }
+    }, 1000);
+  }
+
+
   /**
    * Called when user taps "Let's Go" - set status to ONGOING
    */
@@ -116,7 +134,8 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
         const updated = { ...this.habit!, status: 'ongoing' } as Habit;
         this.habitService.updateHabit(updated);
         this.habit = updated;
-        this.isHabitStarted = true;
+        this.startProgress();
+        this.loadHabits();
       },
       error: (err) => {
         console.error('Failed to start habit', err);
@@ -126,7 +145,28 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onAbortHabit() {
     this.console.log('Abort habit clicked');
-    this.isHabitStarted = true;
+    if (!this.habit) return;
+    this.habitApi.abortHabit(this.habit.id).subscribe({
+      next: (res) => {
+        const updated = { ...this.habit!, status: 'skipped' } as Habit;
+        this.habitService.abortHabit(updated.id);
+        this.habit = updated;
+        this.resetProgress();
+        this.loadHabits();
+      },
+      error: (err) => {
+        console.error('Failed to abort habit', err);
+      }
+    });
+  }
+
+  resetProgress() {
+    this.clearProgress();
+    this.percentageCompleted = 0;
+
+    if (this.percentageWrapper?.nativeElement) {
+      this.percentageWrapper.nativeElement.style.width = `0%`;
+    }
   }
 
   /**
@@ -139,12 +179,27 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
         const updated = { ...this.habit!, status: 'completed' } as Habit;
         this.habitService.completeHabit(updated.id);
         this.habit = updated;
+        this.percentageCompleted = 100;
+        if (this.percentageWrapper?.nativeElement) {
+          this.percentageWrapper.nativeElement.style.width = `100%`;
+        }
+        this.loadHabits();
+
+        this.clearProgress();
       },
       error: (err) => {
         console.error('Failed to complete habit', err);
       }
     });
   }
+
+  clearProgress() {
+    if (this.progressInterval) {
+      clearInterval(this.progressInterval);
+      this.progressInterval = null;
+    }
+  }
+
 
   /**
    * Build a payload matching the backend expected shape. Keep other fields intact but set status.
@@ -257,12 +312,25 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
+
+
     // If habit is provided, set properties from it
     if (this.habit) {
       this.startTime = this.habit.startTimeStamp;
       this.endTime = this.habit.endTimeStamp;
       this.inProgress = this.habit.type === 'habits'; // Example, adjust as needed
       this.isEmpty = false;
+
+      this.habit = {
+        ...this.habit,
+        status: "ongoing",
+        startTimeStamp: Date.now() - 20000,
+        endTimeStamp: Date.now() + 40000
+      };
+    }
+
+    if (this.habit?.status === 'ongoing') {
+      this.calculateAndStartProgress();
     }
 
     // If in list mode, load data based on current active tab
@@ -422,6 +490,8 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
       clearInterval(this._intervalId);
     }
 
+    if (this.progressInterval) clearInterval(this.progressInterval);
+
     // Unsubscribe from subscriptions
     if (this.habitSubscription) {
       this.habitSubscription.unsubscribe();
@@ -469,8 +539,44 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  calculateAndStartProgress() {
+    this.calculatePercentage(); // initial fill
+
+    this.progressInterval = setInterval(() => {
+      this.calculatePercentage();
+      // console log for test
+      console.log("Progress:", this.percentageCompleted);
+
+      if (this.percentageCompleted >= 100) {
+        this.clearProgress();
+      }
+    }, 1000); // update every 1 sec
+  }
+
+  calculatePercentage() {
+    if (!this.habit?.startTimeStamp || !this.habit?.endTimeStamp) return;
+
+    const now = Date.now();
+    const start = this.habit.startTimeStamp;
+    const end = this.habit.endTimeStamp;
+    const total = end - start;
+    const completed = now - start;
+
+    this.percentageCompleted =
+      Math.min(100, Math.max(0, (completed / total) * 100));
+
+    if (this.percentageWrapper?.nativeElement) {
+      this.percentageWrapper.nativeElement.style.width =
+        this.percentageCompleted + "%";
+    }
+  }
+
   showContentNow() {
     this.showContent = true;
+  }
+
+  getStatus(): string {
+    return (this.habit?.status ?? '').toLowerCase();
   }
 
   protected readonly console = console;
@@ -531,6 +637,10 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   getCoinReward(): number {
     return this.habit && this.habit.coinReward ? this.habit.coinReward : 0;
+  }
+
+  getStreak(): number {
+    return this.habit && this.habit.streak ? this.habit.streak : 0;
   }
 
   /**

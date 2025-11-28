@@ -115,4 +115,9 @@ export class HabitApi {
         const url = `${this.base}/habits/lets-go/${id}`;
         return this.http.post(url, {}, { headers: this.headers() });
     }
+
+    abortHabit(id: string): Observable<any> {
+        const url = `${this.base}/habits/abort/${id}`;
+        return this.http.post(url, {}, { headers: this.headers() });
+    }
 }

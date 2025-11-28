@@ -16,7 +16,7 @@ export interface Habit {
   selectedDays: string[]; // Array from Set
   priority: 'low' | 'medium' | 'high';
   routine: string;
-  status: 'pending' | 'ongoing' | 'completed';
+  status: 'pending' | 'ongoing' | 'completed' | 'skipped';
   createdAt: Date;
   activities?: { name: string; startTime: string; endTime: string }[]; // For timetable type
   tags?: string[];

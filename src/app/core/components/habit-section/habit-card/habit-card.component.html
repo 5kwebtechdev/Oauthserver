@@ -95,13 +95,15 @@
     </div>
     <!-- Expandable content wrapper with animation -->
     <div class="habit-expandable-content" [ngClass]="{'expanded': expanded}">
-      <div #percentageWrapper class="habit-footer-progress"></div>
+      <div class="habit-footer-progress-box" *ngIf="getStatus() === 'ongoing'">
+        <div class="habit-footer-progress" #percentageWrapper></div>
+      </div>
       <div class="habit-footer-container">
         <div class="container w-full justify-content-between d-flex p-0 align-items-center">
           <div class=" d-flex reward-section">
             <div class="single-point-container d-flex p-0 align-items-center">
               <img class="score p-r-0" src="assets/Icons-Neutral/Icon-Streak.png" alt="">
-              <p class="score p-l-0">100</p>
+              <p class="score p-l-0">{{getStreak()}}</p>
             </div>
             <div class="single-point-container">
               <img class="score" src="assets/Icons-Neutral/Icons-Coins.png" alt="" style="width:24px;height:auto;">
@@ -109,9 +111,9 @@
             </div>
           </div>
           <div class="d-flex footer-cta">
-            <mindful-button *ngIf="!isHabitStarted" [type]="habit?.type === 'tasks' ? 'orange' : 'lavendar'"
+            <mindful-button *ngIf="getStatus() === 'pending'" [type]="habit?.type === 'tasks' ? 'orange' : 'lavendar'"
               text="Let`s Go" (click)="onStartHabit()"></mindful-button>
-            <mindful-button *ngIf="isHabitStarted"
+            <mindful-button *ngIf="getStatus() === 'ongoing'"
               [type]="habit?.type === 'tasks' ? 'orange-transparent' : 'lavendar-transparent'" text="Abort"
               (click)="onAbortHabit()"></mindful-button>
             <mindful-button type="green" text="Done?" (click)="onCompleteHabit()"></mindful-button>
@@ -121,3 +123,7 @@
     </div>
   </div>
 </div>
+
+<!-- <app-mindful-popup-alert #longPressAlert title="DReady to Start?" message="You're about to begin this habit! "
+  [showLetButton]="true" cancelButtonText="Discard" confirmButtonText="Start Now" (confirm)="onStartHabit()">
+</app-mindful-popup-alert> -->
