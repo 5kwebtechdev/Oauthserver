@@ -15,6 +15,12 @@
     color: #282527;
 }
 
+.quiz-tag-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
 .questions-container {
     padding: 16px;
 }
@@ -232,4 +238,30 @@ font-weight: 700;
 // Adjustments for text-only questions
 .content-quest.text-only {
     margin-top: 0;
+}
+
+// Popup styles
+.popup-text {
+    color: #4CAF50;
+    font-family: Nunito;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.popup-content ::ng-deep .button {
+    width: 100% !important;
+}
+
+.selected-option {
+    border: 1px solid #4CAF50 !important;
+    background: rgba(76, 175, 80, 0.20) !important;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
 }

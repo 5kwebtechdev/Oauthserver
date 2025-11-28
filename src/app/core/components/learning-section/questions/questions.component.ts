@@ -93,9 +93,32 @@ export class QuestionsComponent {
         showCloseButton: false,
         backdrop: true
     };
+        
+    // New timer expiration popup configuration for content time exhaust
+    contentTimeExhaustPopupConfig: MindfulPopupConfig = {
+        image: 'assets/Images-Transparent/Image-Content-TimeExhaust.png',
+        imageAlt: 'Time\'s Up',
+        heading: 'Time\'s Up!',
+        subtitle: 'The timer ran out, but don\'t worry! You can try again. Ready for another round?',
+        primaryCTA: {
+            text: 'Quit',
+            buttonStyle: 'bronze-transparent',
+            callback: () => this.quitQuiz()
+        },
+        secondaryCTA: {
+            text: 'Try Again',
+            buttonStyle: 'green',
+            callback: () => this.restartQuiz()
+        },
+        showCloseButton: false,
+        backdrop: true
+    };
     
     // Timer expiration popup visibility
     showTimerExpirationPopup = false;
+    
+    // Content time exhaust popup visibility
+    showContentTimeExhaustPopup = false;
 
     // Dummy questions data
     questions: Question[] = [
@@ -196,6 +219,14 @@ export class QuestionsComponent {
         // Placeholder for right-action behavior (open help/info etc.)
         console.log('Navigator right action clicked', event ?? 'clicked');
     }
+    
+    /**
+     * Handle timer expiration - shows the content time exhaust popup
+     */
+    onTimerExpire() {
+        // Show the content time exhaust popup
+        this.showContentTimeExhaustPopup = true;
+    }
 
     /**
      * Handle answer selection
@@ -204,60 +235,58 @@ export class QuestionsComponent {
     selectAnswer(selectedAnswer: string) {
         // Only allow selection if answer hasn't been checked yet
         if (!this.answerChecked) {
-            // Set the selected answer and option
-            this.selectedAnswer = selectedAnswer;
-            this.selectedOption = selectedAnswer;
+          // Deselect any previously selected option
+          this.selectedOption = null;
+          
+          // Set the selected answer and option
+          this.selectedAnswer = selectedAnswer;
+          this.selectedOption = selectedAnswer;
 
-            // Save the selected answer for this question
-            const currentQuestionId = this.questions[this.currentQuestionIndex].id;
-            this.questionAnswers[currentQuestionId].selected = selectedAnswer;
+          // Save the selected answer for this question
+          const currentQuestionId = this.questions[this.currentQuestionIndex].id;
+          this.questionAnswers[currentQuestionId].selected = selectedAnswer;
 
-            // For True/False questions, we need to visually update the buttons
-            if (this.questions[this.currentQuestionIndex].type === 'true-false') {
-                // The visual update is handled by the [class.selected] binding in the template
-                return;
-            }
+          // For True/False questions, we need to visually update the buttons
+          if (this.questions[this.currentQuestionIndex].type === 'true-false') {
+            // The visual update is handled by the [class.selected] binding in the template
+            return;
+          }
 
-            // For Visual questions, we need to visually update the options
-            if (this.questions[this.currentQuestionIndex].type === 'visual') {
-                // The visual update is handled by the [class.selected] binding in the template
-                return;
-            }
+          // For Visual questions, we need to visually update the options
+          if (this.questions[this.currentQuestionIndex].type === 'visual') {
+            // The visual update is handled by the [class.selected] binding in the template
+            return;
+          }
 
-            // Update button states - only change the selected button to green (for MCQ)
-            const selectedButton = this.answerButtons.find(button => button.text === selectedAnswer);
-            if (selectedButton) {
-                // Mark the button as correct temporarily to show green color
-                // This will be overridden when the user clicks "Check"
-                selectedButton.correct = true;
-                selectedButton.incorrect = false;
-            }
+          // Update button states - only change the selected button to green (for MCQ)
+          // First, reset all buttons to unselected state
+          this.answerButtons.forEach(button => {
+            button.correct = false;
+            button.incorrect = false;
+          });
+          
+          // Then, mark the selected button as correct temporarily to show green color
+          const selectedButton = this.answerButtons.find(button => button.text === selectedAnswer);
+          if (selectedButton) {
+            selectedButton.correct = true;
+            selectedButton.incorrect = false;
+          }
         }
     }
 
-    /**
-     * Handle check button click
-     */
     onCheck() {
-        // Only proceed if an answer has been selected
         if (this.selectedAnswer !== null) {
-            // Mark that the answer has been checked
             this.answerChecked = true;
 
-            // Determine if the answer is correct
             this.isAnswerCorrect = this.selectedAnswer === this.correctAnswer;
-
-            // Save the result for this question
             const currentQuestionId = this.questions[this.currentQuestionIndex].id;
             this.questionAnswers[currentQuestionId].correct = this.isAnswerCorrect;
 
-            // Reset all buttons
             this.answerButtons.forEach(button => {
                 button.correct = false;
                 button.incorrect = false;
             });
 
-            // Show the appropriate popup
             this.showPopup = true;
 
             if (this.isAnswerCorrect) {
@@ -370,6 +399,14 @@ export class QuestionsComponent {
         this.answerChecked = false;
         this.showHint = false;
         this.showTimerExpirationPopup = false;
+        this.showContentTimeExhaustPopup = false;
         this.loadCurrentQuestion();
+    }
+    
+    /**
+     * Show the content time exhaust popup
+     */
+    showContentTimeExhaustPopupMethod() {
+        this.showContentTimeExhaustPopup = true;
     }
 }

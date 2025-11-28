@@ -51,7 +51,8 @@
                     *ngFor="let option of questions[currentQuestionIndex]?.options" 
                     type="white-black" 
                     [text]="option" 
-                    (click)="selectAnswer(option)">
+                    (click)="selectAnswer(option)"
+                    [correct]="selectedOption === option">
                 </mindful-button>
             </ng-container>
             
@@ -61,13 +62,13 @@
                     type="white-black" 
                     text="True" 
                     (click)="selectAnswer('True')"
-                    [class.selected]="selectedOption === 'True'">
+                    [correct]="selectedOption === 'True'">
                 </mindful-button>
                 <mindful-button 
                     type="white-black" 
                     text="False" 
                     (click)="selectAnswer('False')"
-                    [class.selected]="selectedOption === 'False'">
+                    [correct]="selectedOption === 'False'">
                 </mindful-button>
             </ng-container>
             
@@ -133,4 +134,13 @@
     [isVisible]="showTimerExpirationPopup"
     (closeAction)="showTimerExpirationPopup = false"
     (backdropClick)="showTimerExpirationPopup = false">
+</app-mindful-popup>
+
+<!-- Content Time Exhaust Popup -->
+<app-mindful-popup 
+    *ngIf="showContentTimeExhaustPopup"
+    [config]="contentTimeExhaustPopupConfig"
+    [isVisible]="showContentTimeExhaustPopup"
+    (closeAction)="showContentTimeExhaustPopup = false"
+    (backdropClick)="showContentTimeExhaustPopup = false">
 </app-mindful-popup>
