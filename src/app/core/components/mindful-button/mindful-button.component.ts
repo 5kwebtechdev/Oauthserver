@@ -48,6 +48,14 @@ export class MindfulButtonComponent implements OnInit {
   @CoerceBoolean()
   disabled: boolean = false
 
+  @Input({ transform: booleanAttribute })
+  @CoerceBoolean()
+  correct: boolean = false
+
+  @Input({ transform: booleanAttribute })
+  @CoerceBoolean()
+  incorrect: boolean = false
+
   constructor() { }
 
   ngOnInit(): void {

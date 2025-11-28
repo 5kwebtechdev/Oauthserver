@@ -617,6 +617,18 @@ p {
   margin: 0;
 }
 
+/* Correct state for white-black button */
+.white-black.correct {
+  border: 1px solid #4CAF50;
+  background: rgba(76, 175, 80, 0.20);
+}
+
+/* Incorrect state for white-black button */
+.white-black.incorrect {
+  border: 1px solid #BB2124;
+  background: rgba(187, 33, 36, 0.20);
+}
+
 .add {
   width: 56px;
   height: 56px;

@@ -1,4 +1,4 @@
-<div *ngIf="type" class="button {{type}}" [ngClass]="{'medium': medium , 'large': large, 'disabled': disabled}"
+<div *ngIf="type" class="button {{type}}" [ngClass]="{'medium': medium , 'large': large, 'disabled': disabled, 'correct': correct, 'incorrect': incorrect}"
   [attr.role]="'button'" [attr.tabindex]="disabled ? -1 : 0">
   <!-- start icon or text-only -->
   <ng-container *ngIf="icon && iconPosition === 'start'; else textOnlyStart">

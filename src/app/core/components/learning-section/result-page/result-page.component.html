@@ -1,0 +1,48 @@
+<mindful-navigator heading="Quiz Results" backIcon="cancel" (back)="onCancel()">
+</mindful-navigator>
+
+<ion-content>
+  <div class="result-container">
+    <!-- Mindful Pet in the middle of the page -->
+    <div class="pet-section">
+      <mindful-pet 
+        [name]="'Buddy'" 
+        [pet]="'panda'" 
+        [mood]="'happy'" 
+        [age]="2" 
+        [sizePreset]="96"
+        (petClick)="onPetClick()">
+      </mindful-pet>
+      <h2 class="pet-message">Great job!</h2>
+    </div>
+
+    <!-- Badges Section -->
+    <div class="badges-section">
+      <h3 class="section-title">Badges Earned</h3>
+      <div class="badges-container">
+        <!-- Quiz Ace Badge -->
+        <div class="badge-card" *ngIf="quizAceBadge">
+          <img [src]="quizAceBadge.iconUrl" [alt]="quizAceBadge.name" class="badge-icon" />
+          <div class="badge-info">
+            <h4 class="badge-name">{{ quizAceBadge.name }}</h4>
+            <p class="badge-description">{{ quizAceBadge.description }}</p>
+          </div>
+        </div>
+
+        <!-- Puzzle Master Badge -->
+        <div class="badge-card" *ngIf="puzzleMasterBadge">
+          <img [src]="puzzleMasterBadge.iconUrl" [alt]="puzzleMasterBadge.name" class="badge-icon" />
+          <div class="badge-info">
+            <h4 class="badge-name">{{ puzzleMasterBadge.name }}</h4>
+            <p class="badge-description">{{ puzzleMasterBadge.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Continue Button -->
+    <div class="continue-button">
+      <mindful-button type="green" text="Continue" (click)="onContinue()"></mindful-button>
+    </div>
+  </div>
+</ion-content>
