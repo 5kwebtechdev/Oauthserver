@@ -4,6 +4,7 @@ import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { MindfulPopupComponent, MindfulPopupConfig } from '../../mindful-popup/mindful-popup.component';
 
 interface Question {
   id: number;
@@ -14,12 +15,13 @@ interface Question {
   hint: string;
   type?: 'mcq' | 'true-false' | 'visual'; // Added type field to differentiate question types
   optionImages?: string[]; // Added for visual options
+  contentType?: 'text-only' | 'image-only' | 'text-and-image'; // Added to differentiate question content types
 }
 
 @Component({
     selector: 'app-questions',
     standalone: true,
-    imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent],
+    imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent, MindfulPopupComponent],
     templateUrl: './questions.component.html',
     styleUrls: ['./questions.component.scss']
 })
@@ -72,6 +74,29 @@ export class QuestionsComponent {
     // Hint visibility
     showHint = false;
 
+    // Timer expiration popup configuration
+    timerExpirationPopupConfig: MindfulPopupConfig = {
+        image: 'assets/Images-Transparent/Image-Leaving-Learning.png',
+        imageAlt: 'Time\'s Up',
+        heading: 'Time\'s Up!',
+        subtitle: 'The timer ran out, but don\'t worry! You can try again. Ready for another round?',
+        primaryCTA: {
+            text: 'Quit',
+            buttonStyle: 'bronze-transparent',
+            callback: () => this.quitQuiz()
+        },
+        secondaryCTA: {
+            text: 'Try Again',
+            buttonStyle: 'green',
+            callback: () => this.restartQuiz()
+        },
+        showCloseButton: false,
+        backdrop: true
+    };
+    
+    // Timer expiration popup visibility
+    showTimerExpirationPopup = false;
+
     // Dummy questions data
     questions: Question[] = [
       {
@@ -80,7 +105,8 @@ export class QuestionsComponent {
         options: ['4', '5', '6', '7'],
         correctAnswer: '5',
         image: 'assets/icons/Gemini_Generated_Image_fr3j2vfr3j2vfr3j 1.jpg',
-        hint: 'Add the numbers together: 3 + 2 = ?'
+        hint: 'Add the numbers together: 3 + 2 = ?',
+        contentType: 'text-and-image' // Both text and image
       },
       {
         id: 2,
@@ -89,7 +115,8 @@ export class QuestionsComponent {
         correctAnswer: 'True', // Assuming this statement is true
         image: 'assets/icons/Gemini_Generated_Image_2o9p7vfr3j2vfr3j 2.jpg',
         hint: 'Subtract the numbers: 7 - 3 = 4, which is more than 3.',
-        type: 'true-false' // Added type field
+        type: 'true-false', // Added type field
+        contentType: 'text-and-image' // Both text and image
       },
       {
         id: 3,
@@ -97,23 +124,33 @@ export class QuestionsComponent {
         options: ['6', '7', '8', '9'],
         correctAnswer: '7',
         image: 'assets/icons/Gemini_Generated_Image_3k4l8vfr3j2vfr3j 3.jpg',
-        hint: 'Add the birds together: 4 + 3 = ?'
+        hint: 'Add the birds together: 4 + 3 = ?',
+        type: 'visual', // Changed to visual type
+        optionImages: [ // Added image paths for visual options
+          'assets/icons/option-6.png',
+          'assets/icons/option-7.png',
+          'assets/icons/option-8.png',
+          'assets/icons/option-9.png'
+        ],
+        contentType: 'text-and-image' // Both text and image
       },
       {
         id: 4,
-        text: 'Tom has 10 candies. He eats 4 candies. How many candies are left?',
+        text: '', // No text for this question
         options: ['5', '6', '7', '8'],
         correctAnswer: '6',
         image: 'assets/icons/Gemini_Generated_Image_4m5n9vfr3j2vfr3j 4.jpg',
-        hint: 'Subtract the eaten candies: 10 - 4 = ?'
+        hint: 'Subtract the eaten candies: 10 - 4 = ?',
+        contentType: 'image-only' // Image only
       },
       {
         id: 5,
-        text: 'A pizza is cut into 8 slices. You eat 3 slices. How many slices are left?',
+        text: 'A pizza is cut into 8 slices. You eat 3 slices. How many slices are left?', // No image for this question
         options: ['4', '5', '6', '7'],
         correctAnswer: '5',
-        image: 'assets/icons/Gemini_Generated_Image_5p6q0vfr3j2vfr3j 5.jpg',
-        hint: 'Subtract the eaten slices: 8 - 3 = ?'
+        image: '', // No image for this question
+        hint: 'Subtract the eaten slices: 8 - 3 = ?',
+        contentType: 'text-only' // Text only
       }
     ];
 
@@ -151,8 +188,8 @@ export class QuestionsComponent {
     }
 
     onCancel() {
-        // Navigate back to the description screen for now
-        this.router.navigate(['/authed/content/description']);
+        // Show the timer expiration popup instead of navigating directly
+        this.showTimerExpirationPopup = true;
     }
 
     onRightAction(event?: { index: number, action: any }) {
@@ -177,6 +214,12 @@ export class QuestionsComponent {
 
             // For True/False questions, we need to visually update the buttons
             if (this.questions[this.currentQuestionIndex].type === 'true-false') {
+                // The visual update is handled by the [class.selected] binding in the template
+                return;
+            }
+
+            // For Visual questions, we need to visually update the options
+            if (this.questions[this.currentQuestionIndex].type === 'visual') {
                 // The visual update is handled by the [class.selected] binding in the template
                 return;
             }
@@ -231,6 +274,12 @@ export class QuestionsComponent {
                     return;
                 }
                 
+                // For Visual questions, update the visual state using class binding
+                if (this.questions[this.currentQuestionIndex].type === 'visual') {
+                    // The visual update is handled by the template bindings
+                    return;
+                }
+                
                 // Mark the selected button as correct (for MCQ)
                 const selectedButton = this.answerButtons.find(button => button.text === this.selectedAnswer);
                 if (selectedButton) {
@@ -246,6 +295,12 @@ export class QuestionsComponent {
                 
                 // For True/False questions, update the visual state using class binding
                 if (this.questions[this.currentQuestionIndex].type === 'true-false') {
+                    // The visual update is handled by the template bindings
+                    return;
+                }
+                
+                // For Visual questions, update the visual state using class binding
+                if (this.questions[this.currentQuestionIndex].type === 'visual') {
                     // The visual update is handled by the template bindings
                     return;
                 }
@@ -300,5 +355,21 @@ export class QuestionsComponent {
      */
     toggleHint() {
         this.showHint = !this.showHint;
+    }
+
+    quitQuiz() {
+        // Navigate back to the description screen
+        this.router.navigate(['/authed/content/description']);
+    }
+    
+    restartQuiz() {
+        // Reset quiz to start over
+        this.currentQuestionIndex = 0;
+        this.selectedAnswer = null;
+        this.selectedOption = null;
+        this.answerChecked = false;
+        this.showHint = false;
+        this.showTimerExpirationPopup = false;
+        this.loadCurrentQuestion();
     }
 }
