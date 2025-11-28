@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Router } from '@angular/router';
 import { MindfulButtonComponent } from 'src/app/core/components/mindful-button/mindful-button.component';
 import { MindfulBadgeComponent } from 'src/app/core/components/mindful-badge/mindful-badge.component';
 
@@ -14,7 +15,10 @@ export class LearningArticleCardComponent {
     @Input() index: number = 0;
     @Output() cardClick = new EventEmitter<{ item: any; index: number }>();
 
+    constructor(private router: Router) { }
+
     onCardClick() {
         this.cardClick.emit({ item: this.item, index: this.index });
+        this.router.navigate(['/learning-description']);
     }
 }

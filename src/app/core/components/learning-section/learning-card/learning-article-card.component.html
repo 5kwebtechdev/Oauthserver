@@ -4,8 +4,6 @@
     </div>
 
     <div class="article-body">
-        <mindful-badge type="puzzle" text="Academic Performance"></mindful-badge>
-
         <div class="d-flex justify-content-between align-items-center w-100">
             <h3>{{ item.title }}</h3>
             <span class="coins"><img src="/assets/Icons-Neutral/Icons-Coins.png" alt="coins"
@@ -15,7 +13,7 @@
         <div class="meta-row">
             <p class="desc">{{ item.description }}</p>
 
-            <mindful-button class="text-nowrap" [type]="'pink'" [text]="'Read in 5 min'"
+            <mindful-button class="text-nowrap" [type]="'pink'" [text]="item.buttonText || 'Read in 5 min'"
                 (click)="onCardClick()"></mindful-button>
         </div>
     </div>

@@ -11,9 +11,8 @@
         <div class="head">
             <div>
                 <h3>{{ item.title }}</h3>
-                <div class="tag" *ngIf="item.tag">{{ item.tag }}</div>
             </div>
-            <mindful-badge [type]="item.type"></mindful-badge>
+            <mindful-badge [type]="item.subType || item.type"></mindful-badge>
 
         </div>
 
