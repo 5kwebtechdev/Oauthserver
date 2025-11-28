@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 
 @Component({
   selector: 'app-result-page',
@@ -14,7 +15,8 @@ import { MindfulButtonComponent } from '../../mindful-button/mindful-button.comp
     IonicModule,
     MindfulNavigatorComponent,
     MindfulPetComponent,
-    MindfulButtonComponent
+    MindfulButtonComponent,
+    MindfulInputsModule
   ],
   templateUrl: './result-page.component.html',
   styleUrls: ['./result-page.component.scss']
@@ -34,8 +36,8 @@ export class ResultPageComponent implements OnInit {
 
   // Dummy results data
   totalQuestions = 5;
-  correctAnswers = 4;
-  scorePercentage = 80;
+  correctAnswers = 5;
+  scorePercentage = 100;
   timeTaken = '2:30';
 
   // Pet mood based on performance
@@ -47,9 +49,9 @@ export class ResultPageComponent implements OnInit {
   ngOnInit(): void {
     // In a real implementation, you would fetch the actual badge data here
     // Set pet mood based on performance
-    if (this.scorePercentage >= 80) {
+    if (this.scorePercentage >= 90) {
       this.petMood = 'happy';
-    } else if (this.scorePercentage >= 60) {
+    } else if (this.scorePercentage >= 80) {
       this.petMood = 'playful';
     } else {
       this.petMood = 'curious';

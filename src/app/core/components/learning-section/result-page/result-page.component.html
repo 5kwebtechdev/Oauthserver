@@ -42,24 +42,54 @@
     <!-- Badges Section -->
     <div class="badges-section">
       <h3 class="section-title">Badges Earned</h3>
-      <div class="badges-container">
+      <div class="badge-grid w-100 d-flex">
         <!-- Quiz Ace Badge -->
-        <div class="badge-card" *ngIf="scorePercentage >= 80">
-          <img [src]="quizAceBadge.iconUrl" [alt]="quizAceBadge.name" class="badge-icon" />
-          <div class="badge-info">
-            <h4 class="badge-name">{{ quizAceBadge.name }}</h4>
+        <div *ngIf="scorePercentage >= 80" class="badge-card w-100">
+          <div class="badge-content">
+            <div class="badge-info">
+              <p class="progress-text">
+                1/1
+              </p>
+              <div class="badge-visual">
+                <div class="badge-icon-container">
+                  <img [src]="quizAceBadge.iconUrl" [alt]="quizAceBadge.name" class="badge-icon" />
+                </div>
+                <mindful-completion [completionPercentage]="100"
+                  [borderColor]="'#4CAF50'" [innerText]="''"
+                  [belowText]="''"></mindful-completion>
+              </div>
+            </div>
+            <p class="badge-name">{{ quizAceBadge.name }}</p>
+            <p class="badge-level-text">Expert Level</p>
             <p class="badge-description">{{ quizAceBadge.description }}</p>
+            <p class="badge-achievement">Achievement Unlocked!</p>
           </div>
         </div>
 
         <!-- Puzzle Master Badge -->
-        <div class="badge-card" *ngIf="scorePercentage >= 90">
-          <img [src]="puzzleMasterBadge.iconUrl" [alt]="puzzleMasterBadge.name" class="badge-icon" />
-          <div class="badge-info">
-            <h4 class="badge-name">{{ puzzleMasterBadge.name }}</h4>
+        <div *ngIf="scorePercentage >= 90" class="badge-card w-100">
+          <div class="badge-content">
+            <div class="badge-info">
+              <p class="progress-text">
+                1/1
+              </p>
+              <div class="badge-visual">
+                <div class="badge-icon-container">
+                  <img [src]="puzzleMasterBadge.iconUrl" [alt]="puzzleMasterBadge.name" class="badge-icon" />
+                </div>
+                <mindful-completion [completionPercentage]="100"
+                  [borderColor]="'#4CAF50'" [innerText]="''"
+                  [belowText]="''"></mindful-completion>
+              </div>
+            </div>
+            <p class="badge-name">{{ puzzleMasterBadge.name }}</p>
+            <p class="badge-level-text">Master Level</p>
             <p class="badge-description">{{ puzzleMasterBadge.description }}</p>
+            <p class="badge-achievement">Achievement Unlocked!</p>
           </div>
         </div>
+
+
 
         <!-- Encouragement Message -->
         <div class="encouragement-message" *ngIf="scorePercentage < 80">
