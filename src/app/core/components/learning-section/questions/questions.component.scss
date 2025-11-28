@@ -90,7 +90,22 @@
     }
 }
 
-.hint-section img{
+// Selected state for True/False buttons
+.answers-list mindful-button.selected {
+    border-color: #4CAF50;
+    background-color: #E8F5E9;
+}
+
+.hint-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    
+    p{
+        margin: 0;
+    }
+
+    img{
     width: 16px;
     height: auto;
 }
@@ -107,7 +122,7 @@ font-size: 13px;
 font-style: normal;
 font-weight: 700;
 }
-
+}
 .hint-display {
 
 }
@@ -163,4 +178,9 @@ font-weight: 700;
 
 .popup-content ::ng-deep .button {
     width: 100% !important;
+}
+
+.selected-option {
+    border: 1px solid #4CAF50 !important;
+    background: rgba(76, 175, 80, 0.20) !important;
 }

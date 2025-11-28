@@ -12,6 +12,8 @@ interface Question {
   correctAnswer: string;
   image: string;
   hint: string;
+  type?: 'mcq' | 'true-false' | 'visual'; // Added type field to differentiate question types
+  optionImages?: string[]; // Added for visual options
 }
 
 @Component({
@@ -39,6 +41,9 @@ export class QuestionsComponent {
 
     // Track the selected answer
     selectedAnswer: string | null = null;
+
+    // Track the currently selected option for styling
+    selectedOption: string | null = null;
 
     // Track if answer has been checked
     answerChecked = false;
@@ -69,46 +74,47 @@ export class QuestionsComponent {
 
     // Dummy questions data
     questions: Question[] = [
-        {
-            id: 1,
-            text: 'If you have 3 apples and get 2 more, how many do you have?',
-            options: ['4', '5', '6', '7'],
-            correctAnswer: '5',
-            image: 'assets/icons/Gemini_Generated_Image_fr3j2vfr3j2vfr3j 1.jpg',
-            hint: 'Add the numbers together: 3 + 2 = ?'
-        },
-        {
-            id: 2,
-            text: 'Sarah has 7 oranges. She gives 3 to her friend. How many oranges does she have left?',
-            options: ['3', '4', '5', '6'],
-            correctAnswer: '4',
-            image: 'assets/icons/Gemini_Generated_Image_2o9p7vfr3j2vfr3j 2.jpg',
-            hint: 'Subtract the numbers: 7 - 3 = ?'
-        },
-        {
-            id: 3,
-            text: 'There are 4 birds on a tree. 3 more birds join them. How many birds are there now?',
-            options: ['6', '7', '8', '9'],
-            correctAnswer: '7',
-            image: 'assets/icons/Gemini_Generated_Image_3k4l8vfr3j2vfr3j 3.jpg',
-            hint: 'Add the birds together: 4 + 3 = ?'
-        },
-        {
-            id: 4,
-            text: 'Tom has 10 candies. He eats 4 candies. How many candies are left?',
-            options: ['5', '6', '7', '8'],
-            correctAnswer: '6',
-            image: 'assets/icons/Gemini_Generated_Image_4m5n9vfr3j2vfr3j 4.jpg',
-            hint: 'Subtract the eaten candies: 10 - 4 = ?'
-        },
-        {
-            id: 5,
-            text: 'A pizza is cut into 8 slices. You eat 3 slices. How many slices are left?',
-            options: ['4', '5', '6', '7'],
-            correctAnswer: '5',
-            image: 'assets/icons/Gemini_Generated_Image_5p6q0vfr3j2vfr3j 5.jpg',
-            hint: 'Subtract the eaten slices: 8 - 3 = ?'
-        }
+      {
+        id: 1,
+        text: 'If you have 3 apples and get 2 more, how many do you have?',
+        options: ['4', '5', '6', '7'],
+        correctAnswer: '5',
+        image: 'assets/icons/Gemini_Generated_Image_fr3j2vfr3j2vfr3j 1.jpg',
+        hint: 'Add the numbers together: 3 + 2 = ?'
+      },
+      {
+        id: 2,
+        text: 'Sarah has 7 oranges. She gives 3 to her friend. How many oranges does she have left?',
+        options: ['True', 'False'], // Changed to True/False options
+        correctAnswer: 'True', // Assuming this statement is true
+        image: 'assets/icons/Gemini_Generated_Image_2o9p7vfr3j2vfr3j 2.jpg',
+        hint: 'Subtract the numbers: 7 - 3 = 4, which is more than 3.',
+        type: 'true-false' // Added type field
+      },
+      {
+        id: 3,
+        text: 'There are 4 birds on a tree. 3 more birds join them. How many birds are there now?',
+        options: ['6', '7', '8', '9'],
+        correctAnswer: '7',
+        image: 'assets/icons/Gemini_Generated_Image_3k4l8vfr3j2vfr3j 3.jpg',
+        hint: 'Add the birds together: 4 + 3 = ?'
+      },
+      {
+        id: 4,
+        text: 'Tom has 10 candies. He eats 4 candies. How many candies are left?',
+        options: ['5', '6', '7', '8'],
+        correctAnswer: '6',
+        image: 'assets/icons/Gemini_Generated_Image_4m5n9vfr3j2vfr3j 4.jpg',
+        hint: 'Subtract the eaten candies: 10 - 4 = ?'
+      },
+      {
+        id: 5,
+        text: 'A pizza is cut into 8 slices. You eat 3 slices. How many slices are left?',
+        options: ['4', '5', '6', '7'],
+        correctAnswer: '5',
+        image: 'assets/icons/Gemini_Generated_Image_5p6q0vfr3j2vfr3j 5.jpg',
+        hint: 'Subtract the eaten slices: 8 - 3 = ?'
+      }
     ];
 
     // Track answers for each question
@@ -133,6 +139,15 @@ export class QuestionsComponent {
         // Reset answer checked state for new question
         this.answerChecked = false;
         this.showHint = false;
+        this.selectedOption = null;
+        
+        // Reset all buttons when loading a new question
+        setTimeout(() => {
+            this.answerButtons.forEach(button => {
+                button.correct = false;
+                button.incorrect = false;
+            });
+        }, 0);
     }
 
     onCancel() {
@@ -152,24 +167,27 @@ export class QuestionsComponent {
     selectAnswer(selectedAnswer: string) {
         // Only allow selection if answer hasn't been checked yet
         if (!this.answerChecked) {
-            // Reset all buttons to default state
-            this.answerButtons.forEach(button => {
-                button.correct = false;
-                button.incorrect = false;
-            });
-
-            // Set the selected answer
+            // Set the selected answer and option
             this.selectedAnswer = selectedAnswer;
+            this.selectedOption = selectedAnswer;
 
             // Save the selected answer for this question
             const currentQuestionId = this.questions[this.currentQuestionIndex].id;
             this.questionAnswers[currentQuestionId].selected = selectedAnswer;
 
-            // Highlight the selected button
+            // For True/False questions, we need to visually update the buttons
+            if (this.questions[this.currentQuestionIndex].type === 'true-false') {
+                // The visual update is handled by the [class.selected] binding in the template
+                return;
+            }
+
+            // Update button states - only change the selected button to green (for MCQ)
             const selectedButton = this.answerButtons.find(button => button.text === selectedAnswer);
             if (selectedButton) {
-                // Just highlight the selected button visually (without correct/incorrect indication)
-                // This will be handled when the user clicks "Check"
+                // Mark the button as correct temporarily to show green color
+                // This will be overridden when the user clicks "Check"
+                selectedButton.correct = true;
+                selectedButton.incorrect = false;
             }
         }
     }
@@ -190,6 +208,12 @@ export class QuestionsComponent {
             const currentQuestionId = this.questions[this.currentQuestionIndex].id;
             this.questionAnswers[currentQuestionId].correct = this.isAnswerCorrect;
 
+            // Reset all buttons
+            this.answerButtons.forEach(button => {
+                button.correct = false;
+                button.incorrect = false;
+            });
+
             // Show the appropriate popup
             this.showPopup = true;
 
@@ -200,6 +224,18 @@ export class QuestionsComponent {
                 this.popupTextColor = '#4CAF50';
                 this.nextButtonText = 'Next';
                 this.nextButtonType = 'green';
+                
+                // For True/False questions, update the visual state using class binding
+                if (this.questions[this.currentQuestionIndex].type === 'true-false') {
+                    // The visual update is handled by the template bindings
+                    return;
+                }
+                
+                // Mark the selected button as correct (for MCQ)
+                const selectedButton = this.answerButtons.find(button => button.text === this.selectedAnswer);
+                if (selectedButton) {
+                    selectedButton.correct = true;
+                }
             } else {
                 // Incorrect answer
                 this.popupMessage = 'Incorrect!';
@@ -208,7 +244,13 @@ export class QuestionsComponent {
                 this.nextButtonText = 'Got it, next question';
                 this.nextButtonType = 'bronze';
                 
-                // Mark the selected button as incorrect and correct button as correct
+                // For True/False questions, update the visual state using class binding
+                if (this.questions[this.currentQuestionIndex].type === 'true-false') {
+                    // The visual update is handled by the template bindings
+                    return;
+                }
+                
+                // Mark the selected button as incorrect and correct button as correct (for MCQ)
                 const selectedButton = this.answerButtons.find(button => button.text === this.selectedAnswer);
                 if (selectedButton) {
                     selectedButton.incorrect = true;
@@ -242,6 +284,7 @@ export class QuestionsComponent {
         
         // Reset for next question (in a real app, you would load the next question)
         this.selectedAnswer = null;
+        this.selectedOption = null;
         this.answerChecked = false;
         this.isAnswerCorrect = false;
         
