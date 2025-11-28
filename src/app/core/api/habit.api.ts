@@ -64,6 +64,11 @@ export class HabitApi {
         return this.http.get(url, { headers: this.headers(), params });
     }
 
+    getTodayHabits(): Observable<any> {
+        const url = `${this.base}/habits/today`;
+        return this.http.get(url, { headers: this.headers() });
+    }
+
 
 
     /**
@@ -100,6 +105,14 @@ export class HabitApi {
      */
     completeHabit(id: string): Observable<any> {
         const url = `${this.base}/habits/complete/${id}`;
+        return this.http.post(url, {}, { headers: this.headers() });
+    }
+
+    /**  * "Let's Go" action for a habit
+      * @param id Habit id
+      */
+    letsGoHabit(id: string): Observable<any> {
+        const url = `${this.base}/habits/lets-go/${id}`;
         return this.http.post(url, {}, { headers: this.headers() });
     }
 }

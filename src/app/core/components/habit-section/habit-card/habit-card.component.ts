@@ -69,6 +69,7 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public isRunningLate: boolean = false;
   public missedTime: boolean = false;
+  public isHabitStarted: boolean = false;
 
   public habits: Habit[] = [];
   public tasks: any[] = [];
@@ -108,18 +109,24 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   onStartHabit() {
     if (!this.habit) return;
-    const payload = this.buildUpdatePayload(this.habit, 'ONGOING');
-    this.habitApi.updateHabit(this.habit.id, payload).subscribe({
+    // const payload = this.buildUpdatePayload(this.habit, 'ONGOING');
+    this.habitApi.letsGoHabit(this.habit.id).subscribe({
       next: (res) => {
         // update local store and UI
         const updated = { ...this.habit!, status: 'ongoing' } as Habit;
         this.habitService.updateHabit(updated);
         this.habit = updated;
+        this.isHabitStarted = true;
       },
       error: (err) => {
         console.error('Failed to start habit', err);
       }
     });
+  }
+
+  onAbortHabit() {
+    this.console.log('Abort habit clicked');
+    this.isHabitStarted = true;
   }
 
   /**
@@ -266,13 +273,13 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.switchTab(this.currentActive);
     }
 
-    console.log(this.startTime);
   }  /**
    * Load habits from the API
    */
   loadHabits() {
     // Get all habits using the service
-    this.habitService.loadHabitsBySearch({}).subscribe({
+    // this.habitService.loadHabitsBySearch({}).subscribe({
+    this.habitService.loadTodayHabits().subscribe({
       next: () => {
         this.habits = this.habitService.getCurrentHabits()
           .sort((a: Habit, b: Habit) => {
@@ -298,6 +305,36 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   loadTasks() {
     this.taskApi.getAllTasks().subscribe({
+      next: (tasks) => {
+        this.tasks = (tasks || [])
+          .map((task: any) => ({
+            ...task,
+            type: 'tasks',
+            startTimeStamp: task.startTimeStamp || (task.startDate ? new Date(task.startDate).getTime() : 0),
+            endTimeStamp: task.endTimeStamp || (task.endDate ? new Date(task.endDate).getTime() : 0),
+            createdAt: task.createdAt ? new Date(task.createdAt) : new Date()
+          }))
+          .sort((a: any, b: any) => {
+            const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return bTime - aTime; // newest first
+          })
+          .slice(0, this.maxItemsToShow);
+
+        this.hasTasks = this.tasks.length > 0;
+        this.updateEmptyState();
+      },
+      error: (error) => {
+        console.error('Error fetching tasks:', error);
+        this.tasks = [];
+        this.hasTasks = false;
+        this.updateEmptyState();
+      }
+    });
+  }
+
+  loadTodayTasks() {
+    this.taskApi.getTodayTasks().subscribe({
       next: (tasks) => {
         this.tasks = (tasks || [])
           .map((task: any) => ({
@@ -365,10 +402,10 @@ export class HabitCardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (tab === 'habits' && this.habits.length === 0) {
       this.loadHabits();
     } else if (tab === 'tasks' && this.tasks.length === 0) {
-      this.loadTasks();
+      this.loadTodayTasks();
     } else if (tab === 'all') {
       if (this.habits.length === 0) this.loadHabits();
-      if (this.tasks.length === 0) this.loadTasks();
+      if (this.tasks.length === 0) this.loadTodayTasks();
     }
 
     this.updateEmptyState();

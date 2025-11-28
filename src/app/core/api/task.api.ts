@@ -34,6 +34,11 @@ export class TaskApi {
         return this.http.get(url, { headers: this.headers() });
     }
 
+    getTodayTasks(): Observable<any> {
+        const url = `${this.base}/tasks/today`;
+        return this.http.get(url, { headers: this.headers() });
+    }
+
     /**
      * Get tasks by date
      * @param date The date in YYYY-MM-DD format

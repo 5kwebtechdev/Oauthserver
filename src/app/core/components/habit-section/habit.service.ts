@@ -57,6 +57,22 @@ export class HabitService {
     );
   }
 
+  loadTodayHabits(): Observable<any> {
+    return this.habitApi.getTodayHabits().pipe(
+      tap(response => {
+        if (response) {
+          const habits = this.mapApiResponseToHabits(response);
+          this.habitsSubject.next(habits);
+        }
+      }),
+      catchError(error => {
+        console.error('Error fetching today\'s habits:', error);
+        this.habitsSubject.next([]);
+        return of([]);
+      })
+    );
+  }
+
   private mapApiResponseToHabits(response: any[]): Habit[] {
     if (!Array.isArray(response)) {
       return [];
@@ -158,6 +174,11 @@ export class HabitService {
   }
 
   completeHabit(id: string): void {
+    const currentHabits = this.habitsSubject.value;
+    this.habitsSubject.next(currentHabits.filter(h => h.id !== id));
+  }
+
+  letsGoHabit(id: string): void {
     const currentHabits = this.habitsSubject.value;
     this.habitsSubject.next(currentHabits.filter(h => h.id !== id));
   }

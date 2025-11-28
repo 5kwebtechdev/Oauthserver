@@ -16,7 +16,15 @@ import { Router, RouterModule } from '@angular/router';
   selector: 'habit-page',
   templateUrl: './habit-page.component.html',
   styleUrls: ['./habit-page.component.scss'],
-  imports: [CommonModule, IonicModule, HabitCardComponent, MindfulNavigatorComponent, MindfulInputsModule, MindfulBadgeComponent, RouterModule]
+  imports: [
+    CommonModule,
+    IonicModule,
+    HabitCardComponent,
+    MindfulNavigatorComponent,
+    MindfulInputsModule,
+    MindfulBadgeComponent,
+    RouterModule
+  ]
 })
 export class HabitPageComponent implements OnInit, OnDestroy {
   public title = 'Habits';
@@ -32,37 +40,28 @@ export class HabitPageComponent implements OnInit, OnDestroy {
   public filteredHabits: Habit[] = [];
   public tasks: any[] = [];
   public filteredTasks: any[] = [];
-  public selectedDate: Date = new Date(); // Current selected date
-  public currentTimestamp: number = Date.now(); // Current timestamp for habit status
-  public MAX_SAFE_INTEGER: number = Number.MAX_SAFE_INTEGER;
-  private subscriptions: Subscription = new Subscription();
-  public loading: boolean = false; // Track API loading state
 
+  public selectedDate: Date = new Date();
+  public currentTimestamp: number = Date.now();
+  public loading: boolean = false;
+
+  private subscriptions: Subscription = new Subscription();
   private timestampInterval: any;
+
   public showSingleMode: boolean = false;
   public singleModeHabit: Habit | null = null;
+  public MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER;
 
-  constructor(private habitService: HabitService, private router: Router, private taskApi: TaskApi) { }
+  constructor(
+    private habitService: HabitService,
+    private router: Router,
+    private taskApi: TaskApi
+  ) { }
 
   ngOnInit() {
-    const navigation = this.router.getCurrentNavigation();
-    if (navigation?.extras?.state) {
-      const state = navigation.extras.state as any;
-      if (state.newHabit && state.showSingleMode) {
-        this.singleModeHabit = state.newHabit;
-        this.showSingleMode = true;
-        this.showContent = false;
-      }
-      if ((navigation.extras.state as any).initialTab) {
-        const t = (navigation.extras.state as any).initialTab as string;
-        if (t === 'tasks' || t === 'habits') {
-          this.currentMainTab = t as 'habits' | 'tasks';
-        }
-      }
-    }
-
     this.subscriptions.add(
       this.habitService.getHabits().subscribe(habits => {
+        if (!habits?.length) return;
         this.allHabits = habits;
       })
     );
@@ -78,64 +77,62 @@ export class HabitPageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
-
-    if (this.timestampInterval) {
-      clearInterval(this.timestampInterval);
-    }
+    clearInterval(this.timestampInterval);
   }
 
   onDateSelected(date: Date) {
     this.selectedDate = date;
-    this.loadHabits();
+    this.applyFilters();
     this.loadTasksForSelectedDate(date);
   }
-
-
   loadHabits() {
     this.loading = true;
-    const filters = this.buildFilters();
     this.subscriptions.add(
-      this.habitService.loadHabitsBySearch(filters).subscribe({
-        next: () => {
+      this.habitService.loadTodayHabits().subscribe({
+        next: (res: any) => {
+          console.log("LOADED HABITS:", this.allHabits);
+
+          this.allHabits = res?.data?.map((h: any) => ({
+            ...h,
+            status: h.status?.trim().toLowerCase(),
+            priority: h.priority?.trim().toLowerCase(),
+            routine: h.routine?.trim().toLowerCase(),
+          })) || [];
+
           this.loading = false;
           this.applyFilters();
+
         },
-        error: (error) => {
-          console.error('Error loading habits:', error);
+        error: () => {
           this.loading = false;
         }
       })
     );
   }
 
+
   loadTasksForSelectedDate(date: Date) {
-    const formattedDate = this.habitService.formatDateToYYYYMMDD(date);
     this.loading = true;
+    const formatted = this.habitService.formatDateToYYYYMMDD(date);
+
     this.subscriptions.add(
-      this.taskApi.getTasksByDate(formattedDate).subscribe({
+      this.taskApi.getTasksByDate(formatted).subscribe({
         next: (res: any) => {
-          const list = res?.data || res?.tasks || res || [];
-          this.tasks = Array.isArray(list) ? list : [];
-          // Ensure each task item and any nested `task.task` object has a `type` so
-          // `habit-card` can apply the correct task styles (checks `habit?.type === 'tasks'`).
-          this.tasks = this.tasks.map((t: any) => {
-            const base = {
-              ...t,
-              type: t.type || 'tasks',
-              startTimeStamp: this.getTaskStartTimestamp(t),
-              endTimeStamp: this.getTaskEndTimestamp(t)
-            };
-            // If API returns a nested `task` object, ensure it also carries `type: 'tasks'`.
-            if (base.task && typeof base.task === 'object') {
-              base.task = { ...base.task, type: base.task.type || 'tasks' };
-            }
-            return base;
-          });
+          console.log("LOADED TASKS:", res);
+          const list = Array.isArray(res?.data || res?.tasks || res) ? res.data || res.tasks || res : [];
+          this.tasks = list.map((t: any) => ({
+            ...t,
+            type: t.type || 'tasks',
+            startTimeStamp: this.getTaskStartTimestamp(t),
+            endTimeStamp: this.getTaskEndTimestamp(t),
+            status: t.status?.trim().toLowerCase(),
+            priority: t.priority?.trim().toLowerCase(),
+            routine: t.routine?.trim().toLowerCase(),
+          }));
           this.loading = false;
           this.applyFilters();
         },
-        error: (err: any) => {
-          console.error('Error loading tasks:', err);
+        error: () => {
           this.tasks = [];
           this.loading = false;
           this.applyFilters();
@@ -144,146 +141,139 @@ export class HabitPageComponent implements OnInit, OnDestroy {
     );
   }
 
-  // Helpers to compute numeric timestamps for tasks (backend may provide epoch or date/time strings)
   private getTaskStartTimestamp(t: any): number {
-    if (!t) return 0;
-    if (t.startTimeStamp && !isNaN(Number(t.startTimeStamp))) return Number(t.startTimeStamp);
-    // If API returned nested task object, check there
-    const inner = t.task || t;
-    if (inner.startTimeStamp && !isNaN(Number(inner.startTimeStamp))) return Number(inner.startTimeStamp);
-    if (inner.startDate && inner.startTime) {
-      const dt = new Date(`${inner.startDate}T${inner.startTime}`);
-      const ts = dt.getTime();
-      return isNaN(ts) ? 0 : ts;
-    }
-    return 0;
+    const dt = new Date(`${t.startDate}T${t.startTime}`);
+    return isNaN(dt.getTime()) ? 0 : dt.getTime();
   }
-
   private getTaskEndTimestamp(t: any): number {
-    if (!t) return 0;
-    if (t.endTimeStamp && !isNaN(Number(t.endTimeStamp))) return Number(t.endTimeStamp);
-    const inner = t.task || t;
-    if (inner.endTimeStamp && !isNaN(Number(inner.endTimeStamp))) return Number(inner.endTimeStamp);
-    if (inner.endDate && inner.endTime) {
-      const dt = new Date(`${inner.endDate}T${inner.endTime}`);
-      const ts = dt.getTime();
-      return isNaN(ts) ? 0 : ts;
-    }
-    return Number.MAX_SAFE_INTEGER;
+    const dt = new Date(`${t.endDate}T${t.endTime}`);
+    return isNaN(dt.getTime()) ? Number.MAX_SAFE_INTEGER : dt.getTime();
   }
 
+  // ---------- TAB & FILTER ACTIONS (FRONTEND ONLY) ----------
   selectMainTab(tab: 'habits' | 'tasks') {
     this.currentMainTab = tab;
     this.applyFilters();
   }
-
-  selectSubFilter(filter: 'journey' | 'priorities' | 'routine' | 'all') {
+  selectSubFilter(filter: any) {
     this.subFilter = filter;
-    this.loadHabits();
+    this.applyFilters();
   }
-
-  selectJourneySubFilter(filter: 'pending' | 'ongoing' | 'completed' | 'all') {
+  selectJourneySubFilter(filter: any) {
     this.journeySubFilter = filter;
-    this.loadHabits();
+    this.applyFilters();
   }
-
-  selectPrioritySubFilter(filter: 'high' | 'medium' | 'low' | 'all') {
+  selectPrioritySubFilter(filter: any) {
     this.prioritySubFilter = filter;
-    this.loadHabits();
+    this.applyFilters();
   }
-
-  selectRoutineSubFilter(filter: 'morning' | 'evening' | 'night' | 'all') {
+  selectRoutineSubFilter(filter: any) {
     this.routineSubFilter = filter;
-    this.loadHabits();
+    this.applyFilters();
   }
 
+  // ---------- MAIN FILTER LOGIC ----------
   private applyFilters() {
-    // If tasks tab selected, filter tasks and set filteredTasks
     if (this.currentMainTab === 'tasks') {
-      let list = [...this.tasks];
-
-      // Journey filter uses numeric timestamps
-      if (this.subFilter === 'journey' && this.journeySubFilter !== 'all') {
-        const now = Date.now();
-        if (this.journeySubFilter === 'pending') {
-          list = list.filter(t => (t.startTimeStamp || 0) > now);
-        } else if (this.journeySubFilter === 'ongoing') {
-          list = list.filter(t => (t.startTimeStamp || 0) <= now && (t.endTimeStamp || Number.MAX_SAFE_INTEGER) >= now);
-        } else if (this.journeySubFilter === 'completed') {
-          list = list.filter(t => (t.endTimeStamp || 0) < now);
-        }
-      }
-
-      // Priority filter (string)
-      if (this.subFilter === 'priorities' && this.prioritySubFilter !== 'all') {
-        list = list.filter(t => ((t.priority || t.task?.priority) || '').toString().toLowerCase() === this.prioritySubFilter);
-      }
-
-      // Routine filter (string)
-      if (this.subFilter === 'routine' && this.routineSubFilter !== 'all') {
-        list = list.filter(t => ((t.routine || t.task?.routine || t.selectedRoutine) || '').toString().toLowerCase() === this.routineSubFilter);
-      }
-
-      this.filteredTasks = list;
+      this.filteredTasks = this.filterTasks();
       return;
     }
 
-    let filtered = [...this.allHabits];
-
-    filtered = this.filterByDate(filtered);
-
-    console.log('Filtering by type. Expected:', this.currentMainTab, 'Available types:', filtered.map(h => h.type));
-    if (this.currentMainTab === 'habits') {
-      filtered = filtered;
-    } else {
-      filtered = filtered.filter(habit => habit.type === this.currentMainTab);
-    }
-    console.log('After type filter:', filtered.length);
-
-    if (this.subFilter === 'journey' && this.journeySubFilter !== 'all') {
-      filtered = this.filterByJourney(filtered, this.journeySubFilter);
-    }
-
-    this.filteredHabits = filtered;
+    this.filteredHabits = this.filterHabits();
   }
 
-  private filterByJourney(habits: Habit[], status: 'pending' | 'ongoing' | 'completed'): Habit[] {
-    return habits.filter(habit => habit.status === status);
+  private filterHabits(): Habit[] {
+    let list = this.filterByDate(this.allHabits);
+
+    switch (this.subFilter) {
+      case 'journey':
+        if (this.journeySubFilter !== 'all') {
+          list = list.filter(h => h.status === this.journeySubFilter);
+        }
+        break;
+
+      case 'priorities':
+        if (this.prioritySubFilter !== 'all') {
+          list = list.filter(h => (h.priority || '').toLowerCase() === this.prioritySubFilter);
+        }
+        break;
+
+      case 'routine':
+        if (this.routineSubFilter !== 'all') {
+          list = list.filter(h => (h.routine || '').toLowerCase() === this.routineSubFilter);
+        }
+        break;
+
+      default:
+        // 'all' => no extra filter
+        break;
+    }
+
+    return list;
   }
 
-  private buildFilters(): any {
-    const filters: any = {};
-    if (this.subFilter === 'priorities' && this.prioritySubFilter !== 'all') {
-      filters.priority = this.prioritySubFilter.toUpperCase();
-    } else if (this.subFilter === 'routine' && this.routineSubFilter !== 'all') {
-      filters.routine = this.routineSubFilter.toUpperCase();
+
+  private filterTasks(): any[] {
+    let list = [...this.tasks];
+    const now = Date.now();
+
+    switch (this.subFilter) {
+      case 'journey':
+        if (this.journeySubFilter === 'pending')
+          list = list.filter(t => t.startTimeStamp > now);
+
+        if (this.journeySubFilter === 'ongoing')
+          list = list.filter(t => t.startTimeStamp <= now && t.endTimeStamp >= now);
+
+        if (this.journeySubFilter === 'completed')
+          list = list.filter(t => t.endTimeStamp < now);
+        break;
+
+      case 'priorities':
+        if (this.prioritySubFilter !== 'all') {
+          list = list.filter(t => (t.priority || '').toLowerCase() === this.prioritySubFilter);
+        }
+        break;
+
+      case 'routine':
+        if (this.routineSubFilter !== 'all') {
+          list = list.filter(t => (t.routine || '').toLowerCase() === this.routineSubFilter);
+        }
+        break;
+
+      default:
+        break;
     }
-    // Status is filtered client-side
-    return filters;
+
+    return list;
   }
+
 
   private filterByDate(habits: Habit[]): Habit[] {
-    const selectedDate = new Date(this.selectedDate);
-    return habits.filter(habit => {
-      const start = habit.startDate ? new Date(habit.startDate) : new Date(0);
-      const end = habit.endDate ? new Date(habit.endDate) : new Date(Number.MAX_SAFE_INTEGER);
-      const dayOfWeek = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-      return start <= selectedDate && selectedDate <= end && habit.selectedDays.includes(dayOfWeek);
+    if (!habits.length) return [];
+
+    const selected = this.selectedDate;
+    const day = selected
+      .toLocaleDateString('en-US', { weekday: 'long' })
+      .toUpperCase();
+
+    return habits.filter(h => {
+      const start = h.startDate ? new Date(h.startDate) : selected;
+      const end = h.endDate ? new Date(h.endDate) : selected;
+      return start <= selected &&
+        selected <= end &&
+        (h.selectedDays?.includes(day) ?? true);
     });
   }
+
 
   onOpenCalendar() {
     this.router.navigateByUrl('/authed/habit-detail');
   }
 
   onOpenHabit(habit: Habit) {
-    if (!habit) return;
     this.singleModeHabit = habit;
     this.showSingleMode = true;
     this.showContent = false;
-  }
-
-  onDoneHabit(habit: Habit) {
-    console.log('Mark done called for habit:', habit?.id || habit?.title);
   }
 }
