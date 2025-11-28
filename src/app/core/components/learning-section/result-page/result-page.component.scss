@@ -5,92 +5,104 @@
   padding: 16px;
 }
 
-.results-summary {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.score-title {
-  color: #282527;
-  font-family: 'Nunito', sans-serif;
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0 0 16px 0;
-}
-
-.score-circle {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background-color: #E8F5E9;
+.pet-container {
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin: 0 auto 24px auto;
-  border: 4px solid #4CAF50;
+  width: 100%;
+  height: auto;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.score-percentage {
+// /* Added congrats section styles from badge-section.component.scss */
+.congrats-img {
+ position: relative;
+    width: 250px;
+    /* height: 0px; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+}
+.result-wrap{
+  display: inline-flex;
+padding: 4px 24px;
+justify-content: center;
+align-items: center;
+gap: 8px;
+border-radius: 40px;
+border: 1px solid #4CAF50;
+background: #FFF;
+z-index: 1100;
+}
+
+.question-count {
   color: #4CAF50;
-  font-family: 'Nunito', sans-serif;
-  font-size: 32px;
+  font-family: Nunito, sans-serif;
+  font-size: 40px;
+  font-style: normal;
   font-weight: 700;
+  line-height: 140%; /* 56px */
 }
 
-.score-label {
+.ring .badge-icon {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
+.confetti {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 90px;
+}
+
+.confetti.left {
+  left: 0;
+  transform: translateY(-50%) scaleX(-1);
+}
+
+.confetti.right {
+  right: 0;
+}
+/* End of congrats section styles */
+
+.badges-section {
+  margin: 24px 0;
+}
+
+.reward-u-got {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 16px 0;
+}
+
+.reward-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.reward-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.plus {
   color: #4CAF50;
-  font-family: 'Nunito', sans-serif;
+  font-family: Nunito, sans-serif;
   font-size: 16px;
   font-weight: 600;
 }
 
-.stats {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
-  margin-bottom: 16px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.stat-value {
+.reward-count {
   color: #282527;
-  font-family: 'Nunito', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.stat-label {
-  color: #666;
-  font-family: 'Nunito', sans-serif;
-  font-size: 14px;
-}
-
-.pet-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  padding: 24px 0;
-}
-
-.pet-message {
-  margin-top: 16px;
-  color: #282527;
-  font-family: 'Nunito', sans-serif;
-  font-size: 20px;
+  font-family: Nunito, sans-serif;
+  font-size: 13px;
   font-weight: 600;
-  text-align: center;
-}
-
-.badges-section {
-  margin: 24px 0;
 }
 
 .section-title {

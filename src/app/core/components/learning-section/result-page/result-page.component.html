@@ -1,47 +1,41 @@
-<mindful-navigator heading="Quiz Results" backIcon="cancel" (back)="onCancel()">
+<mindful-navigator heading="" backIcon="cancel" (back)="onCancel()">
 </mindful-navigator>
 
 <ion-content>
   <div class="result-container">
-
-      <div class="pet-section">
+    <div class="pet-container">
       <mindful-pet 
         [name]="'Buddy'" 
         [pet]="'panda'" 
-        [mood]="petMood" 
-        [age]="petAge" 
-        [sizePreset]="96"
-        (petClick)="onPetClick()">
+        [mood]="'happy'" 
+        [age]="2" 
+        [sizePreset]="142">
       </mindful-pet>
-    <!-- Results Summary -->
-    <div class="results-summary">
-      <h2 class="score-title">Great Job!</h2>
-      <div class="score-circle">
-        <span class="score-percentage">{{ scorePercentage }}%</span>
-        <span class="score-label">Score</span>
-      </div>
-      <div class="stats">
-        <div class="stat-item">
-          <span class="stat-value">{{ correctAnswers }}/{{ totalQuestions }}</span>
-          <span class="stat-label">Correct</span>
+      <h2>Great Work!</h2>
+      
+      <div class="congrats-img">
+        <img class="confetti left" src="assets/Images-Transparent/congrats.png" alt="confetti left" />
+        <div class="result-wrap">
+            <span class="question-count">{{ correctAnswers }}/{{ totalQuestions }}</span>
         </div>
-        <div class="stat-item">
-          <span class="stat-value">{{ timeTaken }}</span>
-          <span class="stat-label">Time</span>
-        </div>
+        <img class="confetti right" src="assets/Images-Transparent/congrats.png" alt="confetti right" />
       </div>
     </div>
 
-    <!-- Mindful Pet in the middle of the page -->
-  
-      <h2 class="pet-message" *ngIf="scorePercentage >= 80">Amazing work!</h2>
-      <h2 class="pet-message" *ngIf="scorePercentage >= 60 && scorePercentage < 80">Good effort!</h2>
-      <h2 class="pet-message" *ngIf="scorePercentage < 60">Keep practicing!</h2>
+    <div class="reward-u-got">
+      <div class="reward-item">
+        <span class="plus">+</span>
+        <img src="assets\Icons-Neutral\Icons-Coins.png" alt="Coins" class="reward-icon" />
+        <span class="reward-count">100</span>
+      </div>
+      <div class="reward-item">
+        <span class="plus">+</span>
+        <img src="assets\Icons-Neutral\Icon-Trophy.png" alt="Trophy" class="reward-icon" />
+        <span class="reward-count">1</span>
+      </div>
     </div>
-
     <!-- Badges Section -->
     <div class="badges-section">
-      <h3 class="section-title">Badges Earned</h3>
       <div class="badge-grid w-100 d-flex">
         <!-- Quiz Ace Badge -->
         <div *ngIf="scorePercentage >= 80" class="badge-card w-100">

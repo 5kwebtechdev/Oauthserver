@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
@@ -21,7 +21,7 @@ import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module'
   templateUrl: './result-page.component.html',
   styleUrls: ['./result-page.component.scss']
 })
-export class ResultPageComponent implements OnInit {
+export class ResultPageComponent {
   quizAceBadge: any = {
     name: 'Quiz Ace',
     description: 'You answered 5 quizzes correctly in a row!',
@@ -38,25 +38,12 @@ export class ResultPageComponent implements OnInit {
   totalQuestions = 5;
   correctAnswers = 5;
   scorePercentage = 100;
-  timeTaken = '2:30';
 
-  // Pet mood based on performance
-  petMood: 'happy' | 'playful' | 'curious' | 'base' | 'tired' | 'anger' = 'happy';
-  petAge = 2;
+
 
   constructor(private router: Router) { }
 
-  ngOnInit(): void {
-    // In a real implementation, you would fetch the actual badge data here
-    // Set pet mood based on performance
-    if (this.scorePercentage >= 90) {
-      this.petMood = 'happy';
-    } else if (this.scorePercentage >= 80) {
-      this.petMood = 'playful';
-    } else {
-      this.petMood = 'curious';
-    }
-  }
+
 
   onCancel(): void {
     // Navigate back to the previous page or home
