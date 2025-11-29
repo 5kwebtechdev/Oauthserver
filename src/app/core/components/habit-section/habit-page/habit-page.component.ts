@@ -91,15 +91,15 @@ export class HabitPageComponent implements OnInit, OnDestroy {
     this.loading = true;
     const formattedDate = this.habitService.formatDateToYYYYMMDD(this.selectedDate);
     console.log("Loading habits for date:", formattedDate, "Selected date:", this.selectedDate);
-    
+
     this.subscriptions.add(
       this.habitService.loadHabitsForDate(formattedDate).subscribe({
         next: (res: any) => {
           console.log("LOADED HABITS:", res);
-          
+
           // Handle both cases: response might be directly an array or have a data property
           const habitData = Array.isArray(res) ? res : (res?.data || []);
-          
+
           this.allHabits = habitData.map((h: any) => ({
             ...h,
             status: h.status?.trim().toLowerCase(),
@@ -276,25 +276,25 @@ export class HabitPageComponent implements OnInit, OnDestroy {
       .toUpperCase();
 
     console.log("Filtering by date:", selected, "Day of week:", day);
-    
+
     return habits.filter(h => {
       // Make sure we're handling the dates correctly
       const start = h.startDate ? new Date(h.startDate) : selected;
       const end = h.endDate ? new Date(h.endDate) : selected;
-      
+
       // Log for debugging
       console.log("Checking habit:", h.title, "Start:", start, "End:", end, "Selected:", selected, "Day:", day);
       console.log("Habit selectedDays:", h.selectedDays);
       console.log("Start date valid:", !isNaN(start.getTime()), "End date valid:", !isNaN(end.getTime()));
-      
+
       const isInRange = start <= selected && selected <= end;
       const hasCorrectDay = h.selectedDays && h.selectedDays.length > 0 ? h.selectedDays.includes(day) : true;
-      
+
       console.log("Is in range:", isInRange, "Has correct day:", hasCorrectDay);
-      
+
       const result = isInRange && hasCorrectDay;
       console.log("Including habit:", h.title, "?", result);
-      
+
       return result;
     });
   }
