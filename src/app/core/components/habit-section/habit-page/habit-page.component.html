@@ -64,13 +64,15 @@
                 <h3>Navigate Your Priorities</h3>
             </div>
             <div class="priority-selectors">
-                <mindful-badge text="High" type="red" [disabled]="prioritySubFilter !== 'high'"
-                    [active]="prioritySubFilter === 'high'" (click)="selectPrioritySubFilter('high')"></mindful-badge>
-                <mindful-badge text="Medium" type="yellow" [disabled]="prioritySubFilter !== 'medium'"
-                    [active]="prioritySubFilter === 'medium'"
+                <mindful-badge [text]="`High (${habitPrioritySummary.high})`" type="red"
+                    [disabled]="prioritySubFilter !== 'high'" [active]="prioritySubFilter === 'high'"
+                    (click)="selectPrioritySubFilter('high')"></mindful-badge>
+                <mindful-badge [text]="`Medium (${habitPrioritySummary.medium})`" type="yellow"
+                    [disabled]="prioritySubFilter !== 'medium'" [active]="prioritySubFilter === 'medium'"
                     (click)="selectPrioritySubFilter('medium')"></mindful-badge>
-                <mindful-badge text="Low" type="green" [disabled]="prioritySubFilter !== 'low'"
-                    [active]="prioritySubFilter === 'low'" (click)="selectPrioritySubFilter('low')"></mindful-badge>
+                <mindful-badge [text]="`Low (${habitPrioritySummary.low})`" type="green"
+                    [disabled]="prioritySubFilter !== 'low'" [active]="prioritySubFilter === 'low'"
+                    (click)="selectPrioritySubFilter('low')"></mindful-badge>
             </div>
             <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">
                 <div *ngIf="filteredHabits && filteredHabits.length > 0; else noPriorityHabitsTemplate">
@@ -93,13 +95,13 @@
                 <h3>Your Daily Routines</h3>
             </div>
             <div class="routine-selectors">
-                <mindful-badge text="Morning" type="pending" [disabled]="routineSubFilter !== 'morning'"
+                <mindful-badge text="Morning" type="morning" [disabled]="routineSubFilter !== 'morning'"
                     [active]="routineSubFilter === 'morning'"
                     (click)="selectRoutineSubFilter('morning')"></mindful-badge>
-                <mindful-badge text="Evening" type="ongoing" [disabled]="routineSubFilter !== 'evening'"
+                <mindful-badge text="Evening" type="evening" [disabled]="routineSubFilter !== 'evening'"
                     [active]="routineSubFilter === 'evening'"
                     (click)="selectRoutineSubFilter('evening')"></mindful-badge>
-                <mindful-badge text="Night" type="completed" [disabled]="routineSubFilter !== 'night'"
+                <mindful-badge text="Night" type="night" [disabled]="routineSubFilter !== 'night'"
                     [active]="routineSubFilter === 'night'" (click)="selectRoutineSubFilter('night')"></mindful-badge>
             </div>
             <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">
@@ -158,13 +160,15 @@
                 <h3>Navigate Your Priorities</h3>
             </div>
             <div class="priority-selectors">
-                <mindful-badge text="High" type="red" [disabled]="prioritySubFilter !== 'high'"
-                    [active]="prioritySubFilter === 'high'" (click)="selectPrioritySubFilter('high')"></mindful-badge>
-                <mindful-badge text="Medium" type="yellow" [disabled]="prioritySubFilter !== 'medium'"
-                    [active]="prioritySubFilter === 'medium'"
+                <mindful-badge [text]="`High (${taskPrioritySummary.high})`" type="red"
+                    [disabled]="prioritySubFilter !== 'high'" [active]="prioritySubFilter === 'high'"
+                    (click)="selectPrioritySubFilter('high')"></mindful-badge>
+                <mindful-badge [text]="`Medium (${taskPrioritySummary.medium})`" type="yellow"
+                    [disabled]="prioritySubFilter !== 'medium'" [active]="prioritySubFilter === 'medium'"
                     (click)="selectPrioritySubFilter('medium')"></mindful-badge>
-                <mindful-badge text="Low" type="green" [disabled]="prioritySubFilter !== 'low'"
-                    [active]="prioritySubFilter === 'low'" (click)="selectPrioritySubFilter('low')"></mindful-badge>
+                <mindful-badge [text]="`Low (${taskPrioritySummary.low})`" type="green"
+                    [disabled]="prioritySubFilter !== 'low'" [active]="prioritySubFilter === 'low'"
+                    (click)="selectPrioritySubFilter('low')"></mindful-badge>
             </div>
             <div class="habit-list-container">
                 <div *ngIf="filteredTasks && filteredTasks.length > 0; else noTasksTemplate">

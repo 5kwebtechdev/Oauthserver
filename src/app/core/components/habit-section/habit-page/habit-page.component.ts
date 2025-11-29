@@ -299,6 +299,57 @@ export class HabitPageComponent implements OnInit, OnDestroy {
     });
   }
 
+  get habitPrioritySummary() {
+    return this.countByPriority(this.getHabitsForSelectedDate());
+  }
+
+  get taskPrioritySummary() {
+    return this.countByPriority(this.tasks);
+  }
+
+  private getHabitsForSelectedDate(): Habit[] {
+    if (!this.allHabits.length) {
+      return [];
+    }
+
+    const selected = this.selectedDate;
+    const day = selected
+      .toLocaleDateString('en-US', { weekday: 'long' })
+      .toUpperCase();
+
+    return this.allHabits.filter(habit => {
+      const start = habit.startDate ? new Date(habit.startDate) : selected;
+      const end = habit.endDate ? new Date(habit.endDate) : selected;
+      const isInRange = start <= selected && selected <= end;
+      const hasCorrectDay = habit.selectedDays && habit.selectedDays.length > 0
+        ? habit.selectedDays.includes(day)
+        : true;
+
+      return isInRange && hasCorrectDay;
+    });
+  }
+
+  private countByPriority(items: Array<{ priority?: string }>) {
+    const counts = { high: 0, medium: 0, low: 0 };
+
+    items.forEach(item => {
+      const priority = (item.priority || '').toLowerCase();
+
+      if (priority === 'high') {
+        counts.high += 1;
+      }
+      if (priority === 'medium') {
+        counts.medium += 1;
+      }
+      if (priority === 'low') {
+        counts.low += 1;
+      }
+    });
+
+    return counts;
+  }
+
+
 
   onOpenCalendar() {
     this.router.navigateByUrl('/authed/habit-detail');
