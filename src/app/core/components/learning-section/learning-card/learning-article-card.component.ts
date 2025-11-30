@@ -19,6 +19,7 @@ export class LearningArticleCardComponent {
 
     onCardClick() {
         this.cardClick.emit({ item: this.item, index: this.index });
-        this.router.navigate(['/learning-description']);
+        // Navigate to the article page instead of the general description page
+        this.router.navigate(['/authed/content/article']);
     }
 }

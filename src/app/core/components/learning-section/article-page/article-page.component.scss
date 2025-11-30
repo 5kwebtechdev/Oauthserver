@@ -1,0 +1,30 @@
+.article-page {
+//   --background: #fff;
+//   --ion-background-color: #fff;
+//   --padding-start: 0;
+//   --padding-end: 0;
+//   --padding-top: 0;
+//   --padding-bottom: 0;
+
+  .article-container {
+  
+    width: 100%;
+    padding: 1px 16px 124px 16px;   
+    border-radius: 24px;
+    background: #FEF5C7;
+  }
+
+  .article-header {
+    padding: 16px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  // Responsive styles
+  @media (min-width: 768px) {
+    .article-container {
+      padding: 0 24px;
+    }
+    
+    // Removed responsive styles for deleted elements
+  }
+}
