@@ -79,11 +79,12 @@ export class HabitService {
     }
 
     return response.map(item => {
-      const startTimeStamp = item.startDate ? new Date(item.startDate).getTime() : Date.now();
-      const endTimeStamp = item.endDate ? new Date(item.endDate).getTime() : Date.now() + 3600000;
-
       const startTimeFormatted = item.startTime || item.start_time || "07:00:00";
       const endTimeFormatted = item.endTime || item.end_time || "08:00:00";
+
+      // Combine date and time to create proper timestamps
+      const startTimeStamp = item.startDate ? this.combineDateAndTime(item.startDate, startTimeFormatted) : Date.now();
+      const endTimeStamp = item.endDate ? this.combineDateAndTime(item.endDate, endTimeFormatted) : Date.now() + 3600000;
 
       return {
         id: item.id || '',
@@ -187,6 +188,35 @@ export class HabitService {
   abortHabit(id: string): void {
     const currentHabits = this.habitsSubject.value;
     this.habitsSubject.next(currentHabits.filter(h => h.id !== id));
+  }
+
+  /**
+   * Combine date string (YYYY-MM-DD) with time string (HH:MM:SS) to create timestamp
+   */
+  private combineDateAndTime(dateStr: string, timeStr: string): number {
+    // Parse time components (format: "HH:MM:SS" or "HH:MM")
+    const timeParts = timeStr.split(':');
+    const hours = parseInt(timeParts[0], 10) || 0;
+    const minutes = parseInt(timeParts[1], 10) || 0;
+    const seconds = parseInt(timeParts[2], 10) || 0;
+
+    // Create date from date string and set time components
+    const date = new Date(dateStr);
+    date.setHours(hours, minutes, seconds, 0);
+
+    const timestamp = date.getTime();
+
+    console.log('combineDateAndTime:', {
+      dateStr,
+      timeStr,
+      hours,
+      minutes,
+      seconds,
+      resultDate: date.toLocaleString(),
+      timestamp
+    });
+
+    return timestamp;
   }
 
 }

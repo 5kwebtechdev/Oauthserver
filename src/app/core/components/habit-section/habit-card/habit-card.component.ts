@@ -87,6 +87,9 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   percentageCompleted: number = 0;
   progressInterval: any;
 
+  // Auto-reload timers
+  private letsGoWindowTimer: any;
+  private endTimeTimer: any;
 
   public maxItemsToShow: number = 4;  // percentageWrapper is inside the single-card template which is rendered conditionally,
   // so query it with static: false and guard access in code.
@@ -116,14 +119,11 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   startProgress(): void {
     this.clearProgress(); // Clear old timers
 
-    // Initialize percentage to 0 when starting
-    this.percentageCompleted = 0;
-
-    // Start progress updater immediately
-    this.startProgressUpdater();
-
-    // Also trigger an immediate update to ensure the progress bar starts
+    // Calculate actual percentage based on current time (don't reset to 0)
     this.percentageCompleted = this.calculateProgressPercentage();
+
+    // Start progress updater to keep it updating every second
+    this.startProgressUpdater();
   }
 
   /**
@@ -182,8 +182,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
       // Call task API for tasks
       this.taskApi.abortTask(this.habit.id).subscribe({
         next: (res: any) => {
-          const updated = { ...this.habit!, status: 'skipped' } as any;
-          // For tasks, we might need to update differently
+          // Reset to pending state so card stays on Home and acts like a fresh activity
+          const updated = { ...this.habit!, status: 'pending' } as any;
           this.habit = updated;
           // Reset progress when aborting
           this.percentageCompleted = 0;
@@ -197,10 +197,11 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
         }
       });
     } else {
-      // Call habit API for habits (existing code)
+      // Call habit API for habits
       this.habitApi.abortHabit(this.habit.id).subscribe({
         next: (res: any) => {
-          const updated = { ...this.habit!, status: 'skipped' } as Habit;
+          // Reset to pending state so card stays on Home and acts like a fresh activity
+          const updated = { ...this.habit!, status: 'pending' } as Habit;
           this.habitService.abortHabit(updated.id);
           this.habit = updated;
           // Reset progress when aborting
@@ -285,6 +286,7 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
    */
   calculateProgressPercentage(): number {
     if (!this.habit) {
+      console.log('Progress calculation: No habit');
       return 0;
     }
 
@@ -292,18 +294,31 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     const start = this.habit.startTimeStamp;
     const end = this.habit.endTimeStamp;
 
+    console.log('Progress calculation:', {
+      habitTitle: this.habit.title,
+      now: new Date(now).toLocaleString(),
+      start: start ? new Date(start).toLocaleString() : 'undefined',
+      end: end ? new Date(end).toLocaleString() : 'undefined',
+      startTimestamp: start,
+      endTimestamp: end,
+      status: this.habit.status
+    });
+
     // If no valid timestamps, return 0
     if (!start || !end) {
+      console.log('Progress calculation: Missing timestamps');
       return 0;
     }
 
     // If not started yet, return 0
     if (now < start) {
+      console.log('Progress calculation: Not started yet');
       return 0;
     }
 
     // If already ended, return 100
     if (now > end) {
+      console.log('Progress calculation: Already ended, returning 100%');
       return 100;
     }
 
@@ -311,6 +326,12 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     const totalTime = end - start;
     const elapsedTime = now - start;
     const percentage = (elapsedTime / totalTime) * 100;
+
+    console.log('Progress calculation result:', {
+      totalTime,
+      elapsedTime,
+      percentage: percentage.toFixed(2) + '%'
+    });
 
     // Ensure percentage is between 0 and 100
     return Math.max(0, Math.min(100, percentage));
@@ -356,14 +377,29 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
       this.endTime = this.habit.endTimeStamp;
       this.inProgress = this.habit.type === 'habits'; // Example, adjust as needed
       this.isEmpty = false;
+
+      console.log('Habit loaded in ngOnInit:', {
+        title: this.habit.title,
+        status: this.habit.status,
+        startTime: this.habit.startTime,
+        endTime: this.habit.endTime,
+        startTimeStamp: this.habit.startTimeStamp,
+        endTimeStamp: this.habit.endTimeStamp,
+        startDate: this.habit.startDate,
+        endDate: this.habit.endDate
+      });
     }
 
-    // Initialize percentage to 0 for new habits/tasks
-    // For ongoing habits, it will be updated when startProgress is called
-    this.percentageCompleted = 0;
-
-    if (this.habit?.status === 'ongoing') {
+    // For ongoing habits, calculate the actual percentage based on elapsed time
+    // Don't initialize to 0 - this allows the progress bar to show correct state on page refresh
+    if (this.habit?.status?.toLowerCase() === 'ongoing') {
+      console.log('Starting progress for ongoing habit');
+      // Calculate actual progress immediately
+      this.percentageCompleted = this.calculateProgressPercentage();
       this.startProgress();
+    } else {
+      // For non-ongoing habits, initialize to 0
+      this.percentageCompleted = 0;
     }
 
     // If in list mode, load data based on current active tab
@@ -386,7 +422,7 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     }
 
     // Start progress updater for ongoing habits
-    if (this.habit && this.habit.status === 'ongoing') {
+    if (this.habit && this.habit.status?.toLowerCase() === 'ongoing') {
       this.startProgressUpdater();
     }
 
@@ -410,14 +446,101 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
       // Trigger change detection to update button states
       this.cdr.detectChanges();
     }, 1000);
+
+    // Set up auto-reload timers for key time points
+    this.setupAutoReloadTimers();
+  }
+
+  /**
+   * Set up timers to automatically reload habits/tasks at key time points:
+   * 1. When "Let's Go" window opens (5 min before start time)
+   * 2. When activity ends (at end time)
+   */
+  private setupAutoReloadTimers(): void {
+    // Clear any existing timers
+    this.clearAutoReloadTimers();
+
+    // Only set up timers for list or recent mode
+    if (this.mode !== 'list' && this.mode !== 'recent') {
+      return;
+    }
+
+    const now = Date.now();
+    const fiveMinutes = 5 * 60 * 1000;
+    const upcomingEvents: { time: number, type: 'letsgo' | 'end' }[] = [];
+
+    // Check all habits and tasks in list or recent mode
+    const allActivities = [...this.habits, ...this.tasks, ...this.recentHabits, ...this.recentTasks];
+
+    allActivities.forEach(activity => {
+      if (activity && activity.startTimeStamp && activity.endTimeStamp) {
+        const letsGoWindowStart = activity.startTimeStamp - fiveMinutes;
+        if (now < letsGoWindowStart) {
+          upcomingEvents.push({ time: letsGoWindowStart, type: 'letsgo' });
+        }
+        if (now < activity.endTimeStamp) {
+          upcomingEvents.push({ time: activity.endTimeStamp, type: 'end' });
+        }
+      }
+    });
+
+    // Find the next upcoming event (earliest time)
+    if (upcomingEvents.length > 0) {
+      upcomingEvents.sort((a, b) => a.time - b.time);
+      const nextEvent = upcomingEvents[0];
+      const timeUntilEvent = nextEvent.time - now;
+
+      // Set a single timer for the next event
+      this.letsGoWindowTimer = setTimeout(() => {
+        console.log(`${nextEvent.type === 'letsgo' ? 'Let\'s Go window opened' : 'Activity ended'} - reloading habits and tasks`);
+        this.reloadData();
+        // After reloading, set up timers again for next events
+        this.setupAutoReloadTimers();
+      }, timeUntilEvent);
+    }
+  }
+
+  /**
+   * Clear auto-reload timers
+   */
+  private clearAutoReloadTimers(): void {
+    if (this.letsGoWindowTimer) {
+      clearTimeout(this.letsGoWindowTimer);
+      this.letsGoWindowTimer = null;
+    }
+    if (this.endTimeTimer) {
+      clearTimeout(this.endTimeTimer);
+      this.endTimeTimer = null;
+    }
+  }
+
+  /**
+   * Reload habits and tasks based on current mode
+   */
+  private reloadData(): void {
+    if (this.mode === 'list') {
+      // Reload based on current active tab
+      if (this.currentActive === 'habits') {
+        this.loadHabits();
+      } else if (this.currentActive === 'tasks') {
+        this.loadTodayTasks();
+      } else {
+        // Load both for 'all' tab
+        this.loadHabits();
+        this.loadTodayTasks();
+      }
+    } else if (this.mode === 'recent') {
+      // In recent mode, parent component provides data
+      // Trigger change detection to update filtered lists
+      this.updateRecentDisplay();
+      this.cdr.detectChanges();
+    }
   }
 
   ngAfterViewInit(): void {
-    // Initialize percentage to 0
-    this.percentageCompleted = 0;
-
-    // For ongoing habits, make sure the progress updater is running
-    if (this.habit && this.habit.status === 'ongoing') {
+    // Don't reset percentage here - it's already calculated in ngOnInit
+    // For ongoing habits, ensure the progress updater is running
+    if (this.habit && this.habit.status?.toLowerCase() === 'ongoing') {
       // If progress updater is not running, start it
       if (!this.progressInterval) {
         this.startProgressUpdater();
@@ -438,6 +561,9 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     if (this.buttonStateCheckerInterval) {
       clearInterval(this.buttonStateCheckerInterval);
     }
+
+    // Clear auto-reload timers
+    this.clearAutoReloadTimers();
 
     // Unsubscribe from subscriptions
     if (this.habitSubscription) {
@@ -571,6 +697,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
       this.updateRecentDisplay();
       // Trigger change detection to update button states
       this.cdr.detectChanges();
+      // Re-setup auto-reload timers with new data
+      this.setupAutoReloadTimers();
     }
   }
 
@@ -609,6 +737,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
         this.updateEmptyState();
         // Trigger change detection to update button states
         this.cdr.detectChanges();
+        // Re-setup auto-reload timers after loading new habits
+        this.setupAutoReloadTimers();
       },
       error: (error) => {
         console.error('Error fetching habits:', error);
@@ -752,6 +882,9 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.updateEmptyState();
     // Trigger change detection to update button states
     this.cdr.detectChanges();
+
+    // Re-setup auto-reload timers after data changes
+    this.setupAutoReloadTimers();
   }
 
   toggle() {
@@ -802,7 +935,11 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   getStatus(): string {
-    return (this.habit?.status ?? '').toLowerCase();
+    const status = (this.habit?.status ?? '').toLowerCase();
+    if (this.habit?.title) {
+      console.log(`getStatus() for "${this.habit.title}":`, status);
+    }
+    return status;
   }
 
   protected readonly console = console;
@@ -923,12 +1060,12 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     if (this.mode === 'single') {
       // Check recent habits passed from parent
       if (this.recentHabits && this.recentHabits.some(habit =>
-        habit.status === 'ongoing')) {
+        habit.status?.toLowerCase() === 'ongoing')) {
         return true;
       }
       // Check recent tasks passed from parent
       if (this.recentTasks && this.recentTasks.some(task =>
-        task.status === 'ongoing')) {
+        task.status?.toLowerCase() === 'ongoing')) {
         return true;
       }
     }
@@ -937,12 +1074,12 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     if (this.mode === 'list') {
       // Check habits
       if (this.habits && this.habits.some(habit =>
-        habit.status === 'ongoing')) {
+        habit.status?.toLowerCase() === 'ongoing')) {
         return true;
       }
       // Check tasks
       if (this.tasks && this.tasks.some(task =>
-        task.status === 'ongoing')) {
+        task.status?.toLowerCase() === 'ongoing')) {
         return true;
       }
     }
@@ -951,12 +1088,12 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     if (this.mode === 'recent') {
       // Check recent habits
       if (this.recentHabits && this.recentHabits.some(habit =>
-        habit.status === 'ongoing')) {
+        habit.status?.toLowerCase() === 'ongoing')) {
         return true;
       }
       // Check recent tasks
       if (this.recentTasks && this.recentTasks.some(task =>
-        task.status === 'ongoing')) {
+        task.status?.toLowerCase() === 'ongoing')) {
         return true;
       }
     }
@@ -972,13 +1109,13 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     if (this.mode === 'single') {
       // Check recent habits passed from parent (excluding current habit if it exists)
       if (this.recentHabits && this.recentHabits.some(habit =>
-        habit.status === 'ongoing' &&
+        habit.status?.toLowerCase() === 'ongoing' &&
         (!this.habit || habit.id !== this.habit.id))) {
         return true;
       }
       // Check recent tasks passed from parent (excluding current task if it exists)
       if (this.recentTasks && this.recentTasks.some(task =>
-        task.status === 'ongoing' &&
+        task.status?.toLowerCase() === 'ongoing' &&
         (!this.habit || task.id !== this.habit.id))) {
         return true;
       }
@@ -988,13 +1125,13 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     if (this.mode === 'list') {
       // Check habits (excluding current habit if it exists)
       if (this.habits && this.habits.some(habit =>
-        habit.status === 'ongoing' &&
+        habit.status?.toLowerCase() === 'ongoing' &&
         (!this.habit || habit.id !== this.habit.id))) {
         return true;
       }
       // Check tasks (excluding current task if it exists)
       if (this.tasks && this.tasks.some(task =>
-        task.status === 'ongoing' &&
+        task.status?.toLowerCase() === 'ongoing' &&
         (!this.habit || task.id !== this.habit.id))) {
         return true;
       }
@@ -1004,13 +1141,13 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     if (this.mode === 'recent') {
       // Check recent habits (excluding current habit if it exists)
       if (this.recentHabits && this.recentHabits.some(habit =>
-        habit.status === 'ongoing' &&
+        habit.status?.toLowerCase() === 'ongoing' &&
         (!this.habit || habit.id !== this.habit.id))) {
         return true;
       }
       // Check recent tasks (excluding current task if it exists)
       if (this.recentTasks && this.recentTasks.some(task =>
-        task.status === 'ongoing' &&
+        task.status?.toLowerCase() === 'ongoing' &&
         (!this.habit || task.id !== this.habit.id))) {
         return true;
       }
@@ -1021,16 +1158,16 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
   /**
    * Check if the current habit/task is within the "Let's Go" window
-   * (5 minutes before start time to 5 minutes after start time)
+   * Window: start time -5 min to start time +5 min
    */
   private isWithinLetsGoWindow(): boolean {
-    if (!this.habit) return false;
+    if (!this.habit || !this.habit.startTimeStamp) return false;
 
     const now = Date.now();
     const startTime = this.habit.startTimeStamp;
+    const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
 
     // Check if we're within 5 minutes before or after start time
-    const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
     return (now >= (startTime - fiveMinutes)) && (now <= (startTime + fiveMinutes));
   }
 
@@ -1038,7 +1175,7 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
    * Check if the current time is after the end time
    */
   private isAfterEndTime(): boolean {
-    if (!this.habit) return false;
+    if (!this.habit || !this.habit.endTimeStamp) return false;
 
     const now = Date.now();
     const endTime = this.habit.endTimeStamp;
@@ -1048,31 +1185,41 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
   /**
    * Check if "Let's Go" button should be enabled
+   * Requirements:
+   * - Enabled: Only during 5-minute window (start time -5 min to start time +5 min)
+   * - Disabled: All other times (before start -5 min, and after start +5 min until end time)
+   * - Disabled: After end time
+   * - Blocked: Disabled if another activity is "In Progress"
    */
   isLetsGoEnabled(): boolean {
-    // If there's already another ongoing activity, disable this button
+    // Blocked: If another activity is ongoing, disable this button
     if (this.hasOtherOngoingActivity()) {
       return false;
     }
 
-    // Check if we're within the "Let's Go" window
+    // Disabled: After end time
+    if (this.isAfterEndTime()) {
+      return false;
+    }
+
+    // Enabled: Only during the 5-minute window (start -5 min to start +5 min)
     return this.isWithinLetsGoWindow();
   }
 
   /**
    * Check if "Let's Go" button should be visible
+   * Requirements:
+   * - Hidden: Only when current activity is ongoing (show Abort instead)
+   * - Visible: All other times (will be disabled based on time/blocking rules)
+   * - After end time: Visible but disabled (to show blocked state if another activity ongoing)
    */
   isLetsGoVisible(): boolean {
-    // Hide if we're after end time
-    if (this.isAfterEndTime()) {
+    // Hidden: If current habit/task is ongoing (show Abort instead)
+    if (this.habit && this.habit.status?.toLowerCase() === 'ongoing') {
       return false;
     }
 
-    // Hide if current habit/task is ongoing (show Abort instead)
-    if (this.habit && this.habit.status === 'ongoing') {
-      return false;
-    }
-
+    // Visible in all other cases (enabled/disabled state controlled by isLetsGoEnabled)
     return true;
   }
 
@@ -1081,24 +1228,30 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
    */
   isAbortVisible(): boolean {
     // Show abort button only if current habit/task is ongoing
-    return !!(this.habit && this.habit.status === 'ongoing');
+    return !!(this.habit && this.habit.status?.toLowerCase() === 'ongoing');
   }
 
   /**
    * Check if "Done" button should be enabled
+   * Requirements:
+   * - Visible: Always shown on all activity cards
+   * - Enabled: Before/After "Let's Go" window closes (outside start -5 min to start +5 min)
+   * - Disabled: During "Let's Go" window (start -5 min to start +5 min)
+   * - Blocked: Disabled if another activity is "In Progress"
    */
   isDoneEnabled(): boolean {
     // If current habit/task is ongoing, always enable Done button
-    if (this.habit && this.habit.status === 'ongoing') {
+    if (this.habit && this.habit.status?.toLowerCase() === 'ongoing') {
       return true;
     }
 
-    // If there's already another ongoing activity, disable this button
+    // Blocked: If another activity is ongoing, disable this button
     if (this.hasOtherOngoingActivity()) {
       return false;
     }
 
-    // Enable if we're NOT within the "Let's Go" window
+    // Disabled: During "Let's Go" window (start -5 min to start +5 min)
+    // Enabled: Before/After "Let's Go" window
     return !this.isWithinLetsGoWindow();
   }
 
