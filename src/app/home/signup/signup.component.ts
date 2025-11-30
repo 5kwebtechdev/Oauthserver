@@ -228,6 +228,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       } else if (stepParam === '0.3') {
         this.step = 0.3;
       }
+      this.enforceParentFlowRestrictions();
       this.renderer.setStyle(document.documentElement, '--step', this.step);
       // Ensure birthday picker doesn't open automatically when navigating to step 3
       this.openBirthdayPicker = false;
@@ -1263,5 +1264,25 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
    */
   navigateToTermsOfUse(): void {
     this.router.navigate(['/our-policies'], { queryParams: { tab: 'terms' } });
+  }
+
+  /**
+   * Parent role should not see self-only onboarding steps (pet selection, begin journey)
+   */
+  private enforceParentFlowRestrictions(): void {
+    if (this.currentRole !== 'parent') {
+      return;
+    }
+
+    const stepValue = Number(this.step);
+
+    if (stepValue === 4 || stepValue === 5) {
+      const fallbackStep = 2;
+      this.step = fallbackStep;
+      this.router.navigate(['home/sign-up'], {
+        queryParams: { step: fallbackStep },
+        replaceUrl: true
+      });
+    }
   }
 }

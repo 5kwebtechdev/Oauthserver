@@ -514,6 +514,12 @@
       width: 100%;
       justify-content: space-between;
     }
+
+    img {
+      max-width: none;
+      width: auto;
+      height: auto;
+    }
   }
 
   .profile {

@@ -100,7 +100,7 @@ export class JoinFamily2Component implements OnInit {
     // this.isLoading = true;
     const familyCode = this.joinFamilyForm.get('familyCode')?.value;
     sessionStorage.setItem('familyCode', familyCode);
-    this.router.navigate(['home', 'sign-up'], { queryParams: { step: 4 } });
+    this.redirectToLogin();
 
     // this.familyService.joinFamily(familyCode).subscribe({
     //   next: (response) => {
@@ -179,6 +179,7 @@ export class JoinFamily2Component implements OnInit {
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(this.familyCode).then(() => {
         this.core.triggerToasrt('Family code copied to clipboard!');
+        this.redirectToLogin();
       }).catch(() => {
         this.fallbackCopyTextToClipboard(this.familyCode);
       });
@@ -199,6 +200,7 @@ export class JoinFamily2Component implements OnInit {
     try {
       document.execCommand('copy');
       this.core.triggerToasrt('Family code copied to clipboard!');
+      this.redirectToLogin();
     } catch (err) {
       this.core.triggerToasrt('Failed to copy family code');
     }
@@ -229,6 +231,10 @@ export class JoinFamily2Component implements OnInit {
 
   continueWithoutFamily() {
     this.router.navigate(['home', 'sign-up'], { queryParams: { step: 4 } });
+  }
+
+  private redirectToLogin(): void {
+    this.router.navigate(['/home/login']);
   }
 
   get familyName() {

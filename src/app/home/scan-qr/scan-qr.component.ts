@@ -173,20 +173,24 @@ export class ScanQrComponent implements OnInit, OnDestroy {
         {
           text: 'Use Code',
           handler: () => {
-            // Navigate with the scanned code
-            const targetRoute = this.returnTo === 'join-family2' ? '/home/join-family2' : '/home/join-family';
-            this.router.navigate([targetRoute], {
-              queryParams: {
-                role: this.userRole,
-                code: code
-              }
-            });
+            this.saveCodeAndRedirect(code);
           }
         }
       ]
     });
 
     await alert.present();
+  }
+
+  private saveCodeAndRedirect(code: string) {
+    try {
+      if (code) {
+        sessionStorage.setItem('familyCode', code);
+      }
+    } catch (e) {
+      console.warn('Failed to persist family code', e);
+    }
+    this.router.navigate(['/home/login']);
   }
 
   async toggleFlashlight() {
