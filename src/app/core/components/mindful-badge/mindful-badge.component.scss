@@ -49,6 +49,10 @@
   margin-top: 0px;
 }
 
+:host-context(habit-page) .badge .badge-sub {
+  display: none;
+}
+
 .badge {
   &.medium {
     /* keep medium font but ensure consistent height */
@@ -210,7 +214,8 @@
   white-space: nowrap;
   width: auto;
   height: 34px;
-  padding: 10px 16px;
+  /* Match pending sizing for consistent UI */
+  padding: 10px 24px;
   justify-content: center;
   align-items: center;
   gap: 8px;
@@ -221,7 +226,8 @@
   white-space: nowrap;
   width: auto;
   height: 34px;
-  padding: 10px 16px;
+  /* Match pending sizing for consistent UI */
+  padding: 10px 24px;
   justify-content: center;
   align-items: center;
   gap: 8px;
@@ -235,17 +241,13 @@
   --stroke_gradient: transparent;
 }
 
-/* Active state: visually selected badge */
 .badge.active {
-  /* Use stroke gradient as the outer ring and fill with a solid background */
   --stroke_gradient: linear-gradient(90deg, rgba(144, 33, 77, 0.12), rgba(144, 33, 77, 0.12));
-  /* keep the type's background for the fill when active */
   box-shadow: none;
   border: 1px solid transparent;
 }
 
 .badge.active:before {
-  /* make the outer stroke more subtle when active */
   opacity: 1;
 }
 
@@ -253,8 +255,6 @@
   color: var(--text_color);
 }
 
-/* Habit-journey scoped visuals: only change colors/border for active vs not-active.
-   Do NOT override per-type padding/width: keep existing .badge.pending/.badge.ongoing/etc. */
 :host-context(.habit-journey-week) .badge:not(.active) {
   background: white;
   border: 1px solid #90214D;
@@ -285,6 +285,20 @@
   font-weight: 600;
   line-height: 140%;
   /* 18.2px */
+}
+
+/* Ensure all badges in the journey week (including those using type="inactive")
+   match the Pending badge sizing so UI is consistent */
+:host-context(.habit-journey-week) .badge {
+  display: inline-flex;
+  white-space: nowrap;
+  width: auto;
+  height: 34px;
+  padding: 10px 24px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 26px;
 }
 
 /* Priority selector visuals (used inside .priority-selectors) */
@@ -319,7 +333,18 @@
   border: none;
 }
 
-:host-context(.priority-selectors) .badge,
+:host-context(.priority-selectors) .badge {
+  display: inline-flex;
+  white-space: nowrap;
+  width: auto;
+  height: 34px;
+  padding: 10px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 26px;
+}
+
 :host-context(.priority-selectors) .badge p {
   border-radius: 26px;
 }
@@ -354,7 +379,8 @@
   white-space: nowrap;
   width: auto;
   height: 34px;
-  padding: 10px 16px;
+  /* Match pending sizing */
+  padding: 10px 24px;
   justify-content: center;
   align-items: center;
   gap: 8px;
