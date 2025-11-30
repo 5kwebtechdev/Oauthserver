@@ -66,14 +66,38 @@
                 <mindful-pet></mindful-pet>
             </div>
         </div>
-        <div class="detail-cta">
-            <mindful-button [ngClass]="cameFromLongPress && navigationOriginType === 'habits' ? 'w-100' : 'w-full'"
-                [type]="cameFromLongPress && navigationOriginType === 'habits' ? 'lavendar' : 'orange'"
-                [style.width]="cameFromLongPress && navigationOriginType === 'habits' ? '100%' : null" medium
-                text="Let's Go">
-            </mindful-button>
-            <mindful-button class="w-full" type="green" medium text="Done?"></mindful-button>
+
+        <div class="d-flex flex-column gap-4 align-items-stretch">
+            <!-- Progress Bar - shows when habit is ongoing -->
+            <div class="detail-progress-bar-box" *ngIf="habit?.status?.toLowerCase() === 'ongoing'">
+                <div class="detail-progress-bar" [style.width.%]="percentageCompleted"></div>
+            </div>
+            <div class="detail-cta">
+                <!-- Let's Go Button - visible when not ongoing -->
+                <mindful-button *ngIf="isLetsGoVisible()"
+                    [ngClass]="cameFromLongPress && navigationOriginType === 'habits' ? 'w-100' : 'w-full'"
+                    [type]="cameFromLongPress && navigationOriginType === 'habits' ? 'lavendar' : 'orange'"
+                    [style.width]="cameFromLongPress && navigationOriginType === 'habits' ? '100%' : null"
+                    [disabled]="!isLetsGoEnabled()" (click)="onStartHabit()" medium text="Let's Go">
+                </mindful-button>
+
+                <!-- Abort Button - visible when ongoing -->
+                <mindful-button *ngIf="isAbortVisible()"
+                    [ngClass]="cameFromLongPress && navigationOriginType === 'habits' ? 'w-100' : 'w-full'"
+                    [type]="cameFromLongPress && navigationOriginType === 'habits' ? 'lavendar-transparent' : 'orange-transparent'"
+                    [style.width]="cameFromLongPress && navigationOriginType === 'habits' ? '100%' : null"
+                    (click)="onAbortHabit()" medium text="Abort">
+                </mindful-button>
+
+                <!-- Done Button - always visible -->
+                <mindful-button class="w-full" type="green" [disabled]="!isDoneEnabled()" (click)="onCompleteHabit()"
+                    medium text="Done?">
+                </mindful-button>
+            </div>
+
         </div>
+
+
 
         <!-- decorative divider: replaced span with SVG for gradient stroke -->
         <svg class="divider-svg" xmlns="http://www.w3.org/2000/svg" width="298" height="2" viewBox="0 0 298 2"

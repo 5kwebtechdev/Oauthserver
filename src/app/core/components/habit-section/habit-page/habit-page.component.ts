@@ -173,14 +173,17 @@ export class HabitPageComponent implements OnInit, OnDestroy {
   }
   selectJourneySubFilter(filter: any) {
     this.journeySubFilter = filter;
+    this.subFilter = 'journey'; // Set the main filter to 'journey'
     this.applyFilters();
   }
   selectPrioritySubFilter(filter: any) {
     this.prioritySubFilter = filter;
+    this.subFilter = 'priorities'; // Set the main filter to 'priorities'
     this.applyFilters();
   }
   selectRoutineSubFilter(filter: any) {
     this.routineSubFilter = filter;
+    this.subFilter = 'routine'; // Set the main filter to 'routine'
     this.applyFilters();
   }
 
@@ -233,18 +236,12 @@ export class HabitPageComponent implements OnInit, OnDestroy {
 
   private filterTasks(): any[] {
     let list = [...this.tasks];
-    const now = Date.now();
 
     switch (this.subFilter) {
       case 'journey':
-        if (this.journeySubFilter === 'pending')
-          list = list.filter(t => t.startTimeStamp > now);
-
-        if (this.journeySubFilter === 'ongoing')
-          list = list.filter(t => t.startTimeStamp <= now && t.endTimeStamp >= now);
-
-        if (this.journeySubFilter === 'completed')
-          list = list.filter(t => t.endTimeStamp < now);
+        if (this.journeySubFilter !== 'all') {
+          list = list.filter(t => t.status === this.journeySubFilter);
+        }
         break;
 
       case 'priorities':

@@ -174,7 +174,6 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   onAbortHabit() {
-    this.console.log('Abort habit clicked');
     if (!this.habit) return;
 
     // Check if this is a task or habit and call the appropriate API
@@ -286,7 +285,6 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
    */
   calculateProgressPercentage(): number {
     if (!this.habit) {
-      console.log('Progress calculation: No habit');
       return 0;
     }
 
@@ -294,31 +292,19 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     const start = this.habit.startTimeStamp;
     const end = this.habit.endTimeStamp;
 
-    console.log('Progress calculation:', {
-      habitTitle: this.habit.title,
-      now: new Date(now).toLocaleString(),
-      start: start ? new Date(start).toLocaleString() : 'undefined',
-      end: end ? new Date(end).toLocaleString() : 'undefined',
-      startTimestamp: start,
-      endTimestamp: end,
-      status: this.habit.status
-    });
-
     // If no valid timestamps, return 0
     if (!start || !end) {
-      console.log('Progress calculation: Missing timestamps');
       return 0;
     }
 
     // If not started yet, return 0
     if (now < start) {
-      console.log('Progress calculation: Not started yet');
       return 0;
     }
 
     // If already ended, return 100
     if (now > end) {
-      console.log('Progress calculation: Already ended, returning 100%');
+      return 100;
       return 100;
     }
 
@@ -327,11 +313,7 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     const elapsedTime = now - start;
     const percentage = (elapsedTime / totalTime) * 100;
 
-    console.log('Progress calculation result:', {
-      totalTime,
-      elapsedTime,
-      percentage: percentage.toFixed(2) + '%'
-    });
+
 
     // Ensure percentage is between 0 and 100
     return Math.max(0, Math.min(100, percentage));
@@ -369,7 +351,6 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   ngOnInit() {
-    console.log('HabitCardComponent ngOnInit, mode:', this.mode);
 
     // If habit is provided, set properties from it
     if (this.habit) {
@@ -378,22 +359,12 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
       this.inProgress = this.habit.type === 'habits'; // Example, adjust as needed
       this.isEmpty = false;
 
-      console.log('Habit loaded in ngOnInit:', {
-        title: this.habit.title,
-        status: this.habit.status,
-        startTime: this.habit.startTime,
-        endTime: this.habit.endTime,
-        startTimeStamp: this.habit.startTimeStamp,
-        endTimeStamp: this.habit.endTimeStamp,
-        startDate: this.habit.startDate,
-        endDate: this.habit.endDate
-      });
+
     }
 
     // For ongoing habits, calculate the actual percentage based on elapsed time
     // Don't initialize to 0 - this allows the progress bar to show correct state on page refresh
     if (this.habit?.status?.toLowerCase() === 'ongoing') {
-      console.log('Starting progress for ongoing habit');
       // Calculate actual progress immediately
       this.percentageCompleted = this.calculateProgressPercentage();
       this.startProgress();
@@ -492,7 +463,6 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
       // Set a single timer for the next event
       this.letsGoWindowTimer = setTimeout(() => {
-        console.log(`${nextEvent.type === 'letsgo' ? 'Let\'s Go window opened' : 'Activity ended'} - reloading habits and tasks`);
         this.reloadData();
         // After reloading, set up timers again for next events
         this.setupAutoReloadTimers();
@@ -611,47 +581,22 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   }
 
-  /**
-   * Handle long-press (1.5s) by navigating to the habit detail page.
-   * If a habit is available, pass it through navigation state so the
-   * HabitDetailComponent can receive it via @Input or navigation extras.
-   */
-  // async onLongPress() {
-  //   try {
-  //     if (this.habit) {
-  //       await this.router.navigateByUrl(`/authed/habit-detail/1'`, { state: { habit: this.habit } } as any);
-  //     } else {
-  //       await this.router.navigateByUrl(`/authed/habit-detail/1`);
-  //     }
-  //   } catch (err) {
-  //     console.error('Navigation to habit-detail failed', err);
-  //   }
-  // }
 
   onLongPress() {
     if (!this.habit?.id) {
-      console.warn('No habit ID found for long press');
       return;
     }
 
-    // Simply navigate with the current habit data we already have
-    // The detail page will load fresh data if needed
     const itemType = this.habit.type || 'habits';
     const itemId = Number(this.habit.id);
 
-    console.log(`Long press detected - navigating to ${itemType} detail:`, itemId);
 
-    // Push navigation context so callers (habit-input/habit-detail) can return here
-    // after edits/deletes. Use the current URL as the returnUrl and include a
-    // minimal returnState so navigation back can restore relevant info.
     try {
       this.navigationContext.pushContext(this.router.url, { fromLongPress: true, habitId: this.habit.id, type: itemType }, false);
     } catch (pushErr) {
       console.warn('Failed to push navigation context before long-press navigation', pushErr);
     }
 
-    // Navigate immediately with existing habit data. The detail page will
-    // read `history.state` as before to render immediate UI.
     this.router.navigate(['/authed/habit-detail', itemId], {
       state: { habit: this.habit, type: itemType, fromLongPress: true },
       queryParams: { type: itemType }
@@ -661,22 +606,17 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   async openHabitPage() {
-    // Navigate to the habit page route so the user lands on the full Habit Page
     await this.router.navigateByUrl('/habit-page');
   }
 
   async openTimeline() {
-    // Navigate to the app timeline page. The AuthenticatedModule is mounted at '/authed'
-    // so the timeline route is available at '/authed/timeline'.
     await this.router.navigateByUrl('/authed/timeline');
   }
 
   async openHabitInput() {
-    // Store context - habit-card can be on various pages, use current URL
     const currentUrl = this.router.url;
     this.navigationContext.pushContext(currentUrl, { currentActive: this.currentActive }, true);
 
-    // Open the habit input as a modal
     const { HabitInputComponent } = await import('../habit-input/habit-input.component');
     const modal = await this.modalCtrl.create({
       component: HabitInputComponent,
@@ -905,8 +845,6 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
     this.progressInterval = setInterval(() => {
       this.calculatePercentage();
-      // console log for test
-      console.log("Progress:", this.percentageCompleted);
 
       if (this.percentageCompleted >= 100) {
         this.clearProgress();
@@ -937,7 +875,6 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   getStatus(): string {
     const status = (this.habit?.status ?? '').toLowerCase();
     if (this.habit?.title) {
-      console.log(`getStatus() for "${this.habit.title}":`, status);
     }
     return status;
   }
