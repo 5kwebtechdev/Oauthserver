@@ -226,7 +226,7 @@ export class JoinFamily2Component implements OnInit {
   }
 
   childCompleted() {
-    this.router.navigate(['home', 'sign-up'], { queryParams: { step: 4 } });
+    this.redirectToLogin();
   }
 
   continueWithoutFamily() {
