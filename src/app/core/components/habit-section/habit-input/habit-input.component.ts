@@ -313,7 +313,16 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   }
 
   private getSelectedDaysOfWeek(): string[] {
-    if (this.everyday) return HabitInputComponent.FULL_WEEK;
+    // When everyday is true AND the date range covers all weekdays, send full week
+    // Otherwise, only send the specific selected days
+    if (this.everyday) {
+      const daysInRange = this.getDaysInRange();
+      const coversAllDays = daysInRange.length === 7;
+      // Only return FULL_WEEK if the range actually covers all 7 weekdays
+      if (coversAllDays) {
+        return HabitInputComponent.FULL_WEEK;
+      }
+    }
     return Array.from(this.selectedDays).map(d => HabitInputComponent.DAY_MAP[d] || d.toString().toUpperCase());
   }
 
@@ -392,6 +401,10 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     const priority = (habit.priority || 'medium').toString().toUpperCase();
     const routine = ((habit.selectedRoutine || this.selectedRoutine) || 'MORNING').toString().toUpperCase();
 
+    // Check if date range covers all weekdays
+    const daysInRange = this.getDaysInRange();
+    const coversAllDays = daysInRange.length === 7;
+
     let payload: any;
     if (this.currentActive === 'tasks') {
       payload = {
@@ -405,24 +418,30 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         startTime: formattedStartTime || '',
         endDate: this.formatDateStr(this.endDate) || '',
         endTime: formattedEndTime || '',
-        everyday: !!habit.everyday,
+        everyday: !!(this.everyday && coversAllDays),
         everyWeekend: false,
-        rewardCoins: habit.coinReward ?? 5,
-        daysOfWeek: daysOfWeek
+        rewardCoins: habit.coinReward ?? 5
       };
+      // Only include daysOfWeek if NOT everyday
+      if (!(this.everyday && coversAllDays)) {
+        payload.daysOfWeek = daysOfWeek;
+      }
     } else if (this.currentActive === 'timetable') {
       payload = {
         title: habit.title,
         notes: habit.notes || '',
         tags,
-        everyday: !!habit.everyday,
-        daysOfWeek: daysOfWeek,
+        everyday: !!(this.everyday && coversAllDays),
         startTime: formattedStartTime || '',
         endTime: formattedEndTime || '',
         startDate: this.formatDateStr(this.startDate) || '',
         endDate: this.formatDateStr(this.endDate) || '',
         priority
       };
+      // Only include daysOfWeek if NOT everyday
+      if (!(this.everyday && coversAllDays)) {
+        payload.daysOfWeek = daysOfWeek;
+      }
     } else {
       payload = {
         title: habit.title,
@@ -435,15 +454,19 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         startTime: formattedStartTime || '',
         endDate: this.formatDateStr(this.endDate) || '',
         endTime: formattedEndTime || '',
-        everyday: !!habit.everyday,
+        everyday: !!(this.everyday && coversAllDays),
         everyWeekend: false,
-        coinReward: 5,
-        daysOfWeek: daysOfWeek
+        coinReward: 5
       };
+      // Only include daysOfWeek if NOT everyday
+      if (!(this.everyday && coversAllDays)) {
+        payload.daysOfWeek = daysOfWeek;
+      }
     }
 
     if (this.currentActive === 'tasks') {
       this.isSubmitting = true;
+      console.log('[Task Submit] Payload:', JSON.stringify(payload, null, 2));
 
       if (this.editingId) {
         // Update existing task
@@ -550,7 +573,11 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
           error: (err) => {
             this.isSubmitting = false;
             console.error('Failed to create task', err);
-            alert('Failed to create task. Please try again.');
+            console.error('Error status:', err?.status);
+            console.error('Error message:', err?.message);
+            console.error('Error body:', err?.error);
+            const errorMsg = err?.error?.message || err?.message || 'Unknown error';
+            alert(`Failed to create task: ${errorMsg}. Please try again.`);
           }
         });
       }
@@ -702,6 +729,9 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
 
     if (this.everyday && coversAllDays) return;
 
+    // If range covers all days, allow any weekday selection (no auto-adjustment needed)
+    if (coversAllDays) return;
+
     const daysInRangeSet = new Set(daysInRange);
     const currentSelected = Array.from(this.selectedDays);
 
@@ -739,8 +769,11 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         }
       } else {
         const daysInRange = this.getDaysInRange();
+        const coversAllDays = daysInRange.length === 7;
+
+        // Allow selection if range covers all weekdays OR if day is within range
         const isDayInRange = daysInRange.includes(d);
-        if (!isDayInRange && !this.selectedDays.has(d)) {
+        if (!coversAllDays && !isDayInRange && !this.selectedDays.has(d)) {
           this.showDaySelectionError = true;
           return;
         }
@@ -786,18 +819,22 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         }
 
         const daysInRange = this.getDaysInRange();
-        const daysInRangeSet = new Set(daysInRange);
+        const coversAllDays = daysInRange.length === 7;
 
-        this.selectedDays.clear();
-        this.weekdays.forEach(d => {
-          if (daysInRangeSet.has(d)) this.selectedDays.add(d);
-        });
-
-        if (daysInRange.length < 7) {
-          this.showDaySelectionError = true;
-        } else {
+        // If range covers all weekdays, allow selecting all days
+        if (coversAllDays) {
+          this.selectedDays.clear();
+          this.weekdays.forEach(d => this.selectedDays.add(d));
           this.showDaySelectionError = false;
           this.clearWeekdaysError();
+        } else {
+          // Otherwise, only select days within the range
+          const daysInRangeSet = new Set(daysInRange);
+          this.selectedDays.clear();
+          this.weekdays.forEach(d => {
+            if (daysInRangeSet.has(d)) this.selectedDays.add(d);
+          });
+          this.showDaySelectionError = true;
         }
       } else {
         this.weekdays.forEach(d => this.selectedDays.add(d));
