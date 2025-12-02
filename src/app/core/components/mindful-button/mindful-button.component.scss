@@ -1,20 +1,30 @@
-.button {
-  display: flex;
-    padding: 8px 16px;
-    float: left;
-    box-sizing: border-box;
-    height: 56px;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    background: var(--button_background);
-    border: var(--button_border);
-    box-shadow: var(--button_box_shadow);
-    --text_color: white;
-    width: 100%;
+:host {
+  font-family: 'Nunito', sans-serif;
 }
 
-/* Icons inside button */
+.button {
+  display: flex;
+  padding: 8px 16px;
+  float: left;
+  box-sizing: border-box;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: var(--button_background);
+  border: var(--button_border);
+  box-shadow: var(--button_box_shadow);
+  --text_color: white;
+  width: 100%;
+}
+
+.missing-type {
+  color: red;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+
 .btn-icon {
   display: inline-block;
   vertical-align: middle;
@@ -28,17 +38,14 @@
 }
 
 .btn-count {
-  font-family: Nunito, sans-serif;
   font-weight: 700;
   font-size: 13px;
   line-height: 140%;
   color: inherit;
-  /* inherit from button (gold sets white) */
 }
 
 p {
   font-size: 16px;
-  font-family: 'Nunito', sans-serif;
   font-weight: bold;
   margin: 0;
   text-align: center;
@@ -59,14 +66,12 @@ p {
 }
 
 .large {
-  /* Ensure large buttons can become full-width even if .button uses float */
   display: block;
   float: none;
   border-radius: 12px;
   width: 100%;
   padding: 13px 10px;
   margin: 0;
-  /* allow full-width when host width is 100% */
   box-sizing: border-box;
 }
 
@@ -77,8 +82,6 @@ p {
 .lavendar {
   display: flex;
   width: 100%;
-  // //height: 42px;
-  // ////padding: 12px;
   justify-content: center;
   align-items: center;
   gap: 8px;
@@ -96,8 +99,6 @@ p {
 .lavender-light {
   display: flex;
   width: 100%;
-  //height: 42px;
-  ////padding: 12px;
   justify-content: center;
   align-items: center;
   gap: 8px;
@@ -118,8 +119,22 @@ p {
   --button_border: 1px solid #7471BA;
   --button_box_shodow: 0 -2px 2px 0 #A1A7D8 inset, 0 0 1px 1px rgba(139, 141, 203, 0.20);
   --text_color: #FFFFFF;
-  /* fully opaque when active */
+
   opacity: 1;
+}
+
+
+.lavender.small,
+.lavendar.small {
+  display: flex;
+  padding: 10px 16px;
+  justify-content: center;
+  align-items: center;
+  height: 34px;
+  border-radius: 4px;
+  border: 1px solid #7471BA;
+  background: linear-gradient(104deg, #8B8DCB 2.07%, #6460A2 97.93%);
+  box-shadow: 0 -2px 2px 0 #A1A7D8 inset, 0 0 1px 0.5px rgba(139, 141, 203, 0.20);
 }
 
 .lavendar-transparent {
@@ -127,6 +142,24 @@ p {
   --button_border: 1px solid #7471BA;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(139, 141, 203, 0.2);
   --text_color: #898CCA
+}
+
+.lavendar-transparent.small,
+.lavender-transparent.small {
+  display: flex;
+  padding: 10px 16px;
+  height: 34px;
+  justify-content: center;
+  align-items: center;
+}
+
+.lavendar-transparent.small p,
+.lavender-transparent.small p {
+  color: #898CCA;
+  font-family: 'Nunito', sans-serif;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
 }
 
 .violet {
@@ -138,8 +171,6 @@ p {
 .orange {
   display: flex;
   width: 100%;
-  //height: 42px;
-  ////padding: 12px;
   justify-content: center;
   align-items: center;
   gap: 8px;
@@ -178,7 +209,6 @@ p {
 
 .orange-onboard p {
   color: #FFF;
-  font-family: 'Nunito', sans-serif;
   font-size: 16px;
   font-style: normal;
   font-weight: 700;
@@ -190,11 +220,10 @@ p {
   opacity: 0.5;
 }
 
-/* Specific medium size overrides for orange */
+
 .orange.medium {
   display: flex;
   width: 100%;
-  //height: 42px;
   padding: 10px 16px;
   justify-content: center;
   align-items: center;
@@ -206,11 +235,43 @@ p {
   box-shadow: 0 -2px 2px 0 #FAD2AE inset, 0 0 1px 0.5px rgba(246, 172, 114, 0.20);
 }
 
+
+.orange.small {
+  display: flex;
+  height: 34px;
+  padding: 10px 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  border: 1px solid #F28745;
+  background: linear-gradient(132deg, #F6AC72 1.89%, #EE6621 98.11%);
+  box-shadow: 0 -2px 2px 0 #FAD2AE inset, 0 0 1px 0.5px rgba(246, 172, 114, 0.20);
+  --text_color: #FFFFFF;
+}
+
 .orange-transparent {
   --button_background: transparent;
   --button_border: 1px solid #F28745;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(139, 141, 203, 0.2);
   --text_color: #F6AC72;
+}
+
+.orange-transparent.small {
+  display: flex;
+  padding: 10px 16px;
+  height: 34px;
+  justify-content: center;
+  align-items: center;
+}
+
+.orange-transparent.small p {
+  color: #F28745;
+  font-family: 'Nunito', sans-serif;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
 }
 
 .orange-light {
@@ -220,8 +281,6 @@ p {
   --text_color: #FFFFFF;
   opacity: 0.5;
   display: flex;
-  //height: 42px;
-  ////padding: 12px;
   justify-content: center;
   align-items: center;
   gap: 8px;
@@ -230,15 +289,13 @@ p {
 }
 
 .orange-dark {
-  /* darker / fully opaque variant of orange used for active submit */
+
   --button_background: linear-gradient(103.36deg, #F18A3A 0.27%, #D94A00 99.73%);
   --button_border: 1px solid #D25816;
   --button_box_shodow: 0px 0px 1px 0.5px rgba(209, 138, 84, 0.2), inset 0px -2px 2px #F2B085;
   --text_color: #FFFFFF;
   display: flex;
   width: 361px;
-  //height: 42px;
-  ////padding: 12px;
   justify-content: center;
   align-items: center;
   gap: 8px;
@@ -253,11 +310,10 @@ p {
   --button_box_shodow: 0 0 1px 0.5px rgba(76, 175, 80, 0.20), 0 -4px 2px 0 #6BBD6E inset;
 }
 
-/* Specific medium size overrides for green */
+
 .green.medium {
   display: flex;
   width: 100%;
-  //height: 42px;
   padding: 10px 12px;
   justify-content: center;
   align-items: center;
@@ -269,7 +325,7 @@ p {
   box-shadow: 0 -2px 2px 0 #6BBD6E inset, 0 0 1px 0.5px rgba(76, 175, 80, 0.20);
 }
 
-/* Large green variant matching requested exact style */
+
 .green.large {
   display: flex;
   height: 56px;
@@ -284,19 +340,20 @@ p {
   box-shadow: 0 0 1px 0.5px rgba(76, 175, 80, 0.20), 0 -4px 2px 0 #6BBD6E inset;
 }
 
-/* Small green variant for Send Request button */
+
 .green.small {
   display: flex;
-  //height: 42px;
-  padding: 8px 16px;
+  height: 34px;
+  padding: 10px 12px;
   justify-content: center;
   align-items: center;
   gap: 8px;
-  flex: 1 0 0;
+  flex-shrink: 0;
   border-radius: 4px;
   border: 1px solid #358438;
   background: linear-gradient(132deg, #4CAF50 1.89%, #358438 98.11%);
-  box-shadow: 0 0 1px 0.5px rgba(76, 175, 80, 0.20), 0 -4px 2px 0 #6BBD6E inset;
+  box-shadow: 0 -2px 2px 0 #6BBD6E inset, 0 0 1px 0.5px rgba(76, 175, 80, 0.20);
+  --text_color: #FFFFFF;
 }
 
 .magenta {
@@ -332,11 +389,9 @@ p {
 }
 
 .gold {
-  /* Gold (redesigned) */
+
   display: inline-flex;
-  //height: 42px;
   width: 100%;
-  ////padding: 12px 16px;
   justify-content: center;
   align-items: center;
   gap: 2px;
@@ -346,7 +401,6 @@ p {
   background: linear-gradient(99deg, #F2C452 1.32%, #D98F15 98.68%);
   box-shadow: 0 0 1px 0.5px rgba(241, 168, 70, 0.20), 0 -4px 6px 0 #F4D593 inset;
   color: #6A3900;
-  font-family: Nunito, sans-serif;
   font-size: 16px;
   font-style: normal;
   font-weight: 700;
@@ -356,12 +410,11 @@ p {
 
 .gold p {
   color: #6A3900;
-  font-family: Nunito, sans-serif;
   font-size: 16px;
   font-weight: 700;
 }
 
-/* Hover / focus / active states for accessibility and tactile feedback */
+
 .gold:not(.disabled):hover,
 .gold:not(.disabled):focus {
   transform: translateY(-1px);
@@ -454,7 +507,6 @@ p {
 .bronze:not(.medium):not(.large) {
   display: flex;
   width: 73px;
-  //height: 42px;
   padding: 8px 16px;
   justify-content: center;
   align-items: center;
@@ -468,7 +520,6 @@ p {
 
 .bronze-transparent {
   display: flex;
-  //height: 42px;
   padding: 10px 16px;
   justify-content: center;
   align-items: center;
@@ -482,7 +533,6 @@ p {
 
 .bronze-transparent.small {
   display: flex;
-  //height: 42px;
   padding: 10px 16px;
   justify-content: center;
   align-items: center;
@@ -496,14 +546,14 @@ p {
 }
 
 
-/* Bronze disabled: only change opacity, do not alter colors or border */
+
 .bronze.disabled,
 .bronze[disabled],
 .button.bronze.disabled {
-  /* reset the global grayscale filter for bronze so colors stay exact */
+
   filter: none;
   pointer-events: none;
-  /* keep it non-interactive */
+
   opacity: 0.5;
 }
 
@@ -535,7 +585,7 @@ p {
   font-size: 10px;
   width: auto;
 
-  p{
+  p {
     font-size: 10px;
   }
 }
@@ -557,26 +607,19 @@ p {
 .columbian-blue p {
   color: #FFF;
   text-align: center;
-  font-family: 'Nunito', sans-serif;
   font-size: 10px;
   font-style: normal;
   font-weight: 600;
   line-height: 140%;
-  /* 14px */
+
   margin: 0;
 }
 
-.btn-icon {
-  width: 18px;
-  height: 18px;
-  vertical-align: middle;
-  display: inline-block;
-}
+
 
 .peach {
   display: flex;
   width: 361px;
-  ////padding: 12px;
   justify-content: center;
   align-items: center;
   gap: 8px;
@@ -589,7 +632,6 @@ p {
 
 .white {
   display: flex;
-  //height: 42px;
   padding: 8px 24px;
   justify-content: center;
   align-items: center;
@@ -605,7 +647,6 @@ p {
 .white p {
   color: #282527;
   text-align: center;
-  font-family: 'Nunito', sans-serif;
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
@@ -613,7 +654,7 @@ p {
   margin: 0;
 }
 
-/* New variant: white-black */
+
 .white-black {
   display: flex;
   height: 42px;
@@ -631,7 +672,6 @@ p {
 .white-black p {
   color: var(--text_color);
   text-align: center;
-  font-family: 'Nunito', sans-serif;
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
@@ -639,13 +679,13 @@ p {
   margin: 0;
 }
 
-/* Correct state for white-black button */
+
 .white-black.correct {
   border: 1px solid #4CAF50;
   background: rgba(76, 175, 80, 0.20);
 }
 
-/* Incorrect state for white-black button */
+
 .white-black.incorrect {
   border: 1px solid #BB2124;
   background: rgba(187, 33, 36, 0.20);
@@ -673,4 +713,12 @@ p {
   display: none;
 }
 
-// .button p { display: inline-block; vertical-align: middle; }
+
+
+.small p,
+[class*="-small"] p {
+  color: #FFF;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+}

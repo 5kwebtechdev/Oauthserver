@@ -9,8 +9,7 @@ describe('MindfulButtonComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ MindfulButtonComponent ],
-      imports: [IonicModule.forRoot()]
+      imports: [MindfulButtonComponent, IonicModule.forRoot()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(MindfulButtonComponent);

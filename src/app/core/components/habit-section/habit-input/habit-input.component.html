@@ -22,22 +22,29 @@
 
     <div *ngIf="currentActive === 'habits'" class="form-card">
       <div class="title-input">
-        <div class="mindful-input-group">
-          <input [(ngModel)]="title" placeholder="Habit Title" />
+        <div class="mindful-input-group w-100" [class.missing-placeholder]="showTitleError && attemptedSubmit">
+          <input [(ngModel)]="title" (ngModelChange)="clearTitleError()" placeholder="Habit Title" />
+          <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">Enter habit title</div>
+
         </div>
         <div class="add-new-row">
           <mindful-tags [options]="routineTags" [singleSelection]="true" [size]="'small'" [variant]="'blue'"
             (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)"
             (delete)="onTagDelete($event)">
           </mindful-tags>
+          <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Select tag</div>
         </div>
       </div>
 
-      <div class="routine-section">
-        <label>Routine</label>
-        <mindful-selectors [options]="routineOptions" componentType="badge" [singleSelection]="true"
-          (selectedKeysChange)="onRoutineSelected($event)">
-        </mindful-selectors>
+
+      <div class="d-flex flex-column" style="border-bottom: 1px solid #7471BA;">
+        <div class="routine-section ">
+          <label>Routine</label>
+          <mindful-selectors [options]=" routineOptions" componentType="badge" [singleSelection]="true"
+            (selectedKeysChange)="onRoutineSelected($event)" [scrollable]="false">
+          </mindful-selectors>
+        </div>
+        <div *ngIf="attemptedSubmit && showRoutineError" class="field-error" role="alert">Select routine</div>
       </div>
 
       <div class="date-time-selection">
@@ -74,86 +81,115 @@
             </button>
           </div>
         </div>
+        <div *ngIf="attemptedSubmit && showWeekdaysError" class="field-error" role="alert">Select weekdays</div>
 
         <div class="date-time--pick">
-          <div class="time-row">
-            <div class="pick-time">
-              <label>Start Time</label>
-              <div class="mindful-input-group">
-                <mindful-timepicker placeholder="Start" [(ngModel)]="startTime"></mindful-timepicker>
+          <div class="d-flex flex-column w-100">
+            <div class="time-row">
+              <div class="pick-time">
+                <label>Start Time</label>
+                <div class="mindful-input-group" [class.missing-placeholder]="showTimeError && attemptedSubmit">
+                  <mindful-timepicker placeholder="Start" [(ngModel)]="startTime"
+                    (ngModelChange)="clearTimeError()"></mindful-timepicker>
+                </div>
+              </div>
+              <div class="pick-time">
+                <label>End Time</label>
+                <div class="mindful-input-group" [class.missing-placeholder]="showTimeError && attemptedSubmit">
+                  <mindful-timepicker placeholder="End" [(ngModel)]="endTime"
+                    (ngModelChange)="clearTimeError()"></mindful-timepicker>
+                </div>
               </div>
             </div>
-            <div class="pick-time">
-              <label>End Time</label>
-              <div class="mindful-input-group">
-                <mindful-timepicker placeholder="End" [(ngModel)]="endTime"></mindful-timepicker>
-              </div>
-            </div>
+            <div *ngIf="attemptedSubmit && showTimeError" class="field-error" role="alert">Select time</div>
+            <div *ngIf="showPastTimeError" class="field-error" role="alert">Cannot set time in the past for today</div>
+            <div *ngIf="showEndTimeSingleDayError" class="field-error" role="alert">End time cannot exceed 11:59 PM for
+              single-day activities</div>
           </div>
 
           <div class="start-end-row">
             <div class="d-flex align-items-center gap-2 justify-content-between w-100">
-              <label>Start Date</label>
-              <div class="mindful-input-group">
-                <mindful-datepicker type="date" [(ngModel)]="startDate" [minDate]="today" [rangeStart]="startDate"
-                  [rangeEnd]="endDate"></mindful-datepicker>
+              <label style="    padding-left: 42px;">Start Date</label>
+              <div class="mindful-input-group" [class.missing-placeholder]="showDateError && attemptedSubmit">
+                <mindful-datepicker type="date" [(ngModel)]="startDate" (ngModelChange)="clearDateError()"
+                  [minDate]="today" [rangeStart]="startDate" [rangeEnd]="endDate"
+                  placeholder="Add Start Date"></mindful-datepicker>
               </div>
             </div>
             <div class="d-flex align-items-center gap-2 justify-content-between w-100">
-              <label>End Date</label>
-              <div class="mindful-input-group">
-                <mindful-datepicker type="date" [(ngModel)]="endDate" [minDate]="startDate || today"
-                  [rangeStart]="startDate" [rangeEnd]="endDate"></mindful-datepicker>
+              <label style="padding-left: 42px;">End Date</label>
+              <div class="mindful-input-group" [class.missing-placeholder]="showDateError && attemptedSubmit">
+                <mindful-datepicker type="date" [(ngModel)]="endDate" (ngModelChange)="clearDateError()"
+                  [minDate]="startDate || today" [rangeStart]="startDate" [rangeEnd]="endDate"
+                  placeholder="Add End Date"></mindful-datepicker>
               </div>
             </div>
 
+            <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Add start and
+              end date</div>
           </div>
+          <div *ngIf="showDaySelectionError" class="field-error top-margin" role="alert">
+            Cannot select weekdays outside the selected date range
+          </div>
+
         </div>
       </div>
 
       <div class="priority-selection priority-selectors">
-        <label>Priority</label>
-        <div class="priority-row">
-          <mindful-badge text="High" type="red" [disabled]="priority !== 'high'" [active]="priority === 'high'"
-            (click)="selectPriority('high')"></mindful-badge>
-          <mindful-badge text="Medium" type="yellow" [disabled]="priority !== 'medium'" [active]="priority === 'medium'"
-            (click)="selectPriority('medium')"></mindful-badge>
-          <mindful-badge text="Low" type="green" [disabled]="priority !== 'low'" [active]="priority === 'low'"
-            (click)="selectPriority('low')"></mindful-badge>
+        <div class="d-flex align-items-center gap-2" style="padding: 20px 0px 20px 24px;">
+          <label>Priority</label>
+          <div class="priority-row">
+            <mindful-badge text="High" type="red" [disabled]="priority !== 'high'" [active]="priority === 'high'"
+              (click)="selectPriority('high')"></mindful-badge>
+            <mindful-badge text="Medium" type="yellow" [disabled]="priority !== 'medium'"
+              [active]="priority === 'medium'" (click)="selectPriority('medium')"></mindful-badge>
+            <mindful-badge text="Low" type="green" [disabled]="priority !== 'low'" [active]="priority === 'low'"
+              (click)="selectPriority('low')"></mindful-badge>
+          </div>
         </div>
+        <div *ngIf="attemptedSubmit && showPriorityError" class="field-error" role="alert">Select priority</div>
       </div>
 
       <div class="section notes">
-        <textarea [(ngModel)]="notes" maxlength="250" placeholder="Add Notes....."></textarea>
+        <textarea [(ngModel)]="notes" (ngModelChange)="clearNotesError()"
+          [class.missing-border]="showNotesError && attemptedSubmit" maxlength="250" placeholder="Add Notes....."
+          style="display:block;margin:0 auto;"></textarea>
         <div class="char-count">Max 250 Characters</div>
+        <div *ngIf="attemptedSubmit && showNotesError" class="field-error" role="alert">Add notes</div>
       </div>
 
       <div class="submit-row">
         <mindful-button [type]="isFormComplete ? 'lavendar' : 'lavender-light'"
           [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Habit' : 'Create Habit')"
-          large [disabled]="!isFormComplete || isSubmitting" (click)="submit()">
+          large [disabled]="isSubmitting" (click)="submit()">
         </mindful-button>
       </div>
     </div>
 
     <div *ngIf="currentActive === 'tasks'" class="form-card">
       <div class="title-input">
-        <div class="mindful-input-group">
-          <input [(ngModel)]="title" placeholder="Task Title" />
+        <div class="mindful-input-group w-100" [class.missing-placeholder]="showTitleError && attemptedSubmit">
+          <input [(ngModel)]="title" (ngModelChange)="clearTitleError()" placeholder="Task Title" />
+          <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">Enter task title</div>
         </div>
         <div class="add-new-row">
           <mindful-tags [options]="routineTags" [singleSelection]="true" [size]="'small'" [variant]="'orange'"
             (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)"
             (delete)="onTagDelete($event)">
           </mindful-tags>
+          <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Select tag</div>
 
         </div>
       </div>
 
-      <div class="routine-section">
-        <label>Routine</label>
-        <mindful-selectors [options]="routineOptions" componentType="badge" [singleSelection]="true">
-        </mindful-selectors>
+      <div class="d-flex flex-column" style="border-bottom: 1px solid #F6AC72;">
+        <div class="routine-section ">
+          <label>Routine</label>
+          <mindful-selectors [options]="routineOptions" componentType="badge" [singleSelection]="true"
+            (selectedKeysChange)="onRoutineSelected($event)" [scrollable]="false">
+          </mindful-selectors>
+        </div>
+        <div *ngIf="attemptedSubmit && showRoutineError" class="field-error" role="alert">Select routine</div>
       </div>
 
 
@@ -191,64 +227,85 @@
             </button>
           </div>
         </div>
+        <div *ngIf="attemptedSubmit && showWeekdaysError" class="field-error" role="alert">Select weekdays</div>
 
         <div class="date-time--pick">
-          <div class="time-row">
-            <div class="pick-time">
-              <label>Start Time</label>
-              <div class="mindful-input-group">
-                <mindful-timepicker placeholder="Start" [(ngModel)]="startTime"></mindful-timepicker>
+          <div class="d-flex flex-column w-100">
+            <div class="time-row">
+              <div class="pick-time">
+                <label>Start Time</label>
+                <div class="mindful-input-group" [class.missing-placeholder]="showTimeError && attemptedSubmit">
+                  <mindful-timepicker placeholder="Start" [(ngModel)]="startTime"
+                    (ngModelChange)="clearTimeError()"></mindful-timepicker>
+                </div>
+              </div>
+              <div class="pick-time">
+                <label>End Time</label>
+                <div class="mindful-input-group" [class.missing-placeholder]="showTimeError && attemptedSubmit">
+                  <mindful-timepicker placeholder="End" [(ngModel)]="endTime"
+                    (ngModelChange)="clearTimeError()"></mindful-timepicker>
+                </div>
               </div>
             </div>
-            <div class="pick-time">
-              <label>End Time</label>
-              <div class="mindful-input-group">
-                <mindful-timepicker placeholder="End" [(ngModel)]="endTime"></mindful-timepicker>
-              </div>
-            </div>
+            <div *ngIf="attemptedSubmit && showTimeError" class="field-error" role="alert">Select time</div>
+            <div *ngIf="showPastTimeError" class="field-error" role="alert">Cannot set time in the past for today</div>
+            <div *ngIf="showEndTimeSingleDayError" class="field-error" role="alert">End time cannot exceed 11:59 PM for
+              single-day activities</div>
           </div>
 
           <div class="start-end-row">
             <div class="d-flex align-items-center gap-2 justify-content-between w-100">
-              <label>Start Date</label>
-              <div class="mindful-input-group">
-                <mindful-datepicker type="date" [(ngModel)]="startDate" [minDate]="today" [rangeStart]="startDate"
-                  [rangeEnd]="endDate"></mindful-datepicker>
+              <label style="padding-left: 42px;">Start Date</label>
+              <div class="mindful-input-group" [class.missing-placeholder]="showDateError && attemptedSubmit">
+                <mindful-datepicker type="date" [(ngModel)]="startDate" (ngModelChange)="clearDateError()"
+                  [minDate]="today" [rangeStart]="startDate" [rangeEnd]="endDate"
+                  placeholder="Add Start Date"></mindful-datepicker>
               </div>
             </div>
             <div class="d-flex align-items-center gap-2 justify-content-between w-100">
-              <label>End Date</label>
-              <div class="mindful-input-group">
-                <mindful-datepicker type="date" [(ngModel)]="endDate" [minDate]="startDate || today"
-                  [rangeStart]="startDate" [rangeEnd]="endDate"></mindful-datepicker>
+              <label style="padding-left: 42px;">End Date</label>
+              <div class="mindful-input-group" [class.missing-placeholder]="showDateError && attemptedSubmit">
+                <mindful-datepicker type="date" [(ngModel)]="endDate" (ngModelChange)="clearDateError()"
+                  [minDate]="startDate || today" [rangeStart]="startDate" [rangeEnd]="endDate"
+                  placeholder="Add End Date"></mindful-datepicker>
               </div>
             </div>
 
+          </div>
+          <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Add start and end
+            date</div>
+          <div *ngIf="showDaySelectionError" class="field-error top-margin" role="alert">
+            Cannot select weekdays outside the selected date range
           </div>
         </div>
       </div>
 
       <div class="priority-selection priority-selectors">
-        <label>Priority</label>
-        <div class="priority-row">
-          <mindful-badge text="High" type="red" [disabled]="priority !== 'high'" [active]="priority === 'high'"
-            (click)="selectPriority('high')"></mindful-badge>
-          <mindful-badge text="Medium" type="yellow" [disabled]="priority !== 'medium'" [active]="priority === 'medium'"
-            (click)="selectPriority('medium')"></mindful-badge>
-          <mindful-badge text="Low" type="green" [disabled]="priority !== 'low'" [active]="priority === 'low'"
-            (click)="selectPriority('low')"></mindful-badge>
+        <div class="d-flex align-items-center gap-2" style="padding: 20px 0px 20px 24px;">
+          <label>Priority</label>
+          <div class="priority-row">
+            <mindful-badge text="High" type="red" [disabled]="priority !== 'high'" [active]="priority === 'high'"
+              (click)="selectPriority('high')"></mindful-badge>
+            <mindful-badge text="Medium" type="yellow" [disabled]="priority !== 'medium'"
+              [active]="priority === 'medium'" (click)="selectPriority('medium')"></mindful-badge>
+            <mindful-badge text="Low" type="green" [disabled]="priority !== 'low'" [active]="priority === 'low'"
+              (click)="selectPriority('low')"></mindful-badge>
+          </div>
         </div>
+        <div *ngIf="attemptedSubmit && showPriorityError" class="field-error" role="alert">Select priority</div>
       </div>
 
       <div class="section notes">
-        <textarea [(ngModel)]="notes" maxlength="250" placeholder="Add Notes....."></textarea>
+        <textarea [(ngModel)]="notes" (ngModelChange)="clearNotesError()"
+          [class.missing-border]="showNotesError && attemptedSubmit" maxlength="250" placeholder="Add Notes....."
+          style="display:block;margin:0 auto;"></textarea>
         <div class="char-count">Max 250 Characters</div>
+        <div *ngIf="attemptedSubmit && showNotesError" class="field-error" role="alert">Add notes</div>
       </div>
-
       <div class="submit-row">
         <mindful-button [type]="isFormComplete ? 'orange' : 'orange-light'"
           [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Task' : 'Create Task')"
-          large [disabled]="!isFormComplete || isSubmitting" (click)="submit()">
+          large [disabled]="isSubmitting" (click)="submit()">
         </mindful-button>
       </div>
     </div>
@@ -258,11 +315,14 @@
         <div class="mindful-input-group">
           <input [(ngModel)]="title" placeholder="Time Table Title" />
         </div>
+        <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">Enter timetable title</div>
         <div class="add-new-row">
           <mindful-tags [options]="routineTags" [singleSelection]="true" [size]="'small'" [variant]="'green'"
             (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)"
             (delete)="onTagDelete($event)">
           </mindful-tags>
+
+          <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Select tag</div>
 
         </div>
       </div>
@@ -301,64 +361,81 @@
             </button>
           </div>
         </div>
+        <div *ngIf="attemptedSubmit && showWeekdaysError" class="field-error" role="alert">Select weekdays</div>
 
         <div class="date-time--pick">
           <div class="time-row">
             <div class="pick-time">
               <label>Start Time</label>
-              <div class="mindful-input-group">
-                <mindful-timepicker placeholder="Start" [(ngModel)]="startTime"></mindful-timepicker>
+              <div class="mindful-input-group" [class.missing-placeholder]="showTimeError && attemptedSubmit">
+                <mindful-timepicker placeholder="Start" [(ngModel)]="startTime"
+                  (ngModelChange)="clearTimeError()"></mindful-timepicker>
               </div>
             </div>
             <div class="pick-time">
               <label>End Time</label>
-              <div class="mindful-input-group">
-                <mindful-timepicker placeholder="End" [(ngModel)]="endTime"></mindful-timepicker>
+              <div class="mindful-input-group" [class.missing-placeholder]="showTimeError && attemptedSubmit">
+                <mindful-timepicker placeholder="End" [(ngModel)]="endTime"
+                  (ngModelChange)="clearTimeError()"></mindful-timepicker>
               </div>
             </div>
           </div>
+          <div *ngIf="attemptedSubmit && showTimeError" class="field-error" role="alert">Select time</div>
+          <div *ngIf="showPastTimeError" class="field-error" role="alert">Cannot set time in the past for today</div>
+          <div *ngIf="showEndTimeSingleDayError" class="field-error" role="alert">End time cannot exceed 11:59 PM for
+            single-day activities</div>
 
           <div class="start-end-row">
             <div class="d-flex align-items-center gap-2 justify-content-between w-100">
-              <label>Start Date</label>
+              <label style="padding-left: 42px;">Start Date</label>
               <div class="mindful-input-group">
                 <mindful-datepicker type="date" [(ngModel)]="startDate" [minDate]="today" [rangeStart]="startDate"
-                  [rangeEnd]="endDate"></mindful-datepicker>
+                  [rangeEnd]="endDate" placeholder="Add Start Date"></mindful-datepicker>
               </div>
             </div>
             <div class="d-flex align-items-center gap-2 justify-content-between w-100">
-              <label>End Date</label>
+              <label style="padding-left: 42px;">End Date</label>
               <div class="mindful-input-group">
                 <mindful-datepicker type="date" [(ngModel)]="endDate" [minDate]="startDate || today"
-                  [rangeStart]="startDate" [rangeEnd]="endDate"></mindful-datepicker>
+                  [rangeStart]="startDate" [rangeEnd]="endDate" placeholder="Add End Date"></mindful-datepicker>
               </div>
             </div>
 
+          </div>
+          <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Add start and end
+            date</div>
+          <div *ngIf="showDaySelectionError" class="day-selection-error field-error top-margin">
+            Cannot select weekdays outside the selected date range
           </div>
         </div>
       </div>
 
-      <div class="priority-selection priority-selectors">
-        <label>Priority</label>
-        <div class="priority-row">
-          <mindful-badge text="High" type="red" [disabled]="priority !== 'high'" [active]="priority === 'high'"
-            (click)="selectPriority('high')"></mindful-badge>
-          <mindful-badge text="Medium" type="yellow" [disabled]="priority !== 'medium'" [active]="priority === 'medium'"
-            (click)="selectPriority('medium')"></mindful-badge>
-          <mindful-badge text="Low" type="green" [disabled]="priority !== 'low'" [active]="priority === 'low'"
-            (click)="selectPriority('low')"></mindful-badge>
+      <div class="priority-selection priority-selectors ">
+        <div class="d-flex align-items-center gap-2" style="padding: 20px 0px 20px 24px;">
+          <label>Priority</label>
+          <div class="priority-row">
+            <mindful-badge text="High" type="red" [disabled]="priority !== 'high'" [active]="priority === 'high'"
+              (click)="selectPriority('high')"></mindful-badge>
+            <mindful-badge text="Medium" type="yellow" [disabled]="priority !== 'medium'"
+              [active]="priority === 'medium'" (click)="selectPriority('medium')"></mindful-badge>
+            <mindful-badge text="Low" type="green" [disabled]="priority !== 'low'" [active]="priority === 'low'"
+              (click)="selectPriority('low')"></mindful-badge>
+          </div>
         </div>
+        <div *ngIf="attemptedSubmit && showPriorityError" class="field-error" role="alert">Select priority</div>
       </div>
 
 
       <div class="section notes">
-        <textarea [(ngModel)]="notes" maxlength="250" placeholder="Add Notes....."></textarea>
+        <textarea [(ngModel)]="notes" maxlength="250" placeholder="Add Notes....."
+          style="display:block;margin:0 auto;"></textarea>
         <div class="char-count">Max 250 Characters</div>
       </div>
+      <div *ngIf="attemptedSubmit && showNotesError" class="field-error" role="alert">Add notes</div>
       <div class="submit-row">
         <mindful-button [type]="isFormComplete ? 'aqua' : 'aqua-light'"
           [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Timetable' : 'Create Time Table')"
-          large [disabled]="!isFormComplete || isSubmitting" (click)="submit()">
+          large [disabled]="isSubmitting" (click)="submit()">
         </mindful-button>
       </div>
     </div>

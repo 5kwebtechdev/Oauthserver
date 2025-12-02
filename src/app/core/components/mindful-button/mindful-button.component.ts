@@ -1,7 +1,7 @@
-import { booleanAttribute, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { NgClass, NgIf } from "@angular/common";
-import { buttonStyles } from "./button.types";
-import { CoerceBoolean } from "../../coerceBoolean.decorator";
+import { booleanAttribute, ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { NgClass, NgIf } from '@angular/common';
+import { buttonStyles } from './button.types';
+import { CoerceBoolean } from '../../coerceBoolean.decorator';
 
 @Component({
   standalone: true,
@@ -9,58 +9,87 @@ import { CoerceBoolean } from "../../coerceBoolean.decorator";
   selector: 'mindful-button',
   templateUrl: './mindful-button.component.html',
   styleUrls: ['./mindful-button.component.scss'],
-  imports: [
-    NgClass,
-    NgIf
-  ]
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [NgClass, NgIf]
 })
-
-export class MindfulButtonComponent implements OnInit {
+export class MindfulButtonComponent {
+  private _text = 'Undefined';
+  private _iconPosition: 'start' | 'end' = 'start';
+  private _count: number | null = null;
 
   @Input()
   type?: buttonStyles;
 
   @Input()
-  text?: string = "Undefined";
+  set text(value: string | undefined) {
+    this._text = value ?? 'Undefined';
+  }
+  get text(): string {
+    return this._text;
+  }
 
-  // optional icon path (web path, e.g. '/assets/app-assets/Coins-icon-common.svg')
   @Input()
   icon?: string;
 
   @Input()
-  iconPosition?: 'start' | 'end' = 'start';
+  set iconPosition(value: 'start' | 'end' | undefined) {
+    this._iconPosition = value ?? 'start';
+  }
+  get iconPosition(): 'start' | 'end' {
+    return this._iconPosition;
+  }
 
   @Input()
-  count?: number | null = null;
+  set count(value: number | null | undefined) {
+    this._count = value ?? null;
+  }
+  get count(): number | null {
+    return this._count;
+  }
 
   @Input({ transform: booleanAttribute })
   @CoerceBoolean()
-  medium: boolean = false;
+  medium = false;
 
   @Input({ transform: booleanAttribute })
   @CoerceBoolean()
-  large: boolean = false
-
-  // @Input()
-  // width: string = "auto";
+  large = false;
 
   @Input({ transform: booleanAttribute })
   @CoerceBoolean()
-  disabled: boolean = false
+  small = false;
 
   @Input({ transform: booleanAttribute })
   @CoerceBoolean()
-  correct: boolean = false
+  disabled = false;
 
   @Input({ transform: booleanAttribute })
   @CoerceBoolean()
-  incorrect: boolean = false
+  correct = false;
 
-  constructor() { }
+  @Input({ transform: booleanAttribute })
+  @CoerceBoolean()
+  incorrect = false;
 
-  ngOnInit(): void {
-    if (!this.type) {
-      console.error("MindfulButtonComponent: type is required", this.text);
-    }
+  readonly buttonRole = 'button';
+
+  get classMap(): Record<string, boolean> {
+    return {
+      ...(this.type ? { [this.type]: true } : {}),
+      small: this.small,
+      medium: this.medium,
+      large: this.large,
+      disabled: this.disabled,
+      correct: this.correct,
+      incorrect: this.incorrect
+    };
+  }
+
+  get showLeadingIcon(): boolean {
+    return Boolean(this.icon && this.iconPosition === 'start');
+  }
+
+  get showTrailingIcon(): boolean {
+    return Boolean(this.icon && this.iconPosition === 'end');
   }
 }

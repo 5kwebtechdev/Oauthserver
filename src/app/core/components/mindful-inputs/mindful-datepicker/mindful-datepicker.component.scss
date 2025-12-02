@@ -3,9 +3,15 @@
 
   input {
     width: 100%;
-    padding: 8px;
+    // padding: 8px;
     cursor: pointer;
     border: unset !important;
+    color: #6B656A;
+    font-family: Nunito;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+
   }
 
   .calendar-overlay {

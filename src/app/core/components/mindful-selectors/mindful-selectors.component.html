@@ -1,7 +1,7 @@
 <div class="mindful-selectors">
   <h3 *ngIf="label" class="label">{{ label }}</h3>
   <div class="badges-row">
-    <div class="badges-container">
+    <div class="badges-container" [style.overflow-x]="scrollable ? 'auto' : 'visible'">
       <ng-container *ngIf="componentType === 'badge'">
         <mindful-badge *ngFor="let option of options" [text]="option.value" [type]="option.type"
           [large]="size === 'large'" [medium]="size === 'medium'" [inactive]="!selectedKeys.includes(option.key)"

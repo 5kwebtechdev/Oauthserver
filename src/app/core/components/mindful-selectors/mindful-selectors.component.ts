@@ -34,6 +34,10 @@ export class MindfulSelectorsComponent implements OnInit {
   @CoerceBoolean()
   circle: boolean = false;
 
+  @Input()
+  @CoerceBoolean()
+  scrollable: boolean = true;
+
   selectedKeys: any[] = [];
 
   // track which tag has an active popover (shown after long-press)

@@ -4,7 +4,7 @@
   justify-content: center;
   box-sizing: border-box;
   // height: 34px;
-  padding: 0 16.5px;
+  padding: 8px 10px;
   border-radius: 1000px !important;
   background: var(--background);
   border: 1px solid var(--border-color);
@@ -28,7 +28,7 @@
 
 .badge p {
   font-family: 'Nunito', sans-serif;
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text_color);
   margin: 0;
@@ -110,7 +110,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
+  margin: 0;
+  padding: 8px 16px;
 }
 
 .puzzle,
@@ -293,8 +294,8 @@
   display: inline-flex;
   white-space: nowrap;
   width: auto;
-  height: 34px;
-  padding: 10px 24px;
+
+  padding: 8px 24px;
   justify-content: center;
   align-items: center;
   gap: 8px;
@@ -337,30 +338,27 @@
   display: inline-flex;
   white-space: nowrap;
   width: auto;
-  height: 34px;
-  padding: 10px 16px;
+  padding: 8px 16px;
   justify-content: center;
   align-items: center;
   gap: 8px;
   border-radius: 26px;
+  margin: 0;
 }
 
 :host-context(.priority-selectors) .badge p {
   border-radius: 26px;
 }
 
-/* Non-active priority badge text styling */
 :host-context(.priority-selectors) .badge:not(.active) p {
   color: #282527;
   font-family: 'Nunito', sans-serif;
   font-size: 13px;
   font-style: normal;
   font-weight: 600;
-  line-height: 140%;
-  /* 18.2px */
+
 }
 
-/* Active priority badge text styling */
 :host-context(.priority-selectors) .badge.active p {
   color: #FFFFFF;
   font-family: 'Nunito', sans-serif;

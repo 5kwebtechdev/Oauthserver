@@ -176,8 +176,8 @@ p {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding-left: 16px;
-  padding-right: 16px;
+  padding: 0px 16px;
+  margin: 0 !important;
 
   .empty-add-btn {
     padding: 0px !important;

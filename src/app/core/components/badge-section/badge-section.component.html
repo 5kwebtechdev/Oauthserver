@@ -52,43 +52,43 @@
 
 
 
-</ion-content>
 
-<!-- Share Popup -->
-<app-mindful-popup [isVisible]="sharePopupVisible" [config]="sharePopupConfig" (closeAction)="sharePopupVisible=false"
-    (backdropClick)="sharePopupVisible=false">
-</app-mindful-popup>
+    <!-- Share Popup -->
+    <app-mindful-popup [isVisible]="sharePopupVisible" [config]="sharePopupConfig"
+        (closeAction)="sharePopupVisible=false" (backdropClick)="sharePopupVisible=false">
+    </app-mindful-popup>
 
-<!--complete badge popup full screen-->
-<div *ngIf="congratsVisible" class="d-flex flex-column justify-content-center gap-4 congrats-popup">
-    <button class="congrats-close" aria-label="Close" (click)="closeCongrats()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none"
-            aria-hidden="true">
-            <path
-                d="M1.89652 16.9355C1.70126 17.1308 1.38468 17.1308 1.18942 16.9355L0.146522 15.8926C-0.0487404 15.6974 -0.04874 15.3808 0.146522 15.1855L6.43942 8.89262C6.63468 8.69735 6.63468 8.38077 6.43942 8.18551L0.146522 1.89262C-0.0487406 1.69735 -0.04874 1.38077 0.146522 1.18551L1.18942 0.142616C1.38468 -0.0526466 1.70126 -0.0526462 1.89652 0.142616L8.18942 6.43551C8.38468 6.63077 8.70126 6.63077 8.89652 6.43551L15.1894 0.142615C15.3847 -0.0526468 15.7013 -0.0526462 15.8965 0.142616L16.9394 1.18551C17.1347 1.38077 17.1347 1.69735 16.9394 1.89262L10.6465 8.18551C10.4513 8.38077 10.4513 8.69735 10.6465 8.89262L16.9394 15.1855C17.1347 15.3808 17.1347 15.6974 16.9394 15.8926L15.8965 16.9355C15.7013 17.1308 15.3847 17.1308 15.1894 16.9355L8.89652 10.6426C8.70126 10.4474 8.38468 10.4474 8.18941 10.6426L1.89652 16.9355Z"
-                fill="#282527" />
-        </svg>
-    </button>
-    <div class="congrats-img">
-        <img class="confetti left" src="assets/Images-Transparent/congrats.png" alt="confetti left" />
-        <div class="ring">
-            <div class="badge-wrap">
-                <img class="badge-icon" [src]="selectedBadge?.iconUrl || 'assets/Images-Transparent/congrats.png'"
-                    alt="badge" />
+    <!--complete badge popup full screen-->
+    <div *ngIf="congratsVisible" class="d-flex flex-column justify-content-center gap-4 congrats-popup">
+        <button class="congrats-close" aria-label="Close" (click)="closeCongrats()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none"
+                aria-hidden="true">
+                <path
+                    d="M1.89652 16.9355C1.70126 17.1308 1.38468 17.1308 1.18942 16.9355L0.146522 15.8926C-0.0487404 15.6974 -0.04874 15.3808 0.146522 15.1855L6.43942 8.89262C6.63468 8.69735 6.63468 8.38077 6.43942 8.18551L0.146522 1.89262C-0.0487406 1.69735 -0.04874 1.38077 0.146522 1.18551L1.18942 0.142616C1.38468 -0.0526466 1.70126 -0.0526462 1.89652 0.142616L8.18942 6.43551C8.38468 6.63077 8.70126 6.63077 8.89652 6.43551L15.1894 0.142615C15.3847 -0.0526468 15.7013 -0.0526462 15.8965 0.142616L16.9394 1.18551C17.1347 1.38077 17.1347 1.69735 16.9394 1.89262L10.6465 8.18551C10.4513 8.38077 10.4513 8.69735 10.6465 8.89262L16.9394 15.1855C17.1347 15.3808 17.1347 15.6974 16.9394 15.8926L15.8965 16.9355C15.7013 17.1308 15.3847 17.1308 15.1894 16.9355L8.89652 10.6426C8.70126 10.4474 8.38468 10.4474 8.18941 10.6426L1.89652 16.9355Z"
+                    fill="#282527" />
+            </svg>
+        </button>
+        <div class="congrats-img">
+            <img class="confetti left" src="assets/Images-Transparent/congrats.png" alt="confetti left" />
+            <div class="ring">
+                <div class="badge-wrap">
+                    <img class="badge-icon" [src]="selectedBadge?.iconUrl || 'assets/Images-Transparent/congrats.png'"
+                        alt="badge" />
+                </div>
             </div>
+            <img class="confetti right" src="assets/Images-Transparent/congrats.png" alt="confetti right" />
         </div>
-        <img class="confetti right" src="assets/Images-Transparent/congrats.png" alt="confetti right" />
-    </div>
-    <div class="congrats-text">
-        <h1>{{ selectedBadge?.celebrationTitle || 'Badge Unlocked!' }}</h1>
-        <h2>{{ selectedBadge?.name || 'Coin Collector' }}</h2>
-        <p>{{ selectedBadge?.celebrationMessage || 'You collected 500 coins!' }}</p>
-        <p class="level-info" *ngIf="selectedBadge?.levelText">{{ selectedBadge?.levelText }}</p>
-    </div>
-    <div class="awesome-cta">
-        <mindful-button type="magenta-transparent" text="View all Badges" large
-            (click)="onViewAllBadges()"></mindful-button>
-        <mindful-button type="magenta" text="Awesome" large (click)="onAwesomeClick()"></mindful-button>
-    </div>
+        <div class="congrats-text">
+            <h1>{{ selectedBadge?.celebrationTitle || 'Badge Unlocked!' }}</h1>
+            <h2>{{ selectedBadge?.name || 'Coin Collector' }}</h2>
+            <p>{{ selectedBadge?.celebrationMessage || 'You collected 500 coins!' }}</p>
+            <p class="level-info" *ngIf="selectedBadge?.levelText">{{ selectedBadge?.levelText }}</p>
+        </div>
+        <div class="awesome-cta">
+            <mindful-button type="magenta-transparent" text="View all Badges" large
+                (click)="onViewAllBadges()"></mindful-button>
+            <mindful-button type="magenta" text="Awesome" large (click)="onAwesomeClick()"></mindful-button>
+        </div>
 
-</div>
+    </div>
+</ion-content>

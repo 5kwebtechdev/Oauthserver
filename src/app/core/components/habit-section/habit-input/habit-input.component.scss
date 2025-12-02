@@ -120,7 +120,7 @@
 
 .title-input {
   display: inline-flex;
-  padding: 10px 0px;
+  padding: 30px 0px 0px 0px;
   flex-direction: column;
   align-items: flex-start;
   gap: 16px;
@@ -147,11 +147,9 @@
 
 .routine-section {
   display: flex;
-  padding: 20px 40px 15px 24px;
-  justify-content: center;
+  padding: 20px 0px 20px 0px;
   align-items: center;
   gap: 16px;
-  border-bottom: 1px solid #7471BA;
   width: 100%;
 }
 
@@ -288,11 +286,29 @@
   display: flex;
   align-items: center;
   gap: 12px;
+
+  label {
+    color: #6B656A;
+    font-family: Nunito;
+    font-size: 16px;
+    font-weight: 600;
+  }
 }
 
 .everyday-toggle {
   display: flex;
-  gap: 20px;
+  align-items: center;
+  gap: 16px;
+}
+
+.everyday-toggle .toggle-right {
+  display: flex;
+  align-items: center;
+}
+
+.everyday-toggle mindful-toggle {
+  display: inline-flex;
+  align-items: center;
 }
 
 .everyday-icon {
@@ -322,7 +338,7 @@
 
 .time-row {
   display: flex;
-  padding: 8px 0;
+  padding: 8px 0px 0px 42px;
   justify-content: space-between;
   align-items: center;
   align-self: stretch;
@@ -352,12 +368,13 @@
 
 .priority-row {
   display: flex;
-  gap: 12px;
-  margin-top: 10px;
+  gap: 8px;
 }
 
 .priority-selection {
-  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
   border-bottom: 1px solid #7471BA;
 }
 
@@ -374,16 +391,22 @@
 }
 
 .notes textarea {
-  width: 100%;
+  width: 85%;
   height: 140px;
   border-radius: 10px;
-  border: 1px solid #cfc9e6;
+  border: 1px solid #8B8DCB;
   padding: 12px;
+
   transition: border-color 180ms ease-in-out, box-shadow 180ms ease-in-out;
 }
 
+.notes textarea:focus {
+  border: 1px solid #7471BA;
+  outline: none;
+}
+
 .notes {
-  padding: 16px 24px;
+
   border-bottom: 1px solid #7471BA;
 }
 
@@ -400,15 +423,27 @@
 }
 
 .habit-input-root.habits .notes textarea {
-  border-color: #898CCA;
+  border-color: #8B8DCB;
+}
+
+.habit-input-root.habits .notes textarea:focus {
+  border-color: #7471BA;
 }
 
 .habit-input-root.tasks .notes textarea {
-  border-color: #F6AC72;
+  border-color: #FAD2AE;
+}
+
+.habit-input-root.tasks .notes textarea:focus {
+  border-color: #F28745;
 }
 
 .habit-input-root.timetable .notes textarea {
   border-color: #89B3B6;
+}
+
+.habit-input-root.timetable .notes textarea:focus {
+  border-color: #3E5A60;
 }
 
 .submit-row {
@@ -452,6 +487,39 @@
   padding: 0px !important;
 }
 
+/* Full-width underline when input is empty (has placeholder) */
+.title-input .mindful-input-group input:placeholder-shown {
+  border-bottom: 1px solid #6B656A;
+  padding-bottom: 2px !important;
+}
+
+.habit-input-root.habits .title-input .mindful-input-group input {
+  color: #46456A !important;
+  opacity: 1 !important;
+}
+
+.habit-input-root.habits .title-input .mindful-input-group input:placeholder-shown {
+  border-bottom: 1px solid #46456A !important;
+}
+
+.habit-input-root.tasks .title-input .mindful-input-group input {
+  color: #B93915 !important;
+  opacity: 1 !important;
+}
+
+.habit-input-root.tasks .title-input .mindful-input-group input:placeholder-shown {
+  border-bottom: 1px solid #B93915 !important;
+}
+
+.habit-input-root.timetable .title-input .mindful-input-group input {
+  color: #3E5A60 !important;
+  opacity: 1 !important;
+}
+
+.habit-input-root.timetable .title-input .mindful-input-group input:placeholder-shown {
+  border-bottom: 1px solid #3E5A60 !important;
+}
+
 .title-input .mindful-input-group input:focus,
 .title-input .mindful-input-group input:active {
   outline: none !important;
@@ -469,6 +537,28 @@
   font-weight: 600;
   line-height: 140%;
   opacity: 0.5;
+  text-decoration: underline;
+  text-decoration-color: currentColor;
+  text-underline-position: under;
+}
+
+.habit-input-root.habits .title-input .mindful-input-group input::placeholder,
+.habit-input-root.habits .title-input .mindful-input-group input::-webkit-input-placeholder,
+.habit-input-root.habits .title-input .mindful-input-group input:-ms-input-placeholder,
+.habit-input-root.habits .title-input .mindful-input-group input::-ms-input-placeholder,
+.habit-input-root.tasks .title-input .mindful-input-group input::placeholder,
+.habit-input-root.tasks .title-input .mindful-input-group input::-webkit-input-placeholder,
+.habit-input-root.tasks .title-input .mindful-input-group input:-ms-input-placeholder,
+.habit-input-root.tasks .title-input .mindful-input-group input::-ms-input-placeholder,
+.habit-input-root.timetable .title-input .mindful-input-group input::placeholder,
+.habit-input-root.timetable .title-input .mindful-input-group input::-webkit-input-placeholder,
+.habit-input-root.timetable .title-input .mindful-input-group input:-ms-input-placeholder,
+.habit-input-root.timetable .title-input .mindful-input-group input::-ms-input-placeholder {
+  color: #6B656A !important;
+  opacity: 1 !important;
+  text-decoration: underline !important;
+  text-decoration-color: currentColor !important;
+  text-underline-position: under !important;
 }
 
 .habit-input-root .mindful-input-group input::placeholder,
@@ -502,6 +592,7 @@
   gap: 12px;
   justify-content: space-between;
   width: 100%;
+  margin-bottom: 34px;
 }
 
 .start-end-row>div>label {
@@ -564,5 +655,82 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 16px;
-  padding-left: 36px;
+}
+
+.day-selection-error {
+  color: #D32F2F;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 12px;
+  margin-top: 8px;
+  background-color: #FFEBEE;
+  border-radius: 4px;
+  border-left: 3px solid #D32F2F;
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* Generic field-level inline error */
+.field-error {
+  color: #D32F2F;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  margin-top: 8px;
+  background-color: #FFEBEE;
+  border-radius: 4px;
+  border-left: 3px solid #D32F2F;
+  animation: fadeIn 0.25s ease-in;
+  width: 100%;
+}
+
+/* Utility to show multiple errors in deterministic bottom-to-top order if needed */
+.errors-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Error visual states for missing inputs */
+.mindful-input-group.missing-placeholder {
+
+  /* native inputs */
+  input::placeholder,
+  input::-webkit-input-placeholder,
+  input:-ms-input-placeholder,
+  input::-ms-input-placeholder {
+    color: #D32F2F !important;
+    opacity: 1 !important;
+  }
+
+  /* ionic / custom components: reach into child inputs */
+  ::ng-deep input::placeholder,
+  ::ng-deep input::-webkit-input-placeholder,
+  ::ng-deep ion-input input::placeholder {
+    color: #D32F2F !important;
+    opacity: 1 !important;
+  }
+}
+
+.section.notes textarea.missing-border {
+  border-color: #D32F2F !important;
+  box-shadow: none !important;
+  /* remove blur / subtle shadow */
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.bottom-margin {
+  margin-bottom: -32px;
+}
+
+.top-margin {
+  margin-top: -32px;
 }
