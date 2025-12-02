@@ -108,16 +108,16 @@
           </div>
 
           <div class="start-end-row">
-            <div class="d-flex align-items-center gap-2 justify-content-between w-100">
-              <label style="    padding-left: 42px;">Start Date</label>
+            <div class="date-align">
+              <label>Start Date</label>
               <div class="mindful-input-group" [class.missing-placeholder]="showDateError && attemptedSubmit">
                 <mindful-datepicker type="date" [(ngModel)]="startDate" (ngModelChange)="clearDateError()"
                   [minDate]="today" [rangeStart]="startDate" [rangeEnd]="endDate"
                   placeholder="Add Start Date"></mindful-datepicker>
               </div>
             </div>
-            <div class="d-flex align-items-center gap-2 justify-content-between w-100">
-              <label style="padding-left: 42px;">End Date</label>
+            <div class="date-align">
+              <label>End Date</label>
               <div class="mindful-input-group" [class.missing-placeholder]="showDateError && attemptedSubmit">
                 <mindful-datepicker type="date" [(ngModel)]="endDate" (ngModelChange)="clearDateError()"
                   [minDate]="startDate || today" [rangeStart]="startDate" [rangeEnd]="endDate"
@@ -254,16 +254,16 @@
           </div>
 
           <div class="start-end-row">
-            <div class="d-flex align-items-center gap-2 justify-content-between w-100">
-              <label style="padding-left: 42px;">Start Date</label>
+            <div class="date-align">
+              <label>Start Date</label>
               <div class="mindful-input-group" [class.missing-placeholder]="showDateError && attemptedSubmit">
                 <mindful-datepicker type="date" [(ngModel)]="startDate" (ngModelChange)="clearDateError()"
                   [minDate]="today" [rangeStart]="startDate" [rangeEnd]="endDate"
                   placeholder="Add Start Date"></mindful-datepicker>
               </div>
             </div>
-            <div class="d-flex align-items-center gap-2 justify-content-between w-100">
-              <label style="padding-left: 42px;">End Date</label>
+            <div class="date-align">
+              <label>End Date</label>
               <div class="mindful-input-group" [class.missing-placeholder]="showDateError && attemptedSubmit">
                 <mindful-datepicker type="date" [(ngModel)]="endDate" (ngModelChange)="clearDateError()"
                   [minDate]="startDate || today" [rangeStart]="startDate" [rangeEnd]="endDate"
@@ -386,15 +386,15 @@
             single-day activities</div>
 
           <div class="start-end-row">
-            <div class="d-flex align-items-center gap-2 justify-content-between w-100">
-              <label style="padding-left: 42px;">Start Date</label>
+            <div class="date-align">
+              <label>Start Date</label>
               <div class="mindful-input-group">
                 <mindful-datepicker type="date" [(ngModel)]="startDate" [minDate]="today" [rangeStart]="startDate"
                   [rangeEnd]="endDate" placeholder="Add Start Date"></mindful-datepicker>
               </div>
             </div>
-            <div class="d-flex align-items-center gap-2 justify-content-between w-100">
-              <label style="padding-left: 42px;">End Date</label>
+            <div class="date-align">
+              <label>End Date</label>
               <div class="mindful-input-group">
                 <mindful-datepicker type="date" [(ngModel)]="endDate" [minDate]="startDate || today"
                   [rangeStart]="startDate" [rangeEnd]="endDate" placeholder="Add End Date"></mindful-datepicker>

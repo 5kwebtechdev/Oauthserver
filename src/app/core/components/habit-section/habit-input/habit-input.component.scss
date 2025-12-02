@@ -191,6 +191,28 @@
   gap: 2px;
 }
 
+.date-align {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0px 16px;
+  align-items: center;
+}
+
+.date-align .mindful-input-group {
+  margin-left: auto;
+  max-width: 260px;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.habit-input-root ::ng-deep .date-align .mindful-input-group mindful-datepicker input,
+.habit-input-root ::ng-deep .date-align .mindful-input-group mindful-datepicker input::placeholder {
+  text-align: right;
+  padding-right: 0px;
+}
+
 .timetable-datepicker {
   display: flex;
   justify-content: center;
@@ -338,7 +360,7 @@
 
 .time-row {
   display: flex;
-  padding: 8px 0px 0px 42px;
+  padding: 8px 0px 0px 16px;
   justify-content: space-between;
   align-items: center;
   align-self: stretch;
@@ -347,8 +369,7 @@
 .pick-time {
   display: flex;
   align-items: center;
-  gap: 16px;
-  width: 50%;
+  justify-content: space-between;
 }
 
 .pick-time label {
@@ -602,7 +623,7 @@
   font-size: 13px;
   font-style: normal;
   font-weight: 500;
-  line-height: 140%;
+  width: 100%;
 }
 
 .mindful-input-group {
