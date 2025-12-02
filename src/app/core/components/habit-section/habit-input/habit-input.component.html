@@ -23,7 +23,7 @@
     <div *ngIf="currentActive === 'habits'" class="form-card">
       <div class="title-input">
         <div class="mindful-input-group w-100" [class.missing-placeholder]="showTitleError && attemptedSubmit">
-          <input [(ngModel)]="title" (ngModelChange)="clearTitleError()" placeholder="Habit Title" />
+          <input class="w-100" [(ngModel)]="title" (ngModelChange)="clearTitleError()" placeholder="Habit Title" />
           <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">Enter habit title</div>
 
         </div>
@@ -136,7 +136,7 @@
       </div>
 
       <div class="priority-selection priority-selectors">
-        <div class="d-flex align-items-center gap-2" style="padding: 20px 0px 20px 24px;">
+        <div class="d-flex align-items-center gap-2" style="padding: 20px 0px 20px 16px;">
           <label>Priority</label>
           <div class="priority-row">
             <mindful-badge text="High" type="red" [disabled]="priority !== 'high'" [active]="priority === 'high'"
@@ -169,7 +169,7 @@
     <div *ngIf="currentActive === 'tasks'" class="form-card">
       <div class="title-input">
         <div class="mindful-input-group w-100" [class.missing-placeholder]="showTitleError && attemptedSubmit">
-          <input [(ngModel)]="title" (ngModelChange)="clearTitleError()" placeholder="Task Title" />
+          <input class="w-100" [(ngModel)]="title" (ngModelChange)="clearTitleError()" placeholder="Task Title" />
           <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">Enter task title</div>
         </div>
         <div class="add-new-row">
@@ -281,7 +281,7 @@
       </div>
 
       <div class="priority-selection priority-selectors">
-        <div class="d-flex align-items-center gap-2" style="padding: 20px 0px 20px 24px;">
+        <div class="d-flex align-items-center gap-2" style="padding: 20px 0px 20px 16px;">
           <label>Priority</label>
           <div class="priority-row">
             <mindful-badge text="High" type="red" [disabled]="priority !== 'high'" [active]="priority === 'high'"
@@ -312,8 +312,8 @@
 
     <div *ngIf="currentActive === 'timetable'" class="form-card">
       <div class="title-input">
-        <div class="mindful-input-group">
-          <input [(ngModel)]="title" placeholder="Time Table Title" />
+        <div class="mindful-input-group w-100">
+          <input class="w-100" [(ngModel)]="title" placeholder="Time Table Title" />
         </div>
         <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">Enter timetable title</div>
         <div class="add-new-row">
@@ -411,7 +411,7 @@
       </div>
 
       <div class="priority-selection priority-selectors ">
-        <div class="d-flex align-items-center gap-2" style="padding: 20px 0px 20px 24px;">
+        <div class="d-flex align-items-center gap-2" style="padding: 20px 0px 20px 16px;">
           <label>Priority</label>
           <div class="priority-row">
             <mindful-badge text="High" type="red" [disabled]="priority !== 'high'" [active]="priority === 'high'"

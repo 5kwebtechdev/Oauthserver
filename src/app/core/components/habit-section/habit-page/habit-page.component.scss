@@ -81,12 +81,10 @@
   }
 }
 
-/* Make tab cells relative to place the underline pseudo-element */
 .toggler .col-6 {
   position: relative;
 }
 
-/* Underline pseudo-element for active tab when Habits is selected */
 .toggler.habits-active .col-6.active::before {
   position: absolute;
   content: "";
@@ -97,7 +95,6 @@
   background: #8B8DCB;
 }
 
-/* Underline pseudo-element for active tab when Tasks is selected */
 .toggler.tasks-active .col-6.active::before {
   position: absolute;
   content: "";
@@ -117,8 +114,7 @@
 
 .habit-filters-container,
 .task-filters-container {
-  padding-left: 16px;
-  padding-right: 16px;
+  padding: 0px 16px 50px 16px;
 }
 
 .habit-list-content {

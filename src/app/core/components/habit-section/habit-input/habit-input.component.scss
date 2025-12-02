@@ -76,7 +76,6 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
   margin-top: 12px;
 }
 
@@ -107,7 +106,7 @@
 
 .toggler div.active:before {
   background: currentColor !important;
-  width: 94% !important;
+  width: 100% !important;
   left: 0% !important;
 }
 

@@ -73,10 +73,7 @@
   gap: 12px;
 }
 
-.calendar-navigator {
-  /* cancel parent padding (16px) so the navigator sits flush to the left edge */
-  margin-left: -16px !important;
-}
+
 
 .calendar-component {
   display: inline-flex;

@@ -349,7 +349,18 @@ export class HabitPageComponent implements OnInit, OnDestroy {
 
 
   onOpenCalendar() {
-    this.router.navigateByUrl('/authed/habit-detail');
+    // Navigate to the calendar main page. The previous route attempted
+    // to go to '/authed/habit-detail' which requires an :id segment and
+    // caused the NG04002 "Cannot match any routes" error.
+    this.router.navigateByUrl('/authed/calendar-main');
+  }
+
+  onBack() {
+    // Explicitly navigate back to the user's dashboard (entry point for authed routes).
+    // Use navigate and fall back to a safe '/authed' route if navigation fails.
+    this.router.navigate(['/authed/user-dashboard']).catch(() => {
+      this.router.navigateByUrl('/authed');
+    });
   }
 
   onOpenHabit(habit: Habit) {
