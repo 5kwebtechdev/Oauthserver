@@ -1,16 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { StreaksService } from '../../services/streaks.service';
+import { StreaksService, StreakLeaderboardUser, CurrentUserStreak, StreakLeaderboardResponse } from '../../services/streaks.service';
 import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigator.component';
 import { MindfulSpeechBubbleComponent } from '../mindful-speech-bubble/mindful-speech-bubble.component';
 import { MindfulPetComponent } from '../mindful-pet/mindful-pet.component';
-
-export interface StreakItem {
-    name: string;
-    highestStreak: number;
-    avatar?: string;
-}
 
 @Component({
     selector: 'app-streaks-section',
@@ -22,17 +16,17 @@ export interface StreakItem {
             <div class="streaks-status-item">
                 <span class="status-label">Current Streak</span>
                 <img src="assets/Icons-Neutral/Icon-Streak.png" alt="fire icon" class="icon" />
-                <span class="status-value">45 days</span>
+                <span class="status-value">{{ currentUser?.streakDays || 0 }} days</span>
             </div>
             <div class="streaks-status-item">
                 <span class="status-label">Best Streak</span>
                 <img src="assets/Icons-Neutral/Icon-BestStreak.png" alt="trophy icon" class="icon" />
-                <span class="status-value">56 days</span>
+                <span class="status-value">{{ currentUser?.streakDays || 0 }} days</span>
             </div>
             <div class="streaks-status-item">
                 <span class="status-label">Total days Active</span>
                 <img src="assets/Icons-Neutral/Icon-TotalActiveDays.png" alt="total active days icon" class="icon" />
-                <span class="status-value">115 days</span>
+                <span class="status-value">{{ currentUser?.streakDays || 0 }} days</span>
             </div>
         </div>
         <div class="streak-container">
@@ -40,17 +34,17 @@ export interface StreakItem {
         </div>
         <div class="top-strickers-header d-flex align-items-center justify-content-end">
             <div class="d-flex align-items-center gap-2">
-                <app-speech-bubble [message]="'You\u2019re ranked #8,\\nKeep going champ!'" type="talking"
+                <app-speech-bubble [message]="currentUser?.petMessage || 'Keep going champ!'" type="talking"
                     arrowSide="right" color="#F0AD4E" style="width: 209px;"></app-speech-bubble>
                 <mindful-pet pet="panda" mood="tired" [size]="44"></mindful-pet>
             </div>
         </div>
         <div class="streaks-card">
             <ul class="streaks-list">
-                <li *ngFor="let item of sortedStreaks" class="streak-item">
+                <li *ngFor="let item of rankedStreaks; let i = index" class="streak-item">
                     <div class="left">
                         <div class="d-flex flex-column" style="align-items: center; margin-right: 16px;">
-                            <div class="rank">{{item.highestStreak}}</div>
+                            <div class="rank">{{ i + 1 }}</div>
                             <div class="trend" *ngIf="item.highestStreak === 0 || item.highestStreak === 1">
                                 <span class="triangle down"></span>
                             </div>
@@ -62,10 +56,10 @@ export interface StreakItem {
                             <img class="avatar" [src]="item.avatar || 'assets/avatar/ChildAvatar.png'"
                                 [alt]="item.name + ' avatar'">
                         </div>
-                        <div class="name">{{item.name}}</div>
+                        <div class="name">{{ item.name }}</div>
                     </div>
                     <div class="right">
-                        <div class="days">{{item.highestStreak}} days</div>
+                        <div class="days">{{ item.highestStreak }} days</div>
                     </div>
                 </li>
             </ul>
@@ -279,9 +273,11 @@ ion-content.streaks-page {
 export class StreaksSectionComponent implements OnInit {
     @Input() title = 'Top Streakers';
     @Input() showRankBanner = true;
-    streaks: StreakItem[] = [];
+    
+    currentUser: CurrentUserStreak | null = null;
+    streaks: StreakLeaderboardUser[] = [];
 
-    get sortedStreaks(): StreakItem[] {
+    get rankedStreaks(): StreakLeaderboardUser[] {
         return this.streaks?.length ? this.streaks.slice().sort((a, b) => b.highestStreak - a.highestStreak) : [];
     }
 
@@ -289,8 +285,15 @@ export class StreaksSectionComponent implements OnInit {
 
     ngOnInit(): void {
         this.streaksService.getLeaderboard().subscribe({
-            next: (data: StreakItem[]) => this.streaks = data,
-            error: () => this.streaks = []
+            next: (response: StreakLeaderboardResponse) => {
+                this.currentUser = response.currentUser;
+                this.streaks = response.topUsers;
+            },
+            error: (error) => {
+                console.error('Error fetching leaderboard data:', error);
+                this.currentUser = null;
+                this.streaks = [];
+            }
         });
     }
 }
