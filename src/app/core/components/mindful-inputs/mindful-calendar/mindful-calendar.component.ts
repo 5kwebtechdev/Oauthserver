@@ -21,11 +21,13 @@ export class MindfulCalendarComponent implements OnChanges {
   @Input() dateActivities: { [key: string]: { timetable?: boolean, task?: boolean, habit?: boolean } } = {}; // Activity data for each date
   @Input() useCalendarMainStyle: boolean = false; // New input for calendar-main specific styling
   @Input() moodData: { [key: string]: any } = {}; // Mood data keyed by date (YYYY-MM-DD)
+  @Input() statusData: { [key: string]: 'COMPLETED' | 'SKIPPED' | 'PENDING' } = {}; // Status data for habit detail calendar
 
   @Output() dateSelected = new EventEmitter<Date | { start: Date | null, end: Date | null }>();
   @Output() moodToggled = new EventEmitter<boolean>();
   @Output() cancelled = new EventEmitter<void>();
   @Output() confirmed = new EventEmitter<void>();
+  @Output() monthChanged = new EventEmitter<Date>(); // Emit when month navigation occurs
 
   selectingStart = true;
   showMonthPicker = false;
@@ -71,10 +73,12 @@ export class MindfulCalendarComponent implements OnChanges {
 
   previousMonth() {
     this.currentMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() - 1, 1);
+    this.monthChanged.emit(this.currentMonth);
   }
 
   nextMonth() {
     this.currentMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() + 1, 1);
+    this.monthChanged.emit(this.currentMonth);
   }
 
   selectDate(date: Date) {
@@ -186,7 +190,7 @@ export class MindfulCalendarComponent implements OnChanges {
     const key = this.getDateKey(date);
     const mood = this.moodData[key];
     if (!mood) return '';
-    
+
     // Use toMood as the displayed mood (the final mood state)
     const moodName = mood.toMood || mood.fromMood || 'Neutral';
     return this.getMoodEmojiPath(moodName);
@@ -206,5 +210,21 @@ export class MindfulCalendarComponent implements OnChanges {
     };
 
     return moodMap[moodName] || 'assets/Images-Transparent/Image-Mood-Happy.png';
+  }
+
+  /**
+   * Check if a date has status data (for habit detail calendar)
+   */
+  hasStatusData(date: Date): boolean {
+    const key = this.getDateKey(date);
+    return !!this.statusData[key];
+  }
+
+  /**
+   * Get status for a specific date
+   */
+  getStatusForDate(date: Date): 'COMPLETED' | 'SKIPPED' | 'PENDING' | null {
+    const key = this.getDateKey(date);
+    return this.statusData[key] || null;
   }
 }

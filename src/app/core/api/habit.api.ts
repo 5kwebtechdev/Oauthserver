@@ -120,4 +120,16 @@ export class HabitApi {
         const url = `${this.base}/habits/abort/${id}`;
         return this.http.post(url, {}, { headers: this.headers() });
     }
+
+    /**
+     * Get monthly completion status for a habit
+     * @param id Habit id
+     * @param year Year (e.g., 2025)
+     * @param month Month (1-12)
+     * @returns Observable with monthly completion data
+     */
+    getHabitMonthlyCompletion(id: number, year: number, month: number): Observable<any> {
+        const url = `${this.base}/habits/${id}/month?year=${year}&month=${month}`;
+        return this.http.get(url, { headers: this.headers() });
+    }
 }

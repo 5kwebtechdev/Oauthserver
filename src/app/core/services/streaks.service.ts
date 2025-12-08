@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { delay, catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 export interface StreakLeaderboardUser {
     name: string;
@@ -30,36 +30,28 @@ export class StreaksService {
     constructor(private http: HttpClient) { }
 
     getLeaderboard(): Observable<StreakLeaderboardResponse> {
-        const headers = environment.apiAuthToken ? new HttpHeaders({
-            Authorization: environment.apiAuthToken,
-        }) : undefined;
-        
-        return this.http.get<StreakLeaderboardResponse>(`${this.baseUrl}/auth/leaderboard/streaks`, { headers }).pipe(
+        return this.http.get<StreakLeaderboardResponse>(`${this.baseUrl}/auth/leaderboard/streaks`).pipe(
+            // normalize/validate response shape so callers don't need defensive guards
+            map((res: any) => {
+                const currentUser: CurrentUserStreak = res && res.currentUser ? {
+                    petMessage: String(res.currentUser.petMessage || ''),
+                    streakDays: Number(res.currentUser.streakDays || 0),
+                    rank: Number(res.currentUser.rank || 0),
+                    name: String(res.currentUser.name || ''),
+                    hasStreak: Boolean(res.currentUser.hasStreak || false)
+                } : { petMessage: '', streakDays: 0, rank: 0, name: '', hasStreak: false };
+
+                const topUsers: StreakLeaderboardUser[] = Array.isArray(res && res.topUsers) ? res.topUsers.map((u: any) => ({
+                    name: String(u.name || ''),
+                    highestStreak: Number(u.highestStreak || 0),
+                    avatar: u.avatar ? String(u.avatar) : undefined
+                })) : [];
+
+                return { currentUser, topUsers } as StreakLeaderboardResponse;
+            }),
             catchError((error) => {
-                console.warn('API call failed, using mock data instead:', error);
-                const mockResponse: StreakLeaderboardResponse = {
-                    currentUser: {
-                        petMessage: "You're ranked #9, keep going champ!",
-                        streakDays: 1,
-                        rank: 9,
-                        name: "You",
-                        hasStreak: true
-                    },
-                    topUsers: [
-                        { name: "Child001", highestStreak: 27 },
-                        { name: "yashmeet", highestStreak: 2 },
-                        { name: "John wick", highestStreak: 1 },
-                        { name: "John wick", highestStreak: 1 },
-                        { name: "Naveen Sindhiya", highestStreak: 1 },
-                        { name: "Naveen", highestStreak: 1 },
-                        { name: "dummy", highestStreak: 1 },
-                        { name: "dummy3", highestStreak: 1 },
-                        { name: "Yash", highestStreak: 1 },
-                        { name: "Yash", highestStreak: 1 }
-                    ]
-                };
-                
-                return of(mockResponse).pipe(delay(500));
+                console.error('Failed to fetch streaks leaderboard:', error);
+                return throwError(() => error);
             })
         );
     }

@@ -31,8 +31,8 @@ export class HabitPageComponent implements OnInit, OnDestroy {
   public currentMainTab: 'habits' | 'tasks' = 'habits';
   public showContent: boolean = true;
 
-  public subFilter: 'journey' | 'priorities' | 'routine' | 'all' = 'all';
-  public journeySubFilter: 'pending' | 'ongoing' | 'completed' | 'all' = 'all';
+  public subFilter: 'journey' | 'priorities' | 'routine' | 'all' = 'journey';
+  public journeySubFilter: 'pending' | 'ongoing' | 'completed' | 'all' = 'pending';
   public prioritySubFilter: 'high' | 'medium' | 'low' | 'all' = 'high';
   public routineSubFilter: 'morning' | 'evening' | 'night' | 'all' = 'morning';
 
