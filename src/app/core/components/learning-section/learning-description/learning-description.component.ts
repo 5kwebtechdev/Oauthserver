@@ -86,20 +86,22 @@ import { Challenge } from 'src/app/core/models/learning.models';
   `,
   styles: [
     `
-    :host { display: block; }
-    .content-description-screen { padding: 0 16px 16px 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; margin-top: 0; }
-    .content-description-screen .back-title { display: flex; justify-content: center; align-items: center; gap: 12px; width: 100%; }
-    .content-description-screen .desc-image { margin: 8px 0 16px; width: 100%; }
-    .content-description-screen .desc-image .hero-image { width: 100%; height: 160px; border-radius: 12px; display: block; object-fit: cover; }
+    :host {
+      display: block;
+      height: 100%;
+      overflow-y: auto;
+    }
+    .content-description-screen { padding: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+    .content-description-screen .back-title { display: flex; justify-content: center; align-items: center; gap: 12px; }
+    .content-description-screen .desc-image { margin: 8px 0 16px; }
+    .content-description-screen .desc-image .hero-image { height: 160px; border-radius: 12px; display: block; }
     .content-description-screen .meta-cards { display: flex; padding: 8px; align-items: flex-start; gap: 24px; align-self: stretch; }
-    .content-description-screen .meta-cards .row { width: 100%; margin: 0; }
-    .content-description-screen .meta-cards .col-6 { flex: 0 0 50%; max-width: 50%; }
     .content-description-screen .meta-cards .meta { display: flex; padding: 12px; flex-direction: column; align-items: flex-start; gap: 2px; border-radius: 12px; border-bottom: 3px solid #E1527C; background: #FFF; box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10); }
     .content-description-screen .meta-cards .meta-value { display: flex; align-items: center; gap: 8px; font-family: Nunito; font-weight: 700; font-size: 18px; color: #282527; }
     .content-description-screen .meta-cards .meta-icon { width: 18px; height: 18px; object-fit: contain; display: inline-block; }
     .content-description-screen .meta-cards .meta-label { color: #282527; font-family: Nunito; font-size: 13px; font-weight: 600; line-height: 140%; opacity: 0.7; }
     .content-description-screen .description { color: #282527; font-family: Nunito; font-size: 16px; font-style: normal; font-weight: 600; line-height: 140%; opacity: 0.7; }
-    .content-description-screen .start-journey { display: flex; height: 56px; width: 100%; color: #FFF; padding: 10px; justify-content: center; align-items: center; gap: 8px; flex-shrink: 0; border-radius: 8px; border: 1px solid #CF3359; background: linear-gradient(99deg, #E1527C 0.65%, #AC2456 99.35%); box-shadow: 0 -2px 2px 0 #F4ADC6 inset, 0 0 1px 0.5px rgba(225, 82, 124, 0.20); font-family: Nunito; font-size: 16px; font-style: normal; font-weight: 700; line-height: 140%; cursor: pointer; }
+    .content-description-screen .start-journey { display: flex; height: 56px; color: #FFF; padding: 10px; justify-content: center; align-items: center; gap: 8px; flex-shrink: 0; border-radius: 8px; border: 1px solid #CF3359; background: linear-gradient(99deg, #E1527C 0.65%, #AC2456 99.35%); box-shadow: 0 -2px 2px 0 #F4ADC6 inset, 0 0 1px 0.5px rgba(225, 82, 124, 0.20); font-family: Nunito; font-size: 16px; font-style: normal; font-weight: 700; line-height: 140%; }
     .w-100 { width: 100%; }
     `
   ]
