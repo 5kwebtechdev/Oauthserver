@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MindfulButtonComponent } from 'src/app/core/components/mindful-button/mindful-button.component';
 import { MindfulBadgeComponent } from 'src/app/core/components/mindful-badge/mindful-badge.component';
+import { LearningCardData } from 'src/app/core/models/learning.models';
 
 @Component({
     selector: 'learning-challenge-card',
@@ -12,15 +13,16 @@ import { MindfulBadgeComponent } from 'src/app/core/components/mindful-badge/min
     imports: [CommonModule, MindfulButtonComponent, MindfulBadgeComponent]
 })
 export class LearningChallengeCardComponent {
-    @Input() item: any;
+    @Input() item!: LearningCardData;
     @Input() index: number = 0;
-    @Output() cardClick = new EventEmitter<{ item: any; index: number }>();
+    @Output() cardClick = new EventEmitter<{ item: LearningCardData; index: number }>();
 
     constructor(private router: Router) { }
 
     onCardClick() {
         this.cardClick.emit({ item: this.item, index: this.index });
-        this.router.navigate(['/learning-description']);
+        // Navigate with the challenge ID
+        this.router.navigate(['/authed/content/description', this.item.id]);
     }
 
     // Type-safe image error handler used by the template.

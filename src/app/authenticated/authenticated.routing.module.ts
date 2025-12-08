@@ -80,13 +80,13 @@ const routes: Routes = [
         path: 'content',
         loadComponent: () => import('../core/components/learning-section/learning-main/learning-main.component').then(m => m.LearningMainComponent)
       }, {
-        path: 'content/description',
+        path: 'content/description/:id',
         loadComponent: () => import('../core/components/learning-section/learning-description/learning-description.component').then(m => m.LearningDescriptionComponent)
       }, {
         path: 'content/questions',
         loadComponent: () => import('../core/components/learning-section/questions/questions.component').then(m => m.QuestionsComponent)
       }, {
-        path: 'content/article',
+        path: 'content/article/:id',
         loadComponent: () => import('../core/components/learning-section/article-page/article-page.component').then(m => m.ArticlePageComponent)
       }, {
         path: 'notes',

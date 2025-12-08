@@ -79,29 +79,68 @@
       </button>
     </div>
     <div class="learning-content">
-      <div *ngIf="selectedCategory === 'for-you' || selectedCategory === 'puzzles'" class="cards-section">
-        <div class="cards-grid">
-          <learning-challenge-card *ngFor="let card of puzzleCards; let i = index" [item]="card" [index]="i"
-            (cardClick)="onCardClick($event)">
-          </learning-challenge-card>
-        </div>
+      <!-- Loading State -->
+      <div *ngIf="isLoading$ | async" class="loading-container">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Loading content...</p>
       </div>
 
-      <div *ngIf="selectedCategory === 'for-you' || selectedCategory === 'quizzes'" class="cards-section">
-        <div class="cards-grid">
-          <learning-challenge-card *ngFor="let card of quizCards; let i = index" [item]="card" [index]="i"
-            (cardClick)="onCardClick($event)">
-          </learning-challenge-card>
+      <!-- For You Tab - Shows all content (puzzles, quizzes, and articles) -->
+      <ng-container *ngIf="selectedCategory === 'for-you' && !(isLoading$ | async)">
+        <div *ngIf="(forYouContent$ | async) as forYouContent" class="cards-section">
+          <div *ngIf="forYouContent.length > 0; else emptyState" class="cards-grid">
+            <ng-container *ngFor="let card of forYouContent; let i = index">
+              <learning-challenge-card *ngIf="card.type === 'quiz' || card.type === 'puzzle'" [item]="card" [index]="i"
+                (cardClick)="onCardClick($event)">
+              </learning-challenge-card>
+              <learning-article-card *ngIf="card.type === 'article'" [item]="card" [index]="i"
+                (cardClick)="onCardClick($event)">
+              </learning-article-card>
+            </ng-container>
+          </div>
         </div>
-      </div>
+      </ng-container>
 
-      <div *ngIf="selectedCategory === 'for-you' || selectedCategory === 'articles'" class="cards-section">
-        <div class="cards-grid">
-          <learning-article-card *ngFor="let card of articleCards; let i = index" [item]="card" [index]="i"
-            (cardClick)="onCardClick($event)">
-          </learning-article-card>
+      <!-- Puzzles Tab -->
+      <ng-container *ngIf="selectedCategory === 'puzzles' && !(isLoading$ | async)">
+        <div *ngIf="(puzzleCards$ | async) as puzzleCards" class="cards-section">
+          <div *ngIf="puzzleCards.length > 0; else emptyState" class="cards-grid">
+            <learning-challenge-card *ngFor="let card of puzzleCards; let i = index" [item]="card" [index]="i"
+              (cardClick)="onCardClick($event)">
+            </learning-challenge-card>
+          </div>
         </div>
-      </div>
+      </ng-container>
+
+      <!-- Quizzes Tab -->
+      <ng-container *ngIf="selectedCategory === 'quizzes' && !(isLoading$ | async)">
+        <div *ngIf="(quizCards$ | async) as quizCards" class="cards-section">
+          <div *ngIf="quizCards.length > 0; else emptyState" class="cards-grid">
+            <learning-challenge-card *ngFor="let card of quizCards; let i = index" [item]="card" [index]="i"
+              (cardClick)="onCardClick($event)">
+            </learning-challenge-card>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Articles Tab -->
+      <ng-container *ngIf="selectedCategory === 'articles' && !(isLoading$ | async)">
+        <div *ngIf="(articleCards$ | async) as articleCards" class="cards-section">
+          <div *ngIf="articleCards.length > 0; else emptyState" class="cards-grid">
+            <learning-article-card *ngFor="let card of articleCards; let i = index" [item]="card" [index]="i"
+              (cardClick)="onCardClick($event)">
+            </learning-article-card>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Empty State Template -->
+      <ng-template #emptyState>
+        <div class="empty-state">
+          <ion-icon name="document-text-outline" size="large"></ion-icon>
+          <p>No content available</p>
+        </div>
+      </ng-template>
     </div>
   </div>
   <app-footer></app-footer>

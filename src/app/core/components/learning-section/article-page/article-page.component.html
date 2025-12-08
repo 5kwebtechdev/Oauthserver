@@ -1,10 +1,32 @@
 <ion-content>
-    <div class="article-page d-flex flex-column gap-4">
-  <div class="article-container">
-    <mindful-navigator heading="Article" backIcon="arrowSvg"></mindful-navigator>
-    <div class="article-header">
+  <div class="article-page d-flex flex-column gap-4" *ngIf="!isLoading && article">
+    <div class="article-container">
+      <mindful-navigator [heading]="article.title" backIcon="arrowSvg"></mindful-navigator>
+      <div class="article-header">
+        <img *ngIf="article.thumbnailUrl" [src]="article.thumbnailUrl" [alt]="article.title" class="article-image"
+          style="width: 100%; border-radius: 12px; margin: 16px 0;" />
+        <div class="article-meta" style="display: flex; gap: 16px; margin: 8px 0; color: #666; font-size: 14px;">
+          <span>{{article.timeDuration}}</span>
+          <span *ngIf="article.tags && article.tags.length">{{article.tags.join(', ')}}</span>
+        </div>
+        <div class="article-description" style="margin: 12px 0; font-weight: 600;">
+          <p>{{article.description}}</p>
+        </div>
+        <div class="article-content" style="margin-top: 16px; line-height: 1.6;" [innerHTML]="article.content">
+        </div>
+      </div>
     </div>
-</div>
-<mindful-button type="green" text="Mark as read"></mindful-button>
-</div>
+    <mindful-button type="green" text="Mark as read"></mindful-button>
+  </div>
+
+  <div class="article-page d-flex flex-column gap-4" *ngIf="isLoading" style="text-align: center; padding: 48px 16px;">
+    <p>Loading article...</p>
+  </div>
+
+  <div class="article-page d-flex flex-column gap-4" *ngIf="!isLoading && !article"
+    style="text-align: center; padding: 48px 16px;">
+    <p>Article not found</p>
+    <mindful-button type="green" text="Back to Learning"
+      (click)="router.navigate(['/authed/content'])"></mindful-button>
+  </div>
 </ion-content>

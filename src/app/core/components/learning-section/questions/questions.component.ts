@@ -7,15 +7,15 @@ import { MindfulButtonComponent } from '../../mindful-button/mindful-button.comp
 import { MindfulPopupComponent, MindfulPopupConfig } from '../../mindful-popup/mindful-popup.component';
 
 interface Question {
-  id: number;
-  text: string;
-  options: string[];
-  correctAnswer: string;
-  image: string;
-  hint: string;
-  type?: 'mcq' | 'true-false' | 'visual'; // Added type field to differentiate question types
-  optionImages?: string[]; // Added for visual options
-  contentType?: 'text-only' | 'image-only' | 'text-and-image'; // Added to differentiate question content types
+    id: number;
+    text: string;
+    options: string[];
+    correctAnswer: string;
+    image: string;
+    hint: string;
+    type?: 'mcq' | 'true-false' | 'visual'; // Added type field to differentiate question types
+    optionImages?: string[]; // Added for visual options
+    contentType?: 'text-only' | 'image-only' | 'text-and-image'; // Added to differentiate question content types
 }
 
 @Component({
@@ -93,7 +93,7 @@ export class QuestionsComponent {
         showCloseButton: false,
         backdrop: true
     };
-        
+
     // New timer expiration popup configuration for content time exhaust
     contentTimeExhaustPopupConfig: MindfulPopupConfig = {
         image: 'assets/Images-Transparent/Image-Content-TimeExhaust.png',
@@ -113,69 +113,15 @@ export class QuestionsComponent {
         showCloseButton: false,
         backdrop: true
     };
-    
+
     // Timer expiration popup visibility
     showTimerExpirationPopup = false;
-    
+
     // Content time exhaust popup visibility
     showContentTimeExhaustPopup = false;
 
-    // Dummy questions data
-    questions: Question[] = [
-      {
-        id: 1,
-        text: 'If you have 3 apples and get 2 more, how many do you have?',
-        options: ['4', '5', '6', '7'],
-        correctAnswer: '5',
-        image: 'assets/icons/Gemini_Generated_Image_fr3j2vfr3j2vfr3j 1.jpg',
-        hint: 'Add the numbers together: 3 + 2 = ?',
-        contentType: 'text-and-image' // Both text and image
-      },
-      {
-        id: 2,
-        text: 'Sarah has 7 oranges. She gives 3 to her friend. How many oranges does she have left?',
-        options: ['True', 'False'], // Changed to True/False options
-        correctAnswer: 'True', // Assuming this statement is true
-        image: 'assets/icons/Gemini_Generated_Image_2o9p7vfr3j2vfr3j 2.jpg',
-        hint: 'Subtract the numbers: 7 - 3 = 4, which is more than 3.',
-        type: 'true-false', // Added type field
-        contentType: 'text-and-image' // Both text and image
-      },
-      {
-        id: 3,
-        text: 'There are 4 birds on a tree. 3 more birds join them. How many birds are there now?',
-        options: ['6', '7', '8', '9'],
-        correctAnswer: '7',
-        image: 'assets/icons/Gemini_Generated_Image_3k4l8vfr3j2vfr3j 3.jpg',
-        hint: 'Add the birds together: 4 + 3 = ?',
-        type: 'visual', // Changed to visual type
-        optionImages: [ // Added image paths for visual options
-          'assets/icons/option-6.png',
-          'assets/icons/option-7.png',
-          'assets/icons/option-8.png',
-          'assets/icons/option-9.png'
-        ],
-        contentType: 'text-and-image' // Both text and image
-      },
-      {
-        id: 4,
-        text: '', // No text for this question
-        options: ['5', '6', '7', '8'],
-        correctAnswer: '6',
-        image: 'assets/icons/Gemini_Generated_Image_4m5n9vfr3j2vfr3j 4.jpg',
-        hint: 'Subtract the eaten candies: 10 - 4 = ?',
-        contentType: 'image-only' // Image only
-      },
-      {
-        id: 5,
-        text: 'A pizza is cut into 8 slices. You eat 3 slices. How many slices are left?', // No image for this question
-        options: ['4', '5', '6', '7'],
-        correctAnswer: '5',
-        image: '', // No image for this question
-        hint: 'Subtract the eaten slices: 8 - 3 = ?',
-        contentType: 'text-only' // Text only
-      }
-    ];
+    // Questions will be loaded from the backend via route state or service
+    questions: Question[] = [];
 
     // Track answers for each question
     questionAnswers: { [key: number]: { selected: string | null, correct: boolean } } = {};
@@ -200,7 +146,7 @@ export class QuestionsComponent {
         this.answerChecked = false;
         this.showHint = false;
         this.selectedOption = null;
-        
+
         // Reset all buttons when loading a new question
         setTimeout(() => {
             this.answerButtons.forEach(button => {
@@ -219,7 +165,7 @@ export class QuestionsComponent {
         // Placeholder for right-action behavior (open help/info etc.)
         console.log('Navigator right action clicked', event ?? 'clicked');
     }
-    
+
     /**
      * Handle timer expiration - shows the content time exhaust popup
      */
@@ -235,42 +181,42 @@ export class QuestionsComponent {
     selectAnswer(selectedAnswer: string) {
         // Only allow selection if answer hasn't been checked yet
         if (!this.answerChecked) {
-          // Deselect any previously selected option
-          this.selectedOption = null;
-          
-          // Set the selected answer and option
-          this.selectedAnswer = selectedAnswer;
-          this.selectedOption = selectedAnswer;
+            // Deselect any previously selected option
+            this.selectedOption = null;
 
-          // Save the selected answer for this question
-          const currentQuestionId = this.questions[this.currentQuestionIndex].id;
-          this.questionAnswers[currentQuestionId].selected = selectedAnswer;
+            // Set the selected answer and option
+            this.selectedAnswer = selectedAnswer;
+            this.selectedOption = selectedAnswer;
 
-          // For True/False questions, we need to visually update the buttons
-          if (this.questions[this.currentQuestionIndex].type === 'true-false') {
-            // The visual update is handled by the [class.selected] binding in the template
-            return;
-          }
+            // Save the selected answer for this question
+            const currentQuestionId = this.questions[this.currentQuestionIndex].id;
+            this.questionAnswers[currentQuestionId].selected = selectedAnswer;
 
-          // For Visual questions, we need to visually update the options
-          if (this.questions[this.currentQuestionIndex].type === 'visual') {
-            // The visual update is handled by the [class.selected] binding in the template
-            return;
-          }
+            // For True/False questions, we need to visually update the buttons
+            if (this.questions[this.currentQuestionIndex].type === 'true-false') {
+                // The visual update is handled by the [class.selected] binding in the template
+                return;
+            }
 
-          // Update button states - only change the selected button to green (for MCQ)
-          // First, reset all buttons to unselected state
-          this.answerButtons.forEach(button => {
-            button.correct = false;
-            button.incorrect = false;
-          });
-          
-          // Then, mark the selected button as correct temporarily to show green color
-          const selectedButton = this.answerButtons.find(button => button.text === selectedAnswer);
-          if (selectedButton) {
-            selectedButton.correct = true;
-            selectedButton.incorrect = false;
-          }
+            // For Visual questions, we need to visually update the options
+            if (this.questions[this.currentQuestionIndex].type === 'visual') {
+                // The visual update is handled by the [class.selected] binding in the template
+                return;
+            }
+
+            // Update button states - only change the selected button to green (for MCQ)
+            // First, reset all buttons to unselected state
+            this.answerButtons.forEach(button => {
+                button.correct = false;
+                button.incorrect = false;
+            });
+
+            // Then, mark the selected button as correct temporarily to show green color
+            const selectedButton = this.answerButtons.find(button => button.text === selectedAnswer);
+            if (selectedButton) {
+                selectedButton.correct = true;
+                selectedButton.incorrect = false;
+            }
         }
     }
 
@@ -296,19 +242,19 @@ export class QuestionsComponent {
                 this.popupTextColor = '#4CAF50';
                 this.nextButtonText = 'Next';
                 this.nextButtonType = 'green';
-                
+
                 // For True/False questions, update the visual state using class binding
                 if (this.questions[this.currentQuestionIndex].type === 'true-false') {
                     // The visual update is handled by the template bindings
                     return;
                 }
-                
+
                 // For Visual questions, update the visual state using class binding
                 if (this.questions[this.currentQuestionIndex].type === 'visual') {
                     // The visual update is handled by the template bindings
                     return;
                 }
-                
+
                 // Mark the selected button as correct (for MCQ)
                 const selectedButton = this.answerButtons.find(button => button.text === this.selectedAnswer);
                 if (selectedButton) {
@@ -321,25 +267,25 @@ export class QuestionsComponent {
                 this.popupTextColor = '#BB2124';
                 this.nextButtonText = 'Got it, next question';
                 this.nextButtonType = 'bronze';
-                
+
                 // For True/False questions, update the visual state using class binding
                 if (this.questions[this.currentQuestionIndex].type === 'true-false') {
                     // The visual update is handled by the template bindings
                     return;
                 }
-                
+
                 // For Visual questions, update the visual state using class binding
                 if (this.questions[this.currentQuestionIndex].type === 'visual') {
                     // The visual update is handled by the template bindings
                     return;
                 }
-                
+
                 // Mark the selected button as incorrect and correct button as correct (for MCQ)
                 const selectedButton = this.answerButtons.find(button => button.text === this.selectedAnswer);
                 if (selectedButton) {
                     selectedButton.incorrect = true;
                 }
-                
+
                 const correctButton = this.answerButtons.find(button => button.text === this.correctAnswer);
                 if (correctButton) {
                     correctButton.correct = true;
@@ -354,24 +300,24 @@ export class QuestionsComponent {
     onNext() {
         // Hide the popup
         this.showPopup = false;
-        
+
         // Check if this was the last question
         if (this.currentQuestionIndex >= this.totalQuestions - 1) {
             // Navigate to result page
             this.router.navigate(['/result-page']);
             return;
         }
-        
+
         // Move to next question
         this.currentQuestionIndex++;
         this.loadCurrentQuestion();
-        
+
         // Reset for next question (in a real app, you would load the next question)
         this.selectedAnswer = null;
         this.selectedOption = null;
         this.answerChecked = false;
         this.isAnswerCorrect = false;
-        
+
         // Reset all buttons
         this.answerButtons.forEach(button => {
             button.correct = false;
@@ -390,7 +336,7 @@ export class QuestionsComponent {
         // Navigate back to the description screen
         this.router.navigate(['/authed/content/description']);
     }
-    
+
     restartQuiz() {
         // Reset quiz to start over
         this.currentQuestionIndex = 0;
@@ -402,7 +348,7 @@ export class QuestionsComponent {
         this.showContentTimeExhaustPopup = false;
         this.loadCurrentQuestion();
     }
-    
+
     /**
      * Show the content time exhaust popup
      */

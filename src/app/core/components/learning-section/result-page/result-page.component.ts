@@ -34,10 +34,10 @@ export class ResultPageComponent {
     iconUrl: 'assets/Icons-Neutral/Icon-Badge-PuzzleMaster.png'
   };
 
-  // Dummy results data
-  totalQuestions = 5;
-  correctAnswers = 5;
-  scorePercentage = 100;
+  // Results will be passed via route state from questions component
+  totalQuestions = 0;
+  correctAnswers = 0;
+  scorePercentage = 0;
 
 
 
