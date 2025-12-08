@@ -273,7 +273,7 @@ ion-content.streaks-page {
 export class StreaksSectionComponent implements OnInit {
     @Input() title = 'Top Streakers';
     @Input() showRankBanner = true;
-    
+
     currentUser: CurrentUserStreak | null = null;
     streaks: StreakLeaderboardUser[] = [];
 
@@ -287,7 +287,13 @@ export class StreaksSectionComponent implements OnInit {
         this.streaksService.getLeaderboard().subscribe({
             next: (response: StreakLeaderboardResponse) => {
                 this.currentUser = response.currentUser;
-                this.streaks = response.topUsers;
+
+                // Ensure the returned topUsers are sanitized, sorted and do not duplicate current user
+                const currentName = (this.currentUser?.name || '').trim().toLowerCase();
+                this.streaks = (response.topUsers || [])
+                    .filter(u => (u && (u.name || '').trim().toLowerCase() !== currentName))
+                    .slice()
+                    .sort((a, b) => b.highestStreak - a.highestStreak);
             },
             error: (error) => {
                 console.error('Error fetching leaderboard data:', error);

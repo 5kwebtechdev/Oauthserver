@@ -102,4 +102,16 @@ export class TaskApi {
         const url = `${this.base}/tasks/complete/${id}`;
         return this.http.post(url, {}, { headers: this.headers() });
     }
+
+    /**
+     * Get monthly completion status for a task
+     * @param id Task id
+     * @param year Year (e.g., 2025)
+     * @param month Month (1-12)
+     * @returns Observable with monthly completion data
+     */
+    getTaskMonthlyCompletion(id: number, year: number, month: number): Observable<any> {
+        const url = `${this.base}/tasks/${id}/month?year=${year}&month=${month}`;
+        return this.http.get(url, { headers: this.headers() });
+    }
 }

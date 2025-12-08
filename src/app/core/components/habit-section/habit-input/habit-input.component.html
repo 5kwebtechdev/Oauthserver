@@ -23,7 +23,8 @@
     <div *ngIf="currentActive === 'habits'" class="form-card">
       <div class="title-input">
         <div class="mindful-input-group w-100" [class.missing-placeholder]="showTitleError && attemptedSubmit">
-          <input class="w-100" [(ngModel)]="title" (ngModelChange)="clearTitleError()" placeholder="Habit Title" />
+          <input class="w-100" [(ngModel)]="title" (ngModelChange)="clearTitleError()" placeholder="Habit Title"
+            maxlength="20" />
           <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">Enter habit title</div>
 
         </div>
@@ -169,7 +170,8 @@
     <div *ngIf="currentActive === 'tasks'" class="form-card">
       <div class="title-input">
         <div class="mindful-input-group w-100" [class.missing-placeholder]="showTitleError && attemptedSubmit">
-          <input class="w-100" [(ngModel)]="title" (ngModelChange)="clearTitleError()" placeholder="Task Title" />
+          <input class="w-100" [(ngModel)]="title" (ngModelChange)="clearTitleError()" placeholder="Task Title"
+            maxlength="20" />
           <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">Enter task title</div>
         </div>
         <div class="add-new-row">
@@ -313,7 +315,7 @@
     <div *ngIf="currentActive === 'timetable'" class="form-card">
       <div class="title-input">
         <div class="mindful-input-group w-100">
-          <input class="w-100" [(ngModel)]="title" placeholder="Time Table Title" />
+          <input class="w-100" [(ngModel)]="title" placeholder="Time Table Title" maxlength="20" />
         </div>
         <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">Enter timetable title</div>
         <div class="add-new-row">

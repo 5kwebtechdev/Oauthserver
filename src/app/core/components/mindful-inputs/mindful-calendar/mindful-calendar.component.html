@@ -59,6 +59,12 @@
           <circle cx="2" cy="2" r="2" fill="#8B8DCB" />
         </svg>
       </div>
+
+      <!-- Status dot for habit detail calendar (shown when no mood toggle) -->
+      <div *ngIf="!showMoodToggle && hasStatusData(date)" class="status-dot"
+        [class.status-completed]="getStatusForDate(date) === 'COMPLETED'"
+        [class.status-skipped]="getStatusForDate(date) === 'SKIPPED'">
+      </div>
     </button>
   </div>
 

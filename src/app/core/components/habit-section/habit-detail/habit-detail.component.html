@@ -1,5 +1,5 @@
 <ion-content class="habit-detail-page" fullscreen>
-    <mindful-navigator backIcon="arrowSvg" (rightIconClick)="onEdit()">
+    <mindful-navigator backIcon="arrowSvg" (back)="goBack()" (rightIconClick)="onEdit()">
         <div slot="end">
             <div class="eclipse" aria-hidden="true">
                 <button class="right-custom-edit" aria-label="Edit" (click)="onEdit()" type="button"
@@ -99,7 +99,6 @@
 
 
 
-        <!-- decorative divider: replaced span with SVG for gradient stroke -->
         <svg class="divider-svg" xmlns="http://www.w3.org/2000/svg" width="298" height="2" viewBox="0 0 298 2"
             fill="none" aria-hidden="true">
             <path d="M1 1H297" stroke="url(#paint0_linear_4508_49608)" stroke-width="2" stroke-linecap="round" />
@@ -143,7 +142,8 @@
         </div>
 
         <div class="detail-calendar">
-            <mindful-calendar [useArrowNavigation]="true" [showMoodToggle]="false"></mindful-calendar>
+            <mindful-calendar [useArrowNavigation]="true" [showMoodToggle]="false" [statusData]="calendarStatusData"
+                [currentMonth]="currentCalendarMonth" (monthChanged)="onCalendarMonthChange($event)"></mindful-calendar>
         </div>
 
         <div class="completion-days">

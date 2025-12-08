@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Habit } from '../habit.types';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HabitApi } from 'src/app/core/api/habit.api';
@@ -41,6 +41,10 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
   private progressInterval: any;
   private buttonStateCheckerInterval: any;
 
+  // Calendar status data
+  public calendarStatusData: { [key: string]: 'COMPLETED' | 'SKIPPED' | 'PENDING' } = {};
+  public currentCalendarMonth: Date = new Date();
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -48,7 +52,8 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
     private TaskApi: TaskApi,
     private habitService: HabitService,
     private navigationContext: NavigationContextService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private location: Location
   ) { }
 
   ngOnInit() {
@@ -109,6 +114,9 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
         this.habit = this.normalizeResponse(res, type);
         this.prepareCoinStats();
         this.prepareMilestoneBadges();
+
+        // Load monthly completion data for the current month
+        this.loadMonthlyStatus(this.currentCalendarMonth);
 
         // Start progress tracking if habit is ongoing
         if (this.habit?.status?.toLowerCase() === 'ongoing') {
@@ -258,6 +266,49 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
     });
   }
 
+  /**
+   * Load monthly completion status for the habit/task
+   */
+  loadMonthlyStatus(monthDate: Date): void {
+    if (!this.habit) return;
+
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth() + 1; // JavaScript months are 0-indexed
+    const id = Number(this.habit.id);
+
+    const api$ = this.habit.type === 'tasks'
+      ? this.TaskApi.getTaskMonthlyCompletion(id, year, month)
+      : this.HabitApi.getHabitMonthlyCompletion(id, year, month);
+
+    api$.subscribe({
+      next: (res) => {
+        this.calendarStatusData = {};
+        const completionArray = res.monthlyCompletion || [];
+
+        // Convert array to object keyed by date
+        completionArray.forEach((item: any) => {
+          if (item.date && item.status) {
+            this.calendarStatusData[item.date] = item.status;
+          }
+        });
+
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading monthly completion status:', err);
+        this.calendarStatusData = {};
+      }
+    });
+  }
+
+  /**
+   * Handle calendar month navigation
+   */
+  onCalendarMonthChange(newMonth: Date): void {
+    this.currentCalendarMonth = newMonth;
+    this.loadMonthlyStatus(newMonth);
+  }
+
   get speechMessage(): string {
     const desc = (this.habit as any)?.description ?? (this.habit as any)?.notes ?? '';
     // Return the raw description (no prefixed text), trimmed for display safety
@@ -294,6 +345,11 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
 
     // 4️⃣ Fallback if no data
     return '—';
+  }
+
+  goBack() {
+    // Navigate back to the entry page using browser history
+    this.location.back();
   }
 
   onEdit() {

@@ -21,6 +21,9 @@
   gap: 6px;
   opacity: 0.7;
   cursor: pointer;
+  /* Ensure anchors don't show default blue underline */
+  text-decoration: none;
+  color: inherit;
 
   svg {
     width: 24px;
