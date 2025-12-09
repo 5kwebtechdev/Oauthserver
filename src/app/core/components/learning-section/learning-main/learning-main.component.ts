@@ -42,6 +42,9 @@ export class LearningMainComponent implements OnInit, OnDestroy {
     console.log('Learning Main Component initialized');
     console.log('API URL:', 'http://ec2-13-126-1-142.ap-south-1.compute.amazonaws.com:3000/v1');
 
+    // Reset loading state when component initializes
+    this.learningService.resetLoadingState();
+
     // Initialize observables from the learning service
     this.puzzleCards$ = this.learningService.getPuzzleCards();
     this.quizCards$ = this.learningService.getQuizCards();

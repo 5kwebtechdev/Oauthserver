@@ -89,6 +89,34 @@ export class LearningService {
     }
 
     /**
+     * Submit challenge answers
+     */
+    submitChallenge(challengeId: number, answers: { questionId: number; selectedOptionId: number | null; selectedOptionIds?: number[]; }[]): Observable<any> {
+        const url = `${this.apiUrl}/challenges/${challengeId}/submit-all`;
+        const payload = { answers };
+
+        console.log('Submitting challenge:', challengeId, payload);
+
+        return this.http.post<any>(url, payload, { headers: this.getHeaders() })
+            .pipe(
+                tap(response => {
+                    console.log('Challenge submission response:', response);
+                }),
+                catchError(error => {
+                    console.error('Error submitting challenge:', error);
+                    throw error;
+                })
+            );
+    }
+
+    /**
+     * Reset loading state to false
+     */
+    resetLoadingState(): void {
+        this.isLoading$.next(false);
+    }
+
+    /**
      * Fetch all articles from backend
      */
     fetchArticles(): Observable<Article[]> {

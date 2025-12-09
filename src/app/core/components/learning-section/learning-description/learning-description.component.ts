@@ -145,8 +145,9 @@ export class LearningDescriptionComponent implements OnInit {
 
   startJourney() {
     if (this.challenge) {
-      // Navigate to questions page with challenge ID
-      this.router.navigate(['/authed/content/questions', this.challenge.challengeId]);
+      this.router.navigate(['/authed/content/questions', this.challenge.challengeId], {
+        state: { challenge: this.challenge }
+      });
     } else {
       this.router.navigate(['/authed/content/questions']);
     }

@@ -83,8 +83,11 @@ const routes: Routes = [
         path: 'content/description/:id',
         loadComponent: () => import('../core/components/learning-section/learning-description/learning-description.component').then(m => m.LearningDescriptionComponent)
       }, {
-        path: 'content/questions',
+        path: 'content/questions/:id',
         loadComponent: () => import('../core/components/learning-section/questions/questions.component').then(m => m.QuestionsComponent)
+      }, {
+        path: 'content/result',
+        loadComponent: () => import('../core/components/learning-section/result-page/result-page.component').then(m => m.ResultPageComponent)
       }, {
         path: 'content/article/:id',
         loadComponent: () => import('../core/components/learning-section/article-page/article-page.component').then(m => m.ArticlePageComponent)

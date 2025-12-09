@@ -127,3 +127,38 @@ export interface LearningCardData {
     tags?: string[];
     rawData?: Challenge | Article; // Original data for navigation
 }
+
+/**
+ * Challenge Submission Request
+ */
+export interface ChallengeSubmissionRequest {
+    answers: {
+        questionId: number;
+        selectedOptionId: number | null;
+        selectedOptionIds?: number[];
+    }[];
+}
+
+/**
+ * Challenge Submission Response
+ */
+export interface ChallengeSubmissionResponse {
+    success: boolean;
+    celebrationText: string;
+    correctCount: number;
+    totalQuestions: number;
+    coinsEarned: number;
+    trophiesEarned: number;
+    totalCoins: number;
+    totalTrophies: number;
+    badges: any | null;
+    challengeCompleted: boolean;
+    percentageScore: number;
+    questionResults: any | null;
+    questionFeedbacks: any | null;
+    overallFeedback: string;
+    firstCompletion: boolean;
+    earnedNewBadge: boolean;
+    newlyEarnedBadges: any | null;
+    badgeCelebrationMessage: string | null;
+}
