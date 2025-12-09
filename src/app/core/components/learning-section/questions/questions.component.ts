@@ -1,10 +1,13 @@
-import { Component, ViewChildren, QueryList } from '@angular/core';
+import { Component, ViewChildren, QueryList, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { HttpClientModule } from '@angular/common/http';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulPopupComponent, MindfulPopupConfig } from '../../mindful-popup/mindful-popup.component';
+import { Challenge, ChallengeQuestion, QuestionOption } from 'src/app/core/models/learning.models';
+import { LearningService } from 'src/app/core/services/learning.service';
 
 interface Question {
     id: number;
@@ -21,11 +24,12 @@ interface Question {
 @Component({
     selector: 'app-questions',
     standalone: true,
-    imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent, MindfulPopupComponent],
+    imports: [CommonModule, IonicModule, HttpClientModule, MindfulNavigatorComponent, MindfulButtonComponent, MindfulPopupComponent],
+    providers: [LearningService],
     templateUrl: './questions.component.html',
     styleUrls: ['./questions.component.scss']
 })
-export class QuestionsComponent {
+export class QuestionsComponent implements OnInit, OnDestroy {
     // Heading shown in the navigator
     quizTitle = 'Apple Orchard Math Challenge';
 
@@ -120,22 +124,157 @@ export class QuestionsComponent {
     // Content time exhaust popup visibility
     showContentTimeExhaustPopup = false;
 
+    // Challenge data from backend
+    challenge: Challenge | null = null;
+
     // Questions will be loaded from the backend via route state or service
     questions: Question[] = [];
 
     // Track answers for each question
-    questionAnswers: { [key: number]: { selected: string | null, correct: boolean } } = {};
+    questionAnswers: { [key: number]: { selected: string | null, correct: boolean, selectedOptionId: number | null } } = {};
+
+    // Timer properties
+    totalTimeSeconds = 300; // Default 5 minutes
+    remainingTimeSeconds = 300;
+    timerInterval: any;
+    timerDisplay = '05:00';
+
+    // Submission state
+    isSubmitting = false;
 
     // (No rightActions used — we project the inline SVG timer into the navigator slot)
 
-    constructor(private router: Router) { }
+    constructor(
+        private router: Router,
+        private route: ActivatedRoute,
+        private learningService: LearningService
+    ) { }
 
     ngOnInit() {
-        // Initialize question answers tracking
-        for (let i = 1; i <= this.totalQuestions; i++) {
-            this.questionAnswers[i] = { selected: null, correct: false };
+        // Get challenge from router state or fetch from API
+        const navigation = this.router.getCurrentNavigation();
+        const state = navigation?.extras?.state as { challenge?: Challenge };
+
+        if (state?.challenge) {
+            this.challenge = state.challenge;
+            this.initializeQuiz();
+        } else {
+            // If no state, fetch from API using challengeId from route params
+            const challengeId = this.route.snapshot.paramMap.get('id');
+            if (challengeId) {
+                this.learningService.fetchChallengeById(Number(challengeId)).subscribe({
+                    next: (challenge) => {
+                        this.challenge = challenge;
+                        this.initializeQuiz();
+                    },
+                    error: (error) => {
+                        console.error('Error loading challenge:', error);
+                        this.router.navigate(['/authed/content']);
+                    }
+                });
+            } else {
+                console.error('No challenge data or ID available');
+                this.router.navigate(['/authed/content']);
+            }
         }
+    }
+
+    initializeQuiz() {
+        if (!this.challenge) return;
+
+        // Set quiz title
+        this.quizTitle = this.challenge.name;
+
+        // Transform backend questions to UI Question format
+        this.questions = this.transformQuestions(this.challenge.questions);
+        this.totalQuestions = this.questions.length;
+
+        // Initialize question answers tracking
+        for (let i = 0; i < this.totalQuestions; i++) {
+            this.questionAnswers[this.questions[i].id] = { selected: null, correct: false, selectedOptionId: null };
+        }
+
+        // Parse and set timer from timeDuration (e.g., "5 Minutes")
+        this.parseTimeDuration(this.challenge.timeDuration);
+
+        // Load first question
         this.loadCurrentQuestion();
+
+        // Start the timer
+        this.startTimer();
+    }
+
+    transformQuestions(backendQuestions: ChallengeQuestion[]): Question[] {
+        return backendQuestions.map(q => {
+            // Determine question type
+            let type: 'mcq' | 'true-false' | 'visual' = 'mcq';
+            if (q.trueFalse) type = 'true-false';
+            else if (q.visual) type = 'visual';
+
+            // Determine content type based on what's available
+            let contentType: 'text-only' | 'image-only' | 'text-and-image' = 'text-only';
+            if (q.questionText && q.questionImageUrl) contentType = 'text-and-image';
+            else if (q.questionImageUrl) contentType = 'image-only';
+
+            // Extract options and find correct answer
+            const options = q.options.map(opt => opt.optionText);
+            const correctOption = q.options.find(opt => opt.isCorrect);
+            const correctAnswer = correctOption?.optionText || options[0];
+
+            // Extract option images for visual questions
+            const optionImages = q.options.map(opt => opt.optionImageUrl || '');
+
+            return {
+                id: q.questionId,
+                text: q.questionText,
+                options: options,
+                correctAnswer: correctAnswer,
+                image: q.questionImageUrl || '',
+                hint: q.hint || '',
+                type: type,
+                optionImages: optionImages,
+                contentType: contentType
+            };
+        });
+    }
+
+    parseTimeDuration(duration: string) {
+        // Parse duration string like "5 Minutes" or "10 Minutes"
+        const match = duration.match(/(\d+)\s*min/i);
+        if (match) {
+            const minutes = parseInt(match[1]);
+            this.totalTimeSeconds = minutes * 60;
+            this.remainingTimeSeconds = this.totalTimeSeconds;
+            this.updateTimerDisplay();
+        }
+    }
+
+    startTimer() {
+        this.timerInterval = setInterval(() => {
+            this.remainingTimeSeconds--;
+            this.updateTimerDisplay();
+
+            if (this.remainingTimeSeconds <= 0) {
+                this.stopTimer();
+                this.onTimerExpire();
+            }
+        }, 1000);
+    }
+
+    stopTimer() {
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+        }
+    }
+
+    updateTimerDisplay() {
+        const minutes = Math.floor(this.remainingTimeSeconds / 60);
+        const seconds = this.remainingTimeSeconds % 60;
+        this.timerDisplay = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    ngOnDestroy() {
+        this.stopTimer();
     }
 
     loadCurrentQuestion() {
@@ -188,8 +327,22 @@ export class QuestionsComponent {
             this.selectedAnswer = selectedAnswer;
             this.selectedOption = selectedAnswer;
 
+            // Get the current question from backend data to find option ID
+            const currentQuestion = this.questions[this.currentQuestionIndex];
+            const currentQuestionId = currentQuestion.id;
+
+            // Find the corresponding backend question to get the option ID
+            if (this.challenge?.questions) {
+                const backendQuestion = this.challenge.questions.find(q => q.questionId === currentQuestionId);
+                if (backendQuestion) {
+                    const selectedOption = backendQuestion.options.find(opt => opt.optionText === selectedAnswer);
+                    if (selectedOption) {
+                        this.questionAnswers[currentQuestionId].selectedOptionId = selectedOption.optionId;
+                    }
+                }
+            }
+
             // Save the selected answer for this question
-            const currentQuestionId = this.questions[this.currentQuestionIndex].id;
             this.questionAnswers[currentQuestionId].selected = selectedAnswer;
 
             // For True/False questions, we need to visually update the buttons
@@ -303,8 +456,8 @@ export class QuestionsComponent {
 
         // Check if this was the last question
         if (this.currentQuestionIndex >= this.totalQuestions - 1) {
-            // Navigate to result page
-            this.router.navigate(['/result-page']);
+            // Submit all answers to backend
+            this.submitChallengeAnswers();
             return;
         }
 
@@ -326,6 +479,51 @@ export class QuestionsComponent {
     }
 
     /**
+     * Submit challenge answers to backend
+     */
+    submitChallengeAnswers() {
+        if (!this.challenge || this.isSubmitting) {
+            return;
+        }
+
+        this.isSubmitting = true;
+        this.stopTimer();
+
+        // Prepare answers payload
+        const answers = this.questions.map(q => {
+            const answer = this.questionAnswers[q.id];
+            return {
+                questionId: q.id,
+                selectedOptionId: answer.selectedOptionId,
+                selectedOptionIds: answer.selectedOptionId ? [answer.selectedOptionId] : []
+            };
+        });
+
+        console.log('Submitting answers:', answers);
+
+        this.learningService.submitChallenge(this.challenge.challengeId, answers).subscribe({
+            next: (response) => {
+                console.log('Submission successful:', response);
+                // Navigate to result page with response data
+                this.router.navigate(['/authed/content/result'], {
+                    state: {
+                        submissionResult: response,
+                        challenge: this.challenge,
+                        timeTaken: this.totalTimeSeconds - this.remainingTimeSeconds
+                    }
+                });
+                this.isSubmitting = false;
+            },
+            error: (error) => {
+                console.error('Submission failed:', error);
+                this.isSubmitting = false;
+                // Show error popup or navigate anyway with local data
+                alert('Failed to submit answers. Please try again.');
+            }
+        });
+    }
+
+    /**
      * Toggle hint visibility
      */
     toggleHint() {
@@ -333,8 +531,13 @@ export class QuestionsComponent {
     }
 
     quitQuiz() {
+        this.stopTimer();
         // Navigate back to the description screen
-        this.router.navigate(['/authed/content/description']);
+        if (this.challenge) {
+            this.router.navigate(['/authed/content/description', this.challenge.challengeId]);
+        } else {
+            this.router.navigate(['/authed/content']);
+        }
     }
 
     restartQuiz() {
@@ -346,6 +549,13 @@ export class QuestionsComponent {
         this.showHint = false;
         this.showTimerExpirationPopup = false;
         this.showContentTimeExhaustPopup = false;
+
+        // Reset timer
+        this.stopTimer();
+        this.remainingTimeSeconds = this.totalTimeSeconds;
+        this.updateTimerDisplay();
+        this.startTimer();
+
         this.loadCurrentQuestion();
     }
 

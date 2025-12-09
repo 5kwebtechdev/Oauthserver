@@ -17,24 +17,25 @@
 
 // /* Added congrats section styles from badge-section.component.scss */
 .congrats-img {
- position: relative;
-    width: 250px;
-    /* height: 0px; */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  
+  position: relative;
+  width: 250px;
+  /* height: 0px; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
 }
-.result-wrap{
+
+.result-wrap {
   display: inline-flex;
-padding: 4px 24px;
-justify-content: center;
-align-items: center;
-gap: 8px;
-border-radius: 40px;
-border: 1px solid #4CAF50;
-background: #FFF;
-z-index: 1100;
+  padding: 4px 24px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 40px;
+  border: 1px solid #4CAF50;
+  background: #FFF;
+  z-index: 1100;
 }
 
 .question-count {
@@ -43,7 +44,79 @@ z-index: 1100;
   font-size: 40px;
   font-style: normal;
   font-weight: 700;
-  line-height: 140%; /* 56px */
+  line-height: 140%;
+  /* 56px */
+}
+
+.score-percentage {
+  color: #4CAF50;
+  font-family: Nunito, sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 4px 0;
+}
+
+.time-taken {
+  color: #666;
+  font-family: Nunito, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 4px 0 0;
+}
+
+.total-rewards {
+  text-align: center;
+  margin: 12px 0;
+}
+
+.total-text {
+  color: #666;
+  font-family: Nunito, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.feedback-section {
+  margin: 16px 0;
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.feedback-text {
+  color: #282527;
+  font-family: Nunito, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.first-completion-badge {
+  margin: 12px 0;
+  padding: 12px;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.first-completion-text {
+  color: #fff;
+  font-family: Nunito, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.badge-celebration-title {
+  color: #282527;
+  font-family: Nunito, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 16px;
 }
 
 .ring .badge-icon {
@@ -67,6 +140,7 @@ z-index: 1100;
 .confetti.right {
   right: 0;
 }
+
 /* End of congrats section styles */
 
 .badges-section {
