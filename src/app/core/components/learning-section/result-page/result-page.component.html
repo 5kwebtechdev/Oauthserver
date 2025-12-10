@@ -1,20 +1,21 @@
-<mindful-navigator heading="" backIcon="cancel" (back)="onCancel()">
-</mindful-navigator>
-
 <ion-content>
+  <mindful-navigator heading="" backIcon="cancel" (back)="onCancel()">
+  </mindful-navigator>
   <div class="result-container">
     <div class="pet-container">
-      <mindful-pet [name]="'Buddy'" [pet]="'panda'" [mood]="scorePercentage >= 80 ? 'happy' : 'tired'" [age]="2"
-        [sizePreset]="142">
+      <mindful-pet [name]="'Buddy'" [pet]="'panda'" [mood]="getPetMood()" [age]="2" [sizePreset]="142">
       </mindful-pet>
       <h2>{{ celebrationText || 'Great Work!' }}</h2>
 
       <div class="congrats-img">
-        <img class="confetti left" src="assets/Images-Transparent/congrats.png" alt="confetti left" />
-        <div class="result-wrap">
-          <span class="question-count">{{ correctAnswers }}/{{ totalQuestions }}</span>
+        <img class="confetti left" src="assets/Images-Transparent/congrats.png" alt="confetti left"
+          *ngIf="isExcellentScore()" />
+        <div class="result-wrap" [ngStyle]="{'border-color': getScoreColor()}">
+          <span class="question-count" [ngStyle]="{'color': getScoreColor()}">{{ correctAnswers }}/{{ totalQuestions
+            }}</span>
         </div>
-        <img class="confetti right" src="assets/Images-Transparent/congrats.png" alt="confetti right" />
+        <img class="confetti right" src="assets/Images-Transparent/congrats.png" alt="confetti right"
+          *ngIf="isExcellentScore()" />
       </div>
     </div>
 
@@ -31,11 +32,6 @@
       </div>
     </div>
 
-    <!-- Total Coins and Trophies -->
-    <div class="total-rewards" *ngIf="totalCoins > 0 || totalTrophies > 0">
-      <p class="total-text">Total Coins: {{ totalCoins }} | Total Trophies: {{ totalTrophies }}</p>
-    </div>
-
     <!-- Overall Feedback -->
     <div class="feedback-section" *ngIf="overallFeedback">
       <p class="feedback-text">{{ overallFeedback }}</p>
@@ -47,34 +43,35 @@
     </div>
 
     <!-- Badges Section -->
-    <div class="badges-section" *ngIf="earnedNewBadge && newlyEarnedBadges && newlyEarnedBadges.length > 0">
-      <h3 class="badge-celebration-title">{{ badgeCelebrationMessage || 'New Badges Unlocked!' }}</h3>
-      <div class="badge-grid w-100 d-flex">
-        <div *ngFor="let badge of newlyEarnedBadges" class="badge-card w-100">
-          <div class="badge-content">
-            <div class="badge-info">
-              <p class="progress-text">{{ badge.progress || '1/1' }}</p>
-              <div class="badge-visual">
-                <div class="badge-icon-container">
-                  <img [src]="badge.iconUrl || 'assets/Icons-Neutral/Icon-Trophy.png'" [alt]="badge.name"
-                    class="badge-icon" />
+    <div class="badges-section">
+      <!-- Newly Earned Badges -->
+      <div *ngIf="earnedNewBadge && newlyEarnedBadges && newlyEarnedBadges.length > 0">
+        <h3 class="badge-celebration-title">{{ badgeCelebrationMessage || 'New Badges Unlocked!' }}</h3>
+        <div class="badge-grid w-100 d-flex">
+          <div *ngFor="let badge of newlyEarnedBadges" class="badge-card w-100">
+            <div class="badge-content">
+              <div class="badge-info">
+                <p class="progress-text">{{ badge.progress || '1/1' }}</p>
+                <div class="badge-visual">
+                  <div class="badge-icon-container">
+                    <img [src]="badge.iconUrl || 'assets/Icons-Neutral/Icon-Trophy.png'" [alt]="badge.name"
+                      class="badge-icon" />
+                  </div>
+                  <mindful-completion [completionPercentage]="100" [borderColor]="getScoreColor()" [innerText]="''"
+                    [belowText]="''">
+                  </mindful-completion>
                 </div>
-                <mindful-completion [completionPercentage]="100" [borderColor]="'#4CAF50'" [innerText]="''"
-                  [belowText]="''">
-                </mindful-completion>
               </div>
+              <p class="badge-name">{{ badge.name }}</p>
+              <p class="badge-level-text">{{ badge.level || 'Expert Level' }}</p>
+              <p class="badge-description">{{ badge.description }}</p>
+              <p class="badge-achievement">Achievement Unlocked!</p>
             </div>
-            <p class="badge-name">{{ badge.name }}</p>
-            <p class="badge-level-text">{{ badge.level || 'Expert Level' }}</p>
-            <p class="badge-description">{{ badge.description }}</p>
-            <p class="badge-achievement">Achievement Unlocked!</p>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Fallback Badges Section (when no new badges earned) -->
-    <div class="badges-section" *ngIf="!earnedNewBadge">
+      <!-- Achievement Badges Based on Performance -->
       <div class="badge-grid w-100 d-flex">
         <!-- Quiz Ace Badge -->
         <div *ngIf="scorePercentage >= 80" class="badge-card w-100">
@@ -85,7 +82,7 @@
                 <div class="badge-icon-container">
                   <img [src]="quizAceBadge.iconUrl" [alt]="quizAceBadge.name" class="badge-icon" />
                 </div>
-                <mindful-completion [completionPercentage]="100" [borderColor]="'#4CAF50'" [innerText]="''"
+                <mindful-completion [completionPercentage]="100" [borderColor]="getScoreColor()" [innerText]="''"
                   [belowText]="''">
                 </mindful-completion>
               </div>
@@ -106,7 +103,7 @@
                 <div class="badge-icon-container">
                   <img [src]="puzzleMasterBadge.iconUrl" [alt]="puzzleMasterBadge.name" class="badge-icon" />
                 </div>
-                <mindful-completion [completionPercentage]="100" [borderColor]="'#4CAF50'" [innerText]="''"
+                <mindful-completion [completionPercentage]="100" [borderColor]="getScoreColor()" [innerText]="''"
                   [belowText]="''">
                 </mindful-completion>
               </div>
@@ -117,17 +114,8 @@
             <p class="badge-achievement">Achievement Unlocked!</p>
           </div>
         </div>
-
-        <!-- Encouragement Message -->
-        <div class="encouragement-message" *ngIf="scorePercentage < 80">
-          <p>Keep practicing and you'll earn badges soon!</p>
-        </div>
       </div>
     </div>
 
-    <!-- Continue Button -->
-    <div class="continue-button">
-      <mindful-button type="green" text="Continue" (click)="onContinue()"></mindful-button>
-    </div>
   </div>
 </ion-content>

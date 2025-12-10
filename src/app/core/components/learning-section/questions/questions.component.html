@@ -77,15 +77,23 @@
             </ng-container>
         </div>
         <div class="hint-section">
-            <div>
+            <div class="hint-left">
                 <p>Stuck?</p>
-                <span>Need a hint for<img src="/assets/Icons-Neutral/Icons-Coins.png" alt="coin" class="meta-icon" />?
-                </span>
+                <div class="hint-meta">
+                    <span>Need a hint for 3</span>
+                    <img src="/assets/Icons-Neutral/Icons-Coins.png" alt="coin" class="meta-icon" />
+                    <span>?</span>
+                </div>
             </div>
-            <div>
+            <div class="d-flex flex-column align-items-center gap-2">
                 <button class="hint-cta" (click)="toggleHint()">Hint</button>
+                <div class="hint-counter">
+                    {{ maxHints - hintsUsed }}/{{ maxHints }} remaining
+                </div>
             </div>
+            <!-- Hint usage counter -->
         </div>
+
 
 
 
