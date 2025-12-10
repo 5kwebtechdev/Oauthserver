@@ -12,8 +12,12 @@ export class CalendarService {
 
     constructor(private http: HttpClient) { }
 
-    getUserCalendar(date: string): Observable<CalendarResponse> {
-        return this.http.get<CalendarResponse>(`${this.apiUrl}/user-calendar?date=${date}&viewType=day`);
+    getUserCalendar(date: string, viewType: 'day' | 'month' = 'day'): Observable<CalendarResponse> {
+        return this.http.get<CalendarResponse>(`${this.apiUrl}/user-calendar?date=${date}&viewType=${viewType}`);
+    }
+
+    getUserCalendarMonth(date: string): Observable<CalendarResponse> {
+        return this.http.get<CalendarResponse>(`${this.apiUrl}/user-calendar?date=${date}&viewType=month`);
     }
 
     transformToTimelineEvents(response: CalendarResponse): TimelineEvent[] {

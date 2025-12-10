@@ -346,7 +346,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
 
     const titleMissing = !this.title || !this.title.trim();
     const tagMissing = !Array.isArray(this.selectedTags) || this.selectedTags.length === 0;
-    const routineMissing = !this.selectedRoutine;
+    const routineRequired = this.currentActive !== 'timetable';
+    const routineMissing = routineRequired && !this.selectedRoutine;
     const weekdaysMissing = !this.everyday && (!this.selectedDays || this.selectedDays.size === 0);
     const timeMissing = !this.startTime?.trim() || !this.endTime?.trim();
     const pastTime = this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime);
@@ -438,9 +439,11 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         endDate: this.formatDateStr(this.endDate) || '',
         priority
       };
-      // Only include daysOfWeek if NOT everyday
       if (!(this.everyday && coversAllDays)) {
         payload.daysOfWeek = daysOfWeek;
+      }
+      if (!payload.description) {
+        payload.description = payload.notes;
       }
     } else {
       payload = {
@@ -583,13 +586,107 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       }
     } else if (this.currentActive === 'timetable') {
       this.isSubmitting = true;
-      this.calendarApi.addCalendarEvent(payload).subscribe({
-        next: (res) => {
-          try { this.habitService.addHabit(habit); this.modalCtrl.dismiss(); this.navigationContext.navigateBack({ newHabit: habit, showSingleMode: true, initialTab: 'timetable' }); }
-          finally { this.isSubmitting = false; }
-        },
-        error: (err) => { this.isSubmitting = false; console.error('Failed to create calendar event', err); alert('Failed to create timetable. Please try again.'); }
-      });
+      console.log('[Timetable Submit] Payload:', JSON.stringify(payload, null, 2));
+
+      if (this.editingId) {
+        // Update existing timetable
+        this.calendarApi.updateCalendarEvent(this.editingId, payload).subscribe({
+          next: (res) => {
+            try {
+              // Build updated habit from server response
+              const updated = res || {};
+              const updatedTimetableHabit: Habit = {
+                id: String(updated?.id ?? this.editingId),
+                title: updated?.title ?? habit.title,
+                notes: updated?.description ?? updated?.notes ?? habit.notes,
+                startDate: updated?.startDate ? new Date(updated.startDate) : habit.startDate,
+                endDate: updated?.endDate ? new Date(updated.endDate) : habit.endDate,
+                startTime: updated?.startTime ?? formattedStartTime,
+                endTime: updated?.endTime ?? formattedEndTime,
+                startTimeStamp: updated?.startDate ? new Date(`${updated.startDate}T${formattedStartTime}`).getTime() : habit.startTimeStamp,
+                endTimeStamp: updated?.endDate ? new Date(`${updated.endDate}T${formattedEndTime}`).getTime() : habit.endTimeStamp,
+                type: 'timetable',
+                isPrivate: habit.isPrivate,
+                selectedRoutine: this.selectedRoutine,
+                routineTags: this.routineTags,
+                everyday: !!updated?.everyday,
+                selectedDays: Array.isArray(updated?.daysOfWeek) ? updated.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek),
+                priority: (updated?.priority ?? habit.priority) as any,
+                routine: this.selectedRoutine,
+                status: habit.status,
+                createdAt: updated?.createdAt ? new Date(updated.createdAt) : (this.originalHabit?.createdAt ? new Date(this.originalHabit.createdAt) : new Date()),
+                activities: habit.activities,
+                tags: Array.isArray(updated?.tags) ? updated.tags : (Array.isArray(this.selectedTags) ? this.selectedTags.map(t => t.value || t.key) : []),
+                daysOfWeek: Array.isArray(updated?.daysOfWeek) ? updated.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek)
+              };
+              this.habitService.updateHabit(updatedTimetableHabit);
+              this.modalCtrl.dismiss();
+
+              // Pop the detail page context (habit-input -> detail) without navigating
+              // This allows us to skip the detail page and go back to the origin page
+              this.navigationContext.popContext();
+              console.log('[Timetable Update] Skipped detail page context, navigating to origin page');
+
+              this.navigationContext.navigateBack({ updatedHabit: updatedTimetableHabit, showSingleMode: true, initialTab: 'timetable' });
+            } finally {
+              this.isSubmitting = false;
+            }
+          },
+          error: (err) => {
+            this.isSubmitting = false;
+            console.error('Failed to update timetable', err);
+            alert('Failed to update timetable. Please try again.');
+          }
+        });
+      } else {
+        // Create new timetable
+        this.calendarApi.addCalendarEvent(payload).subscribe({
+          next: (res) => {
+            try {
+              // Build a local Habit model from the calendar response
+              const created = res || {};
+              const createdTimetableHabit: Habit = {
+                id: String(created?.id ?? habit.id),
+                title: created?.title ?? habit.title,
+                notes: created?.description ?? created?.notes ?? habit.notes,
+                startDate: created?.startDate ? new Date(created.startDate) : habit.startDate,
+                endDate: created?.endDate ? new Date(created.endDate) : habit.endDate,
+                startTime: created?.startTime ?? formattedStartTime,
+                endTime: created?.endTime ?? formattedEndTime,
+                startTimeStamp: created?.startDate ? new Date(`${created.startDate}T${formattedStartTime}`).getTime() : habit.startTimeStamp,
+                endTimeStamp: created?.endDate ? new Date(`${created.endDate}T${formattedEndTime}`).getTime() : habit.endTimeStamp,
+                type: 'timetable',
+                isPrivate: habit.isPrivate,
+                selectedRoutine: this.selectedRoutine,
+                routineTags: this.routineTags,
+                everyday: !!created?.everyday,
+                selectedDays: Array.isArray(created?.daysOfWeek) ? created.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek),
+                priority: (created?.priority ?? habit.priority) as any,
+                routine: this.selectedRoutine,
+                status: habit.status,
+                createdAt: created?.createdAt ? new Date(created.createdAt) : new Date(),
+                activities: habit.activities,
+                tags: Array.isArray(created?.tags) ? created.tags : (Array.isArray(this.selectedTags) ? this.selectedTags.map(t => t.value || t.key) : []),
+                daysOfWeek: Array.isArray(created?.daysOfWeek) ? created.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek)
+              };
+              this.habitService.addHabit(createdTimetableHabit);
+              this.modalCtrl.dismiss();
+              this.navigationContext.navigateBack({ newHabit: createdTimetableHabit, showSingleMode: true, initialTab: 'timetable' });
+            } finally {
+              this.isSubmitting = false;
+            }
+          },
+          error: (err) => {
+            this.isSubmitting = false;
+            console.error('Failed to create timetable', err);
+            console.error('Error status:', err?.status);
+            console.error('Error message:', err?.message);
+            console.error('Error body:', err?.error);
+            const errorMsg = err?.error?.message || err?.message || 'Unknown error';
+            alert(`Failed to create timetable: ${errorMsg}. Please try again.`);
+          }
+        });
+      }
     } else {
       // Habit create/update: call HabitApi directly and handle mapping
       if (this.editingId) {

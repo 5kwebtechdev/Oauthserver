@@ -176,7 +176,7 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   }
 
   loadDayData(dateStr: string) {
-    this.calendarService.getUserCalendar(dateStr)
+    this.calendarService.getUserCalendarMonth(dateStr)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
