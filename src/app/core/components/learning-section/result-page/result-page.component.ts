@@ -7,6 +7,7 @@ import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 import { ChallengeSubmissionResponse, Challenge } from 'src/app/core/models/learning.models';
+import { PetMood } from '../../mindful-pet/mindful-pet.component';
 
 @Component({
   selector: 'app-result-page',
@@ -92,24 +93,46 @@ export class ResultPageComponent implements OnInit {
     }
   }
 
+
+  getScoreColor(): string {
+    if (this.scorePercentage >= 80) {
+      return '#4CAF50';
+    } else if (this.scorePercentage >= 40) {
+      return '#F0AD4E';
+    } else {
+      return '#BB2124';
+    }
+  }
+
+
+  getPetMood(): PetMood {
+    if (this.scorePercentage >= 80) {
+      return 'happy';
+    } else if (this.scorePercentage >= 40) {
+      return 'playful';
+    } else {
+      return 'base'; 
+    }
+  }
+
+  
+  isExcellentScore(): boolean {
+    return this.scorePercentage >= 80;
+  }
+
   onCancel(): void {
-    // Navigate back to learning page
     this.router.navigate(['/authed/content']);
   }
 
   onPetClick(): void {
-    // Handle pet click event
     console.log('Pet clicked!');
   }
 
   onContinue(): void {
-    // Navigate back to learning page
     this.router.navigate(['/authed/content']);
   }
 
-  /**
-   * Format time taken in MM:SS format
-   */
+ 
   getFormattedTime(): string {
     const minutes = Math.floor(this.timeTaken / 60);
     const seconds = this.timeTaken % 60;

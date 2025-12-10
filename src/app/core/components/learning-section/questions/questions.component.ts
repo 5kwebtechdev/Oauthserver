@@ -1,6 +1,6 @@
-import { Component, ViewChildren, QueryList, OnInit, OnDestroy } from '@angular/core';
+import { Component, ViewChildren, ViewChild, QueryList, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, IonContent } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
@@ -42,6 +42,9 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     // Store references to all answer buttons
     @ViewChildren(MindfulButtonComponent) answerButtons!: QueryList<MindfulButtonComponent>;
 
+    // Reference to ion-content for scrolling
+    @ViewChild(IonContent) content!: IonContent;
+
     // Define the correct answer for the current question (in a real app, this would come from data)
     correctAnswer = '5';
 
@@ -77,6 +80,12 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
     // Hint visibility
     showHint = false;
+
+    // Hint usage tracking
+    hintsUsed = 0;
+    maxHints = 2;
+    coinsPerHint = 3;
+    totalCoins = 100; // Default value, should be fetched from user profile
 
     // Timer expiration popup configuration
     timerExpirationPopupConfig: MindfulPopupConfig = {
@@ -370,7 +379,21 @@ export class QuestionsComponent implements OnInit, OnDestroy {
                 selectedButton.correct = true;
                 selectedButton.incorrect = false;
             }
+
+            // Scroll to bottom to show the Check button
+            this.scrollToBottom();
         }
+    }
+
+    /**
+     * Scroll to bottom of the page
+     */
+    private scrollToBottom() {
+        setTimeout(() => {
+            if (this.content) {
+                this.content.scrollToBottom(300);
+            }
+        }, 100);
     }
 
     onCheck() {
@@ -389,11 +412,16 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             this.showPopup = true;
 
             if (this.isAnswerCorrect) {
-                // Correct answer
-                this.popupMessage = 'Correct!';
+                // Correct answer - use positiveFeedback from backend or fallback
+                this.popupMessage = this.challenge?.positiveFeedback || 'Correct!';
                 this.popupBackgroundColor = '#DBEFDC';
                 this.popupTextColor = '#4CAF50';
-                this.nextButtonText = 'Next';
+                // Check if this is the last question
+                if (this.currentQuestionIndex >= this.totalQuestions - 1) {
+                    this.nextButtonText = 'See Result';
+                } else {
+                    this.nextButtonText = 'Next';
+                }
                 this.nextButtonType = 'green';
 
                 // For True/False questions, update the visual state using class binding
@@ -414,35 +442,17 @@ export class QuestionsComponent implements OnInit, OnDestroy {
                     selectedButton.correct = true;
                 }
             } else {
-                // Incorrect answer
-                this.popupMessage = 'Incorrect!';
+                // Incorrect answer - use negativeFeedback from backend or fallback
+                this.popupMessage = this.challenge?.negativeFeedback || 'Incorrect!';
                 this.popupBackgroundColor = '#FDCBCC';
                 this.popupTextColor = '#BB2124';
-                this.nextButtonText = 'Got it, next question';
+                // Check if this is the last question
+                if (this.currentQuestionIndex >= this.totalQuestions - 1) {
+                    this.nextButtonText = 'See Result';
+                } else {
+                    this.nextButtonText = 'Got it, next question';
+                }
                 this.nextButtonType = 'bronze';
-
-                // For True/False questions, update the visual state using class binding
-                if (this.questions[this.currentQuestionIndex].type === 'true-false') {
-                    // The visual update is handled by the template bindings
-                    return;
-                }
-
-                // For Visual questions, update the visual state using class binding
-                if (this.questions[this.currentQuestionIndex].type === 'visual') {
-                    // The visual update is handled by the template bindings
-                    return;
-                }
-
-                // Mark the selected button as incorrect and correct button as correct (for MCQ)
-                const selectedButton = this.answerButtons.find(button => button.text === this.selectedAnswer);
-                if (selectedButton) {
-                    selectedButton.incorrect = true;
-                }
-
-                const correctButton = this.answerButtons.find(button => button.text === this.correctAnswer);
-                if (correctButton) {
-                    correctButton.correct = true;
-                }
             }
         }
     }
@@ -489,19 +499,43 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         this.isSubmitting = true;
         this.stopTimer();
 
-        // Prepare answers payload
-        const answers = this.questions.map(q => {
-            const answer = this.questionAnswers[q.id];
-            return {
-                questionId: q.id,
-                selectedOptionId: answer.selectedOptionId,
-                selectedOptionIds: answer.selectedOptionId ? [answer.selectedOptionId] : []
-            };
+        // Prepare answers payload in the format expected by the backend
+        const questionAnswers: { [key: string]: string } = {};
+        const skippedQuestions: string[] = [];
+
+        // Convert our internal tracking to the expected format
+        this.questions.forEach(question => {
+            const answer = this.questionAnswers[question.id];
+            if (answer.selected) {
+                questionAnswers[question.id.toString()] = answer.selected;
+            } else {
+                // Track unanswered questions as skipped
+                skippedQuestions.push(question.id.toString());
+            }
         });
 
-        console.log('Submitting answers:', answers);
+        // If there are skipped questions, confirm submission
+        if (skippedQuestions.length > 0) {
+            const confirmSubmit = confirm(`You have ${skippedQuestions.length} unanswered question(s). Do you want to submit anyway?`);
+            if (!confirmSubmit) {
+                this.isSubmitting = false;
+                return;
+            }
+        }
 
-        this.learningService.submitChallenge(this.challenge.challengeId, answers).subscribe({
+        // Create payload that matches the expected format
+        const payload = {
+            questionAnswers: questionAnswers,
+            timeTaken: this.totalTimeSeconds - this.remainingTimeSeconds,
+            skippedQuestions: skippedQuestions
+        };
+
+        console.log('Submitting challenge:', this.challenge.challengeId);
+        console.log('Full payload:', payload);
+        console.log('JSON payload:', JSON.stringify(payload, null, 2));
+
+        // Use the learning service to submit with the new format
+        this.learningService.submitChallengeNewFormat(this.challenge.challengeId, payload).subscribe({
             next: (response) => {
                 console.log('Submission successful:', response);
                 // Navigate to result page with response data
@@ -517,17 +551,78 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             error: (error) => {
                 console.error('Submission failed:', error);
                 this.isSubmitting = false;
+
+                // More detailed error handling
+                let errorMessage = 'Failed to submit answers. Please try again.';
+
+                if (error.status === 400) {
+                    // Handle bad request - could be validation error or already completed challenge
+                    if (error.error && typeof error.error === 'object') {
+                        if (error.error.message) {
+                            errorMessage = error.error.message;
+                        } else if (error.error.celebrationText) {
+                            // This looks like a successful response despite the 400 status
+                            // Navigate to result page with the error response data
+                            this.router.navigate(['/authed/content/result'], {
+                                state: {
+                                    submissionResult: error.error,
+                                    challenge: this.challenge,
+                                    timeTaken: this.totalTimeSeconds - this.remainingTimeSeconds
+                                }
+                            });
+                            return;
+                        }
+                    } else {
+                        errorMessage = 'Invalid submission data. Please check your answers and try again.';
+                    }
+                } else if (error.status === 409) {
+                    // Handle the case where challenge is already completed
+                    if (error.error && error.error.celebrationText) {
+                        // Navigate to result page with the error response data
+                        this.router.navigate(['/authed/content/result'], {
+                            state: {
+                                submissionResult: error.error,
+                                challenge: this.challenge,
+                                timeTaken: this.totalTimeSeconds - this.remainingTimeSeconds
+                            }
+                        });
+                        return;
+                    }
+                    errorMessage = 'Challenge already completed!';
+                } else if (error.status === 500) {
+                    errorMessage = 'Server error. Please try again later.';
+                }
+
                 // Show error popup or navigate anyway with local data
-                alert('Failed to submit answers. Please try again.');
+                alert(errorMessage);
             }
         });
     }
 
     /**
-     * Toggle hint visibility
+     * Toggle hint visibility and deduct coins
      */
     toggleHint() {
-        this.showHint = !this.showHint;
+        // Check if max hints reached
+        if (this.hintsUsed >= this.maxHints) {
+            console.log('Maximum hints reached');
+            return;
+        }
+
+        // Check if user has enough coins
+        if (this.totalCoins < this.coinsPerHint) {
+            console.log('Not enough coins');
+            return;
+        }
+
+        // Show hint
+        this.showHint = true;
+
+        // Deduct coins and increment hints used
+        this.totalCoins -= this.coinsPerHint;
+        this.hintsUsed++;
+
+        console.log(`Hint used. Remaining coins: ${this.totalCoins}, Hints used: ${this.hintsUsed}/${this.maxHints}`);
     }
 
     quitQuiz() {
@@ -547,6 +642,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         this.selectedOption = null;
         this.answerChecked = false;
         this.showHint = false;
+        this.hintsUsed = 0;
         this.showTimerExpirationPopup = false;
         this.showContentTimeExhaustPopup = false;
 

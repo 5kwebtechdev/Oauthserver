@@ -1,22 +1,21 @@
 <ion-content>
   <div class="article-page d-flex flex-column gap-4" *ngIf="!isLoading && article">
     <div class="article-container">
-      <mindful-navigator [heading]="article.title" backIcon="arrowSvg"></mindful-navigator>
+      <mindful-navigator backIcon="arrowSvg"></mindful-navigator>
+      <h1 class="article-title">{{article.title}}</h1>
       <div class="article-header">
         <img *ngIf="article.thumbnailUrl" [src]="article.thumbnailUrl" [alt]="article.title" class="article-image"
           style="width: 100%; border-radius: 12px; margin: 16px 0;" />
-        <div class="article-meta" style="display: flex; gap: 16px; margin: 8px 0; color: #666; font-size: 14px;">
-          <span>{{article.timeDuration}}</span>
-          <span *ngIf="article.tags && article.tags.length">{{article.tags.join(', ')}}</span>
-        </div>
         <div class="article-description" style="margin: 12px 0; font-weight: 600;">
           <p>{{article.description}}</p>
         </div>
-        <div class="article-content" style="margin-top: 16px; line-height: 1.6;" [innerHTML]="article.content">
-        </div>
       </div>
     </div>
-    <mindful-button type="green" text="Mark as read"></mindful-button>
+    <div class="article-content-section" style="padding:0px 16px 40px 16px;">
+      <div class="article-content" style="margin-top: 16px; line-height: 1.6;" [innerHTML]="article.content">
+      </div>
+      <mindful-button type="green" text="Mark as read"></mindful-button>
+    </div>
   </div>
 
   <div class="article-page d-flex flex-column gap-4" *ngIf="isLoading" style="text-align: center; padding: 48px 16px;">

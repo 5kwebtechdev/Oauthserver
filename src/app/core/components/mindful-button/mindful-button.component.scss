@@ -4,7 +4,7 @@
 
 .button {
   display: flex;
-  padding: 1vw 2.5vw;
+  padding: 8px 16px;
   float: left;
   box-sizing: border-box;
 
@@ -305,9 +305,12 @@ p {
 }
 
 .green {
-  --button_background: linear-gradient(132.16deg, #4CAF50 1.89%, #358438 98.11%);
-  --button_border: 1px solid #358438;
-  --button_box_shodow: 0 0 1px 0.5px rgba(76, 175, 80, 0.20), 0 -4px 2px 0 #6BBD6E inset;
+  border-radius: 8px;
+  border: 1px solid #358438;
+  background: linear-gradient(132deg, #4CAF50 1.89%, #358438 98.11%);
+  box-shadow: 0 0 1px 0.5px rgba(76, 175, 80, 0.20), 0 -4px 2px 0 #6BBD6E inset;
+
+
 }
 
 
@@ -319,10 +322,10 @@ p {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
-  border-radius: 4px;
+  border-radius: 8px;
   border: 1px solid #358438;
   background: linear-gradient(132deg, #4CAF50 1.89%, #358438 98.11%);
-  box-shadow: 0 -2px 2px 0 #6BBD6E inset, 0 0 1px 0.5px rgba(76, 175, 80, 0.20);
+  box-shadow: 0 0 1px 0.5px rgba(76, 175, 80, 0.20), 0 -4px 2px 0 #6BBD6E inset;
 }
 
 
@@ -349,10 +352,10 @@ p {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
-  border-radius: 4px;
+  border-radius: 8px;
   border: 1px solid #358438;
   background: linear-gradient(132deg, #4CAF50 1.89%, #358438 98.11%);
-  box-shadow: 0 -2px 2px 0 #6BBD6E inset, 0 0 1px 0.5px rgba(76, 175, 80, 0.20);
+  box-shadow: 0 0 1px 0.5px rgba(76, 175, 80, 0.20), 0 -4px 2px 0 #6BBD6E inset;
   --text_color: #FFFFFF;
 }
 

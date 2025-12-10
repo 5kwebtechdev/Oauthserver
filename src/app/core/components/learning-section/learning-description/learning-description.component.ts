@@ -15,7 +15,7 @@ import { Challenge } from 'src/app/core/models/learning.models';
   template: `
     <div class="content-description-screen" *ngIf="!isLoading && challenge">
       <div class="back-title">
-        <mindful-navigator [heading]="challenge.name" backIcon="arrowSvg"></mindful-navigator>
+        <mindful-navigator [heading]="challenge.name" backIcon="arrowSvg" (back)="onBack()"></mindful-navigator>
       </div>
       <div class="desc-image">
         <img [src]="challenge.innerImageUrl || challenge.thumbnailImageUrl || '/assets/images/Quiz_Description_screen-Thumbnail.png'" [alt]="challenge.name" class="hero-image" />
@@ -151,5 +151,9 @@ export class LearningDescriptionComponent implements OnInit {
     } else {
       this.router.navigate(['/authed/content/questions']);
     }
+  }
+
+  onBack() {
+    this.router.navigate(['/authed/content']);
   }
 }

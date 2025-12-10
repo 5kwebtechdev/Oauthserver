@@ -89,7 +89,46 @@ export class LearningService {
     }
 
     /**
-     * Submit challenge answers
+     * Submit challenge answers (new format)
+     */
+    submitChallengeNewFormat(challengeId: number, payload: { 
+        questionAnswers: { [key: string]: string }, 
+        timeTaken: number, 
+        skippedQuestions: string[] 
+    }): Observable<any> {
+        const url = `${this.apiUrl}/challenges/${challengeId}/submit-all`;
+        
+        console.log('Submitting challenge to URL:', url);
+        console.log('Full payload:', payload);
+        console.log('JSON payload:', JSON.stringify(payload, null, 2));
+
+        return this.http.post<any>(url, payload, { headers: this.getHeaders() })
+            .pipe(
+                tap(response => {
+                    console.log('Challenge submission response:', response);
+                }),
+                catchError(error => {
+                    console.error('Error submitting challenge:', error);
+                    // If it's a 409 error (conflict), the backend might still return useful data
+                    if (error.status === 409 && error.error) {
+                        // Return the error response body so the UI can handle it appropriately
+                        return of(error.error);
+                    }
+                    // If it's a 400 error (bad request), check if it contains successful response data
+                    if (error.status === 400 && error.error) {
+                        console.error('Bad request details:', error.error);
+                        // If the error response looks like a successful submission response, return it
+                        if (error.error.celebrationText || error.error.success !== undefined) {
+                            return of(error.error);
+                        }
+                    }
+                    throw error;
+                })
+            );
+    }
+
+    /**
+     * Submit challenge answers (legacy format)
      */
     submitChallenge(challengeId: number, answers: { questionId: number; selectedOptionId: number | null; selectedOptionIds?: number[]; }[]): Observable<any> {
         const url = `${this.apiUrl}/challenges/${challengeId}/submit-all`;
