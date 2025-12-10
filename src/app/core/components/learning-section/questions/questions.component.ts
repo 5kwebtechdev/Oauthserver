@@ -1,6 +1,6 @@
-import { Component, ViewChildren, QueryList, OnInit, OnDestroy } from '@angular/core';
+import { Component, ViewChildren, ViewChild, QueryList, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, IonContent } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
@@ -41,6 +41,9 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
     // Store references to all answer buttons
     @ViewChildren(MindfulButtonComponent) answerButtons!: QueryList<MindfulButtonComponent>;
+
+    // Reference to ion-content for scrolling
+    @ViewChild(IonContent) content!: IonContent;
 
     // Define the correct answer for the current question (in a real app, this would come from data)
     correctAnswer = '5';
@@ -370,7 +373,21 @@ export class QuestionsComponent implements OnInit, OnDestroy {
                 selectedButton.correct = true;
                 selectedButton.incorrect = false;
             }
+
+            // Scroll to bottom to show the Check button
+            this.scrollToBottom();
         }
+    }
+
+    /**
+     * Scroll to bottom of the page
+     */
+    private scrollToBottom() {
+        setTimeout(() => {
+            if (this.content) {
+                this.content.scrollToBottom(300);
+            }
+        }, 100);
     }
 
     onCheck() {
