@@ -188,12 +188,29 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       this.notes = h.notes ?? h.description ?? '';
       this.startDate = h.startDate ? new Date(h.startDate) : (h.startDateEpoch ? new Date(Number(h.startDateEpoch)) : null);
       this.endDate = h.endDate ? new Date(h.endDate) : (h.endDateEpoch ? new Date(Number(h.endDateEpoch)) : null);
-      this.startTime = h.startTime || h.start_time || '';
-      this.endTime = h.endTime || h.end_time || '';
+      // Convert times to 12-hour format for the timepicker component
+      this.startTime = this.to12Hour(h.startTime || h.start_time || '');
+      this.endTime = this.to12Hour(h.endTime || h.end_time || '');
       this.currentActive = (h.type as any) || this.currentActive;
       this.isPrivate = !!h.isPrivate;
       this.selectedRoutine = h.selectedRoutine || h.routine || (h.getRoutine as any) || this.selectedRoutine;
-      this.routineTags = Array.isArray(h.routineTags) ? h.routineTags : this.routineTags;
+
+      // Merge incoming routineTags with default tags instead of replacing
+      if (Array.isArray(h.routineTags) && h.routineTags.length > 0) {
+        h.routineTags.forEach((incomingTag: any) => {
+          const exists = this.routineTags.some(rt =>
+            String(rt.key) === String(incomingTag.key) ||
+            String(rt.value).toLowerCase() === String(incomingTag.value).toLowerCase()
+          );
+          if (!exists) {
+            this.routineTags.push({
+              key: String(incomingTag.key),
+              value: incomingTag.value,
+              type: incomingTag.type || 'habit-input'
+            });
+          }
+        });
+      }
 
       const incomingDays: string[] = Array.isArray(h.selectedDays) ? h.selectedDays : (Array.isArray(h.daysOfWeek) ? h.daysOfWeek : []);
       const mapFullToShort: any = { SUNDAY: 'S', MONDAY: 'M', TUESDAY: 'T', WEDNESDAY: 'W', THURSDAY: 'Th', FRIDAY: 'F', SATURDAY: 'Sa' };
@@ -219,8 +236,26 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
 
       if (Array.isArray(h.tags) && h.tags.length) {
         const first = h.tags[0];
-        if (typeof first === 'string') this.selectedTags = h.tags.map((t: string, idx: number) => ({ key: String(idx), value: t }));
-        else if (typeof first === 'object') this.selectedTags = h.tags.map((t: any, idx: number) => (t.key && (t.value || t.name || t.title)) ? { key: String(t.key), value: t.value || t.name || t.title, type: t.type } : { key: String(idx), value: t.value || t.name || t.title || JSON.stringify(t) });
+        if (typeof first === 'string') {
+          this.selectedTags = h.tags.map((t: string, idx: number) => ({ key: String(idx), value: t }));
+          h.tags.forEach((tagValue: string) => {
+            const exists = this.routineTags.some(rt => rt.value.toLowerCase() === tagValue.toLowerCase());
+            if (!exists) {
+              this.routineTags.push({ key: String(Date.now() + Math.random()), value: tagValue, type: 'habit-input' });
+            }
+          });
+        } else if (typeof first === 'object') {
+          this.selectedTags = h.tags.map((t: any, idx: number) => (t.key && (t.value || t.name || t.title)) ? { key: String(t.key), value: t.value || t.name || t.title, type: t.type } : { key: String(idx), value: t.value || t.name || t.title || JSON.stringify(t) });
+          h.tags.forEach((tag: any) => {
+            const tagValue = tag.value || tag.name || tag.title;
+            if (tagValue) {
+              const exists = this.routineTags.some(rt => rt.value.toLowerCase() === tagValue.toLowerCase());
+              if (!exists) {
+                this.routineTags.push({ key: String(tag.key || Date.now() + Math.random()), value: tagValue, type: tag.type || 'habit-input' });
+              }
+            }
+          });
+        }
       }
     } catch (e) {
       console.warn('Failed to read navigation state for habit-input', e);
@@ -305,6 +340,31 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       if (ampm === 'AM' && hh === 12) hh = 0;
       return `${hh.toString().padStart(2, '0')}:${mm}:00`;
     }
+    return trimmed;
+  }
+
+  private to12Hour(t: string): string {
+    if (!t) return '';
+    const trimmed = t.trim();
+
+    // Already in 12-hour format with AM/PM
+    if (/^\d{1,2}:\d{2}\s*(AM|PM)$/i.test(trimmed)) {
+      return trimmed;
+    }
+
+    // Convert from 24-hour format (HH:MM:SS or HH:MM)
+    const match = trimmed.match(/^(\d{1,2}):(\d{2})/);
+    if (match) {
+      let hours = parseInt(match[1], 10);
+      const minutes = match[2];
+      const period = hours >= 12 ? 'PM' : 'AM';
+
+      if (hours === 0) hours = 12;
+      else if (hours > 12) hours -= 12;
+
+      return `${hours}:${minutes} ${period}`;
+    }
+
     return trimmed;
   }
 
@@ -1198,11 +1258,29 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         const keysToSelect: any[] = [];
         if (Array.isArray(this.selectedTags) && this.selectedTags.length) {
           this.selectedTags.forEach(st => {
+            // Get the tag value from various possible property names
+            const stValue = st.value || (st as any).name || (st as any).title || '';
+            // First try to match by value (more reliable for string tags)
+            const byVal = this.routineTags.find(t => String(t.value).toLowerCase() === String(stValue).toLowerCase());
+            if (byVal) {
+              keysToSelect.push(byVal.key);
+              return;
+            }
+            // Then try to match by key
             const byKey = this.routineTags.find(t => String(t.key) === String(st.key));
-            if (byKey) { keysToSelect.push(byKey.key); return; }
-            const byVal = this.routineTags.find(t => String(t.value).toLowerCase() === String(st.value).toLowerCase());
-            if (byVal) { keysToSelect.push(byVal.key); return; }
-            keysToSelect.push(st.key);
+            if (byKey) {
+              keysToSelect.push(byKey.key);
+              return;
+            }
+            // If no match found, the tag should have been added to routineTags in ngOnInit
+            // but just in case, try to find any remaining matches
+            const fallback = this.routineTags.find(t =>
+              String(t.value).toLowerCase().includes(String(stValue || st.key || '').toLowerCase()) ||
+              String(stValue || st.key || '').toLowerCase().includes(String(t.value).toLowerCase())
+            );
+            if (fallback) {
+              keysToSelect.push(fallback.key);
+            }
           });
         }
         this.tagsComponent.selectedKeys = keysToSelect;

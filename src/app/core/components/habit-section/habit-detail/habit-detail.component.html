@@ -18,7 +18,7 @@
     <div class="detail-container" *ngIf="habit">
         <div class="habit-detail-header d-flex justify-content-between align-items-start align-self-stretch">
             <div class="habit-title d-flex flex-column gap-2">
-                <div class="habit-title-priority d-flex  align-items-center gap-3">
+                <div class="habit-title-priority d-flex  align-items-center gap-1">
                     <h1>{{ habit.title }}</h1>
                     <span class="priority-badge priority-{{ habit.priority | lowercase }}">{{ habit.priority | titlecase
                         }}</span>
@@ -57,12 +57,13 @@
                 {{ shortDaysOfWeek }}
             </div>
         </div>
-        <div class="detail-message">
-            <div class="bubble-speech">
-                <app-speech-bubble [arrowSide]="'right'" [arrowOffset]="'50%'"
-                    [message]="speechMessage"></app-speech-bubble>
+        <div class="detail-message d-flex align-items-center"
+            style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <div class="bubble-speech" style="flex:1;min-width:0;margin-right:12px;">
+                <app-speech-bubble [arrowSide]="'right'" [arrowOffset]="'50%'" [message]="speechMessage"
+                    style="display:block;width:100%;"></app-speech-bubble>
             </div>
-            <div class="detail-pet">
+            <div class="detail-pet" style="flex:0 0 auto;margin-left:8px;">
                 <mindful-pet></mindful-pet>
             </div>
         </div>
