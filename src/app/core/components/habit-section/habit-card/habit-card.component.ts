@@ -86,6 +86,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   private lastUpdateTime: number = 0;
   percentageCompleted: number = 0;
   progressInterval: any;
+  // Local flag to show timer icon only for this card when user clicked "Let's Go"
+  public showLocalTimer: boolean = false;
 
   // Auto-reload timers
   private letsGoWindowTimer: any;
@@ -143,6 +145,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           // You might need to implement a task service similar to habitService
           this.habit = updated;
           // Start progress with proper initialization
+          // Show timer icon locally for this card since user pressed Let's Go
+          this.showLocalTimer = true;
           this.startProgress();
           this.loadTodayTasks(); // This might need adjustment for tasks
           // Trigger change detection to update button states in other components
@@ -160,6 +164,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           const updated = { ...this.habit!, status: 'ongoing' } as Habit;
           this.habitService.updateHabit(updated);
           this.habit = updated;
+          // Show timer icon locally for this card since user pressed Let's Go
+          this.showLocalTimer = true;
           // Start progress with proper initialization
           this.startProgress();
           this.loadHabits();
@@ -187,6 +193,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           // Reset progress when aborting
           this.percentageCompleted = 0;
           this.resetProgress();
+          // Hide local timer icon for this card
+          this.showLocalTimer = false;
           this.loadTodayTasks();
           // Trigger change detection to update button states in other components
           this.cdr.detectChanges();
@@ -206,6 +214,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           // Reset progress when aborting
           this.percentageCompleted = 0;
           this.resetProgress();
+          // Hide local timer icon for this card
+          this.showLocalTimer = false;
           this.loadHabits();
           // Trigger change detection to update button states in other components
           this.cdr.detectChanges();
@@ -249,6 +259,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           this.habit = updated;
           // Set progress to 100% when completed
           this.percentageCompleted = 100;
+          // Hide local timer icon for this card when completed
+          this.showLocalTimer = false;
           this.loadTodayTasks();
           this.clearProgress();
           // Trigger change detection to update button states in other components
@@ -267,6 +279,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           this.habit = updated;
           // Set progress to 100% when completed
           this.percentageCompleted = 100;
+          // Hide local timer icon for this card when completed
+          this.showLocalTimer = false;
           this.loadHabits();
           this.clearProgress();
           // Trigger change detection to update button states in other components
@@ -368,6 +382,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
       // Calculate actual progress immediately
       this.percentageCompleted = this.calculateProgressPercentage();
       this.startProgress();
+      // Show timer icon and bubble for ongoing habits (persists across reloads)
+      this.showLocalTimer = true;
     } else {
       // For non-ongoing habits, initialize to 0
       this.percentageCompleted = 0;
@@ -629,6 +645,21 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     if (data) {
       this.switchTab(this.currentActive);
     }
+  }
+
+  async openTimer() {
+    if (!this.habit) return;
+
+    const { SupermeTimerComponent } = await import('../../superme-timer/superme-timer.component');
+    const modal = await this.modalCtrl.create({
+      component: SupermeTimerComponent,
+      componentProps: {
+        startTime: this.startTime || this.habit.startTimeStamp,
+        endTime: this.endTime || this.habit.endTimeStamp,
+        title: this.habit.title || ''
+      }
+    });
+    await modal.present();
   }
 
   ngOnChanges(changes: SimpleChanges) {

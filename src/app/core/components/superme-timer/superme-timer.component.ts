@@ -1,20 +1,30 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
+import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigator.component';
+import { ModalController, IonicModule } from '@ionic/angular';
 
 @Component({
     selector: 'app-superme-timer',
     templateUrl: './superme-timer.component.html',
     styleUrls: ['./superme-timer.component.scss'],
     standalone: true,
-    imports: [CommonModule, MindfulButtonComponent]
+    imports: [IonicModule, CommonModule, MindfulButtonComponent, MindfulNavigatorComponent]
 })
 export class SupermeTimerComponent implements OnInit, OnDestroy {
+    // Optional display title (habit / task title)
+    @Input() title?: string;
+
+    // Timestamps for habit/task time range
+    @Input() startTime?: number;
+    @Input() endTime?: number;
+
     // total duration in seconds (default 1 hour)
     @Input() totalSeconds = 3600;
 
     remainingSeconds = 0;
     private intervalId: any = null;
+    private calculatedDuration = 0;
 
     // SVG progress properties
     radius = 130; // matches SVG viewBox sizing in template
@@ -34,8 +44,9 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
     ticks = new Array(12);
 
     get progressPercent(): number {
-        if (this.totalSeconds <= 0) { return 0; }
-        return Math.min(100, Math.max(0, (this.totalSeconds - this.remainingSeconds) / this.totalSeconds * 100));
+        const duration = this.calculatedDuration || this.totalSeconds;
+        if (duration <= 0) { return 0; }
+        return Math.min(100, Math.max(0, (duration - this.remainingSeconds) / duration * 100));
     }
 
     get dashOffset(): number {
@@ -43,9 +54,36 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        // start timer
-        this.remainingSeconds = this.totalSeconds;
+        // Calculate duration based on startTime and endTime if provided
+        this.calculatedDuration = this.calculateTimerDuration();
+        this.remainingSeconds = this.calculatedDuration;
         this.start();
+    }
+
+    private calculateTimerDuration(): number {
+        // If startTime and endTime are provided, calculate based on them
+        if (this.startTime && this.endTime) {
+            const now = Date.now();
+
+            // If we're within the time range, countdown from now until end
+            if (now >= this.startTime && now <= this.endTime) {
+                const remaining = Math.floor((this.endTime - now) / 1000);
+                return remaining > 0 ? remaining : 60; // minimum 1 minute
+            }
+
+            // If we haven't started yet, use the full duration
+            if (now < this.startTime) {
+                const fullDuration = Math.floor((this.endTime - this.startTime) / 1000);
+                return fullDuration > 0 ? fullDuration : 3600;
+            }
+
+            // If time has passed, use the original duration
+            const fullDuration = Math.floor((this.endTime - this.startTime) / 1000);
+            return fullDuration > 0 ? fullDuration : 3600;
+        }
+
+        // Fall back to totalSeconds input
+        return this.totalSeconds || 3600;
     }
 
     ngOnDestroy(): void {
@@ -70,9 +108,15 @@ export class SupermeTimerComponent implements OnInit, OnDestroy {
         }
     }
 
-    // CTA handler
-    onBack() {
-        // navigate back or emit event — keep simple for this demo
-        window.history.back();
+    constructor(private modalCtrl: ModalController) { }
+
+    // CTA handler — dismiss the modal when back pressed
+    async onBack() {
+        try {
+            await this.modalCtrl.dismiss();
+        } catch (e) {
+            // fallback to history back
+            try { window.history.back(); } catch (err) { /* ignore */ }
+        }
     }
 }
