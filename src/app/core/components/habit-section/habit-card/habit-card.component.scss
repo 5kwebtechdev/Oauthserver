@@ -477,6 +477,9 @@ h4 {
   font-weight: 600;
   line-height: 140%;
   /* 18.2px */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .task-timing {
@@ -485,10 +488,50 @@ h4 {
   font-weight: 600;
   line-height: 140%;
   /* 18.2px */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Timer icon shown when an activity is in-progress */
+.timer-icon {
+  width: 32px;
+  height: 32px;
+  aspect-ratio: 1/1;
 }
 
 /* Size the header "view all" icon in the Day At A Glance card */
 .day-at-glance__view-all {
+
+  /* Timer speech bubble shown after timer icon when user clicks Let's Go */
+  .bubble {
+    position: relative;
+    background: #a1a7d8;
+    color: #FFFFFF;
+    font-family: Arial;
+    font-size: 10px;
+    line-height: 21px;
+    text-align: center;
+    width: 121px;
+    height: 25px;
+    border-radius: 4px;
+    padding: 0px;
+  }
+
+  .bubble:after {
+    content: '';
+    position: absolute;
+    display: block;
+    width: 0;
+    z-index: 1;
+    border-style: solid;
+    border-color: transparent #a1a7d8;
+    border-width: 5px 8px 5px 0;
+    top: 50%;
+    left: -8px;
+    margin-top: -5px;
+  }
+
   width: 40px;
   height: auto;
   margin-top: 20px;
@@ -528,20 +571,21 @@ h4 {
 
 .bubble {
   position: relative;
-  background: #fdfdfd;
-  color: #282527;
-  font-family: Arial;
+  position: relative;
+  background: #A1A7ED;
+  color: #FFFFFF;
+  /* text color */
+  font-family: 'Nunito', sans-serif;
   font-size: 10px;
-  line-height: 13px;
-  box-shadow: 0 0 8px 0 rgba(107, 101, 106, 0.15);
-  width: 70px;
-  height: 26px;
-  border-radius: 4px;
+  font-weight: 600;
+  line-height: 21px;
+
+  border: #A1A7D8 solid 1px;
   display: inline-flex;
-  padding: 6px 12px;
+  padding: 0px 2px;
   justify-content: center;
   align-items: center;
-  border: #4caf4f solid 1px;
+  border-radius: 4px;
 }
 
 .bubble:after {
@@ -549,25 +593,27 @@ h4 {
   position: absolute;
   display: block;
   width: 0;
-  z-index: 1;
+  z-index: 2;
   border-style: solid;
-  border-color: transparent #fdfdfd;
-  // border-width: 8px 0 8px 8px;
+  border-width: 5px 8px 5px 0;
+  /* top right bottom left */
+  border-color: transparent #a1a7d8 transparent transparent;
   top: 50%;
-  right: -8px;
-  margin-top: -8px;
+  left: -8px;
+  margin-top: -5px;
 }
 
 .bubble:before {
+  /* subtle shadow/outline behind the arrow */
   content: '';
   position: absolute;
   width: 0;
-  z-index: 0;
+  z-index: 1;
   border-style: solid;
-  border-color: transparent #4caf4f;
-  border-width: 8px 0px 8px 8px;
+  border-width: 8px 10px 8px 0;
+  border-color: transparent rgba(0, 0, 0, 0.06) transparent transparent;
   top: 50%;
-  right: -9.5px;
-  margin-top: -9px;
+  left: -9.5px;
+  margin-top: -8px;
   display: block;
 }
