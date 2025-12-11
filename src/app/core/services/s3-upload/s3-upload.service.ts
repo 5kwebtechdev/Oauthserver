@@ -6,6 +6,7 @@ export interface PresignRequest {
     originalName: string;
     contentType: string;
     fileSize: number;
+    userId?: number; // Optional userId for custom backend
 }
 
 export interface PresignResponse {
@@ -149,5 +150,117 @@ export class S3UploadService {
             const text = await res.text().catch(() => '');
             throw new Error(`Upload failed with status ${res.status}: ${text}`);
         }
+    }
+
+    /**
+     * Request a presigned URL with userId included in the request body.
+     * This is for backends that require userId as part of the presign request.
+     * @param presignEndpoint full backend endpoint to request presign data
+     * @param file file being uploaded
+     * @param userId user ID to include in request
+     * @param token optional auth token (Bearer)
+     */
+    async getPresignedUrlWithUserId(
+        presignEndpoint: string,
+        file: File,
+        userId: number,
+        token?: string
+    ): Promise<PresignResponse> {
+        const headers: any = {
+            'Content-Type': 'application/json'
+        };
+
+        if (token) {
+            headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+        }
+
+        const body: PresignRequest = {
+            userId: userId,
+            originalName: file.name,
+            contentType: file.type,
+            fileSize: file.size
+        };
+
+        const resp = await lastValueFrom(
+            this.http.post<PresignResponse>(presignEndpoint, body, { headers: new HttpHeaders(headers) })
+        );
+        return resp;
+    }
+
+    /**
+     * Notify backend that upload is complete.
+     * @param uploadCompleteEndpoint full backend endpoint (including fileId)
+     * @param token optional auth token (Bearer)
+     */
+    async notifyUploadComplete(
+        uploadCompleteEndpoint: string,
+        token?: string
+    ): Promise<void> {
+        const headers: any = {
+            'Content-Type': 'application/json'
+        };
+
+        if (token) {
+            headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+        }
+
+        await lastValueFrom(
+            this.http.post(uploadCompleteEndpoint, {}, {
+                headers: new HttpHeaders(headers),
+                responseType: 'text',
+                observe: 'response'
+            })
+        );
+    }
+
+    /**
+     * Complete S3 upload workflow: presign → upload → notify complete.
+     * This is a convenience method that combines all steps.
+     * @param presignEndpoint backend endpoint to request presign data
+     * @param uploadCompleteEndpoint backend endpoint to notify completion (use {fileId} placeholder)
+     * @param file file to upload
+     * @param userId user ID for presign request
+     * @param token auth token
+     * @param onProgress progress callback
+     * @param timeoutMs upload timeout
+     * @returns presigned URL of uploaded file
+     */
+    async uploadFileComplete(
+        presignEndpoint: string,
+        uploadCompleteEndpoint: string,
+        file: File,
+        userId: number,
+        token?: string,
+        onProgress?: (percent: number) => void,
+        timeoutMs: number = 60000
+    ): Promise<string> {
+        // Step 1: Get presigned URL
+        const presignResp = await this.getPresignedUrlWithUserId(
+            presignEndpoint,
+            file,
+            userId,
+            token
+        );
+
+        if (!presignResp.presignedUrl) {
+            throw new Error('Invalid presign response - missing presignedUrl');
+        }
+
+        // Step 2: Upload to S3
+        await this.uploadWithXhr(
+            presignResp.presignedUrl,
+            presignResp.requiredHeaders || {},
+            file,
+            onProgress,
+            timeoutMs
+        );
+
+        // Step 3: Notify backend
+        if (presignResp.fileId) {
+            const completeUrl = uploadCompleteEndpoint.replace('{fileId}', presignResp.fileId.toString());
+            await this.notifyUploadComplete(completeUrl, token);
+        }
+
+        return presignResp.presignedUrl;
     }
 }
