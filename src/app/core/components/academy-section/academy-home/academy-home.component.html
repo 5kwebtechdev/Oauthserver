@@ -8,34 +8,18 @@
 
     <!-- Panda Section -->
     <div class="panda-section">
-      <img src="/assets/Images-Transparent/Image-Academy-Cat1.png" alt="Panda" class="panda-img">
-      <div class="speech-bubble">
-        These lessons are like superpowers for your real world!
-      </div>
+      <mindful-pet pet="panda"></mindful-pet>
+      <app-speech-bubble message="These lessons are like superpowers for your real world!"></app-speech-bubble>
     </div>
 
-    <!-- Question -->
     <div class="question">
       Where do you want to grow today?
     </div>
 
-    <!-- Cards Section -->
-    <div class="cards">
-      <div class="card yellow" (click)="openManagingMoney()">
-        <img src="/assets/Images-Transparent/Image-Academy-Cat1.png" alt="Managing Money" (click)="openManagingMoney()">
-        <p>Managing<br>Money</p>
-      </div>
-      <div class="card purple">
-        <img src="/assets/Images-Transparent/Image-Academy-Cat2.png" alt="Communication">
-        <p>Communication</p>
-      </div>
-      <div class="card pink">
-        <img src="/assets/Images-Transparent/Image-Academy-Cat3.png" alt="Meditation">
-        <p>Meditation</p>
-      </div>
-      <div class="card green">
-        <img src="/assets/Images-Transparent/Image-Academy-Cat4.png" alt="Cultural Values">
-        <p>Cultural<br>Values</p>
+    <div class="subject-cards">
+      <div *ngFor="let card of categoryCards" class="card" [ngClass]="card.color" (click)="openSubject(card.category)">
+        <img [src]="card.thumbnail || card.image" [alt]="card.title">
+        <p [innerHTML]="card.displayTitle"></p>
       </div>
     </div>
 

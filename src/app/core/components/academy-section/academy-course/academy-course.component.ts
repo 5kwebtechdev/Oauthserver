@@ -21,15 +21,25 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
   lessons: Array<{ title: string; desc: string; time: string; image?: string }> = [];
 
   // route-driven mode: if component is loaded via route we populate `course` from the id
-  constructor(private route: ActivatedRoute, private router: Router, private modalCtrl: ModalController) {}
+  constructor(private route: ActivatedRoute, private router: Router, private modalCtrl: ModalController) { }
 
   // navigate back to the academy home
   goBack(): void {
-    this.router.navigate(['/academy']);
+    this.router.navigate(['/authed/academy']);
   }
 
   ngOnInit(): void {
-    if (this.course) return; // input provided by parent
+    // If parent provided the course via `@Input()` or navigation state, use it
+    if (this.course) return;
+
+    // Check navigation state (router.navigate state) for passed course object
+    const navStateCourse = (history && (history.state as any) && (history.state as any).course) || null;
+    if (navStateCourse) {
+      this.course = navStateCourse as CourseCard;
+      this.buildLessons();
+      return;
+    }
+
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadCourseById(id);

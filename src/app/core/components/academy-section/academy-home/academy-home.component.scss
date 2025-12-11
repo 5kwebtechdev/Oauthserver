@@ -1,6 +1,5 @@
 .main-container {
-  width: 393px;
-  height: 882px;
+
   background: #FFF;
   padding: 16px;
   font-family: Arial, sans-serif;
@@ -16,8 +15,8 @@
 
 .back-arrow {
   width: 48px;
-height: 48px;
-padding-left: 16px;
+  height: 48px;
+  padding-left: 16px;
 }
 
 .header-texts {
@@ -25,21 +24,23 @@ padding-left: 16px;
 }
 
 .title {
-color: #282527;
-font-family: Fredoka;
-font-size: 20px;
-font-style: normal;
-font-weight: 500;
-line-height: 140%; /* 28px */
+  color: #282527;
+  font-family: Fredoka;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  /* 28px */
 }
 
 .subtitle {
   color: #282527;
-font-family: Nunito;
-font-size: 13px;
-font-style: normal;
-font-weight: 500;
-line-height: 140%; /* 18.2px */
+  font-family: Nunito;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  /* 18.2px */
   margin: 4px 0 0;
 }
 
@@ -52,9 +53,9 @@ line-height: 140%; /* 18.2px */
 }
 
 .panda-img {
- width: 116px;
-height: 116px;
-flex-shrink: 0;
+  width: 116px;
+  height: 116px;
+  flex-shrink: 0;
 }
 
 .speech-bubble {
@@ -65,27 +66,29 @@ flex-shrink: 0;
   font-size: 12px;
   width: 188px;
   color: #282527;
-font-family: Nunito;
-font-size: 13px;
-font-style: normal;
-font-weight: 500;
-line-height: 140%; /* 18.2px */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  font-family: Nunito;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  /* 18.2px */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Question */
 .question {
   color: #282527;
-font-family: Fredoka;
-font-size: 16px;
-font-style: normal;
-font-weight: 500;
-line-height: 140%; /* 22.4px */
+  font-family: Fredoka;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  /* 22.4px */
   margin: 10px 0;
 }
 
-/* Cards */
-.cards {
+/* Subject cards */
+.subject-cards {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
@@ -100,20 +103,21 @@ line-height: 140%; /* 22.4px */
 }
 
 .card p {
-    color: #282527;
-text-align: center;
-font-family: Nunito;
-font-size: 18px;
-font-style: normal;
-font-weight: 600;
-line-height: 140%; /* 28px */
+  color: #282527;
+  text-align: center;
+  font-family: Nunito;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  /* 28px */
 }
 
 .card img {
   width: 104px;
-height: 104px;
-flex-shrink: 0;
-aspect-ratio: 1/1;
+  height: 104px;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
 }
 
 .card.yellow {
@@ -135,10 +139,11 @@ aspect-ratio: 1/1;
 /* Footer */
 .footer-note {
   color: #90214D;
-font-family: Nunito;
-font-size: 16px;
-font-style: normal;
-font-weight: 500;
-line-height: 140%; /* 22.4px */
-    margin-top: 20px;
+  font-family: Nunito;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  /* 22.4px */
+  margin-top: 20px;
 }

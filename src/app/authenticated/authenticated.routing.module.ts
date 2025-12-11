@@ -137,8 +137,8 @@ const routes: Routes = [
         path: 'academy',
         loadComponent: () => import('../core/components/academy-section/academy-home/academy-home.component').then(m => m.AcademyHomeComponent)
       }, {
-        path: 'academy/managing-money',
-        loadComponent: () => import('../core/components/academy-section/academy-managing-money/academy-managing-money.component').then(m => m.AcademyManagingMoneyComponent)
+        path: 'academy/subject',
+        loadComponent: () => import('../core/components/academy-section/academy-subject/academy-subject.component').then(m => m.AcademySubjectComponent)
       }, {
         path: 'academy/course/:id',
         loadComponent: () => import('../core/components/academy-section/academy-course/academy-course.component').then(m => m.AcademyCourseComponent)
