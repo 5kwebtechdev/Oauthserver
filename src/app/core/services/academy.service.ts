@@ -35,6 +35,49 @@ export interface Course {
     lessons?: Lesson[];
 }
 
+// Course detail response with progress tracking
+export interface CourseLesson {
+    id: number;
+    title: string;
+    description: string;
+    duration: number;
+    order: number;
+    videoUrl: string | null;
+    thumbnailUrl: string;
+    content: string;
+    status: string | null;
+    createdAt: string | null;
+    updatedAt: string | null;
+    isCompleted: boolean;
+    completedAt: string | null;
+    timeSpentMinutes: number;
+    lastAccessedAt: string | null;
+    isLocked: boolean;
+    coins?: number; // optional per-lesson coin reward
+}
+
+export interface CourseDetailResponse {
+    id: number;
+    courseName: string;
+    description: string;
+    category: string;
+    difficulty: string;
+    noOfLessons: number;
+    ageGroup: string;
+    duration: number;
+    format: string;
+    totalCoins: number;
+    thumbnailUrl: string;
+    status: string;
+    completedLessons: number;
+    completionPercentage: number;
+    isCourseCompleted: boolean;
+    progressStatus: string;
+    startedAt: string;
+    completedAt: string | null;
+    lessons: CourseLesson[];
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -57,5 +100,26 @@ export class AcademyService {
         }
 
         return this.http.get<Course[]>(`${this.base}/courses`, { headers });
+    }
+
+    /**
+     * Get detailed course information by ID including lessons and progress
+     * @param courseId The course ID to fetch
+     * @returns Observable with course detail response
+     */
+    getCourseById(courseId: number | string): Observable<CourseDetailResponse> {
+        let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+        // Prefer user token from AuthService (localStorage), fallback to environment.apiAuthToken
+        const userToken = this.authService.getToken();
+        if (userToken) {
+            const t = userToken.startsWith('Bearer ') ? userToken : `Bearer ${userToken}`;
+            headers = headers.set('Authorization', t);
+        } else if (environment.apiAuthToken) {
+            const envToken = environment.apiAuthToken.startsWith('Bearer ') ? environment.apiAuthToken : `Bearer ${environment.apiAuthToken}`;
+            headers = headers.set('Authorization', envToken);
+        }
+
+        return this.http.get<CourseDetailResponse>(`${this.base}/courses/${courseId}`, { headers });
     }
 }

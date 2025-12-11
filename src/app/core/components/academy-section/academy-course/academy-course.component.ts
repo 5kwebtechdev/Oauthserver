@@ -1,14 +1,19 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { CourseCard } from '../academy-section.component';
 import { AcademyChaptersComponent } from '../academy-chapters/academy-chapters.component';
+import { AcademyService, CourseDetailResponse, CourseLesson } from '../../../services/academy.service';
+import { catchError, finalize } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-academy-course',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent],
   templateUrl: './academy-course.component.html',
   styleUrls: ['./academy-course.component.scss'],
 })
@@ -18,10 +23,20 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
   @Output() courseOpen = new EventEmitter<CourseCard>();
   @Output() lessonStart = new EventEmitter<{ courseId: string; lessonIndex: number }>();
 
-  lessons: Array<{ title: string; desc: string; time: string; image?: string }> = [];
+  lessons: Array<{ title: string; desc: string; time: string; image?: string; coins?: number }> = [];
+
+  // API response data
+  courseDetail: CourseDetailResponse | null = null;
+  isLoadingCourse = false;
+  loadError: string | null = null;
 
   // route-driven mode: if component is loaded via route we populate `course` from the id
-  constructor(private route: ActivatedRoute, private router: Router, private modalCtrl: ModalController) { }
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private modalCtrl: ModalController,
+    private academyService: AcademyService
+  ) { }
 
   // navigate back to the academy home
   goBack(): void {
@@ -30,19 +45,36 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
 
   ngOnInit(): void {
     // If parent provided the course via `@Input()` or navigation state, use it
-    if (this.course) return;
+    if (this.course) {
+      // If we have course with numeric id, fetch from API
+      if (this.course.id && !isNaN(Number(this.course.id))) {
+        this.fetchCourseFromApi(Number(this.course.id));
+      } else {
+        this.buildLessons();
+      }
+      return;
+    }
 
     // Check navigation state (router.navigate state) for passed course object
     const navStateCourse = (history && (history.state as any) && (history.state as any).course) || null;
     if (navStateCourse) {
       this.course = navStateCourse as CourseCard;
-      this.buildLessons();
+      if (this.course.id && !isNaN(Number(this.course.id))) {
+        this.fetchCourseFromApi(Number(this.course.id));
+      } else {
+        this.buildLessons();
+      }
       return;
     }
 
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.loadCourseById(id);
+      // Try to fetch from API if id is numeric
+      if (!isNaN(Number(id))) {
+        this.fetchCourseFromApi(Number(id));
+      } else {
+        this.loadCourseById(id);
+      }
     }
   }
 
@@ -73,6 +105,96 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
       time: 'Text-based • 3 mins',
       image: '/assets/img/lesson-binder.png'
     }));
+  }
+
+  /**
+   * Fetch course details from the API
+   * @param courseId The numeric course ID
+   */
+  private fetchCourseFromApi(courseId: number): void {
+    this.isLoadingCourse = true;
+    this.loadError = null;
+
+    this.academyService.getCourseById(courseId)
+      .pipe(
+        catchError(error => {
+          console.error('Error fetching course:', error);
+          this.loadError = 'Failed to load course details. Please try again.';
+          return of(null);
+        }),
+        finalize(() => {
+          this.isLoadingCourse = false;
+        })
+      )
+      .subscribe(response => {
+        if (response) {
+          this.courseDetail = response;
+          this.mapApiResponseToCourse(response);
+          this.buildLessonsFromApi(response.lessons);
+        }
+      });
+  }
+
+  /**
+   * Map API response to CourseCard interface for template compatibility
+   * @param apiResponse The course detail response from API
+   */
+  private mapApiResponseToCourse(apiResponse: CourseDetailResponse): void {
+    this.course = {
+      id: apiResponse.id.toString(),
+      title: apiResponse.courseName,
+      lessons: apiResponse.noOfLessons,
+      duration: `${apiResponse.duration} min`,
+      level: this.formatDifficulty(apiResponse.difficulty),
+      description: apiResponse.description,
+      image: this.convertGoogleDriveUrl(apiResponse.thumbnailUrl)
+    };
+  }
+
+  /**
+   * Build lessons array from API response
+   * @param apiLessons Array of lessons from API
+   */
+  private buildLessonsFromApi(apiLessons: CourseLesson[]): void {
+    // Determine a sensible fallback coin value if per-lesson coins are not provided
+    const fallbackPerLesson = this.courseDetail && this.courseDetail.totalCoins && apiLessons.length
+      ? Math.floor(this.courseDetail.totalCoins / Math.max(1, apiLessons.length))
+      : 0;
+
+    this.lessons = apiLessons.map((lesson, index) => ({
+      title: `${lesson.order}. ${lesson.title}`,
+      desc: lesson.description,
+      time: `${lesson.videoUrl ? 'Video' : 'Text-based'} • ${lesson.duration} min${lesson.duration > 1 ? 's' : ''}`,
+      image: this.convertGoogleDriveUrl(lesson.thumbnailUrl) || '/assets/app-assets/notebook-labeled.svg',
+      coins: typeof lesson.coins === 'number' ? lesson.coins : fallbackPerLesson
+    }));
+  }
+
+  /**
+   * Convert Google Drive share URL to direct image URL
+   * @param url The Google Drive share URL
+   * @returns Direct image URL or original URL if not a Google Drive link
+   */
+  private convertGoogleDriveUrl(url: string): string {
+    if (!url) return '';
+
+    // Check if it's a Google Drive URL in format: https://drive.google.com/file/d/{id}/view
+    const match = url.match(/\/file\/d\/([^\/]+)/);
+    if (match && match[1]) {
+      return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+    }
+
+    return url;
+  }
+
+  /**
+   * Format difficulty level for display
+   * @param difficulty The difficulty string from API
+   * @returns Formatted difficulty string
+   */
+  private formatDifficulty(difficulty: string): string {
+    if (!difficulty) return 'Beginner';
+    return difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase();
   }
 
   onStartLesson(index: number): void {

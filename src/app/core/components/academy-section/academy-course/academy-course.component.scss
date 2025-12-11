@@ -1,30 +1,21 @@
 .container {
-  width: 393px;
-  height: 1078px;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 16px;
-  padding: 16px;
-  box-sizing: border-box;
-  overflow-y: auto;
-}
-
-.header {
-  /* span the full width of the card and extend to the card edges */
-  text-align: center;
-  /* pull the header to the left/right edges of the container (container padding is 16px) */
-  margin-left: -16px;
-  margin-right: -16px;
-  /* small top bleed above the card */
-  margin-top: -20px;
-  /* increase top padding so content stays vertically aligned */
   padding: 26px 20px 16px;
-  /* top corners rounded as requested */
   border-radius: 24px;
   background: #FEF5C7;
-  margin-bottom: 16px;
-  position: relative; /* for absolute-positioned back button */
+  text-align: center;
 }
+
+// .header {
+//   margin-left: -16px;
+//   margin-right: -16px;
+//   margin-top: -20px;
+//   padding: 26px 20px 16px;
+//   border-radius: 24px;
+//   background: #FEF5C7;
+//   margin-bottom: 16px;
+//   position: relative;
+//   /* for absolute-positioned back button */
+// }
 
 .back-arrow {
   width: 48px;
@@ -105,6 +96,25 @@
     margin-bottom: 8px;
   }
 
+  .time .dot {
+    margin: 0 6px;
+    color: #777;
+  }
+
+  .coin-icon {
+    width: 16px;
+    height: 16px;
+    vertical-align: text-bottom;
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+
+  .coin-value {
+    font-size: 12px;
+    color: #444;
+    margin-left: 2px;
+  }
+
   .start-btn {
     display: block;
     margin-top: 8px;
@@ -131,4 +141,55 @@
   border-radius: 8px;
   font-size: 14px;
   cursor: pointer;
+}
+
+// Loading and Error States
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  min-height: 300px;
+
+  ion-spinner {
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-size: 16px;
+    color: #666;
+    margin: 0;
+  }
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  min-height: 300px;
+
+  .error-message {
+    font-size: 16px;
+    color: #d32f2f;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .retry-btn {
+    padding: 10px 24px;
+    background: #e91e63;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+
+    &:hover {
+      background: #c2185b;
+    }
+  }
 }

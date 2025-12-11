@@ -366,6 +366,25 @@ p {
   box-shadow: 0 0 1px 0.5px rgba(144, 33, 77, 0.20), 0 -2px 2px 0 #EA7CB5 inset;
 }
 
+/* New small variant for magenta buttons used in lesson cards */
+.magenta.small {
+  display: flex;
+  width: 90px;
+  height: 35px;
+  padding: 10px 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 4px;
+  border: 1px solid #4A0D25;
+  background: linear-gradient(271deg, #90214D 0.07%, #CD3578 99.93%);
+  box-shadow: 0 0 1px 0.5px rgba(144, 33, 77, 0.20), 0 -2px 2px 0 #EA7CB5 inset;
+  --text_color: #FFFFFF;
+  font-family: Nunito;
+  font-size: 10px;
+  font-weight: 700;
+}
+
 .magenta-transparent {
   --button_background: transparent;
   --button_border: 1px solid #BB2124;
