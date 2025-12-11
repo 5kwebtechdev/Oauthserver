@@ -398,8 +398,41 @@
         <!--pin moment-->
         <div class="section">
           <h2>Pin a Moment</h2>
-          <div class="pin-moment" role="button" tabindex="0" aria-label="Choose item to pin" (click)="openAttachPopup()"
-            (keydown.enter)="openAttachPopup()">
+
+          <!-- Image Preview Area -->
+          <div class="image-preview-container" *ngIf="imagePreviewUrl">
+            <div class="image-preview-wrapper">
+              <img [src]="imagePreviewUrl" alt="Selected image preview" class="image-preview" />
+              <button class="remove-image-btn" (click)="removeImage()" type="button" aria-label="Remove image">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Upload Progress -->
+            <div class="upload-progress" *ngIf="isUploading">
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+              </div>
+              <span class="progress-text">Uploading: {{ uploadProgress }}%</span>
+            </div>
+
+            <!-- Upload Success -->
+            <div class="upload-success" *ngIf="uploadedImageUrl && !isUploading">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>Image ready</span>
+            </div>
+          </div>
+
+          <!-- Pin Moment Button (only show if no image selected) -->
+          <div class="pin-moment" *ngIf="!imagePreviewUrl" role="button" tabindex="0" aria-label="Choose item to pin"
+            (click)="openAttachPopup()" (keydown.enter)="openAttachPopup()">
             <div class="pin-inner">
               <span class="pin-icon" aria-hidden="true">📎</span>
               <span class="pin-text">Choose item here</span>
@@ -411,14 +444,11 @@
 
 
     </div>
-    <!--Post Button-->
     <div class="post-button-container">
-      <!-- use mindful-button to match project styles (magenta, large, full) -->
       <mindful-button type="magenta" text="Post" large class="mindful-button-full" (click)="submit()"></mindful-button>
     </div>
   </div>
 
-  <!-- Attach permission popup -->
   <div class="attach-popup-backdrop" *ngIf="showAttachPopup" role="dialog" aria-modal="true"
     aria-label="Attachment permission dialog">
     <div class="attach-popup" role="document">
