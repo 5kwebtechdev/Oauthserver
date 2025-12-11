@@ -25,6 +25,7 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   selectedDate: Date = new Date(); // Current date selected by default
   habitsForSelectedDate: any[] = [];
   tasksForSelectedDate: any[] = [];
+  eventsForSelectedDate: any[] = []; // Timetable events
   moodOn: boolean = false;
   showMoodPopup: boolean = false;
   moodData: MoodData = {}; // Mood transitions keyed by date
@@ -288,9 +289,10 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          // Use the raw habit/task objects but filter them by selected date
+          // Use the raw habit/task/event objects but filter them by selected date
           const rawHabits = response.habits || [];
           const rawTasks = response.tasks || [];
+          const rawEvents = response.events || [];
 
           // Filter habits to only those scheduled for the selected date
           this.habitsForSelectedDate = rawHabits
@@ -320,11 +322,28 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
                 endTimeStamp: end || t.endTimeStamp || 0
               };
             });
+
+          // Filter events (timetable) to only those scheduled for the selected date
+          this.eventsForSelectedDate = rawEvents
+            .filter((e: any) => this.isItemScheduledForDate(e, dateStr))
+            .map((e: any) => {
+              const start = this.extractTimestamp(e, ['startTime', 'start_time', 'start', 'from', 'scheduledAt', 'time', 'startTimeStamp']);
+              const end = this.extractTimestamp(e, ['endTime', 'end_time', 'end', 'to', 'scheduledEnd', 'endTimeStamp']);
+              return {
+                ...(e || {}),
+                type: 'EVENT',
+                title: e.title || e.name || 'Event',
+                tags: e.tags || [],
+                startTimeStamp: start || e.startTimeStamp || 0,
+                endTimeStamp: end || e.endTimeStamp || 0
+              };
+            });
         },
         error: (err) => {
           console.error('Error loading items for selected date', err);
           this.habitsForSelectedDate = [];
           this.tasksForSelectedDate = [];
+          this.eventsForSelectedDate = [];
         }
       });
   }
@@ -443,5 +462,24 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     if (start && !end) return start <= now;
     if (!start && end) return now <= end;
     return false;
+  }
+
+  // Format a time string (HH:mm:ss or HH:mm) to display format (HH.mm)
+  formatTimeString(timeStr: string | undefined): string {
+    if (!timeStr) return '';
+    const parts = timeStr.split(':');
+    if (parts.length >= 2) {
+      return `${parts[0]}.${parts[1]}`;
+    }
+    return timeStr;
+  }
+
+  // Format a timestamp to time display format (HH.mm)
+  getFormattedTime(timestamp: number): string {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const hh = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    return `${hh}.${mm}`;
   }
 }

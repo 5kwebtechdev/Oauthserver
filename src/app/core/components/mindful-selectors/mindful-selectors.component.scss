@@ -19,9 +19,8 @@
   .badges-container {
     display: flex;
     flex: 1 1 auto;
-    /* take remaining space */
     flex-wrap: nowrap;
-    gap: 10px;
+    justify-content: space-between;
     overflow-x: auto;
     padding: 5px 0;
     box-sizing: border-box;

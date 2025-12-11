@@ -11,7 +11,6 @@
 
         .mood-message-item {
           display: flex;
-          //   align-items: center;
 
 
           .mood-left {
@@ -235,4 +234,70 @@
 .task-card__time {
   color: #C33;
   margin-top: 6px;
+}
+
+/* Timetable card styles */
+.timetable-card {
+  display: flex;
+  padding: 8px 12px 12px 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  border-left: 4px solid #89B3B6;
+  background: #FDFDFD;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+
+.timetable-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  gap: 8px;
+}
+
+.timetable-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.timetable-card__title {
+  color: #282527;
+  font-family: Nunito;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.timetable-card__time {
+  color: #6B656A;
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.timetable-card__tag-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.timetable-card__tag {
+  display: flex;
+  align-items: center;
+  padding: 5px 16px;
+  height: 24px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: bold;
+  font-size: 10px;
+  color: #3D6466;
+  border-radius: 16px;
+  border: 1px solid #6FA5A8;
+  background: #E1F0F1;
 }

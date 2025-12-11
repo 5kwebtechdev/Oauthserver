@@ -6,7 +6,7 @@
   <div class="timeline-page-container">
     <mindful-week (dateSelected)="onDateSelected($event)"></mindful-week>
     <div class="card timeline-score-card container w-full">
-      <div class="row ">
+      <div class="row justify-content-between">
         <div class="col-3 p-0">
           <mindful-completion [completionPercentage]="totalHabits > 0 ? (totalHabitsCompleted / totalHabits * 100) : 0"
             [borderColor]="'#4CAF50'" [innerText]="totalHabitsCompleted + '/' + totalHabits"
@@ -31,7 +31,7 @@
         </div>
       </div>
     </div>
-    <div class="container p-0" style="width: fit-content;transform: scale(1.1); margin-bottom: 20px">
+    <div class="container p-0" style="margin-bottom: 20px">
       <mindful-selectors [options]="[
     {key: 'all', value: 'All', type: 'magenta'},
     {key: 'habit', value: 'Habits', type: 'lavendar'},

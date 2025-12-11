@@ -34,6 +34,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     0: 'S', 1: 'M', 2: 'T', 3: 'W', 4: 'Th', 5: 'F', 6: 'Sa'
   };
   private static readonly FULL_WEEK = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+  private static readonly PRIORITY_MAP: Record<string, 'low' | 'medium' | 'high'> = { '1': 'low', '2': 'medium', '3': 'high' };
 
   title = '';
   notes = '';
@@ -97,9 +98,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   everyday = false;
   weekdays = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'];
   selectedDays = new Set<string>();
-  // start empty so user must explicitly select priority — enables validation error to show
   priority: '' | 'low' | 'medium' | 'high' = '';
-  showDaySelectionError = false;
 
   activities: { name: string; startTime: string; endTime: string }[] = [
     { name: '', startTime: '', endTime: '' },
@@ -112,20 +111,25 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
 
   editingId?: string;
   originalHabit: any = null;
-  public isSubmitting: boolean = false;
-
-  // UI validation flags to show visual cues when user attempts submit
+  isSubmitting = false;
   attemptedSubmit = false;
-  showTitleError = false;
-  showTimeError = false;
-  showDateError = false;
-  showNotesError = false;
-  showTagError = false;
-  showRoutineError = false;
-  showWeekdaysError = false;
-  showPriorityError = false;
-  showPastTimeError = false;
-  showEndTimeSingleDayError = false;
+  showDaySelectionError = false;
+  errors = {
+    title: false, time: false, date: false, notes: false, tag: false,
+    routine: false, weekdays: false, priority: false, pastTime: false, endTimeSingleDay: false
+  };
+
+  // Backward compatibility getters
+  get showTitleError() { return this.errors.title; }
+  get showTimeError() { return this.errors.time; }
+  get showDateError() { return this.errors.date; }
+  get showNotesError() { return this.errors.notes; }
+  get showTagError() { return this.errors.tag; }
+  get showRoutineError() { return this.errors.routine; }
+  get showWeekdaysError() { return this.errors.weekdays; }
+  get showPriorityError() { return this.errors.priority; }
+  get showPastTimeError() { return this.errors.pastTime; }
+  get showEndTimeSingleDayError() { return this.errors.endTimeSingleDay; }
   // Delete confirmation popup state
   deletePopupVisible = false;
   deletePopupConfig: MindfulPopupConfig = {};
@@ -225,12 +229,10 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       if (!this.everyday && this.selectedDays.size === this.weekdays.length) this.everyday = true;
       if (this.everyday) this.weekdays.forEach(d => this.selectedDays.add(d));
 
-      const rawPriority = (h.priority ?? h.priorityLevel ?? '').toString();
-      const normalized = rawPriority.trim().toLowerCase();
-      if (['low', 'medium', 'high'].includes(normalized)) this.priority = normalized as any;
-      else if (normalized === '1') this.priority = 'low';
-      else if (normalized === '2') this.priority = 'medium';
-      else if (normalized === '3') this.priority = 'high';
+      const rawPriority = (h.priority ?? h.priorityLevel ?? '').toString().trim().toLowerCase();
+      this.priority = (['low', 'medium', 'high'].includes(rawPriority)
+        ? rawPriority
+        : HabitInputComponent.PRIORITY_MAP[rawPriority] || '') as any;
 
       this.activities = Array.isArray(h.activities) && h.activities.length ? h.activities : this.activities;
 
@@ -392,44 +394,23 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
 
   submit() {
     this.attemptedSubmit = true;
+    Object.keys(this.errors).forEach(k => (this.errors as any)[k] = false);
 
-    this.showTitleError = false;
-    this.showTimeError = false;
-    this.showDateError = false;
-    this.showNotesError = false;
-    this.showTagError = false;
-    this.showRoutineError = false;
-    this.showWeekdaysError = false;
-    this.showPriorityError = false;
-    this.showPastTimeError = false;
-    this.showEndTimeSingleDayError = false;
+    const validations = {
+      title: !this.title?.trim(),
+      tag: !this.selectedTags?.length,
+      routine: this.currentActive !== 'timetable' && !this.selectedRoutine,
+      weekdays: !this.everyday && !this.selectedDays?.size,
+      time: !this.startTime?.trim() || !this.endTime?.trim(),
+      pastTime: this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime),
+      endTimeSingleDay: this.isEndTimeExceedingSingleDay(this.endTime),
+      date: !this.startDate || !this.endDate || this.startDate > this.endDate,
+      priority: !this.priority,
+      notes: !this.notes?.trim()
+    };
 
-    const titleMissing = !this.title || !this.title.trim();
-    const tagMissing = !Array.isArray(this.selectedTags) || this.selectedTags.length === 0;
-    const routineRequired = this.currentActive !== 'timetable';
-    const routineMissing = routineRequired && !this.selectedRoutine;
-    const weekdaysMissing = !this.everyday && (!this.selectedDays || this.selectedDays.size === 0);
-    const timeMissing = !this.startTime?.trim() || !this.endTime?.trim();
-    const pastTime = this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime);
-    const endTimeExceedsSingleDay = this.isEndTimeExceedingSingleDay(this.endTime);
-    const dateMissing = !this.startDate || !this.endDate || (this.startDate && this.endDate && this.startDate > this.endDate);
-    const priorityMissing = !this.priority;
-    const notesMissing = !this.notes || !this.notes.trim();
-
-    this.showTitleError = !!titleMissing;
-    this.showTagError = !!tagMissing;
-    this.showRoutineError = !!routineMissing;
-    this.showWeekdaysError = !!weekdaysMissing;
-    this.showTimeError = !!timeMissing;
-    this.showPastTimeError = !!pastTime;
-    this.showEndTimeSingleDayError = !!endTimeExceedsSingleDay;
-    this.showDateError = !!dateMissing;
-    this.showPriorityError = !!priorityMissing;
-    this.showNotesError = !!notesMissing;
-
-    if (titleMissing || tagMissing || routineMissing || weekdaysMissing || timeMissing || pastTime || endTimeExceedsSingleDay || dateMissing || priorityMissing || notesMissing) {
-      return;
-    }
+    Object.assign(this.errors, validations);
+    if (Object.values(validations).some(Boolean)) return;
 
     const formattedStartTime = this.to24Hour(this.startTime || '');
     const formattedEndTime = this.to24Hour(this.endTime || '');
@@ -1186,52 +1167,39 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     } catch (e) { console.warn('Failed to parse routine selection', e); }
   }
 
-  clearTitleError() { this.showTitleError = false; }
+  clearError(field: keyof typeof this.errors) { this.errors[field] = false; }
+  clearTitleError() { this.clearError('title'); }
+  clearTagError() { this.clearError('tag'); }
+  clearRoutineError() { this.clearError('routine'); }
+  clearWeekdaysError() { this.clearError('weekdays'); }
+  clearPriorityError() { this.clearError('priority'); }
+  clearNotesError() { this.clearError('notes'); }
+
   clearTimeError() {
-    this.showTimeError = false;
+    this.clearError('time');
     setTimeout(() => {
-      const startTimeInPast = this.startTime ? this.isTimeInPast(this.startTime) : false;
-      const endTimeInPast = this.endTime ? this.isTimeInPast(this.endTime) : false;
-      this.showPastTimeError = startTimeInPast || endTimeInPast;
-
-      const endTimeExceedsSingleDay = this.endTime ? this.isEndTimeExceedingSingleDay(this.endTime) : false;
-      this.showEndTimeSingleDayError = endTimeExceedsSingleDay;
-
-      if (startTimeInPast) {
+      this.errors.pastTime = this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime);
+      this.errors.endTimeSingleDay = this.isEndTimeExceedingSingleDay(this.endTime);
+      if (this.errors.pastTime && this.startTime) {
         const now = new Date();
-        const hours = now.getHours();
-        const minutes = now.getMinutes();
-        const formattedHours = hours % 12 || 12;
-        const period = hours >= 12 ? 'PM' : 'AM';
-        this.startTime = `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+        const hrs = now.getHours() % 12 || 12;
+        this.startTime = `${hrs}:${now.getMinutes().toString().padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
       }
-
-      if (endTimeExceedsSingleDay) {
-        this.endTime = '11:59 PM';
-      }
+      if (this.errors.endTimeSingleDay) this.endTime = '11:59 PM';
     }, 100);
   }
+
   clearDateError() {
-    this.showDateError = false;
+    this.clearError('date');
     setTimeout(() => {
       if (this.startTime || this.endTime) {
-        const startTimeInPast = this.startTime ? this.isTimeInPast(this.startTime) : false;
-        const endTimeInPast = this.endTime ? this.isTimeInPast(this.endTime) : false;
-        this.showPastTimeError = startTimeInPast || endTimeInPast;
-
-        const endTimeExceedsSingleDay = this.endTime ? this.isEndTimeExceedingSingleDay(this.endTime) : false;
-        this.showEndTimeSingleDayError = endTimeExceedsSingleDay;
+        this.errors.pastTime = this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime);
+        this.errors.endTimeSingleDay = this.isEndTimeExceedingSingleDay(this.endTime);
       } else {
-        this.showPastTimeError = false;
-        this.showEndTimeSingleDayError = false;
+        this.errors.pastTime = this.errors.endTimeSingleDay = false;
       }
     }, 100);
   }
-  clearNotesError() { this.showNotesError = false; }
-  clearTagError() { this.showTagError = false; }
-  clearRoutineError() { this.showRoutineError = false; }
-  clearWeekdaysError() { this.showWeekdaysError = false; }
-  clearPriorityError() { this.showPriorityError = false; }
 
   hasAnyErrors(): boolean {
     return !!(this.showTitleError || this.showTagError || this.showRoutineError || this.showWeekdaysError || this.showTimeError || this.showPastTimeError || this.showEndTimeSingleDayError || this.showDateError || this.showPriorityError || this.showNotesError);
