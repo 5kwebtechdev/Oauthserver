@@ -6,7 +6,6 @@ import { IonicModule } from '@ionic/angular';
 import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { lastValueFrom } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { AuthApi } from '../../../api/auth.api';
 import { S3UploadService } from '../../../services/s3-upload/s3-upload.service';
@@ -71,121 +70,40 @@ export class JournalInputComponent implements OnInit {
     };
 
     try {
-      // If there's a selected file, upload to S3 first
-      if (this.selectedFile && !this.uploadedImageUrl) {
-        this.isUploading = true;
-        this.uploadProgress = 10;
-
-        // Step 1: Get presigned URL from backend
-        const presignEndpoint = `${environment.apiUrl}/api/s3/presign`;
-        const token = this.authApi.getToken();
-
-        // Get userId from localStorage
-        const userId = localStorage.getItem('user_id');
-        if (!userId) {
-          throw new Error('User ID not found. Please log in again.');
-        }
-
-        this.uploadProgress = 20;
-
-        // Request presigned URL with userId in body
-        const presignBody = {
-          userId: parseInt(userId, 10),
-          originalName: this.selectedFile.name,
-          contentType: this.selectedFile.type,
-          fileSize: this.selectedFile.size
-        };
-
-        const presignResp = await lastValueFrom(
-          this.http.post<any>(presignEndpoint, presignBody, this.authHeaders(true))
-        );
-
-        console.log('Presign response:', presignResp);
-
-        if (!presignResp.presignedUrl) {
-          throw new Error('Invalid presign response - missing presignedUrl');
-        }
-
-        this.uploadProgress = 30;
-
-        // Step 2: Upload file to S3 using presigned URL
-        await this.s3UploadService.uploadWithXhr(
-          presignResp.presignedUrl,
-          presignResp.requiredHeaders || {},
-          this.selectedFile,
-          (percent) => {
-            // Map upload progress from 30% to 80%
-            this.uploadProgress = 30 + Math.floor(percent * 0.5);
-          },
-          60000 // 60 second timeout
-        );
-
-        console.log('S3 upload complete');
-        this.uploadProgress = 85;
-
-        // Store the S3 fileName for journal submission
-        this.uploadedImageUrl = presignResp.fileName;
-
-        // Step 3: Submit journal entry with S3 fileName
-        const journalPayload = {
-          ...payload,
-          attachmentUrl: presignResp.fileName // Use S3 path, not presigned URL
-        };
-
-        this.uploadProgress = 90;
-
-        const journalUrl = `${environment.apiUrl}/journal/add`;
-        this.http.post(journalUrl, journalPayload, this.authHeaders(true)).subscribe({
-          next: (res: any) => {
-            console.log('Journal added with S3 image:', res);
-            this.uploadProgress = 100;
-            this.isUploading = false;
-
-            this.save.emit(this.text);
-            this.resetForm();
-
-            // Navigate to the journal output page
-            try {
-              this.router.navigate(['/authed/journal-output']);
-            } catch (e) {
-              console.warn('Navigation to journal-output failed', e);
-            }
-          },
-          error: (err) => {
-            console.error('Failed to add journal:', err);
-            this.isUploading = false;
-            this.uploadProgress = 0;
-            alert('Failed to save journal entry. Please try again.');
-          }
-        });
-      } else {
-        // No image selected, submit without image
-        const body: any = { ...payload };
-        const url = `${environment.apiUrl}/journal/add`;
-
-        this.http.post(url, body, this.authHeaders(true)).subscribe({
-          next: (res) => {
-            console.log('Journal added:', res);
-            this.save.emit(this.text);
-            this.resetForm();
-
-            try {
-              this.router.navigate(['/authed/journal-output']);
-            } catch (e) {
-              console.warn('Navigation to journal-output failed', e);
-            }
-          },
-          error: (err) => {
-            console.error('Failed to add journal:', err);
-            alert('Failed to save journal entry. Please try again.');
-          }
-        });
+      // Wait for any ongoing upload to complete
+      if (this.isUploading) {
+        alert('Please wait for the image upload to complete.');
+        return;
       }
+
+      // Build journal payload with uploaded image URL if available
+      const journalPayload: any = { ...payload };
+      if (this.uploadedImageUrl) {
+        journalPayload.attachmentUrl = this.uploadedImageUrl;
+      }
+
+      const journalUrl = `${environment.apiUrl}/journal/add`;
+      this.http.post(journalUrl, journalPayload, this.authHeaders(true)).subscribe({
+        next: (res: any) => {
+          console.log('Journal added:', res);
+          this.save.emit(this.text);
+          this.resetForm();
+
+          // Navigate to the journal output page
+          try {
+            this.router.navigate(['/authed/journal-output']);
+          } catch (e) {
+            console.warn('Navigation to journal-output failed', e);
+          }
+        },
+        error: (err) => {
+          console.error('Failed to add journal:', err);
+          alert('Failed to save journal entry. Please try again.');
+        }
+      });
     } catch (error) {
       console.error('Submit failed:', error);
-      this.isUploading = false;
-      this.uploadProgress = 0;
-      const errorMsg = error instanceof Error ? error.message : 'Failed to upload image. Please try again.';
+      const errorMsg = error instanceof Error ? error.message : 'Failed to save journal. Please try again.';
       alert(errorMsg);
     }
   }
@@ -242,7 +160,7 @@ export class JournalInputComponent implements OnInit {
     console.log('User denied attachment access');
   }
 
-  onFileSelected(event: Event): void {
+  async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (input && input.files && input.files.length) {
       const f = input.files[0];
@@ -275,6 +193,66 @@ export class JournalInputComponent implements OnInit {
       reader.readAsDataURL(f);
 
       console.log('Selected file:', this.selectedFile.name, 'size:', this.selectedFile.size);
+
+      // Start upload immediately
+      await this.uploadImageToS3();
+    }
+  }
+
+  private async uploadImageToS3(): Promise<void> {
+    if (!this.selectedFile) {
+      return;
+    }
+
+    try {
+      this.isUploading = true;
+      this.uploadProgress = 10;
+
+      const presignEndpoint = `${environment.apiUrl}/api/s3/presign`;
+      const uploadCompleteEndpoint = `${environment.apiUrl}/api/s3/upload-complete/{fileId}`;
+      const token = this.authApi.getToken();
+
+      // Get userId from localStorage
+      const userId = localStorage.getItem('user_id');
+      if (!userId) {
+        throw new Error('User ID not found. Please log in again.');
+      }
+
+      this.uploadProgress = 20;
+
+      // Use the complete upload workflow from S3UploadService
+      const uploadedUrl = await this.s3UploadService.uploadFileComplete(
+        presignEndpoint,
+        uploadCompleteEndpoint,
+        this.selectedFile,
+        parseInt(userId, 10),
+        token || undefined,
+        (percent) => {
+          // Map upload progress from 20% to 95%
+          this.uploadProgress = 20 + Math.floor(percent * 0.75);
+        },
+        60000 // 60 second timeout
+      );
+
+      console.log('Image uploaded successfully:', uploadedUrl);
+      this.uploadProgress = 100;
+
+      // Store the presigned URL for journal submission
+      this.uploadedImageUrl = uploadedUrl;
+      this.isUploading = false;
+    } catch (error) {
+      console.error('Upload failed:', error);
+      this.isUploading = false;
+      this.uploadProgress = 0;
+      const errorMsg = error instanceof Error ? error.message : 'Failed to upload image. Please try again.';
+      alert(errorMsg);
+
+      // Reset file selection on error
+      this.selectedFile = null;
+      this.imagePreviewUrl = null;
+      if (this.fileInput && this.fileInput.nativeElement) {
+        this.fileInput.nativeElement.value = '';
+      }
     }
   }
 
