@@ -11,13 +11,10 @@ import { IonicModule } from "@ionic/angular";
 import { MindfulBadgeComponent } from "../core/components/mindful-badge/mindful-badge.component";
 import { UserDashboardComponent } from "./user-dashboard/user-dashboard.component";
 import { TypicalPageComponent } from "../core/components/typical-page/typical-page.component";
-import { ProfileComponent } from "./profile/profile.component";
-import { ProfileHomeComponent } from "./profile/profile-home/profile-home.component";
 import { MindfulInputsModule } from "../core/components/mindful-inputs/mindful-inputs.module";
 import { MindfulTimelineComponent } from "../core/components/mindful-timeline/mindful-timeline.component";
 import { TimelineComponent } from "../core/components/habit-section/timeline/timeline.component";
 import { MindfulSelectorsComponent } from "../core/components/mindful-selectors/mindful-selectors.component";
-import { AddCalendarComponent } from "./add-calendar/add-calendar.component";
 import { MindfulNavigatorComponent } from "../core/components/mindful-navigator/mindful-navigator.component";
 import { UserProfileComponent } from "../core/components/user-profile/user-profile.component";
 import { SupermeTimerComponent } from '../core/components/superme-timer/superme-timer.component';
@@ -26,8 +23,6 @@ import { StreaksSectionComponent } from '../core/components/streaks-section/stre
 @NgModule({
   declarations: [
     AuthenticatedComponent,
-    ProfileComponent,
-    ProfileHomeComponent,
     MindfulTimelineComponent,
     TimelineComponent,
     // AddCalendarComponent is now standalone and imported where needed

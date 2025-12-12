@@ -2,10 +2,8 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AuthenticatedComponent } from "./authenticated.component";
 import { UserDashboardComponent } from "./user-dashboard/user-dashboard.component";
-import { ProfileComponent } from "./profile/profile.component";
 import { UserProfileComponent } from '../core/components/user-profile/user-profile.component';
 import { TimelineComponent } from "../core/components/habit-section/timeline/timeline.component";
-import { AddCalendarComponent } from "./add-calendar/add-calendar.component";
 import { HabitDetailComponent } from "../core/components/habit-section/habit-detail/habit-detail.component";
 
 
@@ -21,9 +19,6 @@ const routes: Routes = [
       }, {
         path: 'parent-account',
         loadComponent: () => import('./parent-account/parent-account.component').then(m => m.ParentAccountComponent)
-      }, {
-        path: 'profile/:section',
-        component: ProfileComponent
       }, {
         path: 'user-profile',
         component: UserProfileComponent
@@ -61,14 +56,8 @@ const routes: Routes = [
         path: 'delete-account',
         loadComponent: () => import('../core/components/user-profile/delete-account/delete-account.component').then(m => m.DeleteAccountComponent)
       }, {
-        path: 'test',
-        loadComponent: () => import('./test/test.component').then(m => m.TestComponent)
-      }, {
         path: 'timeline',
         component: TimelineComponent
-      }, {
-        path: 'add-calendar',
-        component: AddCalendarComponent
       }, {
         path: 'habit-detail/:id',
         component: HabitDetailComponent
