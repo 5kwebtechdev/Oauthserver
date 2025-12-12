@@ -78,6 +78,25 @@ export interface CourseDetailResponse {
     lessons: CourseLesson[];
 }
 
+export interface LessonDetailResponse {
+    id: number;
+    title: string;
+    description: string;
+    duration: number;
+    order: number;
+    videoUrl: string | null;
+    thumbnailUrl: string;
+    content: string;
+    status: string | null;
+    createdAt: string | null;
+    updatedAt: string | null;
+    isCompleted: boolean;
+    completedAt: string | null;
+    timeSpentMinutes: number;
+    lastAccessedAt: string | null;
+    isLocked: boolean;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -121,5 +140,47 @@ export class AcademyService {
         }
 
         return this.http.get<CourseDetailResponse>(`${this.base}/courses/${courseId}`, { headers });
+    }
+
+    /**
+     * Get detailed lesson information by ID
+     * @param lessonId The lesson ID to fetch
+     * @returns Observable with lesson detail response
+     */
+    getLessonById(lessonId: number | string): Observable<LessonDetailResponse> {
+        let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+        // Prefer user token from AuthService (localStorage), fallback to environment.apiAuthToken
+        const userToken = this.authService.getToken();
+        if (userToken) {
+            const t = userToken.startsWith('Bearer ') ? userToken : `Bearer ${userToken}`;
+            headers = headers.set('Authorization', t);
+        } else if (environment.apiAuthToken) {
+            const envToken = environment.apiAuthToken.startsWith('Bearer ') ? environment.apiAuthToken : `Bearer ${environment.apiAuthToken}`;
+            headers = headers.set('Authorization', envToken);
+        }
+
+        return this.http.get<LessonDetailResponse>(`${this.base}/courses/lessons/${lessonId}`, { headers });
+    }
+
+    /**
+     * Mark a lesson as complete
+     * @param lessonId The lesson ID to mark as complete
+     * @returns Observable with updated lesson detail response
+     */
+    completeLessonById(lessonId: number | string): Observable<LessonDetailResponse> {
+        let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+        // Prefer user token from AuthService (localStorage), fallback to environment.apiAuthToken
+        const userToken = this.authService.getToken();
+        if (userToken) {
+            const t = userToken.startsWith('Bearer ') ? userToken : `Bearer ${userToken}`;
+            headers = headers.set('Authorization', t);
+        } else if (environment.apiAuthToken) {
+            const envToken = environment.apiAuthToken.startsWith('Bearer ') ? environment.apiAuthToken : `Bearer ${environment.apiAuthToken}`;
+            headers = headers.set('Authorization', envToken);
+        }
+
+        return this.http.post<LessonDetailResponse>(`${this.base}/courses/lessons/${lessonId}/complete`, {}, { headers });
     }
 }
