@@ -14,14 +14,15 @@
       <div class="edit-details">
         <div class="input-heading">
           <h2 class="heading-text">Date of Birth</h2>
-          <div class="validation-text"></div>
+          <div class="validation-text-age" [ngClass]="{ 'invalid': ageError }">{{ calculatedAge }}</div>
         </div>
         <div class="input-container">
           <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" [showTrigger]="openBirthdayPicker"
             [variant]="'white-green'" style="width: 100%">
-            <input class="dob-input" type="text" formControlName="dob" (click)="openBirthdayPickerNow()"
-              placeholder="Date of Birth" readonly />
+            <input class="dob-input" [ngClass]="{ 'invalid': ageError }" type="text" formControlName="dob"
+              (click)="openBirthdayPickerNow()" placeholder="Date of Birth" readonly />
           </mindful-birthdaypicker>
+          <div class="error-message" *ngIf="ageError">{{ ageError }}</div>
         </div>
       </div>
       <div class="edit-details">

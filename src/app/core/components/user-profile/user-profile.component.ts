@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigator.component';
@@ -10,6 +10,8 @@ import { ChangePetComponent } from './change-pet/change-pet.component';
 import { MindfulPopupComponent } from '../mindful-popup/mindful-popup.component';
 import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
+import { MoodService } from '../../services/mood.service';
+import { VibesDisplayResponse } from '../../models/mood.model';
 
 @Component({
   selector: 'user-profile',
@@ -18,7 +20,7 @@ import { UserService } from '../../services/user.service';
   templateUrl: './user-profile.component.html',
   styleUrls: ['./user-profile.component.scss']
 })
-export class UserProfileComponent implements OnChanges {
+export class UserProfileComponent implements OnInit, OnChanges {
   @Input() user: any = {};
 
   // Local user avatar URL
@@ -59,7 +61,8 @@ export class UserProfileComponent implements OnChanges {
     private router: Router,
     private modalCtrl: ModalController,
     private authService: AuthService,
-    private userService: UserService
+    private userService: UserService,
+    private moodService: MoodService
   ) {
     // Subscribe to user profile changes
     this.userService.getUserProfile$().subscribe(profile => {
@@ -79,6 +82,109 @@ export class UserProfileComponent implements OnChanges {
             this.user = { ...this.user, avatarUrl: this.userAvatarUrl };
           }
         }
+      }
+    });
+  }
+
+  ngOnInit() {
+    // Load user data from localStorage (set during login)
+    this.loadUserDataFromStorage();
+    // Load user stats from localStorage first, then API if not available
+    this.loadUserStatsFromStorage();
+  }
+
+  /**
+   * Load user data from localStorage and map to component properties
+   */
+  private loadUserDataFromStorage(): void {
+    try {
+      const userData = localStorage.getItem('user_data');
+      if (userData) {
+        const parsedData = JSON.parse(userData);
+        console.log('[UserProfile] Loaded user_data from localStorage:', parsedData);
+
+        // Map user basic info
+        this.user = {
+          name: parsedData.name || 'User',
+          email: parsedData.email,
+          phone: parsedData.phone,
+          age: parsedData.age,
+          gender: parsedData.gender,
+          avatarUrl: parsedData.avatar?.url || this.userAvatarUrl,
+          relationship: parsedData.relationship
+        };
+
+        // Update avatar URL
+        if (parsedData.avatar?.url) {
+          this.userAvatarUrl = parsedData.avatar.url;
+        }
+
+        console.log('[UserProfile] Mapped user info:', {
+          name: this.user.name,
+          age: this.user.age,
+          avatarUrl: this.userAvatarUrl
+        });
+      }
+    } catch (e) {
+      console.error('[UserProfile] Error loading user_data from localStorage:', e);
+    }
+  }
+
+  /**
+   * Load user statistics from localStorage first, then fetch from API if not available
+   */
+  private loadUserStatsFromStorage(): void {
+    // Try to load from localStorage first
+    const cachedStats = this.userService.getUserStats();
+
+    if (cachedStats) {
+      // Use cached stats
+      this.userCoins = cachedStats.coins;
+      this.userStreaks = cachedStats.streaks;
+      this.userDays = cachedStats.days;
+      this.userBadges = cachedStats.badges;
+
+      console.log('[UserProfile] Loaded stats from localStorage:', cachedStats);
+    } else {
+      // No cached stats, fetch from API
+      console.log('[UserProfile] No cached stats, fetching from API...');
+      this.loadUserStatsFromAPI();
+    }
+  }
+
+  /**
+   * Load user statistics from the vibes/display endpoint and cache them
+   */
+  private loadUserStatsFromAPI(): void {
+    this.moodService.getVibesDisplay().subscribe({
+      next: (data: VibesDisplayResponse[]) => {
+        // The API returns an array, get the first item (current user's data)
+        if (data && data.length > 0) {
+          const userStats = data[0];
+          this.userCoins = userStats.coins || 0;
+          this.userStreaks = userStats.streak || 0;
+          this.userDays = userStats.trophies || 0;
+          this.userBadges = userStats.badges || 0;
+
+          // Cache the stats in localStorage
+          this.userService.saveUserStats({
+            coins: this.userCoins as number,
+            streaks: this.userStreaks as number,
+            days: this.userDays as number,
+            badges: this.userBadges as number
+          });
+
+          console.log('[UserProfile] Loaded and cached stats from API:', {
+            coins: this.userCoins,
+            streaks: this.userStreaks,
+            days: this.userDays,
+            badges: this.userBadges
+          });
+        }
+      },
+      error: (error) => {
+        console.error('[UserProfile] Failed to load user stats:', error);
+        // Keep default values (0) on error
       }
     });
   }

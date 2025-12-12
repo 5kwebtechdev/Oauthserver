@@ -1,8 +1,8 @@
 <div class="lesson-container">
 
   <!-- Header -->
+  <mindful-navigator backIcon="arrowSvg" (back)="close()"></mindful-navigator>
   <div class="header" *ngIf="lesson">
-    <mindful-navigator backIcon="arrowSvg" (back)="close()"></mindful-navigator>
     <img [src]="convertGoogleDriveUrl(lesson.thumbnailUrl)" alt="Lesson" class="lesson-img">
     <h1>{{ lesson.order }}. {{ lesson.title }}</h1>
     <p class="time">{{ lesson.videoUrl ? 'Video' : 'Text-based' }} • {{ lesson.duration }} min</p>

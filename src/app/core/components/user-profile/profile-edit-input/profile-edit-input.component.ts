@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostBinding } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -18,6 +18,7 @@ export class ProfileEditInputComponent {
   @Input() value: string | null = null;
 
   @Input() errorMessage: string | null = null;
+  @HostBinding('class.has-error')
   @Input() showError: boolean = false;
 
   @Output() valueChange = new EventEmitter<string | null>();

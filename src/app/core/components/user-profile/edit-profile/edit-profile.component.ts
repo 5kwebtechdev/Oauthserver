@@ -45,6 +45,11 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
   // Birthday picker control
   openBirthdayPicker = false;
+  // Account relationship: 'child' | 'parent' | 'self'
+  accountType: 'child' | 'parent' | 'self' | null = null;
+
+  // Age validation error (empty when valid)
+  ageError: string = '';
 
   // Store current user data from backend
   currentUserData: any = null;
@@ -77,7 +82,33 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   }
 
   private loadUserProfile(): void {
-    const userProfile = this.userService.getUserProfile();
+    // First try to get from UserService (user_profile in localStorage)
+    let userProfile = this.userService.getUserProfile();
+
+    // If not available, try to read from user_data (set during login)
+    if (!userProfile) {
+      try {
+        const userData = localStorage.getItem('user_data');
+        if (userData) {
+          const parsedData = JSON.parse(userData);
+          console.log('[EditProfile] Loaded user_data from login:', parsedData);
+          // Map login response structure to UserProfile
+          userProfile = {
+            userId: parsedData.id,
+            name: parsedData.name,
+            email: parsedData.email,
+            phone: parsedData.phone,
+            dob: parsedData.dateOfBirth,
+            gender: parsedData.gender?.toLowerCase() as 'male' | 'female',
+            avatarUrl: parsedData.avatar?.url,
+            avatarName: parsedData.avatar?.avatarName,
+            relationship: parsedData.relationship as 'CHILD' | 'PARENT' | 'SELF'
+          };
+        }
+      } catch (e) {
+        console.error('[EditProfile] Error loading user_data:', e);
+      }
+    }
 
     if (userProfile) {
       // Populate form with existing data
@@ -109,6 +140,20 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       // Store avatar info - avatarName should come from backend avatar object
       this.avatarName = userProfile.avatarName || '';
       this.currentUserData = userProfile;
+
+      // Determine accountType from stored relationship (CHILD/PARENT/SELF from API)
+      if (userProfile.relationship) {
+        const rel = userProfile.relationship.toLowerCase();
+        if (rel === 'child' || rel === 'parent' || rel === 'self') {
+          this.accountType = rel as 'child' | 'parent' | 'self';
+          console.log('[EditProfile] Account type set to:', this.accountType);
+        }
+      }
+
+      // Validate age on load if DOB exists
+      if (userProfile.dob) {
+        this.validateAge();
+      }
     }
   }
 
@@ -306,6 +351,64 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
     // Close the picker after choosing a date
     this.openBirthdayPicker = false;
+
+    // Validate age constraints based on account type
+    this.validateAge();
+  }
+
+  /**
+   * Calculate age in years from selected date of birth
+   */
+  get calculatedAge(): string {
+    const dobValue = this.profileForm.get('dob')?.value;
+    if (!dobValue) {
+      return '';
+    }
+
+    const birthDate = new Date(dobValue);
+    if (isNaN(birthDate.getTime())) {
+      return '';
+    }
+
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    // Adjust age if birthday hasn't occurred yet this year
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    return age >= 0 ? `${age} year${age !== 1 ? 's' : ''} old` : '';
+  }
+
+  /**
+   * Validate age limits depending on selected account type
+   */
+  validateAge(): void {
+    this.ageError = '';
+    const dobValue = this.profileForm.get('dob')?.value;
+    if (!dobValue) return;
+
+    const birthDate = new Date(dobValue);
+    if (isNaN(birthDate.getTime())) return;
+
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    if (this.accountType === 'child') {
+      if (age > 18) {
+        this.ageError = 'Your age cannot be more than 18 years old for child role';
+      }
+    } else if (this.accountType === 'parent') {
+      if (age < 24) {
+        this.ageError = 'Your age cannot be less than 24 years old for parent role';
+      }
+    }
   }
 
   /**
