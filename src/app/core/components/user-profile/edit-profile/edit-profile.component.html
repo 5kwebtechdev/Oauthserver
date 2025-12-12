@@ -1,123 +1,104 @@
 <ion-content fullscreen>
   <mindful-navigator heading="Edit Profile Info"></mindful-navigator>
   <form [formGroup]="profileForm">
-  <div class="edit-profile-container">
+    <div class="edit-profile-container">
 
-    <div class="edit-details">
-      <div class="input-heading">
-        <h2 class="heading-text">Avatar Name</h2>
-        <div class="validation-text">Your in-app identity name</div>
+      <div class="edit-details">
+        <profile-edit-input title="Avatar Name" description="Your in-app identity name" type="text"
+          placeholder="Avatar name" [value]="avatarName" (valueChange)="avatarName = $event"></profile-edit-input>
       </div>
-      <!--avatar input-->
+      <div class="edit-details">
+        <profile-edit-input title="Full Name" description="Just for setup. Never shown" type="text"
+          placeholder="Full name" [value]="fullName" (valueChange)="fullName = $event"></profile-edit-input>
+      </div>
+      <div class="edit-details">
+        <div class="input-heading">
+          <h2 class="heading-text">Date of Birth</h2>
+          <div class="validation-text"></div>
+        </div>
         <div class="input-container">
-          <ion-input class="input-text" placeholder="Avtar name" type="text"></ion-input>
+          <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" [showTrigger]="openBirthdayPicker"
+            [variant]="'white-green'" style="width: 100%">
+            <input class="dob-input" type="text" formControlName="dob" (click)="openBirthdayPickerNow()"
+              placeholder="Date of Birth" readonly />
+          </mindful-birthdaypicker>
         </div>
-
-    </div>
-    <div class="edit-details">
-      <div class="input-heading">
-        <h2 class="heading-text">Full Name</h2>
-        <div class="validation-text">Just for setup. Never shown</div>
       </div>
+      <div class="edit-details">
+        <div class="input-heading">
+          <h2 class="heading-text">Gender</h2>
+          <div class="validation-text">Used for small personalization touches</div>
+        </div>
+        <!--gender-->
+        <div class="gender-row">
+          <div class="gender-button" (click)="gender = 'Male'" [ngClass]="gender === 'Male' ? 'active' : null">
+            Male
+          </div>
+          <div class="gender-button" (click)="gender = 'Female'" [ngClass]="gender === 'Female' ? 'active' : null">
+            Female
+          </div>
+        </div>
+      </div>
+      <div class="edit-details">
+        <div class="input-heading">
+          <h2 class="heading-text">Phone number</h2>
+          <div class="validation-text">Only for login and safety</div>
+        </div>
+        <!--phone number input-->
         <div class="input-container">
-          <ion-input class="input-text" placeholder="Full name" type="text"></ion-input>
-        </div>
-
-    </div>
-    <div class="edit-details">
-      <div class="input-heading">
-        <h2 class="heading-text">Date of Birth</h2>
-        <div class="birth-date"></div>
-      </div>
-      <div class="input-container">
-             <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" [showTrigger]="openBirthdayPicker" [variant]="'white-green'"
-              style="width: 100%">
-              <ion-input class="input-text" type="text" formControlName="dob" (click)="openBirthdayPickerNow()" placeholder="Date of Birth"></ion-input>
-            </mindful-birthdaypicker>
-        </div>
-    </div>
-    <div class="edit-details">
-      <div class="input-heading">
-        <h2 class="heading-text">Gender</h2>
-        <div class="validation-text">Used for small personalization touches</div>
-      </div>
-      <!--gender-->
-      <div class="gender-row">
-        <div class="gender-button" (click)="gender = 'male'" [ngClass]="gender === 'male' ? 'active' : null">
-          Male
-        </div>
-        <div class="gender-button" (click)="gender = 'female'" [ngClass]="gender === 'female' ? 'active' : null">
-          Female
-        </div>
-      </div>
-    </div>
-        <div class="edit-details">
-      <div class="input-heading">
-        <h2 class="heading-text">Phone number</h2>
-        <div class="validation-text">Only for login and safety</div>
-      </div>
-          <!--phone number input-->
-          <div class="input-container">
-            <div class="phone-input-container" [ngClass]="{'error' : !isPhoneValid(profileForm.get('phone')?.value) && profileForm.get('phone')?.dirty }">
-              <div class="country-code-selector" (click)="showCountryCodeModal = true">
-                <span class="flag-emoji">{{selectedCountry?.flag}}</span>
-                <span class="country-code">{{selectedCountry?.code}}</span>
-                <i class="fa-solid fa-chevron-down"></i>
-              </div>
-              <input formControlName="phone" type="tel" [attr.maxlength]="currentPhoneLength" pattern="[0-9]*"
-                inputmode="numeric" (input)="onPhoneInput($event)" (keypress)="onKeyPress($event)"
-                placeholder="Enter {{currentPhoneLength}} digit number" />
+          <div class="phone-input-container"
+            [ngClass]="{'error' : !isPhoneValid(profileForm.get('phone')?.value) && profileForm.get('phone')?.dirty }">
+            <div class="country-code-selector" (click)="showCountryCodeModal = true">
+              <span class="flag-emoji">{{selectedCountry.flag}}</span>
+              <span class="country-code">{{selectedCountry.code}}</span>
+              <i class="fa-solid fa-chevron-down"></i>
             </div>
-            <div class="error" *ngIf="!isPhoneValid(profileForm.get('phone')?.value) && profileForm.get('phone')?.dirty ">
-              {{getPhoneErrorMessage()}}
-            </div>
+            <input formControlName="phone" type="tel" [attr.maxlength]="currentPhoneLength" pattern="[0-9]*"
+              inputmode="numeric" (input)="onPhoneInput($event)" (keypress)="onKeyPress($event)"
+              placeholder="Enter {{currentPhoneLength}} digit number" />
+          </div>
+          <div class="error" *ngIf="!isPhoneValid(profileForm.get('phone')?.value) && profileForm.get('phone')?.dirty ">
+            {{getPhoneErrorMessage()}}
+          </div>
 
-            <!-- Country Code Modal -->
-            <div class="country-modal-backdrop" *ngIf="showCountryCodeModal" (click)="closeCountryCodeModal()"></div>
-            <div class="country-modal" *ngIf="showCountryCodeModal" role="dialog" aria-modal="true">
-              <div class="country-modal__header">
-                <h3 class="country-modal__title">Country code</h3>
-                <button class="country-modal__close" (click)="closeCountryCodeModal()">
-                  <i class="fa-solid fa-times"></i>
-                </button>
-              </div>
-              <div class="country-modal__content">
-                <div class="country-list">
-                  <div class="country-item" *ngFor="let country of countries" (click)="selectCountry(country)"
-                    [class.selected]="selectedCountry?.code === country.code">
-                    <span class="country-flag">{{country.flag}}</span>
-                    <span class="country-name">{{country.name}}</span>
-                    <span class="country-code">{{country.code}}</span>
-                  </div>
+          <!-- Country Code Modal -->
+          <div class="country-modal-backdrop" *ngIf="showCountryCodeModal" (click)="closeCountryCodeModal()"></div>
+          <div class="country-modal" *ngIf="showCountryCodeModal" role="dialog" aria-modal="true">
+            <div class="country-modal__header">
+              <h3 class="country-modal__title">Country code</h3>
+              <button class="country-modal__close" (click)="closeCountryCodeModal()">
+                <i class="fa-solid fa-times"></i>
+              </button>
+            </div>
+            <div class="country-modal__content">
+              <div class="country-list">
+                <div class="country-item" *ngFor="let country of countries" (click)="selectCountry(country)"
+                  [class.selected]="selectedCountry.code === country.code">
+                  <span class="country-flag">{{country.flag}}</span>
+                  <span class="country-name">{{country.name}}</span>
+                  <span class="country-code">{{country.code}}</span>
                 </div>
               </div>
-              <div class="country-modal__footer">
-                <button class="country-modal__done-btn" (click)="closeCountryCodeModal()">Done</button>
-              </div>
             </div>
-          </div>
-    </div>
-    <div class="edit-details">
-      <div class="input-heading">
-        <h2 class="heading-text">Email</h2>
-        <div class="validation-text">Used for login and recovery</div>
-      </div>
-      <!--email-->
-      <div class="input-container">
-        <div class="input-group">
-          <input formControlName="email" type="email" placeholder="Email" />
-          <div class="error" *ngIf="profileForm.get('email')?.invalid && (profileForm.get('email')?.dirty)">
-            Oops! That email looks off. Please check it again.
+            <div class="country-modal__footer">
+              <button class="country-modal__done-btn" (click)="closeCountryCodeModal()">Done</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      <div class="edit-details">
+        <profile-edit-input title="Email" description="Used for login and recovery" type="email" placeholder="Email"
+          [value]="profileForm.get('email')!.value" (valueChange)="profileForm.get('email')!.setValue($event)"
+          [errorMessage]="'Oops! That email looks off. Please check it again.'"
+          [showError]="profileForm.get('email')!.invalid && profileForm.get('email')!.dirty"></profile-edit-input>
+      </div>
 
-    <!-- mindful-Button -->
-    <div class="button-row">
-      <mindful-button type="green" text="Update info" [large]="true" (click)="saveProfile()"></mindful-button>
-    </div>
+      <!-- mindful-Button -->
+      <div class="button-row">
+        <mindful-button type="green" text="Update info" [large]="true" [disabled]="isSubmitting"
+          (click)="saveProfile()"></mindful-button>
+      </div>
 
-  </div>
+    </div>
   </form>
 </ion-content>

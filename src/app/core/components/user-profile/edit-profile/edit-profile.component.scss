@@ -1,29 +1,29 @@
-/* Minimal styles for edit profile */
 :host {
   display: block;
 }
 
 .edit-profile-container {
   display: flex;
-  width: 361px;
+  width: 100%;
   flex-direction: column;
   align-items: flex-start;
   gap: 33px;
-  margin-left: 16px;
+  padding: 16px;
 }
 
 .edit-details {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  align-self: stretch;
+  width: 100%;
+  // align-items: flex-start;
+  // gap: 10px;
+  // align-self: stretch;
 }
 
 .input-heading {
   display: flex;
   align-items: center;
-  gap: 81px;
+  justify-content: space-between;
 }
 
 .heading-text {
@@ -32,7 +32,6 @@
   font-style: normal;
   font-weight: 600;
   line-height: 130%;
-  /* 26px */
 }
 
 .validation-text {
@@ -41,95 +40,33 @@
   font-style: normal;
   font-weight: 500;
   line-height: 130%;
-  /* 16.9px */
 }
 
-.birth-date {
-  color: #282527;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: 130%;
-  /* 20.8px */
-}
-
-.input-text {
+.dob-input {
   display: flex;
-  padding: 10px 56px 10px 24px !important;
+  width: 100%;
+  padding: 20px 24px;
   align-items: center;
-  gap: 8px;
-  align-self: stretch;
   border-radius: 12px;
   border: 1px solid rgba(40, 37, 39, 0.50);
   background: #FFF;
+  font-size: 16px;
+  color: #282527;
+  font-weight: 500;
+  line-height: 130%;
+  cursor: pointer;
 
-  width: 361px;
+  &::placeholder {
+    color: rgba(40, 37, 39, 0.40);
+  }
 
-  /* Placeholder and inner controls styling */
-  /* Ensure any native input/textarea inherit the container sizing */
-  input,
-  textarea {
-    border: none;
+  &:focus {
     outline: none;
-    background: transparent;
-    width: 100%;
-    font-family: inherit;
-    font-size: 14px;
-    color: #282527;
-    padding: 0;
-    /* container handles padding */
-    margin: 0;
-    width: 312px;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-
-  /* Placeholder color for inputs/textareas */
-  input::placeholder,
-  textarea::placeholder {
-    color: rgba(40, 37, 39, 0.40);
-    font-weight: 500;
-  }
-
-  /* Disabled state */
-  input:disabled,
-  textarea:disabled {
-    color: rgba(40, 37, 39, 0.40);
-    cursor: not-allowed;
-  }
-
-  /* Optional icon slot (e.g., leading icon) */
-  .input-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    color: rgba(40, 37, 39, 0.60);
-  }
-
-  /* Remove default focus outline on container and rely on custom focus from inner input */
-  &:focus-within {
     box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.12);
     border-color: #4CAF50;
   }
-
-  /* Make multi-line textarea look good inside container */
-  textarea {
-    resize: vertical;
-    min-height: 56px;
-  }
-
-  /* Small helper for readonly text */
-  .readonly-text {
-    color: rgba(40, 37, 39, 0.80);
-    font-size: 14px;
-  }
-
-
 }
 
-/* Gender row styling requested by user */
 .gender-row {
   display: flex;
   justify-content: space-between;
@@ -156,35 +93,6 @@
 
 .gender-button.active {
   background: #E8F5E9;
-  /* light green background when active */
-}
-
-/* Add input-group styles similar to signup page for email input */
-.input-group {
-  margin-bottom: 1rem;
-  position: relative;
-
-  input {
-    width: 100%;
-    padding: 1rem;
-    border-radius: 12px !important;
-    font-size: 1rem;
-    background: #FAD2AE;
-    border: 2px solid transparent;
-    transition: 0.2s;
-
-    &:focus,
-    &:active,
-    &:hover,
-    &:focus-visible {
-      border: 2px solid #ff823b;
-      outline: none;
-    }
-  }
-
-  input.error {
-    border-color: var(--error_color);
-  }
 }
 
 .button-row {
@@ -198,14 +106,11 @@
   display: block;
 }
 
-/* Phone input styles copied from login to allow local overrides */
 .phone-input-container {
   display: flex;
-  width: 361px;
-  /* requested width for phone number input layout */
+
   height: 61px;
   padding: 0;
-  /* inner elements handle padding */
   align-items: center;
   flex-shrink: 0;
   border-radius: 0 12px 12px 0;
@@ -223,8 +128,6 @@
     border-color: var(--error_color);
   }
 
-  /* Simplified country code selector to avoid dropdown-specific heavy styling.
-     The modal `.country-modal` will handle the expanded country list UI. */
   .country-code-selector {
     display: flex;
     height: 61px;
@@ -253,7 +156,6 @@
       font-size: 16px;
     }
 
-    /* keep a small chevron if present but don't rely on heavy icon rules */
     i {
       margin-left: 6px;
       color: rgba(40, 37, 39, 0.6);
@@ -265,14 +167,10 @@
     border: none;
     background: transparent;
     padding: 20px 8px 20px 8px;
-    /* match vertical padding to requested 20px */
     font-size: 16px;
-    /* requested font size */
     color: #282527;
-    /* requested color */
     font-weight: 500;
     line-height: 130%;
-    /* 20.8px */
     border-radius: 0 12px 12px 0;
     min-width: 0;
 
@@ -285,7 +183,6 @@
       font-weight: 500;
     }
 
-    /* Remove number input arrows */
     &::-webkit-outer-spin-button,
     &::-webkit-inner-spin-button {
       -webkit-appearance: none;
@@ -305,7 +202,6 @@
   }
 }
 
-/* Country modal styling: white background and #4CAF50 accents as requested */
 .country-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -317,15 +213,11 @@
   position: fixed;
   left: 50%;
   bottom: 0;
-  /* anchor to bottom like login page */
   transform: translateX(-50%);
   width: 393px;
-  /* match login page exact width */
   max-height: 80vh;
   background: #ffffff;
-  /* white background */
   border-radius: 12px 12px 0 0;
-  /* rounded top corners */
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.12);
   z-index: 999;
   display: flex;
@@ -389,35 +281,5 @@
     border-radius: 8px;
     border: none;
     cursor: pointer;
-  }
-}
-
-/* Email input group (match signup page layout) */
-.input-group {
-  width: 100%;
-  padding: 1rem;
-  border-radius: 12px !important;
-  font-size: 1rem;
-  background: #FAD2AE;
-  border: 2px solid transparent;
-  transition: 0.2s;
-
-  input[type="email"] {
-    border: none;
-    outline: none;
-    background: transparent;
-    width: 100%;
-    color: #282527;
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 130%;
-    /* 20.8px */
-    padding: 0;
-  }
-
-  .error {
-    margin-top: 8px;
-    color: var(--error_color);
-    font-size: 13px;
   }
 }

@@ -2,30 +2,22 @@
   <mindful-navigator heading="Password and security" backIcon="arrowSvg"></mindful-navigator>
 
   <div class="reset-password-root">
-    <profile-edit-input
-      title="Current Password"
-      description="To verify you"
-      type="password"
-      placeholder="Enter password"
-    ></profile-edit-input>
+    <profile-edit-input title="Current Password" description="To verify you" type="password"
+      placeholder="Enter password" [value]="currentPassword" (valueChange)="onCurrentPasswordChange($event)"
+      [errorMessage]="currentPasswordError" [showError]="currentPasswordError !== ''"></profile-edit-input>
 
-     <profile-edit-input
-      title="New Password"
-      description="To change your password"
-      type="password"
-      placeholder="Enter password"
-    ></profile-edit-input>
+    <profile-edit-input title="New Password" description="To change your password" type="password"
+      placeholder="Enter password" [value]="newPassword" (valueChange)="onNewPasswordChange($event)"
+      [errorMessage]="newPasswordError" [showError]="newPasswordError !== ''"></profile-edit-input>
 
-     <profile-edit-input
-      title="Retype New Password"
-      
-      type="password"
-      placeholder="Enter password"
-    ></profile-edit-input>
+    <profile-edit-input title="Retype New Password" description="Confirm your new password" type="password"
+      placeholder="Enter password" [value]="retypeNewPassword" (valueChange)="onRetypePasswordChange($event)"
+      [errorMessage]="retypePasswordError" [showError]="retypePasswordError !== ''"></profile-edit-input>
 
 
   </div>
-<div class="button-row">
-  <mindful-button type="green" text="Change password" [large]="true" (click)="saveProfile()"></mindful-button>
-</div>
+  <div class="button-row">
+    <mindful-button type="green" [text]="loading ? 'Updating...' : 'Change password'" [large]="true"
+      [disabled]="loading" (click)="saveProfile()"></mindful-button>
+  </div>
 </ion-content>

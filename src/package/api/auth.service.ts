@@ -122,6 +122,24 @@ export class AuthService {
         return this.http.post<any>(url, payload);
     }
 
+    /**
+     * Edit user profile.
+     * Payload: { avatarName: string, name: string, dateOfBirth: string, gender: string, phone: string, email: string }
+     */
+    editProfile(payload: EditProfilePayload): Observable<EditProfileResponse> {
+        const url = `${this.apiUrl}/auth/edit-profile`;
+
+        // Use the user's authentication token from localStorage
+        const userToken = this.getToken();
+
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`
+        });
+
+        return this.http.put<EditProfileResponse>(url, payload, { headers });
+    }
+
     logout(): void {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_id');
@@ -138,4 +156,57 @@ export class AuthService {
     getUserId(): string | null {
         return localStorage.getItem('user_id');
     }
+}
+
+export interface EditProfilePayload {
+    avatarName?: string;
+    name: string;
+    dateOfBirth: string;
+    gender: string;
+    phone: string;
+    email: string;
+}
+
+export interface Avatar {
+    id: number;
+    avatarName: string;
+    gender: string | null;
+    url: string;
+}
+
+export interface Pet {
+    id: number;
+    petName: string;
+    gender: string | null;
+    url: string;
+}
+
+export interface EditProfileResponse {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    gender: string;
+    dateOfBirth: string;
+    relationship: string;
+    role: string;
+    enabled: boolean;
+    emailVerified: boolean;
+    emailVerificationToken: string | null;
+    lastLoginDate: string;
+    createdDateTime: string;
+    referralCode: string | null;
+    coins: number;
+    currentStreak: number;
+    highestStreak: number;
+    age: number;
+    ageGroup: string;
+    avatar: Avatar;
+    pet: Pet;
+    coinHistory: any[];
+    rewards: any[];
+    badges: any[];
+    loggedIn: boolean;
+    usingEmail: boolean;
+    usingPhone: boolean;
 }
