@@ -5,7 +5,7 @@ import { MindfulButtonComponent } from '../../mindful-button/mindful-button.comp
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { CourseCard } from '../academy-section.component';
-import { AcademyChaptersComponent } from '../academy-chapters/academy-chapters.component';
+import { AcademyLessonsComponent } from '../academy-lessons/academy-lessons.component';
 import { AcademyService, CourseDetailResponse, CourseLesson } from '../../../services/academy.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -23,7 +23,7 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
   @Output() courseOpen = new EventEmitter<CourseCard>();
   @Output() lessonStart = new EventEmitter<{ courseId: string; lessonIndex: number }>();
 
-  lessons: Array<{ title: string; desc: string; time: string; image?: string; coins?: number }> = [];
+  lessons: Array<{ title: string; desc: string; time: string; image?: string; coins?: number; lessonId?: number }> = [];
 
   // API response data
   courseDetail: CourseDetailResponse | null = null;
@@ -166,7 +166,8 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
       desc: lesson.description,
       time: `${lesson.videoUrl ? 'Video' : 'Text-based'} • ${lesson.duration} min${lesson.duration > 1 ? 's' : ''}`,
       image: this.convertGoogleDriveUrl(lesson.thumbnailUrl) || '/assets/app-assets/notebook-labeled.svg',
-      coins: typeof lesson.coins === 'number' ? lesson.coins : fallbackPerLesson
+      coins: typeof lesson.coins === 'number' ? lesson.coins : fallbackPerLesson,
+      lessonId: lesson.id
     }));
   }
 
@@ -199,15 +200,26 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
 
   onStartLesson(index: number): void {
     if (!this.course) return;
-    // Open the chapters modal for the course (lessonIndex currently unused here but kept for compatibility)
-    this.openChaptersModal(index).catch(err => console.error('Failed opening chapters modal', err));
+    // Open the lessons modal with the specific lesson ID
+    this.openChaptersModal(index).catch(err => console.error('Failed opening lessons modal', err));
   }
 
-  private async openChaptersModal(_lessonIndex: number): Promise<void> {
+  private async openChaptersModal(lessonIndex: number): Promise<void> {
     if (!this.course) return;
+
+    // Get the lesson ID from the lessons array
+    const lesson = this.lessons[lessonIndex];
+    const lessonId = lesson?.lessonId;
+
+    if (!lessonId) {
+      console.error('Lesson ID not found for index:', lessonIndex);
+      return;
+    }
+
     const modal = await this.modalCtrl.create({
-      component: AcademyChaptersComponent,
+      component: AcademyLessonsComponent,
       componentProps: {
+        lessonId: lessonId,
         courseId: this.course.id,
         courseTitle: this.course.title
       }

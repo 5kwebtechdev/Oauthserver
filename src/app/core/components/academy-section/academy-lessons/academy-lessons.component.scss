@@ -1,6 +1,5 @@
 .lesson-container {
-  width: 393px;
-  height: 100vh;
+
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 12px;
@@ -18,32 +17,6 @@
   border-radius: 24px;
 }
 
-.back-arrow {
-  position: absolute;
-  left: 16px;
-  top: 20px;
-  width: 48px;
-  height: 48px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-}
-.back-arrow svg {
-  width: 48px;
-  height: 48px;
-  display: block;
-}
-
-.lesson-img {
-  width: 70px;
-  margin: 10px auto;
-  display: block;
-}
 
 .header h1 {
   font-size: 18px;
@@ -111,43 +84,20 @@
   line-height: 1.5;
 }
 
-.fun-fact {
-  background: #f9f9f9;
-  border-left: 4px solid #ff9800;
-  padding: 10px;
-  margin: 12px 0;
-  font-size: 14px;
-  color: #333;
-  border-radius: 6px;
-}
-
-/* Footer */
-.footer {
+/* Footer CTA */
+.footer-cta {
   display: flex;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-top: 1px solid #eee;
-  position: sticky;
-  bottom: 0;
-  background: #fff;
-}
+  width: 100%;
+  gap: 8px;
+  padding: 16px;
+  box-sizing: border-box;
 
-.btn {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  font-size: 14px;
-  cursor: pointer;
-  border-radius: 6px;
-  margin: 0 6px;
-}
+  mindful-button {
+    flex: 1;
+    width: 100%;
+  }
 
-.btn.done {
-  background: #4caf50;
-  color: #fff;
-}
-
-.btn.next {
-  background: #8e0057;
-  color: #fff;
+  ::ng-deep mindful-button .button {
+    width: 100% !important;
+  }
 }

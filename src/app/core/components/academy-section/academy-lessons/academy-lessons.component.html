@@ -1,0 +1,40 @@
+<div class="lesson-container">
+
+  <!-- Header -->
+  <div class="header" *ngIf="lesson">
+    <mindful-navigator backIcon="arrowSvg" (back)="close()"></mindful-navigator>
+    <img [src]="convertGoogleDriveUrl(lesson.thumbnailUrl)" alt="Lesson" class="lesson-img">
+    <h1>{{ lesson.order }}. {{ lesson.title }}</h1>
+    <p class="time">{{ lesson.videoUrl ? 'Video' : 'Text-based' }} • {{ lesson.duration }} min</p>
+    <p class="desc">{{ lesson.description }}</p>
+  </div>
+
+  <!-- Lesson Outcomes -->
+  <div class="outcomes" *ngIf="learningOutcomes.length > 0">
+    <h2>In this lesson you will learn</h2>
+    <p class="sub">By the end, you'll be able to:</p>
+    <ul>
+      <li *ngFor="let outcome of learningOutcomes">✔ {{ stripNumbering(outcome) }}</li>
+    </ul>
+  </div>
+
+  <!-- Content Sections -->
+  <div class="content">
+    <div *ngFor="let section of contentSections">
+      <h2>{{ section.heading }}</h2>
+      <div *ngIf="section.isFunFact" class="fun-fact">
+        <strong>{{ section.heading }}</strong> {{ section.body }}
+      </div>
+      <p *ngIf="!section.isFunFact">{{ section.body }}</p>
+    </div>
+  </div>
+
+  <!-- Footer Buttons -->
+  <div class="footer-cta d-flex w-100 gap-2">
+    <mindful-button [type]="'green'" [text]="'Done'" (click)="close()"></mindful-button>
+    <mindful-button [type]="'magenta'" [text]="'Go to Lesson-2'"
+      [style.opacity]="lesson ? (lesson.isCompleted ? 1 : 0.5) : 1">
+    </mindful-button>
+  </div>
+
+</div>
