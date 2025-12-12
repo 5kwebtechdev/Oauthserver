@@ -63,8 +63,9 @@ export const guestGuard: CanActivateFn = (
     if (!isLoggedIn) {
         return true;
     } else {
-        console.log('[GuestGuard] User already authenticated. Redirecting to dashboard.');
-        router.navigate(['/authed/user-dashboard']);
+        console.log('[GuestGuard] User already authenticated. Redirecting to appropriate dashboard.');
+        const dashboardRoute = authService.getDashboardRoute();
+        router.navigate([dashboardRoute]);
         return false;
     }
 };

@@ -24,7 +24,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   public selectedCountry: Country;
   public countries: Country[] = [];
   private subscription = new Subscription();
-  private returnUrl: string = '/authed/user-dashboard';
+  private returnUrl: string = '';
 
 
   constructor(
@@ -111,10 +111,14 @@ export class LoginComponent implements OnInit, OnDestroy {
           console.log('[LoginComponent] Login successful', response);
           console.log('[LoginComponent] Token received:', !!response.token);
           console.log('[LoginComponent] UserId:', response.user?.id);
+          console.log('[LoginComponent] User relationship:', response.user?.relationship);
 
-          // Navigate to return URL if available, otherwise go to dashboard
-          console.log('[LoginComponent] Navigating to:', this.returnUrl);
-          this.router.navigateByUrl(this.returnUrl);
+          // Determine the appropriate dashboard route based on user relationship
+          const dashboardRoute = this.authService.getDashboardRoute();
+          const navigationTarget = this.returnUrl || dashboardRoute;
+
+          console.log('[LoginComponent] Navigating to:', navigationTarget);
+          this.router.navigateByUrl(navigationTarget);
         },
         error: (error) => {
           this.loading = false;
@@ -142,9 +146,9 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Get return URL from route parameters or default to dashboard
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/authed/user-dashboard';
-    console.log('[LoginComponent] Return URL set to:', this.returnUrl);
+    // Get return URL from route parameters (don't set default here, will be determined after login)
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '';
+    console.log('[LoginComponent] Return URL set to:', this.returnUrl || 'Will be determined after login');
 
     // Initialize login mode and its validators
     this.switchMode('phone');
