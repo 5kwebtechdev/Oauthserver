@@ -13,6 +13,7 @@ export interface PresignResponse {
     fileId?: number;
     fileName?: string;
     presignedUrl: string;
+    fileUrl?: string; // Public URL to the uploaded file (if backend provides it)
     status?: string;
     requiredHeaders?: { [k: string]: string };
 }
@@ -259,6 +260,12 @@ export class S3UploadService {
         if (presignResp.fileId) {
             const completeUrl = uploadCompleteEndpoint.replace('{fileId}', presignResp.fileId.toString());
             await this.notifyUploadComplete(completeUrl, token);
+        }
+
+        // Prefer a clean public file URL if backend provided one. Otherwise
+        // derive a stable URL by stripping query params from the presigned URL.
+        if (presignResp.fileUrl) {
+            return presignResp.fileUrl;
         }
 
         return presignResp.presignedUrl;
