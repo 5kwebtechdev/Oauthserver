@@ -560,6 +560,49 @@ export class AuthService {
   }
 
   /**
+   * Get user's relationship from stored data
+   */
+  getUserRelationship(): 'CHILD' | 'PARENT' | 'SELF' | null {
+    try {
+      const userData = localStorage.getItem('user_data');
+      if (userData) {
+        const parsedData = JSON.parse(userData);
+        return parsedData.relationship || null;
+      }
+    } catch (error) {
+      console.error('[AuthService] Error getting user relationship:', error);
+    }
+    return null;
+  }
+
+  /**
+   * Get the appropriate dashboard route based on user's relationship
+   */
+  getDashboardRoute(): string {
+    const relationship = this.getUserRelationship();
+
+    console.log('[AuthService] Determining dashboard route:', {
+      relationship,
+      timestamp: new Date().toISOString()
+    });
+
+    // Parent users go to parent-account page
+    if (relationship === 'PARENT') {
+      return '/authed/parent-account';
+    }
+
+    // Child and Self users go to user-dashboard
+    return '/authed/user-dashboard';
+  }
+
+  /**
+   * Check if the current user is a parent
+   */
+  isParentUser(): boolean {
+    return this.getUserRelationship() === 'PARENT';
+  }
+
+  /**
    * Generate referral code for the authenticated user
    */
   generateReferralCode(): Observable<ReferralCodeResponse> {

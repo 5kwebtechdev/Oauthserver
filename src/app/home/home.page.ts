@@ -75,8 +75,9 @@ export class HomePage implements OnInit {
     }
 
     if (this.isAuthenticated) {
-      console.log('User is already logged in, redirecting to dashboard...');
-      this.router.navigate(['/authed/user-dashboard'], { replaceUrl: true });
+      console.log('User is already logged in, redirecting to appropriate dashboard...');
+      const dashboardRoute = this.authService.getDashboardRoute();
+      this.router.navigate([dashboardRoute], { replaceUrl: true });
     }
   }
 
