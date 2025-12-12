@@ -28,10 +28,9 @@
 
 .heading-text {
   color: #282527;
+  font-family: Nunito;
   font-size: 20px;
-  font-style: normal;
   font-weight: 600;
-  line-height: 130%;
 }
 
 .validation-text {
@@ -40,6 +39,27 @@
   font-style: normal;
   font-weight: 500;
   line-height: 130%;
+}
+
+/* DOB input invalid state */
+.dob-input.invalid {
+  border: 2px solid #BB2124 !important;
+}
+
+.validation-text.invalid {
+  color: #BB2124 !important;
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Error message below DOB input */
+.error-message {
+  color: #BB2124;
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 8px;
 }
 
 .dob-input {
@@ -282,4 +302,15 @@
     border: none;
     cursor: pointer;
   }
+}
+
+.validation-text-age {
+  color: #282527;
+  font-family: Nunito;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.validation-text-age.invalid {
+  color: #BB2124 !important;
 }

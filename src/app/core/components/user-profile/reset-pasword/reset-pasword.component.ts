@@ -34,8 +34,8 @@ export class ResetPaswordComponent {
     private toastCtrl: ToastController
   ) {
     this.form = this.fb.group({
-      currentPassword: ['', [Validators.required, Validators.minLength(6)]],
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      currentPassword: ['', [Validators.required, Validators.minLength(8)]],
+      newPassword: ['', [Validators.required, Validators.minLength(8)]],
       retypeNewPassword: ['', [Validators.required]]
     });
   }
@@ -64,7 +64,7 @@ export class ResetPaswordComponent {
       if (control?.hasError('required')) {
         this.currentPasswordError = 'Current password is required';
       } else if (control?.hasError('minlength')) {
-        this.currentPasswordError = 'Password must be at least 6 characters';
+        this.currentPasswordError = 'Minimum 8 characters required';
       } else {
         this.currentPasswordError = '';
       }
@@ -77,7 +77,7 @@ export class ResetPaswordComponent {
       if (control?.hasError('required')) {
         this.newPasswordError = 'New password is required';
       } else if (control?.hasError('minlength')) {
-        this.newPasswordError = 'Password must be at least 6 characters';
+        this.newPasswordError = 'Minimum 8 characters required';
       } else {
         this.newPasswordError = '';
       }
@@ -90,7 +90,7 @@ export class ResetPaswordComponent {
       if (control?.hasError('required')) {
         this.retypePasswordError = 'Please retype your new password';
       } else if (this.newPassword && this.retypeNewPassword && this.newPassword !== this.retypeNewPassword) {
-        this.retypePasswordError = 'Passwords do not match';
+        this.retypePasswordError = 'Mismatch of password';
       } else {
         this.retypePasswordError = '';
       }
@@ -123,7 +123,7 @@ export class ResetPaswordComponent {
     }
 
     if (this.newPassword !== this.retypeNewPassword) {
-      this.retypePasswordError = 'Passwords do not match';
+      this.retypePasswordError = 'Mismatch of password';
       this.presentToast('New passwords do not match', 'warning');
       return;
     }

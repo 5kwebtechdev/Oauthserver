@@ -279,6 +279,20 @@ export class UserDashboardComponent implements OnInit {
    * Load user statistics from the vibes/display endpoint
    */
   private loadUserStats(): void {
+    // Try to load from localStorage first
+    const cachedStats = this.userService.getUserStats();
+
+    if (cachedStats) {
+      // Use cached stats
+      this.userCoins = cachedStats.coins;
+      this.userStreaks = cachedStats.streaks;
+      this.userDays = cachedStats.days;
+      this.userBadges = cachedStats.badges;
+
+      console.log('[UserDashboard] Loaded stats from localStorage:', cachedStats);
+    }
+
+    // Always fetch fresh data from API in background and update cache
     this.moodService.getVibesDisplay().subscribe({
       next: (data: VibesDisplayResponse[]) => {
         // The API returns an array, get the first item (current user's data)
@@ -288,11 +302,26 @@ export class UserDashboardComponent implements OnInit {
           this.userStreaks = userStats.streak || 0;
           this.userDays = userStats.trophies || 0; // Map trophies to days
           this.userBadges = userStats.badges || 0;
+
+          // Cache the updated stats
+          this.userService.saveUserStats({
+            coins: this.userCoins,
+            streaks: this.userStreaks,
+            days: this.userDays,
+            badges: this.userBadges
+          });
+
+          console.log('[UserDashboard] Updated stats from API:', {
+            coins: this.userCoins,
+            streaks: this.userStreaks,
+            days: this.userDays,
+            badges: this.userBadges
+          });
         }
       },
       error: (error) => {
         console.error('Failed to load user stats:', error);
-        // Keep default values (0) on error
+        // Keep cached or default values (0) on error
       }
     });
   }

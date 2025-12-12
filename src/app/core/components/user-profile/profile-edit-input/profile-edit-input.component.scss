@@ -1,3 +1,7 @@
+:host {
+  width: 100%;
+}
+
 .input-content {
   display: flex;
   flex-direction: column;
@@ -15,13 +19,16 @@
 
 .title-head {
   color: #282527;
-  font-size: 16px;
-  font-weight: 700;
+  font-family: Nunito;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .title-desc {
-  color: #6b6b6b;
-  font-size: 14px;
+  color: #4CAF50;
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .profile-input {
@@ -49,4 +56,16 @@
 .error {
   color: #d9534f;
   font-size: 13px;
+}
+
+/* Page-specific override when the host sets .has-error (e.g., on reset-password page) */
+:host(.has-error) .error {
+  color: #CE0800;
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+:host(.has-error) .profile-input {
+  border: 2px solid #BB2124;
 }

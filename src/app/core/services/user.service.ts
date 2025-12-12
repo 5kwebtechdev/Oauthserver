@@ -22,7 +22,7 @@ export interface UserProfile {
 })
 export class UserService {
   private apiUrl = environment.apiUrl;
-  
+
   // BehaviorSubject to hold the current user profile
   private userProfileSubject = new BehaviorSubject<UserProfile | null>(this.loadUserFromStorage());
   public userProfile$ = this.userProfileSubject.asObservable();
@@ -78,7 +78,7 @@ export class UserService {
   updateUserProfile(profile: Partial<UserProfile>): void {
     const currentProfile = this.userProfileSubject.value || {} as UserProfile;
     const updatedProfile = { ...currentProfile, ...profile };
-    
+
     this.userProfileSubject.next(updatedProfile);
     this.saveUserToStorage(updatedProfile);
   }
@@ -129,9 +129,37 @@ export class UserService {
     this.userProfileSubject.next(null);
     try {
       localStorage.removeItem('user_profile');
+      localStorage.removeItem('user_stats');
     } catch (e) {
       console.error('Error clearing user profile:', e);
     }
+  }
+
+  /**
+   * Save user stats to localStorage
+   */
+  saveUserStats(stats: { coins: number; streaks: number; days: number; badges: number }): void {
+    try {
+      localStorage.setItem('user_stats', JSON.stringify(stats));
+      console.log('[UserService] Saved user stats to localStorage:', stats);
+    } catch (e) {
+      console.error('[UserService] Error saving user stats:', e);
+    }
+  }
+
+  /**
+   * Get user stats from localStorage
+   */
+  getUserStats(): { coins: number; streaks: number; days: number; badges: number } | null {
+    try {
+      const stats = localStorage.getItem('user_stats');
+      if (stats) {
+        return JSON.parse(stats);
+      }
+    } catch (e) {
+      console.error('[UserService] Error loading user stats:', e);
+    }
+    return null;
   }
 
   /**
@@ -156,7 +184,7 @@ export class UserService {
       const signupProfile = sessionStorage.getItem('signup_profile');
       const signupAvatar = sessionStorage.getItem('signup_avatar');
       const signupRole = sessionStorage.getItem('signup_role');
-      
+
       if (signupProfile) {
         const profile = JSON.parse(signupProfile);
         const userProfile: UserProfile = {
@@ -167,7 +195,7 @@ export class UserService {
           avatarUrl: profile.avatar ? this.getAvatarUrlFromSelection(profile.avatar, profile.gender) : undefined,
           relationship: signupRole ? signupRole.toUpperCase() as 'CHILD' | 'PARENT' | 'SELF' : undefined
         };
-        
+
         this.setUserProfile(userProfile);
       }
     } catch (e) {

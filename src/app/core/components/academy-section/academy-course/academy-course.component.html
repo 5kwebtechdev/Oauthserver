@@ -1,7 +1,7 @@
 <ion-content>
   <div class="container">
-
     <mindful-navigator backIcon="arrowSvg" (back)="goBack()"></mindful-navigator>
+
 
     <div *ngIf="!isLoadingCourse && !loadError && course">
       <img [src]="course?.image || 'header-img.png'" alt="{{ course?.title }} Illustration">

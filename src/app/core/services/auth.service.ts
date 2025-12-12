@@ -21,11 +21,35 @@ export interface AuthResponse {
     name: string;
     email: string;
     phone?: string;
+    gender?: string;
+    dateOfBirth?: string;
+    relationship?: 'CHILD' | 'PARENT' | 'SELF';
     role?: string;
-    family?: any;
-    familyMembers?: any[];
-    avatar?: string | null;
-    pet?: string | null;
+    referralCode?: string | null;
+    family?: {
+      id: number;
+      familyCode: string;
+      familyName: string;
+    } | null;
+    familyMembers?: Array<{
+      id: number;
+      userId: number;
+      name: string;
+      relationship: string;
+      dateOfBirth: string;
+    }>;
+    avatar?: {
+      id: number;
+      avatarName: string;
+      gender: string | null;
+      url: string;
+    } | null;
+    pet?: {
+      id: number;
+      petName: string;
+      gender: string | null;
+      url: string;
+    } | null;
   };
   expiresIn?: number;
 }
@@ -230,6 +254,7 @@ export class AuthService {
             console.log('[AuthService] Login successful:', {
               userId,
               hasToken: !!response.token,
+              userObject: response.user,
               timestamp: new Date().toISOString(),
             });
 
@@ -239,6 +264,7 @@ export class AuthService {
                   token: response.token,
                   userId: userId,
                   expiresIn: response.expiresIn,
+                  user: response.user
                 },
                 credentials.rememberMe || false
               );
@@ -407,6 +433,8 @@ export class AuthService {
     localStorage.removeItem(this.USER_ID_KEY);
     localStorage.removeItem(this.LOGIN_TIME_KEY);
     localStorage.removeItem(this.LAST_ACTIVITY_KEY);
+    localStorage.removeItem('user_data');
+    localStorage.removeItem('user_stats');
 
     this.isAuthenticatedSubject.next(false);
     this.currentUserSubject.next(null);
@@ -536,7 +564,7 @@ export class AuthService {
    */
   generateReferralCode(): Observable<ReferralCodeResponse> {
     const token = this.getToken();
-    
+
     if (!token) {
       throw new Error('User not authenticated');
     }
