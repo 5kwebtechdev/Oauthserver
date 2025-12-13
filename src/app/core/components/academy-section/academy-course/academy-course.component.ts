@@ -23,8 +23,10 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
   @Output() courseOpen = new EventEmitter<CourseCard>();
   @Output() lessonStart = new EventEmitter<{ courseId: string; lessonIndex: number }>();
 
-  lessons: Array<{ title: string; desc: string; time: string; image?: string; coins?: number; lessonId?: number }> = [];
+  lessons: Array<{ title: string; desc: string; time: string; image?: string; coins?: number; lessonId?: number; isCompleted?: boolean }> = [];
 
+  // If the user has an in-progress lesson, index of that lesson in `lessons`; null when none
+  resumeLessonIndex: number | null = null;
   // API response data
   courseDetail: CourseDetailResponse | null = null;
   isLoadingCourse = false;
@@ -85,16 +87,19 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
   private buildLessons(): void {
     if (!this.course) {
       this.lessons = [];
+      this.resumeLessonIndex = null;
       return;
     }
 
     if (this.course.id === 'budget-1') {
       this.lessons = [
-        { title: '1. What is a Budget?', desc: 'Discover what a budget is and why it matters.', time: 'Text-based • 3 mins', image: '/assets/app-assets/notebook-labeled.svg' },
-        { title: '2. Track Your Spending', desc: 'Learn how to track your everyday spending.', time: 'Text-based • 4 mins', image: '/assets/app-assets/child-lesson.svg' },
-        { title: '3. Set Spending Limits', desc: 'Find out how to set and stick to spending limits.', time: 'Text-based • 3 mins', image: '/assets/app-assets/timer-lesson.svg' },
-        { title: '4. Save for Your Goals', desc: 'See how to save money toward your goals.', time: 'Text-based • 4 mins', image: '/assets/app-assets/piggy-lesson.svg' },
+        { title: '1. What is a Budget?', desc: 'Discover what a budget is and why it matters.', time: 'Text-based • 3 mins', image: '/assets/app-assets/notebook-labeled.svg', isCompleted: false },
+        { title: '2. Track Your Spending', desc: 'Learn how to track your everyday spending.', time: 'Text-based • 4 mins', image: '/assets/app-assets/child-lesson.svg', isCompleted: false },
+        { title: '3. Set Spending Limits', desc: 'Find out how to set and stick to spending limits.', time: 'Text-based • 3 mins', image: '/assets/app-assets/timer-lesson.svg', isCompleted: false },
+        { title: '4. Save for Your Goals', desc: 'See how to save money toward your goals.', time: 'Text-based • 4 mins', image: '/assets/app-assets/piggy-lesson.svg', isCompleted: false },
       ];
+      // demo/static content: no resume index by default
+      this.resumeLessonIndex = null;
       return;
     }
 
@@ -103,8 +108,11 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
       title: `${i + 1}. Lesson ${i + 1}`,
       desc: this.course?.description || 'Lesson description',
       time: 'Text-based • 3 mins',
-      image: '/assets/img/lesson-binder.png'
+      image: '/assets/img/lesson-binder.png',
+      isCompleted: false,
+      lessonId: undefined
     }));
+    this.resumeLessonIndex = null;
   }
 
   /**
@@ -167,8 +175,12 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
       time: `${lesson.videoUrl ? 'Video' : 'Text-based'} • ${lesson.duration} min${lesson.duration > 1 ? 's' : ''}`,
       image: this.convertGoogleDriveUrl(lesson.thumbnailUrl) || '/assets/app-assets/notebook-labeled.svg',
       coins: typeof lesson.coins === 'number' ? lesson.coins : fallbackPerLesson,
-      lessonId: lesson.id
+      lessonId: lesson.id,
+      isCompleted: !!lesson.isCompleted
     }));
+    // Find a lesson that has been started but not completed: prefer time spent or lastAccessedAt
+    const inProgressIndex = apiLessons.findIndex(l => !l.isCompleted && (!!l.timeSpentMinutes || !!l.lastAccessedAt));
+    this.resumeLessonIndex = inProgressIndex >= 0 ? inProgressIndex : null;
   }
 
   /**

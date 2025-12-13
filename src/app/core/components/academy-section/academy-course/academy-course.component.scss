@@ -1,5 +1,5 @@
 .container {
-  padding: 26px 20px 16px;
+  padding: 1px 20px 16px;
   border-radius: 24px;
   background: #FEF5C7;
   text-align: center;
@@ -60,6 +60,18 @@
   display: flex;
   gap: 12px;
   align-items: center;
+}
+
+.lesson.locked {
+  position: relative;
+}
+
+.lesson .overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  z-index: 20;
+  pointer-events: auto;
 }
 
 .lesson-thumb {

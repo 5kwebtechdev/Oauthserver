@@ -121,24 +121,29 @@ export class AcademyLessonsComponent {
   close(): void {
     // Mark lesson as complete before closing if lesson is loaded
     if (this.lesson && this.lesson.id && !this.lesson.isCompleted) {
-      this.markLessonComplete();
+      this.markLessonComplete(true);
     } else {
       this.modalCtrl.dismiss();
     }
   }
 
-  private markLessonComplete(): void {
+  /**
+   * Mark the current lesson as complete.
+   * @param dismissAfter whether to dismiss the modal after marking complete
+   */
+  private markLessonComplete(dismissAfter = false): void {
     if (!this.lesson) return;
 
     this.academyService.completeLessonById(this.lesson.id)
       .pipe(
         catchError(error => {
           console.error('Error marking lesson as complete:', error);
-          // Still dismiss modal even if API call fails
           return of(null);
         }),
         finalize(() => {
-          this.modalCtrl.dismiss({ completed: true, lessonId: this.lesson?.id });
+          if (dismissAfter) {
+            this.modalCtrl.dismiss({ completed: true, lessonId: this.lesson?.id });
+          }
         })
       )
       .subscribe(response => {
@@ -146,5 +151,26 @@ export class AcademyLessonsComponent {
           console.log('Lesson marked as complete:', response);
         }
       });
+  }
+
+  /**
+   * Handler for the Done button: mark lesson complete but keep modal open so user can go to next.
+   */
+  onDoneClick(): void {
+    if (!this.lesson) return;
+    if (this.lesson.isCompleted) return;
+
+    // Optimistically mark completed locally so UI updates immediately
+    this.lesson.isCompleted = true;
+    this.markLessonComplete(false);
+  }
+
+  /**
+   * Handler for the Next button: only allowed when lesson.isCompleted === true
+   */
+  goToNext(): void {
+    if (!this.lesson || !this.lesson.isCompleted) return;
+    // Signal caller to navigate to next lesson
+    this.modalCtrl.dismiss({ next: true, lessonId: this.lesson.id });
   }
 }

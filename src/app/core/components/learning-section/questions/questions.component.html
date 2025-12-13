@@ -33,13 +33,13 @@
             {{ questions[currentQuestionIndex]?.text }}
         </h2>
         <!-- Hint display that only appears when showHint is true -->
-        <div *ngIf="showHint && questions && questions.length > 0" class="hint-display d-flex align-items-center gap-2">
+        <div *ngIf="showHint && currentHintText" class="hint-display d-flex align-items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="19" viewBox="0 0 14 19" fill="none">
                 <path
                     d="M6.75 18.4423C6.34867 18.4423 5.99383 18.3365 5.6855 18.125C5.37717 17.9133 5.1615 17.6358 5.0385 17.2923H4.75C4.341 17.2923 3.98875 17.1445 3.69325 16.849C3.39775 16.5535 3.25 16.2013 3.25 15.7923V12.5115C2.241 11.9 1.44708 11.0802 0.86825 10.052C0.289417 9.02367 0 7.923 0 6.75C0 4.868 0.6545 3.2725 1.9635 1.9635C3.2725 0.6545 4.868 0 6.75 0C8.632 0 10.2275 0.6545 11.5365 1.9635C12.8455 3.2725 13.5 4.868 13.5 6.75C13.5 7.9435 13.2106 9.04925 12.6318 10.0673C12.0529 11.0853 11.259 11.9 10.25 12.5115V15.7923C10.25 16.2013 10.1023 16.5535 9.80675 16.849C9.51125 17.1445 9.159 17.2923 8.75 17.2923H8.4615C8.3385 17.6358 8.12283 17.9133 7.8145 18.125C7.50617 18.3365 7.15133 18.4423 6.75 18.4423ZM4.75 15.7923H8.75V14.8538H4.75V15.7923ZM4.75 13.9693H8.75V13H4.75V13.9693ZM4.55 11.5H6.15375V8.5885L4.0115 6.44625L4.85 5.60775L6.75 7.50775L8.65 5.60775L9.4885 6.44625L7.34625 8.5885V11.5H8.95C9.85 11.0667 10.5833 10.4292 11.15 9.5875C11.7167 8.74583 12 7.8 12 6.75C12 5.28333 11.4917 4.04167 10.475 3.025C9.45833 2.00833 8.21667 1.5 6.75 1.5C5.28333 4.04167 3.025C2.00833 4.04167 1.5 5.28333 1.5 6.75C1.5 7.8 1.78333 8.74583 2.35 9.5875C2.91667 10.4292 3.65 11.0667 4.55 11.5Z"
                     fill="#4CAF50" />
             </svg>
-            <span class="hint-text">{{ questions[currentQuestionIndex]?.hint }}</span>
+            <span class="hint-text">{{ currentHintText }}</span>
         </div>
 
         <div class="answers-list d-flex flex-column gap-3">
@@ -86,9 +86,13 @@
                 </div>
             </div>
             <div class="d-flex flex-column align-items-center gap-2">
-                <button class="hint-cta" (click)="toggleHint()">Hint</button>
+                <button class="hint-cta" (click)="toggleHint()"
+                    [disabled]="isHintLoading || hintsUsed >= maxHints || totalCoins < coinsPerHint">
+                    {{ isHintLoading ? 'Loading...' : 'Hint' }}
+                </button>
                 <div class="hint-counter">
-                    {{ maxHints - hintsUsed }}/{{ maxHints }} remaining
+                    {{ hintLimitReached ? 'Hint limit reached' : (maxHints - hintsUsed) + '/' + maxHints + ' remaining'
+                    }}
                 </div>
             </div>
             <!-- Hint usage counter -->
@@ -116,10 +120,10 @@
     </div>
 </ion-content>
 
-<!-- Timer Expiration Popup -->
-<app-mindful-popup *ngIf="showTimerExpirationPopup" [config]="timerExpirationPopupConfig"
-    [isVisible]="showTimerExpirationPopup" (closeAction)="showTimerExpirationPopup = false"
-    (backdropClick)="showTimerExpirationPopup = false">
+<!-- Leave Challenge Popup -->
+<app-mindful-popup *ngIf="showLeaveChallengePopup" [config]="leaveChallengePopupConfig"
+    [isVisible]="showLeaveChallengePopup" (closeAction)="showLeaveChallengePopup = false"
+    (backdropClick)="showLeaveChallengePopup = false">
 </app-mindful-popup>
 
 <!-- Content Time Exhaust Popup -->

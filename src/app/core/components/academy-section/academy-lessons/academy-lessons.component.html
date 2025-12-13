@@ -1,8 +1,8 @@
 <div class="lesson-container">
 
   <!-- Header -->
-  <mindful-navigator backIcon="arrowSvg" (back)="close()"></mindful-navigator>
   <div class="header" *ngIf="lesson">
+    <mindful-navigator backIcon="arrowSvg" (back)="close()"></mindful-navigator>
     <img [src]="convertGoogleDriveUrl(lesson.thumbnailUrl)" alt="Lesson" class="lesson-img">
     <h1>{{ lesson.order }}. {{ lesson.title }}</h1>
     <p class="time">{{ lesson.videoUrl ? 'Video' : 'Text-based' }} • {{ lesson.duration }} min</p>
@@ -31,9 +31,9 @@
 
   <!-- Footer Buttons -->
   <div class="footer-cta d-flex w-100 gap-2">
-    <mindful-button [type]="'green'" [text]="'Done'" (click)="close()"></mindful-button>
-    <mindful-button [type]="'magenta'" [text]="'Go to Lesson-2'"
-      [style.opacity]="lesson ? (lesson.isCompleted ? 1 : 0.5) : 1">
+    <mindful-button [type]="'green'" [text]="'Done'" (click)="onDoneClick()"></mindful-button>
+    <mindful-button [type]="'magenta'" [text]="'Go to Lesson-2'" [disabled]="!lesson?.isCompleted"
+      [style.opacity]="lesson ? (lesson.isCompleted ? 1 : 0.5) : 1" (click)="goToNext()">
     </mindful-button>
   </div>
 

@@ -7,11 +7,16 @@
       <img [src]="course?.image || 'header-img.png'" alt="{{ course?.title }} Illustration">
       <h3>{{ course?.title }}</h3>
       <p class="subtitle">{{ course?.lessons }} lessons • {{ course?.duration }}</p>
+      <mindful-button *ngIf="resumeLessonIndex !== null" [type]="'magenta'" full
+        [text]="'Continue with lesson ' + (resumeLessonIndex + 1)"
+        (click)="onStartLesson(resumeLessonIndex)"></mindful-button>
+
       <p class="desc">{{ course?.description }}</p>
     </div>
   </div>
 
-  <div class="lesson" *ngFor="let lesson of lessons; let i = index">
+  <div class="lesson" *ngFor="let lesson of lessons; let i = index"
+    [class.locked]="i > 0 && !lessons[i-1]?.isCompleted">
     <div class="lesson-thumb">
       <img [src]="lesson.image" [alt]="lesson.title" />
     </div>
@@ -24,9 +29,12 @@
         <span class="coin-value">{{ lesson.coins || 0 }}</span>
       </span>
 
-      <mindful-button *ngIf="i === 0" [type]="'magenta'" small (click)="onStartLesson(i)"
-        [text]="'Start Lesson'"></mindful-button>
+      <mindful-button [type]="'magenta'" small (click)="onStartLesson(i)"
+        [text]="lesson?.isCompleted ? 'Continue' : ('Start Lesson ' + (i + 1))"
+        [disabled]="i > 0 && !lessons[i-1]?.isCompleted"></mindful-button>
     </div>
+
+    <div class="overlay" *ngIf="i > 0 && !lessons[i-1]?.isCompleted"></div>
   </div>
 
 </ion-content>

@@ -139,8 +139,6 @@ $muted: rgba(40, 37, 39, 0.7);
 }
 
 .post-card {
-	min-height: 305px;
-	/* allow the card to grow vertically when content increases */
 	height: auto;
 	flex-shrink: 0;
 	border-radius: 24px;
@@ -204,10 +202,8 @@ $muted: rgba(40, 37, 39, 0.7);
 	color: #282527;
 	font-family: Nunito;
 	font-size: 20px;
-	font-style: normal;
 	font-weight: 700;
-	line-height: 140%;
-	/* 28px */
+
 }
 
 .post-tags {

@@ -91,13 +91,13 @@ export class LearningService {
     /**
      * Submit challenge answers (new format)
      */
-    submitChallengeNewFormat(challengeId: number, payload: { 
-        questionAnswers: { [key: string]: string }, 
-        timeTaken: number, 
-        skippedQuestions: string[] 
+    submitChallengeNewFormat(challengeId: number, payload: {
+        questionAnswers: { [key: string]: string },
+        timeTaken: number,
+        skippedQuestions: string[]
     }): Observable<any> {
         const url = `${this.apiUrl}/challenges/${challengeId}/submit-all`;
-        
+
         console.log('Submitting challenge to URL:', url);
         console.log('Full payload:', payload);
         console.log('JSON payload:', JSON.stringify(payload, null, 2));
@@ -385,5 +385,24 @@ export class LearningService {
     clearCache(): void {
         this.challengesCache$.next([]);
         this.articlesCache$.next([]);
+    }
+
+    /**
+     * Use a hint for a specific challenge
+     * @param challengeId The ID of the challenge
+     * @returns Observable with the API response
+     */
+    useHint(challengeId: number): Observable<any> {
+        const url = `${this.apiUrl}/challenges/hint/${challengeId}/use`;
+        return this.http.get<any>(url, { headers: this.getHeaders() })
+            .pipe(
+                tap(response => {
+                    console.log('Hint used successfully:', response);
+                }),
+                catchError(error => {
+                    console.error('Error using hint:', error);
+                    throw error;
+                })
+            );
     }
 }

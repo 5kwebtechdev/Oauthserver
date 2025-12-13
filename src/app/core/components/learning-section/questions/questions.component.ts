@@ -86,22 +86,25 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     maxHints = 2;
     coinsPerHint = 3;
     totalCoins = 100; // Default value, should be fetched from user profile
+    isHintLoading = false; // Track hint request state
+    currentHintText = ''; // Store hint text from API response
+    hintLimitReached = false; // Track if hint limit is reached from API
 
-    // Timer expiration popup configuration
-    timerExpirationPopupConfig: MindfulPopupConfig = {
+    // Leave challenge popup configuration
+    leaveChallengePopupConfig: MindfulPopupConfig = {
         image: 'assets/Images-Transparent/Image-Leaving-Learning.png',
-        imageAlt: 'Time\'s Up',
-        heading: 'Time\'s Up!',
-        subtitle: 'The timer ran out, but don\'t worry! You can try again. Ready for another round?',
+        imageAlt: 'Leaving Learning',
+        heading: 'You\'re Making Great Progress!',
+        subtitle: 'If you leave now, you\'ll need to restart from the beginning.',
         primaryCTA: {
-            text: 'Quit',
-            buttonStyle: 'bronze-transparent',
-            callback: () => this.quitQuiz()
+            text: 'Keep going',
+            buttonStyle: 'green',
+            callback: () => this.showLeaveChallengePopup = false
         },
         secondaryCTA: {
-            text: 'Try Again',
-            buttonStyle: 'green',
-            callback: () => this.restartQuiz()
+            text: 'Exit',
+            buttonStyle: 'bronze-transparent',
+            callback: () => this.quitQuiz()
         },
         showCloseButton: false,
         backdrop: true
@@ -114,21 +117,22 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         heading: 'Time\'s Up!',
         subtitle: 'The timer ran out, but don\'t worry! You can try again. Ready for another round?',
         primaryCTA: {
-            text: 'Quit',
-            buttonStyle: 'bronze-transparent',
-            callback: () => this.quitQuiz()
-        },
-        secondaryCTA: {
             text: 'Try Again',
             buttonStyle: 'green',
             callback: () => this.restartQuiz()
+        },
+        secondaryCTA: {
+
+            text: 'Quit',
+            buttonStyle: 'bronze-transparent',
+            callback: () => this.quitQuiz()
         },
         showCloseButton: false,
         backdrop: true
     };
 
-    // Timer expiration popup visibility
-    showTimerExpirationPopup = false;
+    // Leave challenge popup visibility
+    showLeaveChallengePopup = false;
 
     // Content time exhaust popup visibility
     showContentTimeExhaustPopup = false;
@@ -305,8 +309,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     }
 
     onCancel() {
-        // Show the timer expiration popup instead of navigating directly
-        this.showTimerExpirationPopup = true;
+        // Show the leave challenge popup instead of navigating directly
+        this.showLeaveChallengePopup = true;
     }
 
     onRightAction(event?: { index: number, action: any }) {
@@ -603,6 +607,12 @@ export class QuestionsComponent implements OnInit, OnDestroy {
      * Toggle hint visibility and deduct coins
      */
     toggleHint() {
+        // Prevent multiple simultaneous requests
+        if (this.isHintLoading) {
+            console.log('Hint request already in progress');
+            return;
+        }
+
         // Check if max hints reached
         if (this.hintsUsed >= this.maxHints) {
             console.log('Maximum hints reached');
@@ -615,14 +625,80 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             return;
         }
 
-        // Show hint
-        this.showHint = true;
+        // Validate challenge availability
+        if (!this.challenge?.challengeId) {
+            console.error('Challenge ID not available');
+            return;
+        }
 
-        // Deduct coins and increment hints used
-        this.totalCoins -= this.coinsPerHint;
-        this.hintsUsed++;
+        // Set loading state
+        this.isHintLoading = true;
 
-        console.log(`Hint used. Remaining coins: ${this.totalCoins}, Hints used: ${this.hintsUsed}/${this.maxHints}`);
+        // Call API to use hint
+        this.learningService.useHint(this.challenge.challengeId).subscribe({
+            next: (response) => {
+                console.log('Hint used successfully:', response);
+
+                // Update hints used from API response
+                if (response.hintCount !== undefined) {
+                    this.hintsUsed = response.hintCount;
+                }
+
+                // Store hint text from API
+                if (response.hint) {
+                    this.currentHintText = response.hint;
+                }
+
+                // Show hint on successful API response
+                this.showHint = true;
+
+                // Deduct coins
+                this.totalCoins -= this.coinsPerHint;
+
+                console.log(`Hint used. Remaining coins: ${this.totalCoins}, Hints used: ${this.hintsUsed}/${this.maxHints}`);
+
+                // Reset loading state
+                this.isHintLoading = false;
+            },
+            error: (error) => {
+                console.error('Failed to use hint:', error);
+
+                // Reset loading state
+                this.isHintLoading = false;
+
+                // Check if hint limit reached
+                if (error.error?.message === 'Hint limit reached') {
+                    this.hintLimitReached = true;
+                    console.log('Hint limit reached from API');
+                    return;
+                }
+
+                // Handle specific error cases
+                let errorMessage = 'Unable to use hint. Please try again.';
+
+                if (error.status === 400) {
+                    errorMessage = 'Invalid request. Please check your input.';
+                    console.error('Bad request: Invalid challenge or hint data');
+                } else if (error.status === 403) {
+                    errorMessage = 'You don\'t have enough coins or permission to use this hint.';
+                    console.error('Insufficient coins or permissions');
+                } else if (error.status === 404) {
+                    errorMessage = 'Hint not found for this challenge.';
+                    console.error('Challenge or hint not found');
+                } else if (error.status === 500) {
+                    errorMessage = 'Server error occurred. Please try again later.';
+                    console.error('Server error:', error.error?.message || error.message);
+                } else {
+                    errorMessage = 'Network error. Please check your connection.';
+                }
+
+                // Log the error message for debugging
+                console.error('Error message:', errorMessage);
+
+                // TODO: Show user-friendly error popup
+                // this.showErrorPopup(errorMessage);
+            }
+        });
     }
 
     quitQuiz() {
@@ -643,7 +719,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         this.answerChecked = false;
         this.showHint = false;
         this.hintsUsed = 0;
-        this.showTimerExpirationPopup = false;
+        this.showLeaveChallengePopup = false;
         this.showContentTimeExhaustPopup = false;
 
         // Reset timer
