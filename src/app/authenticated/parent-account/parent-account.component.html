@@ -1,3 +1,70 @@
 <ion-content>
+    <div class="container w-100 p-0">
+        <section class="user-profile-section profile" aria-labelledby="profile-heading">
+            <header class="profile-header" role="banner">
+                <div class="user-info" role="group" aria-label="User info">
+                    <div class="user-avatar" aria-hidden="false">
+                        <a [routerLink]="['/authed','user-profile']" aria-label="Open profile">
+                            <img [src]="userAvatarUrl" alt="{{ userName }} avatar">
+                        </a>
+                    </div>
+                    <div class="user-name-wrap">
+                        <span class="user-name">{{ userName }}</span>
+                    </div>
+                </div>
+
+                <nav class="header-tools" role="navigation" aria-label="Profile tools">
+                    <a class="tool-item-lock" aria-label="Notes" [routerLink]="['/authed/notes']">
+                        <img src="/assets/Icons-Neutral/Icon-Parents-ParentalControl.png" alt="Notes" class="tool-icon">
+                    </a>
+                    <a class="tool-item" type="button" aria-label="Calendar" (click)="openCalendar()">
+                        <img src="/assets/Icons-Neutral/Icon-Calendar.png" alt="Calendar" class="tool-icon">
+                    </a>
+                </nav>
+            </header>
+            <div class="child-progress">
+                <div class="timeline-score-card container w-full p-0">
+                    <div class="d-flex justify-content-between w-100 m-0 p-3">
+                        <div class="col-3 p-0">
+                            <mindful-completion
+                                [completionPercentage]="totalHabits > 0 ? (totalHabitsCompleted / totalHabits * 100) : 0"
+                                [borderColor]="'#4CAF50'" [innerText]="totalHabitsCompleted + '/' + totalHabits"
+                                [belowText]="'Total habits completed'">
+                            </mindful-completion>
+                        </div>
+                        <div class="col-3 p-0">
+                            <mindful-completion
+                                [completionPercentage]="totalTasks > 0 ? (totalTasksCompleted / totalTasks * 100) : 0"
+                                [borderColor]="'#F0AD4E'" [innerText]="totalTasksCompleted + '/' + totalTasks"
+                                [belowText]="'Total tasks completed'">
+                            </mindful-completion>
+                        </div>
+                        <div class="col-3 p-0">
+                            <mindful-completion [completionPercentage]="habitCompletionRate" [borderColor]="'#BB2124'"
+                                [innerText]="habitCompletionRate + '%'" [belowText]="'Habit completion rate'">
+                            </mindful-completion>
+                        </div>
+                        <div class="col-3 p-0">
+                            <mindful-completion [completionPercentage]="taskCompletionRate" [borderColor]="'#F0AD4E'"
+                                [innerText]="taskCompletionRate + '%'" [belowText]="'Task completion rate'">
+                            </mindful-completion>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="dashboard-content">
+            <div class="mood-selector w-full">
+                <mood-selector [value]="selectedMood" (valueChange)="onMoodChange($event)"></mood-selector>
+            </div>
+
+            <div class="w-full">
+                <ad-banner></ad-banner>
+            </div>
+
+
+        </div>
+    </div>
+    <app-footer></app-footer>
 </ion-content>
-<footer></footer>
