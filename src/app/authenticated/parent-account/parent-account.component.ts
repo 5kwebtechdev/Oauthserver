@@ -11,6 +11,7 @@ import { MoodService } from '../../core/services/mood.service';
 import { VibesDisplayResponse } from '../../core/models/mood.model';
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { AdBannerComponent } from '../../core/components/ad-banner/ad-banner.component';
+import { HabitPageContentComponent } from '../../core/components/habit-section/habit-page-content/habit-page-content.component';
 
 
 @Component({
@@ -26,6 +27,7 @@ import { AdBannerComponent } from '../../core/components/ad-banner/ad-banner.com
         MoodSelectorComponent,
         AdBannerComponent,
         FooterComponent,
+        HabitPageContentComponent,
 
     ]
 })
@@ -38,13 +40,12 @@ export class ParentAccountComponent implements OnInit {
     public selectedMood: string | null = 'happy';
 
     public userAvatarUrl: string = '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
-    // Basic stats used by the mindful-completion rings. Initialized to safe defaults.
-    public totalHabits: number = 0;
-    public totalHabitsCompleted: number = 0;
-    public totalTasks: number = 0;
-    public totalTasksCompleted: number = 0;
-    public habitCompletionRate: number = 0;
-    public taskCompletionRate: number = 0;
+    // Stats from vibes/display API for the mindful-completion rings
+    public completionRate: number = 0;
+    public consistencyRate: number = 0;
+    public improvementRate: number = 0;
+    public appScore: number = 0;
+    public Math = Math; // Expose Math to template for Math.abs()
 
     constructor(
         private modalCtrl: ModalController,
@@ -66,17 +67,13 @@ export class ParentAccountComponent implements OnInit {
             }
         });
 
-        // Try to load cached stats if they exist so the rings render immediately.
+        // Load rings data immediately from cache if available
         const stats = this.userService.getUserStats();
         if (stats) {
-            // Map cached stats to reasonable defaults for the ring UI.
-            // These mappings are intentionally simple; refine as needed.
-            this.totalHabits = stats.days || 0;
-            this.totalHabitsCompleted = Math.min(this.totalHabits, Math.floor(stats.streaks || 0));
-            this.totalTasks = Math.max(0, (this.totalHabits * 2));
-            this.totalTasksCompleted = Math.min(this.totalTasks, Math.floor(stats.badges || 0));
-            this.habitCompletionRate = this.totalHabits > 0 ? Math.round((this.totalHabitsCompleted / this.totalHabits) * 100) : 0;
-            this.taskCompletionRate = this.totalTasks > 0 ? Math.round((this.totalTasksCompleted / this.totalTasks) * 100) : 0;
+            this.userCoins = stats.coins || 0;
+            this.userStreaks = stats.streaks || 0;
+            this.userDays = stats.days || 0;
+            this.userBadges = stats.badges || 0;
         }
 
         // Fetch fresh stats from API in background and update cache (same behavior as dashboard)
@@ -100,10 +97,17 @@ export class ParentAccountComponent implements OnInit {
             next: (data: VibesDisplayResponse[]) => {
                 if (data && data.length > 0) {
                     const userStats = data[0];
+                    // Map coins/streaks/trophies/badges
                     this.userCoins = userStats.coins || 0;
                     this.userStreaks = userStats.streak || 0;
                     this.userDays = userStats.trophies || 0;
                     this.userBadges = userStats.badges || 0;
+
+                    // Map ring values directly from API
+                    this.completionRate = Math.round(userStats.completionRate || 0);
+                    this.consistencyRate = Math.round(userStats.consistencyRate || 0);
+                    this.improvementRate = Math.round(userStats.improvementRate || 0);
+                    this.appScore = Math.round(userStats.appScore || 0);
 
                     // Update cached stats
                     this.userService.saveUserStats({
@@ -113,17 +117,16 @@ export class ParentAccountComponent implements OnInit {
                         badges: this.userBadges
                     });
 
-                    // Also update the rings mapping values so they reflect the fresh data
-                    this.totalHabits = this.userDays || 0;
-                    this.totalHabitsCompleted = Math.min(this.totalHabits, Math.floor(this.userStreaks || 0));
-                    this.totalTasks = Math.max(0, (this.totalHabits * 2));
-                    this.totalTasksCompleted = Math.min(this.totalTasks, Math.floor(this.userBadges || 0));
-                    this.habitCompletionRate = this.totalHabits > 0 ? Math.round((this.totalHabitsCompleted / this.totalHabits) * 100) : 0;
-                    this.taskCompletionRate = this.totalTasks > 0 ? Math.round((this.totalTasksCompleted / this.totalTasks) * 100) : 0;
+                    console.log('[ParentAccount] Loaded vibes display:', {
+                        completionRate: this.completionRate,
+                        consistencyRate: this.consistencyRate,
+                        improvementRate: this.improvementRate,
+                        appScore: this.appScore
+                    });
                 }
             },
             error: (error) => {
-                console.error('Failed to load user stats:', error);
+                console.error('[ParentAccount] Failed to load user stats:', error);
             }
         });
     }

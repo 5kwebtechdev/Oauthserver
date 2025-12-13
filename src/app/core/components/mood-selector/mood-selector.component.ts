@@ -5,6 +5,7 @@ import { environment } from '../../../../environments/environment';
 import { AuthApi } from '../../api/auth.api';
 import { MoodService } from '../../services/mood.service';
 import { VibesDisplayResponse } from '../../models/mood.model';
+import { AuthService } from '../../services/auth.service';
 
 export interface MoodOption { key: string; label: string; emoji?: string }
 
@@ -102,15 +103,27 @@ export class MoodSelectorComponent {
 
   // Popup helpers
   openPopup() {
-    if (!this.canSetVibe) return;
-    this.popupSelection = null; this.showPopup = true;
+    // Block popup for PARENT users, allow for CHILD and SELF
+    const userRelationship = this.authService.getUserRelationship();
+    if (userRelationship === 'PARENT') {
+      return;
+    }
+
+    // Check daily limit (max 2 per day)
+    if (this.setsToday >= 2) {
+      return;
+    }
+
+    this.popupSelection = null;
+    this.showPopup = true;
   }
   closePopup() { this.showPopup = false }
   choosePopup(src: string) { this.popupSelection = src }
   constructor(
     private http: HttpClient,
     private authApi: AuthApi,
-    private moodService: MoodService
+    private moodService: MoodService,
+    private authService: AuthService
   ) { }
 
   setVibe() {
@@ -226,10 +239,15 @@ export class MoodSelectorComponent {
 
   trackByUserId = (_: number, item: VibesDisplayResponse) => item?.userId ?? _;
 
-  // Daily set limit helpers (max 2 per day)
+  // Check if user can set vibe (for UI indicators)
   get canSetVibe(): boolean {
+    const userRelationship = this.authService.getUserRelationship();
+    if (userRelationship === 'PARENT') {
+      return false;
+    }
     return this.setsToday < 2;
   }
+
   private loadDailySetCount() {
     try {
       const key = this.dailyKey();
@@ -237,12 +255,14 @@ export class MoodSelectorComponent {
       this.setsToday = raw ? parseInt(raw, 10) || 0 : 0;
     } catch { this.setsToday = 0; }
   }
+
   private incrementDailySetCount() {
     try {
       this.setsToday = Math.min(2, (this.setsToday || 0) + 1);
       localStorage.setItem(this.dailyKey(), String(this.setsToday));
     } catch { /* ignore */ }
   }
+
   private dailyKey() {
     const d = new Date();
     const yyyy = d.getFullYear();

@@ -1,7 +1,4 @@
-<ion-content>
-    <mindful-navigator heading="Your Universe" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
-        rightIconAlt="Calendar" (rightIconClick)="onOpenCalendar()" (back)="onBack()"></mindful-navigator>
-
+<div class="habit-page-content">
     <div class="habit-week">
         <mindful-week (dateSelected)="onDateSelected($event)"></mindful-week>
     </div>
@@ -214,9 +211,8 @@
     </div>
 
 
-
     <!--ad-banner-->
     <!-- <div class="ad-banner-container">
         <ad-banner></ad-banner>
     </div> -->
-</ion-content>
+</div>

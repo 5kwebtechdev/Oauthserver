@@ -26,27 +26,24 @@
                 <div class="timeline-score-card container w-full p-0">
                     <div class="d-flex justify-content-between w-100 m-0 p-3">
                         <div class="col-3 p-0">
-                            <mindful-completion
-                                [completionPercentage]="totalHabits > 0 ? (totalHabitsCompleted / totalHabits * 100) : 0"
-                                [borderColor]="'#4CAF50'" [innerText]="totalHabitsCompleted + '/' + totalHabits"
-                                [belowText]="'Total habits completed'">
+                            <mindful-completion [completionPercentage]="completionRate" [borderColor]="'#4CAF50'"
+                                [innerText]="completionRate + '%'" [belowText]="'Completion Rate'">
                             </mindful-completion>
                         </div>
                         <div class="col-3 p-0">
-                            <mindful-completion
-                                [completionPercentage]="totalTasks > 0 ? (totalTasksCompleted / totalTasks * 100) : 0"
-                                [borderColor]="'#F0AD4E'" [innerText]="totalTasksCompleted + '/' + totalTasks"
-                                [belowText]="'Total tasks completed'">
+                            <mindful-completion [completionPercentage]="consistencyRate" [borderColor]="'#F0AD4E'"
+                                [innerText]="consistencyRate + '%'" [belowText]="'Consistency Rate'">
                             </mindful-completion>
                         </div>
                         <div class="col-3 p-0">
-                            <mindful-completion [completionPercentage]="habitCompletionRate" [borderColor]="'#BB2124'"
-                                [innerText]="habitCompletionRate + '%'" [belowText]="'Habit completion rate'">
+                            <mindful-completion [completionPercentage]="Math.abs(improvementRate)"
+                                [borderColor]="'#BB2124'" [innerText]="improvementRate + '%'"
+                                [belowText]="'Improvement Rate'">
                             </mindful-completion>
                         </div>
                         <div class="col-3 p-0">
-                            <mindful-completion [completionPercentage]="taskCompletionRate" [borderColor]="'#F0AD4E'"
-                                [innerText]="taskCompletionRate + '%'" [belowText]="'Task completion rate'">
+                            <mindful-completion [completionPercentage]="appScore" [borderColor]="'#F0AD4E'"
+                                [innerText]="appScore + ''" [belowText]="'App\'s Score'">
                             </mindful-completion>
                         </div>
                     </div>
@@ -55,14 +52,18 @@
         </section>
 
         <div class="dashboard-content">
-            <div class="mood-selector w-full">
-                <mood-selector [value]="selectedMood" (valueChange)="onMoodChange($event)"></mood-selector>
+            <div class="mood-selector w-full parent-mood-readonly" style="padding:0px 16px;" aria-label=" Mood (view
+                only)">
+                <mood-selector [value]="selectedMood"></mood-selector>
             </div>
 
-            <div class="w-full">
+            <div class="w-full" style="padding:0px 16px;">
                 <ad-banner></ad-banner>
             </div>
 
+            <div class="habit-page w-full">
+                <habit-page-content></habit-page-content>
+            </div>
 
         </div>
     </div>

@@ -110,6 +110,10 @@
   border-radius: 50%;
   background: #ffecec;
   cursor: pointer;
+
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
 /* Mood Popup */
