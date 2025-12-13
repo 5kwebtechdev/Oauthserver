@@ -1,26 +1,32 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
-import { FamilyMemberComponent } from './family-member.component';
 import { ProfileFactsComponent } from '../profile-facts/profile-facts.component';
 import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { InstructioListComponent } from './instructio-list';
+import { AuthService, FamilyInfo, FamilyMember } from '../../../../../package/api/auth.service';
 @Component({
   standalone: true,
   selector: 'family-connection',
-  imports: [CommonModule, FormsModule, IonicModule, MindfulNavigatorComponent, MindfulBadgeComponent, FamilyMemberComponent, ProfileFactsComponent, MindfulPetComponent, MindfulButtonComponent, InstructioListComponent],
+  imports: [CommonModule, FormsModule, IonicModule, MindfulNavigatorComponent, MindfulBadgeComponent, ProfileFactsComponent, MindfulPetComponent, MindfulButtonComponent, InstructioListComponent],
   templateUrl: './family-connection.component.html',
   styleUrls: ['./family-connection.component.scss']
 })
-export class FamilyConnectionComponent {
-  constructor(private router: Router) {}
+export class FamilyConnectionComponent implements OnInit {
   familyName: string = 'Your Family';
+  familyStatus: string = 'ACTIVE';
+  createdOn: string = '';
+  creator: FamilyMember | null = null;
+  members: FamilyMember[] = [];
   showInstructions: boolean = false;
+  isLoading: boolean = true;
+
+  constructor(private router: Router, private authService: AuthService) { }
 
   instructionItems: string[] = [
     'You will link your account to your family and get benefits like learning together and earning rewards.',
@@ -38,15 +44,45 @@ export class FamilyConnectionComponent {
 
   consentChecked: boolean = false;
 
-  members = [
-    { id: 1, name: 'Yash', age: '12', active: false },
-    { id: 2, name: 'Asha', age: '10', active: true },
-    { id: 3, name: 'Sam', age: '8', active: false }
-  ];
+  ngOnInit(): void {
+    this.loadFamilyDetails();
+  }
 
-  onMemberActiveChange(memberId: number, active: boolean) {
-    const m = this.members.find(x => x.id === memberId);
-    if (m) m.active = active;
+  loadFamilyDetails(): void {
+    this.isLoading = true;
+    this.authService.getFamilyDetails().subscribe({
+      next: (response) => {
+        if (response.family) {
+          this.familyName = response.family.familyName;
+          this.familyStatus = response.family.status;
+          this.createdOn = response.family.createdOn;
+          this.creator = response.family.creator;
+          this.members = response.family.members;
+        }
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading family details:', error);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  onMemberActiveChange(userId: number, active: boolean): void {
+    // Handle member active state change if needed
+    console.log(`Member ${userId} active state changed to ${active}`);
+  }
+
+  toggleMemberActive(member: FamilyMember): void {
+    member.you = !member.you;
+    this.onMemberActiveChange(member.userId, member.you);
+  }
+
+  getBadgeText(member: FamilyMember): string {
+    if (member.you) {
+      return member.relationship === 'Parent' ? 'Parent / You' : 'Child / You';
+    }
+    return member.relationship === 'Parent' ? 'Parent' : 'Child';
   }
 
   onRemovedPetClick() {
@@ -54,7 +90,22 @@ export class FamilyConnectionComponent {
   }
 
   onFeedback() {
-    this.router.navigate(['/authed/select-role']).catch(() => {});
+    this.router.navigate(['/authed/select-role']).catch(() => { });
+  }
+
+  /**
+   * Handle back action from mindful-navigator — return to the user profile page
+   */
+  onBackFromFamily() {
+    // Prefer explicit navigation to the authenticated user-profile route
+    this.router.navigate(['/authed', 'user-profile']).catch(err => {
+      console.error('Navigation to user-profile failed, falling back to history.back()', err);
+      try {
+        history.back();
+      } catch (e) {
+        // no-op
+      }
+    });
   }
 
 
@@ -73,7 +124,7 @@ export class FamilyConnectionComponent {
     this.router.navigate(['/select-role']).catch(err => {
       console.error('Navigation to select-role failed', err);
       // fallback to authed path if global path doesn't work
-      this.router.navigate(['/authed/select-role']).catch(() => {});
+      this.router.navigate(['/authed/select-role']).catch(() => { });
     });
   }
 }

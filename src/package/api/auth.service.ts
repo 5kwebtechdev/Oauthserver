@@ -156,6 +156,21 @@ export class AuthService {
     getUserId(): string | null {
         return localStorage.getItem('user_id');
     }
+
+    /**
+     * Get family details for the authenticated user
+     */
+    getFamilyDetails(): Observable<FamilyDetailsResponse> {
+        const url = `${this.apiUrl}/auth/family-details`;
+        const userToken = this.getToken();
+
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`
+        });
+
+        return this.http.get<FamilyDetailsResponse>(url, { headers });
+    }
 }
 
 export interface EditProfilePayload {
@@ -209,4 +224,28 @@ export interface EditProfileResponse {
     loggedIn: boolean;
     usingEmail: boolean;
     usingPhone: boolean;
+}
+
+export interface FamilyMember {
+    userId: number;
+    name: string;
+    avatarName: string;
+    relationship: string;
+    age: number;
+    you: boolean;
+}
+
+export interface FamilyInfo {
+    familyId: number;
+    familyName: string;
+    status: string;
+    createdOn: string;
+    creator: FamilyMember;
+    members: FamilyMember[];
+}
+
+export interface FamilyDetailsResponse {
+    mode: string;
+    family: FamilyInfo | null;
+    selfMode: any | null;
 }

@@ -1,8 +1,9 @@
 <ion-content>
-    <mindful-navigator *ngIf="!showInstructions" heading="My Family" backIcon="arrowSvg"></mindful-navigator>
+    <mindful-navigator *ngIf="!showInstructions" heading="My Family" backIcon="arrowSvg"
+        (back)="onBackFromFamily()"></mindful-navigator>
 
     <main *ngIf="!showInstructions" class="family-connection" role="main" aria-labelledby="family-heading">
-        <section class="family-container-main">
+        <section class="family-container-main" *ngIf="!isLoading">
             <div class="family-container">
 
                 <header class="family-info" id="family-heading">
@@ -13,38 +14,69 @@
                         </div>
 
                         <div class="family-status" aria-hidden="true">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="4" height="5" viewBox="0 0 4 5" fill="none" role="img" aria-label="active">
-                                <circle cx="2" cy="2.5" r="2" fill="#4CAF50"/>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="4" height="5" viewBox="0 0 4 5" fill="none"
+                                role="img" aria-label="active">
+                                <circle cx="2" cy="2.5" r="2"
+                                    [attr.fill]="familyStatus === 'ACTIVE' ? '#4CAF50' : '#999'" />
                             </svg>
-                            <p>active</p>
+                            <p>{{ familyStatus?.toLowerCase() || 'active' }}</p>
                         </div>
                     </div>
 
                     <div class="family-date">
                         <p>Created on:</p>
-                        <h1>12/08/2023</h1>
+                        <h1>{{ createdOn }}</h1>
                     </div>
                 </header>
 
-                <section class="family-con-detail" aria-label="Family details">
+                <section class="family-con-detail" aria-label="Family details" *ngIf="creator">
                     <div class="f-head">
                         <div class="family-avatar">
                             <div class="avatar-img" aria-hidden="true"></div>
                         </div>
 
                         <div class="f-head">
-                            <h1>Chandran</h1>
-                            <p>age years old</p>
+                            <h1>{{ creator.name }}</h1>
+                            <p>{{ creator.age }} years old</p>
+
+                            <div class="relationship-badge" [class.child]="creator.relationship === 'Child'"
+                                [class.parent]="creator.relationship === 'Parent'">
+                                {{ creator.relationship + ' / Creator' + (creator.you ? ' / You' : '') }}
+                            </div>
+
                         </div>
                     </div>
                 </section>
 
                 <section class="family-members" aria-label="Family members">
-                    <family-member *ngFor="let m of members" [name]="m.name" [age]="m.age" [active]="m.active" (activeChange)="onMemberActiveChange(m.id, $event)">
-                    </family-member>
+                    <div class="member-detail" *ngFor="let m of members">
+                        <div class="member-info">
+                            <div class="avtar-img" [class.is-you]="m.you">
+                                <img *ngIf="m.avatarName; else placeholder" [src]="m.avatarName"
+                                    alt="{{m.name}} avatar" />
+                                <ng-template #placeholder>
+                                    <div class="avatar-placeholder"></div>
+                                </ng-template>
+                            </div>
+                            <div class="name-age">
+                                <h1>{{ m.name }}</h1>
+                                <p>{{ m.age }} years old</p>
+                            </div>
+                        </div>
+
+                        <div class="relationship-badge" [class.child]="m.relationship === 'Child'"
+                            [class.parent]="m.relationship === 'Parent'" (click)="toggleMemberActive(m)">
+                            {{ getBadgeText(m) }}
+                        </div>
+                    </div>
                 </section>
 
             </div>
+        </section>
+
+        <section *ngIf="isLoading" style="text-align: center; padding: 2rem;">
+            <ion-spinner></ion-spinner>
+            <p>Loading family details...</p>
         </section>
 
         <!-- removed / self mode message -->
@@ -54,14 +86,11 @@
 
                 <div class="removed-message-text">
                     <h1>You’re now in Self mode !</h1>
-                    <p>The family connection has been removed by the creator. Your account is still safe and all data is saved.</p>
+                    <p>The family connection has been removed by the creator. Your account is still safe and all data is
+                        saved.</p>
                 </div>
 
-                <mindful-button
-                    type="green"
-                    large
-                    text="Continue with a new role?"
-                    (click)="continueWithNewRole()"
+                <mindful-button type="green" large text="Continue with a new role?" (click)="continueWithNewRole()"
                     style="display:block; width:100%; margin-top:12px">
                 </mindful-button>
             </div>
@@ -76,29 +105,26 @@
     <!--intructions-->
     <main *ngIf="showInstructions">
         <mindful-navigator heading="Instructions" backIcon="arrowSvg" (back)="onInstructionsBack()"></mindful-navigator>
-                <div class="instructions-container">
-                    <div class="instruction-list" style="margin-top:16px;">
-                        <instructio-list [heading]="'When You Switch to Child Role'" [items]="instructionItems"></instructio-list>
-                        <instructio-list [heading]="'When You Switch to Parent Role'" [items]="instructionItemsParent"></instructio-list>
-                    </div>
-                    
-                    <div class="consent">
-                        <ion-checkbox slot="start" [(ngModel)]="consentChecked"></ion-checkbox>
-                        <p class="check-text"> I have read and understood that switching roles affects account linkage and data as described above.
-                        </p>
-                    </div>  
-                        <mindful-button
-                            type="green"
-                            full
-                            large
-                            text="Next"
-                            [disabled]="!consentChecked"
-                            [style.opacity]="consentChecked ? 1 : 0.5"
-                            (click)="goToRoleSelect()">
-                        </mindful-button>
+        <div class="instructions-container">
+            <div class="instruction-list" style="margin-top:16px;">
+                <instructio-list [heading]="'When You Switch to Child Role'"
+                    [items]="instructionItems"></instructio-list>
+                <instructio-list [heading]="'When You Switch to Parent Role'"
+                    [items]="instructionItemsParent"></instructio-list>
+            </div>
 
-                    
-                </div>
+            <div class="consent">
+                <ion-checkbox slot="start" [(ngModel)]="consentChecked"></ion-checkbox>
+                <p class="check-text"> I have read and understood that switching roles affects account linkage and data
+                    as described above.
+                </p>
+            </div>
+            <mindful-button type="green" full large text="Next" [disabled]="!consentChecked"
+                [style.opacity]="consentChecked ? 1 : 0.5" (click)="goToRoleSelect()">
+            </mindful-button>
+
+
+        </div>
     </main>
 
 </ion-content>

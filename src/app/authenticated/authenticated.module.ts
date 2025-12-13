@@ -40,7 +40,6 @@ import { StreaksSectionComponent } from '../core/components/streaks-section/stre
     MindfulBadgeComponent,
     TypicalPageComponent,
     UserDashboardComponent,
-    UserProfileComponent,
     IonicModule,
     MindfulInputsModule,
     MindfulSelectorsComponent,

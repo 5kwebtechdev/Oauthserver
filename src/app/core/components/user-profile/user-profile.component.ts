@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigator.component';
 import { IonicModule, ModalController } from '@ionic/angular';
@@ -8,10 +9,11 @@ import { ProfileContentCardComponent } from './profile-content-card/profile-cont
 import { SocialMediaComponent } from '../social-media/social-media.component';
 import { ChangePetComponent } from './change-pet/change-pet.component';
 import { MindfulPopupComponent } from '../mindful-popup/mindful-popup.component';
-import { AuthService } from '../../services/auth.service';
+import { AuthService as CoreAuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
 import { MoodService } from '../../services/mood.service';
 import { VibesDisplayResponse } from '../../models/mood.model';
+import { AuthService, FamilyMember, FamilyDetailsResponse } from '../../../../package/api/auth.service';
 
 @Component({
   selector: 'user-profile',
@@ -57,9 +59,15 @@ export class UserProfileComponent implements OnInit, OnChanges {
     { key: 12, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male6.png' },
   ];
 
+  // Family data
+  creator: FamilyMember | null = null;
+  members: FamilyMember[] = [];
+
   constructor(
     private router: Router,
+    private location: Location,
     private modalCtrl: ModalController,
+    private coreAuthService: CoreAuthService,
     private authService: AuthService,
     private userService: UserService,
     private moodService: MoodService
@@ -91,6 +99,10 @@ export class UserProfileComponent implements OnInit, OnChanges {
     this.loadUserDataFromStorage();
     // Load user stats from localStorage first, then API if not available
     this.loadUserStatsFromStorage();
+    // Load family details if user is a parent
+    if (this.user?.relationship === 'PARENT') {
+      this.loadFamilyDetails();
+    }
   }
 
   /**
@@ -189,6 +201,27 @@ export class UserProfileComponent implements OnInit, OnChanges {
     });
   }
 
+  /**
+   * Load family details from API
+   */
+  private loadFamilyDetails(): void {
+    this.authService.getFamilyDetails().subscribe({
+      next: (response: FamilyDetailsResponse) => {
+        if (response.family) {
+          this.creator = response.family.creator;
+          this.members = response.family.members;
+          console.log('[UserProfile] Loaded family details:', {
+            creator: this.creator,
+            members: this.members
+          });
+        }
+      },
+      error: (error: any) => {
+        console.error('[UserProfile] Failed to load family details:', error);
+      }
+    });
+  }
+
   async onChangePet() {
     const slides = [
       { image: '/assets/app-assets/pet1.png', title: 'Pet 1', subtitle: ['Friendly', 'Playful'], color: '#fff', next_color: '#512100', background: 'linear-gradient(to top right,#ffb974,#ffe3c8)' },
@@ -253,7 +286,7 @@ export class UserProfileComponent implements OnInit, OnChanges {
   }
 
   onBack() {
-    this.router.navigate(['/authed/user-dashboard']).catch(() => { });
+    this.location.back();
   }
 
   onLogout() {
@@ -269,7 +302,7 @@ export class UserProfileComponent implements OnInit, OnChanges {
     this.showLogoutPopup = false;
 
     // Clear authentication data
-    this.authService.logout();
+    this.coreAuthService.logout();
 
     // Navigate to login page with animation
     this.router.navigate(['/home/login'], {
@@ -328,5 +361,22 @@ export class UserProfileComponent implements OnInit, OnChanges {
       if (u.days != null) this.userDays = u.days;
       if (u.badges != null) this.userBadges = u.badges;
     }
+  }
+
+  onMemberActiveChange(userId: number, you: boolean) {
+    const m = this.members.find(x => x.userId === userId);
+    if (m) m.you = you;
+  }
+
+  toggleMemberActive(member: FamilyMember) {
+    member.you = !member.you;
+    this.onMemberActiveChange(member.userId, member.you);
+  }
+
+  getBadgeText(member: FamilyMember): string {
+    if (member.you) {
+      return member.relationship === 'Parent' ? 'Parent / You' : 'Child / You';
+    }
+    return member.relationship === 'Parent' ? 'Parent' : 'Child';
   }
 }

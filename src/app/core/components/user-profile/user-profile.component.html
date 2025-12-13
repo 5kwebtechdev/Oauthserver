@@ -3,7 +3,7 @@
   <div class="profile">
 
     <section class="user-profile-main">
-      <div class="user-profile">
+      <div class="user-profile" *ngIf="user?.relationship !== 'PARENT'">
         <div class="avatar w-100 d-flex justify-content-center gap-2 flex-column align-items-center">
           <div class="avatar-wrapper">
             <img [src]="user?.avatarUrl || userAvatarUrl || '/assets/app-assets/Default-avatar-home.svg'"
@@ -29,6 +29,48 @@
           </mindful-coins-stats>
         </div>
       </div>
+
+      <div parent-profile-detail *ngIf="user?.relationship === 'PARENT'">
+        <section class="family-con-detail" aria-label="Family details" *ngIf="creator">
+          <div class="f-head">
+            <div class="family-avatar">
+              <div class="avatar-img" aria-hidden="true"></div>
+            </div>
+
+            <div class="f-head">
+              <h1>{{ creator.name }}</h1>
+              <p>{{ creator.age }} years old</p>
+
+              <div class="relationship-badge" [class.child]="creator.relationship === 'Child'"
+                [class.parent]="creator.relationship === 'Parent'">
+                {{ creator.relationship + ' / Creator' + (creator.you ? ' / You' : '') }}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="family-members" aria-label="Family members">
+          <div class="member-detail" *ngFor="let m of members">
+            <div class="member-info">
+              <div class="avtar-img" [class.is-you]="m.you">
+                <img *ngIf="m.avatarName; else placeholder" [src]="m.avatarName" alt="{{m.name}} avatar" />
+                <ng-template #placeholder>
+                  <div class="avatar-placeholder"></div>
+                </ng-template>
+              </div>
+              <div class="name-age">
+                <h1>{{ m.name }}</h1>
+                <p>{{ m.age }} years old</p>
+              </div>
+            </div>
+
+            <div class="relationship-badge" [class.child]="m.relationship === 'Child'"
+              [class.parent]="m.relationship === 'Parent'" (click)="toggleMemberActive(m)">
+              {{ getBadgeText(m) }}
+            </div>
+          </div>
+        </section>
+      </div>
     </section>
 
     <section class="profile-content">
@@ -39,7 +81,7 @@
         (select)="onPassword()"></profile-content-card>
 
       <profile-content-card iconName="owl" title="Change your pet" subtitle="Switch your buddy anytime you like!"
-        (select)="onChangePet()"></profile-content-card>
+        (select)="onChangePet()" *ngIf="user?.relationship !== 'PARENT'"></profile-content-card>
 
       <profile-content-card iconName="creditCard" title="Manage Your Membership"
         subtitle="See your perks, upgrade, or cancel anytime"></profile-content-card>
