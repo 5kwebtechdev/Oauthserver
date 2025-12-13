@@ -111,5 +111,15 @@
     flex-direction: column;
     align-items: center;
     gap: 36px;
-    padding: 16px;
+    padding: 0px 0px 90px 0px;
+}
+
+/* Make mood-selector on parent-account non-interactive and show a small overlay */
+.parent-mood-readonly {
+    position: relative;
+}
+
+.parent-mood-readonly mood-selector {
+    pointer-events: none;
+    opacity: 1;
 }
