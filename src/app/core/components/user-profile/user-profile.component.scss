@@ -7,6 +7,12 @@
   padding: 0px 16px;
 }
 
+p,
+h1,
+h2 {
+  margin: 0;
+}
+
 .user-profile-main {
   display: flex;
   width: 100%;
@@ -214,7 +220,7 @@ profile-content-card {
   background: #282527;
 }
 
-.f-head .f-head {
+.f-head {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -224,30 +230,25 @@ profile-content-card {
   h1 {
     color: #282527;
     text-align: center;
+    font-family: Fredoka;
     font-size: 16px;
-    font-style: normal;
     font-weight: 500;
-    line-height: 140%;
-    margin-bottom: 0px;
   }
 
   p {
-    align-self: stretch;
     color: #282527;
     text-align: center;
+    font-family: Nunito;
     font-size: 13px;
-    font-style: normal;
     font-weight: 600;
-    line-height: 140%;
-    margin-bottom: 0px;
+    opacity: 0.7;
   }
 }
 
 .family-members {
   display: flex;
   align-items: center;
-  gap: 32px;
-  align-self: stretch;
+  justify-content: space-between;
 }
 
 /* Member styles */
@@ -360,16 +361,18 @@ profile-content-card {
 
   p {
     color: rgba(40, 37, 39, 0.70);
-    font-family: Nunito, sans-serif;
-    font-size: 16px;
-    font-weight: 600;
+    font-family: Nunito;
+    font-size: 10px;
+    font-weight: 500;
+    align-items: stretch;
   }
 
   h1 {
     color: #282527;
-    font-family: Nunito, sans-serif;
-    font-size: 16px;
-    font-weight: 600;
+    text-align: center;
+    font-family: Fredoka;
+    font-size: 13px;
+    font-weight: 500;
   }
 }
 

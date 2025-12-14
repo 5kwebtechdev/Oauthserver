@@ -3,86 +3,93 @@
         (back)="onBackFromFamily()"></mindful-navigator>
 
     <main *ngIf="!showInstructions" class="family-connection" role="main" aria-labelledby="family-heading">
-        <section class="family-container-main" *ngIf="!isLoading">
-            <div class="family-container">
+        <div class="family-mode d-flex flex-column gap-3" *ngIf="!isSelfUser()">
+            <section class="family-container-main" *ngIf="!isLoading">
+                <div class="family-container">
 
-                <header class="family-info" id="family-heading">
-                    <div class="familyinformation">
-                        <div class="family-name">
-                            <p>Family name:</p>
-                            <h1>{{ familyName }}</h1>
+                    <header class="family-info" id="family-heading">
+                        <div class="familyinformation">
+                            <div class="family-name">
+                                <p>Family name:</p>
+                                <h1>{{ familyName }}</h1>
+                            </div>
+
+                            <div class="family-status" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="4" height="5" viewBox="0 0 4 5"
+                                    fill="none" role="img" aria-label="active">
+                                    <circle cx="2" cy="2.5" r="2"
+                                        [attr.fill]="familyStatus === 'ACTIVE' ? '#4CAF50' : '#999'" />
+                                </svg>
+                                <p>{{ familyStatus?.toLowerCase() || 'active' }}</p>
+                            </div>
                         </div>
 
-                        <div class="family-status" aria-hidden="true">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="4" height="5" viewBox="0 0 4 5" fill="none"
-                                role="img" aria-label="active">
-                                <circle cx="2" cy="2.5" r="2"
-                                    [attr.fill]="familyStatus === 'ACTIVE' ? '#4CAF50' : '#999'" />
-                            </svg>
-                            <p>{{ familyStatus?.toLowerCase() || 'active' }}</p>
+                        <div class="family-date">
+                            <p>Created on:</p>
+                            <h1>{{ createdOn }}</h1>
                         </div>
-                    </div>
+                    </header>
 
-                    <div class="family-date">
-                        <p>Created on:</p>
-                        <h1>{{ createdOn }}</h1>
-                    </div>
-                </header>
-
-                <section class="family-con-detail" aria-label="Family details" *ngIf="creator">
-                    <div class="f-head">
-                        <div class="family-avatar">
-                            <div class="avatar-img" aria-hidden="true"></div>
-                        </div>
-
+                    <section class="family-con-detail" aria-label="Family details" *ngIf="creator">
                         <div class="f-head">
-                            <h1>{{ creator.name }}</h1>
-                            <p>{{ creator.age }} years old</p>
-
-                            <div class="relationship-badge" [class.child]="creator.relationship === 'Child'"
-                                [class.parent]="creator.relationship === 'Parent'">
-                                {{ creator.relationship + ' / Creator' + (creator.you ? ' / You' : '') }}
+                            <div class="family-avatar">
+                                <div class="avatar-img" aria-hidden="true"></div>
                             </div>
 
-                        </div>
-                    </div>
-                </section>
+                            <div class="f-head">
+                                <h1>{{ creator.name }}</h1>
+                                <p>{{ creator.age }} years old</p>
 
-                <section class="family-members" aria-label="Family members">
-                    <div class="member-detail" *ngFor="let m of members">
-                        <div class="member-info">
-                            <div class="avtar-img" [class.is-you]="m.you">
-                                <img *ngIf="m.avatarName; else placeholder" [src]="m.avatarName"
-                                    alt="{{m.name}} avatar" />
-                                <ng-template #placeholder>
-                                    <div class="avatar-placeholder"></div>
-                                </ng-template>
-                            </div>
-                            <div class="name-age">
-                                <h1>{{ m.name }}</h1>
-                                <p>{{ m.age }} years old</p>
+                                <div class="relationship-badge" [class.child]="creator.relationship === 'Child'"
+                                    [class.parent]="creator.relationship === 'Parent'">
+                                    {{ creator.relationship + ' / Creator' + (creator.you ? ' / You' : '') }}
+                                </div>
+
                             </div>
                         </div>
+                    </section>
 
-                        <div class="relationship-badge" [class.child]="m.relationship === 'Child'"
-                            [class.parent]="m.relationship === 'Parent'" (click)="toggleMemberActive(m)">
-                            {{ getBadgeText(m) }}
+                    <section class="family-members" aria-label="Family members">
+                        <div class="member-detail" *ngFor="let m of members">
+                            <div class="member-info">
+                                <div class="avtar-img" [class.is-you]="m.you">
+                                    <img *ngIf="m.avatarName; else placeholder" [src]="m.avatarName"
+                                        alt="{{m.name}} avatar" />
+                                    <ng-template #placeholder>
+                                        <div class="avatar-placeholder"></div>
+                                    </ng-template>
+                                </div>
+                                <div class="name-age">
+                                    <h1>{{ m.name }}</h1>
+                                    <p>{{ m.age }} years old</p>
+                                </div>
+                            </div>
+
+                            <div class="relationship-badge" [class.child]="m.relationship === 'Child'"
+                                [class.parent]="m.relationship === 'Parent'" (click)="toggleMemberActive(m)">
+                                {{ getBadgeText(m) }}
+                            </div>
+                            <a *ngIf="isParentUser()">Remove</a>
                         </div>
-                    </div>
-                </section>
+                    </section>
 
+                </div>
+            </section>
+
+            <section *ngIf="isLoading" style="text-align: center; padding: 2rem;">
+                <ion-spinner></ion-spinner>
+                <p>Loading family details...</p>
+            </section>
+
+            <div class="delete-family" *ngIf="isParentUser()">
+                <mindful-button type="bronze" large text="Delete Family" (click)="onDeleteFamily()"></mindful-button>
             </div>
-        </section>
-
-        <section *ngIf="isLoading" style="text-align: center; padding: 2rem;">
-            <ion-spinner></ion-spinner>
-            <p>Loading family details...</p>
-        </section>
+        </div>
 
         <!-- removed / self mode message -->
-        <aside class="family-removed-container" aria-live="polite">
+        <aside class="family-removed-container" aria-live="polite" *ngIf="isSelfUser()">
             <div class="family-removed-message">
-                <mindful-pet pet="panda" [age]="4" mood="tired" (petClick)="onRemovedPetClick()"></mindful-pet>
+                <mindful-pet pet="panda" [age]="3" mood="tired" (petClick)="onRemovedPetClick()"></mindful-pet>
 
                 <div class="removed-message-text">
                     <h1>You’re now in Self mode !</h1>
@@ -96,11 +103,11 @@
             </div>
         </aside>
 
+
         <!-- faqs -->
         <section class="family-faqs">
             <profile-facts></profile-facts>
         </section>
-
     </main>
     <!--intructions-->
     <main *ngIf="showInstructions">

@@ -10,6 +10,7 @@ import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { InstructioListComponent } from './instructio-list';
 import { AuthService, FamilyInfo, FamilyMember } from '../../../../../package/api/auth.service';
+import { AuthService as CoreAuthService } from '../../../services/auth.service';
 @Component({
   standalone: true,
   selector: 'family-connection',
@@ -26,12 +27,13 @@ export class FamilyConnectionComponent implements OnInit {
   showInstructions: boolean = false;
   isLoading: boolean = true;
 
-  constructor(private router: Router, private authService: AuthService) { }
+  constructor(private router: Router, private authService: AuthService, private coreAuthService: CoreAuthService) { }
 
   instructionItems: string[] = [
     'You will link your account to your family and get benefits like learning together and earning rewards.',
     'Your Parents can view your progress (habits, tasks etc) and give you rewards.',
-    'If later you are removed from the family or the family gets deleted, your account returns to normal with all your data safe and no family connection. Note: Any data related to family will not be there',
+    'If later you are removed from the family or the family gets deleted, your account returns to normal with all your data safe and no family connection.',
+    '<span class="note-title">Note:</span> <span class="note-text">Any data related to family will not be there</span>',
     'You can always use the app on your own that\'s your regular account experience.'
   ];
 
@@ -108,10 +110,65 @@ export class FamilyConnectionComponent implements OnInit {
     });
   }
 
+  /**
+   * Triggered when user clicks Delete Family button. Shows confirmation and
+   * serves as a placeholder for the deletion API call.
+   */
+  onDeleteFamily(): void {
+    const ok = confirm('Are you sure you want to delete the family? This action is irreversible.');
+    if (!ok) return;
+
+    // TODO: call backend API to delete the family. For now, log and show a message.
+    console.log('[FamilyConnection] Delete family confirmed by user');
+    // Example placeholder: this.authService.deleteFamily().subscribe(...)
+    alert('Delete family action is not yet implemented.');
+  }
+
+  /**
+   * Remove a member from the local view (placeholder for actual API call).
+   */
+  removeMember(member: FamilyMember): void {
+    if (!this.isParentUser()) return;
+
+    const ok = confirm(`Remove ${member.name} from family?`);
+    if (!ok) return;
+
+    // Optimistically remove from local list
+    this.members = this.members.filter(m => m.userId !== member.userId);
+    console.log('[FamilyConnection] Member removed locally:', member);
+
+    // TODO: call backend API to remove the member from the family
+    // e.g. this.authService.removeMember(member.userId).subscribe(...)
+  }
+
 
   continueWithNewRole() {
     console.log('Continue with a new role clicked');
     this.showInstructions = true;
+  }
+
+  /**
+   * Helper to determine if current user is a parent (used by template)
+   */
+  isParentUser(): boolean {
+    try {
+      return this.coreAuthService.isParentUser();
+    } catch (e) {
+      console.error('Failed to determine user role:', e);
+      return false;
+    }
+  }
+
+  /**
+   * Helper to determine if current user is in SELF role
+   */
+  isSelfUser(): boolean {
+    try {
+      return this.coreAuthService.getUserRelationship() === 'SELF';
+    } catch (e) {
+      console.error('Failed to determine user relationship:', e);
+      return false;
+    }
   }
 
   onInstructionsBack() {
