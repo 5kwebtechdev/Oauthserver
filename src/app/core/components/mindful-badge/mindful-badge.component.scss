@@ -30,10 +30,8 @@
   color: var(--text_color);
   margin: 0;
   text-align: center;
-  line-height: 140%;
 }
 
-/* Sub-label shown under p for morning/evening/night badges. Matches p styles except smaller font-size */
 .badge .badge-sub {
   display: block;
   font-family: 'Nunito', sans-serif;
@@ -42,11 +40,10 @@
   color: var(--text_color);
   margin: 0;
   text-align: center;
-  line-height: 140%;
   margin-top: 0px;
 }
 
-:host-context(habit-page) .badge .badge-sub {
+:host-context(habit-page-content) .badge .badge-sub {
   display: none;
 }
 
@@ -183,9 +180,7 @@
 .badge.habit-detail-orange p {
   font-family: 'Nunito', sans-serif;
   font-size: 13px;
-  font-style: normal;
   font-weight: 600;
-  line-height: 140%;
   color: var(--text_color);
 }
 
@@ -194,7 +189,6 @@
   display: none;
 }
 
-/* Specific sizing and layout for status badges */
 .badge.pending {
 
   display: inline-flex;
@@ -212,7 +206,6 @@
   white-space: nowrap;
   width: auto;
   height: 34px;
-  /* Match pending sizing for consistent UI */
   padding: 10px 24px;
   justify-content: center;
   align-items: center;
@@ -224,7 +217,6 @@
   white-space: nowrap;
   width: auto;
   height: 34px;
-  /* Match pending sizing for consistent UI */
   padding: 10px 24px;
   justify-content: center;
   align-items: center;
@@ -233,7 +225,6 @@
 
 .inactive {
   --background: white;
-  /* ensure inactive badges render with a visible border and readable text */
   --text_color: #6B656A;
   --border-color: #90214D;
   --stroke_gradient: transparent;
@@ -264,14 +255,11 @@
 }
 
 :host-context(.habit-journey-week) .badge p {
-  /* non-active journey badge typography & color */
   color: #282527;
   font-family: 'Nunito', sans-serif;
   font-size: 13px;
-  font-style: normal;
   font-weight: 600;
-  line-height: 140%;
-  /* 18.2px */
+
 }
 
 :host-context(.habit-journey-week) .badge.active p {
@@ -279,20 +267,17 @@
   color: #FDFDFD;
   font-family: 'Nunito', sans-serif;
   font-size: 13px;
-  font-style: normal;
   font-weight: 600;
-  line-height: 140%;
-  /* 18.2px */
+
 }
 
-/* Ensure all badges in the journey week (including those using type="inactive")
-   match the Pending badge sizing so UI is consistent */
+
 :host-context(.habit-journey-week) .badge {
   display: inline-flex;
   white-space: nowrap;
   width: auto;
 
-  padding: 8px 24px;
+  padding: 8px 16px;
   justify-content: center;
   align-items: center;
   gap: 8px;
@@ -360,13 +345,10 @@
   color: #FFFFFF;
   font-family: 'Nunito', sans-serif;
   font-size: 13px;
-  font-style: normal;
   font-weight: 600;
-  line-height: 140%;
-  /* 18.2px */
+
 }
 
-/* On the habit page, make routine badges match the ongoing/completed sizing */
 :host-context(.routine-selectors) .badge.morning,
 :host-context(.routine-selectors) .badge.evening,
 :host-context(.routine-selectors) .badge.night {
@@ -374,7 +356,6 @@
   white-space: nowrap;
   width: auto;
   height: 34px;
-  /* Match pending sizing */
   padding: 10px 24px;
   justify-content: center;
   align-items: center;
@@ -402,10 +383,8 @@
   color: #282527;
   font-family: 'Nunito', sans-serif;
   font-size: 13px;
-  font-style: normal;
   font-weight: 600;
-  line-height: 140%;
-  /* 18.2px */
+
 }
 
 :host-context(.routine-selectors) .badge.active p {
@@ -413,10 +392,8 @@
   color: #FDFDFD;
   font-family: 'Nunito', sans-serif;
   font-size: 13px;
-  font-style: normal;
   font-weight: 600;
-  line-height: 140%;
-  /* 18.2px */
+
 }
 
 .habit-input.inactive,

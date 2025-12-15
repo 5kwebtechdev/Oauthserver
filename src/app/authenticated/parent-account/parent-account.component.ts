@@ -12,6 +12,7 @@ import { VibesDisplayResponse } from '../../core/models/mood.model';
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { AdBannerComponent } from '../../core/components/ad-banner/ad-banner.component';
 import { HabitPageContentComponent } from '../../core/components/habit-section/habit-page-content/habit-page-content.component';
+import { HabitService } from '../../core/components/habit-section/habit.service';
 
 
 @Component({
@@ -51,7 +52,8 @@ export class ParentAccountComponent implements OnInit {
         private modalCtrl: ModalController,
         private router: Router,
         private userService: UserService,
-        private moodService: MoodService
+        private moodService: MoodService,
+        private habitService: HabitService
     ) { }
 
     async openNotes() {
@@ -78,6 +80,12 @@ export class ParentAccountComponent implements OnInit {
 
         // Fetch fresh stats from API in background and update cache (same behavior as dashboard)
         this.loadUserStats();
+
+        // Subscribe to habit/task changes and reload stats
+        this.habitService.dataChanged$.subscribe(() => {
+            console.log('[ParentAccount] Data changed, reloading stats...');
+            this.loadUserStats();
+        });
     }
 
     /**

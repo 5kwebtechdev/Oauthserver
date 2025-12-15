@@ -33,7 +33,7 @@ export class FamilyConnectionComponent implements OnInit {
     'You will link your account to your family and get benefits like learning together and earning rewards.',
     'Your Parents can view your progress (habits, tasks etc) and give you rewards.',
     'If later you are removed from the family or the family gets deleted, your account returns to normal with all your data safe and no family connection.',
-    '<span class="note-title">Note:</span> <span class="note-text">Any data related to family will not be there</span>',
+    '<span style="color:#282527; opacity: 1;font-family:Nunito; font-size:16px; font-weight:500; text-decoration:underline;">Note:</span> <span style="color:#282527; font-family:Nunito; font-size:16px; font-weight:500;">Any data related to family will not be there</span>',
     'You can always use the app on your own that\'s your regular account experience.'
   ];
 

@@ -105,6 +105,13 @@ export class UserDashboardComponent implements OnInit {
     // Load recent habits and tasks
     this.loadRecentHabitsAndTasks();
 
+    // Subscribe to habit/task changes and reload data
+    this.habitService.dataChanged$.subscribe(() => {
+      console.log('[UserDashboard] Data changed, reloading...');
+      this.loadRecentHabitsAndTasks();
+      this.loadUserStats();
+    });
+
     // Initialize pet message for home page
     this.currentPetMessage = this.petMessagesService.getMessage('home', {
       userName: this.userName,

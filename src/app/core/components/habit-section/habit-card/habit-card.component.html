@@ -122,7 +122,7 @@
 </div>
 
 <!-- habit-task-card -->
-<div *ngIf="mode === 'single' && getStatus() !== 'completed'" class="container w-full h-full p-0">
+<div *ngIf="mode === 'single'" class="container w-full h-full p-0">
   <div class="habit-wrapper"
     [ngClass]="{'expanded': expanded, 'isRunningLate': isRunningLate,'missedTime': missedTime, 'task': habit?.type === 'tasks'}">
     <div class="habit-header-container clickable" (tap)="toggle()" long-press [delay]="1500" (press)="onLongPress()">

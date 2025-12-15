@@ -72,6 +72,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   }
   currentActive: 'habits' | 'tasks' | 'timetable' = 'habits';
   isPrivate = false;
+  isChild = false;
   selectedTags: Array<{ key: string, value: string, type?: string }> = [];
   // today's date (date-only) used to prevent past date selection
   today: Date = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
@@ -181,6 +182,18 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+    // Determine whether current user is a child (only children should see Private toggle)
+    try {
+      const ud = localStorage.getItem('user_data');
+      if (ud) {
+        const parsed = JSON.parse(ud || '{}');
+        const rel = (parsed.relationship || parsed.role || '').toString().toUpperCase();
+        this.isChild = rel === 'CHILD';
+      }
+    } catch (e) {
+      // ignore parsing errors and leave isChild = false
+    }
+
     try {
       const nav = this.router.getCurrentNavigation();
       const stateHabit = nav?.extras?.state?.['habit'] ?? (history && (history.state as any)?.habit);
@@ -608,6 +621,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
                 daysOfWeek: Array.isArray(created?.daysOfWeek) ? created.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek)
               };
               this.habitService.addHabit(createdTaskHabit);
+              this.habitService.notifyTaskAdded();
               this.modalCtrl.dismiss();
               this.navigationContext.navigateBack({ newHabit: createdTaskHabit, showSingleMode: true, initialTab: 'tasks' });
             } finally {
@@ -1059,6 +1073,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         next: () => {
           console.log('Task deleted successfully');
           finalizeLocalDelete(this.editingId);
+          this.habitService.notifyTaskDeleted();
           this.deleting = false;
         },
         error: (err) => {
@@ -1071,6 +1086,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
           } else {
             console.log('Treating as successful deletion (backend quirk)');
             finalizeLocalDelete(this.editingId);
+            this.habitService.notifyTaskDeleted();
             this.deleting = false;
           }
         }

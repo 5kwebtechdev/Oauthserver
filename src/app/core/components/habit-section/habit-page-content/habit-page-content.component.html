@@ -27,32 +27,30 @@
             <div class="habit-journey">
                 <h2>Your Habit Journey</h2>
                 <div class="habit-journey-week d-flex justify-content-between">
-                    <mindful-badge text="Pending" type="pending" [disabled]="journeySubFilter !== 'pending'"
-                        [active]="journeySubFilter === 'pending'"
+                    <mindful-badge [text]="`Pending (${habitJourneySummary.pending})`" type="pending"
+                        [disabled]="journeySubFilter !== 'pending'" [active]="journeySubFilter === 'pending'"
                         (click)="selectJourneySubFilter('pending')"></mindful-badge>
-                    <mindful-badge text="Ongoing" type="inactive" [disabled]="journeySubFilter !== 'ongoing'"
-                        [active]="journeySubFilter === 'ongoing'"
+                    <mindful-badge [text]="`Ongoing (${habitJourneySummary.ongoing})`" type="inactive"
+                        [disabled]="journeySubFilter !== 'ongoing'" [active]="journeySubFilter === 'ongoing'"
                         (click)="selectJourneySubFilter('ongoing')"></mindful-badge>
-                    <mindful-badge text="Completed" type="inactive" [disabled]="journeySubFilter !== 'completed'"
-                        [active]="journeySubFilter === 'completed'"
+                    <mindful-badge [text]="`Completed (${habitJourneySummary.completed})`" type="inactive"
+                        [disabled]="journeySubFilter !== 'completed'" [active]="journeySubFilter === 'completed'"
                         (click)="selectJourneySubFilter('completed')"></mindful-badge>
                 </div>
             </div>
-            <div class="habit-list-content">
-                <div *ngIf="filteredHabits && filteredHabits.length > 0; else noHabitsTemplate"
-                    class="habit-list-content">
-                    <div *ngFor="let habit of filteredHabits">
-                        <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
-                            [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp">
-                        </habit-card>
-                    </div>
+            <div class="habit-list-content"
+                *ngIf="filteredHabitsByJourney && filteredHabitsByJourney.length > 0; else noHabitsTemplate">
+                <div *ngFor="let habit of filteredHabitsByJourney">
+                    <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
+                        [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp">
+                    </habit-card>
                 </div>
-                <ng-template #noHabitsTemplate>
-                    <div class="no-habits-message">
-                        <p>No habits found for this day and filter.</p>
-                    </div>
-                </ng-template>
             </div>
+            <ng-template #noHabitsTemplate>
+                <div class="no-habits-message">
+                    <p>No habits found for this day and filter.</p>
+                </div>
+            </ng-template>
         </div>
 
         <div class="priority-container">
@@ -71,9 +69,9 @@
                 </div>
             </div>
             <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">
-                <div *ngIf="filteredHabits && filteredHabits.length > 0; else noPriorityHabitsTemplate"
+                <div *ngIf="filteredHabitsByPriority && filteredHabitsByPriority.length > 0; else noPriorityHabitsTemplate"
                     class="habit-list-content">
-                    <div *ngFor="let habit of filteredHabits">
+                    <div *ngFor="let habit of filteredHabitsByPriority">
                         <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
                             [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp">
                         </habit-card>
@@ -92,21 +90,21 @@
                 <h3>Your Daily Routines</h3>
 
                 <div class="routine-selectors d-flex justify-content-between">
-                    <mindful-badge text="Morning" type="morning" [disabled]="routineSubFilter !== 'morning'"
-                        [active]="routineSubFilter === 'morning'"
+                    <mindful-badge [text]="`Morning (${habitRoutineSummary.morning})`" type="morning"
+                        [disabled]="routineSubFilter !== 'morning'" [active]="routineSubFilter === 'morning'"
                         (click)="selectRoutineSubFilter('morning')"></mindful-badge>
-                    <mindful-badge text="Evening" type="evening" [disabled]="routineSubFilter !== 'evening'"
-                        [active]="routineSubFilter === 'evening'"
+                    <mindful-badge [text]="`Evening (${habitRoutineSummary.evening})`" type="evening"
+                        [disabled]="routineSubFilter !== 'evening'" [active]="routineSubFilter === 'evening'"
                         (click)="selectRoutineSubFilter('evening')"></mindful-badge>
-                    <mindful-badge text="Night" type="night" [disabled]="routineSubFilter !== 'night'"
-                        [active]="routineSubFilter === 'night'"
+                    <mindful-badge [text]="`Night (${habitRoutineSummary.night})`" type="night"
+                        [disabled]="routineSubFilter !== 'night'" [active]="routineSubFilter === 'night'"
                         (click)="selectRoutineSubFilter('night')"></mindful-badge>
                 </div>
             </div>
             <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">
-                <div *ngIf="filteredHabits && filteredHabits.length > 0; else noRoutineHabitsTemplate"
+                <div *ngIf="filteredHabitsByRoutine && filteredHabitsByRoutine.length > 0; else noRoutineHabitsTemplate"
                     class="habit-list-content">
-                    <div *ngFor="let habit of filteredHabits">
+                    <div *ngFor="let habit of filteredHabitsByRoutine">
                         <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
                             [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp">
                         </habit-card>
@@ -131,26 +129,24 @@
             <div class="habit-journey">
                 <h2>Your Task Journey</h2>
                 <div class="habit-journey-week d-flex justify-content-between">
-                    <mindful-badge text="Pending" type="pending" [disabled]="journeySubFilter !== 'pending'"
-                        [active]="journeySubFilter === 'pending'"
+                    <mindful-badge [text]="`Pending (${taskJourneySummary.pending})`" type="pending"
+                        [disabled]="journeySubFilter !== 'pending'" [active]="journeySubFilter === 'pending'"
                         (click)="selectJourneySubFilter('pending')"></mindful-badge>
-                    <mindful-badge text="Ongoing" type="inactive" [disabled]="journeySubFilter !== 'ongoing'"
-                        [active]="journeySubFilter === 'ongoing'"
+                    <mindful-badge [text]="`Ongoing (${taskJourneySummary.ongoing})`" type="inactive"
+                        [disabled]="journeySubFilter !== 'ongoing'" [active]="journeySubFilter === 'ongoing'"
                         (click)="selectJourneySubFilter('ongoing')"></mindful-badge>
-                    <mindful-badge text="Completed" type="inactive" [disabled]="journeySubFilter !== 'completed'"
-                        [active]="journeySubFilter === 'completed'"
+                    <mindful-badge [text]="`Completed (${taskJourneySummary.completed})`" type="inactive"
+                        [disabled]="journeySubFilter !== 'completed'" [active]="journeySubFilter === 'completed'"
                         (click)="selectJourneySubFilter('completed')"></mindful-badge>
                 </div>
             </div>
 
-            <div class="habit-list-content">
-                <div *ngIf="filteredTasks && filteredTasks.length > 0; else noTasksTemplate" class="habit-list-content">
-                    <div *ngFor="let task of filteredTasks">
-                        <habit-card [habit]="task.task ? task.task : task" [startTime]="task.startTimeStamp"
-                            [endTime]="task.endTimeStamp"
-                            [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp">
-                        </habit-card>
-                    </div>
+            <div class="habit-list-content"
+                *ngIf="filteredTasksByJourney && filteredTasksByJourney.length > 0; else noTasksTemplate">
+                <div *ngFor="let task of filteredTasksByJourney">
+                    <habit-card [habit]="task" [startTime]="task.startTimeStamp" [endTime]="task.endTimeStamp"
+                        [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp">
+                    </habit-card>
                 </div>
             </div>
         </div>
@@ -171,8 +167,9 @@
                 </div>
             </div>
             <div class="habit-list-container">
-                <div *ngIf="filteredTasks && filteredTasks.length > 0; else noTasksTemplate" class="habit-list-content">
-                    <div *ngFor="let task of filteredTasks">
+                <div *ngIf="filteredTasksByPriority && filteredTasksByPriority.length > 0; else noTasksTemplate"
+                    class="habit-list-content">
+                    <div *ngFor="let task of filteredTasksByPriority">
                         <habit-card [habit]="task.task ? task.task : task" [startTime]="task.startTimeStamp"
                             [endTime]="task.endTimeStamp"
                             [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp">
@@ -186,20 +183,21 @@
             <div class="routine-header">
                 <h3>Your Daily Routines</h3>
                 <div class="routine-selectors d-flex justify-content-between">
-                    <mindful-badge text="Morning" type="morning" [disabled]="routineSubFilter !== 'morning'"
-                        [active]="routineSubFilter === 'morning'"
+                    <mindful-badge [text]="`Morning (${taskRoutineSummary.morning})`" type="morning"
+                        [disabled]="routineSubFilter !== 'morning'" [active]="routineSubFilter === 'morning'"
                         (click)="selectRoutineSubFilter('morning')"></mindful-badge>
-                    <mindful-badge text="Evening" type="evening" [disabled]="routineSubFilter !== 'evening'"
-                        [active]="routineSubFilter === 'evening'"
+                    <mindful-badge [text]="`Evening (${taskRoutineSummary.evening})`" type="evening"
+                        [disabled]="routineSubFilter !== 'evening'" [active]="routineSubFilter === 'evening'"
                         (click)="selectRoutineSubFilter('evening')"></mindful-badge>
-                    <mindful-badge text="Night" type="night" [disabled]="routineSubFilter !== 'night'"
-                        [active]="routineSubFilter === 'night'"
+                    <mindful-badge [text]="`Night (${taskRoutineSummary.night})`" type="night"
+                        [disabled]="routineSubFilter !== 'night'" [active]="routineSubFilter === 'night'"
                         (click)="selectRoutineSubFilter('night')"></mindful-badge>
                 </div>
             </div>
             <div class="habit-list-container">
-                <div *ngIf="filteredTasks && filteredTasks.length > 0; else noTasksTemplate" class="habit-list-content">
-                    <div *ngFor="let task of filteredTasks">
+                <div *ngIf="filteredTasksByRoutine && filteredTasksByRoutine.length > 0; else noTasksTemplate"
+                    class="habit-list-content">
+                    <div *ngFor="let task of filteredTasksByRoutine">
                         <habit-card [habit]="task.task ? task.task : task" [startTime]="task.startTimeStamp"
                             [endTime]="task.endTimeStamp"
                             [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp">

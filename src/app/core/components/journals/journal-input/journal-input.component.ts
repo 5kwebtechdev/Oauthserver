@@ -10,6 +10,17 @@ import { environment } from '../../../../../environments/environment';
 import { AuthApi } from '../../../api/auth.api';
 import { S3UploadService } from '../../../services/s3-upload/s3-upload.service';
 
+interface JournalOption {
+  label: string;
+  image: string;
+}
+
+interface JournalSection {
+  key: string;
+  title: string;
+  options: JournalOption[];
+}
+
 @Component({
   selector: 'app-journal-input',
   standalone: true,
@@ -25,7 +36,6 @@ export class JournalInputComponent implements OnInit {
 
   text: string = '';
   showAttachPopup = false;
-  // Track selected option index per section (e.g., { emotions: 0, sleep: 2 })
   public selected: { [section: string]: number | null } = {};
 
   public selectedFile: File | null = null;
@@ -34,16 +44,81 @@ export class JournalInputComponent implements OnInit {
   public isUploading: boolean = false;
   public uploadedImageUrl: string | null = null;
 
-  // Option label arrays to map selected index to a string payload
-  emotionsOptions = ['Happy', 'Excited', 'Angry', 'Sad'];
-  sleepOptions = ['Good', 'Bad', 'Medium', 'Early'];
-  healthOptions = ['Good', 'Bad', 'Sick', 'Healthy'];
-  hobbiesOptions = ['Reading', 'Sports', 'Music', 'Travel'];
-  foodOptions = ['Healthy', 'Unhealthy', 'Home cooked', 'Fast Food'];
-  socialOptions = ['Friends', 'Family', 'Alone', 'Party'];
-  schoolOptions = ['Good', 'Bad', 'Study', 'Exam'];
-
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+
+  // Define all sections with their options
+  sections: JournalSection[] = [
+    {
+      key: 'emotions',
+      title: 'Emotions',
+      options: [
+        { label: 'Happy', image: '/assets/Images-Thumbnails/Image-Journal-Emotions1.jpg' },
+        { label: 'Excited', image: '/assets/Images-Thumbnails/Image-Journal-Emotions2.jpg' },
+        { label: 'Angry', image: '/assets/Images-Thumbnails/Image-Journal-Emotions3.jpg' },
+        { label: 'Sad', image: '/assets/Images-Thumbnails/Image-Journal-Emotions4.jpg' }
+      ]
+    },
+    {
+      key: 'sleep',
+      title: 'Sleep',
+      options: [
+        { label: 'Good', image: '/assets/Images-Thumbnails/Image-Journal-Sleep1.jpg' },
+        { label: 'Bad', image: '/assets/Images-Thumbnails/Image-Journal-Sleep2.jpg' },
+        { label: 'Medium', image: '/assets/Images-Thumbnails/Image-Journal-Sleep3.jpg' },
+        { label: 'Early', image: '/assets/Images-Thumbnails/Image-Journal-Sleep4.jpg' }
+      ]
+    },
+    {
+      key: 'health',
+      title: 'Health',
+      options: [
+        { label: 'Good', image: '/assets/Images-Thumbnails/Image-Journal-Health1.jpg' },
+        { label: 'Bad', image: '/assets/Images-Thumbnails/Image-Journal-Health2.jpg' },
+        { label: 'Sick', image: '/assets/Images-Thumbnails/Image-Journal-Health3.jpg' },
+        { label: 'Healthy', image: '/assets/Images-Thumbnails/Image-Journal-Health4.jpg' }
+      ]
+    },
+    {
+      key: 'hobbies',
+      title: 'Hobbies',
+      options: [
+        { label: 'Reading', image: '/assets/Images-Thumbnails/Image-Journal-Hobbies1.jpg' },
+        { label: 'Sports', image: '/assets/Images-Thumbnails/Image-Journal-Hobbies2.jpg' },
+        { label: 'Music', image: '/assets/Images-Thumbnails/Image-Journal-Hobbies3.jpg' },
+        { label: 'Travel', image: '/assets/Images-Thumbnails/Image-Journal-Hobbies4.jpg' }
+      ]
+    },
+    {
+      key: 'food',
+      title: 'Food',
+      options: [
+        { label: 'Healthy', image: '/assets/Images-Thumbnails/Image-Journal-Food1.jpg' },
+        { label: 'Unhealthy', image: '/assets/Images-Thumbnails/Image-Journal-Food2.jpg' },
+        { label: 'Home cooked', image: '/assets/Images-Thumbnails/Image-Journal-Food3.jpg' },
+        { label: 'Fast Food', image: '/assets/Images-Thumbnails/Image-Journal-Food4.jpg' }
+      ]
+    },
+    {
+      key: 'social',
+      title: 'Social',
+      options: [
+        { label: 'Friends', image: '/assets/Images-Thumbnails/Image-Journal-Social1.jpg' },
+        { label: 'Family', image: '/assets/Images-Thumbnails/Image-Journal-Social2.jpg' },
+        { label: 'Alone', image: '/assets/Images-Thumbnails/Image-Journal-Social3.jpg' },
+        { label: 'Party', image: '/assets/Images-Thumbnails/Image-Journal-Social4.jpg' }
+      ]
+    },
+    {
+      key: 'school',
+      title: 'School',
+      options: [
+        { label: 'Good', image: '/assets/Images-Thumbnails/Image-Journal-School1.jpg' },
+        { label: 'Bad', image: '/assets/Images-Thumbnails/Image-Journal-School2.jpg' },
+        { label: 'Study', image: '/assets/Images-Thumbnails/Image-Journal-School3.jpg' },
+        { label: 'Exam', image: '/assets/Images-Thumbnails/Image-Journal-School4.jpg' }
+      ]
+    }
+  ];
 
   constructor(
     private router: Router,
@@ -58,16 +133,13 @@ export class JournalInputComponent implements OnInit {
 
   async submit(): Promise<void> {
     // Build payload from selections and notes
-    const payload: any = {
-      emotions: this.selected['emotions'] != null ? this.emotionsOptions[this.selected['emotions'] as number] : null,
-      sleep: this.selected['sleep'] != null ? this.sleepOptions[this.selected['sleep'] as number] : null,
-      health: this.selected['health'] != null ? this.healthOptions[this.selected['health'] as number] : null,
-      hobbies: this.selected['hobbies'] != null ? this.hobbiesOptions[this.selected['hobbies'] as number] : null,
-      food: this.selected['food'] != null ? this.foodOptions[this.selected['food'] as number] : null,
-      social: this.selected['social'] != null ? this.socialOptions[this.selected['social'] as number] : null,
-      school: this.selected['school'] != null ? this.schoolOptions[this.selected['school'] as number] : null,
-      notes: this.text || ''
-    };
+    const payload: any = { notes: this.text || '' };
+
+    // Add selected options for each section
+    this.sections.forEach(section => {
+      const selectedIndex = this.selected[section.key];
+      payload[section.key] = selectedIndex != null ? section.options[selectedIndex].label : null;
+    });
 
     try {
       // Wait for any ongoing upload to complete
@@ -294,4 +366,6 @@ export class JournalInputComponent implements OnInit {
   isSelected(section: string, index: number): boolean {
     return this.selected[section] === index;
   }
+
+  trackBySection = (_: number, section: JournalSection) => section.key;
 }

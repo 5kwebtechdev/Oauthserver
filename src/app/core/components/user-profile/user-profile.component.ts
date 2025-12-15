@@ -286,7 +286,22 @@ export class UserProfileComponent implements OnInit, OnChanges {
   }
 
   onBack() {
-    this.location.back();
+    try {
+      // Determine target route based on user relationship (parent -> parent-account, otherwise user-dashboard)
+      const target = this.coreAuthService.getDashboardRoute ? this.coreAuthService.getDashboardRoute() : null;
+      if (target) {
+        this.router.navigateByUrl(target).catch(err => {
+          console.warn('[UserProfile] navigateByUrl failed, falling back to location.back()', err);
+          this.location.back();
+        });
+      } else {
+        // Fallback to history back if route can't be determined
+        this.location.back();
+      }
+    } catch (e) {
+      console.error('[UserProfile] onBack error, falling back to location.back()', e);
+      this.location.back();
+    }
   }
 
   onLogout() {

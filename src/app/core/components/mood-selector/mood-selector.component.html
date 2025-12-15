@@ -27,6 +27,13 @@
       <button *ngFor="let p of popupOptions" type="button" class="popup-emoji" (click)="choosePopup(p.src)"
         [class.selected]="popupSelection === p.src">
         <img [src]="p.src" [alt]="p.label" />
+        <span class="check-icon" *ngIf="popupSelection === p.src">
+          <svg xmlns="http://www.w3.org/2000/svg" width="8" height="6" viewBox="0 0 8 6" fill="none">
+            <path
+              d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+              fill="white" />
+          </svg>
+        </span>
       </button>
     </div>
     <button class="set-vibe" type="button" (click)="setVibe()" [disabled]="!popupSelection">Set the vibe</button>

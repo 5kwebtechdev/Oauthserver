@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, tap, catchError, of } from 'rxjs';
+import { BehaviorSubject, Observable, tap, catchError, of, Subject } from 'rxjs';
 import { Habit } from './habit.types';
 import { HabitApi } from '../../api/habit.api';
 
@@ -9,6 +9,9 @@ import { HabitApi } from '../../api/habit.api';
 export class HabitService {
   private habitsSubject = new BehaviorSubject<Habit[]>([]);
   public habits$ = this.habitsSubject.asObservable();
+
+  private dataChangedSubject = new Subject<{ type: 'habit' | 'task', action: 'added' | 'deleted' }>();
+  public dataChanged$ = this.dataChangedSubject.asObservable();
 
   private currentLoadedDate: string = '';
 
@@ -20,8 +23,8 @@ export class HabitService {
     this.loadHabitsForDate(this.formatDateToYYYYMMDD(new Date()));
   }
 
-  loadHabitsForDate(dateStr: string): Observable<any> {
-    if (this.currentLoadedDate === dateStr) {
+  loadHabitsForDate(dateStr: string, forceReload: boolean = false): Observable<any> {
+    if (this.currentLoadedDate === dateStr && !forceReload) {
       return of(this.habitsSubject.value);
     }
 
@@ -147,6 +150,7 @@ export class HabitService {
   addHabit(habit: Habit): void {
     const currentHabits = this.habitsSubject.value;
     this.habitsSubject.next([...currentHabits, habit]);
+    this.dataChangedSubject.next({ type: 'habit', action: 'added' });
   }
 
   getHabits(): Observable<Habit[]> {
@@ -173,6 +177,15 @@ export class HabitService {
   deleteHabit(id: string): void {
     const currentHabits = this.habitsSubject.value;
     this.habitsSubject.next(currentHabits.filter(h => h.id !== id));
+    this.dataChangedSubject.next({ type: 'habit', action: 'deleted' });
+  }
+
+  notifyTaskAdded(): void {
+    this.dataChangedSubject.next({ type: 'task', action: 'added' });
+  }
+
+  notifyTaskDeleted(): void {
+    this.dataChangedSubject.next({ type: 'task', action: 'deleted' });
   }
 
   completeHabit(id: string): void {

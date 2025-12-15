@@ -239,8 +239,7 @@
 .note-area textarea:focus {
   outline: none;
   border-color: #8c2150;
-  /* theme color emphasis */
-  /* keep focus visual by changing border only; no outer shadow */
+
   box-shadow: none;
 }
 
@@ -268,9 +267,7 @@
   width: 100%;
 }
 
-/* Post button full width */
 
-/* post-button styles removed per request */
 
 .pin-text {
   color: rgba(40, 37, 39, 0.7);

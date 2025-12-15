@@ -166,10 +166,25 @@
   //border-radius: 12px;
   padding: 0px;
   transition: box-shadow 0.12s, transform 0.12s, border-color 0.12s;
+  position: relative;
 
   img {
     width: 91px;
     height: 72px;
+  }
+
+  .check-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #7c2848; // Match the set-vibe button color
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 
   &.selected {

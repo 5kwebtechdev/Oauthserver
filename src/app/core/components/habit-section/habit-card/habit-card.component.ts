@@ -1126,17 +1126,19 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
   /**
    * Check if the current habit/task is within the "Let's Go" window
-   * Window: start time -5 min to start time +5 min
+   * Window: start time -5 min to end time
+   * Example: For a 5pm-6pm habit, Let's Go is enabled from 4:55pm to 6pm
    */
   private isWithinLetsGoWindow(): boolean {
-    if (!this.habit || !this.habit.startTimeStamp) return false;
+    if (!this.habit || !this.habit.startTimeStamp || !this.habit.endTimeStamp) return false;
 
     const now = Date.now();
     const startTime = this.habit.startTimeStamp;
+    const endTime = this.habit.endTimeStamp;
     const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-    // Check if we're within 5 minutes before or after start time
-    return (now >= (startTime - fiveMinutes)) && (now <= (startTime + fiveMinutes));
+    // Check if we're within 5 minutes before start time and before end time
+    return (now >= (startTime - fiveMinutes)) && (now <= endTime);
   }
 
   /**
@@ -1154,9 +1156,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   /**
    * Check if "Let's Go" button should be enabled
    * Requirements:
-   * - Enabled: Only during 5-minute window (start time -5 min to start time +5 min)
-   * - Disabled: All other times (before start -5 min, and after start +5 min until end time)
-   * - Disabled: After end time
+   * - Enabled: From 5 minutes before start time until end time (e.g., 4:55pm - 6pm for a 5pm-6pm habit)
+   * - Disabled: Before the 5-minute window and after end time
    * - Blocked: Disabled if another activity is "In Progress"
    */
   isLetsGoEnabled(): boolean {
@@ -1165,12 +1166,7 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
       return false;
     }
 
-    // Disabled: After end time
-    if (this.isAfterEndTime()) {
-      return false;
-    }
-
-    // Enabled: Only during the 5-minute window (start -5 min to start +5 min)
+    // Enabled: During the window from (start time - 5 min) to end time
     return this.isWithinLetsGoWindow();
   }
 
@@ -1218,9 +1214,14 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
       return false;
     }
 
-    // Disabled: During "Let's Go" window (start -5 min to start +5 min)
-    // Enabled: Before/After "Let's Go" window
-    return !this.isWithinLetsGoWindow();
+    // Enable Done only after the user explicitly started the activity via "Let's Go"
+    // `showLocalTimer` is set to true when the user taps "Let's Go" on this card.
+    if (this.showLocalTimer) {
+      return true;
+    }
+
+    // Otherwise keep Done disabled until user clicks "Let's Go"
+    return false;
   }
 
 }

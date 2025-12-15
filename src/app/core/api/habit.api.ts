@@ -36,7 +36,7 @@ export class HabitApi {
      * @returns Observable with habits for the specified date
      */
     getHabitsByDate(date: string): Observable<any> {
-        const url = `${this.base}/habits/day?date=${date}`;
+        const url = `${this.base}/habits/habits-by-date?date=${date}`;
         return this.http.get(url, { headers: this.headers() });
     }
 
@@ -65,7 +65,7 @@ export class HabitApi {
     }
 
     getTodayHabits(): Observable<any> {
-        const url = `${this.base}/habits/today`;
+        const url = `${this.base}/habits/habits-by-date`;
         return this.http.get(url, { headers: this.headers() });
     }
 

@@ -99,7 +99,7 @@
 <ion-content fullscreen>
   <mindful-navigator [heading]="editingId ? 'Update Activity' : 'Create. Commit. Grow.'" backIcon="cancel"
     [rightActions]="navigatorActions" (rightActionClick)="onNavigatorAction($event)">
-    <div slot="end" class="header-toggle d-flex flex-column gap-2" aria-label="Private toggle">
+    <div *ngIf="isChild" slot="end" class="header-toggle d-flex flex-column gap-2" aria-label="Private toggle">
       <label class="header-toggle-label">Private</label>
       <div class="toggle-right">
         <mindful-toggle [(checked)]="isPrivate"></mindful-toggle>
@@ -135,7 +135,7 @@
       <div class="d-flex flex-column" style="border-bottom: 1px solid #7471BA;">
         <div class="routine-section">
           <label>Routine</label>
-          <mindful-selectors [options]="routineOptions" componentType="badge" [singleSelection]="true"
+          <mindful-selectors class="w-100" [options]="routineOptions" componentType="badge" [singleSelection]="true"
             (selectedKeysChange)="onRoutineSelected($event)" [scrollable]="false"></mindful-selectors>
         </div>
         <div *ngIf="attemptedSubmit && showRoutineError" class="field-error" role="alert">Select routine</div>
@@ -184,7 +184,7 @@
       <div class="d-flex flex-column" style="border-bottom: 1px solid #F6AC72;">
         <div class="routine-section">
           <label>Routine</label>
-          <mindful-selectors [options]="routineOptions" componentType="badge" [singleSelection]="true"
+          <mindful-selectors class="w-100" [options]="routineOptions" componentType="badge" [singleSelection]="true"
             (selectedKeysChange)="onRoutineSelected($event)" [scrollable]="false"></mindful-selectors>
         </div>
         <div *ngIf="attemptedSubmit && showRoutineError" class="field-error" role="alert">Select routine</div>
