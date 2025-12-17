@@ -41,8 +41,11 @@
   </div>
   <!--Tutor filter and Sort Button-->
   <div class="controls-row">
-    <mindful-button type="columbian-blue" text="All Filters" icon="/assets/icons/menu.svg"
-      (click)="openAllFilters()"></mindful-button>
+    <mindful-button type="columbian-blue" text="All Filters" (click)="openAllFilters()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="17" height="15" viewBox="0 0 17 15" fill="none" aria-hidden="true">
+        <path d="M1 3.5H14C14.2763 3.5 14.5 3.27625 14.5 3V1C14.5 0.72375 14.2763 0.5 14 0.5H1C0.72375 0.5 0.5 0.72375 0.5 1V3C0.5 3.27625 0.72375 3.5 1 3.5ZM16 6H3C2.72375 6 2.5 6.22375 2.5 6.5V8.5C2.5 8.77625 2.72375 9 3 9H16C16.2763 9 16.5 8.77625 16.5 8.5V6.5C16.5 6.22375 16.2763 6 16 6ZM14 11.5H1C0.72375 11.5 0.5 11.7237 0.5 12V14C0.5 14.2763 0.72375 14.5 1 14.5H14C14.2763 14.5 14.5 14.2763 14.5 14V12C14.5 11.7237 14.2763 11.5 14 11.5Z" stroke="white"/>
+      </svg>
+    </mindful-button>
 
     <div class="sort-wrapper" (click)="$event.stopPropagation()">
       <button class="sort-btn" (click)="toggleSortMenu()" [attr.aria-expanded]="isSortOpen">
