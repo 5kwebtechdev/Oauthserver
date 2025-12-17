@@ -1,0 +1,51 @@
+.education-main-page-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 24px;
+}
+
+.edu-banner-image {
+    width: 100%;
+    height: 180px;
+    background-image: url('/assets/Images-Thumbnails/educational-banner.jpg');
+    // background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 8px;
+}
+
+.edu-swiper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: visible;
+    /* allow pagination to sit outside rounded slides */
+}
+
+/* Use an external pagination element placed below the swiper */
+.edu-pagination {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 6px 8px;
+    align-items: center;
+}
+
+.edu-dot {
+    width: 10px;
+    height: 10px;
+    background: #cfc7d1;
+    border: none;
+    border-radius: 50%;
+    padding: 0;
+    transition: transform 160ms ease, background 160ms ease;
+}
+
+.edu-dot.active {
+    background: #3b3b5a;
+    transform: scale(1.15);
+}

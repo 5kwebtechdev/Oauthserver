@@ -30,7 +30,7 @@
       </span>
 
       <mindful-button [type]="'magenta'" small (click)="onStartLesson(i)"
-        [text]="lesson?.isCompleted ? 'Continue' : ('Start Lesson ' + (i + 1))"
+        [text]="(lesson?.lessonStatus === 'ONGOING' || lesson?.status === 'ONGOING') ? 'Continue' : ((lesson?.lessonStatus === 'COMPLETED' || lesson?.status === 'COMPLETED' || lesson?.isCompleted) ? 'Read again' : ('Start Lesson ' + (i + 1)))"
         [disabled]="i > 0 && !lessons[i-1]?.isCompleted"></mindful-button>
     </div>
 

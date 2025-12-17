@@ -120,6 +120,9 @@ const routes: Routes = [
         path: 'reel-expand',
         loadComponent: () => import('../core/components/reel-section/reel-expand/reels-expand.component').then(m => m.ReelsExpandComponent)
       }, {
+        path: 'education',
+        loadComponent: () => import('../core/components/education-section/education-main-page/education-main-page.component').then(m => m.EducationMainPageComponent)
+      }, {
         path: 'tutors',
         loadComponent: () => import('../core/components/tutor-section/tutor-homepage/tutor-homepage.component').then(m => m.TutorHomepageComponent)
       }, {

@@ -23,7 +23,7 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
   @Output() courseOpen = new EventEmitter<CourseCard>();
   @Output() lessonStart = new EventEmitter<{ courseId: string; lessonIndex: number }>();
 
-  lessons: Array<{ title: string; desc: string; time: string; image?: string; coins?: number; lessonId?: number; isCompleted?: boolean }> = [];
+  lessons: Array<{ title: string; desc: string; time: string; image?: string; coins?: number; lessonId?: number; isCompleted?: boolean; lessonStatus?: string | null; status?: string | null }> = [];
 
   // If the user has an in-progress lesson, index of that lesson in `lessons`; null when none
   resumeLessonIndex: number | null = null;
@@ -176,7 +176,10 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
       image: this.convertGoogleDriveUrl(lesson.thumbnailUrl) || '/assets/app-assets/notebook-labeled.svg',
       coins: typeof lesson.coins === 'number' ? lesson.coins : fallbackPerLesson,
       lessonId: lesson.id,
-      isCompleted: !!lesson.isCompleted
+      isCompleted: !!lesson.isCompleted,
+      // API recently moved the status field to `lessonStatus` — preserve either
+      lessonStatus: (lesson as any).lessonStatus ?? lesson.status ?? null,
+      status: lesson.status ?? (lesson as any).lessonStatus ?? null
     }));
     // Find a lesson that has been started but not completed: prefer time spent or lastAccessedAt
     const inProgressIndex = apiLessons.findIndex(l => !l.isCompleted && (!!l.timeSpentMinutes || !!l.lastAccessedAt));
@@ -212,8 +215,45 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
 
   onStartLesson(index: number): void {
     if (!this.course) return;
-    // Open the lessons modal with the specific lesson ID
-    this.openChaptersModal(index).catch(err => console.error('Failed opening lessons modal', err));
+
+    const lesson = this.lessons[index];
+    const lessonId = lesson?.lessonId;
+
+    if (!lessonId) {
+      console.error('Lesson ID not found for index:', index);
+      return;
+    }
+
+    // determine current status: prefer `lessonStatus` then `status`
+    const currentStatus = lesson.lessonStatus ?? lesson.status ?? null;
+
+    // If lesson status is PENDING, update it to ONGOING before opening
+    if (currentStatus === 'PENDING') {
+      this.academyService.updateLessonStatus(lessonId, 'ONGOING')
+        .pipe(
+          catchError(error => {
+            // Log and return null so subscription still runs
+            console.warn('Error updating lesson status:', error);
+            return of(null);
+          })
+        )
+        .subscribe((res) => {
+          // If API responded (res not null), assume update succeeded and update local status
+          if (res !== null) {
+            lesson.lessonStatus = 'ONGOING';
+            lesson.status = 'ONGOING';
+          } else {
+            // If the API returned an error (e.g. 400 "Lesson progress not found"), log and continue
+            console.warn('Lesson status update returned no response — opening lesson without local status change');
+          }
+
+          // Open the lessons modal regardless of update result
+          this.openChaptersModal(index).catch(err => console.error('Failed opening lessons modal', err));
+        });
+    } else {
+      // Open the lessons modal directly if status is not PENDING
+      this.openChaptersModal(index).catch(err => console.error('Failed opening lessons modal', err));
+    }
   }
 
   private async openChaptersModal(lessonIndex: number): Promise<void> {

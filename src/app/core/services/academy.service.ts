@@ -183,4 +183,26 @@ export class AcademyService {
 
         return this.http.post<LessonDetailResponse>(`${this.base}/courses/lessons/${lessonId}/complete`, {}, { headers });
     }
+
+    /**
+     * Update lesson status
+     * @param lessonId The lesson ID to update
+     * @param status The new status (e.g., 'ONGOING', 'COMPLETED')
+     * @returns Observable with any response
+     */
+    updateLessonStatus(lessonId: number | string, status: string): Observable<any> {
+        let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+        // Prefer user token from AuthService (localStorage), fallback to environment.apiAuthToken
+        const userToken = this.authService.getToken();
+        if (userToken) {
+            const t = userToken.startsWith('Bearer ') ? userToken : `Bearer ${userToken}`;
+            headers = headers.set('Authorization', t);
+        } else if (environment.apiAuthToken) {
+            const envToken = environment.apiAuthToken.startsWith('Bearer ') ? environment.apiAuthToken : `Bearer ${environment.apiAuthToken}`;
+            headers = headers.set('Authorization', envToken);
+        }
+
+        return this.http.post<any>(`${this.base}/courses/lessons/update-status?lessonId=${lessonId}&status=${status}`, {}, { headers });
+    }
 }
