@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { QRCodeComponent } from 'angularx-qrcode';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
 import { ProfileFactsComponent } from '../profile-facts/profile-facts.component';
@@ -10,11 +11,12 @@ import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { InstructioListComponent } from './instructio-list';
 import { AuthService, FamilyInfo, FamilyMember } from '../../../../../package/api/auth.service';
+import { take } from 'rxjs/operators';
 import { AuthService as CoreAuthService } from '../../../services/auth.service';
 @Component({
   standalone: true,
   selector: 'family-connection',
-  imports: [CommonModule, FormsModule, IonicModule, MindfulNavigatorComponent, MindfulBadgeComponent, ProfileFactsComponent, MindfulPetComponent, MindfulButtonComponent, InstructioListComponent],
+  imports: [CommonModule, FormsModule, IonicModule, QRCodeComponent, MindfulNavigatorComponent, MindfulBadgeComponent, ProfileFactsComponent, MindfulPetComponent, MindfulButtonComponent, InstructioListComponent],
   templateUrl: './family-connection.component.html',
   styleUrls: ['./family-connection.component.scss']
 })
@@ -24,10 +26,67 @@ export class FamilyConnectionComponent implements OnInit {
   createdOn: string = '';
   creator: FamilyMember | null = null;
   members: FamilyMember[] = [];
+  familyCode: string = '';
   showInstructions: boolean = false;
   isLoading: boolean = true;
+  showQrModal: boolean = false;
 
   constructor(private router: Router, private authService: AuthService, private coreAuthService: CoreAuthService) { }
+
+  /**
+   * Open full-screen QR code modal
+   */
+  openQrModal(): void {
+    if (!this.familyCode) {
+      console.warn('No family code available');
+      return;
+    }
+    this.showQrModal = true;
+  }
+
+  /**
+   * Close QR code modal
+   */
+  closeQrModal(): void {
+    this.showQrModal = false;
+  }
+
+  /**
+   * Share QR code using Web Share API (Capacitor-safe)
+   */
+  async shareQrCode(): Promise<void> {
+    try {
+      const canvas = document.querySelector('.qr-modal-content qrcode canvas') as HTMLCanvasElement;
+      if (!canvas) {
+        console.error('QR canvas not found');
+        return;
+      }
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+
+        const file = new File([blob], 'family-qr-code.png', { type: 'image/png' });
+
+        if (navigator.share && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'Family QR Code',
+            text: `Join our family with code: ${this.familyCode}`,
+            files: [file]
+          });
+        } else {
+          // Fallback: download the image
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'family-qr-code.png';
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      }, 'image/png');
+    } catch (error) {
+      console.error('Error sharing QR code:', error);
+    }
+  }
 
   instructionItems: string[] = [
     'You will link your account to your family and get benefits like learning together and earning rewards.',
@@ -52,15 +111,22 @@ export class FamilyConnectionComponent implements OnInit {
 
   loadFamilyDetails(): void {
     this.isLoading = true;
-    this.authService.getFamilyDetails().subscribe({
+    this.authService.getFamilyDetails().pipe(take(1)).subscribe({
       next: (response) => {
-        if (response.family) {
-          this.familyName = response.family.familyName;
-          this.familyStatus = response.family.status;
-          this.createdOn = response.family.createdOn;
-          this.creator = response.family.creator;
-          this.members = response.family.members;
+        if (response && response.family) {
+          const f = response.family as any;
+          this.familyName = f.familyName || this.familyName;
+          this.familyStatus = f.status || this.familyStatus;
+          this.createdOn = f.createdOn || this.createdOn;
+          this.creator = f.creator || this.creator;
+          this.members = f.members || this.members;
+          // Defensive set for familyCode: support both nested and top-level shapes
+          this.familyCode = f.familyCode || (response as any).familyCode || this.familyCode;
+        } else if (response && (response as any).familyCode) {
+          // In some API variants familyCode might be at the root
+          this.familyCode = (response as any).familyCode;
         }
+
         this.isLoading = false;
       },
       error: (error) => {
