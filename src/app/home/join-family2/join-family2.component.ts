@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CoreService } from '../../core/services/core.service';
 import { FamilyService } from '../../core/services/family.service';
+import { BarcodeScanner, BarcodesScannedEvent } from '@capacitor-mlkit/barcode-scanning';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-join-family2',
@@ -10,7 +12,7 @@ import { FamilyService } from '../../core/services/family.service';
   styleUrls: ['./join-family2.component.scss'],
   standalone: false
 })
-export class JoinFamily2Component implements OnInit {
+export class JoinFamily2Component implements OnInit, OnDestroy {
   userRole: 'child' | 'parent' | 'self' = 'parent';
   selectedMode: 'create' | 'join' = 'create';
   familyForm: FormGroup;
@@ -20,13 +22,15 @@ export class JoinFamily2Component implements OnInit {
   familyCode = '';
   qrCodeData = '';
   createdFamilyName = '';
+  isScanning = false;
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private fb: FormBuilder,
     private core: CoreService,
-    private familyService: FamilyService
+    private familyService: FamilyService,
+    private alertController: AlertController
   ) {
     this.familyForm = this.fb.group({
       familyName: ['', [
@@ -68,6 +72,10 @@ export class JoinFamily2Component implements OnInit {
         });
       }
     });
+  }
+
+  async ngOnDestroy() {
+    await this.stopScanner();
   }
 
   goBack() {
@@ -121,20 +129,151 @@ export class JoinFamily2Component implements OnInit {
     // }, 2000);
   }
 
-  openQRScanner() {
-    console.log('QR Scanner button clicked - join-family2 component');
-    console.log('User role:', this.userRole);
-
-    this.router.navigate(['/home/scan-qr'], {
-      queryParams: {
-        role: this.userRole,
-        returnTo: 'join-family2'
+  async openQRScanner() {
+    try {
+      // Check if barcode scanning is supported
+      const { supported } = await BarcodeScanner.isSupported();
+      if (!supported) {
+        this.core.triggerToasrt('QR scanner is not supported on this device');
+        return;
       }
-    }).then(success => {
-      console.log('Navigation to scan-qr successful:', success);
-    }).catch(error => {
-      console.error('Navigation to scan-qr failed:', error);
-    });
+
+      // Check and request camera permissions
+      const hasPermission = await this.checkCameraPermissions();
+      if (!hasPermission) {
+        return;
+      }
+
+      // Start scanning
+      await this.startScanner();
+    } catch (error) {
+      console.error('Error opening QR scanner:', error);
+      this.core.triggerToasrt('Failed to open QR scanner. Please try again.');
+    }
+  }
+
+  private async checkCameraPermissions(): Promise<boolean> {
+    try {
+      const { camera } = await BarcodeScanner.checkPermissions();
+
+      if (camera === 'granted') {
+        return true;
+      }
+
+      if (camera === 'denied') {
+        const alert = await this.alertController.create({
+          header: 'Permission Denied',
+          message: 'Camera permission is required to scan QR codes. Please enable it in your device settings.',
+          buttons: ['OK']
+        });
+        await alert.present();
+        return false;
+      }
+
+      // Request permission
+      const { camera: newStatus } = await BarcodeScanner.requestPermissions();
+      if (newStatus === 'granted') {
+        return true;
+      } else {
+        const alert = await this.alertController.create({
+          header: 'Permission Required',
+          message: 'Camera permission is required to scan QR codes.',
+          buttons: ['OK']
+        });
+        await alert.present();
+        return false;
+      }
+    } catch (error) {
+      console.error('Error checking camera permissions:', error);
+      this.core.triggerToasrt('Failed to check camera permissions');
+      return false;
+    }
+  }
+
+  private async startScanner() {
+    if (this.isScanning) {
+      return;
+    }
+
+    try {
+      // Hide background behind scanner
+      document.body.classList.add('barcode-scanner-active');
+      this.isScanning = true;
+
+      // Add listener for scanned barcodes
+      const listener = await BarcodeScanner.addListener('barcodesScanned', async (result: BarcodesScannedEvent) => {
+        if (result.barcodes && result.barcodes.length > 0) {
+          const barcode = result.barcodes[0];
+          const scannedValue = barcode.displayValue || barcode.rawValue || '';
+
+          // Stop scanning immediately
+          await this.stopScanner();
+
+          // Process the scanned QR code
+          await this.processScannedQRCode(scannedValue);
+        }
+      });
+
+      // Start the scanner
+      await BarcodeScanner.startScan();
+    } catch (error) {
+      console.error('Error starting scanner:', error);
+      this.isScanning = false;
+      document.body.classList.remove('barcode-scanner-active');
+      this.core.triggerToasrt('Failed to start the camera scanner. Please try again.');
+    }
+  }
+
+  private async stopScanner() {
+    if (!this.isScanning) {
+      return;
+    }
+
+    try {
+      await BarcodeScanner.stopScan();
+      await BarcodeScanner.removeAllListeners();
+      this.isScanning = false;
+      document.body.classList.remove('barcode-scanner-active');
+    } catch (error) {
+      console.error('Error stopping scanner:', error);
+    }
+  }
+
+  private async processScannedQRCode(scannedValue: string) {
+    // Validate the QR code format: "GROUP:<code>"
+    if (!scannedValue || !scannedValue.startsWith('GROUP:')) {
+      const alert = await this.alertController.create({
+        header: 'Invalid QR Code',
+        message: 'The scanned QR code is not a valid family code. Please scan a family QR code.',
+        buttons: ['OK']
+      });
+      await alert.present();
+      return;
+    }
+
+    // Extract the family code after "GROUP:"
+    const familyCode = scannedValue.substring(6).trim();
+
+    if (!familyCode || familyCode.length < 6 || familyCode.length > 10) {
+      const alert = await this.alertController.create({
+        header: 'Invalid Code',
+        message: 'The family code must be between 6-10 characters.',
+        buttons: ['OK']
+      });
+      await alert.present();
+      return;
+    }
+
+    // Auto-fill the family code in the form
+    this.joinFamilyForm.patchValue({ familyCode: familyCode });
+
+    // Show success feedback
+    this.core.triggerToasrt(`Family code scanned: ${familyCode}`);
+
+    // Automatically trigger the join family API
+    setTimeout(() => {
+      this.joinFamily();
+    }, 500);
   }
 
   createFamily() {
