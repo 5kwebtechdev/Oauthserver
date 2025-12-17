@@ -32,6 +32,21 @@
 
   &.today {
     border: 1px solid #90214D;
+
+    /* Make the day and date text use the primary accent for today */
+    .day,
+    .date {
+      color: #90214D;
+    }
+
+    /* If today is also the selected day, ensure text is white for contrast */
+    &.selected {
+
+      .day,
+      .date {
+        color: #fff;
+      }
+    }
   }
 
   &.selected {

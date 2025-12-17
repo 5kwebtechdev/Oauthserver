@@ -47,6 +47,10 @@ export class ParentAccountComponent implements OnInit {
     public improvementRate: number = 0;
     public appScore: number = 0;
     public Math = Math; // Expose Math to template for Math.abs()
+    // Switch-user popup state
+    public showSwitchPopup: boolean = false;
+    public children: Array<{ id: string | number; name: string; avatarUrl: string; relationship?: string }> = [];
+    public selectedChild: { id: string | number; name: string; avatarUrl: string; relationship?: string } | null = null;
 
     constructor(
         private modalCtrl: ModalController,
@@ -86,6 +90,50 @@ export class ParentAccountComponent implements OnInit {
             console.log('[ParentAccount] Data changed, reloading stats...');
             this.loadUserStats();
         });
+
+        // Load children from localStorage if present (fallback to demo list)
+        try {
+            const stored = localStorage.getItem('mb_children');
+            if (stored) {
+                this.children = JSON.parse(stored);
+            }
+        } catch (e) {
+            console.warn('[ParentAccount] Failed to parse children from storage, using defaults', e);
+        }
+
+        if (!this.children || this.children.length === 0) {
+            // Minimal default children for UI; real app should fetch from API
+            this.children = [
+                { id: 'c1', name: 'Still Panda', avatarUrl: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png', relationship: 'Child' },
+                { id: 'c2', name: 'Child 2', avatarUrl: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png', relationship: 'Child' }
+            ];
+        }
+    }
+
+    /** Toggle the switch-user popup. Stop event propagation from click. */
+    toggleSwitchPopup(ev?: Event) {
+        if (ev) {
+            ev.stopPropagation();
+        }
+        this.showSwitchPopup = !this.showSwitchPopup;
+    }
+
+    closeSwitchPopup() {
+        this.showSwitchPopup = false;
+    }
+
+    /** Select a child and switch profile context to that child.
+     *  This updates the UserService profile locally and closes the popup.
+     */
+    selectChild(child: { id: string | number; name: string; avatarUrl: string; relationship?: string }) {
+        this.selectedChild = child;
+        // Update user profile in UserService so rest of app reflects the child
+        try {
+            this.userService.setUserProfile({ name: child.name, avatarUrl: child.avatarUrl, relationship: 'CHILD' as any });
+        } catch (e) {
+            console.error('[ParentAccount] Failed to switch child profile', e);
+        }
+        this.closeSwitchPopup();
     }
 
     /**

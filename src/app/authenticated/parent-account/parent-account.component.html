@@ -10,6 +10,37 @@
                     </div>
                     <div class="user-name-wrap">
                         <span class="user-name">{{ userName }}</span>
+
+                        <!-- Switch user trigger -->
+                        <button class="switch-trigger" aria-label="Switch user" (click)="toggleSwitchPopup($event)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="8" viewBox="0 0 13 8"
+                                fill="none">
+                                <path
+                                    d="M0.246614 1.42734C-0.0801544 1.10057 -0.0801535 0.570779 0.246615 0.244011C0.573383 -0.0827579 1.10318 -0.082758 1.42995 0.24401L5.61451 4.42857C6.00503 4.8191 6.6382 4.8191 7.02872 4.42857L11.2133 0.24401C11.5401 -0.0827585 12.0698 -0.0827579 12.3966 0.244011C12.7234 0.570779 12.7234 1.10058 12.3966 1.42734L7.02872 6.79524C6.6382 7.18576 6.00503 7.18576 5.61451 6.79524L0.246614 1.42734Z"
+                                    fill="#282527" />
+                            </svg>
+                        </button>
+
+                        <!-- Switch user popup + backdrop -->
+                        <div *ngIf="showSwitchPopup" class="switch-popup-backdrop" (click)="closeSwitchPopup()">
+                            <div class="switch-popup" (click)="$event.stopPropagation()">
+                                <div class="switch-popup-list">
+                                    <ng-container *ngFor="let c of children">
+                                        <button class="child-row" (click)="selectChild(c)">
+                                            <img [src]="c.avatarUrl" [alt]="c.name + ' avatar'" class="child-avatar">
+                                            <div class="child-info">
+                                                <div class="child-name">{{ c.name }}</div>
+                                                <div class="child-meta">{{ c.relationship || 'Child' }}</div>
+                                            </div>
+                                            <div class="child-selected" *ngIf="selectedChild?.id === c.id">
+                                                <!-- simple check mark -->
+                                                ✓
+                                            </div>
+                                        </button>
+                                    </ng-container>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
