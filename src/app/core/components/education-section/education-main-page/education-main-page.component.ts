@@ -26,27 +26,41 @@ export class EducationMainPageComponent implements OnInit {
         if (!this.swiperRef?.nativeElement) return;
         const swiperEl: any = this.swiperRef.nativeElement;
 
-        // Update currentSlide on init
+        // Update currentSlide on init and ensure autoplay is started
         swiperEl.addEventListener('swiperinit', () => {
             try {
-                const idx = swiperEl.swiper?.realIndex ?? swiperEl.swiper?.activeIndex ?? 0;
+                const api = swiperEl.swiper;
+                const idx = api?.realIndex ?? api?.activeIndex ?? 0;
                 this.currentSlide = idx;
+
+                // Ensure autoplay params are present and start autoplay programmatically
+                if (api) {
+                    api.params = api.params || {};
+                    api.params.autoplay = api.params.autoplay || {};
+                    // prefer configured delay (template binding), but fall back to 3000ms
+                    api.params.autoplay.delay = api.params.autoplay.delay ?? 3000;
+                    api.params.autoplay.disableOnInteraction = api.params.autoplay.disableOnInteraction ?? false;
+                    if (api.autoplay && typeof api.autoplay.start === 'function') {
+                        try { api.autoplay.start(); } catch (e) { }
+                    }
+                }
             } catch (e) { }
         });
 
-        // Slide change events
-        swiperEl.addEventListener('slidechange', () => {
+        // Slide change events: keep currentSlide in sync and resume autoplay if needed
+        const updateIdx = () => {
             try {
-                const idx = swiperEl.swiper?.realIndex ?? swiperEl.swiper?.activeIndex ?? 0;
+                const api = swiperEl.swiper;
+                const idx = api?.realIndex ?? api?.activeIndex ?? 0;
                 this.currentSlide = idx;
+                if (api?.autoplay && typeof api.autoplay.start === 'function') {
+                    try { api.autoplay.start(); } catch (e) { }
+                }
             } catch (e) { }
-        });
-        swiperEl.addEventListener('swiperslidechange', () => {
-            try {
-                const idx = swiperEl.swiper?.realIndex ?? swiperEl.swiper?.activeIndex ?? 0;
-                this.currentSlide = idx;
-            } catch (e) { }
-        });
+        };
+
+        swiperEl.addEventListener('slidechange', updateIdx);
+        swiperEl.addEventListener('swiperslidechange', updateIdx);
     }
 
     goBack(): void {
