@@ -122,15 +122,13 @@
 
 
 .controls-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin: 0 auto;
-  width: calc(100% - 40px);
-  max-width: 760px;
-  margin-top: var(--section-gap);
-  margin-bottom: var(--section-gap);
+display: flex;
+    justify-content: space-between;
+    align-items: center;
+   
+    width: 100%;
+    padding: 16px;
+   
 }
 
 .filter-btn {

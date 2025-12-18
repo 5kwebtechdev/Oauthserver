@@ -6,6 +6,7 @@ export type buttonStyles =
   | 'violet'
   | 'violet-transparent'
   | 'columbian-blue'
+  | 'columbian-blue-transparent'
   | 'pink'
   | 'pink-small'
   | 'orange'

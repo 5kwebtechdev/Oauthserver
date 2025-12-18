@@ -21,50 +21,31 @@
           </div>
         </div>
       </div>
-      <div class="filter-section d-flex gap-3">
-           <div class="sidebar-filters">
-          <span>Skill</span>
-          <span>Level / Proficiency</span>
-          <span>Age Group</span>
-          <span>Tutor Type</span>
-          <span>Mode</span>
-           <span>Location</span>
-          </div>
+       <div class="filter-section d-flex gap-3">
+         <div class="sidebar-filters">
+           <span *ngFor="let g of sidebarGroups" (click)="selectSidebar(g.label)" [class.selected]="selectedSidebar === g.label">{{ g.label }}</span>
+        </div>
       <div class="sub-filters-section w-full">
-        <ion-list lines="none">
-          <ion-item class="sub-filter-items">
-            <ion-label>Nearby (5 km radius)</ion-label>
-            <ion-checkbox slot="end"></ion-checkbox>
-          </ion-item>
-          <ion-item>
-            <ion-label>Chennai</ion-label>
-            <ion-checkbox slot="end"></ion-checkbox>
-          </ion-item>
-          <ion-item>
-            <ion-label>Bangalore</ion-label>
-            <ion-checkbox slot="end"></ion-checkbox>
-          </ion-item>
-          <ion-item>
-            <ion-label>Mumbai</ion-label>
-            <ion-checkbox slot="end"></ion-checkbox>
-          </ion-item>
-          <ion-item>
-            <ion-label>Hyderabad</ion-label>
-            <ion-checkbox slot="end"></ion-checkbox>
-          </ion-item>
-          <ion-item>
-            <ion-label>Delhi</ion-label>
-            <ion-checkbox slot="end"></ion-checkbox>
-          </ion-item>
-          <ion-item>
-            <ion-label>Kolkata</ion-label>
-            <ion-checkbox slot="end"></ion-checkbox>
-          </ion-item>
-        </ion-list>
+        <div class="sub-filter-list">
+          <div class="sub-filter-item" *ngFor="let s of selectedSubFilters">
+            <span class="sub-filter-label">{{ s }}</span>
+            <input
+              type="checkbox"
+              class="sub-filter-checkbox"
+              [checked]="selectedSubFilterSet.has(s)"
+              (change)="onToggleSubFilter(s, ($any($event.target)).checked)"
+            />
+          </div>
+        </div>
 
-    </div>
+       </div>
       </div>
     </div>
-  </div>
+
+        <div class="footer-actions d-flex justify-content-between align-items-center">
+          <mindful-button type="columbian-blue-transparent" text="Clear all" (click)="clearAll()"></mindful-button>
+          <mindful-button type="columbian-blue" text="Show result"></mindful-button>
+        </div>
+    </div>
 
 </ion-content>
