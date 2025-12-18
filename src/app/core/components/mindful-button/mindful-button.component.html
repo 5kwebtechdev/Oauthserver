@@ -4,6 +4,9 @@
       <img class="btn-icon start" [src]="icon ?? ''" alt="" />
     </ng-container>
 
+    <!-- Allow projected inline SVG or custom icon markup as leading content -->
+    <ng-content></ng-content>
+
     <p>{{ text }}</p>
 
     <ng-container *ngIf="showTrailingIcon">
