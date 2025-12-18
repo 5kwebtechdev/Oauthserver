@@ -4,121 +4,288 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { TutorFilterFooterComponent } from '../tutor-filter-footer/tutor-filter-footer.component';
 import { ModalController } from '@ionic/angular';
+import { TutorApi } from '../../../api/tutor.api';
+import { TutorCategory, TutorCategoriesResponse, FilterGroup, FilterOption, SelectedFilters } from '../../../models/tutor.model';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'tutor-all-filter',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent, TutorFilterFooterComponent],
+  imports: [CommonModule, FormsModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent],
   templateUrl: './tutor-all-filter.component.html',
   styleUrls: ['./tutor-all-filter.component.scss']
 })
-export class TutorAllFilterComponent {
+export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy {
   /** List of available filter labels */
   @Input() filters: string[] = [];
 
-  /** Topbar-slider categories for slider */
-  categories = [
-    { key: 'School', label: 'School', icon: '/assets/Icons-Neutral/Tutors-School.png' },
-    { key: 'College', label: 'College', icon: '/assets/Icons-Neutral/Tutors-College.png' },
-    { key: 'Hobbies', label: 'Hobbies', icon: '/assets/Icons-Neutral/Tutors-Hobbies.png' },
-    { key: 'Sports', label: 'Sports', icon: '/assets/Icons-Neutral/Tutors-Sports.png' },
-    { key: 'Exams', label: 'Exams', icon: '/assets/Icons-Neutral/Tutors-Exams.png' },
-    { key: 'Language', label: 'Language', icon: '/assets/Icons-Neutral/Tutors-Language.png' },
-    { key: 'Others', label: 'Others', icon: '/assets/Icons-Neutral/Tutors-Others.png' }
-  ];
+  /** Loading state */
+  isLoading = false;
 
-  /** Topbar-slider active category (kept for template compatibility) */
-  selectedCategory: string | null = this.categories[0].key;
+  /** Error state */
+  errorMessage: string | null = null;
+
+  /** API data */
+  private apiCategories: TutorCategory[] = [];
+
+  /** Topbar-slider categories for slider */
+  categories: Array<{ key: string; label: string; icon: string }> = [];
+
+  /** Topbar-slider active category */
+  selectedCategory: string | null = null;
 
   /** Sidebar groups generated from selected topbar category */
-  sidebarGroups: Array<{ label: string; items: string[] }> = [];
+  sidebarGroups: FilterGroup[] = [];
   selectedSidebar: string | null = null;
-  selectedSubFilters: string[] = [];
-  /** currently checked subfilters */
-  selectedSubFilterSet: Set<string> = new Set();
+  selectedSubFilters: FilterOption[] = [];
 
-  /** Centralised filter definitions per topbar category */
-  private filterDefinitions: Record<string, Array<{ label: string; items: string[] }>> = {
-    School: [
-      { label: 'Class', items: ['Nursery & KG','Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'] },
-      { label: 'Subjects', items: ['Mathematics','Science','English','Physics','Chemistry','Biology','Hindi','Social Studies','Accountancy','Economics','Business Studies','Computer Science','Sanskrit','Environmental Studies (EVS)','Commerce','History','Political Science','Geography','French','Spoken English'] },
-      { label: 'Board', items: ['CBSE','ICSE','IB','State Board','IGCSE','NIOS'] }
-    ],
-    College: [
-      { label: 'Degree / Stream', items: ['Engineering (B.E / B.Tech / M.Tech)','Medical (MBBS / BDS / BAMS / BHMS)','Commerce (B.Com / M.Com)','Management (BBA / MBA)','Science (B.Sc / M.Sc)','Arts & Humanities (BA / MA)','Law (LLB / LLM)','Chartered Courses (CA / CS / CMA)','Computer Applications (BCA / MCA)','Pharmacy & Nursing (B.Pharm / B.Sc Nursing)'] },
-      { label: 'Year', items: ['1st Year','2nd Year','3rd Year','4th Year','5th Year'] }
-    ],
-    Language: [
-      { label: 'Languages', items: ['English','French','German','Spanish','Hindi','Sanskrit','Japanese','Mandarin (Chinese)','Korean','Tamil','Telugu','Marathi','Bengali','Kannada','Malayalam','Punjabi','Gujarati','Arabic','Russian','IELTS / TOEFL Prep'] },
-      { label: 'Level / Proficiency', items: ['Beginner','Intermediate','Advanced','Professional / Business'] }
-    ],
-    Hobbies: [
-      { label: 'Skill', items: ['Guitar','Piano','Violin','Drums','Flute','Indian Classical Vocal','Western Vocals','Bollywood Vocals','Bharatanatyam','Bollywood Dance','Hip Hop','Salsa','Drawing & Sketching','Painting','Calligraphy','Yoga & Meditation','Chess','Cooking','Baking','Photography'] },
-      { label: 'Level / Proficiency', items: ['Beginner','Intermediate','Advanced','Certification / Grade Exams'] },
-      { label: 'Age Group', items: ['Kids (Below 13)','Teens (13-18)','Adults'] }
-    ],
-    Exams: [
-      { label: 'Target Exam', items: ['JEE Mains / Advanced','NEET','GATE','CET / State Entrances','UPSC (Civil Services)','SSC (CGL / CHSL / MTS)','Banking (IBPS / SBI / RBI)','Railways (RRB)','Defence (NDA / CDS / AFCAT)','Teaching (CTET / NET)','CAT','GMAT','XAT / SNAP / NMAT','IPMAT','IELTS / TOEFL / PTE','GRE','SAT','CLAT','CA / CS / CMA'] }
-    ],
-    Sports: [
-      { label: 'Activities', items: ['Cricket','Badminton','Football','Swimming','Pickleball','Tennis','Table Tennis','Basketball','Martial Arts','Skating','Athletics','Volleyball','Personal Training / Fitness'] },
-      { label: 'Age Group', items: ['Kids (Below 13)','Teens (13-18)','Adults'] }
-    ],
-    Others: [
-      { label: 'Skill', items: ['Artificial Intelligence (AI) & Machine Learning','Generative AI Tools','Data Science & Analytics','Digital Marketing','Stock Market & Trading','Web & App Development','Graphic Design','Video Editing','Fashion Designing & Tailoring','Makeup & Hairstyling','Interior Design','Photography'] },
-      { label: 'Level', items: ['Beginner','Intermediate','Advanced'] }
-    ]
+  /** Currently checked subfilters mapped by fieldKey */
+  selectedFiltersMap: Map<string, Set<string>> = new Map();
+
+  /** Mapping of category icons (fallback if API doesn't provide iconUrl) */
+  private categoryIconMap: Record<string, string> = {
+    SCHOOL: '/assets/Icons-Neutral/Tutors-School.png',
+    COLLEGE: '/assets/Icons-Neutral/Tutors-College.png',
+    HOBBIES: '/assets/Icons-Neutral/Tutors-Hobbies.png',
+    SPORTS: '/assets/Icons-Neutral/Tutors-Sports.png',
+    EXAMS: '/assets/Icons-Neutral/Tutors-Exams.png',
+    LANGUAGES: '/assets/Icons-Neutral/Tutors-Language.png',
+    OTHERS: '/assets/Icons-Neutral/Tutors-Others.png'
   };
 
   ngOnInit(): void {
-    this.setSidebarForCategory(this.selectedCategory ?? this.categories[0].key);
+    this.loadTutorCategories();
   }
 
-  private setSidebarForCategory(category: string) {
-    const groups = this.filterDefinitions[category] ?? [
-      { label: 'Skill', items: ['Default'] },
-      { label: 'Level / Proficiency', items: ['Beginner','Intermediate','Advanced'] },
-      { label: 'Age Group', items: ['Kids','Teens','Adults'] },
-      { label: 'Mode', items: ['Online','Offline'] },
-      { label: 'Location', items: ['City 1','City 2'] }
+  /**
+   * Load tutor categories from API
+   */
+  private loadTutorCategories(): void {
+    this.isLoading = true;
+    this.errorMessage = null;
+
+    this.tutorApi.getTutorCategories()
+      .pipe(finalize(() => {
+        this.isLoading = false;
+        // Initialize swiper after data loads and view updates
+        setTimeout(() => this.initSwiper(), 100);
+      }))
+      .subscribe({
+        next: (categories) => {
+          this.apiCategories = categories;
+          this.mapCategoriesToUI(categories);
+
+          // Select first category by default
+          if (this.categories.length > 0) {
+            this.selectedCategory = this.categories[0].key;
+            this.setSidebarForCategory(this.selectedCategory);
+          }
+        },
+        error: (error) => {
+          console.error('[TutorAllFilter] Error loading categories:', error);
+          this.errorMessage = 'Failed to load filter categories. Please try again.';
+          // Use fallback data if API fails
+          this.useFallbackData();
+        }
+      });
+  }
+
+  /**
+   * Map API categories to UI structure
+   */
+  private mapCategoriesToUI(categories: TutorCategory[]): void {
+    this.categories = categories.map(cat => ({
+      key: cat.categoryKey,
+      label: cat.categoryName,
+      icon: cat.iconUrl || this.categoryIconMap[cat.categoryKey] || '/assets/Icons-Neutral/Tutors-Others.png'
+    }));
+  }
+
+  /**
+   * Fallback to hardcoded data if API fails
+   */
+  private useFallbackData(): void {
+    this.categories = [
+      { key: 'SCHOOL', label: 'School', icon: this.categoryIconMap['SCHOOL'] },
+      { key: 'COLLEGE', label: 'College', icon: this.categoryIconMap['COLLEGE'] },
+      { key: 'HOBBIES', label: 'Hobbies', icon: this.categoryIconMap['HOBBIES'] },
+      { key: 'SPORTS', label: 'Sports', icon: this.categoryIconMap['SPORTS'] },
+      { key: 'EXAMS', label: 'Exams', icon: this.categoryIconMap['EXAMS'] },
+      { key: 'LANGUAGES', label: 'Languages', icon: this.categoryIconMap['LANGUAGES'] },
+      { key: 'OTHERS', label: 'Others', icon: this.categoryIconMap['OTHERS'] }
     ];
 
-    this.sidebarGroups = groups;
-    this.selectedSidebar = groups.length ? groups[0].label : null;
-    this.selectedSubFilters = groups.length ? groups[0].items : [];
+    if (this.categories.length > 0) {
+      this.selectedCategory = this.categories[0].key;
+      this.setSidebarForCategory(this.selectedCategory);
+    }
+
+    // Initialize swiper for fallback data
+    setTimeout(() => this.initSwiper(), 100);
   }
 
-  selectSidebar(filterLabel: string) {
+  /**
+   * Set sidebar filters based on selected category
+   */
+  private setSidebarForCategory(categoryKey: string): void {
+    const category = this.apiCategories.find(cat => cat.categoryKey === categoryKey);
+
+    if (category && category.fields.length > 0) {
+      // Map API fields to sidebar groups
+      this.sidebarGroups = category.fields
+        .filter(field => field.isFilterable)
+        .sort((a, b) => a.displayOrder - b.displayOrder)
+        .map(field => ({
+          label: field.fieldLabel,
+          fieldKey: field.fieldKey,
+          isRequired: field.isRequired,
+          isFilterable: field.isFilterable,
+          items: field.options
+            .filter(opt => opt.isActive)
+            .sort((a, b) => a.displayOrder - b.displayOrder)
+            .map(opt => ({
+              id: opt.id,
+              value: opt.optionValue,
+              label: opt.optionLabel,
+              displayOrder: opt.displayOrder
+            }))
+        }));
+
+      // Select first sidebar group by default
+      if (this.sidebarGroups.length > 0) {
+        this.selectedSidebar = this.sidebarGroups[0].label;
+        this.selectedSubFilters = this.sidebarGroups[0].items;
+      } else {
+        this.selectedSidebar = null;
+        this.selectedSubFilters = [];
+      }
+    } else {
+      // No fields found, clear sidebar
+      this.sidebarGroups = [];
+      this.selectedSidebar = null;
+      this.selectedSubFilters = [];
+    }
+  }
+
+  /**
+   * Select a sidebar filter group
+   */
+  selectSidebar(filterLabel: string): void {
     this.selectedSidebar = filterLabel;
     const group = this.sidebarGroups.find(g => g.label === filterLabel);
     this.selectedSubFilters = group ? group.items : [];
   }
 
-  selectCategory(category: string) {
-    this.selectedCategory = category;
-    this.setSidebarForCategory(category);
+  /**
+   * Select a category from topbar
+   */
+  selectCategory(categoryKey: string): void {
+    this.selectedCategory = categoryKey;
+    this.setSidebarForCategory(categoryKey);
   }
 
-  onToggleSubFilter(item: string, checked: boolean) {
+  /**
+   * Toggle a sub-filter option
+   */
+  onToggleSubFilter(item: FilterOption, checked: boolean): void {
+    const group = this.sidebarGroups.find(g => g.label === this.selectedSidebar);
+    if (!group) return;
+
+    const fieldKey = group.fieldKey;
+
+    if (!this.selectedFiltersMap.has(fieldKey)) {
+      this.selectedFiltersMap.set(fieldKey, new Set());
+    }
+
+    const fieldSet = this.selectedFiltersMap.get(fieldKey)!;
+
     if (checked) {
-      this.selectedSubFilterSet.add(item);
+      fieldSet.add(item.value);
     } else {
-      this.selectedSubFilterSet.delete(item);
+      fieldSet.delete(item.value);
     }
   }
 
-  clearAll() {
-    this.selectedSubFilterSet.clear();
+  /**
+   * Check if a sub-filter is selected
+   */
+  isSubFilterSelected(item: FilterOption): boolean {
+    const group = this.sidebarGroups.find(g => g.label === this.selectedSidebar);
+    if (!group) return false;
+
+    const fieldSet = this.selectedFiltersMap.get(group.fieldKey);
+    return fieldSet ? fieldSet.has(item.value) : false;
   }
 
-  @ViewChild('categoriesSwiper', { read: ElementRef, static: true }) categoriesSwiperRef!: ElementRef;
+  /**
+   * Get number of selected options for a field
+   */
+  getSelectedCount(fieldKey: string): number {
+    const set = this.selectedFiltersMap.get(fieldKey);
+    return set ? set.size : 0;
+  }
+
+  /**
+   * Clear all selected filters
+   */
+  clearAll(): void {
+    this.selectedFiltersMap.clear();
+  }
+
+  /**
+   * Get selected filters for API submission
+   */
+  getSelectedFilters(): SelectedFilters | null {
+    if (!this.selectedCategory) return null;
+
+    const filters: { [fieldKey: string]: string[] } = {};
+
+    this.selectedFiltersMap.forEach((values, fieldKey) => {
+      if (values.size > 0) {
+        filters[fieldKey] = Array.from(values);
+      }
+    });
+
+    return {
+      categoryKey: this.selectedCategory,
+      filters
+    };
+  }
+
+  /**
+   * Show result with selected filters
+   */
+  showResult(): void {
+    const selectedFilters = this.getSelectedFilters();
+    console.log('[TutorAllFilter] Selected filters:', selectedFilters);
+
+    // Close modal and pass selected filters
+    this.modalCtrl.dismiss({
+      filters: selectedFilters
+    });
+  }
+
+  @ViewChild('categoriesSwiper', { read: ElementRef, static: false }) categoriesSwiperRef!: ElementRef;
   private swiperInstance: any | null = null;
 
   ngAfterViewInit() {
-    // initialize global Swiper if available (loaded in index.html)
+    // Swiper will be initialized after data loads
+  }
+
+  /**
+   * Initialize Swiper slider
+   */
+  private initSwiper(): void {
     const win: any = typeof window !== 'undefined' ? window : null;
+
+    // Destroy existing instance if any
+    if (this.swiperInstance && typeof this.swiperInstance.destroy === 'function') {
+      this.swiperInstance.destroy(true, true);
+      this.swiperInstance = null;
+    }
+
+    // Initialize new instance
     if (win && typeof win.Swiper === 'function' && this.categoriesSwiperRef?.nativeElement) {
       this.swiperInstance = new win.Swiper(this.categoriesSwiperRef.nativeElement, {
         slidesPerView: 'auto',
@@ -136,11 +303,15 @@ export class TutorAllFilterComponent {
     }
   }
 
-  constructor(private modalCtrl: ModalController) { }
+  constructor(
+    private modalCtrl: ModalController,
+    private tutorApi: TutorApi
+  ) { }
 
-  close() {
+  /**
+   * Close modal without applying filters
+   */
+  close(): void {
     this.modalCtrl.dismiss();
   }
-
-  // Filters removed — kept component minimal
 }

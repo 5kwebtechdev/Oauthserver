@@ -1,5 +1,5 @@
 import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
@@ -8,7 +8,7 @@ import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navig
     selector: 'app-education-main-page',
     standalone: true,
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    imports: [CommonModule, IonicModule, MindfulNavigatorComponent],
+    imports: [CommonModule, IonicModule, MindfulNavigatorComponent, RouterModule],
     templateUrl: './education-main-page.component.html',
     styleUrls: ['./education-main-page.component.scss']
 })

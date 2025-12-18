@@ -1,7 +1,45 @@
 .filters-page {
   padding: 16px;
-  padding-bottom: 96px; /* leave space for fixed footer */
- 
+  padding-bottom: 96px;
+  /* leave space for fixed footer */
+}
+
+/* Loading and Error States */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  min-height: 300px;
+
+  ion-spinner {
+    width: 48px;
+    height: 48px;
+    color: #7284B9;
+  }
+
+  p {
+    margin-top: 16px;
+    color: #282527;
+    font-family: Nunito;
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+.error-container {
+  ion-icon {
+    font-size: 64px;
+    color: #e74c3c;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: #666;
+  }
 }
 
 .content {
@@ -18,65 +56,75 @@
 .swiper {
   width: 100%;
 }
+
 .swiper-wrapper {
   display: flex;
   align-items: center;
 }
+
 .swiper-slide {
   width: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 8px;
+  padding: 1px;
 }
 
 .topbar-slider-item {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px 12px;
+  padding: 6px 6px;
   cursor: pointer;
- 
+
 
 }
+
 .topbar-slider-item img {
   width: 48px;
   height: 48px;
 }
-span{
+
+span {
   color: #282527;
-font-family: Nunito;
-font-size: 16px;
-font-weight: 600;
+  font-family: Nunito;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .topbar-slider-item.active {
   display: flex;
-  width: 96px;
-  padding-bottom: 8px;
+  // padding-bottom: 8px;
   flex-direction: column;
   align-items: center;
   border-radius: 2px;
   border-bottom: 3px solid #9BB2D4;
 }
 
-.sidebar-filters{
-  display: flex;
-flex-direction: column;
-align-items: flex-start ;
-border-radius: 0 8px 8px 0;
-background: #FFF;
-box-shadow: 3px 0 2px 2px rgba(107, 101, 106, 0.10);
-width: 45%;
-
-span{
- padding:16px 12px 16px 0px;
+.sidebar-section {
+  width: 45%;
 }
+
+.sidebar-filters {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-radius: 0 8px 8px 0;
+  background: #FFF;
+  box-shadow: 3px 0 2px 2px rgba(107, 101, 106, 0.10);
+
+
+  span {
+    padding: 16px 12px 16px 0px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
 }
 
 .sidebar-filters span {
   cursor: pointer;
-  display: block;
+  display: flex;
   width: 100%;
 }
 
@@ -84,18 +132,37 @@ span{
   border-radius: 2px;
   border-right: 2px solid #9BB2D4;
   padding-right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.sub-filter-items{
+.sub-filter-items {
   display: flex;
   justify-content: space-between;
-  padding:0px;
+  padding: 0px;
 }
 
 .sub-filter-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+/* Make the sub-filter list scroll vertically when content overflows
+   Keeps visual styling intact while providing inner scrolling */
+.sub-filters-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sub-filter-list {
+  overflow-y: auto;
+  max-height: 60vh;
+  padding-right: 8px;
+  /* space for scrollbar */
+  -webkit-overflow-scrolling: touch;
 }
 
 .sub-filter-item {
@@ -105,7 +172,7 @@ span{
   padding: 8px 12px;
   border-radius: 6px;
   background: #fff;
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.03);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.03);
 }
 
 .sub-filter-label {
@@ -118,7 +185,7 @@ span{
   appearance: none;
   width: 18px;
   height: 18px;
-  border: 1px solid rgba(0,0,0,0.14);
+  border: 1px solid rgba(0, 0, 0, 0.14);
   border-radius: 4px;
   background: transparent;
   display: inline-block;
@@ -126,8 +193,8 @@ span{
 }
 
 .sub-filter-checkbox:checked {
-    background: #7284B9;
-    border-color: #505D83;
+  background: #7284B9;
+  border-color: #505D83;
 }
 
 .sub-filter-checkbox:checked::after {
@@ -146,11 +213,18 @@ span{
 .footer-actions {
   max-width: 1024px;
   margin: 0 auto;
-    position: fixed;
+  position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
   padding: 12px 16px;
-background: #FFF;
-box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);  z-index: 50;
+  background: #FFF;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+  z-index: 50;
+}
+
+/* Tighten the small count next to sidebar labels */
+.sidebar-filters span>span {
+
+  padding: 0;
 }

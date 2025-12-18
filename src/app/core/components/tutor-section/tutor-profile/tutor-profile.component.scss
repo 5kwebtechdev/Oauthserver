@@ -1,13 +1,52 @@
-.tutor-profile-container {
+.tutor-profile-root {
 	padding: 16px;
+	gap: 24px;
+	display: flex;
+	flex-direction: column;
+}
+
+p {
+	margin: 0;
+	color: #282527;
+	font-family: Nunito;
+	font-size: 13px;
+	font-weight: 500;
+}
+
+h3 {
+	margin: 0;
+	color: var(--Neutral-Grey, rgba(40, 37, 39, 0.70));
+	font-family: Nunito;
+	font-size: 13px;
+	font-weight: 600;
+
+}
+
+h1 {
+	color: #282527;
+	font-family: Nunito;
+	font-size: 16px;
+	font-weight: 600;
 }
 
 .hero {
+	gap: 12px;
+
+	h1 {
+		color: #282527;
+		font-family: Nunito;
+		font-size: 20px;
+		font-weight: 700;
+	}
+}
+
+.info,
+.hero {
 	display: flex;
 	flex-direction: column;
+	justify-content: center;
 	align-items: center;
-	gap: 12px;
-	padding-top: 8px
+
 }
 
 .avatar {
@@ -19,39 +58,36 @@
 	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08)
 }
 
+
 .name {
 	font-size: 22px;
 	font-weight: 700;
 	margin: 0
 }
 
-.role {
-	color: #6b6b6b;
-	margin: 0
-}
-
-.subjects {
-	display: flex;
-	gap: 8px;
-	margin-top: 8px
-}
-
-.pill {
-	background: #d6e3ef;
-	padding: 8px 12px;
-	border-radius: 999px
-}
-
 .meta-row {
 	display: flex;
-	gap: 24px;
-	margin-top: 8px
+	justify-content: space-between;
+	width: 100%;
+}
+
+.teaching-row {
+	display: flex;
+	gap: 5px;
+
+	h3 {
+		width: 70px;
+	}
+
+	p {
+		width: 100%;
+	}
 }
 
 .meta {
 	display: flex;
 	align-items: center;
-	gap: 8px
+
 }
 
 /* size the small neutral icons (likes, experience, timings, fees) */
@@ -64,17 +100,7 @@
 	flex-shrink: 0;
 }
 
-.card {
-	width: 100%;
-	background: #f3f6f8;
-	padding: 16px;
-	border-radius: 12px;
-	margin-top: 16px
-}
-
-.card h3 {
-	margin: 0 0 6px 0
-}
+/* Removed academy card and related styles */
 
 .faq-section {
 	margin-top: 22px
@@ -108,7 +134,6 @@
 
 .tutor-profile-root ion-toolbar .button.columbian-blue p {
 	color: #282527;
-	/* dark heart color */
 	font-size: 16px;
 	line-height: 1;
 	margin: 0;
@@ -162,62 +187,16 @@
 	font-size: 20px;
 	font-style: normal;
 	font-weight: 700;
-	line-height: 140%;
-	/* 28px */
+
 }
 
-
-.pill {
-	background: #9BB2D4;
-	border-radius: 24px;
-	border: 1px solid #505D83;
-	color: #FFF;
-
-	font-family: Nunito;
-	font-size: 10px;
-	font-style: normal;
-	font-weight: 600;
-	line-height: 140%;
-	/* 14px */
-}
-
-.level {
-	display: inline-flex;
-	justify-content: center;
-	align-items: center;
-	gap: 6px;
-}
-
-.level-subtext {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	color: #282527;
-	color: #6B656A;
-	font-family: Nunito;
-	font-size: 10px;
-	font-style: normal;
-	font-weight: 600;
-	line-height: 140%;
-	/* 14px */
-}
-
-.level-subtext .dot {
-	display: inline-block;
-	width: 4px;
-	height: 4px;
-	aspect-ratio: 1/1;
-	background: #6B656A;
-	/* fallback for non-SVG */
-	fill: #6B656A;
-	/* for SVG if used */
-	border-radius: 50%;
-	flex-shrink: 0;
-}
-
-.time-fees {
-	display: inline-flex;
-	justify-content: center;
-	align-items: center;
-	gap: 40px;
+.teacher-details {
+	display: flex;
+	padding: 16px;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 16px;
+	align-self: stretch;
+	border-radius: 12px;
+	background: #F3F6FA;
 }

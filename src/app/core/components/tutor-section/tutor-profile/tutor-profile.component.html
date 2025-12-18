@@ -1,50 +1,60 @@
 <ion-content fullscreen>
-  <div class="tutor-profile-container">
-    <!-- mindful navigator -->
-    <mindful-navigator heading="Tutor profile" backIcon="arrowSvg" (back)="close()" [rightActions]="navActions"
-      (rightActionClick)="handleNavAction($event)"></mindful-navigator>
-
+  <mindful-navigator heading="Tutor profile" backIcon="arrowSvg" (back)="close()" [rightActions]="navActions"
+    (rightActionClick)="handleNavAction($event)"></mindful-navigator>
+  <div class="tutor-profile-root">
     <div class="hero">
       <div class="avatar"
-        [ngStyle]="{'background-image': 'url(' + (tutor?.avatar || '/assets/images/Avatar.png') + ')'}">
+        [ngStyle]="{'background-image': 'url(' + (tutor?.avatar || 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png') + ')'}">
       </div>
-      <h2 class="name">{{ tutor?.name || 'Mr. Sharma' }}</h2>
-      <!-- <p class="role">{{ tutor?.description || 'Math & Science Wizard' }}</p> -->
-
-      <div class="subjects">
-        <span class="pill" *ngFor="let s of (tutor?.subjects || ['Maths','Science','English'])">{{ s }}</span>
+      <div class="info">
+        <h2 class="name">{{ tutor?.name || 'Mr. Sharma' }}</h2>
+        <h3 class="achievement">Gold Medalist in Mathematics</h3>
       </div>
-
       <div class="meta-row">
         <div class="meta">
+          <img src="/assets/Icons-Neutral/Experience.png" alt="experience" />
+          <ng-container *ngIf="getExperienceParts() as expParts">
+            <h3><strong>{{ expParts.years }}</strong> years Exp</h3>
+          </ng-container>
+        </div>
+        <h4>|</h4>
+        <div class="meta like" (click)="handleNavAction(navActions[0])">
           <img src="/assets/Icons-Neutral/Icon-Tutor-Like.png" alt="likes" />
-          <span>{{ tutor?.rating || (navActions[0]?.count || 0) }} champs liked</span>
+          <h3>{{ tutor?.rating || (navActions[0]?.count || 0) }} likes</h3>
         </div>
+        <h4>|</h4>
         <div class="meta">
-          <img src="/assets/Icons-Neutral/Icon-Tutor-Experience.png" alt="experience" />
-          <span>{{ tutor?.experience || '8yrs+ Experience' }}</span>
+          <img src="/assets/Icons-Neutral/Students.png" alt="students" />
+          <h3><strong>{{ tutor?.students || 0 }}</strong> students</h3>
         </div>
       </div>
+    </div>
+    <div class="what-teach">
+      <h1>What I teach</h1>
+      <div class="teaching-details">
+        <div class="teaching-row">
+          <h3>Subjects</h3>
+          <p>{{ tutor?.subjects || 'Mathematics, Chemistry, Science, Accountancy, Economics, Social Studies' }}</p>
+        </div>
 
-      <div class="card">
-        <div class="card-intro">
-          <h3>Futuristic Academy</h3>
-          <p>Andheri east, Mumbai</p>
+        <div class="teaching-row">
+          <h3>Class</h3>
+          <p>{{ tutor?.classes || 'Class 8, Class 10, Class 11' }}</p>
         </div>
-        <div class="level">
-          <p class="level-text">Level 5, 6, 7</p>
-          <p class="level-subtext"><span class="dot">.</span> In person</p>
-        </div>
-        <div class="time-fees">
-          <div class="item"><img src="/assets/Icons-Neutral/Icon-Tutor-Timings.png" alt="time" /> 5pm-8pm</div>
-          <div class="item"><img src="/assets/Icons-Neutral/Icon-Tutor-Fees.png" alt="fees" /> ₹800/ subject</div>
+
+        <div class="teaching-row">
+          <h3>Board</h3>
+          <p>{{ tutor?.board || 'CBSE, State Board' }}</p>
         </div>
       </div>
     </div>
 
-    <div class="faq-section">
-      <!-- Replace static FAQ list with reusable ProfileFacts component -->
-      <profile-facts [faqs]="tutorFaqs"></profile-facts>
+    <div class="teacher-details">
+
     </div>
+  </div>
+
+  <div class="faq-section">
+    <profile-facts [faqs]="tutorFaqs"></profile-facts>
   </div>
 </ion-content>

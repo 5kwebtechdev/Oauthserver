@@ -8,10 +8,12 @@ import { ProfileFactsComponent } from '../../user-profile/profile-facts/profile-
 export interface TutorProfile {
   name?: string;
   avatar?: string;
-  description?: string;
   rating?: number;
+  students?: number;
   experience?: string;
-  subjects?: string[];
+  subjects?: string;
+  classes?: string;
+  board?: string;
 }
 
 @Component({
@@ -36,6 +38,13 @@ export class TutorProfileComponent {
 
   close() {
     this.modalCtrl.dismiss();
+  }
+
+  getExperienceParts(): { years: string } {
+    const raw = this.tutor?.experience || '';
+    const m = raw.match(/(\d+)/);
+    if (m) return { years: m[1] };
+    return { years: '8' };
   }
 
   onFavorite() {

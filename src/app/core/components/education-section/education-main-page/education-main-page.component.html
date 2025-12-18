@@ -15,23 +15,26 @@
                     [class.active]="currentSlide === idx" (click)="goToSlide(idx)"></button>
             </div>
         </div>
-<div class="edu-item-list">
-        <div class="edu-item-cards">
-            <h1>Find Tutors</h1>
-            <span>Coming soon</span>
-            <img src="assets/Images-Transparent/Find-Tutors.png" alt="">
-        </div>
-        <div class="edu-item-cards">
-            <h1>Stationery</h1>
-            <span>Shop essentials</span>
-            <img src="assets/Images-Transparent/Stationery.png" alt="Stationery">
-        </div>
+        <div class="edu-item-list">
+            <a class="edu-item-cards" routerLink="/authed/tutors">
+                <h1>Find Tutors</h1>
+                <img src="assets/Images-Transparent/Find-Tutors.png" alt="">
+            </a>
+            <a class="edu-item-cards">
+                <h1>Academies</h1>
+                <img src="assets/Images-Transparent/Academies.png" alt="">
+            </a>
+            <a class="edu-item-cards">
+                <h1>Stationery</h1>
+                <span>Coming soon</span>
+                <img src="assets/Images-Transparent/Stationery.png" alt="Stationery">
+            </a>
 
-        <div class="edu-item-cards">
-            <h1>Book Store</h1>
-            <span>Buy books</span>
-            <img src="assets/Images-Transparent/Book-store.png" alt="Book Store">
-        </div>
+            <a class="edu-item-cards">
+                <h1>Book Store</h1>
+                <span>Coming soon</span>
+                <img src="assets/Images-Transparent/Book-store.png" alt="Book Store">
+            </a>
         </div>
     </div>
 </ion-content>
