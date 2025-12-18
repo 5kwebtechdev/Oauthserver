@@ -58,14 +58,14 @@
       </button>
 
       <ul class="sort-menu" *ngIf="isSortOpen" role="menu" aria-label="Sort options">
-        <li class="sort-item" role="menuitem" [class.active]="currentSort === 'alphabets'"
-          (click)="selectSort('alphabets')">Alphabets <span *ngIf="currentSort === 'alphabets'">✓</span></li>
-        <li class="sort-item" role="menuitem" [class.active]="currentSort === 'mostLiked'"
-          (click)="selectSort('mostLiked')">Most Liked <span *ngIf="currentSort === 'mostLiked'">✓</span></li>
-        <li class="sort-item" role="menuitem" [class.active]="currentSort === 'experience'"
-          (click)="selectSort('experience')">Experience <span *ngIf="currentSort === 'experience'">✓</span></li>
-        <li class="sort-item" role="menuitem" [class.active]="currentSort === 'recent'" (click)="selectSort('recent')">
-          Recently added <span *ngIf="currentSort === 'recent'">✓</span></li>
+        <ng-container *ngFor="let opt of sortOptions">
+          <li class="sort-item" role="menuitem" [class.active]="currentSort === opt.key" (click)="selectSort(opt.key)">
+            {{ opt.label }}
+            <svg *ngIf="currentSort === opt.key" class="sort-tick" xmlns="http://www.w3.org/2000/svg" width="8" height="6" viewBox="0 0 8 6" fill="none" aria-hidden="true">
+              <path d="M2.81319 5.70608C2.61793 5.90134 2.30134 5.90134 2.10608 5.70608L0.146523 3.74652C-0.0487396 3.55126 -0.0487401 3.23468 0.146522 3.03942L0.372748 2.81319C0.568011 2.61793 0.884593 2.61793 1.07986 2.81319L2.10608 3.83942C2.30134 4.03468 2.61793 4.03468 2.81319 3.83942L6.50608 0.146523C6.70134 -0.0487396 7.01793 -0.04874 7.21319 0.146522L7.43942 0.372748C7.63468 0.568011 7.63468 0.884593 7.43942 1.07986L2.81319 5.70608Z" fill="#1C1B1F"/>
+            </svg>
+          </li>
+        </ng-container>
       </ul>
     </div>
   </div>
@@ -75,9 +75,6 @@
     <div class="title-tutor-list">Top picks, trusted by many</div>
     <tutor-list [tutors]="tutors" (viewProfile)="onViewProfile($event)"></tutor-list>
   </div>
-
-
-  <a class="view-all-btn d-block text-center" (click)="viewAllTutors()">Expand</a>
 
 
   <!-- Refer a Tutor - use shared mindful popup -->

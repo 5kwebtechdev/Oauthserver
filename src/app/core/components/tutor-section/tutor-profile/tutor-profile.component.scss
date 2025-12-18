@@ -103,8 +103,7 @@ h1 {
 /* Removed academy card and related styles */
 
 .faq-section {
-	margin-top: 22px
-}
+padding:16px;}
 
 .faq-section h3 {
 	text-align: center;
@@ -199,4 +198,33 @@ h1 {
 	align-self: stretch;
 	border-radius: 12px;
 	background: #F3F6FA;
+}
+
+.teach-detail-list{
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	width: 100%	;
+
+	p, .location{
+		width:55%;
+		
+	}
+	h3{
+		width: 45%;
+		display: flex;
+    align-items: center;}
+	a{
+		    color: #505D83;
+    text-align: center;
+    font-family: Nunito;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration-line: underline;
+    
+	}
+	img{
+		width: 24px;
+height: 24px;
+	}
 }

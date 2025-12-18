@@ -6,7 +6,6 @@ import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
 import { MindfulSpeechBubbleComponent } from '../../mindful-speech-bubble/mindful-speech-bubble.component';
 import { TutorListComponent, Tutor } from '../tutor-list/tutor-list.component';
 import { TutorAllFilterComponent } from '../tutor-all-filter/tutor-all-filter.component';
-import { TutorViewAllScreenComponent } from '../Tutor-View-all-Screen/tutor-view-all-screen.component';
 import { TutorProfileComponent } from '../tutor-profile/tutor-profile.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
@@ -14,7 +13,7 @@ import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.compone
 @Component({
   selector: 'tutor-homepage',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulButtonComponent, TutorListComponent, MindfulPetComponent, MindfulSpeechBubbleComponent, TutorViewAllScreenComponent, TutorAllFilterComponent, FooterComponent, MindfulPopupComponent],
+  imports: [CommonModule, IonicModule, MindfulButtonComponent, TutorListComponent, MindfulPetComponent, MindfulSpeechBubbleComponent, TutorAllFilterComponent, FooterComponent, MindfulPopupComponent],
   templateUrl: './tutor-homepage.component.html',
   styleUrls: ['./tutor-homepage.component.scss']
 })
@@ -40,23 +39,6 @@ export class TutorHomepageComponent {
 
     await modal.present();
   }
-
-  async viewAllTutors() {
-    const modal = await this.modalCtrl.create({
-      component: TutorViewAllScreenComponent,
-      componentProps: {
-        tutors: this.tutors
-      }
-    });
-
-    await modal.present();
-
-    const { data } = await modal.onWillDismiss();
-    // handle returned data if needed
-    if (data && data.selected) {
-      console.log('Returned from view-all modal:', data.selected);
-    }
-  }
   isReferModalOpen = false;
 
   // The link to share — adjust if you have a dynamic link
@@ -64,6 +46,12 @@ export class TutorHomepageComponent {
   // Sort dropdown state
   isSortOpen = false;
   currentSort: 'alphabets' | 'mostLiked' | 'experience' | 'recent' = 'alphabets';
+  readonly sortOptions: { key: 'alphabets' | 'mostLiked' | 'experience' | 'recent'; label: string }[] = [
+    { key: 'alphabets', label: 'Alphabets' },
+    { key: 'mostLiked', label: 'Most Liked' },
+    { key: 'experience', label: 'Experience' },
+    { key: 'recent', label: 'Recently added' }
+  ];
 
   constructor(private modalCtrl: ModalController) { }
 
