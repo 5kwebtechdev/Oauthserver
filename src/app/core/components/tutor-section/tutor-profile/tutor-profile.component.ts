@@ -72,4 +72,10 @@ export class TutorProfileComponent {
       this.onFavorite();
     }
   }
+
+  bookCall() {
+    // placeholder for booking flow — replace with real navigation/modal when available
+    console.log('Book a call clicked for', this.tutor?.name);
+    alert('Booking request sent — we will contact you shortly.');
+  }
 }

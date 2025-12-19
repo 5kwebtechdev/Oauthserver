@@ -617,7 +617,7 @@ p {
   background: linear-gradient(91deg, #7284B9 0.01%, #505D83 99.99%);
   box-shadow: 0 0 1px 0.5px rgba(80, 93, 131, 0.20), 0 -2px 2px 0 #8AA0CA inset;
   display: flex;
-  height: 34px;
+  height: 100%;
   padding: 8px 12px;
   justify-content: center;
   align-items: center;
@@ -749,7 +749,7 @@ p {
   border: 0.5px solid #7284B9;
   background: none;
   display: flex;
-  height: 34px;
+  height: 100%;
   padding: 8px 12px;
   justify-content: center;
   align-items: center;

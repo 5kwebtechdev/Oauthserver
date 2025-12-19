@@ -17,6 +17,7 @@ import { CalendarApi } from '../../../api/calendar.api';
 import { Habit } from '../habit.types';
 import { Router } from '@angular/router';
 import { NavigationContextService } from '../../../services/navigation-context.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   standalone: true,
@@ -71,8 +72,13 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     this.autoAdjustSelectedDays();
   }
   currentActive: 'habits' | 'tasks' | 'timetable' = 'habits';
+
+  get isTasks(): boolean {
+    return this.currentActive === 'tasks';
+  }
   isPrivate = false;
   isChild = false;
+  isParent = false;
   selectedTags: Array<{ key: string, value: string, type?: string }> = [];
   // today's date (date-only) used to prevent past date selection
   today: Date = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
@@ -100,6 +106,20 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   weekdays = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'];
   selectedDays = new Set<string>();
   priority: '' | 'low' | 'medium' | 'high' = '';
+
+  // Priority options for template
+  readonly priorities = [
+    { key: 'high' as const, text: 'High', type: 'red' },
+    { key: 'medium' as const, text: 'Medium', type: 'yellow' },
+    { key: 'low' as const, text: 'Low', type: 'green' }
+  ];
+
+  // Tag variant mapping by activity type
+  readonly tagVariants: Record<string, 'blue' | 'orange' | 'green' | 'gray'> = { habits: 'blue', tasks: 'orange', timetable: 'green' };
+
+  // Coin selector
+  coinOptions = [10, 20, 30, 40, 50];
+  coinReward: number = 5;
 
   activities: { name: string; startTime: string; endTime: string }[] = [
     { name: '', startTime: '', endTime: '' },
@@ -141,7 +161,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   private readonly DELETE_IMAGE_PATH = 'assets/Images-Transparent/Image-Input-Delete.png';
 
   // use PNG assets for icons (18px width, height auto)
-  private readonly _coinSvg = `<img src="assets/Icons-Neutral/Icons-Coins.png" alt="Coins" style="width:18px;height:auto;"/>`;
+  readonly _coinSvg = `<img src="assets/Icons-Neutral/Icons-Coins.png" alt="Coins" style="width:18px;height:auto;"/>`;
   private readonly _streakSvg = `<img src="assets/Icons-Neutral/Icon-Streak.png" alt="Streak" style="width:18px;height:auto;"/>`;
 
   private buildDeletePopupConfig(coin: number, streak: number): MindfulPopupConfig {
@@ -169,7 +189,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     private taskApi: TaskApi,
     private calendarApi: CalendarApi,
     private habitApi: HabitApi,
-    private navigationContext: NavigationContextService
+    private navigationContext: NavigationContextService,
+    private authService: AuthService
   ) { }
 
   get navigatorActions(): Array<{ type: 'edit' | 'icon', src?: string, alt?: string }> {
@@ -194,6 +215,13 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       // ignore parsing errors and leave isChild = false
     }
 
+    // Determine whether current user is a parent (parent accounts can assign coins)
+    try {
+      this.isParent = !!(this.authService && this.authService.isParentUser && this.authService.isParentUser());
+    } catch (e) {
+      this.isParent = false;
+    }
+
     try {
       const nav = this.router.getCurrentNavigation();
       const stateHabit = nav?.extras?.state?.['habit'] ?? (history && (history.state as any)?.habit);
@@ -210,6 +238,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       this.endTime = this.to12Hour(h.endTime || h.end_time || '');
       this.currentActive = (h.type as any) || this.currentActive;
       this.isPrivate = !!h.isPrivate;
+      this.coinReward = Number(h?.coinReward ?? h?.rewardCoins ?? h?.coin ?? 5);
       this.selectedRoutine = h.selectedRoutine || h.routine || (h.getRoutine as any) || this.selectedRoutine;
 
       // Merge incoming routineTags with default tags instead of replacing
@@ -449,6 +478,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       status: 'pending',
       createdAt: new Date(),
       activities: this.currentActive === 'timetable' ? this.activities.filter(a => a.name.trim()) : undefined
+      ,
+      coinReward: this.coinReward ?? 5
     };
 
     const daysOfWeek = this.getSelectedDaysOfWeek();
@@ -475,7 +506,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         endTime: formattedEndTime || '',
         everyday: !!(this.everyday && coversAllDays),
         everyWeekend: false,
-        rewardCoins: habit.coinReward ?? 5
+        rewardCoins: habit.coinReward ?? 5,
+        sharedWithParent: this.isChild ? this.isPrivate : false
       };
       // Only include daysOfWeek if NOT everyday
       if (!(this.everyday && coversAllDays)) {
@@ -491,7 +523,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         endTime: formattedEndTime || '',
         startDate: this.formatDateStr(this.startDate) || '',
         endDate: this.formatDateStr(this.endDate) || '',
-        priority
+        priority,
+        sharedWithParent: this.isChild ? this.isPrivate : false
       };
       if (!(this.everyday && coversAllDays)) {
         payload.daysOfWeek = daysOfWeek;
@@ -513,7 +546,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         endTime: formattedEndTime || '',
         everyday: !!(this.everyday && coversAllDays),
         everyWeekend: false,
-        coinReward: 5
+        coinReward: 5,
+        sharedWithParent: this.isChild ? this.isPrivate : false
       };
       // Only include daysOfWeek if NOT everyday
       if (!(this.everyday && coversAllDays)) {
@@ -526,116 +560,33 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       console.log('[Task Submit] Payload:', JSON.stringify(payload, null, 2));
 
       if (this.editingId) {
-        // Update existing task
         this.taskApi.updateTask(this.editingId, payload).subscribe({
           next: (res) => {
             try {
-              // Build a local Habit model from the task response to keep UI behavior consistent
-              const updated = res || {};
-              const updatedTaskHabit: Habit = {
-                id: String(updated?.id ?? this.editingId),
-                title: updated?.title ?? habit.title,
-                notes: updated?.description ?? habit.notes,
-                startDate: updated?.startDate ? new Date(updated.startDate) : habit.startDate,
-                endDate: updated?.endDate ? new Date(updated.endDate) : habit.endDate,
-                startTime: updated?.startTime ?? formattedStartTime,
-                endTime: updated?.endTime ?? formattedEndTime,
-                startTimeStamp: updated?.startDate ? new Date(`${updated.startDate}T${formattedStartTime}`).getTime() : habit.startTimeStamp,
-                endTimeStamp: updated?.endDate ? new Date(`${updated.endDate}T${formattedEndTime}`).getTime() : habit.endTimeStamp,
-                type: 'tasks',
-                isPrivate: habit.isPrivate,
-                selectedRoutine: updated?.routine ?? habit.selectedRoutine,
-                routineTags: this.routineTags,
-                everyday: !!updated?.everyday,
-                selectedDays: Array.isArray(updated?.daysOfWeek) ? updated.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek),
-                priority: (updated?.priority ?? habit.priority) as any,
-                routine: updated?.routine ?? habit.routine,
-                status: updated?.status ?? habit.status,
-                createdAt: updated?.createdAt ? new Date(updated.createdAt) : (this.originalHabit?.createdAt ? new Date(this.originalHabit.createdAt) : new Date()),
-                activities: habit.activities,
-                tags: Array.isArray(updated?.tags) ? updated.tags : (Array.isArray(this.selectedTags) ? this.selectedTags.map(t => t.value || t.key) : []),
-                coinReward: updated?.rewardCoins ?? updated?.coinReward ?? habit.coinReward ?? 0,
-                coinsEarned: updated?.coinsEarned ?? updated?.coins ?? 0,
-                streak: updated?.streak ?? updated?.streakCount ?? 0,
-                highestStreak: updated?.highestStreak ?? 0,
-                completionPercentage: updated?.completionPercentage ?? updated?.completionRate ?? 0,
-                totalCompletedDays: updated?.totalCompletedDays ?? updated?.completedDays ?? 0,
-                milestoneBadges: updated?.milestoneBadges ?? updated?.badgeList ?? null,
-                daysOfWeek: Array.isArray(updated?.daysOfWeek) ? updated.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek)
-              };
-              this.habitService.updateHabit(updatedTaskHabit);
+              const updatedHabit = this.buildHabitFromResponse(res, habit, 'tasks', formattedStartTime, formattedEndTime, daysOfWeek);
+              this.habitService.updateHabit(updatedHabit);
               this.modalCtrl.dismiss();
-
-              // Pop the detail page context (habit-input -> detail) without navigating
-              // This allows us to skip the detail page and go back to the origin page
               this.navigationContext.popContext();
-              console.log('[Task Update] Skipped detail page context, navigating to origin page');
-
-              this.navigationContext.navigateBack({ updatedHabit: updatedTaskHabit, showSingleMode: true, initialTab: 'tasks' });
-            } finally {
-              this.isSubmitting = false;
-            }
+              this.navigationContext.navigateBack({ updatedHabit, showSingleMode: true, initialTab: 'tasks' });
+            } finally { this.isSubmitting = false; }
           },
-          error: (err) => {
-            this.isSubmitting = false;
-            console.error('Failed to update task', err);
-            alert('Failed to update task. Please try again.');
-          }
+          error: (err) => { this.isSubmitting = false; console.error('Failed to update task', err); alert('Failed to update task. Please try again.'); }
         });
       } else {
-        // Create new task
         this.taskApi.createTask(payload).subscribe({
           next: (res) => {
             try {
-              // Build a local Habit model from the task response to keep UI behavior consistent with habits
-              const created = res || {};
-              const createdTaskHabit: Habit = {
-                id: String(created?.id ?? habit.id),
-                title: created?.title ?? habit.title,
-                notes: created?.description ?? habit.notes,
-                startDate: created?.startDate ? new Date(created.startDate) : habit.startDate,
-                endDate: created?.endDate ? new Date(created.endDate) : habit.endDate,
-                startTime: created?.startTime ?? formattedStartTime,
-                endTime: created?.endTime ?? formattedEndTime,
-                startTimeStamp: created?.startDate ? new Date(`${created.startDate}T${formattedStartTime}`).getTime() : habit.startTimeStamp,
-                endTimeStamp: created?.endDate ? new Date(`${created.endDate}T${formattedEndTime}`).getTime() : habit.endTimeStamp,
-                type: 'tasks',
-                isPrivate: habit.isPrivate,
-                selectedRoutine: created?.routine ?? habit.selectedRoutine,
-                routineTags: this.routineTags,
-                everyday: !!created?.everyday,
-                selectedDays: Array.isArray(created?.daysOfWeek) ? created.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek),
-                priority: (created?.priority ?? habit.priority) as any,
-                routine: created?.routine ?? habit.routine,
-                status: created?.status ?? habit.status,
-                createdAt: created?.createdAt ? new Date(created.createdAt) : new Date(),
-                activities: habit.activities,
-                tags: Array.isArray(created?.tags) ? created.tags : (Array.isArray(this.selectedTags) ? this.selectedTags.map(t => t.value || t.key) : []),
-                coinReward: created?.rewardCoins ?? created?.coinReward ?? habit.coinReward ?? 0,
-                coinsEarned: created?.coinsEarned ?? created?.coins ?? 0,
-                streak: created?.streak ?? created?.streakCount ?? 0,
-                highestStreak: created?.highestStreak ?? 0,
-                completionPercentage: created?.completionPercentage ?? created?.completionRate ?? 0,
-                totalCompletedDays: created?.totalCompletedDays ?? created?.completedDays ?? 0,
-                milestoneBadges: created?.milestoneBadges ?? created?.badgeList ?? null,
-                daysOfWeek: Array.isArray(created?.daysOfWeek) ? created.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek)
-              };
-              this.habitService.addHabit(createdTaskHabit);
+              const createdHabit = this.buildHabitFromResponse(res, habit, 'tasks', formattedStartTime, formattedEndTime, daysOfWeek);
+              this.habitService.addHabit(createdHabit);
               this.habitService.notifyTaskAdded();
               this.modalCtrl.dismiss();
-              this.navigationContext.navigateBack({ newHabit: createdTaskHabit, showSingleMode: true, initialTab: 'tasks' });
-            } finally {
-              this.isSubmitting = false;
-            }
+              this.navigationContext.navigateBack({ newHabit: createdHabit, showSingleMode: true, initialTab: 'tasks' });
+            } finally { this.isSubmitting = false; }
           },
           error: (err) => {
             this.isSubmitting = false;
             console.error('Failed to create task', err);
-            console.error('Error status:', err?.status);
-            console.error('Error message:', err?.message);
-            console.error('Error body:', err?.error);
-            const errorMsg = err?.error?.message || err?.message || 'Unknown error';
-            alert(`Failed to create task: ${errorMsg}. Please try again.`);
+            alert(`Failed to create task: ${err?.error?.message || err?.message || 'Unknown error'}. Please try again.`);
           }
         });
       }
@@ -644,190 +595,55 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       console.log('[Timetable Submit] Payload:', JSON.stringify(payload, null, 2));
 
       if (this.editingId) {
-        // Update existing timetable
         this.calendarApi.updateCalendarEvent(this.editingId, payload).subscribe({
           next: (res) => {
             try {
-              // Build updated habit from server response
-              const updated = res || {};
-              const updatedTimetableHabit: Habit = {
-                id: String(updated?.id ?? this.editingId),
-                title: updated?.title ?? habit.title,
-                notes: updated?.description ?? updated?.notes ?? habit.notes,
-                startDate: updated?.startDate ? new Date(updated.startDate) : habit.startDate,
-                endDate: updated?.endDate ? new Date(updated.endDate) : habit.endDate,
-                startTime: updated?.startTime ?? formattedStartTime,
-                endTime: updated?.endTime ?? formattedEndTime,
-                startTimeStamp: updated?.startDate ? new Date(`${updated.startDate}T${formattedStartTime}`).getTime() : habit.startTimeStamp,
-                endTimeStamp: updated?.endDate ? new Date(`${updated.endDate}T${formattedEndTime}`).getTime() : habit.endTimeStamp,
-                type: 'timetable',
-                isPrivate: habit.isPrivate,
-                selectedRoutine: this.selectedRoutine,
-                routineTags: this.routineTags,
-                everyday: !!updated?.everyday,
-                selectedDays: Array.isArray(updated?.daysOfWeek) ? updated.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek),
-                priority: (updated?.priority ?? habit.priority) as any,
-                routine: this.selectedRoutine,
-                status: habit.status,
-                createdAt: updated?.createdAt ? new Date(updated.createdAt) : (this.originalHabit?.createdAt ? new Date(this.originalHabit.createdAt) : new Date()),
-                activities: habit.activities,
-                tags: Array.isArray(updated?.tags) ? updated.tags : (Array.isArray(this.selectedTags) ? this.selectedTags.map(t => t.value || t.key) : []),
-                daysOfWeek: Array.isArray(updated?.daysOfWeek) ? updated.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek)
-              };
-              this.habitService.updateHabit(updatedTimetableHabit);
+              const updatedHabit = this.buildHabitFromResponse(res, habit, 'timetable', formattedStartTime, formattedEndTime, daysOfWeek);
+              this.habitService.updateHabit(updatedHabit);
               this.modalCtrl.dismiss();
-
-              // Pop the detail page context (habit-input -> detail) without navigating
-              // This allows us to skip the detail page and go back to the origin page
               this.navigationContext.popContext();
-              console.log('[Timetable Update] Skipped detail page context, navigating to origin page');
-
-              this.navigationContext.navigateBack({ updatedHabit: updatedTimetableHabit, showSingleMode: true, initialTab: 'timetable' });
-            } finally {
-              this.isSubmitting = false;
-            }
+              this.navigationContext.navigateBack({ updatedHabit, showSingleMode: true, initialTab: 'timetable' });
+            } finally { this.isSubmitting = false; }
           },
-          error: (err) => {
-            this.isSubmitting = false;
-            console.error('Failed to update timetable', err);
-            alert('Failed to update timetable. Please try again.');
-          }
+          error: (err) => { this.isSubmitting = false; console.error('Failed to update timetable', err); alert('Failed to update timetable. Please try again.'); }
         });
       } else {
-        // Create new timetable
         this.calendarApi.addCalendarEvent(payload).subscribe({
           next: (res) => {
             try {
-              // Build a local Habit model from the calendar response
-              const created = res || {};
-              const createdTimetableHabit: Habit = {
-                id: String(created?.id ?? habit.id),
-                title: created?.title ?? habit.title,
-                notes: created?.description ?? created?.notes ?? habit.notes,
-                startDate: created?.startDate ? new Date(created.startDate) : habit.startDate,
-                endDate: created?.endDate ? new Date(created.endDate) : habit.endDate,
-                startTime: created?.startTime ?? formattedStartTime,
-                endTime: created?.endTime ?? formattedEndTime,
-                startTimeStamp: created?.startDate ? new Date(`${created.startDate}T${formattedStartTime}`).getTime() : habit.startTimeStamp,
-                endTimeStamp: created?.endDate ? new Date(`${created.endDate}T${formattedEndTime}`).getTime() : habit.endTimeStamp,
-                type: 'timetable',
-                isPrivate: habit.isPrivate,
-                selectedRoutine: this.selectedRoutine,
-                routineTags: this.routineTags,
-                everyday: !!created?.everyday,
-                selectedDays: Array.isArray(created?.daysOfWeek) ? created.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek),
-                priority: (created?.priority ?? habit.priority) as any,
-                routine: this.selectedRoutine,
-                status: habit.status,
-                createdAt: created?.createdAt ? new Date(created.createdAt) : new Date(),
-                activities: habit.activities,
-                tags: Array.isArray(created?.tags) ? created.tags : (Array.isArray(this.selectedTags) ? this.selectedTags.map(t => t.value || t.key) : []),
-                daysOfWeek: Array.isArray(created?.daysOfWeek) ? created.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek)
-              };
-              this.habitService.addHabit(createdTimetableHabit);
+              const createdHabit = this.buildHabitFromResponse(res, habit, 'timetable', formattedStartTime, formattedEndTime, daysOfWeek);
+              this.habitService.addHabit(createdHabit);
               this.modalCtrl.dismiss();
-              this.navigationContext.navigateBack({ newHabit: createdTimetableHabit, showSingleMode: true, initialTab: 'timetable' });
-            } finally {
-              this.isSubmitting = false;
-            }
+              this.navigationContext.navigateBack({ newHabit: createdHabit, showSingleMode: true, initialTab: 'timetable' });
+            } finally { this.isSubmitting = false; }
           },
           error: (err) => {
             this.isSubmitting = false;
             console.error('Failed to create timetable', err);
-            console.error('Error status:', err?.status);
-            console.error('Error message:', err?.message);
-            console.error('Error body:', err?.error);
-            const errorMsg = err?.error?.message || err?.message || 'Unknown error';
-            alert(`Failed to create timetable: ${errorMsg}. Please try again.`);
+            alert(`Failed to create timetable: ${err?.error?.message || err?.message || 'Unknown error'}. Please try again.`);
           }
         });
       }
     } else {
-      // Habit create/update: call HabitApi directly and handle mapping
+      this.isSubmitting = true;
       if (this.editingId) {
-        this.isSubmitting = true;
         this.habitApi.updateHabit(this.editingId, payload).subscribe({
           next: (res) => {
             try {
-              // Build updated habit from server response
-              const updated: Habit = {
-                id: String(res?.id ?? this.editingId),
-                title: res?.title ?? habit.title,
-                notes: res?.description ?? habit.notes,
-                startDate: res?.startDate ? new Date(res.startDate) : habit.startDate,
-                endDate: res?.endDate ? new Date(res.endDate) : habit.endDate,
-                startTime: res?.startTime ?? formattedStartTime,
-                endTime: res?.endTime ?? formattedEndTime,
-                startTimeStamp: res?.startDate ? new Date(`${res.startDate}T${formattedStartTime}`).getTime() : habit.startTimeStamp,
-                endTimeStamp: res?.endDate ? new Date(`${res.endDate}T${formattedEndTime}`).getTime() : habit.endTimeStamp,
-                type: 'habits',
-                isPrivate: habit.isPrivate,
-                selectedRoutine: res?.routine ?? habit.selectedRoutine,
-                routineTags: this.routineTags,
-                everyday: !!res?.everyday,
-                selectedDays: res?.daysOfWeek ?? habit.selectedDays,
-                priority: (res?.priority ?? habit.priority) as any,
-                routine: res?.routine ?? habit.routine,
-                status: res?.status ?? habit.status,
-                createdAt: res?.createdAt ? new Date(res.createdAt) : (this.originalHabit?.createdAt ? new Date(this.originalHabit.createdAt) : new Date()),
-                activities: habit.activities,
-                tags: Array.isArray(this.selectedTags) ? this.selectedTags.map(t => t.value || t.key) : [],
-                coinsEarned: res?.coinsEarned ?? res?.coins ?? 0,
-                streak: res?.streak ?? res?.streakCount ?? 0,
-                highestStreak: res?.highestStreak ?? 0,
-                completionPercentage: res?.completionPercentage ?? res?.completionRate ?? 0,
-                totalCompletedDays: res?.totalCompletedDays ?? res?.completedDays ?? 0,
-                milestoneBadges: res?.milestoneBadges ?? res?.badgeList ?? []
-              };
-              this.habitService.updateHabit(updated);
+              const updatedHabit = this.buildHabitFromResponse(res, habit, 'habits', formattedStartTime, formattedEndTime, daysOfWeek);
+              this.habitService.updateHabit(updatedHabit);
               this.modalCtrl.dismiss();
-
-              // Pop the detail page context (habit-input -> detail) without navigating
-              // This allows us to skip the detail page and go back to the origin page
               this.navigationContext.popContext();
-              console.log('[Habit Update] Skipped detail page context, navigating to origin page');
-
-              this.navigationContext.navigateBack({ updatedHabit: updated, showSingleMode: true });
+              this.navigationContext.navigateBack({ updatedHabit, showSingleMode: true });
             } finally { this.isSubmitting = false; }
           },
           error: (err) => { this.isSubmitting = false; console.error('Failed to update habit', err); alert('Failed to update habit. Please try again.'); }
         });
       } else {
-        this.isSubmitting = true;
         this.habitApi.createHabit(payload).subscribe({
           next: (res) => {
             try {
-              const created = res;
-              const createdHabit: Habit = {
-                id: String(created?.id ?? habit.id),
-                title: created?.title ?? habit.title,
-                notes: created?.description ?? habit.notes,
-                startDate: created?.startDate ? new Date(created.startDate) : habit.startDate,
-                endDate: created?.endDate ? new Date(created.endDate) : habit.endDate,
-                startTime: created?.startTime ?? formattedStartTime,
-                endTime: created?.endTime ?? formattedEndTime,
-                startTimeStamp: created?.startDate ? new Date(`${created.startDate}T${formattedStartTime}`).getTime() : habit.startTimeStamp,
-                endTimeStamp: created?.endDate ? new Date(`${created.endDate}T${formattedEndTime}`).getTime() : habit.endTimeStamp,
-                type: 'habits',
-                isPrivate: habit.isPrivate,
-                selectedRoutine: created?.routine ?? habit.selectedRoutine,
-                routineTags: this.routineTags,
-                everyday: !!created?.everyday,
-                selectedDays: created?.daysOfWeek ?? habit.selectedDays,
-                priority: (created?.priority ?? habit.priority) as any,
-                routine: created?.routine ?? habit.routine,
-                status: created?.status ?? habit.status,
-                createdAt: created?.createdAt ? new Date(created.createdAt) : new Date(),
-                activities: habit.activities,
-                tags: Array.isArray(this.selectedTags) ? this.selectedTags.map(t => t.value || t.key) : [],
-                coinReward: created?.coinReward ?? habit.coinReward,
-                coinsEarned: created?.coinsEarned ?? created?.coins ?? 0,
-                streak: created?.streak ?? created?.streakCount ?? 0,
-                highestStreak: created?.highestStreak ?? 0,
-                completionPercentage: created?.completionPercentage ?? created?.completionRate ?? 0,
-                totalCompletedDays: created?.totalCompletedDays ?? created?.completedDays ?? 0,
-                milestoneBadges: created?.milestoneBadges ?? created?.badgeList ?? []
-              };
+              const createdHabit = this.buildHabitFromResponse(res, habit, 'habits', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.addHabit(createdHabit);
               this.modalCtrl.dismiss();
               this.navigationContext.navigateBack({ newHabit: createdHabit, showSingleMode: true });
@@ -837,6 +653,44 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         });
       }
     }
+  }
+
+  selectCoin(value: number) { this.coinReward = value; }
+  isCoinSelected(value: number) { return this.coinReward === value; }
+
+  private buildHabitFromResponse(res: any, baseHabit: Habit, type: 'habits' | 'tasks' | 'timetable', formattedStartTime: string, formattedEndTime: string, daysOfWeek: string[]): Habit {
+    const data = res || {};
+    return {
+      id: String(data.id ?? baseHabit.id),
+      title: data.title ?? baseHabit.title,
+      notes: data.description ?? data.notes ?? baseHabit.notes,
+      startDate: data.startDate ? new Date(data.startDate) : baseHabit.startDate,
+      endDate: data.endDate ? new Date(data.endDate) : baseHabit.endDate,
+      startTime: data.startTime ?? formattedStartTime,
+      endTime: data.endTime ?? formattedEndTime,
+      startTimeStamp: data.startDate ? new Date(`${data.startDate}T${formattedStartTime}`).getTime() : baseHabit.startTimeStamp,
+      endTimeStamp: data.endDate ? new Date(`${data.endDate}T${formattedEndTime}`).getTime() : baseHabit.endTimeStamp,
+      type,
+      isPrivate: baseHabit.isPrivate,
+      selectedRoutine: data.routine ?? baseHabit.selectedRoutine ?? this.selectedRoutine,
+      routineTags: this.routineTags,
+      everyday: !!data.everyday,
+      selectedDays: Array.isArray(data.daysOfWeek) ? data.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek),
+      priority: (data.priority ?? baseHabit.priority) as 'low' | 'medium' | 'high',
+      routine: data.routine ?? baseHabit.routine ?? this.selectedRoutine,
+      status: data.status ?? baseHabit.status,
+      createdAt: data.createdAt ? new Date(data.createdAt) : (this.originalHabit?.createdAt ? new Date(this.originalHabit.createdAt) : new Date()),
+      activities: baseHabit.activities,
+      tags: Array.isArray(data.tags) ? data.tags : this.selectedTags.map(t => t.value || t.key),
+      coinReward: data.rewardCoins ?? data.coinReward ?? baseHabit.coinReward ?? 0,
+      coinsEarned: data.coinsEarned ?? data.coins ?? 0,
+      streak: data.streak ?? data.streakCount ?? 0,
+      highestStreak: data.highestStreak ?? 0,
+      completionPercentage: data.completionPercentage ?? data.completionRate ?? 0,
+      totalCompletedDays: data.totalCompletedDays ?? data.completedDays ?? 0,
+      milestoneBadges: data.milestoneBadges ?? data.badgeList ?? null,
+      daysOfWeek: Array.isArray(data.daysOfWeek) ? data.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek)
+    };
   }
 
   private getDaysInRange(): string[] {

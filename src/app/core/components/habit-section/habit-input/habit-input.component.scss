@@ -12,41 +12,109 @@
   }
 }
 
+$theme-colors: (
+  habits: #7471BA,
+  tasks: #F6AC72,
+  timetable: #89B3B6
+);
+
 .habit-input-root {
   padding: 16px;
 
-  &.habits {
-
-    .title-input,
-    .routine-section,
-    .priority-selection,
-    .notes,
-    .date-time-selection {
-      @include border-color(#7471BA);
+  @each $theme, $color in $theme-colors {
+    &.#{$theme} {
+      .title-input, .routine-section, .priority-selection, .notes,  .assign-coin {
+        @include border-color($color);
+        color: $color;
+      }
     }
   }
 
-  &.tasks {
+.assign-coin {
+  display: flex;
+    justify-content: space-between;
+    padding: 0px 16px 16px 16px;
+    border-bottom: 1px solid;
 
-    .title-input,
-    .routine-section,
-    .priority-selection,
-    .notes,
-    .date-time-selection {
-      @include border-color(#F6AC72);
-    }
+  label {
+    font-weight: 600;
+    color: #6B656A;
   }
 
-  &.timetable {
-
-    .title-input,
-    .routine-section,
-    .priority-selection,
-    .notes,
-    .date-time-selection {
-      @include border-color(#89B3B6);
-    }
+  .coin-badges {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 8px;
+    align-items: center;
+    justify-content: start;
   }
+
+  .coin-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 40px;
+    border-radius: 26px;
+    border: 1px solid #46456A;
+    background: transparent;
+    cursor: pointer;
+    font-family: Nunito, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #282527;
+    min-height: 34px;
+    position: relative;
+    --text_color: #282527;
+    --stroke_gradient: transparent;
+  }
+
+  .coin-badge:before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    width: calc(100% + 3px);
+    height: calc(100% + 3px);
+    top: -1.5px;
+    left: -1.5px;
+    border-radius: 1000px;
+    background: var(--stroke_gradient);
+    opacity: 0;
+  }
+
+  /* Selected badge: filled dark background matching 'add new' */
+  .coin-badge[aria-pressed="true"] {
+    background: #46456A;
+    border-color: #46456A;
+    color: #ffffff;
+    --text_color: white;
+    --stroke_gradient: #46456A;
+  }
+
+  .coin-badge[aria-pressed="true"]:before {
+    opacity: 1;
+  }
+}
+
+/* Tasks-specific coin badge colors */
+.habit-input-root.tasks .coin-badge,
+.habit-input-root.tasks .assign-coin .coin-badge,
+.coin-badge.task-coin {
+  border-radius: 26px !important;
+  border: 1px solid #F28745 !important;
+  background: transparent !important;
+  color: #282527 !important;
+}
+
+.habit-input-root.tasks .coin-badge[aria-pressed="true"],
+.habit-input-root.tasks .assign-coin .coin-badge[aria-pressed="true"],
+.coin-badge.task-coin[aria-pressed="true"] {
+  background: #B93915 !important;
+  border: 1px solid #B93915 !important;
+  color: #ffffff !important;
+  --text_color: white;
+  --stroke_gradient: #B93915;
+}
 }
 
 .habit-input-header mindful-navigator {
@@ -165,10 +233,10 @@
 }
 
 .form-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
   padding: 0;
+  display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .title-input {
@@ -200,7 +268,7 @@
 
 .routine-section {
   display: flex;
-  padding: 20px 0px 20px 0px;
+  padding: 0px 0px 20px 0px;
   align-items: center;
   gap: 16px;
   width: 100%;
@@ -357,6 +425,17 @@
   }
 }
 
+/* Unified label style for Repeat, Routine, Priority and Assign Coins */
+.routine-section label,
+.priority-selection label,
+.assign-coin label,
+.everyday-label label {
+  color: #6B656A;
+  font-family: Nunito;
+  font-size: 16px;
+  font-weight: 600;
+}
+
 .everyday-toggle {
   display: flex;
   align-items: center;
@@ -435,7 +514,6 @@
 .priority-selection {
   display: flex;
   flex-direction: column;
-  margin-bottom: 24px;
   border-bottom: 1px solid;
 }
 
@@ -456,28 +534,17 @@
   }
 }
 
+$notes-themes: (
+  habits: (#8B8DCB, #7471BA),
+  tasks: (#FAD2AE, #F28745),
+  timetable: (#89B3B6, #3E5A60)
+);
+
 .habit-input-root {
-  &.habits .notes textarea {
-    border-color: #8B8DCB;
-
-    &:focus {
-      border-color: #7471BA;
-    }
-  }
-
-  &.tasks .notes textarea {
-    border-color: #FAD2AE;
-
-    &:focus {
-      border-color: #F28745;
-    }
-  }
-
-  &.timetable .notes textarea {
-    border-color: #89B3B6;
-
-    &:focus {
-      border-color: #3E5A60;
+  @each $theme, $colors in $notes-themes {
+    &.#{$theme} .notes textarea {
+      border-color: nth($colors, 1);
+      &:focus { border-color: nth($colors, 2); }
     }
   }
 }
@@ -516,9 +583,7 @@
   color: #6B656A;
   font-family: 'Nunito', sans-serif;
   font-size: 20px;
-  font-style: normal;
   font-weight: 600;
-  line-height: 140%;
   opacity: 0.5;
   padding: 0px !important;
 }
@@ -529,17 +594,11 @@
   padding-bottom: 2px !important;
 }
 
+$title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
+
 .habit-input-root {
-  &.habits .title-input .mindful-input-group input {
-    @include input-style(#46456A);
-  }
-
-  &.tasks .title-input .mindful-input-group input {
-    @include input-style(#B93915);
-  }
-
-  &.timetable .title-input .mindful-input-group input {
-    @include input-style(#3E5A60);
+  @each $theme, $color in $title-colors {
+    &.#{$theme} .title-input .mindful-input-group input { @include input-style($color); }
   }
 }
 
@@ -549,14 +608,15 @@
   box-shadow: none !important;
 }
 
-.title-input .mindful-input-group input::placeholder,
-.title-input .mindful-input-group input::-webkit-input-placeholder,
-.title-input .mindful-input-group input:-ms-input-placeholder,
-.title-input .mindful-input-group input::-ms-input-placeholder {
-  color: #6B656A;
+.title-input .mindful-input-group input,
+.habit-input-root .title-input .mindful-input-group input {
+  &::placeholder { @extend %title-placeholder; }
+}
+
+%title-placeholder {
+  color: #6B656A !important;
   font-family: 'Nunito', sans-serif;
   font-size: 20px;
-  font-style: normal;
   font-weight: 600;
   line-height: 140%;
   opacity: 0.5;
@@ -565,43 +625,20 @@
   text-underline-position: under;
 }
 
-.habit-input-root .title-input .mindful-input-group input {
-
-  &::placeholder,
-  &::-webkit-input-placeholder,
-  &:-ms-input-placeholder,
-  &::-ms-input-placeholder {
-    color: #6B656A !important;
-    opacity: 1 !important;
-    text-decoration: underline !important;
-    text-decoration-color: currentColor !important;
-    text-underline-position: under !important;
-  }
-}
-
-.habit-input-root .mindful-input-group input::placeholder,
-.habit-input-root .mindful-input-group input::-webkit-input-placeholder,
-.habit-input-root .mindful-input-group input:-ms-input-placeholder,
-.habit-input-root .mindful-input-group input::-ms-input-placeholder {
+%input-placeholder {
   color: #6B656A;
   font-family: 'Nunito', sans-serif;
   font-size: 16px;
-  font-style: normal;
   font-weight: 600;
   line-height: 140%;
   opacity: 1;
 }
 
-.habit-input-root ::ng-deep .mindful-input-group ion-input input::placeholder,
-.habit-input-root ::ng-deep mindful-datepicker input::placeholder,
-.habit-input-root ::ng-deep mindful-timepicker input::placeholder {
-  color: #6B656A;
-  font-family: 'Nunito', sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 140%;
-  opacity: 1;
+.habit-input-root {
+  .mindful-input-group input::placeholder { @extend %input-placeholder; }
+  ::ng-deep .mindful-input-group ion-input input::placeholder,
+  ::ng-deep mindful-datepicker input::placeholder,
+  ::ng-deep mindful-timepicker input::placeholder { @extend %input-placeholder; }
 }
 
 .start-end-row {
@@ -628,7 +665,7 @@
 }
 
 .date-time-selection {
-  margin-top: 16px;
+ 
   border-bottom: 1px solid;
 }
 

@@ -698,6 +698,11 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.habitService.loadTodayHabits().subscribe({
       next: () => {
         this.habits = this.habitService.getCurrentHabits()
+          .map((habit: Habit) => ({
+            ...habit,
+            // Normalize status to lowercase for consistency
+            status: habit.status ? habit.status.toLowerCase() as any : 'pending'
+          }))
           .sort((a: Habit, b: Habit) => {
             const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
             const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -734,7 +739,9 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
             type: 'tasks',
             startTimeStamp: task.startTimeStamp || (task.startDate ? new Date(task.startDate).getTime() : 0),
             endTimeStamp: task.endTimeStamp || (task.endDate ? new Date(task.endDate).getTime() : 0),
-            createdAt: task.createdAt ? new Date(task.createdAt) : new Date()
+            createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
+            // Normalize status to lowercase for consistency
+            status: task.status ? task.status.toLowerCase() : 'pending'
           }))
           .sort((a: any, b: any) => {
             const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -768,7 +775,9 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
             type: 'tasks',
             startTimeStamp: task.startTimeStamp || (task.startDate ? new Date(task.startDate).getTime() : 0),
             endTimeStamp: task.endTimeStamp || (task.endDate ? new Date(task.endDate).getTime() : 0),
-            createdAt: task.createdAt ? new Date(task.createdAt) : new Date()
+            createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
+            // Normalize status to lowercase for consistency
+            status: task.status ? task.status.toLowerCase() : 'pending'
           }))
           .sort((a: any, b: any) => {
             const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -1154,6 +1163,18 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   /**
+   * Check if the current time is before the start time
+   */
+  private isBeforeStartTime(): boolean {
+    if (!this.habit || !this.habit.startTimeStamp) return false;
+
+    const now = Date.now();
+    const startTime = this.habit.startTimeStamp;
+
+    return now < startTime;
+  }
+
+  /**
    * Check if "Let's Go" button should be enabled
    * Requirements:
    * - Enabled: From 5 minutes before start time until end time (e.g., 4:55pm - 6pm for a 5pm-6pm habit)
@@ -1173,54 +1194,72 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   /**
    * Check if "Let's Go" button should be visible
    * Requirements:
-   * - Hidden: Only when current activity is ongoing (show Abort instead)
-   * - Visible: All other times (will be disabled based on time/blocking rules)
-   * - After end time: Visible but disabled (to show blocked state if another activity ongoing)
+   * - Hidden: When status is ONGOING (show Abort instead) or COMPLETED
+   * - Visible: When status is PENDING (will be disabled based on time/blocking rules)
    */
   isLetsGoVisible(): boolean {
+    if (!this.habit) return false;
+
+    const status = this.habit.status?.toLowerCase();
+
     // Hidden: If current habit/task is ongoing (show Abort instead)
-    if (this.habit && this.habit.status?.toLowerCase() === 'ongoing') {
+    if (status === 'ongoing') {
       return false;
     }
 
-    // Visible in all other cases (enabled/disabled state controlled by isLetsGoEnabled)
+    // Hidden: If current habit/task is completed (no buttons shown)
+    if (status === 'completed') {
+      return false;
+    }
+
+    // Visible for PENDING status (enabled/disabled state controlled by isLetsGoEnabled)
     return true;
   }
 
   /**
    * Check if "Abort" button should be visible
+   * Requirements:
+   * - Visible: Only when status is ONGOING
+   * - Hidden: When status is PENDING or COMPLETED
    */
   isAbortVisible(): boolean {
+    if (!this.habit) return false;
+
+    const status = this.habit.status?.toLowerCase();
+
     // Show abort button only if current habit/task is ongoing
-    return !!(this.habit && this.habit.status?.toLowerCase() === 'ongoing');
+    return status === 'ongoing';
   }
 
   /**
    * Check if "Done" button should be enabled
    * Requirements:
-   * - Visible: Always shown on all activity cards
-   * - Enabled: Before/After "Let's Go" window closes (outside start -5 min to start +5 min)
-   * - Disabled: During "Let's Go" window (start -5 min to start +5 min)
-   * - Blocked: Disabled if another activity is "In Progress"
+   * - PENDING: Disabled (unclickable) - cannot click before start time
+   * - ONGOING: Enabled (clickable) - but only after start time
+   * - COMPLETED: Not shown (handled by visibility)
+   * - Cannot be clicked before start time
    */
   isDoneEnabled(): boolean {
-    // If current habit/task is ongoing, always enable Done button
-    if (this.habit && this.habit.status?.toLowerCase() === 'ongoing') {
-      return true;
-    }
+    if (!this.habit) return false;
 
-    // Blocked: If another activity is ongoing, disable this button
-    if (this.hasOtherOngoingActivity()) {
+    const status = this.habit.status?.toLowerCase();
+
+    // Cannot click Done before start time
+    if (this.isBeforeStartTime()) {
       return false;
     }
 
-    // Enable Done only after the user explicitly started the activity via "Let's Go"
-    // `showLocalTimer` is set to true when the user taps "Let's Go" on this card.
-    if (this.showLocalTimer) {
+    // If current habit/task is ongoing, enable Done button (after start time check)
+    if (status === 'ongoing') {
       return true;
     }
 
-    // Otherwise keep Done disabled until user clicks "Let's Go"
+    // For PENDING status, keep Done button disabled
+    if (status === 'pending') {
+      return false;
+    }
+
+    // For any other status (e.g., skipped), disable
     return false;
   }
 

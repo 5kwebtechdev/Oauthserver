@@ -81,14 +81,14 @@ export class TutorHomepageComponent {
           avatar: '/assets/images/Avatar.png',
           description: 'Math tutor — Grades 6-8',
           rating: 128,
-          experience: '5+ yrs'
+          experience: '3-5 years Exp'
         },
         {
           name: 'Yashmeet Singh',
           avatar: '/assets/images/Avatar.png',
           description: 'Science & Coding',
           rating: 256,
-          experience: '7+ yrs'
+          experience: '3-5 years Exp'
         },
         {
           name: 'Ms. Sharma',

@@ -176,15 +176,23 @@
             </div>
           </div>
           <div class="d-flex footer-cta">
-            <mindful-button *ngIf="isLetsGoVisible() && getStatus() !== 'completed'"
+            <!-- Let's Go Button: Visible when status is PENDING, hidden when ONGOING or COMPLETED -->
+            <mindful-button *ngIf="isLetsGoVisible()"
               [type]="habit?.type === 'tasks' ? 'orange' : 'lavendar'" small text="Let`s Go" (click)="onStartHabit()"
               [disabled]="!isLetsGoEnabled()"></mindful-button>
+            
+            <!-- Abort Button: Visible only when status is ONGOING -->
             <mindful-button *ngIf="isAbortVisible() && habit?.type === 'tasks'" type="orange-transparent" small
               text="Abort" (click)="onAbortHabit()"></mindful-button>
             <mindful-button *ngIf="isAbortVisible() && habit?.type !== 'tasks'" type="lavendar-transparent" small
               text="Abort" (click)="onAbortHabit()"></mindful-button>
-            <mindful-button *ngIf="getStatus() !== 'completed'" type="green" small text="Done?"
-              (click)="onCompleteHabit()" [disabled]="!isDoneEnabled() || getStatus() === 'skipped'"></mindful-button>
+            
+            <!-- Done Button: Visible when status is PENDING or ONGOING, hidden when COMPLETED -->
+            <!-- Disabled when PENDING, Enabled when ONGOING -->
+            <mindful-button *ngIf="getStatus() !== 'completed' && getStatus() !== 'skipped'" type="green" small text="Done?"
+              (click)="onCompleteHabit()" [disabled]="!isDoneEnabled()"></mindful-button>
+            
+            <!-- Completion Message: Show when status is COMPLETED -->
             <!-- <div class="d-flex gap-2" *ngIf="getStatus() === 'completed'">
               <div class="bubble">You did it</div>
               <mindful-pet pet="panda" mood="tired" [size]="44"></mindful-pet>

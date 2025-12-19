@@ -23,7 +23,7 @@ describe('TutorListComponent', () => {
     expect(items.length).toBe(2);
 
     spyOn(component.viewProfile, 'emit');
-    const btn = items[0].query(By.css('.profile-btn'));
+    const btn = items[0].query(By.css('mindful-button'));
     btn.triggerEventHandler('click', null);
     expect(component.viewProfile.emit).toHaveBeenCalledWith(component.tutors[0]);
   });

@@ -36,33 +36,7 @@
     }
   }
 
-  // .content {
-  //   position: absolute;
-  //   left: 108px;
-  //   top: 24px;
-  //   width: 245px;
-  //   height: 84px;
-  //   display: flex;
-  //   flex-direction: column;
-  //   gap: 16px;
-
-  //   .head { display: flex; justify-content: space-between; align-items: flex-end; }
-
-  //   .name-block { display: flex; flex-direction: column; gap: 2px; }
-
-  //   .name { font-family: 'Nunito', Arial; font-weight: 600; font-size: 13px; color: #282527; margin: 0; }
-  //   .role { font-family: 'Nunito', Arial; font-weight: 600; font-size: 10px; color: #282527; opacity: 0.7; margin: 0; }
-
-  //   .cta-row { display:flex; justify-content: space-between; align-items: center; gap: 26px; }
-
-  //   .profile-btn {
-  //     display: flex; align-items: center; justify-content: center;
-  //     padding: 8px 12px; gap: 8px; width: 88px; height: 34px;
-  //     background: linear-gradient(90.64deg, #7284B9 0.01%, #505D83 99.99%);
-  //     border: 0.5px solid #45506A; box-shadow: 0px 0px 1px 0.5px rgba(80,93,131,0.2), inset 0px -2px 2px #8AA0CA;
-  //     border-radius: 4px; color: #fff; font-family: 'Nunito', Arial; font-weight: 600; font-size: 10px; cursor: pointer;
-  //   }
-  // }
+ 
 }
 
 .content {
@@ -89,25 +63,17 @@
 
 .name {
   color: #282527;
-  font-family: Nunito;
-  font-size: 13px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 140%;
-  /* 18.2px */
-  width: 136px;
-  margin-bottom: 0px !important;
+font-family: Nunito;
+font-size: 13px;
+font-weight: 600;
+  margin: 0px !important;
 }
 
 .role {
-  width: 107px;
   color: #282527;
   font-family: Nunito;
   font-size: 10px;
-  font-style: normal;
   font-weight: 600;
-  line-height: 140%;
-  /* 14px */
   margin-bottom: 0px !important;
 }
 
@@ -119,38 +85,29 @@
 }
 
 .icon.heart-icon,
-.icon.time-icon,
-.icon.fee-icon {
+.icon.time-icon{
   width: 25px;
   height: auto;
 }
 
 .meta {
-  color: #282527;
-  text-align: center;
-  font-family: Nunito;
-  font-size: 13px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 140%;
-  /* 18.2px */
+  color: var(--Neutral-Grey, rgba(40, 37, 39, 0.70));
+text-align: center;
+font-family: Nunito;
+font-size: 10px;
+font-weight: 600;
 }
 
 .cta-row {
-  display: flex;
-  align-items: center;
-  gap: 26px;
-  align-self: stretch;
-  display: flex;
-  width: 100%;
-  justify-content: space-between;
+display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
 
 }
 
 .info {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  
   gap: 8px;
   width: 100%;
 
@@ -163,26 +120,39 @@
 
 }
 
-.info-sec {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+
+.tutor-role-detail{ 
+p, label, .time span {
+font-family: Nunito;
+font-size: 10px;
+font-weight: 600;
 }
 
-.txt {
-  color: #282527;
-  font-family: Nunito;
-  font-size: 8px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 140%;
-  /* 11.2px */
+  p{
+color: var(--Neutral-Black, #282527);
+  }
+  
+  label{
+    color: var(--Neutral-Grey, rgba(40, 37, 39, 0.70));
+  }
+  .time span{
+color: #505D83;
+}
 }
 
 .fees {
-  display: flex;
-  justify-content: center;
-  align-items: center;
 
-
+  p{
+    color: var(--Neutral-Black, #282527);
+font-family: Nunito;
+font-size: 13px;
+font-weight: 600;
+margin: 0;
+  }
+ span{
+  color: #6B656A;
+font-family: Nunito;
+font-size: 8px;
+font-weight: 600;
+ }
 }

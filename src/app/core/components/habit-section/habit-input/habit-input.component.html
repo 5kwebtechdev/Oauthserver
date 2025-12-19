@@ -81,18 +81,69 @@
 
 <ng-template #prioritySection>
   <div class="priority-selection priority-selectors">
-    <div class="d-flex align-items-center gap-2" style="padding: 20px 0px 20px 16px;">
+    <div class="d-flex align-items-center gap-2" style="padding: 0px 0px 20px 16px;">
       <label>Priority</label>
       <div class="priority-row">
-        <mindful-badge text="High" type="red" [disabled]="priority !== 'high'" [active]="priority === 'high'"
-          (click)="selectPriority('high')"></mindful-badge>
-        <mindful-badge text="Medium" type="yellow" [disabled]="priority !== 'medium'" [active]="priority === 'medium'"
-          (click)="selectPriority('medium')"></mindful-badge>
-        <mindful-badge text="Low" type="green" [disabled]="priority !== 'low'" [active]="priority === 'low'"
-          (click)="selectPriority('low')"></mindful-badge>
+        <mindful-badge *ngFor="let p of priorities" [text]="p.text" [type]="p.type" [disabled]="priority !== p.key"
+          [active]="priority === p.key" (click)="selectPriority(p.key)"></mindful-badge>
       </div>
     </div>
     <div *ngIf="attemptedSubmit && showPriorityError" class="field-error" role="alert">Select priority</div>
+  </div>
+</ng-template>
+
+<ng-template #titleInputSection let-placeholder="placeholder" let-errorMsg="errorMsg" let-showError="showError">
+  <div class="title-input">
+    <div class="mindful-input-group w-100" [class.missing-placeholder]="showTitleError && attemptedSubmit">
+      <input class="w-100" [(ngModel)]="title" (ngModelChange)="clearTitleError()" [placeholder]="placeholder" maxlength="20"/>
+      <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">{{errorMsg}}</div>
+    </div>
+    <div class="add-new-row">
+      <mindful-tags [options]="routineTags" [singleSelection]="true" [size]="'small'" [variant]="tagVariants[currentActive]"
+        (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)" (delete)="onTagDelete($event)"></mindful-tags>
+      <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Select tag</div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #routineSection let-borderColor="borderColor">
+  <div class="d-flex flex-column" [style.border-bottom]="'1px solid ' + borderColor">
+    <div class="routine-section">
+      <label>Routine</label>
+      <mindful-selectors class="w-100" [options]="routineOptions" componentType="badge" [singleSelection]="true"
+        (selectedKeysChange)="onRoutineSelected($event)" [scrollable]="false"></mindful-selectors>
+    </div>
+    <div *ngIf="attemptedSubmit && showRoutineError" class="field-error" role="alert">Select routine</div>
+  </div>
+</ng-template>
+
+<ng-template #coinSection>
+  <div *ngIf="isParent" class="assign-coin">
+    <label>Assign Coins</label>
+    <div class="coin-badges">
+      <button type="button" class="coin-badge" [ngClass]="{'task-coin': isTasks}" *ngFor="let c of coinOptions"
+        (click)="selectCoin(c)" [attr.aria-pressed]="isCoinSelected(c)">
+        <span class="coin-value">{{c}}</span>
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #notesSection let-showNotesValidation="showNotesValidation">
+  <div class="section notes">
+    <textarea [(ngModel)]="notes" (ngModelChange)="clearNotesError()"
+      [class.missing-border]="showNotesError && attemptedSubmit && showNotesValidation" maxlength="250"
+      placeholder="Add Notes....." style="display:block;margin:0 auto;"></textarea>
+    <div class="char-count">Max 250 Characters</div>
+    <div *ngIf="attemptedSubmit && showNotesError && showNotesValidation" class="field-error" role="alert">Add notes</div>
+  </div>
+</ng-template>
+
+<ng-template #submitSection let-btnType="btnType" let-btnTypeFaded="btnTypeFaded" let-itemType="itemType">
+  <div class="submit-row">
+    <mindful-button [type]="isFormComplete ? btnType : btnTypeFaded"
+      [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update ' + itemType : 'Create ' + itemType)"
+      large [disabled]="isSubmitting" (click)="submit()"></mindful-button>
   </div>
 </ng-template>
 
@@ -118,29 +169,8 @@
     </div>
 
     <div *ngIf="currentActive === 'habits'" class="form-card">
-      <div class="title-input">
-        <div class="mindful-input-group w-100" [class.missing-placeholder]="showTitleError && attemptedSubmit">
-          <input class="w-100" [(ngModel)]="title" (ngModelChange)="clearTitleError()" placeholder="Habit Title"
-            maxlength="20" />
-          <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">Enter habit title</div>
-        </div>
-        <div class="add-new-row">
-          <mindful-tags [options]="routineTags" [singleSelection]="true" [size]="'small'" [variant]="'blue'"
-            (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)"
-            (delete)="onTagDelete($event)"></mindful-tags>
-          <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Select tag</div>
-        </div>
-      </div>
-
-      <div class="d-flex flex-column" style="border-bottom: 1px solid #7471BA;">
-        <div class="routine-section">
-          <label>Routine</label>
-          <mindful-selectors class="w-100" [options]="routineOptions" componentType="badge" [singleSelection]="true"
-            (selectedKeysChange)="onRoutineSelected($event)" [scrollable]="false"></mindful-selectors>
-        </div>
-        <div *ngIf="attemptedSubmit && showRoutineError" class="field-error" role="alert">Select routine</div>
-      </div>
-
+      <ng-container *ngTemplateOutlet="titleInputSection; context: {placeholder: 'Habit Title', errorMsg: 'Enter habit title'}"></ng-container>
+      <ng-container *ngTemplateOutlet="routineSection; context: {borderColor: '#7471BA'}"></ng-container>
       <div class="date-time-selection">
         <ng-container *ngTemplateOutlet="repeatSection"></ng-container>
         <div class="date-time--pick">
@@ -148,48 +178,15 @@
           <ng-container *ngTemplateOutlet="datePickerSection"></ng-container>
         </div>
       </div>
-
       <ng-container *ngTemplateOutlet="prioritySection"></ng-container>
-
-      <div class="section notes">
-        <textarea [(ngModel)]="notes" (ngModelChange)="clearNotesError()"
-          [class.missing-border]="showNotesError && attemptedSubmit" maxlength="250" placeholder="Add Notes....."
-          style="display:block;margin:0 auto;"></textarea>
-        <div class="char-count">Max 250 Characters</div>
-        <div *ngIf="attemptedSubmit && showNotesError" class="field-error" role="alert">Add notes</div>
-      </div>
-
-      <div class="submit-row">
-        <mindful-button [type]="isFormComplete ? 'lavendar' : 'lavender-light'"
-          [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Habit' : 'Create Habit')"
-          large [disabled]="isSubmitting" (click)="submit()"></mindful-button>
-      </div>
+      <ng-container *ngTemplateOutlet="coinSection"></ng-container>
+      <ng-container *ngTemplateOutlet="notesSection; context: {showNotesValidation: true}"></ng-container>
+      <ng-container *ngTemplateOutlet="submitSection; context: {btnType: 'lavendar', btnTypeFaded: 'lavender-light', itemType: 'Habit'}"></ng-container>
     </div>
 
     <div *ngIf="currentActive === 'tasks'" class="form-card">
-      <div class="title-input">
-        <div class="mindful-input-group w-100" [class.missing-placeholder]="showTitleError && attemptedSubmit">
-          <input class="w-100" [(ngModel)]="title" (ngModelChange)="clearTitleError()" placeholder="Task Title"
-            maxlength="20" />
-          <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">Enter task title</div>
-        </div>
-        <div class="add-new-row">
-          <mindful-tags [options]="routineTags" [singleSelection]="true" [size]="'small'" [variant]="'orange'"
-            (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)"
-            (delete)="onTagDelete($event)"></mindful-tags>
-          <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Select tag</div>
-        </div>
-      </div>
-
-      <div class="d-flex flex-column" style="border-bottom: 1px solid #F6AC72;">
-        <div class="routine-section">
-          <label>Routine</label>
-          <mindful-selectors class="w-100" [options]="routineOptions" componentType="badge" [singleSelection]="true"
-            (selectedKeysChange)="onRoutineSelected($event)" [scrollable]="false"></mindful-selectors>
-        </div>
-        <div *ngIf="attemptedSubmit && showRoutineError" class="field-error" role="alert">Select routine</div>
-      </div>
-
+      <ng-container *ngTemplateOutlet="titleInputSection; context: {placeholder: 'Task Title', errorMsg: 'Enter task title'}"></ng-container>
+      <ng-container *ngTemplateOutlet="routineSection; context: {borderColor: '#F6AC72'}"></ng-container>
       <div class="date-time-selection">
         <ng-container *ngTemplateOutlet="repeatSection"></ng-container>
         <div class="date-time--pick">
@@ -197,62 +194,18 @@
           <ng-container *ngTemplateOutlet="datePickerSection"></ng-container>
         </div>
       </div>
-
       <ng-container *ngTemplateOutlet="prioritySection"></ng-container>
-
-      <div class="section notes">
-        <textarea [(ngModel)]="notes" (ngModelChange)="clearNotesError()"
-          [class.missing-border]="showNotesError && attemptedSubmit" maxlength="250" placeholder="Add Notes....."
-          style="display:block;margin:0 auto;"></textarea>
-        <div class="char-count">Max 250 Characters</div>
-        <div *ngIf="attemptedSubmit && showNotesError" class="field-error" role="alert">Add notes</div>
-      </div>
-
-      <div class="submit-row">
-        <mindful-button [type]="isFormComplete ? 'orange' : 'orange-light'"
-          [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Task' : 'Create Task')"
-          large [disabled]="isSubmitting" (click)="submit()"></mindful-button>
-      </div>
+      <ng-container *ngTemplateOutlet="coinSection"></ng-container>
+      <ng-container *ngTemplateOutlet="notesSection; context: {showNotesValidation: true}"></ng-container>
+      <ng-container *ngTemplateOutlet="submitSection; context: {btnType: 'orange', btnTypeFaded: 'orange-light', itemType: 'Task'}"></ng-container>
     </div>
 
     <div *ngIf="currentActive === 'timetable'" class="form-card">
-      <div class="title-input">
-        <div class="mindful-input-group w-100">
-          <input class="w-100" [(ngModel)]="title" placeholder="Time Table Title" maxlength="20" />
-        </div>
-        <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">Enter timetable title</div>
-        <div class="add-new-row">
-          <mindful-tags [options]="routineTags" [singleSelection]="true" [size]="'small'" [variant]="'green'"
-            (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)"
-            (delete)="onTagDelete($event)"></mindful-tags>
-          <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Select tag</div>
-        </div>
-      </div>
-
+      <ng-container *ngTemplateOutlet="titleInputSection; context: {placeholder: 'Time Table Title', errorMsg: 'Enter timetable title'}"></ng-container>
       <div class="date-time-selection">
         <ng-container *ngTemplateOutlet="repeatSection"></ng-container>
         <div class="date-time--pick">
-          <div class="time-row">
-            <div class="pick-time">
-              <label>Start Time</label>
-              <div class="mindful-input-group" [class.missing-placeholder]="showTimeError && attemptedSubmit">
-                <mindful-timepicker placeholder="Start" [(ngModel)]="startTime"
-                  (ngModelChange)="clearTimeError()"></mindful-timepicker>
-              </div>
-            </div>
-            <div class="pick-time">
-              <label>End Time</label>
-              <div class="mindful-input-group" [class.missing-placeholder]="showTimeError && attemptedSubmit">
-                <mindful-timepicker placeholder="End" [(ngModel)]="endTime"
-                  (ngModelChange)="clearTimeError()"></mindful-timepicker>
-              </div>
-            </div>
-          </div>
-          <div *ngIf="attemptedSubmit && showTimeError" class="field-error" role="alert">Select time</div>
-          <div *ngIf="showPastTimeError" class="field-error" role="alert">Cannot set time in the past for today</div>
-          <div *ngIf="showEndTimeSingleDayError" class="field-error" role="alert">End time cannot exceed 11:59 PM for
-            single-day activities</div>
-
+          <ng-container *ngTemplateOutlet="timePickerSection"></ng-container>
           <div class="start-end-row">
             <div class="date-align">
               <label>Start Date</label>
@@ -269,26 +222,14 @@
               </div>
             </div>
           </div>
-          <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Add start and end
-            date</div>
-          <div *ngIf="showDaySelectionError" class="day-selection-error field-error top-margin">Cannot select weekdays
-            outside the selected date range</div>
+          <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Add start and end date</div>
+          <div *ngIf="showDaySelectionError" class="day-selection-error field-error top-margin">Cannot select weekdays outside the selected date range</div>
         </div>
       </div>
-
       <ng-container *ngTemplateOutlet="prioritySection"></ng-container>
-
-      <div class="section notes">
-        <textarea [(ngModel)]="notes" maxlength="250" placeholder="Add Notes....."
-          style="display:block;margin:0 auto;"></textarea>
-        <div class="char-count">Max 250 Characters</div>
-      </div>
+      <ng-container *ngTemplateOutlet="notesSection; context: {showNotesValidation: false}"></ng-container>
       <div *ngIf="attemptedSubmit && showNotesError" class="field-error" role="alert">Add notes</div>
-      <div class="submit-row">
-        <mindful-button [type]="isFormComplete ? 'aqua' : 'aqua-light'"
-          [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Timetable' : 'Create Time Table')"
-          large [disabled]="isSubmitting" (click)="submit()"></mindful-button>
-      </div>
+      <ng-container *ngTemplateOutlet="submitSection; context: {btnType: 'aqua', btnTypeFaded: 'aqua-light', itemType: 'Time Table'}"></ng-container>
     </div>
 
   </div>
