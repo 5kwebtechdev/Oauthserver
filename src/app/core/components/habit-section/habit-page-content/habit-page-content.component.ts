@@ -6,6 +6,7 @@ import { HabitCardComponent } from '../habit-card/habit-card.component';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 import { HabitService } from '../habit.service';
+import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { TaskApi } from '../../../api/task.api';
 import { Habit } from '../habit.types';
 import { Subscription } from 'rxjs';
@@ -50,6 +51,7 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
 
     constructor(
         private habitService: HabitService,
+        private buttonLogic: HabitButtonLogicService,
         private taskApi: TaskApi,
         private route: ActivatedRoute
     ) { }
@@ -139,15 +141,22 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
             this.taskApi.getTasksByDate(formatted).subscribe({
                 next: (res: any) => {
                     const list = Array.isArray(res?.data || res?.tasks || res) ? res.data || res.tasks || res : [];
-                    this.tasks = list.map((t: any) => ({
-                        ...t,
-                        type: t.type || 'tasks',
-                        startTimeStamp: this.getTimestamp(t.startDate, t.startTime, 0),
-                        endTimeStamp: this.getTimestamp(t.endDate, t.endTime, Number.MAX_SAFE_INTEGER),
-                        status: this.normalizeStatus(t.status),
-                        priority: t.priority?.trim().toLowerCase(),
-                        routine: t.routine?.trim().toLowerCase(),
-                    }));
+                    this.tasks = list.map((t: any) => {
+                        const timestamps = this.buttonLogic.calculateTimestamps({
+                            ...t,
+                            startDate: t.startDate || formatted,
+                            endDate: t.endDate || formatted
+                        });
+                        return {
+                            ...t,
+                            type: t.type || 'tasks',
+                            startTimeStamp: timestamps.startTimeStamp,
+                            endTimeStamp: timestamps.endTimeStamp,
+                            status: this.buttonLogic.normalizeStatus(t.status),
+                            priority: t.priority?.trim().toLowerCase(),
+                            routine: t.routine?.trim().toLowerCase(),
+                        };
+                    });
                     this.loading = false;
                     this.applyFilters();
                 },
@@ -160,19 +169,8 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
         );
     }
 
-    private getTimestamp(date: string, time: string, defaultValue: number): number {
-        const dt = new Date(`${date}T${time}`);
-        return isNaN(dt.getTime()) ? defaultValue : dt.getTime();
-    }
-
     private normalizeStatus(status: any): 'pending' | 'ongoing' | 'completed' | 'skipped' {
-        if (!status) return 'pending';
-        const s = status.toString().trim().toLowerCase();
-        if (s === 'complete' || s === 'completed') return 'completed';
-        if (s === 'ongoing' || s === 'inprogress' || s === 'in-progress' || s === 'in progress') return 'ongoing';
-        if (s === 'pending') return 'pending';
-        if (s === 'skipped' || s === 'skip') return 'skipped';
-        return 'pending';
+        return this.buttonLogic.normalizeStatus(status);
     }
 
     selectMainTab(tab: 'habits' | 'tasks'): void {

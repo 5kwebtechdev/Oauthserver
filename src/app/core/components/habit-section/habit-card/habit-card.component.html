@@ -176,21 +176,24 @@
             </div>
           </div>
           <div class="d-flex footer-cta">
-            <!-- Let's Go Button: Visible when status is PENDING, hidden when ONGOING or COMPLETED -->
-            <mindful-button *ngIf="isLetsGoVisible()"
+            <!-- Let's Go Button: Visible when status is PENDING, hidden when ONGOING, COMPLETED, or SKIPPED -->
+            <mindful-button *ngIf="isLetsGoVisible() && !isParent"
               [type]="habit?.type === 'tasks' ? 'orange' : 'lavendar'" small text="Let`s Go" (click)="onStartHabit()"
               [disabled]="!isLetsGoEnabled()"></mindful-button>
             
             <!-- Abort Button: Visible only when status is ONGOING -->
-            <mindful-button *ngIf="isAbortVisible() && habit?.type === 'tasks'" type="orange-transparent" small
+            <mindful-button *ngIf="isAbortVisible() && habit?.type === 'tasks' && !isParent" type="orange-transparent" small
               text="Abort" (click)="onAbortHabit()"></mindful-button>
-            <mindful-button *ngIf="isAbortVisible() && habit?.type !== 'tasks'" type="lavendar-transparent" small
+            <mindful-button *ngIf="isAbortVisible() && habit?.type !== 'tasks' && !isParent" type="lavendar-transparent" small
               text="Abort" (click)="onAbortHabit()"></mindful-button>
             
-            <!-- Done Button: Visible when status is PENDING or ONGOING, hidden when COMPLETED -->
-            <!-- Disabled when PENDING, Enabled when ONGOING -->
-            <mindful-button *ngIf="getStatus() !== 'completed' && getStatus() !== 'skipped'" type="green" small text="Done?"
+            <!-- Done Button: For PENDING or ONGOING status - Disabled when PENDING, Enabled when ONGOING -->
+            <mindful-button *ngIf="getStatus() !== 'completed' && getStatus() !== 'skipped' && !isParent" type="green" small text="Done?"
               (click)="onCompleteHabit()" [disabled]="!isDoneEnabled()"></mindful-button>
+            
+            <!-- Done Button: For SKIPPED status - Always enabled so user can mark as done -->
+            <mindful-button *ngIf="getStatus() === 'skipped' && !isParent" type="green" small text="Done?"
+              (click)="onCompleteHabit()"></mindful-button>
             
             <!-- Completion Message: Show when status is COMPLETED -->
             <!-- <div class="d-flex gap-2" *ngIf="getStatus() === 'completed'">

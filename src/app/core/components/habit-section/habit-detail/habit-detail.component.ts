@@ -6,6 +6,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { HabitApi } from 'src/app/core/api/habit.api';
 import { TaskApi } from 'src/app/core/api/task.api';
 import { HabitService } from '../habit.service';
+import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulSpeechBubbleComponent } from '../../mindful-speech-bubble/mindful-speech-bubble.component';
 import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
@@ -51,6 +52,7 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
     private HabitApi: HabitApi,
     private TaskApi: TaskApi,
     private habitService: HabitService,
+    private buttonLogic: HabitButtonLogicService,
     private navigationContext: NavigationContextService,
     private cdr: ChangeDetectorRef,
     private location: Location
@@ -134,6 +136,9 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
 
   /** Normalize API response to Habit type */
   private normalizeResponse(res: any, type: 'habits' | 'tasks' | 'timetable'): Habit {
+    // Calculate timestamps using the shared service
+    const timestamps = this.buttonLogic.calculateTimestamps(res);
+    
     return {
       ...res,
       type,
@@ -144,8 +149,8 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
       endDate: res.endDate ? new Date(res.endDate) : null,
       startTime: res.startTime || res.start_time || '',
       endTime: res.endTime || res.end_time || '',
-      startTimeStamp: 0,
-      endTimeStamp: 0,
+      startTimeStamp: timestamps.startTimeStamp,
+      endTimeStamp: timestamps.endTimeStamp,
       isPrivate: !res.sharedWithParents,
       selectedRoutine: res.routine || '',
       routineTags: [],
@@ -154,7 +159,7 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
       daysOfWeek: res.daysOfWeek || [],
       priority: (res.priority?.toLowerCase() || 'medium') as 'low' | 'medium' | 'high',
       routine: res.routine || '',
-      status: (res.status?.toLowerCase() || 'pending') as 'pending' | 'ongoing' | 'completed',
+      status: this.buttonLogic.normalizeStatus(res.status) as 'pending' | 'ongoing' | 'completed',
       createdAt: res.createdAt ? new Date(res.createdAt) : new Date(),
       tags: res.tags || [],
       coinReward: res.rewardCoins || 0,
@@ -398,40 +403,28 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   // ============================================
-  // BUTTON LOGIC - Same as HabitCardComponent
+  // BUTTON LOGIC - Using shared service
   // ============================================
 
   /**
    * Called when user taps "Let's Go" - set status to ONGOING
    */
   onStartHabit() {
-    if (!this.habit) return;
+    if (!this.habit || !this.isLetsGoEnabled()) return;
 
-    if (this.habit.type === 'tasks') {
-      this.TaskApi.letsGoTask(this.habit.id).subscribe({
-        next: (res: any) => {
-          const updated = { ...this.habit!, status: 'ongoing' } as any;
-          this.habit = updated;
-          this.startProgress();
-          this.cdr.detectChanges();
-        },
-        error: (err: any) => {
-          console.error('Failed to start task', err);
-        }
-      });
-    } else {
-      this.HabitApi.letsGoHabit(this.habit.id).subscribe({
-        next: (res: any) => {
-          const updated = { ...this.habit!, status: 'ongoing' } as Habit;
-          this.habit = updated;
-          this.startProgress();
-          this.cdr.detectChanges();
-        },
-        error: (err: any) => {
-          console.error('Failed to start habit', err);
-        }
-      });
-    }
+    const api$ = this.habit.type === 'tasks' 
+      ? this.TaskApi.letsGoTask(this.habit.id) 
+      : this.HabitApi.letsGoHabit(this.habit.id);
+
+    api$.subscribe({
+      next: () => {
+        this.habit = { ...this.habit!, status: 'ongoing' } as Habit;
+        this.buttonLogic.saveOngoingState(this.habit);
+        this.startProgress();
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Failed to start', err)
+    });
   }
 
   /**
@@ -440,67 +433,40 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
   onAbortHabit() {
     if (!this.habit) return;
 
-    if (this.habit.type === 'tasks') {
-      this.TaskApi.abortTask(this.habit.id).subscribe({
-        next: (res: any) => {
-          const updated = { ...this.habit!, status: 'pending' } as any;
-          this.habit = updated;
-          this.percentageCompleted = 0;
-          this.resetProgress();
-          this.cdr.detectChanges();
-        },
-        error: (err: any) => {
-          console.error('Failed to abort task', err);
-        }
-      });
-    } else {
-      this.HabitApi.abortHabit(this.habit.id).subscribe({
-        next: (res: any) => {
-          const updated = { ...this.habit!, status: 'pending' } as Habit;
-          this.habitService.abortHabit(updated.id);
-          this.habit = updated;
-          this.percentageCompleted = 0;
-          this.resetProgress();
-          this.cdr.detectChanges();
-        },
-        error: (err: any) => {
-          console.error('Failed to abort habit', err);
-        }
-      });
-    }
+    const api$ = this.habit.type === 'tasks'
+      ? this.TaskApi.abortTask(this.habit.id)
+      : this.HabitApi.abortHabit(this.habit.id);
+
+    api$.subscribe({
+      next: () => {
+        this.habit = { ...this.habit!, status: 'pending' } as Habit;
+        this.buttonLogic.clearOngoingState(this.habit);
+        this.resetProgress();
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Failed to abort', err)
+    });
   }
 
   /**
    * Called when user taps "Done?" - set status to COMPLETED
    */
   onCompleteHabit() {
-    if (!this.habit) return;
+    if (!this.habit || !this.isDoneEnabled()) return;
 
-    if (this.habit.type === 'tasks') {
-      this.TaskApi.completeTask(this.habit.id).subscribe({
-        next: (res: any) => {
-          const updated = { ...this.habit!, status: 'completed' } as any;
-          this.habit = updated;
-          this.resetProgress();
-          this.cdr.detectChanges();
-        },
-        error: (err: any) => {
-          console.error('Failed to complete task', err);
-        }
-      });
-    } else {
-      this.HabitApi.completeHabit(this.habit.id).subscribe({
-        next: (res: any) => {
-          const updated = { ...this.habit!, status: 'completed' } as Habit;
-          this.habit = updated;
-          this.resetProgress();
-          this.cdr.detectChanges();
-        },
-        error: (err: any) => {
-          console.error('Failed to complete habit', err);
-        }
-      });
-    }
+    const api$ = this.habit.type === 'tasks'
+      ? this.TaskApi.completeTask(this.habit.id)
+      : this.HabitApi.completeHabit(this.habit.id);
+
+    api$.subscribe({
+      next: () => {
+        this.habit = { ...this.habit!, status: 'completed' } as Habit;
+        this.buttonLogic.clearOngoingState(this.habit);
+        this.resetProgress();
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Failed to complete', err)
+    });
   }
 
   // ============================================
@@ -509,7 +475,7 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
 
   startProgress(): void {
     this.clearProgress();
-    this.percentageCompleted = this.calculateProgressPercentage();
+    this.percentageCompleted = this.buttonLogic.calculateProgressPercentage(this.habit);
     this.startProgressUpdater();
   }
 
@@ -526,104 +492,39 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   calculateProgressPercentage(): number {
-    if (!this.habit) return 0;
-
-    const now = Date.now();
-    const start = this.habit.startTimeStamp;
-    const end = this.habit.endTimeStamp;
-
-    if (!start || !end) return 0;
-    if (now < start) return 0;
-    if (now > end) return 100;
-
-    const totalTime = end - start;
-    const elapsedTime = now - start;
-    const percentage = (elapsedTime / totalTime) * 100;
-
-    return Math.max(0, Math.min(100, percentage));
+    return this.buttonLogic.calculateProgressPercentage(this.habit);
   }
 
   startProgressUpdater(): void {
     this.clearProgress();
     this.percentageCompleted = this.calculateProgressPercentage();
-
     this.progressInterval = setInterval(() => {
       this.percentageCompleted = this.calculateProgressPercentage();
     }, 1000);
   }
 
   // ============================================
-  // BUTTON STATE LOGIC
+  // BUTTON STATE LOGIC - Using shared service
   // ============================================
 
   private setupButtonStateChecker(): void {
-    if (this.buttonStateCheckerInterval) {
-      clearInterval(this.buttonStateCheckerInterval);
-    }
-
-    this.buttonStateCheckerInterval = setInterval(() => {
-      this.cdr.detectChanges();
-    }, 1000);
+    if (this.buttonStateCheckerInterval) clearInterval(this.buttonStateCheckerInterval);
+    this.buttonStateCheckerInterval = setInterval(() => this.cdr.detectChanges(), 1000);
   }
 
-  /**
-   * Check if the current habit/task is within the "Let's Go" window
-   * Window: start time -5 min to start time +5 min
-   */
-  private isWithinLetsGoWindow(): boolean {
-    if (!this.habit || !this.habit.startTimeStamp) return false;
-
-    const now = Date.now();
-    const startTime = this.habit.startTimeStamp;
-    const fiveMinutes = 5 * 60 * 1000;
-
-    return (now >= (startTime - fiveMinutes)) && (now <= (startTime + fiveMinutes));
-  }
-
-  /**
-   * Check if the current time is after the end time
-   */
-  private isAfterEndTime(): boolean {
-    if (!this.habit || !this.habit.endTimeStamp) return false;
-
-    const now = Date.now();
-    const endTime = this.habit.endTimeStamp;
-
-    return now > endTime;
-  }
-
-  /**
-   * Check if "Let's Go" button should be enabled
-   */
   isLetsGoEnabled(): boolean {
-    if (this.isAfterEndTime()) return false;
-    return this.isWithinLetsGoWindow();
+    return this.buttonLogic.isLetsGoEnabled(this.habit);
   }
 
-  /**
-   * Check if "Let's Go" button should be visible
-   */
   isLetsGoVisible(): boolean {
-    if (this.habit && this.habit.status?.toLowerCase() === 'ongoing') {
-      return false;
-    }
-    return true;
+    return this.buttonLogic.isLetsGoVisible(this.habit);
   }
 
-  /**
-   * Check if "Abort" button should be visible
-   */
   isAbortVisible(): boolean {
-    return !!(this.habit && this.habit.status?.toLowerCase() === 'ongoing');
+    return this.buttonLogic.isAbortVisible(this.habit);
   }
 
-  /**
-   * Check if "Done" button should be enabled
-   */
   isDoneEnabled(): boolean {
-    if (this.habit && this.habit.status?.toLowerCase() === 'ongoing') {
-      return true;
-    }
-    return !this.isWithinLetsGoWindow();
+    return this.buttonLogic.isDoneEnabled(this.habit);
   }
 }

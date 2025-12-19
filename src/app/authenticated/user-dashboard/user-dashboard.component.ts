@@ -28,6 +28,7 @@ import { HabitService } from '../../core/components/habit-section/habit.service'
 import { Habit } from '../../core/components/habit-section/habit.types';
 import { TaskApi } from '../../core/api/task.api';
 import { HabitApi } from '../../core/api/habit.api';
+import { HabitButtonLogicService } from '../../core/components/habit-section/habit-button-logic.service';
 
 @Component({
   selector: 'app-user-dashboard',
@@ -82,7 +83,8 @@ export class UserDashboardComponent implements OnInit {
     private moodService: MoodService,
     private habitService: HabitService,
     private taskApi: TaskApi,
-    private habitApi: HabitApi
+    private habitApi: HabitApi,
+    private buttonLogic: HabitButtonLogicService
   ) { }
 
   async openNotes() {
@@ -196,6 +198,9 @@ export class UserDashboardComponent implements OnInit {
               return status !== 'completed' && status !== 'skipped';
             })
             .map((item: any) => {
+              // Calculate proper timestamps using shared service
+              const timestamps = this.buttonLogic.calculateTimestamps(item);
+              
               return {
                 id: item.id || '',
                 title: item.title || '',
@@ -204,8 +209,8 @@ export class UserDashboardComponent implements OnInit {
                 endDate: item.endDate ? new Date(item.endDate) : new Date(),
                 startTime: item.startTime || "07:00:00",
                 endTime: item.endTime || "08:00:00",
-                startTimeStamp: item.startDate ? new Date(item.startDate).getTime() : Date.now(),
-                endTimeStamp: item.endDate ? new Date(item.endDate).getTime() : Date.now() + 3600000,
+                startTimeStamp: timestamps.startTimeStamp,
+                endTimeStamp: timestamps.endTimeStamp,
                 type: 'tasks',
                 isPrivate: !!item.isPrivate,
                 selectedRoutine: item.getRoutine,

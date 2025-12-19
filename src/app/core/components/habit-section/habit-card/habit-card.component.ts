@@ -13,9 +13,12 @@ import { HabitCardService } from 'src/app/core/components/habit-section/habit-ca
 import { HabitApi } from 'src/app/core/api/habit.api';
 import { TaskApi } from 'src/app/core/api/task.api';
 import { HabitService } from '../habit.service';
+import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { CoerceBoolean } from "../../../coerceBoolean.decorator";
 import { Habit } from '../habit.types';
 import { Subscription } from 'rxjs';
+import { UserService } from '../../../services/user.service';
+import { AuthService } from '../../../services/auth.service';
 import { NavigationContextService } from '../../../services/navigation-context.service';
 
 @Component({
@@ -88,6 +91,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   progressInterval: any;
   // Local flag to show timer icon only for this card when user clicked "Let's Go"
   public showLocalTimer: boolean = false;
+  // Flag set when logged in user is a parent
+  public isParent: boolean = false;
 
   // Auto-reload timers
   private letsGoWindowTimer: any;
@@ -98,6 +103,7 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   @ViewChild('percentageWrapper', { static: false }) percentageWrapper?: ElementRef;
 
   private _intervalId: any;
+  private userProfileSubscription?: Subscription;
 
   constructor(
     private habitCardService: HabitCardService,
@@ -107,7 +113,10 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     private modalCtrl: ModalController,
     private router: Router,
     private navigationContext: NavigationContextService,
-    private cdr: ChangeDetectorRef
+    private userService: UserService,
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef,
+    private buttonLogic: HabitButtonLogicService
   ) {
     this.habitCardService.lastToggled$.subscribe((data: any) => {
       if (!data) return;
@@ -134,6 +143,12 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   onStartHabit() {
     if (!this.habit) return;
 
+    // Check if Let's Go is enabled (within 5 min window)
+    if (!this.isLetsGoEnabled()) {
+      console.log('Let\'s Go button is not enabled yet');
+      return;
+    }
+
     // Check if this is a task or habit and call the appropriate API
     if (this.habit.type === 'tasks') {
       // Call task API for tasks
@@ -144,6 +159,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           // For tasks, we might need to update differently
           // You might need to implement a task service similar to habitService
           this.habit = updated;
+          // Store the start time in localStorage for progress persistence
+          this.saveOngoingState();
           // Start progress with proper initialization
           // Show timer icon locally for this card since user pressed Let's Go
           this.showLocalTimer = true;
@@ -164,6 +181,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           const updated = { ...this.habit!, status: 'ongoing' } as Habit;
           this.habitService.updateHabit(updated);
           this.habit = updated;
+          // Store the start time in localStorage for progress persistence
+          this.saveOngoingState();
           // Show timer icon locally for this card since user pressed Let's Go
           this.showLocalTimer = true;
           // Start progress with proper initialization
@@ -190,6 +209,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           // Reset to pending state so card stays on Home and acts like a fresh activity
           const updated = { ...this.habit!, status: 'pending' } as any;
           this.habit = updated;
+          // Clear the saved ongoing state
+          this.clearOngoingState();
           // Reset progress when aborting
           this.percentageCompleted = 0;
           this.resetProgress();
@@ -211,6 +232,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           const updated = { ...this.habit!, status: 'pending' } as Habit;
           this.habitService.abortHabit(updated.id);
           this.habit = updated;
+          // Clear the saved ongoing state
+          this.clearOngoingState();
           // Reset progress when aborting
           this.percentageCompleted = 0;
           this.resetProgress();
@@ -240,10 +263,73 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   /**
+   * Save ongoing state to localStorage for persistence across sessions
+   */
+  private saveOngoingState(): void {
+    if (!this.habit) return;
+    
+    const key = `ongoing_${this.habit.type}_${this.habit.id}`;
+    const state = {
+      startedAt: Date.now(),
+      habitStartTime: this.habit.startTimeStamp,
+      habitEndTime: this.habit.endTimeStamp
+    };
+    localStorage.setItem(key, JSON.stringify(state));
+  }
+
+  /**
+   * Clear ongoing state from localStorage
+   */
+  private clearOngoingState(): void {
+    if (!this.habit) return;
+    
+    const key = `ongoing_${this.habit.type}_${this.habit.id}`;
+    localStorage.removeItem(key);
+  }
+
+  /**
+   * Restore ongoing state from localStorage if available
+   */
+  private restoreOngoingState(): void {
+    if (!this.habit) return;
+    
+    const key = `ongoing_${this.habit.type}_${this.habit.id}`;
+    const stored = localStorage.getItem(key);
+    
+    if (stored) {
+      try {
+        const state = JSON.parse(stored);
+        // Verify that the stored state is still valid (same day, etc.)
+        if (state.habitStartTime === this.habit.startTimeStamp && 
+            state.habitEndTime === this.habit.endTimeStamp) {
+          // State is valid, start progress if habit is ongoing
+          if (this.habit.status?.toLowerCase() === 'ongoing') {
+            this.showLocalTimer = true;
+            this.startProgress();
+          }
+        } else {
+          // State is outdated, clear it
+          localStorage.removeItem(key);
+        }
+      } catch (e) {
+        console.error('Error restoring ongoing state:', e);
+        localStorage.removeItem(key);
+      }
+    }
+  }
+
+  /**
    * Called when user taps "Done?" - set status to COMPLETED
    */
   onCompleteHabit() {
     if (!this.habit) return;
+
+    // Check if Done button is enabled (for non-skipped status)
+    const status = this.habit.status?.toLowerCase();
+    if (status !== 'skipped' && !this.isDoneEnabled()) {
+      console.log('Done button is not enabled - need to click Let\'s Go first');
+      return;
+    }
 
     // Check if this is a task or habit and call the appropriate API
     if (this.habit.type === 'tasks') {
@@ -257,6 +343,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           const updated = { ...this.habit!, status: 'completed' } as any;
           // For tasks, we might need to update differently
           this.habit = updated;
+          // Clear the saved ongoing state
+          this.clearOngoingState();
           // Set progress to 100% when completed
           this.percentageCompleted = 100;
           // Hide local timer icon for this card when completed
@@ -277,6 +365,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           const updated = { ...this.habit!, status: 'completed' } as Habit;
           this.habitService.completeHabit(updated.id);
           this.habit = updated;
+          // Clear the saved ongoing state
+          this.clearOngoingState();
           // Set progress to 100% when completed
           this.percentageCompleted = 100;
           // Hide local timer icon for this card when completed
@@ -295,42 +385,29 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
   /**
    * Calculate progress percentage based on current time relative to start and end times
-   * @returns number between 0 and 100 representing completion percentage
    */
   calculateProgressPercentage(): number {
-    if (!this.habit) {
-      return 0;
+    if (!this.habit) return 0;
+
+    // Ensure we have timestamps - calculate from date+time if missing
+    let start = this.habit.startTimeStamp;
+    let end = this.habit.endTimeStamp;
+
+    if (!start || !end) {
+      const ts = this.buttonLogic.calculateTimestamps(this.habit);
+      start = start || ts.startTimeStamp;
+      end = end || ts.endTimeStamp;
     }
+
+    if (!start || !end || start >= end) return 0;
 
     const now = Date.now();
-    const start = this.habit.startTimeStamp;
-    const end = this.habit.endTimeStamp;
+    if (now < start) return 0;
+    if (now > end) return 100;
 
-    // If no valid timestamps, return 0
-    if (!start || !end) {
-      return 0;
-    }
-
-    // If not started yet, return 0
-    if (now < start) {
-      return 0;
-    }
-
-    // If already ended, return 100
-    if (now > end) {
-      return 100;
-      return 100;
-    }
-
-    // Calculate progress percentage
-    const totalTime = end - start;
-    const elapsedTime = now - start;
-    const percentage = (elapsedTime / totalTime) * 100;
-
-
-
-    // Ensure percentage is between 0 and 100
-    return Math.max(0, Math.min(100, percentage));
+    const totalDuration = end - start;
+    const elapsed = now - start;
+    return Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
   }
 
   /**
@@ -368,18 +445,23 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
     // If habit is provided, set properties from it
     if (this.habit) {
+      // Calculate timestamps from date+time if not present
+      const ts = this.buttonLogic.calculateTimestamps(this.habit);
+      this.habit.startTimeStamp = this.habit.startTimeStamp || ts.startTimeStamp;
+      this.habit.endTimeStamp = this.habit.endTimeStamp || ts.endTimeStamp;
+
       this.startTime = this.habit.startTimeStamp;
       this.endTime = this.habit.endTimeStamp;
-      this.inProgress = this.habit.type === 'habits'; // Example, adjust as needed
+      this.inProgress = this.habit.type === 'habits';
       this.isEmpty = false;
-
-
     }
 
     // For ongoing habits, calculate the actual percentage based on elapsed time
     // Don't initialize to 0 - this allows the progress bar to show correct state on page refresh
     if (this.habit?.status?.toLowerCase() === 'ongoing') {
-      // Calculate actual progress immediately
+      // Restore any saved ongoing state from localStorage (for session persistence)
+      this.restoreOngoingState();
+      // Calculate actual progress immediately based on startTime and endTime
       this.percentageCompleted = this.calculateProgressPercentage();
       this.startProgress();
       // Show timer icon and bubble for ongoing habits (persists across reloads)
@@ -411,6 +493,46 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     // Start progress updater for ongoing habits
     if (this.habit && this.habit.status?.toLowerCase() === 'ongoing') {
       this.startProgressUpdater();
+    }
+
+    // Subscribe to user profile to detect parent relationship and hide certain CTAs
+    this.userProfileSubscription = this.userService.userProfile$.subscribe(profile => {
+      const profileIsParent = !!(profile && (profile.relationship || '').toString().toUpperCase() === 'PARENT');
+      const authIsParent = !!this.authService && this.authService.isParentUser && this.authService.isParentUser();
+      this.isParent = profileIsParent || authIsParent;
+      // Ensure template updates
+      this.cdr.detectChanges();
+    });
+
+    // Fallback: some flows set role in sessionStorage/localStorage (e.g., `signup_role`) or store user_profile
+    // Check those places in case the UserService observable is not populated yet.
+    try {
+      let signupRole = sessionStorage.getItem('signup_role') || localStorage.getItem('signup_role');
+      if (!signupRole) {
+        const stored = localStorage.getItem('user_profile');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          signupRole = (parsed && (parsed.relationship || parsed.role)) ? (parsed.relationship || parsed.role) : signupRole;
+        }
+      }
+
+      if (signupRole && signupRole.toString().toUpperCase() === 'PARENT') {
+        this.isParent = true;
+        this.cdr.detectChanges();
+      }
+
+    // Also check AuthService if available (authoritative logged-in role stored under user_data)
+    try {
+      const authParent = this.authService && this.authService.isParentUser && this.authService.isParentUser();
+      if (authParent) {
+        this.isParent = true;
+        this.cdr.detectChanges();
+      }
+    } catch (e) {
+      // ignore
+    }
+    } catch (e) {
+      // ignore parsing errors
     }
 
     // Set up interval to periodically check button states
@@ -558,6 +680,10 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
     if (this.taskSubscription) {
       this.taskSubscription.unsubscribe();
+    }
+
+    if (this.userProfileSubscription) {
+      this.userProfileSubscription.unsubscribe();
     }
   }
 
@@ -734,15 +860,29 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.taskApi.getAllTasks().subscribe({
       next: (tasks) => {
         this.tasks = (tasks || [])
-          .map((task: any) => ({
-            ...task,
-            type: 'tasks',
-            startTimeStamp: task.startTimeStamp || (task.startDate ? new Date(task.startDate).getTime() : 0),
-            endTimeStamp: task.endTimeStamp || (task.endDate ? new Date(task.endDate).getTime() : 0),
-            createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
-            // Normalize status to lowercase for consistency
-            status: task.status ? task.status.toLowerCase() : 'pending'
-          }))
+          .map((task: any) => {
+            // Combine date and time to create proper timestamps
+            // Always recalculate from date+time to ensure accuracy
+            const startTimeStr = task.startTime || '00:00:00';
+            const endTimeStr = task.endTime || '23:59:59';
+            const startDateStr = task.startDate || new Date().toISOString().split('T')[0];
+            const endDateStr = task.endDate || startDateStr;
+            
+            // Calculate proper timestamps using date + time combination
+            const calculatedStartTimeStamp = this.combineDateAndTime(startDateStr, startTimeStr);
+            const calculatedEndTimeStamp = this.combineDateAndTime(endDateStr, endTimeStr);
+            
+            return {
+              ...task,
+              type: 'tasks',
+              // Always use calculated timestamps when we have startTime/endTime strings
+              startTimeStamp: (task.startTime && task.startDate) ? calculatedStartTimeStamp : (task.startTimeStamp || calculatedStartTimeStamp),
+              endTimeStamp: (task.endTime && task.endDate) ? calculatedEndTimeStamp : (task.endTimeStamp || calculatedEndTimeStamp),
+              createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
+              // Normalize status to lowercase for consistency
+              status: task.status ? task.status.toLowerCase() : 'pending'
+            };
+          })
           .sort((a: any, b: any) => {
             const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
             const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -770,15 +910,29 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.taskApi.getTodayTasks().subscribe({
       next: (tasks) => {
         this.tasks = (tasks || [])
-          .map((task: any) => ({
-            ...task,
-            type: 'tasks',
-            startTimeStamp: task.startTimeStamp || (task.startDate ? new Date(task.startDate).getTime() : 0),
-            endTimeStamp: task.endTimeStamp || (task.endDate ? new Date(task.endDate).getTime() : 0),
-            createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
-            // Normalize status to lowercase for consistency
-            status: task.status ? task.status.toLowerCase() : 'pending'
-          }))
+          .map((task: any) => {
+            // Combine date and time to create proper timestamps
+            // Always recalculate from date+time to ensure accuracy
+            const startTimeStr = task.startTime || '00:00:00';
+            const endTimeStr = task.endTime || '23:59:59';
+            const startDateStr = task.startDate || new Date().toISOString().split('T')[0];
+            const endDateStr = task.endDate || startDateStr;
+            
+            // Calculate proper timestamps using date + time combination
+            const calculatedStartTimeStamp = this.combineDateAndTime(startDateStr, startTimeStr);
+            const calculatedEndTimeStamp = this.combineDateAndTime(endDateStr, endTimeStr);
+            
+            return {
+              ...task,
+              type: 'tasks',
+              // Always use calculated timestamps when we have startTime/endTime strings
+              startTimeStamp: (task.startTime && task.startDate) ? calculatedStartTimeStamp : (task.startTimeStamp || calculatedStartTimeStamp),
+              endTimeStamp: (task.endTime && task.endDate) ? calculatedEndTimeStamp : (task.endTimeStamp || calculatedEndTimeStamp),
+              createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
+              // Normalize status to lowercase for consistency
+              status: task.status ? task.status.toLowerCase() : 'pending'
+            };
+          })
           .sort((a: any, b: any) => {
             const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
             const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -1134,133 +1288,38 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   /**
-   * Check if the current habit/task is within the "Let's Go" window
-   * Window: start time -5 min to end time
-   * Example: For a 5pm-6pm habit, Let's Go is enabled from 4:55pm to 6pm
-   */
-  private isWithinLetsGoWindow(): boolean {
-    if (!this.habit || !this.habit.startTimeStamp || !this.habit.endTimeStamp) return false;
-
-    const now = Date.now();
-    const startTime = this.habit.startTimeStamp;
-    const endTime = this.habit.endTimeStamp;
-    const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
-
-    // Check if we're within 5 minutes before start time and before end time
-    return (now >= (startTime - fiveMinutes)) && (now <= endTime);
-  }
-
-  /**
-   * Check if the current time is after the end time
-   */
-  private isAfterEndTime(): boolean {
-    if (!this.habit || !this.habit.endTimeStamp) return false;
-
-    const now = Date.now();
-    const endTime = this.habit.endTimeStamp;
-
-    return now > endTime;
-  }
-
-  /**
-   * Check if the current time is before the start time
-   */
-  private isBeforeStartTime(): boolean {
-    if (!this.habit || !this.habit.startTimeStamp) return false;
-
-    const now = Date.now();
-    const startTime = this.habit.startTimeStamp;
-
-    return now < startTime;
-  }
-
-  /**
    * Check if "Let's Go" button should be enabled
-   * Requirements:
-   * - Enabled: From 5 minutes before start time until end time (e.g., 4:55pm - 6pm for a 5pm-6pm habit)
-   * - Disabled: Before the 5-minute window and after end time
-   * - Blocked: Disabled if another activity is "In Progress"
    */
   isLetsGoEnabled(): boolean {
-    // Blocked: If another activity is ongoing, disable this button
-    if (this.hasOtherOngoingActivity()) {
-      return false;
-    }
-
-    // Enabled: During the window from (start time - 5 min) to end time
-    return this.isWithinLetsGoWindow();
+    return this.buttonLogic.isLetsGoEnabled(this.habit, this.hasOtherOngoingActivity());
   }
 
   /**
    * Check if "Let's Go" button should be visible
-   * Requirements:
-   * - Hidden: When status is ONGOING (show Abort instead) or COMPLETED
-   * - Visible: When status is PENDING (will be disabled based on time/blocking rules)
    */
   isLetsGoVisible(): boolean {
-    if (!this.habit) return false;
-
-    const status = this.habit.status?.toLowerCase();
-
-    // Hidden: If current habit/task is ongoing (show Abort instead)
-    if (status === 'ongoing') {
-      return false;
-    }
-
-    // Hidden: If current habit/task is completed (no buttons shown)
-    if (status === 'completed') {
-      return false;
-    }
-
-    // Visible for PENDING status (enabled/disabled state controlled by isLetsGoEnabled)
-    return true;
+    return this.buttonLogic.isLetsGoVisible(this.habit);
   }
 
   /**
    * Check if "Abort" button should be visible
-   * Requirements:
-   * - Visible: Only when status is ONGOING
-   * - Hidden: When status is PENDING or COMPLETED
    */
   isAbortVisible(): boolean {
-    if (!this.habit) return false;
-
-    const status = this.habit.status?.toLowerCase();
-
-    // Show abort button only if current habit/task is ongoing
-    return status === 'ongoing';
+    return this.buttonLogic.isAbortVisible(this.habit);
   }
 
   /**
    * Check if "Done" button should be enabled
-   * Requirements:
-   * - PENDING: Disabled (unclickable) - cannot click before start time
-   * - ONGOING: Enabled (clickable) - but only after start time
-   * - COMPLETED: Not shown (handled by visibility)
-   * - Cannot be clicked before start time
    */
   isDoneEnabled(): boolean {
-    if (!this.habit) return false;
+    return this.buttonLogic.isDoneEnabled(this.habit);
+  }
 
-    const status = this.habit.status?.toLowerCase();
-
-    // Cannot click Done before start time
-    if (this.isBeforeStartTime()) {
-      return false;
-    }
-
-    // If current habit/task is ongoing, enable Done button (after start time check)
-    if (status === 'ongoing') {
-      return true;
-    }
-
-    // For PENDING status, keep Done button disabled
-    if (status === 'pending') {
-      return false;
-    }
-
-    // For any other status (e.g., skipped), disable
-    return false;
+  /**
+   * Combine date string (YYYY-MM-DD) with time string (HH:MM:SS or HH:MM) to create timestamp
+   */
+  private combineDateAndTime(dateStr: string, timeStr: string): number {
+    return this.buttonLogic.combineDateAndTime(dateStr, timeStr);
   }
 
 }

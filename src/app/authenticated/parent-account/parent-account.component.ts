@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { ModalController } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
@@ -47,10 +47,34 @@ export class ParentAccountComponent implements OnInit {
     public improvementRate: number = 0;
     public appScore: number = 0;
     public Math = Math; // Expose Math to template for Math.abs()
+    // Vibe display fields (from vibes/display per-child entry)
+    public vibeTitle: string = '';
+    public vibeDescription: string = '';
+    public emptyStateDescription: string = '';
+    public completedStateDescription: string = '';
+    public totalHabits: number = 0;
+    public completedHabits: number = 0;
+    public totalTasks: number = 0;
+    public completedTasks: number = 0;
+    public progressPercentage: number = 0;
+    // Mood -> asset mapping (same keys used by MoodSelector)
+    private readonly moodAssetMap: Record<string, string> = {
+        'HAPPY': '/assets/Images-Transparent/Image-Mood-Happy.png',
+        'VERY HAPPY': '/assets/Images-Transparent/Image-Mood-Very happy.png',
+        'EXCITED': '/assets/Images-Transparent/Image-Mood-Excited.png',
+        'SAD': '/assets/Images-Transparent/Image-Mood-Sad.png',
+        'VERY SAD': '/assets/Images-Transparent/Image-Mood-Upset.png',
+        'UPSET': '/assets/Images-Transparent/Image-Mood-Upset.png',
+        'NERVOUS': '/assets/Images-Transparent/Image-Mood-Nervous.png',
+        'NEUTRAL': '/assets/Images-Transparent/Mood-emoji-neutral-home.png'
+    };
     // Switch-user popup state
     public showSwitchPopup: boolean = false;
-    public children: Array<{ id: string | number; name: string; avatarUrl: string; relationship?: string }> = [];
-    public selectedChild: { id: string | number; name: string; avatarUrl: string; relationship?: string } | null = null;
+    // children list now holds raw API response for each child so we can switch stats per child
+    public children: Array<{ id: string | number; name: string; avatarUrl: string; relationship?: string; raw?: any }> = [];
+    public selectedChild: { id: string | number; name: string; avatarUrl: string; relationship?: string; raw?: any } | null = null;
+
+    @ViewChild('moodSel') moodSelector?: MoodSelectorComponent;
 
     constructor(
         private modalCtrl: ModalController,
@@ -91,22 +115,61 @@ export class ParentAccountComponent implements OnInit {
             this.loadUserStats();
         });
 
-        // Load children from localStorage if present (fallback to demo list)
+        // Try to load children from vibes/display API. Fall back to localStorage or defaults.
+        try {
+            this.moodService.getVibesDisplay().subscribe({
+                next: (data) => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        this.children = data.map(d => ({
+                            id: d.userId,
+                            name: d.userName,
+                            avatarUrl: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png',
+                            relationship: d.relationship || 'Child',
+                            raw: d
+                        }));
+                        // persist lightweight children list
+                        try { localStorage.setItem('mb_children', JSON.stringify(this.children)); } catch {}
+
+                        // If no selection yet, pick the first child
+                        if (!this.selectedChild && this.children.length) {
+                            this.selectChild(this.children[0]);
+                        }
+                    } else {
+                        this.loadChildrenFromStorageOrDefaults();
+                    }
+                },
+                error: () => this.loadChildrenFromStorageOrDefaults()
+            });
+        } catch (e) {
+            console.warn('[ParentAccount] Failed to load children from API, falling back', e);
+            this.loadChildrenFromStorageOrDefaults();
+        }
+    }
+
+    private loadChildrenFromStorageOrDefaults() {
         try {
             const stored = localStorage.getItem('mb_children');
             if (stored) {
-                this.children = JSON.parse(stored);
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed) && parsed.length) {
+                    this.children = parsed;
+                    if (!this.selectedChild) this.selectedChild = this.children[0];
+                }
             }
         } catch (e) {
             console.warn('[ParentAccount] Failed to parse children from storage, using defaults', e);
         }
 
         if (!this.children || this.children.length === 0) {
-            // Minimal default children for UI; real app should fetch from API
             this.children = [
                 { id: 'c1', name: 'Still Panda', avatarUrl: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png', relationship: 'Child' },
                 { id: 'c2', name: 'Child 2', avatarUrl: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png', relationship: 'Child' }
             ];
+            if (!this.selectedChild) this.selectedChild = this.children[0];
+        }
+        // Apply stats for currently selected child if available
+        if (this.selectedChild && (this.selectedChild as any).raw) {
+            this.applyChildStats((this.selectedChild as any).raw);
         }
     }
 
@@ -127,13 +190,61 @@ export class ParentAccountComponent implements OnInit {
      */
     selectChild(child: { id: string | number; name: string; avatarUrl: string; relationship?: string }) {
         this.selectedChild = child;
+        // If API raw data exists on the child, apply its stats
+        if ((child as any).raw) {
+            const d = (child as any).raw;
+            this.applyChildStats(d);
+            // Override the mood cache so MoodSelector shows this child's vibe first
+            try {
+                this.moodService.setVibesDisplayOverride([d]);
+                // Ask the child mood-selector to refresh its displayed vibe
+                if (this.moodSelector && typeof this.moodSelector.getTodayVibe === 'function') {
+                    this.moodSelector.getTodayVibe();
+                }
+            } catch (e) { /* ignore */ }
+        }
         // Update user profile in UserService so rest of app reflects the child
         try {
-            this.userService.setUserProfile({ name: child.name, avatarUrl: child.avatarUrl, relationship: 'CHILD' as any });
+            this.userService.setUserProfile({ name: child.name, avatarUrl: child.avatarUrl, relationship: (child.relationship || 'CHILD') as any });
         } catch (e) {
             console.error('[ParentAccount] Failed to switch child profile', e);
         }
         this.closeSwitchPopup();
+    }
+
+    private applyChildStats(d: VibesDisplayResponse | any) {
+        if (!d) return;
+        this.userName = d.userName || this.userName;
+        // mood -> selectedMood (if provided). Set as an asset reference so MoodSelector
+        // displays the proper image when parent switches child.
+        if (d.mood) {
+            try {
+                const moodUpper = String(d.mood).toUpperCase();
+                const assetPath = this.moodAssetMap[moodUpper] || this.moodAssetMap['NEUTRAL'];
+                this.selectedMood = 'asset:' + assetPath;
+            } catch {
+                this.selectedMood = 'asset:' + this.moodAssetMap['NEUTRAL'];
+            }
+        }
+        // vibe display fields
+        this.vibeTitle = d.title || this.vibeTitle || '';
+        this.vibeDescription = d.description || this.vibeDescription || '';
+        this.emptyStateDescription = d.emptyStateDescription || this.emptyStateDescription || '';
+        this.completedStateDescription = d.completedStateDescription || this.completedStateDescription || '';
+        this.totalHabits = Number(d.totalHabits ?? this.totalHabits ?? 0) || 0;
+        this.completedHabits = Number(d.completedHabits ?? this.completedHabits ?? 0) || 0;
+        this.totalTasks = Number(d.totalTasks ?? this.totalTasks ?? 0) || 0;
+        this.completedTasks = Number(d.completedTasks ?? this.completedTasks ?? 0) || 0;
+        this.progressPercentage = Number((d.progressPercentage ?? this.progressPercentage) || 0) || 0;
+        // map coins/stats
+        this.userCoins = d.coins ?? this.userCoins;
+        this.userStreaks = d.streak ?? this.userStreaks;
+        this.userDays = d.trophies ?? this.userDays;
+        this.userBadges = d.badges ?? this.userBadges;
+        this.completionRate = Math.round((d.completionRate ?? this.completionRate) || 0);
+        this.consistencyRate = Math.round((d.consistencyRate ?? this.consistencyRate) || 0);
+        this.improvementRate = Math.round((d.improvementRate ?? this.improvementRate) || 0);
+        this.appScore = Math.round((d.appScore ?? this.appScore) || 0);
     }
 
     /**

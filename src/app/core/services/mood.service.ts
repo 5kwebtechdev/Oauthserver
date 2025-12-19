@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, shareReplay } from 'rxjs';
+import { Observable, map, shareReplay, of } from 'rxjs';
 import { MoodTransition, MoodData, MOOD_EMOJI_MAP, VibesDisplayResponse } from '../models/mood.model';
 import { environment } from 'src/environments/environment';
 
@@ -89,6 +89,19 @@ export class MoodService {
       );
     }
     return this.vibesDisplayCache$;
+  }
+
+  /**
+   * Override the cached vibes display with a provided array.
+   * Useful when parent selects a specific child and we want to show
+   * that child's vibe as the primary entry to other components.
+   */
+  setVibesDisplayOverride(vibes: VibesDisplayResponse[] | null): void {
+    if (!vibes) {
+      this.vibesDisplayCache$ = null;
+      return;
+    }
+    this.vibesDisplayCache$ = of(vibes);
   }
 
   /**

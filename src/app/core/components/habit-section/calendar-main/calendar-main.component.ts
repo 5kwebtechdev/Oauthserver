@@ -12,6 +12,7 @@ import { MoodTransition, MoodData } from '../../../models/mood.model';
 import { Subject, takeUntil } from 'rxjs';
 import { NavigationContextService } from '../../../services/navigation-context.service';
 import { Router } from '@angular/router';
+import { HabitButtonLogicService } from '../habit-button-logic.service';
 
 @Component({
   standalone: true,
@@ -37,7 +38,8 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     private calendarService: CalendarService,
     private moodService: MoodService,
     private navigationContext: NavigationContextService,
-    private router: Router
+    private router: Router,
+    private buttonLogic: HabitButtonLogicService
   ) {
     console.log('CalendarMainComponent initialized');
   }
@@ -298,13 +300,17 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
           this.habitsForSelectedDate = rawHabits
             .filter((h: any) => this.isItemScheduledForDate(h, dateStr))
             .map((h: any) => {
-              const start = this.extractTimestamp(h, ['startTime', 'start_time', 'start', 'from', 'scheduledAt', 'time', 'startTimeStamp']);
-              const end = this.extractTimestamp(h, ['endTime', 'end_time', 'end', 'to', 'scheduledEnd', 'endTimeStamp']);
+              const timestamps = this.buttonLogic.calculateTimestamps({
+                ...h,
+                startDate: h.startDate || dateStr,
+                endDate: h.endDate || dateStr
+              });
               return {
-                ...(h || {}),
+                ...h,
                 title: h.title || h.name || h.habitName || 'Habit',
-                startTimeStamp: start || h.startTimeStamp || 0,
-                endTimeStamp: end || h.endTimeStamp || 0
+                status: this.buttonLogic.normalizeStatus(h.status),
+                startTimeStamp: timestamps.startTimeStamp,
+                endTimeStamp: timestamps.endTimeStamp
               };
             });
 
@@ -312,14 +318,18 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
           this.tasksForSelectedDate = rawTasks
             .filter((t: any) => this.isItemScheduledForDate(t, dateStr))
             .map((t: any) => {
-              const start = this.extractTimestamp(t, ['startTime', 'start_time', 'start', 'from', 'scheduledAt', 'time', 'startTimeStamp']);
-              const end = this.extractTimestamp(t, ['endTime', 'end_time', 'end', 'to', 'scheduledEnd', 'endTimeStamp']);
+              const timestamps = this.buttonLogic.calculateTimestamps({
+                ...t,
+                startDate: t.startDate || dateStr,
+                endDate: t.endDate || dateStr
+              });
               return {
-                ...(t || {}),
+                ...t,
                 type: t?.type || 'tasks',
                 title: t.title || t.name || t.taskName || 'Task',
-                startTimeStamp: start || t.startTimeStamp || 0,
-                endTimeStamp: end || t.endTimeStamp || 0
+                status: this.buttonLogic.normalizeStatus(t.status),
+                startTimeStamp: timestamps.startTimeStamp,
+                endTimeStamp: timestamps.endTimeStamp
               };
             });
 
@@ -327,15 +337,18 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
           this.eventsForSelectedDate = rawEvents
             .filter((e: any) => this.isItemScheduledForDate(e, dateStr))
             .map((e: any) => {
-              const start = this.extractTimestamp(e, ['startTime', 'start_time', 'start', 'from', 'scheduledAt', 'time', 'startTimeStamp']);
-              const end = this.extractTimestamp(e, ['endTime', 'end_time', 'end', 'to', 'scheduledEnd', 'endTimeStamp']);
+              const timestamps = this.buttonLogic.calculateTimestamps({
+                ...e,
+                startDate: e.startDate || dateStr,
+                endDate: e.endDate || dateStr
+              });
               return {
-                ...(e || {}),
+                ...e,
                 type: 'EVENT',
                 title: e.title || e.name || 'Event',
                 tags: e.tags || [],
-                startTimeStamp: start || e.startTimeStamp || 0,
-                endTimeStamp: end || e.endTimeStamp || 0
+                startTimeStamp: timestamps.startTimeStamp,
+                endTimeStamp: timestamps.endTimeStamp
               };
             });
         },

@@ -74,7 +74,7 @@
                 <div class="detail-progress-bar" [style.width.%]="percentageCompleted"></div>
             </div>
             <div class="detail-cta">
-                <!-- Let's Go Button - visible when not ongoing -->
+                <!-- Let's Go Button - visible when pending (not ongoing, completed, or skipped) -->
                 <mindful-button *ngIf="isLetsGoVisible()"
                     [ngClass]="cameFromLongPress && navigationOriginType === 'habits' ? 'w-100' : 'w-full'"
                     [type]="cameFromLongPress && navigationOriginType === 'habits' ? 'lavendar' : 'orange'"
@@ -90,8 +90,15 @@
                     (click)="onAbortHabit()" medium text="Abort">
                 </mindful-button>
 
-                <!-- Done Button - always visible -->
-                <mindful-button class="w-full" type="green" [disabled]="!isDoneEnabled()" (click)="onCompleteHabit()"
+                <!-- Done Button - for pending/ongoing (disabled when pending, enabled when ongoing) -->
+                <mindful-button *ngIf="habit?.status?.toLowerCase() !== 'completed' && habit?.status?.toLowerCase() !== 'skipped'" 
+                    class="w-full" type="green" [disabled]="!isDoneEnabled()" (click)="onCompleteHabit()"
+                    medium text="Done?">
+                </mindful-button>
+                
+                <!-- Done Button - for skipped status (always enabled) -->
+                <mindful-button *ngIf="habit?.status?.toLowerCase() === 'skipped'" 
+                    class="w-full" type="green" (click)="onCompleteHabit()"
                     medium text="Done?">
                 </mindful-button>
             </div>
