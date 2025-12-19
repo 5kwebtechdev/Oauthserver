@@ -151,9 +151,9 @@
           <h4 [ngClass]="habit?.type === 'tasks' ? 'task-timing' : 'habit-timing'">
             {{ formatTimeString(habit?.startTime) || getFormattedTime(startTime) }} - {{
             formatTimeString(habit?.endTime) || getFormattedTime(endTime) }}
-            <img *ngIf="showLocalTimer" src="/assets/Icons-Neutral/Icon Clock.png" alt="Timer" class="timer-icon"
+            <img *ngIf="showLocalTimer && !isParent" src="/assets/Icons-Neutral/Icon Clock.png" alt="Timer" class="timer-icon"
               (click)="openTimer()" style="cursor: pointer;" />
-            <div *ngIf="showLocalTimer" class="bubble">Start focus timer</div>
+            <div *ngIf="showLocalTimer && !isParent" class="bubble">Start focus timer</div>
           </h4>
         </div>
       </div>

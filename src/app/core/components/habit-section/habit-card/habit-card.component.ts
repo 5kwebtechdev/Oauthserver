@@ -71,6 +71,13 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   @Input()
   endTime !: number;
 
+  /**
+   * Optional input that allows parent components to force parent-mode behavior.
+   * When defined, this value takes precedence over internal user profile detection.
+   */
+  @Input()
+  isParentOverride?: boolean;
+
   // Properties for list mode
   public currentActive: string = 'all';
   public showContent: boolean = false;
@@ -91,7 +98,7 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   progressInterval: any;
   // Local flag to show timer icon only for this card when user clicked "Let's Go"
   public showLocalTimer: boolean = false;
-  // Flag set when logged in user is a parent
+  // Flag set when logged in user is a parent (can be overridden by `isParentOverride` input)
   public isParent: boolean = false;
 
   // Auto-reload timers
@@ -497,9 +504,13 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
     // Subscribe to user profile to detect parent relationship and hide certain CTAs
     this.userProfileSubscription = this.userService.userProfile$.subscribe(profile => {
-      const profileIsParent = !!(profile && (profile.relationship || '').toString().toUpperCase() === 'PARENT');
-      const authIsParent = !!this.authService && this.authService.isParentUser && this.authService.isParentUser();
-      this.isParent = profileIsParent || authIsParent;
+      if (this.isParentOverride === undefined) {
+        const profileIsParent = !!(profile && (profile.relationship || '').toString().toUpperCase() === 'PARENT');
+        const authIsParent = !!this.authService && this.authService.isParentUser && this.authService.isParentUser();
+        this.isParent = profileIsParent || authIsParent;
+      } else {
+        this.isParent = !!this.isParentOverride;
+      }
       // Ensure template updates
       this.cdr.detectChanges();
     });
@@ -516,21 +527,31 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
         }
       }
 
-      if (signupRole && signupRole.toString().toUpperCase() === 'PARENT') {
-        this.isParent = true;
+      if (this.isParentOverride === undefined) {
+        if (signupRole && signupRole.toString().toUpperCase() === 'PARENT') {
+          this.isParent = true;
+          this.cdr.detectChanges();
+        }
+      } else {
+        this.isParent = !!this.isParentOverride;
         this.cdr.detectChanges();
       }
 
     // Also check AuthService if available (authoritative logged-in role stored under user_data)
-    try {
-      const authParent = this.authService && this.authService.isParentUser && this.authService.isParentUser();
-      if (authParent) {
-        this.isParent = true;
-        this.cdr.detectChanges();
+      try {
+        if (this.isParentOverride === undefined) {
+          const authParent = this.authService && this.authService.isParentUser && this.authService.isParentUser();
+          if (authParent) {
+            this.isParent = true;
+            this.cdr.detectChanges();
+          }
+        } else {
+          this.isParent = !!this.isParentOverride;
+          this.cdr.detectChanges();
+        }
+      } catch (e) {
+        // ignore
       }
-    } catch (e) {
-      // ignore
-    }
     } catch (e) {
       // ignore parsing errors
     }
@@ -789,6 +810,11 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    // If a parent override is passed from a parent component, apply it immediately
+    if (changes['isParentOverride']) {
+      this.isParent = !!changes['isParentOverride'].currentValue;
+      this.cdr.detectChanges();
+    }
     // If in recent mode and recent habits or tasks change, update the display
     if (this.mode === 'recent' && (changes['recentHabits'] || changes['recentTasks'])) {
       this.updateRecentDisplay();

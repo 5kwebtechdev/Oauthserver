@@ -11,6 +11,8 @@ import { MoodService } from '../../../services/mood.service';
 import { MoodTransition, MoodData } from '../../../models/mood.model';
 import { Subject, takeUntil } from 'rxjs';
 import { NavigationContextService } from '../../../services/navigation-context.service';
+import { UserService } from '../../../services/user.service';
+import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
 import { HabitButtonLogicService } from '../habit-button-logic.service';
 
@@ -40,17 +42,37 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     private navigationContext: NavigationContextService,
     private router: Router,
     private buttonLogic: HabitButtonLogicService
+    ,
+    private userService: UserService,
+    private authService: AuthService
   ) {
     console.log('CalendarMainComponent initialized');
   }
 
   ngOnInit() {
     console.log('CalendarMainComponent ngOnInit');
+    // Detect whether current viewer is a parent so we can pass the flag to habit-card instances
+    try {
+      const authParent = this.authService && this.authService.isParentUser && this.authService.isParentUser();
+      if (authParent) {
+        this.isParent = true;
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    this.userService.userProfile$.pipe(takeUntil(this.destroy$)).subscribe(profile => {
+      const profileIsParent = !!(profile && (profile.relationship || '').toString().toUpperCase() === 'PARENT');
+      if (profileIsParent) this.isParent = true;
+    });
     this.loadCalendarData();
     this.loadMoodData();
     // Populate habits/tasks for the initial selected date
     this.updateHabitsAndTasksForSelectedDate();
   }
+
+  // Flag used to indicate viewer is a parent (passed down to habit-card)
+  public isParent: boolean = false;
 
   // Handler called from template when mindful-calendar emits a dateSelected event
   onDateSelected(date: Date | { start: Date | null, end: Date | null }) {
