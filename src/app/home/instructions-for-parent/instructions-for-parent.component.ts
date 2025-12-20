@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+import { FaqItem, PROFILE_FAQS } from '../../core/components/user-profile/profile-facts/profile-facts.component';
 
 @Component({
   selector: 'app-instructions-for-parent',
@@ -9,6 +10,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 })
 export class InstructionsForParentComponent implements OnInit {
   userRole: 'child' | 'parent' | 'self' = 'parent';
+  parentFaqs: FaqItem[] = PROFILE_FAQS.filter(f => (f.section || '').toLowerCase() === 'onboarding' && (f.screen || '').toLowerCase().includes('instructions-parents'));
 
   constructor(
     private router: Router,

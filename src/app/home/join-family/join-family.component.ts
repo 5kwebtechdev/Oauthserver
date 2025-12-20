@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FamilyService } from '../../core/services/family.service';
 import { CoreService } from '../../core/services/core.service';
+import { FaqItem, PROFILE_FAQS } from '../../core/components/user-profile/profile-facts/profile-facts.component';
 
 @Component({
   selector: 'app-join-family',
@@ -15,6 +16,7 @@ export class JoinFamilyComponent implements OnInit {
   submitted = false;
   isLoading = false;
   userRole: 'child' | 'parent' | 'self' = 'child';
+  codeEntryFaqs: FaqItem[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -46,6 +48,9 @@ export class JoinFamilyComponent implements OnInit {
         });
       }
     });
+
+    // prepare Code Entry FAQs
+    this.codeEntryFaqs = PROFILE_FAQS.filter(f => (f.section || '').toLowerCase() === 'onboarding' && (f.screen || '').toLowerCase().includes('code entry'));
   }
 
   goBack() {

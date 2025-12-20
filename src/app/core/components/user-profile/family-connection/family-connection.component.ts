@@ -6,7 +6,7 @@ import { IonicModule } from '@ionic/angular';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
-import { ProfileFactsComponent } from '../profile-facts/profile-facts.component';
+import { ProfileFactsComponent, FaqItem, PROFILE_FAQS } from '../profile-facts/profile-facts.component';
 import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { InstructioListComponent } from './instructio-list';
@@ -30,6 +30,7 @@ export class FamilyConnectionComponent implements OnInit {
   showInstructions: boolean = false;
   isLoading: boolean = true;
   showQrModal: boolean = false;
+  familyFaqs: FaqItem[] = [];
 
   constructor(private router: Router, private authService: AuthService, private coreAuthService: CoreAuthService) { }
 
@@ -107,6 +108,38 @@ export class FamilyConnectionComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadFamilyDetails();
+    this.setFamilyFaqs();
+  }
+
+  private setFamilyFaqs(): void {
+    try {
+      const role = (() => {
+        try { return this.coreAuthService.getUserRelationship?.(); } catch { return null; }
+      })();
+
+      if (this.isParentUser()) {
+        // Parent view: prefer My Family (Parent) entries
+        this.familyFaqs = PROFILE_FAQS.filter(f => (f.screen && f.screen.toLowerCase().includes('parent')) || (f.section && f.section.toLowerCase().includes('my family') && f.screen && f.screen.toLowerCase().includes('parent')));
+      } else if (role === 'SELF' || this.isSelfUser()) {
+        // Self mode for child
+        this.familyFaqs = PROFILE_FAQS.filter(f => (f.section && f.section.toLowerCase().includes('self mode')) || (f.screen && f.screen.toLowerCase().includes('self mode')));
+      } else {
+        // Default to child view (My Family (Child))
+        this.familyFaqs = PROFILE_FAQS.filter(f => (f.screen && f.screen.toLowerCase().includes('my family (child)')) || ((f.section && f.section.toLowerCase().includes('my family')) && (f.screen && f.screen.toLowerCase().includes('child'))));
+      }
+    } catch (e) {
+      console.error('Error selecting family faqs:', e);
+      this.familyFaqs = [];
+    }
+
+    // Fallbacks: try broader child/self entries, then full list
+    if (!this.familyFaqs || this.familyFaqs.length === 0) {
+      this.familyFaqs = PROFILE_FAQS.filter(f => (f.screen && (f.screen.toLowerCase().includes('my family (child)') || f.screen.toLowerCase().includes('self mode') || f.screen.toLowerCase().includes('parent'))));
+    }
+
+    if (!this.familyFaqs || this.familyFaqs.length === 0) {
+      this.familyFaqs = PROFILE_FAQS;
+    }
   }
 
   loadFamilyDetails(): void {

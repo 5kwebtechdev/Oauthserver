@@ -11,6 +11,7 @@ import { MindfulSelectorsComponent } from "../core/components/mindful-selectors/
 import { MindfulInputsModule } from "../core/components/mindful-inputs/mindful-inputs.module";
 import { MindfulButtonComponent } from "../core/components/mindful-button/mindful-button.component";
 import { SocialMediaComponent } from '../core/components/social-media/social-media.component';
+import { ProfileFactsComponent } from '../core/components/user-profile/profile-facts/profile-facts.component';
 import { InstructionsForChildComponent } from "./instructions-for-child/instructions-for-child.component";
 import { InstructionsForParentComponent } from "./instructions-for-parent/instructions-for-parent.component";
 import { JoinFamilyComponent } from "./join-family/join-family.component";
@@ -28,15 +29,17 @@ import { ResetPasswordComponent } from "./reset-password/reset-password.componen
     MindfulSelectorsComponent,
     MindfulInputsModule,
     MindfulButtonComponent,
+    ProfileFactsComponent,
     ScanQrComponent,
     ResetPasswordComponent,
     SocialMediaComponent
+    ,
+    InstructionsForChildComponent
   ],
   declarations: [
     HomePage,
     LoginComponent,
     SignupComponent,
-    InstructionsForChildComponent,
     InstructionsForParentComponent,
     JoinFamilyComponent,
     JoinFamily2Component

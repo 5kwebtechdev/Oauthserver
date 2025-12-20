@@ -191,6 +191,13 @@ export class JournalOutputComponent implements OnInit {
   }
 
   /**
+   * Handler used by the fixed add button in the template.
+   */
+  onAddClick(): void {
+    this.openJournalInput();
+  }
+
+  /**
    * Navigate back when the back arrow is clicked
    */
   goBack(): void {

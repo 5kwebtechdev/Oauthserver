@@ -104,3 +104,17 @@ font-weight: 500;
   margin: 0;
   padding: 0;
 }
+
+/* Warm variant: text and icon color, and fact-item background */
+.facts--warm,
+.facts--warm .fact-text,
+.facts--warm .fact-answer,
+.facts--warm .facts-heading,
+.facts--warm .fact-question,
+.facts--warm .fact-desc {
+  color: #772817 !important;
+}
+
+.facts--warm .fact-item {
+  background: #FAD2AE !important;
+}

@@ -28,29 +28,7 @@
       </div>
     </div>
 
-    <div class="mindful-faq">
-      <h3 class="mindful-faq__title">FAQ's</h3>
-
-      <details class="mindful-faq__item">
-        <summary>What if my parent doesn't have an account yet?</summary>
-        <p>Ask them to download the app and sign up. Then they can create a family and share the code with you.</p>
-      </details>
-
-      <details class="mindful-faq__item">
-        <summary>How do I get the family code or QR from my parent?</summary>
-        <p>In your parent's app, go to Family settings → Share code/QR. They can show or send it to you.</p>
-      </details>
-
-      <details class="mindful-faq__item">
-        <summary>What if the code or QR doesn't work when I enter it?</summary>
-        <p>Double-check the code, ensure internet is on, and try again. Ask your parent to regenerate if needed.</p>
-      </details>
-
-      <details class="mindful-faq__item">
-        <summary>Can I start using the app without entering a code right away?</summary>
-        <p>You can explore, but linking to your parent's family unlocks the full experience.</p>
-      </details>
-    </div>
+    <profile-facts [faqs]="preLinkingFaqs"></profile-facts>
 
     <mindful-button type="orange-onboard" text="Next" routerLink="/home/join-family"></mindful-button>
   </div>

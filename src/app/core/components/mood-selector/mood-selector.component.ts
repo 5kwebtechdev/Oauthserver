@@ -37,11 +37,10 @@ export class MoodSelectorComponent {
   private readonly moodAssetMap: Record<string, string> = {
     'HAPPY': '/assets/Images-Transparent/Image-Mood-Happy.png',
     'VERY HAPPY': '/assets/Images-Transparent/Image-Mood-Very happy.png',
-    'EXCITED': '/assets/Images-Transparent/Image-Mood-Excited.png',
     'SAD': '/assets/Images-Transparent/Image-Mood-Sad.png',
-    'VERY SAD': '/assets/Images-Transparent/Image-Mood-Upset.png',
-    'UPSET': '/assets/Images-Transparent/Image-Mood-Upset.png',
     'NERVOUS': '/assets/Images-Transparent/Image-Mood-Nervous.png',
+    'UPSET': '/assets/Images-Transparent/Image-Mood-Upset.png',
+    'EXCITED': '/assets/Images-Transparent/Image-Mood-Excited.png',
     'NEUTRAL': '/assets/Images-Transparent/Mood-emoji-neutral-home.png'
   };
 
@@ -51,7 +50,7 @@ export class MoodSelectorComponent {
     { src: '/assets/Images-Transparent/Image-Mood-Happy.png', label: 'Happy', vibe: 'HAPPY' },
     { src: '/assets/Images-Transparent/Image-Mood-Excited.png', label: 'Excited', vibe: 'EXCITED' },
     { src: '/assets/Images-Transparent/Image-Mood-Sad.png', label: 'Sad', vibe: 'SAD' },
-    { src: '/assets/Images-Transparent/Image-Mood-Upset.png', label: 'Very sad', vibe: 'VERY SAD' },
+    { src: '/assets/Images-Transparent/Image-Mood-Upset.png', label: 'Upset', vibe: 'UPSET' },
     { src: '/assets/Images-Transparent/Image-Mood-Nervous.png', label: 'Nervous', vibe: 'NERVOUS' }
   ];
 

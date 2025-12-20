@@ -29,30 +29,7 @@
       </div>
     </div>
 
-    <div class="mindful-faq">
-      <h3 class="mindful-faq__title">FAQ's</h3>
-
-      <details class="mindful-faq__item">
-        <summary>What if my child doesn't have the app downloaded yet?</summary>
-        <p>Your child will need to download the app first. You can share the download link along with the family code.
-        </p>
-      </details>
-
-      <details class="mindful-faq__item">
-        <summary>Can I add multiple children to the same family?</summary>
-        <p>Yes, you can add multiple children to your family using the same family code.</p>
-      </details>
-
-      <details class="mindful-faq__item">
-        <summary>What if the family code stops working or expires?</summary>
-        <p>Family codes don't expire, but you can generate a new one if needed from your family settings.</p>
-      </details>
-
-      <details class="mindful-faq__item">
-        <summary>What if I want to join someone else's family instead of creating my own?</summary>
-        <p>You can choose to join an existing family instead of creating a new one in the next step.</p>
-      </details>
-    </div>
+    <profile-facts [faqs]="parentFaqs"></profile-facts>
 
     <mindful-button type="orange-onboard" text="Next" routerLink="/home/join-family2" [queryParams]="{ role: userRole }"></mindful-button>
   </div>

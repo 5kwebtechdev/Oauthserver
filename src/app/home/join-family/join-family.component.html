@@ -38,13 +38,7 @@
         [disabled]="form.invalid || isLoading">
       </mindful-button>
     </form>
+    <profile-facts [faqs]="codeEntryFaqs"></profile-facts>
 
-    <div class="mindful-faq mt-9" style="margin-top:36px !important">
-      <h3 class="mindful-faq__title">FAQ's</h3>
-      <details class="mindful-faq__item">
-        <summary>What if I don't have the family code or QR yet?</summary>
-        <p>Ask your parent to create a family and share the code with you.</p>
-      </details>
-    </div>
   </div>
 </ion-content>

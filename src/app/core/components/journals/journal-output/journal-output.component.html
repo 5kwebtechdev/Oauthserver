@@ -60,6 +60,7 @@
 
 </ion-content>
 
-<!-- Floating Post Button (small, magenta) -->
-<mindful-button *ngIf="filteredEntries && filteredEntries.length > 0" type="magenta" text="+" large
-  class="journal-floating-post" (click)="openJournalInput()"></mindful-button>
+<!-- Fixed Add Button -->
+<div class="add-button-fixed" (click)="onAddClick()">
+  <mindful-button type="add"></mindful-button>
+</div>

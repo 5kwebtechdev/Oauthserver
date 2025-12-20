@@ -1,22 +1,19 @@
 .help-support-page{
     padding: 16px;
+    flex-direction: column;
+    gap:24px;
+    display: flex;
 }
+
 .help-support-tems{
     display: flex;
-width: 361px;
-flex-direction: column;
-align-items: flex-start;
-gap: 24px;
-}
+    flex-direction: column;
+    gap:2px;
 
-.help-heading{
-    color: #282527;
+    h1{
+        color: #282527;
 font-family: Nunito;
 font-size: 16px;
-font-style: normal;
 font-weight: 600;
-line-height: 140%; /* 22.4px */
-align-self: stretch;
+    }
 }
-
-

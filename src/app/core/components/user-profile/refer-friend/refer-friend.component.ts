@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { ProfileFactsComponent } from '../profile-facts/profile-facts.component';
+import { ProfileFactsComponent, FaqItem, PROFILE_FAQS } from '../profile-facts/profile-facts.component';
 import { IonicModule } from '@ionic/angular';
 import { AuthService, ReferralCodeResponse } from '../../../services/auth.service';
 import { Subject, takeUntil } from 'rxjs';
@@ -17,7 +17,7 @@ import { Subject, takeUntil } from 'rxjs';
 export class ReferFriendComponent implements OnInit, OnDestroy {
   referralCode: string = '';
   shareLink: string = '';
-  faqs: Array<{question: string, answer?: string}> = [];
+  faqs: FaqItem[] = [];
   private destroy$ = new Subject<void>();
 
   constructor(private authService: AuthService) {}
@@ -33,11 +33,15 @@ export class ReferFriendComponent implements OnInit, OnDestroy {
   }
 
   private initializeFaqs(): void {
-    this.faqs = [
-      { question: 'How does this work?', answer: '' },
-      { question: 'The code is not working', answer: '' },
-      { question: 'I cannot copy the code', answer: '' }
-    ];
+    this.faqs = PROFILE_FAQS.filter(f => (f.section || '').toLowerCase() === 'profile' && (f.screen || '').toLowerCase().includes('refer a friend (child)'));
+    // fallback to a minimal set if none found
+    if (!this.faqs || this.faqs.length === 0) {
+      this.faqs = [
+        { question: 'How does this work?' },
+        { question: 'The code is not working' },
+        { question: 'I cannot copy the code' }
+      ];
+    }
   }
 
   private loadReferralCode(): void {

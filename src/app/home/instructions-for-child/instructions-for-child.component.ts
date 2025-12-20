@@ -1,14 +1,20 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { IonicModule } from '@ionic/angular';
+import { ProfileFactsComponent, FaqItem, PROFILE_FAQS } from '../../core/components/user-profile/profile-facts/profile-facts.component';
+import { MindfulButtonComponent } from '../../core/components/mindful-button/mindful-button.component';
 
 @Component({
   selector: 'app-instructions-for-child',
   templateUrl: './instructions-for-child.component.html',
   styleUrls: ['./instructions-for-child.component.scss'],
-  standalone: false
+  standalone: true,
+  imports: [CommonModule, IonicModule, ProfileFactsComponent, RouterModule, MindfulButtonComponent]
 })
 export class InstructionsForChildComponent implements OnInit {
   userRole: 'child' | 'parent' | 'self' = 'child';
+  preLinkingFaqs: FaqItem[] = PROFILE_FAQS.filter(f => (f.section || '').toLowerCase() === 'onboarding' && (f.screen || '').toLowerCase().includes('instructions- child (pre linking)'));
 
   constructor(
     private router: Router,

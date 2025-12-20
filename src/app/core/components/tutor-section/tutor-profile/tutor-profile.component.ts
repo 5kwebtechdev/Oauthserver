@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { ProfileFactsComponent } from '../../user-profile/profile-facts/profile-facts.component';
+import { ProfileFactsComponent, FaqItem, PROFILE_FAQS } from '../../user-profile/profile-facts/profile-facts.component';
 
 export interface TutorProfile {
   name?: string;
@@ -27,12 +27,12 @@ export class TutorProfileComponent {
   @Input() tutor: TutorProfile | undefined;
   // right-side navigator actions for this profile (heart with count)
   navActions: Array<{ type: 'edit' | 'icon' | 'iconWithCount' | 'heart', src?: string, alt?: string, count?: number }> = [];
-  // FAQ data to pass to ProfileFacts component
-  tutorFaqs: Array<{ question: string; description?: string; answer?: string }> = [
-    { question: "What if my child doesn't like the tutor?", answer: '' },
-    { question: 'Is the class online or offline?', answer: '' },
-    { question: 'How are tutors ranked?', answer: '' }
-  ];
+  // FAQ data to pass to ProfileFacts component — use shared PROFILE_FAQS filtered for Tutor entries
+  tutorFaqs: FaqItem[] = PROFILE_FAQS.filter(f => {
+    const s = (f.section || '').toLowerCase();
+    const scr = (f.screen || '').toLowerCase();
+    return s === 'tutor' || scr.includes('tutor');
+  });
 
   constructor(private modalCtrl: ModalController) { }
 

@@ -5,6 +5,7 @@ import { CoreService } from '../../core/services/core.service';
 import { FamilyService } from '../../core/services/family.service';
 import { BarcodeScanner, BarcodesScannedEvent } from '@capacitor-mlkit/barcode-scanning';
 import { AlertController } from '@ionic/angular';
+import { FaqItem, PROFILE_FAQS } from '../../core/components/user-profile/profile-facts/profile-facts.component';
 
 @Component({
   selector: 'app-join-family2',
@@ -23,6 +24,9 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
   qrCodeData = '';
   createdFamilyName = '';
   isScanning = false;
+  createFaqs: FaqItem[] = [];
+  joinFaqs: FaqItem[] = [];
+  createdFaqs: FaqItem[] = [];
 
   constructor(
     private router: Router,
@@ -72,6 +76,11 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
         });
       }
     });
+
+    // prepare FAQ subsets per requested mapping
+    this.createFaqs = PROFILE_FAQS.filter(f => (f.section || '').toLowerCase() === 'onboarding' && (f.screen || '').toLowerCase().includes('join/create'));
+    this.joinFaqs = PROFILE_FAQS.filter(f => (f.section || '').toLowerCase() === 'onboarding' && (f.screen || '').toLowerCase().includes('join family') && !(f.screen || '').toLowerCase().includes('create'));
+    this.createdFaqs = PROFILE_FAQS.filter(f => (f.section || '').toLowerCase() === 'onboarding' && (f.screen || '').toLowerCase().includes('create family code'));
   }
 
   async ngOnDestroy() {

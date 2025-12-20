@@ -16,9 +16,7 @@ $muted: rgba(40, 37, 39, 0.7);
 		flex-direction: column;
 		align-items: center;
 		gap: 12px;
-		width: 361px;
-		height: 231px;
-		margin-top: 48px; // leave header space
+
 	}
 
 	&__illustration {
@@ -54,81 +52,16 @@ $muted: rgba(40, 37, 39, 0.7);
 	}
 
 	&__post {
-		/* keep layout sizing for legacy button styles */
-		margin-top: 6px;
-		width: 361px;
-		height: 42px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 10px 12px;
+    width: 100%;
 
-		/* The original background/box-shadow belongs to the native button/text wrapper.
-		   When using <mindful-button> we clear background so the component's own styles show.
-		*/
-		background: none;
-		border: none;
-		box-shadow: none;
-		cursor: default;
+    align-items: center;
+    justify-content: center;
+    padding: 0px 12px;
 
-		/* If a native element with class .post-text or .journal-empty__post-text exists, style it
-		   (this preserves previous look for any leftover markup). */
-		button .post-text,
-		button .journal-empty__post-text,
-		.post-text,
-		.journal-empty__post-text {
-			display: flex;
-			flex-direction: row;
-			justify-content: center;
-			align-items: center;
-			padding: 10px 12px;
-			gap: 8px;
-			width: 361px;
-			height: 42px;
-			background: linear-gradient(270.94deg, #90214D 0.07%, #CD3578 99.93%);
-			border: 1px solid #4A0D25;
-			box-shadow: 0px 0px 1px 0.5px rgba(144, 33, 77, 0.2), inset 0px -2px 2px #EA7CB5;
-			border-radius: 8px;
-			color: white;
-			font-size: 16px;
-			font-weight: 500;
-			cursor: pointer;
-			flex: none;
-			order: 1;
-			align-self: center;
-			flex-grow: 0;
-			margin: 0 auto;
-		}
-
-		/* Ensure our mindful-button isn't visually doubled by the parent styles */
-		mindful-button.journal-empty__post {
-			background: none !important;
-			border: none !important;
-			box-shadow: none !important;
-			padding: 0 !important;
-			cursor: pointer;
-		}
 	}
 
 }
 
-@media (max-width: 420px) {
-	.journal-empty {
-		margin-top: 28px;
-
-		&__body {
-			margin-top: 56px;
-		}
-
-		&__post {
-			width: 100%;
-		}
-
-		&__illustration {
-			width: 160px;
-		}
-	}
-}
 
 /* Post card styles modeled after the provided PNG */
 .entries {
