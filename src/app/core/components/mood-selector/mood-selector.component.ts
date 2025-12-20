@@ -6,6 +6,7 @@ import { AuthApi } from '../../api/auth.api';
 import { MoodService } from '../../services/mood.service';
 import { VibesDisplayResponse } from '../../models/mood.model';
 import { AuthService } from '../../services/auth.service';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 export interface MoodOption { key: string; label: string; emoji?: string }
 
@@ -122,7 +123,8 @@ export class MoodSelectorComponent {
     private http: HttpClient,
     private authApi: AuthApi,
     private moodService: MoodService,
-    private authService: AuthService
+    private authService: AuthService,
+    private sanitizer: DomSanitizer
   ) { }
 
   setVibe() {
@@ -234,6 +236,12 @@ export class MoodSelectorComponent {
 
   get currentVibe(): VibesDisplayResponse | null {
     return this.vibes[0] || null;
+  }
+
+  get currentVibeTitleSafe(): SafeHtml | null {
+    const v = this.currentVibe;
+    if (!v || !v.title) return null;
+    return this.sanitizer.bypassSecurityTrustHtml(v.title);
   }
 
   trackByUserId = (_: number, item: VibesDisplayResponse) => item?.userId ?? _;

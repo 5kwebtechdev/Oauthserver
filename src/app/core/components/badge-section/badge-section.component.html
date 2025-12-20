@@ -1,6 +1,6 @@
+<ion-content>
 <mindful-card-header [title]="'Your Badge Quest'" [subtitleLeft]="'Earn badges'" [subtitleMiddle]="'Level up'"
     [subtitleRight]="'Show the world'" [showBackArrow]="true" (backClick)="onBackClick()"></mindful-card-header>
-<ion-content>
     <!-- Recent Achievement Card -->
     <div class="recent-achievement-card" *ngIf="recentAchievement">
         <div class="achievement-content">
@@ -16,9 +16,7 @@
                 <button type="button" class="share-button" (click)="onShareClick()">
                     Share now
                 </button>
-                <!-- <ion-button class="test-button" size="small" (click)="onTestClick()">
-                    test now
-                </ion-button> -->
+              
             </div>
         </div>
     </div>
