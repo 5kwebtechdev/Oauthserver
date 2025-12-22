@@ -11,6 +11,7 @@
     align-items: center;
 }
 
+
 /* Header styles copied from user-dashboard for consistent look */
 .profile-header {
     display: flex;
@@ -111,7 +112,7 @@
     flex-direction: column;
     align-items: center;
     gap: 36px;
-    padding: 0px 0px 90px 0px;
+    padding: 0px 16px 90px 16px;
 }
 
 /* Make mood-selector on parent-account non-interactive and show a small overlay */
@@ -218,4 +219,40 @@
 .child-selected {
     color: #4CAF50;
     font-weight: 700;
+}
+
+.school-shopping-banner{
+    display: flex;
+width: 100%;
+padding: 16px 4px 0 24px;
+gap: 8px;
+border-radius: 16px;
+background: #90214D;
+box-shadow: 0 4px 4px 0 rgba(249, 210, 220, 0.25) inset;
+
+h1{
+    color: #FFF;
+font-family: Fredoka;
+font-size: 16px;
+font-weight: 500;
+}
+
+p{
+    color: #FFF;
+font-family: Nunito;
+font-size: 13px;
+font-weight: 500;
+}
+img{
+    width: 103px;
+height: 100%;
+}
+
+.school-mascot{   
+    width: 103px;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #CC2F6D 0%, #90214D 70%);
+    z-index: 0;
+    pointer-events: none;}
 }

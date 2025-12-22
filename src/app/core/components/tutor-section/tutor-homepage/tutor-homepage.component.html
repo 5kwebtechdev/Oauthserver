@@ -84,11 +84,11 @@
       showCloseButton: true,
       backdrop: true,
       primaryCTA: { text: '📎 Copy Link' },
-      secondaryCTA: { text: '🟢 Share through Whatsapp' }
+      secondaryCTA: { text: ' Share through Whatsapp' }
     }" (backdropClick)="closeReferModal()" (primaryAction)="copyLink()" (secondaryAction)="shareWhatsapp()"
     (closeAction)="closeReferModal()">
   </app-mindful-popup>
 
   <!--footer-->
+  <app-footer></app-footer>
 </ion-content>
-<app-footer></app-footer>

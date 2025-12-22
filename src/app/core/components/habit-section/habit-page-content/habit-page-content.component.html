@@ -8,7 +8,7 @@
         <habit-card mode="single" [habit]="singleModeHabit"></habit-card>
     </div>
 
-    <div class="container w-full" *ngIf="showContent">
+    <div class="habit-task-switch w-full" *ngIf="showContent">
         <div class="row toggler"
             [ngClass]="{ 'habits-active': currentMainTab === 'habits', 'tasks-active': currentMainTab === 'tasks' }">
             <div class="col-6" (click)="selectMainTab('habits')"

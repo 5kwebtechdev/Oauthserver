@@ -83,12 +83,22 @@
         </section>
 
         <div class="dashboard-content">
-            <div class="mood-selector w-full parent-mood-readonly" style="padding:0px 16px;" aria-label=" Mood (view
+             <div class="school-shopping-banner d-flex">
+                <div class="school-shop-txt">
+                    <h1>School Shopping, Done?</h1>
+                    <p>Get your child's Uniforms & Books here.</p>
+                </div>
+                <div class="school-mascot">
+                <img src="/assets/School-assets/school-mascot.png" alt="School Mascot" />
+                </div>
+            </div>
+
+            <div class="mood-selector w-full parent-mood-readonly" aria-label=" Mood (view
                 only)">
                 <mood-selector #moodSel [value]="selectedMood"></mood-selector>
             </div>
 
-            <div class="w-full" style="padding:0px 16px;">
+            <div class="ad-banner w-full">
                 <ad-banner></ad-banner>
             </div>
 

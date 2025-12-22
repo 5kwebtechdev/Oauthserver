@@ -16,7 +16,7 @@ import { Router } from '@angular/router';
     <mindful-navigator heading="Your Universe" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
         rightIconAlt="Calendar" (rightIconClick)="onOpenCalendar()" (back)="onBack()"></mindful-navigator>
 
-    <habit-page-content></habit-page-content>
+    <habit-page-content style="padding:0px 16px;"></habit-page-content>
 </ion-content>`,
   styles: [],
   imports: [
