@@ -83,15 +83,17 @@
         </section>
 
         <div class="dashboard-content">
-             <div class="school-shopping-banner d-flex">
-                <div class="school-shop-txt">
-                    <h1>School Shopping, Done?</h1>
-                    <p>Get your child's Uniforms & Books here.</p>
+            <a class="school-shopping-link" [routerLink]="['/authed','school-store']" role="link">
+                <div class="school-shopping-banner d-flex">
+                    <div class="school-shop-txt">
+                        <h1>School Shopping, Done?</h1>
+                        <p>Get your child's Uniforms & Books here.</p>
+                    </div>
+                    <div class="school-mascot">
+                        <img src="/assets/School-assets/school-mascot.png" alt="School Mascot" />
+                    </div>
                 </div>
-                <div class="school-mascot">
-                <img src="/assets/School-assets/school-mascot.png" alt="School Mascot" />
-                </div>
-            </div>
+            </a>
 
             <div class="mood-selector w-full parent-mood-readonly" aria-label=" Mood (view
                 only)">

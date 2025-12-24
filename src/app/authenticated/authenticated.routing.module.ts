@@ -140,6 +140,9 @@ const routes: Routes = [
       }, {
         path: 'badges',
         loadComponent: () => import('../core/components/badge-section/badge-section.component').then(m => m.BadgeSectionComponent)
+      }, {
+        path: 'school-store',
+        loadComponent: () => import('../core/components/school-store/school-store.components').then(m => m.SchoolStoreComponent)
       }
     ]
   }

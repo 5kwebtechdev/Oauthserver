@@ -1,7 +1,7 @@
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Observable, combineLatest, BehaviorSubject } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
+import { Observable, combineLatest, BehaviorSubject, Subscription } from 'rxjs';
+import { map, startWith, distinctUntilChanged } from 'rxjs/operators';
 import { LoadingService } from '../../services/loading.service';
 
 @Component({
@@ -134,6 +134,9 @@ import { LoadingService } from '../../services/loading.service';
 })
 export class SupermeLoadingComponent {
     private _inputVisible$ = new BehaviorSubject<boolean>(false);
+    private _forceHide$ = new BehaviorSubject<boolean>(false);
+    private _showSub: Subscription | undefined;
+    private _timerId: any;
 
     @Input()
     set visible(v: boolean) {
@@ -153,14 +156,38 @@ export class SupermeLoadingComponent {
 
     constructor(private loading: LoadingService) {
 
-        this.visible$ = combineLatest([
+        const showState$ = combineLatest([
             this._inputVisible$.asObservable().pipe(startWith(false)),
             this.loading.isLoading$.pipe(startWith(false))
-        ]).pipe(map(([i, s]) => !!i || !!s));
+        ]).pipe(map(([i, s]) => !!i || !!s), distinctUntilChanged());
+
+        // visible when either input or service requests loading AND not force-hidden
+        this.visible$ = combineLatest([showState$, this._forceHide$.asObservable().pipe(startWith(false))]).pipe(
+            map(([show, forceHide]) => show && !forceHide)
+        );
+
+        // subscribe to show state to start/clear the 15s auto-hide timer
+        this._showSub = showState$.subscribe(show => {
+            if (show) {
+                // reset any previous forced hide and timer
+                this._forceHide$.next(false);
+                if (this._timerId) { clearTimeout(this._timerId); }
+                this._timerId = setTimeout(() => this._forceHide$.next(true), 15000);
+            } else {
+                // not showing -> clear timer and ensure forceHide reset
+                if (this._timerId) { clearTimeout(this._timerId); this._timerId = undefined; }
+                this._forceHide$.next(false);
+            }
+        });
 
         this.message$ = combineLatest([
             this._inputMessage$.asObservable().pipe(startWith(undefined)),
             this.loading.message$.pipe(startWith(undefined))
         ]).pipe(map(([inputMsg, svcMsg]) => inputMsg ?? svcMsg));
+    }
+
+    ngOnDestroy(): void {
+        if (this._showSub) { this._showSub.unsubscribe(); }
+        if (this._timerId) { clearTimeout(this._timerId); this._timerId = undefined; }
     }
 }

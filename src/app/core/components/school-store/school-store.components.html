@@ -1,0 +1,70 @@
+<ion-content>
+    <main class="school-store-main">
+        <mindful-navigator heading="Student-Store" (back)="goBack()">
+            <button slot="end" class="nav-icon icon-1" aria-label="Store action 1"></button>
+            <button slot="end" class="nav-icon icon-2" aria-label="Store action 2"></button>
+        </mindful-navigator>
+
+        <div class="school-store-content">
+
+            <div class="slider-wrap">
+                <swiper-container #swiperEl class="edu-swiper" [slides-per-view]="1" [loop]="true"
+                    [autoplay]="{ delay: 3000, disableOnInteraction: false }">
+                    <swiper-slide *ngFor="let i of [0,1,2,3]">
+                        <div class="edu-banner-image"></div>
+                    </swiper-slide>
+                </swiper-container>
+
+                <!-- custom pager: match LearningSection pager style and placement -->
+                <div class="edu-pagination" aria-hidden="true">
+                    <button type="button" class="edu-dot" *ngFor="let n of [0,1,2,3]; let idx = index"
+                        [class.active]="currentSlide === idx" (click)="goToSlide(idx)"></button>
+                </div>
+            </div>
+
+            <div class="store-cards">
+                <div class="store-card">
+                    <h3>Boys Uniforms</h3>
+                    <img src="/assets/School-assets/Boys Uniform.png" alt="Boys Uniforms">
+                </div>
+
+                <div class="store-card">
+                    <h3>Girls Uniforms</h3>
+                    <img src="/assets/School-assets/Girls Uniform.png" alt="Girls Uniforms">
+                </div>
+
+                <div class="store-card">
+                    <h3>Textbooks</h3>
+                    <img src="/assets/School-assets/text-books.png" alt="Textbooks">
+                </div>
+
+                <div class="store-card-2 d-flex-column">
+                <div class="store-card  w-100">
+                    <h3>Footwears</h3>
+                    <img src="/assets/School-assets/Footwear.png" alt="Footwears">
+                  </div>
+                    <div class="store-card  w-100">
+                    <h3>Accessories</h3>
+                    <img src="/assets/School-assets/Accessories.png" alt="Accessories">
+                </div>
+                </div>
+
+                <div class="store-card">
+                    <h3>Accessories</h3>
+                    <img src="/assets/School-assets/Accessories.png" alt="Accessories">
+                </div>
+
+                <div class="store-card">
+                    <h3>Entrance Exam Books</h3>
+                    <img src="/assets/School-assets/Entrance Exam.png" alt="Entrance Exam Books">
+                </div>
+
+                <div class="store-card">
+                    <h3>General Books</h3>
+                    <img src="/assets/School-assets/gernal-books.png" alt="General Books">
+                </div>
+            </div>
+
+        </div>
+    </main>
+</ion-content>

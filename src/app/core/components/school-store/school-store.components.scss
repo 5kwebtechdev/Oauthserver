@@ -1,0 +1,127 @@
+.school-store-content{
+     display: flex;
+flex-direction: column;
+gap: 24px;
+padding: 0px 16px;
+}
+.nav-icons {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+}
+
+.nav-icon {
+	width: 28px;
+	height: 28px;
+	display: inline-block;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: contain;
+	border: 0;
+	padding: 0;
+	background-color: transparent;
+}
+
+.icon-1 {
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='21' height='24' viewBox='0 0 21 24' fill='none'><path d='M2.2331 24C1.6171 24 1.09087 23.7827 0.654397 23.348C0.218132 22.9131 0 22.3888 0 21.7751V7.76339C0 7.14964 0.218132 6.62533 0.654397 6.19046C1.09087 5.7558 1.6171 5.53846 2.2331 5.53846H4.94118C4.94118 4.00164 5.48203 2.69436 6.56374 1.61661C7.64544 0.538871 8.95753 0 10.5 0C12.0425 0 13.3546 0.538871 14.4363 1.61661C15.518 2.69436 16.0588 4.00164 16.0588 5.53846H18.7669C19.3829 5.53846 19.9091 5.7558 20.3456 6.19046C20.7819 6.62533 21 7.14964 21 7.76339V21.7751C21 22.3888 20.7819 22.9131 20.3456 23.348C19.9091 23.7827 19.3829 24 18.7669 24H2.2331ZM2.2331 22.1538H18.7669C18.862 22.1538 18.9491 22.1144 19.0282 22.0354C19.1074 21.9566 19.1471 21.8698 19.1471 21.7751V7.76339C19.1471 7.66862 19.1074 7.58185 19.0282 7.50308C18.9491 7.4241 18.862 7.38462 18.7669 7.38462H2.2331C2.13799 7.38462 2.0509 7.4241 1.97184 7.50308C1.89257 7.58185 1.85294 7.66862 1.85294 7.76339V21.7751C1.85294 21.8698 1.89257 21.9566 1.97184 22.0354C2.0509 22.1144 2.13799 22.1538 2.2331 22.1538ZM10.5 14.1538C12.0425 14.1538 13.3546 13.615 14.4363 12.5372C15.518 11.4595 16.0588 10.1522 16.0588 8.61539H14.2059C14.2059 9.64103 13.8456 10.5128 13.125 11.2308C12.4044 11.9487 11.5294 12.3077 10.5 12.3077C9.47059 12.3077 8.59559 11.9487 7.875 11.2308C7.15441 10.5128 6.79412 9.64103 6.79412 8.61539H4.94118C4.94118 10.1522 5.48203 11.4595 6.56374 12.5372C7.64544 13.615 8.95753 14.1538 10.5 14.1538ZM6.79412 5.53846H14.2059C14.2059 4.51282 13.8456 3.64103 13.125 2.92308C12.4044 2.20513 11.5294 1.84615 10.5 1.84615C9.47059 1.84615 8.59559 2.20513 7.875 2.92308C7.15441 3.64103 6.79412 4.51282 6.79412 5.53846Z' fill='%23282527'/></svg>");
+}
+
+.icon-2 {
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='24' viewBox='0 0 22 24' fill='none'><path d='M10.0294 21.6097V12.5469L1.94118 7.95197V16.7952C1.94118 16.8601 1.95778 16.9212 1.991 16.9783C2.02422 17.0352 2.07393 17.084 2.14015 17.1246L10.0294 21.6097ZM11.9706 21.6097L19.8599 17.1246C19.9261 17.084 19.9758 17.0352 20.009 16.9783C20.0422 16.9212 20.0588 16.8601 20.0588 16.7952V7.95197L11.9706 12.5469V21.6097ZM9.83044 23.6874L1.16988 18.797C0.80149 18.5888 0.514412 18.3105 0.308647 17.9622C0.102882 17.6137 0 17.2312 0 16.8145V7.18546C0 6.76883 0.102882 6.38627 0.308647 6.03777C0.514412 5.68948 0.80149 5.41124 1.16988 5.20303L9.83044 0.312633C10.1986 0.104212 10.5885 0 11 0C11.4115 0 11.8014 0.104212 12.1696 0.312633L20.8301 5.20303C21.1985 5.41124 21.4856 5.68948 21.6914 6.03777C21.8971 6.38627 22 6.76883 22 7.18546V16.8145C22 17.2312 21.8971 17.6137 21.6914 17.9622C21.4856 18.3105 21.1985 18.5888 20.8301 18.797L12.1696 23.6874C11.8014 23.8958 11.4115 24 11 24C10.5885 24 10.1986 23.8958 9.83044 23.6874ZM15.9898 8.06433L18.9912 6.37484L11.199 1.95324C11.1328 1.91261 11.0664 1.8923 11 1.8923C10.9336 1.8923 10.8672 1.91261 10.801 1.95324L7.99118 3.5402L15.9898 8.06433ZM11 10.9063L14.0088 9.1971L6.01765 4.66568L3.00882 6.37484L11 10.9063Z' fill='%23282527'/></svg>");
+}
+
+.nav-icon:focus {
+	outline: 2px solid rgba(0,0,0,0.12);
+	border-radius: 6px;
+}
+
+.school-store-main{
+    display: flex;
+flex-direction: column;
+gap: 24px;
+}
+
+/* Swiper / pager styles copied from Education main so the slider is visible */
+.edu-banner-image {
+	width: 100%;
+	height: 160px;
+	background-image: url('/assets/School-assets/school-store-banner.jpg');
+	background-position: center;
+	background-repeat: no-repeat;
+	border-radius: 8px;
+}
+
+.edu-swiper {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	position: relative;
+	overflow: visible;
+}
+
+.edu-pagination {
+	display: flex;
+	justify-content: center;
+	gap: 0.5rem;
+	padding: 6px 8px;
+	align-items: center;
+}
+
+.edu-dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.2);
+	border: none;
+	padding: 0;
+	transition: width 160ms ease, background 160ms ease, border-radius 160ms ease;
+}
+
+.edu-dot.active {
+	width: 16px;
+	background: #90214D;
+	border-radius: 23px;
+}
+
+/* Store cards layout */
+.store-cards{
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+	margin-top: 16px;
+}
+
+.store-card{
+	display: flex;
+	width: 172.5px;
+	padding: 12px 8px;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 12px;
+	background: #FFFFFF;
+	border-radius: 12px;
+	box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+	box-sizing: border-box;
+}
+
+.store-card h3{
+	margin: 0;
+	color: #282527;
+	font-family: Nunito, sans-serif;
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.store-card img{
+	width: 126px;
+	height: 126px;
+	aspect-ratio: 1 / 1;
+	object-fit: contain;
+	display: block;
+}
+
+@media (max-width: 420px){
+	.store-card{ width: calc(50% - 8px); }
+}
+
