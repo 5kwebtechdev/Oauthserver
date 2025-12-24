@@ -13,6 +13,12 @@ import { ModalController } from '@ionic/angular';
 export class MindfulNavigatorComponent {
   @Input() heading: string = '';
 
+  // Optional subtext shown below the main heading (e.g. address / location label)
+  @Input() subtext?: string;
+
+  // When true (or when `subtext` is provided) the subtext row will render.
+  @Input() showSubtext: boolean = false;
+
   // Backwards compatibility: some templates pass "arrow". Keep existing literal types
   // but accept the legacy value 'arrow' and map it to the arrowSvg asset.
   @Input() backIcon: 'cancel' | 'arrowSvg' | 'arrow' = 'arrowSvg';

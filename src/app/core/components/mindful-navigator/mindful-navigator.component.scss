@@ -143,3 +143,32 @@
   width: 32px;
   height: 32px;
 }
+
+/* Subtext row shown under the main heading (e.g., address or location) */
+.navigator-heading-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.navigator-subtext-row {
+  margin-top: 0px;
+}
+
+.navigator-subtext {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navigator-subtext-text {
+  color: #282527;
+  font-family: Nunito, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  opacity: 0.7;
+  line-height: 1;
+}
+
+.navigator-subtext-icon svg {
+  display: inline-block;
+}

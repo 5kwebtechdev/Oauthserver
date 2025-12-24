@@ -27,7 +27,21 @@
           </ng-template>
         </ng-template>
       </button>
-      <h1 class="navigator-heading">{{ heading }}</h1>
+      <div class="navigator-heading-wrap">
+        <h1 class="navigator-heading">{{ heading }}</h1>
+
+        <!-- optional subtext row: renders when `showSubtext` is true or `subtext` is provided -->
+        <div class="navigator-subtext-row" *ngIf="showSubtext || subtext">
+          <div class="navigator-subtext">
+            <span class="navigator-subtext-text">{{ subtext }}</span>
+            <span class="navigator-subtext-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="9" height="6" viewBox="0 0 9 6" fill="none">
+                <path d="M0.752053 0H8.18955C8.8583 0 9.19268 0.809375 8.7208 1.28125L5.00205 5C4.7083 5.29375 4.2333 5.29375 3.94268 5L0.220803 1.28125C-0.251072 0.809375 0.0833026 0 0.752053 0Z" fill="#90214D"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="right-group">
       <div class="right-actions">

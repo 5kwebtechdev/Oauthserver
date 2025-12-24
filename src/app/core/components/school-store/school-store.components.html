@@ -1,9 +1,14 @@
 <ion-content>
     <main class="school-store-main">
-        <mindful-navigator heading="Student-Store" (back)="goBack()">
-            <button slot="end" class="nav-icon icon-1" aria-label="Store action 1"></button>
-            <button slot="end" class="nav-icon icon-2" aria-label="Store action 2"></button>
-        </mindful-navigator>
+        <div class="navigator-wrap">
+            <mindful-navigator #navigator heading="Student-Store" [subtext]="navigatorSubtext" [showSubtext]="true" (back)="goBack()">
+                <button slot="end" class="nav-icon icon-1" aria-label="Store action 1"></button>
+                <button slot="end" class="nav-icon icon-2" aria-label="Store action 2"></button>
+            </mindful-navigator>
+
+            <!-- transparent trigger overlapping navigator subtext (clicking subtext or its svg opens the popup) -->
+            <button class="subtext-trigger" aria-label="Open address popup" (click)="openAddressPopup()"></button>
+        </div>
 
         <div class="school-store-content">
 
@@ -23,10 +28,10 @@
             </div>
 
             <div class="store-cards">
-                <div class="store-card">
+                <a class="store-card" role="link" [routerLink]="['/authed','school-store','institute-detail']" aria-label="Open Boys Uniforms details">
                     <h3>Boys Uniforms</h3>
                     <img src="/assets/School-assets/Boys Uniform.png" alt="Boys Uniforms">
-                </div>
+                </a>
 
                 <div class="store-card">
                     <h3>Girls Uniforms</h3>
@@ -38,20 +43,19 @@
                     <img src="/assets/School-assets/text-books.png" alt="Textbooks">
                 </div>
 
-                <div class="store-card-2 d-flex-column">
-                <div class="store-card  w-100">
+                <div class="store-card-2">
+                <div class="store-card-in-2  w-100">
                     <h3>Footwears</h3>
+                    <div class="store-img">
                     <img src="/assets/School-assets/Footwear.png" alt="Footwears">
+                    </div>
                   </div>
-                    <div class="store-card  w-100">
+                    <div class="store-card-in-2  w-100">
                     <h3>Accessories</h3>
+                    <div class="store-img">
                     <img src="/assets/School-assets/Accessories.png" alt="Accessories">
+                         </div>
                 </div>
-                </div>
-
-                <div class="store-card">
-                    <h3>Accessories</h3>
-                    <img src="/assets/School-assets/Accessories.png" alt="Accessories">
                 </div>
 
                 <div class="store-card">
@@ -64,7 +68,33 @@
                     <img src="/assets/School-assets/gernal-books.png" alt="General Books">
                 </div>
             </div>
+            <div class="footer-exchange" role="contentinfo" aria-label="Store footer features">
+                <div class="footer-item">
+                    <img src="/assets/School-assets/School Partner.png" alt="Official School Partner" />
+                    <div class="footer-text">Official School Partner</div>
+                </div>
 
+                <div class="footer-item">
+                    <img src="/assets/School-assets/Easy Exchange.png" alt="Easy Exchange" />
+                    <div class="footer-text">Easy Exchange</div>
+                </div>
+
+                <div class="footer-item">
+                    <img src="/assets/School-assets/Secure Payment.png" alt="Secure Payment" />
+                    <div class="footer-text">Secure Payment</div>
+                </div>
+            </div>
+        </div>
+        <!-- Bottom fixed address popup -->
+        <div class="address-popup" [class.open]="showAddressPopup" role="dialog" aria-modal="true" aria-label="Address options">
+            <div class="address-popup-inner">
+                <button class="popup-close" aria-label="Close" (click)="closeAddressPopup()">✕</button>
+                <div class="address-item" *ngFor="let a of addresses" (click)="selectAddress(a)" [class.selected]="selectedId === a.id" role="button" tabindex="0" (keyup.enter)="selectAddress(a)">
+                    <div class="address-text" [innerHTML]="a.html"></div>
+                </div>
+
+                <button class="add-address">+ Add Address</button>
+            </div>
         </div>
     </main>
 </ion-content>
