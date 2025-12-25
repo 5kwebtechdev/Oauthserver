@@ -148,6 +148,13 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy {
     this.selectedSubCategory = s.id;
     this.cdr.detectChanges();
   }
+
+  openProduct(p: any): void {
+    if (!p || p.outOfStock) return;
+    // navigate to product detail and pass title in history state for heading
+    const url = `/authed/school-store/product/${encodeURIComponent(p.id)}`;
+    try { this.router.navigateByUrl(url, { state: { product: p } }); } catch (e) { this.router.navigateByUrl(url); }
+  }
   // Drag flag used to suppress clicks while user is scrolling
   private _isDragging = false;
   private _cleanupSlider?: () => void;

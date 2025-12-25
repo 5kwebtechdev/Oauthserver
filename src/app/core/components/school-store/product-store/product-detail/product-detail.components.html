@@ -1,0 +1,51 @@
+<ion-content>
+	<main class="product-detail-main">
+		<mindful-navigator [heading]="heading" (back)="goBack()">
+			<button slot="end" class="nav-icon icon-1" aria-label="Store action 1"></button>
+		</mindful-navigator>
+
+		<!-- Product detail content goes here -->
+        <div class="product-detail-view">
+			<div #swiper class="product-swiper"
+				 (pointerdown)="onPointerDown($event)"
+				 (pointermove)="onPointerMove($event)"
+				 (pointerup)="onPointerUp($event)"
+				 (pointercancel)="onPointerUp($event)"
+				 (pointerleave)="onPointerUp($event)">
+
+				<div #slides class="slides" [style.transition]="isDragging ? 'none' : 'transform 320ms ease'">
+					<div class="slide" *ngFor="let img of images">
+						<img [src]="img" [alt]="heading">
+					</div>
+				</div>
+			</div>
+
+			<div class="dots" *ngIf="images?.length">
+				<button type="button" *ngFor="let img of images; let i = index" (click)="goTo(i)" [class.active]="i === currentIndex" [attr.aria-label]="'Slide ' + (i + 1)"></button>
+			</div>
+
+		</div>
+
+        <!-- Additional product details-->
+        <div class="product-info-section">
+            <div class="product-name-price d-flex flex-column gap-8">
+              <div class="title-n-name d-flex flex-column gap-1 align-start">
+				<h1>Classic White Half-Sleeve Shirt</h1>
+				<p>Official School Wear</p>
+                <span>Mandatory</span>
+              </div>
+               <div class="price-n-quantity">
+                 <div class="price d-flex">
+                   <span class="discounted-price">₹799</span>
+                   <span class="original-price">₹999</span>
+                 </div>
+                 <div class="quantity-selector d-flex align-center gap-8">
+                   <!-- <button aria-label="Decrease quantity" (click)="decreaseQuantity()">-</button> -->
+                   <span>2</span>
+                   <!-- <button aria-label="Increase quantity" (click)="increaseQuantity()">+</button> -->
+                 </div>
+                 </div>
+            </div>
+        </div>
+	</main>
+</ion-content>

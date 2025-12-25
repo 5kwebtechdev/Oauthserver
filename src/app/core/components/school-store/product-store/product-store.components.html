@@ -39,7 +39,7 @@
             <div class="product-list-wrap">
                 <ng-container *ngIf="visibleProducts && visibleProducts.length; else emptyState">
                     <div class="product-list-card">
-                        <div class="product-card" *ngFor="let p of visibleProducts">
+                        <div class="product-card" *ngFor="let p of visibleProducts" (click)="!p.outOfStock && openProduct(p)">
                             <div class="product-image-wrap">
                                 <img [src]="p.img" [alt]="p.title">
 
