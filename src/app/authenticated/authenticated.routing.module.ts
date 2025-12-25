@@ -146,6 +146,9 @@ const routes: Routes = [
       }, {
         path: 'school-store/institute-detail',
         loadComponent: () => import('../core/components/school-store/institute-detail-fill/institute-detail-fill.components').then(m => m.InstituteDetailFillComponent)
+      }, {
+        path: 'school-store/product',
+        loadComponent: () => import('../core/components/school-store/product-store/product-store.components').then(m => m.ProductStoreComponent)
       }
     ]
   }

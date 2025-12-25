@@ -65,7 +65,7 @@ font-weight: 600;
 text-decoration: none;
     
 
-span{
+a{
     color: var(--Accent, #90214D);
     font-family: Nunito;
     font-size: 13px;
@@ -139,3 +139,114 @@ box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
 .form-container{
     padding:20px 16px;
 }
+
+/* Field selection bottom popup styles */
+.field-popup-backdrop{
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background: rgba(0,0,0,0.28);
+    z-index: 20000;
+}
+
+.field-popup{
+width: 100%;
+     padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    border-radius: 32px 32px 0px 0px;
+    background: #FFF;
+    box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
+    /* show immediately and above other layers */
+    transform: translateY(0);
+    animation: none;
+    z-index: 20001;
+    outline: 1px solid rgba(144,33,77,0.04);
+}
+
+.popup-handle{
+    width: 40px;
+    height: 4px;
+    background: rgba(40,37,39,0.12);
+    border-radius: 4px;
+    align-self: center;
+}
+
+.popup-title{
+    color: #282527;
+    font-family: Nunito, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.popup-list{ width: 100%; display: flex; flex-direction: column; gap: 16px; }
+
+.popup-option{
+    background: transparent;
+    border: none;
+    text-align: left;
+    padding: 8px 4px;
+    color: #282527;
+    font-family: Nunito, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+@keyframes popupSlideUp{
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+/* Request new school modal styles */
+.request-popup-backdrop{
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.28);
+    z-index: 10000;
+}
+
+.request-popup{
+    width: calc(100% - 48px);
+    max-width: 520px;
+    padding: 20px;
+    border-radius: 24px;
+    background: #FFF;
+    box-shadow: 0 6px 18px rgba(16,16,16,0.12);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.request-close{
+    position: absolute;
+    right: 14px;
+    top: 12px;
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.request-title{
+    margin: 6px 0 0 0;
+    color: #282527;
+    font-family: Nunito, sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.request-inputs{ display: flex; flex-direction: column; gap: 12px; }
+.request-row .request-label{ color: #282527; font-family: Nunito; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.request-row .input-select{ padding: 12px; border-radius: 12px; border: 1px solid rgba(40,37,39,0.2); }
+.request-row .input-select input{ width: 100%; border: none; outline: none; font-family: Nunito; font-size: 14px; }
+
+.request-action{ padding-top: 8px; }

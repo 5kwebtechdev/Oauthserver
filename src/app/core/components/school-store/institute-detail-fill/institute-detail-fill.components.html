@@ -17,21 +17,56 @@
             </ng-template>
 
             <ng-container *ngFor="let f of fields">
-                <div class="institute-field">
+                <div class="institute-field" [style.opacity]="selectedValues[f.key] ? '1' : '0.5'">
                     <div class="field-label">{{ f.label }}</div>
-                    <div class="input-select" role="button" tabindex="0" [attr.aria-label]="f.aria">
+                    <div class="input-select" role="button" tabindex="0" [attr.aria-label]="f.aria" (click)="openFieldPopup(f.key)">
                         <span class="placehold">{{ f.placeholder }}</span>
                         <span class="input-icon"><ng-container *ngTemplateOutlet="chev"></ng-container></span>
                     </div>
 
-                    <div *ngIf="f.key === 'school'" class="helper-text">We need this to show the correct catalog.<br> <a class="request-link" href="#">Can't find your school? <span>Request to Add</span></a></div>
+                    <div *ngIf="f.key === 'school'" class="helper-text">We need this to show the correct catalog.<br>
+                        <span class="request-link">Can't find your school? <a role="button" tabindex="0" (click)="openRequestPopup()">Request to Add</a></span>
+                    </div>
                 </div>
             </ng-container>
 
+            <!-- Field selection bottom popup (reusable) -->
+            <div *ngIf="showFieldPopup" class="field-popup-backdrop" (click)="closeFieldPopup()">
+                <div class="field-popup" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+                    <div class="popup-handle"></div>
+                    <div class="popup-title">{{ getActiveLabel() }}</div>
+                    <div class="popup-list">
+                        <button *ngFor="let o of getActiveOptions()" class="popup-option" (click)="selectOption(o)">{{ o }}</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="enter-btn-container">
-                <mindful-button type="magenta" text="Enter Store" large></mindful-button>
+                <mindful-button type="magenta" text="Enter Store" large (click)="enterStore()"></mindful-button>
             </div>
         </div>
         </section>
+
+            <!-- Request new school modal -->
+            <div *ngIf="showRequestPopup" class="request-popup-backdrop" (click)="closeRequestPopup()">
+                <div class="request-popup" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+                    <button class="request-close" aria-label="Close" (click)="closeRequestPopup()">✕</button>
+                    <h3 class="request-title">Request New School</h3>
+
+                    <div class="request-inputs">
+                        <ng-container *ngFor="let rf of requestFields">
+                            <div class="request-row">
+                                <div class="input-select">
+                                    <input type="text" [placeholder]="rf.placeholder" [(ngModel)]="requestForm[rf.key]" />
+                                </div>
+                            </div>
+                        </ng-container>
+                    </div>
+
+                    <div class="request-action">
+                        <mindful-button type="magenta" text="Send request" (click)="sendRequest()"></mindful-button>
+                    </div>
+                </div>
+            </div>
     </main>
     </ion-content>
