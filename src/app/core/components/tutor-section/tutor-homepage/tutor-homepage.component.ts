@@ -26,7 +26,6 @@ import { TutorListItem, TutorSortOption, Tutor } from '../../../models/tutor.mod
     TutorListComponent,
     MindfulPetComponent,
     MindfulSpeechBubbleComponent,
-    TutorAllFilterComponent,
     FooterComponent,
     MindfulPopupComponent
   ],
@@ -158,11 +157,43 @@ export class TutorHomepageComponent implements OnInit, OnDestroy {
     await modal.present();
 
     const { data } = await modal.onWillDismiss();
-    if (data && data.selected) {
-      // Apply filters from modal
-      this.tutorService.setFilters({
-        subjects: data.selected
-      });
+    // TutorAllFilter returns payload as { filters: SelectedFilters }
+    if (data && data.filters) {
+      const sel = data.filters as any;
+      const tf: any = {};
+
+      // sel.filters is a map of fieldKey -> string[]
+      if (sel.filters) {
+        Object.keys(sel.filters).forEach((fieldKey: string) => {
+          const values: string[] = sel.filters[fieldKey] || [];
+          const k = fieldKey.toLowerCase();
+
+          if (k.includes('subject')) {
+            tf.subjects = values;
+          } else if (k.includes('level') || k.includes('class') || k.includes('grade')) {
+            tf.levels = values;
+          } else if (k.includes('availability') || k.includes('day')) {
+            tf.availability = values;
+          } else if (k.includes('contact') || k.includes('mode')) {
+            tf.contactModes = values;
+          } else if (k.includes('location')) {
+            tf.location = values.length > 0 ? values[0] : undefined;
+          } else if (k.includes('experience')) {
+            tf.experience = values.length > 0 ? values[0] : undefined;
+          } else if (k.includes('fee') || k.includes('rate') || k.includes('price')) {
+            // try to extract numeric values for min/max
+            const nums = values.map(v => Number(String(v).replace(/[^0-9.]/g, ''))).filter(n => !isNaN(n));
+            if (nums.length === 1) tf.minRate = nums[0];
+            else if (nums.length >= 2) { tf.minRate = Math.min(...nums); tf.maxRate = Math.max(...nums); }
+          } else {
+            // Fallback: add to subjects if nothing better
+            tf.subjects = tf.subjects ? [...tf.subjects, ...values] : values;
+          }
+        });
+      }
+
+      // Apply derived filters
+      this.tutorService.setFilters(tf);
     }
   }
 

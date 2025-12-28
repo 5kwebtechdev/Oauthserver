@@ -57,7 +57,11 @@
 
     <div class="footer-actions d-flex justify-content-between align-items-center" *ngIf="!isLoading && !errorMessage">
       <mindful-button type="columbian-blue-transparent" text="Clear all" (click)="clearAll()"></mindful-button>
-      <mindful-button type="columbian-blue" text="Show result" (click)="showResult()"></mindful-button>
+      <mindful-button
+        type="columbian-blue"
+        [text]="resultCount === null ? 'Show result' : ('Show ' + resultCount + (resultCount === 1 ? ' result' : ' results'))"
+        (click)="showResult()">
+      </mindful-button>
     </div>
   </div>
 

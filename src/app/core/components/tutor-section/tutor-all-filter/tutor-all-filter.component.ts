@@ -8,6 +8,8 @@ import { ModalController } from '@ionic/angular';
 import { TutorApi } from '../../../api/tutor.api';
 import { TutorCategory, TutorCategoriesResponse, FilterGroup, FilterOption, SelectedFilters } from '../../../models/tutor.model';
 import { finalize } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
+import { TutorService } from '../../../services/tutor.service';
 
 @Component({
   selector: 'tutor-all-filter',
@@ -42,6 +44,9 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
 
   /** Currently checked subfilters mapped by fieldKey */
   selectedFiltersMap: Map<string, Set<string>> = new Map();
+
+  /** Computed number of matching tutors for current selection. null = no interaction yet */
+  resultCount: number | null = null;
 
   /** Mapping of category icons (fallback if API doesn't provide iconUrl) */
   private categoryIconMap: Record<string, string> = {
@@ -166,6 +171,7 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
       this.selectedSidebar = null;
       this.selectedSubFilters = [];
     }
+
   }
 
   /**
@@ -205,6 +211,9 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
     } else {
       fieldSet.delete(item.value);
     }
+
+    // User interaction begins: compute and show count
+    this.updateResultCount();
   }
 
   /**
@@ -231,6 +240,8 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
    */
   clearAll(): void {
     this.selectedFiltersMap.clear();
+    // Reset interaction state so count hides until next user action
+    this.resultCount = null;
   }
 
   /**
@@ -259,6 +270,9 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
   showResult(): void {
     const selectedFilters = this.getSelectedFilters();
     console.log('[TutorAllFilter] Selected filters:', selectedFilters);
+
+    // update count right before dismiss (optional)
+    this.updateResultCount();
 
     // Close modal and pass selected filters
     this.modalCtrl.dismiss({
@@ -305,8 +319,19 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
 
   constructor(
     private modalCtrl: ModalController,
-    private tutorApi: TutorApi
+    private tutorApi: TutorApi,
+    private tutorService: TutorService
   ) { }
+
+  /** Update the computed result count based on current selections */
+  private updateResultCount(): void {
+    try {
+      const sel = this.getSelectedFilters();
+      this.resultCount = this.tutorService.countForSelectedFilters(sel);
+    } catch (e) {
+      this.resultCount = 0;
+    }
+  }
 
   /**
    * Close modal without applying filters

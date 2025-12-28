@@ -10,7 +10,8 @@ import {
     TutorFilters,
     TutorSortOption,
     toTutorListItem,
-    getExperienceYears
+    getExperienceYears,
+    SelectedFilters
 } from '../models/tutor.model';
 
 @Injectable({
@@ -359,5 +360,83 @@ export class TutorService {
         this.filteredTutors$.next([]);
         this.currentFilters$.next({});
         this.currentSort$.next('recent');
+    }
+
+    /**
+     * Estimate count of tutors matching a `SelectedFilters` payload.
+     * This uses the same filtering heuristics as `applyFiltersAndSort` but
+     * does not mutate service state.
+     */
+    countForSelectedFilters(selected: SelectedFilters | null): number {
+        const tutors = this.tutorsCache$.value || [];
+
+        if (!selected || !selected.filters || Object.keys(selected.filters).length === 0) {
+            return tutors.length;
+        }
+
+        // Map SelectedFilters -> TutorFilters (heuristic)
+        const filters: TutorFilters = {};
+
+        for (const fk of Object.keys(selected.filters)) {
+            const vals = selected.filters[fk] || [];
+            const key = fk.toLowerCase();
+
+            if (key.includes('subject')) {
+                filters.subjects = [...(filters.subjects || []), ...vals];
+            } else if (key.includes('level') || key.includes('grade') || key.includes('class')) {
+                filters.levels = [...(filters.levels || []), ...vals];
+            } else if (key.includes('location') || key.includes('city')) {
+                filters.location = vals.length > 0 ? vals[0] : undefined;
+            } else if (key.includes('contact') || key.includes('mode')) {
+                filters.contactModes = [...(filters.contactModes || []), ...(vals as any)];
+            } else if (key.includes('availability') || key.includes('day') || key.includes('time')) {
+                filters.availability = [...(filters.availability || []), ...(vals as any)];
+            } else {
+                // fallback: try matching as subject
+                filters.subjects = [...(filters.subjects || []), ...vals];
+            }
+        }
+
+        let result = [...tutors];
+
+        // Apply subject filter
+        if (filters.subjects && filters.subjects.length > 0) {
+            result = result.filter(t =>
+                t.subjects?.some(s =>
+                    filters.subjects!.some(fs => s.toLowerCase().includes(fs.toLowerCase()))
+                )
+            );
+        }
+
+        // Apply levels filter
+        if (filters.levels && filters.levels.length > 0) {
+            result = result.filter(t =>
+                t.levels?.some(l =>
+                    filters.levels!.some(fl => l.toLowerCase().includes(fl.toLowerCase()))
+                )
+            );
+        }
+
+        // Apply location filter
+        if (filters.location) {
+            const locLower = filters.location.toLowerCase();
+            result = result.filter(t => t.location?.toLowerCase().includes(locLower));
+        }
+
+        // Apply availability filter
+        if (filters.availability && filters.availability.length > 0) {
+            result = result.filter(t =>
+                t.availability?.some(a => filters.availability!.includes(a))
+            );
+        }
+
+        // Apply contact modes filter
+        if (filters.contactModes && filters.contactModes.length > 0) {
+            result = result.filter(t =>
+                t.contactModes?.some(c => filters.contactModes!.includes(c))
+            );
+        }
+
+        return result.length;
     }
 }
