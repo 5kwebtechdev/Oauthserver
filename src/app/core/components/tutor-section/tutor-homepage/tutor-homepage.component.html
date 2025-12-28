@@ -18,9 +18,18 @@
             fill="#6B656A" />
         </svg>
       </span>
-      <input type="text" placeholder="Looking for a math hero?">
-      <span class="divider" aria-hidden="true"></span>
-      <button class="mic" aria-label="Use voice search">
+      <input type="text" 
+             placeholder="Looking for a math hero?" 
+             [(ngModel)]="searchQuery"
+             (input)="onSearch()"
+             (keyup.enter)="onSearch()">
+      <span class="divider" aria-hidden="true" *ngIf="!searchQuery"></span>
+      <button class="clear-btn" *ngIf="searchQuery" (click)="clearSearch()" aria-label="Clear search">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M1 1L11 11M1 11L11 1" stroke="#6B656A" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="mic" *ngIf="!searchQuery" aria-label="Use voice search">
         <!-- inline mic SVG -->
         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="13" viewBox="0 0 10 13" fill="none"
           aria-hidden="true">
@@ -72,8 +81,26 @@
 
   <!--tutor list-->
   <div class="tutor-list-section">
-    <div class="title-tutor-list">Top picks, trusted by many</div>
-    <tutor-list [tutors]="tutors" (viewProfile)="onViewProfile($event)"></tutor-list>
+    <div class="title-tutor-list">
+      <span *ngIf="!searchQuery">Top picks, trusted by many</span>
+      <span *ngIf="searchQuery">Search results for "{{ searchQuery }}"</span>
+      <span class="tutor-count" *ngIf="tutors.length > 0">({{ tutors.length }} tutors)</span>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="loading-state">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading tutors...</p>
+    </div>
+
+    <!-- Tutor list -->
+    <tutor-list *ngIf="!isLoading" [tutors]="tutors" (viewProfile)="onViewProfile($event)"></tutor-list>
+
+    <!-- No results message -->
+    <div *ngIf="!isLoading && tutors.length === 0 && searchQuery" class="no-results">
+      <p>No tutors found for "{{ searchQuery }}"</p>
+      <mindful-button type="columbian-blue" text="Clear Search" (click)="clearSearch()"></mindful-button>
+    </div>
   </div>
 
 

@@ -4,28 +4,26 @@
   <div class="tutor-profile-root">
     <div class="hero">
       <div class="avatar"
-        [ngStyle]="{'background-image': 'url(' + (tutor?.avatar || 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png') + ')'}">
+        [ngStyle]="{'background-image': 'url(' + (tutor?.profilePicUrl || 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png') + ')'}">
       </div>
       <div class="info">
-        <h2 class="name">{{ tutor?.name || 'Mr. Sharma' }}</h2>
-        <h3 class="achievement">Gold Medalist in Mathematics</h3>
+        <h2 class="name">{{ tutor?.name || 'Unknown Tutor' }}</h2>
+        <h3 class="achievement">{{ tutor?.qualification || 'Subject Expert' }}</h3>
       </div>
       <div class="meta-row">
         <div class="meta">
           <img src="/assets/Icons-Neutral/Experience.png" alt="experience" />
-          <ng-container *ngIf="getExperienceParts() as expParts">
-            <h3><strong>{{ expParts.years }}</strong> years Exp</h3>
-          </ng-container>
+          <h3><strong>{{ getExperienceYears() }}</strong> years Exp</h3>
         </div>
         <h4>|</h4>
-        <div class="meta like" (click)="handleNavAction(navActions[0])">
+        <div class="meta like" (click)="handleNavAction({index: 0, action: navActions[0]})">
           <img src="/assets/Icons-Neutral/Icon-Tutor-Like.png" alt="likes" />
-          <h3>{{ tutor?.rating || (navActions[0]?.count || 0) }} likes</h3>
+          <h3>{{ getLikesCount() }} likes</h3>
         </div>
         <h4>|</h4>
         <div class="meta">
           <img src="/assets/Icons-Neutral/Students.png" alt="students" />
-          <h3><strong>{{ tutor?.students || 0 }}</strong> students</h3>
+          <h3><strong>{{ tutor?.totalStudents || 0 }}</strong> students</h3>
         </div>
       </div>
     </div>
@@ -34,17 +32,17 @@
       <div class="teaching-details">
         <div class="teaching-row">
           <h3>Subjects</h3>
-          <p>{{ tutor?.subjects || 'Mathematics, Chemistry, Science, Accountancy, Economics, Social Studies' }}</p>
+          <p>{{ getSubjectsString() }}</p>
         </div>
 
         <div class="teaching-row">
           <h3>Class</h3>
-          <p>{{ tutor?.classes || 'Class 8, Class 10, Class 11' }}</p>
+          <p>{{ getLevelsString() }}</p>
         </div>
 
         <div class="teaching-row">
           <h3>Board</h3>
-          <p>{{ tutor?.board || 'CBSE, State Board' }}</p>
+          <p>{{ getBoardString() }}</p>
         </div>
       </div>
     </div>
@@ -52,7 +50,7 @@
     <div class="teacher-details">
         <div class="teach-detail-list">
           <h3><img src="assets/Icons-Neutral/Tutor-Mode.png" alt="">Mode</h3>
-          <p>Online, Offline</p>
+          <p>{{ getContactModesString() }}</p>
         </div>
         <div class="teach-detail-list">
           <h3><img src="assets/Icons-Neutral/Tutor-LanguageSpoken.png" alt="">Languages Spoken</h3>
@@ -60,16 +58,16 @@
         </div>
         <div class="teach-detail-list">
           <h3><img src="assets/Icons-Neutral/Tutor-Qualification.png" alt="">Qualification</h3>
-          <p>B.Tech</p>
+          <p>{{ tutor?.qualification || 'Not specified' }}</p>
         </div>
         <div class="teach-detail-list">
           <h3><img src="assets/Icons-Neutral/Tutor-TimeDay.png" alt="">Days & Time</h3>
-          <p>Monday, Wednesday, Friday - 5:00PM - 7:00PM</p>
+          <p>{{ getAvailabilityString() }}</p>
         </div>
          <div class="teach-detail-list">
           <h3><img src="assets/Icons-Neutral/Tutor-Location.png" alt="">Location</h3>
-         <p class="location">No.7 , Galaxy Apartments, Mumbai - 200156 <br>
-          <a>See on map</a></p>
+         <p class="location">{{ tutor?.location || 'Location not specified' }} <br>
+          <a *ngIf="tutor?.location">See on map</a></p>
         </div>
     </div>
     <profile-facts [faqs]="tutorFaqs"></profile-facts>
@@ -78,8 +76,8 @@
 
   <div class="footer-actions d-flex justify-content-between align-items-center" *ngIf="true">
     <div class="d-flex align-items-center gap-1">
-    <h2>₹ 800</h2>
-    <h3>/per hour</h3>
+    <h2>₹ {{ getHourlyRate() }}</h2>
+    <h3>{{ getFeeTypeString() }}</h3>
     </div>
     <mindful-button type="columbian-blue" text="Book a call" (click)="bookCall()" style="opacity: 0.5; height: 42px !important; width: 170px;"></mindful-button>
   </div>

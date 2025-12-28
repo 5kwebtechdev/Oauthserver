@@ -8,6 +8,13 @@
 
 
   <div class="tutors-section__list" role="list">
-    <tutor-list [tutors]="tutors" (viewProfile)="onViewProfile($event)"></tutor-list>
+    <!-- Loading state -->
+    <div *ngIf="isLoading" class="loading-state">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading tutors...</p>
+    </div>
+
+    <!-- Tutor list -->
+    <tutor-list *ngIf="!isLoading" [tutors]="tutors" (viewProfile)="onViewProfile($event)"></tutor-list>
   </div>
 </section>

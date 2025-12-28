@@ -366,3 +366,71 @@ display: flex;
   font-weight: 600;
 
 }
+
+/* Loading state styles */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 12px;
+
+  p {
+    color: #6B656A;
+    font-family: Nunito, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  ion-spinner {
+    --color: #7284B9;
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* No results state */
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 16px;
+  text-align: center;
+
+  p {
+    color: #6B656A;
+    font-family: Nunito, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+/* Tutor count badge */
+.tutor-count {
+  color: #6B656A;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+/* Clear search button in search bar */
+.clear-btn {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+}

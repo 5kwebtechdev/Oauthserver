@@ -1,43 +1,81 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from "@ionic/angular";
+import { CommonModule } from '@angular/common';
 import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.component';
 import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
-import { TutorListComponent, Tutor } from '../tutor-list/tutor-list.component';
+import { TutorListComponent } from '../tutor-list/tutor-list.component';
+import { TutorService } from '../../../services/tutor.service';
+import { TutorListItem } from '../../../models/tutor.model';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'tutor-card',
   templateUrl: './tutor-card.component.html',
   styleUrls: ['./tutor-card.component.scss'],
-  imports: [IonicModule, ViewAllComponent, TutorListComponent, MindfulCardHeaderComponent],
+  imports: [CommonModule, IonicModule, ViewAllComponent, TutorListComponent, MindfulCardHeaderComponent],
   standalone: true
 })
-export class TutorCardComponent {
-  constructor(private router: Router) { }
-  @Input() name: string = '';
-  @Input() avatar: string = '';
-  @Input() description: string = '';
-  @Input() rating: number = 0;
-  @Input() experience: string = '';
-  @Input() isOnline: boolean = false;
+export class TutorCardComponent implements OnInit, OnDestroy {
+  @Input() maxTutors: number = 3; // Max tutors to show in card view
 
-  @Input() tutors: Tutor[] = [];
+  tutors: TutorListItem[] = [];
+  isLoading = false;
+  
+  private subscriptions = new Subscription();
+
+  constructor(
+    private router: Router,
+    private tutorService: TutorService
+  ) { }
 
   ngOnInit(): void {
-    if (!this.tutors || this.tutors.length === 0) {
-      this.tutors = [
-        { name: this.name || 'Mr. Sharma', avatar: this.avatar, description: this.description, rating: this.rating || 400, experience: this.experience || '8+ yrs' },
-        { name: 'Ms. Aarthi Sharma', avatar: '/assets/images/Avatar-female.png', description: 'Math & Science Wizard', rating: 400, experience: '8+ yrs' },
-        { name: this.name || 'Mr. Sharma', avatar: this.avatar, description: this.description, rating: this.rating || 400, experience: this.experience || '8+ yrs' }
-      ];
-    }
+    this.loadTutors();
   }
 
-  onViewAll() {
-    // navigate to the tutors homepage
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
+  /**
+   * Load recent tutors from service
+   */
+  private loadTutors(): void {
+    this.isLoading = true;
+
+    // Subscribe to loading state
+    this.subscriptions.add(
+      this.tutorService.isLoading$.subscribe(loading => {
+        this.isLoading = loading;
+      })
+    );
+
+    // Fetch tutors if not already loaded
+    if (!this.tutorService.isLoaded) {
+      this.subscriptions.add(
+        this.tutorService.fetchTutors().subscribe()
+      );
+    }
+
+    // Subscribe to recent tutors
+    this.subscriptions.add(
+      this.tutorService.getRecentTutors(this.maxTutors).subscribe(tutors => {
+        this.tutors = tutors;
+        this.isLoading = false;
+      })
+    );
+  }
+
+  onViewAll(): void {
     this.router.navigate(['/authed', 'tutors']);
   }
-  onViewProfile(tutor: Tutor) {
-    console.log('View profile clicked for', tutor);
+
+  onViewProfile(tutor: TutorListItem): void {
+    // Store selected tutor in service for profile view
+    this.tutorService.selectTutor(tutor);
+    // Navigate to tutor profile or open modal
+    this.router.navigate(['/authed', 'tutors'], { 
+      queryParams: { tutorId: tutor.id } 
+    });
   }
 }

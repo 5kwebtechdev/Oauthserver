@@ -1,61 +1,154 @@
-import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { IonicModule, ModalController } from '@ionic/angular';
+import { ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
 import { MindfulSpeechBubbleComponent } from '../../mindful-speech-bubble/mindful-speech-bubble.component';
-import { TutorListComponent, Tutor } from '../tutor-list/tutor-list.component';
+import { TutorListComponent } from '../tutor-list/tutor-list.component';
 import { TutorAllFilterComponent } from '../tutor-all-filter/tutor-all-filter.component';
 import { TutorProfileComponent } from '../tutor-profile/tutor-profile.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
+import { TutorService } from '../../../services/tutor.service';
+import { TutorListItem, TutorSortOption, Tutor } from '../../../models/tutor.model';
 
 @Component({
   selector: 'tutor-homepage',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulButtonComponent, TutorListComponent, MindfulPetComponent, MindfulSpeechBubbleComponent, TutorAllFilterComponent, FooterComponent, MindfulPopupComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    MindfulButtonComponent,
+    TutorListComponent,
+    MindfulPetComponent,
+    MindfulSpeechBubbleComponent,
+    TutorAllFilterComponent,
+    FooterComponent,
+    MindfulPopupComponent
+  ],
   templateUrl: './tutor-homepage.component.html',
   styleUrls: ['./tutor-homepage.component.scss']
 })
-export class TutorHomepageComponent {
-  @Input() tutors: Tutor[] = [];
+export class TutorHomepageComponent implements OnInit, OnDestroy {
+  tutors: TutorListItem[] = [];
+  isLoading = false;
+  searchQuery = '';
 
   /** Emitted when a tutor profile is requested */
-  @Output() viewProfile = new EventEmitter<Tutor>();
+  @Output() viewProfile = new EventEmitter<TutorListItem>();
 
-  onViewProfile(tutor: Tutor) {
-    // Open profile modal
-    this.openProfileModal(tutor);
-  }
-
-  async openProfileModal(tutor: Tutor) {
-    const modal = await this.modalCtrl.create({
-      component: TutorProfileComponent,
-      componentProps: {
-        tutor
-      },
-      cssClass: 'tutor-profile-modal'
-    });
-
-    await modal.present();
-  }
   isReferModalOpen = false;
-
-  // The link to share — adjust if you have a dynamic link
   referLink = 'https://example.com/refer-tutor';
+
   // Sort dropdown state
   isSortOpen = false;
-  currentSort: 'alphabets' | 'mostLiked' | 'experience' | 'recent' = 'alphabets';
-  readonly sortOptions: { key: 'alphabets' | 'mostLiked' | 'experience' | 'recent'; label: string }[] = [
+  currentSort: TutorSortOption = 'recent';
+  readonly sortOptions: { key: TutorSortOption; label: string }[] = [
     { key: 'alphabets', label: 'Alphabets' },
     { key: 'mostLiked', label: 'Most Liked' },
     { key: 'experience', label: 'Experience' },
     { key: 'recent', label: 'Recently added' }
   ];
 
-  constructor(private modalCtrl: ModalController) { }
+  private subscriptions = new Subscription();
 
-  async openAllFilters() {
+  constructor(
+    private modalCtrl: ModalController,
+    private tutorService: TutorService,
+    private route: ActivatedRoute
+  ) { }
+
+  ngOnInit(): void {
+    this.loadTutors();
+    this.checkForTutorProfile();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
+  /**
+   * Load tutors from service
+   */
+  private loadTutors(): void {
+    // Subscribe to loading state
+    this.subscriptions.add(
+      this.tutorService.isLoading$.subscribe(loading => {
+        this.isLoading = loading;
+      })
+    );
+
+    // Fetch tutors (will use cache if available)
+    this.subscriptions.add(
+      this.tutorService.fetchTutors().subscribe()
+    );
+
+    // Subscribe to filtered tutors
+    this.subscriptions.add(
+      this.tutorService.tutors$.subscribe(tutors => {
+        this.tutors = tutors;
+      })
+    );
+
+    // Set initial sort
+    this.currentSort = this.tutorService.getCurrentSort();
+  }
+
+  /**
+   * Check if we should open a tutor profile from query params
+   */
+  private checkForTutorProfile(): void {
+    this.subscriptions.add(
+      this.route.queryParams.subscribe(params => {
+        const tutorId = params['tutorId'];
+        if (tutorId) {
+          const id = parseInt(tutorId, 10);
+          this.openProfileById(id);
+        }
+      })
+    );
+  }
+
+  /**
+   * Open profile modal by tutor ID
+   */
+  private async openProfileById(id: number): Promise<void> {
+    this.subscriptions.add(
+      this.tutorService.getTutorById(id).subscribe(async tutor => {
+        if (tutor) {
+          await this.openProfileModal(tutor);
+        }
+      })
+    );
+  }
+
+  onViewProfile(tutor: TutorListItem): void {
+    // Get full tutor data from cache
+    const fullTutor = this.tutorService.getTutorFromCache(tutor.id);
+    if (fullTutor) {
+      this.openProfileModal(fullTutor);
+    } else {
+      // Fetch if not in cache
+      this.tutorService.getTutorById(tutor.id).subscribe(t => {
+        if (t) this.openProfileModal(t);
+      });
+    }
+  }
+
+  async openProfileModal(tutor: Tutor): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: TutorProfileComponent,
+      componentProps: { tutor },
+      cssClass: 'tutor-profile-modal'
+    });
+    await modal.present();
+  }
+
+  async openAllFilters(): Promise<void> {
     const modal = await this.modalCtrl.create({
       component: TutorAllFilterComponent,
       componentProps: {
@@ -65,72 +158,43 @@ export class TutorHomepageComponent {
     await modal.present();
 
     const { data } = await modal.onWillDismiss();
-    // data may include selected filters if you decide to return them from the filter component
     if (data && data.selected) {
-      // handle selected filters here or emit an event
-      console.log('Selected filters from modal:', data.selected);
+      // Apply filters from modal
+      this.tutorService.setFilters({
+        subjects: data.selected
+      });
     }
   }
 
-  // Provide sample data when none is supplied (useful for preview / dev)
-  ngOnInit() {
-    if (!this.tutors || this.tutors.length === 0) {
-      this.tutors = [
-        {
-          name: 'Naveen Malik',
-          avatar: '/assets/images/Avatar.png',
-          description: 'Math tutor — Grades 6-8',
-          rating: 128,
-          experience: '3-5 years Exp'
-        },
-        {
-          name: 'Yashmeet Singh',
-          avatar: '/assets/images/Avatar.png',
-          description: 'Science & Coding',
-          rating: 256,
-          experience: '3-5 years Exp'
-        },
-        {
-          name: 'Ms. Sharma',
-          avatar: '/assets/images/Avatar.png',
-          description: 'English & Communication',
-          rating: 400,
-          experience: '10+ yrs'
-        },
-        {
-          name: 'Ms. Sharma',
-          avatar: '/assets/images/Avatar.png',
-          description: 'English & Communication',
-          rating: 400,
-          experience: '10+ yrs'
-        },
-        {
-          name: 'Ms. Sharma',
-          avatar: '/assets/images/Avatar.png',
-          description: 'English & Communication',
-          rating: 400,
-          experience: '10+ yrs'
-        }
-      ];
-    }
+  /**
+   * Handle search input
+   */
+  onSearch(): void {
+    this.tutorService.searchTutors(this.searchQuery);
   }
 
-  openReferModal() {
+  /**
+   * Clear search
+   */
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.tutorService.searchTutors('');
+  }
+
+  openReferModal(): void {
     this.isReferModalOpen = true;
   }
 
-  closeReferModal() {
+  closeReferModal(): void {
     this.isReferModalOpen = false;
   }
 
-  async copyLink() {
+  async copyLink(): Promise<void> {
     try {
       if (navigator && 'clipboard' in navigator) {
         await navigator.clipboard.writeText(this.referLink);
-        // Optionally provide user feedback — using alert for simplicity
         alert('Link copied to clipboard');
       } else {
-        // fallback
         const el = document.createElement('textarea');
         el.value = this.referLink;
         document.body.appendChild(el);
@@ -145,40 +209,29 @@ export class TutorHomepageComponent {
     }
   }
 
-  shareWhatsapp() {
+  shareWhatsapp(): void {
     const text = encodeURIComponent('Join our platform as a tutor: ' + this.referLink);
-    // Opens WhatsApp share (web or app) — for mobile this will trigger app
     const whatsappUrl = `https://wa.me/?text=${text}`;
     window.open(whatsappUrl, '_blank');
   }
 
-  toggleSortMenu() {
+  toggleSortMenu(): void {
     this.isSortOpen = !this.isSortOpen;
   }
 
-  selectSort(option: 'alphabets' | 'mostLiked' | 'experience' | 'recent') {
+  selectSort(option: TutorSortOption): void {
     this.currentSort = option;
     this.isSortOpen = false;
-    // TODO: implement actual sorting logic and emit or apply to `tutors`
-    console.log('Selected sort:', option);
+    this.tutorService.setSort(option);
   }
 
-  get currentSortLabel() {
-    switch (this.currentSort) {
-      case 'mostLiked':
-        return 'Most Liked';
-      case 'experience':
-        return 'Experience';
-      case 'recent':
-        return 'Recently added';
-      default:
-        return 'Alphabets';
-    }
+  get currentSortLabel(): string {
+    const opt = this.sortOptions.find(o => o.key === this.currentSort);
+    return opt ? opt.label : 'Recently added';
   }
 
-  // close menus when clicking outside - listens to document clicks
-  @HostListener('document:click', ['$event'])
-  onDocumentClick() {
+  @HostListener('document:click')
+  onDocumentClick(): void {
     if (this.isSortOpen) this.isSortOpen = false;
   }
 }

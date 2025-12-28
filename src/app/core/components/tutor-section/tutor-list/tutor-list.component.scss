@@ -155,3 +155,20 @@ font-size: 8px;
 font-weight: 600;
  }
 }
+
+/* Empty state styles */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+
+  p {
+    color: #6B656A;
+    font-family: Nunito, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}

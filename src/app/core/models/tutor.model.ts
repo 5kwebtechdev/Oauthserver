@@ -67,3 +67,250 @@ export interface SelectedFilters {
         [fieldKey: string]: string[];
     };
 }
+
+/**
+ * Tutor API Response Models - Based on /v1/tutors endpoint
+ */
+
+export interface CategoryMapping {
+    id: number;
+    tutorId: number;
+    categoryId: number;
+    selectedFieldOptions: string; // JSON string
+    expertiseLevel: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+    yearsOfExperience: number;
+    isAcceptingStudents: boolean;
+    maxStudentsPerBatch: number;
+    currentStudents: number;
+    categoryHourlyRate: number;
+    categoryBatchRate: number;
+    description: string;
+    studentCount: number;
+    categoryRating: number | null;
+    totalReviews: number;
+    lastClassTaught: string | null;
+    classesCompleted: number;
+    coursesCompleted: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface TutorLike {
+    id: number;
+    tutorId: number;
+    userId: number;
+    createdAt: string;
+}
+
+export type Gender = 'MALE' | 'FEMALE' | 'OTHER';
+export type Experience = 'FRESHER' | 'PLUS_1' | 'PLUS_2' | 'PLUS_3' | 'PLUS_5' | 'PLUS_10';
+export type EntityType = 'SELF' | 'SCHOOL' | 'TUITION' | 'COLLEGE' | 'COACHING';
+export type FeeType = 'PER_HOUR' | 'PER_MONTH' | 'PER_SESSION' | 'PER_COURSE';
+export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+export type ContactMode = 'VIDEO_CALL' | 'IN_PERSON' | 'PHONE_CALL' | 'CHAT';
+
+export interface Tutor {
+    id: number;
+    name: string;
+    age: number;
+    phone: string;
+    email: string;
+    gender: Gender;
+    qualification: string;
+    experience: Experience;
+    entityType: EntityType;
+    entityName: string;
+    subjects: string[];
+    location: string;
+    profilePicUrl: string;
+    startTime: string;
+    endTime: string;
+    feeType: FeeType | null;
+    fees: number | null;
+    levels: string[];
+    documentsVerificationUrl: string;
+    hourlyRate: number;
+    availability: DayOfWeek[];
+    contactModes: ContactMode[];
+    createdAt: string;
+    updatedAt: string;
+    isActive: boolean;
+    isVerified: boolean;
+    verificationNotes: string | null;
+    adminNotes: string | null;
+    lastLoginAt: string | null;
+    totalStudents: number;
+    rating: number | null;
+    totalReviews: number;
+    likes: TutorLike[];
+    categoryMappings: CategoryMapping[];
+    active: boolean;
+    verified: boolean;
+    validForVerification: boolean;
+    categoryIds: number[];
+    champsLiked: number;
+}
+
+/**
+ * Simplified Tutor interface for list display
+ */
+export interface TutorListItem {
+    id: number;
+    name: string;
+    avatar: string;
+    description: string;
+    rating: number;
+    experience: string;
+    qualification: string;
+    hourlyRate: number;
+    location: string;
+    subjects: string[];
+    levels: string[];
+    availability: string[];
+    startTime: string;
+    endTime: string;
+    contactModes: string[];
+    createdAt: string;
+    totalStudents: number;
+}
+
+/**
+ * Filter options for tutor search
+ */
+export interface TutorFilters {
+    search?: string;
+    subjects?: string[];
+    levels?: string[];
+    minRate?: number;
+    maxRate?: number;
+    availability?: DayOfWeek[];
+    contactModes?: ContactMode[];
+    location?: string;
+    experience?: Experience;
+}
+
+/**
+ * Sort options for tutor list
+ */
+export type TutorSortOption = 'alphabets' | 'mostLiked' | 'experience' | 'recent';
+
+/**
+ * Helper function to convert API Tutor to TutorListItem
+ */
+export function toTutorListItem(tutor: Tutor): TutorListItem {
+    return {
+        id: tutor.id,
+        name: tutor.name,
+        avatar: tutor.profilePicUrl || '/assets/images/Avatar.png',
+        description: tutor.subjects?.length > 0
+            ? tutor.subjects.join(', ')
+            : `${tutor.qualification} Specialist`,
+        rating: tutor.champsLiked || tutor.likes?.length || 0,
+        experience: formatExperience(tutor.experience),
+        qualification: tutor.qualification,
+        hourlyRate: tutor.hourlyRate || tutor.fees || 0,
+        location: tutor.location,
+        subjects: tutor.subjects || [],
+        levels: tutor.levels || [],
+        availability: tutor.availability || [],
+        startTime: tutor.startTime,
+        endTime: tutor.endTime,
+        contactModes: tutor.contactModes || [],
+        createdAt: tutor.createdAt,
+        totalStudents: tutor.totalStudents || 0
+    };
+}
+
+/**
+ * Helper function to format experience
+ */
+export function formatExperience(exp: Experience | string): string {
+    const expMap: Record<string, string> = {
+        'FRESHER': 'Fresher',
+        'PLUS_1': '1+ years Exp',
+        'PLUS_2': '2+ years Exp',
+        'PLUS_3': '3+ years Exp',
+        'PLUS_5': '5+ years Exp',
+        'PLUS_10': '10+ years Exp'
+    };
+    return expMap[exp] || exp;
+}
+
+/**
+ * Helper function to format availability days
+ */
+export function formatAvailability(days: DayOfWeek[] | string[]): string {
+    const dayMap: Record<string, string> = {
+        'MONDAY': 'Mon',
+        'TUESDAY': 'Tue',
+        'WEDNESDAY': 'Wed',
+        'THURSDAY': 'Thu',
+        'FRIDAY': 'Fri',
+        'SATURDAY': 'Sat',
+        'SUNDAY': 'Sun'
+    };
+    return days.map(d => dayMap[d] || d).join(', ');
+}
+
+/**
+ * Helper function to format time from ISO string
+ */
+export function formatTime(isoTime: string): string {
+    if (!isoTime) return '';
+    try {
+        const date = new Date(isoTime);
+        return date.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+    } catch {
+        return '';
+    }
+}
+
+/**
+ * Helper function to get experience years as number
+ */
+export function getExperienceYears(exp: Experience | string): number {
+    const expMap: Record<string, number> = {
+        'FRESHER': 0,
+        'PLUS_1': 1,
+        'PLUS_2': 2,
+        'PLUS_3': 3,
+        'PLUS_5': 5,
+        'PLUS_10': 10
+    };
+    return expMap[exp] || 0;
+}
+
+/**
+ * Helper function to format levels for display
+ */
+export function formatLevels(levels: string[]): string {
+    if (!levels || levels.length === 0) return '';
+    return levels.map(l => {
+        // Convert GRADE_10 to Class 10, etc.
+        if (l.startsWith('GRADE_')) {
+            return `Class ${l.replace('GRADE_', '')}`;
+        }
+        if (l.startsWith('CLASS_')) {
+            return `Class ${l.replace('CLASS_', '')}`;
+        }
+        // Convert underscores and capitalize
+        return l.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }).join(', ');
+}
+
+/**
+ * Helper function to format contact modes
+ */
+export function formatContactModes(modes: ContactMode[] | string[]): string {
+    const modeMap: Record<string, string> = {
+        'VIDEO_CALL': 'Online',
+        'IN_PERSON': 'Offline',
+        'PHONE_CALL': 'Phone',
+        'CHAT': 'Chat'
+    };
+    return modes.map(m => modeMap[m] || m).join(', ');
+}

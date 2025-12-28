@@ -10,39 +10,46 @@
         <div class="content">
           <div class="head">
             <div class="name-block">
-              <p class="name">{{ t.name || 'Mr. Sharma' }}</p>
+              <p class="name">{{ t.name || 'Unknown Tutor' }}</p>
             </div>
             
             <div class="stats" aria-hidden="true">
               <img class="icon heart-icon" src="/assets/Icons-Neutral/Icon-Tutor-Like.png" alt="Likes"
               aria-hidden="true" />
-              <span class="meta">{{ t.rating || 400 }} | {{ t.experience || '3-5 years Exp' }}</span>
+              <span class="meta">{{ t.rating || 0 }} | {{ t.experience || 'Fresher' }}</span>
             </div>
           </div>
           
           <div class="cta-row">
             <div class="tutor-role-detail d-grid">
-            <p class="role">{{ t.description || 'Math & Science Wizard' }}</p>
-            <label>Class 8, 10, 11</label>
+            <p class="role">{{ t.description || t.qualification || 'Subject Expert' }}</p>
+            <label>{{ formatLevelsDisplay(t.levels) || 'All Levels' }}</label>
             <div class="time">
               <img class="icon time-icon" src="/assets/Icons-Neutral/Icon-Tutor-Timings.png" alt="Timings"
                 aria-hidden="true" />
-              <span>Mon,Wed,Fri - 5:00PM-7:00PM</span>
+              <span>{{ getTimingString(t) }}</span>
             </div>
 
             </div>
             <div class="info d-flex justify-content-between align-items-end">
                 <div class="fees d-flex align-items-baseline gap-1">
-                 <p>₹ 800</p>
+                 <p>₹ {{ t.hourlyRate || 0 }}</p>
                 <span>/per hour</span>
     </div>
                 
                 <mindful-button type="columbian-blue" medium [text]="'View Profile'" (click)="onViewProfile(t)"
-                [attr.aria-label]="'View profile of ' + (t.name || 'Mr. Sharma')"></mindful-button>
+                [attr.aria-label]="'View profile of ' + (t.name || 'Tutor')"></mindful-button>
             </div>
           </div>
         </div>
       </article>
+    </ng-container>
+
+    <!-- Empty state -->
+    <ng-container *ngIf="!tutors || tutors.length === 0">
+      <div class="empty-state">
+        <p>No tutors found</p>
+      </div>
     </ng-container>
   </div>
 </div>
