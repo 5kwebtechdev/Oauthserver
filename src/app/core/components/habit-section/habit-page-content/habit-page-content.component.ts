@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
@@ -8,6 +8,7 @@ import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module'
 import { HabitService } from '../habit.service';
 import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { TaskApi } from '../../../api/task.api';
+import { UserService } from '../../../services/user.service';
 import { Habit } from '../habit.types';
 import { Subscription } from 'rxjs';
 
@@ -53,13 +54,24 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
         private habitService: HabitService,
         private buttonLogic: HabitButtonLogicService,
         private taskApi: TaskApi,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private userService: UserService,
+        private cdr: ChangeDetectorRef
     ) { }
 
     ngOnInit(): void {
+        // Ensure we show today's data by default when component opens
+        this.selectedDate = new Date();
         this.checkRouteParameters();
         this.initializeSubscriptions();
         this.loadInitialData();
+        // Reload when selected profile changes (e.g., parent selects a child)
+        this.subscriptions.add(
+            this.userService.getUserProfile$().subscribe(profile => {
+                this.loadHabits(true);
+                this.loadTasksForSelectedDate(this.selectedDate);
+            })
+        );
         this.startTimestampInterval();
     }
 
@@ -83,8 +95,31 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
         this.subscriptions.add(
             this.habitService.getHabits().subscribe(habits => {
                 if (habits?.length) {
-                    this.allHabits = habits;
+                    // If parent selected a child, filter habits by assigned fields
+                    const selectedUserId = this.userService.getUserProfile()?.userId;
+                    const profileIsParent = !!(this.userService.getUserProfile() && (this.userService.getUserProfile()!.relationship || '').toString().toUpperCase() === 'PARENT');
+                    if (profileIsParent && selectedUserId != null) {
+                        this.allHabits = (habits || []).filter((item: any) => {
+                            const assigned = item.assignedTo ?? item.assigned_to ?? item.userId ?? item.user_id ?? item.assigned_user_id ?? item.assigneeId ?? item.assignee_id;
+                            return assigned == selectedUserId;
+                        });
+                    } else {
+                        this.allHabits = habits;
+                    }
                     this.applyFilters();
+                }
+            })
+        );
+        // Reload when habits/tasks are added/changed elsewhere (create/update/delete)
+        this.subscriptions.add(
+            this.habitService.dataChanged$.subscribe(evt => {
+                if (!evt) return;
+                if (evt.type === 'habit') {
+                    // refresh habits for current date
+                    this.loadHabits(true);
+                }
+                if (evt.type === 'task') {
+                    this.loadTasksForSelectedDate(this.selectedDate);
                 }
             })
         );
@@ -115,7 +150,15 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
         this.subscriptions.add(
             this.habitService.loadHabitsForDate(formattedDate, forceReload).subscribe({
                 next: (res: any) => {
-                    const habitData = Array.isArray(res) ? res : (res?.data || []);
+                    let habitData = Array.isArray(res) ? res : (res?.data || []);
+                    // If parent has selected a child, prefer client-side filtering by assignedTo
+                    const selectedUserId = this.userService.getUserProfile()?.userId;
+                    if (selectedUserId != null) {
+                        habitData = (habitData || []).filter((item: any) => {
+                            const assigned = item.assignedTo ?? item.assigned_to ?? item.userId ?? item.user_id ?? item.assigned_user_id ?? item.assigneeId ?? item.assignee_id;
+                            return assigned == selectedUserId;
+                        });
+                    }
                     this.allHabits = habitData.map((h: any) => ({
                         ...h,
                         status: this.normalizeStatus(h.status),
@@ -124,6 +167,8 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
                     }));
                     this.loading = false;
                     this.applyFilters();
+                    // ensure Angular picks up the updated lists immediately
+                    try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
                 },
                 error: () => {
                     this.loading = false;
@@ -137,10 +182,18 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
         this.loading = true;
         const formatted = this.habitService.formatDateToYYYYMMDD(date);
 
+        const userId = this.userService.getUserProfile()?.userId;
         this.subscriptions.add(
-            this.taskApi.getTasksByDate(formatted).subscribe({
+            this.taskApi.getTasksByDate(formatted, userId).subscribe({
                 next: (res: any) => {
-                    const list = Array.isArray(res?.data || res?.tasks || res) ? res.data || res.tasks || res : [];
+                    let list = Array.isArray(res?.data || res?.tasks || res) ? res.data || res.tasks || res : [];
+                    // If parent selected a child, filter tasks by assigned fields as a fallback
+                    if (userId != null) {
+                        list = (list || []).filter((t: any) => {
+                            const assigned = t.assignedTo ?? t.assigned_to ?? t.userId ?? t.user_id ?? t.assigned_user_id ?? t.assigneeId ?? t.assignee_id;
+                            return assigned == userId;
+                        });
+                    }
                     this.tasks = list.map((t: any) => {
                         const timestamps = this.buttonLogic.calculateTimestamps({
                             ...t,
@@ -159,6 +212,7 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
                     });
                     this.loading = false;
                     this.applyFilters();
+                    try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
                 },
                 error: () => {
                     this.tasks = [];

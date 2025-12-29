@@ -12,12 +12,20 @@ export class CalendarService {
 
     constructor(private http: HttpClient) { }
 
-    getUserCalendar(date: string, viewType: 'day' | 'month' = 'day'): Observable<CalendarResponse> {
-        return this.http.get<CalendarResponse>(`${this.apiUrl}/user-calendar?date=${date}&viewType=${viewType}`);
+    /**
+     * Get user calendar. Optionally pass `userId` to fetch calendar for a child.
+     */
+    getUserCalendar(date: string, viewType: 'day' | 'month' = 'day', userId?: number): Observable<CalendarResponse> {
+        let url = `${this.apiUrl}/user-calendar?date=${date}&viewType=${viewType}`;
+        if (userId != null) url += `&userId=${userId}`;
+        return this.http.get<CalendarResponse>(url);
     }
 
-    getUserCalendarMonth(date: string): Observable<CalendarResponse> {
-        return this.http.get<CalendarResponse>(`${this.apiUrl}/user-calendar?date=${date}&viewType=month`);
+    /**
+     * Convenience wrapper to fetch month view
+     */
+    getUserCalendarMonth(date: string, userId?: number): Observable<CalendarResponse> {
+        return this.getUserCalendar(date, 'month', userId);
     }
 
     transformToTimelineEvents(response: CalendarResponse): TimelineEvent[] {

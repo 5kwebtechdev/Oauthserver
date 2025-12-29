@@ -153,7 +153,7 @@
     <div *ngIf="isChild" slot="end" class="header-toggle d-flex flex-column gap-2" aria-label="Private toggle">
       <label class="header-toggle-label">Private</label>
       <div class="toggle-right">
-        <mindful-toggle [(checked)]="isPrivate"></mindful-toggle>
+        <mindful-toggle [(checked)]="isPrivate" (checkedChange)="onPrivateChange($event)"></mindful-toggle>
       </div>
     </div>
   </mindful-navigator>

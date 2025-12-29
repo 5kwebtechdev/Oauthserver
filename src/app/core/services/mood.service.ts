@@ -19,10 +19,13 @@ export class MoodService {
    * @param month Month (1-12)
    * @returns Observable of mood transitions array
    */
-  getMoodTransitionsMonthly(year: number, month: number): Observable<MoodTransition[]> {
-    return this.http.get<MoodTransition[]>(
-      `${this.apiUrl}/vibes/transition/monthly?year=${year}&month=${month}`
-    );
+  /**
+   * Fetch mood transitions for a specific month. Optionally include `userId` to fetch for a child.
+   */
+  getMoodTransitionsMonthly(year: number, month: number, userId?: number): Observable<MoodTransition[]> {
+    let url = `${this.apiUrl}/vibes/transition/monthly?year=${year}&month=${month}`;
+    if (userId != null) url += `&userId=${userId}`;
+    return this.http.get<MoodTransition[]>(url);
   }
 
   /**

@@ -120,7 +120,8 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     const year = this.selectedDate.getFullYear();
     const month = this.selectedDate.getMonth() + 1; // JavaScript months are 0-indexed
 
-    this.moodService.getMoodTransitionsMonthly(year, month)
+    const userId = this.userService.getUserProfile()?.userId;
+    this.moodService.getMoodTransitionsMonthly(year, month, userId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (transitions) => {
@@ -201,7 +202,8 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   }
 
   loadDayData(dateStr: string) {
-    this.calendarService.getUserCalendarMonth(dateStr)
+    const userId = this.userService.getUserProfile()?.userId;
+    this.calendarService.getUserCalendarMonth(dateStr, userId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -309,7 +311,8 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   // Fetch habits and tasks for the currently selected date and populate arrays used by template
   updateHabitsAndTasksForSelectedDate() {
     const dateStr = this.formatDateToYYYYMMDD(this.selectedDate);
-    this.calendarService.getUserCalendar(dateStr)
+    const userId2 = this.userService.getUserProfile()?.userId;
+    this.calendarService.getUserCalendar(dateStr, 'day', userId2)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {

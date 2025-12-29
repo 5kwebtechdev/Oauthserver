@@ -75,6 +75,7 @@ export class ParentAccountComponent implements OnInit {
     public selectedChild: { id: string | number; name: string; avatarUrl: string; relationship?: string; raw?: any } | null = null;
 
     @ViewChild('moodSel') moodSelector?: MoodSelectorComponent;
+    @ViewChild(HabitPageContentComponent) habitPageContent?: HabitPageContentComponent;
 
     constructor(
         private modalCtrl: ModalController,
@@ -205,10 +206,18 @@ export class ParentAccountComponent implements OnInit {
         }
         // Update user profile in UserService so rest of app reflects the child
         try {
-            this.userService.setUserProfile({ name: child.name, avatarUrl: child.avatarUrl, relationship: (child.relationship || 'CHILD') as any });
+            // Include `userId` so other services/APIs can request data for the selected child
+            this.userService.setUserProfile({ userId: Number(child.id as any), name: child.name, avatarUrl: child.avatarUrl, relationship: (child.relationship || 'CHILD') as any });
         } catch (e) {
             console.error('[ParentAccount] Failed to switch child profile', e);
         }
+        // Reload habits for today so UI reflects selected child immediately
+        try {
+            this.habitService.loadHabitsForDate(this.habitService.formatDateToYYYYMMDD(new Date()), true).subscribe({ next: () => {
+                // Also call the child component directly if available to ensure UI refresh
+                try { this.habitPageContent?.loadHabits(true); this.habitPageContent?.loadTasksForSelectedDate(new Date()); } catch (e) { /* ignore */ }
+            }, error: () => {} });
+        } catch (e) { /* ignore */ }
         this.closeSwitchPopup();
     }
 

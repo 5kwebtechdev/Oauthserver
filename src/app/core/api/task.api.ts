@@ -44,8 +44,12 @@ export class TaskApi {
      * @param date The date in YYYY-MM-DD format
      * @returns Observable with tasks for the specified date
      */
-    getTasksByDate(date: string): Observable<any> {
-        const url = `${this.base}/tasks/tasks-by-date?date=${date}`;
+    /**
+     * Get tasks by date. Optionally include `userId` to fetch for a specific child.
+     */
+    getTasksByDate(date: string, userId?: number): Observable<any> {
+        let url = `${this.base}/tasks/tasks-by-date?date=${date}`;
+        if (userId != null) url += `&userId=${userId}`;
         return this.http.get(url, { headers: this.headers() });
     }
 

@@ -507,7 +507,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         everyday: !!(this.everyday && coversAllDays),
         everyWeekend: false,
         rewardCoins: habit.coinReward ?? 5,
-        sharedWithParent: this.isChild ? this.isPrivate : false
+        sharedWithParent: this.isChild ? !this.isPrivate : false
       };
       // Only include daysOfWeek if NOT everyday
       if (!(this.everyday && coversAllDays)) {
@@ -524,7 +524,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         startDate: this.formatDateStr(this.startDate) || '',
         endDate: this.formatDateStr(this.endDate) || '',
         priority,
-        sharedWithParent: this.isChild ? this.isPrivate : false
+        sharedWithParent: this.isChild ? !this.isPrivate : false
       };
       if (!(this.everyday && coversAllDays)) {
         payload.daysOfWeek = daysOfWeek;
@@ -547,13 +547,18 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         everyday: !!(this.everyday && coversAllDays),
         everyWeekend: false,
         coinReward: 5,
-        sharedWithParent: this.isChild ? this.isPrivate : false
+        sharedWithParent: this.isChild ? !this.isPrivate : false
       };
       // Only include daysOfWeek if NOT everyday
       if (!(this.everyday && coversAllDays)) {
         payload.daysOfWeek = daysOfWeek;
       }
     }
+    // Debug: show computed values to help diagnose server mismatch
+    try {
+      console.log('[Submit Debug] isChild=', this.isChild, 'isPrivate=', this.isPrivate, 'sharedWithParent=', (this.isChild ? !this.isPrivate : false));
+      console.log('[Submit Debug] Payload:', JSON.stringify(payload, null, 2));
+    } catch (e) { /* ignore logging errors */ }
 
     if (this.currentActive === 'tasks') {
       this.isSubmitting = true;
@@ -1140,5 +1145,11 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         if (selKey != null) { this.selectorsComponent.selectedKeys = [selKey]; this.selectorsComponent.selectedKeysChange.emit(this.selectorsComponent.selectedKeys); }
       }
     } catch (e) { console.warn('Failed to set selectorsComponent selected keys', e); }
+  }
+
+  onPrivateChange(event: any) {
+    // Normalise both event types: boolean or event with detail.checked
+    const checked = !!(event?.detail?.checked ?? event === true);
+    this.isPrivate = checked;
   }
 }

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CalendarService } from '../../../services/calendar.service';
+import { UserService } from '../../../services/user.service';
 import { TimelineEvent } from '../../../models/calendar.model';
 import { NavigationContextService } from '../../../services/navigation-context.service';
 
@@ -27,7 +28,8 @@ export class TimelineComponent implements OnInit {
   constructor(
     private calendarService: CalendarService,
     private router: Router,
-    private navigationContext: NavigationContextService
+    private navigationContext: NavigationContextService,
+    private userService: UserService
   ) { }
 
   ngOnInit() {
@@ -35,7 +37,8 @@ export class TimelineComponent implements OnInit {
   }
 
   loadEvents() {
-    this.calendarService.getUserCalendar(this.selectedDate).subscribe({
+    const userId = this.userService.getUserProfile()?.userId;
+    this.calendarService.getUserCalendar(this.selectedDate, 'day', userId).subscribe({
       next: (response) => {
         this.allEvents = this.calendarService.transformToTimelineEvents(response);
         this.filterEvents();

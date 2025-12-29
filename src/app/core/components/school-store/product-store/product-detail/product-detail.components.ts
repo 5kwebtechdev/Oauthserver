@@ -1,7 +1,16 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, HostListener } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  ViewChild,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../../mindful-navigator/mindful-navigator.component';
+import { MindfulButtonComponent } from '../../../mindful-button/mindful-button.component';
 import { Router } from '@angular/router';
 
 @Component({
@@ -9,20 +18,100 @@ import { Router } from '@angular/router';
   selector: 'product-detail',
   templateUrl: './product-detail.components.html',
   styleUrls: ['./product-detail.components.scss'],
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent]
+  imports: [
+    CommonModule,
+    IonicModule,
+    MindfulNavigatorComponent,
+    MindfulButtonComponent,
+  ],
 })
-export class ProductDetailComponent implements OnInit {
+export class ProductDetailComponent implements OnInit, AfterViewInit {
   heading = 'Product';
   product: any = null;
   images: string[] = [];
   currentIndex = 0;
+  quantity = 1;
+  // Available sizes for this product
+  sizes: number[] = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26];
+  selectedSize = 2;
+  outOfStockSizes: number[] = [8, 16];
   isDragging = false;
   private startX = 0;
   private containerWidth = 0;
+  // product details dropdown state
+  detailsExpanded = false;
 
   @ViewChild('swiper', { static: true }) swiperRef!: ElementRef<HTMLElement>;
   @ViewChild('slides', { static: true }) slidesRef!: ElementRef<HTMLElement>;
-  constructor(private router: Router) {}
+  @ViewChild('sizeGuideFirstFocus') sizeGuideFirstFocus!:
+    | ElementRef<HTMLElement>
+    | undefined;
+  // Controls embedded size guide modal
+  showSizeGuide = false;
+  // selected unit for size display
+  unit: 'in' | 'cm' = 'in';
+
+  constructor(private router: Router) { }
+
+  openSizeGuide(): void {
+    this.showSizeGuide = true;
+    this.setBackgroundInert(true);
+  }
+
+  closeSizeGuide(): void {
+    this.showSizeGuide = false;
+    this.setBackgroundInert(false);
+  }
+
+  onSizeModalPresented(): void {
+    try {
+      // focus the hidden focus target inside the modal to ensure assistive tech focuses modal content
+      this.sizeGuideFirstFocus?.nativeElement?.focus?.();
+    } catch (e) { }
+  }
+
+  private setBackgroundInert(val: boolean): void {
+    try {
+      const outlet =
+        document.querySelector('ion-router-outlet.hydrated') ||
+        document.querySelector('ion-router-outlet');
+      if (!outlet) return;
+      if (val) {
+        outlet.setAttribute('inert', '');
+      } else {
+        outlet.removeAttribute('inert');
+      }
+    } catch (e) { }
+  }
+
+  ngOnDestroy(): void {
+    // ensure inert is removed if component is destroyed while modal open
+    try {
+      this.setBackgroundInert(false);
+    } catch (e) { }
+  }
+
+  increaseQuantity(): void {
+    this.quantity = (this.quantity || 0) + 1;
+  }
+
+  decreaseQuantity(): void {
+    if (!this.quantity || this.quantity <= 1) return;
+    this.quantity = this.quantity - 1;
+  }
+
+  selectSize(size: number): void {
+    if (this.isOutOfStock(size)) return;
+    this.selectedSize = size;
+  }
+
+  selectUnit(u: 'in' | 'cm'): void {
+    this.unit = u;
+  }
+
+  isOutOfStock(size: number): boolean {
+    return this.outOfStockSizes.includes(size);
+  }
 
   ngOnInit(): void {
     try {
@@ -41,7 +130,11 @@ export class ProductDetailComponent implements OnInit {
   }
 
   goBack(): void {
-    if (history.length > 1) { history.back(); } else { this.router.navigateByUrl('/home'); }
+    if (history.length > 1) {
+      history.back();
+    } else {
+      this.router.navigateByUrl('/home');
+    }
   }
 
   ngAfterViewInit(): void {
@@ -82,12 +175,29 @@ export class ProductDetailComponent implements OnInit {
       this.currentIndex--;
     }
     this.setTranslate(-this.currentIndex * this.containerWidth, false);
-    try { (ev.target as Element).releasePointerCapture?.(ev.pointerId); } catch (e) { }
+    try {
+      (ev.target as Element).releasePointerCapture?.(ev.pointerId);
+    } catch (e) { }
   }
 
   goTo(i: number): void {
     this.currentIndex = i;
     this.setTranslate(-this.currentIndex * this.containerWidth, false);
+  }
+
+  toggleDetails(event?: KeyboardEvent | Event): void {
+    if (event && (event as KeyboardEvent).type === 'keydown') {
+      (event as KeyboardEvent).preventDefault?.();
+    }
+    this.detailsExpanded = !this.detailsExpanded;
+  }
+
+  addToCart(): void {
+    // placeholder - integrate real cart logic here
+    console.log('Add to bag:', {
+      size: this.selectedSize,
+      quantity: this.quantity,
+    });
   }
 
   private setTranslate(px: number, noTransition = false): void {
@@ -97,5 +207,3 @@ export class ProductDetailComponent implements OnInit {
     el.style.transform = `translateX(${px}px)`;
   }
 }
-
-

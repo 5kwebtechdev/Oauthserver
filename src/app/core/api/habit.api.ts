@@ -35,8 +35,12 @@ export class HabitApi {
      * @param date The date in YYYY-MM-DD format
      * @returns Observable with habits for the specified date
      */
-    getHabitsByDate(date: string): Observable<any> {
-        const url = `${this.base}/habits/habits-by-date?date=${date}`;
+    /**
+     * Get habits by date. Optionally include `userId` to fetch for a specific child.
+     */
+    getHabitsByDate(date: string, userId?: number): Observable<any> {
+        let url = `${this.base}/habits/habits-by-date?date=${date}`;
+        if (userId != null) url += `&userId=${userId}`;
         return this.http.get(url, { headers: this.headers() });
     }
 
