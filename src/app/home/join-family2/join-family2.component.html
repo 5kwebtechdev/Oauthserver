@@ -105,10 +105,10 @@
 
       <div class="qr-code-section">
         <div class="qr-code-container">
-          <!-- Placeholder QR Code - Replace with actual QR generation library -->
-          <div class="qr-code-placeholder">
-            <div class="qr-pattern"></div>
-          </div>
+          <!-- QR Code generated with angularx-qrcode -->
+          <qrcode [qrdata]="qrCodeData" [width]="200" [errorCorrectionLevel]="'M'" [elementType]="'canvas'"
+            [margin]="2" cssClass="qr-canvas">
+          </qrcode>
         </div>
         <button class="share-qr-btn" (click)="shareQRCode()">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="14" viewBox="0 0 12 14" fill="none"
@@ -121,9 +121,8 @@
         </button>
       </div>
 
-      <button class="mindful-btn mindful-btn--primary" (click)="childCompleted()">
-        My child has done the required
-      </button>
+      <mindful-button type="orange-onboard" text="My child has done the required" (click)="childCompleted()">
+      </mindful-button>
     </div>
 
     <ng-container *ngIf="selectedMode === 'create' && !familyCreated">

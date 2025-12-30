@@ -157,10 +157,34 @@ export class ScanQrComponent implements OnInit, OnDestroy {
   }
 
   async handleScannedCode(code: string) {
-    // Show alert with scanned code
+    // Extract family code if it has GROUP: prefix
+    let familyCode = code;
+    if (code && code.startsWith('GROUP:')) {
+      familyCode = code.substring(6).trim();
+    }
+
+    // Validate the extracted code
+    if (!familyCode || familyCode.length < 6) {
+      const alert = await this.alertController.create({
+        header: 'Invalid QR Code',
+        message: 'The scanned QR code does not contain a valid family code. Please try again.',
+        buttons: [
+          {
+            text: 'OK',
+            handler: () => {
+              this.startScan();
+            }
+          }
+        ]
+      });
+      await alert.present();
+      return;
+    }
+
+    // Show confirmation alert with scanned code
     const alert = await this.alertController.create({
-      header: 'QR Code Scanned',
-      message: `Scanned code: ${code}`,
+      header: 'Family Code Scanned',
+      message: `Found family code: ${familyCode}`,
       buttons: [
         {
           text: 'Cancel',
@@ -171,9 +195,9 @@ export class ScanQrComponent implements OnInit, OnDestroy {
           }
         },
         {
-          text: 'Use Code',
+          text: 'Join Family',
           handler: () => {
-            this.saveCodeAndRedirect(code);
+            this.saveCodeAndRedirect(familyCode);
           }
         }
       ]

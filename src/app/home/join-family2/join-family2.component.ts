@@ -303,7 +303,7 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
         this.isLoading = false;
         this.familyCreated = true;
         this.familyCode = response.familyCode || this.generateFamilyCode();
-        this.qrCodeData = this.familyCode;
+        this.qrCodeData = 'GROUP:' + this.familyCode; // Prefixed for QR scanning validation
         this.core.triggerToasrt('Family created successfully!');
         sessionStorage.setItem('familyCode', this.familyCode);
       },

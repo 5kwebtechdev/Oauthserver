@@ -270,30 +270,41 @@
           </div>
 
 		<!-- Size Guide Table -->
-		  <div class="size-guide-table">
-			<table style="width: 100%;">
-			  <thead>
-         <tr>
-                            <th class="cell-center"></th>
-                          <th class="cell-center">Size</th>
-                          <th class="cell-center">Chest</th>
-                          <th class="cell-center">Waist</th>
-                          <th class="cell-center">Height</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                            <td class="cell-center">
-                              <input type="radio" name="size" value="1" />
-                            </td>
-                          <td class="cell-center">1</td>
-                          <td class="cell-center">28</td>
-                          <td class="cell-center">30</td>
-                          <td class="cell-center">152</td>
-                        </tr>
-			  </tbody>
-			</table>
-		  </div>
+          <div class="size-guide-table">
+            <table style="width: 100%;">
+              <thead>
+                <tr>
+                  <th class="cell-center"></th>
+                  <th class="cell-center">Size</th>
+                  <th class="cell-center">Chest</th>
+                  <th class="cell-center">Length</th>
+                  <th class="cell-center">Sleeve Length</th>
+                  <th class="cell-center">Age (Approx)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="cell-body" *ngFor="let r of sizeChart">
+                  <td class="cell-center">
+                    <label class="custom-radio" [attr.aria-label]="'Select size ' + r.size">
+                      <input
+                        type="radio"
+                        name="size"
+                        [value]="r.size"
+                        (change)="selectSize(r.size)"
+                        [checked]="selectedSize === r.size"
+                      />
+                      <span class="custom-radio-mark" aria-hidden="true"></span>
+                    </label>
+                  </td>
+                  <td class="cell-center">{{ r.size }}</td>
+                  <td class="cell-center">{{ r.chest }}</td>
+                  <td class="cell-center">{{ r.length }}</td>
+                  <td class="cell-center">{{ r.sleeve }}</td>
+                  <td class="cell-center">{{ r.age }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </main>
       </ion-content>
     </ng-template>

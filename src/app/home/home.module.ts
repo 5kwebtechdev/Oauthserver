@@ -2,6 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA, NgModule, NO_ERRORS_SCHEMA } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { QRCodeComponent } from 'angularx-qrcode';
 import { HomePage } from './home.page';
 
 import { HomePageRoutingModule } from './home-routing.module';
@@ -32,9 +33,9 @@ import { ResetPasswordComponent } from "./reset-password/reset-password.componen
     ProfileFactsComponent,
     ScanQrComponent,
     ResetPasswordComponent,
-    SocialMediaComponent
-    ,
-    InstructionsForChildComponent
+    SocialMediaComponent,
+    InstructionsForChildComponent,
+    QRCodeComponent
   ],
   declarations: [
     HomePage,

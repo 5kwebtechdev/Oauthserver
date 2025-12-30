@@ -1,6 +1,8 @@
 .navigator-root {
   position: relative;
-  margin-top: 56px;
+  padding-top: 56px; /* fallback spacing for non-notched devices */
+  padding-top: calc(constant(safe-area-inset-top) + 56px); /* old iOS WebKit */
+  padding-top: calc(env(safe-area-inset-top) + 56px); /* modern */
   display: block;
 }
 

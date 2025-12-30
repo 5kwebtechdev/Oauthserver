@@ -50,6 +50,8 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
   showSizeGuide = false;
   // selected unit for size display
   unit: 'in' | 'cm' = 'in';
+  // Size chart data (will be loaded from backend in future)
+  sizeChart: Array<{ size: number; chest: number; length: number; sleeve: number; age: string }> = [];
 
   constructor(private router: Router) { }
 
@@ -127,6 +129,32 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
     // Prepare images (use same image 3 times as requested)
     const src = 'assets/School-assets/temp/Shirt-l.jpg';
     this.images = [src, src, src];
+
+    // Load size chart (placeholder for backend data)
+    this.loadSizeChartFromBackend();
+  }
+
+  /**
+   * Placeholder loader for size chart. Replace with real HTTP call later.
+   */
+  private loadSizeChartFromBackend(): void {
+    // Dummy data — will be replaced by backend response
+    this.sizeChart = [
+      { size: 1, chest: 28, length: 30, sleeve: 12, age: '3-4 yrs' },
+      { size: 2, chest: 30, length: 32, sleeve: 13, age: '5-6 yrs' },
+      { size: 3, chest: 32, length: 34, sleeve: 14, age: '7-8 yrs' },
+      { size: 4, chest: 34, length: 36, sleeve: 15, age: '9-10 yrs' },
+      { size: 5, chest: 36, length: 38, sleeve: 16, age: '11-12 yrs' },
+      { size: 6, chest: 38, length: 40, sleeve: 17, age: '13-14 yrs' },
+    ];
+
+    // keep `sizes` in sync (used by size-tag buttons elsewhere)
+    try {
+      this.sizes = this.sizeChart.map((r) => r.size);
+      if (!this.sizes.includes(this.selectedSize)) {
+        this.selectedSize = this.sizes[0] || this.selectedSize;
+      }
+    } catch (e) { }
   }
 
   goBack(): void {

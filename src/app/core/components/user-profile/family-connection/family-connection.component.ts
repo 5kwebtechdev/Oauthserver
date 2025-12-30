@@ -27,6 +27,7 @@ export class FamilyConnectionComponent implements OnInit {
   creator: FamilyMember | null = null;
   members: FamilyMember[] = [];
   familyCode: string = '';
+  qrCodeData: string = ''; // Prefixed QR code data for scanning validation
   showInstructions: boolean = false;
   isLoading: boolean = true;
   showQrModal: boolean = false;
@@ -86,6 +87,39 @@ export class FamilyConnectionComponent implements OnInit {
       }, 'image/png');
     } catch (error) {
       console.error('Error sharing QR code:', error);
+    }
+  }
+
+  /**
+   * Copy family code to clipboard
+   */
+  async copyFamilyCode(): Promise<void> {
+    if (!this.familyCode) {
+      console.warn('No family code available to copy');
+      return;
+    }
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(this.familyCode);
+        // Show a brief visual feedback (you can enhance this with a toast)
+        console.log('Family code copied to clipboard:', this.familyCode);
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        const textArea = document.createElement('textarea');
+        textArea.value = this.familyCode;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        textArea.style.top = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        console.log('Family code copied to clipboard (fallback):', this.familyCode);
+      }
+    } catch (error) {
+      console.error('Error copying family code:', error);
     }
   }
 
@@ -158,6 +192,11 @@ export class FamilyConnectionComponent implements OnInit {
         } else if (response && (response as any).familyCode) {
           // In some API variants familyCode might be at the root
           this.familyCode = (response as any).familyCode;
+        }
+
+        // Set QR code data with GROUP: prefix for consistent scanning validation
+        if (this.familyCode) {
+          this.qrCodeData = 'GROUP:' + this.familyCode;
         }
 
         this.isLoading = false;

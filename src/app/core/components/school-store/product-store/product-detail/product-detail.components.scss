@@ -3,10 +3,10 @@ h1,
 h2 {
   margin: 0;
 }
-p ,th{
+p ,th {
   opacity: 0.7;
 }
-h2,
+h2, .cell-center,
 p,
 strong,
 li,th {
@@ -408,6 +408,60 @@ li {
   border: 0 !important;
 }
 
+/* Custom radio styling for size table */
+.custom-radio {
+  align-items: center;
+  cursor: pointer;
+}
+
+.custom-radio input[type="radio"] {
+  /* remove default appearance */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: 2px solid rgba(40, 37, 39, 0.70); /* stroke equivalent */
+  background: transparent;
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+}
+
+.custom-radio input[type="radio"]:focus {
+  outline: 2px solid rgba(144, 33, 77, 0.12);
+}
+
+.custom-radio input[type="radio"]::after {
+  /* inner dot when checked */
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 120ms ease;
+}
+
+.custom-radio input[type="radio"]:checked {
+  border: 2px solid #90214D; /* selected stroke color */
+}
+
+.custom-radio input[type="radio"]:checked::after {
+  background: #90214D; /* fill dot when selected */
+}
+
+.custom-radio .custom-radio-mark {
+  /* keep a fallback marker for browsers that don't support appearance:none */
+  display: none;
+}
+
 /* Unit switch styles */
 .unit-switch{
   display: inline-flex;
@@ -480,4 +534,16 @@ li {
 }
 .size-guide-table th.cell-center {
   font-weight: 700;
+}
+
+thead{
+  border-top: 1px solid var(--Neutral-Grey, rgba(40, 37, 39, 0.70));
+border-bottom: 1px solid var(--Neutral-Grey, rgba(40, 37, 39, 0.70));
+display: flex;
+  justify-content: space-between
+}
+.cell-body{
+  border-bottom: 1px solid var(--Neutral-Grey, rgba(40, 37, 39, 0.70));
+  display: flex;
+  justify-content: space-between
 }
