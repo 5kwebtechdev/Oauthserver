@@ -131,12 +131,17 @@ export class LoginComponent implements OnInit, OnDestroy {
           });
 
           // Handle different error scenarios
-          if (error.status === 401) {
+          // Check for ProgressEvent (Android network failures) or status 0
+          if (error instanceof ProgressEvent || (error && error.type === 'error' && error.target)) {
+            this.loginError = 'Network error. Please check your internet connection and try again.';
+          } else if (error.status === 401) {
             this.loginError = 'Invalid email/phone or password. Please try again.';
           } else if (error.status === 404) {
             this.loginError = 'User not found. Please check your credentials.';
-          } else if (error.status === 0) {
+          } else if (error.status === 0 || !error.status) {
             this.loginError = 'Cannot connect to server. Please check your internet connection.';
+          } else if (error.error?.message) {
+            this.loginError = error.error.message;
           } else {
             this.loginError = 'An error occurred during login. Please try again later.';
           }

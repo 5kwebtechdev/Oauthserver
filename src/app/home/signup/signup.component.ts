@@ -325,8 +325,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           }, 100);
         },
         error: (err) => {
-          console.error('Failed to request OTP:', err.error);
-          this.errorMessage = 'Failed to send OTP. Please enter valid email or phone number.';
+          console.error('Failed to request OTP:', err);
+          // Handle ProgressEvent errors (network failures on Android)
+          if (err instanceof ProgressEvent || (err && err.type === 'error' && err.target)) {
+            this.errorMessage = 'Network error. Please check your internet connection and try again.';
+          } else if (err?.error?.message) {
+            this.errorMessage = err.error.message;
+          } else if (typeof err?.error === 'string') {
+            this.errorMessage = err.error;
+          } else {
+            this.errorMessage = 'Failed to send OTP. Please check your connection and try again.';
+          }
         }
       });
     } else {
@@ -359,9 +368,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('Failed to request OTP:', err);
-          const msg = err && err.error && (err.error.message || err.error)
-            ? (err.error.message || String(err.error))
-            : 'Failed to send OTP. Please try again.';
+          let msg: string;
+          // Handle ProgressEvent errors (network failures on Android)
+          if (err instanceof ProgressEvent || (err && err.type === 'error' && err.target)) {
+            msg = 'Network error. Please check your internet connection and try again.';
+          } else if (err?.error?.message) {
+            msg = err.error.message;
+          } else if (typeof err?.error === 'string') {
+            msg = err.error;
+          } else {
+            msg = 'Failed to send OTP. Please check your connection and try again.';
+          }
           this.errorMessage = msg;
           try { this.core.triggerToasrt(msg); } catch (e) { /* swallow */ }
         }
@@ -970,7 +987,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('OTP verification failed:', err);
-        this.errorMessage = 'Incorrect OTP. Please try again.';
+        // Handle ProgressEvent errors (network failures on Android)
+        if (err instanceof ProgressEvent || (err && err.type === 'error' && err.target)) {
+          this.errorMessage = 'Network error. Please check your internet connection and try again.';
+        } else if (err?.error?.message) {
+          this.errorMessage = err.error.message;
+        } else if (typeof err?.error === 'string') {
+          this.errorMessage = err.error;
+        } else {
+          this.errorMessage = 'Incorrect OTP. Please try again.';
+        }
         this.canResendOtp = true;
         this.clearOtpTimer();
       }
@@ -1030,7 +1056,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Failed to resend OTP:', err);
-        this.core.triggerToasrt('Failed to resend OTP. Please try again.');
+        // Handle ProgressEvent errors (network failures on Android)
+        let msg: string;
+        if (err instanceof ProgressEvent || (err && err.type === 'error' && err.target)) {
+          msg = 'Network error. Please check your internet connection and try again.';
+        } else if (err?.error?.message) {
+          msg = err.error.message;
+        } else if (typeof err?.error === 'string') {
+          msg = err.error;
+        } else {
+          msg = 'Failed to resend OTP. Please try again.';
+        }
+        this.core.triggerToasrt(msg);
       }
     });
   }
