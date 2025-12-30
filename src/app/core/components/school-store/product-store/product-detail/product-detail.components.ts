@@ -28,13 +28,16 @@ import { Router } from '@angular/router';
 export class ProductDetailComponent implements OnInit, AfterViewInit {
   heading = 'Product';
   product: any = null;
+  // selectedAddress: holds short address string or null when user has no address
+  // Set to null to show the empty-state UI by default for now
+  selectedAddress: string | null = null;
   images: string[] = [];
   currentIndex = 0;
   quantity = 1;
   // Available sizes for this product
   sizes: number[] = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26];
   selectedSize = 2;
-  outOfStockSizes: number[] = [8, 16];
+  outOfStockSizes: number[] = [6, 8, 16];
   isDragging = false;
   private startX = 0;
   private containerWidth = 0;
@@ -50,14 +53,22 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
   showSizeGuide = false;
   // selected unit for size display
   unit: 'in' | 'cm' = 'in';
+  // pincode check state for empty address UI
+  lastCheckedPincode: string | null = null;
+  pincodeAvailable: boolean | null = null;
   // Size chart data (will be loaded from backend in future)
   sizeChart: Array<{ size: number; chest: number; length: number; sleeve: number; age: string }> = [];
 
   constructor(private router: Router) { }
 
+
   openSizeGuide(): void {
     this.showSizeGuide = true;
     this.setBackgroundInert(true);
+  }
+
+  openAddressPopup(): void {
+    console.log('openAddressPopup called');
   }
 
   closeSizeGuide(): void {
@@ -126,17 +137,38 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
       }
     } catch (e) { }
 
-    // Prepare images (use same image 3 times as requested)
     const src = 'assets/School-assets/temp/Shirt-l.jpg';
     this.images = [src, src, src];
 
-    // Load size chart (placeholder for backend data)
     this.loadSizeChartFromBackend();
   }
 
-  /**
-   * Placeholder loader for size chart. Replace with real HTTP call later.
-   */
+
+  displayChest(r: { chest: number }): string {
+    return this.formatMeasurement(r.chest);
+  }
+
+
+  displayLength(r: { length: number }): string {
+    return this.formatMeasurement(r.length);
+  }
+
+
+  displaySleeve(r: { sleeve: number }): string {
+    return this.formatMeasurement(r.sleeve);
+  }
+
+  private formatMeasurement(value: number): string {
+    if (value === null || value === undefined) return '';
+    if (this.unit === 'in') {
+      return `${value}`;
+    }
+    const cm = value * 2.54;
+    const rounded = Math.round(cm * 10) / 10;
+    return `${rounded}`;
+  }
+
+
   private loadSizeChartFromBackend(): void {
     // Dummy data — will be replaced by backend response
     this.sizeChart = [
@@ -155,6 +187,15 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
         this.selectedSize = this.sizes[0] || this.selectedSize;
       }
     } catch (e) { }
+  }
+
+  // UI-only pincode check placeholder used by the template
+  checkPincode(code?: string): void {
+    const val = (code || '').toString().trim();
+    this.lastCheckedPincode = val || null;
+    // dummy logic: only '247554' is available for delivery in our test
+    this.pincodeAvailable = val === '247554';
+    console.log('Pincode check (UI):', val, 'available=', this.pincodeAvailable);
   }
 
   goBack(): void {

@@ -383,6 +383,14 @@ p {
   font-weight: 700;
 }
 
+/* Apply styles when the host element includes the page-cta class */
+:host(.page-cta) .button {
+  padding: 10px 40px !important;
+  height: 48px !important;
+  border-radius: 8px !important;
+  box-sizing: border-box !important;
+}
+
 .magenta-transparent {
   --button_background: transparent;
   --button_border: 1px solid #BB2124;

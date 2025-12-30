@@ -2,6 +2,7 @@ p,
 h1,
 h2 {
   margin: 0;
+  
 }
 p ,th {
   opacity: 0.7;
@@ -15,6 +16,13 @@ li,th {
   font-size: 16px;
   font-weight: 600;
 }
+
+  h1 {
+    color: #282527;
+    font-family: Nunito;
+    font-size: 20px;
+    font-weight: 600;
+  }
 li {
   color: rgba(40, 37, 39, 0.7) !important;
 }
@@ -37,6 +45,8 @@ li {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  /* keep space for the fixed purchase bar so content isn't obscured */
+  padding-bottom: 88px;
 }
 .nav-icon {
   width: 28px;
@@ -127,12 +137,7 @@ li {
 }
 
 .title-n-name {
-  h1 {
-    color: #282527;
-    font-family: Nunito;
-    font-size: 20px;
-    font-weight: 600;
-  }
+
 
   span {
     display: flex;
@@ -182,6 +187,7 @@ li {
 }
 
 .discounted-price,
+.selected-size,
 .original-price,
 .quantity-count,
 .shipping-date {
@@ -265,7 +271,6 @@ li {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 12px 0;
   width: 100%;
   box-sizing: border-box;
 }
@@ -297,6 +302,43 @@ li {
   align-items: flex-start;
   gap: 16px;
   align-self: stretch;
+}
+
+/* Empty address state shown when user has no saved address */
+.address-empty {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 20px;
+  border: 1px solid #90214d;
+  background: #fff;
+
+}
+
+.address-empty .empty-right {
+  display: flex;
+padding: 8px;
+justify-content: flex-end;
+align-items: center;
+border-radius: 12px;
+border: 1px solid rgba(40, 37, 39, 0.50);
+}
+
+.pincode-input {
+color: #282527;
+font-family: Nunito;
+font-size: 13px;
+font-weight: 500;
+border:none;
+width: 100%;
+    outline: none;
+}
+
+:host ::ng-deep mindful-button.pincode-check .button {
+  padding: 8px !important;
+  font-size: 13px !important;
 }
 
 .product-detail-dropdown {
@@ -362,8 +404,11 @@ li {
   line-height: 1.6;
 }
 
-:host ::ng-deep mindful-button.page-cta .button {
-  padding: 10px 40px;
+:host ::ng-deep mindful-button.page-cta .button,
+mindful-button.page-cta .button,
+.product-purchase-bar mindful-button.page-cta .button {
+  padding: 10px 40px !important;
+
 }
 
 .product-purchase-bar {
@@ -376,12 +421,24 @@ li {
   box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
 }
 
+.product-purchase-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 /* Size guide styles copied from standalone component */
 .size-guide-container {
   padding: 0 16px;
   display: flex;
   flex-direction: column;
   gap: 32px;
+    padding-bottom: 88px;
+
 }
 
 .product-breif {
@@ -395,18 +452,7 @@ li {
   box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
 }
 
-/* Utility to keep focusable element available for screen readers but visually hidden */
-.visually-hidden {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  overflow: hidden !important;
-  clip: rect(0 0 0 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
-}
+
 
 /* Custom radio styling for size table */
 .custom-radio {
@@ -530,7 +576,7 @@ li {
 .size-guide-table td.cell-center {
   text-align: center;
   vertical-align: middle;
-  padding: 12px 8px;
+  padding: 12px 4px;
 }
 .size-guide-table th.cell-center {
   font-weight: 700;
@@ -539,11 +585,22 @@ li {
 thead{
   border-top: 1px solid var(--Neutral-Grey, rgba(40, 37, 39, 0.70));
 border-bottom: 1px solid var(--Neutral-Grey, rgba(40, 37, 39, 0.70));
-display: flex;
-  justify-content: space-between
+
 }
 .cell-body{
   border-bottom: 1px solid var(--Neutral-Grey, rgba(40, 37, 39, 0.70));
-  display: flex;
-  justify-content: space-between
+
+}
+
+/* Out of stock row styling for size guide table */
+.size-guide-table tr.out-of-stock-row {
+  opacity: 0.5;
+}
+
+.size-guide-table tr.out-of-stock-row .custom-radio {
+  cursor: not-allowed;
+}
+
+.size-guide-table tr.out-of-stock-row input[type="radio"] {
+  cursor: not-allowed;
 }

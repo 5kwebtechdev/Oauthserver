@@ -3,6 +3,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CoreService } from '../../core/services/core.service';
 import { FamilyService } from '../../core/services/family.service';
+import { AuthService } from '../../core/services/auth.service';
+import { UserService } from '../../core/services/user.service';
 import { BarcodeScanner, BarcodesScannedEvent } from '@capacitor-mlkit/barcode-scanning';
 import { AlertController } from '@ionic/angular';
 import { FaqItem, PROFILE_FAQS } from '../../core/components/user-profile/profile-facts/profile-facts.component';
@@ -34,7 +36,9 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private core: CoreService,
     private familyService: FamilyService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private authService: AuthService,
+    private userService: UserService
   ) {
     this.familyForm = this.fb.group({
       familyName: ['', [
@@ -374,7 +378,107 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
   }
 
   childCompleted() {
-    this.redirectToLogin();
+    // Register parent using data collected during signup flow, then auto-login and redirect
+    const profileStr = sessionStorage.getItem('signup_profile');
+    const password = sessionStorage.getItem('signup_password');
+    const role = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || 'parent';
+    const identifier = sessionStorage.getItem('requestedIdentifier');
+    const loginMode = sessionStorage.getItem('loginMode');
+    const familyCode = sessionStorage.getItem('familyCode') || this.familyCode || '';
+    const familyName = sessionStorage.getItem('familyName') || this.createdFamilyName || '';
+
+    if (!profileStr || !password) {
+      this.core.triggerToasrt('Please complete sign up before continuing');
+      this.router.navigate(['home', 'sign-up']);
+      return;
+    }
+
+    let profile: any = {};
+    try { profile = JSON.parse(profileStr); } catch (e) { profile = {}; }
+
+    const payload: any = {
+      name: profile.name || '',
+      gender: (profile.gender || '').toUpperCase(),
+      relationship: 'PARENT',
+      password: password,
+      avatarName: `avatar${profile.avatar || ''}`,
+      familyCode: familyCode || '',
+      familyName: familyName || ''
+    };
+
+    // include contact
+    if (loginMode === 'email' || (identifier && identifier.includes && identifier.includes('@'))) {
+      payload.email = identifier;
+    } else if (identifier) {
+      const countryCode = sessionStorage.getItem('countryCode') || '';
+      payload.phone = `${countryCode || ''}${identifier}`;
+    }
+
+    // dateOfBirth (prefer session-stored profile dob)
+    const dobValue = profile.dob;
+    if (dobValue) {
+      const dobDate = new Date(dobValue);
+      if (!isNaN(dobDate.getTime())) {
+        payload.dateOfBirth = dobDate.toISOString().split('T')[0];
+      }
+    }
+
+    this.isLoading = true;
+    this.authService.register(payload).subscribe({
+      next: (resp) => {
+        // After successful registration, attempt to login using provided credentials
+        const credentials: any = { password };
+        if (payload.email) credentials.email = payload.email;
+        else if (payload.phone) credentials.phone = payload.phone;
+
+        this.authService.login(credentials).subscribe({
+          next: (loginResp) => {
+            // Ensure user profile stored in UserService
+            try {
+              this.userService.setUserProfile({
+                name: loginResp.user?.name || payload.name,
+                email: loginResp.user?.email || payload.email,
+                phone: loginResp.user?.phone || payload.phone,
+                gender: (loginResp.user?.gender || payload.gender || '').toLowerCase(),
+                dob: loginResp.user?.dateOfBirth || payload.dateOfBirth,
+                avatarName: loginResp.user?.avatar?.avatarName || payload.avatarName,
+                avatarUrl: loginResp.user?.avatar?.url || undefined,
+                relationship: loginResp.user?.relationship || 'PARENT',
+                pet: loginResp.user?.pet?.petName || undefined
+              });
+            } catch (e) { }
+
+            this.isLoading = false;
+            // Clear signup session storage used for onboarding
+            try {
+              sessionStorage.removeItem('signup_profile');
+              sessionStorage.removeItem('signup_password');
+              sessionStorage.removeItem('signup_role');
+              sessionStorage.removeItem('signup_avatar');
+              sessionStorage.removeItem('requestedIdentifier');
+              sessionStorage.removeItem('familyCode');
+              sessionStorage.removeItem('familyName');
+            } catch (e) { }
+
+            // Navigate to parent's authenticated area
+            const route = this.authService.getDashboardRoute() || '/authed/parent-account';
+            this.router.navigate([route]);
+          },
+          error: (err) => {
+            this.isLoading = false;
+            console.error('Auto-login failed after registration', err);
+            this.core.triggerToasrt('Account created but automatic login failed. Please login manually.');
+            this.router.navigate(['/home/login']);
+          }
+        });
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error('Registration failed', err);
+        const msg = err?.error?.message || err?.error || 'Failed to create account. Please try again.';
+        this.core.triggerToasrt(msg);
+      }
+    });
   }
 
   continueWithoutFamily() {
