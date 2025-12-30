@@ -162,10 +162,8 @@ export class MindfulCalendarComponent implements OnChanges {
   getActivitiesForDate(date: Date) {
     const key = this.getDateKey(date);
     const activities = this.dateActivities[key] || {};
-    // Log only if there are activities
-    if (activities.timetable || activities.task || activities.habit) {
-      console.log(`Activities for ${key}:`, activities);
-    }
+    // Avoid logging here — this method is called many times by the template
+    // and causes repeated console output during change detection.
     return activities;
   }
 

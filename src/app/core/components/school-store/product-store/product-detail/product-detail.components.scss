@@ -3,13 +3,13 @@ h1,
 h2 {
   margin: 0;
 }
-p {
+p ,th{
   opacity: 0.7;
 }
 h2,
 p,
 strong,
-li {
+li,th {
   color: #282527;
   font-family: Nunito;
   font-size: 16px;
@@ -465,4 +465,19 @@ li {
   align-items: center;
   border-radius: 8px;
   background: #f9d5de;
+}
+
+/* Size guide table utility classes */
+.size-guide-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.size-guide-table th.cell-center,
+.size-guide-table td.cell-center {
+  text-align: center;
+  vertical-align: middle;
+  padding: 12px 8px;
+}
+.size-guide-table th.cell-center {
+  font-weight: 700;
 }
