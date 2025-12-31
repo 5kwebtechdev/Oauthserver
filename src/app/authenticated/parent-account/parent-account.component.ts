@@ -13,6 +13,7 @@ import { FooterComponent } from '../../core/components/footer/footer.component';
 import { AdBannerComponent } from '../../core/components/ad-banner/ad-banner.component';
 import { HabitPageContentComponent } from '../../core/components/habit-section/habit-page-content/habit-page-content.component';
 import { HabitService } from '../../core/components/habit-section/habit.service';
+import {ProfileSelectorService} from "../../core/services/profile-selector-service";
 
 
 @Component({
@@ -82,7 +83,8 @@ export class ParentAccountComponent implements OnInit {
         private router: Router,
         private userService: UserService,
         private moodService: MoodService,
-        private habitService: HabitService
+        private habitService: HabitService,
+        private profileSelector: ProfileSelectorService
     ) { }
 
     async openNotes() {
@@ -189,8 +191,9 @@ export class ParentAccountComponent implements OnInit {
     /** Select a child and switch profile context to that child.
      *  This updates the UserService profile locally and closes the popup.
      */
-    selectChild(child: { id: string | number; name: string; avatarUrl: string; relationship?: string }) {
-        this.selectedChild = child;
+    selectChild(child: any) {
+        this.selectedChild = child.raw.assignedTo;
+        this.profileSelector.setChild(child.raw.assignedTo);
         // If API raw data exists on the child, apply its stats
         if ((child as any).raw) {
             const d = (child as any).raw;
