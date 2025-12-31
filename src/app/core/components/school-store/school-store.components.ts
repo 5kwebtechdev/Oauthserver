@@ -44,11 +44,31 @@ export class SchoolStoreComponent implements AfterViewInit {
 		return s.length > 20 ? s.slice(0, 20) + '...' : s;
 	}
 
+	// local navigator action counts
+	cartCount: number = 0;
+	packageCount: number = 0;
+
 	constructor(private router: Router, private cdr: ChangeDetectorRef) { }
 
 	openAddressPopup(): void {
 		this.showAddressPopup = true;
 		this.cdr.detectChanges();
+	}
+
+	// handle right action clicks from mindful-navigator
+	onNavigatorAction(ev: { index: number; action: any }): void {
+		try {
+			const action = ev && (ev as any).action;
+			if (!action) return;
+			if (action.type === 'cart') {
+				try { this.router.navigateByUrl('/authed/cart'); } catch (e) { console.log('Open cart', action); }
+				return;
+			}
+			if (action.type === 'package') {
+				try { this.router.navigateByUrl('/authed/packages'); } catch (e) { console.log('Open packages', action); }
+				return;
+			}
+		} catch (e) { }
 	}
 
 	closeAddressPopup(): void {
@@ -100,20 +120,15 @@ export class SchoolStoreComponent implements AfterViewInit {
 		swiperEl.addEventListener('swiperslidechange', updateIdx);
 
 		// Attach delegated click listener on the mindful-navigator so clicks on
-		// the subtext or its svg can open the address popup.
+		// the navigator heading or subtext open the address popup.
 		try {
 			const navNative = this.navigatorEl?.nativeElement;
 			if (navNative && typeof navNative.addEventListener === 'function') {
 				navNative.addEventListener('click', (ev: Event) => {
 					const target = ev.target as HTMLElement | null;
 					if (!target) return;
-					// open when user clicks an inline svg inside navigator or text containing the sample address
-					if (target.closest && target.closest('svg')) {
-						this.openAddressPopup();
-						return;
-					}
-					const text = (target.textContent || '').trim();
-					if (text && text.indexOf('502') !== -1) {
+					// Only open when click is within the navigator heading or subtext row
+					if (target.closest && (target.closest('.navigator-heading') || target.closest('.navigator-subtext-row') || target.closest('.navigator-subtext') || target.closest('.navigator-subtext-text'))) {
 						this.openAddressPopup();
 					}
 				});

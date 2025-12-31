@@ -1,13 +1,16 @@
 <ion-content>
     <main class="school-store-main">
         <div class="navigator-wrap">
-            <mindful-navigator #navigator heading="Student-Store" [subtext]="navigatorSubtext" [showSubtext]="true" (back)="goBack()">
-                <button slot="end" class="nav-icon icon-1" aria-label="Store action 1"></button>
-                <button slot="end" class="nav-icon icon-2" aria-label="Store action 2"></button>
+            <mindful-navigator
+                #navigator
+                heading="Student-Store"
+                [subtext]="navigatorSubtext"
+                [showSubtext]="true"
+                (back)="goBack()"
+                [rightActions]="[{ type: 'cart', count: cartCount, alt: 'My cart' }, { type: 'package', count: packageCount, alt: 'Packages' }]"
+                (rightActionClick)="onNavigatorAction($event)">
             </mindful-navigator>
 
-            <!-- transparent trigger overlapping navigator subtext (clicking subtext or its svg opens the popup) -->
-            <button class="subtext-trigger" aria-label="Open address popup" (click)="openAddressPopup()"></button>
         </div>
 
         <div class="school-store-content">

@@ -1,14 +1,43 @@
 <ion-content>
     <main class="my-cart-main">
 
-        <mindful-navigator #navigator heading="My Cart" [subtext]="cartSubtext" [showSubtext]="true" (back)="goBack()">
-            <button slot="end" class="nav-icon" aria-label="Cart action" (click)="onRightAction()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="24" viewBox="0 0 22 24" fill="none">
-                    <path d="M10.0294 21.6097V12.5469L1.94118 7.95197V16.7952C1.94118 16.8601 1.95778 16.9212 1.991 16.9783C2.02422 17.0352 2.07393 17.084 2.14015 17.1246L10.0294 21.6097ZM11.9706 21.6097L19.8599 17.1246C19.9261 17.084 19.9758 17.0352 20.009 16.9783C20.0422 16.9212 20.0588 16.8601 20.0588 16.7952V7.95197L11.9706 12.5469V21.6097ZM9.83044 23.6874L1.16988 18.797C0.80149 18.5888 0.514412 18.3105 0.308647 17.9622C0.102882 17.6137 0 17.2312 0 16.8145V7.18546C0 6.76883 0.102882 6.38627 0.308647 6.03777C0.514412 5.68948 0.80149 5.41124 1.16988 5.20303L9.83044 0.312633C10.1986 0.104212 10.5885 0 11 0C11.4115 0 11.8014 0.104212 12.1696 0.312633L20.8301 5.20303C21.1985 5.41124 21.4856 5.68948 21.6914 6.03777C21.8971 6.38627 22 6.76883 22 7.18546V16.8145C22 17.2312 21.8971 17.6137 21.6914 17.9622C21.4856 18.3105 21.1985 18.5888 20.8301 18.797L12.1696 23.6874C11.8014 23.8958 11.4115 24 11 24C10.5885 24 10.1986 23.8958 9.83044 23.6874ZM15.9898 8.06433L18.9912 6.37484L11.199 1.95324C11.1328 1.91261 11.0664 1.8923 11 1.8923C10.9336 1.8923 10.8672 1.91261 10.801 1.95324L7.99118 3.5402L15.9898 8.06433ZM11 10.9063L14.0088 9.1971L6.01765 4.66568L3.00882 6.37484L11 10.9063Z" fill="#282527"/>
-                </svg>
-            </button>
+                <mindful-navigator #navigator
+                        heading="My Cart"
+                        [subtext]="cartSubtext"
+                        [showSubtext]="true"
+                        [showSubtextChevron]="false"
+                        (back)="goBack()"
+                        [rightActions]="[{ type: 'package', alt: 'Packages' }]"
+                        (rightActionClick)="onNavigatorAction($event)">
+                </mindful-navigator>
 
-        </mindful-navigator>
+                <!-- Deliver-to block copied from product-detail -->
+                <div class="address-detail">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20" fill="none">
+                        <path
+                            d="M8 10C8.55 10 9.02083 9.80417 9.4125 9.4125C9.80417 9.02083 10 8.55 10 8C10 7.45 9.80417 6.97917 9.4125 6.5875C9.02083 6.19583 8.55 6 8 6C7.45 6 6.97917 6.19583 6.5875 6.5875C6.19583 6.97917 6 7.45 6 8C6 8.55 6.19583 9.02083 6.5875 9.4125C6.97917 9.80417 7.45 10 8 10ZM8 17.35C10.0333 15.4833 11.5417 13.7875 12.525 12.2625C13.5083 10.7375 14 9.38333 14 8.2C14 6.38333 13.4208 4.89583 12.2625 3.7375C11.1042 2.57917 9.68333 2 8 2C6.31667 2 4.89583 2.57917 3.7375 3.7375C2.57917 4.89583 2 6.38333 2 8.2C2 9.38333 2.49167 10.7375 3.475 12.2625C4.45833 13.7875 5.96667 15.4833 8 17.35ZM8 20C5.31667 17.7167 3.3125 15.5958 1.9875 13.6375C0.6625 11.6792 0 9.86667 0 8.2C0 5.7 0.804167 3.70833 2.4125 2.225C4.02083 0.741667 5.88333 0 8 0C10.1167 0 11.9792 0.741667 13.5875 2.225C15.1958 3.70833 16 5.7 16 8.2C16 9.86667 15.3375 11.6792 14.0125 13.6375C12.6875 15.5958 10.6833 17.7167 8 20Z"
+                            fill="#282527" />
+                    </svg>
+                    <div class="address-text-detail d-flex flex-column w-100">
+                        <h2>Deliver to:</h2>
+                        <div class="address-text d-flex justify-content-between">
+                            <h2>{{ selectedAddress }}</h2>
+                            <a role="button" tabindex="0" (click)="openAddressPopup()">Change</a>
+                        </div>
+                        
+                    </div>
+                </div>
 
+                <!-- Address popup (bottom sheet) -->
+                <div class="address-popup" [class.open]="showAddressPopup" role="dialog" aria-modal="true" aria-label="Address options">
+                        <div class="address-popup-inner">
+                                <button class="popup-close" aria-label="Close" (click)="closeAddressPopup()">✕</button>
+                                <div class="address-item" *ngFor="let a of addresses" (click)="selectAddress(a)" [class.selected]="selectedId === a.id" role="button" tabindex="0" (keyup.enter)="selectAddress(a)">
+                                        <div class="address-text" [innerHTML]="a.html"></div>
+                                </div>
+
+                                <button class="add-address">+ Add Address</button>
+                        </div>
+                </div>
     </main>
 </ion-content>

@@ -20,6 +20,10 @@ export class MindfulNavigatorComponent implements OnInit {
   // When true (or when `subtext` is provided) the subtext row will render.
   @Input() showSubtext: boolean = false;
 
+  // When true the small chevron on the subtext row is displayed. Pages
+  // can set this to false to hide the chevron (e.g., My Cart page).
+  @Input() showSubtextChevron: boolean = true;
+
   // Backwards compatibility: some templates pass "arrow". Keep existing literal types
   // but accept the legacy value 'arrow' and map it to the arrowSvg asset.
   @Input() backIcon: 'cancel' | 'arrowSvg' | 'arrow' = 'arrowSvg';

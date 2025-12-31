@@ -38,6 +38,11 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   // popup state for address/subtext
   showAddressPopup = false;
 
+  // local cart count shown in navigator right action
+  cartCount: number = 0;
+  // local package count shown in navigator right action
+  packageCount: number = 0;
+
   // address list and selection
   addresses = [
     {
@@ -308,6 +313,24 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   addToBag(p: any): void {
     // placeholder for Add To Bag action
     try { console.log('Add to bag', p && p.id); } catch (e) { }
+    // update local cart count so navigator badge reflects additions
+    try { this.cartCount = (this.cartCount || 0) + 1; } catch (e) { }
+  }
+
+  // handle right action clicks from the navigator (e.g., cart)
+  onNavigatorAction(ev: { index: number; action: any }): void {
+    try {
+      const action = ev && (ev as any).action;
+      if (!action) return;
+      if (action.type === 'cart') {
+        try { this.router.navigateByUrl('/authed/cart'); } catch (e) { console.log('Open cart', action); }
+        return;
+      }
+      if (action.type === 'package') {
+        try { this.router.navigateByUrl('/authed/packages'); } catch (e) { console.log('Open packages', action); }
+        return;
+      }
+    } catch (e) { }
   }
 
   // Compute a display badge for a product when appropriate.

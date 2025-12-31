@@ -149,6 +149,9 @@ const routes: Routes = [
         path: 'school-store',
         loadComponent: () => import('../core/components/school-store/school-store.components').then(m => m.SchoolStoreComponent)
       }, {
+        path: 'cart',
+        loadComponent: () => import('../core/components/school-store/product-store/my-cart/my-cart.components').then(m => m.MyCartComponent)
+      }, {
         path: 'school-store/institute-detail',
         loadComponent: () => import('../core/components/school-store/institute-detail-fill/institute-detail-fill.components').then(m => m.InstituteDetailFillComponent)
       }, {

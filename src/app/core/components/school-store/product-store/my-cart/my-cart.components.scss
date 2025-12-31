@@ -1,0 +1,137 @@
+/* Address block and popup styles copied from product-detail/store pages (scoped to My Cart) */
+.address-detail {
+	border-radius: 16px;
+	border: 0.5px solid #90214d;
+	display: flex;
+	padding: 8px 16px;
+	align-items: flex-start;
+	gap: 16px;
+	align-self: stretch;
+	background: #fff;
+}
+.address-text-detail h2 {
+	margin: 0;
+	font-weight: 600;
+	font-size: 13px;
+}
+.address-text {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.address-popup {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: -100%;
+	background: rgba(255,255,255,0.98);
+	transition: bottom 220ms ease;
+	z-index: 1200;
+	box-shadow: 0 -6px 16px rgba(0,0,0,0.08);
+}
+.address-popup.open {
+	bottom: 0;
+}
+.address-popup-inner {
+	padding: 16px;
+}
+.address-item {
+	padding: 12px;
+	border-bottom: 1px solid #eee;
+}
+.address-item.selected {
+	background: #f7f0f5;
+}
+.popup-close {
+	background: transparent;
+	border: none;
+	font-size: 20px;
+	float: right;
+}
+.add-address {
+	display: block;
+	width: 100%;
+	margin-top: 12px;
+	padding: 10px;
+	border-radius: 6px;
+	border: 1px dashed #ccc;
+	background: #fff;
+}
+
+/* Address styling copied from product-detail (scoped to My Cart) */
+.address-empty {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 14px;
+	border-radius: 20px;
+	border: 1px solid #90214d;
+	background: #fff;
+}
+
+.address-empty .empty-right {
+	display: flex;
+	padding: 8px;
+	justify-content: flex-end;
+	align-items: center;
+	border-radius: 12px;
+	border: 1px solid rgba(40, 37, 39, 0.50);
+}
+
+.pincode-input {
+	color: #282527;
+	font-family: Nunito;
+	font-size: 13px;
+	font-weight: 500;
+	border: none;
+	width: 100%;
+	outline: none;
+}
+
+:host ::ng-deep mindful-button.pincode-check .button {
+	padding: 8px !important;
+	font-size: 13px !important;
+}
+
+/* Address popup (bottom sheet) */
+.address-popup {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: -100%;
+	background: rgba(255,255,255,0.98);
+	transition: bottom 220ms ease;
+	z-index: 1200;
+	box-shadow: 0 -6px 16px rgba(0,0,0,0.08);
+}
+.address-popup.open {
+	bottom: 0;
+}
+.address-popup-inner {
+	padding: 16px;
+}
+.address-item {
+	padding: 12px;
+	border-bottom: 1px solid #eee;
+}
+.address-item.selected {
+	background: #f7f0f5;
+}
+.popup-close {
+	background: transparent;
+	border: none;
+	font-size: 20px;
+	float: right;
+}
+.add-address {
+	display: block;
+	width: 100%;
+	margin-top: 12px;
+	padding: 10px;
+	border-radius: 6px;
+	border: 1px dashed #ccc;
+	background: #fff;
+}
+
