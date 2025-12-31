@@ -356,7 +356,7 @@
         </p>
       </div>
     </div>
-    <div *ngIf="step === 4 && currentRole === 'self'" [@slideIn]>
+    <div *ngIf="step === 4 && (currentRole === 'self' || currentRole === 'child')" [@slideIn]>
       <swiper-container slides-per-view="1.4" centered-slides="true" space-between="20" grab-cursor="true"
         (slidechange)="onSlideChange()" (swiperstateupdate)="onSlideChange()" #swiperEl [style]="{ marginTop: '50px' }">
         <swiper-slide *ngFor="let pet of pets">
@@ -373,7 +373,7 @@
 
     </div>
 
-    <div *ngIf="step === 5 && currentRole === 'self'" [@slideIn]
+    <div *ngIf="step === 5 && (currentRole === 'self' || currentRole === 'child')" [@slideIn]
       class="welcome-page d-flex flex-column align-items-center justify-content-center gap-3">
       <img src="assets/Images-Transparent/Image-Onboarding-Pet2.png" alt="Onboarding pet" class="onboarding-image" />
 

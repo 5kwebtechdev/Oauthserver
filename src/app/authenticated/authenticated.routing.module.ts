@@ -5,6 +5,7 @@ import { UserDashboardComponent } from "./user-dashboard/user-dashboard.componen
 import { UserProfileComponent } from '../core/components/user-profile/user-profile.component';
 import { TimelineComponent } from "../core/components/habit-section/timeline/timeline.component";
 import { HabitDetailComponent } from "../core/components/habit-section/habit-detail/habit-detail.component";
+import { RoleGuard } from '../core/guards/role.guard';
 
 
 const routes: Routes = [
@@ -15,10 +16,14 @@ const routes: Routes = [
 
       {
         path: 'user-dashboard',
-        component: UserDashboardComponent
+        component: UserDashboardComponent,
+        canActivate: [RoleGuard],
+        data: { allowedRoles: ['CHILD', 'SELF'] }
       }, {
         path: 'parent-account',
-        loadComponent: () => import('./parent-account/parent-account.component').then(m => m.ParentAccountComponent)
+        loadComponent: () => import('./parent-account/parent-account.component').then(m => m.ParentAccountComponent),
+        canActivate: [RoleGuard],
+        data: { allowedRoles: ['PARENT'] }
       }, {
         path: 'user-profile',
         component: UserProfileComponent

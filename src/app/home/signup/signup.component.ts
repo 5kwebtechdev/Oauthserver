@@ -219,6 +219,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     })
     this.route.queryParams.subscribe(params => {
       const stepParam = params['step'];
+      const roleParam = params['role'];
+
+      // If role was provided via query (e.g. from scanner), persist it
+      if (roleParam && ['child', 'parent', 'self'].includes(roleParam)) {
+        try { sessionStorage.setItem('signup_role', roleParam); } catch (e) { }
+        this.roleSelected = roleParam;
+      }
+
       this.step = Number(stepParam) || 1;
       // Handle special step cases
       if (stepParam === '0.1') {
@@ -232,6 +240,34 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.renderer.setStyle(document.documentElement, '--step', this.step);
       // Ensure birthday picker doesn't open automatically when navigating to step 3
       this.openBirthdayPicker = false;
+      // If we've navigated directly to pet selection, ensure a pet is selected and carousel shows
+      try {
+        if (this.step === 4) {
+          // ensure roleSelected is set from session if available
+          const storedRole = sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self' | null;
+          if (storedRole) this.roleSelected = storedRole;
+
+          const petFromSession = sessionStorage.getItem('signup_pet');
+          if (petFromSession) {
+            const idx = this.pets.findIndex(p => p.name === petFromSession);
+            this.currentImage = idx >= 0 ? this.pets[idx] : this.pets[0];
+          } else {
+            this.currentImage = this.pets[0];
+            sessionStorage.setItem('signup_pet', this.pets[0].name);
+          }
+
+          // If swiper instance exists, move it to the stored pet index
+          setTimeout(() => {
+            try {
+              const swiperInstance = this.swiperRef?.nativeElement?.swiper;
+              if (swiperInstance) {
+                const targetIndex = this.pets.findIndex(p => p.name === (petFromSession || this.pets[0].name));
+                if (targetIndex >= 0) swiperInstance.slideTo(targetIndex);
+              }
+            } catch (e) { /* ignore */ }
+          }, 200);
+        }
+      } catch (e) { /* ignore */ }
     })
   }
 
@@ -452,7 +488,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         sessionStorage.setItem('signup_pet', selectedPetName);
       }
 
-      // Navigate to welcome step (step 5)
+      // If role is child or self, register account now and then show welcome step
+      const role = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;
+      if (role === 'child' || role === 'self') {
+        this.registerChildOrSelfFromSession(role as 'child' | 'self');
+        return;
+      }
+
+      // Navigate to welcome step (step 5) for other flows
       this.router.navigate(['home/sign-up'], { queryParams: { step: 5 } });
       return;
     }
@@ -1229,7 +1272,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       next: (resp) => {
         this.errorMessage = null; // Clear any previous errors
 
-        // Save user profile to UserService
+        // Save user profile to UserService (best-effort)
         this.userService.setUserProfile({
           name: payload.name,
           email: payload.email,
@@ -1253,30 +1296,40 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           sessionStorage.removeItem('familyName');
         } catch (e) { }
 
-        // After successful registration, route depending on role:
-        // - If parent, send to parent instructions
-        // - If self, go to user dashboard
-        // - If child, move to pet selection (step 4)
-        const roleSaved = (role || this.roleSelected) as string | undefined;
-        const roleUpper = roleSaved ? roleSaved.toUpperCase() : '';
-        if (roleUpper === 'PARENT') {
-          // this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
+        // Mark onboarding completed so onboarding routes are blocked later
+        try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) { }
+
+        // Attempt automatic login after registration (useful on mobile)
+        const passwordForLogin = password || sessionStorage.getItem('signup_password') || this.password?.value || '';
+        const credentials: any = { password: passwordForLogin };
+        if (payload.email) credentials.email = payload.email;
+        else if (payload.phone) credentials.phone = payload.phone;
+
+        // If we have credentials, try to login and route based on user relationship
+        if (credentials.password && (credentials.email || credentials.phone)) {
+          this.authService.login(credentials).subscribe({
+            next: (loginResp) => {
+              // After login, user session is set by AuthService
+              // Navigate to appropriate dashboard
+              const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+              this.router.navigate([route]);
+            },
+            error: (loginErr) => {
+              // If auto-login fails, fall back to login page
+              console.error('Auto-login failed after registration', loginErr);
+              this.core.triggerToasrt('Account created. Please login to continue.');
+              this.router.navigate(['/home/login']);
+            }
+          });
+        } else {
+          // No credentials available - redirect to login
           this.router.navigate(['/home/login']);
-        } else if (roleUpper === 'SELF') {
-          this.router.navigate(['home/login']);
-        } else if (roleUpper === 'CHILD') {
-          // For child role, continue to pet selection
-          // this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
-          this.router.navigate(['/home/login']);
-        }
-        else {
-          // For child role, continue to pet selection
-          this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
         }
       },
       error: (err) => {
-        const serverMsg = err?.error.error || 'Registration failed';
+        const serverMsg = err?.error?.message || err?.error || 'Registration failed';
         this.errorMessage = typeof serverMsg === 'string' ? serverMsg : 'Registration failed. Please try again.';
+        try { this.core.triggerToasrt(this.errorMessage); } catch (e) { }
       }
     });
   }
@@ -1284,11 +1337,83 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   // Password visibility toggle
   public hidePassword: boolean = true;
 
+  /**
+   * Register a child/self account using session data and then navigate to welcome (step 5).
+   */
+  private registerChildOrSelfFromSession(role: 'child' | 'self') {
+    this.errorMessage = null;
+
+    // Collect values from session and forms (reuse registerFromSession logic)
+    const profileStr = sessionStorage.getItem('signup_profile');
+    const password = sessionStorage.getItem('signup_password') || this.password?.value;
+    const identifier = this.requestedIdentifier || this.email?.value || this.phone?.value;
+    const familyCode = sessionStorage.getItem('familyCode');
+
+    let profile: any = {};
+    try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) { profile = {}; }
+
+    const payload: any = {
+      name: profile.name || this.profileForm.get('name')?.value,
+      gender: (profile.gender || this.gender || '').toUpperCase(),
+      relationship: (role || '').toUpperCase(),
+      password: password || undefined,
+      avatarName: `avatar${profile.avatar || this.avatarSelected}`,
+      familyCode: familyCode || ''
+    };
+
+    // include email or phone depending on loginMode or identifier content
+    if (this.loginMode === 'email' || (identifier && identifier.includes && identifier.includes('@'))) {
+      payload.email = identifier;
+    } else {
+      const contactNumber = sessionStorage.getItem('countryCode') || this.selectedCountry.code;
+      payload.phone = contactNumber + identifier;
+    }
+
+    // dateOfBirth
+    const dobValue = profile.dob || this.profileForm.get('dob')?.value;
+    if (dobValue) {
+      const dobDate = new Date(dobValue);
+      payload.dateOfBirth = dobDate.toISOString().split('T')[0];
+    }
+
+    // petName
+    try {
+      let petName = sessionStorage.getItem('signup_pet') || this.currentImage?.name;
+      if (!petName && this.pets.length > 0) petName = this.pets[0].name;
+      if (petName) payload.petName = petName;
+    } catch (e) { }
+
+    this.authService.register(payload).subscribe({
+      next: (resp) => {
+        // Mark onboarding complete and persist minimal user info
+        try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) { }
+
+        // Clear transient signup session data (keep login flow separate)
+        try {
+          sessionStorage.removeItem('signup_profile');
+          sessionStorage.removeItem('signup_password');
+          sessionStorage.removeItem('signup_role');
+          sessionStorage.removeItem('signup_avatar');
+          sessionStorage.removeItem('requestedIdentifier');
+          sessionStorage.removeItem('familyCode');
+          sessionStorage.removeItem('familyName');
+        } catch (e) { }
+
+        // Navigate to welcome step
+        this.router.navigate(['home/sign-up'], { queryParams: { step: 5 } });
+      },
+      error: (err) => {
+        const serverMsg = err?.error?.message || err?.error || 'Registration failed';
+        this.errorMessage = typeof serverMsg === 'string' ? serverMsg : 'Registration failed. Please try again.';
+        try { this.core.triggerToasrt(this.errorMessage); } catch (e) { }
+      }
+    });
+  }
+
   // Navigate to authenticated area after welcome step and complete registration
   onBegin() {
-    // Complete the registration with all session data
+    // Complete the registration with all session data; navigation will occur after register finishes
     this.registerFromSession();
-    this.router.navigate(['/home/login']);
   }
 
   /**

@@ -1,8 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { IonicModule, AlertController } from '@ionic/angular';
 import { CommonModule, Location } from '@angular/common';
-import { BarcodeScanner, BarcodesScannedEvent } from '@capacitor-mlkit/barcode-scanning';
+import { BarcodeScanner, BarcodesScannedEvent, BarcodeFormat } from '@capacitor-mlkit/barcode-scanning';
+import { UserService } from '../../core/services/user.service';
+import { RoleGuard } from '../../core/guards/role.guard';
 
 @Component({
   selector: 'app-scan-qr',
@@ -17,12 +19,15 @@ export class ScanQrComponent implements OnInit, OnDestroy {
   isScanning: boolean = false;
   isFlashlightOn: boolean = false;
   scannerSupported: boolean = false;
+  private scanListener: any = null;
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private location: Location,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private ngZone: NgZone,
+    private userService: UserService
   ) { }
 
   async ngOnInit() {
@@ -99,28 +104,34 @@ export class ScanQrComponent implements OnInit, OnDestroy {
     }
 
     try {
-      // Hide background behind scanner
+      // Hide the WebView background so native camera shows through
       document.body.classList.add('barcode-scanner-active');
 
-      this.isScanning = true;
-
-      // Start scanning
-      const listener = await BarcodeScanner.addListener('barcodesScanned', async (result: BarcodesScannedEvent) => {
+      // Add listener for scanned barcodes BEFORE starting the scan
+      this.scanListener = await BarcodeScanner.addListener('barcodesScanned', async (result: BarcodesScannedEvent) => {
         console.log('Barcodes scanned:', result);
 
         // Get the first barcode from the result
         if (result.barcodes && result.barcodes.length > 0) {
           const barcode = result.barcodes[0];
 
-          // Stop scanning when QR code is detected
-          await this.stopScan();
+          // Run in Angular zone to ensure UI updates
+          this.ngZone.run(async () => {
+            // Stop scanning when QR code is detected
+            await this.stopScan();
 
-          // Process the scanned QR code
-          await this.handleScannedCode(barcode.displayValue);
+            // Process the scanned QR code
+            await this.handleScannedCode(barcode.displayValue || barcode.rawValue || '');
+          });
         }
       });
 
-      await BarcodeScanner.startScan();
+      // Start continuous scanning - targeting QR codes specifically
+      await BarcodeScanner.startScan({
+        formats: [BarcodeFormat.QrCode]
+      });
+
+      this.isScanning = true;
     } catch (error) {
       console.error('Error starting scan:', error);
       this.isScanning = false;
@@ -136,16 +147,24 @@ export class ScanQrComponent implements OnInit, OnDestroy {
   }
 
   async stopScan() {
-    if (!this.isScanning) {
-      return;
-    }
-
     try {
-      await BarcodeScanner.stopScan();
+      // Remove listener first
+      if (this.scanListener) {
+        await this.scanListener.remove();
+        this.scanListener = null;
+      }
       await BarcodeScanner.removeAllListeners();
+
+      // Stop the scan
+      await BarcodeScanner.stopScan();
 
       // Turn off flashlight if it's on
       if (this.isFlashlightOn) {
+        try {
+          await BarcodeScanner.toggleTorch();
+        } catch (e) {
+          // Ignore torch errors during cleanup
+        }
         this.isFlashlightOn = false;
       }
 
@@ -153,6 +172,8 @@ export class ScanQrComponent implements OnInit, OnDestroy {
       document.body.classList.remove('barcode-scanner-active');
     } catch (error) {
       console.error('Error stopping scan:', error);
+      this.isScanning = false;
+      document.body.classList.remove('barcode-scanner-active');
     }
   }
 
@@ -211,10 +232,40 @@ export class ScanQrComponent implements OnInit, OnDestroy {
       if (code) {
         sessionStorage.setItem('familyCode', code);
       }
+      // Store the user role for use after login
+      sessionStorage.setItem('signup_role', this.userRole);
     } catch (e) {
       console.warn('Failed to persist family code', e);
     }
-    this.router.navigate(['/home/login']);
+
+    // If the scanned flow is part of onboarding for child/self, send user to signup step 4 (pet selection)
+    if (this.userRole === 'child' || this.userRole === 'self') {
+      this.router.navigate(['/home/sign-up'], {
+        queryParams: {
+          step: 4,
+          role: this.userRole,
+          familyCode: code
+        }
+      });
+      return;
+    }
+
+    // Default: Navigate to login with the role. After login completes, user will be redirected appropriately
+    this.router.navigate(['/home/login'], {
+      queryParams: {
+        role: this.userRole,
+        familyCode: code
+      }
+    });
+  }
+
+  /**
+   * Navigate directly to the appropriate dashboard based on role
+   * This can be called after successful authentication
+   */
+  navigateToDashboard(): void {
+    const dashboardRoute = RoleGuard.getDashboardRouteForRole(this.userRole.toUpperCase());
+    this.router.navigate([dashboardRoute]);
   }
 
   async toggleFlashlight() {
