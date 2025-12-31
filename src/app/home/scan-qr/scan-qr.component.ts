@@ -4,7 +4,6 @@ import { IonicModule, AlertController } from '@ionic/angular';
 import { CommonModule, Location } from '@angular/common';
 import { BarcodeScanner, BarcodesScannedEvent, BarcodeFormat } from '@capacitor-mlkit/barcode-scanning';
 import { UserService } from '../../core/services/user.service';
-import { RoleGuard } from '../../core/guards/role.guard';
 
 @Component({
   selector: 'app-scan-qr',
@@ -264,7 +263,8 @@ export class ScanQrComponent implements OnInit, OnDestroy {
    * This can be called after successful authentication
    */
   navigateToDashboard(): void {
-    const dashboardRoute = RoleGuard.getDashboardRouteForRole(this.userRole.toUpperCase());
+    const normalized = this.userRole?.toUpperCase?.() || '';
+    const dashboardRoute = normalized === 'PARENT' ? '/authed/parent-account' : '/authed/user-dashboard';
     this.router.navigate([dashboardRoute]);
   }
 

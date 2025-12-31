@@ -6,7 +6,6 @@ import { UserService } from '../services/user.service';
     providedIn: 'root'
 })
 export class RoleGuard implements CanActivate {
-
     constructor(
         private userService: UserService,
         private router: Router
@@ -16,44 +15,34 @@ export class RoleGuard implements CanActivate {
         const userProfile = this.userService.getUserProfile();
         const userRole = userProfile?.relationship?.toUpperCase();
 
-        // Get allowed roles from route data
         const allowedRoles: string[] = route.data['allowedRoles'] || [];
 
         // If no roles specified, allow access
-        if (allowedRoles.length === 0) {
+        if (!allowedRoles || allowedRoles.length === 0) {
             return true;
         }
 
-        // Check if user role is in allowed roles
+        // If user has a role and it's allowed, allow
         if (userRole && allowedRoles.includes(userRole)) {
             return true;
         }
 
-        // Redirect based on user role
-        this.redirectBasedOnRole(userRole);
+        // Otherwise, redirect to the appropriate dashboard for the user's role
+        const target = userRole === 'PARENT' ? '/authed/parent-account' : '/authed/user-dashboard';
+
+        try {
+            if (this.router.url === target) return false;
+        } catch (e) {
+            // ignore
+        }
+
+        this.router.navigateByUrl(target, { replaceUrl: true }).catch(() => { });
         return false;
     }
 
-    /**
-     * Redirect user to their appropriate dashboard based on role
-     */
-    redirectBasedOnRole(role: string | undefined): void {
-        if (role === 'PARENT') {
-            this.router.navigate(['/authed/parent-account']);
-        } else {
-            // CHILD, SELF, or undefined - go to user-dashboard
-            this.router.navigate(['/authed/user-dashboard']);
-        }
-    }
-
-    /**
-     * Static helper to get the correct dashboard route for a role
-     */
+    // Static helper kept for convenience
     static getDashboardRouteForRole(role: string | undefined): string {
-        const normalizedRole = role?.toUpperCase();
-        if (normalizedRole === 'PARENT') {
-            return '/authed/parent-account';
-        }
-        return '/authed/user-dashboard';
+        const normalized = role?.toUpperCase();
+        return normalized === 'PARENT' ? '/authed/parent-account' : '/authed/user-dashboard';
     }
 }

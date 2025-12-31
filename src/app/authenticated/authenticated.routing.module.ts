@@ -2,10 +2,10 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AuthenticatedComponent } from "./authenticated.component";
 import { UserDashboardComponent } from "./user-dashboard/user-dashboard.component";
+import { RoleGuard } from '../core/guards/role.guard';
 import { UserProfileComponent } from '../core/components/user-profile/user-profile.component';
 import { TimelineComponent } from "../core/components/habit-section/timeline/timeline.component";
 import { HabitDetailComponent } from "../core/components/habit-section/habit-detail/habit-detail.component";
-import { RoleGuard } from '../core/guards/role.guard';
 
 
 const routes: Routes = [

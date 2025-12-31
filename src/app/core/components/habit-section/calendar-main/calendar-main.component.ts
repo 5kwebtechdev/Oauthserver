@@ -49,6 +49,7 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     console.log('CalendarMainComponent initialized');
   }
 
+
   ngOnInit() {
     console.log('CalendarMainComponent ngOnInit');
     // Detect whether current viewer is a parent so we can pass the flag to habit-card instances
