@@ -386,19 +386,20 @@ $accent: #90214D;
 	gap: 4px;
 }
 
-.product-tag{
-	color: #282527;
-	font-family: Nunito, sans-serif;
-	font-size: 10px;
-	font-weight: 600;
-	opacity: 0.7;
+.product-title{
+font-size: 13px;
 }
 
-.product-title{
+.product-tag, .product-subtitle{
+font-size: 10px;
+opacity: 0.7;
+}
+
+h3{
 	color: #282527;
-	font-family: Nunito, sans-serif;
-	font-size: 13px;
-	font-weight: 600;
+font-family: Nunito;
+font-weight: 600;
+margin: 0;
 }
 
 .product-prices{

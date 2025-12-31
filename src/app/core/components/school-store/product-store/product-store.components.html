@@ -51,13 +51,17 @@
                             </div>
 
                             <div class="product-info">
-                                <div class="product-tag">{{ p.tag }}</div>
-                                <div class="product-title">{{ p.title }}</div>
+                                <h3 class="product-tag" *ngIf="p.tag && selectedCategory !== 'textbooks' && p.category !== 'textbooks'">{{ p.tag }}</h3>
 
-                                <div class="product-prices">
-                                    <div class="price-discount">{{ p.price }}</div>
-                                    <div class="price-mrp">{{ p.mrp }}</div>
-                                </div>
+                                <h3 class="product-title">{{ p.title }}</h3>
+                                    <h3 class="product-subtitle" *ngIf="p.subtitle">{{ p.subtitle }}</h3>
+
+                                    <div class="product-prices">
+                                        <div class="price-discount">{{ p.price }}</div>
+                                        <div class="price-mrp">{{ p.mrp }}</div>
+                                    </div>
+
+                                <mindful-button *ngIf="selectedCategory === 'textbooks' || p.category === 'textbooks'" type="magenta" text="Add To Bag" (click)="addToBag(p); $event.stopPropagation()"></mindful-button>
                             </div>
                         </div>
                     </div>

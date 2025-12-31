@@ -1,9 +1,9 @@
-import { Component, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, IonContent } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   standalone: true,
@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
   ,
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class ProductStoreComponent implements AfterViewInit, OnDestroy {
+export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   @ViewChild('navigator', { static: false, read: ElementRef }) navigatorEl?: ElementRef;
   @ViewChild('categorySlider', { static: false, read: ElementRef }) categorySlider?: ElementRef;
   @ViewChild('subCategorySlider', { static: false, read: ElementRef }) subCategorySlider?: ElementRef;
@@ -46,7 +46,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy {
     return s.length > 20 ? s.slice(0, 20) + '...' : s;
   }
 
-  constructor(private router: Router, private cdr: ChangeDetectorRef) {}
+  constructor(private router: Router, private cdr: ChangeDetectorRef, private route: ActivatedRoute) { }
 
   // product categories
   categories = [
@@ -69,7 +69,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy {
 
   selectedSubCategory = this.subCategories[0].id;
 
-  // simple product list for cards (one example product; expand as needed)
+  // simple product list for cards (keeps existing uniform/cloth dummy data and adds textbooks)
   products = [
     {
       id: 'shirt-1',
@@ -119,6 +119,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy {
     },
     {
       id: 'track-1',
+      category: 'girls',
       tag: 'Official School Wear',
       title: 'Comfort Sports Track Pants',
       price: '₹449',
@@ -126,20 +127,153 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy {
       img: 'assets/School-assets/temp/Gemini_Generated_Image_pi8q46pi8q46pi8q 1.jpg',
       outOfStock: true,
       subcategory: 'sport'
+    },
+    // --- Boys uniform samples to avoid empty state when selecting Boys > All ---
+    {
+      id: 'boys-shirt-1',
+      category: 'boys',
+      tag: 'Official School Wear',
+      title: 'Classic White Half-Sleeve Shirt',
+      price: '₹449',
+      mrp: '₹600',
+      img: 'assets/School-assets/temp/Shirt.jpg',
+      subcategory: 'summer'
+    },
+    {
+      id: 'boys-trouser-1',
+      category: 'boys',
+      tag: 'Official School Wear',
+      title: 'Classic Formal Trousers',
+      price: '₹699',
+      mrp: '₹850',
+      img: 'assets/School-assets/temp/Trousers.jpg',
+      subcategory: 'all'
+    },
+    {
+      id: 'boys-tshirt-1',
+      category: 'boys',
+      tag: 'Official School Wear',
+      title: 'House T-Shirt (White/Red)',
+      price: '₹349',
+      mrp: '₹500',
+      img: 'assets/School-assets/temp/T-Shirt.jpg',
+      subcategory: 'summer'
+    },
+    {
+      id: 'boys-shorts-1',
+      category: 'boys',
+      tag: 'Official School Wear',
+      title: 'Navy Blue Formal Shorts',
+      price: '₹399',
+      mrp: '₹500',
+      img: 'assets/School-assets/temp/Shorts.jpg',
+      subcategory: 'summer'
+    },
+    {
+      id: 'boys-shirt-l',
+      category: 'boys',
+      tag: 'Official School Wear',
+      title: 'Classic White Shirt (Large)',
+      price: '₹499',
+      mrp: '₹650',
+      img: 'assets/School-assets/temp/Shirt-l.jpg',
+      subcategory: 'all'
+    },
+    {
+      id: 'boys-blazer-1',
+      category: 'boys',
+      tag: 'Official School Wear',
+      title: 'Classic Blazer',
+      price: '₹699',
+      mrp: '₹850',
+      img: 'assets/School-assets/temp/Blazer.jpg',
+      outOfStock: true,
+      subcategory: 'all'
+    },
+    // --- Textbooks (new dummy data) ---
+    {
+      id: 'maths-class7',
+      category: 'textbooks',
+      tag: 'Mandatory',
+      title: 'Mathematics -\nClass 7',
+      subtitle: 'NCERT - 2025 Edition',
+      price: '₹65',
+      mrp: '₹80',
+      img: 'assets/School-assets/temp/Maths Book.jpg',
+      subcategory: 'textbooks'
+    },
+    {
+      id: 'science-class7',
+      category: 'textbooks',
+      tag: 'Mandatory',
+      title: 'Science -\nClass 7',
+      subtitle: 'NCERT - 2025 Edition',
+      price: '₹65',
+      mrp: '₹80',
+      img: 'assets/School-assets/temp/Maths Book.jpg',
+      subcategory: 'textbooks'
+    },
+    {
+      id: 'english-honeycomb',
+      category: 'textbooks',
+      tag: '',
+      title: 'Honeycomb -\nEnglish',
+      subtitle: 'NCERT - 2024 Edition',
+      price: '₹65',
+      mrp: '₹80',
+      img: 'assets/School-assets/temp/English.jpg',
+      subcategory: 'textbooks'
+    },
+    {
+      id: 'single-line-notebook',
+      category: 'textbooks',
+      tag: 'Mandatory',
+      title: 'Single Line Notebooks (A4) - Pack of 6',
+      subtitle: 'Classmate - 172 Pages',
+      price: '₹249',
+      mrp: '₹350',
+      img: 'assets/School-assets/temp/Notebook.jpg',
+      subcategory: 'notesbook'
     }
   ];
 
   // Return products filtered by selected subcategory. 'all' returns all products.
   get visibleProducts() {
-    if (!this.products || !this.selectedSubCategory) return this.products;
-    if (this.selectedSubCategory === 'all') return this.products;
-    return this.products.filter(p => (p.subcategory || '') === this.selectedSubCategory);
+    if (!this.products) return [];
+    let filtered = this.products.slice();
+    // filter by selected category if present
+    if (this.selectedCategory) {
+      filtered = filtered.filter(p => (p.category || '') === this.selectedCategory);
+    }
+    // then filter by subcategory
+    if (this.selectedSubCategory && this.selectedSubCategory !== 'all') {
+      filtered = filtered.filter(p => (p.subcategory || '') === this.selectedSubCategory);
+    }
+    return filtered;
   }
 
   selectCategory(c: { id: string; label: string }): void {
     // ignore click if user was dragging to scroll
     if ((this as any)._isDragging) return;
     this.selectedCategory = c.id;
+    // when switching to textbooks, adjust subcategories
+    if (c.id === 'textbooks') {
+      this.subCategories = [
+        { id: 'all', label: 'All' },
+        { id: 'textbooks', label: 'Textbooks' },
+        { id: 'notesbook', label: 'Notesbook' }
+      ];
+      this.selectedSubCategory = 'all';
+    } else {
+      // restore defaults for other categories
+      this.subCategories = [
+        { id: 'all', label: 'All' },
+        { id: 'summer', label: 'Summer' },
+        { id: 'winter', label: 'Winter' },
+        { id: 'sport', label: 'Sport' }
+      ];
+      this.selectedSubCategory = 'all';
+    }
     this.cdr.detectChanges();
   }
 
@@ -154,6 +288,29 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy {
     // navigate to product detail and pass title in history state for heading
     const url = `/authed/school-store/product/${encodeURIComponent(p.id)}`;
     try { this.router.navigateByUrl(url, { state: { product: p } }); } catch (e) { this.router.navigateByUrl(url); }
+  }
+
+  addToBag(p: any): void {
+    // placeholder for Add To Bag action
+    try { console.log('Add to bag', p && p.id); } catch (e) { }
+  }
+
+  ngOnInit(): void {
+    try {
+      const cat = this.route.snapshot.queryParamMap.get('category');
+      if (cat) {
+        // set selected category and adjust subcategories if textbooks
+        this.selectedCategory = cat;
+        if (cat === 'textbooks') {
+          this.subCategories = [
+            { id: 'all', label: 'All' },
+            { id: 'textbooks', label: 'Textbooks' },
+            { id: 'notesbook', label: 'Notesbook' }
+          ];
+          this.selectedSubCategory = 'all';
+        }
+      }
+    } catch (e) { }
   }
   // Drag flag used to suppress clicks while user is scrolling
   private _isDragging = false;

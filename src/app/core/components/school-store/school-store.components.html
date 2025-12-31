@@ -38,10 +38,10 @@
                     <img src="/assets/School-assets/Girls Uniform.png" alt="Girls Uniforms">
                 </div>
 
-                <div class="store-card">
+                <a class="store-card" role="link" [routerLink]="['/authed','school-store','product']" [queryParams]="{ category: 'textbooks' }" aria-label="Open Textbooks">
                     <h3>Textbooks</h3>
                     <img src="/assets/School-assets/text-books.png" alt="Textbooks">
-                </div>
+                </a>
 
                 <div class="store-card-2">
                 <div class="store-card-in-2  w-100">
