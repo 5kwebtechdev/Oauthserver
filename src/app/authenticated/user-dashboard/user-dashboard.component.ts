@@ -29,6 +29,7 @@ import { Habit } from '../../core/components/habit-section/habit.types';
 import { TaskApi } from '../../core/api/task.api';
 import { HabitApi } from '../../core/api/habit.api';
 import { HabitButtonLogicService } from '../../core/components/habit-section/habit-button-logic.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-user-dashboard',
@@ -84,7 +85,8 @@ export class UserDashboardComponent implements OnInit {
     private habitService: HabitService,
     private taskApi: TaskApi,
     private habitApi: HabitApi,
-    private buttonLogic: HabitButtonLogicService
+    private buttonLogic: HabitButtonLogicService,
+    private authService: AuthService
   ) { }
 
   async openNotes() {
@@ -93,6 +95,12 @@ export class UserDashboardComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Check if the current user is a parent and redirect if needed
+    if (this.authService.isParentUser()) {
+      this.router.navigate(['/authed/parent-account'], { replaceUrl: true });
+      return;
+    }
+
     // Load user profile from service
     this.userService.getUserProfile$().subscribe(profile => {
       if (profile) {
@@ -200,7 +208,7 @@ export class UserDashboardComponent implements OnInit {
             .map((item: any) => {
               // Calculate proper timestamps using shared service
               const timestamps = this.buttonLogic.calculateTimestamps(item);
-              
+
               return {
                 id: item.id || '',
                 title: item.title || '',
