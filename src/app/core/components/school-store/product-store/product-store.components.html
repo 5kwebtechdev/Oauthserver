@@ -2,7 +2,8 @@
     <main class="school-store-main">
 
         <div class="navigator-wrap">
-            <mindful-navigator #navigator heading="Student-Store" [subtext]="navigatorSubtext" [showSubtext]="true" (back)="goBack()">
+            <mindful-navigator #navigator heading="Student-Store" [subtext]="navigatorSubtext" [showSubtext]="true"
+                (back)="goBack()">
                 <button slot="end" class="nav-icon icon-1" aria-label="Store action 1"></button>
                 <button slot="end" class="nav-icon icon-2" aria-label="Store action 2"></button>
             </mindful-navigator>
@@ -14,10 +15,14 @@
             <!-- Category and Subcategory sliders-->
             <div class="main-category">
                 <div class="category-slider-wrap w-100">
-                    <swiper-container #categorySlider class="category-swiper" slides-per-view="auto" space-between="24" free-mode="true" free-mode-momentum="true" grab-cursor="true">
+                    <swiper-container #categorySlider class="category-swiper" slides-per-view="auto" space-between="24"
+                        free-mode="true" free-mode-momentum="true" grab-cursor="true">
                         <swiper-slide class="category-slide" *ngFor="let c of categories; let i = index">
-                            <div role="tab" class="category-item" [class.selected]="selectedCategory === c.id" (click)="selectCategory(c)" tabindex="0" [attr.aria-selected]="selectedCategory === c.id">
-                                <span class="category-text" [class.selected-text]="selectedCategory === c.id">{{ c.label }}</span>
+                            <div role="tab" class="category-item" [class.selected]="selectedCategory === c.id"
+                                (click)="selectCategory(c)" tabindex="0"
+                                [attr.aria-selected]="selectedCategory === c.id">
+                                <span class="category-text" [class.selected-text]="selectedCategory === c.id">{{ c.label
+                                    }}</span>
                             </div>
                         </swiper-slide>
                     </swiper-container>
@@ -26,9 +31,12 @@
             <!-- Subcategory Slider -->
             <div class="sub-category">
                 <div class="category-slider-wrap w-100">
-                    <swiper-container #subCategorySlider class="subcategory-swiper" slides-per-view="auto" space-between="12" free-mode="true" free-mode-momentum="true" grab-cursor="true">
+                    <swiper-container #subCategorySlider class="subcategory-swiper" slides-per-view="auto"
+                        space-between="12" free-mode="true" free-mode-momentum="true" grab-cursor="true">
                         <swiper-slide class="subcategory-slide" *ngFor="let s of subCategories; let j = index">
-                            <div role="tab" class="tab" [class.tab--selected]="selectedSubCategory === s.id" (click)="selectSubCategory(s)" tabindex="0" [attr.aria-selected]="selectedSubCategory === s.id">
+                            <div role="tab" class="tab" [class.tab--selected]="selectedSubCategory === s.id"
+                                (click)="selectSubCategory(s)" tabindex="0"
+                                [attr.aria-selected]="selectedSubCategory === s.id">
                                 <span class="tab-text">{{ s.label }}</span>
                             </div>
                         </swiper-slide>
@@ -39,7 +47,8 @@
             <div class="product-list-wrap">
                 <ng-container *ngIf="visibleProducts && visibleProducts.length; else emptyState">
                     <div class="product-list-card">
-                        <div class="product-card" *ngFor="let p of visibleProducts" (click)="!p.outOfStock && openProduct(p)">
+                        <div class="product-card" *ngFor="let p of visibleProducts"
+                            (click)="!p.outOfStock && openProduct(p)">
                             <div class="product-image-wrap">
                                 <img [src]="p.img" [alt]="p.title">
 
@@ -51,17 +60,23 @@
                             </div>
 
                             <div class="product-info">
-                                <h3 class="product-tag" *ngIf="p.tag && selectedCategory !== 'textbooks' && p.category !== 'textbooks'">{{ p.tag }}</h3>
+                                <h3 class="product-tag"
+                                    *ngIf="p.tag && selectedCategory !== 'textbooks' && p.category !== 'textbooks'">{{
+                                    p.tag }}</h3>
 
                                 <h3 class="product-title">{{ p.title }}</h3>
-                                    <h3 class="product-subtitle" *ngIf="p.subtitle">{{ p.subtitle }}</h3>
-
+                                <h3 class="product-subtitle" *ngIf="p.subtitle">{{ p.subtitle }}</h3>
+                                <div class="d-flex align-items-center justify-content-between w-100">
                                     <div class="product-prices">
                                         <div class="price-discount">{{ p.price }}</div>
                                         <div class="price-mrp">{{ p.mrp }}</div>
                                     </div>
 
-                                <mindful-button *ngIf="selectedCategory === 'textbooks' || p.category === 'textbooks'" type="magenta" text="Add To Bag" (click)="addToBag(p); $event.stopPropagation()"></mindful-button>
+                                    <mindful-button
+                                        *ngIf="selectedCategory === 'textbooks' || p.category === 'textbooks'"
+                                        type="magenta" text="Add To Bag"
+                                        (click)="addToBag(p); $event.stopPropagation()"></mindful-button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -71,17 +86,20 @@
                     <div class="empty-state">
                         <img src="assets/School-assets/empty-product-list.png" alt="No products">
                         <h1>Nothing Here... Yet!</h1>
-                        <mindful-button type="magenta" text="View all Products" (click)="selectSubCategory({ id: 'all', label: 'All' })"></mindful-button>
+                        <mindful-button type="magenta" text="View all Products"
+                            (click)="selectSubCategory({ id: 'all', label: 'All' })"></mindful-button>
                     </div>
                 </ng-template>
             </div>
         </div>
 
         <!-- Bottom fixed address popup -->
-        <div class="address-popup" [class.open]="showAddressPopup" role="dialog" aria-modal="true" aria-label="Address options">
+        <div class="address-popup" [class.open]="showAddressPopup" role="dialog" aria-modal="true"
+            aria-label="Address options">
             <div class="address-popup-inner">
                 <button class="popup-close" aria-label="Close" (click)="closeAddressPopup()">✕</button>
-                <div class="address-item" *ngFor="let a of addresses" (click)="selectAddress(a)" [class.selected]="selectedId === a.id" role="button" tabindex="0" (keyup.enter)="selectAddress(a)">
+                <div class="address-item" *ngFor="let a of addresses" (click)="selectAddress(a)"
+                    [class.selected]="selectedId === a.id" role="button" tabindex="0" (keyup.enter)="selectAddress(a)">
                     <div class="address-text" [innerHTML]="a.html"></div>
                 </div>
 
@@ -91,12 +109,15 @@
 
     </main>
 
-        <!-- Floating Top button -->
-        <button *ngIf="visibleProducts && visibleProducts.length" class="top-button" aria-label="Scroll to top" (click)="scrollToTop()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="8" height="13" viewBox="0 0 8 13" fill="none">
-                    <path d="M4.03568 0.146447C3.84042 -0.0488155 3.52384 -0.0488155 3.32858 0.146447L0.146595 3.32843C-0.0486672 3.52369 -0.0486672 3.84027 0.146595 4.03553C0.341857 4.2308 0.65844 4.2308 0.853702 4.03553L3.68213 1.20711L6.51056 4.03553C6.70582 4.2308 7.0224 4.2308 7.21766 4.03553C7.41293 3.84027 7.41293 3.52369 7.21766 3.32843L4.03568 0.146447ZM3.18213 12.5C3.18213 12.7761 3.40599 13 3.68213 13C3.95827 13 4.18213 12.7761 4.18213 12.5H3.68213H3.18213ZM3.68213 0.5H3.18213L3.18213 12.5H3.68213H4.18213L4.18213 0.5L3.68213 0.5Z" fill="#282527"/>
-                </svg>
-                <span class="top-text">Top</span>
-        </button>
+    <!-- Floating Top button -->
+    <button *ngIf="visibleProducts && visibleProducts.length" class="top-button" aria-label="Scroll to top"
+        (click)="scrollToTop()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="8" height="13" viewBox="0 0 8 13" fill="none">
+            <path
+                d="M4.03568 0.146447C3.84042 -0.0488155 3.52384 -0.0488155 3.32858 0.146447L0.146595 3.32843C-0.0486672 3.52369 -0.0486672 3.84027 0.146595 4.03553C0.341857 4.2308 0.65844 4.2308 0.853702 4.03553L3.68213 1.20711L6.51056 4.03553C6.70582 4.2308 7.0224 4.2308 7.21766 4.03553C7.41293 3.84027 7.41293 3.52369 7.21766 3.32843L4.03568 0.146447ZM3.18213 12.5C3.18213 12.7761 3.40599 13 3.68213 13C3.95827 13 4.18213 12.7761 4.18213 12.5H3.68213H3.18213ZM3.68213 0.5H3.18213L3.18213 12.5H3.68213H4.18213L4.18213 0.5L3.68213 0.5Z"
+                fill="#282527" />
+        </svg>
+        <span class="top-text">Top</span>
+    </button>
 
 </ion-content>

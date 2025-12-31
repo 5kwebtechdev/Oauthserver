@@ -28,6 +28,7 @@ import { Router } from '@angular/router';
 export class ProductDetailComponent implements OnInit, AfterViewInit {
   heading = 'Product';
   product: any = null;
+  isBook = false;
   // selectedAddress: holds short address string or null when user has no address
   // Set to null to show the empty-state UI by default for now
   selectedAddress: string | null = null;
@@ -132,13 +133,27 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
       if (s && s.product) {
         this.product = s.product;
         this.heading = this.product.title || this.heading;
+        // detect book-like categories and set flag
+        try {
+          const cat = (this.product?.category || this.product?.type || '').toString().toLowerCase();
+          this.isBook = ['textbook', 'textbooks', 'notebook', 'notebooks', 'book', 'books'].includes(cat);
+        } catch (e) { this.isBook = false; }
+        // use product images if provided
+        if (this.product?.images && Array.isArray(this.product.images) && this.product.images.length) {
+          this.images = this.product.images;
+        } else if (this.product?.image) {
+          this.images = [this.product.image];
+        }
       } else if (s && s.title) {
         this.heading = s.title;
       }
     } catch (e) { }
 
-    const src = 'assets/School-assets/temp/Shirt-l.jpg';
-    this.images = [src, src, src];
+    // fallback images when product has none
+    if (!this.images || !this.images.length) {
+      const src = 'assets/School-assets/temp/Shirt-l.jpg';
+      this.images = [src, src, src];
+    }
 
     this.loadSizeChartFromBackend();
   }

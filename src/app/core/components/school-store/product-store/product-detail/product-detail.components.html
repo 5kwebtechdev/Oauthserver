@@ -1,29 +1,14 @@
 <ion-content>
   <main class="product-detail-main">
     <mindful-navigator [heading]="heading" (back)="goBack()">
-      <button
-        slot="end"
-        class="nav-icon icon-1"
-        aria-label="Store action 1"
-      ></button>
+      <button slot="end" class="nav-icon icon-1" aria-label="Store action 1"></button>
     </mindful-navigator>
 
     <!-- Product detail content goes here -->
     <div class="product-detail-view">
-      <div
-        #swiper
-        class="product-swiper"
-        (pointerdown)="onPointerDown($event)"
-        (pointermove)="onPointerMove($event)"
-        (pointerup)="onPointerUp($event)"
-        (pointercancel)="onPointerUp($event)"
-        (pointerleave)="onPointerUp($event)"
-      >
-        <div
-          #slides
-          class="slides"
-          [style.transition]="isDragging ? 'none' : 'transform 320ms ease'"
-        >
+      <div #swiper class="product-swiper" (pointerdown)="onPointerDown($event)" (pointermove)="onPointerMove($event)"
+        (pointerup)="onPointerUp($event)" (pointercancel)="onPointerUp($event)" (pointerleave)="onPointerUp($event)">
+        <div #slides class="slides" [style.transition]="isDragging ? 'none' : 'transform 320ms ease'">
           <div class="slide" *ngFor="let img of images">
             <img [src]="img" [alt]="heading" />
           </div>
@@ -31,13 +16,8 @@
       </div>
 
       <div class="dots" *ngIf="images.length">
-        <button
-          type="button"
-          *ngFor="let img of images; let i = index"
-          (click)="goTo(i)"
-          [class.active]="i === currentIndex"
-          [attr.aria-label]="'Slide ' + (i + 1)"
-        ></button>
+        <button type="button" *ngFor="let img of images; let i = index" (click)="goTo(i)"
+          [class.active]="i === currentIndex" [attr.aria-label]="'Slide ' + (i + 1)"></button>
       </div>
     </div>
 
@@ -45,29 +25,27 @@
     <div class="product-info-section">
       <div class="product-name-price d-flex flex-column gap-1">
         <div class="title-n-name d-flex flex-column gap-1 align-start">
-          <h1>Classic White Half-Sleeve Shirt</h1>
-          <p>Official School Wear</p>
-          <span>Mandatory</span>
+          <h1 class="product-title">{{ product?.title || heading }}</h1>
+          <p class="product-subtitle">
+            {{ isBook ? (product?.subtitle || '') : (product?.tag || '') }}
+          </p>
         </div>
         <div class="price-n-quantity d-flex justify-content-between">
           <div class="price d-flex gap-2">
-            <span class="discounted-price">₹799</span>
-            <span class="original-price">₹999</span>
+            <span class="discounted-price">
+              {{ product?.price ?? product?.discountedPrice ? ( (product.price ?? product.discountedPrice)) :
+              '₹799' }}
+            </span>
+            <span *ngIf="product?.originalPrice || product?.mrp" class="original-price">
+              {{ (product?.originalPrice ?? product?.mrp) }}
+            </span>
           </div>
           <div class="quantity-selector d-flex align-center gap-2">
-            <button
-              class="qty-btn decrease"
-              aria-label="Decrease quantity"
-              (click)="decreaseQuantity()"
-            >
+            <button class="qty-btn decrease" aria-label="Decrease quantity" (click)="decreaseQuantity()">
               <span>-</span>
             </button>
             <span class="quantity-count">{{ quantity }}</span>
-            <button
-              class="qty-btn increase"
-              aria-label="Increase quantity"
-              (click)="increaseQuantity()"
-            >
+            <button class="qty-btn increase" aria-label="Increase quantity" (click)="increaseQuantity()">
               <span>+</span>
             </button>
           </div>
@@ -75,49 +53,54 @@
       </div>
 
       <!--product size-->
-      <div class="product-size-section d-flex flex-column gap-3">
+      <div *ngIf="!isBook" class="product-size-section d-flex flex-column gap-3">
         <div class="size-descrip d-flex flex-column">
           <div class="d-flex justify-content-between">
             <h2>Size: {{ selectedSize }}</h2>
             <div class="d-flex gap-1">
               <p>Not sure?</p>
-              <a role="button" tabindex="0" (click)="openSizeGuide()"
-                >Check size guide</a
-              >
+              <a role="button" tabindex="0" (click)="openSizeGuide()">Check size guide</a>
             </div>
           </div>
           <p>Recommended for <br />Age 3-4</p>
         </div>
         <div class="size-selector">
-          <button
-            *ngFor="let s of sizes"
-            class="size-tag"
-            [class.selected]="selectedSize === s"
-            [class.out-of-stock]="isOutOfStock(s)"
-            (click)="selectSize(s)"
-            [attr.aria-pressed]="selectedSize === s"
-            [disabled]="isOutOfStock(s)"
-            [attr.aria-disabled]="isOutOfStock(s)"
-          >
+          <button *ngFor="let s of sizes" class="size-tag" [class.selected]="selectedSize === s"
+            [class.out-of-stock]="isOutOfStock(s)" (click)="selectSize(s)" [attr.aria-pressed]="selectedSize === s"
+            [disabled]="isOutOfStock(s)" [attr.aria-disabled]="isOutOfStock(s)">
             <h2>{{ s }}</h2>
           </button>
         </div>
         <h2 style="color: #bb2124">Hurry up! Only 3 left in Size 2.</h2>
       </div>
+
+      <!--book-detail-->
+      <div class="book-info d-flex align-items-center justify-content-between">
+        <div class="book-detail">
+          <p>Subject</p>
+          <h2>Math</h2>
+        </div>
+        <div class="book-detail">
+          <p>Language</p>
+          <h2>English</h2>
+        </div>
+        <div class="book-detail">
+          <p>Pages</p>
+          <h2>140</h2>
+        </div>
+        <div class="book-detail">
+          <p>Binding</p>
+          <h2>Soft Cover</h2>
+        </div>
+
+      </div>
       <!-- address-detail: show filled address or an empty-state prompting for pincode -->
       <ng-container *ngIf="selectedAddress; else emptyAddress">
         <div class="address-detail">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="20"
-            viewBox="0 0 16 20"
-            fill="none"
-          >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20" fill="none">
             <path
               d="M8 10C8.55 10 9.02083 9.80417 9.4125 9.4125C9.80417 9.02083 10 8.55 10 8C10 7.45 9.80417 6.97917 9.4125 6.5875C9.02083 6.19583 8.55 6 8 6C7.45 6 6.97917 6.19583 6.5875 6.5875C6.19583 6.97917 6 7.45 6 8C6 8.55 6.19583 9.02083 6.5875 9.4125C6.97917 9.80417 7.45 10 8 10ZM8 17.35C10.0333 15.4833 11.5417 13.7875 12.525 12.2625C13.5083 10.7375 14 9.38333 14 8.2C14 6.38333 13.4208 4.89583 12.2625 3.7375C11.1042 2.57917 9.68333 2 8 2C6.31667 2 4.89583 2.57917 3.7375 3.7375C2.57917 4.89583 2 6.38333 2 8.2C2 9.38333 2.49167 10.7375 3.475 12.2625C4.45833 13.7875 5.96667 15.4833 8 17.35ZM8 20C5.31667 17.7167 3.3125 15.5958 1.9875 13.6375C0.6625 11.6792 0 9.86667 0 8.2C0 5.7 0.804167 3.70833 2.4125 2.225C4.02083 0.741667 5.88333 0 8 0C10.1167 0 11.9792 0.741667 13.5875 2.225C15.1958 3.70833 16 5.7 16 8.2C16 9.86667 15.3375 11.6792 14.0125 13.6375C12.6875 15.5958 10.6833 17.7167 8 20Z"
-              fill="#282527"
-            />
+              fill="#282527" />
           </svg>
           <div class="address-text-detail d-flex flex-column w-100">
             <h2 style="font-size: 13px">Deliver to:</h2>
@@ -132,76 +115,51 @@
 
       <ng-template #emptyAddress>
         <div class="d-flex flex-column gap-2">
-        <div class="address-empty" role="group" aria-label="Check delivery date">
-          <div class="empty-left">
-            <h2>Check delivery date</h2>
+          <div class="address-empty" role="group" aria-label="Check delivery date">
+            <div class="empty-left">
+              <h2>Check delivery date</h2>
+            </div>
+            <div class="empty-right">
+              <input class="pincode-input" type="text" inputmode="numeric" maxlength="6" placeholder="Enter Pincode"
+                #pincode />
+              <mindful-button class="pincode-check" type="magenta" text="Check"
+                (click)="checkPincode(pincode.value)"></mindful-button>
+            </div>
           </div>
-          <div class="empty-right">
-            <input class="pincode-input" type="text" inputmode="numeric" maxlength="6" placeholder="Enter Pincode" #pincode />
-             <mindful-button
-                class="pincode-check"
-                type="magenta"
-                text="Check"
-                (click)="checkPincode(pincode.value)"
-              ></mindful-button>
+          <div class="pincode-message" *ngIf="pincodeAvailable !== null">
+            <h2 style="color:#90214D" *ngIf="pincodeAvailable">Get it by Mon, 2nd Jan</h2>
+            <h2 style="color: #BB2124;" *ngIf="pincodeAvailable === false">Not available for {{ lastCheckedPincode }}
+              pincode</h2>
           </div>
-        </div>
-        <div class="pincode-message" *ngIf="pincodeAvailable !== null">
-          <h2 style="color:#90214D" *ngIf="pincodeAvailable">Get it by Mon, 2nd Jan</h2>
-          <h2 style="color: #BB2124;" *ngIf="pincodeAvailable === false">Not available for {{ lastCheckedPincode }} pincode</h2>
-        </div>
         </div>
       </ng-template>
 
-      
+
       <!--exchange-->
-      <div
-        class="footer-exchange"
-        role="contentinfo"
-        aria-label="Store footer features"
-      >
+      <div class="footer-exchange" role="contentinfo" aria-label="Store footer features">
         <div class="footer-item">
-          <img
-            src="/assets/School-assets/School Partner.png"
-            alt="Official School Partner"
-          />
+          <img src="/assets/School-assets/School Partner.png" alt="Official School Partner" />
           <h2 class="footer-text">Official School Partner</h2>
         </div>
 
         <div class="footer-item">
-          <img
-            src="/assets/School-assets/Easy Exchange.png"
-            alt="Easy Exchange"
-          />
+          <img src="/assets/School-assets/Easy Exchange.png" alt="Easy Exchange" />
           <h2 class="footer-text">Easy 7 day Return & Exchange</h2>
         </div>
 
         <div class="footer-item">
-          <img
-            src="/assets/School-assets/Secure Payment.png"
-            alt="Secure Payment"
-          />
+          <img src="/assets/School-assets/Secure Payment.png" alt="Secure Payment" />
           <h2 class="footer-text">Secure Payment</h2>
         </div>
       </div>
 
       <!--product-detail-dropdown-->
-      <div
-        class="product-detail-dropdown"
-        role="button"
-        tabindex="0"
-        [attr.aria-expanded]="detailsExpanded"
-        (click)="toggleDetails($event)"
-        (keydown.enter)="toggleDetails($event)"
-        (keydown.space)="toggleDetails($event)"
-        [class.open]="detailsExpanded"
-      >
+      <div class="product-detail-dropdown" role="button" tabindex="0" [attr.aria-expanded]="detailsExpanded"
+        (click)="toggleDetails($event)" (keydown.enter)="toggleDetails($event)" (keydown.space)="toggleDetails($event)"
+        [class.open]="detailsExpanded">
         <div class="product-detail-summary">
           <h2>Product Details</h2>
-          <ion-icon
-            name="chevron-down-outline"
-            [class.open]="detailsExpanded"
-          ></ion-icon>
+          <ion-icon name="chevron-down-outline" [class.open]="detailsExpanded"></ion-icon>
         </div>
         <div class="product-detail-body">
           <ul>
@@ -217,52 +175,30 @@
 
     <!--purchase-bar-->
     <div class="product-purchase-bar">
-      <span class="discounted-price">₹799</span>
-      <mindful-button
-        class="page-cta"
-        type="magenta"
-        text="Add To Bag"
-        large
-        (click)="addToCart()"
-      ></mindful-button>
+      <span class="discounted-price">
+        {{ product?.price ?? product?.discountedPrice ? ((product.price ?? product.discountedPrice)) : '₹799' }}
+      </span>
+      <mindful-button class="page-cta" type="magenta" text="Add To Bag" large (click)="addToCart()"></mindful-button>
     </div>
   </main>
 
   <!-- Size Guide Modal -->
-  <ion-modal
-    [isOpen]="showSizeGuide"
-    swipeToClose="true"
-    (ionModalDidDismiss)="closeSizeGuide()"
-    (ionModalDidPresent)="onSizeModalPresented()"
-  >
+  <ion-modal [isOpen]="showSizeGuide" swipeToClose="true" (ionModalDidDismiss)="closeSizeGuide()"
+    (ionModalDidPresent)="onSizeModalPresented()">
     <ng-template>
       <ion-content>
-        <mindful-navigator
-          heading="Size Guide"
-          backIcon="arrowSvg"
-          (back)="closeSizeGuide()"
-        ></mindful-navigator>
-        <button
-          #sizeGuideFirstFocus
-          class="visually-hidden"
-          aria-hidden="false"
-          tabindex="0"
-        ></button>
+        <mindful-navigator heading="Size Guide" backIcon="arrowSvg" (back)="closeSizeGuide()"></mindful-navigator>
+        <button #sizeGuideFirstFocus class="visually-hidden" aria-hidden="false" tabindex="0"></button>
         <main class="size-guide-container w-100">
           <div class="product-breif">
             <div class="product-brief-img">
-              <img
-                src="assets/School-assets/temp/Shirt-l.jpg"
-                alt="{{ heading }}"
-              />
+              <img src="assets/School-assets/temp/Shirt-l.jpg" alt="{{ heading }}" />
             </div>
             <div class="product-brief-text d-flex flex-column gap-2">
               <h2>Classic White Half-Sleeve Shirt</h2>
               <p>St. Xavier’s High School</p>
               <div class="price d-flex gap-2">
-                <span class="discounted-price" style="font-size: 16px"
-                  >₹799</span
-                >
+                <span class="discounted-price" style="font-size: 16px">₹799</span>
                 <span class="original-price" style="font-size: 16px">₹999</span>
               </div>
             </div>
@@ -270,31 +206,19 @@
 
           <div class="size-unit d-flex justify-content-between align-items-center">
             <h2>Select size in</h2>
-              <div class="unit-switch" role="tablist" aria-label="Select size unit">
-                <button
-                  type="button"
-                  role="tab"
-                  class="unit-btn"
-                  [class.selected]="unit === 'in'"
-                  (click)="selectUnit('in')"
-                  [attr.aria-selected]="unit === 'in'"
-                >
-                  <span class="unit-label">in</span>
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  class="unit-btn"
-                  [class.selected]="unit === 'cm'"
-                  (click)="selectUnit('cm')"
-                  [attr.aria-selected]="unit === 'cm'"
-                >
-                  <span class="unit-label">cm</span>
-                </button>
-              </div>
+            <div class="unit-switch" role="tablist" aria-label="Select size unit">
+              <button type="button" role="tab" class="unit-btn" [class.selected]="unit === 'in'"
+                (click)="selectUnit('in')" [attr.aria-selected]="unit === 'in'">
+                <span class="unit-label">in</span>
+              </button>
+              <button type="button" role="tab" class="unit-btn" [class.selected]="unit === 'cm'"
+                (click)="selectUnit('cm')" [attr.aria-selected]="unit === 'cm'">
+                <span class="unit-label">cm</span>
+              </button>
+            </div>
           </div>
 
-		<!-- Size Guide Table -->
+          <!-- Size Guide Table -->
           <div class="size-guide-table">
             <table style="width: 100%;">
               <thead>
@@ -311,15 +235,9 @@
                 <tr class="cell-body" *ngFor="let r of sizeChart" [class.out-of-stock-row]="isOutOfStock(r.size)">
                   <td class="cell-center">
                     <label class="custom-radio" [attr.aria-label]="'Select size ' + r.size">
-                      <input
-                        type="radio"
-                        name="size"
-                        [value]="r.size"
-                        (change)="selectSize(r.size)"
-                        [checked]="selectedSize === r.size"
-                        [disabled]="isOutOfStock(r.size)"
-                        [attr.aria-disabled]="isOutOfStock(r.size)"
-                      />
+                      <input type="radio" name="size" [value]="r.size" (change)="selectSize(r.size)"
+                        [checked]="selectedSize === r.size" [disabled]="isOutOfStock(r.size)"
+                        [attr.aria-disabled]="isOutOfStock(r.size)" />
                       <span class="custom-radio-mark" aria-hidden="true"></span>
                     </label>
                   </td>
@@ -337,34 +255,29 @@
             <h1>How to measure</h1>
             <img src="assets/School-assets/Size Chart- Shirt.jpg" alt="shirt-size-chart">
             <!-- Measurement Instructions -->
-             <div>
-                      <div class="measure-instructions d-flex align-items-baseline gap-1">
-                        <h2 style="white-space: nowrap;">1. Chest:</h2>
-                        <p>Measure around the fullest part of the chest, keeping the tape horizontal.</p>
-                      </div>
-                      <div class="measure-instructions d-flex align-items-baseline gap-1">
-                        <h2 style="white-space: nowrap;">2. Length:</h2>
-                        <p>Measure around the fullest part of the chest, keeping the tape horizontal.</p>
-                        </div>
-                      <div class="measure-instructions d-flex align-items-baseline gap-1">
-                        <h2 style="white-space: nowrap;">3. Sleeve:</h2>
-                        <p>Measure around the fullest part of the chest, keeping the tape horizontal.</p>
-                      </div>
-             </div>
+            <div>
+              <div class="measure-instructions d-flex align-items-baseline gap-1">
+                <h2 style="white-space: nowrap;">1. Chest:</h2>
+                <p>Measure around the fullest part of the chest, keeping the tape horizontal.</p>
+              </div>
+              <div class="measure-instructions d-flex align-items-baseline gap-1">
+                <h2 style="white-space: nowrap;">2. Length:</h2>
+                <p>Measure around the fullest part of the chest, keeping the tape horizontal.</p>
+              </div>
+              <div class="measure-instructions d-flex align-items-baseline gap-1">
+                <h2 style="white-space: nowrap;">3. Sleeve:</h2>
+                <p>Measure around the fullest part of the chest, keeping the tape horizontal.</p>
+              </div>
+            </div>
           </div>
 
         </main>
         <!--apply size-->
         <div class="product-purchase-bar">
           <span class="selected-size">Size: {{ selectedSize }}</span>
-           <mindful-button
-        class="page-cta"
-        type="magenta"
-        text="Apply Size"
-        large
-            (click)="closeSizeGuide()"
-      ></mindful-button>
-         
+          <mindful-button class="page-cta" type="magenta" text="Apply Size" large
+            (click)="closeSizeGuide()"></mindful-button>
+
         </div>
       </ion-content>
     </ng-template>
