@@ -36,13 +36,14 @@ export class MindfulNavigatorComponent implements OnInit {
 
   @Output() rightIcon2Click = new EventEmitter<void>();
   @Input() rightType?: 'edit';
-  @Input() rightActions?: Array<{ type: 'edit' | 'icon' | 'iconWithCount' | 'heart', src?: string, alt?: string, count?: number }>;
+  // Accept flexible action types to keep navigator generic and avoid hard-coding specific actions
+  @Input() rightActions?: Array<{ type?: string, src?: string, alt?: string, count?: number }>;
   @Output() rightActionClick = new EventEmitter<{ index: number, action: any }>();
   // Emit when the back button is clicked so parents can intercept navigation.
   @Output() back = new EventEmitter<void>();
 
   // Programmatic helper: call from a page to configure which right actions to show.
-  configureRightActions(actions: Array<{ type: 'edit' | 'icon', src?: string, alt?: string }>) {
+  configureRightActions(actions: Array<{ type?: string, src?: string, alt?: string }>) {
     this.rightActions = actions;
   }
 

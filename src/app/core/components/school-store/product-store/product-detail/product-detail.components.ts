@@ -29,6 +29,8 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
   heading = 'Product';
   product: any = null;
   isBook = false;
+  // local cart count displayed on navigator; replace with shared cart service integration as needed
+  cartCount = 0;
   // selectedAddress: holds short address string or null when user has no address
   // Set to null to show the empty-state UI by default for now
   selectedAddress: string | null = null;
@@ -278,10 +280,11 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
 
   addToCart(): void {
     // placeholder - integrate real cart logic here
-    console.log('Add to bag:', {
-      size: this.selectedSize,
-      quantity: this.quantity,
-    });
+    try {
+      const added = Number(this.quantity) || 1;
+      this.cartCount = (this.cartCount || 0) + added;
+    } catch (e) { }
+    console.log('Add to bag:', { size: this.selectedSize, quantity: this.quantity, cartCount: this.cartCount });
   }
 
   private setTranslate(px: number, noTransition = false): void {

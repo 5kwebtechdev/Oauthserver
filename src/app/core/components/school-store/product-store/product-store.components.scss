@@ -425,9 +425,18 @@ h3 {
 	margin: 0;
 }
 
+.product-badge{
+	border-radius: 4px;
+background: #F9D2DC;
+position: absolute;
+left: 8.5px;
+top: 8.711px;
+padding: 4px;
+font-size: 10px;
+}
 .product-prices {
 	display: flex;
-	gap: 8px;
+	gap: 4px;
 	align-items: center;
 }
 

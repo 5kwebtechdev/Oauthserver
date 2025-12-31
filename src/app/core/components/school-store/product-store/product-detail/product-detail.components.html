@@ -1,7 +1,6 @@
 <ion-content>
   <main class="product-detail-main">
-    <mindful-navigator [heading]="heading" (back)="goBack()">
-      <button slot="end" class="nav-icon icon-1" aria-label="Store action 1"></button>
+    <mindful-navigator [heading]="heading" [rightActions]="[{ type: 'cart', count: cartCount, alt: 'My cart' }]" (back)="goBack()">
     </mindful-navigator>
 
     <!-- Product detail content goes here -->

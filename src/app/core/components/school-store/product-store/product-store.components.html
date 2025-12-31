@@ -4,8 +4,10 @@
         <div class="navigator-wrap">
             <mindful-navigator #navigator heading="Student-Store" [subtext]="navigatorSubtext" [showSubtext]="true"
                 (back)="goBack()">
-                <button slot="end" class="nav-icon icon-1" aria-label="Store action 1"></button>
-                <button slot="end" class="nav-icon icon-2" aria-label="Store action 2"></button>
+                                <button slot="end" class="nav-icon icon-1" aria-label="Store action 1">
+                                    <my-cart-icon></my-cart-icon>
+                                </button>
+                                <button slot="end" class="nav-icon icon-2" aria-label="Store action 2"></button>
             </mindful-navigator>
 
             <button class="subtext-trigger" aria-label="Open address popup" (click)="openAddressPopup()"></button>
@@ -51,7 +53,7 @@
                             (click)="!p.outOfStock && openProduct(p)">
                             <div class="product-image-wrap">
                                 <img [src]="p.img" [alt]="p.title">
-
+                                <h3 class="product-badge" *ngIf="getBadge(p) as badge">{{ badge }}</h3>
                                 <!-- Out of stock overlay -->
                                 <div class="oos-overlay" *ngIf="p.outOfStock">
                                     <div class="oos-text">Out of stock</div>

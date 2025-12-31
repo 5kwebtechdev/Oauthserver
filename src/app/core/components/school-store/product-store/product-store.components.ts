@@ -5,6 +5,21 @@ import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navig
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { Router, ActivatedRoute } from '@angular/router';
 
+// top-level Product type used in component and template
+type Product = {
+  id: string;
+  tag?: string;
+  title: string;
+  subtitle?: string;
+  price: string;
+  mrp: string;
+  img: string;
+  subcategory?: string;
+  outOfStock?: boolean;
+  category?: string;
+  badge?: string;
+};
+
 @Component({
   standalone: true,
   selector: 'product-store',
@@ -70,7 +85,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   selectedSubCategory = this.subCategories[0].id;
 
   // simple product list for cards (keeps existing uniform/cloth dummy data and adds textbooks)
-  products = [
+  products: Product[] = [
     {
       id: 'shirt-1',
       tag: 'Official School Wear',
@@ -293,6 +308,24 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   addToBag(p: any): void {
     // placeholder for Add To Bag action
     try { console.log('Add to bag', p && p.id); } catch (e) { }
+  }
+
+  // Compute a display badge for a product when appropriate.
+  // Priority: explicit `badge` -> `tag === 'Mandatory'` -> title/subtitle containing 'Pack of N'
+  getBadge(p: Product | any): string | undefined {
+    if (!p) return undefined;
+    if (p.badge) return p.badge;
+    if (p.tag && String(p.tag).trim().toLowerCase() === 'mandatory') return 'Mandatory';
+    const extractPack = (text: string | undefined) => {
+      if (!text) return null;
+      const m = /pack\s*of\s*(\d+)/i.exec(text);
+      return m ? `Pack of ${m[1]}` : null;
+    };
+    const fromTitle = extractPack(p.title);
+    if (fromTitle) return fromTitle;
+    const fromSubtitle = extractPack(p.subtitle);
+    if (fromSubtitle) return fromSubtitle;
+    return undefined;
   }
 
   ngOnInit(): void {
