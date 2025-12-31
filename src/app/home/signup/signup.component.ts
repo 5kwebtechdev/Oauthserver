@@ -325,16 +325,23 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           }, 100);
         },
         error: (err) => {
-          console.error('Failed to request OTP:', err);
+          console.error('Failed to request OTP (phone):', err);
+          console.error('Error type:', err?.constructor?.name);
+          console.error('Error status:', err?.status);
+          console.error('Error url:', err?.url);
           // Handle ProgressEvent errors (network failures on Android)
           if (err instanceof ProgressEvent || (err && err.type === 'error' && err.target)) {
-            this.errorMessage = 'Network error. Please check your internet connection and try again.';
+            this.errorMessage = 'Network error. Cannot reach server. Please check your connection.';
+            this.core.triggerToasrt('Network error. Cannot reach server at ' + (err?.url || 'API'));
           } else if (err?.error?.message) {
             this.errorMessage = err.error.message;
+            this.core.triggerToasrt(err.error.message);
           } else if (typeof err?.error === 'string') {
             this.errorMessage = err.error;
+            this.core.triggerToasrt(err.error);
           } else {
-            this.errorMessage = 'Failed to send OTP. Please check your connection and try again.';
+            this.errorMessage = 'Failed to send OTP. Status: ' + (err?.status || 'unknown');
+            this.core.triggerToasrt(this.errorMessage);
           }
         }
       });
@@ -367,17 +374,20 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           }, 100);
         },
         error: (err) => {
-          console.error('Failed to request OTP:', err);
+          console.error('Failed to request OTP (email):', err);
+          console.error('Error type:', err?.constructor?.name);
+          console.error('Error status:', err?.status);
+          console.error('Error url:', err?.url);
           let msg: string;
           // Handle ProgressEvent errors (network failures on Android)
           if (err instanceof ProgressEvent || (err && err.type === 'error' && err.target)) {
-            msg = 'Network error. Please check your internet connection and try again.';
+            msg = 'Network error. Cannot reach server at ' + (err?.url || 'API');
           } else if (err?.error?.message) {
             msg = err.error.message;
           } else if (typeof err?.error === 'string') {
             msg = err.error;
           } else {
-            msg = 'Failed to send OTP. Please check your connection and try again.';
+            msg = 'Failed to send OTP. Status: ' + (err?.status || 'unknown');
           }
           this.errorMessage = msg;
           try { this.core.triggerToasrt(msg); } catch (e) { /* swallow */ }

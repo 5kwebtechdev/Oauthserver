@@ -8,6 +8,7 @@ const config: CapacitorConfig = {
     cleartext: true,
     androidScheme: 'http',
     allowNavigation: [
+      'ec2-13-235-27-101.ap-south-1.compute.amazonaws.com',
       'ec2-13-126-1-142.ap-south-1.compute.amazonaws.com',
       'localhost'
     ]

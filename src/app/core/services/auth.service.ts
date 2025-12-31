@@ -239,13 +239,16 @@ export class AuthService {
    * Login user with credentials
    */
   login(credentials: LoginCredentials): Observable<AuthResponse> {
+    const loginUrl = `${this.apiUrl}/auth/login`;
     console.log('[AuthService] Login attempt with:', {
-      endpoint: `${this.apiUrl}/auth/login`,
+      endpoint: loginUrl,
       credentials: { ...credentials, password: '***', rememberMe: credentials.rememberMe },
       timestamp: new Date().toISOString()
     });
+    console.log('[AuthService] Full API URL:', loginUrl);
+    console.log('[AuthService] Base API URL from environment:', this.apiUrl);
 
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, credentials)
+    return this.http.post<AuthResponse>(loginUrl, credentials)
       .pipe(
         tap({
           next: (response) => {
@@ -396,6 +399,10 @@ export class AuthService {
     const payload = isEmail
       ? { email: identifier, "identifierType": "EMAIL" }
       : { phone: identifier, "identifierType": "PHONE" };
+
+    console.log('[AuthService] registerRequestOtp - Calling:', url);
+    console.log('[AuthService] registerRequestOtp - Payload:', payload);
+    console.log('[AuthService] registerRequestOtp - Has Auth Token:', !!headers);
 
     return this.http.post<string>(url, payload, options);
   }
