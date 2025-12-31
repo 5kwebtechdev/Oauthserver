@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AuthenticatedComponent } from "./authenticated.component";
 import { UserDashboardComponent } from "./user-dashboard/user-dashboard.component";
+import { DashboardRedirectGuard } from '../core/guards/dashboard-redirect.guard';
 import { UserProfileComponent } from '../core/components/user-profile/user-profile.component';
 import { TimelineComponent } from "../core/components/habit-section/timeline/timeline.component";
 import { HabitDetailComponent } from "../core/components/habit-section/habit-detail/habit-detail.component";
@@ -15,10 +16,14 @@ const routes: Routes = [
 
       {
         path: 'user-dashboard',
-        component: UserDashboardComponent
+        component: UserDashboardComponent,
+        canActivate: [DashboardRedirectGuard],
+        data: { allowedRoles: ['CHILD', 'SELF'] }
       }, {
         path: 'parent-account',
-        loadComponent: () => import('./parent-account/parent-account.component').then(m => m.ParentAccountComponent)
+        loadComponent: () => import('./parent-account/parent-account.component').then(m => m.ParentAccountComponent),
+        canActivate: [DashboardRedirectGuard],
+        data: { allowedRoles: ['PARENT'] }
       }, {
         path: 'user-profile',
         component: UserProfileComponent

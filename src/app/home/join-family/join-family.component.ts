@@ -92,7 +92,9 @@ export class JoinFamilyComponent implements OnInit {
     const familyCode = this.form.get('code')?.value;
     console.log('Joining family with code:', familyCode);
     sessionStorage.setItem('familyCode', familyCode);
-    this.router.navigate(['home', 'sign-up'], { queryParams: { step: 4 } });
+    // Store the role for use after login
+    sessionStorage.setItem('signup_role', this.userRole);
+    this.router.navigate(['/home/login'], { queryParams: { role: this.userRole } });
     // this.familyService.joinFamily(familyCode).subscribe({
     //   next: (response) => {
     //     this.isLoading = false;

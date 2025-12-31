@@ -13,7 +13,8 @@ import { FooterComponent } from '../../core/components/footer/footer.component';
 import { AdBannerComponent } from '../../core/components/ad-banner/ad-banner.component';
 import { HabitPageContentComponent } from '../../core/components/habit-section/habit-page-content/habit-page-content.component';
 import { HabitService } from '../../core/components/habit-section/habit.service';
-import {ProfileSelectorService} from "../../core/services/profile-selector-service";
+import { ProfileSelectorService } from "../../core/services/profile-selector-service";
+import { AuthService } from '../../core/services/auth.service';
 
 
 @Component({
@@ -84,7 +85,8 @@ export class ParentAccountComponent implements OnInit {
         private userService: UserService,
         private moodService: MoodService,
         private habitService: HabitService,
-        private profileSelector: ProfileSelectorService
+        private profileSelector: ProfileSelectorService,
+        private authService: AuthService
     ) { }
 
     async openNotes() {
@@ -92,6 +94,12 @@ export class ParentAccountComponent implements OnInit {
     }
 
     ngOnInit() {
+        // Check if the current user is not a parent and redirect if needed
+        if (!this.authService.isParentUser()) {
+            this.router.navigate(['/authed/user-dashboard'], { replaceUrl: true });
+            return;
+        }
+
         // subscribe to user profile to get name and avatar immediately
         this.userService.getUserProfile$().subscribe(profile => {
             if (profile) {
@@ -131,7 +139,7 @@ export class ParentAccountComponent implements OnInit {
                             raw: d
                         }));
                         // persist lightweight children list
-                        try { localStorage.setItem('mb_children', JSON.stringify(this.children)); } catch {}
+                        try { localStorage.setItem('mb_children', JSON.stringify(this.children)); } catch { }
 
                         // If no selection yet, pick the first child
                         if (!this.selectedChild && this.children.length) {
@@ -216,10 +224,12 @@ export class ParentAccountComponent implements OnInit {
         }
         // Reload habits for today so UI reflects selected child immediately
         try {
-            this.habitService.loadHabitsForDate(this.habitService.formatDateToYYYYMMDD(new Date()), true).subscribe({ next: () => {
-                // Also call the child component directly if available to ensure UI refresh
-                try { this.habitPageContent?.loadHabits(true); this.habitPageContent?.loadTasksForSelectedDate(new Date()); } catch (e) { /* ignore */ }
-            }, error: () => {} });
+            this.habitService.loadHabitsForDate(this.habitService.formatDateToYYYYMMDD(new Date()), true).subscribe({
+                next: () => {
+                    // Also call the child component directly if available to ensure UI refresh
+                    try { this.habitPageContent?.loadHabits(true); this.habitPageContent?.loadTasksForSelectedDate(new Date()); } catch (e) { /* ignore */ }
+                }, error: () => { }
+            });
         } catch (e) { /* ignore */ }
         this.closeSwitchPopup();
     }

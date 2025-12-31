@@ -1,7 +1,8 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { NavigationService } from '../../services/navigation.service';
 import { ModalController } from '@ionic/angular';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'mindful-navigator',
@@ -10,7 +11,7 @@ import { ModalController } from '@ionic/angular';
   templateUrl: './mindful-navigator.component.html',
   styleUrls: ['./mindful-navigator.component.scss']
 })
-export class MindfulNavigatorComponent {
+export class MindfulNavigatorComponent implements OnInit {
   @Input() heading: string = '';
 
   // Optional subtext shown below the main heading (e.g. address / location label)
@@ -45,7 +46,20 @@ export class MindfulNavigatorComponent {
     this.rightActions = actions;
   }
 
-  constructor(private navigation: NavigationService, private location: Location, private modalCtrl: ModalController) { }
+  private entryUrl?: string;
+
+  constructor(private navigation: NavigationService, private location: Location, private modalCtrl: ModalController, private router: Router) { }
+
+  ngOnInit(): void {
+    try {
+      const hist = this.navigation.getHistory();
+      if (hist && hist.length >= 2) {
+        this.entryUrl = hist[hist.length - 2];
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
 
   async goBack() {
     // If a parent is listening to (back), let it handle navigation and do not perform
@@ -60,16 +74,40 @@ export class MindfulNavigatorComponent {
       // ignore emit errors and continue with default navigation
     }
 
+    // 1) If inside a modal/overlay, dismiss it.
     try {
-      await this.modalCtrl.dismiss();
-      return;
+      const top = await this.modalCtrl.getTop();
+      if (top) {
+        await this.modalCtrl.dismiss();
+        return;
+      }
     } catch (e) {
+      // ignore and continue to router/history fallback
     }
 
+    // 2) If we captured an entry URL (the page that led here), navigate to it.
+    try {
+      if (this.entryUrl && this.router && this.entryUrl !== this.router.url) {
+        await this.router.navigateByUrl(this.entryUrl, { replaceUrl: true });
+        return;
+      }
+    } catch (e) {
+      // ignore and continue to history fallback
+    }
+
+    // 3) Use navigation service history fallback.
     try {
       this.navigation.back();
+      return;
     } catch (e) {
+      // final fallback below
+    }
+
+    // 4) Last resort: location.back()
+    try {
       this.location.back();
+    } catch (e) {
+      // nothing else we can do
     }
   }
 

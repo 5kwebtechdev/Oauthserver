@@ -144,24 +144,14 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
 
   async openQRScanner() {
     try {
-      // Check if barcode scanning is supported
-      const { supported } = await BarcodeScanner.isSupported();
-      if (!supported) {
-        this.core.triggerToasrt('QR scanner is not supported on this device');
-        return;
-      }
-
-      // Check and request camera permissions
-      const hasPermission = await this.checkCameraPermissions();
-      if (!hasPermission) {
-        return;
-      }
-
-      // Start scanning
-      await this.startScanner();
+      // Navigate to the centralized scan-qr page which handles camera/permissions/scan
+      this.router.navigate(['/home/scan-qr'], { queryParams: { role: this.userRole, returnTo: 'join-family2' } }).catch((err) => {
+        console.error('Navigation to scan-qr failed:', err);
+        this.core.triggerToasrt('Failed to open scanner. Please try again.');
+      });
     } catch (error) {
-      console.error('Error opening QR scanner:', error);
-      this.core.triggerToasrt('Failed to open QR scanner. Please try again.');
+      console.error('Error navigating to scanner:', error);
+      this.core.triggerToasrt('Failed to open scanner. Please try again.');
     }
   }
 
@@ -485,7 +475,11 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
   }
 
   private redirectToLogin(): void {
-    this.router.navigate(['/home/login']);
+    // Store the role for use after login
+    sessionStorage.setItem('signup_role', this.userRole);
+    this.router.navigate(['/home/login'], {
+      queryParams: { role: this.userRole }
+    });
   }
 
   get familyName() {

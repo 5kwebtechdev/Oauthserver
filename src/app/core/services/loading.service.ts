@@ -42,6 +42,13 @@ export class LoadingService {
             this._message$.next(message);
         }
 
+        // Debug: report show call parameters and current internal state
+        try {
+            console.debug('[LoadingService] show() ->', { id, message, delay, minVisible, pendingBefore: this._pending.size, activeCount: this._activeCount });
+        } catch (e) {
+            // ignore logging failures
+        }
+
         const record: { showTimer?: any; shown: boolean } = { shown: false };
         this._pending.set(id, record);
 
@@ -68,6 +75,9 @@ export class LoadingService {
      * Hide loader for a specific token. If token is omitted, reduce one active count.
      */
     hide(token?: string): void {
+        try {
+            console.debug('[LoadingService] hide() called', { token, pendingBefore: this._pending.size, activeCountBefore: this._activeCount });
+        } catch (e) { }
         // If token maps to a pending show that hasn't fired, cancel it and return
         if (token && this._pending.has(token)) {
             const rec = this._pending.get(token)!;
@@ -79,6 +89,7 @@ export class LoadingService {
             if (this._pending.size === 0 && this._activeCount === 0) {
                 this._message$.next(undefined);
             }
+            try { console.debug('[LoadingService] hide() -> cancelled pending show', { token, pendingAfter: this._pending.size, activeCount: this._activeCount }); } catch (e) { }
             return;
         }
 
@@ -99,6 +110,10 @@ export class LoadingService {
     }
 
     private _finalizeHide() {
+        try {
+            console.debug('[LoadingService] _finalizeHide', { activeCount: this._activeCount, pending: this._pending.size });
+        } catch (e) { }
+
         if (this._activeCount === 0 && this._pending.size === 0) {
             this._clearSafetyTimer();
             this._message$.next(undefined);
@@ -133,6 +148,7 @@ export class LoadingService {
      * Immediately reset loader state (clear timers and hide)
      */
     reset() {
+        try { console.debug('[LoadingService] reset() - clearing pending and hiding'); } catch (e) { }
         this._pending.forEach(r => r.showTimer && clearTimeout(r.showTimer));
         this._pending.clear();
         this._activeCount = 0;

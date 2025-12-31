@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
 import { CountriesService, Country } from "../../core/services/countries.service";
 import { AuthService, LoginCredentials } from "../../core/services/auth.service";
+import { UserService } from '../../core/services/user.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 
@@ -31,6 +32,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private countriesService: CountriesService,
     private authService: AuthService,
+    private userService: UserService,
     private router: Router,
     private route: ActivatedRoute
   ) {
@@ -112,6 +114,22 @@ export class LoginComponent implements OnInit, OnDestroy {
           console.log('[LoginComponent] Token received:', !!response.token);
           console.log('[LoginComponent] UserId:', response.user?.id);
           console.log('[LoginComponent] User relationship:', response.user?.relationship);
+
+          // Sync profile into UserService so components (parent-account, dashboard) get immediate data
+          try {
+            const user = response.user || {};
+            this.userService.setUserProfile({
+              userId: user.id,
+              name: user.name || '',
+              email: user.email || undefined,
+              phone: user.phone || undefined,
+              avatarUrl: user.avatar?.url || undefined,
+              relationship: (user.relationship || '').toUpperCase() as any
+            });
+            console.log('[LoginComponent] UserService profile synced:', this.userService.getUserProfile());
+          } catch (e) {
+            console.warn('[LoginComponent] Failed to sync user profile to UserService', e);
+          }
 
           // Determine the appropriate dashboard route based on user relationship
           const dashboardRoute = this.authService.getDashboardRoute();
