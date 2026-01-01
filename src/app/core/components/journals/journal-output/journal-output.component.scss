@@ -121,27 +121,16 @@
   align-items: center;
 }
 
-.post-date {
+.post-date,.post-time  {
   color: #6B656A;
   text-align: center;
   font-family: Nunito;
   font-size: 16px;
-  font-style: normal;
   font-weight: 700;
-  line-height: 140%;
-  /* 22.4px */
+
 }
 
-.post-time {
-  color: #6B656A;
-  text-align: center;
-  font-family: Nunito;
-  font-size: 13px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: 140%;
-  /* 18.2px */
-}
+
 
 .post-body {
   display: flex;
@@ -209,11 +198,8 @@
   color: #282527;
   font-family: Nunito;
   font-size: 16px;
-  font-style: normal;
   font-weight: 600;
-  line-height: 140%;
-  /* 22.4px */
-  /* allow text to wrap and expand the card */
+
   white-space: normal;
   overflow-wrap: anywhere;
 }
@@ -221,7 +207,7 @@
 .post-images img {
   width: 62.986px;
   height: 55.606px;
-  flex-shrink: 0;
+  object-fit: cover;
 }
 
 /* Floating button fixed to bottom-right */

@@ -1,24 +1,16 @@
 .mindful-card-header {
+  padding-top: env(safe-area-inset-top, 0);
+  padding-top: constant(safe-area-inset-top);
   display: flex;
   align-items: center;
-  justify-content: space-between;
   width: 100%;
-  margin-top: 72px;
 }
 
-.mindful-card-header.no-back {
-  margin-top: 0;
-
-  .mindful-card-header__right {
-    margin-top: -20px;
-  }
-}
 
 .mindful-card-header__left {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1 1 auto;
+  align-items: center;
+    justify-content: space-between;
 }
 
 .mindful-card-header__title {
@@ -64,11 +56,7 @@
 .mindful-card-header__right {
   display: flex;
   align-items: center;
-  min-width: 0;
-  padding-right: 8px;
-  flex: 0 0 auto;
-  // margin-top: -20px;
-  margin-left: auto;
+
 
 }
 

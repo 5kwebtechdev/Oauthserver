@@ -151,10 +151,8 @@ $muted: rgba(40, 37, 39, 0.7);
 	text-align: center;
 	font-family: Nunito;
 	font-size: 13px;
-	font-style: normal;
 	font-weight: 600;
-	line-height: 140%;
-	/* 18.2px */
+
 }
 
 .tag::after {
@@ -188,5 +186,4 @@ $muted: rgba(40, 37, 39, 0.7);
 .post-images img {
 	width: 62.986px;
 	height: 55.606px;
-	flex-shrink: 0;
-}
+object-fit: cover;}
