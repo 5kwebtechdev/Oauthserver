@@ -4,6 +4,8 @@ import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../../mindful-navigator/mindful-navigator.component';
 import { MindfulButtonComponent } from '../../../mindful-button/mindful-button.component';
 import { Router } from '@angular/router';
+import { ModalController } from '@ionic/angular';
+import { AddressInputComponent } from '../../address-input/address-input.components';
 
 @Component({
     selector: 'my-cart',
@@ -41,7 +43,7 @@ export class MyCartComponent {
     ];
     selectedSize: number = 16; // default shown in picker
 
-    constructor(private router: Router, private cdr: ChangeDetectorRef) { }
+    constructor(private router: Router, private cdr: ChangeDetectorRef, private modalCtrl: ModalController) { }
     // Simple cart items list; replace with real store/service integration as needed
     items: any[] = [
         { id: '1', title: 'Classic White Half-Sleeve Shirt', subtitle: 'St. Xavier’s High School', image: 'assets/School-assets/temp/Shirt-l.jpg', price: 799, originalPrice: 999, size: 16, quantity: 1 },
@@ -180,5 +182,12 @@ export class MyCartComponent {
 
     get toPayDisplay(): string {
         return '₹' + this.toPay;
+    }
+
+    async openAddressInput(): Promise<void> {
+        try {
+            this.closeAddressPopup();
+            await this.router.navigateByUrl('/authed/school-store/address-input');
+        } catch (e) { console.error('Failed to open address input page', e); }
     }
 }

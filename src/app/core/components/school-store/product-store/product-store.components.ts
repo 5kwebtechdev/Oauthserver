@@ -4,6 +4,8 @@ import { IonicModule, IonContent } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { Router, ActivatedRoute } from '@angular/router';
+import { ModalController } from '@ionic/angular';
+import { AddressInputComponent } from '../address-input/address-input.components';
 
 // top-level Product type used in component and template
 type Product = {
@@ -66,7 +68,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
     return s.length > 20 ? s.slice(0, 20) + '...' : s;
   }
 
-  constructor(private router: Router, private cdr: ChangeDetectorRef, private route: ActivatedRoute) { }
+  constructor(private router: Router, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private modalCtrl: ModalController) { }
 
   // product categories
   categories = [
@@ -385,6 +387,13 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   closeAddressPopup(): void {
     this.showAddressPopup = false;
     this.cdr.detectChanges();
+  }
+
+  async openAddressInput(): Promise<void> {
+    try {
+      this.closeAddressPopup();
+      await this.router.navigateByUrl('/authed/school-store/address-input');
+    } catch (e) { console.error('Failed to open address input page', e); }
   }
 
   selectAddress(a: { id: string; short: string; html: string }): void {

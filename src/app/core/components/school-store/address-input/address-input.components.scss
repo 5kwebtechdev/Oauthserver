@@ -1,0 +1,103 @@
+.address-input-wrap{
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+h2{
+    color: #282527;
+font-family: Nunito;
+font-size: 16px;
+font-weight: 600;
+margin: 0;
+}
+
+.address-input{
+    display: flex;
+padding: 16px;
+align-items: center;
+gap: 8px;
+align-self: stretch;
+border-radius: 12px;
+border: 1px solid rgba(40, 37, 39, 0.50);
+width: 100%;
+color: #282527;
+font-family: Nunito;
+font-size: 13px;
+font-weight: 600;
+outline: #28252780;
+}
+
+/* Phone input with prefix inside the field */
+.phone-input{
+    position: relative;
+    width: 100%;
+}
+
+.phone-prefix{
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    height: calc(100% - 0px);
+    color: #282527;
+    font-weight: 600;
+    font-family: Nunito;
+
+    font-size: 14px;
+    padding: 0 8px 0 8px;
+    background: transparent;
+    pointer-events: none;
+        border-right: 1px solid #282527; 
+        opacity: 0.7;
+}
+
+.address-input.phone-number{
+    padding-left: 64px;
+}
+
+.set-default{
+  font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    input{
+        width: 16px;
+height: 16px;
+aspect-ratio: 1/1;
+border-radius: 4px;
+border: 1px solid #282527;
+    }
+}
+
+/* Checkbox checked color */
+.set-default input[type="checkbox"]{
+    accent-color: #90214D;
+}
+
+.set-default input[type="checkbox"]:checked{
+    border-color: #90214D;
+}
+
+.address-input.invalid{
+    border-color: #BB2124;
+    box-shadow: 0 0 0 4px rgba(187,33,36,0.06);
+}
+
+.error{
+    color: #BB2124;
+    font-family: Nunito;
+    font-size: 13px;
+    margin-top: 8px;
+    display: block;
+}
+
+/* Disabled state for the page CTA */
+.page-cta.disabled{
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+}
