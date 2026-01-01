@@ -13,6 +13,7 @@
 
 
                 <div class="my-cart-container">
+                  <!--address detail-->
                 <div class="address-detail">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
   <g opacity="0.7">
@@ -33,41 +34,69 @@
                         
                     </div>
                 </div>
-                <div class="cart-products-list"> 
-                    <div class="cart-product-item">
-                            <div class="product-item-img">
-                            <img src="assets/School-assets/temp/Shirt-l.jpg" alt="" />
-                            </div>
-                            <div class="product-item-text d-flex flex-column gap-2">
-                            <h2>Classic White Half-Sleeve Shirt</h2>
-                            <p>St. Xavier’s High School</p>
-                            <div class="price d-flex gap-2">
-                                <span class="discounted-price">₹799</span>
-                                <span class="original-price">₹999</span>
-                            </div>
-                             <h2 style="color:#90214D; font-size: 13px;">Get it by Mon, 2nd Jan</h2>
-                            <div class="size-quantity d-flex align-center justify-content-between">
-                                <div class="size-picker" role="button" tabindex="0" (click)="openSizePopup()" (keyup.enter)="openSizePopup()">
-                                  <h2 style="font-size: 10px;">size: {{ selectedSize }}</h2>
-                                  <ion-icon style="font-size: 10px;" name="caret-down"></ion-icon>
-                                </div>
-                              <div class="quantity-selector d-flex align-center gap-2">
-                                <button class="qty-btn decrease" aria-label="Decrease quantity" (click)="decreaseQuantity()">
-                                  <span>-</span>
-                                </button>
-                                <span class="quantity-count">{{ quantity }}</span>
-                                <button class="qty-btn increase" aria-label="Increase quantity" (click)="increaseQuantity()">
-                                  <span>+</span>
-                                </button>
-                              </div>
-
-                            </div>
-                            </div>
+                <!--cart products list-->
+                <div class="cart-products-list">
+                  <div class="cart-product-item" *ngFor="let item of items; let i = index">
+                    <div class="product-item-img">
+                      <img [src]="item.image" [alt]="item.title" />
                     </div>
+                    <div class="product-item-text d-flex flex-column gap-2">
+                      <h2>{{ item.title }}</h2>
+                      <p>{{ item.subtitle }}</p>
+                      <div class="price d-flex gap-2">
+                        <span class="discounted-price">₹{{ item.price }}</span>
+                        <span class="original-price">₹{{ item.originalPrice }}</span>
+                      </div>
+                      <h2 style="color:#90214D; font-size: 13px;">Get it by Mon, 2nd Jan</h2>
+                      <div class="size-quantity d-flex align-center justify-content-between">
+                        <div class="size-picker" role="button" tabindex="0" (click)="openSizePopup()" (keyup.enter)="openSizePopup()">
+                          <h2 style="font-size: 10px;">size: {{ item.size }}</h2>
+                          <ion-icon style="font-size: 10px;" name="caret-down"></ion-icon>
+                        </div>
+                        <div class="quantity-selector d-flex align-center gap-2">
+                          <button class="qty-btn decrease" aria-label="Decrease quantity" (click)="decreaseQuantity(i)">
+                            <span>-</span>
+                          </button>
+                          <span class="quantity-count">{{ item.quantity }}</span>
+                          <button class="qty-btn increase" aria-label="Increase quantity" (click)="increaseQuantity(i)">
+                            <span>+</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
+                <!--price breakdown-->
+                  <div class="bill-summary">
+                    <h2>Bill Summary ({{ items.length }} Items)</h2>
+                    <div class="d-flex flex-column gap-2 w-100">
+                    <div class="txt-amount">
+                      <p>Item Total</p>
+                      <h3>{{ totalPriceDisplay }}</h3>
+                    </div>
+                    <div class="txt-amount">
+                      <p>GST & Other Charges (18%)</p>
+                      <h3>{{ gstDisplay }}</h3>
+                    </div>
+                    <div class="txt-amount">
+                      <p>Delivery</p>
+                      <h3 [ngStyle]="{ color: deliveryFee === 0 ? '#4CAF50' : 'inherit' }">{{ deliveryDisplay }}</h3>
+                    </div>
+                    <div class="txt-amount">
+                      <p>TO PAY</p>
+                      <h3>{{ toPayDisplay }}</h3>
+                    </div>
+                    </div>
+                  </div>
                 </div>
 
                 
+                <!--purchase-bar-->
+                <div class="product-purchase-bar">
+                  <span class="to-pay">{{ toPayDisplay }}</span>
+                  <mindful-button class="page-cta" type="magenta" text="Proceed to Pay" large (click)="addToCart()"></mindful-button>
+                </div>
     </main>
           <!-- Bottom fixed address popup -->
           <div class="address-popup" [class.open]="showAddressPopup" role="dialog" aria-modal="true"

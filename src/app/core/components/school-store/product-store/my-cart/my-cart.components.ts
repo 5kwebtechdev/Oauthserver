@@ -2,12 +2,13 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../../mindful-navigator/mindful-navigator.component';
+import { MindfulButtonComponent } from '../../../mindful-button/mindful-button.component';
 import { Router } from '@angular/router';
 
 @Component({
     selector: 'my-cart',
     standalone: true,
-    imports: [CommonModule, IonicModule, MindfulNavigatorComponent],
+    imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent],
     templateUrl: './my-cart.components.html',
     styleUrls: ['./my-cart.components.scss']
 })
@@ -42,9 +43,14 @@ export class MyCartComponent {
 
     constructor(private router: Router, private cdr: ChangeDetectorRef) { }
     // Simple cart items list; replace with real store/service integration as needed
-    items: any[] = [];
+    items: any[] = [
+        { id: '1', title: 'Classic White Half-Sleeve Shirt', subtitle: 'St. Xavier’s High School', image: 'assets/School-assets/temp/Shirt-l.jpg', price: 799, originalPrice: 999, size: 16, quantity: 1 },
+        { id: '2', title: 'Classic White Half-Sleeve Shirt', subtitle: 'St. Xavier’s High School', image: 'assets/School-assets/temp/Shirt-l.jpg', price: 799, originalPrice: 999, size: 16, quantity: 1 },
+        { id: '3', title: 'Classic White Half-Sleeve Shirt', subtitle: 'St. Xavier’s High School', image: 'assets/School-assets/temp/Shirt-l.jpg', price: 799, originalPrice: 999, size: 16, quantity: 1 },
+        { id: '4', title: 'Classic White Half-Sleeve Shirt', subtitle: 'St. Xavier’s High School', image: 'assets/School-assets/temp/Shirt-l.jpg', price: 799, originalPrice: 999, size: 16, quantity: 1 }
+    ];
 
-    // Per-item quantity (UI only for now)
+    // Backwards-compatible single-quantity for legacy UI usage (not used for the list)
     quantity: number = 1;
 
     get cartItemCount(): number {
@@ -111,14 +117,68 @@ export class MyCartComponent {
         this.closeSizePopup();
     }
 
-    increaseQuantity(): void {
-        this.quantity = (this.quantity || 0) + 1;
+    increaseQuantity(index?: number): void {
+        if (typeof index === 'number' && this.items && this.items[index]) {
+            this.items[index].quantity = (this.items[index].quantity || 0) + 1;
+        } else {
+            this.quantity = (this.quantity || 0) + 1;
+        }
         try { this.cdr.detectChanges(); } catch (e) { }
     }
 
-    decreaseQuantity(): void {
-        if (!this.quantity || this.quantity <= 1) return;
-        this.quantity = this.quantity - 1;
+    decreaseQuantity(index?: number): void {
+        if (typeof index === 'number' && this.items && this.items[index]) {
+            if (!this.items[index].quantity || this.items[index].quantity <= 1) return;
+            this.items[index].quantity = this.items[index].quantity - 1;
+        } else {
+            if (!this.quantity || this.quantity <= 1) return;
+            this.quantity = this.quantity - 1;
+        }
         try { this.cdr.detectChanges(); } catch (e) { }
+    }
+
+    addToCart(): void {
+        // Placeholder: wire this up to cart service or navigation as needed
+        console.log('Add to cart clicked');
+    }
+
+    // Compute total price shown in purchase bar by summing all items' (price * quantity)
+    get totalPrice(): number {
+        if (!this.items || !this.items.length) return (this.quantity || 1) * 799;
+        return this.items.reduce((sum, it) => {
+            const p = Number(it?.price || 799);
+            const q = Number(it?.quantity || 1);
+            return sum + p * q;
+        }, 0);
+    }
+
+    get totalPriceDisplay(): string {
+        return '₹' + this.totalPrice;
+    }
+
+    // GST at 18% of total price
+    get gstAmount(): number {
+        return Math.round(this.totalPrice * 0.18);
+    }
+
+    get gstDisplay(): string {
+        return '₹' + this.gstAmount;
+    }
+
+    // Delivery: free if totalPrice > 500 else ₹99
+    get deliveryFee(): number {
+        return this.totalPrice > 500 ? 0 : 99;
+    }
+
+    get deliveryDisplay(): string {
+        return this.deliveryFee === 0 ? 'Free' : '₹' + this.deliveryFee;
+    }
+
+    get toPay(): number {
+        return this.totalPrice + this.gstAmount + this.deliveryFee;
+    }
+
+    get toPayDisplay(): string {
+        return '₹' + this.toPay;
     }
 }

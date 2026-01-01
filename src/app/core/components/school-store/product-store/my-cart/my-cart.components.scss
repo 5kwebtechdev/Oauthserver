@@ -4,6 +4,8 @@
 	  display: flex;
 	  flex-direction: column;
 	  gap: 24px;
+	      padding-bottom: 100px;
+
 }
 .address-detail {
 	border-radius: 16px;
@@ -15,7 +17,7 @@
 	align-self: stretch;
 	background: #fff;
 }
- h2, p, span {
+ h2, p, span ,h3{
 	margin: 0;
 	color: #282527;
 font-family: Nunito;
@@ -28,6 +30,9 @@ font-size: 16px;
 p{
 	font-size: 13px;
 	opacity: 0.7;
+}
+h3{
+	font-size: 13px;
 }
 
 span{
@@ -261,9 +266,9 @@ align-self: stretch;
 	 width so layout remains consistent. Use both min and max to enforce 135px. */
 @media (max-width: 360px) {
 	.product-item-img {
-		min-width: 135px;
-		max-width: 135px;
-		width: 135px;
+		min-width: 120px;
+		max-width: 120px;
+		width: 120px;
 	}
 }
 
@@ -314,4 +319,59 @@ background: #FAD7E0;
 padding: 8px;
 justify-content: center;
 align-items: center;
+}
+
+/* Purchase bar styles copied from product-detail component */
+:host ::ng-deep mindful-button.page-cta .button,
+mindful-button.page-cta .button,
+.product-purchase-bar mindful-button.page-cta .button {
+	padding: 10px 40px !important;
+
+}
+
+.product-purchase-bar {
+	display: flex;
+	padding: 16px;
+	justify-content: space-between;
+	align-items: center;
+	align-self: stretch;
+	background: #fff;
+	box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
+}
+
+.product-purchase-bar {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 60;
+	width: 100%;
+	box-sizing: border-box;
+}
+.to-pay{
+	font-size: 20px;
+}
+
+.cart-products-list{
+	    display: flex;
+    flex-direction: column;
+	gap: 24px;
+}
+
+.bill-summary{
+	display: flex;
+padding: 16px;
+flex-direction: column;
+align-items: flex-start;
+gap: 16px;
+align-self: stretch;
+	border-radius: 16px;
+background: #FFF;
+box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+
+.txt-amount{
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
