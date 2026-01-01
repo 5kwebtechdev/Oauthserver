@@ -1,5 +1,5 @@
 <ion-content>
-    <main class="my-cart-main">
+    <main class="my-cart-main d-flex flex-column gap-3">
 
                 <mindful-navigator #navigator
                         heading="My Cart"
@@ -11,33 +11,86 @@
                         (rightActionClick)="onNavigatorAction($event)">
                 </mindful-navigator>
 
-                <!-- Deliver-to block copied from product-detail -->
+
+                <div class="my-cart-container">
                 <div class="address-detail">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20" fill="none">
-                        <path
-                            d="M8 10C8.55 10 9.02083 9.80417 9.4125 9.4125C9.80417 9.02083 10 8.55 10 8C10 7.45 9.80417 6.97917 9.4125 6.5875C9.02083 6.19583 8.55 6 8 6C7.45 6 6.97917 6.19583 6.5875 6.5875C6.19583 6.97917 6 7.45 6 8C6 8.55 6.19583 9.02083 6.5875 9.4125C6.97917 9.80417 7.45 10 8 10ZM8 17.35C10.0333 15.4833 11.5417 13.7875 12.525 12.2625C13.5083 10.7375 14 9.38333 14 8.2C14 6.38333 13.4208 4.89583 12.2625 3.7375C11.1042 2.57917 9.68333 2 8 2C6.31667 2 4.89583 2.57917 3.7375 3.7375C2.57917 4.89583 2 6.38333 2 8.2C2 9.38333 2.49167 10.7375 3.475 12.2625C4.45833 13.7875 5.96667 15.4833 8 17.35ZM8 20C5.31667 17.7167 3.3125 15.5958 1.9875 13.6375C0.6625 11.6792 0 9.86667 0 8.2C0 5.7 0.804167 3.70833 2.4125 2.225C4.02083 0.741667 5.88333 0 8 0C10.1167 0 11.9792 0.741667 13.5875 2.225C15.1958 3.70833 16 5.7 16 8.2C16 9.86667 15.3375 11.6792 14.0125 13.6375C12.6875 15.5958 10.6833 17.7167 8 20Z"
-                            fill="#282527" />
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+  <g opacity="0.7">
+    <mask id="mask0_12436_41393" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+      <rect width="24" height="24" fill="#D9D9D9"/>
+    </mask>
+    <g mask="url(#mask0_12436_41393)">
+      <path d="M12 12C12.55 12 13.0208 11.8042 13.4125 11.4125C13.8042 11.0208 14 10.55 14 10C14 9.45 13.8042 8.97917 13.4125 8.5875C13.0208 8.19583 12.55 8 12 8C11.45 8 10.9792 8.19583 10.5875 8.5875C10.1958 8.97917 10 9.45 10 10C10 10.55 10.1958 11.0208 10.5875 11.4125C10.9792 11.8042 11.45 12 12 12ZM12 19.35C14.0333 17.4833 15.5417 15.7875 16.525 14.2625C17.5083 12.7375 18 11.3833 18 10.2C18 8.38333 17.4208 6.89583 16.2625 5.7375C15.1042 4.57917 13.6833 4 12 4C10.3167 4 8.89583 4.57917 7.7375 5.7375C6.57917 6.89583 6 8.38333 6 10.2C6 11.3833 6.49167 12.7375 7.475 14.2625C8.45833 15.7875 9.96667 17.4833 12 19.35ZM12 22C9.31667 19.7167 7.3125 17.5958 5.9875 15.6375C4.6625 13.6792 4 11.8667 4 10.2C4 7.7 4.80417 5.70833 6.4125 4.225C8.02083 2.74167 9.88333 2 12 2C14.1167 2 15.9792 2.74167 17.5875 4.225C19.1958 5.70833 20 7.7 20 10.2C20 11.8667 19.3375 13.6792 18.0125 15.6375C16.6875 17.5958 14.6833 19.7167 12 22Z" fill="#282527"/>
+    </g>
+  </g>
+</svg>
                     <div class="address-text-detail d-flex flex-column w-100">
-                        <h2>Deliver to:</h2>
-                        <div class="address-text d-flex justify-content-between">
-                            <h2>{{ selectedAddress }}</h2>
-                            <a role="button" tabindex="0" (click)="openAddressPopup()">Change</a>
-                        </div>
+                      <h2 style="font-size: 13px;">Deliver to:</h2>
+                      <div class="address-text d-flex justify-content-between">
+                        <h2>{{ selectedAddress }}</h2>
+                        <a class="underline-link" role="button" tabindex="0" (click)="openAddressPopup()" (keyup.enter)="openAddressPopup()">Change</a>
+                      </div>
                         
                     </div>
                 </div>
-
-                <!-- Address popup (bottom sheet) -->
-                <div class="address-popup" [class.open]="showAddressPopup" role="dialog" aria-modal="true" aria-label="Address options">
-                        <div class="address-popup-inner">
-                                <button class="popup-close" aria-label="Close" (click)="closeAddressPopup()">✕</button>
-                                <div class="address-item" *ngFor="let a of addresses" (click)="selectAddress(a)" [class.selected]="selectedId === a.id" role="button" tabindex="0" (keyup.enter)="selectAddress(a)">
-                                        <div class="address-text" [innerHTML]="a.html"></div>
+                <div class="cart-products-list"> 
+                    <div class="cart-product-item">
+                            <div class="product-item-img">
+                            <img src="assets/School-assets/temp/Shirt-l.jpg" alt="" />
+                            </div>
+                            <div class="product-item-text d-flex flex-column gap-2">
+                            <h2>Classic White Half-Sleeve Shirt</h2>
+                            <p>St. Xavier’s High School</p>
+                            <div class="price d-flex gap-2">
+                                <span class="discounted-price">₹799</span>
+                                <span class="original-price">₹999</span>
+                            </div>
+                             <h2 style="color:#90214D; font-size: 13px;">Get it by Mon, 2nd Jan</h2>
+                            <div class="size-quantity d-flex align-center justify-content-between">
+                                <div class="size-picker" role="button" tabindex="0" (click)="openSizePopup()" (keyup.enter)="openSizePopup()">
+                                  <h2 style="font-size: 10px;">size: {{ selectedSize }}</h2>
+                                  <ion-icon style="font-size: 10px;" name="caret-down"></ion-icon>
                                 </div>
+                              <div class="quantity-selector d-flex align-center gap-2">
+                                <button class="qty-btn decrease" aria-label="Decrease quantity" (click)="decreaseQuantity()">
+                                  <span>-</span>
+                                </button>
+                                <span class="quantity-count">{{ quantity }}</span>
+                                <button class="qty-btn increase" aria-label="Increase quantity" (click)="increaseQuantity()">
+                                  <span>+</span>
+                                </button>
+                              </div>
 
-                                <button class="add-address">+ Add Address</button>
-                        </div>
+                            </div>
+                            </div>
+                    </div>
                 </div>
+                </div>
+
+                
     </main>
+          <!-- Bottom fixed address popup -->
+          <div class="address-popup" [class.open]="showAddressPopup" role="dialog" aria-modal="true"
+            aria-label="Address options" (click)="closeAddressPopup()">
+            <div class="address-popup-inner" (click)="$event.stopPropagation()">
+              <button class="popup-close" aria-label="Close" (click)="closeAddressPopup()">✕</button>
+              <div class="address-item" *ngFor="let a of addresses" (click)="selectAddress(a)"
+                [class.selected]="selectedId === a.id" role="button" tabindex="0" (keyup.enter)="selectAddress(a)">
+                <div class="address-text" [innerHTML]="a.html"></div>
+              </div>
+
+              <button class="add-address">+ Add Address</button>
+            </div>
+          </div>
+          <!-- Bottom fixed size popup -->
+          <div class="size-popup" [class.open]="showSizePopup" role="dialog" aria-modal="true" aria-label="Size options" (click)="closeSizePopup()">
+            <div class="size-popup-inner" (click)="$event.stopPropagation()">
+              <button class="popup-close" aria-label="Close" (click)="closeSizePopup()">✕</button>
+              <div class="size-item" *ngFor="let s of sizes" (click)="selectSize(s)" [class.selected]="selectedSize === s.size" role="button" tabindex="0" (keyup.enter)="selectSize(s)">
+                <h2>Size: {{ s.size }}</h2>
+                <h2>{{ s.age }}</h2>
+              </div>
+
+            </div>
+          </div>
 </ion-content>

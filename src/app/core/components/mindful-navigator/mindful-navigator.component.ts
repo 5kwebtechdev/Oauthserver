@@ -127,11 +127,19 @@ export class MindfulNavigatorComponent implements OnInit {
   onActionClick(index: number, action: any) {
     if (index === 0) this.onRightClick();
     if (index === 1) this.onRight2Click();
+
+
+    try {
+      if (action && action.type === 'cart') {
+        this.router.navigateByUrl('/authed/cart').catch(() => { /* ignore navigation errors */ });
+      }
+    } catch (e) {
+    }
+
     this.rightActionClick.emit({ index, action });
   }
 
   get backIconSrc(): string {
-    // Map legacy 'arrow' to the same asset as 'arrowSvg'
     const icon = this.backIcon === 'cancel' ? 'cancel' : (this.backIcon === 'arrow' ? 'arrowSvg' : this.backIcon);
     return icon === 'cancel' ? '/assets/app-assets/Cancel.svg' : '/assets/app-assets/Back-common-icon.svg';
   }
