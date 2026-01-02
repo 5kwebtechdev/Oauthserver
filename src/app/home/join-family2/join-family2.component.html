@@ -121,7 +121,12 @@
         </button>
       </div>
 
-      <mindful-button type="orange-onboard" text="My child has done the required" (click)="childCompleted()">
+      <!-- Show Register Your Account button after family is created and parent is not yet registered -->
+      <mindful-button *ngIf="showRegisterButton && !isParentRegistered" type="orange-onboard" text="Register Your Account" (click)="registerAccount()">
+      </mindful-button>
+      
+      <!-- Show the original button after parent has registered or if register button is not shown -->
+      <mindful-button *ngIf="familyCreated && (!showRegisterButton || isParentRegistered)" type="orange-onboard" text="My child has done the required" (click)="childCompleted()">
       </mindful-button>
     </div>
 

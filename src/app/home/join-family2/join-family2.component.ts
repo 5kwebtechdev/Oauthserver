@@ -29,6 +29,8 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
   createFaqs: FaqItem[] = [];
   joinFaqs: FaqItem[] = [];
   createdFaqs: FaqItem[] = [];
+  isParentRegistered = false;
+  showRegisterButton = false;
 
   constructor(
     private router: Router,
@@ -299,6 +301,7 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
         this.familyCode = response.familyCode || this.generateFamilyCode();
         this.qrCodeData = 'GROUP:' + this.familyCode; // Prefixed for QR scanning validation
         sessionStorage.setItem('familyCode', this.familyCode);
+        this.showRegisterButton = true;
       },
       error: (error) => {
         this.isLoading = false;
@@ -367,7 +370,15 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
   }
 
   childCompleted() {
-    // Register parent using data collected during signup flow, then auto-login and redirect
+    // If parent is already registered, navigate to dashboard directly
+    if (this.isParentRegistered || (!this.showRegisterButton && this.familyCreated)) {
+      // Navigate to parent's authenticated area
+      const route = this.authService.getDashboardRoute() || '/authed/parent-account';
+      this.router.navigate([route]);
+      return;
+    }
+
+    // Otherwise, register parent using data collected during signup flow, then auto-login and redirect
     const profileStr = sessionStorage.getItem('signup_profile');
     const password = sessionStorage.getItem('signup_password');
     const role = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || 'parent';
@@ -390,7 +401,6 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
       gender: (profile.gender || '').toUpperCase(),
       relationship: 'PARENT',
       password: password,
-      avatarName: `avatar${profile.avatar || ''}`,
       familyCode: familyCode || '',
       familyName: familyName || ''
     };
@@ -430,7 +440,7 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
                 phone: loginResp.user?.phone || payload.phone,
                 gender: (loginResp.user?.gender || payload.gender || '').toLowerCase(),
                 dob: loginResp.user?.dateOfBirth || payload.dateOfBirth,
-                avatarName: loginResp.user?.avatar?.avatarName || payload.avatarName,
+                avatarName: loginResp.user?.avatar?.avatarName,
                 avatarUrl: loginResp.user?.avatar?.url || undefined,
                 relationship: loginResp.user?.relationship || 'PARENT',
                 pet: loginResp.user?.pet?.petName || undefined
@@ -448,6 +458,10 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
               sessionStorage.removeItem('familyCode');
               sessionStorage.removeItem('familyName');
             } catch (e) { }
+
+            // Update button state to reflect registration is complete
+            this.showRegisterButton = false;
+            this.isParentRegistered = true;
 
             // Navigate to parent's authenticated area
             const route = this.authService.getDashboardRoute() || '/authed/parent-account';
@@ -479,6 +493,116 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
     sessionStorage.setItem('signup_role', this.userRole);
     this.router.navigate(['/home/login'], {
       queryParams: { role: this.userRole }
+    });
+  }
+
+  registerAccount() {
+    // Use actual signup data from session storage, similar to childCompleted method
+    const profileStr = sessionStorage.getItem('signup_profile');
+    const password = sessionStorage.getItem('signup_password');
+    const role = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || 'parent';
+    const identifier = sessionStorage.getItem('requestedIdentifier');
+    const loginMode = sessionStorage.getItem('loginMode');
+    const familyCode = sessionStorage.getItem('familyCode') || this.familyCode || '';
+    const familyName = sessionStorage.getItem('familyName') || this.createdFamilyName || '';
+
+    if (!profileStr || !password) {
+      this.core.triggerToasrt('Please complete sign up before continuing');
+      this.router.navigate(['home', 'sign-up']);
+      return;
+    }
+
+    let profile: any = {};
+    try { profile = JSON.parse(profileStr); } catch (e) { profile = {}; }
+
+    const registerPayload: any = {
+      name: profile.name || '',
+      gender: (profile.gender || '').toUpperCase(),
+      relationship: 'PARENT',
+      password: password,
+      familyCode: familyCode || '',
+      familyName: familyName || ''
+    };
+
+    // include contact
+    if (loginMode === 'email' || (identifier && identifier.includes && identifier.includes('@'))) {
+      registerPayload.email = identifier;
+    } else if (identifier) {
+      const countryCode = sessionStorage.getItem('countryCode') || '';
+      registerPayload.phone = `${countryCode || ''}${identifier}`;
+    }
+
+    // dateOfBirth (prefer session-stored profile dob)
+    const dobValue = profile.dob;
+    if (dobValue) {
+      const dobDate = new Date(dobValue);
+      if (!isNaN(dobDate.getTime())) {
+        registerPayload.dateOfBirth = dobDate.toISOString().split('T')[0];
+      }
+    }
+
+    this.isLoading = true;
+    this.authService.register(registerPayload).subscribe({
+      next: (resp) => {
+        this.isLoading = false;
+        this.showRegisterButton = false; // Hide the register button
+        this.isParentRegistered = true; // Mark parent as registered
+        // Show the original button after successful registration
+        this.core.triggerToasrt('Account registered successfully!');
+
+        // After successful registration, attempt to login using provided credentials
+        const credentials: any = { password };
+        if (registerPayload.email) credentials.email = registerPayload.email;
+        else if (registerPayload.phone) credentials.phone = registerPayload.phone;
+
+        this.authService.login(credentials).subscribe({
+          next: (loginResp) => {
+            // Ensure user profile stored in UserService
+            try {
+              this.userService.setUserProfile({
+                name: loginResp.user?.name || registerPayload.name,
+                email: loginResp.user?.email || registerPayload.email,
+                phone: loginResp.user?.phone || registerPayload.phone,
+                gender: (loginResp.user?.gender || registerPayload.gender || '').toLowerCase() as 'male' | 'female',
+                dob: loginResp.user?.dateOfBirth || registerPayload.dateOfBirth,
+                avatarName: loginResp.user?.avatar?.avatarName,
+                avatarUrl: loginResp.user?.avatar?.url || undefined,
+                relationship: loginResp.user?.relationship || 'PARENT',
+                pet: loginResp.user?.pet?.petName || undefined
+              });
+            } catch (e) { }
+
+            // Clear signup session storage used for onboarding
+            try {
+              sessionStorage.removeItem('signup_profile');
+              sessionStorage.removeItem('signup_password');
+              sessionStorage.removeItem('signup_role');
+              sessionStorage.removeItem('signup_avatar');
+              sessionStorage.removeItem('requestedIdentifier');
+              sessionStorage.removeItem('familyCode');
+              sessionStorage.removeItem('familyName');
+            } catch (e) { }
+
+            // Instead of navigating, just update the button state to show the original button
+            this.showRegisterButton = false;
+            this.isParentRegistered = true;
+            // this.core.triggerToasrt('Registration and login successful!');
+            // The original button will now appear due to the updated state
+          },
+          error: (err) => {
+            this.isLoading = false;
+            console.error('Auto-login failed after registration', err);
+            this.core.triggerToasrt('Account created but automatic login failed. Please login manually.');
+            this.router.navigate(['/home/login']);
+          }
+        });
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error('Registration failed', err);
+        const msg = err?.error?.message || err?.error || 'Failed to create account. Please try again.';
+        this.core.triggerToasrt(msg);
+      }
     });
   }
 
