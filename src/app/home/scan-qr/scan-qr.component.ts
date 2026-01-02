@@ -30,6 +30,7 @@ export class ScanQrComponent implements OnInit, OnDestroy {
   ) { }
 
   async ngOnInit() {
+    // Set up role and return route from params
     this.route.queryParams.subscribe(params => {
       const role = params['role'];
       const returnTo = params['returnTo'];
@@ -43,7 +44,6 @@ export class ScanQrComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Check if barcode scanning is supported
     const { supported } = await BarcodeScanner.isSupported();
     this.scannerSupported = supported;
 
@@ -58,7 +58,6 @@ export class ScanQrComponent implements OnInit, OnDestroy {
 
   async checkPermissions(): Promise<boolean> {
     try {
-      // Check camera permission
       const { camera } = await BarcodeScanner.checkPermissions();
 
       if (camera === 'granted') {
@@ -76,7 +75,6 @@ export class ScanQrComponent implements OnInit, OnDestroy {
         return false;
       }
 
-      // Request permission
       const { camera: newStatus } = await BarcodeScanner.requestPermissions();
 
       if (newStatus === 'granted') {
@@ -103,29 +101,23 @@ export class ScanQrComponent implements OnInit, OnDestroy {
     }
 
     try {
-      // Hide the WebView background so native camera shows through
+      // Start QR scanning
       document.body.classList.add('barcode-scanner-active');
 
-      // Add listener for scanned barcodes BEFORE starting the scan
       this.scanListener = await BarcodeScanner.addListener('barcodesScanned', async (result: BarcodesScannedEvent) => {
         console.log('Barcodes scanned:', result);
 
-        // Get the first barcode from the result
         if (result.barcodes && result.barcodes.length > 0) {
           const barcode = result.barcodes[0];
 
-          // Run in Angular zone to ensure UI updates
           this.ngZone.run(async () => {
-            // Stop scanning when QR code is detected
             await this.stopScan();
 
-            // Process the scanned QR code
             await this.handleScannedCode(barcode.displayValue || barcode.rawValue || '');
           });
         }
       });
 
-      // Start continuous scanning - targeting QR codes specifically
       await BarcodeScanner.startScan({
         formats: [BarcodeFormat.QrCode]
       });
@@ -147,17 +139,14 @@ export class ScanQrComponent implements OnInit, OnDestroy {
 
   async stopScan() {
     try {
-      // Remove listener first
       if (this.scanListener) {
         await this.scanListener.remove();
         this.scanListener = null;
       }
       await BarcodeScanner.removeAllListeners();
 
-      // Stop the scan
       await BarcodeScanner.stopScan();
 
-      // Turn off flashlight if it's on
       if (this.isFlashlightOn) {
         try {
           await BarcodeScanner.toggleTorch();
@@ -177,13 +166,12 @@ export class ScanQrComponent implements OnInit, OnDestroy {
   }
 
   async handleScannedCode(code: string) {
-    // Extract family code if it has GROUP: prefix
+    // Extract family code
     let familyCode = code;
     if (code && code.startsWith('GROUP:')) {
       familyCode = code.substring(6).trim();
     }
 
-    // Validate the extracted code
     if (!familyCode || familyCode.length < 6) {
       const alert = await this.alertController.create({
         header: 'Invalid QR Code',
@@ -201,7 +189,6 @@ export class ScanQrComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Show confirmation alert with scanned code
     const alert = await this.alertController.create({
       header: 'Family Code Scanned',
       message: `Found family code: ${familyCode}`,
@@ -210,7 +197,6 @@ export class ScanQrComponent implements OnInit, OnDestroy {
           text: 'Cancel',
           role: 'cancel',
           handler: () => {
-            // Resume scanning
             this.startScan();
           }
         },
@@ -227,17 +213,16 @@ export class ScanQrComponent implements OnInit, OnDestroy {
   }
 
   private saveCodeAndRedirect(code: string) {
+    // Save scanned code and navigate based on user role
     try {
       if (code) {
         sessionStorage.setItem('familyCode', code);
       }
-      // Store the user role for use after login
       sessionStorage.setItem('signup_role', this.userRole);
     } catch (e) {
       console.warn('Failed to persist family code', e);
     }
 
-    // If the scanned flow is part of onboarding for child/self, send user to signup step 4 (pet selection)
     if (this.userRole === 'child' || this.userRole === 'self') {
       this.router.navigate(['/home/sign-up'], {
         queryParams: {
@@ -249,10 +234,7 @@ export class ScanQrComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // If returnTo is a join-family route, navigate there with scannedCode so that
-    // the join-family component can auto-register (if signup data exists)
     if (this.returnTo === 'join-family2') {
-      // Scanning to join an existing family - ensure we don't mark creator
       try { sessionStorage.removeItem('familyCreator'); } catch (e) { }
       this.router.navigate(['/home/join-family2'], {
         queryParams: {
@@ -263,7 +245,6 @@ export class ScanQrComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Default: Navigate to login with the role. After login completes, user will be redirected appropriately
     this.router.navigate(['/home/login'], {
       queryParams: {
         role: this.userRole,
@@ -272,10 +253,6 @@ export class ScanQrComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Navigate directly to the appropriate dashboard based on role
-   * This can be called after successful authentication
-   */
   navigateToDashboard(): void {
     const normalized = this.userRole?.toUpperCase?.() || '';
     const dashboardRoute = normalized === 'PARENT' ? '/authed/parent-account' : '/authed/user-dashboard';
@@ -297,7 +274,6 @@ export class ScanQrComponent implements OnInit, OnDestroy {
   }
 
   async openGallery() {
-    // This would require additional plugin for image picking and QR code reading from image
     const alert = await this.alertController.create({
       header: 'Coming Soon',
       message: 'Gallery upload feature will be available soon.',
@@ -315,17 +291,16 @@ export class ScanQrComponent implements OnInit, OnDestroy {
   async close() {
     await this.stopScan();
 
-    // Prefer navigating back in history so we return to the exact page that opened the scanner.
+    // Try to go back in history, otherwise navigate to return route
     try {
       if (typeof window !== 'undefined' && window.history && window.history.length > 1) {
         this.location.back();
         return;
       }
     } catch (e) {
-      // fall through to fallback navigation
+      // fallback navigation
     }
 
-    // Fallback: navigate to the configured return route
     const targetRoute = this.returnTo === 'join-family2' ? '/home/join-family2' : '/home/join-family';
     this.router.navigate([targetRoute], { queryParams: { role: this.userRole } });
   }

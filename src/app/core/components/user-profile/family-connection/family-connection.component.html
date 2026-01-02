@@ -76,8 +76,8 @@
                                 <p>{{ creator.age }} years old</p>
 
                                 <div class="relationship-badge" [class.child]="creator.relationship === 'Child'"
-                                    [class.parent]="creator.relationship === 'Parent'">
-                                    {{ creator.relationship + ' / Creator' + (creator.you ? ' / You' : '') }}
+                                    [class.parent]="creator.relationship === 'Parent' || creator.relationship === 'Co-Parent'">
+                                    {{ (creator.relationship === 'Co-Parent' ? 'Parent' : creator.relationship) + ' / Creator' + (creator.you ? ' / You' : '') }}
                                 </div>
 
                             </div>
@@ -101,7 +101,7 @@
                             </div>
 
                             <div class="relationship-badge" [class.child]="m.relationship === 'Child'"
-                                [class.parent]="m.relationship === 'Parent'" (click)="toggleMemberActive(m)">
+                                [class.parent]="m.relationship === 'Parent' || m.relationship === 'Co-Parent'" (click)="toggleMemberActive(m)">
                                 {{ getBadgeText(m) }}
                             </div>
                             <a *ngIf="isParentUser()">Remove</a>

@@ -139,15 +139,15 @@ export class JoinFamilyComponent implements OnInit {
     // Store the role for use after login / during signup
     sessionStorage.setItem('signup_role', this.userRole);
 
-    // If onboarding flow (child/self), navigate directly to pet selection (step 4)
-    if (this.userRole === 'child' || this.userRole === 'self') {
+    // If family code is provided, navigate to pet selection (step 4) for onboarding
+    if (familyCode) {
       const queryParams: any = { step: 4, role: this.userRole };
-      if (familyCode) queryParams.familyCode = familyCode;
+      queryParams.familyCode = familyCode;
       this.router.navigate(['/home/sign-up'], { queryParams });
       return;
     }
 
-    // Default: navigate to login for parent or other flows
+    // Default: navigate to login for flows without family code
     this.router.navigate(['/home/login'], { queryParams: { role: this.userRole } });
     // this.familyService.joinFamily(familyCode).subscribe({
     //   next: (response) => {

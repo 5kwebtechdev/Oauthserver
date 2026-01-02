@@ -147,31 +147,41 @@ export class FamilyConnectionComponent implements OnInit {
 
   private setFamilyFaqs(): void {
     try {
-      const role = (() => {
-        try { return this.coreAuthService.getUserRelationship?.(); } catch { return null; }
-      })();
+      let targetSection: string;
+      let targetScreen: string;
 
       if (this.isParentUser()) {
-        // Parent view: prefer My Family (Parent) entries
-        this.familyFaqs = PROFILE_FAQS.filter(f => (f.screen && f.screen.toLowerCase().includes('parent')) || (f.section && f.section.toLowerCase().includes('my family') && f.screen && f.screen.toLowerCase().includes('parent')));
-      } else if (role === 'SELF' || this.isSelfUser()) {
-        // Self mode for child
-        this.familyFaqs = PROFILE_FAQS.filter(f => (f.section && f.section.toLowerCase().includes('self mode')) || (f.screen && f.screen.toLowerCase().includes('self mode')));
+        targetSection = 'My Family';
+        targetScreen = 'Parent';
+      } else if (this.isSelfUser()) {
+        targetSection = 'Profile';
+        targetScreen = 'Self Mode (Child)';
       } else {
-        // Default to child view (My Family (Child))
-        this.familyFaqs = PROFILE_FAQS.filter(f => (f.screen && f.screen.toLowerCase().includes('my family (child)')) || ((f.section && f.section.toLowerCase().includes('my family')) && (f.screen && f.screen.toLowerCase().includes('child'))));
+        // Child mode
+        targetSection = 'Profile';
+        targetScreen = 'My Family (Child)';
+      }
+
+      this.familyFaqs = PROFILE_FAQS.filter(faq =>
+        faq.section === targetSection && faq.screen === targetScreen
+      );
+
+      // If no exact matches, fallback to broader search
+      if (this.familyFaqs.length === 0) {
+        console.warn(`No FAQs found for section: ${targetSection}, screen: ${targetScreen}. Falling back to broader search.`);
+        this.familyFaqs = PROFILE_FAQS.filter(faq =>
+          faq.section?.toLowerCase().includes(targetSection.toLowerCase()) ||
+          faq.screen?.toLowerCase().includes(targetScreen.toLowerCase())
+        );
+      }
+
+      // Ultimate fallback
+      if (this.familyFaqs.length === 0) {
+        console.warn('No relevant FAQs found. Using all FAQs as fallback.');
+        this.familyFaqs = PROFILE_FAQS;
       }
     } catch (e) {
       console.error('Error selecting family faqs:', e);
-      this.familyFaqs = [];
-    }
-
-    // Fallbacks: try broader child/self entries, then full list
-    if (!this.familyFaqs || this.familyFaqs.length === 0) {
-      this.familyFaqs = PROFILE_FAQS.filter(f => (f.screen && (f.screen.toLowerCase().includes('my family (child)') || f.screen.toLowerCase().includes('self mode') || f.screen.toLowerCase().includes('parent'))));
-    }
-
-    if (!this.familyFaqs || this.familyFaqs.length === 0) {
       this.familyFaqs = PROFILE_FAQS;
     }
   }
@@ -220,9 +230,9 @@ export class FamilyConnectionComponent implements OnInit {
 
   getBadgeText(member: FamilyMember): string {
     if (member.you) {
-      return member.relationship === 'Parent' ? 'Parent / You' : 'Child / You';
+      return (member.relationship === 'Parent' || member.relationship === 'Co-Parent') ? 'Parent / You' : 'Child / You';
     }
-    return member.relationship === 'Parent' ? 'Parent' : 'Child';
+    return (member.relationship === 'Parent' || member.relationship === 'Co-Parent') ? 'Parent' : 'Child';
   }
 
   onRemovedPetClick() {

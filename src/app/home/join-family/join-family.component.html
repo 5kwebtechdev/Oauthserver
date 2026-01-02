@@ -35,7 +35,7 @@
       </div>
 
       <mindful-button type="orange-onboard" [text]="isLoading ? 'Joining...' : 'Join Family'"
-        [disabled]="form.invalid || isLoading">
+        [disabled]="form.invalid || isLoading" (click)="submit()">
       </mindful-button>
     </form>
     <profile-facts [faqs]="codeEntryFaqs"></profile-facts>

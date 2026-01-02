@@ -1459,10 +1459,34 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     });
   }
 
-  // Navigate to authenticated area after welcome step and complete registration
+  // Navigate to authenticated area after welcome step
   onBegin() {
-    // Complete the registration with all session data; navigation will occur after register finishes
-    this.registerFromSession();
+    // Perform automatic login after registration
+    const password = sessionStorage.getItem('signup_password') || this.password?.value || '';
+    const credentials: any = { password };
+    if (this.loginMode === 'email' || (this.requestedIdentifier && this.requestedIdentifier.includes('@'))) {
+      credentials.email = this.requestedIdentifier || this.email?.value;
+    } else {
+      const contactNumber = sessionStorage.getItem('countryCode') || this.selectedCountry.code;
+      credentials.phone = contactNumber + (this.requestedIdentifier || this.phone?.value);
+    }
+
+    if (credentials.password && (credentials.email || credentials.phone)) {
+      this.authService.login(credentials).subscribe({
+        next: (loginResp) => {
+          // After login, navigate to appropriate dashboard
+          const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+          this.router.navigate([route]);
+        },
+        error: (loginErr) => {
+          console.error('Auto-login failed', loginErr);
+          this.core.triggerToasrt('Login failed. Please login manually.');
+          this.router.navigate(['/home/login']);
+        }
+      });
+    } else {
+      this.router.navigate(['/home/login']);
+    }
   }
 
   /**
