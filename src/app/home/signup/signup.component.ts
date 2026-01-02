@@ -1219,6 +1219,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       familyName: familyName || ''
     };
 
+    // Include explicit family role: CREATOR when user created the family in this session,
+    // otherwise CO_PARENT when joining an existing family. Keep `relationship` as PARENT.
+    try {
+      const createdFlag = sessionStorage.getItem('familyCreator');
+      if (createdFlag === 'true') {
+        payload.familyRole = 'CREATOR';
+      } else if (payload.familyCode) {
+        payload.familyRole = 'CO_PARENT';
+      }
+    } catch (e) { }
+
     // include email or phone depending on loginMode or identifier content
     if (this.loginMode === 'email' || (identifier && identifier.includes('@'))) {
       payload.email = identifier;
@@ -1233,6 +1244,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       const dobDate = new Date(dobValue);
       payload.dateOfBirth = dobDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
     }
+
+    // Mark family role for parent flows: if user created the family in this session, mark CREATOR,
+    // otherwise if joining a family mark CO_PARENT. This preserves `relationship: PARENT` while
+    // allowing backend to distinguish creator vs co-parent.
+    try {
+      const created = sessionStorage.getItem('familyCreator');
+      if (created === 'true') payload.familyRole = 'CREATOR';
+      else if (payload.familyCode) payload.familyRole = 'CO_PARENT';
+    } catch (e) { }
 
     // Include selected pet name if available (from session or current selection)
     try {
@@ -1294,6 +1314,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           sessionStorage.removeItem('requestedIdentifier');
           sessionStorage.removeItem('familyCode');
           sessionStorage.removeItem('familyName');
+          sessionStorage.removeItem('familyCreator');
         } catch (e) { }
 
         // Mark onboarding completed so onboarding routes are blocked later
@@ -1381,6 +1402,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       familyCode: familyCode || ''
     };
 
+    // If this flow included a family code, mark whether the current user created the family
+    try {
+      const createdFlag = sessionStorage.getItem('familyCreator');
+      if (createdFlag === 'true') payload.familyRole = 'CREATOR';
+      else if (payload.familyCode) payload.familyRole = 'CO_PARENT';
+    } catch (e) { }
+
     // include email or phone depending on loginMode or identifier content
     if (this.loginMode === 'email' || (identifier && identifier.includes && identifier.includes('@'))) {
       payload.email = identifier;
@@ -1417,6 +1445,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           sessionStorage.removeItem('requestedIdentifier');
           sessionStorage.removeItem('familyCode');
           sessionStorage.removeItem('familyName');
+          sessionStorage.removeItem('familyCreator');
         } catch (e) { }
 
         // Navigate to welcome step

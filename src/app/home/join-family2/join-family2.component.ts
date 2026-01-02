@@ -123,6 +123,8 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
     // this.isLoading = true;
     const familyCode = this.joinFamilyForm.get('familyCode')?.value;
     sessionStorage.setItem('familyCode', familyCode);
+    // This is a join flow, not create — ensure creator flag is cleared
+    try { sessionStorage.removeItem('familyCreator'); } catch (e) { }
 
     // If signup data already present, attempt to register the parent immediately
     const profileStr = sessionStorage.getItem('signup_profile');
@@ -288,6 +290,8 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
 
     // Automatically trigger the join family API
     setTimeout(() => {
+      // ensure this is treated as a join, not a create
+      try { sessionStorage.removeItem('familyCreator'); } catch (e) { }
       this.joinFamily();
     }, 500);
   }
@@ -312,6 +316,8 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
         this.familyCode = response.familyCode || this.generateFamilyCode();
         this.qrCodeData = 'GROUP:' + this.familyCode; // Prefixed for QR scanning validation
         sessionStorage.setItem('familyCode', this.familyCode);
+        // Mark that current user created this family so registration knows they're the creator
+        try { sessionStorage.setItem('familyCreator', 'true'); } catch (e) { }
         this.showRegisterButton = true;
       },
       error: (error) => {
@@ -416,6 +422,13 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
       familyName: familyName || ''
     };
 
+    // Indicate whether this registration is for a created family (creator) or a join (co-parent)
+    try {
+      const createdFlag = sessionStorage.getItem('familyCreator');
+      if (createdFlag === 'true') payload.familyRole = 'CREATOR';
+      else if (payload.familyCode) payload.familyRole = 'CO_PARENT';
+    } catch (e) { }
+
     // include contact
     if (loginMode === 'email' || (identifier && identifier.includes && identifier.includes('@'))) {
       payload.email = identifier;
@@ -468,6 +481,7 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
               sessionStorage.removeItem('requestedIdentifier');
               sessionStorage.removeItem('familyCode');
               sessionStorage.removeItem('familyName');
+              sessionStorage.removeItem('familyCreator');
             } catch (e) { }
 
             // Update button state to reflect registration is complete
@@ -535,6 +549,13 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
       familyName: familyName || ''
     };
 
+    // Mark whether this registration is for a created family (creator) or a join (co-parent)
+    try {
+      const createdFlag = sessionStorage.getItem('familyCreator');
+      if (createdFlag === 'true') registerPayload.familyRole = 'CREATOR';
+      else if (registerPayload.familyCode) registerPayload.familyRole = 'CO_PARENT';
+    } catch (e) { }
+
     // include contact
     if (loginMode === 'email' || (identifier && identifier.includes && identifier.includes('@'))) {
       registerPayload.email = identifier;
@@ -559,7 +580,7 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
         this.showRegisterButton = false; // Hide the register button
         this.isParentRegistered = true; // Mark parent as registered
         // Show the original button after successful registration
-        this.core.triggerToasrt('Account registered successfully!');
+        // this.core.triggerToasrt('Account registered successfully!');
 
         // After successful registration, attempt to login using provided credentials
         const credentials: any = { password };
@@ -592,6 +613,7 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
               sessionStorage.removeItem('requestedIdentifier');
               sessionStorage.removeItem('familyCode');
               sessionStorage.removeItem('familyName');
+              sessionStorage.removeItem('familyCreator');
             } catch (e) { }
 
             // Instead of navigating, just update the button state to show the original button

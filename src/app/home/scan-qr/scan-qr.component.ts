@@ -252,6 +252,8 @@ export class ScanQrComponent implements OnInit, OnDestroy {
     // If returnTo is a join-family route, navigate there with scannedCode so that
     // the join-family component can auto-register (if signup data exists)
     if (this.returnTo === 'join-family2') {
+      // Scanning to join an existing family - ensure we don't mark creator
+      try { sessionStorage.removeItem('familyCreator'); } catch (e) { }
       this.router.navigate(['/home/join-family2'], {
         queryParams: {
           role: this.userRole,
