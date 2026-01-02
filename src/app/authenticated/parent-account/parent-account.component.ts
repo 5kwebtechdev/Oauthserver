@@ -43,13 +43,13 @@ export class ParentAccountComponent implements OnInit {
     public selectedMood: string | null = 'happy';
 
     public userAvatarUrl: string = '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
-    // Stats from vibes/display API for the mindful-completion rings
+    // Stats
     public completionRate: number = 0;
     public consistencyRate: number = 0;
     public improvementRate: number = 0;
     public appScore: number = 0;
-    public Math = Math; // Expose Math to template for Math.abs()
-    // Vibe display fields (from vibes/display per-child entry)
+    public Math = Math; // expose Math
+    // Vibe fields
     public vibeTitle: string = '';
     public vibeDescription: string = '';
     public emptyStateDescription: string = '';
@@ -59,7 +59,7 @@ export class ParentAccountComponent implements OnInit {
     public totalTasks: number = 0;
     public completedTasks: number = 0;
     public progressPercentage: number = 0;
-    // Mood -> asset mapping (same keys used by MoodSelector)
+    // Mood assets
     private readonly moodAssetMap: Record<string, string> = {
         'HAPPY': '/assets/Images-Transparent/Image-Mood-Happy.png',
         'VERY HAPPY': '/assets/Images-Transparent/Image-Mood-Very happy.png',
@@ -70,9 +70,9 @@ export class ParentAccountComponent implements OnInit {
         'NERVOUS': '/assets/Images-Transparent/Image-Mood-Nervous.png',
         'NEUTRAL': '/assets/Images-Transparent/Mood-emoji-neutral-home.png'
     };
-    // Switch-user popup state
+    // Popup state
     public showSwitchPopup: boolean = false;
-    // children list now holds raw API response for each child so we can switch stats per child
+    // Children list
     public children: Array<{ id: string | number; name: string; avatarUrl: string; relationship?: string; raw?: any }> = [];
     public selectedChild: { id: string | number; name: string; avatarUrl: string; relationship?: string; raw?: any } | null = null;
 
@@ -93,14 +93,15 @@ export class ParentAccountComponent implements OnInit {
         this.router.navigate(['/authed/notes']);
     }
 
+    // Initialize component
     ngOnInit() {
-        // Check if the current user is not a parent and redirect if needed
+        // redirect non-parent users
         if (!this.authService.isParentUser()) {
             this.router.navigate(['/authed/user-dashboard'], { replaceUrl: true });
             return;
         }
 
-        // subscribe to user profile to get name and avatar immediately
+        // subscribe to profile
         this.userService.getUserProfile$().subscribe(profile => {
             if (profile) {
                 this.userName = profile.name || 'User';
@@ -108,7 +109,7 @@ export class ParentAccountComponent implements OnInit {
             }
         });
 
-        // Load rings data immediately from cache if available
+        // Load cached stats
         const stats = this.userService.getUserStats();
         if (stats) {
             this.userCoins = stats.coins || 0;
@@ -117,10 +118,10 @@ export class ParentAccountComponent implements OnInit {
             this.userBadges = stats.badges || 0;
         }
 
-        // Fetch fresh stats from API in background and update cache (same behavior as dashboard)
+        // Fetch fresh stats and update cache
         this.loadUserStats();
 
-        // Subscribe to habit/task changes and reload stats
+        // Refresh when habits/tasks change
         this.habitService.dataChanged$.subscribe(() => {
             console.log('[ParentAccount] Data changed, reloading stats...');
             this.loadUserStats();
@@ -138,10 +139,9 @@ export class ParentAccountComponent implements OnInit {
                             relationship: d.relationship || 'Child',
                             raw: d
                         }));
-                        // persist lightweight children list
                         try { localStorage.setItem('mb_children', JSON.stringify(this.children)); } catch { }
 
-                        // If no selection yet, pick the first child
+                        // pick first child if none selected
                         if (!this.selectedChild && this.children.length) {
                             this.selectChild(this.children[0]);
                         }
@@ -178,13 +178,13 @@ export class ParentAccountComponent implements OnInit {
             ];
             if (!this.selectedChild) this.selectedChild = this.children[0];
         }
-        // Apply stats for currently selected child if available
+        // apply selected child's stats
         if (this.selectedChild && (this.selectedChild as any).raw) {
             this.applyChildStats((this.selectedChild as any).raw);
         }
     }
 
-    /** Toggle the switch-user popup. Stop event propagation from click. */
+    // Toggle popup
     toggleSwitchPopup(ev?: Event) {
         if (ev) {
             ev.stopPropagation();
@@ -196,12 +196,11 @@ export class ParentAccountComponent implements OnInit {
         this.showSwitchPopup = false;
     }
 
-    /** Select a child and switch profile context to that child.
-     *  This updates the UserService profile locally and closes the popup.
-     */
+    // Select child & switch profile
     selectChild(child: any) {
-        this.selectedChild = child.raw.assignedTo;
-        this.profileSelector.setChild(child.raw.assignedTo);
+        // keep selectedChild in sync with list
+        this.selectedChild = child;
+        this.profileSelector.setChild(child.raw?.assignedTo);
         // If API raw data exists on the child, apply its stats
         if ((child as any).raw) {
             const d = (child as any).raw;
@@ -226,7 +225,7 @@ export class ParentAccountComponent implements OnInit {
         try {
             this.habitService.loadHabitsForDate(this.habitService.formatDateToYYYYMMDD(new Date()), true).subscribe({
                 next: () => {
-                    // Also call the child component directly if available to ensure UI refresh
+                    // refresh child habit view
                     try { this.habitPageContent?.loadHabits(true); this.habitPageContent?.loadTasksForSelectedDate(new Date()); } catch (e) { /* ignore */ }
                 }, error: () => { }
             });
@@ -234,11 +233,11 @@ export class ParentAccountComponent implements OnInit {
         this.closeSwitchPopup();
     }
 
+    // Apply stats from child data
     private applyChildStats(d: VibesDisplayResponse | any) {
         if (!d) return;
         this.userName = d.userName || this.userName;
-        // mood -> selectedMood (if provided). Set as an asset reference so MoodSelector
-        // displays the proper image when parent switches child.
+        // set selectedMood from data
         if (d.mood) {
             try {
                 const moodUpper = String(d.mood).toUpperCase();
@@ -248,7 +247,7 @@ export class ParentAccountComponent implements OnInit {
                 this.selectedMood = 'asset:' + this.moodAssetMap['NEUTRAL'];
             }
         }
-        // vibe display fields
+        // vibe fields
         this.vibeTitle = d.title || this.vibeTitle || '';
         this.vibeDescription = d.description || this.vibeDescription || '';
         this.emptyStateDescription = d.emptyStateDescription || this.emptyStateDescription || '';
@@ -269,13 +268,11 @@ export class ParentAccountComponent implements OnInit {
         this.appScore = Math.round((d.appScore ?? this.appScore) || 0);
     }
 
-    /**
-     * Load user statistics from the vibes/display endpoint and update cache
-     */
+    // Load user stats
     private loadUserStats(): void {
         const cached = this.userService.getUserStats();
         if (cached) {
-            // map cached to UI values (also used above)
+            // map cached
             this.userCoins = cached.coins || 0;
             this.userStreaks = cached.streaks || 0;
             this.userDays = cached.days || 0;
@@ -286,19 +283,19 @@ export class ParentAccountComponent implements OnInit {
             next: (data: VibesDisplayResponse[]) => {
                 if (data && data.length > 0) {
                     const userStats = data[0];
-                    // Map coins/streaks/trophies/badges
+                    // Map coins/streaks
                     this.userCoins = userStats.coins || 0;
                     this.userStreaks = userStats.streak || 0;
                     this.userDays = userStats.trophies || 0;
                     this.userBadges = userStats.badges || 0;
 
-                    // Map ring values directly from API
+                    // Map ring values
                     this.completionRate = Math.round(userStats.completionRate || 0);
                     this.consistencyRate = Math.round(userStats.consistencyRate || 0);
                     this.improvementRate = Math.round(userStats.improvementRate || 0);
                     this.appScore = Math.round(userStats.appScore || 0);
 
-                    // Update cached stats
+                    // Save cached stats
                     this.userService.saveUserStats({
                         coins: this.userCoins,
                         streaks: this.userStreaks,

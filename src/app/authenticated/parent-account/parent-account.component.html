@@ -32,7 +32,7 @@
                                                 <div class="child-name">{{ c.name }}</div>
                                                 <div class="child-meta">{{ c.relationship || 'Child' }}</div>
                                             </div>
-                                            <div class="child-selected" *ngIf="selectedChild?.id === c.id">
+                                            <div class="child-selected" *ngIf="selectedChild === c">
                                                 <!-- simple check mark -->
                                                 ✓
                                             </div>
