@@ -123,6 +123,17 @@ export class JoinFamily2Component implements OnInit, OnDestroy {
     // this.isLoading = true;
     const familyCode = this.joinFamilyForm.get('familyCode')?.value;
     sessionStorage.setItem('familyCode', familyCode);
+
+    // If signup data already present, attempt to register the parent immediately
+    const profileStr = sessionStorage.getItem('signup_profile');
+    const password = sessionStorage.getItem('signup_password');
+    if (profileStr && password) {
+      // Use existing register flow which will auto-login on success
+      this.registerAccount();
+      return;
+    }
+
+    // Otherwise redirect to login/signup so the user can complete signup
     this.redirectToLogin();
 
     // this.familyService.joinFamily(familyCode).subscribe({
