@@ -81,6 +81,10 @@ export class MyCartComponent {
                 try { this.router.navigateByUrl('/authed/cart'); } catch (e) { console.log('Open cart', action); }
                 return;
             }
+            if (action.type === 'package') {
+                try { this.router.navigateByUrl('/authed/school-store/my-orders'); } catch (e) { console.log('Open packages', action); }
+                return;
+            }
         } catch (e) { }
     }
 

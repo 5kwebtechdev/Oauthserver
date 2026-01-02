@@ -65,7 +65,7 @@ export class SchoolStoreComponent implements AfterViewInit {
 				return;
 			}
 			if (action.type === 'package') {
-				try { this.router.navigateByUrl('/authed/packages'); } catch (e) { console.log('Open packages', action); }
+				try { this.router.navigateByUrl('/authed/school-store/my-orders'); } catch (e) { console.log('Open packages', action); }
 				return;
 			}
 		} catch (e) { }
@@ -150,6 +150,6 @@ export class SchoolStoreComponent implements AfterViewInit {
 	}
 
 	goBack(): void {
-		this.router.navigate(['/authed/user-dashboard']).catch(() => { this.router.navigateByUrl('/authed'); });
+		this.router.navigateByUrl('/home').catch(() => { this.router.navigate(['/authed/user-dashboard']); });
 	}
 }

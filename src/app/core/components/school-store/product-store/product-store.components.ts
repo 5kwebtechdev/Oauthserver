@@ -329,7 +329,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
         return;
       }
       if (action.type === 'package') {
-        try { this.router.navigateByUrl('/authed/packages'); } catch (e) { console.log('Open packages', action); }
+        try { this.router.navigateByUrl('/authed/school-store/my-orders'); } catch (e) { console.log('Open packages', action); }
         return;
       }
     } catch (e) { }
@@ -410,13 +410,9 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
         navNative.addEventListener('click', (ev: Event) => {
           const target = ev.target as HTMLElement | null;
           if (!target) return;
-          if (target.closest && target.closest('svg')) {
+          if (target.closest && (target.closest('.navigator-heading') || target.closest('.navigator-subtext-row') || target.closest('.navigator-subtext') || target.closest('.navigator-subtext-text'))) {
             this.openAddressPopup();
             return;
-          }
-          const text = (target.textContent || '').trim();
-          if (text && text.indexOf('502') !== -1) {
-            this.openAddressPopup();
           }
         });
       }

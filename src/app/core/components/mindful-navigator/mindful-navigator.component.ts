@@ -130,6 +130,10 @@ export class MindfulNavigatorComponent implements OnInit {
 
 
     try {
+      if (action && action.type === 'package') {
+        // Open My Orders page when package icon is clicked
+        this.router.navigateByUrl('/authed/school-store/my-orders').catch(() => { /* ignore navigation errors */ });
+      }
       if (action && action.type === 'cart') {
         this.router.navigateByUrl('/authed/cart').catch(() => { /* ignore navigation errors */ });
       }

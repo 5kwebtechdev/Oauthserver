@@ -1,0 +1,45 @@
+.orders-container{
+    padding: 24px 16px;
+}
+
+h1,h2,p{
+    margin: 0;
+    font-family: Nunito;
+    font-weight: 600;
+}
+
+p{
+    color: #282527;
+font-size: 13px;
+font-style: normal;
+}
+
+/* Search Bar */
+.search-bar {
+    display: flex;
+padding: 16px 12px;
+align-items: center;
+flex: 1 0 0;
+  border-radius: 12px;
+background: #FDFDFD;
+box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  color: #6B656A;
+font-family: Nunito;
+font-size: 13px;
+font-weight: 600;
+}
+
+.search-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}

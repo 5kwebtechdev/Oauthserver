@@ -3,48 +3,7 @@
         <mindful-navigator heading="Add Delivery Address" backIcon="arrowSvg" (back)="goBack()">
         </mindful-navigator>
         <div class="map-picker">
-            <div class="search-container">
-                <ion-searchbar
-                    [(ngModel)]="searchQuery"
-                    (ionInput)="onSearchInput()"
-                    placeholder="Search for location"
-                    class="location-search">
-                </ion-searchbar>
-                
-                <div class="search-results" *ngIf="showSearchResults && searchResults.length > 0">
-                    <div 
-                        class="search-result-item"
-                        *ngFor="let result of searchResults"
-                        (click)="selectPlace(result)">
-                        <ion-icon name="location" class="result-icon"></ion-icon>
-                        <div class="result-text">
-                            <div class="result-name">{{ result.name }}</div>
-                            <div class="result-address">{{ result.formatted_address }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <google-map
-                [options]="mapOptions"
-                height="300px"
-                width="100%"
-                (mapClick)="onMapClick($event)"
-                *ngIf="isMapLoaded">
-                <map-marker
-                    *ngFor="let markerPosition of markerPositions"
-                    [position]="markerPosition"
-                    [options]="{ draggable: true }"
-                    (mapDragend)="onMarkerDragEnd($event)">
-                </map-marker>
-            </google-map>
-            
-            <ion-fab vertical="bottom" horizontal="center" slot="fixed" class="location-fab">
-                <ion-fab-button (click)="useCurrentLocation()" class="use-location-btn">
-                    <ion-icon name="locate"></ion-icon>
-                    <span>Use Current Location</span>
-                </ion-fab-button>
-            </ion-fab>
+
         </div>
             <form class="address-input-wrap" [formGroup]="addressForm" (ngSubmit)="saveAddress()">
             <div>
