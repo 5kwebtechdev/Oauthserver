@@ -1328,8 +1328,28 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       },
       error: (err) => {
         const serverMsg = err?.error?.message || err?.error || 'Registration failed';
-        this.errorMessage = typeof serverMsg === 'string' ? serverMsg : 'Registration failed. Please try again.';
-        try { this.core.triggerToasrt(this.errorMessage); } catch (e) { }
+        // If registration failed because user already exists, try to login automatically
+        const passwordForLogin = password || sessionStorage.getItem('signup_password') || this.password?.value || '';
+        const credentials: any = { password: passwordForLogin };
+        if (payload.email) credentials.email = payload.email;
+        else if (payload.phone) credentials.phone = payload.phone;
+
+        if (credentials.password && (credentials.email || credentials.phone)) {
+          this.authService.login(credentials).subscribe({
+            next: () => {
+              const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+              this.router.navigate([route]);
+            },
+            error: (loginErr) => {
+              // If auto-login fails, show original registration error
+              this.errorMessage = typeof serverMsg === 'string' ? serverMsg : 'Registration failed. Please try again.';
+              try { this.core.triggerToasrt(this.errorMessage); } catch (e) { }
+            }
+          });
+        } else {
+          this.errorMessage = typeof serverMsg === 'string' ? serverMsg : 'Registration failed. Please try again.';
+          try { this.core.triggerToasrt(this.errorMessage); } catch (e) { }
+        }
       }
     });
   }

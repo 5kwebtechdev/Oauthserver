@@ -25,8 +25,9 @@ export class JoinFamilyComponent implements OnInit {
     private familyService: FamilyService,
     private core: CoreService
   ) {
+    // Start with no validators; validators are applied dynamically based on selected role
     this.form = this.fb.group({
-      code: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9]{8}$/)]]
+      code: ['']
     });
   }
 
@@ -37,6 +38,8 @@ export class JoinFamilyComponent implements OnInit {
 
       if (role && ['child', 'parent', 'self'].includes(role)) {
         this.userRole = role;
+        // Apply validators based on role
+        this.updateCodeValidators();
       }
 
       if (scannedCode) {
@@ -66,6 +69,29 @@ export class JoinFamilyComponent implements OnInit {
     this.form.patchValue({ code: scanned });
   }
 
+  private codePattern() {
+    return /^[A-Za-z0-9]{8}$/;
+  }
+
+  private isValidCode(code?: string | null): boolean {
+    if (!code) return false;
+    return this.codePattern().test(code);
+  }
+
+  private updateCodeValidators(): void {
+    const control = this.form.get('code');
+    if (!control) return;
+
+    // Child role requires a family code; other roles may provide it optionally
+    if (this.userRole === 'child') {
+      control.setValidators([Validators.required, Validators.pattern(this.codePattern())]);
+    } else {
+      // optional, but if provided must match pattern — we'll validate on submit
+      control.clearValidators();
+    }
+    control.updateValueAndValidity({ onlySelf: true });
+  }
+
   openScanner() {
     console.log('QR Scanner button clicked - join-family component');
     console.log('User role:', this.userRole);
@@ -85,15 +111,43 @@ export class JoinFamilyComponent implements OnInit {
   submit() {
     this.submitted = true;
     Object.keys(this.form.controls).forEach(k => this.form.controls[k].markAsTouched());
-    if (this.form.invalid) {
+
+    // Enforce required form validity for child role
+    if (this.userRole === 'child' && this.form.invalid) {
       return;
     }
+
     // this.isLoading = true;
     const familyCode = this.form.get('code')?.value;
     console.log('Joining family with code:', familyCode);
-    sessionStorage.setItem('familyCode', familyCode);
-    // Store the role for use after login
+
+    // If a family code was provided, validate it and persist only if valid
+    if (familyCode) {
+      if (!this.isValidCode(familyCode)) {
+        this.core.triggerToasrt('Please enter a valid 8-character family code');
+        return;
+      }
+      sessionStorage.setItem('familyCode', familyCode);
+    } else {
+      // If user is child, family code is mandatory — ensure it's present (extra guard)
+      if (this.userRole === 'child') {
+        this.core.triggerToasrt('Family code is required to join as a child');
+        return;
+      }
+    }
+
+    // Store the role for use after login / during signup
     sessionStorage.setItem('signup_role', this.userRole);
+
+    // If onboarding flow (child/self), navigate directly to pet selection (step 4)
+    if (this.userRole === 'child' || this.userRole === 'self') {
+      const queryParams: any = { step: 4, role: this.userRole };
+      if (familyCode) queryParams.familyCode = familyCode;
+      this.router.navigate(['/home/sign-up'], { queryParams });
+      return;
+    }
+
+    // Default: navigate to login for parent or other flows
     this.router.navigate(['/home/login'], { queryParams: { role: this.userRole } });
     // this.familyService.joinFamily(familyCode).subscribe({
     //   next: (response) => {
