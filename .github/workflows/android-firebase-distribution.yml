@@ -10,9 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2️⃣ Set up JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -20,42 +22,51 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      # 3️⃣ Set up Node.js 20
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Optional: clear npm cache
+      # 4️⃣ Optional: clear npm cache
+      - name: Clear npm cache
         run: npm cache clean --force || true
 
+      # 5️⃣ Install npm dependencies
       - name: Install npm dependencies
         run: npm ci
 
+      # 6️⃣ Build Angular app
       - name: Build Angular app
         run: npm run build
 
+      # 7️⃣ Sync Capacitor
       - name: Sync Capacitor
         run: npx cap sync android
 
+      # 8️⃣ Cache Gradle dependencies
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*','**/gradle/wrapper/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      # 9️⃣ Make gradlew executable
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
+      # 🔟 Build Android release APK
       - name: Build Android release APK
         run: |
           cd android
           ./gradlew assembleRelease
 
+      # 1️⃣1️⃣ Upload APK to Firebase App Distribution
       - name: Upload to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
@@ -63,8 +74,10 @@ jobs:
           token: ${{ secrets.FIREBASE_TOKEN }}
           file: android/app/build/outputs/apk/release/app-release.apk
           releaseNotes: "Release build from GitHub Actions"
-          serviceCredentialsFileContent: ""
+          # If you are not using service credentials file content, just omit the line entirely
+          # serviceCredentialsFileContent: ""
 
+      # 1️⃣2️⃣ Upload APK as artifact
       - name: Upload APK as artifact
         uses: actions/upload-artifact@v4
         if: always()
