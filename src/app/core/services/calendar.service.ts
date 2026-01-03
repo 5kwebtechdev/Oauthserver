@@ -13,19 +13,19 @@ export class CalendarService {
     constructor(private http: HttpClient) { }
 
     /**
-     * Get user calendar. Optionally pass `userId` to fetch calendar for a child.
+     * Get user calendar. The ProfileSelectorInterceptor automatically adds userId
+     * when a child is selected by the parent.
      */
-    getUserCalendar(date: string, viewType: 'day' | 'month' = 'day', userId?: number): Observable<CalendarResponse> {
-        let url = `${this.apiUrl}/user-calendar?date=${date}&viewType=${viewType}`;
-        if (userId != null) url += `&userId=${userId}`;
+    getUserCalendar(date: string, viewType: 'day' | 'month' = 'day'): Observable<CalendarResponse> {
+        const url = `${this.apiUrl}/user-calendar?date=${date}&viewType=${viewType}`;
         return this.http.get<CalendarResponse>(url);
     }
 
     /**
      * Convenience wrapper to fetch month view
      */
-    getUserCalendarMonth(date: string, userId?: number): Observable<CalendarResponse> {
-        return this.getUserCalendar(date, 'month', userId);
+    getUserCalendarMonth(date: string): Observable<CalendarResponse> {
+        return this.getUserCalendar(date, 'month');
     }
 
     transformToTimelineEvents(response: CalendarResponse): TimelineEvent[] {

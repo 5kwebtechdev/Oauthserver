@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CalendarService } from '../../../services/calendar.service';
-import { UserService } from '../../../services/user.service';
+import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { TimelineEvent } from '../../../models/calendar.model';
 import { NavigationContextService } from '../../../services/navigation-context.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-timeline',
@@ -11,7 +12,7 @@ import { NavigationContextService } from '../../../services/navigation-context.s
   styleUrls: ['./timeline.component.scss'],
   standalone: false
 })
-export class TimelineComponent implements OnInit {
+export class TimelineComponent implements OnInit, OnDestroy {
   allEvents: TimelineEvent[] = [];
   filteredEvents: TimelineEvent[] = [];
   selectedDate: string = this.formatDate(new Date());
@@ -25,22 +26,43 @@ export class TimelineComponent implements OnInit {
   totalTasksCompleted: number = 0;
   taskCompletionRate: number = 0;
 
+  private subscriptions = new Subscription();
+
   constructor(
     private calendarService: CalendarService,
     private router: Router,
     private navigationContext: NavigationContextService,
-    private userService: UserService
+    private profileSelector: ProfileSelectorService
   ) { }
 
   ngOnInit() {
     this.loadEvents();
+    // Reload when parent switches child
+    this.subscriptions.add(
+      this.profileSelector.childChanged$.subscribe(() => this.loadEvents())
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 
   loadEvents() {
-    const userId = this.userService.getUserProfile()?.userId;
-    this.calendarService.getUserCalendar(this.selectedDate, 'day', userId).subscribe({
+    // Interceptor handles userId - no need to pass manually
+    this.calendarService.getUserCalendar(this.selectedDate, 'day').subscribe({
       next: (response) => {
-        this.allEvents = this.calendarService.transformToTimelineEvents(response);
+        let events = this.calendarService.transformToTimelineEvents(response);
+
+        // Filter by selected child if parent is viewing
+        const selectedChildId = this.profileSelector.getChildId();
+        if (selectedChildId !== null) {
+          events = events.filter((e: any) => {
+            const userId = e.userId ?? e.user_id ?? e.assignedTo ?? e.assigned_to;
+            return userId == selectedChildId;
+          });
+        }
+
+        this.allEvents = events;
         this.filterEvents();
 
         // Update completion statistics
@@ -53,7 +75,6 @@ export class TimelineComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error fetching calendar events:', error);
-        // Handle error appropriately
       }
     });
   }

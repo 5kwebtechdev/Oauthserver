@@ -20,11 +20,11 @@ export class MoodService {
    * @returns Observable of mood transitions array
    */
   /**
-   * Fetch mood transitions for a specific month. Optionally include `userId` to fetch for a child.
+   * Fetch mood transitions for a specific month.
+   * The ProfileSelectorInterceptor automatically adds userId when a child is selected.
    */
-  getMoodTransitionsMonthly(year: number, month: number, userId?: number): Observable<MoodTransition[]> {
-    let url = `${this.apiUrl}/vibes/transition/monthly?year=${year}&month=${month}`;
-    if (userId != null) url += `&userId=${userId}`;
+  getMoodTransitionsMonthly(year: number, month: number): Observable<MoodTransition[]> {
+    const url = `${this.apiUrl}/vibes/transition/monthly?year=${year}&month=${month}`;
     return this.http.get<MoodTransition[]>(url);
   }
 

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "871736630224",
+    "project_id": "superme-app-6e3af",
+    "storage_bucket": "superme-app-6e3af.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:871736630224:android:7da44619ddf01e68b0b7d5",
+        "android_client_info": {
+          "package_name": "com.supr.mind"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxtYvYd-I4YFsiud7ppvVFNYyyqtNZVi8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

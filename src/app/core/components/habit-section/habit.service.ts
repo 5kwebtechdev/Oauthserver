@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, tap, catchError, of, Subject } from 'rxjs';
 import { Habit } from './habit.types';
 import { HabitApi } from '../../api/habit.api';
-import { UserService } from '../../services/user.service';
 
 @Injectable({
   providedIn: 'root'
@@ -20,8 +19,9 @@ export class HabitService {
     return this.habitApi.createHabit(payload);
   }
 
-  constructor(private habitApi: HabitApi, private userService: UserService) {
-    this.loadHabitsForDate(this.formatDateToYYYYMMDD(new Date()));
+  constructor(private habitApi: HabitApi) {
+    // Don't auto-load - let components decide when to load based on context
+    // (e.g., parent account needs to wait for child selection first)
   }
 
   loadHabitsForDate(dateStr: string, forceReload: boolean = false): Observable<any> {
@@ -29,8 +29,8 @@ export class HabitService {
       return of(this.habitsSubject.value);
     }
 
-    const userId = this.userService.getUserProfile()?.userId;
-    return this.habitApi.getHabitsByDate(dateStr, userId).pipe(
+    // Interceptor handles userId - no need to pass manually
+    return this.habitApi.getHabitsByDate(dateStr).pipe(
       tap(response => {
         if (response) {
           const habits = this.mapApiResponseToHabits(response);

@@ -11,7 +11,7 @@ import { MoodService } from '../../../services/mood.service';
 import { MoodTransition, MoodData } from '../../../models/mood.model';
 import { Subject, takeUntil } from 'rxjs';
 import { NavigationContextService } from '../../../services/navigation-context.service';
-import { UserService } from '../../../services/user.service';
+import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
 import { HabitButtonLogicService } from '../habit-button-logic.service';
@@ -41,9 +41,8 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     private moodService: MoodService,
     private navigationContext: NavigationContextService,
     private router: Router,
-    private buttonLogic: HabitButtonLogicService
-    ,
-    private userService: UserService,
+    private buttonLogic: HabitButtonLogicService,
+    private profileSelector: ProfileSelectorService,
     private authService: AuthService
   ) {
     console.log('CalendarMainComponent initialized');
@@ -62,14 +61,17 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
       // ignore
     }
 
-    this.userService.userProfile$.pipe(takeUntil(this.destroy$)).subscribe(profile => {
-      const profileIsParent = !!(profile && (profile.relationship || '').toString().toUpperCase() === 'PARENT');
-      if (profileIsParent) this.isParent = true;
-    });
     this.loadCalendarData();
     this.loadMoodData();
     // Populate habits/tasks for the initial selected date
     this.updateHabitsAndTasksForSelectedDate();
+
+    // Reload when parent switches child
+    this.profileSelector.childChanged$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.loadCalendarData();
+      this.loadMoodData();
+      this.updateHabitsAndTasksForSelectedDate();
+    });
   }
 
   // Flag used to indicate viewer is a parent (passed down to habit-card)
@@ -121,8 +123,8 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     const year = this.selectedDate.getFullYear();
     const month = this.selectedDate.getMonth() + 1; // JavaScript months are 0-indexed
 
-    const userId = this.userService.getUserProfile()?.userId;
-    this.moodService.getMoodTransitionsMonthly(year, month, userId)
+    // Interceptor handles userId - no need to pass manually
+    this.moodService.getMoodTransitionsMonthly(year, month)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (transitions) => {
@@ -203,8 +205,8 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   }
 
   loadDayData(dateStr: string) {
-    const userId = this.userService.getUserProfile()?.userId;
-    this.calendarService.getUserCalendarMonth(dateStr, userId)
+    // Interceptor handles userId - no need to pass manually
+    this.calendarService.getUserCalendarMonth(dateStr)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
@@ -312,15 +314,32 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   // Fetch habits and tasks for the currently selected date and populate arrays used by template
   updateHabitsAndTasksForSelectedDate() {
     const dateStr = this.formatDateToYYYYMMDD(this.selectedDate);
-    const userId2 = this.userService.getUserProfile()?.userId;
-    this.calendarService.getUserCalendar(dateStr, 'day', userId2)
+    // Interceptor handles userId - no need to pass manually
+    this.calendarService.getUserCalendar(dateStr, 'day')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
           // Use the raw habit/task/event objects but filter them by selected date
-          const rawHabits = response.habits || [];
-          const rawTasks = response.tasks || [];
-          const rawEvents = response.events || [];
+          let rawHabits = response.habits || [];
+          let rawTasks = response.tasks || [];
+          let rawEvents = response.events || [];
+
+          // Filter by selected child if parent is viewing
+          const selectedChildId = this.profileSelector.getChildId();
+          if (selectedChildId !== null) {
+            rawHabits = rawHabits.filter((h: any) => {
+              const userId = h.userId ?? h.user_id ?? h.assignedTo ?? h.assigned_to;
+              return userId == selectedChildId;
+            });
+            rawTasks = rawTasks.filter((t: any) => {
+              const userId = t.userId ?? t.user_id ?? t.assignedTo ?? t.assigned_to;
+              return userId == selectedChildId;
+            });
+            rawEvents = rawEvents.filter((e: any) => {
+              const userId = e.userId ?? e.user_id ?? e.assignedTo ?? e.assigned_to;
+              return userId == selectedChildId;
+            });
+          }
 
           // Filter habits to only those scheduled for the selected date
           this.habitsForSelectedDate = rawHabits

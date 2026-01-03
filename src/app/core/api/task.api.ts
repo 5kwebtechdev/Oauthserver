@@ -45,11 +45,11 @@ export class TaskApi {
      * @returns Observable with tasks for the specified date
      */
     /**
-     * Get tasks by date. Optionally include `userId` to fetch for a specific child.
+     * Get tasks by date. The ProfileSelectorInterceptor automatically adds userId
+     * when a child is selected by the parent.
      */
-    getTasksByDate(date: string, userId?: number): Observable<any> {
-        let url = `${this.base}/tasks/tasks-by-date?date=${date}`;
-        if (userId != null) url += `&userId=${userId}`;
+    getTasksByDate(date: string): Observable<any> {
+        const url = `${this.base}/tasks/tasks-by-date?date=${date}`;
         return this.http.get(url, { headers: this.headers() });
     }
 

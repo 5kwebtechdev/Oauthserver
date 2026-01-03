@@ -36,11 +36,11 @@ export class HabitApi {
      * @returns Observable with habits for the specified date
      */
     /**
-     * Get habits by date. Optionally include `userId` to fetch for a specific child.
+     * Get habits by date. The ProfileSelectorInterceptor automatically adds userId
+     * when a child is selected by the parent.
      */
-    getHabitsByDate(date: string, userId?: number): Observable<any> {
-        let url = `${this.base}/habits/habits-by-date?date=${date}`;
-        if (userId != null) url += `&userId=${userId}`;
+    getHabitsByDate(date: string): Observable<any> {
+        const url = `${this.base}/habits/habits-by-date?date=${date}`;
         return this.http.get(url, { headers: this.headers() });
     }
 

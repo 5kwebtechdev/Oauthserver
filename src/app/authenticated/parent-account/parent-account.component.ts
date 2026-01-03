@@ -200,7 +200,12 @@ export class ParentAccountComponent implements OnInit {
     selectChild(child: any) {
         // keep selectedChild in sync with list
         this.selectedChild = child;
-        this.profileSelector.setChild(child.raw?.assignedTo);
+
+        // Set the child ID in ProfileSelectorService - interceptor will add to all API requests
+        // Use child.id (userId from API) as the primary identifier
+        const childId = Number(child.id) || child.raw?.userId || child.raw?.assignedTo;
+        this.profileSelector.setChild(childId);
+
         // If API raw data exists on the child, apply its stats
         if ((child as any).raw) {
             const d = (child as any).raw;
@@ -214,22 +219,9 @@ export class ParentAccountComponent implements OnInit {
                 }
             } catch (e) { /* ignore */ }
         }
-        // Update user profile in UserService so rest of app reflects the child
-        try {
-            // Include `userId` so other services/APIs can request data for the selected child
-            this.userService.setUserProfile({ userId: Number(child.id as any), name: child.name, avatarUrl: child.avatarUrl, relationship: (child.relationship || 'CHILD') as any });
-        } catch (e) {
-            console.error('[ParentAccount] Failed to switch child profile', e);
-        }
-        // Reload habits for today so UI reflects selected child immediately
-        try {
-            this.habitService.loadHabitsForDate(this.habitService.formatDateToYYYYMMDD(new Date()), true).subscribe({
-                next: () => {
-                    // refresh child habit view
-                    try { this.habitPageContent?.loadHabits(true); this.habitPageContent?.loadTasksForSelectedDate(new Date()); } catch (e) { /* ignore */ }
-                }, error: () => { }
-            });
-        } catch (e) { /* ignore */ }
+
+        // No need to manually call loadHabits - components subscribe to childChanged$
+        // and will automatically reload when the child changes
         this.closeSwitchPopup();
     }
 
