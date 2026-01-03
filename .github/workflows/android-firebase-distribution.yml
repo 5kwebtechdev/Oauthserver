@@ -71,13 +71,27 @@ jobs:
           cd android
           ./gradlew assembleRelease
 
+      # 🔎 Find the generated release artifact (APK or AAB) and expose path
+      - name: Find release artifact
+        run: |
+          set -e
+          echo "Searching for release APK/AAB under android/app/build/outputs..."
+          ARTIFACT=$(find android/app/build/outputs -type f \( -name "*.apk" -o -name "*.aab" \) -print | sort | tail -n 1 || true)
+          if [ -z "$ARTIFACT" ]; then
+            echo "No APK/AAB found in android/app/build/outputs"
+            ls -R android/app/build || true
+            exit 1
+          fi
+          echo "Found artifact: $ARTIFACT"
+          echo "ARTIFACT_PATH=$ARTIFACT" >> $GITHUB_ENV
+
       # 1️⃣1️⃣ Upload APK to Firebase App Distribution
       - name: Upload to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
           token: ${{ secrets.FIREBASE_TOKEN }}
-          file: android/app/build/outputs/apk/release/app-release.apk
+          file: ${{ env.ARTIFACT_PATH }}
           releaseNotes: "Release build from GitHub Actions"
           # If you are not using service credentials file content, just omit the line entirely
           # serviceCredentialsFileContent: ""
