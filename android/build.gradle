@@ -26,6 +26,39 @@ allprojects {
     }
 }
 
+// Centralize local flatDir repositories here to avoid repeated flatDir declarations
+// in subprojects (reduces Gradle flatDir warnings). Also configure Java/Kotlin
+// compatibility across subprojects so Java 21 features compile in CI and locally.
+allprojects {
+    repositories {
+        // local jars used by some Capacitor plugins
+        flatDir {
+            dirs "$rootDir/capacitor-cordova-android-plugins/src/main/libs"
+            dirs "$rootDir/app/libs"
+        }
+    }
+
+    // Configure Java & Kotlin compilation targets for Android subprojects
+    afterEvaluate { proj ->
+        def androidExt = proj.extensions.findByName('android')
+        if (androidExt != null) {
+            androidExt.compileOptions.sourceCompatibility = JavaVersion.VERSION_21
+            androidExt.compileOptions.targetCompatibility = JavaVersion.VERSION_21
+        }
+
+        proj.tasks.withType(JavaCompile).configureEach {
+            it.sourceCompatibility = '21'
+            it.targetCompatibility = '21'
+        }
+
+        // Configure Kotlin JVM target when Kotlin plugin is applied; setting here
+        // avoids needing to repeat in each module and reduces Kotlin-plugin warnings.
+        proj.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+            it.kotlinOptions.jvmTarget = '21'
+        }
+    }
+}
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

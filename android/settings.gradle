@@ -3,3 +3,17 @@ include ':capacitor-cordova-android-plugins'
 project(':capacitor-cordova-android-plugins').projectDir = new File('./capacitor-cordova-android-plugins/')
 
 apply from: 'capacitor.settings.gradle'
+
+// Provide a consistent Kotlin plugin version to avoid the "plugin loaded multiple
+// times" warnings. Subprojects can apply the plugin without forcing different
+// versions.
+pluginManagement {
+	repositories {
+		gradlePluginPortal()
+		google()
+		mavenCentral()
+	}
+	plugins {
+		id "org.jetbrains.kotlin.android" version "1.9.10"
+	}
+}
