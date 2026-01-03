@@ -1,7 +1,6 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-
     repositories {
         google()
         mavenCentral()
@@ -17,28 +16,13 @@ buildscript {
 
 apply from: "variables.gradle"
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url 'https://jitpack.io' }
-        maven { url 'https://repo1.maven.org/maven2/' }
-    }
-}
+// Do NOT declare repositories here. `dependencyResolutionManagement` in
+// `settings.gradle` is authoritative (repositoriesMode = FAIL_ON_PROJECT_REPOS).
+// This file should avoid adding project-level repositories to comply with Gradle 8.
 
-// Centralize local flatDir repositories here to avoid repeated flatDir declarations
-// in subprojects (reduces Gradle flatDir warnings). Also configure Java/Kotlin
-// compatibility across subprojects so Java 21 features compile in CI and locally.
-allprojects {
-    repositories {
-        // local jars used by some Capacitor plugins
-        flatDir {
-            dirs "$rootDir/capacitor-cordova-android-plugins/src/main/libs"
-            dirs "$rootDir/app/libs"
-        }
-    }
-
-    // Configure Java & Kotlin compilation targets for Android subprojects
+// Configure Java & Kotlin compilation targets for Android subprojects without
+// adding repositories. Using `subprojects` keeps this configuration centralized.
+subprojects {
     afterEvaluate { proj ->
         def androidExt = proj.extensions.findByName('android')
         if (androidExt != null) {
@@ -51,10 +35,13 @@ allprojects {
             it.targetCompatibility = '21'
         }
 
-        // Configure Kotlin JVM target when Kotlin plugin is applied; setting here
-        // avoids needing to repeat in each module and reduces Kotlin-plugin warnings.
-        proj.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-            it.kotlinOptions.jvmTarget = '21'
+        try {
+            def kotlinCompileClass = Class.forName('org.jetbrains.kotlin.gradle.tasks.KotlinCompile')
+            proj.tasks.withType(kotlinCompileClass).configureEach {
+                it.kotlinOptions.jvmTarget = '21'
+            }
+        } catch (ClassNotFoundException e) {
+            // Kotlin plugin not applied to this project yet; skip configuring Kotlin tasks
         }
     }
 }

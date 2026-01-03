@@ -138,7 +138,7 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
   private normalizeResponse(res: any, type: 'habits' | 'tasks' | 'timetable'): Habit {
     // Calculate timestamps using the shared service
     const timestamps = this.buttonLogic.calculateTimestamps(res);
-    
+
     return {
       ...res,
       type,
@@ -412,8 +412,8 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
   onStartHabit() {
     if (!this.habit || !this.isLetsGoEnabled()) return;
 
-    const api$ = this.habit.type === 'tasks' 
-      ? this.TaskApi.letsGoTask(this.habit.id) 
+    const api$ = this.habit.type === 'tasks'
+      ? this.TaskApi.letsGoTask(this.habit.id)
       : this.HabitApi.letsGoHabit(this.habit.id);
 
     api$.subscribe({

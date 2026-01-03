@@ -4,7 +4,8 @@ android {
     namespace "io.ionic.starter"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "io.ionic.starter"
+        // Match the package name in android/app/google-services.json
+        applicationId "com.supr.mind"
         minSdkVersion 26
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -24,12 +25,9 @@ android {
     }
 }
 
-// Repositories for this module are provided at the root project. Local flatDir
-// entries were centralized into the root `allprojects.repositories` to avoid
-// repeated flatDir usage across modules and to reduce Gradle warnings.
-repositories {
-    maven { url 'https://repo1.maven.org/maven2/' }
-}
+// Module-level repositories are intentionally omitted. Repositories are
+// declared in `settings.gradle` via dependencyResolutionManagement to comply
+// with Gradle 8's `FAIL_ON_PROJECT_REPOS` policy.
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
