@@ -61,6 +61,13 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
+              # 🔍 Verify settings.gradle ordering (Gradle 8 requirement)
+      - name: Verify settings.gradle ordering
+        run: |
+          echo "---- settings.gradle (first 40 lines) ----"
+          sed -n '1,40p' android/settings.gradle
+
+
       # 🔟 Build Android release APK
       - name: Build Android release APK
         run: |
