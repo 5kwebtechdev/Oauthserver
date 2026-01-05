@@ -225,8 +225,7 @@
     display: flex;
 width: 100%;
 padding: 16px 4px 0 24px;
-gap: 8px;
-border-radius: 16px;
+justify-content: space-between;
 background: #90214D;
 box-shadow: 0 4px 4px 0 rgba(249, 210, 220, 0.25) inset;
 
