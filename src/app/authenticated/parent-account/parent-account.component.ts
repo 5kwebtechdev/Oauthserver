@@ -141,10 +141,8 @@ export class ParentAccountComponent implements OnInit {
                         }));
                         try { localStorage.setItem('mb_children', JSON.stringify(this.children)); } catch { }
 
-                        // pick first child if none selected
-                        if (!this.selectedChild && this.children.length) {
-                            this.selectChild(this.children[0]);
-                        }
+                        // Restore previously selected child or pick first
+                        this.restoreOrSelectFirstChild();
                     } else {
                         this.loadChildrenFromStorageOrDefaults();
                     }
@@ -157,6 +155,23 @@ export class ParentAccountComponent implements OnInit {
         }
     }
 
+    /** Restore previously selected child from ProfileSelectorService or select first */
+    private restoreOrSelectFirstChild(): void {
+        const storedId = this.profileSelector.getChildId();
+        if (storedId !== null) {
+            const found = this.children.find(c => Number(c.id) === storedId);
+            if (found) {
+                this.selectedChild = found;
+                if (found.raw) this.applyChildStats(found.raw);
+                return;
+            }
+        }
+        // Fallback to first child
+        if (this.children.length) {
+            this.selectChild(this.children[0]);
+        }
+    }
+
     private loadChildrenFromStorageOrDefaults() {
         try {
             const stored = localStorage.getItem('mb_children');
@@ -164,7 +179,8 @@ export class ParentAccountComponent implements OnInit {
                 const parsed = JSON.parse(stored);
                 if (Array.isArray(parsed) && parsed.length) {
                     this.children = parsed;
-                    if (!this.selectedChild) this.selectedChild = this.children[0];
+                    this.restoreOrSelectFirstChild();
+                    return;
                 }
             }
         } catch (e) {
@@ -176,7 +192,7 @@ export class ParentAccountComponent implements OnInit {
                 { id: 'c1', name: 'Still Panda', avatarUrl: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png', relationship: 'Child' },
                 { id: 'c2', name: 'Child 2', avatarUrl: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png', relationship: 'Child' }
             ];
-            if (!this.selectedChild) this.selectedChild = this.children[0];
+            this.restoreOrSelectFirstChild();
         }
         // apply selected child's stats
         if (this.selectedChild && (this.selectedChild as any).raw) {
