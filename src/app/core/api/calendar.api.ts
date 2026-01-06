@@ -40,21 +40,30 @@ export class CalendarApi {
     }
 
     updateCalendarEvent(eventId: string, payload: any): Observable<any> {
-        const url = `${this.base}/api/calendar/events/${eventId}`;
+        const url = `${this.base}/calendar/update/${eventId}`;
         return this.http.put(url, payload, { headers: this.headers() });
     }
 
     deleteCalendarEvent(eventId: string): Observable<any> {
-        const url = `${this.base}/api/calendar/events/${eventId}`;
+        const url = `${this.base}/calendar/delete/${eventId}`;
         return this.http.delete(url, { headers: this.headers() });
     }
 
     /**
+     * Alternate update path (some backends provide this route):
+     * /api/calendar/events/{eventId}
+     */
+    updateCalendarEventV2(eventId: string, payload: any): Observable<any> {
+        const url = `${this.base}/api/calendar/events/${eventId}`;
+        return this.http.put(url, payload, { headers: this.headers() });
+    }
+
+    /**
      * Alternate delete path (some backends provide this route):
-     * /calendar/delete/{eventId}
+     * /api/calendar/events/{eventId}
      */
     deleteCalendarEventV2(eventId: string): Observable<any> {
-        const url = `${this.base}/calendar/delete/${eventId}`;
+        const url = `${this.base}/api/calendar/events/${eventId}`;
         return this.http.delete(url, { headers: this.headers() });
     }
 }

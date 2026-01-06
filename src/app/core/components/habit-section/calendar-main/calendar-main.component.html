@@ -78,8 +78,8 @@
             </div>
             <div *ngIf="eventsForSelectedDate?.length" class="d-flex flex-column gap-2">
                 <div *ngFor="let event of eventsForSelectedDate">
-                    <!-- Timetable event cards -->
-                    <div class="timetable-card">
+                    <!-- Timetable event cards with long-press support -->
+                    <div class="timetable-card" long-press [delay]="1500" (press)="onTimetableLongPress(event)">
                         <div class="timetable-card__header">
                             <div class="timetable-card__info">
                                 <h3 class="timetable-card__title">{{event?.title || 'Event'}}</h3>

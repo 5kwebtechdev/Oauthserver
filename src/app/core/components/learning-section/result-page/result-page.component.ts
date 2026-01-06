@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { LoadingService } from 'src/app/core/services/loading.service';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
@@ -23,7 +24,7 @@ import { PetMood } from '../../mindful-pet/mindful-pet.component';
   templateUrl: './result-page.component.html',
   styleUrls: ['./result-page.component.scss']
 })
-export class ResultPageComponent implements OnInit {
+export class ResultPageComponent implements OnInit, OnDestroy {
   quizAceBadge: any = {
     name: 'Quiz Ace',
     description: 'You answered 5 quizzes correctly in a row!',
@@ -56,7 +57,7 @@ export class ResultPageComponent implements OnInit {
   newlyEarnedBadges: any[] = [];
   badgeCelebrationMessage = '';
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private loadingService: LoadingService) {
     // Get data from router state
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras?.state as {
@@ -73,6 +74,9 @@ export class ResultPageComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Ensure any global loaders are cleared when arriving on the results page
+    // (covers cases where previous page left a loader token active)
+    try { this.loadingService.reset(); } catch (e) { }
     if (this.submissionResult) {
       // Map submission result to display properties
       this.totalQuestions = this.submissionResult.totalQuestions;
@@ -90,6 +94,21 @@ export class ResultPageComponent implements OnInit {
       this.badgeCelebrationMessage = this.submissionResult.badgeCelebrationMessage || '';
     } else {
       console.warn('No submission result found in router state');
+    }
+
+    // Intercept browser/gesture back (popstate) while on this page and
+    // redirect to content so swipe-back / back-gesture behaves like cancel.
+    window.addEventListener('popstate', this.handlePopState);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('popstate', this.handlePopState);
+  }
+
+  private handlePopState = (event: PopStateEvent) => {
+    // Ensure we don't try to navigate if already heading to content
+    if (this.router.url !== '/authed/content') {
+      this.router.navigateByUrl('/authed/content', { replaceUrl: true });
     }
   }
 
@@ -111,17 +130,17 @@ export class ResultPageComponent implements OnInit {
     } else if (this.scorePercentage >= 40) {
       return 'playful';
     } else {
-      return 'base'; 
+      return 'base';
     }
   }
 
-  
+
   isExcellentScore(): boolean {
     return this.scorePercentage >= 80;
   }
 
   onCancel(): void {
-    this.router.navigate(['/authed/content']);
+    this.router.navigateByUrl('/authed/content', { replaceUrl: true });
   }
 
   onPetClick(): void {
@@ -129,10 +148,10 @@ export class ResultPageComponent implements OnInit {
   }
 
   onContinue(): void {
-    this.router.navigate(['/authed/content']);
+    this.router.navigateByUrl('/authed/content', { replaceUrl: true });
   }
 
- 
+
   getFormattedTime(): string {
     const minutes = Math.floor(this.timeTaken / 60);
     const seconds = this.timeTaken % 60;

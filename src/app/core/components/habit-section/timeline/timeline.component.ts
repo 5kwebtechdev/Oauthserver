@@ -5,6 +5,7 @@ import { ProfileSelectorService } from '../../../services/profile-selector-servi
 import { TimelineEvent } from '../../../models/calendar.model';
 import { NavigationContextService } from '../../../services/navigation-context.service';
 import { Subscription } from 'rxjs';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-timeline',
@@ -32,7 +33,8 @@ export class TimelineComponent implements OnInit, OnDestroy {
     private calendarService: CalendarService,
     private router: Router,
     private navigationContext: NavigationContextService,
-    private profileSelector: ProfileSelectorService
+    private profileSelector: ProfileSelectorService,
+    private modalCtrl: ModalController
   ) { }
 
   ngOnInit() {
@@ -104,8 +106,7 @@ export class TimelineComponent implements OnInit, OnDestroy {
   }
 
   onCalendarClick(): void {
-    // TODO: implement calendar action (open calendar or navigate)
-    console.log('Calendar icon clicked');
+    this.router.navigateByUrl('/authed/calendar-main');
   }
 
   onDateSelected(date: Date): void {
@@ -117,5 +118,34 @@ export class TimelineComponent implements OnInit, OnDestroy {
     // Store the timeline route context before navigating
     this.navigationContext.pushContext('/authed/timeline', { selectedDate: this.selectedDate, selectedType: this.selectedType });
     this.router.navigateByUrl('/authed/habit-input');
+  }
+
+  /**
+   * Handle long-press on timetable event in timeline
+   */
+  async onTimetableLongPress(event: TimelineEvent): Promise<void> {
+    if (!event || !event.id || event.type !== 'timetable') {
+      return;
+    }
+
+    const currentUrl = this.router.url;
+    this.navigationContext.pushContext(currentUrl, { selectedDate: this.selectedDate, selectedType: this.selectedType, fromLongPress: true }, true);
+
+    const { HabitInputComponent } = await import('../habit-input/habit-input.component');
+    const modal = await this.modalCtrl.create({
+      component: HabitInputComponent,
+      componentProps: {
+        editingHabit: event,
+        initialTab: 'timetable'
+      }
+    });
+
+    await modal.present();
+
+    // Reload events when modal is dismissed
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      this.loadEvents();
+    }
   }
 }

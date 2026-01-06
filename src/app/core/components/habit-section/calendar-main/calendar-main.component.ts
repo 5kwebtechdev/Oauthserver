@@ -15,13 +15,14 @@ import { ProfileSelectorService } from '../../../services/profile-selector-servi
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
 import { HabitButtonLogicService } from '../habit-button-logic.service';
+import { LongPressDirective } from '../../../directives/gestureControlDirective';
 
 @Component({
   standalone: true,
   selector: 'calendar-main',
   templateUrl: './calendar-main.component.html',
   styleUrls: ['./calendar-main.component.scss'],
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulInputsModule, MindfulButtonComponent, HabitCardComponent]
+  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulInputsModule, MindfulButtonComponent, HabitCardComponent, LongPressDirective]
 })
 export class CalendarMainComponent implements OnInit, OnDestroy {
   dateActivities: { [key: string]: { timetable?: boolean, task?: boolean, habit?: boolean } } = {};
@@ -539,5 +540,35 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     const hh = String(date.getHours()).padStart(2, '0');
     const mm = String(date.getMinutes()).padStart(2, '0');
     return `${hh}.${mm}`;
+  }
+
+  /**
+   * Handle long-press on timetable card to open edit mode
+   */
+  async onTimetableLongPress(event: any) {
+    if (!event || !event.id) {
+      return;
+    }
+
+    const currentUrl = this.router.url;
+    this.navigationContext.pushContext(currentUrl, { currentActive: 'timetable', fromLongPress: true }, true);
+
+    const { HabitInputComponent } = await import('../habit-input/habit-input.component');
+    const modal = await this.modalCtrl.create({
+      component: HabitInputComponent,
+      componentProps: {
+        editingHabit: event,
+        initialTab: 'timetable'
+      }
+    });
+
+    await modal.present();
+
+    // Reload calendar data when modal is dismissed
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      this.loadCalendarData();
+      this.updateHabitsAndTasksForSelectedDate();
+    }
   }
 }

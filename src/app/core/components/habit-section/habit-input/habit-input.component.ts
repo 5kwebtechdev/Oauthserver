@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
@@ -36,6 +36,10 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   };
   private static readonly FULL_WEEK = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
   private static readonly PRIORITY_MAP: Record<string, 'low' | 'medium' | 'high'> = { '1': 'low', '2': 'medium', '3': 'high' };
+
+  // Input properties for modal usage - allows passing data directly via componentProps
+  @Input() editingHabit: any = null;
+  @Input() initialTab: 'habits' | 'tasks' | 'timetable' | null = null;
 
   title = '';
   notes = '';
@@ -223,8 +227,10 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     }
 
     try {
+      // First check @Input() properties (used when opened via modal componentProps)
+      // Then fall back to router navigation state or history.state
       const nav = this.router.getCurrentNavigation();
-      const stateHabit = nav?.extras?.state?.['habit'] ?? (history && (history.state as any)?.habit);
+      const stateHabit = this.editingHabit ?? nav?.extras?.state?.['habit'] ?? (history && (history.state as any)?.habit);
       if (!stateHabit) return;
       const h: any = stateHabit;
       this.originalHabit = h;
@@ -236,7 +242,9 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       // Convert times to 12-hour format for the timepicker component
       this.startTime = this.to12Hour(h.startTime || h.start_time || '');
       this.endTime = this.to12Hour(h.endTime || h.end_time || '');
-      this.currentActive = (h.type as any) || this.currentActive;
+      // Auto-switch to the appropriate tab based on: @Input() initialTab, explicit currentActive in state, or habit type
+      const stateCurrentActive = this.initialTab ?? nav?.extras?.state?.['currentActive'] ?? (history && (history.state as any)?.currentActive);
+      this.currentActive = stateCurrentActive || (h.type as any) || this.currentActive;
       this.isPrivate = !!h.isPrivate;
       this.coinReward = Number(h?.coinReward ?? h?.rewardCoins ?? h?.coin ?? 5);
       this.selectedRoutine = h.selectedRoutine || h.routine || (h.getRoutine as any) || this.selectedRoutine;

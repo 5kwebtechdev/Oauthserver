@@ -22,7 +22,8 @@
       <ng-container *ngFor="let event of events">
         <div class="event-box {{event.type}}" [style.top.px]="event._top" [style.height.px]="event._height"
           [style.left]="'calc(' + ((event._column || 0) / (event._columnCount || 1) * 100) + '% + 10px)'"
-          [style.width]="'calc(' + (100 / (event._columnCount || 1)) + '% - 15px)'">
+          [style.width]="'calc(' + (100 / (event._columnCount || 1)) + '% - 15px)'"
+          long-press [delay]="1500" (press)="onEventLongPress(event)">
           <div class="container w-full p-0">
             <h4>{{ event.title }}</h4>
             <h5>{{ event.startTime }} - {{ event.endTime }}</h5>
