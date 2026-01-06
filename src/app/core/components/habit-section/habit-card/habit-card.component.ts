@@ -274,7 +274,7 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
    */
   private saveOngoingState(): void {
     if (!this.habit) return;
-    
+
     const key = `ongoing_${this.habit.type}_${this.habit.id}`;
     const state = {
       startedAt: Date.now(),
@@ -289,7 +289,7 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
    */
   private clearOngoingState(): void {
     if (!this.habit) return;
-    
+
     const key = `ongoing_${this.habit.type}_${this.habit.id}`;
     localStorage.removeItem(key);
   }
@@ -299,16 +299,16 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
    */
   private restoreOngoingState(): void {
     if (!this.habit) return;
-    
+
     const key = `ongoing_${this.habit.type}_${this.habit.id}`;
     const stored = localStorage.getItem(key);
-    
+
     if (stored) {
       try {
         const state = JSON.parse(stored);
         // Verify that the stored state is still valid (same day, etc.)
-        if (state.habitStartTime === this.habit.startTimeStamp && 
-            state.habitEndTime === this.habit.endTimeStamp) {
+        if (state.habitStartTime === this.habit.startTimeStamp &&
+          state.habitEndTime === this.habit.endTimeStamp) {
           // State is valid, start progress if habit is ongoing
           if (this.habit.status?.toLowerCase() === 'ongoing') {
             this.showLocalTimer = true;
@@ -537,7 +537,7 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
         this.cdr.detectChanges();
       }
 
-    // Also check AuthService if available (authoritative logged-in role stored under user_data)
+      // Also check AuthService if available (authoritative logged-in role stored under user_data)
       try {
         if (this.isParentOverride === undefined) {
           const authParent = this.authService && this.authService.isParentUser && this.authService.isParentUser();
@@ -753,7 +753,13 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     const itemType = this.habit.type || 'habits';
     const itemId = Number(this.habit.id);
 
+    // For timetable, open habit-input in edit mode
+    if (itemType === 'timetable') {
+      this.openTimetableEditor();
+      return;
+    }
 
+    // For habits and tasks, navigate to habit-detail page
     try {
       this.navigationContext.pushContext(this.router.url, { fromLongPress: true, habitId: this.habit.id, type: itemType }, false);
     } catch (pushErr) {
@@ -766,6 +772,33 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     }).catch(err => {
       console.error('Navigation to habit detail failed:', err);
     });
+  }
+
+  /**
+   * Open habit-input component in edit mode for timetable
+   */
+  private async openTimetableEditor() {
+    if (!this.habit) return;
+
+    const currentUrl = this.router.url;
+    this.navigationContext.pushContext(currentUrl, { currentActive: 'timetable', fromLongPress: true }, true);
+
+    const { HabitInputComponent } = await import('../habit-input/habit-input.component');
+    const modal = await this.modalCtrl.create({
+      component: HabitInputComponent,
+      componentProps: {
+        editingHabit: this.habit,
+        initialTab: 'timetable'
+      }
+    });
+
+    await modal.present();
+
+    // Reload timetables when modal is dismissed
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      this.loadHabits();
+    }
   }
 
   async openHabitPage() {
@@ -893,11 +926,11 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
             const endTimeStr = task.endTime || '23:59:59';
             const startDateStr = task.startDate || new Date().toISOString().split('T')[0];
             const endDateStr = task.endDate || startDateStr;
-            
+
             // Calculate proper timestamps using date + time combination
             const calculatedStartTimeStamp = this.combineDateAndTime(startDateStr, startTimeStr);
             const calculatedEndTimeStamp = this.combineDateAndTime(endDateStr, endTimeStr);
-            
+
             return {
               ...task,
               type: 'tasks',
@@ -943,11 +976,11 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
             const endTimeStr = task.endTime || '23:59:59';
             const startDateStr = task.startDate || new Date().toISOString().split('T')[0];
             const endDateStr = task.endDate || startDateStr;
-            
+
             // Calculate proper timestamps using date + time combination
             const calculatedStartTimeStamp = this.combineDateAndTime(startDateStr, startTimeStr);
             const calculatedEndTimeStamp = this.combineDateAndTime(endDateStr, endTimeStr);
-            
+
             return {
               ...task,
               type: 'tasks',

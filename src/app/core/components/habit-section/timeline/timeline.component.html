@@ -1,7 +1,7 @@
 <ion-content style="height: 100vh; overflow-y: scroll">
   <mindful-navigator heading="Timeline" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
-    [rightIcon2]="'/assets/Icons-Neutral/Icon-Notes.png'" (rightIconClick)="onNotesClick()"
-    (rightIcon2Click)="onCalendarClick()"></mindful-navigator>
+    [rightIcon2]="'/assets/Icons-Neutral/Icon-Notes.png'" (rightIconClick)="onCalendarClick()"
+    (rightIcon2Click)="onNotesClick()"></mindful-navigator>
 
   <div class="timeline-page-container">
     <mindful-week (dateSelected)="onDateSelected($event)"></mindful-week>
@@ -42,7 +42,7 @@
       </mindful-selectors>
     </div>
     <div class="container w-full p-0" style="overflow:hidden ">
-      <mindful-timeline [events]="filteredEvents"></mindful-timeline>
+      <mindful-timeline [events]="filteredEvents" (eventLongPressed)="onTimetableLongPress($event)"></mindful-timeline>
     </div>
 
     <!-- Fixed Add Button -->

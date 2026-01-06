@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, Output, EventEmitter } from '@angular/core';
 
 import { TimelineEvent } from '../../models/calendar.model';
 
@@ -18,6 +18,7 @@ interface EventPosition extends TimelineEvent {
 })
 export class MindfulTimelineComponent implements OnInit, OnChanges {
   @Input() events: EventPosition[] = [];
+  @Output() eventLongPressed = new EventEmitter<TimelineEvent>();
 
   timeSlots: string[] = [];
   compressedSlots: { startHour: number, count: number }[] = [];
@@ -197,5 +198,12 @@ export class MindfulTimelineComponent implements OnInit, OnChanges {
     const block = this.compressedSlots.find(s => hour === s.startHour);
     if (!block) return 0;
     return 60; // compressed visual height
+  }
+
+  /**
+   * Handle long-press on an event
+   */
+  onEventLongPress(event: TimelineEvent): void {
+    this.eventLongPressed.emit(event);
   }
 }
