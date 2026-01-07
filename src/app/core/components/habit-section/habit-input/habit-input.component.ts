@@ -18,6 +18,7 @@ import { Habit } from '../habit.types';
 import { Router } from '@angular/router';
 import { NavigationContextService } from '../../../services/navigation-context.service';
 import { AuthService } from '../../../services/auth.service';
+import { ProfileSelectorService } from '../../../services/profile-selector-service';
 
 @Component({
   standalone: true,
@@ -194,7 +195,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     private calendarApi: CalendarApi,
     private habitApi: HabitApi,
     private navigationContext: NavigationContextService,
-    private authService: AuthService
+    private authService: AuthService,
+    private profileSelector: ProfileSelectorService
   ) { }
 
   get navigatorActions(): Array<{ type: 'edit' | 'icon', src?: string, alt?: string }> {
@@ -565,8 +567,23 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     // Debug: show computed values to help diagnose server mismatch
     try {
       console.log('[Submit Debug] isChild=', this.isChild, 'isPrivate=', this.isPrivate, 'sharedWithParent=', (this.isChild ? !this.isPrivate : false));
-      console.log('[Submit Debug] Payload:', JSON.stringify(payload, null, 2));
+      console.log('[Submit Debug] Payload before forUserId:', JSON.stringify(payload, null, 2));
     } catch (e) { /* ignore logging errors */ }
+
+    // Add forUserId to payload
+    // Priority: 1) Child selected by parent, 2) Current user ID
+    const selectedChildId = this.profileSelector.getChildId();
+    const currentUserId = this.authService.getUserId();
+    const forUserId = selectedChildId || currentUserId;
+
+    console.log('[forUserId] selectedChildId:', selectedChildId, 'currentUserId:', currentUserId, 'final forUserId:', forUserId);
+
+    if (forUserId) {
+      payload.forUserId = forUserId;
+      console.log('[forUserId] Added to payload:', forUserId);
+    } else {
+      console.log('[forUserId] Warning: No forUserId available');
+    }
 
     if (this.currentActive === 'tasks') {
       this.isSubmitting = true;
