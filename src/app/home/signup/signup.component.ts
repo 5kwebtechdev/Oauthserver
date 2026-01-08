@@ -373,8 +373,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
             this.errorMessage = err.error.message;
             this.core.triggerToasrt(err.error.message);
           } else if (typeof err?.error === 'string') {
-            this.errorMessage = err.error;
-            this.core.triggerToasrt(err.error);
+            // Sometimes backend returns a JSON string body; try to parse and extract `message`.
+            try {
+              const parsed = JSON.parse(err.error);
+              const msg = parsed?.message || parsed?.error?.message || err.error;
+              this.errorMessage = msg;
+              this.core.triggerToasrt(msg);
+            } catch (e) {
+              this.errorMessage = err.error;
+              this.core.triggerToasrt(err.error);
+            }
           } else {
             this.errorMessage = 'Failed to send OTP. Status: ' + (err?.status || 'unknown');
             this.core.triggerToasrt(this.errorMessage);
@@ -421,7 +429,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           } else if (err?.error?.message) {
             msg = err.error.message;
           } else if (typeof err?.error === 'string') {
-            msg = err.error;
+            try {
+              const parsed = JSON.parse(err.error);
+              msg = parsed?.message || parsed?.error?.message || err.error;
+            } catch (e) {
+              msg = err.error;
+            }
           } else {
             msg = 'Failed to send OTP. Status: ' + (err?.status || 'unknown');
           }
@@ -684,9 +697,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
     } else {
     }
-  } openBirthdayPickerNow() {
-    // explicitly open the birthday picker only when user clicks the input
-    this.openBirthdayPicker = true;
+  }
+
+  openBirthdayPickerNow() {
+    // Force a toggled change so child sees a new `showTrigger` value even
+    // if it was previously left `true` when the picker was closed without selection.
+    this.openBirthdayPicker = false;
+    // Small timeout ensures Angular processes the change and triggers ngOnChanges
+    setTimeout(() => {
+      this.openBirthdayPicker = true;
+    }, 50);
   }
 
   birthdayChanged(date: any) {
@@ -1046,7 +1066,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         } else if (err?.error?.message) {
           this.errorMessage = err.error.message;
         } else if (typeof err?.error === 'string') {
-          this.errorMessage = err.error;
+          try {
+            const parsed = JSON.parse(err.error);
+            this.errorMessage = parsed?.message || parsed?.error?.message || err.error;
+          } catch (e) {
+            this.errorMessage = err.error;
+          }
         } else {
           this.errorMessage = 'Incorrect OTP. Please try again.';
         }
@@ -1116,7 +1141,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         } else if (err?.error?.message) {
           msg = err.error.message;
         } else if (typeof err?.error === 'string') {
-          msg = err.error;
+          try {
+            const parsed = JSON.parse(err.error);
+            msg = parsed?.message || parsed?.error?.message || err.error;
+          } catch (e) {
+            msg = err.error;
+          }
         } else {
           msg = 'Failed to resend OTP. Please try again.';
         }

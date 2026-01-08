@@ -38,9 +38,9 @@ export class MindfulCoinsStatsComponent {
       case 'coins':
         return this.userCoins ?? 0;
       case 'trophy':
-        return this.userStreaks ?? 0;
-      case 'streak':
         return this.userDays ?? 0;
+      case 'streak':
+        return this.userStreaks ?? 0;
       case 'badges':
         return this.userBadges ?? 0;
       case 'success':

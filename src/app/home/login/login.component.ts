@@ -149,21 +149,35 @@ export class LoginComponent implements OnInit, OnDestroy {
             errorType: error?.constructor?.name
           });
 
-          // Handle different error scenarios
-          // Check for ProgressEvent (Android network failures) or status 0
+          // Handle different error scenarios - just set loginError, don't navigate
           if (error instanceof ProgressEvent || (error && error.type === 'error' && error.target)) {
             this.loginError = 'Network error. Cannot reach server. Check connection and server availability.';
-          } else if (error.status === 401) {
-            this.loginError = 'Invalid email/phone or password. Please try again.';
+          } else if (error.status === 401 || error.status === 403) {
+            // 403 Forbidden is also used for invalid credentials
+            if (error.error?.message) {
+              this.loginError = error.error.message;
+            } else {
+              this.loginError = 'Invalid email/phone or password. Please try again.';
+            }
           } else if (error.status === 404) {
             this.loginError = 'User not found. Please check your credentials.';
           } else if (error.status === 0 || !error.status) {
             this.loginError = 'Cannot connect to server at: ' + (error.url || 'API endpoint');
           } else if (error.error?.message) {
+            // Priority: use server's message field directly
             this.loginError = error.error.message;
+          } else if (typeof error.error === 'string') {
+            // Try to parse if error is a JSON string
+            try {
+              const parsed = JSON.parse(error.error);
+              this.loginError = parsed?.message || parsed?.error?.message || error.error;
+            } catch (e) {
+              this.loginError = error.error;
+            }
           } else {
             this.loginError = 'Error (status ' + error.status + '). Please try again.';
           }
+          // DO NOT NAVIGATE - just show error message on the page
         }
       });
     }

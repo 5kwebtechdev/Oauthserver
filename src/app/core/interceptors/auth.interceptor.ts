@@ -69,8 +69,11 @@ export class AuthInterceptor implements HttpInterceptor {
             console.warn('[AuthInterceptor] Unauthorized - Session expired, logging out');
             this.authService.logout();
           } else if (error.status === 403) {
-            console.warn('[AuthInterceptor] Forbidden - Access denied');
-            this.router.navigate(['/home']);
+            // Don't redirect on 403 for login endpoint - let component handle it
+            if (!error.url?.includes('/auth/login')) {
+              console.warn('[AuthInterceptor] Forbidden - Access denied');
+              this.router.navigate(['/home']);
+            }
           }
 
           return throwError(() => error);

@@ -71,11 +71,6 @@
               password?</a>
           </div>
 
-          <!-- Show error message if login fails -->
-          <div class="error-message" *ngIf="loginError">
-            {{ loginError }}
-          </div>
-
           <!-- Remember Me checkbox (for web users - extends session to 30 days) -->
           <div class="remember-me-item">
             <ion-checkbox [(ngModel)]="rememberMe" [ngModelOptions]="{standalone: true}"></ion-checkbox>
@@ -85,7 +80,12 @@
           <mindful-button type="orange-onboard" [text]="loading ? 'Logging in...' : 'Login'"
             [disabled]="!isLoginFormValid() || loading" (click)="onSubmit()">
           </mindful-button>
-          <button type="submit" style="display:none"></button>
+
+          <div class="error-message" *ngIf="loginError">
+            {{ loginError }}
+          </div>
+
+          <button type="submit" style="display:none">helo</button>
 
         </form>
       </div>
