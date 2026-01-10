@@ -139,6 +139,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   originalHabit: any = null;
   isSubmitting = false;
   attemptedSubmit = false;
+  // Server-side validation message (e.g., duplicate time/date)
+  serverErrorMessage = '';
   showDaySelectionError = false;
   errors = {
     title: false, time: false, date: false, notes: false, tag: false,
@@ -446,6 +448,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
 
   submit() {
     this.attemptedSubmit = true;
+    // clear any previous server-side message
+    this.serverErrorMessage = '';
     Object.keys(this.errors).forEach(k => (this.errors as any)[k] = false);
 
     const validations = {
@@ -600,7 +604,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
               this.navigationContext.navigateBack({ updatedHabit, showSingleMode: true, initialTab: 'tasks' });
             } finally { this.isSubmitting = false; }
           },
-          error: (err) => { this.isSubmitting = false; console.error('Failed to update task', err); alert('Failed to update task. Please try again.'); }
+          error: (err) => { this.isSubmitting = false; console.error('Failed to update task', err); this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to update task. Please try again.'; }
         });
       } else {
         this.taskApi.createTask(payload).subscribe({
@@ -616,7 +620,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
           error: (err) => {
             this.isSubmitting = false;
             console.error('Failed to create task', err);
-            alert(`Failed to create task: ${err?.error?.message || err?.message || 'Unknown error'}. Please try again.`);
+            this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to create task. Please try again.';
           }
         });
       }
@@ -667,7 +671,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
               this.navigationContext.navigateBack({ updatedHabit, showSingleMode: true });
             } finally { this.isSubmitting = false; }
           },
-          error: (err) => { this.isSubmitting = false; console.error('Failed to update habit', err); alert('Failed to update habit. Please try again.'); }
+          error: (err) => { this.isSubmitting = false; console.error('Failed to update habit', err); this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to update habit. Please try again.'; }
         });
       } else {
         this.habitApi.createHabit(payload).subscribe({
@@ -679,7 +683,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
               this.navigationContext.navigateBack({ newHabit: createdHabit, showSingleMode: true });
             } finally { this.isSubmitting = false; }
           },
-          error: (err) => { this.isSubmitting = false; console.error('Failed to create habit', err); alert('Failed to create habit. Please try again.'); }
+          error: (err) => { this.isSubmitting = false; console.error('Failed to create habit', err); this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to create habit. Please try again.'; }
         });
       }
     }

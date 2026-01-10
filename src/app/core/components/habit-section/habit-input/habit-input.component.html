@@ -141,6 +141,7 @@
 
 <ng-template #submitSection let-btnType="btnType" let-btnTypeFaded="btnTypeFaded" let-itemType="itemType">
   <div class="submit-row">
+    <div *ngIf="serverErrorMessage && (currentActive === 'habits' || currentActive === 'tasks')" class="field-error" style="margin-top: -24px;" role="alert">{{serverErrorMessage}}</div>
     <mindful-button [type]="isFormComplete ? btnType : btnTypeFaded"
       [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update ' + itemType : 'Create ' + itemType)"
       large [disabled]="isSubmitting" (click)="submit()"></mindful-button>

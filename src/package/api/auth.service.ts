@@ -171,6 +171,43 @@ export class AuthService {
 
         return this.http.get<FamilyDetailsResponse>(url, { headers });
     }
+
+    /**
+     * Get family details for a specific user (optional forUserId query param).
+     * Example: /v1/auth/family-details?forUserId=88
+     */
+    getFamilyDetailsForUser(forUserId?: number): Observable<FamilyDetailsResponse> {
+        let url = `${this.apiUrl}/v1/auth/family-details`;
+        if (typeof forUserId === 'number') {
+            url += `?forUserId=${forUserId}`;
+        }
+
+        const userToken = this.getToken();
+
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`
+        });
+
+        return this.http.get<FamilyDetailsResponse>(url, { headers });
+    }
+
+    /**
+     * Remove a member from the family
+     * Endpoint: POST {{host}}/family/remove
+     * Payload: { memberId: number }
+     */
+    removeMemberFromFamily(memberId: number): Observable<any> {
+        const url = `${this.apiUrl}/family/remove`;
+        const userToken = this.getToken();
+
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`
+        });
+
+        return this.http.post<any>(url, { memberId }, { headers });
+    }
 }
 
 export interface EditProfilePayload {

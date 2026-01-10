@@ -40,25 +40,6 @@ export class UserProfileComponent implements OnInit, OnChanges {
   // popup state for confirming logout
   showLogoutPopup: boolean = false;
 
-  // avatar picker popup state
-  showAvatarPicker: boolean = false;
-
-  // Avatars (reuse same assets as signup)
-  public avatars = [
-    { key: 1, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png' },
-    { key: 2, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female2.png' },
-    { key: 3, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female3.png' },
-    { key: 4, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female4.png' },
-    { key: 5, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female5.png' },
-    { key: 6, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female6.png' },
-    { key: 7, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png' },
-    { key: 8, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male2.png' },
-    { key: 9, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male3.png' },
-    { key: 10, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male4.png' },
-    { key: 11, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male5.png' },
-    { key: 12, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male6.png' },
-  ];
-
   // Family data
   creator: FamilyMember | null = null;
   members: FamilyMember[] = [];
@@ -332,40 +313,6 @@ export class UserProfileComponent implements OnInit, OnChanges {
 
   closeLogoutPopup() {
     this.showLogoutPopup = false;
-  }
-
-  /** Avatar picker methods */
-  openAvatarPicker(event?: Event) {
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    this.showAvatarPicker = true;
-  }
-
-  closeAvatarPicker() {
-    this.showAvatarPicker = false;
-  }
-
-  get avatarsToShow() {
-    const gender = (this.user && this.user.gender) ? this.user.gender : 'male';
-    return this.avatars.filter(a => a.gender === gender).slice(0, 6);
-  }
-
-  selectAvatar(avatar: any) {
-    if (!avatar) return;
-    // Update local view
-    if (!this.user) this.user = {};
-    this.user.avatarUrl = avatar.value;
-
-    // Persist using UserService so other parts of app update
-    try {
-      this.userService.updateUserAvatar(avatar.value, `avatar${avatar.key}`);
-    } catch (e) {
-      console.error('Failed to update avatar in UserService', e);
-    }
-
-    this.closeAvatarPicker();
   }
 
   ngOnChanges(changes: SimpleChanges) {

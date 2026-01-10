@@ -43,6 +43,23 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   // gender selected in template. 'Male' | 'Female' | null (match backend format)
   gender: 'Male' | 'Female' | null = null;
 
+  // Avatar selection
+  avatarSelected: any = null;
+  public avatars = [
+    { key: 1, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png' },
+    { key: 2, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female2.png' },
+    { key: 3, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female3.png' },
+    { key: 4, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female4.png' },
+    { key: 5, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female5.png' },
+    { key: 6, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female6.png' },
+    { key: 7, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png' },
+    { key: 8, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male2.png' },
+    { key: 9, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male3.png' },
+    { key: 10, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male4.png' },
+    { key: 11, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male5.png' },
+    { key: 12, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male6.png' },
+  ];
+
   // Birthday picker control
   openBirthdayPicker = false;
   // Account relationship: 'child' | 'parent' | 'self'
@@ -113,7 +130,9 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     if (userProfile) {
       // Populate form with existing data
       this.fullName = userProfile.name || '';
-      this.gender = userProfile.gender === 'male' ? 'Male' : userProfile.gender === 'female' ? 'Female' : null;
+      // Normalize stored gender values and pre-select on edit
+      const storedGender = userProfile.gender ? String(userProfile.gender).toLowerCase() : '';
+      this.gender = storedGender === 'male' ? 'Male' : storedGender === 'female' ? 'Female' : null;
 
       if (userProfile.dob) {
         this.profileForm.patchValue({ dob: userProfile.dob });
@@ -140,6 +159,15 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       // Store avatar info - avatarName should come from backend avatar object
       this.avatarName = userProfile.avatarName || '';
       this.currentUserData = userProfile;
+
+      // Set initial avatar selection if avatar name matches one of the available avatars
+      if (userProfile.avatarName) {
+        const avatarKey = userProfile.avatarName.replace('avatar', '');
+        const numKey = parseInt(avatarKey, 10);
+        if (!isNaN(numKey) && numKey > 0) {
+          this.avatarSelected = numKey;
+        }
+      }
 
       // Determine accountType from stored relationship (CHILD/PARENT/SELF from API)
       if (userProfile.relationship) {
@@ -200,9 +228,11 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       email: this.profileForm.get('email')!.value!.trim()
     };
 
-    // Only include avatarName if user has provided one and it's different from current
-    // Note: avatarName should be a reference to backend avatar (e.g., 'avatar1'), not free text
-    if (this.avatarName?.trim() && this.avatarName.trim() !== this.currentUserData?.avatarName) {
+    // Include selected avatar if user has chosen one
+    if (this.avatarSelected) {
+      payload.avatarName = `avatar${this.avatarSelected}`;
+    } else if (this.avatarName?.trim() && this.avatarName.trim() !== this.currentUserData?.avatarName) {
+      // Fallback to avatarName if it's different from current
       payload.avatarName = this.avatarName.trim();
     }
 
@@ -460,5 +490,31 @@ export class EditProfileComponent implements OnInit, OnDestroy {
         })
     );
   }
-}
 
+  /**
+   * Get filtered avatars for the selected gender
+   */
+  get avatarsFiltered(): any[] {
+    // Prefer the currently selected gender in the form. If that's empty,
+    // fallback to the loaded user data gender so avatars appear on edit.
+    let selectedGender = this.gender;
+    if (!selectedGender && this.currentUserData && this.currentUserData.gender) {
+      const g = String(this.currentUserData.gender).toLowerCase();
+      if (g === 'male') selectedGender = 'Male';
+      if (g === 'female') selectedGender = 'Female';
+    }
+
+    if (!selectedGender) return [];
+    return this.avatars.filter(a => a.gender === selectedGender);
+  }
+
+  /**
+   * Select an avatar and update the profile
+   */
+  selectAvatar(avatar: any): void {
+    if (!avatar) return;
+    this.avatarSelected = avatar.key;
+    // Log the selection
+    console.log('[EditProfile] Avatar selected:', avatar.key, avatar.value);
+  }
+}

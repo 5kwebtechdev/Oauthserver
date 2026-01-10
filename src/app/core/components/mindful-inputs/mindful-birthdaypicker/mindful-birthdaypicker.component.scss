@@ -88,14 +88,15 @@
 // removed empty ruleset
 
 .highlight-bar {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-20px);
-  height: 40px;
-  width: 90%;
-  pointer-events: none;
+ 
   border-radius: 10px;
   background: #EE6621;
+      position: absolute;
+    top: 42%;
+    transform: translateY(-20px);
+    height: 50px;
+    width: 90%;
+    pointer-events: none;
 }
 
 /* highlight for variant */

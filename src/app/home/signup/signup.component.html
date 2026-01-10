@@ -222,7 +222,7 @@
           <h4>Date of Birth <span *ngIf="computedAge !== null" class="age-count">{{computedAge}} years old</span></h4>
           <div class="input-group">
             <!--            <input  formControlName="dob" type="text" placeholder="Date of Birth" />-->
-            <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" [showTrigger]="openBirthdayPicker"
+            <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" (closed)="openBirthdayPicker = false" [showTrigger]="openBirthdayPicker"
               style="width: 100%">
               <input type="text" formControlName="dob" readonly (click)="openBirthdayPickerNow()" placeholder="Date of Birth" />
             </mindful-birthdaypicker>

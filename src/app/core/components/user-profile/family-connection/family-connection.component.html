@@ -6,15 +6,20 @@
 
         <div class="family-mode d-flex flex-column gap-3" *ngIf="!isSelfUser()">
             <section class="family-container-main" *ngIf="!isLoading">
-                <div class="family-code-container">
+                <div class="family-code-container" *ngIf="isParentUser()">
                     <div class="family-code-label">
                         <p>Your Family Code</p>
-                        <h1>{{ familyCode }}<svg xmlns="http://www.w3.org/2000/svg" width="13" height="15"
+                        <h1 (click)="copyFamilyCode()" role="button" tabindex="0"
+                            (keydown.enter)="copyFamilyCode()" (keydown.space)="copyFamilyCode()"
+                            [attr.aria-label]="'Copy family code ' + familyCode" style="cursor: pointer;">
+                            {{ familyCode }}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="15"
                                 viewBox="0 0 13 15" fill="none">
                                 <path
                                     d="M11.3333 12H4C3.63333 12 3.31944 11.8694 3.05833 11.6083C2.79722 11.3472 2.66667 11.0333 2.66667 10.6667V1.33333C2.66667 0.966667 2.79722 0.652778 3.05833 0.391667C3.31944 0.130556 3.63333 0 4 0H8.66667L12.6667 4V10.6667C12.6667 11.0333 12.5361 11.3472 12.275 11.6083C12.0139 11.8694 11.7 12 11.3333 12ZM8 4.66667V1.33333H4V10.6667H11.3333V4.66667H8ZM1.33333 14.6667C0.966667 14.6667 0.652778 14.5361 0.391667 14.275C0.130556 14.0139 0 13.7 0 13.3333V4H1.33333V13.3333H8.66667V14.6667H1.33333Z"
                                     fill="#282527" />
-                            </svg></h1>
+                            </svg>
+                        </h1>
                     </div>
                     <div class="hori-divider">
                         <svg xmlns="http://www.w3.org/2000/svg" width="1" height="56" viewBox="0 0 1 56" fill="none">
@@ -55,7 +60,7 @@
                                     <circle cx="2" cy="2.5" r="2"
                                         [attr.fill]="familyStatus === 'ACTIVE' ? '#4CAF50' : '#999'" />
                                 </svg>
-                                <p>{{ familyStatus?.toLowerCase() || 'active' }}</p>
+                                <p>{{ (familyStatus || 'active').toLowerCase() }}</p>
                             </div>
                         </div>
 
@@ -104,7 +109,11 @@
                                 [class.parent]="m.relationship === 'Parent' || m.relationship === 'Co-Parent'" (click)="toggleMemberActive(m)">
                                 {{ getBadgeText(m) }}
                             </div>
-                            <a *ngIf="isParentUser()">Remove</a>
+                            <a *ngIf="isParentUser()" (click)="removeMember(m)" role="button" tabindex="0"
+                                (keydown.enter)="removeMember(m)" (keydown.space)="removeMember(m)"
+                                [attr.aria-label]="'Remove ' + m.name + ' from family'" style="cursor: pointer;">
+                                Remove
+                            </a>
                         </div>
                     </section>
 
@@ -116,9 +125,9 @@
                 <p>Loading family details...</p>
             </section>
 
-            <div class="delete-family" *ngIf="isParentUser()">
+            <!-- <div class="delete-family" *ngIf="isParentUser()">
                 <mindful-button type="bronze" large text="Delete Family" (click)="onDeleteFamily()"></mindful-button>
-            </div>
+            </div> -->
         </div>
 
         <!-- removed / self mode message -->
@@ -224,7 +233,7 @@
                     </svg>
                 </div>
 
-                <div class="family-code-container">
+                <div class="family-code-container" *ngIf="isParentUser()">
 
                     <div class="family-code-label">
                         <p>Facing errors?<br>Try entering the code instead.</p>
@@ -248,5 +257,19 @@
             </div>
         </div>
     </div>
+
+    <!-- Remove Member Confirmation Popup -->
+    <app-mindful-popup 
+        *ngIf="showRemovePopup && memberToRemove"
+        [isVisible]="showRemovePopup"
+        [image]="'assets/Images-Transparent/Image-Parents-Family.png'"
+        [heading]="getRemoveHeading()"
+        [subtitle]="'Their account will be converted to self and you will no longer see their progress'"
+        [primaryCTA]="{ text: 'Remove', buttonStyle: 'bronze', buttonLarge: true }"
+        [secondaryCTA]="{ text: 'Cancel', buttonStyle: 'bronze-transparent', buttonLarge: true }"
+        [backdrop]="true"
+        (primaryAction)="confirmRemoveMember()"
+        (secondaryAction)="cancelRemoveMember()">
+    </app-mindful-popup>
 
 </ion-content>
