@@ -142,8 +142,8 @@ profile-content-card {
   display: flex;
   align-items: center;
   justify-content: center;
-  top: -24vh;
-
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
 }
 
 .avatar-picker-card {
@@ -158,6 +158,7 @@ profile-content-card {
   gap: 24px;
   max-width: 520px;
   width: calc(100% - 48px);
+  z-index: 1001;
 }
 
 .avatar-grid {

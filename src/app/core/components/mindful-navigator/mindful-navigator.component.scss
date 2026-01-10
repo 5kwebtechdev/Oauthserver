@@ -1,6 +1,6 @@
 .navigator-root {
   position: relative;
-  padding-top: env(safe-area-inset-top, 0);
+  padding-top: env(safe-area-inset-top, );
   padding-top: constant(safe-area-inset-top);
   display: block;
 }

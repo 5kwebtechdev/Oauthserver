@@ -5,10 +5,10 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
 import { ProfileFactsComponent, FaqItem, PROFILE_FAQS } from '../profile-facts/profile-facts.component';
 import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
 import { InstructioListComponent } from './instructio-list';
 import { AuthService, FamilyInfo, FamilyMember } from '../../../../../package/api/auth.service';
 import { take } from 'rxjs/operators';
@@ -16,7 +16,7 @@ import { AuthService as CoreAuthService } from '../../../services/auth.service';
 @Component({
   standalone: true,
   selector: 'family-connection',
-  imports: [CommonModule, FormsModule, IonicModule, QRCodeComponent, MindfulNavigatorComponent, MindfulBadgeComponent, ProfileFactsComponent, MindfulPetComponent, MindfulButtonComponent, InstructioListComponent],
+  imports: [CommonModule, FormsModule, IonicModule, QRCodeComponent, MindfulNavigatorComponent, ProfileFactsComponent, MindfulPetComponent, MindfulButtonComponent, MindfulPopupComponent, InstructioListComponent],
   templateUrl: './family-connection.component.html',
   styleUrls: ['./family-connection.component.scss']
 })
@@ -32,6 +32,8 @@ export class FamilyConnectionComponent implements OnInit {
   isLoading: boolean = true;
   showQrModal: boolean = false;
   familyFaqs: FaqItem[] = [];
+  showRemovePopup: boolean = false;
+  memberToRemove: FamilyMember | null = null;
 
   constructor(private router: Router, private authService: AuthService, private coreAuthService: CoreAuthService) { }
 
@@ -273,20 +275,78 @@ export class FamilyConnectionComponent implements OnInit {
   }
 
   /**
-   * Remove a member from the local view (placeholder for actual API call).
+   * Open the remove member confirmation popup.
    */
   removeMember(member: FamilyMember): void {
     if (!this.isParentUser()) return;
+    this.memberToRemove = member;
+    this.showRemovePopup = true;
+  }
 
-    const ok = confirm(`Remove ${member.name} from family?`);
-    if (!ok) return;
+  /**
+   * Confirm and proceed with removing the member from the family.
+   */
+  confirmRemoveMember(): void {
+    if (!this.memberToRemove) return;
 
-    // Optimistically remove from local list
+    const member = this.memberToRemove;
+    this.showRemovePopup = false;
+
+    // Show loading state while removing
+    const originalMembers = this.members;
     this.members = this.members.filter(m => m.userId !== member.userId);
-    console.log('[FamilyConnection] Member removed locally:', member);
 
-    // TODO: call backend API to remove the member from the family
-    // e.g. this.authService.removeMember(member.userId).subscribe(...)
+    // Call backend API to remove the member from the family
+    this.authService.removeMemberFromFamily(member.userId).pipe(take(1)).subscribe({
+      next: (response) => {
+        console.log('[FamilyConnection] Member removed successfully:', member);
+        this.memberToRemove = null;
+
+        // Refresh family details by requesting the server endpoint with forUserId
+        // (matches: http://.../v1/auth/family-details?forUserId=88)
+        this.authService.getFamilyDetailsForUser(member.userId).pipe(take(1)).subscribe({
+          next: (resp) => {
+            if (resp && resp.family) {
+              const f = resp.family as any;
+              this.familyName = f.familyName || this.familyName;
+              this.familyStatus = f.status || this.familyStatus;
+              this.createdOn = f.createdOn || this.createdOn;
+              this.creator = f.creator || this.creator;
+              this.members = f.members || this.members;
+              this.familyCode = f.familyCode || this.familyCode;
+            }
+          },
+          error: (err) => {
+            console.error('[FamilyConnection] Failed to refresh family details after removal', err);
+            // fallback to local reload
+            try { window.location.reload(); } catch (e) { this.loadFamilyDetails(); }
+          }
+        });
+      },
+      error: (error) => {
+        console.error('[FamilyConnection] Error removing member:', error);
+        // Restore the member to the list if the API call fails
+        this.members = originalMembers;
+        this.memberToRemove = null;
+        // Do not show blocking window.alert; keep console error and UI restore.
+      }
+    });
+  }
+
+  /**
+   * Cancel the remove member operation and close the popup.
+   */
+  cancelRemoveMember(): void {
+    this.showRemovePopup = false;
+    this.memberToRemove = null;
+  }
+
+  /**
+   * Return the heading text for the remove-member popup.
+   */
+  getRemoveHeading(): string {
+    const name = this.memberToRemove?.name || '';
+    return `Are you sure you want to remove "${name}" from your family?`;
   }
 
 

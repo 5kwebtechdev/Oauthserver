@@ -17,7 +17,7 @@
           <div class="validation-text-age" [ngClass]="{ 'invalid': ageError }">{{ calculatedAge }}</div>
         </div>
         <div class="input-container">
-          <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" [showTrigger]="openBirthdayPicker"
+          <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" (closed)="openBirthdayPicker = false" [showTrigger]="openBirthdayPicker"
             [variant]="'white-green'" style="width: 100%">
             <input class="dob-input" [ngClass]="{ 'invalid': ageError }" type="text" formControlName="dob"
               (click)="openBirthdayPickerNow()" placeholder="Date of Birth" readonly />
@@ -40,6 +40,23 @@
           </div>
         </div>
       </div>
+
+      <!-- Avatar Picker Section (only for child/self accounts) -->
+      <div class="edit-details" *ngIf="(gender || currentUserData?.gender) && accountType !== 'parent'">
+        <div class="input-heading">
+          <h2 class="heading-text">Choose an avatar</h2>
+          <div class="validation-text">Pick your profile picture</div>
+        </div>
+        <div class="avatar-grid">
+          <ng-container *ngFor="let avatar of avatarsFiltered">
+            <div class="avatar-item" (click)="selectAvatar(avatar)"
+              [ngClass]="avatarSelected === avatar.key ? 'active' : null">
+              <img [src]="avatar.value" [alt]="'Avatar ' + avatar.key" />
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
       <div class="edit-details">
         <div class="input-heading">
           <h2 class="heading-text">Phone number</h2>
