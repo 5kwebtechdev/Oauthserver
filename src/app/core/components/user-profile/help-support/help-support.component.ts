@@ -25,10 +25,14 @@ export class HelpSupportComponent implements OnInit {
   securityFaqs: FaqItem[] = [];
   troubleshootingFaqs: FaqItem[] = [];
 
-  constructor(private coreAuthService: CoreAuthService) {}
+  constructor(private coreAuthService: CoreAuthService) { }
 
   toggleContactForm() {
     this.showContactForm = !this.showContactForm;
+  }
+
+  openChat() {
+    this.toggleContactForm();
   }
 
   onSubmitContact() {

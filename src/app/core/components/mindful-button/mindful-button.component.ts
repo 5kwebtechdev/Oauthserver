@@ -47,17 +47,21 @@ export class MindfulButtonComponent {
     return this._count;
   }
 
+  @Input()
+  size: 'full' | 'large' | 'medium' | 'small' = 'small';
+
+  // Legacy boolean inputs for backward compatibility
   @Input({ transform: booleanAttribute })
-  @CoerceBoolean()
-  medium = false;
+  set full(value: boolean) { if (value) this.size = 'full'; }
 
   @Input({ transform: booleanAttribute })
-  @CoerceBoolean()
-  large = false;
+  set large(value: boolean) { if (value) this.size = 'large'; }
 
   @Input({ transform: booleanAttribute })
-  @CoerceBoolean()
-  small = false;
+  set medium(value: boolean) { if (value) this.size = 'medium'; }
+
+  @Input({ transform: booleanAttribute })
+  set small(value: boolean) { if (value) this.size = 'small'; }
 
   @Input({ transform: booleanAttribute })
   @CoerceBoolean()
@@ -76,9 +80,7 @@ export class MindfulButtonComponent {
   get classMap(): Record<string, boolean> {
     return {
       ...(this.type ? { [this.type]: true } : {}),
-      small: this.small,
-      medium: this.medium,
-      large: this.large,
+      [this.size]: true,
       disabled: this.disabled,
       correct: this.correct,
       incorrect: this.incorrect

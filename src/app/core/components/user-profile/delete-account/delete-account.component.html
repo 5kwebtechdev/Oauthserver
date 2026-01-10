@@ -4,24 +4,45 @@
   <div class="delete-account-container">
     <span class="warning">This action is permanent. Think twice!</span>
 
-      <div class="what-happens">
-        <h1>What happens when I delete my data?</h1>
-        <div class="explanation">
-          <div class="explanation-list"><span class="list-count">1</span><p>All habits, progress, and pets erased.</p></div>
-          <div class="explanation-list"><span class="list-count">2</span><p>Parent connection and rewards removed.</p></div>
-          <div class="explanation-list"><span class="list-count">3</span><p>Account becomes inactive.</p></div>
-          <div class="explanation-list"><span class="list-count">4</span><p>Data cannot be recovered. </p></div>
-        </div>
-        
-      </div> 
-      <div class="for-your-safety">
-        <h1>For your safety</h1>
-        <div class="explanation">
-          <div class="explanation-list"><span class="list-count">1</span><p>All habits, progress, and pets erased.</p></div>
-          <div class="explanation-list"><span class="list-count">2</span><p>Parent connection and rewards removed.</p></div>
+      <!-- Child/Self Account Text -->
+      <ng-container *ngIf="!isParentUser()">
+        <div class="what-happens">
+          <h1>What happens when I delete my data?</h1>
+          <div class="explanation">
+            <div class="explanation-list"><span class="list-count">1</span><p>All habits, progress, and pets erased.</p></div>
+            <div class="explanation-list"><span class="list-count">2</span><p>Parent connection and rewards removed.</p></div>
+            <div class="explanation-list"><span class="list-count">3</span><p>Account becomes inactive.</p></div>
+            <div class="explanation-list"><span class="list-count">4</span><p>Data cannot be recovered. </p></div>
           </div>
-        
-      </div> 
+        </div> 
+        <div class="for-your-safety">
+          <h1>For your safety</h1>
+          <div class="explanation">
+            <div class="explanation-list"><span class="list-count">1</span><p>All habits, progress, and pets erased.</p></div>
+            <div class="explanation-list"><span class="list-count">2</span><p>Parent connection and rewards removed.</p></div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Parent Account Text -->
+      <ng-container *ngIf="isParentUser()">
+        <div class="what-happens">
+          <h1>What happens when I delete my data?</h1>
+          <div class="explanation">
+            <div class="explanation-list"><span class="list-count">1</span><p>All family members will be disconnected and converted to self accounts.</p></div>
+            <div class="explanation-list"><span class="list-count">2</span><p>Parental controls, reports, and coin assignments are erased.</p></div>
+            <div class="explanation-list"><span class="list-count">3</span><p>Your parental account becomes inactive.</p></div>
+            <div class="explanation-list"><span class="list-count">4</span><p>Data cannot be recovered. </p></div>
+          </div>
+        </div> 
+        <div class="for-your-safety">
+          <h1>For your family's safety</h1>
+          <div class="explanation">
+            <div class="explanation-list"><span class="list-count">1</span><p>All linked family members will be notified of account disconnection.</p></div>
+            <div class="explanation-list"><span class="list-count">2</span><p>Some information may be retained if necessary to comply with local laws.</p></div>
+          </div>
+        </div>
+      </ng-container> 
 
       <div class="consent">
         <ion-checkbox slot="start" [(ngModel)]="consentChecked"></ion-checkbox>
@@ -29,9 +50,9 @@
       </div>
 
       <!--delete button-->
-        <div class="delete-action">
-          <mindful-button type="bronze" text="Delete my data" [large]="true" [disabled]="!consentChecked" style="display:block; width:100%; margin-top:16px;" (click)="onDelete()"></mindful-button>
+        <div class="delete-action w-100">
+          <mindful-button type="bronze" text="Delete my data" size="full" [disabled]="!consentChecked" (click)="onDelete()"></mindful-button>
         </div>
-      
+      <p>Need help? Contact us at support <a href="mailto:support&#64;superme.com">support&#64;superme.com</a></p>
   </div>
 </ion-content>

@@ -16,35 +16,19 @@
     
   </div>
   <div class="terms-and-conditions" *ngIf="selectedTab==='terms' || !selectedTab">
-        <h1>What do we collect?</h1>
-        <p>[App Name] is designed to help you build healthy habits while having fun with your virtual pet. By using this app, you agree to:
-<br><br>
-Use the app responsibly (no bullying, cheating, or harmful behavior).
-<br><br>
-Be at least 11 years old or have parental consent if younger.
-<br><br>
-Let parents manage your account’s privacy settings and purchases.
-<br><br>
-Follow community guidelines to keep the app safe for everyone.
-<br><br>
-We may update these terms occasionally. Continued use means you accept the changes. Violating rules may result in account suspension.</p>
+    <h1>Your Privacy, Our Promise. Learn how we collect, use, and protect your personal information to keep you and your family safe.</h1>
+    <p>Last Updated: January 15, 2026</p>
+    <h2>
+      <mindful-view-all text="Read the complete Privacy Policy" (clicked)="openFullPolicies()"></mindful-view-all>
+    </h2>
     </div>
 
     <div class="privacy-policy" *ngIf="selectedTab==='privacy'">
-        <h1>What do we collect?</h1>
-        <p>We care deeply about your privacy. Here’s how we protect you:
-
-Data We Collect: <br><br>Habits, progress, device info (no location), and details like parent emails for approvals.
-<br><br>
-Why? To personalize your pet’s growth, improve the app, and send you rewards.
-<br><br>
-Parental Control: Parents can review, edit, or delete your data anytime via their linked account.
-<br><br>
-No Ads: We never sell your data to advertisers.
-<br><br>
-Security: Data is encrypted and stored securely.
-<br><br>
-For full details or to request data deletion, email.</p>
+         <h1>Know the rules. These terms outline your rights, responsibilities, and what you can expect when using SuperMe.</h1>
+    <p>Last Updated: January 15, 2026</p>
+    <h2>
+      <mindful-view-all text="Read the complete Terms of Use" (clicked)="openFullPolicies()"></mindful-view-all>
+    </h2>
     </div>
   </div>
 </ion-content>

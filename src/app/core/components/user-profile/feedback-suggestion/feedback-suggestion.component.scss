@@ -17,12 +17,10 @@
 }
 
 p {
-    color: #282527;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 130%;
-    /* 20.8px */
+   color: #282527;
+font-family: Nunito;
+font-size: 16px;
+font-weight: 600;
     margin-bottom: 0px;
 }
 
@@ -40,10 +38,39 @@ p {
     align-items: center;
     gap: 24px;
 
-    img {
-        width: 61px;
-        height: 48px;
-        aspect-ratio: 61/48;
+    .emoji-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+
+        img {
+            width: 61px;
+            height: 48px;
+            aspect-ratio: 61/48;
+            display: block;
+        }
+
+        .tick {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            padding: 5px 4px;
+            border-radius: 8px;
+            background: #4CAF50;
+        }
+
+        &.selected {
+            .tick {
+                display: flex;
+            }
+        }
     }
 }
 
