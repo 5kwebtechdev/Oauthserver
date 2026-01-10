@@ -46,6 +46,7 @@
   font-style: normal;
   font-weight: 500;
   line-height: 130%;
+  transition: border-color 120ms ease-in-out, box-shadow 120ms ease-in-out;
 }
 
 .profile-input::placeholder {
@@ -68,4 +69,18 @@
 
 :host(.has-error) .profile-input {
   border: 2px solid #BB2124;
+}
+
+/* Focus styles: use #4CAF50 for focused input when not in error state */
+.profile-input:focus,
+.profile-input:focus-visible {
+  outline: none;
+  border: 2px solid #4CAF50;
+}
+
+/* Keep explicit error border when host has .has-error */
+:host(.has-error) .profile-input:focus,
+:host(.has-error) .profile-input:focus-visible {
+  border: 2px solid #BB2124;
+  box-shadow: none;
 }

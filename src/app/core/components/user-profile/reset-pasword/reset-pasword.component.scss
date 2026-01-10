@@ -14,3 +14,9 @@
 .button-row {
   padding: 16px;
 }
+
+/* custom toast style for green success (#4CAF50) */
+.green-success-toast {
+  --background: #398f3c;
+  --color: #ffffff;
+}

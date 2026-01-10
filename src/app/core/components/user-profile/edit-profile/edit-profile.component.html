@@ -111,10 +111,9 @@
           [showError]="profileForm.get('email')!.invalid && profileForm.get('email')!.dirty"></profile-edit-input>
       </div>
 
-      <!-- mindful-Button -->
+      <!-- mindful-Button (replaced with disabled variant for testing) -->
       <div class="button-row">
-        <mindful-button type="green" text="Update info" [large]="true" [disabled]="isSubmitting"
-          (click)="saveProfile()"></mindful-button>
+        <mindful-button type="green" text="Update info" [large]="true" disabled></mindful-button>
       </div>
 
     </div>

@@ -4,14 +4,21 @@
 
 .refer-n-earn {
   display: flex;
-  width: 204.123px;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 24px;
-  /* center this block horizontally inside its container */
   margin-left: auto;
   margin-right: auto;
+}
+
+h2,h1, p{
+  color: #282527;
+text-align: center;
+font-family: Nunito;
+font-style: normal;
+font-weight: 600;
+margin: 0;
 }
 
 .refer-container .refer-icon {
@@ -23,14 +30,7 @@
 
   h2 {
     align-self: stretch;
-    color: #282527;
-    text-align: center;
     font-size: 16px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 130%;
-    /* 20.8px */
-    margin-bottom: -15px;
   }
 
   img {
@@ -47,14 +47,8 @@
   align-self: stretch;
 
   h1 {
-    color: #282527;
-    text-align: center;
     font-size: 13px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 130%;
-    /* 16.9px */
-    align-self: stretch;
+
   }
 }
 
@@ -78,13 +72,9 @@
 
   h2 {
     color: #4CAF50;
-    text-align: center;
     font-size: 20px;
-    font-style: normal;
     font-weight: 700;
-    line-height: normal;
     flex: 1 1 auto;
-    margin: 0;
   }
 
   svg {
@@ -103,27 +93,18 @@
   align-items: center;
   gap: 16px;
 
-  h2 {
+  h1 {
     color: #282527;
     font-size: 25px;
-    font-style: normal;
     font-weight: 500;
+    font-family: Fredoka;
 
   }
 }
 
 .steps {
-  color: #282527;
-  font-size: 25px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 140%;
-  /* 35px */
   stroke-width: 0.5px;
   stroke: #282527;
-
-
-  /* visual divider */
   border-bottom: 1px solid rgba(40, 37, 39, 0.4);
   padding-bottom: 8px;
 }
@@ -141,25 +122,14 @@
   gap: 0px;
 
   h2 {
-    color: #282527;
-    text-align: center;
     font-size: 20px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 140%;
-    /* 28px */
     align-self: stretch;
-    margin-bottom: 2px;
   }
 
   p {
-    color: #282527;
-    text-align: center;
     font-size: 16px;
-    font-style: normal;
     font-weight: 500;
-    line-height: 140%;
-    /* 22.4px */
+   opacity: 0.7;
   }
 }
 
