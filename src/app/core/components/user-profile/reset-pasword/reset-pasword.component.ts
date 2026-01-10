@@ -124,7 +124,6 @@ export class ResetPaswordComponent {
     this.validateRetypePassword();
 
     if (this.form.invalid) {
-      this.presentToast('Please fill all fields correctly', 'warning');
       return;
     }
 
