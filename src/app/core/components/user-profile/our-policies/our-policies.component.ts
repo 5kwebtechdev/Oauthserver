@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.component';
 
 @Component({
   selector: 'our-policies',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent],
+  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, ViewAllComponent],
   templateUrl: './our-policies.component.html',
   styleUrls: ['./our-policies.component.scss']
 })

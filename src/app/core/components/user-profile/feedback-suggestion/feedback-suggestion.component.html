@@ -5,27 +5,54 @@
     <div class="feed-sugg">
       <p>1. How happy are you with the app?</p>
       <div class="select-emoji">
-        <img class="mood-img" src="/assets/Images-Transparent/Image-Mood-Very happy.png" alt="Very happy"
-          data-mood="very-happy" role="button" tabindex="0" />
-        <img class="mood-img" src="/assets/Images-Transparent/Image-Mood-Happy.png" alt="Happy" data-mood="happy"
-          role="button" tabindex="0" />
-        <img class="mood-img" src="/assets/Images-Transparent/Image-Mood-Upset.png" alt="Upset" data-mood="upset"
-          role="button" tabindex="0" />
-        <img class="mood-img" src="/assets/Images-Transparent/Image-Mood-Sad.png" alt="Sad" data-mood="sad"
-          role="button" tabindex="0" />
+        <div class="emoji-btn" role="button" tabindex="0" (click)="selectMood('very-happy')" (keydown.enter)="selectMood('very-happy')" (keydown.space)="selectMood('very-happy')" [class.selected]="selectedMood === 'very-happy'">
+          <img class="mood-img" src="/assets/Images-Transparent/Image-Mood-Very happy.png" alt="Very happy" />
+          <span class="tick" aria-hidden="true">
+            <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 3.2L2.46667 4.66667L6.93333 0.2" stroke="#FFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </div>
+
+        <div class="emoji-btn" role="button" tabindex="0" (click)="selectMood('happy')" (keydown.enter)="selectMood('happy')" (keydown.space)="selectMood('happy')" [class.selected]="selectedMood === 'happy'">
+          <img class="mood-img" src="/assets/Images-Transparent/Image-Mood-Happy.png" alt="Happy" />
+          <span class="tick" aria-hidden="true">
+            <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 3.2L2.46667 4.66667L6.93333 0.2" stroke="#FFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </div>
+
+        <div class="emoji-btn" role="button" tabindex="0" (click)="selectMood('upset')" (keydown.enter)="selectMood('upset')" (keydown.space)="selectMood('upset')" [class.selected]="selectedMood === 'upset'">
+          <img class="mood-img" src="/assets/Images-Transparent/Image-Mood-Upset.png" alt="Upset" />
+          <span class="tick" aria-hidden="true">
+            <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 3.2L2.46667 4.66667L6.93333 0.2" stroke="#FFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </div>
+
+        <div class="emoji-btn" role="button" tabindex="0" (click)="selectMood('sad')" (keydown.enter)="selectMood('sad')" (keydown.space)="selectMood('sad')" [class.selected]="selectedMood === 'sad'">
+          <img class="mood-img" src="/assets/Images-Transparent/Image-Mood-Sad.png" alt="Sad" />
+          <span class="tick" aria-hidden="true">
+            <svg width="8" height="6" viewBox="0 0 8 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 3.2L2.46667 4.66667L6.93333 0.2" stroke="#FFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </div>
       </div>
     </div>
 
     <div class="feed-sugg">
       <p>2. Tell us more about our app?</p>
-      <profile-edit-input placeholder="What’s working? What’s not?" type="text"></profile-edit-input>
+      <profile-edit-input placeholder="What’s working? What’s not?" type="text" [value]="details1" (valueChange)="details1 = $event"></profile-edit-input>
     </div>
 
     <div class="feed-sugg">
       <p>3. What would you like to see in our app?</p>
-      <profile-edit-input placeholder="Write down your thoughts" type="text"></profile-edit-input>
+      <profile-edit-input placeholder="Write down your thoughts" type="text" [value]="details2" (valueChange)="details2 = $event"></profile-edit-input>
     </div>
-    <mindful-button type="green" text="Submit" [large]="true" disable (click)="onSubmit()"
+    <mindful-button type="green" text="Submit" [large]="true" [disabled]="!canSubmit" (click)="onSubmit()"
       style="display:block; width:100%;"></mindful-button>
     <div class="disclaimer">
       <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">

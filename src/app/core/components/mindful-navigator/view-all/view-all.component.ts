@@ -14,7 +14,6 @@ import { Router } from '@angular/router';
         <path d="M8.94097 6.39773L4.38604 10.9526C4.16636 11.1723 3.8102 11.1723 3.59054 10.9526L3.05929 10.4214C2.83998 10.2021 2.83956 9.84666 3.05835 9.62684L6.66822 5.99998L3.05835 2.37314C2.83956 2.15332 2.83998 1.79789 3.05929 1.57859L3.59054 1.04733C3.81022 0.827648 4.16638 0.827648 4.38604 1.04733L8.94095 5.60224C9.16063 5.8219 9.16063 6.17805 8.94097 6.39773Z" fill="#90214D" />
       </svg>
     </span>
-    <span class="btn-underline" aria-hidden="true"></span>
   </button>
   `,
   styles: [
@@ -38,11 +37,16 @@ import { Router } from '@angular/router';
 
     .btn-text {
       color: #90214D;
-      font-family: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      font-family: 'Nunito';
       font-size: 16px;
-      font-style: normal;
       font-weight: 600;
-      line-height: 140%;
+      text-decoration-line: underline;
+          text-decoration-style: solid;
+    -webkit-text-decoration-skip-ink: none;
+    text-decoration-skip-ink: none;
+    text-decoration-thickness: from-font;
+    text-underline-offset: auto;
+    text-underline-position: from-font;
     }
 
     .btn-icon {
@@ -55,16 +59,6 @@ import { Router } from '@angular/router';
 
     .btn-icon path {
       fill: #90214D;
-    }
-
-    .btn-underline {
-      width: 77px;
-      height: 0;
-      position: absolute;
-      bottom: 4px;
-      left: 0;
-      stroke-width: 0.5px;
-      border-bottom: 0.5px solid #90214D;
     }
     `
   ]
