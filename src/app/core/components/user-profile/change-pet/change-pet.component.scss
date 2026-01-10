@@ -11,14 +11,22 @@
 
 .pet-slide{
   display: inline-flex;
-align-items: center;
-gap: 16px;
+  align-items: center;
+  gap: var(--pet-gap, 20px);
+  flex: 0 0 auto; /* prevent shrinking so slides don't overlap on small screens */
+  padding-right: 0; /* padding handled by gap variable */
+  margin-right: 0 !important;
 }
 .pet-card{
     width: 305px;
-height: 480px;
+  height: 480px;
 border-radius: 32px;
 border: 2px solid #4CAF50;
+    transform: scale(var(--pet-card-scale, 1));
+    transform-origin: center top;
+    transition: transform 120ms ease;
+    overflow: hidden; /* clip any image parts that stick out */
+    position: relative;
 }
 .pet-details{
 display: flex;
@@ -73,12 +81,14 @@ width: 217px;
 }
 
 .slide-image {
+  display: block;
   width: 100%;
+  max-width: 277px;
+  height: auto;
   object-fit: contain;
+  margin: 0 auto 8px auto;
   position: relative;
-  top: -15px;
 }
-
 .text-content {
   padding: 1.5rem;
   text-align: left;
@@ -141,7 +151,6 @@ width: 217px;
 }
 
 .change-pet-actions{
-  margin-top:34px;
   margin-bottom: 16px;
 }
 
