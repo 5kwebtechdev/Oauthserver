@@ -6,6 +6,7 @@ import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-in
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse, HttpClientModule } from '@angular/common/http';
+import { NavController } from '@ionic/angular';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -31,7 +32,8 @@ export class ResetPaswordComponent {
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private navCtrl: NavController
   ) {
     this.form = this.fb.group({
       currentPassword: ['', [Validators.required, Validators.minLength(8)]],
@@ -97,13 +99,17 @@ export class ResetPaswordComponent {
     }
   }
 
-  async presentToast(message: string, color: string = 'dark', duration = 3000): Promise<void> {
-    const toast = await this.toastCtrl.create({
+  async presentToast(message: string, color: string = 'dark', duration = 3000, cssClass?: string): Promise<void> {
+    const opts: any = {
       message,
       duration,
       color,
       position: 'bottom'
-    });
+    };
+    if (cssClass) {
+      opts.cssClass = cssClass;
+    }
+    const toast = await this.toastCtrl.create(opts);
     await toast.present();
   }
 
@@ -143,26 +149,35 @@ export class ResetPaswordComponent {
     };
 
     // AuthInterceptor will automatically add the token from localStorage
-    this.http.put(url, body).subscribe({
-      next: async (response: any) => {
+    // Use responseType 'text' because server returns no/ plain-text body which
+    // would otherwise cause HttpClient to try parsing JSON and throw a parse error.
+    const toastDuration = 2000;
+    this.http.put(url, body, { responseType: 'text' }).subscribe({
+      next: async (_response: any) => {
         this.loading = false;
-        await this.presentToast('Password updated successfully', 'success');
+        await this.presentToast('Password updated successfully', 'success', toastDuration, 'green-success-toast');
 
-        // Clear form
-        this.currentPassword = '';
-        this.newPassword = '';
-        this.retypeNewPassword = '';
-        this.form.reset();
+        // Give the user a moment to see the toast, then reset and navigate back
+        setTimeout(() => {
+          // Clear form
+          this.currentPassword = '';
+          this.newPassword = '';
+          this.retypeNewPassword = '';
+          this.form.reset();
 
-        // Clear errors
-        this.currentPasswordError = '';
-        this.newPasswordError = '';
-        this.retypePasswordError = '';
+          // Clear errors
+          this.currentPasswordError = '';
+          this.newPasswordError = '';
+          this.retypePasswordError = '';
+
+          // Navigate back to previous page (entry)
+          this.navCtrl.back();
+        }, toastDuration + 200);
       },
       error: async (error: HttpErrorResponse) => {
         this.loading = false;
-        const errorMessage = error?.error?.message || error?.message || 'Failed to update password. Please try again.';
-        await this.presentToast(errorMessage, 'danger', 4000);
+        const errorMessage = error?.error || error?.error?.message || error?.message || 'Failed to update password. Please try again.';
+        await this.presentToast(String(errorMessage), 'danger', 4000);
         console.error('Password change error:', error);
       }
     });

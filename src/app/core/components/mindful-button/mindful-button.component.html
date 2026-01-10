@@ -1,5 +1,13 @@
 <ng-container *ngIf="type; else missingType">
-  <div class="button" [ngClass]="classMap" [attr.role]="buttonRole" [attr.tabindex]="disabled ? -1 : 0">
+  <div
+    class="button"
+    [ngClass]="classMap"
+    [attr.role]="buttonRole"
+    [attr.tabindex]="disabled ? -1 : 0"
+    [attr.aria-disabled]="disabled"
+    [attr.disabled]="disabled ? true : null"
+    (click)="handleClick($event)"
+    (keydown)="handleKeydown($event)">
     <ng-container *ngIf="showLeadingIcon">
       <img class="btn-icon start" [src]="icon ?? ''" alt="" />
     </ng-container>

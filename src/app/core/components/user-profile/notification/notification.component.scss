@@ -23,6 +23,7 @@
   justify-content: center;
   align-items: center;
   border-radius: 24px;
+  width: 100%;
   background: #FFF;
   box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
 }
@@ -47,29 +48,24 @@
 .n-head {
   display: flex;
   align-items: center;
-  gap: 166px;
+  justify-content: space-between;
+  width: 100%;
   align-self: stretch;
 }
 
 .n-title h2 {
-  color: #282527;
-  font-family: 'Fredoka', sans-serif;
-  font-size: 16px;
-  font-style: normal;
+color: #282527;
+font-family: Nunito;
+font-size: 16px;
   font-weight: 600;
-  line-height: 130%;
-  width: 123px;
   margin: 0;
 }
 
 .n-desc {
   color: #282527;
   font-size: 13px;
-  font-style: normal;
   font-weight: 500;
-  line-height: 130%;
-  /* 16.9px */
-  width: 232px;
+  opacity: 0.7;
   margin: 0;
 }
 

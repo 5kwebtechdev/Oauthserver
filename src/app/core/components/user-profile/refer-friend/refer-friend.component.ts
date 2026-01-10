@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { ProfileFactsComponent, FaqItem, PROFILE_FAQS } from '../profile-facts/profile-facts.component';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ToastController } from '@ionic/angular';
 import { AuthService, ReferralCodeResponse } from '../../../services/auth.service';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -20,7 +20,7 @@ export class ReferFriendComponent implements OnInit, OnDestroy {
   faqs: FaqItem[] = [];
   private destroy$ = new Subject<void>();
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private toastCtrl: ToastController) { }
 
   ngOnInit(): void {
     this.initializeFaqs();
@@ -57,6 +57,55 @@ export class ReferFriendComponent implements OnInit, OnDestroy {
   copyLink(): void {
     if (this.referralCode) {
       navigator.clipboard?.writeText(this.shareLink);
+    }
+  }
+
+  async copyCode(event: Event): Promise<void> {
+    event.stopPropagation();
+    if (!this.referralCode) return;
+
+    try {
+      await navigator.clipboard?.writeText(this.referralCode);
+      const toast = await this.toastCtrl.create({
+        message: 'Code copied',
+        duration: 1000,
+        position: 'bottom',
+        cssClass: 'copied-toast'
+      });
+      try {
+        (toast as any).style?.setProperty('--background', '#FFF');
+        (toast as any).style?.setProperty('--color', '#282527');
+        (toast as any).style && ((toast as any).style.borderRadius = '4px');
+        (toast as any).style && ((toast as any).style.boxShadow = '0 0 2px 1px rgba(107, 101, 106, 0.10)');
+        (toast as any).style && ((toast as any).style.fontFamily = 'Nunito, sans-serif');
+        (toast as any).style && ((toast as any).style.fontSize = '13px');
+        (toast as any).style && ((toast as any).style.fontWeight = '600');
+        (toast as any).style && ((toast as any).style.color = '#282527');
+      } catch (e) {
+        // ignore style injection errors
+      }
+      await toast.present();
+    } catch (err) {
+      // fallback: still try to show feedback even if clipboard fails
+      const toast = await this.toastCtrl.create({
+        message: 'Unable to copy code',
+        duration: 1500,
+        position: 'bottom',
+        cssClass: 'copied-toast'
+      });
+      try {
+        (toast as any).style?.setProperty('--background', '#FFF');
+        (toast as any).style?.setProperty('--color', '#282527');
+        (toast as any).style && ((toast as any).style.borderRadius = '4px');
+        (toast as any).style && ((toast as any).style.boxShadow = '0 0 2px 1px rgba(107, 101, 106, 0.10)');
+        (toast as any).style && ((toast as any).style.fontFamily = 'Nunito, sans-serif');
+        (toast as any).style && ((toast as any).style.fontSize = '13px');
+        (toast as any).style && ((toast as any).style.fontWeight = '600');
+        (toast as any).style && ((toast as any).style.color = '#282527');
+      } catch (e) {
+        // ignore style injection errors
+      }
+      await toast.present();
     }
   }
 

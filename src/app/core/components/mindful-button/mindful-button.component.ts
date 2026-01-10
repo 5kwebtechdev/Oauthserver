@@ -92,4 +92,21 @@ export class MindfulButtonComponent {
   get showTrailingIcon(): boolean {
     return Boolean(this.icon && this.iconPosition === 'end');
   }
+
+  handleClick(event: Event): void {
+    if (this.disabled) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      event.stopPropagation();
+    }
+  }
+
+  handleKeydown(event: KeyboardEvent): void {
+    const key = event.key;
+    if (this.disabled && (key === 'Enter' || key === ' ' || key === 'Spacebar')) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      event.stopPropagation();
+    }
+  }
 }
