@@ -245,3 +245,23 @@
     font-weight: bold;
   }
 }
+
+/* Ensure the image column places the image at the bottom */
+.role-selector {
+  .row {
+    display: flex;
+    align-items: stretch;
+  }
+
+  .col-6 {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .col-6 img {
+    max-width: 100%;
+    height: auto;
+    margin-top: auto; /* push image to bottom */
+    display: block;
+  }
+}

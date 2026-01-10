@@ -140,10 +140,10 @@
                     <p>The family connection has been removed by the creator. Your account is still safe and all data is
                         saved.</p>
                 </div>
-
-                <mindful-button type="green" large text="Continue with a new role?" (click)="continueWithNewRole()"
-                    style="display:block; width:100%; margin-top:12px">
+                <div class="continue-button w-100">
+                <mindful-button type="green" size="full" text="Continue with a new role?" (click)="continueWithNewRole()">
                 </mindful-button>
+                </div>
             </div>
         </aside>
 
@@ -170,8 +170,7 @@
                     as described above.
                 </p>
             </div>
-            <mindful-button type="green" full large text="Next" [disabled]="!consentChecked"
-                [style.opacity]="consentChecked ? 1 : 0.5" (click)="goToRoleSelect()">
+            <mindful-button type="green" size="full" text="Next" [disabled]="!consentChecked" (click)="goToRoleSelect()">
             </mindful-button>
 
 

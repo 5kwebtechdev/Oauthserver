@@ -17,7 +17,7 @@
 
   </div>
   <div class="button-row">
-    <mindful-button type="green" [text]="loading ? 'Updating...' : 'Change password'" [large]="true"
-      [disabled]="loading" (click)="saveProfile()"></mindful-button>
+    <mindful-button type="green" [text]="loading ? 'Updating...' : 'Change password'" size="full"
+      [disabled]="loading || form.invalid" (click)="saveProfile()"></mindful-button>
   </div>
 </ion-content>

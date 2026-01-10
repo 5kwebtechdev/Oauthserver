@@ -54,8 +54,7 @@
 		</div>
 		-->
 			<div>
-				<mindful-button type="green" full large text="Save & Continue" [disabled]="!selectedRole"
-					[style.opacity]="selectedRole ? 1 : 0.5" (click)="save()"></mindful-button>
+				<mindful-button type="green" size="full" text="Save & Continue" [disabled]="!selectedRole" (click)="save()"></mindful-button>
 			</div>
 		</div>
 	</div>
@@ -64,13 +63,13 @@
 		<mindful-navigator heading="Instructions" backIcon="arrowSvg" (back)="prevStep()"></mindful-navigator>
 
 		<div class="container" style="max-width:420px; margin: 16px auto;">
-			<instructio-list [items]="roleSelectionInstructions" type="role-selection-instruction"></instructio-list>
+			<instructio-list [items]="selectedRole === 'child' ? childRoleInstructions : roleSelectionInstructions" type="role-selection-instruction"></instructio-list>
 		</div>
 
-		<profile-facts [faqs]="faqsForSelectRole"></profile-facts>
+		<profile-facts [faqs]="selectedRole === 'child' ? profileChildFaqs : profileParentFaqs"></profile-facts>
 
 		<div style="margin-top:20px; text-align:center;">
-			<mindful-button type="green" full large text="Next" (click)="save()"></mindful-button>
+			<mindful-button type="green" size="full" text="Next" (click)="save()"></mindful-button>
 		</div>
 	</div>
 
@@ -79,7 +78,7 @@
 
 		<div class="container w-full p-0" style="display: flex; justify-content: center; align-items: center;">
 			<div class="container w-full p-0" style="padding: 20px 0px !important; max-width:420px; width:100%">
-				<div class="toggle-buttons">
+				<div *ngIf="selectedRole !== 'child'" class="toggle-buttons">
 					<button [class.active]="selectedFamilyAction === 'create'"
 						(click)="setFamilyAction('create')">Create Family</button>
 					<button [class.active]="selectedFamilyAction === 'join'" (click)="setFamilyAction('join')">Join
@@ -101,9 +100,9 @@
 				</div>
 
 				<div style="margin-top:20px; text-align:center;">
-					<mindful-button type="green" full large
+					<mindful-button type="green" size="full"
 						[text]="selectedFamilyAction === 'create' ? 'Create Family' : 'Join Family'"
-						(click)="save()"></mindful-button>
+						[disabled]="!selectedFamilyAction" (click)="save()"></mindful-button>
 				</div>
 
 				<div style="margin-top:18px; max-width:420px; margin-left:auto; margin-right:auto;">

@@ -5,7 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { InstructioListComponent } from '../family-connection/instructio-list';
-import { ProfileFactsComponent } from '../profile-facts/profile-facts.component';
+import { ProfileFactsComponent, PROFILE_FAQS } from '../profile-facts/profile-facts.component';
 import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-input.component';
 import { NavigationService } from '../../../services/navigation.service';
 
@@ -28,12 +28,25 @@ export class RoleSelectComponent {
     'Once your child enters the code, you\'ll both be connected and can track progress together!'
   ];
 
+  // Instructions shown when a child selects the role
+  childRoleInstructions: string[] = [
+    'Ask your parent to create their account on their device.',
+    'After signup, your parent creates a family in the app.',
+    'Your parent will see a family code and a QR code.',
+    'Enter the family code or scan the QR code in the next screen to join their family.',
+    'Once linked, you are good to proceed !'
+  ];
+
   faqsForSelectRole = [
     { question: "What if my child doesn't have the app downloaded yet?", answer: '' },
     { question: "Can I add multiple children to the same family?", answer: '' },
     { question: "What if the family code stops working or expires?", answer: '' },
     { question: "What if I want to join someone else's family instead of creating my own?", answer: '' }
   ];
+
+  // Filtered FAQ lists derived from the shared PROFILE_FAQS
+  profileChildFaqs = PROFILE_FAQS.filter(f => f.screen === 'Instructions- Child (Pre Linking)');
+  profileParentFaqs = PROFILE_FAQS.filter(f => f.screen === 'Instructions-Parents');
 
   // FAQs shown on Step 3 (Account Creation)
   faqsForStep3 = [
@@ -65,6 +78,12 @@ export class RoleSelectComponent {
 
   selectRole(role: string) {
     this.selectedRole = role;
+    // If user picks child role, they must join a family (cannot create)
+    if (role === 'child') {
+      this.selectedFamilyAction = 'join';
+    } else if (role === 'parent') {
+      this.selectedFamilyAction = 'create';
+    }
   }
 
   // allow keyboard selection via Enter/Space
