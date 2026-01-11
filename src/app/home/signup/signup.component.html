@@ -236,7 +236,7 @@
           <ng-container *ngIf="currentRole === 'parent'; else nonParentAvatar">
             <h4 style="margin-top: 15px">Profile picture</h4>
             <div class="initial-avatar-preview">
-              <div class="initial-avatar-circle">{{ getNameInitial() }}</div>
+                <div class="initial-avatar-circle" [ngStyle]="parentImageService.getAvatarStyle(getNameInitial(), gender === 'female')">{{ getNameInitial() }}</div>
               <p class="initial-avatar-hint">This will be used as your profile picture</p>
             </div>
           </ng-container>

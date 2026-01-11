@@ -25,7 +25,9 @@
         <section class="family-con-detail" aria-label="Family details" *ngIf="creator">
           <div class="f-head">
             <div class="family-avatar">
-              <div class="avatar-img" aria-hidden="true"></div>
+              <div class="initial-avatar-circle" [ngStyle]="parentImageService.getAvatarStyle(getInitial(creator.name), isFemale(creator), 80)">
+                {{ getInitial(creator.name) }}
+              </div>
             </div>
 
             <div class="f-head">

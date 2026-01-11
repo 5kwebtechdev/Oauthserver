@@ -10,37 +10,14 @@
   width: 100%;
   max-width: 100vw;
   box-sizing: border-box;
-  position: relative;
-  overflow-x: hidden;
-
-  h2,
-  .title-text {
-    display: flex;
-    align-items: center;
-    font-size: 1.5rem;
-    font-weight: 500;
-    line-height: 1.3;
-    margin: 0;
-  }
-
-  .initial-avatar-preview {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 8px;
-  }
-
   .initial-avatar-circle {
+    /* core layout only; visual styles are provided via ParentImageService */
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
-    font-size: 28px;
-    color: #fff;
-    background: #EE6621;
     text-transform: uppercase;
     user-select: none;
   }
