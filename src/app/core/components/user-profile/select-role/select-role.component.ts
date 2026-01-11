@@ -13,8 +13,393 @@ import { NavigationService } from '../../../services/navigation.service';
   standalone: true,
   selector: 'role-select',
   imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent, InstructioListComponent, ProfileFactsComponent, ProfileEditInputComponent],
-  templateUrl: './select-role.component.html',
-  styleUrls: ['./select-role.component.scss']
+  template: `
+<ion-content>
+	<div class="step step-1" *ngIf="currentStep === 1">
+		<mindful-navigator heading="Select the role" backIcon="arrowSvg" (back)="goBack()"></mindful-navigator>
+		<div class="d-flex flex-column gap-4">
+			<div class="role-selector container p-0" data-role="child" role="button" tabindex="0"
+				(click)="selectRole('child')" (keydown)="onKeySelect($event, 'child')"
+				[class.active]="selectedRole === 'child'" [attr.aria-pressed]="selectedRole === 'child'">
+
+				<div class="row">
+					<div class="col-6">
+						<h2>Child</h2>
+						<h4>Learn and grow</h4>
+						<h4>Link with your parents</h4>
+						<h4>Earn rewards together</h4>
+					</div>
+
+					<div class="col-6">
+						<img src="assets/Images-Transparent/Image-Role-Child.png" alt="">
+					</div>
+				</div>
+			</div>
+
+			<div class="role-selector container p-0" data-role="parent" role="button" tabindex="0"
+				(click)="selectRole('parent')" (keydown)="onKeySelect($event, 'parent')"
+				[class.active]="selectedRole === 'parent'" [attr.aria-pressed]="selectedRole === 'parent'">
+
+				<div class="row">
+					<div class="col-6 p-l-0">
+						<img src="assets/Images-Transparent/Image-Role-Parent.png" alt="">
+					</div>
+
+					<div class="col-6">
+						<h2>Parent</h2>
+						<h4>Grow together</h4>
+						<h4>Link with child</h4>
+						<h4>Track progress</h4>
+					</div>
+				</div>
+			</div>
+
+			<!--
+		<div class="role-selector container p-0" data-role="self" style="margin-top: 25px">
+			<div class="row">
+				<div class="col-6">
+					<h2>Self</h2>
+					<h4>Personal Journey</h4>
+					<h4>Daily Reflections</h4>
+					<h4>Mindful Growth</h4>
+				</div>
+				<div class="col-6">
+					<img src="/assets/app-assets/Onboarding-role-selection-self.svg" alt="">
+				</div>
+			</div>
+		</div>
+		-->
+			<div>
+				<mindful-button type="green" size="full" text="Save & Continue" [disabled]="!selectedRole" (click)="save()"></mindful-button>
+			</div>
+		</div>
+	</div>
+
+	<div class="step step-2" *ngIf="currentStep === 2">
+		<mindful-navigator heading="Instructions" backIcon="arrowSvg" (back)="prevStep()"></mindful-navigator>
+
+		<div class="container" style="max-width:420px; margin: 16px auto;">
+			<instructio-list [items]="selectedRole === 'child' ? childRoleInstructions : roleSelectionInstructions" type="role-selection-instruction"></instructio-list>
+		</div>
+
+		<profile-facts [faqs]="selectedRole === 'child' ? profileChildFaqs : profileParentFaqs"></profile-facts>
+
+		<div style="margin-top:20px; text-align:center;">
+			<mindful-button type="green" size="full" text="Next" (click)="save()"></mindful-button>
+		</div>
+	</div>
+
+	<div class="step step-3" *ngIf="currentStep === 3">
+		<mindful-navigator heading="Create your account" backIcon="arrowSvg" (back)="prevStep()"></mindful-navigator>
+
+		<div class="container w-full p-0" style="display: flex; justify-content: center; align-items: center;">
+			<div class="container w-full p-0" style="padding: 20px 0px !important; max-width:420px; width:100%">
+				<div *ngIf="selectedRole !== 'child'" class="toggle-buttons">
+					<button [class.active]="selectedFamilyAction === 'create'"
+						(click)="setFamilyAction('create')">Create Family</button>
+					<button [class.active]="selectedFamilyAction === 'join'" (click)="setFamilyAction('join')">Join
+						Family</button>
+				</div>
+
+				<div style="position:relative;">
+					<profile-edit-input desc="For naming your family"
+						[placeholder]="selectedFamilyAction === 'create' ? 'Set family name' : 'Enter family code or scan QR'"></profile-edit-input>
+
+					<button *ngIf="selectedFamilyAction === 'join'" (click)="onScanQr()" aria-label="Scan QR"
+						style="position:absolute; right:8px; top:50%; transform:translateY(-50%); border:none; background:transparent; padding:6px; display:flex; align-items:center;">
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+							<path
+								d="M0 8V0H8V8H0ZM2 6H6V2H2V6ZM0 18V10H8V18H0ZM2 16H6V12H2V16ZM10 8V0H18V8H10ZM12 6H16V2H12V6ZM16 18V16H18V18H16ZM10 12V10H12V12H10ZM12 14V12H14V14H12ZM10 16V14H12V16H10ZM12 18V16H14V18H12ZM14 16V14H16V16H14ZM14 12V10H16V12H14ZM16 14V12H18V14H16Z"
+								fill="#282527" />
+						</svg>
+					</button>
+				</div>
+
+				<div style="margin-top:20px; text-align:center;">
+					<mindful-button type="green" size="full"
+						[text]="selectedFamilyAction === 'create' ? 'Create Family' : 'Join Family'"
+						[disabled]="!selectedFamilyAction" (click)="save()"></mindful-button>
+				</div>
+
+				<div style="margin-top:18px; max-width:420px; margin-left:auto; margin-right:auto;">
+					<profile-facts [faqs]="faqsForStep3"></profile-facts>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+</ion-content>
+`,
+  styles: [`
+.step-1,
+.step-2,
+.step-3 {
+  padding: 16px;
+}
+
+.select-role {
+  .select-role__container {
+    max-width: 420px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  &__title {
+    font-size: 20px;
+    margin-bottom: 16px;
+    color: var(--ion-color-primary-contrast);
+  }
+
+  &__options {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  &__option {
+    --border-radius: 8px;
+    --padding-start: 18px;
+    --padding-end: 18px;
+  }
+
+  &__option--primary {
+    --background: var(--ion-color-primary);
+    color: white;
+  }
+
+  &__note {
+    font-size: 13px;
+    color: var(--ion-color-medium);
+  }
+}
+
+/* Copied styles for steps 1-3 from signup component */
+.role-selector {
+  overflow: hidden;
+  padding-top: 25px !important;
+  padding-left: 15px !important;
+  position: relative;
+  border: 5px solid transparent;
+  transition: 0.2s;
+  border-radius: 32px;
+  background: #FFF;
+  box-shadow: 0 0 10px 5px rgba(107, 101, 106, 0.10);
+
+  h2 {
+    font-weight: 500;
+    font-size: 40px;
+    text-align: left;
+    color: #282527;
+    margin: 10px 0px 15px 0px;
+  }
+
+  h4 {
+    font-weight: 400;
+    font-size: 20px;
+    text-align: left;
+    opacity: 0.5;
+  }
+
+  &.active {
+    border: 4px solid #4CAF50;
+    border-radius: 32px;
+    background: #FFF;
+    box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(76, 175, 80, 0.25);
+    outline-offset: 4px;
+  }
+
+  &::before {
+    content: '\\f00c';
+    font-family: 'Font Awesome 6 Free', serif;
+    font-weight: 900;
+    position: absolute;
+    top: 12px;
+    right: 10px;
+    width: 24px;
+    aspect-ratio: 1;
+    border-radius: 100px;
+    background: #4CAF50;
+    font-size: 12px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: 0.2s;
+  }
+
+  &.active::before {
+    opacity: 1;
+  }
+}
+
+.toggle-buttons {
+  display: flex;
+  margin-bottom: 20px;
+  border-radius: 40px;
+  background: rgba(76, 175, 80, 0.20);
+
+  button {
+    flex: 1;
+    padding: 0.7rem;
+    border: none;
+    border-radius: 30px;
+    font-weight: 500;
+    cursor: pointer;
+    margin: 6px;
+    background: transparent;
+    color: #282527;
+
+    &.active {
+      background: #4CAF50;
+      color: white;
+    }
+  }
+}
+
+.input-group {
+  margin-bottom: 1rem;
+  position: relative;
+
+  input {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 10px !important;
+    font-size: 1rem;
+    background: #ffffff;
+    border: 2px solid transparent;
+    transition: 0.2s;
+
+    &:focus,
+    &:active,
+    &:hover,
+    &:focus-visible {
+      border: 2px solid #ffffff;
+      outline: none;
+    }
+  }
+}
+
+.signup-btn {
+  width: 100%;
+  background: #ffffff;
+  padding: 0.9rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  margin-bottom: 1rem;
+  cursor: pointer;
+
+  &.active-bg {
+    background: #4CAF50;
+  }
+}
+
+.or-divider {
+  text-align: center;
+  margin: 1rem 0;
+
+  span {
+    background: #ffe9db;
+    padding: 0 10px;
+  }
+
+  &::before,
+  &::after {
+    content: '';
+    display: inline-block;
+    height: 1px;
+    background: #c08464;
+    width: 40%;
+    vertical-align: middle;
+  }
+}
+
+.social-logins {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+  gap: 40px;
+  width: 200px;
+  height: 40px;
+  margin-bottom: 2rem;
+  margin-top: 1.2rem;
+
+  .social-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+  }
+}
+
+.login-text {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  font-size: 16px;
+  color: #282527;
+
+  a {
+    color: #282527;
+    font-weight: bold;
+  }
+}
+
+.whatsapp-checkbox {
+  align-items: center;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #282527;
+}
+
+.terms {
+  font-size: 0.75rem;
+  text-align: center;
+  color: #282527;
+
+  a {
+    color: #282527;
+    font-weight: bold;
+  }
+}
+
+/* Ensure the image column places the image at the bottom */
+.role-selector {
+  .row {
+    display: flex;
+    align-items: stretch;
+  }
+
+  .col-6 {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .col-6 img {
+    max-width: 100%;
+    height: auto;
+    margin-top: auto; /* push image to bottom */
+    display: block;
+  }
+}
+`]
 })
 export class RoleSelectComponent {
   // currently selected role: 'child' | 'parent' | 'self' | null

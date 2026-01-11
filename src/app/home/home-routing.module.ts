@@ -3,10 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { HomePage } from './home.page';
 import { LoginComponent } from "./login/login.component";
 import { SignupComponent } from "./signup/signup.component";
-import { InstructionsForChildComponent } from "./instructions-for-child/instructions-for-child.component";
-import { InstructionsForParentComponent } from "./instructions-for-parent/instructions-for-parent.component";
-import { JoinFamilyComponent } from "./join-family/join-family.component";
-import { JoinFamily2Component } from "./join-family2/join-family2.component";
+import { FamilyOnboardComponent } from "./family-onboard/family-onboard.component";
 import { ScanQrComponent } from './scan-qr/scan-qr.component';
 import { ResetPasswordComponent } from "./reset-password/reset-password.component";
 import { guestGuard } from "../core/authe-guard/authe-guard";
@@ -26,20 +23,20 @@ const routes: Routes = [
   },
   {
     path: 'reset-password',
-    component: ResetPasswordComponent, // Add this route
+    component: ResetPasswordComponent,
   },
   {
     path: 'instructions-for-child',
-    component: InstructionsForChildComponent
+    component: FamilyOnboardComponent
   }, {
     path: 'instructions-for-parent',
-    component: InstructionsForParentComponent
+    component: FamilyOnboardComponent
   }, {
     path: 'join-family',
-    component: JoinFamilyComponent
+    component: FamilyOnboardComponent
   }, {
     path: 'join-family2',
-    component: JoinFamily2Component
+    component: FamilyOnboardComponent
   }, {
     path: 'scan-qr',
     component: ScanQrComponent

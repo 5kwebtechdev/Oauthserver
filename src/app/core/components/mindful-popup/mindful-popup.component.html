@@ -30,7 +30,7 @@
     </div>
     <div class="mindful-popup-actions" *ngIf="hasPrimaryCTA || hasSecondaryCTA || finalConfig.showShareButton">
       <div class="mindful-popup-single-cta" *ngIf="hasOneCTA">
-        <mindful-button *ngIf="hasPrimaryCTA && finalConfig.primaryCTA?.buttonStyle"
+        <mindful-button *ngIf="hasPrimaryCTA && finalConfig.primaryCTA?.buttonStyle" full
           [type]="finalConfig.primaryCTA?.buttonStyle" [text]="finalConfig.primaryCTA?.text"
           [medium]="finalConfig.primaryCTA?.buttonMedium" [large]="finalConfig.primaryCTA?.buttonLarge"
           [icon]="finalConfig.primaryCTA?.icon" [iconPosition]="finalConfig.primaryCTA?.iconPosition"
@@ -42,7 +42,7 @@
           {{ finalConfig.primaryCTA?.text }}
         </button>
 
-        <mindful-button *ngIf="hasSecondaryCTA && !hasPrimaryCTA && finalConfig.secondaryCTA?.buttonStyle"
+        <mindful-button *ngIf="hasSecondaryCTA && !hasPrimaryCTA && finalConfig.secondaryCTA?.buttonStyle" full
           [type]="finalConfig.secondaryCTA?.buttonStyle" [text]="finalConfig.secondaryCTA?.text"
           [medium]="finalConfig.secondaryCTA?.buttonMedium" [large]="finalConfig.secondaryCTA?.buttonLarge"
           [icon]="finalConfig.secondaryCTA?.icon" [iconPosition]="finalConfig.secondaryCTA?.iconPosition"
@@ -58,7 +58,7 @@
       <!-- Dual CTA: column layout (primary first, secondary second) -->
       <div class="mindful-popup-dual-cta column" *ngIf="hasTwoCTAs && finalConfig.ctaDirection==='column'">
         <!-- Primary (top) -->
-        <mindful-button *ngIf="finalConfig.primaryCTA?.buttonStyle" [type]="finalConfig.primaryCTA?.buttonStyle"
+        <mindful-button *ngIf="finalConfig.primaryCTA?.buttonStyle" full [type]="finalConfig.primaryCTA?.buttonStyle"
           [text]="finalConfig.primaryCTA?.text" [medium]="finalConfig.primaryCTA?.buttonMedium"
           [large]="finalConfig.primaryCTA?.buttonLarge" [icon]="finalConfig.primaryCTA?.icon"
           [iconPosition]="finalConfig.primaryCTA?.iconPosition" (click)="onPrimaryClick()"></mindful-button>
@@ -69,7 +69,7 @@
         </button>
 
         <!-- Secondary (bottom) -->
-        <mindful-button *ngIf="finalConfig.secondaryCTA?.buttonStyle" [type]="finalConfig.secondaryCTA?.buttonStyle"
+        <mindful-button *ngIf="finalConfig.secondaryCTA?.buttonStyle" full [type]="finalConfig.secondaryCTA?.buttonStyle"
           [text]="finalConfig.secondaryCTA?.text" [medium]="finalConfig.secondaryCTA?.buttonMedium"
           [large]="finalConfig.secondaryCTA?.buttonLarge" [icon]="finalConfig.secondaryCTA?.icon"
           [iconPosition]="finalConfig.secondaryCTA?.iconPosition" (click)="onSecondaryClick()"></mindful-button>
@@ -82,7 +82,7 @@
 
       <!-- Dual CTA: row layout (legacy order: secondary then primary) -->
       <div class="mindful-popup-dual-cta" *ngIf="hasTwoCTAs && finalConfig.ctaDirection!=='column'">
-        <mindful-button *ngIf="finalConfig.secondaryCTA?.buttonStyle" [type]="finalConfig.secondaryCTA?.buttonStyle"
+        <mindful-button *ngIf="finalConfig.secondaryCTA?.buttonStyle" full [type]="finalConfig.secondaryCTA?.buttonStyle"
           [text]="finalConfig.secondaryCTA?.text" [medium]="finalConfig.secondaryCTA?.buttonMedium"
           [large]="finalConfig.secondaryCTA?.buttonLarge" [icon]="finalConfig.secondaryCTA?.icon"
           [iconPosition]="finalConfig.secondaryCTA?.iconPosition" (click)="onSecondaryClick()"></mindful-button>
@@ -92,7 +92,7 @@
           {{ finalConfig.secondaryCTA?.text }}
         </button>
 
-        <mindful-button *ngIf="finalConfig.primaryCTA?.buttonStyle" [type]="finalConfig.primaryCTA?.buttonStyle"
+        <mindful-button *ngIf="finalConfig.primaryCTA?.buttonStyle" full [type]="finalConfig.primaryCTA?.buttonStyle"
           [text]="finalConfig.primaryCTA?.text" [medium]="finalConfig.primaryCTA?.buttonMedium"
           [large]="finalConfig.primaryCTA?.buttonLarge" [icon]="finalConfig.primaryCTA?.icon"
           [iconPosition]="finalConfig.primaryCTA?.iconPosition" (click)="onPrimaryClick()"></mindful-button>

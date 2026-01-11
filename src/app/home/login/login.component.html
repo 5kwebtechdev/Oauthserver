@@ -1,18 +1,7 @@
 <ion-content>
   <div class="signup-container">
+    <mindful-navigator [heading]="'Login your account'" [variant]="'warm'" (back)="goBack()"></mindful-navigator>
     <div class="login-header-toggle-wrapper">
-      <div class="login-header">
-        <span class="back-arrow" (click)="goBack()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="16" viewBox="0 0 26 16" fill="none"
-            aria-hidden="true">
-            <path
-              d="M0.292893 7.29289C-0.0976311 7.68342 -0.0976311 8.31658 0.292893 8.70711L6.65685 15.0711C7.04738 15.4616 7.68054 15.4616 8.07107 15.0711C8.46159 14.6805 8.46159 14.0474 8.07107 13.6569L2.41421 8L8.07107 2.34315C8.46159 1.95262 8.46159 1.31946 8.07107 0.928932C7.68054 0.538408 7.04738 0.538408 6.65685 0.928932L0.292893 7.29289ZM25 9C25.5523 9 26 8.55228 26 8C26 7.44772 25.5523 7 25 7V8V9ZM1 8V9H25V8V7H1V8Z"
-              fill="#772817" />
-          </svg>
-        </span>
-        <span class="login-title">Login your account</span>
-        <h1>Test33</h1>
-      </div>
       <div class="login-toggle-form-wrapper">
         <div class="toggle-buttons">
 
@@ -77,8 +66,8 @@
             <label (click)="rememberMe = !rememberMe">Remember me</label>
           </div>
 
-          <mindful-button type="orange-onboard" [text]="loading ? 'Logging in...' : 'Login'"
-            [disabled]="!isLoginFormValid() || loading" (click)="onSubmit()">
+          <mindful-button type="orange-onboard" full [text]="loading ? 'Logging in...' : 'Login'"
+            [disabled]="!signInForm.dirty || !isLoginFormValid() || loading" (click)="onSubmit()">
           </mindful-button>
 
           <div class="error-message" *ngIf="loginError">

@@ -63,14 +63,15 @@
   }
 
   .step-text {
+        color: #772817;
+    font-family: Nunito;
     font-size: 16px;
     font-weight: 500;
-    color: #6b3d2b;
 
     span {
       display: block;
       font-size: 20px;
-      font-weight: 700;
+      font-weight: 600;
     }
   }
 
@@ -524,12 +525,11 @@
 
   .profile {
     h4 {
-      font-style: normal;
-      font-weight: 600;
-      font-size: 20px;
-      line-height: 130%;
-      color: #772817;
       position: relative;
+    color: #772817;
+    font-family: Nunito;
+    font-size: 20px;
+    font-weight: 600;
 
       span {
         font-weight: 500;
@@ -766,7 +766,7 @@ swiper-slide.swiper-slide-active .pet-card {
 
 @media (max-width: 768px) {
   .signup-container {
-    padding: 1rem;
+    padding: 0 16px;
     min-height: 100dvh;
   }
 }
@@ -1283,14 +1283,9 @@ swiper-slide.swiper-slide-active .pet-card {
   }
 }
 
-.header-text {
-  font-weight: 500;
-  font-size: 25px;
-  line-height: 130%;
-  color: #772817;
-  font-family: 'Fredoka', sans-serif;
-  width: 242px;
-}
+/* Header text replaced by shared `mindful-navigator` component (warm variant).
+   Removed local `.header-text` rules to avoid duplication and to let the shared
+   component control heading/subtext styling. */
 
 .welcome-page {
   display: flex;
@@ -1361,7 +1356,7 @@ ion-content.bg-white {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 0.6rem 0.8rem;
+    padding: 0.6rem 0;
     background: transparent;
     cursor: pointer;
     border-radius: 12px;
