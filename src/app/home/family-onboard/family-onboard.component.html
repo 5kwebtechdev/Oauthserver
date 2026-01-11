@@ -41,6 +41,7 @@
 
       <profile-facts [faqs]="faqs"></profile-facts>
 
+      <div style="margin-top: 24px !important;">
       <mindful-button 
         type="orange-onboard" 
         full 
@@ -48,6 +49,7 @@
         [disabled]="false"
         (click)="router.navigate(['/home/join-family'], {queryParams: {role: userRole}})">
       </mindful-button>
+      </div>
     </ng-container>
 
     <!-- ===== INSTRUCTIONS FOR PARENT ===== -->
@@ -100,7 +102,7 @@
         </div>
       </div>
 
-      <form [formGroup]="codeForm" (ngSubmit)="submitJoinFamily()" class="family-form">
+      <form [formGroup]="codeForm" (ngSubmit)="submitJoinFamily()" style="margin-bottom: 24px !important;"class="family-form">
         <div class="mindful-input-group">
           <div class="code-input-container">
             <input 

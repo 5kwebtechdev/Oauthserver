@@ -516,6 +516,13 @@
       justify-content: space-between;
     }
 
+    /* Ensure the Self role artwork sticks to the bottom of its container */
+    .self-role .role-img {
+      align-self: flex-end;
+      display: flex;
+      align-items: flex-end;
+    }
+
     img {
       max-width: none;
       width: auto;
@@ -766,7 +773,7 @@ swiper-slide.swiper-slide-active .pet-card {
 
 @media (max-width: 768px) {
   .signup-container {
-    padding: 0 16px;
+    padding: 0 16px 40px;
     min-height: 100dvh;
   }
 }

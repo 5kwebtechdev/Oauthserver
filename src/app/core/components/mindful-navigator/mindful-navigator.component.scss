@@ -1,7 +1,7 @@
 .navigator-root {
   position: relative;
-  padding-top: env(safe-area-inset-top, );
-  padding-top: constant(safe-area-inset-top);
+  padding-top: calc(env(safe-area-inset-top, 0px) + 20px);
+  padding-top: calc(constant(safe-area-inset-top) + 20px);
   display: block;
 }
 
