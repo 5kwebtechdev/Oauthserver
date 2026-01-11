@@ -17,6 +17,9 @@ export class MindfulNavigatorComponent implements OnInit {
   // Optional subtext shown below the main heading (e.g. address / location label)
   @Input() subtext?: string;
 
+  // Optional visual variant. Use 'warm' to apply warm color styles.
+  @Input() variant?: string;
+
   // When true (or when `subtext` is provided) the subtext row will render.
   @Input() showSubtext: boolean = false;
 

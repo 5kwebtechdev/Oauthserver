@@ -38,9 +38,9 @@
   flex-shrink: 0;
 }
 
-.back-button .back-svg path {
-  /* ensure fill color stays correct; stroke not used for filled path */
-  fill: #282527;
+/* Use color on the button so SVGs using currentColor inherit it */
+.back-button {
+  color: #282527;
 }
 
 .navigator-heading {
@@ -52,6 +52,32 @@
   line-height: 140%;
   text-align: left;
   margin: 0;
+}
+
+/* Warm variant overrides */
+.navigator-root.warm {
+  .back-button {
+    color: #772817;
+  }
+
+  .navigator-heading {
+    color: #772817;
+    font-size: 25px;
+  }
+
+  .navigator-subtext-text {
+    color: #772817;
+    font-family: Nunito, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    opacity: 1;
+    line-height: 1;
+  }
+
+  /* hide the small chevron after subtext for the warm variant */
+  .navigator-subtext-icon {
+    display: none;
+  }
 }
 
 /* smaller cancel icon size per design */

@@ -37,18 +37,21 @@ export class AppComponent implements OnInit {
         this.loading = true;
       }
       if (event instanceof NavigationEnd || event instanceof NavigationCancel || event instanceof NavigationError) {
-        // hide nav loader
+        // hide nav loader immediately
         if (this._navToken) {
           this.loadingService.hide(this._navToken);
           this._navToken = undefined;
         }
-        // small delay to avoid flicker in UI (spinner overlay may remain for minVisible)
-        setTimeout(() => this.loading = false, 80);
+
+        // Wait a bit longer to respect minVisibleMs, then hide the loading indicator
+        setTimeout(() => {
+          this.loading = false;
+        }, 150);
 
         // Extra safety: if navigation failed, ensure loader is reset
         if (event instanceof NavigationError) {
           console.warn('[AppComponent] Navigation error detected, ensuring loader is reset');
-          setTimeout(() => this.loadingService.reset(), 200);
+          setTimeout(() => this.loadingService.reset(), 300);
         }
       }
     });

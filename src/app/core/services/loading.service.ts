@@ -19,7 +19,7 @@ export class LoadingService {
     private _showStart = 0;
     private _currentMinVisible = 0;
     private _safetyTimer?: any;
-    private readonly SAFETY_TIMEOUT = 30000; // 30 seconds - auto-hide stuck loaders
+    private readonly SAFETY_TIMEOUT = 10000; // 10 seconds - auto-hide stuck loaders (reduced from 30s)
 
     get isLoading$(): Observable<boolean> {
         return this._visible$.asObservable();
@@ -119,6 +119,25 @@ export class LoadingService {
             this._message$.next(undefined);
             this._visible$.next(false);
         }
+    }
+
+    /**
+     * Force hide the loader immediately (useful for stuck loaders)
+     */
+    forceHide(): void {
+        try {
+            console.warn('[LoadingService] forceHide() called - forcibly hiding loader');
+        } catch (e) { }
+        this._pending.forEach(r => {
+            if (r.showTimer) {
+                clearTimeout(r.showTimer);
+            }
+        });
+        this._pending.clear();
+        this._activeCount = 0;
+        this._clearSafetyTimer();
+        this._message$.next(undefined);
+        this._visible$.next(false);
     }
 
     /**

@@ -5,6 +5,7 @@ import { CoreService } from "../../core/services/core.service";
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
 import { CountriesService, Country } from "../../core/services/countries.service";
+import { LoadingService } from '../../core/services/loading.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Subscription } from 'rxjs';
 
@@ -162,6 +163,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Safety: ensure any stuck loaders from navigation are cleared immediately
+    this.loadingService.forceHide();
+
     // Defensive: ensure picker does not open automatically on init
     this.openBirthdayPicker = false;
 
@@ -181,10 +185,31 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // Debug: check if flag is properly loaded
 
-    // Restore requested identifier if present (helps when component is recreated during navigation)
+    // Restore all signup credentials from sessionStorage (helps when component is recreated during navigation)
     const savedIdentifier = sessionStorage.getItem('requestedIdentifier');
     if (savedIdentifier) {
       this.requestedIdentifier = savedIdentifier;
+    }
+
+    // Restore login mode
+    const savedLoginMode = sessionStorage.getItem('loginMode') as 'email' | 'phone';
+    if (savedLoginMode) {
+      this.loginMode = savedLoginMode;
+    }
+
+    // Restore country code
+    const savedCountryCode = sessionStorage.getItem('countryCode');
+    if (savedCountryCode) {
+      const foundCountry = this.countries?.find(c => c.code === savedCountryCode);
+      if (foundCountry) {
+        this.selectedCountry = foundCountry;
+      }
+    }
+
+    // Restore role selection
+    const savedRole = sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self';
+    if (savedRole) {
+      this.roleSelected = savedRole;
     }
   }
 
@@ -200,7 +225,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     private core: CoreService,
     private countriesService: CountriesService,
     private authService: AuthService,
-    private userService: UserService
+    private userService: UserService,
+    private loadingService: LoadingService
   ) {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -302,6 +328,25 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     } catch {
       return '?';
     }
+  }
+
+  // Header helpers for template bindings to avoid complex inline expressions
+  get headerText(): string {
+    if (this.step === 1) return "Who's using the app?";
+    if (this.step === 0.1) return 'Add phone number or email address';
+    if (this.step === 0.2) return this.loginMode === 'phone' ? 'Check your phone' : 'Check your email';
+    if (this.step === 0.3) return 'Create Password';
+    return "Let's set you up!";
+  }
+
+  get headerSubtext(): string {
+    if (this.step === 0.2) return this.loginMode === 'phone' ? this.getMaskedPhoneNumber() : (this.email?.value || '');
+    if (this.step === 0.3) return 'It must be six characters or more';
+    return '';
+  }
+
+  get showHeaderSubtext(): boolean {
+    return this.step === 0.2 || this.step === 0.3;
   }
 
   switchMode(mode: 'email' | 'phone') {
@@ -634,7 +679,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         return;
       }
     } else if (role === 'self') {
-      this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
+      this.router.navigate(['home/sign-up'], { queryParams: { step: 3 } });
       return;
     }
   }
@@ -1335,6 +1380,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           pet: payload.petName
         });
 
+        // IMPORTANT: Store login credentials for auto-login on "Begin My Journey" button
+        const passwordForLogin = password || sessionStorage.getItem('signup_password') || this.password?.value || '';
+        try {
+          if (payload.email) sessionStorage.setItem('login_email', payload.email);
+          if (payload.phone) sessionStorage.setItem('login_phone', payload.phone);
+          sessionStorage.setItem('login_password', passwordForLogin);
+        } catch (e) { }
+
         // Clear signup session data
         try {
           sessionStorage.removeItem('signup_profile');
@@ -1351,7 +1404,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) { }
 
         // Attempt automatic login after registration (useful on mobile)
-        const passwordForLogin = password || sessionStorage.getItem('signup_password') || this.password?.value || '';
         const credentials: any = { password: passwordForLogin };
         if (payload.email) credentials.email = payload.email;
         else if (payload.phone) credentials.phone = payload.phone;
@@ -1361,20 +1413,29 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           this.authService.login(credentials).subscribe({
             next: (loginResp) => {
               // After login, user session is set by AuthService
-              // Navigate to appropriate dashboard
+              // Navigate to appropriate dashboard with loader hidden
               const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
-              this.router.navigate([route]);
+              setTimeout(() => {
+                this.loadingService.forceHide();
+                this.router.navigate([route]);
+              }, 50);
             },
             error: (loginErr) => {
               // If auto-login fails, fall back to login page
               console.error('Auto-login failed after registration', loginErr);
               this.core.triggerToasrt('Account created. Please login to continue.');
-              this.router.navigate(['/home/login']);
+              setTimeout(() => {
+                this.loadingService.forceHide();
+                this.router.navigate(['/home/login']);
+              }, 50);
             }
           });
         } else {
           // No credentials available - redirect to login
-          this.router.navigate(['/home/login']);
+          setTimeout(() => {
+            this.loadingService.forceHide();
+            this.router.navigate(['/home/login']);
+          }, 50);
         }
       },
       error: (err) => {
@@ -1389,7 +1450,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           this.authService.login(credentials).subscribe({
             next: () => {
               const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
-              this.router.navigate([route]);
+              setTimeout(() => {
+                this.loadingService.forceHide();
+                this.router.navigate([route]);
+              }, 50);
             },
             error: (loginErr) => {
               // If auto-login fails, show original registration error
@@ -1463,6 +1527,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     this.authService.register(payload).subscribe({
       next: (resp) => {
+        // IMPORTANT: Store login credentials for auto-login on "Begin My Journey" button
+        const passwordForLogin = password || sessionStorage.getItem('signup_password') || this.password?.value || '';
+        try {
+          if (payload.email) sessionStorage.setItem('login_email', payload.email);
+          if (payload.phone) sessionStorage.setItem('login_phone', payload.phone);
+          sessionStorage.setItem('login_password', passwordForLogin);
+        } catch (e) { }
+
         // Mark onboarding complete and persist minimal user info
         try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) { }
 
@@ -1478,8 +1550,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           sessionStorage.removeItem('familyCreator');
         } catch (e) { }
 
-        // Navigate to welcome step
-        this.router.navigate(['home/sign-up'], { queryParams: { step: 5 } });
+        // Navigate to welcome step with a small delay to ensure loader state is properly updated
+        setTimeout(() => {
+          this.loadingService.forceHide();
+          this.router.navigate(['home/sign-up'], { queryParams: { step: 5 } });
+        }, 50);
       },
       error: (err) => {
         const serverMsg = err?.error?.message || err?.error || 'Registration failed';
@@ -1489,34 +1564,32 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     });
   }
 
-  // Navigate to authenticated area after welcome step
+  // Auto-login and redirect to dashboard
   onBegin() {
-    // Perform automatic login after registration
-    const password = sessionStorage.getItem('signup_password') || this.password?.value || '';
+    // Get login credentials stored during registration
+    const email = sessionStorage.getItem('login_email');
+    const phone = sessionStorage.getItem('login_phone');
+    const password = sessionStorage.getItem('login_password');
+
+    // Build login credentials
     const credentials: any = { password };
-    if (this.loginMode === 'email' || (this.requestedIdentifier && this.requestedIdentifier.includes('@'))) {
-      credentials.email = this.requestedIdentifier || this.email?.value;
-    } else {
-      const contactNumber = sessionStorage.getItem('countryCode') || this.selectedCountry.code;
-      credentials.phone = contactNumber + (this.requestedIdentifier || this.phone?.value);
+    if (email) {
+      credentials.email = email;
+    } else if (phone) {
+      credentials.phone = phone;
     }
 
-    if (credentials.password && (credentials.email || credentials.phone)) {
-      this.authService.login(credentials).subscribe({
-        next: (loginResp) => {
-          // After login, navigate to appropriate dashboard
-          const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
-          this.router.navigate([route]);
-        },
-        error: (loginErr) => {
-          console.error('Auto-login failed', loginErr);
-          this.core.triggerToasrt('Login failed. Please login manually.');
-          this.router.navigate(['/home/login']);
-        }
-      });
-    } else {
-      this.router.navigate(['/home/login']);
-    }
+    // Auto-login
+    this.authService.login(credentials).subscribe({
+      next: () => {
+        this.loadingService.forceHide();
+        this.router.navigate(['/authed/user-dashboard']);
+      },
+      error: () => {
+        this.loadingService.forceHide();
+        this.router.navigate(['/home/login']);
+      }
+    });
   }
 
   /**

@@ -92,8 +92,7 @@
   border-radius: 10px;
   background: #EE6621;
       position: absolute;
-    top: 42%;
-    transform: translateY(-20px);
+    top: 38%;
     height: 50px;
     width: 90%;
     pointer-events: none;
@@ -102,7 +101,8 @@
 /* highlight for variant */
 .popover.variant-white-green .highlight-bar {
   background: #4CAF50; // date selection area color
-  border-radius: 10px;
+      top: 32%;
+
 }
 
 /* Done button styling for white-green variant */
