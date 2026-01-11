@@ -11,6 +11,7 @@ import { MindfulButtonComponent } from '../../mindful-button/mindful-button.comp
 import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
 import { InstructioListComponent } from './instructio-list';
 import { AuthService, FamilyInfo, FamilyMember } from '../../../../../package/api/auth.service';
+import { ParentImageService } from '../../../services/parent-image.service';
 import { take } from 'rxjs/operators';
 import { AuthService as CoreAuthService } from '../../../services/auth.service';
 @Component({
@@ -35,7 +36,25 @@ export class FamilyConnectionComponent implements OnInit {
   showRemovePopup: boolean = false;
   memberToRemove: FamilyMember | null = null;
 
-  constructor(private router: Router, private authService: AuthService, private coreAuthService: CoreAuthService) { }
+  constructor(private router: Router, private authService: AuthService, private coreAuthService: CoreAuthService,
+    public parentImageService: ParentImageService) { }
+
+  // Return the first uppercase initial for a name (safe for template bindings)
+  getInitial(name?: string): string {
+    if (!name) return '';
+    return name.trim().charAt(0).toUpperCase();
+  }
+
+  // Determine female flag for member/creator (case-insensitive check)
+  isFemale(member?: FamilyMember | null): boolean {
+    try {
+      const g = (member as any)?.gender;
+      if (!g) return false;
+      return String(g).toLowerCase() === 'female';
+    } catch (e) {
+      return false;
+    }
+  }
 
   /**
    * Open full-screen QR code modal

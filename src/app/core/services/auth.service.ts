@@ -567,14 +567,28 @@ export class AuthService {
   }
 
   /**
+   * Get full user data from stored session (includes avatar, pet, family details, etc.)
+   */
+  getUserData(): any {
+    try {
+      const userData = localStorage.getItem('user_data');
+      if (userData) {
+        return JSON.parse(userData);
+      }
+    } catch (error) {
+      console.error('[AuthService] Error getting user data:', error);
+    }
+    return null;
+  }
+
+  /**
    * Get user's relationship from stored data
    */
   getUserRelationship(): 'CHILD' | 'PARENT' | 'SELF' | null {
     try {
-      const userData = localStorage.getItem('user_data');
+      const userData = this.getUserData();
       if (userData) {
-        const parsedData = JSON.parse(userData);
-        return parsedData.relationship || null;
+        return userData.relationship || null;
       }
     } catch (error) {
       console.error('[AuthService] Error getting user relationship:', error);
@@ -600,6 +614,36 @@ export class AuthService {
 
     // Child and Self users go to user-dashboard
     return '/authed/user-dashboard';
+  }
+
+  /**
+   * Get user's avatar data from stored session
+   */
+  getUserAvatar(): any {
+    try {
+      const userData = this.getUserData();
+      if (userData && userData.avatar) {
+        return userData.avatar;
+      }
+    } catch (error) {
+      console.error('[AuthService] Error getting user avatar:', error);
+    }
+    return null;
+  }
+
+  /**
+   * Get user's pet data from stored session
+   */
+  getUserPet(): any {
+    try {
+      const userData = this.getUserData();
+      if (userData && userData.pet) {
+        return userData.pet;
+      }
+    } catch (error) {
+      console.error('[AuthService] Error getting user pet:', error);
+    }
+    return null;
   }
 
   /**

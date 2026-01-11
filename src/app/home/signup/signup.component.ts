@@ -6,6 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
 import { CountriesService, Country } from "../../core/services/countries.service";
 import { LoadingService } from '../../core/services/loading.service';
+import { ParentImageService } from '../../core/services/parent-image.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Subscription } from 'rxjs';
 
@@ -226,7 +227,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     private countriesService: CountriesService,
     private authService: AuthService,
     private userService: UserService,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+    public parentImageService: ParentImageService
   ) {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -1285,12 +1287,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     let profile: any = {};
     try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) { profile = {}; }
 
+    // Determine avatar selection (prefer saved profile value, then current selection)
+    const avatarKey = profile.avatar ?? this.avatarSelected ?? null;
+    const avatarNameValue = avatarKey ? `avatar${avatarKey}` : undefined;
+    const avatarImageNameValue = avatarKey ? `Avatar ${Number(avatarKey)}` : undefined;
+
     const payload: any = {
       name: profile.name || this.profileForm.get('name')?.value,
       gender: (profile.gender || this.gender || '').toUpperCase(),
       relationship: (role || '').toUpperCase(),
       password: password || undefined,
-      avatarName: `avatar${profile.avatar || this.avatarSelected}`,
+      avatarName: avatarNameValue,
+      avatarImageName: avatarImageNameValue,
       familyCode: familyCode || '',
       familyName: familyName || ''
     };
@@ -1488,12 +1496,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     let profile: any = {};
     try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) { profile = {}; }
 
+    // Determine avatar selection (prefer saved profile value, then current selection)
+    const avatarKey2 = profile.avatar ?? this.avatarSelected ?? null;
+    const avatarNameValue2 = avatarKey2 ? `avatar${avatarKey2}` : undefined;
+    const avatarImageNameValue2 = avatarKey2 ? `Avatar ${Number(avatarKey2)}` : undefined;
+
     const payload: any = {
       name: profile.name || this.profileForm.get('name')?.value,
       gender: (profile.gender || this.gender || '').toUpperCase(),
       relationship: (role || '').toUpperCase(),
       password: password || undefined,
-      avatarName: `avatar${profile.avatar || this.avatarSelected}`,
+      avatarName: avatarNameValue2,
+      avatarImageName: avatarImageNameValue2,
       familyCode: familyCode || ''
     };
 

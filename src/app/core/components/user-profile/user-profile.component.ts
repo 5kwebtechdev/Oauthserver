@@ -14,6 +14,7 @@ import { UserService } from '../../services/user.service';
 import { MoodService } from '../../services/mood.service';
 import { VibesDisplayResponse } from '../../models/mood.model';
 import { AuthService, FamilyMember, FamilyDetailsResponse } from '../../../../package/api/auth.service';
+import { ParentImageService } from '../../services/parent-image.service';
 
 @Component({
   selector: 'user-profile',
@@ -52,6 +53,8 @@ export class UserProfileComponent implements OnInit, OnChanges {
     private authService: AuthService,
     private userService: UserService,
     private moodService: MoodService
+    ,
+    public parentImageService: ParentImageService
   ) {
     // Subscribe to user profile changes
     this.userService.getUserProfile$().subscribe(profile => {
@@ -83,6 +86,24 @@ export class UserProfileComponent implements OnInit, OnChanges {
     // Load family details if user is a parent
     if (this.user?.relationship === 'PARENT') {
       this.loadFamilyDetails();
+    }
+  }
+
+  // Return the uppercase initial for a given name
+  getInitial(name?: string): string {
+    try {
+      if (!name) return '?';
+      return name.trim().charAt(0).toUpperCase();
+    } catch {
+      return '?';
+    }
+  }
+
+  isFemale(member?: any): boolean {
+    try {
+      return !!(member && (member as any).gender === 'female');
+    } catch {
+      return false;
     }
   }
 

@@ -73,7 +73,11 @@
                     <section class="family-con-detail" aria-label="Family details" *ngIf="creator">
                         <div class="f-head">
                             <div class="family-avatar">
-                                <div class="avatar-img" aria-hidden="true"></div>
+                                <div class="initial-avatar-circle"
+                                     [ngStyle]="parentImageService.getAvatarStyle(getInitial(creator?.name), isFemale(creator), 80)"
+                                     aria-hidden="true">
+                                    {{ getInitial(creator?.name) }}
+                                </div>
                             </div>
 
                             <div class="f-head">
@@ -96,7 +100,11 @@
                                     <img *ngIf="m.avatarName; else placeholder" [src]="m.avatarName"
                                         alt="{{m.name}} avatar" />
                                     <ng-template #placeholder>
-                                        <div class="avatar-placeholder"></div>
+                                        <div class="initial-avatar-circle"
+                                             [ngStyle]="parentImageService.getAvatarStyle(getInitial(m.name), isFemale(m), 48)"
+                                             aria-hidden="true">
+                                            {{ getInitial(m.name) }}
+                                        </div>
                                     </ng-template>
                                 </div>
                                 <div class="name-age">
