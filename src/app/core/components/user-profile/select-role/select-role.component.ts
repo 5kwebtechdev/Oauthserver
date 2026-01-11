@@ -1,13 +1,15 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ToastController } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { InstructioListComponent } from '../family-connection/instructio-list';
 import { ProfileFactsComponent, PROFILE_FAQS } from '../profile-facts/profile-facts.component';
 import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-input.component';
 import { NavigationService } from '../../../services/navigation.service';
+import { FamilyService } from '../../../services/family.service';
+import { take } from 'rxjs/operators';
 
 @Component({
   standalone: true,
@@ -443,6 +445,8 @@ export class RoleSelectComponent {
 
   // Family flow toggle for Step 3: 'create' | 'join'
   selectedFamilyAction: 'create' | 'join' = 'create';
+  familyInput: string = ''; // Family name or family code input
+  isSubmitting: boolean = false; // Loading state
 
   setFamilyAction(action: 'create' | 'join') {
     this.selectedFamilyAction = action;
@@ -459,7 +463,12 @@ export class RoleSelectComponent {
     }
   }
 
-  constructor(private router: Router, private navigationService: NavigationService) { }
+  constructor(
+    private router: Router,
+    private navigationService: NavigationService,
+    private familyService: FamilyService,
+    private toastController: ToastController
+  ) { }
 
   selectRole(role: string) {
     this.selectedRole = role;

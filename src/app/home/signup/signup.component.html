@@ -346,7 +346,7 @@
     </div>
     <div *ngIf="step === 4 && (currentRole === 'self' || currentRole === 'child')" [@slideIn]>
       <swiper-container slides-per-view="1.4" centered-slides="true" space-between="20" grab-cursor="true"
-        (slidechange)="onSlideChange()" (swiperstateupdate)="onSlideChange()" #swiperEl [style]="{ marginTop: '50px' }">
+        (slidechange)="onSlideChange()" (swiperstateupdate)="onSlideChange()" #swiperEl [style]="{ marginBottom: '24px' }">
         <swiper-slide *ngFor="let pet of pets">
           <div class="pet-card d-flex flex-column">
             <h4>{{pet.displayName}}</h4>
@@ -371,11 +371,11 @@
         <p class="subtitle" style="width:281px;">Add something to keep track of — for now, soon, or later. It's your
           call.</p>
 
-        <div class="begin-action" style="width:100%;">
-          <!-- Make the button full-width of its parent -->
-        </div>
+      
       </div>
-      <mindful-button type="magenta" full text="Begin My Journey" (click)="onBegin()"></mindful-button>
+       <div class="begin-action" style="width:100%;">
+          <mindful-button type="magenta" full text="Begin My Journey" (click)="onBegin()"></mindful-button>
+        </div>
     </div>
 
     <div class="age-modal-backdrop" *ngIf="showAgeSuggestionModal" (click)="closeAgeSuggestionModal()"></div>

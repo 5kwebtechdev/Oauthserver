@@ -679,7 +679,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         return;
       }
     } else if (role === 'self') {
-      this.router.navigate(['home/sign-up'], { queryParams: { step: 3 } });
+      // For self users, go straight to pet selection (step 4)
+      this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
       return;
     }
   }
