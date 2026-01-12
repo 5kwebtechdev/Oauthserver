@@ -24,7 +24,7 @@
       <div class="d-flex flex-column gap-3" parent-profile-detail *ngIf="user?.relationship === 'PARENT'">
         <section class="family-con-detail" aria-label="Family details" *ngIf="creator">
           <div class="f-head">
-            <div class="family-avatar">
+              <div class="family-avatar">
               <div class="initial-avatar-circle" [ngStyle]="parentImageService.getAvatarStyle(getInitial(creator.name), isFemale(creator), 80)">
                 {{ getInitial(creator.name) }}
               </div>
@@ -35,8 +35,8 @@
               <p>{{ creator.age }} years old</p>
 
               <div class="relationship-badge" [class.child]="creator.relationship === 'Child'"
-                [class.parent]="creator.relationship === 'Parent'">
-                {{ creator.relationship + ' / Creator' + (creator.you ? ' / You' : '') }}
+                [class.parent]="creator.relationship === 'Parent' || creator.relationship === 'Co-Parent'">
+                {{ (creator.relationship === 'Co-Parent' ? 'Parent' : creator.relationship) + ' / Creator' + (creator.you ? ' / You' : '') }}
               </div>
             </div>
           </div>
@@ -46,9 +46,30 @@
           <div class="member-detail" *ngFor="let m of members">
             <div class="member-info">
               <div class="avtar-img" [class.is-you]="m.you">
-                <img *ngIf="m.avatarName; else placeholder" [src]="m.avatarName" alt="{{m.name}} avatar" />
-                <ng-template #placeholder>
-                  <div class="avatar-placeholder"></div>
+                <!-- Parent: show styled initial avatar -->
+                <ng-container *ngIf="m.relationship === 'Parent' || m.relationship === 'Co-Parent'; else regularAvatar">
+                  <div class="initial-avatar-circle" [ngStyle]="parentImageService.getAvatarStyle(getInitial(m.name), isFemale(m), 56)">
+                    {{ getInitial(m.name) }}
+                  </div>
+                </ng-container>
+
+                <!-- Regular avatar: for Child use child resolver; otherwise prefer server-provided image, fallback placeholder -->
+                <ng-template #regularAvatar>
+                  <ng-container *ngIf="m.relationship === 'Child'; else nonChildAvatar">
+                    <ng-container *ngIf="getMemberAvatar(m) as resolvedAvatar">
+                      <img *ngIf="resolvedAvatar.url; else childPlaceholder" [src]="resolvedAvatar.url" [alt]="resolvedAvatar.alt || (m.name + ' avatar')" />
+                    </ng-container>
+                    <ng-template #childPlaceholder>
+                      <div class="avatar-placeholder"></div>
+                    </ng-template>
+                  </ng-container>
+
+                  <ng-template #nonChildAvatar>
+                    <img *ngIf="m.avatarName; else placeholder" [src]="m.avatarName" alt="{{m.name}} avatar" />
+                    <ng-template #placeholder>
+                      <div class="avatar-placeholder"></div>
+                    </ng-template>
+                  </ng-template>
                 </ng-template>
               </div>
               <div class="name-age">
@@ -58,7 +79,7 @@
             </div>
 
             <div class="relationship-badge" [class.child]="m.relationship === 'Child'"
-              [class.parent]="m.relationship === 'Parent'" (click)="toggleMemberActive(m)">
+              [class.parent]="m.relationship === 'Parent' || m.relationship === 'Co-Parent'" (click)="toggleMemberActive(m)">
               {{ getBadgeText(m) }}
             </div>
           </div>
