@@ -1,5 +1,13 @@
 <ion-content fullscreen>
-    <section class="parental-instructions" *ngIf="!showParentalControlBlank">
+    <div class="coming-soon-container">
+        <mindful-navigator heading="Parental Control" backIcon="arrowSvg"></mindful-navigator>
+    <div class="coming-soon-message">
+        <img src="/assets/Images-Transparent/Parental Coming Soon.png" alt="Parental Coming Soon" />
+        <h1>Advanced controls are on the way</h1>
+        <p>A detailed dashboard for managing limits and permissions is currently being built.</p>
+    </div>
+</div>
+    <!-- <section class="parental-instructions" *ngIf="!showParentalControlBlank">
         <mindful-navigator heading="Get this done on your device" backIcon="arrowSvg"></mindful-navigator>
 
         <div class="parental-control-content">
@@ -41,11 +49,9 @@
                         </div>
                         <div class="app-time-list">
                             <div class="app-usage-data">
-                                <!-- App usage row: YouTube -->
                                 <div class="app-row">
                                     <div class="app-left">
                                         <div class="app-icon youtube-icon">
-                                            <!-- YouTube-like SVG -->
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="14"
                                                 viewBox="0 0 20 14" fill="none">
                                                 <g clip-path="url(#clip0_4300_42498)">
@@ -72,11 +78,9 @@
                                     <div class="app-time">1hr 15min</div>
                                 </div>
 
-                                <!-- App usage row: Whatsapp -->
                                 <div class="app-row">
                                     <div class="app-left">
                                         <div class="app-icon whatsapp-icon">
-                                            <!-- Whatsapp-like SVG -->
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                                                 viewBox="0 0 20 20" fill="none">
                                                 <g clip-path="url(#clip0_4300_42507)">
@@ -114,14 +118,11 @@
             <h1>App Blocker</h1>
             <div class="app-blocker">
                 <div class="app-block-list">
-                    <!-- Render blocked apps dynamically -->
                     <div class="app-name-time" *ngFor="let app of blockedApps">
                         <div class="app-list-item">
                             <div class="app-icon" *ngIf="app.iconType === 'svg'">
-                                <!-- Inline SVGs by id -->
                                 <ng-container [ngSwitch]="app.svg">
                                     <ng-container *ngSwitchCase="'youtube'">
-                                        <!-- small Youtube svg -->
                                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
                                             xmlns="http://www.w3.org/2000/svg">
                                             <path
@@ -130,7 +131,6 @@
                                         </svg>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'whatsapp'">
-                                        <!-- small Whatsapp svg -->
                                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
                                             xmlns="http://www.w3.org/2000/svg">
                                             <path
@@ -185,6 +185,6 @@
                 </div>
             </div>
         </main>
-    </section>
+    </section> -->
 
 </ion-content>

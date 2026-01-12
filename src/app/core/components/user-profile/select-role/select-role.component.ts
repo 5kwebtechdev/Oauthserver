@@ -11,11 +11,12 @@ import { NavigationService } from '../../../services/navigation.service';
 import { FamilyService } from '../../../services/family.service';
 import { AuthService } from '../../../services/auth.service';
 import { take } from 'rxjs/operators';
+import { QRCodeComponent } from 'angularx-qrcode';
 
 @Component({
   standalone: true,
   selector: 'role-select',
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent, InstructioListComponent, ProfileFactsComponent, ProfileEditInputComponent],
+  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent, InstructioListComponent, ProfileFactsComponent, ProfileEditInputComponent, QRCodeComponent],
   template: `
 <ion-content>
 	<div class="step step-1" *ngIf="currentStep === 1">
@@ -97,40 +98,104 @@ import { take } from 'rxjs/operators';
 
 		<div class="container w-full p-0" style="display: flex; justify-content: center; align-items: center;">
 			<div class="container w-full p-0" style="padding: 20px 0px !important; max-width:420px; width:100%">
-				<div *ngIf="selectedRole !== 'child'" class="toggle-buttons">
-					<button [class.active]="selectedFamilyAction === 'create'"
-						(click)="setFamilyAction('create')">Create Family</button>
-					<button [class.active]="selectedFamilyAction === 'join'" (click)="setFamilyAction('join')">Join
-						Family</button>
+				
+				<!-- FAMILY CREATION FORM (before family is created) -->
+				<ng-container *ngIf="!familyCreated">
+					<div *ngIf="selectedRole !== 'child'" class="toggle-buttons">
+						<button [class.active]="selectedFamilyAction === 'create'"
+							(click)="setFamilyAction('create')">Create Family</button>
+						<button [class.active]="selectedFamilyAction === 'join'" (click)="setFamilyAction('join')">Join
+							Family</button>
+					</div>
+
+					<div style="position:relative;">
+					<profile-edit-input 
+						desc="For naming your family"
+						[placeholder]="selectedFamilyAction === 'create' ? 'Set family name' : 'Enter family code or scan QR'"
+						[value]="familyInput"
+						(valueChange)="onFamilyInputChange($event)">
+					</profile-edit-input>
+
+					<button *ngIf="selectedFamilyAction === 'join'" (click)="onScanQr()" aria-label="Scan QR"
+						[disabled]="isSubmitting"
+						style="position:absolute; right:8px; top:50%; transform:translateY(-50%); border:none; background:transparent; padding:6px; display:flex; align-items:center; cursor: pointer; z-index: 10;">
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none" [style.opacity]="isSubmitting ? 0.5 : 1">
+							<path
+								d="M0 8V0H8V8H0ZM2 6H6V2H2V6ZM0 18V10H8V18H0ZM2 16H6V12H2V16ZM10 8V0H18V8H10ZM12 6H16V2H12V6ZM16 18V16H18V18H16ZM10 12V10H12V12H10ZM12 14V12H14V14H12ZM10 16V14H12V16H10ZM12 18V16H14V18H12ZM14 16V14H16V16H14ZM14 12V10H16V12H14ZM16 14V12H18V14H16Z"
+								fill="#282527" />
+						</svg>
+					</button>
 				</div>
 
-				<div style="position:relative;">
-				<profile-edit-input 
-					desc="For naming your family"
-					[placeholder]="selectedFamilyAction === 'create' ? 'Set family name' : 'Enter family code or scan QR'"
-					[value]="familyInput"
-					(valueChange)="onFamilyInputChange($event)">
-				</profile-edit-input>
+				<div style="margin-top:20px; text-align:center;">
+					<mindful-button type="green" size="full"
+						[text]="(isSubmitting ? 'Processing...' : (selectedFamilyAction === 'create' ? 'Create Family' : 'Join Family'))"
+						[disabled]="!isFormValid() || isSubmitting" (click)="save()"></mindful-button>
 
-				<button *ngIf="selectedFamilyAction === 'join'" (click)="onScanQr()" aria-label="Scan QR"
-					[disabled]="isSubmitting"
-					style="position:absolute; right:8px; top:50%; transform:translateY(-50%); border:none; background:transparent; padding:6px; display:flex; align-items:center; cursor: pointer; z-index: 10;">
-					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none" [style.opacity]="isSubmitting ? 0.5 : 1">
-						<path
-							d="M0 8V0H8V8H0ZM2 6H6V2H2V6ZM0 18V10H8V18H0ZM2 16H6V12H2V16ZM10 8V0H18V8H10ZM12 6H16V2H12V6ZM16 18V16H18V18H16ZM10 12V10H12V12H10ZM12 14V12H14V14H12ZM10 16V14H12V16H10ZM12 18V16H14V18H12ZM14 16V14H16V16H14ZM14 12V10H16V12H14ZM16 14V12H18V14H16Z"
-							fill="#282527" />
-					</svg>
-				</button>
-			</div>
-
-			<div style="margin-top:20px; text-align:center;">
-				<mindful-button type="green" size="full"
-					[text]="(isSubmitting ? 'Processing...' : (selectedFamilyAction === 'create' ? 'Create Family' : 'Join Family'))"
-					[disabled]="!isFormValid() || isSubmitting" (click)="save()"></mindful-button>
-
-				<div style="margin-top:18px; max-width:420px; margin-left:auto; margin-right:auto;">
-					<profile-facts [faqs]="faqsForStep3"></profile-facts>
+					<div style="margin-top:18px; max-width:420px; margin-left:auto; margin-right:auto;">
+						<profile-facts [faqs]="faqsForStep3"></profile-facts>
+					</div>
 				</div>
+				</ng-container>
+
+				<!-- FAMILY CREATED SUCCESS STATE (after family is created) -->
+				<ng-container *ngIf="familyCreated">
+					<div class="family-success-section">
+						<div class="success-header">
+							<h5 class="success-title">Family Created Successfully!</h5>
+						</div>
+
+						<div class="family-code-section">
+							<p class="code-label">Your Family Code</p>
+							<div class="code-display">
+								<span class="code-text">{{ familyCode }}</span>
+								<button class="copy-btn" (click)="copyFamilyCode()" aria-label="Copy family code">
+								<svg xmlns="http://www.w3.org/2000/svg" width="13" height="15" viewBox="0 0 13 15" fill="none">
+  <path d="M11.3333 12H4C3.63333 12 3.31944 11.8694 3.05833 11.6083C2.79722 11.3472 2.66667 11.0333 2.66667 10.6667V1.33333C2.66667 0.966667 2.79722 0.652778 3.05833 0.391667C3.31944 0.130556 3.63333 0 4 0H8.66667L12.6667 4V10.6667C12.6667 11.0333 12.5361 11.3472 12.275 11.6083C12.0139 11.8694 11.7 12 11.3333 12ZM8 4.66667V1.33333H4V10.6667H11.3333V4.66667H8ZM1.33333 14.6667C0.966667 14.6667 0.652778 14.5361 0.391667 14.275C0.130556 14.0139 0 13.7 0 13.3333V4H1.33333V13.3333H8.66667V14.6667H1.33333Z" fill="#282527"/>
+</svg>
+								</button>
+							</div>
+						</div>
+
+						<div class="divider">
+							<span>OR</span>
+						</div>
+
+						<div class="qr-code-section">
+							<div class="qr-code-container">
+								<qrcode [qrdata]="qrCodeData" [width]="200" [errorCorrectionLevel]="'M'" [elementType]="'canvas'" [margin]="2" cssClass="qr-canvas">
+								</qrcode>
+							</div>
+							<button class="share-qr-btn" (click)="shareQRCode()">
+								<svg xmlns="http://www.w3.org/2000/svg" width="12" height="14" viewBox="0 0 12 14" fill="none">
+  <path d="M10 13.3333C9.44444 13.3333 8.97222 13.1389 8.58333 12.75C8.19444 12.3611 8 11.8889 8 11.3333C8 11.2667 8.01667 11.1111 8.05 10.8667L3.36667 8.13333C3.18889 8.3 2.98333 8.43056 2.75 8.525C2.51667 8.61944 2.26667 8.66667 2 8.66667C1.44444 8.66667 0.972222 8.47222 0.583333 8.08333C0.194444 7.69444 0 7.22222 0 6.66667C0 6.11111 0.194444 5.63889 0.583333 5.25C0.972222 4.86111 1.44444 4.66667 2 4.66667C2.26667 4.66667 2.51667 4.71389 2.75 4.80833C2.98333 4.90278 3.18889 5.03333 3.36667 5.2L8.05 2.46667C8.02778 2.38889 8.01389 2.31389 8.00833 2.24167C8.00278 2.16944 8 2.08889 8 2C8 1.44444 8.19444 0.972222 8.58333 0.583333C8.97222 0.194444 9.44444 0 10 0C10.5556 0 11.0278 0.194444 11.4167 0.583333C11.8056 0.972222 12 1.44444 12 2C12 2.55556 11.8056 3.02778 11.4167 3.41667C11.0278 3.80556 10.5556 4 10 4C9.73333 4 9.48333 3.95278 9.25 3.85833C9.01667 3.76389 8.81111 3.63333 8.63333 3.46667L3.95 6.2C3.97222 6.27778 3.98611 6.35278 3.99167 6.425C3.99722 6.49722 4 6.57778 4 6.66667C4 6.75556 3.99722 6.83611 3.99167 6.90833C3.98611 6.98056 3.97222 7.05555 3.95 7.13333L8.63333 9.86667C8.81111 9.7 9.01667 9.56944 9.25 9.475C9.48333 9.38056 9.73333 9.33333 10 9.33333C10.5556 9.33333 11.0278 9.52778 11.4167 9.91667C11.8056 10.3056 12 10.7778 12 11.3333C12 11.8889 11.8056 12.3611 11.4167 12.75C11.0278 13.1389 10.5556 13.3333 10 13.3333ZM10 12C10.1889 12 10.3472 11.9361 10.475 11.8083C10.6028 11.6806 10.6667 11.5222 10.6667 11.3333C10.6667 11.1444 10.6028 10.9861 10.475 10.8583C10.3472 10.7306 10.1889 10.6667 10 10.6667C9.81111 10.6667 9.65278 10.7306 9.525 10.8583C9.39722 10.9861 9.33333 11.1444 9.33333 11.3333C9.33333 11.5222 9.39722 11.6806 9.525 11.8083C9.65278 11.9361 9.81111 12 10 12ZM2 7.33333C2.18889 7.33333 2.34722 7.26944 2.475 7.14167C2.60278 7.01389 2.66667 6.85556 2.66667 6.66667C2.66667 6.47778 2.60278 6.31944 2.475 6.19167C2.34722 6.06389 2.18889 6 2 6C1.81111 6 1.65278 6.06389 1.525 6.19167C1.39722 6.31944 1.33333 6.47778 1.33333 6.66667C1.33333 6.85556 1.39722 7.01389 1.525 7.14167C1.65278 7.26944 1.81111 7.33333 2 7.33333ZM10 2.66667C10.1889 2.66667 10.3472 2.60278 10.475 2.475C10.6028 2.34722 10.6667 2.18889 10.6667 2C10.6667 1.81111 10.6028 1.65278 10.475 1.525C10.3472 1.39722 10.1889 1.33333 10 1.33333C9.81111 1.33333 9.65278 1.39722 9.525 1.525C9.39722 1.65278 9.33333 1.81111 9.33333 2C9.33333 2.18889 9.39722 2.34722 9.525 2.475C9.65278 2.60278 9.81111 2.66667 10 2.66667Z" fill="white"/>
+</svg>
+								Share QR code
+							</button>
+						</div>
+
+            <!-- First button: Child has done the required -->
+            <mindful-button
+              *ngIf="!childCompletedTask"
+              type="green"
+              size="full"
+              text="My child has done the required"
+              [disabled]="isSubmitting"
+              (click)="onChildTaskCompleted()">
+            </mindful-button>
+
+            <!-- Second button: Go to Parent account (shows after confirming child done) -->
+            <mindful-button
+              *ngIf="childCompletedTask"
+              type="green"
+              size="full"
+              text="Go to your Parent account"
+              [disabled]="isSubmitting"
+              (click)="goToParentAccount()">
+            </mindful-button>
+					</div>
+				</ng-container>
+
 			</div>
 		</div>
 	</div>
@@ -197,6 +262,8 @@ import { take } from 'rxjs/operators';
     color: #282527;
     margin: 10px 0px 15px 0px;
   }
+  h5{margin: 0px;}
+
 
   h4 {
     font-weight: 400;
@@ -403,6 +470,125 @@ import { take } from 'rxjs/operators';
     display: block;
   }
 }
+
+/* ============ QR CODE SECTION STYLES (matching family-onboard) ============ */
+.family-success-section {
+  margin: 2rem 0;
+}
+
+.success-header {
+  text-align: center;
+}
+
+.success-title {
+ color: #4CAF50;
+text-align: center;
+font-family: Nunito;
+font-size: 16px;
+font-weight: 600;
+  margin: 0;
+}
+
+.family-code-section {
+      margin: 1.5rem 0;
+    padding: 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.code-label {
+  font-size: 0.85rem;
+  color: #888;
+  margin: 0 0 0.75rem 0;
+  font-weight: 500;
+}
+
+.code-display {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+ 
+}
+
+.code-text {
+ color: #282527;
+    font-family: Nunito;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.copy-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+  
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #ddd;
+  }
+
+}
+
+.qr-code-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 0;
+}
+
+.qr-code-container {
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  
+  .qr-canvas {
+    canvas {
+      max-width: 100%;
+      height: auto;
+    }
+  }
+}
+
+.share-qr-btn {
+  display: flex;
+    padding: 8px;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    border-radius: 32px;
+    background: #4CAF50;
+    color: #FFF;
+    font-family: Nunito;
+    font-size: 13px;
+    font-weight: 500;
+  
+  &:hover {
+    background: #f0f8f4;
+  }
+}
 `]
 })
 export class RoleSelectComponent {
@@ -449,6 +635,13 @@ export class RoleSelectComponent {
   selectedFamilyAction: 'create' | 'join' = 'create';
   familyInput: string = ''; // Family name or family code input
   isSubmitting: boolean = false; // Loading state
+
+  // Family creation state
+  familyCreated: boolean = false;
+  familyCode: string = '';
+  qrCodeData: string = '';
+  createdFamilyName: string = '';
+  childCompletedTask: boolean = false; // Track if child has completed task
 
   setFamilyAction(action: 'create' | 'join') {
     this.selectedFamilyAction = action;
@@ -688,9 +881,152 @@ export class RoleSelectComponent {
     if (this.selectedRole === 'child' || this.selectedFamilyAction === 'join') {
       this.joinFamilyViaApi();
     } else if (this.selectedFamilyAction === 'create') {
-      // For parent creating family
-      this.createFamilyViaApi();
+      // For parent creating family - show QR code screen
+      this.createFamilyLocally();
     }
+  }
+
+  /**
+   * Create family locally and show QR code screen
+   */
+  private createFamilyLocally(): void {
+    if (!this.isFormValid()) {
+      this.showToast('Please enter a family name', 'warning');
+      return;
+    }
+
+    this.isSubmitting = true;
+    const familyName = this.familyInput.trim();
+    this.createdFamilyName = familyName;
+
+    // Simulate family creation - in real app, call API
+    this.familyService.createFamily(familyName).pipe(take(1)).subscribe({
+      next: (response) => {
+        console.log('✅ Family created:', response);
+        this.isSubmitting = false;
+        this.familyCreated = true;
+        this.familyCode = response.familyCode || this.generateFamilyCode();
+        this.qrCodeData = 'GROUP:' + this.familyCode;
+      },
+      error: (error) => {
+        console.error('❌ Family creation failed:', error);
+        this.isSubmitting = false;
+        this.showToast('Failed to create family', 'danger');
+      }
+    });
+  }
+
+  /**
+   * Continue after family creation
+   */
+  continueAfterFamilyCreation(): void {
+    if (!this.familyCreated) return;
+
+    // Save family code to localStorage
+    const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+    userData.familyCode = this.familyCode;
+    userData.familyName = this.createdFamilyName;
+    localStorage.setItem('user_data', JSON.stringify(userData));
+
+    // Navigate to next step or dashboard
+    this.router.navigate(['/authed/family-connection']);
+  }
+
+  /**
+   * Handle when child has completed the required task
+   */
+  onChildTaskCompleted(): void {
+    if (!this.familyCreated) return;
+    this.childCompletedTask = true;
+  }
+
+  /**
+   * Navigate to parent account page
+   */
+  goToParentAccount(): void {
+    if (!this.familyCreated) return;
+
+    // Save family code and name to localStorage
+    const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+    userData.familyCode = this.familyCode;
+    userData.familyName = this.createdFamilyName;
+    userData.relationship = 'PARENT';
+    localStorage.setItem('user_data', JSON.stringify(userData));
+
+    // Navigate to parent account
+    this.router.navigate(['/authenticated/parent-account']);
+  }
+
+  /**
+   * Copy family code to clipboard
+   */
+  copyFamilyCode(): void {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(this.familyCode).then(() => {
+        this.showToast('Family code copied to clipboard!', 'success');
+      }).catch(() => {
+        this.fallbackCopyTextToClipboard(this.familyCode);
+      });
+    } else {
+      this.fallbackCopyTextToClipboard(this.familyCode);
+    }
+  }
+
+  /**
+   * Fallback copy to clipboard for non-secure contexts
+   */
+  private fallbackCopyTextToClipboard(text: string): void {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.top = '0';
+    textArea.style.left = '0';
+    textArea.style.position = 'fixed';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      this.showToast('Family code copied to clipboard!', 'success');
+    } catch (err) {
+      this.showToast('Failed to copy family code', 'danger');
+    }
+    document.body.removeChild(textArea);
+  }
+
+  /**
+   * Share QR code via native share or fallback
+   */
+  shareQRCode(): void {
+    if (navigator.share) {
+      navigator.share({
+        title: 'Family Code',
+        text: `Join my family with code: ${this.familyCode}`,
+        url: `${window.location.origin}/join-family?code=${this.familyCode}`
+      }).catch(() => {
+        this.fallbackShare();
+      });
+    } else {
+      this.fallbackShare();
+    }
+  }
+
+  /**
+   * Fallback share when native share not available
+   */
+  private fallbackShare(): void {
+    this.showToast('Share functionality not available on this device', 'warning');
+  }
+
+  /**
+   * Generate random family code
+   */
+  private generateFamilyCode(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
   }
 
   goBack() {
