@@ -15,6 +15,7 @@ import { MoodService } from '../../services/mood.service';
 import { VibesDisplayResponse } from '../../models/mood.model';
 import { AuthService, FamilyMember, FamilyDetailsResponse } from '../../../../package/api/auth.service';
 import { ParentImageService } from '../../services/parent-image.service';
+import { ChildSelfImageService } from '../../services/child-self-image.service';
 
 @Component({
   selector: 'user-profile',
@@ -28,6 +29,8 @@ export class UserProfileComponent implements OnInit, OnChanges {
 
   // Local user avatar URL
   userAvatarUrl: string = '/assets/app-assets/Default-avatar-home.svg';
+  // Avatar image name (e.g., "Avatar 3") coming from login response
+  avatarImageName: string | null = null;
 
   @Input() userCoins: number | string = 0;
   @Input() userStreaks: number | string = 0;
@@ -52,14 +55,28 @@ export class UserProfileComponent implements OnInit, OnChanges {
     private coreAuthService: CoreAuthService,
     private authService: AuthService,
     private userService: UserService,
-    private moodService: MoodService
-    ,
+    private moodService: MoodService,
+    private childSelfImageService: ChildSelfImageService,
     public parentImageService: ParentImageService
   ) {
     // Subscribe to user profile changes
     this.userService.getUserProfile$().subscribe(profile => {
       if (profile) {
         this.userAvatarUrl = this.userService.getUserAvatarUrl();
+
+        // Also resolve avatar from service for child/self users
+        const userData = localStorage.getItem('user_data');
+        if (userData) {
+          try {
+            const parsedData = JSON.parse(userData);
+            const resolved = this.childSelfImageService.resolveAvatarFromUser(parsedData);
+            if (resolved.url) this.userAvatarUrl = resolved.url;
+            if (resolved.alt) this.avatarImageName = resolved.alt;
+          } catch (e) {
+            // ignore
+          }
+        }
+
         // Merge service-provided avatar into local `user` object.
         // If `user` wasn't provided as an Input, create it from the profile.
         if (!this.user || Object.keys(this.user).length === 0) {
@@ -128,15 +145,18 @@ export class UserProfileComponent implements OnInit, OnChanges {
           relationship: parsedData.relationship
         };
 
-        // Update avatar URL
-        if (parsedData.avatar?.url) {
-          this.userAvatarUrl = parsedData.avatar.url;
-        }
+        // Update avatar URL using shared resolver
+        const resolved = this.childSelfImageService.resolveAvatarFromUser(parsedData);
+        if (resolved.url) this.userAvatarUrl = resolved.url;
+        if (resolved.alt) this.avatarImageName = resolved.alt;
 
         console.log('[UserProfile] Mapped user info:', {
           name: this.user.name,
           age: this.user.age,
-          avatarUrl: this.userAvatarUrl
+          avatarUrl: this.userAvatarUrl,
+          avatarImageName: this.avatarImageName,
+          resolvedUrl: resolved.url,
+          resolvedAlt: resolved.alt
         });
       }
     } catch (e) {
@@ -362,4 +382,6 @@ export class UserProfileComponent implements OnInit, OnChanges {
     }
     return member.relationship === 'Parent' ? 'Parent' : 'Child';
   }
+
+
 }
