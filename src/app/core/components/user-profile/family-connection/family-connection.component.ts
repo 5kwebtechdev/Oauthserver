@@ -14,6 +14,7 @@ import { AuthService, FamilyInfo, FamilyMember } from '../../../../../package/ap
 import { ParentImageService } from '../../../services/parent-image.service';
 import { take } from 'rxjs/operators';
 import { AuthService as CoreAuthService } from '../../../services/auth.service';
+import { ChangeDetectorRef } from '@angular/core';
 @Component({
   standalone: true,
   selector: 'family-connection',
@@ -37,7 +38,7 @@ export class FamilyConnectionComponent implements OnInit {
   memberToRemove: FamilyMember | null = null;
 
   constructor(private router: Router, private authService: AuthService, private coreAuthService: CoreAuthService,
-    public parentImageService: ParentImageService) { }
+    public parentImageService: ParentImageService, private cdr: ChangeDetectorRef) { }
 
   // Return the first uppercase initial for a name (safe for template bindings)
   getInitial(name?: string): string {
@@ -162,8 +163,49 @@ export class FamilyConnectionComponent implements OnInit {
   consentChecked: boolean = false;
 
   ngOnInit(): void {
+    // Refresh user data from API to get current relationship status
+    this.refreshUserRelationship();
     this.loadFamilyDetails();
     this.setFamilyFaqs();
+  }
+
+  /**
+   * Refresh user relationship from family-details API to ensure correct UI display
+   */
+  private refreshUserRelationship(): void {
+    this.authService.getFamilyDetails().pipe(take(1)).subscribe({
+      next: (response) => {
+        // Check if user has a family and update relationship accordingly
+        if (response && response.family) {
+          // User is part of a family - check their role from the response
+          const family = response.family as any;
+          const members = family.members || [];
+          const creator = family.creator;
+
+          // Find current user in members or check if they are creator
+          const userData = this.coreAuthService.getUserData() || {};
+          const userId = userData.id;
+
+          // Update relationship based on family data
+          if (creator && creator.you) {
+            userData.relationship = creator.relationship?.toUpperCase() || 'PARENT';
+          } else {
+            const currentUserMember = members.find((m: any) => m.you === true);
+            if (currentUserMember) {
+              userData.relationship = currentUserMember.relationship?.toUpperCase() || 'CHILD';
+            }
+          }
+
+          localStorage.setItem('user_data', JSON.stringify(userData));
+          console.log('[FamilyConnection] Refreshed user relationship:', userData.relationship);
+          this.setFamilyFaqs(); // Refresh FAQs after relationship update
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => {
+        console.error('[FamilyConnection] Failed to refresh user relationship:', err);
+      }
+    });
   }
 
   private setFamilyFaqs(): void {
@@ -211,6 +253,31 @@ export class FamilyConnectionComponent implements OnInit {
     this.isLoading = true;
     this.authService.getFamilyDetails().pipe(take(1)).subscribe({
       next: (response) => {
+        // If server indicates the user has been moved to SELF mode, update stored user data
+        if (response && (response as any).mode === 'SELF') {
+          try {
+            const userData = this.coreAuthService.getUserData() || {};
+            userData.relationship = 'SELF';
+            localStorage.setItem('user_data', JSON.stringify(userData));
+          } catch (e) {
+            console.error('Failed to update local user_data for SELF mode', e);
+          }
+
+          // Clear family-related UI state and refresh faqs for SELF
+          this.familyName = 'Your Family';
+          this.familyStatus = '';
+          this.createdOn = '';
+          this.creator = null;
+          this.members = [];
+          this.familyCode = '';
+          this.qrCodeData = '';
+          this.setFamilyFaqs();
+          this.isLoading = false;
+          // Ensure change detection so template updates immediately
+          try { this.cdr.detectChanges(); } catch (e) { /* noop */ }
+          return;
+        }
+
         if (response && response.family) {
           const f = response.family as any;
           this.familyName = f.familyName || this.familyName;

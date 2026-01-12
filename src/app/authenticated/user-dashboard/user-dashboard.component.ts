@@ -105,6 +105,18 @@ export class UserDashboardComponent implements OnInit {
       return;
     }
 
+    // Try to get userName from session storage first
+    const storedUserData = sessionStorage.getItem('user_data') || localStorage.getItem('user_data');
+    if (storedUserData) {
+      try {
+        const userData = JSON.parse(storedUserData);
+        this.userName = userData.name || 'User';
+      } catch (e) {
+        console.error('Error parsing stored user data:', e);
+        this.userName = 'User';
+      }
+    }
+
     // Load user profile from service
     this.userService.getUserProfile$().subscribe(profile => {
       if (profile) {

@@ -102,7 +102,7 @@ export class ParentImageService {
             'font-family': 'Nunito',
             'font-size': Math.round(size * 0.60) + 'px',
             'width': size + 'px',
-            'height': size + 'px',
+            'height': '100%',
             'text-transform': 'uppercase',
             'user-select': 'none',
             'overflow': 'hidden'

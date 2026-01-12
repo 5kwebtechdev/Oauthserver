@@ -97,15 +97,28 @@
                         <div class="member-detail" *ngFor="let m of members">
                             <div class="member-info">
                                 <div class="avtar-img" [class.is-you]="m.you">
-                                    <img *ngIf="m.avatarName; else placeholder" [src]="m.avatarName"
-                                        alt="{{m.name}} avatar" />
-                                    <ng-template #placeholder>
+                                    <!-- If member is Parent or Co-Parent, render styled initial avatar via ParentImageService -->
+                                    <ng-container *ngIf="m.relationship === 'Parent' || m.relationship === 'Co-Parent'; else regularAvatar">
                                         <div class="initial-avatar-circle"
-                                             [ngStyle]="parentImageService.getAvatarStyle(getInitial(m.name), isFemale(m), 48)"
+                                             [ngStyle]="parentImageService.getAvatarStyle(getInitial(m.name), isFemale(m), 56)"
                                              aria-hidden="true">
                                             {{ getInitial(m.name) }}
                                         </div>
+                                    </ng-container>
+
+                                    <!-- Regular avatar: prefer server-provided image, fallback to styled initial -->
+                                    <ng-template #regularAvatar>
+                                        <img *ngIf="m.avatarName; else placeholder" [src]="m.avatarName"
+                                            alt="{{m.name}} avatar" />
+                                        <ng-template #placeholder>
+                                            <div class="initial-avatar-circle"
+                                                 [ngStyle]="parentImageService.getAvatarStyle(getInitial(m.name), isFemale(m), 48)"
+                                                 aria-hidden="true">
+                                                {{ getInitial(m.name) }}
+                                            </div>
+                                        </ng-template>
                                     </ng-template>
+
                                 </div>
                                 <div class="name-age">
                                     <h1>{{ m.name }}</h1>
