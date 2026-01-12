@@ -30,6 +30,7 @@ import { TaskApi } from '../../core/api/task.api';
 import { HabitApi } from '../../core/api/habit.api';
 import { HabitButtonLogicService } from '../../core/components/habit-section/habit-button-logic.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ChildSelfImageService } from '../../core/services/child-self-image.service';
 
 @Component({
   selector: 'app-user-dashboard',
@@ -62,6 +63,7 @@ export class UserDashboardComponent implements OnInit {
   // Minimal properties used by the template
   public userName: string = 'User';
   public userAvatarUrl: string = '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
+  public avatarImageName: string | null = null;
   public userCoins: number = 0;
   public userStreaks: number = 0;
   public userDays: number = 0;
@@ -87,6 +89,8 @@ export class UserDashboardComponent implements OnInit {
     private habitApi: HabitApi,
     private buttonLogic: HabitButtonLogicService,
     private authService: AuthService
+    ,
+    private childSelfImageService: ChildSelfImageService
   ) { }
 
   async openNotes() {
@@ -108,6 +112,16 @@ export class UserDashboardComponent implements OnInit {
         this.userAvatarUrl = this.userService.getUserAvatarUrl();
       }
     });
+
+    // Prefer avatar info from stored login response (for child/self avatars)
+    try {
+      const userData = this.authService.getUserData();
+      const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
+      if (resolved.url) this.userAvatarUrl = resolved.url;
+      if (resolved.alt) this.avatarImageName = resolved.alt;
+    } catch (e) {
+      // ignore
+    }
 
     // Fetch user stats (coins, streaks, badges, etc.) from backend
     this.loadUserStats();
@@ -363,4 +377,9 @@ export class UserDashboardComponent implements OnInit {
   }
 
   protected readonly console = console;
+  /**
+   * Resolve avatar URL from an avatarImageName like "Avatar 3" and optional gender
+   */
+  // helper moved to ChildSelfImageService
+
 }

@@ -7,7 +7,7 @@
         <div class="avatar w-100 d-flex justify-content-center gap-2 flex-column align-items-center">
           <div class="avatar-wrapper">
             <img [src]="user?.avatarUrl || userAvatarUrl || '/assets/app-assets/Default-avatar-home.svg'"
-              alt="{{ user?.name || 'User' }} avatar" />
+              [alt]="avatarImageName ? avatarImageName : (user?.name || 'User') + ' avatar'" />
           </div>
           <div class="user-info w-100 d-flex justify-content-center gap-2 flex-column align-items-center">
             <div class="user-name">{{ user?.name || 'You' }}</div>
