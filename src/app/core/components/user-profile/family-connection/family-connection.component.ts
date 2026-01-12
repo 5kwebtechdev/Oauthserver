@@ -12,6 +12,7 @@ import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.compone
 import { InstructioListComponent } from './instructio-list';
 import { AuthService, FamilyInfo, FamilyMember } from '../../../../../package/api/auth.service';
 import { ParentImageService } from '../../../services/parent-image.service';
+import { ChildSelfImageService } from '../../../services/child-self-image.service';
 import { take } from 'rxjs/operators';
 import { AuthService as CoreAuthService } from '../../../services/auth.service';
 import { ChangeDetectorRef } from '@angular/core';
@@ -38,7 +39,7 @@ export class FamilyConnectionComponent implements OnInit {
   memberToRemove: FamilyMember | null = null;
 
   constructor(private router: Router, private authService: AuthService, private coreAuthService: CoreAuthService,
-    public parentImageService: ParentImageService, private cdr: ChangeDetectorRef) { }
+    public parentImageService: ParentImageService, private childSelfImageService: ChildSelfImageService, private cdr: ChangeDetectorRef) { }
 
   // Return the first uppercase initial for a name (safe for template bindings)
   getInitial(name?: string): string {
@@ -54,6 +55,30 @@ export class FamilyConnectionComponent implements OnInit {
       return String(g).toLowerCase() === 'female';
     } catch (e) {
       return false;
+    }
+  }
+
+  /**
+   * Resolve avatar URL+alt for a family member.
+   * Use ChildSelfImageService only for members whose relationship is Child.
+   */
+  getMemberAvatar(member: FamilyMember | null): { url: string | null; alt: string | null } | null {
+    if (!member) return null;
+
+    try {
+      const rel = String(member.relationship || '').toLowerCase();
+
+      // Only use child resolver for children — avoid using avatarImageName for parents/co-parents
+      if (rel === 'child') {
+        // ChildSelfImageService gracefully handles multiple input shapes (avatarName/avatarImageName)
+        const resolved = this.childSelfImageService.resolveAvatarForMember(member as any);
+        return resolved || { url: null, alt: null };
+      }
+
+      return null;
+    } catch (e) {
+      console.error('[FamilyConnection] getMemberAvatar error', e);
+      return null;
     }
   }
 

@@ -125,6 +125,28 @@ export class UserProfileComponent implements OnInit, OnChanges {
   }
 
   /**
+   * Resolve avatar URL+alt for a family member.
+   * Use ChildSelfImageService only for members whose relationship is Child.
+   */
+  getMemberAvatar(member: FamilyMember | null): { url: string | null; alt: string | null } | null {
+    if (!member) return null;
+
+    try {
+      const rel = String(member.relationship || '').toLowerCase();
+
+      if (rel === 'child') {
+        const resolved = this.childSelfImageService.resolveAvatarForMember(member as any);
+        return resolved || { url: null, alt: null };
+      }
+
+      return null;
+    } catch (e) {
+      console.error('[UserProfile] getMemberAvatar error', e);
+      return null;
+    }
+  }
+
+  /**
    * Load user data from localStorage and map to component properties
    */
   private loadUserDataFromStorage(): void {
@@ -377,10 +399,13 @@ export class UserProfileComponent implements OnInit, OnChanges {
   }
 
   getBadgeText(member: FamilyMember): string {
+    const rel = String(member.relationship || '').toLowerCase();
+    const isParentLike = rel === 'parent' || rel === 'co-parent';
+
     if (member.you) {
-      return member.relationship === 'Parent' ? 'Parent / You' : 'Child / You';
+      return isParentLike ? 'Parent / You' : 'Child / You';
     }
-    return member.relationship === 'Parent' ? 'Parent' : 'Child';
+    return isParentLike ? 'Parent' : 'Child';
   }
 
 

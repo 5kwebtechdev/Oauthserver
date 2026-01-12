@@ -54,6 +54,11 @@
     </div>
     <mindful-button type="green" text="Submit" [large]="true" [disabled]="!canSubmit" (click)="onSubmit()"
       style="display:block; width:100%;"></mindful-button>
+    
+    <!-- Error message display -->
+    <div *ngIf="errorMessage" style="margin-top: 16px; padding: 12px; background-color: #ffebee; border-radius: 8px; color: #c62828;">
+      <p style="margin: 0; font-size: 14px;">{{ errorMessage }}</p>
+    </div>
     <div class="disclaimer">
       <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
         <mask id="mask0_2355_9224" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="4" y="4" width="17"
