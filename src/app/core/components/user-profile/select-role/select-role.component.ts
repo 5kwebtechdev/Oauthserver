@@ -9,6 +9,7 @@ import { ProfileFactsComponent, PROFILE_FAQS } from '../profile-facts/profile-fa
 import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-input.component';
 import { NavigationService } from '../../../services/navigation.service';
 import { FamilyService } from '../../../services/family.service';
+import { AuthService } from '../../../services/auth.service';
 import { take } from 'rxjs/operators';
 
 @Component({
@@ -104,24 +105,28 @@ import { take } from 'rxjs/operators';
 				</div>
 
 				<div style="position:relative;">
-					<profile-edit-input desc="For naming your family"
-						[placeholder]="selectedFamilyAction === 'create' ? 'Set family name' : 'Enter family code or scan QR'"></profile-edit-input>
+				<profile-edit-input 
+					desc="For naming your family"
+					[placeholder]="selectedFamilyAction === 'create' ? 'Set family name' : 'Enter family code or scan QR'"
+					[value]="familyInput"
+					(valueChange)="onFamilyInputChange($event)">
+				</profile-edit-input>
 
-					<button *ngIf="selectedFamilyAction === 'join'" (click)="onScanQr()" aria-label="Scan QR"
-						style="position:absolute; right:8px; top:50%; transform:translateY(-50%); border:none; background:transparent; padding:6px; display:flex; align-items:center;">
-						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
-							<path
-								d="M0 8V0H8V8H0ZM2 6H6V2H2V6ZM0 18V10H8V18H0ZM2 16H6V12H2V16ZM10 8V0H18V8H10ZM12 6H16V2H12V6ZM16 18V16H18V18H16ZM10 12V10H12V12H10ZM12 14V12H14V14H12ZM10 16V14H12V16H10ZM12 18V16H14V18H12ZM14 16V14H16V16H14ZM14 12V10H16V12H14ZM16 14V12H18V14H16Z"
-								fill="#282527" />
-						</svg>
-					</button>
-				</div>
+				<button *ngIf="selectedFamilyAction === 'join'" (click)="onScanQr()" aria-label="Scan QR"
+					[disabled]="isSubmitting"
+					style="position:absolute; right:8px; top:50%; transform:translateY(-50%); border:none; background:transparent; padding:6px; display:flex; align-items:center; cursor: pointer; z-index: 10;">
+					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none" [style.opacity]="isSubmitting ? 0.5 : 1">
+						<path
+							d="M0 8V0H8V8H0ZM2 6H6V2H2V6ZM0 18V10H8V18H0ZM2 16H6V12H2V16ZM10 8V0H18V8H10ZM12 6H16V2H12V6ZM16 18V16H18V18H16ZM10 12V10H12V12H10ZM12 14V12H14V14H12ZM10 16V14H12V16H10ZM12 18V16H14V18H12ZM14 16V14H16V16H14ZM14 12V10H16V12H14ZM16 14V12H18V14H16Z"
+							fill="#282527" />
+					</svg>
+				</button>
+			</div>
 
-				<div style="margin-top:20px; text-align:center;">
-					<mindful-button type="green" size="full"
-						[text]="selectedFamilyAction === 'create' ? 'Create Family' : 'Join Family'"
-						[disabled]="!selectedFamilyAction" (click)="save()"></mindful-button>
-				</div>
+			<div style="margin-top:20px; text-align:center;">
+				<mindful-button type="green" size="full"
+					[text]="(isSubmitting ? 'Processing...' : (selectedFamilyAction === 'create' ? 'Create Family' : 'Join Family'))"
+					[disabled]="!isFormValid() || isSubmitting" (click)="save()"></mindful-button>
 
 				<div style="margin-top:18px; max-width:420px; margin-left:auto; margin-right:auto;">
 					<profile-facts [faqs]="faqsForStep3"></profile-facts>
@@ -129,9 +134,6 @@ import { take } from 'rxjs/operators';
 			</div>
 		</div>
 	</div>
-
-
-</ion-content>
 `,
   styles: [`
 .step-1,
@@ -450,6 +452,161 @@ export class RoleSelectComponent {
 
   setFamilyAction(action: 'create' | 'join') {
     this.selectedFamilyAction = action;
+    this.familyInput = ''; // Reset input when switching actions
+  }
+
+  /**
+   * Handle family input changes
+   */
+  onFamilyInputChange(value: string | null) {
+    this.familyInput = value || '';
+  }
+
+  /**
+   * Validate form before submission
+   */
+  isFormValid(): boolean {
+    if (!this.familyInput || !this.familyInput.trim()) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Join family via API
+   */
+  private async joinFamilyViaApi(): Promise<void> {
+    if (!this.isFormValid()) {
+      await this.showToast('Please enter a family code', 'warning');
+      return;
+    }
+
+    if (!this.selectedRole) {
+      await this.showToast('Role not selected', 'danger');
+      return;
+    }
+
+    this.isSubmitting = true;
+    const familyCode = this.familyInput.trim();
+    const relationship = this.selectedRole.toLowerCase();
+
+    this.familyService
+      .joinFamilyWithCode(familyCode, relationship)
+      .pipe(take(1))
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Family join SUCCESS:', response);
+          this.isSubmitting = false;
+
+          // Update user_data relationship
+          const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+          userData.relationship = relationship.toUpperCase();
+          localStorage.setItem('user_data', JSON.stringify(userData));
+
+          // Redirect immediately
+          this.router.navigate(['/authed/family-connection']);
+        },
+        error: (error) => {
+          console.error('❌ Family join ERROR:', error);
+          this.isSubmitting = false;
+
+          // If HTTP 200 but JSON parsing failed (server returned plain text), treat as success
+          if (error.status === 200) {
+            console.log('✅ Join succeeded (text response), redirecting...');
+            const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+            userData.relationship = relationship.toUpperCase();
+            localStorage.setItem('user_data', JSON.stringify(userData));
+            this.router.navigate(['/authed/family-connection']);
+            return;
+          }
+
+          // Actual error
+          this.showToast('Failed to join family', 'danger');
+        }
+      });
+  }
+
+  /**
+   * Create family via API
+   */
+  private async createFamilyViaApi(): Promise<void> {
+    if (!this.isFormValid()) {
+      await this.showToast('Please enter a family name', 'warning');
+      return;
+    }
+
+    this.isSubmitting = true;
+    const familyName = this.familyInput.trim();
+
+    this.familyService
+      .createFamily(familyName)
+      .pipe(take(1))
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Family create SUCCESS:', response);
+          this.isSubmitting = false;
+
+          // Update user_data relationship
+          const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+          userData.relationship = 'PARENT';
+          localStorage.setItem('user_data', JSON.stringify(userData));
+
+          // Redirect immediately
+          this.router.navigate(['/authed/family-connection']);
+        },
+        error: (error) => {
+          console.error('❌ Family create ERROR:', error);
+          this.isSubmitting = false;
+
+          // If HTTP 200 but JSON parsing failed (server returned plain text), treat as success
+          if (error.status === 200) {
+            console.log('✅ Create succeeded (text response), redirecting...');
+            const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+            userData.relationship = 'PARENT';
+            localStorage.setItem('user_data', JSON.stringify(userData));
+            this.router.navigate(['/authed/family-connection']);
+            return;
+          }
+
+          // Actual error
+          this.showToast('Failed to create family', 'danger');
+        }
+      });
+  }
+
+  /**
+   * Extract user-friendly error message from HTTP error response
+   */
+  private extractErrorMessage(error: any): string {
+    // Check for common error structures
+    if (error?.error?.message) return error.error.message;
+    if (error?.error?.error) return error.error.error;
+    if (error?.message) return error.message;
+    if (error?.status === 404) return 'Family code not found. Please check and try again.';
+    if (error?.status === 400) return 'Invalid family code or relationship. Please try again.';
+    if (error?.status === 401 || error?.status === 403) return 'Authentication failed. Please login again.';
+    if (error?.status === 409) return 'You are already a member of this family.';
+    if (error?.status >= 500) return 'Server error. Please try again later.';
+    return 'Failed to process request. Please try again.';
+  }
+
+  /**
+   * Show toast notification
+   */
+  private async showToast(message: string, color: string = 'primary'): Promise<void> {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      position: 'top',
+      color,
+      buttons: [
+        {
+          text: 'Close',
+          role: 'cancel',
+        },
+      ],
+    });
+    await toast.present();
   }
 
   // Placeholder handler for QR scan action. Navigates to scan-qr page.
@@ -459,7 +616,7 @@ export class RoleSelectComponent {
       this.router.navigate(['/home/scan-qr']).catch(() => { });
     } catch (e) {
       // fallback log
-      console.log('QR scan navigation requested', e);
+      console.error('QR scan navigation error:', e);
     }
   }
 
@@ -467,7 +624,8 @@ export class RoleSelectComponent {
     private router: Router,
     private navigationService: NavigationService,
     private familyService: FamilyService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private authService: AuthService
   ) { }
 
   selectRole(role: string) {
@@ -524,8 +682,15 @@ export class RoleSelectComponent {
 
   finish() {
     // Finalize account creation / family join or creation
-    console.log('Finishing flow. Family action:', this.selectedFamilyAction);
-    // TODO: wire actual API calls and navigation
+    console.log('Finishing flow. Role:', this.selectedRole, 'Action:', this.selectedFamilyAction);
+
+    // For child role, always join family
+    if (this.selectedRole === 'child' || this.selectedFamilyAction === 'join') {
+      this.joinFamilyViaApi();
+    } else if (this.selectedFamilyAction === 'create') {
+      // For parent creating family
+      this.createFamilyViaApi();
+    }
   }
 
   goBack() {

@@ -4,7 +4,6 @@ import { Injectable } from '@angular/core';
     providedIn: 'root'
 })
 export class ChildSelfImageService {
-    // Same avatars array as edit-profile to ensure paths always work
     private avatars = [
         { key: 1, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png', alt: 'Avatar 1' },
         { key: 2, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female2.png', alt: 'Avatar 2' },
