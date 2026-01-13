@@ -670,6 +670,22 @@ swiper-slide.swiper-slide-active .pet-card {
   gap: 10px;
 }
 
+/* Center generic popup content (used by access-popup) */
+.popup__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.access-popup__actions {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  gap: 8px;
+}
 .age-modal__title {
   text-align: center;
   color: #282527;

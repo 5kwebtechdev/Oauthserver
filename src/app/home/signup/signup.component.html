@@ -329,7 +329,6 @@
             [disabled]="!signupForm.dirty || (loginMode === 'email' ? email?.invalid : !isPhoneValid(phone?.value))">
           </mindful-button>
 
-          <p class="login-text">Don't have and Account ?<a href="#"> Sign In</a></p>
         </div>
       </div>
       <div class="container w-full p-0" style="opacity: 0.5">
@@ -398,6 +397,18 @@
           (click)="selectParentRole()">Try Parent Role</button>
       </div>
       <p class="age-modal__footer">You can always switch role in<br>settings if you prefer</p>
+    </div>
+
+    <!-- Access restricted popup for users under 8 years -->
+    <div class="popup-backdrop age-modal-backdrop" *ngIf="showAccessRestrictedModal" (click)="closeAccessRestrictedModal()"></div>
+    <div class="popup access-popup age-modal" *ngIf="showAccessRestrictedModal" role="dialog" aria-modal="true">
+      <div class="popup__content">
+        <h3 class="access-popup__title">Access Restricted</h3>
+        <p class="access-popup__subtitle">Based on the date of birth entered, you are not eligible to create an account</p>
+        <div class="access-popup__actions">
+          <mindful-button type="orange-onboard" size="small" (click)="closeAccessRestrictedModal()" [text]="'Okay'"></mindful-button>
+        </div>
+      </div>
     </div>
 
     <div class="country-modal-backdrop" *ngIf="showCountryCodeModal" (click)="closeCountryCodeModal()"></div>

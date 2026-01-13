@@ -101,11 +101,12 @@ export class ParentImageService {
             'font-weight': '700',
             'font-family': 'Nunito',
             'font-size': Math.round(size * 0.60) + 'px',
-            'width': '100%',
+            'width': size + 'px',
             'height': '100%',
             'text-transform': 'uppercase',
             'user-select': 'none',
-            'overflow': 'hidden'
+            'overflow': 'hidden',
+            'aspect-ratio': '1/1'
         };
     }
 
