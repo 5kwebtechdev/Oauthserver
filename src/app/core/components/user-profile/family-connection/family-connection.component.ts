@@ -490,6 +490,42 @@ export class FamilyConnectionComponent implements OnInit {
     }
   }
 
+  /**
+   * Helper to check if user is self and age is between 18-24
+   */
+  isSelfUserWithIndependentGrowth(): boolean {
+    try {
+      const userData = this.coreAuthService.getUserData();
+      if (!userData) return false;
+
+      // Check if user is in SELF mode
+      if (userData.relationship !== 'SELF') return false;
+
+      // Check if age is between 18-24
+      const age = userData.age;
+      if (typeof age === 'number' && age >= 18 && age <= 24) {
+        return true;
+      }
+
+      // If age is stored as dateOfBirth, calculate it
+      if (userData.dateOfBirth) {
+        const dob = new Date(userData.dateOfBirth);
+        const today = new Date();
+        let calculatedAge = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+          calculatedAge--;
+        }
+        return calculatedAge >= 18 && calculatedAge <= 24;
+      }
+
+      return false;
+    } catch (e) {
+      console.error('Failed to check independent growth eligibility:', e);
+      return false;
+    }
+  }
+
   onInstructionsBack() {
     this.showInstructions = false;
   }

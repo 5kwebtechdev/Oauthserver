@@ -123,7 +123,10 @@ export class LoginComponent implements OnInit, OnDestroy {
               name: user.name || '',
               email: user.email || undefined,
               phone: user.phone || undefined,
+              dob: user.dateOfBirth || undefined,
+              gender: user.gender ? (user.gender.toLowerCase() as 'male' | 'female') : undefined,
               avatarUrl: user.avatar?.url || undefined,
+              avatarName: user.avatar?.avatarName || undefined,
               relationship: (user.relationship || '').toUpperCase() as any
             });
             console.log('[LoginComponent] UserService profile synced:', this.userService.getUserProfile());

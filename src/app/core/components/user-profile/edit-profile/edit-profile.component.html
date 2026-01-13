@@ -3,7 +3,7 @@
   <form [formGroup]="profileForm">
     <div class="edit-profile-container">
 
-      <div class="edit-details">
+      <div class="edit-details" *ngIf="accountType !== 'parent'">
         <profile-edit-input title="Avatar Name" description="Your in-app identity name" type="text"
           placeholder="Avatar name" [value]="avatarName" (valueChange)="avatarName = $event"></profile-edit-input>
       </div>
@@ -113,7 +113,7 @@
 
       <!-- mindful-Button (replaced with disabled variant for testing) -->
       <div class="button-row">
-        <mindful-button type="green" text="Update info" size="full" [disabled]="profileForm.invalid"></mindful-button>
+        <mindful-button type="green" text="Update info" size="full" (click)="saveProfile()"></mindful-button>
       </div>
 
     </div>

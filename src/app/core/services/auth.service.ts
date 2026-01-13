@@ -294,6 +294,7 @@ export class AuthService {
     localStorage.setItem(this.LAST_ACTIVITY_KEY, currentTime);
     localStorage.setItem(this.REMEMBER_ME_KEY, rememberMe.toString());
     localStorage.setItem(this.PLATFORM_KEY, platformType);
+    // Store full user data in localStorage (persists until logout for mobile app)
     localStorage.setItem('user_data', JSON.stringify(authResponse.user));
 
 
@@ -568,6 +569,7 @@ export class AuthService {
 
   /**
    * Get full user data from stored session (includes avatar, pet, family details, etc.)
+   * Data is stored in localStorage and will be cleared on logout
    */
   getUserData(): any {
     try {

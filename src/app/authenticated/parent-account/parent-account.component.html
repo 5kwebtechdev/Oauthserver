@@ -5,14 +5,19 @@
                 <div class="user-info" role="group" aria-label="User info">
                     <div class="user-avatar" aria-hidden="false">
                         <a [routerLink]="['/authed','user-profile']" aria-label="Open profile">
-                            <img [src]="userAvatarUrl" alt="{{ userName }} avatar">
+                            <ng-container *ngIf="userAvatarUrl; else parentAvatar">
+                                <img [src]="userAvatarUrl" alt="{{ userName }} avatar">
+                            </ng-container>
+                            <ng-template #parentAvatar>
+                                <div class="parent-avatar" [ngStyle]="parentAvatarStyle" aria-hidden="false">{{ parentInitial }}</div>
+                            </ng-template>
                         </a>
                     </div>
                     <div class="user-name-wrap">
                         <span class="user-name">{{ userName }}</span>
 
                         <!-- Switch user trigger -->
-                        <button class="switch-trigger" aria-label="Switch user" (click)="toggleSwitchPopup($event)">
+                        <button *ngIf="children?.length" class="switch-trigger" aria-label="Switch user" (click)="toggleSwitchPopup($event)">
                             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="8" viewBox="0 0 13 8"
                                 fill="none">
                                 <path

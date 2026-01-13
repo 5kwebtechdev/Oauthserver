@@ -50,4 +50,14 @@ export class FamilyService {
             relationship
         }, { headers });
     }
+
+    /**
+     * Convert self account to parent account
+     * POST /v1/auth/self-to-parent?familyName=...&familyCode=...
+     */
+    convertSelfToParent(familyCode: string, familyName: string): Observable<any> {
+        const headers = this.getHeaders();
+        const params = `familyName=${encodeURIComponent(familyName)}&familyCode=${encodeURIComponent(familyCode)}`;
+        return this.http.post(`${this.baseUrl}/auth/self-to-parent?${params}`, {}, { headers });
+    }
 }

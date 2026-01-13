@@ -38,6 +38,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   });
 
   avatarName: string | null = '';
+  avatarImageName: string | null = '';  // New field for avatar image name (e.g., 'Avatar 8', 'Avatar 11')
   fullName: string | null = '';
 
   // gender selected in template. 'Male' | 'Female' | null (match backend format)
@@ -46,18 +47,18 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   // Avatar selection
   avatarSelected: any = null;
   public avatars = [
-    { key: 1, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png' },
-    { key: 2, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female2.png' },
-    { key: 3, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female3.png' },
-    { key: 4, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female4.png' },
-    { key: 5, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female5.png' },
-    { key: 6, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female6.png' },
-    { key: 7, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png' },
-    { key: 8, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male2.png' },
-    { key: 9, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male3.png' },
-    { key: 10, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male4.png' },
-    { key: 11, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male5.png' },
-    { key: 12, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male6.png' },
+    { key: 1, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png', imageName: 'Avatar 1' },
+    { key: 2, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female2.png', imageName: 'Avatar 2' },
+    { key: 3, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female3.png', imageName: 'Avatar 3' },
+    { key: 4, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female4.png', imageName: 'Avatar 4' },
+    { key: 5, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female5.png', imageName: 'Avatar 5' },
+    { key: 6, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female6.png', imageName: 'Avatar 6' },
+    { key: 7, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png', imageName: 'Avatar 7' },
+    { key: 8, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male2.png', imageName: 'Avatar 8' },
+    { key: 9, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male3.png', imageName: 'Avatar 9' },
+    { key: 10, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male4.png', imageName: 'Avatar 10' },
+    { key: 11, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male5.png', imageName: 'Avatar 11' },
+    { key: 12, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male6.png', imageName: 'Avatar 12' },
   ];
 
   // Birthday picker control
@@ -70,6 +71,17 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
   // Store current user data from backend
   currentUserData: any = null;
+
+  // Track initial values to detect changes
+  private initialValues: {
+    fullName: string | null;
+    gender: 'Male' | 'Female' | null;
+    dob: string | null;
+    phone: string | null;
+    email: string | null;
+    avatarSelected: any;
+    selectedCountryCode: string;
+  } | null = null;
 
   constructor(
     private countriesService: CountriesService,
@@ -128,48 +140,82 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     }
 
     if (userProfile) {
-      // Populate form with existing data
+      console.log('[EditProfile] Autofilling form with user data:', userProfile);
+
+      // 1. Auto-fill Full Name
       this.fullName = userProfile.name || '';
-      // Normalize stored gender values and pre-select on edit
+      console.log('[EditProfile] Full Name set to:', this.fullName);
+
+      // 2. Auto-fill Gender - normalize to 'Male' or 'Female'
       const storedGender = userProfile.gender ? String(userProfile.gender).toLowerCase() : '';
       this.gender = storedGender === 'male' ? 'Male' : storedGender === 'female' ? 'Female' : null;
+      console.log('[EditProfile] Gender set to:', this.gender);
 
+      // 3. Auto-fill Date of Birth
       if (userProfile.dob) {
         this.profileForm.patchValue({ dob: userProfile.dob });
+        console.log('[EditProfile] DOB set to:', userProfile.dob);
       }
 
+      // 4. Auto-fill Email
       if (userProfile.email) {
         this.profileForm.patchValue({ email: userProfile.email });
+        console.log('[EditProfile] Email set to:', userProfile.email);
       }
 
+      // 5. Auto-fill Phone with Country Code
       if (userProfile.phone) {
-        // Extract phone number without country code
         const phoneWithCode = userProfile.phone;
+        console.log('[EditProfile] Phone value from data:', phoneWithCode);
+
         // Try to find matching country code
         const matchingCountry = this.countries.find(c => phoneWithCode.startsWith(c.code));
         if (matchingCountry) {
           this.selectedCountry = matchingCountry;
           const phoneNumber = phoneWithCode.substring(matchingCountry.code.length);
           this.profileForm.patchValue({ phone: phoneNumber });
+          console.log('[EditProfile] Phone number extracted:', phoneNumber, 'Country:', matchingCountry.name);
         } else {
           this.profileForm.patchValue({ phone: phoneWithCode });
+          console.log('[EditProfile] No matching country code found, using raw phone:', phoneWithCode);
         }
       }
 
-      // Store avatar info - avatarName should come from backend avatar object
-      this.avatarName = userProfile.avatarName || '';
+      // 6. Auto-fill Avatar Name (for non-parent accounts)
+      if (userProfile.relationship?.toUpperCase() !== 'PARENT') {
+        this.avatarName = userProfile.avatarName || '';
+        // Try to auto-detect avatar image name from stored data if available
+        if (userProfile.avatarName) {
+          const match = userProfile.avatarName.match(/\d+/);
+          if (match) {
+            const numKey = parseInt(match[0], 10);
+            const avatar = this.avatars.find(a => a.key === numKey);
+            if (avatar) {
+              this.avatarImageName = avatar.imageName;
+              console.log('[EditProfile] Avatar Image Name set to:', this.avatarImageName);
+            }
+          }
+        }
+        console.log('[EditProfile] Avatar Name set to:', this.avatarName);
+      }
+
+      // Store current user data for reference
       this.currentUserData = userProfile;
 
-      // Set initial avatar selection if avatar name matches one of the available avatars
+      // 7. Auto-select Avatar based on stored avatar name
       if (userProfile.avatarName) {
-        const avatarKey = userProfile.avatarName.replace('avatar', '');
-        const numKey = parseInt(avatarKey, 10);
-        if (!isNaN(numKey) && numKey > 0) {
-          this.avatarSelected = numKey;
+        // Extract numeric key from avatar name (e.g., 'pare261551' or 'avatar5')
+        const match = userProfile.avatarName.match(/\d+/);
+        if (match) {
+          const numKey = parseInt(match[0], 10);
+          if (numKey > 0 && numKey <= this.avatars.length) {
+            this.avatarSelected = numKey;
+            console.log('[EditProfile] Avatar selected:', numKey);
+          }
         }
       }
 
-      // Determine accountType from stored relationship (CHILD/PARENT/SELF from API)
+      // 8. Determine Account Type from stored relationship
       if (userProfile.relationship) {
         const rel = userProfile.relationship.toLowerCase();
         if (rel === 'child' || rel === 'parent' || rel === 'self') {
@@ -178,11 +224,44 @@ export class EditProfileComponent implements OnInit, OnDestroy {
         }
       }
 
-      // Validate age on load if DOB exists
+      // 9. Validate age based on account type
       if (userProfile.dob) {
         this.validateAge();
       }
+
+      // 10. Store initial values for change detection
+      this.storeInitialValues();
+
+      console.log('[EditProfile] Profile autofill complete');
+    } else {
+      console.warn('[EditProfile] No user profile data found to autofill');
     }
+  }
+
+  /**
+   * Store initial values for change detection
+   */
+  private storeInitialValues(): void {
+    this.initialValues = {
+      fullName: this.fullName,
+      gender: this.gender,
+      dob: this.profileForm.get('dob')?.value || null,
+      phone: this.profileForm.get('phone')?.value || null,
+      email: this.profileForm.get('email')?.value || null,
+      avatarSelected: this.avatarSelected,
+      selectedCountryCode: this.selectedCountry.code
+    };
+    console.log('[EditProfile] Initial values stored:', this.initialValues);
+  }
+
+  /**
+   * Check if a field has been changed from its initial value
+   */
+  private hasFieldChanged(fieldName: string, currentValue: any): boolean {
+    if (!this.initialValues) return true;
+
+    const initialValue = (this.initialValues as any)[fieldName];
+    return initialValue !== currentValue;
   }
 
   ngOnDestroy(): void {
@@ -219,22 +298,53 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Transform data to match backend format
-    const payload: EditProfilePayload = {
-      name: this.fullName!.trim(),
-      dateOfBirth: this.formatDateForBackend(this.profileForm.get('dob')!.value!),
-      gender: this.gender!,
-      phone: `${this.selectedCountry.code}${phoneValue}`,
-      email: this.profileForm.get('email')!.value!.trim()
-    };
+    // Build payload with only changed fields
+    const payload: any = {};
 
-    // Include selected avatar if user has chosen one
-    if (this.avatarSelected) {
-      payload.avatarName = `avatar${this.avatarSelected}`;
-    } else if (this.avatarName?.trim() && this.avatarName.trim() !== this.currentUserData?.avatarName) {
-      // Fallback to avatarName if it's different from current
-      payload.avatarName = this.avatarName.trim();
+    // Check each field for changes and only include if changed
+    if (this.hasFieldChanged('fullName', this.fullName)) {
+      payload.name = this.fullName!.trim();
     }
+
+    if (this.hasFieldChanged('dob', this.profileForm.get('dob')?.value)) {
+      payload.dateOfBirth = this.formatDateForBackend(this.profileForm.get('dob')!.value!);
+    }
+
+    if (this.hasFieldChanged('gender', this.gender)) {
+      payload.gender = this.gender!;
+    }
+
+    if (this.hasFieldChanged('phone', phoneValue) || this.hasFieldChanged('selectedCountryCode', this.selectedCountry.code)) {
+      payload.phone = `${this.selectedCountry.code}${phoneValue}`;
+    }
+
+    if (this.hasFieldChanged('email', this.profileForm.get('email')?.value)) {
+      payload.email = this.profileForm.get('email')!.value!.trim();
+    }
+
+    // Check avatar changes
+    if (this.hasFieldChanged('avatarSelected', this.avatarSelected)) {
+      if (this.avatarSelected) {
+        payload.avatarName = `avatar${this.avatarSelected}`;
+        const selectedAvatarData = this.avatars.find(a => a.key === this.avatarSelected);
+        if (selectedAvatarData) {
+          payload.avatarImageName = selectedAvatarData.imageName;
+        }
+      } else if (this.avatarName?.trim() && this.avatarName.trim() !== this.currentUserData?.avatarName) {
+        payload.avatarName = this.avatarName.trim();
+        if (this.avatarImageName?.trim()) {
+          payload.avatarImageName = this.avatarImageName.trim();
+        }
+      }
+    }
+
+    // If no changes detected, show message and return
+    if (Object.keys(payload).length === 0) {
+      this.coreService.triggerToasrt('No changes detected. Update a field to save.');
+      return;
+    }
+
+    console.log('[EditProfile] Sending only changed fields:', payload);
 
     // Submit to backend
     this.isSubmitting = true;
@@ -248,7 +358,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (response) => {
             this.coreService.triggerToasrt('Profile updated successfully!');
-            console.log('Profile update response:', response);
+            console.log('[EditProfile] Profile update response:', response);
 
             // Update local user profile with response data
             if (response) {
@@ -261,6 +371,12 @@ export class EditProfileComponent implements OnInit, OnDestroy {
                 avatarUrl: response.avatar?.url,
                 avatarName: response.avatar?.avatarName
               });
+
+              // Update avatar image name if available in response
+              if (response.avatar?.avatarImageName) {
+                this.avatarImageName = response.avatar.avatarImageName;
+              }
+
               this.currentUserData = response;
             }
           },
@@ -453,7 +569,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       gender: this.gender!,
       phone: `${this.selectedCountry.code}${phoneValue}`,
       email: this.profileForm.get('email')!.value!.trim()
-      // Explicitly not including avatarName
+      // Explicitly not including avatarName or avatarImageName
     };
 
     this.isSubmitting = true;
@@ -467,7 +583,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (response) => {
             this.coreService.triggerToasrt('Profile updated successfully (avatar unchanged)!');
-            console.log('Profile update response:', response);
+            console.log('[EditProfile] Profile update response:', response);
 
             // Update local user profile
             if (response) {
@@ -480,10 +596,15 @@ export class EditProfileComponent implements OnInit, OnDestroy {
                 avatarUrl: response.avatar?.url,
                 avatarName: response.avatar?.avatarName
               });
+
+              // Update avatar image name if available
+              if (response.avatar?.avatarImageName) {
+                this.avatarImageName = response.avatar.avatarImageName;
+              }
             }
           },
           error: (error) => {
-            console.error('Retry profile update error:', error);
+            console.error('[EditProfile] Retry profile update error:', error);
             const errorMessage = error?.error?.message || error?.message || 'Failed to update profile.';
             this.coreService.triggerToasrt(errorMessage);
           }
@@ -514,7 +635,11 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   selectAvatar(avatar: any): void {
     if (!avatar) return;
     this.avatarSelected = avatar.key;
-    // Log the selection
-    console.log('[EditProfile] Avatar selected:', avatar.key, avatar.value);
+    this.avatarImageName = avatar.imageName || `Avatar ${avatar.key}`;
+    console.log('[EditProfile] Avatar selected:', {
+      key: avatar.key,
+      imageName: this.avatarImageName,
+      path: avatar.value
+    });
   }
 }

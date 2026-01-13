@@ -4,7 +4,7 @@
 
     <main *ngIf="!showInstructions" class="family-connection" role="main" aria-labelledby="family-heading">
 
-        <div class="family-mode d-flex flex-column gap-3" *ngIf="!isSelfUser()">
+        <div class="family-mode d-flex flex-column gap-3" *ngIf="!isSelfUser() && !isSelfUserWithIndependentGrowth()">
             <section class="family-container-main" *ngIf="!isLoading">
                 <div class="family-code-container" *ngIf="isParentUser()">
                     <div class="family-code-label">
@@ -165,8 +165,20 @@
             </div> -->
         </div>
 
+        <!-- Independent Growth Blank State (Self User, Age 18-24) -->
+        <aside class="family-removed-container" aria-live="polite" *ngIf="isSelfUserWithIndependentGrowth()">
+            <div class="family-removed-message">
+                <mindful-pet pet="panda" [age]="3" mood="happy" (petClick)="onRemovedPetClick()"></mindful-pet>
+
+                <div class="removed-message-text">
+                    <h2>You've unlocked independent growth!</h2>
+                    <p>Since you age between 18-24, you get exclusive access to Self Mode- A space designed just for you. No family linking required.</p>
+                </div>
+            </div>
+        </aside>
+
         <!-- removed / self mode message -->
-        <aside class="family-removed-container" aria-live="polite" *ngIf="isSelfUser()">
+        <aside class="family-removed-container" aria-live="polite" *ngIf="isSelfUser() && !isSelfUserWithIndependentGrowth()">
             <div class="family-removed-message">
                 <mindful-pet pet="panda" [age]="3" mood="tired" (petClick)="onRemovedPetClick()"></mindful-pet>
 
@@ -184,7 +196,7 @@
 
 
         <!-- faqs -->
-        <section class="family-faqs">
+        <section class="family-faqs" *ngIf="!isSelfUserWithIndependentGrowth()">
             <profile-facts [faqs]="familyFaqs"></profile-facts>
         </section>
     </main>
