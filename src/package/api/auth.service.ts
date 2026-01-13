@@ -124,7 +124,8 @@ export class AuthService {
 
     /**
      * Edit user profile.
-     * Payload: { avatarName: string, name: string, dateOfBirth: string, gender: string, phone: string, email: string }
+     * Endpoint: {{host}}/v1/auth/edit-profile
+     * Payload: { avatarName: string, avatarImageName: string, name: string, dateOfBirth: string, gender: string, phone: string, email: string }
      */
     editProfile(payload: EditProfilePayload): Observable<EditProfileResponse> {
         const url = `${this.apiUrl}/auth/edit-profile`;
@@ -211,19 +212,22 @@ export class AuthService {
 }
 
 export interface EditProfilePayload {
-    avatarName?: string;
-    name: string;
-    dateOfBirth: string;
-    gender: string;
-    phone: string;
-    email: string;
+    avatarName?: string;            // Avatar name (e.g., 'pare261551', 'avatar5')
+    avatarImageName?: string;       // Avatar image name (e.g., 'Avatar 8', 'Avatar 11')
+    name: string;                   // Full name
+    dateOfBirth: string;            // Format: YYYY-MM-DD
+    gender: string;                 // Gender (Male/Female)
+    phone: string;                  // Phone number with country code
+    email: string;                  // Email address
 }
 
 export interface Avatar {
     id: number;
     avatarName: string;
+    avatarImageName?: string;  // Avatar image name (e.g., 'Avatar 8', 'Avatar 11')
     gender: string | null;
     url: string;
+    renamedByUser?: boolean;
 }
 
 export interface Pet {

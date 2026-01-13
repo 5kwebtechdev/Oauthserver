@@ -15,6 +15,8 @@ import { HabitPageContentComponent } from '../../core/components/habit-section/h
 import { HabitService } from '../../core/components/habit-section/habit.service';
 import { ProfileSelectorService } from "../../core/services/profile-selector-service";
 import { AuthService } from '../../core/services/auth.service';
+import { ChildSelfImageService } from '../../core/services/child-self-image.service';
+import { ParentImageService } from '../../core/services/parent-image.service';
 
 
 @Component({
@@ -43,6 +45,10 @@ export class ParentAccountComponent implements OnInit {
     public selectedMood: string | null = 'happy';
 
     public userAvatarUrl: string = '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
+    // Parent avatar style (used when no child selected or when no children)
+    public parentAvatarStyle: { [k: string]: string } = {};
+    public parentInitial: string = 'U';
+    public currentProfile: any = null;
     // Stats
     public completionRate: number = 0;
     public consistencyRate: number = 0;
@@ -86,7 +92,9 @@ export class ParentAccountComponent implements OnInit {
         private moodService: MoodService,
         private habitService: HabitService,
         private profileSelector: ProfileSelectorService,
-        private authService: AuthService
+        private authService: AuthService,
+        private childSelfImage: ChildSelfImageService,
+        private parentImageService: ParentImageService
     ) { }
 
     async openNotes() {
@@ -104,8 +112,11 @@ export class ParentAccountComponent implements OnInit {
         // subscribe to profile
         this.userService.getUserProfile$().subscribe(profile => {
             if (profile) {
+                this.currentProfile = profile;
                 this.userName = profile.name || 'User';
                 this.userAvatarUrl = this.userService.getUserAvatarUrl();
+                this.parentInitial = (profile.name && profile.name.charAt(0)) || 'U';
+                this.parentAvatarStyle = this.parentImageService.getAvatarStyle(this.parentInitial, (profile.gender || '').toLowerCase() === 'female', 54);
             }
         });
 
@@ -135,7 +146,7 @@ export class ParentAccountComponent implements OnInit {
                         this.children = data.map(d => ({
                             id: d.userId,
                             name: d.userName,
-                            avatarUrl: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png',
+                            avatarUrl: this.childSelfImage.resolveAvatarForMember(d).url || '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png',
                             relationship: d.relationship || 'Child',
                             raw: d
                         }));
@@ -144,14 +155,14 @@ export class ParentAccountComponent implements OnInit {
                         // Restore previously selected child or pick first
                         this.restoreOrSelectFirstChild();
                     } else {
-                        this.loadChildrenFromStorageOrDefaults();
+                        this.useParentAsDefault();
                     }
                 },
-                error: () => this.loadChildrenFromStorageOrDefaults()
+                error: () => this.useParentAsDefault()
             });
         } catch (e) {
             console.warn('[ParentAccount] Failed to load children from API, falling back', e);
-            this.loadChildrenFromStorageOrDefaults();
+            this.useParentAsDefault();
         }
     }
 
@@ -178,7 +189,13 @@ export class ParentAccountComponent implements OnInit {
             if (stored) {
                 const parsed = JSON.parse(stored);
                 if (Array.isArray(parsed) && parsed.length) {
-                    this.children = parsed;
+                    this.children = parsed.map((c: any) => {
+                        if (c.raw) {
+                            const resolved = this.childSelfImage.resolveAvatarForMember(c.raw);
+                            c.avatarUrl = resolved.url || c.avatarUrl || '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
+                        }
+                        return c;
+                    });
                     this.restoreOrSelectFirstChild();
                     return;
                 }
@@ -188,15 +205,29 @@ export class ParentAccountComponent implements OnInit {
         }
 
         if (!this.children || this.children.length === 0) {
-            this.children = [
-                { id: 'c1', name: 'Still Panda', avatarUrl: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png', relationship: 'Child' },
-                { id: 'c2', name: 'Child 2', avatarUrl: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png', relationship: 'Child' }
-            ];
-            this.restoreOrSelectFirstChild();
+            // No stored children — fall back to parent view
+            this.useParentAsDefault();
         }
         // apply selected child's stats
         if (this.selectedChild && (this.selectedChild as any).raw) {
             this.applyChildStats((this.selectedChild as any).raw);
+        }
+    }
+
+    // Use parent display when there are no children returned by API
+    private useParentAsDefault() {
+        try {
+            this.children = [];
+            this.selectedChild = null;
+            const p = this.currentProfile || null;
+            this.userName = (p && p.name) || this.userName || 'User';
+            this.parentInitial = (p && p.name && p.name.charAt(0)) || (this.userName && this.userName.charAt(0)) || 'U';
+            const isFemale = (p && (p.gender || '').toLowerCase() === 'female') || false;
+            this.parentAvatarStyle = this.parentImageService.getAvatarStyle(this.parentInitial, isFemale, 54);
+            // Clear any child avatar url so template shows the parent style instead
+            this.userAvatarUrl = '';
+        } catch (e) {
+            console.warn('[ParentAccount] useParentAsDefault failed', e);
         }
     }
 
@@ -245,6 +276,15 @@ export class ParentAccountComponent implements OnInit {
     private applyChildStats(d: VibesDisplayResponse | any) {
         if (!d) return;
         this.userName = d.userName || this.userName;
+        // Resolve avatar for this child via service
+        try {
+            const resolved = this.childSelfImage.resolveAvatarForMember(d);
+            if (resolved && resolved.url) {
+                this.userAvatarUrl = resolved.url;
+            }
+        } catch (e) {
+            // ignore and keep existing avatar
+        }
         // set selectedMood from data
         if (d.mood) {
             try {

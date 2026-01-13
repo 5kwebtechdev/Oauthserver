@@ -22,7 +22,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 	<div class="step step-1" *ngIf="currentStep === 1">
 		<mindful-navigator heading="Select the role" backIcon="arrowSvg" (back)="goBack()"></mindful-navigator>
 		<div class="d-flex flex-column gap-4">
-			<div class="role-selector container p-0" data-role="child" role="button" tabindex="0"
+			<div class="role-selector container p-0" *ngIf="shouldShowChildRole()" data-role="child" role="button" tabindex="0"
 				(click)="selectRole('child')" (keydown)="onKeySelect($event, 'child')"
 				[class.active]="selectedRole === 'child'" [attr.aria-pressed]="selectedRole === 'child'">
 
@@ -40,7 +40,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 				</div>
 			</div>
 
-			<div class="role-selector container p-0" data-role="parent" role="button" tabindex="0"
+			<div class="role-selector container p-0" *ngIf="shouldShowParentRole()" data-role="parent" role="button" tabindex="0"
 				(click)="selectRole('parent')" (keydown)="onKeySelect($event, 'parent')"
 				[class.active]="selectedRole === 'parent'" [attr.aria-pressed]="selectedRole === 'parent'">
 
@@ -93,8 +93,8 @@ import { QRCodeComponent } from 'angularx-qrcode';
 		</div>
 	</div>
 
-	<div class="step step-3" *ngIf="currentStep === 3">
-		<mindful-navigator heading="Create your account" backIcon="arrowSvg" (back)="prevStep()"></mindful-navigator>
+  <div class="step step-3" *ngIf="currentStep === 3">
+    <mindful-navigator *ngIf="!familyCreated" heading="Create your account" backIcon="arrowSvg" (back)="prevStep()"></mindful-navigator>
 
 		<div class="container w-full p-0" style="display: flex; justify-content: center; align-items: center;">
 			<div class="container w-full p-0" style="padding: 20px 0px !important; max-width:420px; width:100%">
@@ -143,6 +143,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 					<div class="family-success-section">
 						<div class="success-header">
 							<h5 class="success-title">Family Created Successfully!</h5>
+              <h5 class="success-title">Your Self account is converted to Parent account.</h5>
 						</div>
 
 						<div class="family-code-section">
@@ -189,7 +190,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
               *ngIf="childCompletedTask"
               type="green"
               size="full"
-              text="Go to your Parent account"
+              text="Login to Parent account"
               [disabled]="isSubmitting"
               (click)="goToParentAccount()">
             </mindful-button>
@@ -596,6 +597,11 @@ export class RoleSelectComponent {
   selectedRole: string | null = null;
   currentStep = 1;
 
+  // User data and account type
+  userAccountType: 'child' | 'parent' | 'self' | null = null;
+  userAge: number | null = null;
+  userDob: string | null = null;
+
   roleSelectionInstructions: string[] = [
     'Create your family in the next step to get started.',
     'You\'ll receive a unique family code and QR code instantly.',
@@ -819,7 +825,75 @@ export class RoleSelectComponent {
     private familyService: FamilyService,
     private toastController: ToastController,
     private authService: AuthService
-  ) { }
+  ) {
+    this.loadUserData();
+  }
+
+  /**
+   * Load user data from localStorage to determine account type and age
+   */
+  private loadUserData(): void {
+    try {
+      const userData = localStorage.getItem('user_data');
+      if (userData) {
+        const parsedData = JSON.parse(userData);
+        this.userAccountType = (parsedData.relationship as 'CHILD' | 'PARENT' | 'SELF')?.toLowerCase() as any;
+        this.userDob = parsedData.dateOfBirth;
+        if (this.userDob) {
+          this.userAge = this.calculateAge(this.userDob);
+          console.log('[RoleSelect] User age calculated:', this.userAge);
+        }
+      }
+    } catch (e) {
+      console.error('[RoleSelect] Error loading user data:', e);
+    }
+  }
+
+  /**
+   * Calculate age from date of birth
+   * @param dob Date of birth in any parseable format
+   * @returns Age in years
+   */
+  private calculateAge(dob: string): number {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  }
+
+  /**
+   * Check if child role should be shown based on age
+   * For 'self' users: show child if under 18
+   * For other account types: always show child
+   */
+  shouldShowChildRole(): boolean {
+    if (this.userAccountType !== 'self') {
+      return true;
+    }
+    if (this.userAge === null) {
+      return true; // Show if age not available
+    }
+    return this.userAge < 18;
+  }
+
+  /**
+   * Check if parent role should be shown based on age
+   * For 'self' users: show parent if 24 or above
+   * For other account types: always show parent
+   */
+  shouldShowParentRole(): boolean {
+    if (this.userAccountType !== 'self') {
+      return true;
+    }
+    if (this.userAge === null) {
+      return true; // Show if age not available
+    }
+    return this.userAge >= 24;
+  }
 
   selectRole(role: string) {
     this.selectedRole = role;
@@ -903,10 +977,12 @@ export class RoleSelectComponent {
     this.familyService.createFamily(familyName).pipe(take(1)).subscribe({
       next: (response) => {
         console.log('✅ Family created:', response);
-        this.isSubmitting = false;
         this.familyCreated = true;
         this.familyCode = response.familyCode || this.generateFamilyCode();
         this.qrCodeData = 'GROUP:' + this.familyCode;
+
+        // Automatically call self-to-parent API with family code and name
+        this.convertSelfToParent(this.familyCode, response.familyName || familyName);
       },
       error: (error) => {
         console.error('❌ Family creation failed:', error);
@@ -914,6 +990,30 @@ export class RoleSelectComponent {
         this.showToast('Failed to create family', 'danger');
       }
     });
+  }
+
+  /**
+   * Convert self account to parent account via API
+   */
+  private convertSelfToParent(familyCode: string, familyName: string): void {
+    console.log('🔄 Converting self to parent with code:', familyCode, 'and name:', familyName);
+
+    this.familyService
+      .convertSelfToParent(familyCode, familyName)
+      .pipe(take(1))
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Self-to-parent conversion SUCCESS:', response);
+          this.isSubmitting = false;
+          // UI is already showing QR code and buttons
+        },
+        error: (error) => {
+          console.error('❌ Self-to-parent conversion failed:', error);
+          this.isSubmitting = false;
+          // Still allow user to proceed even if conversion fails - they can retry or use the family code
+          this.showToast('Note: Family created but conversion encountered an issue. You can still proceed.', 'warning');
+        }
+      });
   }
 
   /**
@@ -941,20 +1041,50 @@ export class RoleSelectComponent {
   }
 
   /**
-   * Navigate to parent account page
+   * Logout and redirect to login page
    */
   goToParentAccount(): void {
     if (!this.familyCreated) return;
+    this.isSubmitting = true;
+    console.log('🚪 Logging out and redirecting to /home/login...');
 
-    // Save family code and name to localStorage
-    const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
-    userData.familyCode = this.familyCode;
-    userData.familyName = this.createdFamilyName;
-    userData.relationship = 'PARENT';
-    localStorage.setItem('user_data', JSON.stringify(userData));
-
-    // Navigate to parent account
-    this.router.navigate(['/authenticated/parent-account']);
+    try {
+      if (this.authService && typeof this.authService.logout === 'function') {
+        // Let AuthService perform logout and redirect to /home/login
+        try {
+          (this.authService.logout as any)();
+        } catch (e) {
+          console.warn('AuthService.logout threw an error, falling back to client logout:', e);
+          localStorage.removeItem('user_data');
+          localStorage.removeItem('auth_token');
+          sessionStorage.clear();
+          this.router.navigate(['/home/login']).catch(err => {
+            console.error('Navigation error:', err);
+            window.location.href = '/home/login';
+          });
+        }
+      } else {
+        // Fallback: clear storage and navigate to /home/login
+        localStorage.removeItem('user_data');
+        localStorage.removeItem('auth_token');
+        sessionStorage.clear();
+        this.router.navigate(['/home/login']).catch(err => {
+          console.error('Navigation error:', err);
+          window.location.href = '/home/login';
+        });
+      }
+    } catch (e) {
+      console.error('Unexpected error during logout redirect:', e);
+      localStorage.removeItem('user_data');
+      localStorage.removeItem('auth_token');
+      sessionStorage.clear();
+      this.router.navigate(['/home/login']).catch(err => {
+        console.error('Navigation error:', err);
+        window.location.href = '/home/login';
+      });
+    } finally {
+      this.isSubmitting = false;
+    }
   }
 
   /**
