@@ -77,6 +77,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
   public showAgeSuggestionModal = false;
   public computedAge: number | null = null;
+  public showAccessRestrictedModal = false;
 
 
   public stepDesciption = [
@@ -571,6 +572,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const parsedDob = dobVal ? new Date(dobVal) : null;
     const age = parsedDob ? this.calculateAge(parsedDob) : null;
 
+    // If user is under 8 years old, show access restricted popup
+    if (age !== null && age < 8) {
+      this.showAccessRestrictedModal = true;
+      return;
+    }
+
     if (age !== null) {
       // Child role: age < 24 is valid, age >= 24 shows popup
       if (this.roleSelected === 'child') {
@@ -637,6 +644,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const dobVal = this.profileForm.get('dob')?.value;
     const parsedDob = dobVal ? new Date(dobVal) : null;
     const age = parsedDob ? this.calculateAge(parsedDob) : null;
+
+    // If user is under 8 years old, show access restricted popup
+    if (age !== null && age < 8) {
+      this.showAccessRestrictedModal = true;
+      return;
+    }
 
     if (age === null) {
       this.core.triggerToasrt('Please enter your date of birth');
@@ -791,6 +804,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   closeAgeSuggestionModal(): void {
     this.showAgeSuggestionModal = false;
+  }
+
+  closeAccessRestrictedModal(): void {
+    this.showAccessRestrictedModal = false;
   }
 
   selectSelfRole(): void {

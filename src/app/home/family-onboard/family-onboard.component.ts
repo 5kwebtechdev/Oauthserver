@@ -242,7 +242,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         };
 
         const route = backRoutes[this.viewMode];
-        const queryParams = this.viewMode.startsWith('join-family') ? { role: this.userRole } : { step: 3 };
+        // If user arrived from sign-up, back should return them to the profile/details entry (step 2)
+        const queryParams = this.viewMode.startsWith('join-family') ? { role: this.userRole } : { step: 2 };
         this.router.navigate([route], { queryParams });
     }
 
@@ -350,6 +351,14 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         const password = sessionStorage.getItem('signup_password');
         if (profileStr && password) {
             this.registerAccount();
+            return;
+        }
+
+        // If user is in signup flow (has signup_role), navigate back to signup step 2 to complete profile
+        const signupRole = sessionStorage.getItem('signup_role');
+        if (signupRole === 'parent') {
+            // Navigate to signup step 2 (profile information) to continue parent signup
+            this.router.navigate(['/home/sign-up'], { queryParams: { step: 2 } });
             return;
         }
 
@@ -486,6 +495,33 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
                 familyName: sessionStorage.getItem('familyName') || this.createdFamilyName || ''
             };
 
+            // Add date of birth from profile (required by register API)
+            if (profile.dob) {
+                // If dob is a timestamp (milliseconds), convert to date. Otherwise assume it's already a date string
+                let dobDate: Date;
+                if (typeof profile.dob === 'number') {
+                    dobDate = new Date(profile.dob);
+                } else {
+                    dobDate = new Date(profile.dob);
+                }
+                // Format as YYYY-MM-DD
+                if (!isNaN(dobDate.getTime())) {
+                    payload.dateOfBirth = dobDate.toISOString().split('T')[0];
+                }
+            }
+
+            // Retrieve email or phone from signup flow (stored during signup steps)
+            const requestedIdentifier = sessionStorage.getItem('requestedIdentifier');
+            const loginMode = sessionStorage.getItem('loginMode') as 'email' | 'phone';
+            const countryCode = sessionStorage.getItem('countryCode');
+
+            // Add email or phone to payload (required by register API)
+            if (loginMode === 'email' || (requestedIdentifier && requestedIdentifier.includes('@'))) {
+                payload.email = requestedIdentifier || '';
+            } else if (requestedIdentifier) {
+                payload.phone = (countryCode ? countryCode : '') + requestedIdentifier;
+            }
+
             if (isCreator) {
                 payload.familyRole = 'CREATOR';
             } else if (familyCode) {
@@ -494,13 +530,61 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
             this.authService.register(payload).subscribe({
                 next: () => {
-                    this.isLoading = false;
                     this.isParentRegistered = true;
                     this.core.triggerToasrt('Account registered successfully!');
-                    this.childCompleted();
+                    
+                    // Store credentials for auto-login
+                    try {
+                        if (payload.email) sessionStorage.setItem('login_email', payload.email);
+                        if (payload.phone) sessionStorage.setItem('login_phone', payload.phone);
+                        sessionStorage.setItem('login_password', password);
+                    } catch (e) { }
+
+                    // Auto-login parent after registration
+                    const loginCredentials: any = { password: password };
+                    if (payload.email) {
+                        loginCredentials.email = payload.email;
+                    } else if (payload.phone) {
+                        loginCredentials.phone = payload.phone;
+                    }
+
+                    if (loginCredentials.email || loginCredentials.phone) {
+                        this.authService.login(loginCredentials).subscribe({
+                            next: () => {
+                                // Clear signup session data after successful login
+                                try {
+                                    sessionStorage.removeItem('signup_profile');
+                                    sessionStorage.removeItem('signup_password');
+                                    sessionStorage.removeItem('signup_role');
+                                    sessionStorage.removeItem('requestedIdentifier');
+                                    sessionStorage.removeItem('loginMode');
+                                    sessionStorage.removeItem('countryCode');
+                                    sessionStorage.removeItem('familyCode');
+                                    sessionStorage.removeItem('familyName');
+                                    sessionStorage.removeItem('familyCreator');
+                                } catch (e) { }
+
+                                // Navigate to parent dashboard
+                                this.isLoading = false;
+                                const route = this.authService.getDashboardRoute() || '/authed/parent-account';
+                                this.router.navigate([route]);
+                            },
+                            error: (loginErr) => {
+                                console.error('Auto-login failed after registration', loginErr);
+                                // If auto-login fails, keep as registered and redirect to dashboard
+                                this.isLoading = false;
+                                const route = this.authService.getDashboardRoute() || '/authed/parent-account';
+                                this.router.navigate([route]);
+                            }
+                        });
+                    } else {
+                        this.isLoading = false;
+                        this.childCompleted();
+                    }
                 },
                 error: (error) => {
                     this.isLoading = false;
+                    this.isParentRegistered = false;
                     this.core.triggerToasrt(error.error?.message || 'Registration failed. Please try again.');
                 }
             });
