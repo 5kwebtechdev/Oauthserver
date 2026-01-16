@@ -81,7 +81,7 @@
 
 <ng-template #prioritySection>
   <div class="priority-selection priority-selectors">
-    <div class="d-flex align-items-center gap-2" style="padding: 0px 0px 20px 16px;">
+    <div class="d-flex align-items-center gap-2">
       <label>Priority</label>
       <div class="priority-row">
         <mindful-badge *ngFor="let p of priorities" [text]="p.text" [type]="p.type" [disabled]="priority !== p.key"
