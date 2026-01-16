@@ -713,10 +713,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
 
 /* Generic field-level inline error */
 .field-error {
-  padding: 8px 12px;
-  background-color: #FFEBEE;
-  border-left: 3px solid #D32F2F;
-  animation: fadeIn 0.25s ease-in;
+ animation: _ngcontent-ng-c2563854052_fadeIn 0.25s ease-in;
     width: 100%;
     color: #BB2124;
     font-family: Nunito;
