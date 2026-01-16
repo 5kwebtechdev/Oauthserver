@@ -2,8 +2,6 @@ import { Component, AfterViewInit, ElementRef, ViewChild, Input } from '@angular
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
-import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
-import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.component';
 import { ReelFrameComponent } from '../reel-frame/reel-frame.component';
 
 @Component({
@@ -11,7 +9,7 @@ import { ReelFrameComponent } from '../reel-frame/reel-frame.component';
   templateUrl: './reels-card.component.html',
   styleUrls: ['./reels-card.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, MindfulCardHeaderComponent, ViewAllComponent, ReelFrameComponent]
+  imports: [CommonModule, IonicModule, RouterModule, ReelFrameComponent]
 })
 export class ReelsCardComponent {
   // When true the per-slide category labels rendered by ReelFrame will be hidden

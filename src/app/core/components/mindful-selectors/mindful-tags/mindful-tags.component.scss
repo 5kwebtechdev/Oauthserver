@@ -86,18 +86,16 @@
 
 .tag-add-fixed {
   position: fixed;
-  left: 273px;
-  top: 178px;
-  transform: translateX(-50%);
-  z-index: 100001;
-  align-items: center;
-  gap: 8px;
-  width: 194px;
-  height: 48px;
-  flex-shrink: 0;
-  padding: 0 8px;
-  background: #FFF;
-  border-radius: 16px;
+   
+    z-index: 100001;
+    align-items: center;
+    gap: 8px;
+    width: 220px;
+    height: 48px;
+    flex-shrink: 0;
+    padding: 8px;
+    background: #FFF;
+    border-radius: 16px;
   box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
 }
 

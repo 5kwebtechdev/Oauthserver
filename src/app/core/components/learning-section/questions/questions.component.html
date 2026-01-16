@@ -18,19 +18,19 @@
 
         <!-- Question Image - only show if contentType is 'image-only' or 'text-and-image' and there is an image -->
         <div class="content-img mx-auto" *ngIf="questions && questions.length > 0 && 
-                    questions[currentQuestionIndex]?.image && 
-                    (questions[currentQuestionIndex]?.contentType === 'image-only' || 
-                     questions[currentQuestionIndex]?.contentType === 'text-and-image')">
-            <img [src]="questions[currentQuestionIndex]?.image"
+                    questions[currentQuestionIndex].image && 
+                    (questions[currentQuestionIndex].contentType === 'image-only' || 
+                     questions[currentQuestionIndex].contentType === 'text-and-image')">
+            <img [src]="questions[currentQuestionIndex].image"
                 [alt]="'Question ' + (currentQuestionIndex + 1) + ' illustration'" loading="lazy" />
         </div>
 
         <!-- Question Text - only show if contentType is 'text-only' or 'text-and-image' and there is text -->
         <h2 class="content-quest" *ngIf="questions && questions.length > 0 && 
-                   questions[currentQuestionIndex]?.text && 
-                   (questions[currentQuestionIndex]?.contentType === 'text-only' || 
-                    questions[currentQuestionIndex]?.contentType === 'text-and-image')">
-            {{ questions[currentQuestionIndex]?.text }}
+                   questions[currentQuestionIndex].text && 
+                   (questions[currentQuestionIndex].contentType === 'text-only' || 
+                    questions[currentQuestionIndex].contentType === 'text-and-image')">
+            {{ questions[currentQuestionIndex].text }}
         </h2>
         <!-- Hint display that only appears when showHint is true -->
         <div *ngIf="showHint && currentHintText" class="hint-display d-flex align-items-center gap-2">
@@ -46,14 +46,14 @@
             <h1>Tap the correct answer</h1>
             <!-- MCQ Options -->
             <ng-container
-                *ngIf="!questions[currentQuestionIndex]?.type || questions[currentQuestionIndex]?.type === 'mcq'">
-                <mindful-button *ngFor="let option of questions[currentQuestionIndex]?.options" type="white-black"
+                *ngIf="!questions[currentQuestionIndex].type || questions[currentQuestionIndex].type === 'mcq'">
+                <mindful-button *ngFor="let option of questions[currentQuestionIndex].options" type="white-black"
                     [text]="option" (click)="selectAnswer(option)" [correct]="selectedOption === option">
                 </mindful-button>
             </ng-container>
 
             <!-- True/False Options -->
-            <ng-container *ngIf="questions[currentQuestionIndex]?.type === 'true-false'">
+            <ng-container *ngIf="questions[currentQuestionIndex].type === 'true-false'">
                 <mindful-button type="white-black" text="True" (click)="selectAnswer('True')"
                     [correct]="selectedOption === 'True'">
                 </mindful-button>
@@ -63,13 +63,13 @@
             </ng-container>
 
             <!-- Visual Options -->
-            <ng-container *ngIf="questions[currentQuestionIndex]?.type === 'visual'">
+            <ng-container *ngIf="questions[currentQuestionIndex].type === 'visual'">
                 <div class="visual-options-grid">
                     <div class="visual-option"
-                        *ngFor="let option of questions[currentQuestionIndex]?.options; let i = index"
+                        *ngFor="let option of questions[currentQuestionIndex].options; let i = index"
                         (click)="selectAnswer(option)" [class.selected]="selectedOption === option">
                         <div class="visual-option-image"
-                            [ngStyle]="{'background-image': 'url(' + questions[currentQuestionIndex]?.optionImages?.[i] + ')'}">
+                            [ngStyle]="{'background-image': 'url(' + questions[currentQuestionIndex].optionImages?.[i] + ')'}">
                         </div>
                         <span class="visual-option-label">{{ option }}</span>
                     </div>

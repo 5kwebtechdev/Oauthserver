@@ -17,7 +17,6 @@ export class LoginComponent implements OnInit, OnDestroy {
   public loginMode: 'email' | 'phone' = 'email';
   public hidePassword = true;
   public whatsappConsent = true;
-  public rememberMe = false; // Remember Me checkbox state
   public loading = false;
   public loginError: string | null = null;
 
@@ -85,8 +84,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       this.loginError = null;
 
       const credentials: LoginCredentials = {
-        password: this.signInForm.get('password')?.value,
-        rememberMe: this.rememberMe // Include Remember Me state
+        password: this.signInForm.get('password')?.value
       };
 
       // Add either email or phone based on login mode
@@ -95,7 +93,6 @@ export class LoginComponent implements OnInit, OnDestroy {
       } else {
         // Format phone with country code
         const phoneNumber = this.signInForm.get('phone')?.value;
-        // credentials.phone = phoneNumber;
         credentials.phone = this.selectedCountry.code + phoneNumber;
       }
 
@@ -103,8 +100,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         mode: this.loginMode,
         email: credentials.email,
         phone: credentials.phone,
-        hasPassword: !!credentials.password,
-        rememberMe: credentials.rememberMe
+        hasPassword: !!credentials.password
       });
 
       this.authService.login(credentials).subscribe({

@@ -1,3 +1,4 @@
+@use 'sass:color';
 .day-at-glance-container {
   display: flex;
   flex-direction: column;
@@ -558,7 +559,7 @@ h4 {
   transition: color 0.15s ease, transform 0.06s ease;
 
   &:hover {
-    color: darken(#282527, 8%);
+    color: color.adjust(#282527, $lightness: -8%);
     transform: translateY(-1px);
   }
 

@@ -1,3 +1,4 @@
+@use 'sass:list';
 // Mixins
 @mixin border-color($color) {
   border-bottom-color: $color;
@@ -543,8 +544,8 @@ $notes-themes: (
 .habit-input-root {
   @each $theme, $colors in $notes-themes {
     &.#{$theme} .notes textarea {
-      border-color: nth($colors, 1);
-      &:focus { border-color: nth($colors, 2); }
+      border-color: list.nth($colors, 1);
+      &:focus { border-color: list.nth($colors, 2); }
     }
   }
 }

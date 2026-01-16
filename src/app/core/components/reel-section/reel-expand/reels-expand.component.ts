@@ -2,14 +2,13 @@ import { Component, OnDestroy, OnInit, ViewChild, ElementRef, ViewEncapsulation 
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 
 @Component({
   selector: 'reels-expand',
   templateUrl: './reels-expand.component.html',
   styleUrls: ['./reels-expand.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, MindfulButtonComponent],
+  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent],
   encapsulation: ViewEncapsulation.None
 })
 export class ReelsExpandComponent implements OnInit, OnDestroy {

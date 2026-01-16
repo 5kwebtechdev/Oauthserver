@@ -4,8 +4,6 @@ import { IonicModule, ModalController } from '@ionic/angular';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
-import { MindfulBadgeComponent } from '../mindful-badge/mindful-badge.component';
-import { MindfulTagsComponent } from '../mindful-selectors/mindful-tags/mindful-tags.component';
 import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigator.component';
 import { NotesService, NoteModel } from './notes.service';
 import { NotesSaveComponent } from './notes-save/notes-save.component';
@@ -13,7 +11,7 @@ import { NotesSaveComponent } from './notes-save/notes-save.component';
 @Component({
   selector: 'notes',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, RouterModule, MindfulButtonComponent, MindfulBadgeComponent, MindfulTagsComponent, MindfulNavigatorComponent],
+  imports: [CommonModule, IonicModule, FormsModule, RouterModule, MindfulButtonComponent, MindfulNavigatorComponent],
   templateUrl: './notes.component.html',
   styleUrls: ['./notes.component.scss']
 })

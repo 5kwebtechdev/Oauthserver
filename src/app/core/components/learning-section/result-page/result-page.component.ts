@@ -5,7 +5,6 @@ import { Router } from '@angular/router';
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 import { ChallengeSubmissionResponse, Challenge } from 'src/app/core/models/learning.models';
 import { PetMood } from '../../mindful-pet/mindful-pet.component';
@@ -18,7 +17,6 @@ import { PetMood } from '../../mindful-pet/mindful-pet.component';
     IonicModule,
     MindfulNavigatorComponent,
     MindfulPetComponent,
-    MindfulButtonComponent,
     MindfulInputsModule
   ],
   templateUrl: './result-page.component.html',

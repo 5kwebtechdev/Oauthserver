@@ -1,11 +1,10 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ViewAllComponent } from '../view-all/view-all.component';
 
 @Component({
   standalone: true,
   selector: 'mindful-card-header',
-  imports: [CommonModule, ViewAllComponent],
+  imports: [CommonModule],
   templateUrl: './mindful-card-header.component.html',
   styleUrls: ['./mindful-card-header.component.scss']
 })
