@@ -269,7 +269,7 @@ $theme-colors: (
 
 .routine-section {
   display: flex;
-  padding: 0px 0px 20px 0px;
+  padding: 0px 0px 8px 0px;
   align-items: center;
   gap: 16px;
   width: 100%;
@@ -435,6 +435,12 @@ $theme-colors: (
   font-family: Nunito;
   font-size: 16px;
   font-weight: 600;
+}
+
+/* Invalid state for routine/priority: highlight label in error color */
+.routine-section.invalid label,
+.priority-selection.invalid label {
+  color: #BB2124 !important;
 }
 
 .everyday-toggle {
@@ -609,12 +615,8 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
   box-shadow: none !important;
 }
 
-.title-input .mindful-input-group input,
-.habit-input-root .title-input .mindful-input-group input {
-  &::placeholder { @extend %title-placeholder; }
-}
-
-%title-placeholder {
+.title-input .mindful-input-group input::placeholder,
+.habit-input-root .title-input .mindful-input-group input::placeholder {
   color: #6B656A !important;
   font-family: 'Nunito', sans-serif;
   font-size: 20px;
@@ -642,13 +644,19 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
   ::ng-deep mindful-timepicker input::placeholder { @extend %input-placeholder; }
 }
 
+/* When title is invalid (missing), force placeholder to error color - HIGH SPECIFICITY */
+.habit-input-root .title-input .mindful-input-group.missing-placeholder input::placeholder {
+  color: #BB2124 !important;
+  opacity: 1 !important;
+  text-decoration: none !important;
+}
+
 .start-end-row {
   display: flex;
   flex-direction: column;
   gap: 12px;
   justify-content: space-between;
   width: 100%;
-  margin-bottom: 34px;
 }
 
 .start-end-row>div>label {
@@ -666,8 +674,17 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
 }
 
 .date-time-selection {
- 
   border-bottom: 1px solid;
+  padding-bottom: 8px;
+
+  /* Keep inline field errors visually inside the date/time section */
+  .field-error.bottom-margin {
+    margin-bottom: 0 !important;
+  }
+
+  .field-error.top-margin {
+    margin-top: 8px !important;
+  }
 }
 
 ::ng-deep .add-new-row .badge,
@@ -713,12 +730,16 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
 
 /* Generic field-level inline error */
 .field-error {
- animation: _ngcontent-ng-c2563854052_fadeIn 0.25s ease-in;
     width: 100%;
     color: #BB2124;
     font-family: Nunito;
     font-size: 13px;
     font-weight: 500;
+    padding: 4px 12px;
+    background-color: #FFEBEE;
+    border-left: 3px solid #D32F2F;
+    animation: fadeIn 0.25s ease-in;
+    margin: 8px 0;
 }
 
 /* Utility to show multiple errors in deterministic bottom-to-top order if needed */
@@ -736,7 +757,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
   input::-webkit-input-placeholder,
   input:-ms-input-placeholder,
   input::-ms-input-placeholder {
-    color: #D32F2F !important;
+    color: #BB2124 !important;
     opacity: 1 !important;
   }
 
@@ -744,7 +765,15 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
   ::ng-deep input::placeholder,
   ::ng-deep input::-webkit-input-placeholder,
   ::ng-deep ion-input input::placeholder {
-    color: #D32F2F !important;
+    color: #BB2124 !important;
+    opacity: 1 !important;
+  }
+
+  /* custom mindful components */
+  ::ng-deep mindful-datepicker input::placeholder,
+  ::ng-deep mindful-timepicker input::placeholder,
+  ::ng-deep .mindful-timepicker-wrapper input {
+    color: #BB2124 !important;
     opacity: 1 !important;
   }
 }

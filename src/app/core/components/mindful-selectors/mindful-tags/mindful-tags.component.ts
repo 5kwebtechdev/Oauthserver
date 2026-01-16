@@ -189,7 +189,8 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
 
   // Unified save method for both edit and add
   saveInputPopup() {
-    const val = (this.inputValue || '').trim();
+    const val = ((this.inputValue || '').trim()).slice(0, 10);
+    this.inputValue = val;
     if (!val) {
       this.cancelInputPopup();
       return;
