@@ -27,7 +27,7 @@
         [class.selected]="selectedDays.has(d)">{{d}}</button>
     </div>
   </div>
-  <div *ngIf="attemptedSubmit && showWeekdaysError" class="field-error" role="alert">Select weekdays</div>
+  <div *ngIf="attemptedSubmit && showWeekdaysError" class="field-error" role="alert">Pick at least one day.</div>
 </ng-template>
 
 <ng-template #timePickerSection>
@@ -48,7 +48,7 @@
         </div>
       </div>
     </div>
-    <div *ngIf="attemptedSubmit && showTimeError" class="field-error" role="alert">Select time</div>
+    <div *ngIf="attemptedSubmit && showTimeError" class="field-error" role="alert">Please set a time.</div>
     <div *ngIf="showPastTimeError" class="field-error" role="alert">Cannot set time in the past for today</div>
     <div *ngIf="showEndTimeSingleDayError" class="field-error" role="alert">End time cannot exceed 11:59 PM for
       single-day activities</div>
@@ -72,23 +72,21 @@
           placeholder="Add End Date"></mindful-datepicker>
       </div>
     </div>
+    <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Please pick both dates.</div>
+    <div *ngIf="showDaySelectionError" class="field-error top-margin" role="alert">That day isn't in your chosen date range.</div>
   </div>
-  <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Add start and end date
-  </div>
-  <div *ngIf="showDaySelectionError" class="field-error top-margin" role="alert">Cannot select weekdays outside the
-    selected date range</div>
 </ng-template>
 
-<ng-template #prioritySection>
-  <div class="priority-selection priority-selectors">
-    <div class="d-flex align-items-center gap-2">
+  <ng-template #prioritySection>
+  <div class="priority-selection priority-selectors" [class.invalid]="attemptedSubmit && showPriorityError">
+    <div class="d-flex align-items-center gap-2" style="padding-bottom: 16px;">
       <label>Priority</label>
       <div class="priority-row">
         <mindful-badge *ngFor="let p of priorities" [text]="p.text" [type]="p.type" [disabled]="priority !== p.key"
           [active]="priority === p.key" (click)="selectPriority(p.key)"></mindful-badge>
       </div>
     </div>
-    <div *ngIf="attemptedSubmit && showPriorityError" class="field-error" role="alert">Select priority</div>
+    <div *ngIf="attemptedSubmit && showPriorityError" class="field-error" role="alert">How important is this? Pick a priority.</div>
   </div>
 </ng-template>
 
@@ -101,19 +99,19 @@
     <div class="add-new-row">
       <mindful-tags [options]="routineTags" [singleSelection]="true" [size]="'small'" [variant]="tagVariants[currentActive]"
         (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)" (delete)="onTagDelete($event)"></mindful-tags>
-      <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Select tag</div>
+      <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Pick a tag for this activity.</div>
     </div>
   </div>
 </ng-template>
 
 <ng-template #routineSection let-borderColor="borderColor">
   <div class="d-flex flex-column" [style.border-bottom]="'1px solid ' + borderColor">
-    <div class="routine-section">
+    <div class="routine-section" [class.invalid]="attemptedSubmit && showRoutineError">
       <label>Routine</label>
       <mindful-selectors class="w-100" [options]="routineOptions" componentType="badge" [singleSelection]="true"
         (selectedKeysChange)="onRoutineSelected($event)" [scrollable]="false"></mindful-selectors>
     </div>
-    <div *ngIf="attemptedSubmit && showRoutineError" class="field-error" role="alert">Select routine</div>
+    <div *ngIf="attemptedSubmit && showRoutineError" class="field-error" role="alert">When do you want to do this? Pick a routine.</div>
   </div>
 </ng-template>
 
@@ -135,7 +133,7 @@
       [class.missing-border]="showNotesError && attemptedSubmit && showNotesValidation" maxlength="250"
       placeholder="Add Notes....." style="display:block;margin:0 auto;"></textarea>
     <div class="char-count">Max 250 Characters</div>
-    <div *ngIf="attemptedSubmit && showNotesError && showNotesValidation" class="field-error" role="alert">Add notes</div>
+    <div *ngIf="attemptedSubmit && showNotesError && showNotesValidation" class="field-error" role="alert">Please add a short note about this.</div>
   </div>
 </ng-template>
 
@@ -170,7 +168,7 @@
     </div>
 
     <div *ngIf="currentActive === 'habits'" class="form-card">
-      <ng-container *ngTemplateOutlet="titleInputSection; context: {placeholder: 'Habit Title', errorMsg: 'Enter habit title'}"></ng-container>
+      <ng-container *ngTemplateOutlet="titleInputSection; context: {placeholder: 'Habit Title', errorMsg: 'Please give this a name'}"></ng-container>
       <ng-container *ngTemplateOutlet="routineSection; context: {borderColor: '#7471BA'}"></ng-container>
       <div class="date-time-selection">
         <ng-container *ngTemplateOutlet="repeatSection"></ng-container>
@@ -186,7 +184,7 @@
     </div>
 
     <div *ngIf="currentActive === 'tasks'" class="form-card">
-      <ng-container *ngTemplateOutlet="titleInputSection; context: {placeholder: 'Task Title', errorMsg: 'Enter task title'}"></ng-container>
+      <ng-container *ngTemplateOutlet="titleInputSection; context: {placeholder: 'Task Title', errorMsg: 'Please give this a name'}"></ng-container>
       <ng-container *ngTemplateOutlet="routineSection; context: {borderColor: '#F6AC72'}"></ng-container>
       <div class="date-time-selection">
         <ng-container *ngTemplateOutlet="repeatSection"></ng-container>
@@ -209,27 +207,27 @@
           <ng-container *ngTemplateOutlet="timePickerSection"></ng-container>
           <div class="start-end-row">
             <div class="date-align">
-              <label>Start Date</label>
-              <div class="mindful-input-group">
-                <mindful-datepicker type="date" [(ngModel)]="startDate" [minDate]="today" [rangeStart]="startDate"
-                  [rangeEnd]="endDate" placeholder="Add Start Date"></mindful-datepicker>
+                <label>Start Date</label>
+                <div class="mindful-input-group" [class.missing-placeholder]="attemptedSubmit && showDateError">
+                  <mindful-datepicker type="date" [(ngModel)]="startDate" [minDate]="today" [rangeStart]="startDate"
+                    [rangeEnd]="endDate" placeholder="Add Start Date"></mindful-datepicker>
+                </div>
               </div>
-            </div>
-            <div class="date-align">
-              <label>End Date</label>
-              <div class="mindful-input-group">
-                <mindful-datepicker type="date" [(ngModel)]="endDate" [minDate]="startDate || today"
-                  [rangeStart]="startDate" [rangeEnd]="endDate" placeholder="Add End Date"></mindful-datepicker>
+              <div class="date-align">
+                <label>End Date</label>
+                <div class="mindful-input-group" [class.missing-placeholder]="attemptedSubmit && showDateError">
+                  <mindful-datepicker type="date" [(ngModel)]="endDate" [minDate]="startDate || today"
+                    [rangeStart]="startDate" [rangeEnd]="endDate" placeholder="Add End Date"></mindful-datepicker>
+                </div>
               </div>
-            </div>
           </div>
-          <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Add start and end date</div>
-          <div *ngIf="showDaySelectionError" class="day-selection-error field-error top-margin">Cannot select weekdays outside the selected date range</div>
+          <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Please pick both dates.</div>
+          <div *ngIf="showDaySelectionError" class="day-selection-error field-error top-margin">That day isn't in your chosen date range.</div>
         </div>
       </div>
       <ng-container *ngTemplateOutlet="prioritySection"></ng-container>
       <ng-container *ngTemplateOutlet="notesSection; context: {showNotesValidation: false}"></ng-container>
-      <div *ngIf="attemptedSubmit && showNotesError" class="field-error" role="alert">Add notes</div>
+      <div *ngIf="attemptedSubmit && showNotesError" class="field-error" role="alert">Please add a short note about this.</div>
       <ng-container *ngTemplateOutlet="submitSection; context: {btnType: 'aqua', btnTypeFaded: 'aqua-light', itemType: 'Time Table'}"></ng-container>
     </div>
 
