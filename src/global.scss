@@ -1,3 +1,5 @@
+@use 'sass:map';
+
 @import "@ionic/angular/css/core.css";
 
 @import "@ionic/angular/css/normalize.css";
@@ -25,7 +27,7 @@ $svg-icons: (
 
 // Function to get icon URL by type
 @function icon-url($name){
-$path: map-get($svg-icons, $name);
+  $path: map.get($svg-icons, $name);
 
 @if $path ==null {
   @error "Unknown icon `#{$name}`. Add it to $svg-icons map in global.scss";
@@ -36,7 +38,7 @@ $path: map-get($svg-icons, $name);
 
 // Mixin to apply SVG icon as background or mask
 @mixin svg-icon($name, $size: 20px, $color: null) {
-  $path: map-get($svg-icons, $name);
+  $path: map.get($svg-icons, $name);
 
   @if $path ==null {
     @error "Unknown icon `#{$name}`. Add it to $svg-icons map in global.scss";

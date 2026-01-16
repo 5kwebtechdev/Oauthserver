@@ -82,9 +82,8 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable();
 
   // Session timeout configuration
-  private readonly WEB_SESSION_TIMEOUT = 2 * 60 * 1000; // 2 minutes for web testing (change to 30 * 60 * 1000 for production)
-  private readonly MOBILE_SESSION_TIMEOUT = 30 * 24 * 60 * 60 * 1000; // 30 days for mobile
-  private readonly REMEMBER_ME_TIMEOUT = 30 * 24 * 60 * 60 * 1000; // 30 days when "Remember Me" is checked
+  // Sessions persist until manual logout for both web and mobile platforms
+  private readonly SESSION_PERSIST_UNTIL_LOGOUT = Number.MAX_SAFE_INTEGER; // Persist indefinitely until manual logout
   private readonly TOKEN_REFRESH_INTERVAL = 30 * 1000; // Check every 30 seconds for testing (change to 5 * 60 * 1000 for production)
 
   // Storage keys
@@ -118,39 +117,21 @@ export class AuthService {
   }
 
   /**
-   * Returns the appropriate session timeout based on platform and remember me setting
+   * Returns the session timeout - sessions persist until manual logout
    */
   private getSessionTimeout(): number {
-    const rememberMe = localStorage.getItem(this.REMEMBER_ME_KEY) === 'true';
-
-    if (this.isMobilePlatform) {
-      return this.MOBILE_SESSION_TIMEOUT;
-    }
-
-    return rememberMe ? this.REMEMBER_ME_TIMEOUT : this.WEB_SESSION_TIMEOUT;
+    return this.SESSION_PERSIST_UNTIL_LOGOUT;
   }
 
   /**
-   * Initialize session monitoring to track user activity and session expiration
+   * Initialize session monitoring - minimal checks since sessions persist until logout
    */
   private initSessionMonitoring(): void {
-    // On mobile platforms, skip periodic checks and activity tracking to save battery
-    if (this.isMobilePlatform) {
-      console.log('Mobile platform detected - session persists until logout');
-      return;
-    }
-
-    // Check session validity periodically (web only)
-    timer(0, this.TOKEN_REFRESH_INTERVAL).subscribe(() => {
+    console.log('Session monitoring initialized - sessions persist until manual logout');
+    // Periodic validity check (optional, kept minimal)
+    timer(this.TOKEN_REFRESH_INTERVAL, this.TOKEN_REFRESH_INTERVAL).subscribe(() => {
       this.checkSessionValidity();
     });
-
-    // Track user activity (web only)
-    if (typeof window !== 'undefined') {
-      ['click', 'keypress', 'scroll', 'touchstart'].forEach(event => {
-        window.addEventListener(event, () => this.updateLastActivity(), { passive: true });
-      });
-    }
   }
 
   /**
@@ -292,19 +273,15 @@ export class AuthService {
     localStorage.setItem(this.USER_ID_KEY, authResponse.userId.toString());
     localStorage.setItem(this.LOGIN_TIME_KEY, currentTime);
     localStorage.setItem(this.LAST_ACTIVITY_KEY, currentTime);
-    localStorage.setItem(this.REMEMBER_ME_KEY, rememberMe.toString());
     localStorage.setItem(this.PLATFORM_KEY, platformType);
-    // Store full user data in localStorage (persists until logout for mobile app)
+    // Store full user data in localStorage (persists until logout)
     localStorage.setItem('user_data', JSON.stringify(authResponse.user));
-
 
     console.log('[AuthService] Session established:', {
       userId: authResponse.userId,
       loginTime: new Date(parseInt(currentTime)).toISOString(),
       platform: platformType,
-      rememberMe: rememberMe,
-      sessionTimeout: this.isMobilePlatform ? 'No timeout (mobile)' :
-        rememberMe ? '30 days' : '2 minutes (testing)'
+      sessionBehavior: 'Persists until manual logout'
     });
 
     // Update observables
@@ -498,7 +475,7 @@ export class AuthService {
 
     // On mobile, return max timeout value as there's no automatic expiration
     if (this.isMobilePlatform) {
-      return this.MOBILE_SESSION_TIMEOUT;
+      return this.SESSION_PERSIST_UNTIL_LOGOUT;
     }
 
     const lastActivityTime = parseInt(lastActivity, 10);
@@ -542,7 +519,6 @@ export class AuthService {
   getSessionInfo(): {
     isActive: boolean;
     platform: 'web' | 'mobile';
-    rememberMe: boolean;
     timeout: number;
     remainingTime: number;
     expiresAt: Date | null;
@@ -552,18 +528,12 @@ export class AuthService {
     const timeout = this.getSessionTimeout();
     const remainingTime = this.getSessionRemainingTime();
 
-    let expiresAt: Date | null = null;
-    if (isActive && !this.isMobilePlatform && session) {
-      expiresAt = new Date(session.lastActivity + timeout);
-    }
-
     return {
       isActive,
       platform: this.isMobilePlatform ? 'mobile' : 'web',
-      rememberMe: session?.rememberMe || false,
       timeout,
       remainingTime,
-      expiresAt
+      expiresAt: null // Sessions persist indefinitely until logout
     };
   }
 

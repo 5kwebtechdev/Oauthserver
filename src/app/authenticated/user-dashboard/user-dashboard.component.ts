@@ -8,7 +8,6 @@ import { LearningSectionComponent } from "../../core/components/learning-section
 import { AdBannerComponent } from '../../core/components/ad-banner/ad-banner.component';
 import { TutorCardComponent } from "../../core/components/tutor-section/tutor-card/tutor-card.component";
 import { ReelsCardComponent } from "../../core/components/reel-section/reels-card/reels-card.component";
-import { ReelsExpandComponent } from "../../core/components/reel-section/reel-expand/reels-expand.component";
 import { JournalsComponent } from "../../core/components/journals/journals.component";
 import { AcademySectionComponent } from "../../core/components/academy-section/academy-section.component";
 import { IonicModule } from "@ionic/angular";
@@ -44,7 +43,6 @@ import { ChildSelfImageService } from '../../core/services/child-self-image.serv
     AdBannerComponent,
     LearningSectionComponent,
     ReelsCardComponent,
-    ReelsExpandComponent,
     TutorCardComponent,
     JournalsComponent,
     AcademySectionComponent,

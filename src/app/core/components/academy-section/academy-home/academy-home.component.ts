@@ -1,18 +1,16 @@
-
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { AcademyService, Course } from '../../../services/academy.service';
 import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
-import { FooterComponent } from '../../footer/footer.component';
 import { MindfulSpeechBubbleComponent } from '../../mindful-speech-bubble/mindful-speech-bubble.component';
 import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
 
 @Component({
   selector: 'app-academy-home',
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, MindfulCardHeaderComponent, FooterComponent, MindfulSpeechBubbleComponent, MindfulPetComponent],
+  imports: [CommonModule, IonicModule, RouterModule, MindfulCardHeaderComponent, MindfulSpeechBubbleComponent, MindfulPetComponent],
   templateUrl: './academy-home.component.html',
   styleUrls: ['./academy-home.component.scss']
 })

@@ -2,14 +2,12 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../../mindful-navigator/mindful-navigator.component';
-import { InstructioListComponent } from '../../family-connection/instructio-list';
-import { MindfulButtonComponent } from '../../../mindful-button/mindful-button.component';
 import { MindfulInputsModule } from '../../../mindful-inputs/mindful-inputs.module';
 
 @Component({
     selector: 'parental-control-child',
     standalone: true,
-    imports: [CommonModule, IonicModule, MindfulNavigatorComponent, InstructioListComponent, MindfulButtonComponent, MindfulInputsModule],
+    imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulInputsModule],
     templateUrl: './parental-control-child.component.html',
     styleUrls: ['./parental-control-child.component.scss']
 })

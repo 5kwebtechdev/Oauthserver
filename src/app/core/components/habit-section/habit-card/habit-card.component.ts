@@ -3,7 +3,6 @@ import { NgClass, NgIf, CommonModule, NgForOf } from "@angular/common";
 import { RouterModule } from '@angular/router';
 import { LongPressDirective } from "../../../directives/gestureControlDirective";
 import { MindfulButtonComponent } from "../../mindful-button/mindful-button.component";
-import { MindfulPetComponent } from "../../mindful-pet/mindful-pet.component";
 
 import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.component';
@@ -33,7 +32,6 @@ import { NavigationContextService } from '../../../services/navigation-context.s
     NgForOf,
     LongPressDirective,
     MindfulButtonComponent,
-    MindfulPetComponent,
 
     MindfulCardHeaderComponent,
     ViewAllComponent,

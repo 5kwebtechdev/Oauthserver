@@ -60,11 +60,7 @@
               password?</a>
           </div>
 
-          <!-- Remember Me checkbox (for web users - extends session to 30 days) -->
-          <div class="remember-me-item">
-            <ion-checkbox [(ngModel)]="rememberMe" [ngModelOptions]="{standalone: true}"></ion-checkbox>
-            <label (click)="rememberMe = !rememberMe">Remember me</label>
-          </div>
+          <!-- (Removed Remember Me - session persists until logout) -->
 
           <mindful-button type="orange-onboard" full [text]="loading ? 'Logging in...' : 'Login'"
             [disabled]="!signInForm.dirty || !isLoginFormValid() || loading" (click)="onSubmit()">
@@ -73,8 +69,6 @@
           <div class="error-message" *ngIf="loginError">
             {{ loginError }}
           </div>
-
-          <!-- <button type="submit" style="display:none">helo</button> -->
 
         </form>
       </div>
@@ -85,7 +79,7 @@
       <social-media [variant]="'login-with'"></social-media>
     </div>
     <div class="signup-link">
-      <p>Don’t have an account? <a href="home/sign-up?step=0.1">Sign up</a></p>
+      <p>Don't have an account? <a [routerLink]="['/home/sign-up']" [queryParams]="{ step: '0.1' }">Sign up</a></p>
     </div>
 
 
