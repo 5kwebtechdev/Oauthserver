@@ -14,7 +14,7 @@ import { LongPressDirective } from '../../../directives/gestureControlDirective'
   imports: [CommonModule, FormsModule, MindfulBadgeComponent, MindfulButtonComponent, MindfulPopupComponent, LongPressDirective]
 })
 export class MindfulTagsComponent implements OnInit, OnDestroy {
-  @ViewChild('editInput') editInputRef?: ElementRef<HTMLInputElement>;
+  @ViewChild('tagInput') tagInputRef?: ElementRef<HTMLInputElement>;
 
   @Input() options: { key: any; value: string; type?: string }[] = [];
   @Input() formGroup?: FormGroup;
@@ -22,6 +22,7 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
   @Input() size: 'small' | 'medium' | 'large' = 'small';
   @Input() singleSelection: boolean = false;
   @Input() variant: 'blue' | 'orange' | 'green' | 'gray' = 'blue';
+  @Input() storageKey: string = 'mindful-tags'; // Key for localStorage
 
   @Output() selectedKeysChange = new EventEmitter<any[]>();
   @Output() edit = new EventEmitter<any>();
@@ -33,13 +34,12 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
   activeTagKey: any = null;
   popoverPosition: { left: number; top: number } | null = null;
 
+  // Unified input popup state
+  showInputPopup: boolean = false;
+  isEditMode: boolean = false;
+  inputValue: string = '';
+  inputPopupPosition: { left: number; top: number } | null = null;
   editingTagKey: any = null;
-  editingValue: string = '';
-  editPosition: { left: number; top: number } | null = null;
-
-  addingTag: boolean = false;
-  addingValue: string = '';
-  addPosition: { left: number; top: number } | null = null;
 
   private onDocClick?: any;
   // Delete confirmation popup state
@@ -56,14 +56,32 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
 
   constructor(private el: ElementRef) {
     this.onDocClick = (ev: any) => {
-      if ((this.activeTagKey !== null || this.editingTagKey !== null || this.addingTag) && !this.el.nativeElement.contains(ev.target)) {
+      if ((this.activeTagKey !== null || this.showInputPopup) && !this.el.nativeElement.contains(ev.target)) {
         this.closeAll();
       }
     };
     document.addEventListener('click', this.onDocClick);
   }
 
+  /**
+   * Clamp a popup center X coordinate so the popup (approx width 220px)
+   * stays at least 16px from viewport edges.
+   */
+  private clampPopupCenter(left: number, popupWidth = 220, margin = 16): number {
+    try {
+      const half = popupWidth / 2;
+      const min = margin + half;
+      const max = (window.innerWidth || document.documentElement.clientWidth) - margin - half;
+      return Math.max(min, Math.min(left, max));
+    } catch (e) {
+      return left;
+    }
+  }
+
   ngOnInit(): void {
+    // Load custom tags from localStorage
+    this.loadTagsFromStorage();
+    
     const control = this.formGroup?.get(this.formControlName || '') as FormControl;
     if (control) {
       this.selectedKeys = control.value || [];
@@ -93,7 +111,10 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
     this.activeTagKey = key;
     if (elRef && elRef.getBoundingClientRect) {
       const rect = elRef.getBoundingClientRect();
-      this.popoverPosition = { left: rect.left + rect.width / 2, top: rect.bottom + 8 };
+      const center = rect.left + rect.width / 2;
+      // clamp popover so it remains at least 16px from viewport edges
+      // use a smaller estimated width for the small edit/delete popover
+      this.popoverPosition = { left: this.clampPopupCenter(center, 140), top: rect.bottom + 8 };
     } else {
       this.popoverPosition = null;
     }
@@ -107,21 +128,23 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
   openEditFromClick(key: any, elRef?: any) {
     const tag = this.options.find(o => o.key === key);
     this.editingTagKey = key;
-    this.editingValue = tag ? tag.value : '';
+    this.isEditMode = true;
+    this.inputValue = tag ? tag.value : '';
     if (elRef && elRef.getBoundingClientRect) {
       const rect = elRef.getBoundingClientRect();
-      // Use viewport coords so the fixed-position popup aligns correctly
-      this.editPosition = { left: rect.left + rect.width / 2, top: rect.bottom + 8 };
+      const center = rect.left + rect.width / 2;
+      this.inputPopupPosition = { left: this.clampPopupCenter(center), top: rect.bottom + 8 };
     } else {
-      this.editPosition = null;
+      this.inputPopupPosition = null;
     }
+    this.showInputPopup = true;
     document.body.classList.add('no-scroll');
 
     // Auto-focus the input after the view updates
     setTimeout(() => {
-      if (this.editInputRef) {
-        this.editInputRef.nativeElement.focus();
-        this.editInputRef.nativeElement.select();
+      if (this.tagInputRef) {
+        this.tagInputRef.nativeElement.focus();
+        this.tagInputRef.nativeElement.select();
       }
     }, 0);
   }
@@ -136,10 +159,16 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
     if (ev) ev.stopPropagation();
     const tag = this.options.find(o => o.key === key);
     this.editingTagKey = key;
-    this.editingValue = tag ? tag.value : '';
+    this.isEditMode = true;
+    this.inputValue = tag ? tag.value : '';
 
     // Use the current popover position as the starting point for the edit popup
-    this.editPosition = this.popoverPosition ? { ...this.popoverPosition } : null;
+    if (this.popoverPosition) {
+      this.inputPopupPosition = { left: this.clampPopupCenter(this.popoverPosition.left), top: this.popoverPosition.top };
+    } else {
+      this.inputPopupPosition = null;
+    }
+    this.showInputPopup = true;
 
     // Hide the popover but do NOT call closeTagMenu() because that removes the
     // body no-scroll class and clears state we rely on for the edit popup.
@@ -151,29 +180,56 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
 
     // Auto-focus the input after the view updates
     setTimeout(() => {
-      if (this.editInputRef) {
-        this.editInputRef.nativeElement.focus();
-        this.editInputRef.nativeElement.select(); // Select all text for easy replacement
+      if (this.tagInputRef) {
+        this.tagInputRef.nativeElement.focus();
+        this.tagInputRef.nativeElement.select();
       }
     }, 0);
   }
 
-  saveEdit() {
-    if (this.editingTagKey != null) {
+  // Unified save method for both edit and add
+  saveInputPopup() {
+    const val = (this.inputValue || '').trim();
+    if (!val) {
+      this.cancelInputPopup();
+      return;
+    }
+
+    if (this.isEditMode && this.editingTagKey != null) {
+      // Edit existing tag
       const idx = this.options.findIndex(o => o.key === this.editingTagKey);
       if (idx > -1) {
-        this.options[idx].value = this.editingValue;
-        this.edit.emit({ key: this.editingTagKey, value: this.editingValue });
+        this.options[idx].value = val;
+        this.saveTagsToStorage();
+        this.edit.emit({ key: this.editingTagKey, value: val });
       }
+    } else {
+      // Add new tag at first position
+      const key = Date.now();
+      const newTag = { key, value: val, type: 'custom' };
+      this.options.unshift(newTag); // Add to first position
+      this.saveTagsToStorage();
+      this.add.emit({ key, value: val });
     }
-    this.cancelEdit();
+    this.cancelInputPopup();
+  }
+
+  cancelInputPopup() {
+    this.showInputPopup = false;
+    this.isEditMode = false;
+    this.inputValue = '';
+    this.inputPopupPosition = null;
+    this.editingTagKey = null;
+    document.body.classList.remove('no-scroll');
+  }
+
+  // Legacy method aliases for compatibility
+  saveEdit() {
+    this.saveInputPopup();
   }
 
   cancelEdit() {
-    this.editingTagKey = null;
-    this.editingValue = '';
-    this.editPosition = null;
-    document.body.classList.remove('no-scroll');
+    this.cancelInputPopup();
   }
 
   onDelete(key: any) {
@@ -181,6 +237,9 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
     const idx = this.options.findIndex(o => o.key === key);
     if (idx > -1) {
       const removed = this.options.splice(idx, 1)[0];
+      // Save changes to localStorage
+      this.saveTagsToStorage();
+      
       // If the deleted tag was selected, remove it from selectedKeys
       if (this.selectedKeys && this.selectedKeys.includes(key)) {
         this.selectedKeys = this.selectedKeys.filter(k => k !== key);
@@ -246,36 +305,68 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
   }
 
   openAdd(elRef?: any) {
-    this.addingTag = true;
+    this.isEditMode = false;
+    this.inputValue = '';
+    this.editingTagKey = null;
     if (elRef && elRef.getBoundingClientRect) {
       const rect = elRef.getBoundingClientRect();
-      this.addPosition = { left: rect.left + rect.width / 2, top: rect.bottom + 8 };
+      const center = rect.left + rect.width / 2;
+      this.inputPopupPosition = { left: this.clampPopupCenter(center), top: rect.bottom + 8 };
     } else {
-      this.addPosition = null;
+      this.inputPopupPosition = null;
     }
+    this.showInputPopup = true;
     document.body.classList.add('no-scroll');
+
+    // Auto-focus the input after the view updates
+    setTimeout(() => {
+      if (this.tagInputRef) {
+        this.tagInputRef.nativeElement.focus();
+      }
+    }, 0);
   }
 
   saveAdd() {
-    const val = (this.addingValue || '').trim();
-    if (val) {
-      const key = Date.now();
-      this.add.emit({ key, value: val });
-    }
-    this.cancelAdd();
+    this.saveInputPopup();
   }
 
   cancelAdd() {
-    this.addingTag = false;
-    this.addingValue = '';
-    this.addPosition = null;
-    document.body.classList.remove('no-scroll');
+    this.cancelInputPopup();
   }
 
   closeAll() {
     this.closeTagMenu();
-    this.cancelEdit();
-    this.cancelAdd();
+    this.cancelInputPopup();
+  }
+
+  // LocalStorage methods for persistence
+  private getStorageKey(): string {
+    return `${this.storageKey}-custom`;
+  }
+
+  private loadTagsFromStorage(): void {
+    try {
+      const stored = localStorage.getItem(this.getStorageKey());
+      if (stored) {
+        const customTags = JSON.parse(stored) as { key: any; value: string; type?: string }[];
+        // Merge custom tags at the beginning of options (avoiding duplicates)
+        const existingKeys = new Set(this.options.map(o => o.key));
+        const newCustomTags = customTags.filter(tag => !existingKeys.has(tag.key));
+        this.options = [...newCustomTags, ...this.options];
+      }
+    } catch (e) {
+      console.warn('Failed to load tags from localStorage:', e);
+    }
+  }
+
+  private saveTagsToStorage(): void {
+    try {
+      // Save only custom tags (those with type='custom')
+      const customTags = this.options.filter(o => o.type === 'custom');
+      localStorage.setItem(this.getStorageKey(), JSON.stringify(customTags));
+    } catch (e) {
+      console.warn('Failed to save tags to localStorage:', e);
+    }
   }
 
   getBadgeType(option: any): string {

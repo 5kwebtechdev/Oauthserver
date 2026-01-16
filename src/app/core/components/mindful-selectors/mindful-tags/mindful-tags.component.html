@@ -45,25 +45,16 @@
     (backdropClick)="cancelConfirmDelete()">
   </app-mindful-popup>
 
-  <!-- Edit popup -->
-  <div class="tag-edit-fixed" *ngIf="editingTagKey && editPosition" (click)="cancelEdit()"
-    [ngStyle]="{ left: (editPosition.left) + 'px', top: (editPosition.top) + 'px' }">
-    <div class="tag-edit-inner" (click)="$event.stopPropagation()">
+  <!-- Unified Edit/Add popup -->
+  <div class="tag-input-fixed" *ngIf="showInputPopup && inputPopupPosition" (click)="cancelInputPopup()">
+    <div class="tag-input-inner" (click)="$event.stopPropagation()"
+      [ngStyle]="{ left: (inputPopupPosition.left) + 'px', top: (inputPopupPosition.top) + 'px' }">
       <div class="custom-tag-input">
-        <input class="custom-tag-input__field" type="text" [(ngModel)]="editingValue" placeholder="Edit tag"
-          (keydown.enter)="saveEdit()" (blur)="saveEdit()" #editInput />
+        <input class="custom-tag-input__field" type="text" [(ngModel)]="inputValue" 
+          [placeholder]="isEditMode ? 'Edit tag' : 'Type the name here'"
+          (keydown.enter)="saveInputPopup()" #tagInput />
       </div>
-    </div>
-  </div>
-
-  <!-- Add popup -->
-  <div class="tag-add-fixed" *ngIf="addingTag && addPosition" (click)="cancelAdd()">
-    <div class="tag-add-inner" (click)="$event.stopPropagation()"
-      [ngStyle]="{ left: (addPosition.left) + 'px', top: (addPosition.top) + 'px' }">
-      <div class="custom-tag-input">
-        <input class="custom-tag-input__field" type="text" [(ngModel)]="addingValue" placeholder="Type the name here" />
-      </div>
-      <mindful-button type="plum" text="Add" (click)="saveAdd()"></mindful-button>
+      <mindful-button type="plum" [text]="isEditMode ? 'Save' : 'Add'" (click)="saveInputPopup()"></mindful-button>
     </div>
   </div>
 </div>
