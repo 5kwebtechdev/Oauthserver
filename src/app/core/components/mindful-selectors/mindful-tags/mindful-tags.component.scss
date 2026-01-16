@@ -69,34 +69,33 @@
   box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
 }
 
-.tag-edit-fixed {
+.tag-input-fixed {
   position: fixed;
-  transform: translateX(-50%);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 100001;
+}
+
+.tag-input-inner {
+  position: fixed;
+  display: flex;
+  justify-content: center;
   align-items: center;
   gap: 8px;
-  width: 194px;
+  width: 220px;
   height: 48px;
   flex-shrink: 0;
-  padding: 12px 8px;
+  padding: 8px;
   background: #FFF;
   border-radius: 16px;
   box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
-}
+  transform: translateX(-50%);
 
-.tag-add-fixed {
-  position: fixed;
-   
-    z-index: 100001;
-    align-items: center;
-    gap: 8px;
-    width: 220px;
-    height: 48px;
-    flex-shrink: 0;
-    padding: 8px;
-    background: #FFF;
-    border-radius: 16px;
-  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
+  mindful-button {
+    padding: 8px 10px;
+  }
 }
 
 .tag-edit-inner,
