@@ -24,7 +24,7 @@ $theme-colors: (
 
   @each $theme, $color in $theme-colors {
     &.#{$theme} {
-      .title-input, .routine-section, .priority-selection, .notes,  .assign-coin {
+      .title-input, .routine-section, .priority-selection, .notes, .assign-coin, .date-time-selection {
         @include border-color($color);
         color: $color;
       }
@@ -713,16 +713,15 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
 
 /* Generic field-level inline error */
 .field-error {
-  color: #D32F2F;
-  font-size: 12px;
-  font-weight: 600;
   padding: 8px 12px;
-  margin-top: 8px;
   background-color: #FFEBEE;
-  border-radius: 4px;
   border-left: 3px solid #D32F2F;
   animation: fadeIn 0.25s ease-in;
-  width: 100%;
+    width: 100%;
+    color: #BB2124;
+    font-family: Nunito;
+    font-size: 13px;
+    font-weight: 500;
 }
 
 /* Utility to show multiple errors in deterministic bottom-to-top order if needed */
