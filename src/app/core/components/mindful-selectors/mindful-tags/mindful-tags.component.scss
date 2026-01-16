@@ -127,6 +127,13 @@
   box-shadow: none;
   font-size: 14px;
   box-sizing: border-box;
+  /* Force stable text color independent of surrounding theme/tab classes */
+  color: #282527 !important;
+  caret-color: #282527 !important;
+}
+
+.custom-tag-input__field::placeholder {
+  color: #28252799; /* slightly muted placeholder */
 }
 
 .custom-tag-input__field:placeholder-shown {
