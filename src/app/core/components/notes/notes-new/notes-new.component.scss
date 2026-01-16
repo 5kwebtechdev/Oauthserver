@@ -10,9 +10,10 @@
 
 /* Header */
 .header {
+    position: relative;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 4px);
+  padding-top: calc(constant(safe-area-inset-top) + 4px);
   display: flex;
-  align-items: center;
-  padding-top: 24px;
 }
 
 .header .back-arrow {
