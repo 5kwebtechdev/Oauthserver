@@ -80,6 +80,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     phone: string | null;
     email: string | null;
     avatarSelected: any;
+    avatarName: string | null;
     selectedCountryCode: string;
   } | null = null;
 
@@ -249,6 +250,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       phone: this.profileForm.get('phone')?.value || null,
       email: this.profileForm.get('email')?.value || null,
       avatarSelected: this.avatarSelected,
+      avatarName: this.avatarName,
       selectedCountryCode: this.selectedCountry.code
     };
     console.log('[EditProfile] Initial values stored:', this.initialValues);
@@ -322,7 +324,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       payload.email = this.profileForm.get('email')!.value!.trim();
     }
 
-    // Check avatar changes
+    // Check avatar changes - only include if avatar was actually changed and not blank
     if (this.hasFieldChanged('avatarSelected', this.avatarSelected)) {
       if (this.avatarSelected) {
         payload.avatarName = `avatar${this.avatarSelected}`;
@@ -330,11 +332,13 @@ export class EditProfileComponent implements OnInit, OnDestroy {
         if (selectedAvatarData) {
           payload.avatarImageName = selectedAvatarData.imageName;
         }
-      } else if (this.avatarName?.trim() && this.avatarName.trim() !== this.currentUserData?.avatarName) {
-        payload.avatarName = this.avatarName.trim();
-        if (this.avatarImageName?.trim()) {
-          payload.avatarImageName = this.avatarImageName.trim();
-        }
+      }
+    }
+    // Also check if avatarName text input changed (for custom names) - only if not blank
+    else if (this.avatarName && this.avatarName.trim() && this.avatarName.trim() !== this.currentUserData?.avatarName) {
+      payload.avatarName = this.avatarName.trim();
+      if (this.avatarImageName?.trim()) {
+        payload.avatarImageName = this.avatarImageName.trim();
       }
     }
 

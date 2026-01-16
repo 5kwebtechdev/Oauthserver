@@ -104,6 +104,12 @@ export class UserProfileComponent implements OnInit, OnChanges {
     if (this.user?.relationship === 'PARENT') {
       this.loadFamilyDetails();
     }
+
+    this.userService.getUserProfile$().subscribe(profile => {
+      if (profile && this.user) {
+        this.user.name = profile.name || 'User';
+      }
+    });
   }
 
   // Return the uppercase initial for a given name

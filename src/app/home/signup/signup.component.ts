@@ -665,9 +665,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         avatar: this.currentRole === 'parent' ? this.getNameInitial() : this.avatarSelected
       };
       sessionStorage.setItem('signup_profile', JSON.stringify(profile));
-      // Persist referral code (if provided) using existing familyCode key expected elsewhere
+      // Persist referral code (if provided)
       if (this.referralCode && this.referralCode.length > 0) {
-        try { sessionStorage.setItem('familyCode', this.referralCode); } catch (e) { }
+        try { sessionStorage.setItem('referralCode', this.referralCode); } catch (e) { }
       }
     } catch (e) { }
 
@@ -883,7 +883,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // If hiding the input, clear stored code
     if (!this.showReferral) {
       this.referralCode = '';
-      try { sessionStorage.removeItem('familyCode'); } catch (e) { }
+      try { sessionStorage.removeItem('referralCode'); } catch (e) { }
     }
     // If showing, focus the input after a short delay
     if (this.showReferral) {
@@ -901,7 +901,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.referralCode = cleaned;
     // Update input value to cleaned value (prevents caret jump)
     try { event.target.value = cleaned; } catch (e) { }
-    try { sessionStorage.setItem('familyCode', this.referralCode); } catch (e) { }
+    try { sessionStorage.setItem('referralCode', this.referralCode); } catch (e) { }
   }
 
   // Handle phone input to ensure only numbers
@@ -1300,6 +1300,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const identifier = this.requestedIdentifier || this.email?.value || this.phone?.value;
     const familyCode = sessionStorage.getItem('familyCode');
     const familyName = sessionStorage.getItem('familyName');
+    const referralCode = sessionStorage.getItem('referralCode');
 
     let profile: any = {};
     try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) { profile = {}; }
@@ -1317,7 +1318,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       avatarName: avatarNameValue,
       avatarImageName: avatarImageNameValue,
       familyCode: familyCode || '',
-      familyName: familyName || ''
+      familyName: familyName || '',
+      referralCode: referralCode || null
     };
 
     // Include explicit family role: CREATOR when user created the family in this session,
@@ -1424,6 +1426,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           sessionStorage.removeItem('familyCode');
           sessionStorage.removeItem('familyName');
           sessionStorage.removeItem('familyCreator');
+          sessionStorage.removeItem('referralCode');
         } catch (e) { }
 
         // Mark onboarding completed so onboarding routes are blocked later
@@ -1509,6 +1512,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const password = sessionStorage.getItem('signup_password') || this.password?.value;
     const identifier = this.requestedIdentifier || this.email?.value || this.phone?.value;
     const familyCode = sessionStorage.getItem('familyCode');
+    const referralCode = sessionStorage.getItem('referralCode');
 
     let profile: any = {};
     try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) { profile = {}; }
@@ -1525,7 +1529,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       password: password || undefined,
       avatarName: avatarNameValue2,
       avatarImageName: avatarImageNameValue2,
-      familyCode: familyCode || ''
+      familyCode: familyCode || '',
+      referralCode: referralCode || null
     };
 
     // If this flow included a family code, mark whether the current user created the family
@@ -1580,6 +1585,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           sessionStorage.removeItem('familyCode');
           sessionStorage.removeItem('familyName');
           sessionStorage.removeItem('familyCreator');
+          sessionStorage.removeItem('referralCode');
         } catch (e) { }
 
         // Navigate to welcome step with a small delay to ensure loader state is properly updated
