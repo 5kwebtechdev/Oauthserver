@@ -390,7 +390,6 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(this.familyCode).then(() => {
                 this.core.triggerToasrt('Family code copied to clipboard!');
-                this.redirectToLogin();
             }).catch(() => {
                 this.fallbackCopyTextToClipboard(this.familyCode);
             });
@@ -411,7 +410,6 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         try {
             document.execCommand('copy');
             this.core.triggerToasrt('Family code copied to clipboard!');
-            this.redirectToLogin();
         } catch (err) {
             this.core.triggerToasrt('Failed to copy family code');
         }
