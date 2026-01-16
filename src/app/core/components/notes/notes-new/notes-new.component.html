@@ -1,7 +1,4 @@
 <ion-content>
-<div class="note-new-container">
-
-  <!-- Header -->
   <div class="header">
     <button class="back-arrow" (click)="goBack()" aria-label="Back">
       <!-- simple left arrow -->
@@ -13,6 +10,9 @@
     </button>
     <input class="title-input" placeholder="Title" [(ngModel)]="title" />
   </div>
+<div class="note-new-container">
+
+  <!-- Header -->
 
   <!-- Tag Section -->
   <mindful-tags variant="gray" [options]="tagOptions" [singleSelection]="true"
