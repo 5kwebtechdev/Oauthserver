@@ -1092,11 +1092,34 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   addActivity() { this.activities.push({ name: '', startTime: '', endTime: '' }); }
 
   onTagsChange(payload: any) {
-    if (!Array.isArray(payload) || payload.length === 0) { this.selectedTags = []; this.clearTagError(); return; }
-    const first = payload[0];
-    if (typeof first === 'number') this.selectedTags = (payload as number[]).map(i => this.routineTags[i]).filter(Boolean);
-    else if (typeof first === 'string') this.selectedTags = this.routineTags.filter(tag => (payload as string[]).includes(tag.key));
-    else if (typeof first === 'object') this.selectedTags = payload as any[]; else this.selectedTags = [];
+    // Normalize payload to an array to support singleSelection emitting a single value
+    const values = Array.isArray(payload) ? payload : (payload == null ? [] : [payload]);
+    if (!values || values.length === 0) { this.selectedTags = []; this.clearTagError(); return; }
+
+    const first = values[0];
+    // Build lookup source: prefer routineTags, then fallback to tagsComponent options
+    const sourceOptions = [...(this.routineTags || []), ...((this.tagsComponent && this.tagsComponent.options) || [])];
+
+    if (typeof first === 'number') {
+      // numeric indices -> map to sourceOptions
+      this.selectedTags = (values as number[]).map(i => sourceOptions[i]).filter(Boolean);
+    } else if (typeof first === 'string' || typeof first === 'number') {
+      // keys -> find matching options by key
+      const keys = (values as any[]).map(v => String(v));
+      this.selectedTags = sourceOptions.filter(tag => keys.includes(String(tag.key)));
+    } else if (typeof first === 'object') {
+      // already full tag objects
+      this.selectedTags = values as any[];
+    } else {
+      this.selectedTags = [];
+    }
+
+    // If still empty but mindful-tags component exists, try mapping selectedKeys from that component
+    if ((!this.selectedTags || this.selectedTags.length === 0) && this.tagsComponent) {
+      const keys = values.map(v => String(v));
+      this.selectedTags = (this.tagsComponent.options || []).filter(o => keys.includes(String(o.key)));
+    }
+
     this.clearTagError();
   }
 

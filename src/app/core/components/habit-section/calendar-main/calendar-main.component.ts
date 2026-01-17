@@ -533,6 +533,13 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     return timeStr;
   }
 
+  // Return true if the currently selected date is today's date
+  isSelectedDateToday(): boolean {
+    if (!this.selectedDate) return false;
+    const today = new Date();
+    return this.formatDateToYYYYMMDD(this.selectedDate) === this.formatDateToYYYYMMDD(today);
+  }
+
   // Format a timestamp to time display format (HH.mm)
   getFormattedTime(timestamp: number): string {
     if (!timestamp) return '';

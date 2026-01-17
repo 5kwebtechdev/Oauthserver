@@ -18,12 +18,7 @@ export interface MoodOption { key: string; label: string; emoji?: string }
   styleUrls: ['./mood-selector.component.scss']
 })
 export class MoodSelectorComponent {
-  @Input() options: MoodOption[] = [
-    { key: 'happy', label: 'Happy', emoji: '😄' },
-    { key: 'sad', label: 'Sad', emoji: '😔' },
-    { key: 'anxious', label: 'Anxious', emoji: '😰' },
-    { key: 'neutral', label: 'Okay', emoji: '🙂' }
-  ];
+  @Input() options: MoodOption[] = [];
   @Input() value: string | null = null;
   @Output() valueChange = new EventEmitter<string>();
 
@@ -60,37 +55,36 @@ export class MoodSelectorComponent {
     this.loadDailySetCount();
   }
 
+  // Fetch today's vibe via service
   getTodayVibe() {
-    // Use the shared MoodService instead of making a direct HTTP call
-    // This will share the same API request with UserDashboardComponent
     this.moodService.getVibesDisplay().subscribe({
       next: (res) => {
         console.debug('[MoodSelector] Vibes display:', res);
         this.vibes = Array.isArray(res) ? res : [];
 
-        // Map backend mood to asset path
+        // Map backend mood to asset
         const first = this.vibes[0];
         if (first && first.mood) {
           const moodUpper = first.mood.toUpperCase();
           const assetPath = this.moodAssetMap[moodUpper];
 
           if (assetPath) {
-            // Set as asset reference
+            // Use asset
             this.value = 'asset:' + assetPath;
           } else {
-            // Fallback to neutral asset if mood not found
+            // Fallback neutral
             this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
           }
         } else {
-          // No mood set, use neutral asset as default
-          this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
+          // No mood set -> neutral
+            this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
         }
         this.valueChange.emit(this.value);
       },
       error: (err) => {
         console.error('Failed to fetch vibes display', err);
         this.vibes = [];
-        // On error, show neutral asset
+        // On error -> neutral
         this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
       }
     });
@@ -103,13 +97,13 @@ export class MoodSelectorComponent {
 
   // Popup helpers
   openPopup() {
-    // Block popup for PARENT users, allow for CHILD and SELF
+    // Prevent parents from opening popup
     const userRelationship = this.authService.getUserRelationship();
     if (userRelationship === 'PARENT') {
       return;
     }
 
-    // Check daily limit (max 2 per day)
+    // Limit to 2 sets/day
     if (this.setsToday >= 2) {
       return;
     }
@@ -133,7 +127,7 @@ export class MoodSelectorComponent {
     const opt = this.popupOptions.find(p => p.src === this.popupSelection);
     if (!opt) return;
 
-    // Use the vibe property from popup option for accurate backend mapping
+    // Use popup vibe key
     const vibeKey = opt.vibe || 'NEUTRAL';
 
     const url = `${environment.apiUrl}/mood/vibes/set`;
@@ -146,14 +140,13 @@ export class MoodSelectorComponent {
 
     this.http.post(url, body, { headers }).subscribe({
       next: () => {
-        // Only update UI on success
+        // On success: update UI
         this.value = 'asset:' + this.popupSelection;
         this.valueChange.emit(this.value);
         this.incrementDailySetCount();
         this.showPopup = false;
-        // Clear the cache so next call fetches fresh data
+        // Clear cache and refresh
         this.moodService.clearVibesDisplayCache();
-        // Refresh vibe display to get updated data
         this.getTodayVibe();
       },
       error: (err) => {
@@ -173,9 +166,18 @@ export class MoodSelectorComponent {
     return (this.value as string).replace(/^asset:/, '');
   }
 
+  // Active or neutral asset
+  get displayAssetSrc(): string | null {
+    const active = this.activeAssetSrc;
+    if (active) return active;
+    return this.moodAssetMap['NEUTRAL'] || null;
+  }
+
   get activeEmoji() {
+    // Don't show unicode if asset is visible
+    if (this.displayAssetSrc) return '';
     const m = this.options.find(x => x.key === this.value) || this.options[0];
-    return m?.emoji || '🙂';
+    return m?.emoji || '';
   }
   get activeLabel() {
     const vibe = this.vibes[0];
@@ -197,11 +199,10 @@ export class MoodSelectorComponent {
     const hasCounts = totalHabits > 0 || totalTasks > 0;
     const allCompleted = hasCounts && (completedHabits === totalHabits) && (completedTasks === totalTasks);
 
-    if (hasCounts) {
+      if (hasCounts) {
       if (allCompleted && vibe.completedStateDescription) {
         return vibe.completedStateDescription;
       }
-      // Exact phrasing requested
       return `${totalHabits} habits & ${totalTasks} tasks awaits.`;
     }
 
@@ -228,7 +229,9 @@ export class MoodSelectorComponent {
         return Math.round(Math.max(0, Math.min(100, vibe.progressPercentage)));
       }
     }
-    // Fallback: Map mood index to percent for visual bar
+    // Guard: avoid division by zero
+    if (!this.options || this.options.length === 0) return 0;
+    // Map mood index to percent for visual bar
     const idx = this.options.findIndex(x => x.key === this.value);
     const pos = idx === -1 ? 0 : idx;
     return Math.round(((pos + 1) / this.options.length) * 100);
