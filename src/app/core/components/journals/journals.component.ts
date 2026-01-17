@@ -38,36 +38,6 @@ export class JournalsComponent {
   // show a loading flag while fetching
   public loading: boolean = false;
 
-  sampleEntries: JournalEntry[] = [
-    {
-      id: '1',
-      title: 'Morning Reflection',
-      content: 'Today I feel grateful for the small moments of peace and clarity...',
-      date: new Date('2024-01-15'),
-      mood: 'grateful',
-      tags: ['morning', 'gratitude', 'mindfulness'],
-      isPrivate: false
-    },
-    {
-      id: '2',
-      title: 'Evening Thoughts',
-      content: 'Reflecting on today\'s challenges and how I overcame them...',
-      date: new Date('2024-01-14'),
-      mood: 'reflective',
-      tags: ['evening', 'reflection', 'growth'],
-      isPrivate: true
-    },
-    {
-      id: '3',
-      title: 'Weekend Adventures',
-      content: 'Spent time in nature today, feeling refreshed and energized...',
-      date: new Date('2024-01-13'),
-      mood: 'energetic',
-      tags: ['weekend', 'nature', 'adventure'],
-      isPrivate: false
-    }
-  ];
-
   constructor(private router: Router, private http: HttpClient, private authApi: AuthApi) {
   }
 
@@ -173,6 +143,21 @@ export class JournalsComponent {
       peaceful: '☮️'
     };
     return moodEmojis[mood] || '📝';
+  }
+
+  /** Return emotion image mapping (if available) for a mood label */
+  getEmotion(entry: JournalEntry): { label: string; image: string } | null {
+    const mood = (entry.mood || '').toLowerCase();
+    if (!mood) return null;
+
+    const emotionMap: { [k: string]: { label: string; image: string } } = {
+      happy: { label: 'Happy', image: '/assets/Images-Thumbnails/Image-Journal-Emotions1.jpg' },
+      excited: { label: 'Excited', image: '/assets/Images-Thumbnails/Image-Journal-Emotions2.jpg' },
+      angry: { label: 'Angry', image: '/assets/Images-Thumbnails/Image-Journal-Emotions3.jpg' },
+      sad: { label: 'Sad', image: '/assets/Images-Thumbnails/Image-Journal-Emotions4.jpg' }
+    };
+
+    return emotionMap[mood] || null;
   }
 
   getMoodLabel(mood: string): string {

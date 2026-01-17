@@ -13,7 +13,14 @@
 		</div>
 
 		<div class="post-body">
-			<div class="emoji">{{ getEmoji(entry) }}</div>
+				<div class="emoji">
+					<ng-container *ngIf="getEmotion(entry) as em; else emojiFallback">
+						<img class="emotion-thumb" [src]="em.image" [alt]="em.label" />
+					</ng-container>
+					<ng-template #emojiFallback>
+						{{ getEmoji(entry) }}
+					</ng-template>
+				</div>
 			<div class="post-content">
 				<div class="post-mood">{{ getMoodLabel(entry.mood) }}</div>
 

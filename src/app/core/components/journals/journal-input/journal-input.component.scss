@@ -129,8 +129,8 @@
 .timeline::before {
   content: "";
   position: absolute;
-  left: -20px;
-  top: 0;
+  left: -21px;
+  top: 8px;
   bottom: 0;
   width: 3px;
   background: #FCE7EB;
@@ -141,7 +141,7 @@
 }
 
 .section {
-  margin-bottom: 40px;
+  margin-bottom: 24px;
   position: relative;
 }
 
@@ -165,6 +165,31 @@
   line-height: 140%;
   /* 22.4px */
 }
+
+/* Error state for the emotion section title */
+.section-title-error {
+  color: #BB2124;
+}
+
+/* More specific selector to override the base .section h2 color */
+.section h2.section-title-error {
+  color: #BB2124;
+}
+
+/* Error field styling provided by user */
+.field-error {
+    width: 100%;
+    color: #BB2124;
+    font-family: Nunito;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 4px 12px;
+    background-color: #FFEBEE;
+    border-left: 3px solid #D32F2F;
+    animation: fadeIn 0.25s ease-in;
+    margin: 0 0 8px 0;
+}
+
 
 .options {
   display: flex;
@@ -218,7 +243,9 @@
 
 .note-area textarea {
   width: 100%;
-  min-height: 120px;
+  /* default height 150px; allow user to resize vertically from the bottom-right corner */
+  height: 150px;
+  min-height: 150px;
   resize: vertical;
   padding: 18px 20px;
   border-radius: 12px;
@@ -234,6 +261,14 @@
 
 .note-area textarea::placeholder {
   color: rgba(40, 37, 39, 0.35);
+}
+
+.char-counter {
+  text-align: right;
+  font-family: Nunito;
+  font-size: 13px;
+  color: rgba(40, 37, 39, 0.6);
+  margin-top: 6px;
 }
 
 .note-area textarea:focus {
@@ -266,9 +301,6 @@
   align-items: center;
   width: 100%;
 }
-
-
-
 .pin-text {
   color: rgba(40, 37, 39, 0.7);
   font-family: Nunito;

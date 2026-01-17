@@ -17,6 +17,16 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
   @ViewChild('tagInput') tagInputRef?: ElementRef<HTMLInputElement>;
 
   @Input() options: { key: any; value: string; type?: string }[] = [];
+  @Input() maxTags: number = 10;
+  // Default predefined options (centralized source)
+  private readonly defaultOptions: { key: any; value: string; type?: string }[] = [
+    { key: 1, value: 'Study' },
+    { key: 2, value: 'Health' },
+    { key: 3, value: 'Skill' },
+    { key: 4, value: 'Routine' },
+    { key: 5, value: 'Personal' },
+    { key: 6, value: 'Finance' }
+  ];
   @Input() formGroup?: FormGroup;
   @Input() formControlName?: string;
   @Input() size: 'small' | 'medium' | 'large' = 'small';
@@ -79,7 +89,21 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Load custom tags from localStorage
+    // Ensure default predefined options are present when parent doesn't pass `options`
+    try {
+      const existingKeys = new Set(this.options.map(o => String(o.key)));
+      const defaultsToAdd = this.defaultOptions.filter(d => !existingKeys.has(String(d.key)));
+      if (!this.options || this.options.length === 0) {
+        this.options = [...this.defaultOptions];
+      } else if (defaultsToAdd.length) {
+        this.options = [...defaultsToAdd, ...this.options];
+      }
+    } catch (e) {
+      // fallback: ensure options at least contains defaults
+      if (!this.options || this.options.length === 0) this.options = [...this.defaultOptions];
+    }
+
+    // Load custom tags from localStorage (merge with current options)
     this.loadTagsFromStorage();
     
     const control = this.formGroup?.get(this.formControlName || '') as FormControl;
@@ -100,6 +124,11 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
       if (this.selectedKeys.includes(key)) {
         this.selectedKeys = this.selectedKeys.filter(k => k !== key);
       } else {
+        // Enforce selection limit
+        if (this.selectedKeys.length >= this.maxTags) {
+          this.showLimitErrorMessage();
+          return;
+        }
         this.selectedKeys.push(key);
       }
     }
@@ -206,11 +235,15 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
       }
     } else {
       // Add new tag at first position
-      const key = Date.now();
-      const newTag = { key, value: val, type: 'custom' };
-      this.options.unshift(newTag); // Add to first position
-      this.saveTagsToStorage();
-      this.add.emit({ key, value: val });
+      if (this.options.length >= this.maxTags) {
+        this.showLimitErrorMessage();
+      } else {
+        const key = Date.now();
+        const newTag = { key, value: val, type: 'custom' };
+        this.options.unshift(newTag); // Add to first position
+        this.saveTagsToStorage();
+        this.add.emit({ key, value: val });
+      }
     }
     this.cancelInputPopup();
   }
@@ -306,6 +339,12 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
   }
 
   openAdd(elRef?: any) {
+    // If we've reached the options limit, show inline error and do NOT open input popup
+    if (this.options.length >= this.maxTags) {
+      this.showLimitErrorMessage();
+      return;
+    }
+
     this.isEditMode = false;
     this.inputValue = '';
     this.editingTagKey = null;
@@ -353,7 +392,11 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
         // Merge custom tags at the beginning of options (avoiding duplicates)
         const existingKeys = new Set(this.options.map(o => o.key));
         const newCustomTags = customTags.filter(tag => !existingKeys.has(tag.key));
-        this.options = [...newCustomTags, ...this.options];
+          this.options = [...newCustomTags, ...this.options];
+          // Enforce maximum options limit to avoid overflow from stored tags
+          if (this.options.length > this.maxTags) {
+            this.options = this.options.slice(0, this.maxTags);
+          }
       }
     } catch (e) {
       console.warn('Failed to load tags from localStorage:', e);
@@ -373,5 +416,15 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
   getBadgeType(option: any): string {
     const isSelected = this.selectedKeys.includes(option.key);
     return this.variant + (isSelected ? '-selected' : '-unselected');
+  }
+
+  // UI state for maximum-limit error message
+  showLimitError: boolean = false;
+  limitErrorMessage: string = 'Limit reached! Delete an old tag to add a new one.';
+
+  private showLimitErrorMessage() {
+    this.showLimitError = true;
+    // auto-clear after a short interval
+    setTimeout(() => { this.showLimitError = false; }, 3500);
   }
 }

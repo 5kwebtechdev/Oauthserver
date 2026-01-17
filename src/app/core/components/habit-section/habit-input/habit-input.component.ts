@@ -96,14 +96,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   // start empty so user must explicitly select routine — enables validation error to show
   selectedRoutine = '';
 
-  routineTags = [
-    { key: '1', value: 'Study', type: 'habit-input' },
-    { key: '2', value: 'Health', type: 'habit-input' },
-    { key: '3', value: 'Skill', type: 'habit-input' },
-    { key: '4', value: 'Routine', type: 'habit-input' },
-    { key: '5', value: 'Personal', type: 'habit-input' },
-
-  ];
+  // Use centralized tags from MindfulTags; keep local container for dynamic additions
+  routineTags: Array<{ key: string, value: string, type: string }> = [];
 
   everyday = false;
   weekdays = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'];

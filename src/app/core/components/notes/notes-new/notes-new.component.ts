@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
@@ -21,13 +21,8 @@ export class NotesNewComponent {
   selectedTagKeys: any[] = [];
   loading = false;
   error: string | null = null;
-  tagOptions: { key: any; value: string }[] = [
-    { key: 1, value: 'Personal' },
-    { key: 2, value: 'Skill' },
-    { key: 3, value: 'Routine' },
-    { key: 4, value: 'Health' },
-    { key: 5, value: 'Finance' }
-  ];
+  // Use MindfulTags defaults; resolve labels via ViewChild at save time
+  @ViewChild(MindfulTagsComponent) tagsComponent?: MindfulTagsComponent;
 
   constructor(private notesService: NotesService, private router: Router) { }
 
@@ -40,7 +35,8 @@ export class NotesNewComponent {
   }
 
   save() {
-    const tags = this.selectedTagKeys.map(key => this.tagOptions.find(o => o.key === key)?.value).filter(Boolean) as string[];
+    const options = this.tagsComponent?.options || [];
+    const tags = this.selectedTagKeys.map(key => options.find(o => String(o.key) === String(key))?.value).filter(Boolean) as string[];
     const payload = {
       title: this.title || 'Untitled',
       content: this.text || '',
