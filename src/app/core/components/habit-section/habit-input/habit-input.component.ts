@@ -97,14 +97,12 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   selectedRoutine = '';
 
   routineTags = [
-    { key: '1', value: 'Exercise', type: 'habit-input' },
-    { key: '2', value: 'Running', type: 'habit-input' },
-    { key: '3', value: 'Reading', type: 'habit-input' },
-    { key: '4', value: 'Swimming', type: 'habit-input' },
-    { key: '5', value: 'Learning', type: 'habit-input' },
-    { key: '6', value: 'Fitness', type: 'habit-input' },
-    { key: '7', value: 'Skill', type: 'habit-input' },
-    { key: '8', value: 'Personal', type: 'habit-input' }
+    { key: '1', value: 'Study', type: 'habit-input' },
+    { key: '2', value: 'Health', type: 'habit-input' },
+    { key: '3', value: 'Skill', type: 'habit-input' },
+    { key: '4', value: 'Routine', type: 'habit-input' },
+    { key: '5', value: 'Personal', type: 'habit-input' },
+
   ];
 
   everyday = false;
@@ -323,7 +321,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     if (!this.startDate || !this.endDate) return false;
     if (!this.startTime?.trim() || !this.endTime?.trim()) return false;
     if (this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime)) return false;
-    if (this.isEndTimeExceedingSingleDay(this.endTime)) return false;
+    if (this.isEndTimeCrossingMidnight(this.startTime, this.endTime)) return false;
     return this.everyday || (this.selectedDays && this.selectedDays.size > 0);
   }
 
@@ -359,19 +357,27 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     return selectedTime < new Date();
   }
 
-  private isEndTimeExceedingSingleDay(timeStr: string): boolean {
-    if (!timeStr || !this.startDate || !this.endDate) return false;
+  // Return true when end time represents midnight/overflow or would fall on the next day
+  // relative to the start time. This enforces that each daily occurrence must finish
+  // before midnight (11:59 PM) regardless of single- or multi-day ranges.
+  private isEndTimeCrossingMidnight(startTimeStr: string, endTimeStr: string): boolean {
+    if (!startTimeStr || !endTimeStr) return false;
 
-    const startDateOnly = new Date(this.startDate.getFullYear(), this.startDate.getMonth(), this.startDate.getDate());
-    const endDateOnly = new Date(this.endDate.getFullYear(), this.endDate.getMonth(), this.endDate.getDate());
+    const start = this.parseTime(startTimeStr);
+    const end = this.parseTime(endTimeStr);
+    if (!start || !end) return false;
 
-    if (startDateOnly.getTime() !== endDateOnly.getTime()) return false;
+    // Exact midnight (00:00) is considered the next day and therefore invalid
+    if (end.hours === 0 && end.minutes === 0) return true;
 
-    const parsed = this.parseTime(timeStr);
-    if (!parsed) return false;
+    // Invalid/overflow times
+    if (end.hours > 23 || (end.hours === 23 && end.minutes > 59)) return true;
 
-    if (parsed.hours === 0 && parsed.minutes === 0) return true;
-    if (parsed.hours > 23 || (parsed.hours === 23 && parsed.minutes > 59)) return true;
+    const startMinutes = start.hours * 60 + start.minutes;
+    const endMinutes = end.hours * 60 + end.minutes;
+
+    // If end is less than or equal to start, it would fall on the next day or be zero-length
+    if (endMinutes <= startMinutes) return true;
 
     return false;
   }
@@ -459,7 +465,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       weekdays: !this.everyday && !this.selectedDays?.size,
       time: !this.startTime?.trim() || !this.endTime?.trim(),
       pastTime: this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime),
-      endTimeSingleDay: this.isEndTimeExceedingSingleDay(this.endTime),
+      endTimeSingleDay: this.isEndTimeCrossingMidnight(this.startTime, this.endTime),
       date: !this.startDate || !this.endDate || this.startDate > this.endDate,
       priority: !this.priority,
       notes: !this.notes?.trim()
@@ -1083,7 +1089,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     this.clearError('time');
     setTimeout(() => {
       this.errors.pastTime = this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime);
-      this.errors.endTimeSingleDay = this.isEndTimeExceedingSingleDay(this.endTime);
+      this.errors.endTimeSingleDay = this.isEndTimeCrossingMidnight(this.startTime, this.endTime);
       if (this.errors.pastTime && this.startTime) {
         const now = new Date();
         const hrs = now.getHours() % 12 || 12;
@@ -1098,7 +1104,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     setTimeout(() => {
       if (this.startTime || this.endTime) {
         this.errors.pastTime = this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime);
-        this.errors.endTimeSingleDay = this.isEndTimeExceedingSingleDay(this.endTime);
+        this.errors.endTimeSingleDay = this.isEndTimeCrossingMidnight(this.startTime, this.endTime);
       } else {
         this.errors.pastTime = this.errors.endTimeSingleDay = false;
       }
@@ -1109,6 +1115,18 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     return !!(this.showTitleError || this.showTagError || this.showRoutineError || this.showWeekdaysError || this.showTimeError || this.showPastTimeError || this.showEndTimeSingleDayError || this.showDateError || this.showPriorityError || this.showNotesError);
   }
 
+  // User-facing message for day-selection errors. If the date range is a single
+  // date, the message should explicitly tell the user which weekday is allowed.
+  get daySelectionErrorMessage(): string {
+    if (!this.showDaySelectionError) return "";
+    if (this.isSameDateRange() && this._startDate) {
+      const code = HabitInputComponent.DAY_NUM_TO_CODE[this._startDate.getDay()];
+      const full = HabitInputComponent.DAY_MAP[code] || '';
+      return `Your date is set for ${full} only.`;
+    }
+    return "That day isn't in your chosen date range.";
+  }
+
   orderedErrorMessages(): string[] {
     const msgs: string[] = [];
     if (this.showTitleError) msgs.push('Enter title');
@@ -1117,7 +1135,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     if (this.showWeekdaysError) msgs.push('Select at least one weekday');
     if (this.showTimeError) msgs.push('Add start and end time');
     if (this.showPastTimeError) msgs.push('Cannot set time in the past for today');
-    if (this.showEndTimeSingleDayError) msgs.push('End time cannot exceed 11:59 PM for single-day activities');
+    if (this.showEndTimeSingleDayError) msgs.push('Activities must finish before midnight (11:59 PM).');
     if (this.showDateError) msgs.push('Add start and end date');
     if (this.showPriorityError) msgs.push('Select priority');
     if (this.showNotesError) msgs.push('Add notes');

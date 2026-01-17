@@ -22,11 +22,11 @@ export class NotesNewComponent {
   loading = false;
   error: string | null = null;
   tagOptions: { key: any; value: string }[] = [
-    { key: 1, value: 'personal' },
-    { key: 2, value: 'work' },
-    { key: 3, value: 'ideas' },
-    { key: 4, value: 'health' },
-    { key: 5, value: 'finance' }
+    { key: 1, value: 'Personal' },
+    { key: 2, value: 'Skill' },
+    { key: 3, value: 'Routine' },
+    { key: 4, value: 'Health' },
+    { key: 5, value: 'Finance' }
   ];
 
   constructor(private notesService: NotesService, private router: Router) { }
