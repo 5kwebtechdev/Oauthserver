@@ -153,3 +153,32 @@
   width: 20px;
   height: 20px;
 }
+
+.add-new.disabled {
+  opacity: 0.5;
+}
+
+/* use shared .field-error.top-margin from habit-input styles */
+
+/* Inline field-level error styles (copied from habit-input component) */
+.field-error {
+    width: 100%;
+    color: #BB2124;
+    font-family: Nunito;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 4px 12px;
+    background-color: #FFEBEE;
+    border-left: 3px solid #D32F2F;
+    animation: fadeIn 0.25s ease-in;
+    margin: 8px 0;
+}
+
+.top-margin {
+  margin-top: 8px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

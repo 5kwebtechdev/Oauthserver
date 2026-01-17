@@ -130,8 +130,8 @@
 
   </div>
 
-  <!-- Fixed Add Button -->
-  <div class="add-button-fixed" (click)="goToNewNote()">
+  <!-- Fixed Add Button (hidden when there are no notes) -->
+  <div class="add-button-fixed" *ngIf="notes && notes.length > 0" (click)="goToNewNote()">
     <mindful-button type="add"></mindful-button>
   </div>
 

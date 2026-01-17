@@ -35,7 +35,14 @@
         </div>
 
         <div class="post-body">
-          <div class="emoji">{{ getEmoji(entry) }}</div>
+          <div class="emoji">
+            <ng-container *ngIf="getEmotion(entry) as em; else emojiFallback">
+              <img class="emotion-thumb" [src]="em.image" [alt]="em.label" />
+            </ng-container>
+            <ng-template #emojiFallback>
+              {{ getEmoji(entry) }}
+            </ng-template>
+          </div>
           <div class="post-content">
             <div class="post-mood">{{ entry.mood || 'Mood' }}</div>
 
@@ -61,6 +68,7 @@
 </ion-content>
 
 <!-- Fixed Add Button -->
-<div class="add-button-fixed" (click)="onAddClick()">
+<!-- Fixed Add Button (hidden when there are no entries) -->
+<div *ngIf="filteredEntries && filteredEntries.length" class="add-button-fixed" (click)="onAddClick()">
   <mindful-button type="add"></mindful-button>
 </div>

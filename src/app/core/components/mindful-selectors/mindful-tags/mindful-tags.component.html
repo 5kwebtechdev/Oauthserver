@@ -11,11 +11,13 @@
 
     <div class="tags-add-inline">
       <div class="add-wrapper" #addEl>
-        <mindful-badge class="add-new" text="Add new +" [type]="variant + '-selected'"
+        <mindful-badge class="add-new" [ngClass]="{disabled: options.length >= maxTags}" text="Add new +" [type]="variant + '-selected'"
           (click)="openAdd(addEl)"></mindful-badge>
       </div>
     </div>
   </div>
+
+  <div *ngIf="showLimitError" class="field-error top-margin" role="alert">{{ limitErrorMessage }}</div>
 
   <!-- Popover for edit/delete -->
   <div class="tag-popover-fixed" *ngIf="activeTagKey && popoverPosition"

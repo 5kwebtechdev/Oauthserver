@@ -43,6 +43,8 @@ export class JournalInputComponent implements OnInit {
   public uploadProgress: number = 0;
   public isUploading: boolean = false;
   public uploadedImageUrl: string | null = null;
+  public emotionError: string | null = null;
+  public noteMaxLength = 160;
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -132,6 +134,13 @@ export class JournalInputComponent implements OnInit {
   }
 
   async submit(): Promise<void> {
+    // Require emotion selection
+    const emotionSelected = this.selected['emotions'];
+    if (emotionSelected == null) {
+      this.emotionError = 'How are you feeling? Pick an emotion to continue.';
+      return;
+    }
+
     // Build payload from selections and notes
     const payload: any = { notes: this.text || '' };
 
@@ -178,6 +187,17 @@ export class JournalInputComponent implements OnInit {
       const errorMsg = error instanceof Error ? error.message : 'Failed to save journal. Please try again.';
       alert(errorMsg);
     }
+  }
+
+  // Ensure text stays within max length (defensive: trims pasted content)
+  onNotesInput(): void {
+    if (this.text && this.text.length > this.noteMaxLength) {
+      this.text = this.text.slice(0, this.noteMaxLength);
+    }
+  }
+
+  get notesCharCount(): number {
+    return (this.text || '').length;
   }
 
 
@@ -360,6 +380,10 @@ export class JournalInputComponent implements OnInit {
       this.selected[section] = null;
     } else {
       this.selected[section] = index;
+    }
+    // Clear emotion error when an emotion is chosen/toggled
+    if (section === 'emotions' && this.selected['emotions'] != null) {
+      this.emotionError = null;
     }
   }
 

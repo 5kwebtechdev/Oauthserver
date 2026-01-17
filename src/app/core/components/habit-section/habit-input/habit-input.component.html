@@ -98,7 +98,7 @@
       <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">{{errorMsg}}</div>
     </div>
     <div class="add-new-row">
-      <mindful-tags [options]="routineTags" [singleSelection]="true" [size]="'small'" [variant]="tagVariants[currentActive]"
+      <mindful-tags [singleSelection]="true" [size]="'small'" [variant]="tagVariants[currentActive]"
         (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)" (delete)="onTagDelete($event)"></mindful-tags>
       <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Pick a tag for this activity.</div>
     </div>
