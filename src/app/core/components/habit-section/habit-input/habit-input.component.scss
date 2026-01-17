@@ -24,7 +24,7 @@ $theme-colors: (
 
   @each $theme, $color in $theme-colors {
     &.#{$theme} {
-      .title-input, .routine-section, .priority-selection, .notes, .assign-coin, .date-time-selection {
+      .title-input, .routine-section, .priority-selection, .assign-coin{
         @include border-color($color);
         color: $color;
       }
