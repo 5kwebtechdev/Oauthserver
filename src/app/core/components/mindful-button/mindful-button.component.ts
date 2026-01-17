@@ -1,4 +1,4 @@
-import { booleanAttribute, ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, Input, HostBinding, HostListener } from '@angular/core';
 import { NgClass, NgIf } from '@angular/common';
 import { buttonStyles } from './button.types';
 import { CoerceBoolean } from '../../coerceBoolean.decorator';
@@ -77,6 +77,12 @@ export class MindfulButtonComponent {
 
   readonly buttonRole = 'button';
 
+  // Apply disabled class on host so pointer-events:none covers the entire component
+  @HostBinding('class.disabled')
+  get hostDisabled(): boolean {
+    return this.disabled;
+  }
+
   get classMap(): Record<string, boolean> {
     return {
       ...(this.type ? { [this.type]: true } : {}),
@@ -100,6 +106,15 @@ export class MindfulButtonComponent {
       event.preventDefault();
       event.stopImmediatePropagation();
       event.stopPropagation();
+    }
+  }
+
+  // Also intercept clicks at the host level to ensure parent listeners don't receive events
+  @HostListener('click', ['$event'])
+  handleHostClick(event: Event): void {
+    if (this.disabled) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
     }
   }
 

@@ -210,6 +210,10 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
       fieldSet.add(item.value);
     } else {
       fieldSet.delete(item.value);
+      // If no values remain for this field, remove the key from the map
+      if (fieldSet.size === 0) {
+        this.selectedFiltersMap.delete(fieldKey);
+      }
     }
 
     // User interaction begins: compute and show count
@@ -233,6 +237,13 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
   getSelectedCount(fieldKey: string): number {
     const set = this.selectedFiltersMap.get(fieldKey);
     return set ? set.size : 0;
+  }
+
+  /**
+   * Check if any filters are currently selected
+   */
+  hasSelectedFilters(): boolean {
+    return this.selectedFiltersMap.size > 0;
   }
 
   /**
@@ -327,6 +338,12 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
   private updateResultCount(): void {
     try {
       const sel = this.getSelectedFilters();
+      // If there are no selected filters, treat as zero results (user expects no count)
+      if (!sel || !sel.filters || Object.keys(sel.filters).length === 0) {
+        this.resultCount = 0;
+        return;
+      }
+
       this.resultCount = this.tutorService.countForSelectedFilters(sel);
     } catch (e) {
       this.resultCount = 0;

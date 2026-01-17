@@ -110,8 +110,9 @@
       subtitle: 'Know a tutor who should be here? Share our form so they can join',
       showCloseButton: true,
       backdrop: true,
-      primaryCTA: { text: '📎 Copy Link' },
-      secondaryCTA: { text: ' Share through Whatsapp' }
+      ctaDirection: 'column',
+      primaryCTA: { text: 'Copy Link', icon: 'assets/icons/attachment-small.svg', iconPosition: 'start', buttonStyle: 'white' },
+      secondaryCTA: { text: ' Share through Whatsapp', icon: 'assets/icons/whatsapp-small.svg', iconPosition: 'start', buttonStyle: 'white' }
     }" (backdropClick)="closeReferModal()" (primaryAction)="copyLink()" (secondaryAction)="shareWhatsapp()"
     (closeAction)="closeReferModal()">
   </app-mindful-popup>

@@ -51,9 +51,8 @@
                         height="121" style="width:208px;height:121px;aspect-ratio:208/121;object-fit:contain;" />
                 </div>
                 <div class="empty-calendar-text">
-                    <h2>Your Calendar's Looking Clear Today!</h2>
-                    <p>No tasks or habits set for today yet. Get started by adding some tasks or habits to make the most
-                        of your day!</p>
+                    <h2>{{ isSelectedDateToday() ? "Your Calendar's Looking Clear Today!" : "Your Calendar's Looking Clear" }}</h2>
+                    <p>{{ isSelectedDateToday() ? 'No tasks or habits set for today yet. Get started by adding some tasks or habits to make the most of your day!' : 'No tasks or habits set for this day yet. Get started by adding some tasks or habits to make the most of this day!' }}</p>
                 </div>
             </div>
             <mindful-button type="magenta" text="+ Add new" large style="display:block; width:100%"

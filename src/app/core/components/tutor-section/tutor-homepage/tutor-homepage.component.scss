@@ -210,9 +210,7 @@ display: flex;
   font-size: 0.9rem;
   cursor: pointer;
   white-space: nowrap;
-  /* prevent text wrapping */
   min-width: 120px;
-  /* ensure enough width for the full text */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -220,7 +218,7 @@ display: flex;
 
 
 .tutor-list-section {
-  padding: 0 16px 24px 16px;
+  padding: 0 16px 110px 16px;
   gap: 16px;
 }
 
@@ -228,10 +226,7 @@ display: flex;
   color: #282527;
   font-family: Fredoka;
   font-size: 20px;
-  font-style: normal;
   font-weight: 500;
-  line-height: 140%;
-  /* 28px */
   margin-bottom: 16px;
 }
 
@@ -433,4 +428,18 @@ display: flex;
   &:hover {
     background-color: rgba(0, 0, 0, 0.05);
   }
+}
+
+/* Ensure the shared popup's CTA buttons are stacked vertically for this page only */
+:host ::ng-deep app-mindful-popup .mindful-popup-actions .mindful-popup-dual-cta,
+:host ::ng-deep app-mindful-popup .mindful-popup-actions .mindful-popup-dual-cta.column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+}
+
+/* Make the inner buttons take full width when stacked */
+:host ::ng-deep app-mindful-popup .mindful-popup-actions .mindful-popup-dual-cta > * {
+  width: 100%;
 }

@@ -24,6 +24,9 @@ import {
 export class TutorProfileComponent implements OnInit {
   @Input() tutor: Tutor | undefined;
 
+  // Like toggle state
+  isLiked = false;
+
   // Navigator actions
   navActions: Array<{ type: 'edit' | 'icon' | 'iconWithCount' | 'heart', src?: string, alt?: string, count?: number }> = [];
 
@@ -45,7 +48,7 @@ export class TutorProfileComponent implements OnInit {
     const svgData = 'data:image/svg+xml;utf8,' + encodeURIComponent(svgString);
 
     this.navActions = [
-      { type: 'heart', src: svgData, alt: 'Heart', count: this.getLikesCount() }
+      { type: 'heart', src: svgData, alt: 'Heart' }
     ];
   }
 
@@ -175,9 +178,28 @@ export class TutorProfileComponent implements OnInit {
 
   handleNavAction(event: any): void {
     const { index, action } = event;
-    if (action.type === 'heart' || action.type === 'iconWithCount') {
-      action.count = (action.count || 0) + 1;
+    if (action.type === 'heart') {
+      this.toggleLike();
+      // Update the heart icon to show gradient when liked
+      if (this.isLiked) {
+        const gradientSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><defs><linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff6a6a"/><stop offset="100%" stop-color="#ff2e7a"/></linearGradient></defs><circle cx="30" cy="30" r="24" fill="url(#g1)" opacity="0.1"/><path d="M30 39L28.55 37.7C26.87 36.18 25.48 34.87 24.38 33.77C23.28 32.67 22.4 31.69 21.75 30.81C21.1 29.94 20.65 29.13 20.39 28.4C20.13 27.67 20 26.92 20 26.15C20 24.58 20.53 23.27 21.58 22.22C22.63 21.17 23.93 20.65 25.5 20.65C26.37 20.65 27.19 20.83 27.98 21.2C28.76 21.57 29.43 22.08 30 22.75C30.57 22.08 31.24 21.57 32.03 21.2C32.81 20.83 33.63 20.65 34.5 20.65C36.07 20.65 37.38 21.17 38.43 22.22C39.48 23.27 40 24.58 40 26.15C40 26.92 39.87 27.67 39.61 28.4C39.35 29.13 38.9 29.94 38.25 30.81C37.6 31.69 36.73 32.67 35.63 33.77C34.53 34.87 33.13 36.18 31.45 37.7L30 39Z" fill="url(#g1)"/></svg>';
+        action.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(gradientSvg);
+      } else {
+        const neutralSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60" fill="none"><g filter="url(#filter0_d_4507_48920)"><foreignObject x="-10" y="-10" width="80" height="80"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(8px);clip-path:url(#bgblur_0_4507_48920_clip_path);height:100%;width:100%"></div></foreignObject><circle data-figma-bg-blur-radius="16" cx="30" cy="30" r="24" fill="url(#paint0_linear_4507_48920)"/><mask id="mask0_4507_48920" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="18" y="18" width="24" height="24"><rect x="18" y="18" width="24" height="24" fill="#282527"/></mask><g mask="url(#mask0_4507_48920)"><path d="M30 38.9984L28.55 37.6984C26.8667 36.1818 25.475 34.8734 24.375 33.7734C23.275 32.6734 22.4 31.6859 21.75 30.8109C21.1 29.9359 20.6458 29.1318 20.3875 28.3984C20.1292 27.6651 20 26.9151 20 26.1484C20 24.5818 20.525 23.2734 21.575 22.2234C22.625 21.1734 23.9333 20.6484 25.5 20.6484C26.3667 20.6484 27.1917 20.8318 27.975 21.1984C28.7583 21.5651 29.4333 22.0818 30 22.7484C30.5667 22.0818 31.2417 21.5651 32.025 21.1984C32.8083 20.8318 33.6333 20.6484 34.5 20.6484C36.0667 20.6484 37.375 21.1734 38.425 22.2234C39.475 23.2734 40 24.5818 40 26.1484C40 26.9151 39.8708 27.6651 39.6125 28.3984C39.3542 29.1318 38.9 29.9359 38.25 30.8109C37.6 31.6859 36.725 32.6734 35.625 33.7734C34.525 34.8734 33.1333 36.1818 31.45 37.6984L30 38.9984ZM30 36.2984C31.6 34.8651 32.9167 33.6359 33.95 32.6109C34.9833 31.5859 35.8 30.6943 36.4 29.9359C37 29.1776 37.4167 28.5026 37.65 27.9109C37.8833 27.3193 38 26.7318 38 26.1484C38 25.1484 37.6667 24.3151 37 23.6484C36.3333 22.9818 35.5 22.6484 34.5 22.6484C33.7167 22.6484 32.9917 22.8693 32.325 23.3109C31.6583 23.7526 31.2 24.3151 30.95 24.9984H29.05C28.8 24.3151 28.3417 23.7526 27.675 23.3109C27.0083 22.8693 26.2833 22.6484 25.5 22.6484C24.5 22.6484 23.6667 22.9818 23 23.6484C22.3333 24.3151 22 25.1484 22 26.1484C22 26.7318 22.1167 27.3193 22.35 27.9109C22.5833 28.5026 23 29.1776 23.6 29.9359C24.2 30.6943 25.0167 31.5859 26.05 32.6109C27.0833 33.6359 28.4 34.8651 30 36.2984Z" fill="#282527"/></g></g><defs><filter id="filter0_d_4507_48920" x="0" y="0" width="60" height="60" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feGaussianBlur stdDeviation="3"/><feComposite in2="hardAlpha" operator="out"/><feColorMatrix type="matrix" values="0 0 0 0 0.419608 0 0 0 0 0.396078 0 0 0 0 0.415686 0 0 0 0.15 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_4507_48920"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_4507_48920" result="shape"/></filter></defs></svg>';
+        action.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(neutralSvg);
+      }
       this.onFavorite();
+    }
+  }
+
+  private toggleLike(): void {
+    this.isLiked = !this.isLiked;
+    if (this.tutor) {
+      if (this.isLiked) {
+        this.tutor.champsLiked = (this.tutor.champsLiked || 0) + 1;
+      } else {
+        this.tutor.champsLiked = Math.max(0, (this.tutor.champsLiked || 0) - 1);
+      }
     }
   }
 

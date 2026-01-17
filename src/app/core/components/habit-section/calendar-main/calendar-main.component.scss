@@ -1,4 +1,8 @@
 /* Styles for the mood status timeline */
+
+h2, p {
+  margin: 0;
+}
 .calendar-mood-satus-popup {
   .daily-mood-status {
     .mood-staus-message {
@@ -131,27 +135,29 @@
   align-items: center;
   gap: 8px;
   align-self: stretch;
-}
 
-.empty-calendar-text h2 {
-  color: #282527;
-  text-align: center;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 140%;
-  /* 22.4px */
-  align-self: stretch;
+  h2{
+color: #282527;
+text-align: center;
+font-family: Fredoka;
+font-size: 16px;
+font-weight: 500;
+  }
+  p{
+    color: #282527;
+text-align: center;
+font-family: Nunito;
+font-size: 13px;
+font-weight: 500;
+opacity: 0.7;
+  }
 }
 
 .empty-calendar-text {
   color: #282527;
   text-align: center;
   font-size: 13px;
-  font-style: normal;
   font-weight: 500;
-  line-height: 140%;
-  /* 18.2px */
   align-self: stretch;
 }
 
@@ -180,10 +186,8 @@
   width: 300px;
   color: #282527;
   font-size: 16px;
-  font-style: normal;
   font-weight: 500;
-  line-height: 140%;
-  /* 22.4px */
+ 
 }
 
 .calendar-mood-satus-popup {
