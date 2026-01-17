@@ -49,9 +49,8 @@
       </div>
     </div>
     <div *ngIf="attemptedSubmit && showTimeError" class="field-error" role="alert">Please set a time.</div>
-    <div *ngIf="showPastTimeError" class="field-error" role="alert">Cannot set time in the past for today</div>
-    <div *ngIf="showEndTimeSingleDayError" class="field-error" role="alert">End time cannot exceed 11:59 PM for
-      single-day activities</div>
+    <div *ngIf="showPastTimeError" class="field-error" role="alert">That time has already passed! Pick a later time.</div>
+    <div *ngIf="showEndTimeSingleDayError" class="field-error" role="alert">Activities must finish before midnight (11:59 PM).</div>
   </div>
 </ng-template>
 
@@ -73,7 +72,7 @@
       </div>
     </div>
     <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Please pick both dates.</div>
-    <div *ngIf="showDaySelectionError" class="field-error top-margin" role="alert">That day isn't in your chosen date range.</div>
+    <div *ngIf="showDaySelectionError" class="field-error top-margin" role="alert">{{ daySelectionErrorMessage }}</div>
   </div>
 </ng-template>
 
@@ -222,7 +221,7 @@
               </div>
           </div>
           <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Please pick both dates.</div>
-          <div *ngIf="showDaySelectionError" class="day-selection-error field-error top-margin">That day isn't in your chosen date range.</div>
+          <div *ngIf="showDaySelectionError" class="day-selection-error field-error top-margin">{{ daySelectionErrorMessage }}</div>
         </div>
       </div>
       <ng-container *ngTemplateOutlet="prioritySection"></ng-container>

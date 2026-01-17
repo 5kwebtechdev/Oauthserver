@@ -28,6 +28,10 @@ $theme-colors: (
         @include border-color($color);
         color: $color;
       }
+      .date-time-selection{
+                @include border-color($color);
+
+      }
     }
   }
 
