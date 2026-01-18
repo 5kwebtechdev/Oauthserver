@@ -16,6 +16,11 @@ import { MindfulButtonComponent } from '../../mindful-button/mindful-button.comp
 })
 export class NotesNewComponent {
   title = '';
+  // Controls how many characters are allowed and how many to show in the header
+  readonly MAX_TITLE = 48; // hard maximum allowed
+  readonly DISPLAY_LEN = 16; // number of chars to show before ellipsis
+  inputFocused = false;
+  showLimitTooltip = false;
   text = '';
   tagsInput = '';
   selectedTagKeys: any[] = [];
@@ -26,8 +31,43 @@ export class NotesNewComponent {
 
   constructor(private notesService: NotesService, private router: Router) { }
 
+  get canSave(): boolean {
+    const hasTitle = Boolean((this.title || '').trim());
+    const hasText = Boolean((this.text || '').trim());
+    const hasTag = Array.isArray(this.selectedTagKeys) && this.selectedTagKeys.length > 0;
+    return hasTitle && hasText && hasTag && !this.loading;
+  }
+
   onSelectedKeysChange(keys: any[]) {
     this.selectedTagKeys = keys;
+  }
+
+  get displayValue(): string {
+    if (this.inputFocused) return this.title;
+    if (!this.title) return '';
+    return this.title.length <= this.DISPLAY_LEN ? this.title : this.title.slice(0, this.DISPLAY_LEN) + '...';
+  }
+
+  handleTitleInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    let value = input.value || '';
+    if (value.length > this.MAX_TITLE) {
+      // Enforce hard maximum and notify user briefly
+      this.title = value.slice(0, this.MAX_TITLE);
+      input.value = this.title;
+      this.showLimitTooltip = true;
+      setTimeout(() => this.showLimitTooltip = false, 2000);
+    } else {
+      this.title = value;
+    }
+  }
+
+  onTitleFocus() {
+    this.inputFocused = true;
+  }
+
+  onTitleBlur() {
+    this.inputFocused = false;
   }
 
   goBack() {

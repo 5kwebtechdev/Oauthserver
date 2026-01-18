@@ -30,7 +30,8 @@
     </div>
     <div class="mindful-popup-actions" *ngIf="hasPrimaryCTA || hasSecondaryCTA || finalConfig.showShareButton">
       <div class="mindful-popup-single-cta" *ngIf="hasOneCTA">
-        <mindful-button *ngIf="hasPrimaryCTA && finalConfig.primaryCTA?.buttonStyle" full
+        <mindful-button *ngIf="hasPrimaryCTA && finalConfig.primaryCTA?.buttonStyle"
+          [full]="finalConfig.primaryCTA?.buttonFull" [small]="finalConfig.primaryCTA?.buttonSmall"
           [type]="finalConfig.primaryCTA?.buttonStyle" [text]="finalConfig.primaryCTA?.text"
           [medium]="finalConfig.primaryCTA?.buttonMedium" [large]="finalConfig.primaryCTA?.buttonLarge"
           [icon]="finalConfig.primaryCTA?.icon" [iconPosition]="finalConfig.primaryCTA?.iconPosition"
@@ -42,7 +43,8 @@
           {{ finalConfig.primaryCTA?.text }}
         </button>
 
-        <mindful-button *ngIf="hasSecondaryCTA && !hasPrimaryCTA && finalConfig.secondaryCTA?.buttonStyle" full
+        <mindful-button *ngIf="hasSecondaryCTA && !hasPrimaryCTA && finalConfig.secondaryCTA?.buttonStyle"
+          [full]="finalConfig.secondaryCTA?.buttonFull" [small]="finalConfig.secondaryCTA?.buttonSmall"
           [type]="finalConfig.secondaryCTA?.buttonStyle" [text]="finalConfig.secondaryCTA?.text"
           [medium]="finalConfig.secondaryCTA?.buttonMedium" [large]="finalConfig.secondaryCTA?.buttonLarge"
           [icon]="finalConfig.secondaryCTA?.icon" [iconPosition]="finalConfig.secondaryCTA?.iconPosition"
@@ -58,10 +60,11 @@
       <!-- Dual CTA: column layout (primary first, secondary second) -->
       <div class="mindful-popup-dual-cta column" *ngIf="hasTwoCTAs && finalConfig.ctaDirection==='column'">
         <!-- Primary (top) -->
-        <mindful-button *ngIf="finalConfig.primaryCTA?.buttonStyle" full [type]="finalConfig.primaryCTA?.buttonStyle"
-          [text]="finalConfig.primaryCTA?.text" [medium]="finalConfig.primaryCTA?.buttonMedium"
-          [large]="finalConfig.primaryCTA?.buttonLarge" [icon]="finalConfig.primaryCTA?.icon"
-          [iconPosition]="finalConfig.primaryCTA?.iconPosition" (click)="onPrimaryClick()"></mindful-button>
+        <mindful-button *ngIf="finalConfig.primaryCTA?.buttonStyle"
+          [full]="finalConfig.primaryCTA?.buttonFull" [small]="finalConfig.primaryCTA?.buttonSmall"
+          [type]="finalConfig.primaryCTA?.buttonStyle" [text]="finalConfig.primaryCTA?.text"
+          [medium]="finalConfig.primaryCTA?.buttonMedium" [large]="finalConfig.primaryCTA?.buttonLarge"
+          [icon]="finalConfig.primaryCTA?.icon" [iconPosition]="finalConfig.primaryCTA?.iconPosition" (click)="onPrimaryClick()"></mindful-button>
 
         <button *ngIf="!finalConfig.primaryCTA?.buttonStyle" class="mindful-button mindful-button-white"
           [disabled]="finalConfig.primaryCTA?.disabled" (click)="onPrimaryClick()">
@@ -69,10 +72,11 @@
         </button>
 
         <!-- Secondary (bottom) -->
-        <mindful-button *ngIf="finalConfig.secondaryCTA?.buttonStyle" full [type]="finalConfig.secondaryCTA?.buttonStyle"
-          [text]="finalConfig.secondaryCTA?.text" [medium]="finalConfig.secondaryCTA?.buttonMedium"
-          [large]="finalConfig.secondaryCTA?.buttonLarge" [icon]="finalConfig.secondaryCTA?.icon"
-          [iconPosition]="finalConfig.secondaryCTA?.iconPosition" (click)="onSecondaryClick()"></mindful-button>
+        <mindful-button *ngIf="finalConfig.secondaryCTA?.buttonStyle"
+          [full]="finalConfig.secondaryCTA?.buttonFull" [small]="finalConfig.secondaryCTA?.buttonSmall"
+          [type]="finalConfig.secondaryCTA?.buttonStyle" [text]="finalConfig.secondaryCTA?.text"
+          [medium]="finalConfig.secondaryCTA?.buttonMedium" [large]="finalConfig.secondaryCTA?.buttonLarge"
+          [icon]="finalConfig.secondaryCTA?.icon" [iconPosition]="finalConfig.secondaryCTA?.iconPosition" (click)="onSecondaryClick()"></mindful-button>
 
         <button *ngIf="!finalConfig.secondaryCTA?.buttonStyle" class="mindful-button mindful-button-white"
           [disabled]="finalConfig.secondaryCTA?.disabled" (click)="onSecondaryClick()">
@@ -82,19 +86,21 @@
 
       <!-- Dual CTA: row layout (legacy order: secondary then primary) -->
       <div class="mindful-popup-dual-cta" *ngIf="hasTwoCTAs && finalConfig.ctaDirection!=='column'">
-        <mindful-button *ngIf="finalConfig.secondaryCTA?.buttonStyle" full [type]="finalConfig.secondaryCTA?.buttonStyle"
-          [text]="finalConfig.secondaryCTA?.text" [medium]="finalConfig.secondaryCTA?.buttonMedium"
-          [large]="finalConfig.secondaryCTA?.buttonLarge" [icon]="finalConfig.secondaryCTA?.icon"
-          [iconPosition]="finalConfig.secondaryCTA?.iconPosition" (click)="onSecondaryClick()"></mindful-button>
+        <mindful-button *ngIf="finalConfig.secondaryCTA?.buttonStyle"
+          [full]="finalConfig.secondaryCTA?.buttonFull" [small]="finalConfig.secondaryCTA?.buttonSmall"
+          [type]="finalConfig.secondaryCTA?.buttonStyle" [text]="finalConfig.secondaryCTA?.text"
+          [medium]="finalConfig.secondaryCTA?.buttonMedium" [large]="finalConfig.secondaryCTA?.buttonLarge"
+          [icon]="finalConfig.secondaryCTA?.icon" [iconPosition]="finalConfig.secondaryCTA?.iconPosition" (click)="onSecondaryClick()"></mindful-button>
 
         <button *ngIf="!finalConfig.secondaryCTA?.buttonStyle" class="mindful-button mindful-button-white"
           [disabled]="finalConfig.secondaryCTA?.disabled" (click)="onSecondaryClick()">
           {{ finalConfig.secondaryCTA?.text }}
         </button>
 
-        <mindful-button *ngIf="finalConfig.primaryCTA?.buttonStyle" full [type]="finalConfig.primaryCTA?.buttonStyle"
-          [text]="finalConfig.primaryCTA?.text" [medium]="finalConfig.primaryCTA?.buttonMedium"
-          [large]="finalConfig.primaryCTA?.buttonLarge" [icon]="finalConfig.primaryCTA?.icon"
+        <mindful-button *ngIf="finalConfig.primaryCTA?.buttonStyle"
+          [full]="finalConfig.primaryCTA?.buttonFull" [small]="finalConfig.primaryCTA?.buttonSmall"
+          [type]="finalConfig.primaryCTA?.buttonStyle" [text]="finalConfig.primaryCTA?.text"
+          [medium]="finalConfig.primaryCTA?.buttonMedium" [large]="finalConfig.primaryCTA?.buttonLarge" [icon]="finalConfig.primaryCTA?.icon"
           [iconPosition]="finalConfig.primaryCTA?.iconPosition" (click)="onPrimaryClick()"></mindful-button>
 
         <button *ngIf="!finalConfig.primaryCTA?.buttonStyle" class="mindful-button mindful-button-white"

@@ -17,6 +17,10 @@ export interface MindfulPopupCTA {
   buttonLarge?: boolean;
   icon?: string;
   iconPosition?: 'start' | 'end';
+  // Allow callers to explicitly request small or full sizing
+  // (popup will forward these flags to `mindful-button` inputs)
+  buttonSmall?: boolean;
+  buttonFull?: boolean;
 }
 
 export interface MindfulPopupConfig {

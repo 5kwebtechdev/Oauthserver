@@ -15,8 +15,8 @@
   <app-mindful-popup [isVisible]="showMindfulPopup" [config]="{
       heading: 'Are you sure you want to delete this note?',
       subtitle: '',
-      primaryCTA: { text: 'Delete', type: 'secondary' },
-      secondaryCTA: { text: 'Cancel', type: 'secondary' },
+      primaryCTA: { text: 'Delete', type: 'secondary', buttonStyle: 'bronze', buttonMedium: true },
+      secondaryCTA: { text: 'Cancel', type: 'secondary', buttonStyle: 'bronze-transparent', buttonMedium: true },
       showCloseButton: false,
       backdrop: true
     }" (primaryAction)="confirmDelete()" (secondaryAction)="confirmCancel()"

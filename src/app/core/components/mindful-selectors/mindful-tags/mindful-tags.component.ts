@@ -15,6 +15,7 @@ import { LongPressDirective } from '../../../directives/gestureControlDirective'
 })
 export class MindfulTagsComponent implements OnInit, OnDestroy {
   @ViewChild('tagInput') tagInputRef?: ElementRef<HTMLInputElement>;
+  @ViewChild('tagsSlider') tagsSliderRef?: ElementRef<HTMLDivElement>;
 
   @Input() options: { key: any; value: string; type?: string }[] = [];
   @Input() maxTags: number = 10;
@@ -243,9 +244,27 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
         this.options.unshift(newTag); // Add to first position
         this.saveTagsToStorage();
         this.add.emit({ key, value: val });
+        // After adding a new tag, scroll the tag list to show the new item at the left
+        setTimeout(() => this.scrollTagsToStart(), 0);
       }
     }
     this.cancelInputPopup();
+  }
+
+  /** Scroll the tags slider to the start (left) so the newly-added tag is visible */
+  private scrollTagsToStart(): void {
+    try {
+      const el = this.tagsSliderRef?.nativeElement as HTMLElement | undefined;
+      if (!el) return;
+      // Smooth scroll to leftmost position if supported
+      if (typeof (el as any).scrollTo === 'function') {
+        (el as any).scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        el.scrollLeft = 0;
+      }
+    } catch (e) {
+      // ignore
+    }
   }
 
   cancelInputPopup() {
@@ -420,7 +439,7 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
 
   // UI state for maximum-limit error message
   showLimitError: boolean = false;
-  limitErrorMessage: string = 'Limit reached! Delete an old tag to add a new one.';
+  limitErrorMessage: string = 'Limit reached! Delete or Edit an old tag';
 
   private showLimitErrorMessage() {
     this.showLimitError = true;
