@@ -6,11 +6,12 @@ import { Router } from '@angular/router';
 import { NotesService, NoteModel } from '../notes.service';
 import { MindfulTagsComponent } from '../../mindful-selectors/mindful-tags/mindful-tags.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 
 @Component({
   selector: 'notes-new',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, MindfulTagsComponent, MindfulButtonComponent],
+  imports: [CommonModule, IonicModule, FormsModule, MindfulTagsComponent, MindfulButtonComponent, MindfulNavigatorComponent],
   templateUrl: './notes-new.component.html',
   styleUrls: ['./notes-new.component.scss']
 })
