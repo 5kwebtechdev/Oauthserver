@@ -73,11 +73,10 @@
 
 }
 
-/* Option selection visuals */
 .options {
   display: flex;
-  gap: 24px;
-  flex-wrap: nowrap;
+  justify-content: space-between;
+
 }
 
 .option {
@@ -91,14 +90,22 @@
   outline: none;
 }
 
-.option img {
-  width: 96px;
-  height: 96px;
-  object-fit: cover;
-  border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06), inset 0 -2px 0 rgba(0, 0, 0, 0.02);
-}
+// .option img {
+//   width: 96px;
+//   height: 96px;
+//   object-fit: cover;
+//   border-radius: 12px;
+//   box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
 
+// }
+
+.j-img{
+  width: 4rem;
+  height: 4rem;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
 .option .check {
   position: absolute;
   top: -10px;
@@ -191,11 +198,7 @@
 }
 
 
-.options {
-  display: flex;
-  justify-content: space-between;
 
-}
 
 .option {
   display: flex;
@@ -218,11 +221,11 @@
   transition: transform 0.2s ease;
 }
 
-.option img {
-  width: 50px;
-  height: 50px;
-  object-fit: contain;
-}
+// .option img {
+//   width: 50px;
+//   height: 50px;
+//   object-fit: contain;
+// }
 
 .option span {
   display: block;
@@ -243,9 +246,9 @@
 
 .note-area textarea {
   width: 100%;
-    height: 150px;
-    min-height: 150px;
-    resize: vertical;
+    height: 100px; /* fixed height */
+    min-height: 100px;
+    resize: none; /* disable native resize */
     border: none;
     font-family: Nunito;
     font-size: 15px;
