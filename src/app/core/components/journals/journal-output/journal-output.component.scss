@@ -6,39 +6,33 @@
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.04);
 }
 
+p{
+  margin: 0;
 
+}
 /* Month navigator center block */
 .month-navigator {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 24px;
+  gap: 8px;
 }
 
 .month-prev,
 .month-next {
-  width: 16px;
-  height: 16px;
-  aspect-ratio: 1/1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
   background: transparent;
   border: none;
-  color: rgba(40, 37, 39, 0.9);
-  font-size: 18px;
+  color: #282527;
   cursor: pointer;
+ font-size: 34px;
+    font-family: math;
 }
 
 .month-label {
   color: #282527;
   font-family: Nunito;
   font-size: 16px;
-  font-style: normal;
   font-weight: 500;
-  line-height: 140%;
-  /* 22.4px */
 }
 
 .subtitle {
@@ -53,6 +47,22 @@
   color: rgba(40, 37, 39, 0.6);
 }
 
+.lead{
+  color: #282527;
+text-align: center;
+font-family: Fredoka;
+font-size: 16px;
+font-weight: 500;
+}
+
+.sub{
+  color: #282527;
+text-align: center;
+font-family: Nunito;
+font-size: 13px;
+font-weight: 500;
+opacity: 0.7;
+}
 .entries {
   list-style: none;
   padding: 0;
@@ -233,7 +243,6 @@
 .journal-floating-post .btn-icon,
 .journal-floating-post p {
   height: 100%;
-  margin: 0;
   line-height: 1;
 }
 
