@@ -8,22 +8,20 @@
   gap: 24px;
   padding: 16px;
   box-sizing: border-box;
-  /* ensure content isn't hidden behind the fixed footer */
   padding-bottom: calc(16px + 64px + env(safe-area-inset-bottom, 0px));
 }
 
 /* Header */
 .header {
-    position: relative;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 4px);
-  padding-top: calc(constant(safe-area-inset-top) + 4px);
+  position: relative;
+  padding: calc(env(safe-area-inset-top, 0px) + 20px) 16px 0;
   display: flex;
+  align-items: center;
 }
 
 .header .back-arrow {
   font-size: 20px;
   cursor: pointer;
-  margin-right: 12px;
 }
 
 .header .title {
@@ -136,6 +134,34 @@
 .back-arrow {
   background: transparent;
   border: none;
-  padding: 4px;
-  margin-right: 8px;
+}
+
+.delete-draft-icon {
+  background: transparent;
+  border: none;
+  margin-left: 8px;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+}
+
+.delete-draft-icon .eclipse {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
+  border-radius: 48px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(98deg, rgba(226, 226, 226, 0.60) 8.57%, rgba(241, 241, 241, 0.30) 90.15%);
+  backdrop-filter: blur(8px);
+}
+
+.delete-draft-icon .eclipse img {
+  width: 18px;
+  height: 18px;
 }

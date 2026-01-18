@@ -102,6 +102,18 @@
       </div>
     </ng-container>
 
+    <!-- Draft Card (if exists) - use same card layout as saved notes; shows 'Draft' in date -->
+    <div class="note-card" *ngIf="draft" (click)="goToNewNote()" role="button" tabindex="0">
+      <p class="note-text">{{ draft.text }}</p>
+      <div class="note-footer">
+        <div>
+          <h3>{{ draft.title || 'Untitled' }}</h3>
+          <span class="date">Draft</span>
+        </div>
+        <span class="tag" [ngClass]="primaryTagClassFromTags(draft.tags)">{{ (draft.tags && draft.tags.length) ? draft.tags[0] : 'No Tag' }}</span>
+      </div>
+    </div>
+
     <ng-container *ngIf="!loading && notes && notes.length; else noNotes">
       <div class="note-card" *ngFor="let note of notes; let i = index; trackBy: trackByIndex" (click)="openNote(note)"
         role="button" tabindex="0">

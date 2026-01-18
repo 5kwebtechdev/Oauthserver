@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { NotesApi } from '../../../api/notes.api';
+import { NotesService } from '../notes.service';
 
 @Component({
   selector: 'app-notes-save',
@@ -34,7 +35,7 @@ export class NotesSaveComponent implements OnChanges {
   // Use MindfulPopup for confirmation UI
   showMindfulPopup: boolean = false;
 
-  constructor(private sanitizer: DomSanitizer, @Optional() private notesApi?: NotesApi) { }
+  constructor(private sanitizer: DomSanitizer, @Optional() private notesApi?: NotesApi, private notesService?: NotesService) { }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['content']) {
@@ -115,16 +116,28 @@ export class NotesSaveComponent implements OnChanges {
   confirmDelete() {
     // hide popup first
     this.showMindfulPopup = false;
-    // If we have a noteId and NotesApi available, call backend delete first
     const id = this.noteId;
-    if (id && this.notesApi?.deleteNote) {
+    // Prefer NotesService (handles local cache + optimistic delete). Fallback to NotesApi if service isn't available.
+    if (id && this.notesService && this.notesService.deleteNote) {
+      this.notesService.deleteNote(id).subscribe({
+        next: () => {
+          if (this.closeModalFn) { try { this.closeModalFn(); } catch (e) { /* ignore */ } }
+          this.delete.emit();
+        },
+        error: (err: any) => {
+          // still emit delete so UI can update; service already reverted if needed
+          console.error('Failed to delete note via API', err);
+          if (this.closeModalFn) { try { this.closeModalFn(); } catch (e) { /* ignore */ } }
+          this.delete.emit();
+        }
+      });
+    } else if (id && this.notesApi?.deleteNote) {
       this.notesApi.deleteNote(id).subscribe({
         next: () => {
           if (this.closeModalFn) { try { this.closeModalFn(); } catch (e) { /* ignore */ } }
           this.delete.emit();
         },
         error: (err: any) => {
-          // still emit delete so UI can update; optionally surface error in UI
           console.error('Failed to delete note via API', err);
           if (this.closeModalFn) { try { this.closeModalFn(); } catch (e) { /* ignore */ } }
           this.delete.emit();

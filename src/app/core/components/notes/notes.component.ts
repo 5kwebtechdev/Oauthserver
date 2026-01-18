@@ -25,19 +25,36 @@ export class NotesComponent {
   public tags: { key: any; value: string }[] = [];
   public titleCollapsed: boolean = false;
   public notes: NoteModel[] = [];
+  public draft: { title: string; text: string; tags?: string[] } | null = null;
   // tag action UI
   public activeTagIndex: number | null = null;
   public editIndex: number | null = null;
   public editName: string = '';
 
   constructor(private modalCtrl: ModalController, private router: Router, private notesService: NotesService) {
+    // restore session cache if present; otherwise fetch from server once
+    this.notesService.initFromSession();
     this.notes = this.notesService.getAll();
+    // load draft from sessionStorage if present
+    try {
+      const raw = sessionStorage.getItem('notes-draft');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // ensure tags is an array if present
+        if (parsed && parsed.tags && !Array.isArray(parsed.tags)) parsed.tags = [];
+        this.draft = parsed;
+      }
+    } catch (e) {
+      // ignore storage errors
+    }
     // subscribe to updates so the list refreshes when new notes are added
     this.notesService.notes$.subscribe((list) => {
       this.notes = list;
     });
-    // initial load from backend
-    this.loadFromServer();
+    // only fetch from server if we don't have any cached notes
+    if (!this.notes || this.notes.length === 0) {
+      this.loadFromServer();
+    }
   }
 
   /**
@@ -161,6 +178,9 @@ export class NotesComponent {
     };
     this.notesService.add(note);
     this.notes = this.notesService.getAll();
+    // clear draft since note was saved
+    try { sessionStorage.removeItem('notes-draft'); } catch (e) { /* ignore */ }
+    this.draft = null;
     // clear current editing state
     this.noteText = '';
     this.noteTitle = '';
@@ -319,6 +339,14 @@ export class NotesComponent {
   primaryTagClass(note: NoteModel): string {
     // Return a class based on the tag, e.g., for styling
     const tag = this.primaryTag(note);
+    if (tag === 'Work') return 'work-tag';
+    if (tag === 'Personal') return 'personal-tag';
+    return 'default-tag';
+  }
+
+  // Helper to derive tag class when only tags array is available (e.g., draft)
+  primaryTagClassFromTags(tags?: string[]): string {
+    const tag = (tags && tags.length > 0) ? tags[0] : 'No Tag';
     if (tag === 'Work') return 'work-tag';
     if (tag === 'Personal') return 'personal-tag';
     return 'default-tag';
