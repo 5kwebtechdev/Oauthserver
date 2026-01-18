@@ -243,20 +243,14 @@
 
 .note-area textarea {
   width: 100%;
-  /* default height 150px; allow user to resize vertically from the bottom-right corner */
-  height: 150px;
-  min-height: 150px;
-  resize: vertical;
-  padding: 18px 20px;
-  border-radius: 12px;
-  border: 1px solid rgba(40, 37, 39, 0.08);
-  /* remove outer drop shadow so only the textarea border is visible */
-  box-shadow: none;
-  background: #FFFFFF;
-  font-family: Nunito, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  font-size: 15px;
-  color: #282527;
-  line-height: 1.4;
+    height: 150px;
+    min-height: 150px;
+    resize: vertical;
+    border: none;
+    font-family: Nunito;
+    font-size: 15px;
+    color: #282527;
+    line-height: 1.4;
 }
 
 .note-area textarea::placeholder {

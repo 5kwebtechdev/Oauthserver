@@ -7,7 +7,7 @@
     <div class="month-navigator" role="group" aria-label="Month navigator">
       <button class="month-prev" type="button" aria-label="Previous month" (click)="prevMonth()">‹</button>
       <div class="month-label">{{ monthLabel }}</div>
-      <button class="month-next" type="button" aria-label="Next month" (click)="nextMonth()">›</button>
+      <button *ngIf="!isAtLatestMonth" class="month-next" type="button" aria-label="Next month" (click)="nextMonth()">›</button>
     </div>
 
 
@@ -18,11 +18,17 @@
           alt="Panda with kids illustration">
 
         <div class="journal-empty__texts">
-          <p class="lead">We are waiting to hear about your day!</p>
-          <p class="sub">Post your journal to keep your story alive</p>
+          <ng-container *ngIf="isAtLatestMonth; else previousEmpty">
+            <p class="lead">We are waiting to hear about your day!</p>
+            <p class="sub">Post your journal to keep your story alive</p>
+          </ng-container>
+          <ng-template #previousEmpty>
+            <p class="lead">No journal entries for this month</p>
+            <p class="sub">There are no posts for the selected month.</p>
+          </ng-template>
         </div>
 
-        <mindful-button class="journal-empty__post" type="magenta" large text="Post now"
+        <mindful-button *ngIf="isAtLatestMonth" class="journal-empty__post" type="magenta" large text="Post now"
           style="display:block; width:100%" (click)="openJournalInput()" aria-label="Post now"></mindful-button>
       </div>
     </div>
@@ -40,14 +46,14 @@
               <img class="emotion-thumb" [src]="em.image" [alt]="em.label" />
             </ng-container>
             <ng-template #emojiFallback>
-              {{ getEmoji(entry) }}
+              {{ entry.emoji }}
             </ng-template>
           </div>
           <div class="post-content">
             <div class="post-mood">{{ entry.mood || 'Mood' }}</div>
 
             <div class="post-tags">
-              <ng-container *ngFor="let tag of joinTags(entry.tags); let i = index">
+              <ng-container *ngFor="let tag of getFilteredTags(entry); let i = index">
                 <span class="tag">{{ tag }}</span>
               </ng-container>
             </div>
@@ -68,7 +74,7 @@
 </ion-content>
 
 <!-- Fixed Add Button -->
-<!-- Fixed Add Button (hidden when there are no entries) -->
-<div *ngIf="filteredEntries && filteredEntries.length" class="add-button-fixed" (click)="onAddClick()">
+<!-- Fixed Add Button (only show for the current month) -->
+<div *ngIf="isAtLatestMonth && filteredEntries && filteredEntries.length" class="add-button-fixed" (click)="onAddClick()">
   <mindful-button type="add"></mindful-button>
 </div>

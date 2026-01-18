@@ -1,6 +1,7 @@
 .mindful-card-header {
-  padding-top: env(safe-area-inset-top, 0);
-  padding-top: constant(safe-area-inset-top);
+  position: relative;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 20px);
+  padding-top: calc(constant(safe-area-inset-top) + 20px);
   display: flex;
   align-items: center;
   width: 100%;

@@ -72,6 +72,17 @@ export class JournalOutputComponent implements OnInit {
     this.updateMonthLabel();
   }
 
+  /** Return true when the currently selected month is the same as the real current month/year */
+  get isAtLatestMonth(): boolean {
+    try {
+      const now = new Date();
+      const sel = this.currentMonthDate || new Date();
+      return sel.getMonth() === now.getMonth() && sel.getFullYear() === now.getFullYear();
+    } catch (e) {
+      return false;
+    }
+  }
+
   /** Return entries that fall within the currently selected month/year */
   get filteredEntries(): JournalOutputEntry[] {
     if (!this.entries || !this.entries.length) return [];
@@ -170,20 +181,15 @@ export class JournalOutputComponent implements OnInit {
     return tags || [];
   }
 
-  getEmoji(entry: JournalOutputEntry): string {
-    if (entry.emoji) return entry.emoji;
-    // simple mapping fallback for moods
-    const map: { [k: string]: string } = {
-      happy: '😊',
-      excited: '🤩',
-      sad: '😔',
-      calm: '😌',
-      grateful: '🙏'
-    };
-    return map[(entry.mood || '').toLowerCase()] || '📝';
+  /** Return tags for display excluding the entry's mood/emotion (to avoid duplication) */
+  getFilteredTags(entry: JournalOutputEntry): string[] {
+    const tags = Array.isArray(entry?.tags) ? entry.tags.map(t => String(t).trim()).filter(Boolean) : [];
+    const mood = (entry?.mood || '').trim().toLowerCase();
+    if (!mood) return tags;
+    return tags.filter(t => String(t).toLowerCase() !== mood);
   }
 
-  /** Return the emotion display (label + image) when available */
+
   getEmotion(entry: JournalOutputEntry): { label: string; image: string } | null {
     const mood = (entry.mood || '').toLowerCase();
     if (!mood) return null;
