@@ -1,6 +1,6 @@
 <div class="mindful-tags">
   <div class="tags-row">
-    <div class="tags-slider" role="list">
+    <div class="tags-slider" #tagsSlider role="list">
       <div class="tag-wrapper" #tagEl *ngFor="let option of options">
         <mindful-badge class="tag" *ngIf="option" [text]="option.value || ''" [type]="getBadgeType(option)"
           [large]="size === 'large'" [medium]="size === 'medium'" (click)="toggleSelection(option.key)" long-press

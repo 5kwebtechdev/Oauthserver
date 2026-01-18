@@ -73,7 +73,7 @@
             <!-- Generic icon action. If it's a delete (alt contains 'delete') render inside the eclipse wrapper
                  so the icon has the same circular background as edit/heart actions. Otherwise render as a button. -->
             <ng-container *ngIf="action.type === 'icon'">
-              <ng-container *ngIf="(action.alt || '').toLowerCase().indexOf('delete') !== -1; else normalIcon">
+              <ng-container *ngIf="(action.alt || '').toLowerCase().indexOf('delete') !== -1 || (action.alt || '').toLowerCase().indexOf('share') !== -1; else normalIcon">
                 <div class="right-edit-layout" (click)="onActionClick(i, action)" role="button"
                   [attr.aria-label]="action.alt || 'Delete'">
                   <div class="eclipse">

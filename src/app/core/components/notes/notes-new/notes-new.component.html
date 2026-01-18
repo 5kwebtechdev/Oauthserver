@@ -8,7 +8,14 @@
           fill="#282527" />
       </svg>
     </button>
-    <input class="title-input" placeholder="Title" [(ngModel)]="title" />
+    <input class="title-input" placeholder="Title"
+      [value]="displayValue"
+      (input)="handleTitleInput($event)"
+      (focus)="onTitleFocus()"
+      (blur)="onTitleBlur()"
+      [attr.title]="title || 'Title'"
+      aria-label="Note title" />
+    <div class="title-limit-tooltip" *ngIf="showLimitTooltip">Maximum 48 characters allowed</div>
   </div>
 <div class="note-new-container">
 
@@ -24,7 +31,7 @@
   </div>
 
   <footer class="notes-new__footer">
-    <mindful-button type="magenta" text="Save" size="small" (click)="save()"></mindful-button>
+    <mindful-button type="magenta" text="Save" full [disabled]="!canSave" (click)="save()"></mindful-button>
   </footer>
 
 </div>
