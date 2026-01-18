@@ -24,12 +24,30 @@ export class NotesService {
   constructor(private notesApi: NotesApi) { }
 
   /**
+   * Initialize service state from sessionStorage if present.
+   * Call this once on app/login load to avoid refetching repeatedly.
+   */
+  initFromSession() {
+    try {
+      const raw = sessionStorage.getItem('notes');
+      if (raw) {
+        const parsed = JSON.parse(raw) || [];
+        this.notes = parsed;
+        this.notesChanged.next(this.notes.slice());
+      }
+    } catch (e) {
+      // ignore parse errors and continue to empty state
+    }
+  }
+
+  /**
    * Add note locally
    */
   addLocal(note: NoteModel) {
     this.notes.unshift(note);
     // notify subscribers that notes changed
     this.notesChanged.next(this.notes.slice());
+    this.persistToSession();
   }
 
   /**
@@ -66,6 +84,74 @@ export class NotesService {
   }
 
   /**
+   * Optimistic add: insert a temporary note immediately, call backend,
+   * then replace the temp note with the server-created note on success,
+   * or revert on error.
+   */
+  addOptimistic(payload: any): Observable<any> {
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+    const tempNote: NoteModel = {
+      title: payload.title || 'Untitled',
+      text: payload.content || payload.text || '',
+      tags: payload.tags || [],
+      createdAt: new Date().toISOString(),
+      id: tempId
+    };
+    // add locally so UI updates immediately
+    this.notes.unshift(tempNote);
+    this.notesChanged.next(this.notes.slice());
+    this.persistToSession();
+
+    // call backend and patch/replace on success
+    return new Observable<any>((subscriber) => {
+      this.notesApi.addNote(payload).subscribe({
+        next: (res: any) => {
+          const created = res && (res.data || res) ? (res.data || res) : payload;
+          const createdAtVal = created.createdDate ? (created.createdTime ? `${created.createdDate}T${created.createdTime}` : created.createdDate) : (payload.createdAt || new Date().toISOString());
+          const updatedAtVal = created.updatedDate ? (created.updatedTime ? `${created.updatedDate}T${created.updatedTime}` : created.updatedDate) : (created.updatedAt || payload.updatedAt || undefined);
+          const serverNote: NoteModel = {
+            title: created.title || payload.title || 'Untitled',
+            text: created.content || created.text || payload.text || '',
+            tags: created.tags || payload.tags || [],
+            createdAt: createdAtVal,
+            updatedAt: updatedAtVal,
+            id: created.id || created.noteId || created._id || undefined
+          };
+          // replace temp note if present
+          const idx = this.notes.findIndex(n => (n as any).id === tempId);
+          if (idx > -1) {
+            this.notes[idx] = serverNote;
+          } else {
+            this.notes.unshift(serverNote);
+          }
+          this.notesChanged.next(this.notes.slice());
+          this.persistToSession();
+          subscriber.next(serverNote);
+          subscriber.complete();
+        },
+        error: (err: any) => {
+          // remove temp note on failure
+          this.notes = this.notes.filter(n => (n as any).id !== tempId);
+          this.notesChanged.next(this.notes.slice());
+          this.persistToSession();
+          subscriber.error(err);
+        }
+      });
+    });
+  }
+
+  /**
+   * Persist current notes array to sessionStorage.
+   */
+  private persistToSession() {
+    try {
+      sessionStorage.setItem('notes', JSON.stringify(this.notes));
+    } catch (e) {
+      // ignore storage errors (quota etc.)
+    }
+  }
+
+  /**
    * Fetch all notes from backend and update local cache.
    * Returns observable so callers can react to loading/error if desired.
    */
@@ -91,6 +177,8 @@ export class NotesService {
           });
           // notify subscribers and emit
           this.notesChanged.next(this.notes.slice());
+          // persist fetched notes so subsequent opens can use session cache
+          this.persistToSession();
           subscriber.next(this.notes.slice());
           subscriber.complete();
         },
@@ -105,7 +193,44 @@ export class NotesService {
     return this.notes;
   }
 
+  /**
+   * Delete locally (synchronous) without calling API.
+   */
+  deleteLocal(id: any) {
+    this.notes = this.notes.filter(n => (n as any).id !== id);
+    this.notesChanged.next(this.notes.slice());
+    this.persistToSession();
+  }
+
+  /**
+   * Optimistic delete: remove locally and call backend. On error, refetch from server.
+   */
+  deleteNote(id: any): Observable<any> {
+    // remove locally first
+    const prev = this.notes.slice();
+    this.deleteLocal(id);
+    return new Observable<any>((subscriber) => {
+      this.notesApi.deleteNote(id).subscribe({
+        next: (res: any) => {
+          subscriber.next(res);
+          subscriber.complete();
+        },
+        error: (err: any) => {
+          // revert to previous state on error and emit
+          this.notes = prev;
+          this.notesChanged.next(this.notes.slice());
+          this.persistToSession();
+          subscriber.error(err);
+        }
+      });
+    });
+  }
+
   clear() {
     this.notes = [];
+    this.notesChanged.next(this.notes.slice());
+    try {
+      sessionStorage.removeItem('notes');
+    } catch (e) { /* ignore */ }
   }
 }

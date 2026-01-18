@@ -1,4 +1,3 @@
-<ion-content>
   <div class="header">
     <button class="back-arrow" (click)="goBack()" aria-label="Back">
       <!-- simple left arrow -->
@@ -15,6 +14,11 @@
       (blur)="onTitleBlur()"
       [attr.title]="title || 'Title'"
       aria-label="Note title" />
+    <button type="button" *ngIf="isDraft" class="delete-draft-icon" (click)="deleteDraft()" aria-label="Delete draft">
+      <div class="eclipse">
+        <img src="/assets/icons/delete.svg" alt="Delete" />
+      </div>
+    </button>
     <div class="title-limit-tooltip" *ngIf="showLimitTooltip">Maximum 48 characters allowed</div>
   </div>
 <div class="note-new-container">
@@ -27,7 +31,7 @@
 
   <!-- Notes Section -->
   <div class="notes-section">
-    <textarea placeholder="Notes here...." rows="8" [(ngModel)]="text"></textarea>
+    <textarea placeholder="Notes here...." rows="8" [(ngModel)]="text" (ngModelChange)="saveDraft()"></textarea>
   </div>
 
   <footer class="notes-new__footer">
@@ -35,4 +39,3 @@
   </footer>
 
 </div>
-</ion-content>
