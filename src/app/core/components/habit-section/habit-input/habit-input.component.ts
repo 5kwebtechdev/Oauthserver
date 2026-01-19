@@ -1131,13 +1131,23 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     } catch (e) { console.warn('Failed to parse routine selection', e); }
   }
 
-  clearError(field: keyof typeof this.errors) { this.errors[field] = false; }
+  clearError(field: keyof typeof this.errors) { this.clearError('notes'); this.errors[field] = false; }
   clearTitleError() { this.clearError('title'); }
   clearTagError() { this.clearError('tag'); }
   clearRoutineError() { this.clearError('routine'); }
   clearWeekdaysError() { this.clearError('weekdays'); }
   clearPriorityError() { this.clearError('priority'); }
-  clearNotesError() { this.clearError('notes'); }
+  
+  onNotesChange() {
+    this.clearError('notes');
+  }
+
+  autoExpandTextarea(event: any) {
+    const textarea = event.target as HTMLTextAreaElement;
+    textarea.style.height = 'auto';
+    const scrollHeight = textarea.scrollHeight;
+    textarea.style.height = (scrollHeight > 300 ? 300 : scrollHeight) + 'px';
+  }
 
   clearTimeError() {
     this.clearError('time');

@@ -1,0 +1,47 @@
+.network-issue-root {
+  position: fixed;
+  inset: 0;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.network-card {
+  text-align: center;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.network-card img {
+  width: 160px;
+  height: auto;
+  margin-bottom: 16px;
+}
+
+.network-card h2 {
+  color: #282527;
+  text-align: center;
+  font-family: Fredoka, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 6px 0 10px;
+}
+
+.network-card p {
+  color: #282527;
+  text-align: center;
+  font-family: Nunito, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  width: 304px;
+  margin: 0 0 18px;
+}
+
+.retry-wrap {
+  width: 100%;
+  max-width: 304px;
+}
