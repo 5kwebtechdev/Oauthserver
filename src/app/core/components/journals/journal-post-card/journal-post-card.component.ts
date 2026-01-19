@@ -1,0 +1,81 @@
+import { Component, Input, OnInit, HostListener } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+export interface JournalEntry {
+  id?: string | number;
+  date?: string | Date;
+  text?: string;
+  mood?: string;
+  emoji?: string;
+  tags?: string[];
+  images?: string[];
+}
+
+@Component({
+  selector: 'journal-post-card',
+  templateUrl: './journal-post-card.component.html',
+  styleUrls: ['./journal-post-card.component.scss'],
+  imports: [CommonModule],
+  standalone: true
+})
+export class JournalPostCardComponent implements OnInit {
+  @Input() entry!: JournalEntry;
+  
+  viewerOpen: boolean = false;
+  viewerSrc: string = '';
+
+  ngOnInit(): void {
+    // Initialize if needed
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    this.closeImageViewer();
+  }
+
+  getFilteredTags(entry: JournalEntry): string[] {
+    const tags = Array.isArray(entry?.tags) ? entry.tags.map(t => String(t).trim()).filter(Boolean) : [];
+    const mood = (entry?.mood || '').trim().toLowerCase();
+    if (!mood) return tags;
+    return tags.filter(t => String(t).toLowerCase() !== mood);
+  }
+
+  getEmotion(entry: JournalEntry): { label: string; image: string } | null {
+    const mood = (entry.mood || '').toLowerCase();
+    if (!mood) return null;
+
+    const emotionMap: { [k: string]: { label: string; image: string } } = {
+      happy: { label: 'Happy', image: '/assets/Images-Thumbnails/Image-Journal-Emotions1.jpg' },
+      excited: { label: 'Excited', image: '/assets/Images-Thumbnails/Image-Journal-Emotions2.jpg' },
+      angry: { label: 'Angry', image: '/assets/Images-Thumbnails/Image-Journal-Emotions3.jpg' },
+      sad: { label: 'Sad', image: '/assets/Images-Thumbnails/Image-Journal-Emotions4.jpg' }
+    };
+
+    return emotionMap[mood] || null;
+  }
+
+  formatHeaderDate(date?: string | Date): string {
+    if (!date) return '';
+    const d = date instanceof Date ? date : new Date(date);
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    if (isToday) return `Today, ${d.toLocaleString('en-US', { month: 'long', day: 'numeric' })}`;
+    return d.toLocaleString('en-US', { weekday: undefined, month: 'long', day: 'numeric' });
+  }
+
+  formatTime(date?: string | Date): string {
+    if (!date) return '';
+    const d = date instanceof Date ? date : new Date(date);
+    return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  }
+
+  openImageViewer(img: string): void {
+    this.viewerSrc = img;
+    this.viewerOpen = true;
+  }
+
+  closeImageViewer(): void {
+    this.viewerOpen = false;
+    this.viewerSrc = '';
+  }
+}
