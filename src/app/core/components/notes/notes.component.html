@@ -19,68 +19,18 @@
     <div class="sort-row">
       <details class="sort-dropdown" role="listbox">
         <summary class="sort-btn" aria-haspopup="listbox" aria-expanded="false">
-          <span class="sort-label">{{ sortKey === 'created' ? 'Date Created' : sortKey === 'modified' ? 'Date Modified'
-            : sortKey === 'az' ? 'A - Z' : 'Z - A' }}</span>
-          <!-- dropdown arrow SVG -->
+          <span class="sort-label">{{ ({created:'Date Created',modified:'Date Modified',az:'A - Z',za:'Z - A'})[sortKey] }}</span>
           <span class="sort-arrow" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <mask id="mask0_1346_5113" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="16"
-                height="16">
-                <rect y="16" width="16" height="16" rx="0.5" transform="rotate(-90 0 16)" fill="#F3F8F8" />
-              </mask>
-              <g mask="url(#mask0_1346_5113)">
-                <path
-                  d="M11.6464 6.31295C11.8417 6.50821 11.8417 6.8248 11.6464 7.02006L8.35355 10.313C8.15829 10.5082 7.84171 10.5082 7.64645 10.313L4.35355 7.02006C4.15829 6.82479 4.15829 6.50821 4.35355 6.31295L4.57978 6.08672C4.77504 5.89146 5.09162 5.89146 5.28689 6.08672L7.64645 8.44628C7.84171 8.64155 8.15829 8.64155 8.35355 8.44628L10.7131 6.08672C10.9084 5.89146 11.225 5.89146 11.4202 6.08672L11.6464 6.31295Z"
-                  fill="#282527" />
-              </g>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 16 16" fill="none">
+              <path d="M11.6464 6.31295C11.8417 6.50821 11.8417 6.8248 11.6464 7.02006L8.35355 10.313C8.15829 10.5082 7.84171 10.5082 7.64645 10.313L4.35355 7.02006C4.15829 6.82479 4.15829 6.50821 4.35355 6.31295L4.57978 6.08672C4.77504 5.89146 5.09162 5.89146 5.28689 6.08672L7.64645 8.44628C7.84171 8.64155 8.15829 8.64155 8.35355 8.44628L10.7131 6.08672C10.9084 5.89146 11.225 5.89146 11.4202 6.08672L11.6464 6.31295Z" fill="#282527" />
             </svg>
           </span>
         </summary>
 
-        <div class="sort-options" role="presentation">
-          <button class="sort-option" role="option" (click)="setSort('created')"
-            [class.selected]="sortKey === 'created'">
-            <span>Date Created</span>
-            <span class="option-tick" aria-hidden="true" *ngIf="sortKey === 'created'">
-              <!-- tick SVG -->
-              <svg xmlns="http://www.w3.org/2000/svg" width="8" height="7" viewBox="0 0 8 7" fill="none">
-                <path
-                  d="M3.02022 6.57962C2.82496 6.77488 2.50838 6.77488 2.31311 6.57962L0.353554 4.62006C0.158292 4.4248 0.158291 4.10821 0.353553 3.91295L0.57978 3.68672C0.775042 3.49146 1.09162 3.49146 1.28689 3.68672L2.31311 4.71295C2.50838 4.90821 2.82496 4.90821 3.02022 4.71295L6.71311 1.02006C6.90838 0.824796 7.22496 0.824795 7.42022 1.02006L7.64645 1.24628C7.84171 1.44155 7.84171 1.75813 7.64645 1.95339L3.02022 6.57962Z"
-                  fill="#1C1B1F" />
-              </svg>
-            </span>
-          </button>
-
-          <button class="sort-option" role="option" (click)="setSort('modified')"
-            [class.selected]="sortKey === 'modified'">
-            <span>Date Modified</span>
-            <span class="option-tick" aria-hidden="true" *ngIf="sortKey === 'modified'">
-              <svg xmlns="http://www.w3.org/2000/svg" width="8" height="7" viewBox="0 0 8 7" fill="none">
-                <path
-                  d="M3.02022 6.57962C2.82496 6.77488 2.50838 6.77488 2.31311 6.57962L0.353554 4.62006C0.158292 4.4248 0.158291 4.10821 0.353553 3.91295L0.57978 3.68672C0.775042 3.49146 1.09162 3.49146 1.28689 3.68672L2.31311 4.71295C2.50838 4.90821 2.82496 4.90821 3.02022 4.71295L6.71311 1.02006C6.90838 0.824796 7.22496 0.824795 7.42022 1.02006L7.64645 1.24628C7.84171 1.44155 7.84171 1.75813 7.64645 1.95339L3.02022 6.57962Z"
-                  fill="#1C1B1F" />
-              </svg>
-            </span>
-          </button>
-          <button class="sort-option" role="option" (click)="setSort('az')" [class.selected]="sortKey === 'az'">
-            <span>A-Z</span>
-            <span class="option-tick" aria-hidden="true" *ngIf="sortKey === 'az'">
-              <svg xmlns="http://www.w3.org/2000/svg" width="8" height="7" viewBox="0 0 8 7" fill="none">
-                <path
-                  d="M3.02022 6.57962C2.82496 6.77488 2.50838 6.77488 2.31311 6.57962L0.353554 4.62006C0.158292 4.4248 0.158291 4.10821 0.353553 3.91295L0.57978 3.68672C0.775042 3.49146 1.09162 3.49146 1.28689 3.68672L2.31311 4.71295C2.50838 4.90821 2.82496 4.90821 3.02022 4.71295L6.71311 1.02006C6.90838 0.824796 7.22496 0.824795 7.42022 1.02006L7.64645 1.24628C7.84171 1.44155 7.84171 1.75813 7.64645 1.95339L3.02022 6.57962Z"
-                  fill="#1C1B1F" />
-              </svg>
-            </span>
-          </button>
-          <button class="sort-option" role="option" (click)="setSort('za')" [class.selected]="sortKey === 'za'">
-            <span>Z-A</span>
-            <span class="option-tick" aria-hidden="true" *ngIf="sortKey === 'za'">
-              <svg xmlns="http://www.w3.org/2000/svg" width="8" height="7" viewBox="0 0 8 7" fill="none">
-                <path
-                  d="M3.02022 6.57962C2.82496 6.77488 2.50838 6.77488 2.31311 6.57962L0.353554 4.62006C0.158292 4.4248 0.158291 4.10821 0.353553 3.91295L0.57978 3.68672C0.775042 3.49146 1.09162 3.49146 1.28689 3.68672L2.31311 4.71295C2.50838 4.90821 2.82496 4.90821 3.02022 4.71295L6.71311 1.02006C6.90838 0.824796 7.22496 0.824795 7.42022 1.02006L7.64645 1.24628C7.84171 1.44155 7.84171 1.75813 7.64645 1.95339L3.02022 6.57962Z"
-                  fill="#1C1B1F" />
-              </svg>
-            </span>
+          <div class="sort-options" role="presentation">
+          <button *ngFor="let o of sortOptions" type="button" class="sort-option" role="option" (click)="setSort(o.k)" [class.selected]="sortKey===o.k">
+            <span>{{ o.l }}</span>
+            <span class="option-tick" aria-hidden="true" *ngIf="sortKey===o.k"><img src="assets/icons/tick-small.svg" width="8" height="6" alt="" /></span>
           </button>
         </div>
       </details>
@@ -105,12 +55,13 @@
     <!-- Draft Card (if exists) - use same card layout as saved notes; shows 'Draft' in date -->
     <div class="note-card" *ngIf="draft" (click)="goToNewNote()" role="button" tabindex="0">
       <p class="note-text">{{ draft.text }}</p>
-      <div class="note-footer">
+      <div class="note-footer" style="position:relative;">
         <div>
           <h3>{{ draft.title || 'Untitled' }}</h3>
           <span class="date">Draft</span>
         </div>
         <span class="tag" [ngClass]="primaryTagClassFromTags(draft.tags)">{{ (draft.tags && draft.tags.length) ? draft.tags[0] : 'No Tag' }}</span>
+        <img src="assets/icons/edit-icon.svg" alt="Edit" class="note-edit-icon" style="position:absolute; top:6px; right:6px; width:12px; height:12px;" aria-hidden="true" />
       </div>
     </div>
 
@@ -126,12 +77,13 @@
           <p class="note-text">{{ note.text }}</p>
         </ng-template>
 
-        <div class="note-footer">
+        <div class="note-footer" style="position:relative;">
           <div>
             <h3>{{ note.title }}</h3>
             <span class="date">{{ formatDate(note.createdAt) }}</span>
           </div>
           <span class="tag" [ngClass]="primaryTagClass(note)">{{ primaryTag(note) }}</span>
+          <img src="assets/icons/edit-icon.svg" alt="Edit" class="note-edit-icon" style="position: absolute;top: -6px;right: 0px;width: 16px;height: 16px;" aria-hidden="true" />
         </div>
       </div>
     </ng-container>

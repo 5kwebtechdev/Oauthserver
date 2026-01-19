@@ -89,9 +89,16 @@ p {
   color: var(--text_color);
 }
 
-.disabled {
+// Ensure the host (component element) disables interaction when `disabled` class is applied
+:host(.disabled) .button {
   pointer-events: none;
   opacity: 0.5;
+}
+
+// Also make host itself visually dimmed
+:host(.disabled) {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 // ===========================================
