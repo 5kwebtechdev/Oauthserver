@@ -313,3 +313,15 @@ color: #6B656A;
 	z-index: 1000;
 	cursor: pointer;
 }
+
+.edit-back{position: absolute;
+    border-radius: 10vw;
+    background: #FFF;
+    box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+    top: -38px;
+    right: 5px;
+    width: 33px;
+    height: 31px;
+display: flex;
+    justify-content: center;
+    align-items: center;}

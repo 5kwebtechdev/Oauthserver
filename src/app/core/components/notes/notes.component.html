@@ -83,8 +83,8 @@
             <span class="date">{{ formatDate(note.createdAt) }}</span>
           </div>
           <span class="tag" [ngClass]="primaryTagClass(note)">{{ primaryTag(note) }}</span>
-          <img src="assets/icons/edit-icon.svg" alt="Edit" class="note-edit-icon" style="position: absolute;top: -6px;right: 0px;width: 16px;height: 16px;" aria-hidden="true"
-            (click)="editNote(note); $event.stopPropagation();" />
+          <div class="edit-back"><img src="assets/icons/edit-icon.svg" alt="Edit" class="note-edit-icon" style="width: 16px;height: 16px;" aria-hidden="true"
+            (click)="editNote(note); $event.stopPropagation();" /></div>
         </div>
       </div>
     </ng-container>
