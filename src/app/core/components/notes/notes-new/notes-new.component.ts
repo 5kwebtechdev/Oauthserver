@@ -31,6 +31,9 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
   @ViewChild(MindfulTagsComponent) tagsComponent?: MindfulTagsComponent;
   private _draftTags: string[] = [];
   public isDraft: boolean = false;
+  // Edit mode state
+  public editing: boolean = false;
+  private editId: any = null;
 
   constructor(private notesService: NotesService, private router: Router) { }
 
@@ -48,6 +51,23 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
     } catch (e) {
       // ignore
     }
+
+    // check for edit payload (set by notes list when user clicks edit)
+    try {
+      const rawEdit = sessionStorage.getItem('notes-edit');
+      if (rawEdit) {
+        const parsed = JSON.parse(rawEdit) || {};
+        // populate fields from note object
+        this.title = parsed.title || this.title || '';
+        this.text = parsed.text || this.text || '';
+        this._draftTags = Array.isArray(parsed.tags) ? parsed.tags : this._draftTags;
+        this.editing = true;
+        this.editId = parsed.id || parsed.noteId || parsed._id || null;
+        this.isDraft = Boolean((this.title && this.title.length) || (this.text && this.text.length) || (this._draftTags && this._draftTags.length));
+        // clear the session-stored edit marker so normal navigation isn't affected later
+        try { sessionStorage.removeItem('notes-edit'); } catch (e) { /* ignore */ }
+      }
+    } catch (e) { /* ignore parse errors */ }
   }
 
   ngAfterViewInit(): void {
@@ -144,6 +164,8 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
   }
 
   save() {
+    // Prevent save when UI indicates disabled
+    if (!this.canSave) return;
     const options = this.tagsComponent?.options || [];
     const tags = this.selectedTagKeys.map(key => options.find(o => String(o.key) === String(key))?.value).filter(Boolean) as string[];
     const payload = {
@@ -151,25 +173,43 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
       content: this.text || '',
       tags
     };
-
-    // Optimistic save: show the new note immediately from local cache
     this.loading = true;
     this.error = null;
-    // add locally and call backend in background; navigate back immediately so user sees the note
-    this.notesService.addOptimistic(payload).subscribe({
-      next: () => {
-        // backend succeeded; nothing more to do (service replaced temp note)
-      },
-      error: (err) => {
-        // surface error but user already sees optimistic result removed by service
-        this.error = (err && err.message) ? err.message : 'Failed to save note';
-      }
-    });
-    this.loading = false;
-    // clear draft after successful save
-    try { sessionStorage.removeItem('notes-draft'); } catch (e) { /* ignore */ }
-    this.isDraft = false;
-    this.router.navigate(['/authed/notes']);
+
+    if (this.editing && this.editId) {
+      // Optimistic update: apply locally and navigate immediately
+      this.notesService.updateOptimistic(this.editId, payload).subscribe({
+        next: () => {
+          // immediately navigate back so user sees updated note
+          try { sessionStorage.removeItem('notes-draft'); } catch (e) { /* ignore */ }
+          this.isDraft = false;
+          this.editing = false;
+          this.editId = null;
+          this.loading = false;
+          this.router.navigate(['/authed/notes']);
+        },
+        error: (err) => {
+          this.loading = false;
+          this.error = (err && err.message) ? err.message : 'Failed to update note';
+        }
+      });
+    } else {
+      // Optimistic add: show the new note immediately from local cache
+      this.notesService.addOptimistic(payload).subscribe({
+        next: () => {
+          // backend succeeded; nothing more to do (service replaced temp note)
+        },
+        error: (err) => {
+          // surface error but user already sees optimistic result removed by service
+          this.error = (err && err.message) ? err.message : 'Failed to save note';
+        }
+      });
+      this.loading = false;
+      // clear draft after successful save
+      try { sessionStorage.removeItem('notes-draft'); } catch (e) { /* ignore */ }
+      this.isDraft = false;
+      this.router.navigate(['/authed/notes']);
+    }
   }
 
   deleteDraft() {

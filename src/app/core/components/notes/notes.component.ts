@@ -362,4 +362,15 @@ export class NotesComponent {
   goToNewNote() {
     this.router.navigate(['/authed/notes/new']);
   }
+
+  /**
+   * Navigate to the new-note screen in edit mode for the given note.
+   * Store the note temporarily in sessionStorage so `NotesNewComponent` can prefill.
+   */
+  editNote(note: any) {
+    try {
+      sessionStorage.setItem('notes-edit', JSON.stringify(note || {}));
+    } catch (e) { /* ignore storage errors */ }
+    this.router.navigate(['/authed/notes/new']);
+  }
 }

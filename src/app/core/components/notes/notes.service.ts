@@ -226,6 +226,119 @@ export class NotesService {
     });
   }
 
+  /**
+   * Update a note via backend and update local cache on success.
+   */
+  updateNote(id: any, payload: any): Observable<any> {
+    return new Observable<any>((subscriber) => {
+      this.notesApi.updateNote(id, payload).subscribe({
+        next: (res: any) => {
+          const updated = res && (res.data || res) ? (res.data || res) : payload;
+          // map server response to NoteModel shape
+          const updatedAtVal = updated.updatedDate ? (updated.updatedTime ? `${updated.updatedDate}T${updated.updatedTime}` : updated.updatedDate) : (updated.updatedAt || new Date().toISOString());
+          const note: NoteModel = {
+            title: updated.title || payload.title || 'Untitled',
+            text: updated.content || updated.text || payload.text || '',
+            tags: updated.tags || payload.tags || [],
+            createdAt: updated.createdAt || payload.createdAt || new Date().toISOString(),
+            updatedAt: updatedAtVal,
+            id: updated.id || updated.noteId || updated._id || id
+          };
+
+          // replace existing note in local cache if present
+          const idx = this.notes.findIndex(n => (n as any).id === id);
+          if (idx > -1) {
+            this.notes[idx] = note;
+          } else {
+            // if not present, add to top
+            this.notes.unshift(note);
+          }
+          this.notesChanged.next(this.notes.slice());
+          this.persistToSession();
+          subscriber.next(note);
+          subscriber.complete();
+        },
+        error: (err: any) => {
+          subscriber.error(err);
+        }
+      });
+    });
+  }
+
+  /**
+   * Optimistic update: apply the update to local cache immediately, emit change,
+   * then call backend. On error, revert to previous state and emit an error.
+   */
+  updateOptimistic(id: any, payload: any): Observable<any> {
+    return new Observable<any>((subscriber) => {
+      // Snapshot previous note
+      const idx = this.notes.findIndex(n => (n as any).id === id);
+      const prev = idx > -1 ? { ...this.notes[idx] } : null;
+
+      // Apply optimistic update locally
+      const now = new Date().toISOString();
+      const optimisticNote: NoteModel = {
+        title: payload.title || 'Untitled',
+        text: payload.content || payload.text || '',
+        tags: payload.tags || [],
+        createdAt: prev ? prev.createdAt : now,
+        updatedAt: now,
+        id: id
+      };
+
+      if (idx > -1) {
+        this.notes[idx] = optimisticNote;
+      } else {
+        this.notes.unshift(optimisticNote);
+      }
+      this.notesChanged.next(this.notes.slice());
+      this.persistToSession();
+
+      // Kick off backend update but don't block the UI
+      this.notesApi.updateNote(id, payload).subscribe({
+        next: (res: any) => {
+          // map server response and replace note with authoritative data
+          const updated = res && (res.data || res) ? (res.data || res) : payload;
+          const updatedAtVal = updated.updatedDate ? (updated.updatedTime ? `${updated.updatedDate}T${updated.updatedTime}` : updated.updatedDate) : (updated.updatedAt || new Date().toISOString());
+          const serverNote: NoteModel = {
+            title: updated.title || payload.title || optimisticNote.title,
+            text: updated.content || updated.text || optimisticNote.text,
+            tags: updated.tags || payload.tags || optimisticNote.tags,
+            createdAt: updated.createdAt || optimisticNote.createdAt,
+            updatedAt: updatedAtVal,
+            id: updated.id || updated.noteId || updated._id || id
+          };
+          const replaceIdx = this.notes.findIndex(n => (n as any).id === id);
+          if (replaceIdx > -1) this.notes[replaceIdx] = serverNote;
+          else this.notes.unshift(serverNote);
+          this.notesChanged.next(this.notes.slice());
+          this.persistToSession();
+          subscriber.next(serverNote);
+          subscriber.complete();
+        },
+        error: (err: any) => {
+          // revert optimistic change
+          if (prev) {
+            const revertIdx = this.notes.findIndex(n => (n as any).id === id);
+            if (revertIdx > -1) {
+              this.notes[revertIdx] = prev;
+            }
+          } else {
+            // remove optimistic note
+            this.notes = this.notes.filter(n => (n as any).id !== id);
+          }
+          this.notesChanged.next(this.notes.slice());
+          this.persistToSession();
+          subscriber.error(err);
+        }
+      });
+
+      // Immediately resolve so callers can navigate without waiting
+      subscriber.next(optimisticNote);
+      subscriber.complete();
+    });
+  }
+
   clear() {
     this.notes = [];
     this.notesChanged.next(this.notes.slice());
