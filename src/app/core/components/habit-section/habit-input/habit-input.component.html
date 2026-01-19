@@ -130,10 +130,10 @@
 
 <ng-template #notesSection let-showNotesValidation="showNotesValidation">
   <div class="section notes">
-    <textarea [(ngModel)]="notes" (ngModelChange)="clearNotesError()"
-      [class.missing-border]="showNotesError && attemptedSubmit && showNotesValidation" maxlength="250"
-      placeholder="Add Notes....." style="display:block;margin:0 auto;"></textarea>
-    <div class="char-count">Max 250 Characters</div>
+    <textarea [(ngModel)]="notes" (ngModelChange)="onNotesChange()" (input)="autoExpandTextarea($event)"
+      [class.missing-border]="showNotesError && attemptedSubmit && showNotesValidation" maxlength="100"
+      placeholder="Add Notes....."></textarea>
+    <div class="char-count">Max 100 Characters</div>
     <div *ngIf="attemptedSubmit && showNotesError && showNotesValidation" class="field-error" role="alert">Please add a short note about this.</div>
   </div>
 </ng-template>
