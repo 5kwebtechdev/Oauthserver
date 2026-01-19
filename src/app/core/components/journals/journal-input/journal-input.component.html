@@ -42,45 +42,66 @@
         <div class="section">
           <h2>Pin a Moment</h2>
 
-          <!-- Image Preview Area -->
-          <div class="image-preview-container" *ngIf="imagePreviewUrl">
-            <div class="image-preview-wrapper">
-              <img [src]="imagePreviewUrl" alt="Selected image preview" class="image-preview" />
-              <button class="remove-image-btn" (click)="removeImage()" type="button" aria-label="Remove image">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
+          <!-- Image Upload Section (max 3 slots) -->
+          <div class="image-upload-section d-flex align-items-center gap-2">
+            <!-- Uploaded image slots -->
+            <div *ngFor="let img of uploadedImages; let i = index" class="image-slot">
+              <div class="image-preview-container">
+                <img [src]="img.previewUrl" alt="Uploaded image" class="image-preview" />
+                <button class="remove-image-btn" (click)="removeImage(i)" type="button" aria-label="Remove image">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 4 4" fill="none">
+                    <path d="M2 2.42586L0.509506 3.91635C0.453739 3.97212 0.382763 4 0.296578 4C0.210393 4 0.139417 3.97212 0.0836502 3.91635C0.0278834 3.86058 0 3.78961 0 3.70342C0 3.61724 0.0278834 3.54626 0.0836502 3.49049L1.57414 2L0.0836502 0.509506C0.0278834 0.453739 0 0.382763 0 0.296578C0 0.210393 0.0278834 0.139417 0.0836502 0.0836502C0.139417 0.0278834 0.210393 0 0.296578 0C0.382763 0 0.453739 0.0278834 0.509506 0.0836502L2 1.57414L3.49049 0.0836502C3.54626 0.0278834 3.61724 0 3.70342 0C3.78961 0 3.86058 0.0278834 3.91635 0.0836502C3.97212 0.139417 4 0.210393 4 0.296578C4 0.382763 3.97212 0.453739 3.91635 0.509506L2.42586 2L3.91635 3.49049C3.97212 3.54626 4 3.61724 4 3.70342C4 3.78961 3.97212 3.86058 3.91635 3.91635C3.86058 3.97212 3.78961 4 3.70342 4C3.61724 4 3.54626 3.97212 3.49049 3.91635L2 2.42586Z" fill="#282527"/>
+                  </svg>
+                </button>
+                <!-- Upload progress -->
+                <div *ngIf="img.uploading" class="upload-progress-overlay">
+                  <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="img.progress"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty upload slots (shown when at least 1 image is uploaded) -->
+            <div *ngIf="uploadedImages.length > 0; else emptyPinSection" class="d-flex gap-2">
+              <button *ngFor="let slot of getEmptySlotArray()" class="upload-slot-btn" (click)="triggerFileInput(uploadedImages.length + slot)" type="button" aria-label="Add more images">
+                <img src="assets/icons/plus-icon.svg" alt="Add" width="16" height="16" />
               </button>
             </div>
+          </div>
 
-            <!-- Upload Progress -->
-            <div class="upload-progress" *ngIf="isUploading">
-              <div class="progress-bar">
-                <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+          <!-- Progress message -->
+          <div *ngIf="isAnyImageUploading()" class="upload-status">
+            Uploading images...
+          </div>
+
+          <!-- Upload Progress (visible during uploads) -->
+          <div class="upload-progress" *ngIf="isAnyImageUploading()">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="getAverageProgress()"></div>
+            </div>
+            <span class="progress-text">{{ getAverageProgress() }}%</span>
+          </div>
+
+          <!-- Upload Success -->
+          <div class="upload-success" *ngIf="hasUploadedImagesReady()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Images ready</span>
+          </div>
+
+          <!-- Pin Moment Button (only show when no images uploaded) -->
+          <ng-template #emptyPinSection>
+            <div class="pin-moment" role="button" tabindex="0" aria-label="Choose item to pin"
+              (click)="openAttachPopup()" (keydown.enter)="openAttachPopup()">
+              <div class="pin-inner">
+                <img class="pin-icon" src="assets/icons/attachment-small.svg" alt="Attach" aria-hidden="true" width="18" height="18" />
+                <span class="pin-text">Choose item here</span>
               </div>
-              <span class="progress-text">Uploading: {{ uploadProgress }}%</span>
             </div>
-
-            <!-- Upload Success -->
-            <div class="upload-success" *ngIf="uploadedImageUrl && !isUploading">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-              <span>Image ready</span>
-            </div>
-          </div>
-
-          <!-- Pin Moment Button (only show if no image selected) -->
-          <div class="pin-moment" *ngIf="!imagePreviewUrl" role="button" tabindex="0" aria-label="Choose item to pin"
-            (click)="openAttachPopup()" (keydown.enter)="openAttachPopup()">
-            <div class="pin-inner">
-              <img class="pin-icon" src="assets/icons/attachment-small.svg" alt="Attach" aria-hidden="true" width="18" height="18" />
-              <span class="pin-text">Choose item here</span>
-            </div>
-          </div>
+          </ng-template>
         </div>
       </div>
 
@@ -88,7 +109,7 @@
 
       <div *ngIf="emotionError" class="field-error">{{ emotionError }}</div>
       <div class="post-button-container">
-        <mindful-button type="magenta" text="Post" large class="mindful-button-full" (click)="submit()"></mindful-button>
+        <mindful-button type="magenta" size="full" text="Post" [disabled]="!isPostEnabled" (click)="handleSubmit()"></mindful-button>
       </div>
     </div>
   </div>

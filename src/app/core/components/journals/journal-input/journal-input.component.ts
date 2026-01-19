@@ -38,13 +38,12 @@ export class JournalInputComponent implements OnInit {
   showAttachPopup = false;
   public selected: { [section: string]: number | null } = {};
 
-  public selectedFile: File | null = null;
-  public imagePreviewUrl: string | null = null;
-  public uploadProgress: number = 0;
-  public isUploading: boolean = false;
-  public uploadedImageUrl: string | null = null;
+  // Multi-image upload (max 3)
+  private static readonly MAX_IMAGES = 3;
+  public uploadedImages: Array<{ file: File; previewUrl: string; uploadedUrl: string | null; uploading: boolean; progress: number }> = [];
   public emotionError: string | null = null;
   public noteMaxLength = 160;
+  public currentUploadIndex = -1;
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -151,16 +150,20 @@ export class JournalInputComponent implements OnInit {
     });
 
     try {
-      // Wait for any ongoing upload to complete
-      if (this.isUploading) {
-        alert('Please wait for the image upload to complete.');
+      // Wait for any ongoing uploads to complete
+      const uploading = this.uploadedImages.some(img => img.uploading);
+      if (uploading) {
+        alert('Please wait for all image uploads to complete.');
         return;
       }
 
-      // Build journal payload with uploaded image URL if available
+      // Build journal payload with uploaded image URLs
       const journalPayload: any = { ...payload };
-      if (this.uploadedImageUrl) {
-        journalPayload.attachmentUrl = this.uploadedImageUrl;
+      const uploadedUrls = this.uploadedImages
+        .filter(img => img.uploadedUrl)
+        .map(img => img.uploadedUrl);
+      if (uploadedUrls.length > 0) {
+        journalPayload.attachmentUrls = uploadedUrls;
       }
 
       const journalUrl = `${environment.apiUrl}/journal/add`;
@@ -189,6 +192,21 @@ export class JournalInputComponent implements OnInit {
     }
   }
 
+  /** Whether the post button should be enabled (requires an emotion selected) */
+  get isPostEnabled(): boolean {
+    return this.selected['emotions'] != null;
+  }
+
+  /** Guarded click handler for the post button */
+  handleSubmit(): void {
+    if (!this.isPostEnabled) {
+      this.emotionError = 'How are you feeling? Pick an emotion to continue.';
+      return;
+    }
+    // call submit and ignore returned promise
+    void this.submit();
+  }
+
   // Ensure text stays within max length (defensive: trims pasted content)
   onNotesInput(): void {
     if (this.text && this.text.length > this.noteMaxLength) {
@@ -205,11 +223,8 @@ export class JournalInputComponent implements OnInit {
   private resetForm(): void {
     this.text = '';
     this.selected = {};
-    this.selectedFile = null;
-    this.imagePreviewUrl = null;
-    this.uploadProgress = 0;
-    this.isUploading = false;
-    this.uploadedImageUrl = null;
+    this.uploadedImages = [];
+    this.currentUploadIndex = -1;
     if (this.fileInput && this.fileInput.nativeElement) {
       this.fileInput.nativeElement.value = '';
     }
@@ -261,7 +276,6 @@ export class JournalInputComponent implements OnInit {
       if (!f.type.startsWith('image/')) {
         alert('Please select an image file (PNG, JPG, etc.)');
         input.value = '';
-        this.selectedFile = null;
         return;
       }
 
@@ -270,92 +284,134 @@ export class JournalInputComponent implements OnInit {
         console.warn('Selected file too large:', f.size);
         alert('Selected file is too large. Please choose a file smaller than 5 MB.');
         input.value = '';
-        this.selectedFile = null;
         return;
       }
-
-      this.selectedFile = f;
-      this.uploadedImageUrl = null; // Reset uploaded URL when new file is selected
 
       // Generate preview
       const reader = new FileReader();
       reader.onload = (e) => {
-        this.imagePreviewUrl = e.target?.result as string;
+        const previewUrl = e.target?.result as string;
+        const idx = this.currentUploadIndex >= 0 ? this.currentUploadIndex : this.uploadedImages.length;
+        
+        if (idx < JournalInputComponent.MAX_IMAGES) {
+          if (idx < this.uploadedImages.length) {
+            // Replace existing
+            this.uploadedImages[idx] = {
+              file: f,
+              previewUrl,
+              uploadedUrl: null,
+              uploading: false,
+              progress: 0
+            };
+          } else {
+            // Add new
+            this.uploadedImages.push({
+              file: f,
+              previewUrl,
+              uploadedUrl: null,
+              uploading: false,
+              progress: 0
+            });
+          }
+          
+          console.log(`File selected for slot ${idx}:`, f.name);
+          this.uploadImageToS3(idx);
+        }
       };
       reader.readAsDataURL(f);
+    }
+    
+    input.value = '';
+    this.currentUploadIndex = -1;
+  }
 
-      console.log('Selected file:', this.selectedFile.name, 'size:', this.selectedFile.size);
+  private uploadImageToS3(index: number): void {
+    if (index < 0 || index >= this.uploadedImages.length) return;
 
-      // Start upload immediately
-      await this.uploadImageToS3();
+    const imgData = this.uploadedImages[index];
+    if (!imgData.file) return;
+
+    (async () => {
+      try {
+        imgData.uploading = true;
+        imgData.progress = 10;
+
+        const presignEndpoint = `${environment.apiUrl}/api/s3/presign`;
+        const uploadCompleteEndpoint = `${environment.apiUrl}/api/s3/upload-complete/{fileId}`;
+        const token = this.authApi.getToken();
+
+        const userId = localStorage.getItem('user_id');
+        if (!userId) throw new Error('User ID not found. Please log in again.');
+
+        imgData.progress = 20;
+
+        const uploadedUrl = await this.s3UploadService.uploadFileComplete(
+          presignEndpoint,
+          uploadCompleteEndpoint,
+          imgData.file,
+          parseInt(userId, 10),
+          token || undefined,
+          (percent) => {
+            imgData.progress = 20 + Math.floor(percent * 0.75);
+          },
+          60000
+        );
+
+        imgData.uploadedUrl = uploadedUrl;
+        imgData.progress = 100;
+        imgData.uploading = false;
+        console.log(`Image ${index} uploaded:`, uploadedUrl);
+      } catch (error) {
+        console.error(`Upload failed for slot ${index}:`, error);
+        imgData.uploading = false;
+        imgData.progress = 0;
+        const msg = error instanceof Error ? error.message : 'Upload failed';
+        alert(`Failed to upload image: ${msg}`);
+        
+        // Remove failed image
+        this.removeImage(index);
+      }
+    })();
+  }
+
+  removeImage(index: number): void {
+    if (index >= 0 && index < this.uploadedImages.length) {
+      this.uploadedImages.splice(index, 1);
     }
   }
 
-  private async uploadImageToS3(): Promise<void> {
-    if (!this.selectedFile) {
-      return;
-    }
-
-    try {
-      this.isUploading = true;
-      this.uploadProgress = 10;
-
-      const presignEndpoint = `${environment.apiUrl}/api/s3/presign`;
-      const uploadCompleteEndpoint = `${environment.apiUrl}/api/s3/upload-complete/{fileId}`;
-      const token = this.authApi.getToken();
-
-      // Get userId from localStorage
-      const userId = localStorage.getItem('user_id');
-      if (!userId) {
-        throw new Error('User ID not found. Please log in again.');
-      }
-
-      this.uploadProgress = 20;
-
-      // Use the complete upload workflow from S3UploadService
-      const uploadedUrl = await this.s3UploadService.uploadFileComplete(
-        presignEndpoint,
-        uploadCompleteEndpoint,
-        this.selectedFile,
-        parseInt(userId, 10),
-        token || undefined,
-        (percent) => {
-          // Map upload progress from 20% to 95%
-          this.uploadProgress = 20 + Math.floor(percent * 0.75);
-        },
-        60000 // 60 second timeout
-      );
-
-      console.log('Image uploaded successfully:', uploadedUrl);
-      this.uploadProgress = 100;
-
-      // Store the presigned URL for journal submission
-      this.uploadedImageUrl = uploadedUrl;
-      this.isUploading = false;
-    } catch (error) {
-      console.error('Upload failed:', error);
-      this.isUploading = false;
-      this.uploadProgress = 0;
-      const errorMsg = error instanceof Error ? error.message : 'Failed to upload image. Please try again.';
-      alert(errorMsg);
-
-      // Reset file selection on error
-      this.selectedFile = null;
-      this.imagePreviewUrl = null;
-      if (this.fileInput && this.fileInput.nativeElement) {
-        this.fileInput.nativeElement.value = '';
-      }
-    }
+  triggerFileInput(slotIndex: number): void {
+    if (slotIndex >= JournalInputComponent.MAX_IMAGES) return;
+    this.currentUploadIndex = slotIndex;
+    this.fileInput?.nativeElement?.click();
   }
 
-  removeImage(): void {
-    this.selectedFile = null;
-    this.imagePreviewUrl = null;
-    this.uploadedImageUrl = null;
-    this.uploadProgress = 0;
-    if (this.fileInput && this.fileInput.nativeElement) {
-      this.fileInput.nativeElement.value = '';
-    }
+  get canAddMoreImages(): boolean {
+    return this.uploadedImages.length < JournalInputComponent.MAX_IMAGES;
+  }
+
+  getEmptySlotCount(): number {
+    return JournalInputComponent.MAX_IMAGES - this.uploadedImages.length;
+  }
+
+  getEmptySlotArray(): number[] {
+    return Array.from({ length: this.getEmptySlotCount() }, (_, i) => i);
+  }
+
+  getAverageProgress(): number {
+    const uploadingImages = this.uploadedImages.filter(img => img.uploading);
+    if (uploadingImages.length === 0) return 0;
+    const totalProgress = uploadingImages.reduce((sum, img) => sum + img.progress, 0);
+    return Math.round(totalProgress / uploadingImages.length);
+  }
+
+  isAnyImageUploading(): boolean {
+    return this.uploadedImages.some(img => img.uploading);
+  }
+
+  hasUploadedImagesReady(): boolean {
+    const uploadedCount = this.uploadedImages.filter(img => img.uploadedUrl).length;
+    return uploadedCount > 0 && !this.isAnyImageUploading();
   }
 
   private authHeaders(contentTypeJson = false): { headers: HttpHeaders } {
