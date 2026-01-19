@@ -74,20 +74,19 @@
     </div>
   </div>
 
-</ion-content>
-
-<!-- Fixed Add Button -->
-<!-- Fixed Add Button (only show for the current month) -->
-<div *ngIf="isAtLatestMonth && filteredEntries && filteredEntries.length" class="add-button-fixed" (click)="onAddClick()">
-  <mindful-button type="add"></mindful-button>
-</div>
-
-<!-- Image viewer overlay -->
-  <div class="image-viewer-backdrop" *ngIf="viewerOpen" (click)="closeImageViewer()">
-  <button class="image-viewer-close" (click)="closeImageViewer()" aria-label="Close image viewer">
-    <img src="/assets/app-assets/cancel-cross.svg" alt="Close image viewer">
-  </button>
-  <div class="image-viewer-content" (click)="$event.stopPropagation()">
-    <img [src]="viewerSrc" alt="attachment preview" />
+  <!-- Fixed Add Button -->
+  <!-- Fixed Add Button (only show for the current month) -->
+  <div *ngIf="isAtLatestMonth && filteredEntries && filteredEntries.length" class="add-button-fixed" (click)="onAddClick()">
+    <mindful-button type="add"></mindful-button>
   </div>
-</div>
+  
+  <!-- Image viewer overlay -->
+    <div class="image-viewer-backdrop" *ngIf="viewerOpen" (click)="closeImageViewer()">
+    <button class="image-viewer-close" (click)="closeImageViewer()" aria-label="Close image viewer">
+      <img src="/assets/app-assets/cancel-cross.svg" alt="Close image viewer">
+    </button>
+    <div class="image-viewer-content" (click)="$event.stopPropagation()">
+      <img [src]="viewerSrc" alt="attachment preview" />
+    </div>
+  </div>
+</ion-content>

@@ -8,26 +8,216 @@ import { AuthApi } from '../../api/auth.api';
 import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { ViewAllComponent } from '../mindful-navigator/view-all/view-all.component';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
+import { JournalPostCardComponent } from './journal-post-card/journal-post-card.component';
 
 export interface JournalEntry {
   id: string;
   title: string;
   content: string;
+  text?: string;
   date: Date;
-  // optional time portion (e.g. '14:30' or ISO time)
   time?: string;
   mood: string;
   tags: string[];
-  // optional image attachments (urls)
   images?: string[];
   isPrivate: boolean;
 }
 
 @Component({
   selector: 'journals',
-  templateUrl: './journals.component.html',
-  styleUrls: ['./journals.component.scss'],
-  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, ViewAllComponent, MindfulButtonComponent],
+  template: `
+    <section class="journal-empty">
+      <mindful-card-header [title]="'Your Journal, Your Journey'" [subtitleLeft]="'Track moods'" [subtitleMiddle]="'Save'"
+        [subtitleRight]="'Feel Better'">
+        <mindful-view-all mindful-header-actions [routerLink]="['/authed/journal-output']"
+          class="journal-empty__view-all">
+        </mindful-view-all>
+      </mindful-card-header>
+
+      <div *ngIf="latestEntry as entry; else emptyBody" class="entries-container">
+        <journal-post-card [entry]="entry"></journal-post-card>
+      </div>
+
+      <ng-template #emptyBody>
+        <div class="journal-empty__body">
+          <img class="journal-empty__illustration" src="/assets/Images-Transparent/Image-Journal-Blank.png"
+            alt="Panda with kids illustration">
+
+          <div class="journal-empty__texts">
+            <p class="lead">We are waiting to hear about your day!</p>
+            <p class="sub">Post your journal to keep your story alive</p>
+          </div>
+
+          <mindful-button class="journal-empty__post" type="magenta" large text="Post now"
+             (click)="onCreateNewEntry()" aria-label="Post now"></mindful-button>
+        </div>
+      </ng-template>
+    </section>
+  `,
+  styles: [`
+    .journal-empty {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding: 0;
+    }
+
+    .journal-empty__body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .journal-empty__illustration {
+      width: 208px;
+      height: 123px;
+      object-fit: contain;
+    }
+
+    .journal-empty__texts {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .journal-empty__texts .lead {
+      font-family: 'Fredoka', Arial;
+      font-weight: 500;
+      font-size: 16px;
+      color: #282527;
+      text-align: center;
+      margin: 0;
+    }
+
+    .journal-empty__texts .sub {
+      font-family: 'Nunito', Arial;
+      font-weight: 500;
+      font-size: 13px;
+      color: #282527;
+      opacity: 0.7;
+      text-align: center;
+      margin: 0;
+    }
+
+    .journal-empty__post {
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+      padding: 0px 12px;
+    }
+
+    .entries {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .post-card {
+      height: auto;
+      flex-shrink: 0;
+      border-radius: 24px;
+      background: #FFF;
+      box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+      padding: 16px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .post-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .post-date, .post-time {
+      color: #6B656A;
+      text-align: center;
+      font-family: Nunito;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .post-time {
+      font-size: 13px;
+    }
+
+    .post-body {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .emoji {
+      width: 65.722px;
+      height: 52px;
+      aspect-ratio: 65.72/52.00;
+    }
+
+    .post-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .post-mood {
+      color: #282527;
+      font-family: Nunito;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .post-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+      align-items: center;
+    }
+
+    .tag {
+      color: #282527;
+      text-align: center;
+      font-family: Nunito;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .tag::after {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #7fb6b4;
+      border-radius: 50%;
+      margin-left: 10px;
+    }
+
+    .post-tags .tag:last-child::after {
+      content: none;
+    }
+
+    .post-text {
+      color: #282527;
+      font-family: Nunito;
+      font-size: 16px;
+      font-weight: 600;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .post-images img {
+      width: 62.986px;
+      height: 55.606px;
+      object-fit: cover;
+    }
+  `],
+  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, ViewAllComponent, MindfulButtonComponent, JournalPostCardComponent],
   standalone: true
 })
 export class JournalsComponent {
@@ -107,12 +297,17 @@ export class JournalsComponent {
           });
 
           const images: string[] = [];
-          if (item.attachmentUrl) images.push(item.attachmentUrl);
+          if (item.attachmentUrls && Array.isArray(item.attachmentUrls)) {
+            images.push(...item.attachmentUrls);
+          } else if (item.attachmentUrl) {
+            images.push(item.attachmentUrl);
+          }
 
           return {
             id: item.id?.toString?.() ?? '',
             title: item.notes ? (String(item.notes).split('\n')[0].slice(0, 80)) : (item.title || 'Journal entry'),
             content: item.notes || '',
+            text: item.notes || '', // For post-card display
             date: dateVal,
             time: item.creationTime || undefined,
             mood: item.emotions || item.mood || '',
@@ -242,5 +437,9 @@ export class JournalsComponent {
       day: 'numeric',
       year: 'numeric'
     });
+  }
+
+  trackById(index: number, entry: JournalEntry): string | number {
+    return entry.id || index;
   }
 }
