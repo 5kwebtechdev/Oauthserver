@@ -86,6 +86,13 @@ export class NotesComponent {
 
   // sorting state: 'created' | 'modified' | 'az' | 'za'
   public sortKey: 'created' | 'modified' | 'az' | 'za' = 'created';
+  // typed options for the sort dropdown to satisfy Angular template type checking
+  public sortOptions: { k: 'created' | 'modified' | 'az' | 'za'; l: string }[] = [
+    { k: 'created', l: 'Date Created' },
+    { k: 'modified', l: 'Date Modified' },
+    { k: 'az', l: 'A - Z' },
+    { k: 'za', l: 'Z - A' }
+  ];
   public loading: boolean = false;
   public loadError: string | null = null;
 
