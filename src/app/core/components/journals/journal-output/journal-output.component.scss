@@ -2,7 +2,7 @@
   width: 100%;
   background: #fff;
   border-radius: 16px;
-  padding: 16px;
+  padding: 16px 16px 100px 16px;
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.04);
 }
 
@@ -150,9 +150,9 @@ opacity: 0.7;
 }
 
 .emoji {
-  width: 65.722px;
-  height: 52px;
-  aspect-ratio: 65.72/52.00;
+      width: 4rem;
+    height: 4rem;
+    aspect-ratio: 1 / 1;
 }
 
 .post-content {
@@ -216,9 +216,63 @@ opacity: 0.7;
 }
 
 .post-images img {
-  width: 62.986px;
-  height: 55.606px;
+  width: 4rem;
+  height: 4rem;
   object-fit: cover;
+}
+
+.post-image-thumb {
+  cursor: pointer;
+  width: 4rem;
+  height: 4rem;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Image viewer overlay */
+.image-viewer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+
+.image-viewer-content {
+  position: relative;
+  max-width: calc(100% - 20px);
+  max-height: calc(100% - 20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-viewer-content img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+}
+
+.image-viewer-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 /* Floating button fixed to bottom-right */
