@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
@@ -25,6 +25,9 @@ export interface JournalOutputEntry {
   styleUrls: ['./journal-output.component.scss']
 })
 export class JournalOutputComponent implements OnInit {
+  // Image viewer state
+  public viewerOpen: boolean = false;
+  public viewerSrc: string | null = null;
   @Input() entries: JournalOutputEntry[] = [];
 
   constructor(private router: Router, private http: HttpClient, private authApi: AuthApi) { }
@@ -40,8 +43,15 @@ export class JournalOutputComponent implements OnInit {
       this.entries = navState.entries as JournalOutputEntry[];
     }
 
-    // Normalize dates to Date objects for easier formatting
-    this.entries = (this.entries || []).map(e => ({ ...e, date: e.date ? new Date(e.date) : undefined }));
+    // Normalize dates to Date objects for easier formatting and ensure `images` exists
+    this.entries = (this.entries || []).map(e => {
+      const normalizedDate = e.date ? new Date(e.date) : undefined;
+      let images: string[] = [];
+      const src = (e as any).attachmentUrls ?? (e as any).attachmentUrl ?? (e as any).images;
+      if (Array.isArray(src)) images = (src as any[]).filter(Boolean);
+      else if (typeof src === 'string' && src) images = [src];
+      return { ...e, date: normalizedDate, images } as JournalOutputEntry;
+    });
 
     // If entries still empty, fetch from backend API
     if (!this.entries || this.entries.length === 0) {
@@ -50,6 +60,24 @@ export class JournalOutputComponent implements OnInit {
 
     // initialize month label (will show current month/year)
     this.updateMonthLabel();
+  }
+
+  /** Open the image viewer overlay for the selected image */
+  openImageViewer(src: string): void {
+    if (!src) return;
+    this.viewerSrc = src;
+    this.viewerOpen = true;
+  }
+
+  /** Close the image viewer overlay */
+  closeImageViewer(): void {
+    this.viewerOpen = false;
+    this.viewerSrc = null;
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscapeKey(event: KeyboardEvent) {
+    if (this.viewerOpen) this.closeImageViewer();
   }
 
   private updateMonthLabel(): void {
@@ -139,7 +167,11 @@ export class JournalOutputComponent implements OnInit {
           });
 
           const images: string[] = [];
-          if (item.attachmentUrl) images.push(item.attachmentUrl);
+          if (Array.isArray(item.attachmentUrls)) {
+            item.attachmentUrls.forEach((u: string) => { if (u) images.push(u); });
+          } else if (item.attachmentUrl) {
+            images.push(item.attachmentUrl);
+          }
 
           return {
             id: item.id,

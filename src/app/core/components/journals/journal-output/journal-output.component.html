@@ -62,9 +62,12 @@
               {{ entry.text }}
             </div>
 
-            <div class="post-images" *ngIf="entry.images && entry.images.length">
-              <img [src]="entry.images[0]" alt="attachment" />
+            <div class="post-images d-flex gap-2" *ngIf="entry.images && entry.images.length">
+              <ng-container *ngFor="let img of entry.images; let i = index">
+                <img class="post-image-thumb" [src]="img" [alt]="'attachment ' + (i + 1)" (click)="openImageViewer(img)" role="button" tabindex="0" />
+              </ng-container>
             </div>
+            
           </div>
         </div>
       </div>
@@ -77,4 +80,14 @@
 <!-- Fixed Add Button (only show for the current month) -->
 <div *ngIf="isAtLatestMonth && filteredEntries && filteredEntries.length" class="add-button-fixed" (click)="onAddClick()">
   <mindful-button type="add"></mindful-button>
+</div>
+
+<!-- Image viewer overlay -->
+  <div class="image-viewer-backdrop" *ngIf="viewerOpen" (click)="closeImageViewer()">
+  <button class="image-viewer-close" (click)="closeImageViewer()" aria-label="Close image viewer">
+    <img src="/assets/app-assets/cancel-cross.svg" alt="Close image viewer">
+  </button>
+  <div class="image-viewer-content" (click)="$event.stopPropagation()">
+    <img [src]="viewerSrc" alt="attachment preview" />
+  </div>
 </div>
