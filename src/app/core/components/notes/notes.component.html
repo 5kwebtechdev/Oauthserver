@@ -61,7 +61,7 @@
           <span class="date">Draft</span>
         </div>
         <span class="tag" [ngClass]="primaryTagClassFromTags(draft.tags)">{{ (draft.tags && draft.tags.length) ? draft.tags[0] : 'No Tag' }}</span>
-        <img src="assets/icons/edit-icon.svg" alt="Edit" class="note-edit-icon" style="position:absolute; top:6px; right:6px; width:12px; height:12px;" aria-hidden="true" />
+        <!-- edit icon hidden for draft notes -->
       </div>
     </div>
 
@@ -83,7 +83,8 @@
             <span class="date">{{ formatDate(note.createdAt) }}</span>
           </div>
           <span class="tag" [ngClass]="primaryTagClass(note)">{{ primaryTag(note) }}</span>
-          <img src="assets/icons/edit-icon.svg" alt="Edit" class="note-edit-icon" style="position: absolute;top: -6px;right: 0px;width: 16px;height: 16px;" aria-hidden="true" />
+          <img src="assets/icons/edit-icon.svg" alt="Edit" class="note-edit-icon" style="position: absolute;top: -6px;right: 0px;width: 16px;height: 16px;" aria-hidden="true"
+            (click)="editNote(note); $event.stopPropagation();" />
         </div>
       </div>
     </ng-container>

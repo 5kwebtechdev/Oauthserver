@@ -49,4 +49,12 @@ export class NotesApi {
         const url = `${this.base}/notes/delete/${id}`;
         return this.http.delete(url, { headers: this.headers() });
     }
+
+    /**
+     * Update an existing note by id. Endpoint: PUT {base}/notes/update/{id}
+     */
+    updateNote(id: any, payload: any): Observable<any> {
+        const url = `${this.base}/notes/update/${id}`;
+        return this.http.put(url, payload, { headers: this.headers() });
+    }
 }
