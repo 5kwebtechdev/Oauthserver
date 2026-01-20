@@ -586,3 +586,12 @@
   color: rgba(40, 37, 39, 0.7);
   font-weight: 500;
 }
+
+.image-error {
+  color: var(--Error, #BB2124);
+  text-align: center;
+  font-family: Nunito;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-top: 8px;
+}

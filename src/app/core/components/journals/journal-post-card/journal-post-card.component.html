@@ -4,7 +4,7 @@
     <div class="post-time">{{ formatTime(entry.date) }}</div>
   </div>
 
-  <div class="post-body" [class.no-tags]="getFilteredTags(entry).length === 0">
+  <div class="post-body" [class.center-emoji]="!hasDetails(entry)">
     <div class="emoji">
       <ng-container *ngIf="getEmotion(entry) as em; else emojiFallback">
         <img class="emotion-thumb" [src]="em.image" [alt]="em.label" />
@@ -16,7 +16,7 @@
     <div class="post-content">
       <div class="post-mood">{{ entry.mood || 'Mood' }}</div>
 
-      <div class="post-tags">
+      <div class="post-tags" *ngIf="getFilteredTags(entry).length > 0">
         <ng-container *ngFor="let tag of getFilteredTags(entry); let i = index">
           <ng-container *ngIf="tag && tag.indexOf(': ') > -1; else plainTag">
             <span class="tag"><span class="tag-title">{{ tag.split(': ')[0] }}:</span><span class="tag-text">{{ tag.split(': ')[1] }}</span></span>
@@ -27,7 +27,7 @@
         </ng-container>
       </div>
 
-      <div class="post-text">
+      <div class="post-text" *ngIf="entry.text && entry.text.trim().length">
         {{ entry.text }}
       </div>
 

@@ -41,6 +41,7 @@ export class JournalInputComponent implements OnInit {
   private static readonly MAX_IMAGES = 3;
   public uploadedImages: Array<{ file: File; previewUrl: string; uploadedUrl: string | null; uploading: boolean; progress: number }> = [];
   public emotionError: string | null = null;
+  public imageUploadError: string | null = null;
   public noteMaxLength = 160;
   public currentUploadIndex = -1;
 
@@ -254,6 +255,7 @@ export class JournalInputComponent implements OnInit {
     if (this.fileInput && this.fileInput.nativeElement) {
       this.fileInput.nativeElement.value = '';
     }
+    this.imageUploadError = null;
   }
 
   onCancel(): void {
@@ -304,7 +306,7 @@ export class JournalInputComponent implements OnInit {
       const fileType = f.type || '';
       if (fileType) {
         if (!fileType.startsWith('image/')) {
-          alert('Please select an image file (PNG, JPG, etc.)');
+          this.imageUploadError = 'Invalid format';
           input.value = '';
           return;
         }
@@ -313,16 +315,16 @@ export class JournalInputComponent implements OnInit {
         const name = (f.name || '').toLowerCase();
         if (!name.match(/\.(jpg|jpeg|png|gif|webp|heic)$/)) {
           console.warn('Selected file has no type and unknown extension:', f.name);
-          alert('Please select an image file (PNG, JPG, etc.)');
+          this.imageUploadError = 'Invalid format';
           input.value = '';
           return;
         }
       }
 
-      const maxBytes = 5 * 1024 * 1024; // 5 MB
+      const maxBytes = 7 * 1024 * 1024; // 7 MB
       if (f.size > maxBytes) {
         console.warn('Selected file too large:', f.size);
-        alert('Selected file is too large. Please choose a file smaller than 5 MB.');
+        this.imageUploadError = 'File size limit 7mb';
         input.value = '';
         return;
       }
@@ -335,7 +337,7 @@ export class JournalInputComponent implements OnInit {
           const previewUrl = URL.createObjectURL(blob);
           const idx = this.currentUploadIndex >= 0 ? this.currentUploadIndex : this.uploadedImages.length;
 
-          if (idx < JournalInputComponent.MAX_IMAGES) {
+              if (idx < JournalInputComponent.MAX_IMAGES) {
             if (idx < this.uploadedImages.length) {
               this.uploadedImages[idx] = {
                 file: f,
@@ -354,6 +356,8 @@ export class JournalInputComponent implements OnInit {
               });
             }
 
+              // Clear any previous upload-format/size error once a valid file is selected
+              this.imageUploadError = null;
               this.uploadImageToS3(idx);
           }
         } catch (err) {
@@ -406,13 +410,39 @@ export class JournalInputComponent implements OnInit {
         imgData.uploadedUrl = uploadedUrl;
         imgData.progress = 100;
         imgData.uploading = false;
+        // clear any image upload error on successful upload
+        this.imageUploadError = null;
       } catch (error) {
         console.error(`Upload failed for slot ${index}:`, error);
         imgData.uploading = false;
         imgData.progress = 0;
         const msg = error instanceof Error ? error.message : 'Upload failed';
-        alert(`Failed to upload image: ${msg}`);
-        
+        // Map presign server error to invalid format message and avoid alert
+        let isPresignError = false;
+        try {
+          if (error && typeof error === 'object') {
+            // common shapes: { status, error: { path, status, message }, path }
+            if ((error as any).status === 500 && typeof (error as any).path === 'string' && String((error as any).path).includes('presign')) {
+              isPresignError = true;
+            }
+            if ((error as any).error && typeof (error as any).error === 'object') {
+              const e2 = (error as any).error;
+              if (e2.status === 500 && typeof e2.path === 'string' && String(e2.path).includes('presign')) {
+                isPresignError = true;
+              }
+            }
+            if (!isPresignError && /presign/.test(JSON.stringify(error))) {
+              isPresignError = true;
+            }
+          }
+        } catch (e) { /* ignore */ }
+
+        if (isPresignError) {
+          this.imageUploadError = 'Invalid format';
+        } else {
+          this.imageUploadError = `Failed to upload image: ${msg}`;
+        }
+
         // Remove failed image
         this.removeImage(index);
         
