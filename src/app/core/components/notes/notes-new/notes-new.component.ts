@@ -18,7 +18,7 @@ import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navig
 export class NotesNewComponent implements OnInit, AfterViewInit {
   title = '';
   // Controls how many characters are allowed and how many to show in the header
-  readonly MAX_TITLE = 16; // hard maximum allowed
+  readonly MAX_TITLE = 24; // hard maximum allowed
   readonly DISPLAY_LEN = 16; // number of chars to show before ellipsis
   inputFocused = false;
   showLimitTooltip = false;
@@ -34,6 +34,8 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
   // Edit mode state
   public editing: boolean = false;
   private editId: any = null;
+  // Snapshot of the original note when editing; used to avoid marking as draft if nothing changed
+  private originalSnapshot: { title: string; text: string; tags: string[] } | null = null;
 
   constructor(private notesService: NotesService, private router: Router) { }
 
@@ -63,7 +65,9 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
         this._draftTags = Array.isArray(parsed.tags) ? parsed.tags : this._draftTags;
         this.editing = true;
         this.editId = parsed.id || parsed.noteId || parsed._id || null;
-        this.isDraft = Boolean((this.title && this.title.length) || (this.text && this.text.length) || (this._draftTags && this._draftTags.length));
+        // Capture original content so we can detect real edits later. Do not treat the original note as a draft.
+        this.originalSnapshot = { title: String(this.title || ''), text: String(this.text || ''), tags: Array.isArray(this._draftTags) ? [...this._draftTags] : [] };
+        this.isDraft = false;
         // clear the session-stored edit marker so normal navigation isn't affected later
         try { sessionStorage.removeItem('notes-edit'); } catch (e) { /* ignore */ }
       }
@@ -95,7 +99,34 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
     const hasTitle = Boolean((this.title || '').trim());
     const hasText = Boolean((this.text || '').trim());
     const hasTag = Array.isArray(this.selectedTagKeys) && this.selectedTagKeys.length > 0;
+    // When editing, require that the user actually made changes before allowing save
+    if (this.editing) {
+      return hasTitle && hasText && hasTag && !this.loading && this.hasChanges();
+    }
     return hasTitle && hasText && hasTag && !this.loading;
+  }
+
+  /**
+   * Return true if current inputs differ from the original snapshot captured when edit began.
+   */
+  private hasChanges(): boolean {
+    if (!this.editing || !this.originalSnapshot) return true;
+    const curTitle = String((this.title || '').trim());
+    const curText = String((this.text || '').trim());
+
+    // Resolve current selected tag labels using the child component options
+    const options = this.tagsComponent?.options || [];
+    const curTags = Array.isArray(this.selectedTagKeys) ? this.selectedTagKeys.map(key => options.find(o => String(o.key) === String(key))?.value).filter(Boolean) as string[] : [];
+
+    const origTitle = String((this.originalSnapshot.title || '').trim());
+    const origText = String((this.originalSnapshot.text || '').trim());
+    const origTags = Array.isArray(this.originalSnapshot.tags) ? this.originalSnapshot.tags : [];
+
+    const sameTitle = curTitle === origTitle;
+    const sameText = curText === origText;
+    const sameTags = origTags.length === curTags.length && origTags.every((t, i) => String(t) === String(curTags[i]));
+
+    return !(sameTitle && sameText && sameTags);
   }
 
   onSelectedKeysChange(keys: any[]) {
@@ -141,6 +172,21 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
       // resolve selected tag labels if possible
       const options = this.tagsComponent?.options || [];
       const tags = Array.isArray(this.selectedTagKeys) ? this.selectedTagKeys.map(key => options.find(o => String(o.key) === String(key))?.value).filter(Boolean) as string[] : [];
+
+      // If we're editing and nothing has changed compared to the original snapshot, don't save a draft.
+      if (this.editing && this.originalSnapshot) {
+        const sameTitle = String((this.title || '').trim()) === String((this.originalSnapshot.title || '').trim());
+        const sameText = String((this.text || '').trim()) === String((this.originalSnapshot.text || '').trim());
+        const origTags = Array.isArray(this.originalSnapshot.tags) ? this.originalSnapshot.tags : [];
+        const sameTags = origTags.length === tags.length && origTags.every((t, i) => String(t) === String(tags[i]));
+        if (sameTitle && sameText && sameTags) {
+          // No meaningful change — remove any existing draft and mark as not draft
+          try { sessionStorage.removeItem('notes-draft'); } catch (e) { /* ignore */ }
+          this.isDraft = false;
+          return;
+        }
+      }
+
       const draft = { title: this.title || '', text: this.text || '', tags };
       sessionStorage.setItem('notes-draft', JSON.stringify(draft));
       this.isDraft = true;

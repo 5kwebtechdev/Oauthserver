@@ -288,11 +288,19 @@ export class JournalsComponent {
 
           const tags: string[] = [];
           if (item.hobbies && typeof item.hobbies === 'string') {
-            item.hobbies.split(',').forEach((t: string) => { const s = t.trim(); if (s) tags.push(s); });
+            item.hobbies.split(',').forEach((t: string) => {
+              const s = t.trim();
+              if (s) {
+                const titled = `Hobbies: ${s}`;
+                if (tags.indexOf(titled) === -1) tags.push(titled);
+              }
+            });
           }
           ['sleep', 'health', 'food', 'social', 'school', 'emotions'].forEach((k: string) => {
             if (item[k]) {
-              const val = String(item[k]).trim(); if (val && tags.indexOf(val) === -1) tags.push(val);
+              const val = String(item[k]).trim();
+              const titled = `${this.capitalize(k)}: ${val}`;
+              if (val && tags.indexOf(titled) === -1) tags.push(titled);
             }
           });
 
