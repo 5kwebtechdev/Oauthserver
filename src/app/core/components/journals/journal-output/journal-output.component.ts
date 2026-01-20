@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { JournalPostCardComponent } from '../journal-post-card/journal-post-card.component';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import { AuthApi } from '../../../api/auth.api';
@@ -20,7 +21,7 @@ export interface JournalOutputEntry {
 @Component({
   selector: 'app-journal-output',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, MindfulButtonComponent],
+  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, MindfulButtonComponent, JournalPostCardComponent],
   templateUrl: './journal-output.component.html',
   styleUrls: ['./journal-output.component.scss']
 })
@@ -116,10 +117,16 @@ export class JournalOutputComponent implements OnInit {
     if (!this.entries || !this.entries.length) return [];
     const month = (this.currentMonthDate || new Date()).getMonth();
     const year = (this.currentMonthDate || new Date()).getFullYear();
-    return this.entries.filter(e => {
+    const list = this.entries.filter(e => {
       if (!e || !e.date) return false;
       const d = e.date instanceof Date ? e.date : new Date(e.date as any);
       return d.getMonth() === month && d.getFullYear() === year;
+    });
+    // Sort by date descending so most recent entries appear first
+    return list.sort((a, b) => {
+      const da = a.date instanceof Date ? a.date.getTime() : new Date(a.date as any).getTime();
+      const db = b.date instanceof Date ? b.date.getTime() : new Date(b.date as any).getTime();
+      return db - da;
     });
   }
 
