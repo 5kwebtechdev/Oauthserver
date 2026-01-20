@@ -50,6 +50,13 @@ export class JournalPostCardComponent implements OnInit {
     });
   }
 
+  hasDetails(entry: JournalEntry): boolean {
+    const hasTags = this.getFilteredTags(entry).length > 0;
+    const hasText = !!(entry && entry.text && entry.text.toString().trim().length > 0);
+    const hasImages = Array.isArray(entry?.images) && entry.images.length > 0;
+    return hasTags || hasText || hasImages;
+  }
+
   getEmotion(entry: JournalEntry): { label: string; image: string } | null {
     const mood = (entry.mood || '').toLowerCase();
     if (!mood) return null;
