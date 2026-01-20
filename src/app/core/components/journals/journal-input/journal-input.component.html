@@ -33,7 +33,7 @@
         <div class="section" style="margin-bottom: 0;">
           <h2>A Quick Note</h2>
           <div class="note-area">
-            <textarea placeholder="Your notes goes here..." [(ngModel)]="text" name="journalNotes" maxlength="160" (input)="onNotesInput()"></textarea>
+            <textarea placeholder="Your notes goes here..." [(ngModel)]="text" name="journalNotes" maxlength="160" (input)="onNotesInput()" (input)="autoExpandTextarea($event)"></textarea>
           </div>
           <div class="char-counter">{{ notesCharCount }}/{{ noteMaxLength }}</div>
         </div>

@@ -9,6 +9,7 @@ import { LoadingService } from '../../core/services/loading.service';
 import { ParentImageService } from '../../core/services/parent-image.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Subscription } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 
 @Component({
@@ -60,6 +61,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   // Referral code UI and value
   public showReferral: boolean = false;
   public referralCode: string = '';
+  public referralValidationStatus: 'pending' | 'valid' | 'invalid' | null = null;
+  public referralErrorMessage: string = '';
+  private referralCheckInProgress: boolean = false;
 
   // Use an accessor so we can defensively guard and log unexpected changes
   private _openBirthdayPicker = false;
@@ -897,11 +901,76 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   // Handle referral input: allow only alphanumeric and max length 8
   onReferralInput(event: any): void {
     const raw = (event.target.value || '') as string;
-    const cleaned = raw.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
+    // Allow only alphanumeric, up to 8 chars, and normalize to UPPERCASE
+    const cleaned = raw.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase();
     this.referralCode = cleaned;
     // Update input value to cleaned value (prevents caret jump)
     try { event.target.value = cleaned; } catch (e) { }
     try { sessionStorage.setItem('referralCode', this.referralCode); } catch (e) { }
+
+    // Check referral code validity when exactly 8 characters are entered
+    if (cleaned.length === 8) {
+      this.checkReferralCodeValidity(cleaned);
+    } else {
+      // Reset validation status if user clears or modifies the code
+      this.referralValidationStatus = null;
+      this.referralErrorMessage = '';
+    }
+  }
+
+  // Check if referral code is valid by calling the API
+  private checkReferralCodeValidity(referralCode: string): void {
+    if (this.referralCheckInProgress) {
+      return; // Prevent duplicate requests
+    }
+
+    this.referralCheckInProgress = true;
+    this.referralValidationStatus = 'pending';
+    this.referralErrorMessage = '';
+
+    const apiUrl = `${environment.apiUrl}/auth/check-referral?referralCode=${referralCode}`;
+
+    this.authService.checkReferralCode(referralCode).subscribe({
+      next: (response: any) => {
+        this.referralCheckInProgress = false;
+
+        // Handle several possible response shapes from the backend.
+        // If the API returns an explicit boolean or an object with a flag, respect it.
+        let isValid: boolean | null = null;
+        try {
+          if (typeof response === 'boolean') {
+            isValid = response;
+          } else if (response && typeof response === 'object') {
+            if ('valid' in response) isValid = !!response.valid;
+            else if ('isValid' in response) isValid = !!response.isValid;
+            else if ('success' in response) isValid = !!response.success;
+            else if ('status' in response && typeof response.status === 'string') {
+              isValid = response.status === 'valid' || response.status === 'success';
+            }
+          }
+        } catch (e) {
+          isValid = null;
+        }
+
+        if (isValid === false) {
+          this.referralValidationStatus = 'invalid';
+          this.referralErrorMessage = (response && response.message) ? response.message : 'Invalid referral code';
+          console.log('Referral code is invalid (server indicated false):', response);
+        } else {
+          // If server didn't explicitly return false, treat 200 as valid
+          this.referralValidationStatus = 'valid';
+          this.referralErrorMessage = '';
+          console.log('Referral code is valid:', response);
+        }
+      },
+      error: (error: any) => {
+        this.referralCheckInProgress = false;
+        this.referralValidationStatus = 'invalid';
+        const errorMsg = error?.error?.message || 'Invalid referral code';
+        this.referralErrorMessage = errorMsg;
+        console.error('Referral code validation failed:', error);
+      }
+    });
   }
 
   // Handle phone input to ensure only numbers

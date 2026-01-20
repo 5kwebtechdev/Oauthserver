@@ -214,6 +214,13 @@ export class JournalInputComponent implements OnInit {
     }
   }
 
+  autoExpandTextarea(event: any): void {
+    const textarea = event.target as HTMLTextAreaElement;
+    textarea.style.height = 'auto';
+    const scrollHeight = textarea.scrollHeight;
+    textarea.style.height = (scrollHeight > 300 ? 300 : scrollHeight) + 'px';
+  }
+
   get notesCharCount(): number {
     return (this.text || '').length;
   }

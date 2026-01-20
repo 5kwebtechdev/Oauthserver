@@ -18,7 +18,7 @@ import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navig
 export class NotesNewComponent implements OnInit, AfterViewInit {
   title = '';
   // Controls how many characters are allowed and how many to show in the header
-  readonly MAX_TITLE = 48; // hard maximum allowed
+  readonly MAX_TITLE = 16; // hard maximum allowed
   readonly DISPLAY_LEN = 16; // number of chars to show before ellipsis
   inputFocused = false;
   showLimitTooltip = false;

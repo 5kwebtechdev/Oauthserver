@@ -22,6 +22,7 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     // Skip adding auth header if the request already has one (from API services)
+    const skipAuthHandler = request.headers.get('X-Skip-Auth-Handler') === 'true';
     if (request.headers.has('Authorization')) {
       console.log('[AuthInterceptor] Request already has Authorization header, skipping');
       return next.handle(request);
@@ -65,15 +66,19 @@ export class AuthInterceptor implements HttpInterceptor {
           });
 
           // Handle authentication errors
-          if (error.status === 401) {
-            console.warn('[AuthInterceptor] Unauthorized - Session expired, logging out');
-            this.authService.logout();
-          } else if (error.status === 403) {
-            // Don't redirect on 403 for login endpoint - let component handle it
-            if (!error.url?.includes('/auth/login')) {
-              console.warn('[AuthInterceptor] Forbidden - Access denied');
-              this.router.navigate(['/home']);
+          if (!skipAuthHandler) {
+            if (error.status === 401) {
+              console.warn('[AuthInterceptor] Unauthorized - Session expired, logging out');
+              this.authService.logout();
+            } else if (error.status === 403) {
+              // Don't redirect on 403 for login endpoint - let component handle it
+              if (!error.url?.includes('/auth/login')) {
+                console.warn('[AuthInterceptor] Forbidden - Access denied');
+                this.router.navigate(['/home']);
+              }
             }
+          } else {
+            console.log('[AuthInterceptor] Skipping auth-handler actions due to X-Skip-Auth-Handler header');
           }
 
           return throwError(() => error);
@@ -93,9 +98,13 @@ export class AuthInterceptor implements HttpInterceptor {
         });
 
         // Handle authentication errors even when no token is present
-        if (error.status === 401 && this.authService.isLoggedIn()) {
-          console.warn('[AuthInterceptor] Unauthorized - Logging out');
-          this.authService.logout();
+        if (!skipAuthHandler) {
+          if (error.status === 401 && this.authService.isLoggedIn()) {
+            console.warn('[AuthInterceptor] Unauthorized - Logging out');
+            this.authService.logout();
+          }
+        } else {
+          console.log('[AuthInterceptor] Skipping auth-handler actions due to X-Skip-Auth-Handler header');
         }
 
         return throwError(() => error);

@@ -275,9 +275,23 @@
 
         <div class="referral-input-wrapper" *ngIf="showReferral">
           <div class="input-group">
-            <input type="text" [value]="referralCode" (input)="onReferralInput($event)" placeholder="Code"
+            <input type="text" [value]="referralCode" (input)="onReferralInput($event)" placeholder="Type 8 character code"
               maxlength="8" />
             <div class="error" *ngIf="referralCode && referralCode.length > 8">Referral code must be up to 8 characters
+            </div>
+            <!-- Validation status indicators -->
+            <div class="referral-validation" *ngIf="referralValidationStatus || referralErrorMessage">
+              <div class="validation-status" [ngClass]="referralValidationStatus">
+                <span *ngIf="referralValidationStatus === 'pending'" class="status-text">
+                  <i class="fa-solid fa-spinner fa-spin"></i> Validating...
+                </span>
+                <span *ngIf="referralValidationStatus === 'valid'" class="status-text success">
+                  <i class="fa-solid fa-check-circle"></i> Referral code applied!
+                </span>
+                <span *ngIf="referralValidationStatus === 'invalid'" class="status-text error">
+                  <i class="fa-solid fa-exclamation-circle"></i> {{referralErrorMessage || 'Invalid referral code'}}
+                </span>
+              </div>
             </div>
           </div>
         </div>

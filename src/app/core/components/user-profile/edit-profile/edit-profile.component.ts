@@ -33,7 +33,8 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   // Form with proper validators
   profileForm = new FormGroup({
     dob: new FormControl<string | null>(null, [Validators.required]),
-    phone: new FormControl<string | null>(null, [Validators.required]),
+    // Phone is optional now — user can update profile without providing phone
+    phone: new FormControl<string | null>(null, []),
     email: new FormControl<string | null>(null, [Validators.required, Validators.email]),
   });
 
@@ -287,7 +288,8 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     }
 
     const phoneValue = this.profileForm.get('phone')?.value;
-    if (!this.isPhoneValid(phoneValue)) {
+    // Phone is optional: validate only when user has entered a phone
+    if (phoneValue && !this.isPhoneValid(phoneValue)) {
       this.coreService.triggerToasrt(this.getPhoneErrorMessage());
       this.profileForm.get('phone')?.markAsDirty();
       return;
@@ -371,15 +373,18 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   private buildChangedPayload(): any | null {
     if (!this.initialValues) {
       // If we don't have initial values, be conservative and send everything
-      const phoneValue = this.profileForm.get('phone')?.value || '';
-      return {
+      const phoneRaw = (this.profileForm.get('phone')?.value || '').replace(/\D/g, '');
+      const base: any = {
         name: this.fullName?.trim(),
         dateOfBirth: this.formatDateForBackend(this.profileForm.get('dob')!.value!),
         gender: this.gender,
-        phone: `${this.selectedCountry.code}${phoneValue.replace(/\D/g, '')}`,
         email: this.profileForm.get('email')!.value!.trim(),
         ...(this.avatarSelected ? { avatarName: `avatar${this.avatarSelected}` } : {}),
       };
+      if (phoneRaw) {
+        base.phone = `${this.selectedCountry.code}${phoneRaw}`;
+      }
+      return base;
     }
 
     const payload: any = {};
@@ -437,9 +442,40 @@ export class EditProfileComponent implements OnInit, OnDestroy {
         payload.avatarName = currentAvatarName;
         if (this.avatarImageName?.trim()) payload.avatarImageName = this.avatarImageName.trim();
       }
+      // If the avatar name was prefilled and the user didn't change it,
+      // include the prefilled/avatar name in the payload so backend receives it as-is.
+      if (initialAvatarName && currentAvatarName === initialAvatarName) {
+        payload.avatarName = currentAvatarName;
+        if (this.avatarImageName?.trim()) payload.avatarImageName = this.avatarImageName.trim();
+      }
     }
 
-    return Object.keys(payload).length ? payload : null;
+    // If there are any other changes to send, include an avatar name automatically:
+    // priority: user-edited `avatarName` > generated from `avatarSelected` > existing backend `avatarName`.
+    if (Object.keys(payload).length) {
+      const currentAvatarName = this.avatarName?.trim();
+      if (!payload.avatarName) {
+        if (currentAvatarName) {
+          payload.avatarName = currentAvatarName;
+        } else if (this.avatarSelected) {
+          payload.avatarName = `avatar${this.avatarSelected}`;
+        } else if (this.currentUserData?.avatarName) {
+          payload.avatarName = this.currentUserData.avatarName;
+        }
+      }
+
+      // ensure avatarImageName is sent when available
+      if (!payload.avatarImageName) {
+        if (this.avatarImageName?.trim()) payload.avatarImageName = this.avatarImageName.trim();
+        else if (this.avatarSelected) {
+          const sel = this.avatars.find(a => a.key === this.avatarSelected);
+          if (sel) payload.avatarImageName = sel.imageName;
+        }
+      }
+      return payload;
+    }
+
+    return null;
   }
 
   /**
@@ -537,7 +573,8 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   }
 
   isPhoneValid(phoneValue: string | null | undefined): boolean {
-    if (!phoneValue) return false;
+    // Phone is optional — treat empty phone as valid. When provided, enforce length.
+    if (!phoneValue) return true;
     const cleanPhone = phoneValue.replace(/\D/g, '');
     return cleanPhone.length === this.currentPhoneLength;
   }
@@ -627,16 +664,19 @@ export class EditProfileComponent implements OnInit, OnDestroy {
    * Retry profile update without avatar if avatar 404 error occurs
    */
   private retryProfileUpdateWithoutAvatar(): void {
-    const phoneValue = this.profileForm.get('phone')?.value;
+    const phoneRaw = (this.profileForm.get('phone')?.value || '').replace(/\D/g, '');
 
     const payload: EditProfilePayload = {
       name: this.fullName!.trim(),
       dateOfBirth: this.formatDateForBackend(this.profileForm.get('dob')!.value!),
       gender: this.gender!,
-      phone: `${this.selectedCountry.code}${phoneValue}`,
       email: this.profileForm.get('email')!.value!.trim()
       // Explicitly not including avatarName or avatarImageName
-    };
+    } as any;
+
+    if (phoneRaw) {
+      payload.phone = `${this.selectedCountry.code}${phoneRaw}`;
+    }
 
     this.isSubmitting = true;
     this.subscription.add(
