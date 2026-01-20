@@ -5,11 +5,14 @@ import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.compone
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { NotesApi } from '../../../api/notes.api';
 import { NotesService } from '../notes.service';
+import { Share } from '@capacitor/share';
+import { Clipboard } from '@capacitor/clipboard';
+import { IonicModule } from '@ionic/angular';
 
 @Component({
   selector: 'app-notes-save',
   standalone: true,
-  imports: [CommonModule, MindfulPopupComponent, MindfulNavigatorComponent],
+  imports: [CommonModule, MindfulPopupComponent, MindfulNavigatorComponent, IonicModule],
   templateUrl: './notes-save.component.html',
   styleUrls: ['./notes-save.component.scss']
 })
@@ -19,6 +22,8 @@ export class NotesSaveComponent implements OnChanges {
   @Input() content: string = '';
   @Input() showDelete: boolean = true;
   @Input() showShare: boolean = true;
+  // Optional tags associated with the note. Can be a single string or an array of strings.
+  @Input() tags: string | string[] | undefined;
 
   // Actions
   @Output() back = new EventEmitter<void>();
@@ -56,8 +61,65 @@ export class NotesSaveComponent implements OnChanges {
     this.showMindfulPopup = true;
   }
 
-  onShare() {
+  async onShare() {
+    // Emit event for parent listeners
     this.share.emit();
+
+    // Build a clean, plain-text share message in a friendly format:
+    // Title
+    // Tag: tag1, tag2
+    //
+    // Note text
+    const title = (this.title || '').trim();
+    const content = (this.content || '').trim();
+    let tagsText = '';
+    if (this.tags) {
+      if (Array.isArray(this.tags)) tagsText = this.tags.filter(t => !!t).join(', ');
+      else tagsText = String(this.tags).trim();
+    }
+
+    let parts: string[] = [];
+    if (title) parts.push(title);
+    if (tagsText) parts.push(`Tag: ${tagsText}`);
+    if (content) parts.push(content);
+
+    const shareText = parts.join('\n\n') || ' '; // share API expects non-empty text on some platforms
+
+    // Try Capacitor Share first (native mobile). Fallback to Web Share API, then clipboard.
+    try {
+      await Share.share({
+        title: title || undefined,
+        text: shareText,
+        dialogTitle: title ? `Share "${title}"` : 'Share note'
+      });
+      return;
+    } catch (e) {
+      // If native Share isn't available or failed, fall through to web fallback
+      console.warn('Capacitor Share failed or unavailable', e);
+    }
+
+    // Web Share API fallback
+    try {
+      if ((navigator as any).share) {
+        await (navigator as any).share({
+          title: title || undefined,
+          text: shareText
+        });
+        return;
+      }
+    } catch (e) {
+      console.warn('Navigator.share failed', e);
+    }
+
+    // Last-resort: copy to clipboard and notify user that text was copied.
+    try {
+      await Clipboard.write({ string: shareText });
+      // Use a simple alert as we don't want to add new UI dependencies here.
+      alert('Note text copied to clipboard. You can paste it into any app.');
+    } catch (e) {
+      console.error('Failed to copy note to clipboard for sharing', e);
+      alert('Unable to open share options on this device.');
+    }
   }
 
   private renderContentAsHtml(raw: string): string {

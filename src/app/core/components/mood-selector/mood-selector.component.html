@@ -9,6 +9,10 @@
   <div class="mood-right">
     <div class="mood-emoji" role="button" tabindex="0" (click)="openPopup()" (keydown.enter)="openPopup()"
       aria-label="Open mood picker" style="position:relative;">
+        <!-- blocked-tooltip: appears when the user reached daily limit -->
+        <div *ngIf="blockedTooltipVisible" class="blocked-tooltip" (click)="$event.stopPropagation()">
+          You can only input your mood twice a day
+        </div>
         <ng-container *ngIf="displayAssetSrc; else unicodeEmoji">
           <img class="active-asset" [src]="displayAssetSrc" alt="active mood" />
         </ng-container>

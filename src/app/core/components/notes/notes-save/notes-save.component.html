@@ -1,15 +1,16 @@
+<ion-content>
+<mindful-navigator 
+  [heading]="title" 
+  [rightActions]="[
+    { type: 'icon', src: '/assets/icons/delete.svg', alt: 'Delete' },
+    { type: 'icon', src: '/assets/icons/share.svg', alt: 'Share' }
+  ]"
+  (back)="onBack()"
+  (rightActionClick)="onNavigatorAction($event)">
+</mindful-navigator>
 <div class="note-view">
-  <mindful-navigator 
-    [heading]="title" 
-    [rightActions]="[
-      { type: 'icon', src: '/assets/icons/delete.svg', alt: 'Delete' },
-      { type: 'icon', src: '/assets/icons/share.svg', alt: 'Share' }
-    ]"
-    (back)="onBack()"
-    (rightActionClick)="onNavigatorAction($event)">
-  </mindful-navigator>
   <!--note content-->
-  <div class="note-content"> {{content}} </div>
+  <div class="note-content">text{{content}} </div>
 
   <!-- Use the shared MindfulPopup component for confirmation -->
   <app-mindful-popup [isVisible]="showMindfulPopup" [config]="{
@@ -22,3 +23,4 @@
     }" (primaryAction)="confirmDelete()" (secondaryAction)="confirmCancel()"
     (backdropClick)="confirmCancel()"></app-mindful-popup>
 </div>
+</ion-content>
