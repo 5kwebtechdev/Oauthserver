@@ -108,8 +108,8 @@
 
 
       <div *ngIf="emotionError" class="field-error">{{ emotionError }}</div>
-      <div class="post-button-container">
-        <mindful-button type="magenta" size="full" text="Post" [disabled]="!isPostEnabled" (click)="handleSubmit()"></mindful-button>
+      <div class="post-button-container" (click)="onPostAttempt($event)">
+        <mindful-button type="magenta" size="full" text="Post" [disabled]="!isPostEnabled"></mindful-button>
       </div>
     </div>
   </div>
