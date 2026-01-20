@@ -40,7 +40,7 @@
 
         <!--pin moment-->
         <div class="section">
-          <h2>Pin a Moment</h2>
+          <h2>Pin a Momenttest5</h2>
 
           <!-- Image Upload Section (max 3 slots) -->
           <div class="image-upload-section d-flex align-items-center gap-2">
@@ -94,13 +94,13 @@
 
           <!-- Pin Moment Button (only show when no images uploaded) -->
           <ng-template #emptyPinSection>
-            <div class="pin-moment" role="button" tabindex="0" aria-label="Choose item to pin"
-              (click)="triggerNativeFilePicker()" (keydown.enter)="triggerNativeFilePicker()">
+            <label class="pin-moment" for="journalFileInput" role="button" tabindex="0" aria-label="Choose item to pin"
+              (keydown.enter)="triggerNativeFilePicker()">
               <div class="pin-inner">
                 <img class="pin-icon" src="assets/icons/attachment-small.svg" alt="Attach" aria-hidden="true" width="18" height="18" />
                 <span class="pin-text">Choose item here</span>
               </div>
-            </div>
+            </label>
           </ng-template>
         </div>
       </div>
@@ -108,6 +108,7 @@
 
 
       <div *ngIf="emotionError" class="field-error">{{ emotionError }}</div>
+      
       <div class="post-button-container" (click)="onPostAttempt($event)">
         <mindful-button type="magenta" size="full" text="Post" [disabled]="!isPostEnabled"></mindful-button>
       </div>
@@ -115,5 +116,5 @@
   </div>
 
   <!-- Hidden file input - triggers native device permission dialog automatically -->
-  <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" hidden />
+  <input #fileInput id="journalFileInput" type="file" accept="image/*" (change)="onFileSelected($event)" style="display:none" />
 </ion-content>

@@ -436,7 +436,7 @@ export class JournalsComponent {
 
   onEntryClick(entry: JournalEntry): void {
     // Handle entry click
-    console.log('Clicked on entry:', entry.title);
+    // Navigation or analytics hook for entry click
   }
 
   formatDate(date: Date): string {

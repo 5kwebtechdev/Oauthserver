@@ -169,7 +169,6 @@ export class JournalInputComponent implements OnInit {
       const journalUrl = `${environment.apiUrl}/journal/add`;
       this.http.post(journalUrl, journalPayload, this.authHeaders(true)).subscribe({
         next: (res: any) => {
-          console.log('Journal added:', res);
           this.save.emit(this.text);
           this.resetForm();
 
@@ -290,14 +289,34 @@ export class JournalInputComponent implements OnInit {
 
   async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    if (input && input.files && input.files.length) {
-      const f = input.files[0];
-
-      // Validate file type (images only)
-      if (!f.type.startsWith('image/')) {
-        alert('Please select an image file (PNG, JPG, etc.)');
-        input.value = '';
+    
+    try {
+      if (!input) {
+        console.warn('onFileSelected: event.target is not an input element');
         return;
+      }
+      if (input && input.files && input.files.length) {
+        const f = input.files[0];
+        
+        
+
+      // Validate file type (images only). Some mobile WebViews may provide an empty `type`.
+      const fileType = f.type || '';
+      if (fileType) {
+        if (!fileType.startsWith('image/')) {
+          alert('Please select an image file (PNG, JPG, etc.)');
+          input.value = '';
+          return;
+        }
+      } else {
+        // Fallback: check filename extension when `type` is empty
+        const name = (f.name || '').toLowerCase();
+        if (!name.match(/\.(jpg|jpeg|png|gif|webp|heic)$/)) {
+          console.warn('Selected file has no type and unknown extension:', f.name);
+          alert('Please select an image file (PNG, JPG, etc.)');
+          input.value = '';
+          return;
+        }
       }
 
       const maxBytes = 5 * 1024 * 1024; // 5 MB
@@ -309,42 +328,48 @@ export class JournalInputComponent implements OnInit {
       }
 
       // Generate preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const previewUrl = e.target?.result as string;
-        const idx = this.currentUploadIndex >= 0 ? this.currentUploadIndex : this.uploadedImages.length;
-        
-        if (idx < JournalInputComponent.MAX_IMAGES) {
-          if (idx < this.uploadedImages.length) {
-            // Replace existing
-            this.uploadedImages[idx] = {
-              file: f,
-              previewUrl,
-              uploadedUrl: null,
-              uploading: false,
-              progress: 0
-            };
-          } else {
-            // Add new
-            this.uploadedImages.push({
-              file: f,
-              previewUrl,
-              uploadedUrl: null,
-              uploading: false,
-              progress: 0
-            });
+        try {
+          // Use arrayBuffer + blob URL for preview — more reliable across mobile WebViews
+          const buffer = await f.arrayBuffer();
+          const blob = new Blob([buffer], { type: f.type || 'image/jpeg' });
+          const previewUrl = URL.createObjectURL(blob);
+          const idx = this.currentUploadIndex >= 0 ? this.currentUploadIndex : this.uploadedImages.length;
+
+          if (idx < JournalInputComponent.MAX_IMAGES) {
+            if (idx < this.uploadedImages.length) {
+              this.uploadedImages[idx] = {
+                file: f,
+                previewUrl,
+                uploadedUrl: null,
+                uploading: false,
+                progress: 0
+              };
+            } else {
+              this.uploadedImages.push({
+                file: f,
+                previewUrl,
+                uploadedUrl: null,
+                uploading: false,
+                progress: 0
+              });
+            }
+
+              this.uploadImageToS3(idx);
           }
-          
-          console.log(`File selected for slot ${idx}:`, f.name);
-          this.uploadImageToS3(idx);
+        } catch (err) {
+          console.error('arrayBuffer preview failed:', err);
         }
-      };
-      reader.readAsDataURL(f);
     }
-    
-    input.value = '';
-    this.currentUploadIndex = -1;
+    } catch (err) {
+      console.error('onFileSelected failed:', err);
+    } finally {
+      // reset input so same file can be selected again later
+      try { if (input) input.value = ''; } catch (_) {}
+      this.currentUploadIndex = -1;
+    }
   }
+
+  
 
   private uploadImageToS3(index: number): void {
     if (index < 0 || index >= this.uploadedImages.length) return;
@@ -381,7 +406,6 @@ export class JournalInputComponent implements OnInit {
         imgData.uploadedUrl = uploadedUrl;
         imgData.progress = 100;
         imgData.uploading = false;
-        console.log(`Image ${index} uploaded:`, uploadedUrl);
       } catch (error) {
         console.error(`Upload failed for slot ${index}:`, error);
         imgData.uploading = false;
@@ -391,6 +415,7 @@ export class JournalInputComponent implements OnInit {
         
         // Remove failed image
         this.removeImage(index);
+        
       }
     })();
   }
