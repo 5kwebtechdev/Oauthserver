@@ -32,45 +32,11 @@
           style="display:block; width:100%" (click)="openJournalInput()" aria-label="Post now"></mindful-button>
       </div>
     </div>
-    <!-- All post note cards -->
+    <!-- Use reusable post card component for each entry -->
     <div class="entries" *ngIf="filteredEntries && filteredEntries.length">
-      <div *ngFor="let entry of filteredEntries; trackBy: trackById" class="post-card">
-        <div class="post-header">
-          <div class="post-date">{{ formatHeaderDate(entry.date) }}</div>
-          <div class="post-time">{{ formatTime(entry.date) }}</div>
-        </div>
-
-        <div class="post-body">
-          <div class="emoji">
-            <ng-container *ngIf="getEmotion(entry) as em; else emojiFallback">
-              <img class="emotion-thumb" [src]="em.image" [alt]="em.label" />
-            </ng-container>
-            <ng-template #emojiFallback>
-              {{ entry.emoji }}
-            </ng-template>
-          </div>
-          <div class="post-content">
-            <div class="post-mood">{{ entry.mood || 'Mood' }}</div>
-
-            <div class="post-tags">
-              <ng-container *ngFor="let tag of getFilteredTags(entry); let i = index">
-                <span class="tag">{{ tag }}</span>
-              </ng-container>
-            </div>
-
-            <div class="post-text">
-              {{ entry.text }}
-            </div>
-
-            <div class="post-images d-flex gap-2" *ngIf="entry.images && entry.images.length">
-              <ng-container *ngFor="let img of entry.images; let i = index">
-                <img class="post-image-thumb" [src]="img" [alt]="'attachment ' + (i + 1)" (click)="openImageViewer(img)" role="button" tabindex="0" />
-              </ng-container>
-            </div>
-            
-          </div>
-        </div>
-      </div>
+      <ng-container *ngFor="let entry of filteredEntries; trackBy: trackById">
+        <journal-post-card [entry]="entry"></journal-post-card>
+      </ng-container>
     </div>
   </div>
 
