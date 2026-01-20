@@ -246,14 +246,16 @@
 
 .note-area textarea {
   width: 100%;
-    height: 100px; /* fixed height */
-    min-height: 100px;
-    resize: none; /* disable native resize */
-    border: none;
-    font-family: Nunito;
-    font-size: 15px;
-    color: #282527;
-    line-height: 1.4;
+  min-height: 30px;
+  max-height: 300px;
+  resize: none;
+  overflow-y: hidden;
+  border: none;
+  font-family: Nunito;
+  font-size: 15px;
+  color: #282527;
+  line-height: 1.4;
+  transition: border-color 180ms ease-in-out;
 }
 
 .note-area textarea::placeholder {

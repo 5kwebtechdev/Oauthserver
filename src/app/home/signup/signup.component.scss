@@ -1436,6 +1436,67 @@ ion-content.bg-white {
         margin-top: 0.3rem;
         color: var(--error_color);
       }
+
+      .referral-validation {
+        margin-top: 0.5rem;
+
+        .validation-status {
+         
+
+          .status-text {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+
+            i {
+              font-size: 1rem;
+            }
+          }
+
+          &.pending {
+           
+
+            i {
+              color: #f57c00;
+              animation: spin 1s linear infinite;
+            }
+          }
+
+          &.valid {
+
+            .success {
+              color: #2e7d32;
+            }
+
+            i {
+              color: #2e7d32;
+            }
+          }
+
+          &.invalid {
+        
+            .error {
+              color: #EE6621;
+              margin: 0;
+            }
+
+            i {
+              color: #EE6621;
+              margin: 0;
+            }
+          }
+        }
+      }
     }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }

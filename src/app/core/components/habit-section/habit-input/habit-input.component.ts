@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild, Input } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, Input, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
@@ -200,8 +200,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       imageAlt: 'Delete activity',
       heading: headingHtml,
       subtitle: '',
-      primaryCTA: { text: 'Delete', buttonStyle: 'bronze' },
-      secondaryCTA: { text: 'Cancel', buttonStyle: 'bronze-transparent', buttonMedium: true },
+      primaryCTA: { text: 'Delete', buttonStyle: 'bronze', buttonSmall: true },
+      secondaryCTA: { text: 'Cancel', buttonStyle: 'bronze-transparent', buttonSmall: true },
       backdrop: true,
       ctaDirection: 'row'
     } as MindfulPopupConfig;
@@ -216,7 +216,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     private habitApi: HabitApi,
     private navigationContext: NavigationContextService,
     private authService: AuthService,
-    private profileSelector: ProfileSelectorService
+    private profileSelector: ProfileSelectorService,
+    private cd: ChangeDetectorRef
   ) { }
 
   get navigatorActions(): Array<{ type: 'edit' | 'icon', src?: string, alt?: string }> {
@@ -503,6 +504,9 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     };
 
     Object.assign(this.errors, validations);
+    // Debug: log validation flags and force change detection so template updates immediately
+    try { console.log('[Validation] attemptedSubmit=', this.attemptedSubmit, 'validations=', validations, 'errors=', this.errors); } catch (e) { }
+    try { this.cd.detectChanges(); } catch (e) { }
     if (Object.values(validations).some(Boolean)) return;
 
     const formattedStartTime = this.to24Hour(this.startTime || '');
@@ -1131,7 +1135,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     } catch (e) { console.warn('Failed to parse routine selection', e); }
   }
 
-  clearError(field: keyof typeof this.errors) { this.clearError('notes'); this.errors[field] = false; }
+  clearError(field: keyof typeof this.errors) { this.errors[field] = false; }
   clearTitleError() { this.clearError('title'); }
   clearTagError() { this.clearError('tag'); }
   clearRoutineError() { this.clearError('routine'); }

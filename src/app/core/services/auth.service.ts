@@ -666,4 +666,38 @@ export class AuthService {
         })
       );
   }
+
+  /**
+   * Check if a referral code is valid.
+   * Endpoint: GET {{host}}/v1/auth/check-referral?referralCode=<code>
+   */
+  checkReferralCode(referralCode: string) {
+    const url = `${this.apiUrl}/auth/check-referral`;
+    const headers = new HttpHeaders({
+      'X-Skip-Auth-Handler': 'true'
+    });
+
+    return this.http.get<any>(url, { 
+      params: { referralCode },
+      headers
+    }).pipe(
+      tap({
+        next: (response) => {
+          console.log('[AuthService] Referral code validated successfully:', {
+            referralCode: referralCode,
+            timestamp: new Date().toISOString(),
+            response: response
+          });
+        },
+        error: (error) => {
+          console.error('[AuthService] Referral code validation failed:', {
+            referralCode: referralCode,
+            error: error.message,
+            status: error.status,
+            timestamp: new Date().toISOString()
+          });
+        }
+      })
+    );
+  }
 }
