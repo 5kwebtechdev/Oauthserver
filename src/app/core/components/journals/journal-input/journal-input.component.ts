@@ -207,6 +207,26 @@ export class JournalInputComponent implements OnInit {
     void this.submit();
   }
 
+  /** Handle user attempting to post (even when button disabled) */
+  onPostAttempt(event: MouseEvent): void {
+    // If post is enabled, proceed normally
+    if (this.isPostEnabled) {
+      // Prevent the container click from firing twice if inner component emits click
+      event.stopPropagation();
+      this.handleSubmit();
+      return;
+    }
+
+    // Show error prompting selection of emotion
+    this.emotionError = 'How are you feeling? Pick an emotion to continue.';
+
+    // Optionally, bring the emotions section into view for the user
+    try {
+      const el = document.querySelector('.timeline .section');
+      if (el) (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (e) { /* ignore */ }
+  }
+
   // Ensure text stays within max length (defensive: trims pasted content)
   onNotesInput(): void {
     if (this.text && this.text.length > this.noteMaxLength) {
