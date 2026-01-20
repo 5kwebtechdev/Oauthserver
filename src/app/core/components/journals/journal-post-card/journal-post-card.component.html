@@ -4,7 +4,7 @@
     <div class="post-time">{{ formatTime(entry.date) }}</div>
   </div>
 
-  <div class="post-body">
+  <div class="post-body" [class.no-tags]="getFilteredTags(entry).length === 0">
     <div class="emoji">
       <ng-container *ngIf="getEmotion(entry) as em; else emojiFallback">
         <img class="emotion-thumb" [src]="em.image" [alt]="em.label" />
