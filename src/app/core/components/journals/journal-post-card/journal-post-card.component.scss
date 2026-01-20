@@ -32,6 +32,11 @@
   align-items: flex-start;
 }
 
+/* When there are no tags, center the emoji vertically with the content */
+.post-body.no-tags {
+  align-items: center;
+}
+
 .emoji {
   width: 4rem;
   height: 4rem;

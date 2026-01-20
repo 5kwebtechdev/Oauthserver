@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
@@ -124,7 +124,8 @@ export class JournalInputComponent implements OnInit {
     private router: Router,
     private http: HttpClient,
     private authApi: AuthApi,
-    private s3UploadService: S3UploadService
+    private s3UploadService: S3UploadService,
+    private location: Location
   ) { }
 
   ngOnInit(): void {
@@ -265,8 +266,14 @@ export class JournalInputComponent implements OnInit {
    * Navigate back to the journals listing (user dashboard home).
    */
   goBack(): void {
-    // The journals list is displayed in the authenticated user dashboard at /authed/user-dashboard
-    this.router.navigate(['/authed/user-dashboard']);
+    // Prefer navigating back in history so the user returns to the originating entry page.
+    try {
+      // Use Angular Location.back() which maps to history.back()
+      this.location.back();
+    } catch (e) {
+      // Fallback to routing to user dashboard if history isn't available
+      this.router.navigate(['/authed/user-dashboard']).catch(() => { /* ignore navigation errors */ });
+    }
   }
 
   /**

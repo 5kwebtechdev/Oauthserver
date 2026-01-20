@@ -37,7 +37,17 @@ export class JournalPostCardComponent implements OnInit {
     const tags = Array.isArray(entry?.tags) ? entry.tags.map(t => String(t).trim()).filter(Boolean) : [];
     const mood = (entry?.mood || '').trim().toLowerCase();
     if (!mood) return tags;
-    return tags.filter(t => String(t).toLowerCase() !== mood);
+    return tags.filter(t => {
+      const lowered = String(t).toLowerCase();
+      // remove plain tag that exactly equals mood
+      if (lowered === mood) return false;
+      // remove tags that are prefixed with 'emotions:' or 'emotion:'
+      if (lowered.startsWith('emotions:') || lowered.startsWith('emotion:')) return false;
+      // remove tags like 'Emotions: Happy' where value equals mood
+      const parts = String(t).split(':').map(p => p.trim());
+      if (parts.length >= 2 && parts[1].toLowerCase() === mood) return false;
+      return true;
+    });
   }
 
   getEmotion(entry: JournalEntry): { label: string; image: string } | null {
