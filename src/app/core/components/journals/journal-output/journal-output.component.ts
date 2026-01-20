@@ -156,13 +156,20 @@ export class JournalOutputComponent implements OnInit {
           const tags: string[] = [];
           // hobbies may be a comma-separated string in the API
           if (item.hobbies && typeof item.hobbies === 'string') {
-            item.hobbies.split(',').forEach((t: string) => { const s = t.trim(); if (s) tags.push(s); });
+            item.hobbies.split(',').forEach((t: string) => {
+              const s = t.trim();
+              if (s) {
+                const titled = `Hobbies: ${s}`;
+                if (tags.indexOf(titled) === -1) tags.push(titled);
+              }
+            });
           }
           // also include other short fields as tags if present
           ['sleep', 'health', 'food', 'social', 'school', 'emotions'].forEach((k: string) => {
             if (item[k]) {
               const val = String(item[k]).trim();
-              if (val && tags.indexOf(val) === -1) tags.push(val);
+              const titled = `${k.charAt(0).toUpperCase() + k.slice(1)}: ${val}`;
+              if (val && tags.indexOf(titled) === -1) tags.push(titled);
             }
           });
 

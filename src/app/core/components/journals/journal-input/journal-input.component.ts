@@ -35,7 +35,6 @@ export class JournalInputComponent implements OnInit {
   @Output() cancel = new EventEmitter<void>();
 
   text: string = '';
-  showAttachPopup = false;
   public selected: { [section: string]: number | null } = {};
 
   // Multi-image upload (max 3)
@@ -270,28 +269,16 @@ export class JournalInputComponent implements OnInit {
     this.router.navigate(['/authed/user-dashboard']);
   }
 
-  // Open the attachment chooser popup (simulates native permission dialog)
-  openAttachPopup(): void {
-    this.showAttachPopup = true;
-  }
-
-  // Handle the user allowing access - stub for now to integrate with file picker
-  onAllowAttach(): void {
-    this.showAttachPopup = false;
-    // trigger the hidden file input to open system file picker
-    setTimeout(() => {
-      try {
-        this.fileInput?.nativeElement?.click();
-      } catch (e) {
-        console.warn('file input not available', e);
-      }
-    }, 50);
-  }
-
-  // Handle the user denying access
-  onDenyAttach(): void {
-    this.showAttachPopup = false;
-    console.log('User denied attachment access');
+  /**
+   * Trigger the native file picker directly.
+   * The device OS will automatically prompt for permissions if needed.
+   */
+  triggerNativeFilePicker(): void {
+    try {
+      this.fileInput?.nativeElement?.click();
+    } catch (e) {
+      console.warn('Failed to open file picker:', e);
+    }
   }
 
   async onFileSelected(event: Event): Promise<void> {

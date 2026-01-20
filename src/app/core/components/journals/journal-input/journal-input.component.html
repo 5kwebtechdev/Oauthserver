@@ -95,7 +95,7 @@
           <!-- Pin Moment Button (only show when no images uploaded) -->
           <ng-template #emptyPinSection>
             <div class="pin-moment" role="button" tabindex="0" aria-label="Choose item to pin"
-              (click)="openAttachPopup()" (keydown.enter)="openAttachPopup()">
+              (click)="triggerNativeFilePicker()" (keydown.enter)="triggerNativeFilePicker()">
               <div class="pin-inner">
                 <img class="pin-icon" src="assets/icons/attachment-small.svg" alt="Attach" aria-hidden="true" width="18" height="18" />
                 <span class="pin-text">Choose item here</span>
@@ -114,17 +114,6 @@
     </div>
   </div>
 
-  <div class="attach-popup-backdrop" *ngIf="showAttachPopup" role="dialog" aria-modal="true"
-    aria-label="Attachment permission dialog">
-    <div class="attach-popup" role="document">
-      <div class="attach-icon">📁</div>
-      <div class="attach-title">Allow Mindful Buddy to access photos, media, and files on your device?</div>
-      <div class="attach-actions">
-        <button class="attach-allow" (click)="onAllowAttach()">Allow</button>
-        <button class="attach-deny" (click)="onDenyAttach()">Deny</button>
-      </div>
-    </div>
-  </div>
-  <!-- hidden file input triggered after user allows attach -->
+  <!-- Hidden file input - triggers native device permission dialog automatically -->
   <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" hidden />
 </ion-content>

@@ -78,6 +78,23 @@
   line-height: 140%;
 }
 
+.tag-title {
+  color: #282527;
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 140%;
+  opacity: 0.5;
+  margin-right: 3px;
+}
+
+.tag-text {
+  color: #282527;
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .tag::after {
   content: '';
   display: inline-block;
@@ -85,7 +102,7 @@
   height: 8px;
   background: #7fb6b4;
   border-radius: 50%;
-  margin-left: 10px;
+  margin-left: 3px;
 }
 
 .post-tags .tag:last-child::after {

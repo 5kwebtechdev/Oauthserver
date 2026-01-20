@@ -18,7 +18,12 @@
 
       <div class="post-tags">
         <ng-container *ngFor="let tag of getFilteredTags(entry); let i = index">
-          <span class="tag">{{ tag }}</span>
+          <ng-container *ngIf="tag && tag.indexOf(': ') > -1; else plainTag">
+            <span class="tag"><span class="tag-title">{{ tag.split(': ')[0] }}:</span><span class="tag-text">{{ tag.split(': ')[1] }}</span></span>
+          </ng-container>
+          <ng-template #plainTag>
+            <span class="tag">{{ tag }}</span>
+          </ng-template>
         </ng-container>
       </div>
 

@@ -103,10 +103,14 @@
     <div class="calendar-mood-satus-popup" [class.show]="showMoodPopup" *ngIf="selectedMoodTransition">
         <div class="daily-mood-status" [class.visible]="showMoodPopup">
             <div class="emoji-status">
-                <!-- Display both from and to mood emojis -->
-                <img [src]="getMoodEmoji(selectedMoodTransition.fromMood)" alt="from mood" class="mood-emoji-large"
+                <!-- Display 'from' mood emoji if available -->
+                <img *ngIf="selectedMoodTransition?.fromMood"
+                    [src]="getMoodEmoji(selectedMoodTransition.fromMood)" alt="from mood" class="mood-emoji-large"
                     style="width:40px;height:auto;" />
-                <img [src]="getMoodEmoji(selectedMoodTransition.toMood)" alt="to mood" class="mood-emoji-large"
+
+                <!-- Display 'to' mood emoji only when it's present and different from 'from' -->
+                <img *ngIf="selectedMoodTransition?.toMood && selectedMoodTransition.toMood !== selectedMoodTransition.fromMood"
+                    [src]="getMoodEmoji(selectedMoodTransition.toMood)" alt="to mood" class="mood-emoji-large"
                     style="width:40px;height:auto;" />
             </div>
             <div class="status-header">
