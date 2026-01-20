@@ -114,6 +114,26 @@
   &:active {
     transform: scale(0.95);
   }
+
+  .blocked-tooltip {
+    display: inline-flex;
+    padding: 4px 6px;
+    border-radius: 4px;
+    background: #FDFDFD;
+    box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.1);
+    color: #282527;
+    text-align: center;
+    font-family: Nunito, sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    width: 137px;
+    position: absolute;
+    right: 0px;
+    top: 64px;
+    z-index: 70;
+    pointer-events: auto;
+
+  }
 }
 
 /* Mood Popup */

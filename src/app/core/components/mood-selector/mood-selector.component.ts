@@ -28,6 +28,9 @@ export class MoodSelectorComponent {
   // popup state
   showPopup = false;
   popupSelection: string | null = null;
+  // blocked-tooltip state
+  blockedTooltipVisible = false;
+  private blockedTooltipTimer: any = null;
 
   // Mood to asset mapping (backend mood -> asset path)
   private readonly moodAssetMap: Record<string, string> = {
@@ -105,6 +108,8 @@ export class MoodSelectorComponent {
 
     // Limit to 2 sets/day
     if (this.setsToday >= 2) {
+      // Show a small inline tooltip explaining the limit
+      this.showBlockedTooltip();
       return;
     }
 
@@ -113,6 +118,21 @@ export class MoodSelectorComponent {
   }
   closePopup() { this.showPopup = false }
   choosePopup(src: string) { this.popupSelection = src }
+
+  showBlockedTooltip() {
+    try {
+      if (this.blockedTooltipTimer) {
+        clearTimeout(this.blockedTooltipTimer);
+        this.blockedTooltipTimer = null;
+      }
+    } catch {}
+    this.blockedTooltipVisible = true;
+    // Hide after 2.5s
+    this.blockedTooltipTimer = setTimeout(() => {
+      this.blockedTooltipVisible = false;
+      this.blockedTooltipTimer = null;
+    }, 4000);
+  }
   constructor(
     private http: HttpClient,
     private authApi: AuthApi,
