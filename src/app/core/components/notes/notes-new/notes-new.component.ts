@@ -2,7 +2,7 @@ import { Component, ViewChild, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { NotesService, NoteModel } from '../notes.service';
 import { MindfulTagsComponent } from '../../mindful-selectors/mindful-tags/mindful-tags.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
@@ -31,24 +31,40 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
   @ViewChild(MindfulTagsComponent) tagsComponent?: MindfulTagsComponent;
   private _draftTags: string[] = [];
   public isDraft: boolean = false;
+  private currentDraftId: number | null = null;
   // Edit mode state
   public editing: boolean = false;
   private editId: any = null;
   // Snapshot of the original note when editing; used to avoid marking as draft if nothing changed
   private originalSnapshot: { title: string; text: string; tags: string[] } | null = null;
 
-  constructor(private notesService: NotesService, private router: Router) { }
+  constructor(private notesService: NotesService, private router: Router, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
     // load draft if present and populate title/text; tag keys mapped after view init
     try {
-      const raw = sessionStorage.getItem('notes-draft');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        this.title = parsed.title || '';
-        this.text = parsed.text || '';
-        this._draftTags = Array.isArray(parsed.tags) ? parsed.tags : [];
-        this.isDraft = Boolean((this.title && this.title.length) || (this.text && this.text.length) || (this._draftTags && this._draftTags.length));
+      // If route includes ?fresh=1 we intentionally ignore any stored draft
+      const fresh = this.route.snapshot.queryParamMap.get('fresh');
+      if (fresh !== '1') {
+        // If a specific draft id was selected, load that draft from array
+        const draftIdRaw = sessionStorage.getItem('notes-draft-id');
+        if (draftIdRaw) {
+          const id = Number(draftIdRaw);
+          const arrRaw = sessionStorage.getItem('notes-drafts');
+          if (arrRaw) {
+            const arr = JSON.parse(arrRaw) as any[];
+            const found = Array.isArray(arr) ? arr.find(a => Number(a.id) === id) : null;
+            if (found) {
+              this.currentDraftId = id;
+              this.title = found.title || '';
+              this.text = found.text || '';
+              this._draftTags = Array.isArray(found.tags) ? found.tags : [];
+              this.isDraft = true;
+            }
+          }
+        } else {
+          // No specific draft chosen; do not auto-load a single global draft anymore
+        }
       }
     } catch (e) {
       // ignore
@@ -93,6 +109,31 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
         }
       }
     } catch (e) { /* ignore mapping errors */ }
+  }
+
+  private loadDraftsArray(): Array<any> {
+    try {
+      const raw = sessionStorage.getItem('notes-drafts');
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+  }
+
+  private saveDraftsArray(arr: Array<any>) {
+    try { sessionStorage.setItem('notes-drafts', JSON.stringify(arr)); } catch (e) { /* ignore */ }
+  }
+
+  private removeDraftById(id: number): boolean {
+    try {
+      const arr = this.loadDraftsArray();
+      const filtered = arr.filter(a => Number(a.id) !== Number(id));
+      if (filtered.length === arr.length) return false;
+      this.saveDraftsArray(filtered);
+      // clear selection marker
+      try { sessionStorage.removeItem('notes-draft-id'); } catch (e) { /* ignore */ }
+      return true;
+    } catch (e) { return false; }
   }
 
   get canSave(): boolean {
@@ -144,14 +185,13 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
     const input = event.target as HTMLInputElement;
     let value = input.value || '';
     if (value.length > this.MAX_TITLE) {
-      // Enforce hard maximum and notify user briefly
       this.title = value.slice(0, this.MAX_TITLE);
       input.value = this.title;
       this.showLimitTooltip = true;
-      setTimeout(() => this.showLimitTooltip = false, 2000);
     } else {
       this.title = value;
     }
+
     // Auto-save draft to sessionStorage whenever title changes
     this.saveDraft();
   }
@@ -163,8 +203,13 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
       const hasText = Boolean((this.text || '').trim().length);
       const hasTags = Array.isArray(this.selectedTagKeys) && this.selectedTagKeys.length > 0;
       if (!hasTitle && !hasText && !hasTags) {
-        // nothing meaningful to persist — remove any existing draft
-        try { sessionStorage.removeItem('notes-draft'); } catch (e) { /* ignore */ }
+        // nothing meaningful to persist — remove any existing draft entry
+        if (this.currentDraftId) {
+          this.removeDraftById(this.currentDraftId);
+          this.currentDraftId = null;
+        } else {
+          try { sessionStorage.removeItem('notes-draft'); } catch (e) { /* ignore */ }
+        }
         this.isDraft = false;
         return;
       }
@@ -180,16 +225,42 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
         const origTags = Array.isArray(this.originalSnapshot.tags) ? this.originalSnapshot.tags : [];
         const sameTags = origTags.length === tags.length && origTags.every((t, i) => String(t) === String(tags[i]));
         if (sameTitle && sameText && sameTags) {
-          // No meaningful change — remove any existing draft and mark as not draft
-          try { sessionStorage.removeItem('notes-draft'); } catch (e) { /* ignore */ }
+          // No meaningful change — remove any existing draft entry and mark as not draft
+          if (this.currentDraftId) {
+            try { this.removeDraftById(this.currentDraftId); } catch (e) { /* ignore */ }
+            this.currentDraftId = null;
+          } else {
+            try { sessionStorage.removeItem('notes-draft'); } catch (e) { /* ignore */ }
+          }
           this.isDraft = false;
           return;
         }
       }
 
-      const draft = { title: this.title || '', text: this.text || '', tags };
-      sessionStorage.setItem('notes-draft', JSON.stringify(draft));
-      this.isDraft = true;
+      // Persist into the drafts array (create or update entry)
+      try {
+        const arr = this.loadDraftsArray();
+        if (this.currentDraftId) {
+          const idx = arr.findIndex(a => Number(a.id) === Number(this.currentDraftId));
+          if (idx > -1) {
+            arr[idx] = { id: this.currentDraftId, title: this.title || '', text: this.text || '', tags };
+          } else {
+            arr.push({ id: this.currentDraftId, title: this.title || '', text: this.text || '', tags });
+          }
+        } else {
+          const id = Date.now();
+          arr.push({ id, title: this.title || '', text: this.text || '', tags });
+          this.currentDraftId = id;
+          try { sessionStorage.setItem('notes-draft-id', String(id)); } catch (e) { /* ignore */ }
+        }
+        this.saveDraftsArray(arr);
+        this.isDraft = true;
+      } catch (e) {
+        // fallback: keep behavior if storage fails
+        const draft = { title: this.title || '', text: this.text || '', tags };
+        try { sessionStorage.setItem('notes-draft', JSON.stringify(draft)); } catch (er) { /* ignore */ }
+        this.isDraft = true;
+      }
     } catch (e) {
       // ignore sessionStorage errors
     }
@@ -204,7 +275,17 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
   }
 
   goBack() {
-    // save draft before leaving
+    // If we're editing an existing note, do NOT persist a draft when the
+    // user navigates back via the header/back button. Require an explicit
+    // save to update the original note. For non-edit flows, save draft as
+    // before so users don't lose in-progress content.
+    if (this.editing) {
+      // When editing an existing saved note, do not persist a draft here.
+      this.router.navigate(['/authed/notes']);
+      return;
+    }
+
+    // save draft before leaving when not editing
     this.saveDraft();
     this.router.navigate(['/authed/notes']);
   }
@@ -227,8 +308,29 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
       this.notesService.updateOptimistic(this.editId, payload).subscribe({
         next: () => {
           // immediately navigate back so user sees updated note
-          try { sessionStorage.removeItem('notes-draft'); } catch (e) { /* ignore */ }
-          this.isDraft = false;
+          // Remove matching draft entry if present
+            try {
+              let removed = false;
+              if (this.currentDraftId) {
+                removed = this.removeDraftById(this.currentDraftId);
+                this.currentDraftId = null;
+              } else {
+                const arr = this.loadDraftsArray();
+                const idx = arr.findIndex(a => {
+                  const sameTitle = String((a.title || '')).trim() === String(payload.title || '').trim();
+                  const sameText = String((a.text || '')).trim() === String(payload.content || '').trim();
+                  const aTags = Array.isArray(a.tags) ? a.tags : [];
+                  const sameTags = Array.isArray(payload.tags) && aTags.length === payload.tags.length && aTags.every((t: any, i: number) => String(t) === String(payload.tags[i]));
+                  return sameTitle && sameText && sameTags;
+                });
+                if (idx > -1) {
+                  arr.splice(idx, 1);
+                  this.saveDraftsArray(arr);
+                  removed = true;
+                }
+              }
+              if (removed) this.isDraft = false;
+            } catch (e) { /* ignore */ }
           this.editing = false;
           this.editId = null;
           this.loading = false;
@@ -251,15 +353,42 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
         }
       });
       this.loading = false;
-      // clear draft after successful save
-      try { sessionStorage.removeItem('notes-draft'); } catch (e) { /* ignore */ }
-      this.isDraft = false;
+      // Remove matching draft entry if present
+      try {
+        let removed = false;
+        if (this.currentDraftId) {
+          removed = this.removeDraftById(this.currentDraftId);
+          this.currentDraftId = null;
+        } else {
+          const arr = this.loadDraftsArray();
+          const idx = arr.findIndex(a => {
+            const sameTitle = String((a.title || '')).trim() === String(payload.title || '').trim();
+            const sameText = String((a.text || '')).trim() === String(payload.content || '').trim();
+            const aTags = Array.isArray(a.tags) ? a.tags : [];
+            const sameTags = Array.isArray(payload.tags) && aTags.length === payload.tags.length && aTags.every((t: any, i: number) => String(t) === String(payload.tags[i]));
+            return sameTitle && sameText && sameTags;
+          });
+          if (idx > -1) {
+            arr.splice(idx, 1);
+            this.saveDraftsArray(arr);
+            removed = true;
+          }
+        }
+        if (removed) this.isDraft = false;
+      } catch (e) { /* ignore */ }
       this.router.navigate(['/authed/notes']);
     }
   }
 
   deleteDraft() {
-    try { sessionStorage.removeItem('notes-draft'); } catch (e) { /* ignore */ }
+    try {
+      if (this.currentDraftId) {
+        this.removeDraftById(this.currentDraftId);
+        this.currentDraftId = null;
+      } else {
+        try { sessionStorage.removeItem('notes-draft'); } catch (e) { /* ignore */ }
+      }
+    } catch (e) { /* ignore */ }
     this.title = '';
     this.text = '';
     this.selectedTagKeys = [];

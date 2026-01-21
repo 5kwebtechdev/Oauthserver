@@ -52,16 +52,15 @@
       </div>
     </ng-container>
 
-    <!-- Draft Card (if exists) - use same card layout as saved notes; shows 'Draft' in date -->
-    <div class="note-card" *ngIf="draft" (click)="goToNewNote()" role="button" tabindex="0">
-      <p class="note-text">{{ draft.text }}</p>
+    <!-- Draft Cards (if any) - allow multiple drafts stored locally -->
+    <div class="note-card" *ngFor="let d of drafts" (click)="openDraft(d.id)" role="button" tabindex="0">
+      <p class="note-text">{{ d.text }}</p>
       <div class="note-footer" style="position:relative;">
         <div>
-          <h3>{{ draft.title || 'Untitled' }}</h3>
+          <h3>{{ d.title || 'Untitled' }}</h3>
           <span class="date">Draft</span>
         </div>
-        <span class="tag" [ngClass]="primaryTagClassFromTags(draft.tags)">{{ (draft.tags && draft.tags.length) ? draft.tags[0] : 'No Tag' }}</span>
-        <!-- edit icon hidden for draft notes -->
+        <span class="tag" [ngClass]="primaryTagClassFromTags(d.tags)">{{ (d.tags && d.tags.length) ? d.tags[0] : 'No Tag' }}</span>
       </div>
     </div>
 
