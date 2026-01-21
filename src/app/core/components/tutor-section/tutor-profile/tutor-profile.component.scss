@@ -227,7 +227,6 @@ height: 24px;
 
 /* Fixed footer for booking CTA */
 .footer-actions {
-	max-width: 1024px;
 	margin: 0 auto;
 	position: fixed;
 	left: 0;
@@ -240,3 +239,104 @@ height: 24px;
 	display: flex;
 	justify-content: center;
 }
+
+/* Inline contact sheet styles */
+.contact-backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,0.28);
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
+	z-index: 200;
+}
+
+.contact-sheet {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 24px;
+	border-radius: 32px 32px 0px 0px;
+	background: #FFF;
+	box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+	transform: translateY(0);
+	animation: sheetIn 260ms cubic-bezier(.22,1,.36,1) forwards;
+}
+
+.sheet-header {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.title {
+	color: #282527;
+	font-family: 'Fredoka';
+	font-size: clamp(14px, 2.2vw, 16px);
+	font-weight: 500;
+	margin: 0;
+}
+
+.btn-close {
+	background: transparent;
+	border: none;
+	padding: 6px;
+}
+
+.btn-close img { width: 24px; height: 24px; aspect-ratio: 1/1; }
+
+.options { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.option { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 6px 0; position: relative; }
+
+/* Hide native radio appearance but keep it accessible */
+.option input {
+	position: absolute;
+	left: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 18px;
+	height: 18px;
+	margin: 0;
+	padding: 0;
+	opacity: 0;
+	z-index: 2;
+}
+
+/* Custom radio visual: outer ring + inner circle, both using #9BB2D4 */
+.option .radio {
+	width: 18px;
+	height: 18px;
+	flex: 0 0 18px;
+	border-radius: 50%;
+	box-sizing: border-box;
+	border: 2px solid #9BB2D4; /* outer ring */
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+}
+
+.option .radio::after {
+	content: '';
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: #9BB2D4; /* inner circle */
+	transform: scale(0);
+	transition: transform 140ms ease-in-out;
+}
+
+/* When the input is checked, show the inner circle */
+.option input:checked + .radio::after {
+	transform: scale(1);
+}
+
+.option .label-text { color: #282527; font-family: 'Nunito'; font-size: clamp(14px, 2.2vw, 16px); font-weight: 600; margin-left: 8px; }
+
+.action { width: 100%; }
+
+@keyframes sheetIn { from { transform: translateY(24px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }

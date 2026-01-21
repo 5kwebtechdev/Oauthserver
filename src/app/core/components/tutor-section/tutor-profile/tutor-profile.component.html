@@ -79,6 +79,34 @@
     <h2>₹ {{ getHourlyRate() }}</h2>
     <h3>{{ getFeeTypeString() }}</h3>
     </div>
-    <mindful-button type="columbian-blue" text="Contact Tutor" (click)="contactTutor()" style="opacity: 0.5; height: 42px !important; width: 170px;"></mindful-button>
+    <mindful-button type="columbian-blue" size="medium" text="Contact Tutor" [disabled]="isChildUser()" (click)="contactTutor()" style="height: 42px !important; width: 170px;"></mindful-button>
+  </div>
+  
+  <!-- Inline bottom sheet for contact (parent or self only) -->
+  <div class="contact-backdrop" *ngIf="showContactSheet" (click)="closeContactSheet()">
+    <div class="contact-sheet" (click)="$event.stopPropagation()">
+      <div class="sheet-header">
+        <h2 class="title">Get in touch with Tutor</h2>
+        <button class="btn-close" (click)="closeContactSheet()"><img src="assets/icons/cancel-cross.svg" alt="close" /></button>
+      </div>
+
+      <div class="options">
+        <label class="option" [class.selected]="selectedContactMethod === 'call'" (click)="selectContact('call')">
+          <input type="radio" name="contactMethod" [checked]="selectedContactMethod === 'call'" aria-label="Call option" />
+          <span class="radio" aria-hidden="true"></span>
+          <span class="label-text">Call</span>
+        </label>
+
+        <label class="option" [class.selected]="selectedContactMethod === 'email'" (click)="selectContact('email')">
+          <input type="radio" name="contactMethod" [checked]="selectedContactMethod === 'email'" aria-label="Email option" />
+          <span class="radio" aria-hidden="true"></span>
+          <span class="label-text">Email</span>
+        </label>
+      </div>
+
+      <div class="action">
+        <mindful-button type="columbian-blue" size="large" [disabled]="!selectedContactMethod" [text]="selectedContactMethod === 'call' ? 'Call Now' : 'Send Email'" (click)="confirmContact()"></mindful-button>
+      </div>
+    </div>
   </div>
 </ion-content>
