@@ -25,7 +25,7 @@ export class NotesComponent {
   public tags: { key: any; value: string }[] = [];
   public titleCollapsed: boolean = false;
   public notes: NoteModel[] = [];
-  public draft: { title: string; text: string; tags?: string[] } | null = null;
+  public drafts: Array<{ id: number; title: string; text: string; tags?: string[] }> = [];
   // tag action UI
   public activeTagIndex: number | null = null;
   public editIndex: number | null = null;
@@ -35,14 +35,12 @@ export class NotesComponent {
     // restore session cache if present; otherwise fetch from server once
     this.notesService.initFromSession();
     this.notes = this.notesService.getAll();
-    // load draft from sessionStorage if present
+    // load drafts array from sessionStorage if present
     try {
-      const raw = sessionStorage.getItem('notes-draft');
+      const raw = sessionStorage.getItem('notes-drafts');
       if (raw) {
-        const parsed = JSON.parse(raw);
-        // ensure tags is an array if present
-        if (parsed && parsed.tags && !Array.isArray(parsed.tags)) parsed.tags = [];
-        this.draft = parsed;
+        const parsed = JSON.parse(raw) as any[];
+        this.drafts = Array.isArray(parsed) ? parsed.map(d => ({ id: d.id || Date.now(), title: d.title || '', text: d.text || '', tags: Array.isArray(d.tags) ? d.tags : [] })) : [];
       }
     } catch (e) {
       // ignore storage errors
@@ -50,6 +48,18 @@ export class NotesComponent {
     // subscribe to updates so the list refreshes when new notes are added
     this.notesService.notes$.subscribe((list) => {
       this.notes = list;
+    });
+    // refresh drafts when navigation returns to this page
+    this.router.events.subscribe(() => {
+      try {
+        const raw = sessionStorage.getItem('notes-drafts');
+        if (raw) {
+          const parsed = JSON.parse(raw) as any[];
+          this.drafts = Array.isArray(parsed) ? parsed.map(d => ({ id: d.id || Date.now(), title: d.title || '', text: d.text || '', tags: Array.isArray(d.tags) ? d.tags : [] })) : [];
+        } else {
+          this.drafts = [];
+        }
+      } catch (e) { /* ignore */ }
     });
     // only fetch from server if we don't have any cached notes
     if (!this.notes || this.notes.length === 0) {
@@ -82,6 +92,13 @@ export class NotesComponent {
       // fallback: navigate to a dedicated route if modal creation fails
       this.router.navigate(['/authed/notes']);
     }
+  }
+
+  openDraft(draftId: number) {
+    try {
+      sessionStorage.setItem('notes-draft-id', String(draftId));
+    } catch (e) { /* ignore */ }
+    this.router.navigate(['/authed/notes/new']);
   }
 
   // sorting state: 'created' | 'modified' | 'az' | 'za'
@@ -185,9 +202,40 @@ export class NotesComponent {
     };
     this.notesService.add(note);
     this.notes = this.notesService.getAll();
-    // clear draft since note was saved
-    try { sessionStorage.removeItem('notes-draft'); } catch (e) { /* ignore */ }
-    this.draft = null;
+    // Clear stored draft only if it matches the content we just saved.
+    try {
+      let removed = false;
+      // If a specific draft-id was selected, remove that draft
+      const did = sessionStorage.getItem('notes-draft-id');
+      const arrRaw = sessionStorage.getItem('notes-drafts');
+      const arr = arrRaw ? (JSON.parse(arrRaw) as any[]) : [];
+      if (did) {
+        const id = Number(did);
+        const idx = arr.findIndex(a => Number(a.id) === id);
+        if (idx > -1) {
+          arr.splice(idx, 1);
+          this.drafts = arr;
+          try { sessionStorage.removeItem('notes-draft-id'); } catch (e) { /* ignore */ }
+          try { sessionStorage.setItem('notes-drafts', JSON.stringify(arr)); } catch (e) { /* ignore */ }
+          removed = true;
+        }
+      } else if (arr && arr.length) {
+        const idx = arr.findIndex(a => {
+          const sameTitle = String((a.title || '')).trim() === String(title).trim();
+          const sameText = String((a.text || '')).trim() === String(text).trim();
+          const aTags = Array.isArray(a.tags) ? a.tags : [];
+          const sameTags = Array.isArray(note.tags) && aTags.length === note.tags.length && aTags.every((t: any, i: number) => String(t) === String(note.tags[i]));
+          return sameTitle && sameText && sameTags;
+        });
+        if (idx > -1) {
+          arr.splice(idx, 1);
+          this.drafts = arr;
+          try { sessionStorage.setItem('notes-drafts', JSON.stringify(arr)); } catch (e) { /* ignore */ }
+          removed = true;
+        }
+      }
+      // if nothing matched, keep drafts as-is
+    } catch (e) { /* ignore */ }
     // clear current editing state
     this.noteText = '';
     this.noteTitle = '';
@@ -360,8 +408,14 @@ export class NotesComponent {
   }
 
   goToNewNote() {
-    this.router.navigate(['/authed/notes/new']);
+    // When user explicitly clicks the "Add New" action, open a fresh
+    // new-note view. We pass a query param so the new-note component
+    // will ignore any stored draft but we do NOT delete the draft from
+    // sessionStorage so it remains available if the user returns later.
+    try { sessionStorage.removeItem('notes-edit'); } catch (e) { /* ignore */ }
+    this.router.navigate(['/authed/notes/new'], { queryParams: { fresh: '1' } });
   }
+
 
   /**
    * Navigate to the new-note screen in edit mode for the given note.
