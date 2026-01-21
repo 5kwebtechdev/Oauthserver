@@ -432,6 +432,70 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Ensure that the provided tag labels exist in the component options.
+   * - Matches existing options case-insensitively by value.
+   * - Adds missing labels as custom tags, respecting `maxTags`.
+   * - If at capacity, attempts to remove an unused predefined tag to make room.
+   * Returns the array of keys corresponding to the requested labels (in order).
+   */
+  public ensureOptionsForLabels(labels: string[] = []): any[] {
+    try {
+      if (!Array.isArray(labels) || labels.length === 0) return [];
+      const normalizedLabels = labels.map(l => String(l || '').trim()).filter(Boolean);
+      if (normalizedLabels.length === 0) return [];
+
+      const resultKeys: any[] = [];
+      const lowerRequested = normalizedLabels.map(l => l.toLowerCase());
+
+      const currentSelected = new Set((this.selectedKeys || []).map(k => String(k)));
+
+      const findByValueLower = (lblLower: string) => this.options.find(o => String(o.value || '').trim().toLowerCase() === lblLower);
+
+      for (const lbl of normalizedLabels) {
+        const lblLower = lbl.toLowerCase();
+        let opt = findByValueLower(lblLower);
+        if (!opt) {
+          // Need to add a new option. If at capacity, try to remove an unused predefined option.
+          if (this.options.length >= this.maxTags) {
+            const removableIdx = this.options.findIndex(o => (o.type !== 'custom') && !currentSelected.has(String(o.key)) && !lowerRequested.includes(String(o.value || '').trim().toLowerCase()));
+            if (removableIdx > -1) {
+              this.options.splice(removableIdx, 1);
+            } else {
+              // fallback: remove first predefined that's not selected
+              const fallbackIdx = this.options.findIndex(o => (o.type !== 'custom') && !currentSelected.has(String(o.key)));
+              if (fallbackIdx > -1) this.options.splice(fallbackIdx, 1);
+              else this.options.pop();
+            }
+          }
+          const key = Date.now() + Math.floor(Math.random() * 1000);
+          opt = { key, value: lbl, type: 'custom' };
+          this.options.unshift(opt);
+          // persist custom additions
+          this.saveTagsToStorage();
+        }
+        resultKeys.push(opt.key);
+      }
+
+      // Update selectedKeys: ensure requested keys are present and respect maxTags
+      if (this.singleSelection) {
+        this.selectedKeys = resultKeys.length ? [resultKeys[0]] : [];
+      } else {
+        const merged = Array.from(new Set([...(this.selectedKeys || []), ...resultKeys]));
+        this.selectedKeys = merged.slice(0, this.maxTags);
+      }
+
+      const control = this.formGroup?.get(this.formControlName || '') as FormControl;
+      if (control) control.setValue(this.selectedKeys);
+      this.selectedKeysChange.emit(this.selectedKeys);
+
+      return resultKeys;
+    } catch (e) {
+      console.warn('ensureOptionsForLabels failed', e);
+      return [];
+    }
+  }
+
   getBadgeType(option: any): string {
     const isSelected = this.selectedKeys.includes(option.key);
     return this.variant + (isSelected ? '-selected' : '-unselected');

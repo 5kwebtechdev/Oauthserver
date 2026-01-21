@@ -332,6 +332,31 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
           });
         }
       }
+      // Ensure the MindfulTags component contains these tags and select them.
+      try {
+        if (this.tagsComponent) {
+          const labels: string[] = [];
+          if (Array.isArray(this.routineTags)) labels.push(...this.routineTags.map(rt => String(rt.value || '').trim()));
+          if (Array.isArray(this.selectedTags)) labels.push(...this.selectedTags.map(st => String((st as any).value || (st as any).name || (st as any).title || '').trim()));
+          const uniq = Array.from(new Set(labels.map(l => l).filter(Boolean)));
+          if (uniq.length) {
+            this.tagsComponent.ensureOptionsForLabels(uniq);
+          }
+
+          // Map selectedTags into child component selectedKeys
+          if (Array.isArray(this.selectedTags) && this.selectedTags.length) {
+            const selectedKeys = (this.selectedTags || []).map(st => {
+              const val = String((st as any).value || (st as any).name || (st as any).title || '').trim().toLowerCase();
+              const opt = (this.tagsComponent!.options || []).find(o => String(o.value || '').trim().toLowerCase() === val);
+              return opt ? opt.key : null;
+            }).filter(k => k != null);
+            if (selectedKeys.length) {
+              this.tagsComponent.selectedKeys = selectedKeys as any[];
+              this.tagsComponent.selectedKeysChange.emit(this.tagsComponent.selectedKeys);
+            }
+          }
+        }
+      } catch (e) { console.warn('Failed to sync routine tags with MindfulTags component', e); }
     } catch (e) {
       console.warn('Failed to read navigation state for habit-input', e);
     }

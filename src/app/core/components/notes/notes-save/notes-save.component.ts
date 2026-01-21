@@ -6,7 +6,6 @@ import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navig
 import { NotesApi } from '../../../api/notes.api';
 import { NotesService } from '../notes.service';
 import { Share } from '@capacitor/share';
-import { Clipboard } from '@capacitor/clipboard';
 import { IonicModule } from '@ionic/angular';
 
 @Component({
@@ -85,40 +84,16 @@ export class NotesSaveComponent implements OnChanges {
 
     const shareText = parts.join('\n\n') || ' '; // share API expects non-empty text on some platforms
 
-    // Try Capacitor Share first (native mobile). Fallback to Web Share API, then clipboard.
+    // Try Capacitor Share first (native mobile). If it fails, silently log and do nothing.
     try {
       await Share.share({
         title: title || undefined,
         text: shareText,
         dialogTitle: title ? `Share "${title}"` : 'Share note'
       });
-      return;
     } catch (e) {
-      // If native Share isn't available or failed, fall through to web fallback
+      // Do not fallback to clipboard or show alerts — user requested native-only behavior.
       console.warn('Capacitor Share failed or unavailable', e);
-    }
-
-    // Web Share API fallback
-    try {
-      if ((navigator as any).share) {
-        await (navigator as any).share({
-          title: title || undefined,
-          text: shareText
-        });
-        return;
-      }
-    } catch (e) {
-      console.warn('Navigator.share failed', e);
-    }
-
-    // Last-resort: copy to clipboard and notify user that text was copied.
-    try {
-      await Clipboard.write({ string: shareText });
-      // Use a simple alert as we don't want to add new UI dependencies here.
-      alert('Note text copied to clipboard. You can paste it into any app.');
-    } catch (e) {
-      console.error('Failed to copy note to clipboard for sharing', e);
-      alert('Unable to open share options on this device.');
     }
   }
 

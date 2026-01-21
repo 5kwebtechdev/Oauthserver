@@ -7,11 +7,12 @@ import { NotesService, NoteModel } from '../notes.service';
 import { MindfulTagsComponent } from '../../mindful-selectors/mindful-tags/mindful-tags.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
 
 @Component({
   selector: 'notes-new',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, MindfulTagsComponent, MindfulButtonComponent, MindfulNavigatorComponent],
+  imports: [CommonModule, IonicModule, FormsModule, MindfulTagsComponent, MindfulButtonComponent, MindfulNavigatorComponent, MindfulPopupComponent],
   templateUrl: './notes-new.component.html',
   styleUrls: ['./notes-new.component.scss']
 })
@@ -19,7 +20,7 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
   title = '';
   // Controls how many characters are allowed and how many to show in the header
   readonly MAX_TITLE = 24; // hard maximum allowed
-  readonly DISPLAY_LEN = 16; // number of chars to show before ellipsis
+  readonly DISPLAY_LEN = 24; // number of chars to show before ellipsis
   inputFocused = false;
   showLimitTooltip = false;
   text = '';
@@ -37,6 +38,8 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
   private editId: any = null;
   // Snapshot of the original note when editing; used to avoid marking as draft if nothing changed
   private originalSnapshot: { title: string; text: string; tags: string[] } | null = null;
+  // Confirmation popup state for delete action when editing a saved note
+  public showMindfulPopup: boolean = false;
 
   constructor(private notesService: NotesService, private router: Router, private route: ActivatedRoute) { }
 
@@ -94,17 +97,11 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
     // Map draft tag labels back to tag keys so the child component shows selected tags
     try {
       if (this._draftTags && this._draftTags.length && this.tagsComponent) {
-        const options = this.tagsComponent.options || [];
-        const keys: any[] = [];
-        for (const label of this._draftTags) {
-          const opt = options.find(o => String(o.value) === String(label));
-          if (opt) keys.push(opt.key);
-        }
-        if (keys.length) {
+        // Ensure the tags exist in the child component (adds missing custom tags if required)
+        const keys = this.tagsComponent.ensureOptionsForLabels(this._draftTags.map(t => String(t)));
+        if (keys && keys.length) {
           this.selectedTagKeys = keys;
-          // also set the child component's internal selectedKeys so it reflects selection
           this.tagsComponent.selectedKeys = keys;
-          // notify parent handlers if necessary
           this.tagsComponent.selectedKeysChange.emit(keys);
         }
       }
@@ -173,6 +170,44 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
   onSelectedKeysChange(keys: any[]) {
     this.selectedTagKeys = keys;
     this.saveDraft();
+  }
+
+  onDelete() {
+    // If editing an existing saved note, show confirmation popup and delete via API.
+    if (this.editing && this.editId) {
+      this.showMindfulPopup = true;
+      return;
+    }
+    // Otherwise treat as draft deletion
+    this.deleteDraft();
+  }
+
+  confirmCancel() {
+    this.showMindfulPopup = false;
+  }
+
+  confirmDelete() {
+    this.showMindfulPopup = false;
+    const id = this.editId;
+    if (id && this.notesService && this.notesService.deleteNote) {
+      this.notesService.deleteNote(id).subscribe({
+        next: () => {
+          // Remove any related draft and navigate back
+          try { if (this.currentDraftId) { this.removeDraftById(this.currentDraftId); this.currentDraftId = null; } } catch (e) { /* ignore */ }
+          this.editing = false;
+          this.editId = null;
+          this.router.navigate(['/authed/notes']);
+        },
+        error: (err) => {
+          console.error('Failed to delete note via API', err);
+          // still navigate back and let list refresh handle state
+          this.router.navigate(['/authed/notes']);
+        }
+      });
+    } else {
+      // fallback: just navigate back
+      this.router.navigate(['/authed/notes']);
+    }
   }
 
   get displayValue(): string {
