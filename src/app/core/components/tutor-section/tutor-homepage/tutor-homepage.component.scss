@@ -3,6 +3,8 @@
   --section-gap: 20px;
   overflow: auto;
   padding-bottom: 96px;
+     padding-top: env(safe-area-inset-top, 0);
+  padding-top: constant(safe-area-inset-top);
 }
 h2{margin: 0;}
 
@@ -17,8 +19,7 @@ h2{margin: 0;}
   box-sizing: border-box;
   position: relative;
   border-radius: 0px 0px 48px 48px;
-   padding-top: env(safe-area-inset-top, 0);
-  padding-top: constant(safe-area-inset-top);
+
   display: flex;
     flex-direction: column;
     gap: 24px;
