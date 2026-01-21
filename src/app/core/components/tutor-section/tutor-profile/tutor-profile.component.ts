@@ -203,8 +203,8 @@ export class TutorProfileComponent implements OnInit {
     }
   }
 
-  bookCall(): void {
-    console.log('Book a call clicked for:', this.tutor?.name);
-    alert('Booking request sent — we will contact you shortly.');
+  contactTutor(): void {
+    console.log('Contact Tutor clicked for:', this.tutor?.name);
+    alert('Contact request sent — we will contact you shortly.');
   }
 }

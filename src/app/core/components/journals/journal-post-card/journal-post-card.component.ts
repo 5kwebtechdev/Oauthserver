@@ -36,18 +36,45 @@ export class JournalPostCardComponent implements OnInit {
   getFilteredTags(entry: JournalEntry): string[] {
     const tags = Array.isArray(entry?.tags) ? entry.tags.map(t => String(t).trim()).filter(Boolean) : [];
     const mood = (entry?.mood || '').trim().toLowerCase();
-    if (!mood) return tags;
-    return tags.filter(t => {
-      const lowered = String(t).toLowerCase();
-      // remove plain tag that exactly equals mood
-      if (lowered === mood) return false;
-      // remove tags that are prefixed with 'emotions:' or 'emotion:'
-      if (lowered.startsWith('emotions:') || lowered.startsWith('emotion:')) return false;
-      // remove tags like 'Emotions: Happy' where value equals mood
-      const parts = String(t).split(':').map(p => p.trim());
-      if (parts.length >= 2 && parts[1].toLowerCase() === mood) return false;
-      return true;
-    });
+
+    const shouldRemoveForMood = (tag: string): boolean => {
+      const lowered = tag.toLowerCase();
+      if (mood && lowered === mood) return true;
+      if (lowered.startsWith('emotions:') || lowered.startsWith('emotion:')) return true;
+      const parts = tag.split(':').map(p => p.trim());
+      if (parts.length >= 2 && mood && parts[1].toLowerCase() === mood) return true;
+      return false;
+    };
+
+    // Keep original response order, only filter out mood/emotion tags
+    const filtered = tags.filter(t => !shouldRemoveForMood(t));
+
+    // Helpers to detect key parts like 'hobbies' and 'health check'
+    const keyOf = (tag: string) => tag.split(':')[0].trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const isHobbiesKey = (tag: string) => {
+      const k = keyOf(tag);
+      return k === 'hobbies' || k === 'hobby' || k === 'hobbieslist';
+    };
+    const isHealthKey = (tag: string) => {
+      const k = keyOf(tag);
+      return k === 'healthcheck' || k === 'health' || k === 'healthchecklist';
+    };
+
+    // Ensure that any 'hobbies' tag appears after 'health check' tag(s)
+    const hobbyIndex = filtered.findIndex((t) => isHobbiesKey(t) || t.toLowerCase().includes('hobbies'));
+    const healthIndex = filtered.findIndex((t) => isHealthKey(t) || t.toLowerCase().includes('health'));
+
+    if (hobbyIndex > -1 && healthIndex > -1 && hobbyIndex < healthIndex) {
+      const [hobbyTag] = filtered.splice(hobbyIndex, 1);
+      // find last health-like index (there might be multiple health-related tags)
+      let lastHealth = -1;
+      for (let i = 0; i < filtered.length; i++) {
+        if (isHealthKey(filtered[i]) || filtered[i].toLowerCase().includes('health')) lastHealth = i;
+      }
+      filtered.splice(lastHealth + 1, 0, hobbyTag);
+    }
+
+    return filtered;
   }
 
   hasDetails(entry: JournalEntry): boolean {
