@@ -16,7 +16,7 @@
             <div class="stats" aria-hidden="true">
               <img class="icon heart-icon" src="/assets/Icons-Neutral/Icon-Tutor-Like.png" alt="Likes"
               aria-hidden="true" />
-              <span class="meta">{{ t.rating || 0 }} | {{ t.experience || 'Fresher' }}</span>
+              <span class="meta">{{ (t.champsLiked !== undefined && t.champsLiked !== null) ? t.champsLiked : (t.rating || 0) }} likes | {{ t.experience || 'Fresher' }}</span>
             </div>
           </div>
           

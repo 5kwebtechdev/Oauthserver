@@ -143,6 +143,7 @@ export interface Tutor {
     rating: number | null;
     totalReviews: number;
     likes: TutorLike[];
+    likedByUser?: boolean;
     categoryMappings: CategoryMapping[];
     active: boolean;
     verified: boolean;
@@ -160,6 +161,8 @@ export interface TutorListItem {
     avatar: string;
     description: string;
     rating: number;
+    champsLiked?: number;
+    likedByUser?: boolean;
     experience: string;
     qualification: string;
     hourlyRate: number;
@@ -205,6 +208,8 @@ export function toTutorListItem(tutor: Tutor): TutorListItem {
         description: tutor.subjects?.length > 0
             ? tutor.subjects.join(', ')
             : `${tutor.qualification} Specialist`,
+        champsLiked: tutor.champsLiked || 0,
+        likedByUser: !!tutor.likedByUser,
         rating: tutor.champsLiked || tutor.likes?.length || 0,
         experience: formatExperience(tutor.experience),
         qualification: tutor.qualification,
