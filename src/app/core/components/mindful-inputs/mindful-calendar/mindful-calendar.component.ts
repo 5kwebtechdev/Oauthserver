@@ -159,6 +159,13 @@ export class MindfulCalendarComponent implements OnChanges {
     return `${year}-${month}-${day}`;
   }
 
+  /**
+   * Check if the provided date is today
+   */
+  isToday(date: Date): boolean {
+    return this.isSameDay(date, new Date());
+  }
+
   getActivitiesForDate(date: Date) {
     const key = this.getDateKey(date);
     const activities = this.dateActivities[key] || {};

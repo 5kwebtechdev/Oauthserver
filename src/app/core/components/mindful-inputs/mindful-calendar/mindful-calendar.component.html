@@ -37,6 +37,7 @@
       [class.isEndDate]="isEndOfRange(date)" [class.currentMonth]="isDateinCurrentMonth(date)"
       [class.selected]="isSameDay(date, startDate) || isSameDay(date, endDate)" [class.in-range]="isInRange(date)"
       [class.mood-active]="moodOn && useCalendarMainStyle" [class.mood-inactive]="!moodOn && useCalendarMainStyle"
+      [class.today]="isToday(date)"
       (click)="selectDate(date)">
       <p>{{ date.getDate() }}</p>
 
