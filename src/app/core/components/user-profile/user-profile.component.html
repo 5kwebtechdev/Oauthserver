@@ -98,7 +98,7 @@
         (select)="onChangePet()" *ngIf="user?.relationship !== 'PARENT'"></profile-content-card>
 
       <profile-content-card iconName="creditCard" title="Manage Your Membership"
-        subtitle="See your perks, upgrade, or cancel anytime"></profile-content-card>
+        subtitle="See your perks, upgrade, or cancel anytime" (select)="onManageMembership()"></profile-content-card>
 
       <profile-content-card iconName="notification" title="Notifications" subtitle="Manage your notifications"
         (select)="onNotifications()"></profile-content-card>

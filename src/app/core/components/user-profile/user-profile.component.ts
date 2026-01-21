@@ -316,6 +316,10 @@ export class UserProfileComponent implements OnInit, OnChanges {
     this.router.navigate(['/authed/parental-control']).catch(() => { });
   }
 
+  onManageMembership() {
+    this.router.navigate(['/authed/membership']).catch(() => { });
+  }
+
   onFeedback() {
     // navigate to the feedback suggestion page
     this.router.navigate(['/authed/feedback-suggestion']).catch(() => { });

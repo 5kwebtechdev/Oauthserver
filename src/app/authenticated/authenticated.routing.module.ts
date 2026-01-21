@@ -49,6 +49,9 @@ const routes: Routes = [
         path: 'select-role',
         loadComponent: () => import('../core/components/user-profile/select-role/select-role.component').then(m => m.RoleSelectComponent)
       }, {
+        path: 'membership',
+        loadComponent: () => import('../core/components/user-profile/membership-section/membership-section.component').then(m => m.MembershipSectionComponent)
+      }, {
         path: 'feedback-suggestion',
         loadComponent: () => import('../core/components/user-profile/feedback-suggestion/feedback-suggestion.component').then(m => m.FeedbackSuggestionComponent)
       }, {

@@ -1,0 +1,39 @@
+/* Membership coming-soon styles (readable) */
+.coming-soon-container {
+	padding: 0 16px;
+}
+
+.coming-soon-message {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	justify-content: center;
+	align-items: center;
+	height: calc(100vh - 300px); /* account for header/navigation */
+	text-align: center;
+	padding-top: 24px;
+}
+
+.coming-soon-message img {
+	max-width: 320px;
+	width: 60%;
+	height: auto;
+	display: block;
+}
+
+.coming-soon-message h1,
+.coming-soon-message p {
+	margin: 0;
+	color: #282527;
+	font-weight: 500;
+}
+
+.coming-soon-message h1 {
+	font-size: 16px;
+}
+
+.coming-soon-message p {
+	font-size: 13px;
+    font-family: 'Nunito';
+    width: 70vw;
+}
