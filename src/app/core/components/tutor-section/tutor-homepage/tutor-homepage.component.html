@@ -96,10 +96,9 @@
     <!-- Tutor list -->
     <tutor-list *ngIf="!isLoading" [tutors]="tutors" (viewProfile)="onViewProfile($event)"></tutor-list>
 
-    <!-- No results message -->
-    <div *ngIf="!isLoading && tutors.length === 0 && searchQuery" class="no-results">
-      <p>No tutors found for "{{ searchQuery }}"</p>
-      <mindful-button type="columbian-blue" text="Clear Search" (click)="clearSearch()"></mindful-button>
+    <!-- No results image -->
+    <div *ngIf="!isLoading && tutors.length === 0 && searchQuery" class="no-results" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;">
+      <img src="assets/Images-Transparent/File-search.png" alt="No results" style="max-width:220px;width:40%;height:auto;opacity:0.95;" />
     </div>
   </div>
 

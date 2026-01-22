@@ -11,7 +11,7 @@
     margin-top: 10px;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 0px;
+    gap: 6px;
     grid-auto-rows: 35px;
 
     .day-bar {
@@ -37,7 +37,7 @@
     .dates-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 0px;
+      gap: 6px;
       margin-top: 8px;
     }
 
@@ -128,6 +128,9 @@
         box-sizing: border-box;
         border: 1px solid #90214D !important;
         border-radius: 6px;
+        width: 100%;
+    height: 100%;
+
       }
 
       &.selected::before {
@@ -307,6 +310,8 @@
           align-items: center;
           border-radius: 6px;
           background: #90214D;
+          width: 100%;
+    height: 100%;
 
           p {
             color: white;
@@ -330,6 +335,8 @@
           align-items: center;
           border-radius: 6px;
           background: #90214D;
+          width: 100%;
+          height: 100%;
 
           p {
             color: white;
