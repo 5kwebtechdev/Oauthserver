@@ -41,21 +41,20 @@
     }
 
     button {
-      // padding: 6px;
-      border: none;
-      background: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: 500;
-      aspect-ratio: 1;
-      color: #6B656A;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-
-      min-width: 41px;
-      justify-self: center;
+         border: none;
+    background: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    /* aspect-ratio: 1; */
+    color: #6B656A;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* min-width: 41px; */
+    justify-self: center;
+    margin: 1vw;
 
       p {
         font-weight: 500;
@@ -297,7 +296,6 @@
     .calendar-grid {
       button {
         /* default for habit/calendar buttons inside calendar-main */
-        aspect-ratio: 1;
         padding: 4px;
 
         /* When mood toggle is ACTIVE (ON) */
@@ -331,7 +329,6 @@
           align-items: center;
           border-radius: 6px;
           background: #90214D;
-          gap: 10px;
 
           p {
             color: white;
@@ -351,7 +348,6 @@
 
         /* When mood toggle is ON for calendar-main style, make each date slightly taller */
         button.mood-active {
-          aspect-ratio: 1 / 1.3;
           padding: 8px;
         }
     }

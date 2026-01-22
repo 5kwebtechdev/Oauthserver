@@ -33,7 +33,7 @@
   <div class="calendar-grid">
     <div class="day" *ngFor="let d of ['Sun','Mon','Tue','Wed','Thur','Fri','Sat']">{{ d }}</div>
 
-    <button *ngFor="let date of getMonthDays()" [class.isStartDate]="isStartOfRange(date)"
+    <button *ngFor="let date of getVisibleMonthDays()" [class.isStartDate]="isStartOfRange(date)"
       [class.isEndDate]="isEndOfRange(date)" [class.currentMonth]="isDateinCurrentMonth(date)"
       [class.selected]="isSameDay(date, startDate) || isSameDay(date, endDate)" [class.in-range]="isInRange(date)"
       [class.mood-active]="moodOn && useCalendarMainStyle" [class.mood-inactive]="!moodOn && useCalendarMainStyle"

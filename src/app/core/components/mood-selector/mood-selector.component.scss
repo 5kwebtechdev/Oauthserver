@@ -36,6 +36,7 @@
   font-weight: 400;
   font-size: 16px;
   color: #282527;
+  width: 73vw;
 }
 
 /* Apply gradient styles to server-provided <h1> injected via innerHTML */
@@ -207,29 +208,21 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 
+  /* When an emoji is selected in the popup, only show the check icon.
+     Disable transform/box-shadow/transition so the emoji does not move/zoom. */
   &.selected {
-    transform: translateY(-4px);
-    border-color: rgba(0, 0, 0, 0.08);
+    transform: none !important;
+    box-shadow: none !important;
+    transition: none !important;
   }
 
-  &:hover {
+  /* Keep hover effects for unselected emojis only. */
+  &:not(.selected):hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
   }
 }
 
-.set-vibe {
-  width: 100%;
-  color: #fff;
-  border: none;
-  padding: 12px;
-
-  font-weight: 700;
-  border-radius: 8px;
-  border: 1px solid #4A0D25;
-  background: #90214D;
-  box-shadow: 0 0 1px 0.5px rgba(144, 33, 77, 0.20), 0 -2px 2px 0 #EA7CB5 inset;
-}
 
 .popup-close {
   position: absolute;
