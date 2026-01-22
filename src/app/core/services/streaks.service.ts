@@ -43,8 +43,15 @@ export class StreaksService {
 
                 const topUsers: StreakLeaderboardUser[] = Array.isArray(res && res.topUsers) ? res.topUsers.map((u: any) => ({
                     name: String(u.name || ''),
-                    highestStreak: Number(u.highestStreak || 0),
-                    avatar: u.avatar ? String(u.avatar) : undefined
+                    // include rank if provided by API
+                    rank: typeof u.rank !== 'undefined' ? Number(u.rank) : undefined,
+                    // support APIs that return `currentStreak` or `highestStreak`
+                    highestStreak: Number(u.highestStreak ?? u.currentStreak ?? 0),
+                    // keep any direct avatar URL if present
+                    avatar: u.avatar ? String(u.avatar) : undefined,
+                    // preserve avatarImageName (if API provides it) for callers that resolve avatars differently
+                    // attach as a passthrough property on the object
+                    ...(u.avatarImageName ? { avatarImageName: String(u.avatarImageName) } : {})
                 })) : [];
 
                 return { currentUser, topUsers } as StreakLeaderboardResponse;
