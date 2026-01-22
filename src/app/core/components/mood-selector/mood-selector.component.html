@@ -38,7 +38,7 @@
         </span>
       </button>
     </div>
-    <button class="set-vibe" type="button" (click)="setVibe()" [disabled]="!popupSelection">Set the vibe</button>
+    <mindful-button type="magenta" large [disabled]="!popupSelection" text="Set the vibe" (click)="setVibe()"></mindful-button>
   </div>
   <button class="popup-close" type="button" (click)="closePopup()" aria-label="Close">✕</button>
 </div>

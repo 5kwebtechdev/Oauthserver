@@ -26,7 +26,6 @@ export class MindfulTagsComponent implements OnInit, OnDestroy {
     { key: 3, value: 'Skill' },
     { key: 4, value: 'Routine' },
     { key: 5, value: 'Personal' },
-    { key: 6, value: 'Finance' }
   ];
   @Input() formGroup?: FormGroup;
   @Input() formControlName?: string;

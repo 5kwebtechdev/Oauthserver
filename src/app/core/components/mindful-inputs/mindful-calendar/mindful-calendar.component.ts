@@ -127,6 +127,30 @@ export class MindfulCalendarComponent implements OnChanges {
     return days;
   }
 
+  /**
+   * Return the month days but omit the final week if it contains NO dates
+   * from the current month (prevents showing an unnecessary faded week).
+   */
+  getVisibleMonthDays(): Date[] {
+    const days = this.getMonthDays();
+    // Split into weeks of 7 days
+    const weeks: Date[][] = [];
+    for (let i = 0; i < days.length; i += 7) {
+      weeks.push(days.slice(i, i + 7));
+    }
+
+    // Remove trailing weeks that contain NO dates from the current month.
+    while (weeks.length > 0) {
+      const lastWeek = weeks[weeks.length - 1];
+      const anyInCurrent = lastWeek.some(d => this.isDateinCurrentMonth(d));
+      if (anyInCurrent) break;
+      weeks.pop();
+    }
+
+    // Flatten back to a single array without using `flat()` to keep TS target compatibility
+    return weeks.reduce((acc: Date[], wk: Date[]) => acc.concat(wk), [] as Date[]);
+  }
+
   isInRange(date: Date): boolean {
     if (this.startDate && this.endDate) {
       return date >= this.startDate && date <= this.endDate;

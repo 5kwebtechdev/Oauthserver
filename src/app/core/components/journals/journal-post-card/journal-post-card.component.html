@@ -44,7 +44,7 @@
 <!-- Image viewer overlay -->
 <div class="image-viewer-backdrop" *ngIf="viewerOpen" (click)="closeImageViewer()">
   <button class="image-viewer-close" (click)="closeImageViewer()" aria-label="Close image viewer">
-    <img src="/assets/app-assets/cancel-cross.svg" alt="Close image viewer">
+    <img src="/assets/icons/cancel-cross.svg" alt="Close image viewer">
   </button>
   <div class="image-viewer-content" (click)="$event.stopPropagation()">
     <img [src]="viewerSrc" alt="attachment preview" />

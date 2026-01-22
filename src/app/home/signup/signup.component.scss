@@ -1152,8 +1152,9 @@ swiper-slide.swiper-slide-active .pet-card {
   }
 
   .otp-inputs {
-    gap: 13px;
-  }
+display: flex;
+        justify-content: space-between;
+        gap: 2px;  }
 
   .otp-digit {
     width: 50px;
