@@ -12,6 +12,7 @@
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 0px;
+    grid-auto-rows: 35px;
 
     .day-bar {
       display: inline-flex;
@@ -41,20 +42,20 @@
     }
 
     button {
-         border: none;
-    background: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 500;
-    /* aspect-ratio: 1; */
-    color: #6B656A;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    /* min-width: 41px; */
-    justify-self: center;
-    margin: 1vw;
+      border: none;
+      background: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 500;
+      color: #6B656A;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-self: center;
+      /* Use internal padding to space content consistently instead of margin */
+      margin: 0;
+      padding: 8px 4px;
 
       p {
         font-weight: 500;
@@ -76,7 +77,9 @@
         pointer-events: none;
       }
 
-      /* Activity dots shown beneath the date when mood is off */
+      /* Activity dots shown beneath the date when mood is off.
+         Use normal document flow so spacing from the date is consistent (4px).
+         This avoids overlap issues on the final week while keeping layout stable. */
       .activity-dots {
         display: flex;
         align-items: center;
@@ -85,10 +88,8 @@
         z-index: 2;
         pointer-events: none;
         min-height: 6px;
-        position: absolute;
-        bottom: 4px;
-        left: 50%;
-        transform: translateX(-50%);
+        position: static;
+        margin-top: 4px;
 
         svg {
           display: block;

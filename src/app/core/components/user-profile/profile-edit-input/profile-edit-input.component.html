@@ -13,4 +13,13 @@
   />
 
   <div *ngIf="showError && errorMessage" class="error">{{ errorMessage }}</div>
+
+  <!-- If a suggestion error exists, show it in the suggestions area -->
+  <div class="suggestion-error" *ngIf="suggestionError">
+    {{ suggestionError }}
+  </div>
+
+  <div class="suggestions" *ngIf="!suggestionError && showSuggestions && suggestions && suggestions.length">
+    <div class="suggestion-item" *ngFor="let s of suggestions" (click)="onSuggestionClick(s)">{{ s }}</div>
+  </div>
 </div>
