@@ -55,16 +55,20 @@
 }
 
 .error {
-  color: #d9534f;
-  font-size: 13px;
-}
-
-/* Page-specific override when the host sets .has-error (e.g., on reset-password page) */
-:host(.has-error) .error {
-  color: #CE0800;
+  color: #BB2124; /* Figma error color */
   font-family: Nunito;
   font-size: 13px;
-  font-weight: 600;
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* Page-specific override when the host sets .has-error: keep same typography and color */
+:host(.has-error) .error {
+  color: #BB2124;
+  font-family: Nunito;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
 }
 
 :host(.has-error) .profile-input {
@@ -83,4 +87,42 @@
 :host(.has-error) .profile-input:focus-visible {
   border: 2px solid #BB2124;
   box-shadow: none;
+}
+
+/* Suggestions list styling */
+.suggestions {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap; /* wrap to next line when items overflow */
+}
+
+.suggestion-item {
+  color: #4CAF50;
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+/* Add a comma after each suggestion */
+.suggestion-item::after {
+  content: ',';
+  margin-left: 4px;
+}
+
+.suggestion-item:hover {
+  background: rgba(76, 175, 80, 0.06);
+}
+
+.suggestion-error {
+  color: #BB2124;
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 8px;
 }

@@ -5,11 +5,21 @@
 
       <div class="edit-details" *ngIf="accountType !== 'parent'">
         <profile-edit-input title="Avatar Name" description="Your in-app identity name" type="text"
-          placeholder="Avatar name" [value]="avatarName" (valueChange)="avatarName = $event"></profile-edit-input>
+          placeholder="Avatar name"
+          [value]="avatarName"
+          (valueChange)="onAvatarNameChange($event)"
+          [suggestions]="avatarSuggestions"
+          [showSuggestions]="showAvatarSuggestions"
+          [suggestionError]="avatarSuggestionError"
+          [errorMessage]="avatarNameError"
+          [showError]="showAvatarNameError"
+          (suggestionSelected)="onSuggestionSelected($event)">
+        </profile-edit-input>
       </div>
       <div class="edit-details">
         <profile-edit-input title="Full Name" description="Just for setup. Never shown" type="text"
-          placeholder="Full name" [value]="fullName" (valueChange)="fullName = $event"></profile-edit-input>
+          placeholder="Full name" [value]="fullName" (valueChange)="onFullNameChange($event)"
+          [errorMessage]="fullNameError" [showError]="showFullNameError"></profile-edit-input>
       </div>
       <div class="edit-details">
         <div class="input-heading">
@@ -106,7 +116,7 @@
       </div>
       <div class="edit-details">
         <profile-edit-input title="Email" description="Used for login and recovery" type="email" placeholder="Email"
-          [value]="profileForm.get('email')!.value" (valueChange)="profileForm.get('email')!.setValue($event)"
+          [value]="profileForm.get('email')!.value" (valueChange)="onEmailChange($event)"
           [errorMessage]="'Oops! That email looks off. Please check it again.'"
           [showError]="profileForm.get('email')!.invalid && profileForm.get('email')!.dirty"></profile-edit-input>
       </div>

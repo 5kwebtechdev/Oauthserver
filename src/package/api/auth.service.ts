@@ -194,6 +194,22 @@ export class AuthService {
     }
 
     /**
+     * Get avatar name suggestions for a given input string.
+     * Endpoint: {{host}}/v1/auth/avatar-suggestions?input=...
+     */
+    getAvatarSuggestions(input: string): Observable<string[]> {
+        const url = `${this.apiUrl}/auth/avatar-suggestions?input=${encodeURIComponent(input)}`;
+        const userToken = this.getToken();
+
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`
+        });
+
+        return this.http.get<string[]>(url, { headers });
+    }
+
+    /**
      * Remove a member from the family
      * Endpoint: POST {{host}}/family/remove
      * Payload: { memberId: number }

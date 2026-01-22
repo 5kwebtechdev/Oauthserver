@@ -30,7 +30,7 @@
       </div>
     </div>
   </div>
-  <div class="calendar-grid">
+  <div class="calendar-grid" [style.gridAutoRows.px]="(moodOn && useCalendarMainStyle) ? 46 : 35">
     <div class="day" *ngFor="let d of ['Sun','Mon','Tue','Wed','Thur','Fri','Sat']">{{ d }}</div>
 
     <button *ngFor="let date of getVisibleMonthDays()" [class.isStartDate]="isStartOfRange(date)"

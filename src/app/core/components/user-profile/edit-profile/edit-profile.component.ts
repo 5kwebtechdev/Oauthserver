@@ -6,12 +6,12 @@ import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navig
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { CountriesService, Country } from '../../../services/countries.service';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject, of } from 'rxjs';
 import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-input.component';
 import { AuthService, EditProfilePayload } from '../../../../../package/api/auth.service';
 import { CoreService } from '../../../services/core.service';
 import { UserService } from '../../../services/user.service';
-import { finalize } from 'rxjs/operators';
+import { finalize, debounceTime, distinctUntilChanged, switchMap, filter, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'edit-profile',
@@ -41,6 +41,18 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   avatarName: string | null = '';
   avatarImageName: string | null = '';  // New field for avatar image name (e.g., 'Avatar 8', 'Avatar 11')
   fullName: string | null = '';
+  // Inline full name validation state
+  fullNameError: string | null = null;
+  showFullNameError = false;
+
+  // Avatar suggestions
+  private avatarInput$ = new Subject<string>();
+  avatarSuggestions: string[] = [];
+  showAvatarSuggestions = false;
+  avatarSuggestionError: string | null = null;
+  // Inline avatar name validation state
+  avatarNameError: string | null = null;
+  showAvatarNameError = false;
 
   // gender selected in template. 'Male' | 'Female' | null (match backend format)
   gender: 'Male' | 'Female' | null = null;
@@ -110,6 +122,22 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
     // Load current user profile data
     this.loadUserProfile();
+
+    // Avatar suggestions stream: debounce and call API when at least 4 chars
+    this.subscription.add(
+      this.avatarInput$.pipe(
+        // Wait 3 seconds after the user stops typing before calling the API
+        debounceTime(3000),
+        distinctUntilChanged(),
+        filter(s => (s || '').trim().length >= 4),
+        switchMap(s => this.authService.getAvatarSuggestions((s || '').trim()).pipe(
+          catchError(() => of([]))
+        ))
+      ).subscribe((list: string[] | any) => {
+        this.avatarSuggestions = Array.isArray(list) ? list : [];
+        this.showAvatarSuggestions = this.avatarSuggestions.length > 0;
+      })
+    );
   }
 
   private loadUserProfile(): void {
@@ -165,22 +193,20 @@ export class EditProfileComponent implements OnInit, OnDestroy {
         console.log('[EditProfile] Email set to:', userProfile.email);
       }
 
-      // 5. Auto-fill Phone with Country Code
+      // 5. Auto-fill Phone — strip any country code so the input only shows the local number
       if (userProfile.phone) {
         const phoneWithCode = userProfile.phone;
         console.log('[EditProfile] Phone value from data:', phoneWithCode);
 
-        // Try to find matching country code
+        // Try to detect a matching country and set it, but always show only the local number
         const matchingCountry = this.countries.find(c => phoneWithCode.startsWith(c.code));
         if (matchingCountry) {
           this.selectedCountry = matchingCountry;
-          const phoneNumber = phoneWithCode.substring(matchingCountry.code.length);
-          this.profileForm.patchValue({ phone: phoneNumber });
-          console.log('[EditProfile] Phone number extracted:', phoneNumber, 'Country:', matchingCountry.name);
-        } else {
-          this.profileForm.patchValue({ phone: phoneWithCode });
-          console.log('[EditProfile] No matching country code found, using raw phone:', phoneWithCode);
         }
+
+        const localNumber = this.normalizePhoneForInput(phoneWithCode);
+        this.profileForm.patchValue({ phone: localNumber });
+        console.log('[EditProfile] Phone number (local) set to:', localNumber, 'Country:', this.selectedCountry?.name);
       }
 
       // 6. Auto-fill Avatar Name (for non-parent accounts)
@@ -347,6 +373,15 @@ export class EditProfileComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.error('Profile update error:', error);
+            // If backend returns the specific avatar-change limit message, show it in
+            // the avatar suggestions area instead of a toast.
+            if (error?.status === 400 && error?.error?.message === 'Avatar name can be changed only once') {
+              this.avatarSuggestionError = error.error.message || 'Avatar name can be changed only once';
+              // Ensure suggestions list is hidden when showing the error
+              this.avatarSuggestions = [];
+              this.showAvatarSuggestions = false;
+              return;
+            }
 
             let errorMessage = 'Failed to update profile. Please try again.';
 
@@ -551,10 +586,56 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     const numericValue = value.replace(/[^0-9]/g, '');
 
     this.profileForm.patchValue({ phone: numericValue });
+    // mark phone as dirty so validation appears while typing
+    try { this.profileForm.get('phone')?.markAsDirty(); } catch (e) {}
 
     setTimeout(() => {
       try { input.setSelectionRange(numericValue.length, numericValue.length); } catch (e) { }
     }, 0);
+  }
+
+  onAvatarNameChange(value: string | null): void {
+    // Clear any previous avatar-suggestion error when user types manually
+    this.avatarSuggestionError = null;
+    this.avatarName = value || '';
+    const v = (this.avatarName || '').toString();
+    // Inline validation: max 20 chars
+    if (v.length > 20) {
+      this.avatarNameError = 'Maximum limit is 20 characters';
+      this.showAvatarNameError = true;
+    } else {
+      this.avatarNameError = null;
+      this.showAvatarNameError = false;
+    }
+    if (v.trim().length >= 4) {
+      this.avatarInput$.next(v.trim());
+    } else {
+      // hide/clear suggestions when input too short
+      this.avatarSuggestions = [];
+      this.showAvatarSuggestions = false;
+    }
+  }
+
+  onSuggestionSelected(s: string): void {
+    this.avatarName = s;
+    this.avatarSuggestions = [];
+    this.showAvatarSuggestions = false;
+    this.avatarSuggestionError = null;
+    // clear inline avatar validation when a suggestion is chosen
+    this.avatarNameError = null;
+    this.showAvatarNameError = false;
+  }
+
+  onFullNameChange(value: string | null): void {
+    this.fullName = value || '';
+    const v = (this.fullName || '').toString();
+    if (v.length > 40) {
+      this.fullNameError = 'Maximum limit is 40 characters';
+      this.showFullNameError = true;
+    } else {
+      this.fullNameError = null;
+      this.showFullNameError = false;
+    }
   }
 
   selectCountry(country: Country): void {
@@ -565,6 +646,42 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       phoneControl.markAsUntouched();
       phoneControl.updateValueAndValidity();
     }
+  }
+
+  /**
+   * Normalize a phone value for display in the phone input by removing any
+   * leading country code (e.g., +91) and non-digit characters. Prefer the
+   * selectedCountry code, then fall back to known countries. If no code is
+   * detected and the number is longer than the expected phone length, return
+   * the last N digits.
+   */
+  private normalizePhoneForInput(phoneWithCode: string): string {
+    if (!phoneWithCode) return '';
+
+    // keep only digits
+    const digits = (phoneWithCode + '').replace(/\D/g, '');
+
+    // try selected country first
+    const selCode = (this.selectedCountry?.code || '').replace(/\D/g, '');
+    if (selCode && digits.startsWith(selCode)) {
+      return digits.substring(selCode.length);
+    }
+
+    // try to detect any known country code from the loaded countries
+    for (const c of this.countries || []) {
+      const codeDigits = (c.code || '').replace(/\D/g, '');
+      if (codeDigits && digits.startsWith(codeDigits)) {
+        return digits.substring(codeDigits.length);
+      }
+    }
+
+    // fallback: if we know expected phone length for selected country, use last N digits
+    const expected = this.selectedCountry?.phoneLength || 0;
+    if (expected && digits.length > expected) {
+      return digits.slice(-expected);
+    }
+
+    return digits;
   }
 
   // Phone helpers copied from login
@@ -585,6 +702,13 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
   openBirthdayPickerNow(): void {
     this.openBirthdayPicker = true;
+  }
+
+  onEmailChange(value: string | null): void {
+    const control = this.profileForm.get('email');
+    if (!control) return;
+    control.setValue(value);
+    try { control.markAsDirty(); } catch (e) {}
   }
 
   birthdayChanged(date: any): void {
@@ -652,10 +776,16 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     if (this.accountType === 'child') {
       if (age > 18) {
         this.ageError = 'Your age cannot be more than 18 years old for child role';
+      } else if (age < 8) {
+        this.ageError = 'Your age cannot be less than 8 years old';
       }
     } else if (this.accountType === 'parent') {
       if (age < 24) {
         this.ageError = 'Your age cannot be less than 24 years old for parent role';
+      }
+    } else if (this.accountType === 'self') {
+      if (age < 8) {
+        this.ageError = 'Your age cannot be less than 8 years old';
       }
     }
   }

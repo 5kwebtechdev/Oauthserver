@@ -188,7 +188,7 @@
   }
 
   &.error {
-    border-color: var(--error_color);
+    border-color: #BB2124;
   }
 
   .country-code-selector {
@@ -224,6 +224,14 @@
       color: rgba(40, 37, 39, 0.6);
     }
   }
+
+.error {
+  color: #BB2124;
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 8px;
+}
 
   input {
     flex: 1;
