@@ -267,6 +267,117 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Update UserService immediately when API call is made to notify subscribers
+   */
+  private updateUserServiceImmediately(payload: any): void {
+    // Get current user profile
+    const currentProfile = this.userService.getUserProfile();
+
+    // Create updated profile by merging current profile with new values
+    const updatedProfile: any = {};
+
+    // Copy all existing profile properties
+    if (currentProfile) {
+      Object.assign(updatedProfile, currentProfile);
+    }
+
+    // Update with new values from payload
+    if (payload.name !== undefined) updatedProfile.name = payload.name;
+    if (payload.email !== undefined) updatedProfile.email = payload.email;
+    if (payload.phone !== undefined) updatedProfile.phone = payload.phone;
+    if (payload.dateOfBirth !== undefined) updatedProfile.dob = payload.dateOfBirth;
+    if (payload.gender !== undefined) updatedProfile.gender = payload.gender.toLowerCase() === 'male' ? 'male' : 'female';
+    if (payload.avatarName !== undefined) {
+      updatedProfile.avatarName = payload.avatarName;
+      // Update avatar URL if avatarImageName is provided
+      if (payload.avatarImageName) {
+        updatedProfile.avatarUrl = this.deriveAvatarUrlFromImageName(payload.avatarImageName);
+      } else {
+        // Otherwise try to derive from avatarName
+        updatedProfile.avatarUrl = this.deriveAvatarUrlFromName(payload.avatarName);
+      }
+    } else if (payload.avatarImageName) {
+      // If only avatarImageName is provided
+      updatedProfile.avatarUrl = this.deriveAvatarUrlFromImageName(payload.avatarImageName);
+    }
+
+    // Update the UserService with the new profile
+    this.userService.setUserProfile(updatedProfile);
+    console.log('[EditProfile] Updated UserService immediately with:', updatedProfile);
+  }
+
+  /**
+   * Derive avatar URL from avatar image name
+   */
+  private deriveAvatarUrlFromImageName(imageName: string): string | undefined {
+    if (!imageName) return undefined;
+
+    // Extract number from avatar name like "Avatar 3"
+    const match = imageName.match(/\d+/);
+    if (match) {
+      const num = parseInt(match[0], 10);
+      // Determine gender based on the number (even = female, odd = male, or based on your logic)
+      const isFemale = num <= 6; // First 6 avatars are female
+      const gender = isFemale ? 'Female' : 'Male';
+      return `/assets/Images-Transparent/Image-Onboarding-Avatar-${gender}${num}.png`;
+    }
+    return undefined;
+  }
+
+  /**
+   * Derive avatar URL from avatar name (e.g., "avatar3" -> extract number)
+   */
+  private deriveAvatarUrlFromName(avatarName: string): string | undefined {
+    if (!avatarName) return undefined;
+
+    // Extract number from avatar name like "avatar3", "pare261551", etc.
+    const match = avatarName.match(/\d+/);
+    if (match) {
+      const num = parseInt(match[0], 10);
+      // Validate that it's a valid avatar number (1-12)
+      if (num >= 1 && num <= 12) {
+        // Determine gender based on the number (first 6 are female, next 6 are male)
+        const isFemale = num <= 6;
+        const gender = isFemale ? 'Female' : 'Male';
+        return `/assets/Images-Transparent/Image-Onboarding-Avatar-${gender}${num}.png`;
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Update user_data in localStorage immediately when API call is made
+   */
+  private updateUserDataInLocalStorage(payload: any): void {
+    try {
+      const userDataStr = localStorage.getItem('user_data');
+      if (userDataStr) {
+        const userData = JSON.parse(userDataStr);
+
+        // Update the user data with the payload values
+        if (payload.name !== undefined) userData.name = payload.name;
+        if (payload.email !== undefined) userData.email = payload.email;
+        if (payload.phone !== undefined) userData.phone = payload.phone;
+        if (payload.dateOfBirth !== undefined) userData.dateOfBirth = payload.dateOfBirth;
+        if (payload.gender !== undefined) userData.gender = payload.gender;
+        if (payload.avatarName !== undefined && payload.avatarName) {
+          if (!userData.avatar) userData.avatar = {};
+          userData.avatar.avatarName = payload.avatarName;
+        }
+        if (payload.avatarImageName !== undefined && payload.avatarImageName) {
+          if (!userData.avatar) userData.avatar = {};
+          userData.avatar.avatarImageName = payload.avatarImageName;
+        }
+
+        localStorage.setItem('user_data', JSON.stringify(userData));
+        console.log('[EditProfile] Updated user_data in localStorage immediately');
+      }
+    } catch (e) {
+      console.error('[EditProfile] Failed to update user_data in localStorage:', e);
+    }
+  }
+
+  /**
    * Store initial values for change detection
    */
   private storeInitialValues(): void {
@@ -338,6 +449,12 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
     console.log('[EditProfile] Sending only changed fields:', payload);
 
+    // Update localStorage immediately before sending API request
+    this.updateUserDataInLocalStorage(payload);
+
+    // Update UserService immediately to notify subscribers
+    this.updateUserServiceImmediately(payload);
+
     // Submit to backend
     this.isSubmitting = true;
     this.subscription.add(
@@ -373,6 +490,13 @@ export class EditProfileComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.error('Profile update error:', error);
+
+            // Restore previous user profile in UserService if API call failed
+            if (this.currentUserData) {
+              this.userService.setUserProfile(this.currentUserData);
+              console.log('[EditProfile] Restored previous user profile after API failure');
+            }
+
             // If backend returns the specific avatar-change limit message, show it in
             // the avatar suggestions area instead of a toast.
             if (error?.status === 400 && error?.error?.message === 'Avatar name can be changed only once') {
@@ -587,7 +711,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
     this.profileForm.patchValue({ phone: numericValue });
     // mark phone as dirty so validation appears while typing
-    try { this.profileForm.get('phone')?.markAsDirty(); } catch (e) {}
+    try { this.profileForm.get('phone')?.markAsDirty(); } catch (e) { }
 
     setTimeout(() => {
       try { input.setSelectionRange(numericValue.length, numericValue.length); } catch (e) { }
@@ -708,7 +832,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     const control = this.profileForm.get('email');
     if (!control) return;
     control.setValue(value);
-    try { control.markAsDirty(); } catch (e) {}
+    try { control.markAsDirty(); } catch (e) { }
   }
 
   birthdayChanged(date: any): void {
