@@ -79,7 +79,17 @@
     <h2>₹ {{ getHourlyRate() }}</h2>
     <h3>{{ getFeeTypeString() }}</h3>
     </div>
-    <mindful-button type="columbian-blue" size="medium" text="Contact Tutor" [disabled]="isChildUser()" (click)="contactTutor()" style="height: 42px !important; width: 170px;"></mindful-button>
+    <!-- Make button visually disabled for child users but keep it clickable so toast can show -->
+    <mindful-button type="columbian-blue" size="medium" text="Contact Tutor"
+      [attr.aria-disabled]="isChildUser()"
+      [class.disabled]="isChildUser()"
+      (click)="contactTutor()"
+      style="height: 42px !important; width: 170px;"></mindful-button>
+  </div>
+
+  <!-- Transient toast shown when child users attempt to contact -->
+  <div class="contact-toast" *ngIf="showContactToast" role="status" aria-live="polite">
+    {{ contactToastMessage }}
   </div>
   
   <!-- Inline bottom sheet for contact (parent or self only) -->
