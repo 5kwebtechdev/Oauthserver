@@ -719,6 +719,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       // From step 1 (role selection), go back to step 0.3 (password creation)
       this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
     } else if (this.step > 1) {
+      // Special-case: if user is in "self" flow and on pet-selection (step 4),
+      // back should return to profile/details entry (step 2) rather than step 3.
+      const savedRole = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;
+      if (this.step === 4 && savedRole === 'self') {
+        this.router.navigate(['home/sign-up'], { queryParams: { step: 2 } });
+        return;
+      }
+
       this.router.navigate(['home/sign-up'], { queryParams: { step: this.step - 1 } });
     }
   }

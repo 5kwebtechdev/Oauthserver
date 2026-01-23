@@ -7,8 +7,6 @@
 			/* requested height */
 			flex-shrink: 0;
 			border-radius: 24px 24px 48px 48px;
-			/* requested radii */
-			/* allow decorative elements (speech bubble arrow) to extend outside the card */
 			overflow: visible;
 			background: url('/assets/Images-Thumbnails/Background-Content.png') center/cover no-repeat;
 
@@ -66,6 +64,7 @@
 						font-weight: 600;
 						width: 100%;
 						border: none;
+						outline: none;
 					}
 
 					/* mic button on the right inside the pill */
