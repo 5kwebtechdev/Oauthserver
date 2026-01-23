@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ModalController } from '@ionic/angular';
@@ -26,7 +26,7 @@ import { TutorLikeService } from '../../../services/tutor-like.service';
   templateUrl: './tutor-profile.component.html',
   styleUrls: ['./tutor-profile.component.scss']
 })
-export class TutorProfileComponent implements OnInit {
+export class TutorProfileComponent implements OnInit, OnDestroy {
   @Input() tutor: Tutor | undefined;
 
   // Like toggle state
@@ -48,6 +48,11 @@ export class TutorProfileComponent implements OnInit {
   // Inline contact sheet state
   showContactSheet = false;
   selectedContactMethod: 'call' | 'email' | null = 'call';
+
+  // Transient contact toast for child users
+  showContactToast = false;
+  contactToastMessage = 'Ask your parent to reach out';
+  private toastTimeout: any = null;
 
   constructor(
     private http: HttpClient,
@@ -253,11 +258,33 @@ export class TutorProfileComponent implements OnInit {
 
   contactTutor(): void {
     if (this.isChildUser()) {
+      // show short-lived toast instructing child to ask parent
+      this.showTransientContactToast();
       console.warn('Contact disabled for child users');
       return;
     }
+
     // open inline bottom sheet
     this.openContactSheet();
+  }
+
+  private showTransientContactToast(durationMs = 3000): void {
+    this.contactToastMessage = 'Ask your parent to reach out';
+    this.showContactToast = true;
+    if (this.toastTimeout) {
+      clearTimeout(this.toastTimeout);
+    }
+    this.toastTimeout = setTimeout(() => {
+      this.showContactToast = false;
+      this.toastTimeout = null;
+    }, durationMs);
+  }
+
+  ngOnDestroy(): void {
+    if (this.toastTimeout) {
+      clearTimeout(this.toastTimeout);
+      this.toastTimeout = null;
+    }
   }
 
   openContactSheet(): void {
