@@ -13,6 +13,7 @@ import { TutorProfileComponent } from '../tutor-profile/tutor-profile.component'
 import { FooterComponent } from '../../footer/footer.component';
 import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
 import { TutorService } from '../../../services/tutor.service';
+import { TutorApi } from '../../../api/tutor.api';
 import { TutorListItem, TutorSortOption, Tutor } from '../../../models/tutor.model';
 
 @Component({
@@ -58,12 +59,12 @@ export class TutorHomepageComponent implements OnInit, OnDestroy {
   constructor(
     private modalCtrl: ModalController,
     private tutorService: TutorService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private tutorApi: TutorApi
   ) { }
 
   ngOnInit(): void {
     this.loadTutors();
-    this.checkForTutorProfile();
   }
 
   ngOnDestroy(): void {
@@ -160,40 +161,82 @@ export class TutorHomepageComponent implements OnInit, OnDestroy {
     // TutorAllFilter returns payload as { filters: SelectedFilters }
     if (data && data.filters) {
       const sel = data.filters as any;
-      const tf: any = {};
 
-      // sel.filters is a map of fieldKey -> string[]
-      if (sel.filters) {
-        Object.keys(sel.filters).forEach((fieldKey: string) => {
-          const values: string[] = sel.filters[fieldKey] || [];
-          const k = fieldKey.toLowerCase();
+      // First try server-side search using the exact SelectedFilters payload
+      // this lets the backend match any field/keyword precisely.
+      this.tutorApi.searchTutors(sel).subscribe(resp => {
+        // TutorApi may return { tutors: [], total: 0 } or an array - handle both
+        const tutors = Array.isArray(resp) ? resp : (resp && resp.tutors ? resp.tutors : []);
+        if (tutors && tutors.length > 0) {
+          // Replace client cache with server-provided results and update list
+          this.tutorService.setCacheAndApply(tutors);
+        } else {
+          // If server returned no results, fall back to local derived filters
+          const tf: any = {};
+          if (sel.filters) {
+            Object.keys(sel.filters).forEach((fieldKey: string) => {
+              const values: string[] = sel.filters[fieldKey] || [];
+              const k = fieldKey.toLowerCase();
 
-          if (k.includes('subject')) {
-            tf.subjects = values;
-          } else if (k.includes('level') || k.includes('class') || k.includes('grade')) {
-            tf.levels = values;
-          } else if (k.includes('availability') || k.includes('day')) {
-            tf.availability = values;
-          } else if (k.includes('contact') || k.includes('mode')) {
-            tf.contactModes = values;
-          } else if (k.includes('location')) {
-            tf.location = values.length > 0 ? values[0] : undefined;
-          } else if (k.includes('experience')) {
-            tf.experience = values.length > 0 ? values[0] : undefined;
-          } else if (k.includes('fee') || k.includes('rate') || k.includes('price')) {
-            // try to extract numeric values for min/max
-            const nums = values.map(v => Number(String(v).replace(/[^0-9.]/g, ''))).filter(n => !isNaN(n));
-            if (nums.length === 1) tf.minRate = nums[0];
-            else if (nums.length >= 2) { tf.minRate = Math.min(...nums); tf.maxRate = Math.max(...nums); }
-          } else {
-            // Fallback: add to subjects if nothing better
-            tf.subjects = tf.subjects ? [...tf.subjects, ...values] : values;
+              if (k.includes('subject')) {
+                tf.subjects = values;
+              } else if (k.includes('level') || k.includes('class') || k.includes('grade')) {
+                tf.levels = values;
+              } else if (k.includes('availability') || k.includes('day')) {
+                tf.availability = values;
+              } else if (k.includes('contact') || k.includes('mode')) {
+                tf.contactModes = values;
+              } else if (k.includes('location')) {
+                tf.location = values.length > 0 ? values[0] : undefined;
+              } else if (k.includes('experience')) {
+                tf.experience = values.length > 0 ? values[0] : undefined;
+              } else if (k.includes('fee') || k.includes('rate') || k.includes('price')) {
+                // try to extract numeric values for min/max
+                const nums = values.map(v => Number(String(v).replace(/[^0-9.]/g, ''))).filter(n => !isNaN(n));
+                if (nums.length === 1) tf.minRate = nums[0];
+                else if (nums.length >= 2) { tf.minRate = Math.min(...nums); tf.maxRate = Math.max(...nums); }
+              } else {
+                // Fallback: add to subjects if nothing better
+                tf.subjects = tf.subjects ? [...tf.subjects, ...values] : values;
+              }
+            });
           }
-        });
-      }
 
-      // Apply derived filters
-      this.tutorService.setFilters(tf);
+          // Apply derived filters locally
+          this.tutorService.setFilters(tf);
+        }
+      }, err => {
+        // On error use local filtering as fallback
+        console.error('[TutorHomepage] server search failed, falling back to local filters', err);
+        const tf: any = {};
+        if (sel.filters) {
+          Object.keys(sel.filters).forEach((fieldKey: string) => {
+            const values: string[] = sel.filters[fieldKey] || [];
+            const k = fieldKey.toLowerCase();
+
+            if (k.includes('subject')) {
+              tf.subjects = values;
+            } else if (k.includes('level') || k.includes('class') || k.includes('grade')) {
+              tf.levels = values;
+            } else if (k.includes('availability') || k.includes('day')) {
+              tf.availability = values;
+            } else if (k.includes('contact') || k.includes('mode')) {
+              tf.contactModes = values;
+            } else if (k.includes('location')) {
+              tf.location = values.length > 0 ? values[0] : undefined;
+            } else if (k.includes('experience')) {
+              tf.experience = values.length > 0 ? values[0] : undefined;
+            } else if (k.includes('fee') || k.includes('rate') || k.includes('price')) {
+              const nums = values.map(v => Number(String(v).replace(/[^0-9.]/g, ''))).filter(n => !isNaN(n));
+              if (nums.length === 1) tf.minRate = nums[0];
+              else if (nums.length >= 2) { tf.minRate = Math.min(...nums); tf.maxRate = Math.max(...nums); }
+            } else {
+              tf.subjects = tf.subjects ? [...tf.subjects, ...values] : values;
+            }
+          });
+        }
+        this.tutorService.setFilters(tf);
+      });
     }
   }
 

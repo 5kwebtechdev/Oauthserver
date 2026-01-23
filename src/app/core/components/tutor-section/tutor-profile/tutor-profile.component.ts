@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { HttpClient, HttpHeaders, HttpClientModule } from '@angular/common/http';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
@@ -48,7 +49,13 @@ export class TutorProfileComponent implements OnInit {
   showContactSheet = false;
   selectedContactMethod: 'call' | 'email' | null = 'call';
 
-  constructor(private http: HttpClient, private authService: AuthService, private likeService: TutorLikeService, private location: Location) { }
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService,
+    private likeService: TutorLikeService,
+    private location: Location,
+    private modalCtrl: ModalController
+  ) { }
 
   ngOnInit(): void {
     // initialize nav actions first so subscription can update the icon
@@ -85,8 +92,19 @@ export class TutorProfileComponent implements OnInit {
     ];
   }
 
-  close(): void {
-    // Navigate back in history (previous screen)
+  async close(): Promise<void> {
+    // If opened as an Ionic modal, dismiss it to return to the entry page.
+    try {
+      const top = await this.modalCtrl.getTop();
+      if (top) {
+        await top.dismiss();
+        return;
+      }
+    } catch (e) {
+      // ignore and fall back to history
+    }
+
+    // Fallback: navigate back in browser history
     try { this.location.back(); } catch (e) { window.history.back(); }
   }
 
