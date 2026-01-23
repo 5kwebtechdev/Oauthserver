@@ -369,6 +369,13 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     if (this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime)) return false;
     if (this.isEndTimeNotAfterStart(this.startTime, this.endTime)) return false;
     if (this.isEndTimeCrossingMidnight(this.startTime, this.endTime)) return false;
+
+    // Additional required fields checked by submit validations
+    if (!this.selectedTags || this.selectedTags.length === 0) return false;
+    if (this.currentActive !== 'timetable' && !this.selectedRoutine) return false;
+    if (!this.priority) return false;
+    if (!this.notes?.trim()) return false;
+
     return this.everyday || (this.selectedDays && this.selectedDays.size > 0);
   }
 
