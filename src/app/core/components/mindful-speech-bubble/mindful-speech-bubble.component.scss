@@ -109,6 +109,11 @@
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
+/* Allow host-level overrides to change alignment (e.g. .cheer-bubble on the host) */
+:host(.cheer-bubble) .message-text {
+  text-align: left;
+}
+
 .bubble-arrow {
   position: absolute;
   width: 0;
