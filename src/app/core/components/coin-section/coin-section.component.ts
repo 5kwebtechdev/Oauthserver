@@ -74,6 +74,12 @@ export class CoinSectionComponent implements OnInit {
         }));
     }
 
+    get sortedCoinItems(): CoinItem[] {
+        const items = [...this.coinItems];
+        items.sort((a, b) => b.date.getTime() - a.date.getTime());
+        return items;
+    }
+
     private getIconForType(type: string, habit: any, task: any): string {
         // Use habit or task icon if available, otherwise use default based on type
         if (type === 'HABIT_COMPLETION' && habit?.tags?.length > 0) {
