@@ -1,5 +1,4 @@
 .footer-main {
-  height: 80px;
   border-radius: 0 0 24px 24px;
   background: #FDFDFD;
   box-shadow: 0 0 12px 0 rgba(107, 101, 106, 0.15);
@@ -11,7 +10,16 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 0 20px;
+  min-height: 80px;
+  padding-top: 8px;
+  /* Base horizontal padding and top padding; avoid adding extra bottom space by default */
+  /* Always respect device safe-area inset at the very bottom (no added spacer when not needed) */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* When a system navigation bar is detected at runtime, add a small spacer above it */
+  &.has-system-nav {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0px);
+  }
 }
 
 .footer-item {
@@ -64,8 +72,8 @@
   justify-content: center;
   cursor: pointer;
   position: relative;
-  margin-bottom: 40px;
   z-index: 100;
+  bottom:16px;
 
   svg {
     width: 88px;

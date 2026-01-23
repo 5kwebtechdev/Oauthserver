@@ -43,17 +43,16 @@ export class MindfulDatepickerComponent implements ControlValueAccessor {
     this.isOpen = !this.isOpen;
 
     if (!wasOpen && this.isOpen) {
-      // When opening, set currentMonth to show the appropriate month
+      // When opening, set currentMonth to show the appropriate month.
+      // Prefer the currently set date, otherwise prefer minDate (useful for end-date picker),
+      // otherwise fall back to today. Do NOT pre-select a date here — the user must
+      // explicitly pick a date to change the model.
       if (this.startDate) {
         this.currentMonth = new Date(this.startDate.getFullYear(), this.startDate.getMonth(), 1);
+      } else if (this.minDate) {
+        this.currentMonth = new Date(this.minDate.getFullYear(), this.minDate.getMonth(), 1);
       } else {
         this.currentMonth = new Date();
-      }
-
-      // For single-date pickers with no value, pre-select minDate or today
-      if (this.type === 'date' && !this.startDate) {
-        const defaultDate = this.minDate ? new Date(this.minDate) : new Date();
-        this.startDate = new Date(defaultDate.getFullYear(), defaultDate.getMonth(), defaultDate.getDate());
       }
     }
   }
@@ -97,7 +96,9 @@ export class MindfulDatepickerComponent implements ControlValueAccessor {
   confirmSelection() {
     this.isOpen = false;
     if (this.type === 'date') {
-      this.onChange(this.startDate);
+      // Only emit when a date is actually selected (prevents accidental defaulting
+      // when the picker was opened but the user didn't choose a date).
+      if (this.startDate) this.onChange(this.startDate);
     } else {
       this.onChange({ start: this.startDate, end: this.endDate });
     }
@@ -137,6 +138,28 @@ export class MindfulDatepickerComponent implements ControlValueAccessor {
     }
 
     return days;
+  }
+
+  /**
+   * Return the month days but omit the final week if it contains NO dates
+   * from the current month (prevents showing an unnecessary faded week).
+   */
+  getVisibleMonthDays(): Date[] {
+    const days = this.getMonthDays();
+    const weeks: Date[][] = [];
+    for (let i = 0; i < days.length; i += 7) {
+      weeks.push(days.slice(i, i + 7));
+    }
+
+    while (weeks.length > 0) {
+      const lastWeek = weeks[weeks.length - 1];
+      const anyInCurrent = lastWeek.some(d => this.isDateinCurrentMonth(d));
+      if (anyInCurrent) break;
+      weeks.pop();
+    }
+
+    // Flatten back to a single array
+    return weeks.reduce((acc: Date[], wk: Date[]) => acc.concat(wk), [] as Date[]);
   }
 
   isDisabled(date: Date): boolean {

@@ -1,16 +1,17 @@
 .content-page {
 	.content-main {
+		 padding-top: calc(constant(safe-area-inset-top) + 0px);
+  		 padding-top: calc(env(safe-area-inset-top, 0px) + 0px);
 		.card {
 			position: relative;
 			display: flex;
 			height: 254px;
 			/* requested height */
 			flex-shrink: 0;
-			border-radius: 24px 24px 48px 48px;
-			/* requested radii */
-			/* allow decorative elements (speech bubble arrow) to extend outside the card */
+			border-radius: 0px 0px 48px 48px;
 			overflow: visible;
 			background: url('/assets/Images-Thumbnails/Background-Content.png') center/cover no-repeat;
+			    background-color: #ff5b77;
 
 
 			.card-bg {
@@ -66,6 +67,7 @@
 						font-weight: 600;
 						width: 100%;
 						border: none;
+						outline: none;
 					}
 
 					/* mic button on the right inside the pill */
