@@ -1,6 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { HttpClient, HttpHeaders, HttpClientModule } from '@angular/common/http';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
@@ -25,7 +26,7 @@ import { TutorLikeService } from '../../../services/tutor-like.service';
   templateUrl: './tutor-profile.component.html',
   styleUrls: ['./tutor-profile.component.scss']
 })
-export class TutorProfileComponent implements OnInit {
+export class TutorProfileComponent implements OnInit, OnDestroy {
   @Input() tutor: Tutor | undefined;
 
   // Like toggle state
@@ -48,7 +49,18 @@ export class TutorProfileComponent implements OnInit {
   showContactSheet = false;
   selectedContactMethod: 'call' | 'email' | null = 'call';
 
-  constructor(private http: HttpClient, private authService: AuthService, private likeService: TutorLikeService, private location: Location) { }
+  // Transient contact toast for child users
+  showContactToast = false;
+  contactToastMessage = 'Ask your parent to reach out';
+  private toastTimeout: any = null;
+
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService,
+    private likeService: TutorLikeService,
+    private location: Location,
+    private modalCtrl: ModalController
+  ) { }
 
   ngOnInit(): void {
     // initialize nav actions first so subscription can update the icon
@@ -85,8 +97,19 @@ export class TutorProfileComponent implements OnInit {
     ];
   }
 
-  close(): void {
-    // Navigate back in history (previous screen)
+  async close(): Promise<void> {
+    // If opened as an Ionic modal, dismiss it to return to the entry page.
+    try {
+      const top = await this.modalCtrl.getTop();
+      if (top) {
+        await top.dismiss();
+        return;
+      }
+    } catch (e) {
+      // ignore and fall back to history
+    }
+
+    // Fallback: navigate back in browser history
     try { this.location.back(); } catch (e) { window.history.back(); }
   }
 
@@ -235,11 +258,33 @@ export class TutorProfileComponent implements OnInit {
 
   contactTutor(): void {
     if (this.isChildUser()) {
+      // show short-lived toast instructing child to ask parent
+      this.showTransientContactToast();
       console.warn('Contact disabled for child users');
       return;
     }
+
     // open inline bottom sheet
     this.openContactSheet();
+  }
+
+  private showTransientContactToast(durationMs = 3000): void {
+    this.contactToastMessage = 'Ask your parent to reach out';
+    this.showContactToast = true;
+    if (this.toastTimeout) {
+      clearTimeout(this.toastTimeout);
+    }
+    this.toastTimeout = setTimeout(() => {
+      this.showContactToast = false;
+      this.toastTimeout = null;
+    }, durationMs);
+  }
+
+  ngOnDestroy(): void {
+    if (this.toastTimeout) {
+      clearTimeout(this.toastTimeout);
+      this.toastTimeout = null;
+    }
   }
 
   openContactSheet(): void {

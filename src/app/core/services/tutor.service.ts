@@ -363,6 +363,16 @@ export class TutorService {
     }
 
     /**
+     * Replace the tutors cache (for example when server returns filtered results)
+     * and re-apply current filters/sort to update the public list.
+     */
+    setCacheAndApply(tutors: Tutor[] | null): void {
+        this.tutorsCache$.next(tutors || []);
+        this.tutorsLoaded = true;
+        this.applyFiltersAndSort();
+    }
+
+    /**
      * Estimate count of tutors matching a `SelectedFilters` payload.
      * This uses the same filtering heuristics as `applyFiltersAndSort` but
      * does not mutate service state.
