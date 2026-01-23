@@ -1289,33 +1289,28 @@ display: flex;
    component control heading/subtext styling. */
 
 .welcome-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 40px 16px;
+  flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 16px;
+    width: 100%;
+ 
 }
 
 .welcome-content {
   text-align: center;
-  max-width: 420px;
+}
+.onboarding-image{
+  width: 250px;
+height: 160px;
+aspect-ratio: 25/16;
 }
 
 .welcome-content .subtitle {
   color: #6b6b6b;
 }
 
-.begin-action {
-  display: flex;
-  justify-content: center;
-}
-
-.onboarding-image {
-  display: block;
-  margin: 0 auto 20px;
-  max-width: 280px;
-  width: 100%;
-  height: auto;
-}
 
 .step-5-container {
   background: #ffffff !important;
