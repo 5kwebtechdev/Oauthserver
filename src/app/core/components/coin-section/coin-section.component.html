@@ -21,7 +21,9 @@
         </div>
 
         <div class="coin-list-section">
-            <h2>Spent Smart, Spent Fun!</h2>
+            <div class="list-header">
+                <h2>Spent Smart, Spent Fun!</h2>
+            </div>
 
             <ng-container *ngIf="isLoading">
                 <div class="loading-container">
@@ -40,7 +42,7 @@
                 </div>
             </ng-container>
 
-            <div *ngFor="let item of coinItems" class="coin-list-item">
+            <div *ngFor="let item of sortedCoinItems" class="coin-list-item">
                 <div class="coin-detail">
                     <img [src]="item.icon" alt="{{ item.label }} icon" class="item-icon">
                     <div class="coin-label">
