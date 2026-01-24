@@ -7,19 +7,9 @@
       fill="#282527" />
     </svg>
   </button>
-  <div class="w-100">
+  <div class="main-card">
   <div class="mindful-card-header__left">
     <h3 class="mindful-card-header__title">{{ title }}</h3>
-    <div class="mindful-card-header__right">
-      <div class="mindful-card-header__actions">
-        <ng-content select="[mindful-header-actions]"></ng-content>
-    
-        <ng-content></ng-content>
-    
-      </div>
-    </div>
-    </div>
-<div>
     <div class="mindful-card-header__tagline">
       <ng-container *ngIf="subtitleLeft">
         <span class="tag">{{ subtitleLeft }}</span>
@@ -37,6 +27,14 @@
         <span class="tag">{{ subtitleRight }}</span>
       </ng-container>
     </div>
-  </div>
-  </div>
+    </div>
+    <div class="mindful-card-header__right">
+      <div class="mindful-card-header__actions">
+        <ng-content select="[mindful-header-actions]"></ng-content>
+    
+        <ng-content></ng-content>
+    
+      </div>
+      </div>
+    </div>
 </header>

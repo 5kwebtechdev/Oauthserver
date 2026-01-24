@@ -800,7 +800,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   async openHabitPage() {
-    await this.router.navigateByUrl('/habit-page');
+    // Navigate to the authenticated habit page route
+    await this.router.navigateByUrl('/authed/habit-page');
   }
 
   async openTimeline() {

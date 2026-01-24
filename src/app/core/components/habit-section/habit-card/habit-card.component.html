@@ -1,10 +1,14 @@
 <!-- List Mode -->
+<!-- Shared header used by both list and recent modes -->
+<ng-template #dayHeader>
+  <mindful-card-header title="Today Day at a Glance" subtitleMiddle="Check tasks • Finish habits • Crush it">
+    <img src="/assets/Icons-Neutral/Icon-Time Management.png" alt="View All" class="day-at-glance__view-all"
+      (click)="openTimeline()" style="cursor:pointer;" />
+  </mindful-card-header>
+</ng-template>
 <div *ngIf="mode === 'list'" class="d-flex flex-column gap-4">
   <div class="day-at-glance-container">
-    <mindful-card-header title="Your Day at a Glance" subtitleMiddle="Check tasks • Finish habits • Crush it">
-      <img src="/assets/Icons-Neutral/Icon-Time Management.png" alt="View All" class="day-at-glance__view-all"
-        (click)="openTimeline()" style="cursor:pointer;" *ngIf="!isEmpty" />
-    </mindful-card-header>
+    <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
 
     <!-- Tab Navigation -->
     <div class="container w-full" *ngIf="!isEmpty">
@@ -63,10 +67,7 @@
 <!-- Recent Mode -->
 <div *ngIf="mode === 'recent'" class="d-flex flex-column gap-4">
   <div class="day-at-glance-container">
-    <mindful-card-header title="Your Day at a Glance" subtitleMiddle="Check tasks • Finish habits • Crush it">
-      <img src="/assets/Icons-Neutral/Icon-Time Management.png" alt="View All" class="day-at-glance__view-all"
-        (click)="openTimeline()" style="cursor:pointer;" *ngIf="!isEmpty" />
-    </mindful-card-header>
+    <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
 
     <!-- Tab Navigation -->
     <div class="container w-full" *ngIf="!isEmpty">
@@ -111,8 +112,10 @@
   </div>
 
   <!-- CTA Buttons -->
-  <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="isEmpty">
-    <mindful-button type="magenta" large style="display:block; width:100%" text="Add New"
+  <div class="add-button-container d-flex gap-2" [class.mt-4]="!isEmpty" *ngIf="isEmpty">
+    <mindful-button type="magenta-transparent" medium style="display:block; width:100%" text="View all"
+      (click)="openHabitPage()"></mindful-button>
+    <mindful-button type="magenta" medium style="display:block; width:100%" text="Add New"
       (click)="openHabitInput()"></mindful-button>
   </div>
   <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
