@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from "@angular/common";
-import { ModalController } from '@ionic/angular';
+import { ModalController, RefresherCustomEvent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { NotesComponent } from '../../core/components/notes/notes.component';
 import { HabitCardComponent } from "../../core/components/habit-section/habit-card/habit-card.component";
@@ -103,35 +103,32 @@ export class UserDashboardComponent implements OnInit {
       return;
     }
 
-    // Try to get userName from session storage first
-    const storedUserData = sessionStorage.getItem('user_data') || localStorage.getItem('user_data');
-    if (storedUserData) {
-      try {
-        const userData = JSON.parse(storedUserData);
+    // Subscribe to user data changes from AuthService (primary source of truth)
+    // This will update the UI whenever user data is modified (e.g., from edit-profile)
+    this.authService.userData$.subscribe(userData => {
+      if (userData) {
+        console.log('[UserDashboard] User data updated from AuthService:', userData.name);
         this.userName = userData.name || 'User';
-      } catch (e) {
-        console.error('Error parsing stored user data:', e);
-        this.userName = 'User';
-      }
-    }
-
-    // Load user profile from service
-    this.userService.getUserProfile$().subscribe(profile => {
-      if (profile) {
-        this.userName = profile.name || 'User';
-        this.userAvatarUrl = this.userService.getUserAvatarUrl();
+        
+        // Update avatar from user data
+        const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
+        if (resolved.url) this.userAvatarUrl = resolved.url;
+        if (resolved.alt) this.avatarImageName = resolved.alt;
       }
     });
 
-    // Prefer avatar info from stored login response (for child/self avatars)
-    try {
-      const userData = this.authService.getUserData();
-      const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
-      if (resolved.url) this.userAvatarUrl = resolved.url;
-      if (resolved.alt) this.avatarImageName = resolved.alt;
-    } catch (e) {
-      // ignore
-    }
+    // Load user profile from service (secondary source for additional profile info)
+    this.userService.getUserProfile$().subscribe(profile => {
+      if (profile) {
+        // Only update if not already set from AuthService
+        if (!this.userName || this.userName === 'User') {
+          this.userName = profile.name || 'User';
+        }
+        if (!this.userAvatarUrl) {
+          this.userAvatarUrl = this.userService.getUserAvatarUrl();
+        }
+      }
+    });
 
     // Fetch user stats (coins, streaks, badges, etc.) from backend
     this.loadUserStats();
@@ -391,5 +388,66 @@ export class UserDashboardComponent implements OnInit {
    * Resolve avatar URL from an avatarImageName like "Avatar 3" and optional gender
    */
   // helper moved to ChildSelfImageService
+
+  /**
+   * Handle pull-to-refresh event
+   * Validates session, refreshes user data from API, and reloads all data
+   */
+  async handleRefresh(event: RefresherCustomEvent): Promise<void> {
+    console.log('[UserDashboard] Pull to refresh triggered');
+    
+    try {
+      // First, validate session and refresh user data from API
+      const isSessionValid = await this.authService.refreshUserData().toPromise();
+      
+      if (!isSessionValid) {
+        console.log('[UserDashboard] Session invalid or refresh failed');
+        // Session might be invalid, but don't redirect here - let auth guard handle it
+      } else {
+        // Update local user data from refreshed storage
+        const userData = this.authService.getUserData();
+        if (userData) {
+          this.userName = userData.name || this.userName;
+          
+          // Update avatar from refreshed data
+          const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
+          if (resolved.url) this.userAvatarUrl = resolved.url;
+          if (resolved.alt) this.avatarImageName = resolved.alt;
+          
+          // Update user profile in UserService
+          this.userService.updateUserProfile({
+            name: userData.name,
+            email: userData.email,
+            phone: userData.phone,
+            gender: userData.gender,
+            relationship: userData.relationship
+          });
+        }
+      }
+      
+      // Reload user stats from vibes API
+      this.loadUserStats();
+      
+      // Reload habits and tasks
+      this.loadRecentHabitsAndTasks();
+      
+      // Update pet message
+      this.currentPetMessage = this.petMessagesService.getMessage('home', {
+        userName: this.userName,
+        tasksCount: this.recentTasks.length,
+        habitsCount: this.recentHabits.length,
+        streakDays: this.userStreaks
+      });
+      this.petMood = this.currentPetMessage.mood;
+      
+      // Wait a bit to show the refresh animation
+      await new Promise(resolve => setTimeout(resolve, 800));
+    } catch (error) {
+      console.error('[UserDashboard] Error during refresh:', error);
+    } finally {
+      // Complete the refresh
+      event.target.complete();
+    }
+  }
 
 }

@@ -1,7 +1,6 @@
 .content-page {
 	.content-main {
-		 padding-top: calc(constant(safe-area-inset-top) + 0px);
-  		 padding-top: calc(env(safe-area-inset-top, 0px) + 0px);
+	
 		.card {
 			position: relative;
 			display: flex;

@@ -1,12 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ModalController } from '@ionic/angular';
+import { IonicModule, ModalController, RefresherCustomEvent } from '@ionic/angular';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
 import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigator.component';
 import { NotesService, NoteModel } from './notes.service';
 import { NotesSaveComponent } from './notes-save/notes-save.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'notes',
@@ -31,7 +32,12 @@ export class NotesComponent {
   public editIndex: number | null = null;
   public editName: string = '';
 
-  constructor(private modalCtrl: ModalController, private router: Router, private notesService: NotesService) {
+  constructor(
+    private modalCtrl: ModalController,
+    private router: Router,
+    private notesService: NotesService,
+    private authService: AuthService
+  ) {
     // restore session cache if present; otherwise fetch from server once
     this.notesService.initFromSession();
     this.notes = this.notesService.getAll();
@@ -142,6 +148,52 @@ export class NotesComponent {
       const details = document.querySelector('.sort-dropdown') as HTMLDetailsElement | null;
       if (details && details.open) details.open = false;
     } catch (e) { /* ignore DOM errors in SSR or test env */ }
+  }
+
+  /**
+   * Handle pull-to-refresh event
+   * Validates session and refreshes notes data
+   */
+  async handleRefresh(event: RefresherCustomEvent): Promise<void> {
+    console.log('[Notes] Pull to refresh triggered');
+    try {
+      // Validate session and refresh user data
+      await this.authService.refreshUserData().toPromise();
+      
+      // Reload notes from server
+      await this.loadFromServerAsync();
+      
+      // Wait a bit to show the refresh animation
+      await new Promise(resolve => setTimeout(resolve, 500));
+    } catch (error) {
+      console.error('[Notes] Error during refresh:', error);
+    } finally {
+      event.target.complete();
+    }
+  }
+
+  /**
+   * Async wrapper for loading notes from server
+   */
+  private loadFromServerAsync(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.loading = true;
+      this.loadError = null;
+      this.notesService.fetchAll().subscribe({
+        next: (list) => {
+          this.notes = list || [];
+          this.applySort();
+          this.loading = false;
+          resolve();
+        },
+        error: (err) => {
+          console.error('Failed to load notes', err);
+          this.loadError = 'Failed to load notes';
+          this.loading = false;
+          reject(err);
+        }
+      });
+    });
   }
 
   private applySort() {
