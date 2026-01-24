@@ -38,12 +38,12 @@
                             [belowText]="''"></mindful-completion>
                     </div>
                 </div>
-                <p class="badge-name">{{ badge.name }}</p>
                 <p class="badge-level-text" *ngIf="badge.levelText">{{ badge.levelText }}</p>
+                <p class="badge-name">{{ badge.name }}</p>
                 <p class="badge-description">{{ badge.description }}</p>
-                <p class="badge-achievement" *ngIf="badge.achievementText && badge.currentProgress > 0">
+                <!-- <p class="badge-achievement" *ngIf="badge.achievementText && badge.currentProgress > 0">
                     {{ badge.achievementText }}
-                </p>
+                </p> -->
             </div>
         </div>
     </div>
