@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from "@angular/common";
-import { ModalController } from '@ionic/angular';
+import { ModalController, RefresherCustomEvent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { NotesComponent } from '../../core/components/notes/notes.component';
 import { UserService } from '../../core/services/user.service';
@@ -377,6 +377,71 @@ export class ParentAccountComponent implements OnInit {
 
     openCalendar() {
         this.router.navigateByUrl('/calendar-main');
+    }
+
+    /**
+     * Handle pull-to-refresh event
+     * Validates session, refreshes user data from API, and reloads all data
+     */
+    async handleRefresh(event: RefresherCustomEvent): Promise<void> {
+        console.log('[ParentAccount] Pull to refresh triggered');
+        
+        try {
+            // First, validate session and refresh user data from API
+            const isSessionValid = await this.authService.refreshUserData().toPromise();
+            
+            if (!isSessionValid) {
+                console.log('[ParentAccount] Session invalid or refresh failed');
+            } else {
+                // Update local user data from refreshed storage
+                const userData = this.authService.getUserData();
+                if (userData) {
+                    this.userName = userData.name || this.userName;
+                    this.parentInitial = (userData.name && userData.name.charAt(0)) || this.parentInitial;
+                    const isFemale = (userData.gender || '').toLowerCase() === 'female';
+                    this.parentAvatarStyle = this.parentImageService.getAvatarStyle(this.parentInitial, isFemale, 54);
+                }
+            }
+            
+            // Reload user stats
+            this.loadUserStats();
+            
+            // Reload children data from API
+            this.moodService.getVibesDisplay().subscribe({
+                next: (data) => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        this.children = data.map(d => ({
+                            id: d.userId,
+                            name: d.userName,
+                            avatarUrl: this.childSelfImage.resolveAvatarForMember(d).url || '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png',
+                            relationship: d.relationship || 'Child',
+                            raw: d
+                        }));
+                        
+                        // Update selected child's stats if applicable
+                        if (this.selectedChild) {
+                            const updated = this.children.find(c => c.id === this.selectedChild?.id);
+                            if (updated) {
+                                this.selectedChild = updated;
+                                if (updated.raw) this.applyChildStats(updated.raw);
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Refresh habit content if available
+            if (this.habitPageContent) {
+                await this.habitPageContent.refresh();
+            }
+            
+            // Wait a bit to show the refresh animation
+            await new Promise(resolve => setTimeout(resolve, 800));
+        } catch (error) {
+            console.error('[ParentAccount] Error during refresh:', error);
+        } finally {
+            event.target.complete();
+        }
     }
 
     protected readonly console = console;

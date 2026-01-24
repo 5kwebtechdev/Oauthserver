@@ -1,5 +1,15 @@
 <ion-content class="notes-fullscreen">
 
+  <!-- Pull-to-refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Pull to refresh"
+      refreshingSpinner="circles"
+      refreshingText="Refreshing...">
+    </ion-refresher-content>
+  </ion-refresher>
+
   <mindful-navigator [heading]="'Quick Notes. Big Ideas'" [backIcon]="'arrowSvg'" (back)="close()"></mindful-navigator>
 
   <div class="empty-notes-container" *ngIf="!notes || notes.length === 0">
