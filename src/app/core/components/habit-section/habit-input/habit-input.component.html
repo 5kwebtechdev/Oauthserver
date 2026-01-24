@@ -158,7 +158,7 @@
     </div>
   </mindful-navigator>
   <div class="habit-input-root" [ngClass]="currentActive">
-    <div class="container w-full">
+    <div *ngIf="!editingId" class="container w-full">
       <div class="row toggler">
         <div class="col-4" (click)="currentActive = 'habits'" [ngClass]="{active: currentActive === 'habits'}">Habits
         </div>

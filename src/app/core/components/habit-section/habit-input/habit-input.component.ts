@@ -53,6 +53,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     return this._startDate;
   }
 
+  
+
   set startDate(value: Date | null) {
     if (value && this._endDate && value > this._endDate) {
       console.warn('Start date cannot be after end date');
@@ -126,6 +128,10 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
 
   @ViewChild(MindfulTagsComponent) tagsComponent?: MindfulTagsComponent;
   @ViewChild(MindfulSelectorsComponent) selectorsComponent?: MindfulSelectorsComponent;
+
+  // store labels found during init so we can sync them to the child after view init
+  private _pendingTagLabels: string[] = [];
+  private _tagsSynced: boolean = false;
 
   editingId?: string;
   originalHabit: any = null;
@@ -238,14 +244,14 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         const rel = (parsed.relationship || parsed.role || '').toString().toUpperCase();
         this.isChild = rel === 'CHILD';
       }
-    } catch (e) {
+    } catch (e: any) {
       // ignore parsing errors and leave isChild = false
     }
 
     // Determine whether current user is a parent (parent accounts can assign coins)
     try {
       this.isParent = !!(this.authService && this.authService.isParentUser && this.authService.isParentUser());
-    } catch (e) {
+    } catch (e: any) {
       this.isParent = false;
     }
 
@@ -356,8 +362,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
             }
           }
         }
-      } catch (e) { console.warn('Failed to sync routine tags with MindfulTags component', e); }
-    } catch (e) {
+      } catch (e: any) { console.warn('Failed to sync routine tags with MindfulTags component', e); }
+    } catch (e: any) {
       console.warn('Failed to read navigation state for habit-input', e);
     }
   }
@@ -537,8 +543,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
 
     Object.assign(this.errors, validations);
     // Debug: log validation flags and force change detection so template updates immediately
-    try { console.log('[Validation] attemptedSubmit=', this.attemptedSubmit, 'validations=', validations, 'errors=', this.errors); } catch (e) { }
-    try { this.cd.detectChanges(); } catch (e) { }
+    try { console.log('[Validation] attemptedSubmit=', this.attemptedSubmit, 'validations=', validations, 'errors=', this.errors); } catch (e: any) { }
+    try { this.cd.detectChanges(); } catch (e: any) { }
     if (Object.values(validations).some(Boolean)) return;
 
     const formattedStartTime = this.to24Hour(this.startTime || '');
@@ -645,7 +651,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     try {
       console.log('[Submit Debug] isChild=', this.isChild, 'isPrivate=', this.isPrivate, 'sharedWithParent=', (this.isChild ? !this.isPrivate : false));
       console.log('[Submit Debug] Payload before forUserId:', JSON.stringify(payload, null, 2));
-    } catch (e) { /* ignore logging errors */ }
+    } catch (e: any) { /* ignore logging errors */ }
 
     // Add forUserId to payload
     // Priority: 1) Child selected by parent, 2) Current user ID
@@ -987,7 +993,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     const backendId = possibleIds.length ? possibleIds[0] : undefined;
 
     const finalizeLocalDelete = (idToRemove?: string) => {
-      try { this.habitService.deleteHabit((idToRemove || this.editingId) as string); } catch (e) { console.warn('Local delete failed', e); }
+      try { this.habitService.deleteHabit((idToRemove || this.editingId) as string); } catch (e: any) { console.warn('Local delete failed', e); }
       try { this.modalCtrl.dismiss(); } catch { /* ignore if not modal */ }
       this.deletePopupVisible = false;
 
@@ -1164,7 +1170,15 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     try {
       this.selectedRoutine = String(payload[0]);
       this.clearRoutineError();
-    } catch (e) { console.warn('Failed to parse routine selection', e); }
+    } catch (e: any) { console.warn('Failed to parse routine selection', e); }
+  }
+
+  onPrivateChange(checked: any) {
+    try {
+      this.isPrivate = !!(checked?.detail?.checked ?? checked ?? this.isPrivate);
+    } catch (e: any) {
+      this.isPrivate = !!checked;
+    }
   }
 
   clearError(field: keyof typeof this.errors) { this.errors[field] = false; }
@@ -1274,27 +1288,36 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         this.tagsComponent.selectedKeys = keysToSelect;
         this.tagsComponent.selectedKeysChange.emit(this.tagsComponent.selectedKeys);
       }
-    } catch (e) { console.warn('Failed to set tagsComponent selected keys', e); }
+    } catch (e: any) { console.warn('Failed to set tagsComponent selected keys', e); }
 
     try {
-      if (this.selectorsComponent) {
-        let selKey: any = null;
-        if (this.selectedRoutine) {
-          const byKey = this.routineOptions.find(o => String(o.key) === String(this.selectedRoutine));
-          if (byKey) selKey = byKey.key;
-          else {
-            const byVal = this.routineOptions.find(o => String(o.value).toLowerCase() === String(this.selectedRoutine).toLowerCase());
-            if (byVal) selKey = byVal.key;
+        // build labels to ensure exist in the child component (adds custom tags if needed)
+        const labels: string[] = [];
+        if (Array.isArray(this.routineTags)) labels.push(...this.routineTags.map(rt => String(rt.value || '').trim()));
+        if (Array.isArray(this.selectedTags)) labels.push(...this.selectedTags.map(st => String((st as any).value || (st as any).name || (st as any).title || '').trim()));
+        const uniq = Array.from(new Set(labels.map(l => l).filter(Boolean)));
+        if (uniq.length) {
+          if (this.tagsComponent) {
+            try { this.tagsComponent.ensureOptionsForLabels(uniq); } catch (e: any) { /* ignore */ }
+          } else {
+            // queue for AfterViewInit when ViewChild will be available
+            this._pendingTagLabels = uniq;
           }
         }
-        if (selKey != null) { this.selectorsComponent.selectedKeys = [selKey]; this.selectorsComponent.selectedKeysChange.emit(this.selectorsComponent.selectedKeys); }
-      }
-    } catch (e) { console.warn('Failed to set selectorsComponent selected keys', e); }
-  }
 
-  onPrivateChange(event: any) {
-    // Normalise both event types: boolean or event with detail.checked
-    const checked = !!(event?.detail?.checked ?? event === true);
-    this.isPrivate = checked;
+        // If child is available now, map selectedTags into child component selectedKeys
+        if (this.tagsComponent && Array.isArray(this.selectedTags) && this.selectedTags.length) {
+          const selectedKeys = (this.selectedTags || []).map(st => {
+            const val = String((st as any).value || (st as any).name || (st as any).title || '').trim().toLowerCase();
+            const opt = (this.tagsComponent!.options || []).find(o => String(o.value || '').trim().toLowerCase() === val);
+            return opt ? opt.key : null;
+          }).filter(k => k != null);
+          if (selectedKeys.length) {
+            this.tagsComponent.selectedKeys = selectedKeys as any[];
+            this.tagsComponent.selectedKeysChange.emit(this.tagsComponent.selectedKeys);
+          }
+        }
+      } catch (e: any) { console.warn('Failed to ensure tagsComponent options or set selected keys', e); }
+    } catch (e: any) { console.warn('Failed in ngAfterViewInit tag sync', e); }
+
   }
-}
