@@ -7,11 +7,15 @@
   width: 100%;
 }
 
-
+.main-card{
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
 .mindful-card-header__left {
   display: flex;
-  align-items: center;
-    justify-content: space-between;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .mindful-card-header__title {
