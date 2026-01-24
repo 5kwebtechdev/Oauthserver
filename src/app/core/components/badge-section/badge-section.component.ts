@@ -57,9 +57,8 @@ export class BadgeSectionComponent implements OnInit {
      * Calculates progress color based on completion percentage
      */
     private getProgressColor(completionPercentage: number): string {
-        if (completionPercentage >= 100) return '#4CAF50'; // Green - completed
-        if (completionPercentage >= 50) return '#FF9800';  // Orange - halfway
-        if (completionPercentage > 0) return '#2196F3';    // Blue - started
+        // Show green for any in-progress or completed state, gray for not started
+        if (completionPercentage > 0) return '#4CAF50';    // Green - in progress/completed
         return '#9E9E9E';                                   // Gray - not started
     }
 
@@ -147,7 +146,8 @@ export class BadgeSectionComponent implements OnInit {
      * Get completion percentage for display
      */
     getCompletionPercentage(badge: Badge): number {
-        if (badge.isLocked || badge.targetProgress === 0) {
+        // Show progress even for locked badges (useful to indicate progress toward unlocking).
+        if (badge.targetProgress === 0) {
             return 0;
         }
         return this.calculateCompletionPercentage(badge.currentProgress, badge.targetProgress);
