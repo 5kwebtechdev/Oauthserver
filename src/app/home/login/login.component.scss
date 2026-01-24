@@ -1,13 +1,17 @@
+.login_section{
+    min-height: 100vh;
+      background: #FDEAD7;
+
+}
 .signup-container {
   display: flex;
   flex-direction: column;
   width: 100%;
   margin: 0 auto;
   padding: 0 16px;
-  background: #FDEAD7;
   font-family: var(--font-sans);
   color: #532b19;
-  min-height: 100vh;
+
   // min-width: 360px;
   border-radius: 0;
 

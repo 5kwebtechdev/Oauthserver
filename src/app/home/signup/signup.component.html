@@ -1,12 +1,12 @@
 <ion-content [ngClass]="step === 5 ? 'bg-white' : 'bg-mindful-secondary'">
+  <mindful-navigator *ngIf="step !== 5"
+    [heading]="headerText"
+    [subtext]="headerSubtext"
+    [showSubtext]="showHeaderSubtext"
+    [variant]="'warm'"
+    (back)="goBack()">
+  </mindful-navigator>
   <div class="signup-container" [ngClass]="{'step-5-container': step === 5}">
-    <mindful-navigator *ngIf="step !== 5"
-      [heading]="headerText"
-      [subtext]="headerSubtext"
-      [showSubtext]="showHeaderSubtext"
-      [variant]="'warm'"
-      (back)="goBack()">
-    </mindful-navigator>
     <h4 class="step-text" *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 5">
       Step {{step}} of 4
       <span>{{stepDesciption[step-1]}}</span>
