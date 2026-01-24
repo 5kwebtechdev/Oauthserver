@@ -162,9 +162,10 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
       status: this.buttonLogic.normalizeStatus(res.status) as 'pending' | 'ongoing' | 'completed',
       createdAt: res.createdAt ? new Date(res.createdAt) : new Date(),
       tags: res.tags || [],
-      coinReward: res.rewardCoins || 0,
-      rewardCoins: res.rewardCoins || 0,
-      streak: res.streak || 0,
+      // Preserve coin/streak fields regardless of backend naming (coinReward, rewardCoins, coin)
+      coinReward: (res.coinReward ?? res.rewardCoins ?? res.coin) || 0,
+      rewardCoins: (res.rewardCoins ?? res.coinReward ?? res.coin) || 0,
+      streak: (res.streak ?? res.streakCount) || 0,
       highestStreak: res.highestStreak || 0,
       coinsEarned: res.coinsEarned || 0,
       completionPercentage: res.completionPercentage || 0,
