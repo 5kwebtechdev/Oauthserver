@@ -105,9 +105,36 @@ export class UserProfileComponent implements OnInit, OnChanges {
       this.loadFamilyDetails();
     }
 
+    // Subscribe to user data changes from CoreAuthService (primary source of truth)
+    // This will reactively update the UI when user data changes (e.g., from edit-profile)
+    this.coreAuthService.userData$.subscribe(userData => {
+      if (userData) {
+        console.log('[UserProfile] User data updated from CoreAuthService:', userData.name);
+        
+        // Update user object with new data
+        this.user = {
+          ...this.user,
+          name: userData.name || this.user?.name || 'User',
+          email: userData.email || this.user?.email,
+          phone: userData.phone || this.user?.phone,
+          age: userData.age || this.user?.age,
+          gender: userData.gender || this.user?.gender,
+          relationship: userData.relationship || this.user?.relationship
+        };
+
+        // Update avatar using shared resolver
+        const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
+        if (resolved.url) this.userAvatarUrl = resolved.url;
+        if (resolved.alt) this.avatarImageName = resolved.alt;
+      }
+    });
+
     this.userService.getUserProfile$().subscribe(profile => {
       if (profile && this.user) {
-        this.user.name = profile.name || 'User';
+        // Only update if not already set from CoreAuthService
+        if (!this.user.name || this.user.name === 'User') {
+          this.user.name = profile.name || 'User';
+        }
       }
     });
   }

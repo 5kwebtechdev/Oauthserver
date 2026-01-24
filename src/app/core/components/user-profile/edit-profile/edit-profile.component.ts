@@ -8,7 +8,8 @@ import { MindfulButtonComponent } from '../../mindful-button/mindful-button.comp
 import { CountriesService, Country } from '../../../services/countries.service';
 import { Subscription, Subject, of } from 'rxjs';
 import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-input.component';
-import { AuthService, EditProfilePayload } from '../../../../../package/api/auth.service';
+import { AuthService as PackageAuthService, EditProfilePayload } from '../../../../../package/api/auth.service';
+import { AuthService as CoreAuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
 import { UserService } from '../../../services/user.service';
 import { finalize, debounceTime, distinctUntilChanged, switchMap, filter, catchError } from 'rxjs/operators';
@@ -99,7 +100,8 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
   constructor(
     private countriesService: CountriesService,
-    private authService: AuthService,
+    private authService: PackageAuthService,
+    private coreAuthService: CoreAuthService,
     private coreService: CoreService,
     private userService: UserService
   ) {
@@ -120,7 +122,17 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       })
     );
 
-    // Load current user profile data
+    // Subscribe to user data changes from CoreAuthService (primary source of truth)
+    this.subscription.add(
+      this.coreAuthService.userData$.subscribe(userData => {
+        if (userData) {
+          console.log('[EditProfile] Received user data from CoreAuthService:', userData);
+          this.prefillFormFromUserData(userData);
+        }
+      })
+    );
+
+    // Load current user profile data (fallback for initial load)
     this.loadUserProfile();
 
     // Avatar suggestions stream: debounce and call API when at least 4 chars
@@ -151,18 +163,9 @@ export class EditProfileComponent implements OnInit, OnDestroy {
         if (userData) {
           const parsedData = JSON.parse(userData);
           console.log('[EditProfile] Loaded user_data from login:', parsedData);
-          // Map login response structure to UserProfile
-          userProfile = {
-            userId: parsedData.id,
-            name: parsedData.name,
-            email: parsedData.email,
-            phone: parsedData.phone,
-            dob: parsedData.dateOfBirth,
-            gender: parsedData.gender?.toLowerCase() as 'male' | 'female',
-            avatarUrl: parsedData.avatar?.url,
-            avatarName: parsedData.avatar?.avatarName,
-            relationship: parsedData.relationship as 'CHILD' | 'PARENT' | 'SELF'
-          };
+          // Use the helper method to prefill form
+          this.prefillFormFromUserData(parsedData);
+          return;
         }
       } catch (e) {
         console.error('[EditProfile] Error loading user_data:', e);
@@ -170,53 +173,107 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     }
 
     if (userProfile) {
-      console.log('[EditProfile] Autofilling form with user data:', userProfile);
-
-      // 1. Auto-fill Full Name
-      this.fullName = userProfile.name || '';
-      console.log('[EditProfile] Full Name set to:', this.fullName);
-
-      // 2. Auto-fill Gender - normalize to 'Male' or 'Female'
-      const storedGender = userProfile.gender ? String(userProfile.gender).toLowerCase() : '';
-      this.gender = storedGender === 'male' ? 'Male' : storedGender === 'female' ? 'Female' : null;
-      console.log('[EditProfile] Gender set to:', this.gender);
-
-      // 3. Auto-fill Date of Birth
-      if (userProfile.dob) {
-        this.profileForm.patchValue({ dob: userProfile.dob });
-        console.log('[EditProfile] DOB set to:', userProfile.dob);
-      }
-
-      // 4. Auto-fill Email
-      if (userProfile.email) {
-        this.profileForm.patchValue({ email: userProfile.email });
-        console.log('[EditProfile] Email set to:', userProfile.email);
-      }
-
-      // 5. Auto-fill Phone — strip any country code so the input only shows the local number
-      if (userProfile.phone) {
-        const phoneWithCode = userProfile.phone;
-        console.log('[EditProfile] Phone value from data:', phoneWithCode);
-
-        // Try to detect a matching country and set it, but always show only the local number
-        const matchingCountry = this.countries.find(c => phoneWithCode.startsWith(c.code));
-        if (matchingCountry) {
-          this.selectedCountry = matchingCountry;
+      console.log('[EditProfile] Loading from UserService:', userProfile);
+      // Map UserService profile to user_data format and prefill
+      const mappedData = {
+        id: userProfile.userId,
+        name: userProfile.name,
+        email: userProfile.email,
+        phone: userProfile.phone,
+        dateOfBirth: userProfile.dob,
+        gender: userProfile.gender,
+        relationship: userProfile.relationship,
+        avatar: {
+          url: userProfile.avatarUrl,
+          avatarName: userProfile.avatarName
         }
+      };
+      this.prefillFormFromUserData(mappedData);
+    } else {
+      console.warn('[EditProfile] No user profile data found to autofill');
+    }
+  }
 
-        const localNumber = this.normalizePhoneForInput(phoneWithCode);
-        this.profileForm.patchValue({ phone: localNumber });
-        console.log('[EditProfile] Phone number (local) set to:', localNumber, 'Country:', this.selectedCountry?.name);
+  /**
+   * Prefill form from user data object (from CoreAuthService or localStorage)
+   */
+  private prefillFormFromUserData(userData: any): void {
+    if (!userData) return;
+
+    console.log('[EditProfile] Prefilling form with user data:', userData);
+
+    // 1. Auto-fill Full Name
+    if (userData.name) {
+      this.fullName = userData.name;
+      console.log('[EditProfile] Full Name set to:', this.fullName);
+    }
+
+    // 2. Auto-fill Gender - normalize to 'Male' or 'Female'
+    if (userData.gender) {
+      const genderStr = String(userData.gender).toLowerCase();
+      this.gender = genderStr === 'male' ? 'Male' : genderStr === 'female' ? 'Female' : null;
+      console.log('[EditProfile] Gender set to:', this.gender, 'from:', userData.gender);
+    }
+
+    // 3. Auto-fill Date of Birth
+    if (userData.dateOfBirth || userData.dob) {
+      const dobValue = userData.dateOfBirth || userData.dob;
+      this.profileForm.patchValue({ dob: dobValue });
+      console.log('[EditProfile] DOB set to:', dobValue);
+    }
+
+    // 4. Auto-fill Email
+    if (userData.email) {
+      this.profileForm.patchValue({ email: userData.email });
+      console.log('[EditProfile] Email set to:', userData.email);
+    }
+
+    // 5. Auto-fill Phone — strip any country code so the input only shows the local number
+    if (userData.phone) {
+      const phoneWithCode = userData.phone;
+      console.log('[EditProfile] Phone value from data:', phoneWithCode);
+
+      // Try to detect a matching country and set it, but always show only the local number
+      const matchingCountry = this.countries.find(c => phoneWithCode.startsWith(c.code));
+      if (matchingCountry) {
+        this.selectedCountry = matchingCountry;
       }
 
-      // 6. Auto-fill Avatar Name (for non-parent accounts)
-      if (userProfile.relationship?.toUpperCase() !== 'PARENT') {
-        this.avatarName = userProfile.avatarName || '';
-        // Try to auto-detect avatar image name from stored data if available
-        if (userProfile.avatarName) {
-          const match = userProfile.avatarName.match(/\d+/);
-          if (match) {
-            const numKey = parseInt(match[0], 10);
+      const localNumber = this.normalizePhoneForInput(phoneWithCode);
+      this.profileForm.patchValue({ phone: localNumber });
+      console.log('[EditProfile] Phone number (local) set to:', localNumber, 'Country:', this.selectedCountry?.name);
+    }
+
+    // 6. Determine Account Type from stored relationship
+    const relationship = userData.relationship || userData.relationshipType;
+    if (relationship) {
+      const rel = String(relationship).toLowerCase();
+      if (rel === 'child' || rel === 'parent' || rel === 'self') {
+        this.accountType = rel as 'child' | 'parent' | 'self';
+        console.log('[EditProfile] Account type set to:', this.accountType);
+      }
+    }
+
+    // 7. Auto-fill Avatar for non-parent accounts
+    if (this.accountType !== 'parent') {
+      // Get avatar info from nested avatar object or top-level properties
+      const avatarInfo = userData.avatar || {};
+      const avatarName = avatarInfo.avatarName || userData.avatarName;
+      const avatarImageName = avatarInfo.avatarImageName || userData.avatarImageName;
+
+      if (avatarName) {
+        this.avatarName = avatarName;
+        console.log('[EditProfile] Avatar Name set to:', this.avatarName);
+
+        // Extract numeric key from avatar name (e.g., 'pare261551' or 'avatar5')
+        const match = avatarName.match(/\d+/);
+        if (match) {
+          const numKey = parseInt(match[0], 10);
+          if (numKey > 0 && numKey <= this.avatars.length) {
+            this.avatarSelected = numKey;
+            console.log('[EditProfile] Avatar selected (key):', numKey);
+
+            // Set avatar image name from avatars array
             const avatar = this.avatars.find(a => a.key === numKey);
             if (avatar) {
               this.avatarImageName = avatar.imageName;
@@ -224,46 +281,34 @@ export class EditProfileComponent implements OnInit, OnDestroy {
             }
           }
         }
-        console.log('[EditProfile] Avatar Name set to:', this.avatarName);
       }
 
-      // Store current user data for reference
-      this.currentUserData = userProfile;
+      // Override with explicit avatarImageName if provided
+      if (avatarImageName) {
+        this.avatarImageName = avatarImageName;
+        console.log('[EditProfile] Avatar Image Name overridden to:', this.avatarImageName);
 
-      // 7. Auto-select Avatar based on stored avatar name
-      if (userProfile.avatarName) {
-        // Extract numeric key from avatar name (e.g., 'pare261551' or 'avatar5')
-        const match = userProfile.avatarName.match(/\d+/);
-        if (match) {
-          const numKey = parseInt(match[0], 10);
-          if (numKey > 0 && numKey <= this.avatars.length) {
-            this.avatarSelected = numKey;
-            console.log('[EditProfile] Avatar selected:', numKey);
-          }
+        // Try to find and select the matching avatar by imageName
+        const avatar = this.avatars.find(a => a.imageName === avatarImageName);
+        if (avatar) {
+          this.avatarSelected = avatar.key;
+          console.log('[EditProfile] Avatar selected by imageName:', avatar.key);
         }
       }
-
-      // 8. Determine Account Type from stored relationship
-      if (userProfile.relationship) {
-        const rel = userProfile.relationship.toLowerCase();
-        if (rel === 'child' || rel === 'parent' || rel === 'self') {
-          this.accountType = rel as 'child' | 'parent' | 'self';
-          console.log('[EditProfile] Account type set to:', this.accountType);
-        }
-      }
-
-      // 9. Validate age based on account type
-      if (userProfile.dob) {
-        this.validateAge();
-      }
-
-      // 10. Store initial values for change detection
-      this.storeInitialValues();
-
-      console.log('[EditProfile] Profile autofill complete');
-    } else {
-      console.warn('[EditProfile] No user profile data found to autofill');
     }
+
+    // 8. Store current user data for reference
+    this.currentUserData = userData;
+
+    // 9. Validate age based on account type
+    if (userData.dateOfBirth || userData.dob) {
+      this.validateAge();
+    }
+
+    // 10. Store initial values for change detection
+    this.storeInitialValues();
+
+    console.log('[EditProfile] Profile autofill complete');
   }
 
   /**
@@ -346,34 +391,32 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Update user_data in localStorage immediately when API call is made
+   * Update user_data in localStorage and notify all subscribers via CoreAuthService
    */
   private updateUserDataInLocalStorage(payload: any): void {
     try {
-      const userDataStr = localStorage.getItem('user_data');
-      if (userDataStr) {
-        const userData = JSON.parse(userDataStr);
-
-        // Update the user data with the payload values
-        if (payload.name !== undefined) userData.name = payload.name;
-        if (payload.email !== undefined) userData.email = payload.email;
-        if (payload.phone !== undefined) userData.phone = payload.phone;
-        if (payload.dateOfBirth !== undefined) userData.dateOfBirth = payload.dateOfBirth;
-        if (payload.gender !== undefined) userData.gender = payload.gender;
-        if (payload.avatarName !== undefined && payload.avatarName) {
-          if (!userData.avatar) userData.avatar = {};
-          userData.avatar.avatarName = payload.avatarName;
-        }
-        if (payload.avatarImageName !== undefined && payload.avatarImageName) {
-          if (!userData.avatar) userData.avatar = {};
-          userData.avatar.avatarImageName = payload.avatarImageName;
-        }
-
-        localStorage.setItem('user_data', JSON.stringify(userData));
-        console.log('[EditProfile] Updated user_data in localStorage immediately');
+      // Build the update object matching the user_data structure
+      const updateData: any = {};
+      
+      if (payload.name !== undefined) updateData.name = payload.name;
+      if (payload.email !== undefined) updateData.email = payload.email;
+      if (payload.phone !== undefined) updateData.phone = payload.phone;
+      if (payload.dateOfBirth !== undefined) updateData.dateOfBirth = payload.dateOfBirth;
+      if (payload.gender !== undefined) updateData.gender = payload.gender;
+      
+      // Handle avatar as nested object
+      if (payload.avatarName !== undefined || payload.avatarImageName !== undefined) {
+        const currentUserData = this.coreAuthService.getUserData();
+        updateData.avatar = { ...(currentUserData?.avatar || {}) };
+        if (payload.avatarName) updateData.avatar.avatarName = payload.avatarName;
+        if (payload.avatarImageName) updateData.avatar.avatarImageName = payload.avatarImageName;
       }
+      
+      // Use CoreAuthService to update and broadcast to all subscribers
+      this.coreAuthService.updateUserData(updateData);
+      console.log('[EditProfile] Updated user_data via CoreAuthService');
     } catch (e) {
-      console.error('[EditProfile] Failed to update user_data in localStorage:', e);
+      console.error('[EditProfile] Failed to update user_data:', e);
     }
   }
 

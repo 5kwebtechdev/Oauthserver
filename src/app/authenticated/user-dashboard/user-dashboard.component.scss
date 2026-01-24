@@ -49,23 +49,19 @@ ion-content {
 
 // USER PROFILE SECTION
 .user-profile-section {
-  position: relative;
-  //width: 100vw;
-  //margin-left: calc(-50vw + 50%);
-  height: 340px;
-  background-image: url('/assets/Images-Thumbnails/Background-Home.png');
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-  border-radius: 24px 24px 48px 48px;
-  // padding: 20px 0px;
-  margin-bottom: 24px;
-  flex-shrink: 0;
-
-  // Center the content both horizontally and vertically
-  display: flex;
-  align-items: center;
-  // justify-content: center;
+     position: relative;
+    height: 300px;
+    background-image: url(/assets/Images-Thumbnails/Background-Home.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 0 0 48px 48px;
+    /* margin-bottom: 24px; */
+    flex-shrink: 0;
+    display: flex;
+    /* align-items: center; */
+    background-color: #fee581;
+    padding-top: 20px;
 }
 
 .dasboard-wrapper {
@@ -458,4 +454,25 @@ ion-content {
 footer {
   margin: 16px;
   margin-bottom: 0; // Keep footer at the very bottom
+}
+
+// PULL TO REFRESH STYLING
+ion-refresher {
+  --background: transparent;
+  
+  ion-refresher-content {
+    --color: #7471BA;
+    
+    .refresher-pulling-icon,
+    .refresher-refreshing-icon {
+      color: #7471BA;
+    }
+    
+    .refresher-pulling-text,
+    .refresher-refreshing-text {
+      color: #282527;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+  }
 }

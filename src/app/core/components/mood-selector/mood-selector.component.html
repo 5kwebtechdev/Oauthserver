@@ -7,7 +7,7 @@
     <div class="mood-progress" aria-hidden="true"><span class="bar" [style.width.%]="progressPercent"></span></div>
   </div>
   <div class="mood-right">
-    <div class="mood-emoji" role="button" tabindex="0" (click)="openPopup()" (keydown.enter)="openPopup()"
+    <div class="mood-emoji" role="button" tabindex="0" (click)="onMoodClick()" (keydown.enter)="onMoodClick()"
       aria-label="Open mood picker" style="position:relative;">
         <!-- blocked-tooltip: appears when the user reached daily limit -->
         <div *ngIf="blockedTooltipVisible" class="blocked-tooltip" (click)="$event.stopPropagation()">

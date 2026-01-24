@@ -71,6 +71,8 @@ $svg-icons: (
   --error_color: #bb2124;
   --font-heading: 'Fredoka', sans-serif;
   --font-sans: 'Nunito', sans-serif;
+  /* Visual footer height used across app to reserve space for fixed footer */
+  --footer-visual-height: 80px;
 }
 
 html,
@@ -412,6 +414,8 @@ ion-content {
     >* {
       margin-top: 0 !important;
     }
+    /* Ensure page container reserves bottom space for fixed footer on all devices */
+    padding-bottom: calc(var(--footer-visual-height, 80px) + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -425,7 +429,7 @@ ion-content {
         min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
         min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
         padding-top: env(safe-area-inset-top);
-        padding-bottom: env(30px safe-area-inset-bottom);
+        padding-bottom: calc(var(--footer-visual-height, 80px) + env(safe-area-inset-bottom, 0px));
       }
     }
   }
