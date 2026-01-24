@@ -117,6 +117,20 @@ export class MoodSelectorComponent {
     this.popupSelection = null;
     this.showPopup = true;
   }
+  
+  // First-layer click handler used by template to prevent opening popup when blocked
+  onMoodClick() {
+    // Prevent parents from opening popup
+    const userRelationship = this.authService.getUserRelationship();
+    if (userRelationship === 'PARENT') return;
+
+    if (this.setsToday >= 2) {
+      this.showBlockedTooltip();
+      return;
+    }
+
+    this.openPopup();
+  }
   closePopup() { this.showPopup = false }
   choosePopup(src: string) { this.popupSelection = src }
 
@@ -144,6 +158,13 @@ export class MoodSelectorComponent {
 
   setVibe() {
     if (!this.popupSelection) return;
+
+    // Safety guard: if we already hit the daily limit, don't attempt network call
+    if (this.setsToday >= 2) {
+      this.showBlockedTooltip();
+      this.showPopup = false;
+      return;
+    }
 
     const opt = this.popupOptions.find(p => p.src === this.popupSelection);
     if (!opt) return;
@@ -174,6 +195,17 @@ export class MoodSelectorComponent {
         console.error('Failed to set vibe', err);
         // Do NOT change mood on error; keep previous state
         this.showPopup = false;
+
+        // Defensive: if server reports the daily limit, show blocked tooltip
+        const serverMsg = err?.error?.message || err?.message || '';
+        const m = String(serverMsg).toLowerCase();
+        if (m.includes('you can set your mood only 2 times') || m.includes('only 2 times') || m.includes('twice')) {
+          try {
+            this.setsToday = 2;
+            localStorage.setItem(this.dailyKey(), '2');
+          } catch (e) { /* ignore */ }
+          this.showBlockedTooltip();
+        }
       }
     });
   }

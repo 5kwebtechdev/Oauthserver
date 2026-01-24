@@ -370,4 +370,13 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
         });
         return counts;
     }
+
+    /**
+     * Public method to refresh all data (called from parent on pull-to-refresh)
+     */
+    public async refresh(): Promise<void> {
+        console.log('[HabitPageContent] Refreshing data...');
+        this.loadHabits(true);
+        this.loadTasksForSelectedDate(this.selectedDate);
+    }
 }

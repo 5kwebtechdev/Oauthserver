@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, timer } from 'rxjs';
-import { tap, map } from 'rxjs/operators';
+import { BehaviorSubject, Observable, timer, of } from 'rxjs';
+import { tap, map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -80,6 +80,11 @@ export class AuthService {
   // Observable to track current user
   private currentUserSubject = new BehaviorSubject<UserSession | null>(this.getCurrentSession());
   public currentUser$ = this.currentUserSubject.asObservable();
+
+  // Observable to track user data (profile info from login/refresh)
+  // This is the primary source of truth for user profile data across the app
+  private userDataSubject = new BehaviorSubject<any>(this.loadUserDataFromStorage());
+  public userData$ = this.userDataSubject.asObservable();
 
   // Session timeout configuration
   // Sessions persist until manual logout for both web and mobile platforms
@@ -274,8 +279,9 @@ export class AuthService {
     localStorage.setItem(this.LOGIN_TIME_KEY, currentTime);
     localStorage.setItem(this.LAST_ACTIVITY_KEY, currentTime);
     localStorage.setItem(this.PLATFORM_KEY, platformType);
-    // Store full user data in localStorage (persists until logout)
-    localStorage.setItem('user_data', JSON.stringify(authResponse.user));
+    
+    // Store full user data and notify all subscribers
+    this.setUserData(authResponse.user);
 
     console.log('[AuthService] Session established:', {
       userId: authResponse.userId,
@@ -423,6 +429,7 @@ export class AuthService {
 
     this.isAuthenticatedSubject.next(false);
     this.currentUserSubject.next(null);
+    this.userDataSubject.next(null);
 
     if (redirectToLogin) {
       this.router.navigate(['/home/login']);
@@ -542,15 +549,63 @@ export class AuthService {
    * Data is stored in localStorage and will be cleared on logout
    */
   getUserData(): any {
+    return this.userDataSubject.value;
+  }
+
+  /**
+   * Load user data from localStorage (used for initializing the BehaviorSubject)
+   */
+  private loadUserDataFromStorage(): any {
     try {
       const userData = localStorage.getItem('user_data');
       if (userData) {
         return JSON.parse(userData);
       }
     } catch (error) {
-      console.error('[AuthService] Error getting user data:', error);
+      console.error('[AuthService] Error loading user data from storage:', error);
     }
     return null;
+  }
+
+  /**
+   * Update user data in localStorage and notify all subscribers
+   * Call this method whenever user profile is updated (e.g., from edit-profile)
+   * @param data - Partial user data to merge with existing data
+   */
+  updateUserData(data: Partial<any>): void {
+    try {
+      const currentData = this.userDataSubject.value || {};
+      const updatedData = { ...currentData, ...data };
+      
+      // Handle nested avatar object
+      if (data['avatar']) {
+        updatedData['avatar'] = { ...(currentData['avatar'] || {}), ...data['avatar'] };
+      }
+      
+      // Save to localStorage
+      localStorage.setItem('user_data', JSON.stringify(updatedData));
+      
+      // Notify all subscribers
+      this.userDataSubject.next(updatedData);
+      
+      console.log('[AuthService] User data updated and broadcasted:', updatedData);
+    } catch (error) {
+      console.error('[AuthService] Error updating user data:', error);
+    }
+  }
+
+  /**
+   * Set complete user data (replaces all existing data)
+   * Used during login to set the initial user data
+   */
+  setUserData(data: any): void {
+    try {
+      localStorage.setItem('user_data', JSON.stringify(data));
+      this.userDataSubject.next(data);
+      console.log('[AuthService] User data set and broadcasted');
+    } catch (error) {
+      console.error('[AuthService] Error setting user data:', error);
+    }
   }
 
   /**
@@ -697,6 +752,104 @@ export class AuthService {
             timestamp: new Date().toISOString()
           });
         }
+      })
+    );
+  }
+
+  /**
+   * Refresh user data from the API and update local storage
+   * This validates the session and fetches fresh user data
+   * @returns Observable<boolean> - true if session is valid and data refreshed, false otherwise
+   */
+  refreshUserData(): Observable<boolean> {
+    const token = this.getToken();
+    const userId = this.getUserId();
+
+    if (!token || !userId) {
+      console.log('[AuthService] No valid session to refresh');
+      return of(false);
+    }
+
+    console.log('[AuthService] Refreshing user data from API...');
+
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    // Fetch user profile from API
+    return this.http.get<any>(`${this.apiUrl}/users/${userId}/profile`, { headers }).pipe(
+      tap({
+        next: (userData) => {
+          console.log('[AuthService] User data refreshed successfully:', {
+            userId: userData?.id || userId,
+            hasData: !!userData,
+            timestamp: new Date().toISOString()
+          });
+
+          if (userData) {
+            // Update user_data using the new method (updates localStorage and notifies subscribers)
+            const existingData = this.getUserData() || {};
+            const updatedData = {
+              ...existingData,
+              ...userData,
+              id: userData.id || existingData.id || parseInt(userId, 10)
+            };
+            this.setUserData(updatedData);
+
+            // Update last activity to keep session fresh
+            this.updateLastActivity();
+          }
+        },
+        error: (error) => {
+          console.error('[AuthService] Failed to refresh user data:', {
+            error: error.message,
+            status: error.status,
+            timestamp: new Date().toISOString()
+          });
+
+          // If unauthorized (401), session is invalid - logout
+          if (error.status === 401) {
+            console.log('[AuthService] Session invalid, logging out...');
+            this.logout();
+          }
+        }
+      }),
+      map(() => true),
+      catchError((error) => {
+        // Return false but don't throw - let the app continue
+        if (error.status !== 401) {
+          return of(false);
+        }
+        return of(false);
+      })
+    );
+  }
+
+  /**
+   * Check if session is valid by making a lightweight API call
+   * @returns Observable<boolean> - true if session is valid
+   */
+  validateSession(): Observable<boolean> {
+    const token = this.getToken();
+
+    if (!token) {
+      return of(false);
+    }
+
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
+    // Use a lightweight endpoint to validate token
+    return this.http.get<any>(`${this.apiUrl}/auth/validate`, { headers }).pipe(
+      map(() => true),
+      catchError((error) => {
+        console.log('[AuthService] Session validation failed:', error.status);
+        if (error.status === 401) {
+          this.logout();
+        }
+        return of(false);
       })
     );
   }
