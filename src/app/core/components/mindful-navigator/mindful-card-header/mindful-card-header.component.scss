@@ -7,11 +7,13 @@
   width: 100%;
 }
 
-.main-card{
+.main-card {
   display: flex;
   width: 100%;
   justify-content: space-between;
+  align-items: end;
 }
+
 .mindful-card-header__left {
   display: flex;
   flex-direction: column;
@@ -49,14 +51,7 @@
   flex-shrink: 0;
 }
 
-.mindful-card-header__actions {
-  display: flex;
-  gap: 8px;
-  /* space between projected actions */
-  align-items: center;
-  justify-content: flex-end;
-  min-width: 0;
-}
+
 
 .mindful-card-header__right {
   display: flex;
