@@ -37,10 +37,12 @@
         height: 100%;
         font-size: 44px;
 
+        /* keep identical look when used on input element */
         &.active {
           background: #90214D;
           color: white;
           border: none;
+          outline: none;
         }
       }
     }

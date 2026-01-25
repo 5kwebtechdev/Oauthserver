@@ -32,6 +32,8 @@ export class MindfulTimepickerComponent implements ControlValueAccessor {
   @Input() placeholder: string = 'Time';
 
   @ViewChild('popup') popupRef!: ElementRef;
+  @ViewChild('hourInput') hourInputRef!: ElementRef;
+  @ViewChild('minuteInput') minuteInputRef!: ElementRef;
   showPopup = false;
   selectedHour = 12;
   selectedMinute = 0;
@@ -39,8 +41,8 @@ export class MindfulTimepickerComponent implements ControlValueAccessor {
   selecting = 'hour'; // or 'minute'
   hasValue = false; // whether a time has been confirmed / written
 
-  onChange: any = () => {};
-  onTouched: any = () => {};
+  onChange: any = () => { };
+  onTouched: any = () => { };
 
   get timeString(): string {
     const h = this.selectedHour.toString().padStart(2, '0');
@@ -55,7 +57,7 @@ export class MindfulTimepickerComponent implements ControlValueAccessor {
       this.selectedHour = hour;
       this.selectedMinute = minute;
       this.ampm = period as 'AM' | 'PM';
-  this.hasValue = true;
+      this.hasValue = true;
     }
   }
 
@@ -76,17 +78,47 @@ export class MindfulTimepickerComponent implements ControlValueAccessor {
     else this.selectedMinute = unit;
   }
 
+  onHourInput(event: any) {
+    const raw = (event.target.value || '').replace(/[^0-9]/g, '').slice(0, 2);
+    event.target.value = raw.padStart(raw.length < 2 ? raw.length : 2, raw.length ? '' : '');
+    if (raw.length === 0) return;
+    const num = Number(raw);
+    // clamp hours 1-12 (treat 0 as 12 when typed as '00')
+    let val = num;
+    if (raw === '00') val = 12;
+    if (val < 1) val = 1;
+    if (val > 12) val = 12;
+    this.selectedHour = val;
+    // if user typed two digits, auto-focus minutes
+    if (raw.length === 2) {
+      try {
+        this.minuteInputRef.nativeElement.focus();
+      } catch (e) { }
+    }
+  }
+
+  onMinuteInput(event: any) {
+    const raw = (event.target.value || '').replace(/[^0-9]/g, '').slice(0, 2);
+    event.target.value = raw.padStart(raw.length < 2 ? raw.length : 2, raw.length ? '' : '');
+    if (raw.length === 0) return;
+    const num = Number(raw);
+    let val = num;
+    if (val < 0) val = 0;
+    if (val > 59) val = 59;
+    this.selectedMinute = val;
+  }
+
   setAMPM(period: 'AM' | 'PM') {
     this.ampm = period;
   }
 
   confirm() {
-    if(this.selecting == 'hour'){
+    if (this.selecting == 'hour') {
       this.selecting = 'minute';
       return;
     }
     this.onChange(this.timeString);
-  this.hasValue = true;
+    this.hasValue = true;
     this.showPopup = false;
     console.log('confirm clicekd' + this.showPopup);
   }
