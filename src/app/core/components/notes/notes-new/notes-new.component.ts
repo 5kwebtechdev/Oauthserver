@@ -316,6 +316,29 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
     // before so users don't lose in-progress content.
     if (this.editing) {
       // When editing an existing saved note, do not persist a draft here.
+      // Ensure any draft entry created during this edit is removed so the
+      // user's cancelled edits are not stored as a draft.
+      try {
+        if (this.currentDraftId) {
+          this.removeDraftById(this.currentDraftId);
+          this.currentDraftId = null;
+        }
+        // Also remove any drafts that match the current (possibly edited)
+        // content so partial edits are not preserved.
+        const arr = this.loadDraftsArray();
+        const filtered = arr.filter(a => {
+          const sameTitle = String((a.title || '')).trim() === String((this.title || '')).trim();
+          const sameText = String((a.text || '')).trim() === String((this.text || '')).trim();
+          const aTags = Array.isArray(a.tags) ? a.tags : [];
+          const curTags = Array.isArray(this._draftTags) ? this._draftTags : [];
+          const sameTags = aTags.length === curTags.length && aTags.every((t: any, i: number) => String(t) === String(curTags[i]));
+          // keep drafts that do NOT match current edited content
+          return !(sameTitle && sameText && sameTags);
+        });
+        if (filtered.length !== arr.length) {
+          this.saveDraftsArray(filtered);
+        }
+      } catch (e) { /* ignore storage errors */ }
       this.router.navigate(['/authed/notes']);
       return;
     }
@@ -344,28 +367,28 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
         next: () => {
           // immediately navigate back so user sees updated note
           // Remove matching draft entry if present
-            try {
-              let removed = false;
-              if (this.currentDraftId) {
-                removed = this.removeDraftById(this.currentDraftId);
-                this.currentDraftId = null;
-              } else {
-                const arr = this.loadDraftsArray();
-                const idx = arr.findIndex(a => {
-                  const sameTitle = String((a.title || '')).trim() === String(payload.title || '').trim();
-                  const sameText = String((a.text || '')).trim() === String(payload.content || '').trim();
-                  const aTags = Array.isArray(a.tags) ? a.tags : [];
-                  const sameTags = Array.isArray(payload.tags) && aTags.length === payload.tags.length && aTags.every((t: any, i: number) => String(t) === String(payload.tags[i]));
-                  return sameTitle && sameText && sameTags;
-                });
-                if (idx > -1) {
-                  arr.splice(idx, 1);
-                  this.saveDraftsArray(arr);
-                  removed = true;
-                }
+          try {
+            let removed = false;
+            if (this.currentDraftId) {
+              removed = this.removeDraftById(this.currentDraftId);
+              this.currentDraftId = null;
+            } else {
+              const arr = this.loadDraftsArray();
+              const idx = arr.findIndex(a => {
+                const sameTitle = String((a.title || '')).trim() === String(payload.title || '').trim();
+                const sameText = String((a.text || '')).trim() === String(payload.content || '').trim();
+                const aTags = Array.isArray(a.tags) ? a.tags : [];
+                const sameTags = Array.isArray(payload.tags) && aTags.length === payload.tags.length && aTags.every((t: any, i: number) => String(t) === String(payload.tags[i]));
+                return sameTitle && sameText && sameTags;
+              });
+              if (idx > -1) {
+                arr.splice(idx, 1);
+                this.saveDraftsArray(arr);
+                removed = true;
               }
-              if (removed) this.isDraft = false;
-            } catch (e) { /* ignore */ }
+            }
+            if (removed) this.isDraft = false;
+          } catch (e) { /* ignore */ }
           this.editing = false;
           this.editId = null;
           this.loading = false;

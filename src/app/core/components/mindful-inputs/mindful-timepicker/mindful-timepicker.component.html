@@ -1,47 +1,26 @@
 <div class="mindful-timepicker-wrapper">
-  <input
-    type="text"
-    [attr.placeholder]="placeholder"
-    [value]="hasValue ? timeString : ''"
-    (click)="showPopup = true; clicked()"
-    class="time-display-input"
-  />
+  <input type="text" [attr.placeholder]="placeholder" [value]="hasValue ? timeString : ''"
+    (click)="showPopup = true; clicked()" class="time-display-input" />
 
   <div class="overlay" *ngIf="showPopup">
     <div class="popup" #popup>
       <div class="popup-header">
         <div class="time-select">
-          <button
-            class="time-button"
-            [class.active]="selecting === 'hour'"
-            (click)="selecting = 'hour'"
-          >
-            {{ selectedHour.toString().padStart(2, '0') }}
-          </button>
+          <input #hourInput type="tel" inputmode="numeric" maxlength="2" class="time-button"
+            [class.active]="selecting === 'hour'" (focus)="selecting = 'hour'" (click)="selecting = 'hour'"
+            [value]="selectedHour.toString().padStart(2, '0')" (input)="onHourInput($event)" />
           <p style="font-size: 50px;width: 20px;display: inline-block;margin: 0 15px;font-weight: bold">:</p>
-          <button
-            class="time-button"
-            [class.active]="selecting === 'minute'"
-            (click)="selecting = 'minute'"
-          >
-            {{ selectedMinute.toString().padStart(2, '0') }}
-          </button>
+          <input #minuteInput type="tel" inputmode="numeric" maxlength="2" class="time-button"
+            [class.active]="selecting === 'minute'" (focus)="selecting = 'minute'" (click)="selecting = 'minute'"
+            [value]="selectedMinute.toString().padStart(2, '0')" (input)="onMinuteInput($event)" />
         </div>
         <div class="ampm-box">
           <div class="container p-0" style="max-width: 75px">
-            <button
-              class="ampm-button"
-              [class.selected]="ampm === 'AM'"
-              (click)="setAMPM('AM')"
-            >
+            <button class="ampm-button" [class.selected]="ampm === 'AM'" (click)="setAMPM('AM')">
               AM
             </button>
             <hr />
-            <button
-              class="ampm-button"
-              [class.selected]="ampm === 'PM'"
-              (click)="setAMPM('PM')"
-            >
+            <button class="ampm-button" [class.selected]="ampm === 'PM'" (click)="setAMPM('PM')">
               PM
             </button>
           </div>
@@ -51,58 +30,26 @@
       <div class="clock-face">
         <svg class="clock-svg" viewBox="0 0 200 200">
           <!-- Clock Circle -->
-          <circle
-            cx="100"
-            cy="100"
-            r="97"
-            fill="#DCDBDC"
-            stroke="none"
-            stroke-width="2"></circle>
-          <circle
-            cx="100"
-            cy="100"
-            r="3"
-            fill="#90214D"
-            stroke="none"></circle>
+          <circle cx="100" cy="100" r="97" fill="#DCDBDC" stroke="none" stroke-width="2"></circle>
+          <circle cx="100" cy="100" r="3" fill="#90214D" stroke="none"></circle>
           <!-- Clock Hand -->
-          <line
-            x1="100"
-            y1="100"
-            [attr.x2]="getHandX()"
-            [attr.y2]="getHandY()"
-            stroke="#90214D"
-            stroke-width="2"
-          ></line>
+          <line x1="100" y1="100" [attr.x2]="getHandX()" [attr.y2]="getHandY()" stroke="#90214D" stroke-width="2">
+          </line>
 
           // have the for loop in a group
           <g transform="translate(100, 100)">
-          <!-- Numbers -->
-          <ng-container
-            *ngFor="let i of [].constructor(selecting === 'hour' ? 12 : 60); let idx = index"
-          >
-              <g
-                [attr.transform]="getTransform(idx)"
-                (click)="selectTime(selecting === 'hour' ? (idx === 0 ? 12 : idx) : idx)"
-                class="clock-number"
-              >
-              <circle
-                [attr.cx]="0"
-                [attr.cy]="-77"
-                r="18"
-                [attr.fill]="isSelected(idx) ? '#90214D' : 'transparent'"
-              ></circle>
-              <text
-                x="0"
-                y="-75"
-                text-anchor="middle"
-                dominant-baseline="middle"
-                [attr.fill]="isSelected(idx) ? 'white' : 'black'"
-                font-size="10"
-              >
-                {{ selecting === 'hour' ? (idx === 0 ? 12 : idx) : (idx% 5 === 0 ? idx : '') }}
-              </text>
-            </g>
-          </ng-container>
+            <!-- Numbers -->
+            <ng-container *ngFor="let i of [].constructor(selecting === 'hour' ? 12 : 60); let idx = index">
+              <g [attr.transform]="getTransform(idx)"
+                (click)="selectTime(selecting === 'hour' ? (idx === 0 ? 12 : idx) : idx)" class="clock-number">
+                <circle [attr.cx]="0" [attr.cy]="-77" r="18" [attr.fill]="isSelected(idx) ? '#90214D' : 'transparent'">
+                </circle>
+                <text x="0" y="-75" text-anchor="middle" dominant-baseline="middle"
+                  [attr.fill]="isSelected(idx) ? 'white' : 'black'" font-size="10">
+                  {{ selecting === 'hour' ? (idx === 0 ? 12 : idx) : (idx% 5 === 0 ? idx : '') }}
+                </text>
+              </g>
+            </ng-container>
           </g>
         </svg>
       </div>

@@ -13,6 +13,7 @@ import { CoerceBoolean } from "../../coerceBoolean.decorator";
   selector: 'mindful-selectors',
   templateUrl: './mindful-selectors.component.html',
   styleUrls: ['./mindful-selectors.component.scss'],
+  standalone: true,
   imports: [NgForOf, CommonModule, FormsModule, MindfulBadgeComponent, MindfulButtonComponent, LongPressDirective],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

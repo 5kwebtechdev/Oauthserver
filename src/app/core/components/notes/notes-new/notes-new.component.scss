@@ -14,7 +14,7 @@
 /* Header */
 .header {
   position: relative;
-  padding: calc(env(safe-area-inset-top, 0px) + 20px) 16px 0 0;
+  padding: calc(env(safe-area-inset-top, 0px)) 16px 0 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -56,7 +56,8 @@
 /* Notes Section */
 .notes-section {
   flex: 1 1 auto;
-  min-height: 0; /* allow flex child to shrink properly */
+  min-height: 0;
+  /* allow flex child to shrink properly */
 }
 
 .notes-section textarea {
@@ -114,7 +115,7 @@
   position: absolute;
   top: 56px;
   left: 56px;
-  background: rgba(0,0,0,0.75);
+  background: rgba(0, 0, 0, 0.75);
   color: #fff;
   padding: 6px 8px;
   border-radius: 6px;
