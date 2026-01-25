@@ -75,11 +75,10 @@
             </div>
             <div class="detail-cta">
                 <!-- Let's Go Button - visible when pending (not ongoing, completed, or skipped) -->
-                <mindful-button *ngIf="isLetsGoVisible()"
-                    [ngClass]="cameFromLongPress && navigationOriginType === 'habits' ? 'w-100' : 'w-full'"
-                    [type]="cameFromLongPress && navigationOriginType === 'habits' ? 'lavendar' : 'orange'"
-                    [style.width]="cameFromLongPress && navigationOriginType === 'habits' ? '100%' : null"
-                    [disabled]="!isLetsGoEnabled()" (click)="onStartHabit()" medium text="Let's Go">
+                <mindful-button *ngIf="isLetsGoVisible()" [ngClass]="habit?.type === 'habits' ? 'w-100' : 'w-full'"
+                    [type]="habit?.type === 'habits' ? 'lavendar' : 'orange'"
+                    [style.width]="habit?.type === 'habits' ? '100%' : null" [disabled]="!isLetsGoEnabled()"
+                    (click)="onStartHabit()" medium text="Let's Go">
                 </mindful-button>
 
                 <!-- Abort Button - visible when ongoing -->
@@ -91,15 +90,15 @@
                 </mindful-button>
 
                 <!-- Done Button - for pending/ongoing (disabled when pending, enabled when ongoing) -->
-                <mindful-button *ngIf="habit?.status?.toLowerCase() !== 'completed' && habit?.status?.toLowerCase() !== 'skipped'" 
-                    class="w-full" type="green" [disabled]="!isDoneEnabled()" (click)="onCompleteHabit()"
-                    medium text="Done?">
+                <mindful-button
+                    *ngIf="habit?.status?.toLowerCase() !== 'completed' && habit?.status?.toLowerCase() !== 'skipped'"
+                    class="w-full" type="green" [disabled]="!isDoneEnabled()" (click)="onCompleteHabit()" medium
+                    text="Done?">
                 </mindful-button>
-                
+
                 <!-- Done Button - for skipped status (always enabled) -->
-                <mindful-button *ngIf="habit?.status?.toLowerCase() === 'skipped'" 
-                    class="w-full" type="green" (click)="onCompleteHabit()"
-                    medium text="Done?">
+                <mindful-button *ngIf="habit?.status?.toLowerCase() === 'skipped'" class="w-full" type="green"
+                    (click)="onCompleteHabit()" medium text="Done?">
                 </mindful-button>
             </div>
 

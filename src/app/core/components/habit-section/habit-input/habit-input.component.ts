@@ -53,7 +53,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     return this._startDate;
   }
 
-  
+
 
   set startDate(value: Date | null) {
     if (value && this._endDate && value > this._endDate) {
@@ -378,7 +378,6 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
 
     // Additional required fields checked by submit validations
     if (!this.selectedTags || this.selectedTags.length === 0) return false;
-    if (this.currentActive !== 'timetable' && !this.selectedRoutine) return false;
     if (!this.priority) return false;
     if (!this.notes?.trim()) return false;
 
@@ -530,7 +529,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     const validations = {
       title: !this.title?.trim(),
       tag: !this.selectedTags?.length,
-      routine: this.currentActive !== 'timetable' && !this.selectedRoutine,
+      routine: !!(this.selectedRoutine && this.startTime && !this.isStartTimeWithinRoutine()),
       weekdays: !this.everyday && !this.selectedDays?.size,
       time: !this.startTime?.trim() || !this.endTime?.trim(),
       pastTime: this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime),
@@ -1168,9 +1167,75 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   onRoutineSelected(payload: any) {
     if (!Array.isArray(payload) || payload.length === 0) return;
     try {
-      this.selectedRoutine = String(payload[0]);
+      const sel = String(payload[0]);
+      // Toggle: if user clicks the already-selected routine, deselect it
+      if (this.selectedRoutine && String(this.selectedRoutine) === sel) {
+        this.selectedRoutine = '';
+        // If we have access to child selectors component, clear its selection too
+        try {
+          if (this.selectorsComponent) {
+            this.selectorsComponent.selectedKeys = [] as any[];
+            this.selectorsComponent.selectedKeysChange.emit(this.selectorsComponent.selectedKeys);
+          }
+        } catch (e) { /* ignore child update errors */ }
+      } else {
+        this.selectedRoutine = sel;
+      }
+
       this.clearRoutineError();
+      this.validateRoutineTime();
     } catch (e: any) { console.warn('Failed to parse routine selection', e); }
+  }
+
+  private getRoutineRangeInfo(routineKey: string | null): { label: string; startHour: number; startMinute: number; endHour: number; endMinute: number; rangeText: string; wraps: boolean } | null {
+    if (!routineKey) return null;
+    const key = String(routineKey).toLowerCase();
+    if (key === 'morning') {
+      return { label: 'Morning', startHour: 5, startMinute: 0, endHour: 12, endMinute: 0, rangeText: '5:00 AM to 12:00 PM', wraps: false };
+    }
+    if (key === 'evening') {
+      return { label: 'Evening', startHour: 12, startMinute: 0, endHour: 19, endMinute: 0, rangeText: '12:00 PM to 7:00 PM', wraps: false };
+    }
+    if (key === 'night') {
+      return { label: 'Night', startHour: 19, startMinute: 0, endHour: 5, endMinute: 0, rangeText: '7:00 PM to 5:00 AM', wraps: true };
+    }
+    return null;
+  }
+
+  private isStartTimeWithinRoutine(): boolean {
+    if (!this.selectedRoutine || !this.startTime) return true;
+    const parsed = this.parseTime(this.startTime);
+    if (!parsed) return true; // if not parseable, skip routine check here
+
+    const info = this.getRoutineRangeInfo(this.selectedRoutine);
+    if (!info) return true;
+
+    const hours = parsed.hours;
+    const minutes = parsed.minutes;
+    // Compare only by hour/minute; convert to minutes since midnight
+    const timeMins = hours * 60 + minutes;
+    const startMins = info.startHour * 60 + info.startMinute;
+    const endMins = info.endHour * 60 + info.endMinute;
+
+    if (!info.wraps) {
+      return timeMins >= startMins && timeMins < endMins;
+    }
+    // wraps (night): valid if >= start (19:00) OR < end (05:00)
+    return timeMins >= startMins || timeMins < endMins;
+  }
+
+  private validateRoutineTime() {
+    try {
+      const mismatch = !!(this.selectedRoutine && this.startTime && !this.isStartTimeWithinRoutine());
+      this.errors.routine = mismatch;
+    } catch (e) { /* ignore */ }
+  }
+
+  get routineErrorMessage(): string {
+    if (!this.selectedRoutine) return 'When do you want to do this? Pick a routine.';
+    const info = this.getRoutineRangeInfo(this.selectedRoutine);
+    if (!info) return 'When do you want to do this? Pick a routine.';
+    return `Start time doesn’t match the ${info.label} routine. Switch routines or pick a start time between ${info.rangeText}.`;
   }
 
   onPrivateChange(checked: any) {
@@ -1187,7 +1252,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   clearRoutineError() { this.clearError('routine'); }
   clearWeekdaysError() { this.clearError('weekdays'); }
   clearPriorityError() { this.clearError('priority'); }
-  
+
   onNotesChange() {
     this.clearError('notes');
   }
@@ -1206,6 +1271,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       this.errors.endTimeBeforeStart = this.isEndTimeNotAfterStart(this.startTime, this.endTime);
       this.errors.endTimeSingleDay = this.isEndTimeCrossingMidnight(this.startTime, this.endTime);
       // Do not auto-adjust startTime or endTime here. Let user correct times manually when an error occurs.
+      // Validate routine/time mismatch
+      this.validateRoutineTime();
     }, 100);
   }
 
@@ -1216,6 +1283,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         this.errors.pastTime = this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime);
         this.errors.endTimeBeforeStart = this.isEndTimeNotAfterStart(this.startTime, this.endTime);
         this.errors.endTimeSingleDay = this.isEndTimeCrossingMidnight(this.startTime, this.endTime);
+        this.validateRoutineTime();
       } else {
         this.errors.pastTime = this.errors.endTimeBeforeStart = this.errors.endTimeSingleDay = false;
       }
@@ -1291,33 +1359,33 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     } catch (e: any) { console.warn('Failed to set tagsComponent selected keys', e); }
 
     try {
-        // build labels to ensure exist in the child component (adds custom tags if needed)
-        const labels: string[] = [];
-        if (Array.isArray(this.routineTags)) labels.push(...this.routineTags.map(rt => String(rt.value || '').trim()));
-        if (Array.isArray(this.selectedTags)) labels.push(...this.selectedTags.map(st => String((st as any).value || (st as any).name || (st as any).title || '').trim()));
-        const uniq = Array.from(new Set(labels.map(l => l).filter(Boolean)));
-        if (uniq.length) {
-          if (this.tagsComponent) {
-            try { this.tagsComponent.ensureOptionsForLabels(uniq); } catch (e: any) { /* ignore */ }
-          } else {
-            // queue for AfterViewInit when ViewChild will be available
-            this._pendingTagLabels = uniq;
-          }
+      // build labels to ensure exist in the child component (adds custom tags if needed)
+      const labels: string[] = [];
+      if (Array.isArray(this.routineTags)) labels.push(...this.routineTags.map(rt => String(rt.value || '').trim()));
+      if (Array.isArray(this.selectedTags)) labels.push(...this.selectedTags.map(st => String((st as any).value || (st as any).name || (st as any).title || '').trim()));
+      const uniq = Array.from(new Set(labels.map(l => l).filter(Boolean)));
+      if (uniq.length) {
+        if (this.tagsComponent) {
+          try { this.tagsComponent.ensureOptionsForLabels(uniq); } catch (e: any) { /* ignore */ }
+        } else {
+          // queue for AfterViewInit when ViewChild will be available
+          this._pendingTagLabels = uniq;
         }
+      }
 
-        // If child is available now, map selectedTags into child component selectedKeys
-        if (this.tagsComponent && Array.isArray(this.selectedTags) && this.selectedTags.length) {
-          const selectedKeys = (this.selectedTags || []).map(st => {
-            const val = String((st as any).value || (st as any).name || (st as any).title || '').trim().toLowerCase();
-            const opt = (this.tagsComponent!.options || []).find(o => String(o.value || '').trim().toLowerCase() === val);
-            return opt ? opt.key : null;
-          }).filter(k => k != null);
-          if (selectedKeys.length) {
-            this.tagsComponent.selectedKeys = selectedKeys as any[];
-            this.tagsComponent.selectedKeysChange.emit(this.tagsComponent.selectedKeys);
-          }
+      // If child is available now, map selectedTags into child component selectedKeys
+      if (this.tagsComponent && Array.isArray(this.selectedTags) && this.selectedTags.length) {
+        const selectedKeys = (this.selectedTags || []).map(st => {
+          const val = String((st as any).value || (st as any).name || (st as any).title || '').trim().toLowerCase();
+          const opt = (this.tagsComponent!.options || []).find(o => String(o.value || '').trim().toLowerCase() === val);
+          return opt ? opt.key : null;
+        }).filter(k => k != null);
+        if (selectedKeys.length) {
+          this.tagsComponent.selectedKeys = selectedKeys as any[];
+          this.tagsComponent.selectedKeysChange.emit(this.tagsComponent.selectedKeys);
         }
-      } catch (e: any) { console.warn('Failed to ensure tagsComponent options or set selected keys', e); }
-    } catch (e: any) { console.warn('Failed in ngAfterViewInit tag sync', e); }
+      }
+    } catch (e: any) { console.warn('Failed to ensure tagsComponent options or set selected keys', e); }
+  } catch(e: any) { console.warn('Failed in ngAfterViewInit tag sync', e); }
 
-  }
+}
