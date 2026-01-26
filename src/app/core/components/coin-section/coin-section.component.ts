@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
 import { FooterComponent } from '../footer/footer.component';
@@ -21,7 +22,7 @@ interface CoinItem {
 @Component({
     selector: 'app-coin-section',
     standalone: true,
-    imports: [CommonModule, IonicModule, MindfulButtonComponent, FooterComponent, MindfulSpeechBubbleComponent, MindfulPetComponent],
+    imports: [CommonModule, IonicModule, RouterModule, MindfulButtonComponent, FooterComponent, MindfulSpeechBubbleComponent, MindfulPetComponent],
     templateUrl: './coin-section.component.html',
     styleUrls: ['./coin-section.component.scss']
 })

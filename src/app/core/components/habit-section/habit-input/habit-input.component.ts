@@ -16,7 +16,7 @@ import { TaskApi } from '../../../api/task.api';
 import { CalendarApi } from '../../../api/calendar.api';
 import { Habit } from '../habit.types';
 import { Router } from '@angular/router';
-import { NavigationContextService } from '../../../services/navigation-context.service';
+import { NavigationService } from '../../../services/navigation.service';
 import { AuthService } from '../../../services/auth.service';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
 
@@ -220,7 +220,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     private taskApi: TaskApi,
     private calendarApi: CalendarApi,
     private habitApi: HabitApi,
-    private navigationContext: NavigationContextService,
+    private navigation: NavigationService,
     private authService: AuthService,
     private profileSelector: ProfileSelectorService,
     private cd: ChangeDetectorRef
@@ -677,9 +677,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
             try {
               const updatedHabit = this.buildHabitFromResponse(res, habit, 'tasks', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.updateHabit(updatedHabit);
-              this.modalCtrl.dismiss();
-              this.navigationContext.popContext();
-              this.navigationContext.navigateBack({ updatedHabit, showSingleMode: true, initialTab: 'tasks' });
+              this.modalCtrl.dismiss().catch(() => {});
+              this.navigation.back();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => { this.isSubmitting = false; console.error('Failed to update task', err); this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to update task. Please try again.'; }
@@ -691,8 +690,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
               const createdHabit = this.buildHabitFromResponse(res, habit, 'tasks', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.addHabit(createdHabit);
               this.habitService.notifyTaskAdded();
-              this.modalCtrl.dismiss();
-              this.navigationContext.navigateBack({ newHabit: createdHabit, showSingleMode: true, initialTab: 'tasks' });
+              this.modalCtrl.dismiss().catch(() => {});
+              this.navigation.back();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => {
@@ -712,9 +711,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
             try {
               const updatedHabit = this.buildHabitFromResponse(res, habit, 'timetable', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.updateHabit(updatedHabit);
-              this.modalCtrl.dismiss();
-              this.navigationContext.popContext();
-              this.navigationContext.navigateBack({ updatedHabit, showSingleMode: true, initialTab: 'timetable' });
+              this.modalCtrl.dismiss().catch(() => {});
+              this.navigation.back();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => { this.isSubmitting = false; console.error('Failed to update timetable', err); alert('Failed to update timetable. Please try again.'); }
@@ -725,8 +723,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
             try {
               const createdHabit = this.buildHabitFromResponse(res, habit, 'timetable', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.addHabit(createdHabit);
-              this.modalCtrl.dismiss();
-              this.navigationContext.navigateBack({ newHabit: createdHabit, showSingleMode: true, initialTab: 'timetable' });
+              this.modalCtrl.dismiss().catch(() => {});
+              this.navigation.back();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => {
@@ -744,9 +742,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
             try {
               const updatedHabit = this.buildHabitFromResponse(res, habit, 'habits', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.updateHabit(updatedHabit);
-              this.modalCtrl.dismiss();
-              this.navigationContext.popContext();
-              this.navigationContext.navigateBack({ updatedHabit, showSingleMode: true });
+              this.modalCtrl.dismiss().catch(() => {});
+              this.navigation.back();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => { this.isSubmitting = false; console.error('Failed to update habit', err); this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to update habit. Please try again.'; }
@@ -757,8 +754,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
             try {
               const createdHabit = this.buildHabitFromResponse(res, habit, 'habits', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.addHabit(createdHabit);
-              this.modalCtrl.dismiss();
-              this.navigationContext.navigateBack({ newHabit: createdHabit, showSingleMode: true });
+              this.modalCtrl.dismiss().catch(() => {});
+              this.navigation.back();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => { this.isSubmitting = false; console.error('Failed to create habit', err); this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to create habit. Please try again.'; }
@@ -996,11 +993,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       try { this.modalCtrl.dismiss(); } catch { /* ignore if not modal */ }
       this.deletePopupVisible = false;
 
-
-      this.navigationContext.popContext();
-      console.log('[Delete] Skipped detail page context, navigating to origin page');
-
-      this.navigationContext.navigateBack({ deletedId: idToRemove || this.editingId });
+      // Navigate back using the navigation service
+      this.navigation.back();
     };
 
     if (!backendId) {

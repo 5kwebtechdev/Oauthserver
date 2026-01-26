@@ -58,6 +58,9 @@ const routes: Routes = [
         path: 'help-support',
         loadComponent: () => import('../core/components/user-profile/help-support/help-support.component').then(m => m.HelpSupportComponent)
       }, {
+        path: 'bot-helpline',
+        loadComponent: () => import('../core/components/user-profile/bot-helpline/bot-helpline.component').then(m => m.BotHelplineComponent)
+      }, {
         path: 'our-policies',
         loadComponent: () => import('../core/components/user-profile/our-policies/our-policies.component').then(m => m.OurPoliciesComponent)
       }, {

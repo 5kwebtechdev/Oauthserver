@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../..//components/mindful-navigator/mindful-navigator.component';
+import { Router } from '@angular/router';
 import { ProfileFactsComponent, FaqItem, PROFILE_FAQS } from '../profile-facts/profile-facts.component';
 import { AuthService as CoreAuthService } from '../../../services/auth.service';
 
@@ -25,14 +26,22 @@ export class HelpSupportComponent implements OnInit {
   securityFaqs: FaqItem[] = [];
   troubleshootingFaqs: FaqItem[] = [];
 
-  constructor(private coreAuthService: CoreAuthService) { }
+  constructor(private coreAuthService: CoreAuthService, private router: Router) { }
 
   toggleContactForm() {
     this.showContactForm = !this.showContactForm;
   }
 
   openChat() {
-    this.toggleContactForm();
+    // Navigate to the bot helpline page
+    try {
+      this.router.navigate(['/authed', 'bot-helpline']).catch(() => {
+        // fallback to toggling the contact form if navigation fails
+        this.toggleContactForm();
+      });
+    } catch (e) {
+      this.toggleContactForm();
+    }
   }
 
   onSubmitContact() {

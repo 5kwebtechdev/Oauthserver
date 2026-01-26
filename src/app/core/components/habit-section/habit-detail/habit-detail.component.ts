@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Habit } from '../habit.types';
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HabitApi } from 'src/app/core/api/habit.api';
@@ -15,7 +15,6 @@ import { MindfulCalendarComponent } from '../../mindful-inputs/mindful-calendar/
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
-import { NavigationContextService } from '../../../services/navigation-context.service';
 import { finalize } from 'rxjs/operators';
 
 @Component({
@@ -53,9 +52,7 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
     private TaskApi: TaskApi,
     private habitService: HabitService,
     private buttonLogic: HabitButtonLogicService,
-    private navigationContext: NavigationContextService,
-    private cdr: ChangeDetectorRef,
-    private location: Location
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -353,15 +350,7 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
     return '—';
   }
 
-  goBack() {
-    // Navigate back to the entry page using browser history
-    this.location.back();
-  }
-
   onEdit() {
-    // Store the current route context before navigating
-    this.navigationContext.pushContext('/authed/habit-detail', { habit: this.habit });
-
     // Navigate to the habit-input page and pass the current habit/task in navigation state
     if (this.habit) {
       this.router.navigate(['/authed/habit-input'], {

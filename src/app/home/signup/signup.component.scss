@@ -1,3 +1,7 @@
+p,h1,h2,h3,h4,h5,h6, ul {
+  margin: 0;
+ 
+}
 .signup-container {
   display: flex;
   flex-direction: column;
@@ -1303,6 +1307,7 @@ aspect-ratio: 25/16;
 
 .welcome-content .subtitle {
   color: #6b6b6b;
+  margin: 0;
 }
 
 
@@ -1456,11 +1461,11 @@ ion-content.bg-white {
           &.valid {
 
             .success {
-              color: #2e7d32;
+              color: #4CAF50;
             }
 
             i {
-              color: #2e7d32;
+              color: #4CAF50;
             }
           }
 
@@ -1488,5 +1493,26 @@ ion-content.bg-white {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Subtitle list styles for onboarding welcome message */
+.subtitle {
+  font-size: 16px;
+  color: #6b6b6b;
+
+  ul {
+    margin: 0.5rem 0 0 1.25rem;
+    padding: 0;
+    list-style-type: disc;
+  }
+
+  li {
+  }
+
+  .first-word {
+    color: #90214D;
+    font-weight: 600;
+    margin-right: 0.35rem;
   }
 }

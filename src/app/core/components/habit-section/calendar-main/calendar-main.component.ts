@@ -10,7 +10,6 @@ import { CalendarService } from '../../../services/calendar.service';
 import { MoodService } from '../../../services/mood.service';
 import { MoodTransition, MoodData } from '../../../models/mood.model';
 import { Subject, takeUntil } from 'rxjs';
-import { NavigationContextService } from '../../../services/navigation-context.service';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
@@ -40,7 +39,6 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     private modalCtrl: ModalController,
     private calendarService: CalendarService,
     private moodService: MoodService,
-    private navigationContext: NavigationContextService,
     private router: Router,
     private buttonLogic: HabitButtonLogicService,
     private profileSelector: ProfileSelectorService,
@@ -492,9 +490,6 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   }
 
   async openHabitInput() {
-    // Store context - calendar opened as modal
-    this.navigationContext.pushContext('/authed/calendar', { selectedDate: this.selectedDate }, true);
-
     const { HabitInputComponent } = await import('../habit-input/habit-input.component');
     const modal = await this.modalCtrl.create({
       component: HabitInputComponent,
@@ -556,9 +551,6 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     if (!event || !event.id) {
       return;
     }
-
-    const currentUrl = this.router.url;
-    this.navigationContext.pushContext(currentUrl, { currentActive: 'timetable', fromLongPress: true }, true);
 
     const { HabitInputComponent } = await import('../habit-input/habit-input.component');
     const modal = await this.modalCtrl.create({

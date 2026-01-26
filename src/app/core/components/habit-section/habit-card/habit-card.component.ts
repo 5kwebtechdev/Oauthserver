@@ -18,7 +18,6 @@ import { Habit } from '../habit.types';
 import { Subscription } from 'rxjs';
 import { UserService } from '../../../services/user.service';
 import { AuthService } from '../../../services/auth.service';
-import { NavigationContextService } from '../../../services/navigation-context.service';
 
 @Component({
   selector: 'habit-card',
@@ -117,7 +116,6 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     private habitService: HabitService,
     private modalCtrl: ModalController,
     private router: Router,
-    private navigationContext: NavigationContextService,
     private userService: UserService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
@@ -758,12 +756,6 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     }
 
     // For habits and tasks, navigate to habit-detail page
-    try {
-      this.navigationContext.pushContext(this.router.url, { fromLongPress: true, habitId: this.habit.id, type: itemType }, false);
-    } catch (pushErr) {
-      console.warn('Failed to push navigation context before long-press navigation', pushErr);
-    }
-
     this.router.navigate(['/authed/habit-detail', itemId], {
       state: { habit: this.habit, type: itemType, fromLongPress: true },
       queryParams: { type: itemType }
@@ -777,9 +769,6 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
    */
   private async openTimetableEditor() {
     if (!this.habit) return;
-
-    const currentUrl = this.router.url;
-    this.navigationContext.pushContext(currentUrl, { currentActive: 'timetable', fromLongPress: true }, true);
 
     const { HabitInputComponent } = await import('../habit-input/habit-input.component');
     const modal = await this.modalCtrl.create({
@@ -809,9 +798,6 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   async openHabitInput() {
-    const currentUrl = this.router.url;
-    this.navigationContext.pushContext(currentUrl, { currentActive: this.currentActive }, true);
-
     const { HabitInputComponent } = await import('../habit-input/habit-input.component');
     const modal = await this.modalCtrl.create({
       component: HabitInputComponent,
