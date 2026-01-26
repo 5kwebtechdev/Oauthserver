@@ -48,6 +48,14 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     qrCodeData = '';
     createdFamilyName = '';
 
+    // Family code validation state
+    codeValidationStatus: 'valid' | 'invalid' | null = null;
+    joinFamilyCodeValidationStatus: 'valid' | 'invalid' | null = null;
+    isCheckingCode = false;
+    isCheckingJoinFamilyCode = false;
+    private codeCheckTimeout: any;
+    private joinFamilyCodeCheckTimeout: any;
+
     // FAQs
     faqs: FaqItem[] = [];
     createModeFaqs: FaqItem[] = [];
@@ -78,12 +86,11 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             ]]
         });
 
-        // Join family form
+        // Join family form (exactly 8 alphanumeric characters)
         this.joinFamilyForm = this.fb.group({
             familyCode: ['', [
                 Validators.required,
-                Validators.minLength(6),
-                Validators.maxLength(10)
+                Validators.pattern(/^[A-Za-z0-9]{8}$/)
             ]]
         });
     }
@@ -127,9 +134,49 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
         this.initializeFaqs();
         this.applyCodeValidators();
+
+        // Also watch parent join-family input for exact-8 validation and auto-check
+        const joinCtrl = this.joinFamilyForm.get('familyCode');
+        if (joinCtrl) {
+            joinCtrl.valueChanges.subscribe((val: any) => {
+                const raw = (val || '').toString();
+                const trimmed = raw.trim().toUpperCase();
+
+                if (!trimmed) {
+                    this.joinFamilyCodeValidationStatus = null;
+                    return;
+                }
+
+                // If longer than 8, truncate to 8 and update control silently
+                if (trimmed.length > 8) {
+                    const truncated = trimmed.slice(0, 8);
+                    joinCtrl.setValue(truncated, { emitEvent: false });
+                    // trigger check for truncated value
+                    if (truncated.length === 8) {
+                        this.onJoinFamilyCodeInputChange(truncated);
+                    } else {
+                        this.joinFamilyCodeValidationStatus = null;
+                    }
+                    return;
+                }
+
+                if (trimmed.length === 8) {
+                    this.onJoinFamilyCodeInputChange(trimmed);
+                } else {
+                    this.joinFamilyCodeValidationStatus = null;
+                }
+            });
+        }
     }
 
     ngOnDestroy() {
+        // Clear any pending timeouts
+        if (this.codeCheckTimeout) {
+            clearTimeout(this.codeCheckTimeout);
+        }
+        if (this.joinFamilyCodeCheckTimeout) {
+            clearTimeout(this.joinFamilyCodeCheckTimeout);
+        }
         this.stopScanner().catch(e => console.error('Error stopping scanner:', e));
     }
 
@@ -192,6 +239,104 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             control.clearValidators();
         }
         control.updateValueAndValidity({ onlySelf: true });
+
+        // Listen to value changes for auto-validation when user is joining family
+        control.valueChanges.subscribe(value => {
+            if (this.viewMode === 'join-family-child' && value) {
+                this.onCodeInputChange(value);
+            }
+            if (this.viewMode === 'join-family-parent' && this.selectedMode === 'join' && value) {
+                this.onJoinFamilyCodeInputChange(value);
+            }
+        });
+    }
+
+    /**
+     * Handle code input change for child joining family
+     * Auto-check when 8 characters are entered
+     */
+    private onCodeInputChange(code: string): void {
+        // Clear previous timeout
+        if (this.codeCheckTimeout) {
+            clearTimeout(this.codeCheckTimeout);
+        }
+
+        const trimmedCode = code.trim().toUpperCase();
+
+        // Reset validation if code is not 8 characters
+        if (trimmedCode.length !== 8) {
+            this.codeValidationStatus = null;
+            return;
+        }
+
+        // Auto-check when exactly 8 characters
+        this.checkFamilyCodeValidity(trimmedCode, 'child');
+    }
+
+    /**
+     * Handle family code input change for parent joining family
+     * Auto-check when 8 characters are entered
+     */
+    private onJoinFamilyCodeInputChange(code: string): void {
+        // Clear previous timeout
+        if (this.joinFamilyCodeCheckTimeout) {
+            clearTimeout(this.joinFamilyCodeCheckTimeout);
+        }
+
+        const trimmedCode = code.trim().toUpperCase();
+
+        // Reset validation if code is not 8 characters
+        if (trimmedCode.length !== 8) {
+            this.joinFamilyCodeValidationStatus = null;
+            return;
+        }
+
+        // Auto-check when exactly 8 characters
+        this.checkFamilyCodeValidity(trimmedCode, 'parent');
+    }
+
+    /**
+     * Check family code validity via API
+     */
+    private checkFamilyCodeValidity(familyCode: string, role: 'child' | 'parent'): void {
+        const isChildRole = role === 'child';
+        const loadingFlag = isChildRole ? this.isCheckingCode : this.isCheckingJoinFamilyCode;
+
+        if (loadingFlag) return; // Already checking
+
+        const setLoading = (value: boolean) => {
+            if (isChildRole) {
+                this.isCheckingCode = value;
+            } else {
+                this.isCheckingJoinFamilyCode = value;
+            }
+        };
+
+        const setStatus = (status: 'valid' | 'invalid' | null) => {
+            if (isChildRole) {
+                this.codeValidationStatus = status;
+            } else {
+                this.joinFamilyCodeValidationStatus = status;
+            }
+        };
+
+        setLoading(true);
+
+        this.familyService.checkFamilyCode(familyCode).subscribe({
+            next: (response) => {
+                setLoading(false);
+                if (response.exists) {
+                    setStatus('valid');
+                } else {
+                    setStatus('invalid');
+                }
+            },
+            error: (error) => {
+                setLoading(false);
+                console.error('Error checking family code:', error);
+                setStatus('invalid');
+            }
+        });
     }
 
     /**
@@ -339,7 +484,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     joinFamily(): void {
         if (this.joinFamilyForm.invalid) {
             this.joinFamilyForm.markAllAsTouched();
-            this.core.triggerToasrt('Please enter a valid family code (6-10 characters)');
+            this.core.triggerToasrt('Please enter a valid family code (6-8 characters)');
             return;
         }
 
@@ -707,10 +852,10 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
         const familyCode = scannedValue.substring(6).trim();
 
-        if (!familyCode || familyCode.length < 6 || familyCode.length > 10) {
+        if (!familyCode || familyCode.length < 6 || familyCode.length > 8) {
             const alert = await this.alertController.create({
                 header: 'Invalid Code',
-                message: 'The family code must be between 6-10 characters.',
+                message: 'The family code must be between 6-8 characters.',
                 buttons: ['OK']
             });
             await alert.present();

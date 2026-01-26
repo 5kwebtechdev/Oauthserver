@@ -60,4 +60,13 @@ export class FamilyService {
         const params = `familyName=${encodeURIComponent(familyName)}&familyCode=${encodeURIComponent(familyCode)}`;
         return this.http.post(`${this.baseUrl}/auth/self-to-parent?${params}`, {}, { headers });
     }
+
+    /**
+     * Check if a family code exists and is valid
+     * GET /v1/family/check-family-code?familyCode=...
+     */
+    checkFamilyCode(familyCode: string): Observable<any> {
+        const headers = this.getHeaders();
+        return this.http.get(`${this.baseUrl}/family/check-family-code?familyCode=${encodeURIComponent(familyCode)}`, { headers });
+    }
 }

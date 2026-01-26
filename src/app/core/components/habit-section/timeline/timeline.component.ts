@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { CalendarService } from '../../../services/calendar.service';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { TimelineEvent } from '../../../models/calendar.model';
-import { NavigationContextService } from '../../../services/navigation-context.service';
 import { Subscription } from 'rxjs';
 import { ModalController } from '@ionic/angular';
 
@@ -32,7 +31,6 @@ export class TimelineComponent implements OnInit, OnDestroy {
   constructor(
     private calendarService: CalendarService,
     private router: Router,
-    private navigationContext: NavigationContextService,
     private profileSelector: ProfileSelectorService,
     private modalCtrl: ModalController
   ) { }
@@ -115,8 +113,6 @@ export class TimelineComponent implements OnInit, OnDestroy {
   }
 
   onAddClick(): void {
-    // Store the timeline route context before navigating
-    this.navigationContext.pushContext('/authed/timeline', { selectedDate: this.selectedDate, selectedType: this.selectedType });
     this.router.navigateByUrl('/authed/habit-input');
   }
 
@@ -127,9 +123,6 @@ export class TimelineComponent implements OnInit, OnDestroy {
     if (!event || !event.id || event.type !== 'timetable') {
       return;
     }
-
-    const currentUrl = this.router.url;
-    this.navigationContext.pushContext(currentUrl, { selectedDate: this.selectedDate, selectedType: this.selectedType, fromLongPress: true }, true);
 
     const { HabitInputComponent } = await import('../habit-input/habit-input.component');
     const modal = await this.modalCtrl.create({

@@ -2,8 +2,10 @@
     <div class="coin-page">
         <div class="coin-card">
             <div class="header">
-                <p>Ready to Treat Yourself?</p>
-                <img src="assets/Icons-Neutral/Icon-Chatbot.png" alt="Robot" class="robot-icon">
+                                <p>Ready to Treat Yourself?</p>
+                                <a [routerLink]="['/authed','bot-helpline']" class="robot-link" aria-label="Helpline">
+                                    <img src="assets/Icons-Neutral/Icon-Chatbot.png" alt="Robot" class="robot-icon">
+                                </a>
             </div>
 
             <div class="coins">

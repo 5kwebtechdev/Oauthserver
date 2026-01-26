@@ -236,6 +236,8 @@ font-weight: 600;
   }
 }
 
+/* Removed deprecated .validation-message styles; using .error-message and simple spans for status messages */
+
 .note-text {
   font-size: 0.85rem;
   color: #777;
@@ -379,6 +381,16 @@ font-weight: 700;
   &::after {
     content: '';
     flex: 1;
+
+  /* Validation / success text styling */
+  .validation-success,
+  .status-text.success,
+  .validation-status.valid .status-text {
+    color: #4CAF50 !important;
+    font-size: 13px;
+    font-family: Nunito, sans-serif;
+    font-weight: 500;
+  }
     height: 1px;
     background: #772817;
   }
@@ -413,19 +425,21 @@ font-weight: 700;
 .share-qr-btn {
  display: flex;
     padding: 8px;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-    border-radius: 32px;
-    background: #FAD2AE;
-    color: #772817;
-font-family: Nunito;
-font-size: 13px;
-font-weight: 500;
 }
 
 // ============ RESPONSIVE ============
 @media (max-width: 480px) {
+    .validation-success,
+    .status-text.success,
+    .validation-status.valid .status-text,
+    .family-form .valid,
+    .family-join-section .valid,
+    .valid {
+      color: #4CAF50 !important;
+      font-size: 13px;
+      font-family: Nunito;
+      font-weight: 500;
+    }
   .mindful-page-container {
     padding: 0 16px 40px;
             gap: 24px;

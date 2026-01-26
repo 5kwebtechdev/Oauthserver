@@ -1,8 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { NavigationService } from '../../services/navigation.service';
 import { ModalController } from '@ionic/angular';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'mindful-navigator',
@@ -54,35 +53,25 @@ export class MindfulNavigatorComponent implements OnInit {
     this.rightActions = actions;
   }
 
-  private entryUrl?: string;
+  constructor(
+    private navigation: NavigationService,
+    private modalCtrl: ModalController
+  ) { }
 
-  constructor(private navigation: NavigationService, private location: Location, private modalCtrl: ModalController, private router: Router) { }
-
-  ngOnInit(): void {
-    try {
-      const hist = this.navigation.getHistory();
-      if (hist && hist.length >= 2) {
-        this.entryUrl = hist[hist.length - 2];
-      }
-    } catch (e) {
-      // ignore
-    }
-  }
+  ngOnInit(): void { }
 
   async goBack() {
-    // If a parent is listening to (back), let it handle navigation and do not perform
-    // the default modal/route navigation. EventEmitter exposes `observers` so we can
-    // check whether anyone subscribed.
+    // If a parent component is listening to (back), let it handle navigation
     try {
       if (this.back && Array.isArray((this.back as any).observers) && (this.back as any).observers.length > 0) {
         this.back.emit();
         return;
       }
     } catch (e) {
-      // ignore emit errors and continue with default navigation
+      // ignore and continue with default navigation
     }
 
-    // 1) If inside a modal/overlay, dismiss it.
+    // Check if inside a modal and dismiss it
     try {
       const top = await this.modalCtrl.getTop();
       if (top) {
@@ -90,33 +79,11 @@ export class MindfulNavigatorComponent implements OnInit {
         return;
       }
     } catch (e) {
-      // ignore and continue to router/history fallback
+      // ignore and continue
     }
 
-    // 2) If we captured an entry URL (the page that led here), navigate to it.
-    try {
-      if (this.entryUrl && this.router && this.entryUrl !== this.router.url) {
-        await this.router.navigateByUrl(this.entryUrl, { replaceUrl: true });
-        return;
-      }
-    } catch (e) {
-      // ignore and continue to history fallback
-    }
-
-    // 3) Use navigation service history fallback.
-    try {
-      this.navigation.back();
-      return;
-    } catch (e) {
-      // final fallback below
-    }
-
-    // 4) Last resort: location.back()
-    try {
-      this.location.back();
-    } catch (e) {
-      // nothing else we can do
-    }
+    // Use the navigation service to go back
+    this.navigation.back();
   }
 
   onRightClick() {
@@ -130,19 +97,6 @@ export class MindfulNavigatorComponent implements OnInit {
   onActionClick(index: number, action: any) {
     if (index === 0) this.onRightClick();
     if (index === 1) this.onRight2Click();
-
-
-    try {
-      if (action && action.type === 'package') {
-        // Open My Orders page when package icon is clicked
-        this.router.navigateByUrl('/authed/school-store/my-orders').catch(() => { /* ignore navigation errors */ });
-      }
-      if (action && action.type === 'cart') {
-        this.router.navigateByUrl('/authed/cart').catch(() => { /* ignore navigation errors */ });
-      }
-    } catch (e) {
-    }
-
     this.rightActionClick.emit({ index, action });
   }
 

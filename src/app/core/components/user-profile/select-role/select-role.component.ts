@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ToastController } from '@ionic/angular';
@@ -125,6 +125,12 @@ import { QRCodeComponent } from 'angularx-qrcode';
 								fill="#282527" />
 						</svg>
 					</button>
+
+					<div *ngIf="selectedFamilyAction === 'join' && familyInput && familyInput.length === 8" style="margin-top: 0.5rem;">
+						<div *ngIf="isCheckingFamilyCode" style="color: #1976d2; font-size: 0.85rem; font-weight: 500;">Checking code...</div>
+						<div *ngIf="!isCheckingFamilyCode && familyCodeValidationStatus === 'valid'" style="color: #4CAF50; font-size: 0.85rem; font-weight: 600;">✓ Family code is valid</div>
+						<div *ngIf="!isCheckingFamilyCode && familyCodeValidationStatus === 'invalid'" style="color: #d32f2f; font-size: 0.85rem; font-weight: 600;">✗ Family code is invalid!</div>
+					</div>
 				</div>
 
 				<div style="margin-top:20px; text-align:center;">
@@ -592,7 +598,7 @@ font-weight: 600;
 }
 `]
 })
-export class RoleSelectComponent {
+export class RoleSelectComponent implements OnDestroy {
   // currently selected role: 'child' | 'parent' | 'self' | null
   selectedRole: string | null = null;
   currentStep = 1;
@@ -649,16 +655,81 @@ export class RoleSelectComponent {
   createdFamilyName: string = '';
   childCompletedTask: boolean = false; // Track if child has completed task
 
+  // Family code validation state
+  familyCodeValidationStatus: 'valid' | 'invalid' | null = null;
+  isCheckingFamilyCode = false;
+  private familyCodeCheckTimeout: any;
+
   setFamilyAction(action: 'create' | 'join') {
     this.selectedFamilyAction = action;
     this.familyInput = ''; // Reset input when switching actions
+    this.familyCodeValidationStatus = null; // Reset validation status
   }
 
   /**
    * Handle family input changes
    */
   onFamilyInputChange(value: string | null) {
-    this.familyInput = value || '';
+    const raw = (value || '').toString();
+    // Normalize to uppercase and enforce max 8 characters
+    const normalized = raw.trim().toUpperCase().slice(0, 8);
+    this.familyInput = normalized;
+
+    // Auto-validate when joining family and 8 characters are entered
+    if (this.selectedFamilyAction === 'join') {
+      if (this.familyInput.length === 8) {
+        this.onJoinFamilyCodeInputChange(this.familyInput);
+      } else {
+        this.familyCodeValidationStatus = null;
+      }
+    }
+  }
+
+  /**
+   * Handle family code input change when joining
+   * Auto-check when 8 characters are entered
+   */
+  private onJoinFamilyCodeInputChange(code: string): void {
+    // Clear previous timeout
+    if (this.familyCodeCheckTimeout) {
+      clearTimeout(this.familyCodeCheckTimeout);
+    }
+
+    const trimmedCode = code.trim().toUpperCase();
+
+    // Reset validation if code is not 8 characters
+    if (trimmedCode.length !== 8) {
+      this.familyCodeValidationStatus = null;
+      return;
+    }
+
+    // Auto-check when exactly 8 characters
+    this.checkFamilyCodeValidity(trimmedCode);
+  }
+
+  /**
+   * Check family code validity via API
+   */
+  private checkFamilyCodeValidity(familyCode: string): void {
+    if (this.isCheckingFamilyCode) return; // Already checking
+
+    this.isCheckingFamilyCode = true;
+
+    this.familyService.checkFamilyCode(familyCode).subscribe({
+      next: (response) => {
+        this.isCheckingFamilyCode = false;
+        if (response.exists) {
+          this.familyCodeValidationStatus = 'valid';
+        } else {
+          this.familyCodeValidationStatus = 'invalid';
+        }
+      },
+      error: (error) => {
+        this.isCheckingFamilyCode = false;
+        console.error('Error checking family code:', error);
+        this.familyCodeValidationStatus = 'invalid';
+      }
+    });
   }
 
   /**
@@ -668,6 +739,13 @@ export class RoleSelectComponent {
     if (!this.familyInput || !this.familyInput.trim()) {
       return false;
     }
+
+    // If user selected Join, family code must be exactly 8 characters
+    if (this.selectedFamilyAction === 'join') {
+      const trimmed = this.familyInput.trim();
+      if (trimmed.length !== 8) return false;
+    }
+
     return true;
   }
 
@@ -1162,6 +1240,13 @@ export class RoleSelectComponent {
   goBack() {
     // Use the app's navigation service for proper back navigation
     this.navigationService.back();
+  }
+
+  ngOnDestroy() {
+    // Clear any pending timeouts
+    if (this.familyCodeCheckTimeout) {
+      clearTimeout(this.familyCodeCheckTimeout);
+    }
   }
 }
 

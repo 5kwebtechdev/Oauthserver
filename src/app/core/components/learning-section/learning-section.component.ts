@@ -74,28 +74,25 @@ import { LearningCardComponent } from './learning-card/learning-card.component';
           text-align: center;
           display: flex;
           flex-direction: column;
-          width: 137px;
-          height: 48px;
+          align-items: center;
         }
 
         .content-title h2 {
           text-align: center;
           display: block;
           margin: 0;
-          font-size: 20px;
+          font-size: 1.25rem;
           color: #282527;
           width: 137px;
-          height: 48px;
         }
 
         .content-sub {
-          display: block;
+          margin:0;
           font-size: 10px;
           text-align: center;
-          color: rgba(0, 0, 0, 0.6);
-          height: 28px;
+          color:#282527;
+          font-family: 'Nunito';
           width: 235px;
-          box-sizing: border-box;
           align-self: center;
         }
       }
@@ -146,9 +143,8 @@ import { LearningCardComponent } from './learning-card/learning-card.component';
         display: flex;
         justify-content: flex-end;
         width: 100%;
-        padding: 0 6px;
+        padding: 6px 0;
         box-sizing: border-box;
-        margin-top: 45px;
       }
 
       .see-all {

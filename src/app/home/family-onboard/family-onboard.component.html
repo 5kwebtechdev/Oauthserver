@@ -117,13 +117,20 @@
             <span *ngIf="codeControl?.errors?.['required']">Code is required</span>
             <span *ngIf="codeControl?.errors?.['pattern']">Code must be 8 characters</span>
           </div>
+          <div *ngIf="codeControl?.value && codeControl?.value?.length === 8">
+            <span *ngIf="isCheckingCode" class="checking">Checking code...</span>
+            <span *ngIf="!isCheckingCode && codeValidationStatus === 'valid'" class="valid">Family code is valid</span>
+            <div class="error-message" *ngIf="!isCheckingCode && codeValidationStatus === 'invalid'">
+              <span>Family code is invalid!</span>
+            </div>
+          </div>
         </div>
 
         <mindful-button 
           type="orange-onboard" 
           full 
           [text]="isLoading ? 'Joining...' : 'Join Family'"
-          [disabled]="codeForm.invalid || isLoading" 
+          [disabled]="codeForm.invalid || isLoading || codeValidationStatus !== 'valid'" 
           (click)="submitJoinFamily()">
         </mindful-button>
       </form>
@@ -194,7 +201,7 @@
                 formControlName="familyCode" 
                 placeholder="Enter code"
                 [class.error]="familyCodeControl?.invalid && familyCodeControl?.touched" 
-                maxlength="10" 
+                maxlength="8" 
                 autocomplete="off"
                 autocapitalize="characters" 
                 spellcheck="false">
@@ -213,8 +220,14 @@
             <p class="note-text">Note: Double-check the code before entering</p>
             <div class="error-message" *ngIf="familyCodeControl?.invalid && familyCodeControl?.touched">
               <span *ngIf="familyCodeControl?.errors?.['required']">Family code is required</span>
-              <span *ngIf="familyCodeControl?.errors?.['minlength']">Family code must be at least 6 characters</span>
-              <span *ngIf="familyCodeControl?.errors?.['maxlength']">Family code must be less than 10 characters</span>
+              <span *ngIf="familyCodeControl?.errors?.['pattern']">Family code must be 8 characters</span>
+            </div>
+            <div *ngIf="familyCodeControl?.value && familyCodeControl?.value?.length === 8">
+              <span *ngIf="isCheckingJoinFamilyCode" class="checking">Checking code...</span>
+              <span *ngIf="!isCheckingJoinFamilyCode && joinFamilyCodeValidationStatus === 'valid'" class="valid">Family code is valid</span>
+              <div class="error-message" *ngIf="!isCheckingJoinFamilyCode && joinFamilyCodeValidationStatus === 'invalid'">
+                <span>Family code is invalid!</span>
+              </div>
             </div>
           </div>
 
@@ -222,7 +235,7 @@
             type="orange-onboard" 
             full 
             [text]="isLoading ? 'Joining...' : 'Join Family'"
-            [disabled]="joinFamilyForm.invalid || isLoading" 
+            [disabled]="joinFamilyForm.invalid || isLoading || joinFamilyCodeValidationStatus !== 'valid'" 
             (click)="joinFamily()">
           </mindful-button>
         </form>
