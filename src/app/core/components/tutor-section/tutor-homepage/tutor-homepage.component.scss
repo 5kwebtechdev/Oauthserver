@@ -3,20 +3,19 @@
 h2{margin: 0;}
 
 .tutor-header {
-  height: 254px;
-  flex-shrink: 0;
-  background-image: url('/assets/Images-Thumbnails/Imgae-Tutor-TopBg.jpg');
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-  padding: 0 16px;
-  box-sizing: border-box;
-  position: relative;
-  border-radius: 0px 0px 48px 48px;
-  
-
-  display: flex;
+      height: calc(254px + env(safe-area-inset-top));
+    flex-shrink: 0;
+    background-image: url(/assets/Images-Thumbnails/Imgae-Tutor-TopBg.jpg);
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    padding: 0 16px;
+    box-sizing: border-box;
+    position: relative;
+    border-radius: 0px 0px 48px 48px;
+    display: flex;
     flex-direction: column;
+    padding-top: env(safe-area-inset-top, 0) !important;
     gap: 24px;
 }
 

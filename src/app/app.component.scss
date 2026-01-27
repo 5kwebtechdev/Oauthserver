@@ -1,0 +1,27 @@
+.app-router-container {
+	position: fixed;
+    left: 0;
+    width: 100vw;
+    --footer-visual-height: 0px;
+    height: calc(100dvh - env(safe-area-inset-bottom) );
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 0px);
+    overflow-y: scroll;
+    margin: 0;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0) !important;
+    z-index: 1;
+
+	&:before{content: '';
+		position: fixed;
+		width: 100vw;
+		height: calc(env(safe-area-inset-top, 0px) / 2);
+		background: #ffffff55;
+		z-index: 2;
+		top:0;
+	}
+}
+
+.content-main,.header,.tutor-homepage,mindful-navigator,mindful-card-header{
+	    padding-top: env(safe-area-inset-top) !important;
+
+}

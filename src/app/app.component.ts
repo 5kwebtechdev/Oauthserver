@@ -3,6 +3,7 @@ import { Platform } from '@ionic/angular';
 import { Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError, Event } from '@angular/router';
 import { PetAgeService } from './core/services/pet-age.service';
 import { LoadingService } from './core/services/loading.service';
+import { NavigationService } from './core/services/navigation.service';
 
 @Component({
   selector: 'app-root',
@@ -18,15 +19,16 @@ export class AppComponent implements OnInit {
     private router: Router,
     private petAgeService: PetAgeService,
     private loadingService: LoadingService,
+    private navigation: NavigationService,
   ) { }
 
   ngOnInit() {
     // Track app open for pet age progression
     this.recordDailyAppOpen();
 
-    // Perform any initialization logic here
+    // Handle hardware back button on mobile devices
     this.platform.backButton.subscribeWithPriority(10, () => {
-      window.history.back();
+      this.navigation.back();
     })
 
     // show loading on navigation using LoadingService to centralize behaviour

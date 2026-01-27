@@ -152,7 +152,7 @@
     <div *ngIf="serverErrorMessage && (currentActive === 'habits' || currentActive === 'tasks')" class="field-error"
       style="margin-top: -24px;" role="alert">{{serverErrorMessage}}</div>
     <mindful-button [type]="isFormComplete ? btnType : btnTypeFaded"
-      [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update ' + itemType : (selectedRoutine ? 'Create ' + itemType : 'Act'))"
+      [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update ' + itemType : (selectedRoutine ? 'Create ' + itemType : 'Create Habit'))"
       large [disabled]="isSubmitting || !isFormComplete" (click)="submit()"></mindful-button>
   </div>
 </ng-template>

@@ -1,4 +1,4 @@
-<ion-content fullscreen>
+<ion-content>
   <mindful-navigator heading="Tutor profile" backIcon="arrowSvg" (back)="close()" [rightActions]="navActions"
     (rightActionClick)="handleNavAction($event)"></mindful-navigator>
   <div class="tutor-profile-root">
@@ -72,8 +72,6 @@
     </div>
     <profile-facts [faqs]="tutorFaqs"></profile-facts>
   </div>
-
-
   <div class="footer-actions d-flex justify-content-between align-items-center" *ngIf="true">
     <div class="d-flex align-items-center gap-1">
     <h2>₹ {{ getHourlyRate() }}</h2>
@@ -86,6 +84,8 @@
       (click)="contactTutor()"
       style="height: 42px !important; width: 170px;"></mindful-button>
   </div>
+
+
 
   <!-- Transient toast shown when child users attempt to contact -->
   <div class="contact-toast" *ngIf="showContactToast" role="status" aria-live="polite">
