@@ -3,13 +3,14 @@
 	
 		.card {
 			position: relative;
+			height: calc(254px + env(safe-area-inset-top));
 			display: flex;
-			height: 254px;
 			flex-shrink: 0;
 			border-radius: 0px 0px 48px 48px;
 			overflow: visible;
 			background: url('/assets/Images-Thumbnails/Background-Content.png') center/cover no-repeat;
-			    background-color: #ff5b77;
+			background-color: #ff5b77;
+			padding-top: env(safe-area-inset-top, 0) !important;
 
 
 			.card-bg {
@@ -25,7 +26,6 @@
 				padding: 16px;
 				display: flex;
 				align-items: flex-start;
-				margin-top: 24px;
 				gap: 16px;
 			}
 

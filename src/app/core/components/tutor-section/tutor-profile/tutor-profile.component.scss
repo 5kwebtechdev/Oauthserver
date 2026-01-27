@@ -1,11 +1,16 @@
 .tutor-profile-root {
 	padding: 16px;
-	padding-bottom: 96px; /* leave space for fixed footer */
-	gap: 24px;
-	display: flex;
-	flex-direction: column;
+    padding-bottom: 50px;
+    gap: 24px;
+    display: flex;
+    max-height: calc(100dvh - env(safe-area-inset-bottom) - env(safe-area-inset-top) - 114px);
+    flex-direction: column;
+    overflow-y: scroll;
 }
-
+ion-content{
+	height: calc(100dvh - env(safe-area-inset-bottom)) !important;
+	overflow-y: scroll !important;
+}
 p {
 	margin: 0;
 	color: #282527;
@@ -231,7 +236,7 @@ height: 24px;
 	position: fixed;
 	left: 0;
 	right: 0;
-	bottom: 0;
+	bottom: env(safe-area-inset-bottom, 0px);
 	padding: 12px 16px;
 	background: #FFF;
 	box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
