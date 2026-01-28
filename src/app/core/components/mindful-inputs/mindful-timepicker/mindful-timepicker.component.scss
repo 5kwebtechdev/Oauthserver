@@ -37,6 +37,12 @@
         height: 100%;
         font-size: 44px;
 
+        /* center the numeric digits horizontally */
+        text-align: center;
+        padding-left: 6px;
+        padding-right: 6px;
+        box-sizing: border-box;
+
         /* keep identical look when used on input element */
         &.active {
           background: #90214D;

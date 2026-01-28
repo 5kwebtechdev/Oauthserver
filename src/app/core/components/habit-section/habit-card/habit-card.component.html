@@ -181,22 +181,22 @@
           <div class="d-flex footer-cta">
             <!-- Let's Go Button: Visible when status is PENDING, hidden when ONGOING, COMPLETED, or SKIPPED -->
             <mindful-button *ngIf="isLetsGoVisible() && !isParent"
-              [type]="habit?.type === 'tasks' ? 'orange' : 'lavendar'" small text="Let`s Go" (click)="onStartHabit()"
+              [type]="habit?.type === 'tasks' ? 'orange' : 'lavendar'" small text="Let`s Go" (click)="openStartPopup()"
               [disabled]="!isLetsGoEnabled()"></mindful-button>
             
             <!-- Abort Button: Visible only when status is ONGOING -->
             <mindful-button *ngIf="isAbortVisible() && habit?.type === 'tasks' && !isParent" type="orange-transparent" small
-              text="Abort" (click)="onAbortHabit()"></mindful-button>
+              text="Abort" (click)="openAbortPopup()"></mindful-button>
             <mindful-button *ngIf="isAbortVisible() && habit?.type !== 'tasks' && !isParent" type="lavendar-transparent" small
-              text="Abort" (click)="onAbortHabit()"></mindful-button>
+              text="Abort" (click)="openAbortPopup()"></mindful-button>
             
             <!-- Done Button: For PENDING or ONGOING status - Disabled when PENDING, Enabled when ONGOING -->
             <mindful-button *ngIf="getStatus() !== 'completed' && getStatus() !== 'skipped' && !isParent" type="green" small text="Done?"
-              (click)="onCompleteHabit()" [disabled]="!isDoneEnabled()"></mindful-button>
+              (click)="openCompletePopup()" [disabled]="!isDoneEnabled()"></mindful-button>
             
             <!-- Done Button: For SKIPPED status - Always enabled so user can mark as done -->
             <mindful-button *ngIf="getStatus() === 'skipped' && !isParent" type="green" small text="Done?"
-              (click)="onCompleteHabit()"></mindful-button>
+              (click)="openCompletePopup()"></mindful-button>
             
             <!-- Completion Message: Show when status is COMPLETED -->
             <!-- <div class="d-flex gap-2" *ngIf="getStatus() === 'completed'">
@@ -214,3 +214,15 @@
 <!-- <app-mindful-popup-alert #longPressAlert title="DReady to Start?" message="You're about to begin this habit! "
   [showLetButton]="true" cancelButtonText="Discard" confirmButtonText="Start Now" (confirm)="onStartHabit()">
 </app-mindful-popup-alert> -->
+
+<app-mindful-popup [config]="startPopupConfig" [isVisible]="showStartPopup"
+  (primaryAction)="handlePopupPrimary()" (secondaryAction)="handlePopupSecondary()"
+  (closeAction)="closeStartPopup()" (backdropClick)="closeStartPopup()"></app-mindful-popup>
+
+<app-mindful-popup [config]="completePopupConfig" [isVisible]="showCompletePopup"
+  (primaryAction)="handleCompletePrimary()" (secondaryAction)="handleCompleteSecondary()"
+  (closeAction)="closeCompletePopup()" (backdropClick)="closeCompletePopup()"></app-mindful-popup>
+
+<app-mindful-popup [config]="abortPopupConfig" [isVisible]="showAbortPopup"
+  (primaryAction)="handleAbortPrimary()" (secondaryAction)="handleAbortSecondary()"
+  (closeAction)="closeAbortPopup()" (backdropClick)="closeAbortPopup()"></app-mindful-popup>

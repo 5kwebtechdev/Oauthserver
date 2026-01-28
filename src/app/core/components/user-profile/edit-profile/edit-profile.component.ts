@@ -109,6 +109,15 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
   // Birthday picker control
   openBirthdayPicker = false;
+
+  /**
+   * Provide a null-safe initial date for the birthday picker.
+   * Returns `string | Date | undefined` as expected by the picker input.
+   */
+  public get birthdayInitialDate(): string | Date | undefined {
+    const val = this.profileForm.get('dob')?.value;
+    return val == null ? undefined : val;
+  }
   // Account relationship: 'child' | 'parent' | 'self'
   accountType: 'child' | 'parent' | 'self' | null = null;
 
