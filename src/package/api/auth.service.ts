@@ -225,6 +225,108 @@ export class AuthService {
 
         return this.http.post<any>(url, { memberId }, { headers });
     }
+
+    /**
+     * Verify phone number
+     * Endpoint: POST {{host}}/v1/auth/verify-phone
+     * Payload: { phone: string }
+     */
+    verifyPhone(phone: string): Observable<any> {
+        const url = `${this.apiUrl}/auth/verify-phone`;
+        const userToken = this.getToken();
+
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`
+        });
+
+        return this.http.post<any>(url, { phone }, { headers });
+    }
+
+    /**
+     * Verify email address
+     * Endpoint: POST {{host}}/v1/auth/verify-email
+     * Payload: { email: string }
+     */
+    verifyEmail(email: string): Observable<any> {
+        const url = `${this.apiUrl}/auth/verify-email`;
+        const userToken = this.getToken();
+
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`
+        });
+
+        return this.http.post<any>(url, { email }, { headers });
+    }
+
+    /**
+     * Send OTP to phone number
+     * Endpoint: POST {{host}}/v1/auth/send-phone-otp
+     * Payload: { phone: string }
+     */
+    sendPhoneOtp(phone: string): Observable<any> {
+        const url = `${this.apiUrl}/auth/send-phone-otp`;
+        const userToken = this.getToken();
+
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`
+        });
+
+        return this.http.post<any>(url, { phone }, { headers });
+    }
+
+    /**
+     * Send OTP to email address
+     * Endpoint: POST {{host}}/v1/auth/send-email-otp
+     * Payload: { email: string }
+     */
+    sendEmailOtp(email: string): Observable<any> {
+        const url = `${this.apiUrl}/auth/send-email-otp`;
+        const userToken = this.getToken();
+
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`
+        });
+
+        return this.http.post<any>(url, { email }, { headers });
+    }
+
+    /**
+     * Verify phone OTP
+     * Endpoint: POST {{host}}/v1/auth/verify-phone-otp
+     * Payload: { phone: string, otp: string }
+     */
+    verifyPhoneOtp(phone: string, otp: string): Observable<any> {
+        const url = `${this.apiUrl}/auth/verify-phone-otp`;
+        const userToken = this.getToken();
+
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`
+        });
+
+        return this.http.post<any>(url, { phone, otp }, { headers });
+    }
+
+    /**
+     * Verify email OTP
+     * Endpoint: POST {{host}}/v1/auth/verify-email-otp
+     * Payload: { email: string, otp: string }
+     */
+    verifyEmailOtp(email: string, otp: string): Observable<any> {
+        const url = `${this.apiUrl}/auth/verify-email-otp`;
+        const userToken = this.getToken();
+
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`
+        });
+
+        return this.http.post<any>(url, { email, otp }, { headers });
+    }
 }
 
 export interface EditProfilePayload {

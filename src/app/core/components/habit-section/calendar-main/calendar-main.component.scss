@@ -305,3 +305,14 @@ opacity: 0.7;
   border: 1px solid #6FA5A8;
   background: #E1F0F1;
 }
+
+/* Floating add button container */
+.calendar-add-btn {
+  position: fixed;
+  right: 16px;
+  bottom: 24px;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
