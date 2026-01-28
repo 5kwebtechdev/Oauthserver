@@ -5,6 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { HabitCardComponent } from '../habit-card/habit-card.component';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
+import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { HabitService } from '../habit.service';
 import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { TaskApi } from '../../../api/task.api';
@@ -18,7 +19,7 @@ import { Subscription, filter, take } from 'rxjs';
     selector: 'habit-page-content',
     templateUrl: './habit-page-content.component.html',
     styleUrls: ['./habit-page-content.component.scss'],
-    imports: [CommonModule, IonicModule, HabitCardComponent, MindfulInputsModule, MindfulBadgeComponent]
+    imports: [CommonModule, IonicModule, HabitCardComponent, MindfulInputsModule, MindfulBadgeComponent, EmptyStateComponent]
 })
 
 export class HabitPageContentComponent implements OnInit, OnDestroy {

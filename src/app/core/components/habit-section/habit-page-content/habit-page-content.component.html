@@ -47,9 +47,13 @@
                 </div>
             </div>
             <ng-template #noHabitsTemplate>
-                <div class="no-habits-message">
-                    <p>No habits found for this day and filter.</p>
-                </div>
+                <empty-state
+                    [imageSrc]="'/assets/Images-Pet/Panda-Age1-Base.png'"
+                    [imageAlt]="'Panda illustration'"
+                    [leadText]="journeySubFilter === 'pending' ? 'No pending habits yet' : (journeySubFilter === 'ongoing' ? 'No ongoing habits yet' : 'No completed habits yet')"
+                    [subText]="'Add habits to your journey to view them here'"
+                    [buttonText]="''">
+                </empty-state>
             </ng-template>
         </div>
 
@@ -78,9 +82,13 @@
                     </div>
                 </div>
                 <ng-template #noPriorityHabitsTemplate>
-                    <div class="no-habits-message">
-                        <p>No habits with this priority found.</p>
-                    </div>
+                    <empty-state
+                        [imageSrc]="'/assets/Images-Pet/Panda-Age1-Base.png'"
+                        [imageAlt]="'Panda illustration'"
+                        [leadText]="prioritySubFilter === 'high' ? 'No high priority habits yet' : (prioritySubFilter === 'medium' ? 'No medium priority habits yet' : 'No low priority habits yet')"
+                        [subText]="'Add habits with this priority to view them here'"
+                        [buttonText]="''">
+                    </empty-state>
                 </ng-template>
             </div>
         </div>
@@ -111,9 +119,13 @@
                     </div>
                 </div>
                 <ng-template #noRoutineHabitsTemplate>
-                    <div class="no-habits-message">
-                        <p>No habits with this routine found.</p>
-                    </div>
+                    <empty-state
+                        [imageSrc]="'/assets/Images-Pet/Panda-Age1-Base.png'"
+                        [imageAlt]="'Panda illustration'"
+                        [leadText]="routineSubFilter === 'morning' ? 'No morning routine yet' : (routineSubFilter === 'evening' ? 'No evening routine yet' : 'No night routine yet')"
+                        [subText]="routineSubFilter === 'morning' ? 'Add morning routine to your habits and tasks to view them here' : (routineSubFilter === 'evening' ? 'Add evening routine to your habits and tasks to view them here' : 'Add night routine to your habits and tasks to view them here')"
+                        [buttonText]="''">
+                    </empty-state>
                 </ng-template>
             </div>
         </div>
@@ -121,8 +133,24 @@
 
     <!-- Tasks layout mirrors Habits: Journey, Priority, Routine selectors and lists -->
     <div class="task-filters-container" *ngIf="currentMainTab === 'tasks'">
-        <ng-template #noTasksTemplate>
-            <div class="empty-state">No tasks found.</div>
+        <ng-template #noTasksJourneyTemplate>
+            <empty-state
+                [imageSrc]="'/assets/Images-Pet/Panda-Age1-Base.png'"
+                [imageAlt]="'Panda illustration'"
+                [leadText]="journeySubFilter === 'pending' ? 'No pending tasks yet' : (journeySubFilter === 'ongoing' ? 'No ongoing tasks yet' : 'No completed tasks yet')"
+                [subText]="'Add tasks to your journey to view them here'"
+                [buttonText]="''">
+            </empty-state>
+        </ng-template>
+
+        <ng-template #noTasksPriorityTemplate>
+            <empty-state
+                [imageSrc]="'/assets/Images-Pet/Panda-Age1-Base.png'"
+                [imageAlt]="'Panda illustration'"
+                [leadText]="prioritySubFilter === 'high' ? 'No high priority tasks yet' : (prioritySubFilter === 'medium' ? 'No medium priority tasks yet' : 'No low priority tasks yet')"
+                [subText]="'Add tasks with this priority to view them here'"
+                [buttonText]="''">
+            </empty-state>
         </ng-template>
 
         <div class="habit-journey-container">
@@ -142,7 +170,7 @@
             </div>
 
             <div class="habit-list-content"
-                *ngIf="filteredTasksByJourney && filteredTasksByJourney.length > 0; else noTasksTemplate">
+                *ngIf="filteredTasksByJourney && filteredTasksByJourney.length > 0; else noTasksJourneyTemplate">
                 <div *ngFor="let task of filteredTasksByJourney">
                     <habit-card [habit]="task" [startTime]="task.startTimeStamp" [endTime]="task.endTimeStamp"
                         [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp">
@@ -167,7 +195,7 @@
                 </div>
             </div>
             <div class="habit-list-container">
-                <div *ngIf="filteredTasksByPriority && filteredTasksByPriority.length > 0; else noTasksTemplate"
+                <div *ngIf="filteredTasksByPriority && filteredTasksByPriority.length > 0; else noTasksPriorityTemplate"
                     class="habit-list-content">
                     <div *ngFor="let task of filteredTasksByPriority">
                         <habit-card [habit]="task.task ? task.task : task" [startTime]="task.startTimeStamp"
@@ -194,8 +222,8 @@
                         (click)="selectRoutineSubFilter('night')"></mindful-badge>
                 </div>
             </div>
-            <div class="habit-list-container">
-                <div *ngIf="filteredTasksByRoutine && filteredTasksByRoutine.length > 0; else noTasksTemplate"
+                <div class="habit-list-container">
+                <div *ngIf="filteredTasksByRoutine && filteredTasksByRoutine.length > 0; else noRoutineTasksTemplate"
                     class="habit-list-content">
                     <div *ngFor="let task of filteredTasksByRoutine">
                         <habit-card [habit]="task.task ? task.task : task" [startTime]="task.startTimeStamp"
@@ -204,6 +232,15 @@
                         </habit-card>
                     </div>
                 </div>
+                <ng-template #noRoutineTasksTemplate>
+                    <empty-state
+                        [imageSrc]="'/assets/Images-Pet/Panda-Age1-Base.png'"
+                        [imageAlt]="'Panda illustration'"
+                        [leadText]="routineSubFilter === 'morning' ? 'No morning routine yet' : (routineSubFilter === 'evening' ? 'No evening routine yet' : 'No night routine yet')"
+                        [subText]="routineSubFilter === 'morning' ? 'Add morning routine to your habits and tasks to view them here' : (routineSubFilter === 'evening' ? 'Add evening routine to your habits and tasks to view them here' : 'Add night routine to your habits and tasks to view them here')"
+                        [buttonText]="''">
+                    </empty-state>
+                </ng-template>
             </div>
         </div>
     </div>
