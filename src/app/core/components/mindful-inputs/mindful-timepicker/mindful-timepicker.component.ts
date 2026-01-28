@@ -40,6 +40,10 @@ export class MindfulTimepickerComponent implements ControlValueAccessor {
   ampm: 'AM' | 'PM' = 'AM';
   selecting = 'hour'; // or 'minute'
   hasValue = false; // whether a time has been confirmed / written
+  // editing buffers to allow clearing the input for typing
+  editingField: 'hour' | 'minute' | null = null;
+  hourBuffer: string = '';
+  minuteBuffer: string = '';
 
   onChange: any = () => { };
   onTouched: any = () => { };
@@ -73,6 +77,20 @@ export class MindfulTimepickerComponent implements ControlValueAccessor {
     this.showPopup = !this.showPopup;
   }
 
+  startEdit(field: 'hour' | 'minute') {
+    this.selecting = field;
+    this.editingField = field;
+    if (field === 'hour') this.hourBuffer = '';
+    else this.minuteBuffer = '';
+    // focus the input element after change detection
+    setTimeout(() => {
+      try {
+        if (field === 'hour') this.hourInputRef?.nativeElement?.focus();
+        else this.minuteInputRef?.nativeElement?.focus();
+      } catch (e) { }
+    });
+  }
+
   selectTime(unit: number) {
     if (this.selecting === 'hour') this.selectedHour = unit;
     else this.selectedMinute = unit;
@@ -80,6 +98,8 @@ export class MindfulTimepickerComponent implements ControlValueAccessor {
 
   onHourInput(event: any) {
     const raw = (event.target.value || '').replace(/[^0-9]/g, '').slice(0, 2);
+    // update buffer so template shows the typed digits while editing
+    this.hourBuffer = raw;
     event.target.value = raw.padStart(raw.length < 2 ? raw.length : 2, raw.length ? '' : '');
     if (raw.length === 0) return;
     const num = Number(raw);
@@ -93,12 +113,16 @@ export class MindfulTimepickerComponent implements ControlValueAccessor {
     if (raw.length === 2) {
       try {
         this.minuteInputRef.nativeElement.focus();
+        this.editingField = 'minute';
+        this.minuteBuffer = '';
       } catch (e) { }
     }
   }
 
   onMinuteInput(event: any) {
     const raw = (event.target.value || '').replace(/[^0-9]/g, '').slice(0, 2);
+    // update buffer so template shows the typed digits while editing
+    this.minuteBuffer = raw;
     event.target.value = raw.padStart(raw.length < 2 ? raw.length : 2, raw.length ? '' : '');
     if (raw.length === 0) return;
     const num = Number(raw);

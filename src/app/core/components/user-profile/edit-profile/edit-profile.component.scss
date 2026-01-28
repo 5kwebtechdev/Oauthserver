@@ -365,3 +365,131 @@
 .validation-text-age.invalid {
   color: #BB2124 !important;
 }
+
+/* Verify button styling inside phone input */
+.phone-input-container {
+  .phone-verify-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 8px;
+    min-width: fit-content;
+  }
+
+  .phone-verify-btn ::ng-deep button {
+    white-space: nowrap;
+    font-size: 13px;
+  }
+}
+
+/* Email input container with verify button */
+.email-input-container {
+  display: flex;
+  height: 61px;
+  padding: 0;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(40, 37, 39, 0.50);
+  background: #FFF;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &:focus-within {
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.12);
+    border-color: #4CAF50;
+  }
+
+  &.error {
+    border-color: #BB2124;
+  }
+
+  input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 20px 16px;
+    font-size: 16px;
+    color: #282527;
+    font-weight: 500;
+    line-height: 130%;
+    min-width: 0;
+
+    &:focus {
+      outline: none;
+    }
+
+    &::placeholder {
+      color: rgba(40, 37, 39, 0.4);
+      font-weight: 500;
+    }
+  }
+
+  .email-verify-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 8px;
+    min-width: fit-content;
+  }
+
+  .email-verify-btn ::ng-deep button {
+    white-space: nowrap;
+    font-size: 13px;
+  }
+}
+
+/* Compact OTP modal styles (minimal, only necessary rules) */
+.otp-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 998;
+}
+
+.otp-modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 340px;
+  max-width: 95%;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  z-index: 999;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.otp-modal__header { display: flex; justify-content: space-between; align-items: center; }
+.otp-modal__title { margin: 0; font-size: 16px; font-weight: 600; }
+.otp-modal__subtitle { margin: 0; font-size: 13px; color: #666; }
+
+.otp-inputs-container { display: flex; gap: 10px; justify-content: center; margin: 12px 0; }
+.otp-input { width: 20vw;
+        /* height: 20vh; */
+        font-size: 18px;
+        aspect-ratio: 1 / 1;
+         border: 1px solid #e6e6e6; border-radius: 8px; text-align: center; font-size: 20px; }
+.otp-input:focus { outline: none; border-color: #2a9d8f; box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.12); }
+
+.otp-error { color: #e03b3b; text-align: center; font-size: 13px; margin-top: 6px; }
+.otp-footer-info { display: flex; justify-content: flex-end; align-items: center; gap: 12px; font-size: 13px; color: #666; margin-top: 6px; }
+.otp-resend-btn { background: transparent; border: none; color: #2a9d8f; cursor: pointer; text-decoration: underline; }
+
+/* Ensure timer and resend button stay right-aligned on small screens */
+@media (max-width: 480px) {
+  .otp-footer-info { justify-content: flex-end; }
+}
+
+.otp-modal__confirm-btn { display: none; }
+
+@media (max-width: 480px) {
+  .otp-modal { width: 95%; padding: 12px; }
+  .otp-input { width: 20vw;
+        /* height: 20vh; */
+        font-size: 18px;
+        aspect-ratio: 1 / 1; }
+}

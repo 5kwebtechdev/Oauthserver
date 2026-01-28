@@ -35,22 +35,22 @@
   flex: 0 0 auto;
 }
 
+.tags-slider {
+  /* keep scrolling but hide the horizontal scrollbar */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
 .tags-slider::-webkit-scrollbar {
-  height: 6px;
+  height: 0; /* hide horizontal scrollbar in WebKit-based browsers */
 }
 
 .tags-slider::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.08);
-  border-radius: 3px;
+  background: transparent;
 }
 
 .tags-slider::-webkit-scrollbar-track {
   background: transparent;
-}
-
-.tags-slider {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.08) transparent;
 }
 
 .tag-popover-fixed {

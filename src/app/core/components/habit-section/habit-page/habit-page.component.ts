@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule, RefresherCustomEvent } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { HabitPageContentComponent } from '../habit-page-content/habit-page-content.component';
+import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 
@@ -28,20 +29,38 @@ import { AuthService } from '../../../services/auth.service';
         rightIconAlt="Calendar" (rightIconClick)="onOpenCalendar()" (back)="onBack()"></mindful-navigator>
 
     <habit-page-content #habitContent style="padding:0px 16px;"></habit-page-content>
+
+    <div class="habit-add-btn">
+      <mindful-button
+        type="add"
+        [size]="'large'"
+        text="Add"
+        (click)="onAddHabit()"
+        aria-label="Add habit">
+      </mindful-button>
+    </div>
+
 </ion-content>`,
-  styles: [`
+    styles: [`
     ion-refresher {
       --background: transparent;
     }
     ion-refresher-content {
       --color: #7471BA;
     }
+    .habit-add-btn {
+      position: fixed;
+      right: 16px;
+      bottom: 24px;
+      z-index: 1000;
+    }
   `],
   imports: [
     CommonModule,
     IonicModule,
     MindfulNavigatorComponent,
-    HabitPageContentComponent
+    HabitPageContentComponent,
+    MindfulButtonComponent
   ]
 })
 export class HabitPageComponent {
@@ -51,6 +70,10 @@ export class HabitPageComponent {
     private router: Router,
     private authService: AuthService
   ) { }
+
+  onAddHabit(): void {
+    this.router.navigate(['/authed/habit-input']).catch(() => { });
+  }
 
   /**
    * Navigate to calendar main page

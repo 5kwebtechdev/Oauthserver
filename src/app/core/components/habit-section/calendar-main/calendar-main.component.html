@@ -7,7 +7,7 @@
         <div class="calendar-main">
             <mindful-calendar [useArrowNavigation]="true" [dateActivities]="dateActivities"
                 [useCalendarMainStyle]="true" [startDate]="selectedDate" [moodData]="moodData"
-                (dateSelected)="onDateSelected($event)" (moodToggled)="onMoodToggled($event)">
+                (dateSelected)="onDateSelected($event)" (moodToggled)="onMoodToggled($event)" (monthChanged)="onMonthChanged($event)">
             </mindful-calendar>
         </div>
         <div class="calendar-component" *ngIf="!moodOn">
@@ -55,8 +55,6 @@
                     <p>{{ isSelectedDateToday() ? 'No tasks or habits set for today yet. Get started by adding some tasks or habits to make the most of your day!' : 'No tasks or habits set for this day yet. Get started by adding some tasks or habits to make the most of this day!' }}</p>
                 </div>
             </div>
-            <mindful-button type="magenta" text="+ Add new" large style="display:block; width:100%"
-                (click)="openHabitInput()"></mindful-button>
         </div>
 
         <div *ngIf="(habitsForSelectedDate?.length || tasksForSelectedDate?.length || eventsForSelectedDate?.length) && !moodOn"
@@ -97,6 +95,11 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Floating add button (hidden when calendar is empty) -->
+    <div class="calendar-add-btn" *ngIf="!isCalendarEmpty()">
+        <mindful-button type="add" size="large" text="Add" (click)="openHabitInput()"></mindful-button>
     </div>
 
     <!-- Mood popup: hidden by default, slides up when showMoodPopup is true -->

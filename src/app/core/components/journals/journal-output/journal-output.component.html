@@ -28,7 +28,7 @@
           </ng-template>
         </div>
 
-        <mindful-button *ngIf="isAtLatestMonth" class="journal-empty__post" type="magenta" large text="Post now"
+        <mindful-button *ngIf="isAtLatestMonth && !hasEntryForToday" class="journal-empty__post" type="magenta" large text="Post now"
           style="display:block; width:100%" (click)="openJournalInput()" aria-label="Post now"></mindful-button>
       </div>
     </div>
@@ -41,7 +41,7 @@
   </div>
 
   <!-- Fixed Add Button -->
-  <div *ngIf="isAtLatestMonth && filteredEntries && filteredEntries.length" class="add-button-fixed" (click)="onAddClick()">
+  <div *ngIf="isAtLatestMonth && filteredEntries && filteredEntries.length && !hasEntryForToday" class="add-button-fixed" (click)="onAddClick()">
     <mindful-button type="add"></mindful-button>
   </div>
   
