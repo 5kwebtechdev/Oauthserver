@@ -28,7 +28,7 @@
         </div>
         <div class="input-container">
           <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" (closed)="openBirthdayPicker = false" [showTrigger]="openBirthdayPicker"
-            [variant]="'white-green'" style="width: 100%">
+            [variant]="'white-green'" [initialDate]="birthdayInitialDate" style="width: 100%">
             <input class="dob-input" [ngClass]="{ 'invalid': ageError }" type="text" formControlName="dob"
               (click)="openBirthdayPickerNow()" placeholder="Date of Birth" readonly />
           </mindful-birthdaypicker>
@@ -84,6 +84,14 @@
             <input formControlName="phone" type="tel" [attr.maxlength]="currentPhoneLength" pattern="[0-9]*"
               inputmode="numeric" (input)="onPhoneInput($event)" (keypress)="onKeyPress($event)"
               placeholder="Enter {{currentPhoneLength}} digit number" />
+            <mindful-button 
+              type="green" 
+              text="Verify" 
+              size="small"
+              class="phone-verify-btn"
+              [disabled]="!isPhoneValid(profileForm.get('phone')?.value) || !profileForm.get('phone')?.dirty"
+              (click)="verifyPhone()">
+            </mindful-button>
           </div>
           <div class="error" *ngIf="!isPhoneValid(profileForm.get('phone')?.value) && profileForm.get('phone')?.dirty ">
             {{getPhoneErrorMessage()}}
@@ -115,10 +123,31 @@
         </div>
       </div>
       <div class="edit-details">
-        <profile-edit-input title="Email" description="Used for login and recovery" type="email" placeholder="Email"
-          [value]="profileForm.get('email')!.value" (valueChange)="onEmailChange($event)"
-          [errorMessage]="'Oops! That email looks off. Please check it again.'"
-          [showError]="profileForm.get('email')!.invalid && profileForm.get('email')!.dirty"></profile-edit-input>
+        <div class="input-heading">
+          <h2 class="heading-text">Email</h2>
+          <div class="validation-text">Used for login and recovery</div>
+        </div>
+        <div class="input-container">
+          <div class="email-input-container"
+            [ngClass]="{'error': profileForm.get('email')!.invalid && profileForm.get('email')!.dirty}">
+            <input 
+              formControlName="email" 
+              type="email" 
+              placeholder="Email"
+              (input)="onEmailChange(profileForm.get('email')!.value)" />
+            <mindful-button 
+              type="green" 
+              text="Verify" 
+              size="small"
+              class="email-verify-btn"
+              [disabled]="profileForm.get('email')!.invalid || !profileForm.get('email')!.dirty"
+              (click)="verifyEmail()">
+            </mindful-button>
+          </div>
+          <div class="error" *ngIf="profileForm.get('email')!.invalid && profileForm.get('email')!.dirty">
+            Oops! That email looks off. Please check it again.
+          </div>
+        </div>
       </div>
 
       <!-- mindful-Button (replaced with disabled variant for testing) -->
@@ -128,4 +157,59 @@
 
     </div>
   </form>
+
+  <!-- OTP Verification Modal (inlined) -->
+  <div *ngIf="showPhoneOtpModal || showEmailOtpModal">
+    <div class="otp-modal-backdrop" (click)="closeOtpModal()"></div>
+
+    <div class="otp-modal">
+      <div class="otp-modal__header">
+        <div class="otp-modal__header-content">
+          <h1 class="otp-modal__title">Verify your {{ currentVerificationType === 'email' ? 'email' : 'number' }}</h1>
+          <p class="otp-modal__subtitle">We've sent an OTP to {{ getMaskedDisplay() }}</p>
+        </div>
+        <button class="otp-modal__close-btn" (click)="closeOtpModal()" type="button">
+          <img src="assets/icons/cancel-cross.svg" alt="Close" />
+        </button>
+      </div>
+
+      <div class="otp-modal__body">
+        <div class="otp-inputs-container" [ngClass]="{'invalid': otpInvalid}">
+          <input #otpInput type="tel" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*"
+            *ngFor="let d of otp; let i = index"
+            [id]="'otp-input-' + i"
+            [value]="otp[i]"
+            (input)="onOtpInput($event, i)"
+            (keydown)="onOtpKeydown($event, i)"
+            (keyup)="onOtpKeyup($event, i)"
+            (focus)="onOtpFocus($event, i)"
+            (paste)="onOtpPaste($event)"
+            autocomplete="one-time-code"
+            [attr.data-index]="i"
+            [disabled]="otpVerifying || isExpired" />
+        </div>
+
+        <div class="otp-error" *ngIf="otpError && otpInvalid">{{ otpError }}</div>
+
+        <div class="otp-footer-info">
+          <div *ngIf="!isExpired" class="otp-timer">{{ formattedOtpTime }}</div>
+
+          <div *ngIf="isExpired" class="otp-expired-section">
+            <span class="otp-expired-text">OTP expired</span>
+            <button class="otp-resend-btn" (click)="handleResendClick()" [disabled]="isResendDisabled" type="button">Resend OTP?</button>
+          </div>
+
+          <div *ngIf="isResendDisabled && resendCooldown > 0" class="otp-resend-cooldown">Resend in {{ resendCooldown }}s</div>
+        </div>
+      </div>
+
+      <mindful-button
+        type="green"
+        text="Confirm"
+        size="full"
+        [disabled]="!isOtpComplete() || otpVerifying || isExpired"
+        (click)="verifyOtp()">
+      </mindful-button>
+    </div>
+  </div>
 </ion-content>

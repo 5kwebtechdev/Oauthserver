@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChildren, QueryList, ElementRef, AfterViewInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
@@ -13,6 +13,7 @@ import { AuthService as CoreAuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
 import { UserService } from '../../../services/user.service';
 import { finalize, debounceTime, distinctUntilChanged, switchMap, filter, catchError } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'edit-profile',
@@ -22,6 +23,8 @@ import { finalize, debounceTime, distinctUntilChanged, switchMap, filter, catchE
   styleUrls: ['./edit-profile.component.scss']
 })
 export class EditProfileComponent implements OnInit, OnDestroy {
+  @ViewChildren('otpInput') otpInputs!: QueryList<ElementRef>;
+
   // Country and phone related
   showCountryCodeModal = false;
   selectedCountry!: Country;
@@ -30,6 +33,35 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
   // Loading state
   isSubmitting = false;
+
+  // Verification states
+  isPhoneVerifying = false;
+  isEmailVerifying = false;
+  phoneVerificationError: string | null = null;
+  emailVerificationError: string | null = null;
+  phoneVerified = false;
+  emailVerified = false;
+
+  // OTP Modal states
+  showPhoneOtpModal = false;
+  showEmailOtpModal = false;
+  maskedPhone = '';
+  maskedEmail = '';
+  currentVerificationType: 'phone' | 'email' | null = null;
+
+  // Inline OTP state (4 digits)
+  otp: string[] = ['', '', '', ''];
+  otpError: string | null = null;
+  otpInvalid = false;
+  otpVerifying = false;
+
+  // Timer and resend
+  timeLeft = 120; // seconds
+  timerSub: any = null;
+  isExpired = false;
+  resendCooldown = 0;
+  resendSub: any = null;
+  isResendDisabled = false;
 
   // Form with proper validators
   profileForm = new FormGroup({
@@ -77,6 +109,15 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
   // Birthday picker control
   openBirthdayPicker = false;
+
+  /**
+   * Provide a null-safe initial date for the birthday picker.
+   * Returns `string | Date | undefined` as expected by the picker input.
+   */
+  public get birthdayInitialDate(): string | Date | undefined {
+    const val = this.profileForm.get('dob')?.value;
+    return val == null ? undefined : val;
+  }
   // Account relationship: 'child' | 'parent' | 'self'
   accountType: 'child' | 'parent' | 'self' | null = null;
 
@@ -103,7 +144,8 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     private authService: PackageAuthService,
     private coreAuthService: CoreAuthService,
     private coreService: CoreService,
-    private userService: UserService
+    private userService: UserService,
+    private router: Router
   ) {
     // initialize selected country with service default
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -475,6 +517,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
     // Update UserService immediately to notify subscribers
     this.updateUserServiceImmediately(payload);
+          // this.router.navigate(['/authed/user-profile']);
 
     // Submit to backend
     this.isSubmitting = true;
@@ -507,6 +550,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
               this.syncUserDataStorage(response);
               // update stored initial values after successful update
               this.storeInitialValues();
+              this.router.navigate(['/authed/user-profile']);
             }
           },
           error: (error) => {
@@ -605,10 +649,10 @@ export class EditProfileComponent implements OnInit, OnDestroy {
           // send only the image name when user picks an avatar image
           payload.avatarImageName = selectedAvatarData.imageName;
         }
-      } else if (this.avatarName && this.avatarName.trim() && this.avatarName.trim() !== this.currentUserData?.avatarName) {
+      //} else if (this.avatarName && this.avatarName.trim() && this.avatarName.trim() !== this.currentUserData?.avatarName) {
         // avatar selection cleared but the user provided a custom name -> send it
-        payload.avatarName = this.avatarName.trim();
-        if (this.avatarImageName?.trim()) payload.avatarImageName = this.avatarImageName.trim();
+        //payload.avatarName = this.avatarName.trim();
+        //if (this.avatarImageName?.trim()) payload.avatarImageName = this.avatarImageName.trim();
       } else if (!this.avatarSelected && this.avatarName && this.avatarName.trim()) {
         // if avatarSelected cleared but avatarName present and differs
         payload.avatarName = this.avatarName.trim();
@@ -1024,5 +1068,394 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       imageName: this.avatarImageName,
       path: avatar.value
     });
+  }
+
+  /**
+   * Verify phone number
+   */
+  verifyPhone(): void {
+    const phoneValue = this.profileForm.get('phone')?.value;
+
+    if (!phoneValue || !this.isPhoneValid(phoneValue)) {
+      this.phoneVerificationError = this.getPhoneErrorMessage();
+      return;
+    }
+
+    // No backend integration for now — just open the OTP modal for local testing
+    const fullPhone = `${this.selectedCountry.code}${phoneValue.replace(/\D/g, '')}`;
+    this.phoneVerificationError = null;
+    this.maskedPhone = fullPhone;
+    this.clearOtp();
+    this.currentVerificationType = 'phone';
+    this.showPhoneOtpModal = true;
+    this.startOtpTimer();
+    console.log('[EditProfile] (no-api) Opening Phone OTP modal for', fullPhone);
+  }
+
+  /**
+   * Verify email address
+   */
+  verifyEmail(): void {
+    const emailValue = this.profileForm.get('email')?.value;
+
+    if (!emailValue || this.profileForm.get('email')?.invalid) {
+      this.emailVerificationError = 'Please enter a valid email address';
+      return;
+    }
+
+    // No backend integration for now — just open the OTP modal for local testing
+    this.emailVerificationError = null;
+    this.maskedEmail = emailValue.trim();
+    this.clearOtp();
+    this.currentVerificationType = 'email';
+    this.showEmailOtpModal = true;
+    this.startOtpTimer();
+    console.log('[EditProfile] (no-api) Opening Email OTP modal for', this.maskedEmail);
+  }
+
+  /**
+   * Handle OTP confirmation from modal
+   */
+  onOtpConfirm(otp: string): void {
+    if (otp === 'RESEND_OTP') {
+      // Resend OTP
+      this.resendOtp();
+      return;
+    }
+
+    if (this.currentVerificationType === 'phone') {
+      this.verifyPhoneOtp(otp);
+    } else if (this.currentVerificationType === 'email') {
+      this.verifyEmailOtp(otp);
+    }
+  }
+
+  /**
+   * Verify phone OTP
+   */
+  private verifyPhoneOtp(otp: string): void {
+    const phoneValue = this.profileForm.get('phone')?.value;
+    if (!phoneValue) return;
+    
+    const fullPhone = `${this.selectedCountry.code}${phoneValue.replace(/\D/g, '')}`;
+
+    this.subscription.add(
+      this.authService.verifyPhoneOtp(fullPhone, otp)
+        .subscribe({
+          next: (response) => {
+            this.phoneVerified = true;
+            this.coreService.triggerToasrt('Phone verified successfully!');
+            this.showPhoneOtpModal = false;
+            console.log('[EditProfile] Phone OTP verified:', response);
+          },
+          error: (error) => {
+            const errorMsg = error?.error?.message || 'Incorrect OTP';
+            this.markInvalid(errorMsg);
+            console.error('[EditProfile] Phone OTP verification error:', error);
+          }
+        })
+    );
+  }
+
+  /**
+   * Verify email OTP
+   */
+  private verifyEmailOtp(otp: string): void {
+    const emailValue = this.profileForm.get('email')?.value;
+    if (!emailValue) return;
+
+    this.subscription.add(
+      this.authService.verifyEmailOtp(emailValue.trim(), otp)
+        .subscribe({
+          next: (response) => {
+            this.emailVerified = true;
+            this.coreService.triggerToasrt('Email verified successfully!');
+            this.showEmailOtpModal = false;
+            console.log('[EditProfile] Email OTP verified:', response);
+          },
+          error: (error) => {
+            const errorMsg = error?.error?.message || 'Incorrect OTP';
+            this.markInvalid(errorMsg);
+            console.error('[EditProfile] Email OTP verification error:', error);
+          }
+        })
+    );
+  }
+
+  /**
+   * Resend OTP
+   */
+  private resendOtp(): void {
+    if (this.currentVerificationType === 'phone') {
+      const phoneValue = this.profileForm.get('phone')?.value;
+      if (!phoneValue) return;
+      
+      const fullPhone = `${this.selectedCountry.code}${phoneValue.replace(/\D/g, '')}`;
+
+      this.subscription.add(
+        this.authService.sendPhoneOtp(fullPhone)
+          .subscribe({
+            next: (response) => {
+              this.coreService.triggerToasrt('OTP resent successfully!');
+              console.log('[EditProfile] Phone OTP resent:', response);
+            },
+            error: (error) => {
+              const errorMsg = error?.error?.message || 'Failed to resend OTP.';
+              this.coreService.triggerToasrt(errorMsg);
+              console.error('[EditProfile] Resend phone OTP error:', error);
+            }
+          })
+      );
+    } else if (this.currentVerificationType === 'email') {
+      const emailValue = this.profileForm.get('email')?.value;
+      if (!emailValue) return;
+
+      this.subscription.add(
+        this.authService.sendEmailOtp(emailValue.trim())
+          .subscribe({
+            next: (response) => {
+              this.coreService.triggerToasrt('OTP resent successfully!');
+              console.log('[EditProfile] Email OTP resent:', response);
+            },
+            error: (error) => {
+              const errorMsg = error?.error?.message || 'Failed to resend OTP.';
+              this.coreService.triggerToasrt(errorMsg);
+              console.error('[EditProfile] Resend email OTP error:', error);
+            }
+          })
+      );
+    }
+  }
+
+  /**
+   * Close OTP modal
+   */
+  closeOtpModal(): void {
+    this.showPhoneOtpModal = false;
+    this.showEmailOtpModal = false;
+    this.currentVerificationType = null;
+    this.stopOtpTimer();
+    this.stopResendCooldown();
+    this.clearOtp();
+    this.otpError = null;
+    this.otpInvalid = false;
+    this.otpVerifying = false;
+  }
+
+  /* ----------------- OTP helper methods inlined ----------------- */
+  private startOtpTimer(seconds: number = 120): void {
+    this.timeLeft = seconds;
+    this.isExpired = false;
+    if (this.timerSub) this.stopOtpTimer();
+    this.timerSub = setInterval(() => {
+      this.timeLeft--;
+      if (this.timeLeft <= 0) {
+        this.isExpired = true;
+        this.stopOtpTimer();
+      }
+    }, 1000);
+  }
+
+  private stopOtpTimer(): void {
+    if (this.timerSub) {
+      clearInterval(this.timerSub);
+      this.timerSub = null;
+    }
+  }
+
+  get formattedOtpTime(): string {
+    const minutes = Math.floor(this.timeLeft / 60);
+    const seconds = this.timeLeft % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+
+  // Dead simple OTP handlers
+  onOtpInput(event: any, index: number): void {
+    const el = event.target as HTMLInputElement;
+    let val = (el.value || '').replace(/[^0-9]/g, ''); // only digits
+    
+    // If input is being cleared (empty or only non-numeric), handle deletion
+    if (!val || val.length === 0) {
+      this.otp[index] = '';
+      el.value = '';
+      return;
+    }
+    
+    // Take only the first digit
+    if (val.length > 1) val = val.charAt(0);
+    
+    this.otp[index] = val;
+    el.value = val;
+    
+    // Auto-advance to next input if digit entered and not the last input
+    if (val && index < this.otp.length - 1) {
+      setTimeout(() => {
+        const next = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
+        if (next) {
+          next.focus();
+          next.select();
+        }
+      }, 10);
+    }
+  }
+
+  onOtpKeydown(event: KeyboardEvent, index: number): void {
+    if (event.key === 'Backspace') {
+      event.preventDefault();
+      this.otp[index] = '';
+      (event.target as HTMLInputElement).value = '';
+      if (index > 0) {
+        const prev = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
+        if (prev) prev.focus();
+      }
+    }
+    // Handle Enter key to move to next input
+    if (event.key === 'Enter' && index < this.otp.length - 1) {
+      event.preventDefault();
+      const next = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
+      if (next) next.focus();
+    }
+    // Handle arrow keys for navigation
+    if (event.key === 'ArrowRight' && index < this.otp.length - 1) {
+      const next = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
+      if (next) next.focus();
+    }
+    if (event.key === 'ArrowLeft' && index > 0) {
+      const prev = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
+      if (prev) prev.focus();
+    }
+  }
+
+  onOtpKeyup(event: KeyboardEvent, index: number): void {
+    // no-op
+  }
+
+  // onOtpKeyUp removed — using input + keydown handlers for reliable IME behaviour
+
+  onOtpPaste(event: ClipboardEvent): void {
+    event.preventDefault();
+    const data = event.clipboardData?.getData('text') || '';
+    const digits = data.replace(/[^0-9]/g, '');
+    
+    // Fill inputs with digits
+    for (let i = 0; i < this.otp.length && i < digits.length; i++) {
+      this.otp[i] = digits[i];
+      const inp = document.getElementById(`otp-input-${i}`) as HTMLInputElement;
+      if (inp) inp.value = digits[i];
+    }
+    
+    // Focus next empty or last
+    const nextEmpty = this.otp.findIndex(d => !d);
+    if (nextEmpty >= 0) {
+      const inp = document.getElementById(`otp-input-${nextEmpty}`) as HTMLInputElement;
+      if (inp) inp.focus();
+    }
+    
+    // Auto-submit if all filled
+    if (this.otp.every(d => d)) this.verifyOtp();
+  }
+
+  onOtpFocus(event: FocusEvent, index: number): void {
+    (event.target as HTMLInputElement).select();
+  }
+
+  private getOtpValue(): string {
+    return this.otp.join('');
+  }
+
+  isOtpComplete(): boolean {
+    return this.otp.every(d => d !== '');
+  }
+
+  verifyOtp(): void {
+    if (!this.isOtpComplete()) {
+      this.otpError = 'Please enter all 4 digits';
+      this.otpInvalid = true;
+      return;
+    }
+    const code = this.getOtpValue();
+    this.otpVerifying = true;
+    // route to existing confirmation handler
+    this.onOtpConfirm(code);
+  }
+
+  markInvalid(message: string = 'Incorrect OTP'): void {
+    this.otpInvalid = true;
+    this.otpError = message;
+    this.otpVerifying = false;
+    this.clearOtp();
+    setTimeout(() => {
+      if (this.otpInputs && this.otpInputs.first) {
+        try { this.otpInputs.first.nativeElement.focus(); } catch (e) {}
+      }
+    }, 100);
+  }
+
+  markVerified(): void {
+    this.otpInvalid = false;
+    this.otpError = null;
+    this.otpVerifying = false;
+    this.stopOtpTimer();
+  }
+
+  private clearOtp(): void {
+    this.otp = ['', '', '', ''];
+    if (this.otpInputs) {
+      this.otpInputs.forEach(i => { try { i.nativeElement.value = ''; } catch (e) {} });
+    }
+  }
+
+  private startResendCooldown(seconds: number = 30): void {
+    this.resendCooldown = seconds;
+    this.isResendDisabled = true;
+    if (this.resendSub) this.stopResendCooldown();
+    this.resendSub = setInterval(() => {
+      this.resendCooldown--;
+      if (this.resendCooldown <= 0) {
+        this.stopResendCooldown();
+      }
+    }, 1000);
+  }
+
+  private stopResendCooldown(): void {
+    if (this.resendSub) {
+      clearInterval(this.resendSub);
+      this.resendSub = null;
+    }
+    this.isResendDisabled = false;
+    this.resendCooldown = 0;
+  }
+
+  handleResendClick(): void {
+    if (this.isResendDisabled) return;
+    // trigger backend resend
+    this.resendOtp();
+    // start cooldown
+    this.startResendCooldown();
+  }
+
+  /**
+   * Return masked display value for modal subtitle
+   */
+  getMaskedDisplay(): string {
+    if (this.currentVerificationType === 'email') {
+      const e = this.maskedEmail || '';
+      const parts = e.split('@');
+      if (parts.length !== 2) return e;
+      const local = parts[0];
+      const domain = parts[1];
+      const first = local.slice(0, 2);
+      const last = local.slice(-3);
+      return `${first}*****${last}@${domain}`;
+    } else if (this.currentVerificationType === 'phone') {
+      const p = this.maskedPhone || '';
+      const digits = p.replace(/\D/g, '');
+      if (digits.length <= 6) return p;
+      const cc = p.replace(digits, '').trim();
+      const first = digits.slice(0, 5);
+      const last = digits.slice(-3);
+      return `${cc} ${first}**${last}`;
+    }
+    return '';
   }
 }

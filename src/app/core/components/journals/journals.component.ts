@@ -9,6 +9,7 @@ import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-he
 import { ViewAllComponent } from '../mindful-navigator/view-all/view-all.component';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
 import { JournalPostCardComponent } from './journal-post-card/journal-post-card.component';
+import { EmptyStateComponent } from '../empty-state/empty-state.component';
 
 export interface JournalEntry {
   id: string;
@@ -39,18 +40,16 @@ export interface JournalEntry {
       </div>
 
       <ng-template #emptyBody>
-        <div class="journal-empty__body">
-          <img class="journal-empty__illustration" src="/assets/Images-Transparent/Image-Journal-Blank.png"
-            alt="Panda with kids illustration">
-
-          <div class="journal-empty__texts">
-            <p class="lead">We are waiting to hear about your day!</p>
-            <p class="sub">Post your journal to keep your story alive</p>
-          </div>
-
-          <mindful-button class="journal-empty__post" type="magenta" large text="Post now"
-             (click)="onCreateNewEntry()" aria-label="Post now"></mindful-button>
-        </div>
+        <empty-state
+          [imageSrc]="'/assets/Images-Transparent/Image-Journal-Blank.png'"
+          [imageAlt]="'Panda with kids illustration'"
+          [leadText]="'We are waiting to hear about your day!'"
+          [subText]="'Post your journal to keep your story alive'"
+          [buttonType]="'magenta'"
+          [buttonText]="'Post now'"
+          [isLargeButton]="true"
+          (buttonClicked)="onCreateNewEntry()">
+        </empty-state>
       </ng-template>
     </section>
   `,
@@ -63,50 +62,11 @@ export interface JournalEntry {
       padding: 0;
     }
 
-    .journal-empty__body {
+    .entries-container {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .journal-empty__illustration {
-      width: 208px;
-      height: 123px;
-      object-fit: contain;
-    }
-
-    .journal-empty__texts {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .journal-empty__texts .lead {
-      font-family: 'Fredoka', Arial;
-      font-weight: 500;
-      font-size: 16px;
-      color: #282527;
-      text-align: center;
-      margin: 0;
-    }
-
-    .journal-empty__texts .sub {
-      font-family: 'Nunito', Arial;
-      font-weight: 500;
-      font-size: 13px;
-      color: #282527;
-      opacity: 0.7;
-      text-align: center;
-      margin: 0;
-    }
-
-    .journal-empty__post {
-      width: 100%;
-      align-items: center;
-      justify-content: center;
-      padding: 0px 12px;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 16px;
     }
 
     .entries {
@@ -217,7 +177,7 @@ export interface JournalEntry {
       object-fit: cover;
     }
   `],
-  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, ViewAllComponent, MindfulButtonComponent, JournalPostCardComponent],
+  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, ViewAllComponent, MindfulButtonComponent, JournalPostCardComponent, EmptyStateComponent],
   standalone: true
 })
 export class JournalsComponent {

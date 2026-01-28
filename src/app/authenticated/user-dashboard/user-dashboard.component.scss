@@ -50,7 +50,7 @@ ion-content {
 // USER PROFILE SECTION
 .user-profile-section {
      position: relative;
-    height: 300px;
+    height: calc(300px + env(safe-area-inset-top));
     background-image: url(/assets/Images-Thumbnails/Background-Home.png);
     background-size: cover;
     background-repeat: no-repeat;
@@ -61,7 +61,7 @@ ion-content {
     display: flex;
     /* align-items: center; */
     background-color: #fee581;
-    padding-top: 20px;
+    padding-top: env(safe-area-inset-top, 0) !important;
 }
 
 .dasboard-wrapper {

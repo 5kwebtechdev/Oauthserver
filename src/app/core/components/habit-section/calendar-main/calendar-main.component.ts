@@ -116,6 +116,17 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Handle month navigation from the child calendar.
+   * The calendar emits the first day of the new month.
+   */
+  onMonthChanged(monthDate: Date) {
+    if (!monthDate) return;
+    const firstDay = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+    const dateStr = this.formatDateToYYYYMMDD(firstDay);
+    this.loadDayData(dateStr);
+  }
+
+  /**
    * Load mood transition data for the current month
    */
   loadMoodData() {
@@ -214,10 +225,10 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
           // Clear existing activities for this month
           this.dateActivities = {};
 
-          // Process events (timetable)
+          // Process events (timetable) using `completionDate` field for dots
           if (response.events && response.events.length > 0) {
             response.events.forEach((event: any) => {
-              const dates = this.getDateRangeFromItem(event);
+              const dates = this.getDatesFromCompletionDate(event);
               dates.forEach(date => {
                 if (!this.dateActivities[date]) {
                   this.dateActivities[date] = {};
@@ -227,10 +238,10 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
             });
           }
 
-          // Process tasks
+          // Process tasks using `completionDate`
           if (response.tasks && response.tasks.length > 0) {
             response.tasks.forEach((task: any) => {
-              const dates = this.getDateRangeFromItem(task);
+              const dates = this.getDatesFromCompletionDate(task);
               dates.forEach(date => {
                 if (!this.dateActivities[date]) {
                   this.dateActivities[date] = {};
@@ -240,10 +251,10 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
             });
           }
 
-          // Process habits
+          // Process habits using `completionDate`
           if (response.habits && response.habits.length > 0) {
             response.habits.forEach((habit: any) => {
-              const dates = this.getDateRangeFromItem(habit);
+              const dates = this.getDatesFromCompletionDate(habit);
               dates.forEach(date => {
                 if (!this.dateActivities[date]) {
                   this.dateActivities[date] = {};
@@ -262,48 +273,38 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Extract all dates from an item's date range, considering daysOfWeek if present
+   * Extract one or more completion dates from an item using `completionDate`.
+   * Handles a single ISO/string date or an array of dates. Returns dates
+   * normalized to YYYY-MM-DD format.
    */
-  private getDateRangeFromItem(item: any): string[] {
+  private getDatesFromCompletionDate(item: any): string[] {
     const dates: string[] = [];
+    if (!item) return dates;
 
-    // Get start and end dates
-    const startDateStr = item.startDate || item.start_date || item.date;
-    const endDateStr = item.endDate || item.end_date || item.date;
-
-    if (!startDateStr) return dates;
-
-    const startDate = new Date(startDateStr);
-    const endDate = endDateStr ? new Date(endDateStr) : startDate;
-
-    // If item has daysOfWeek, only include those specific days
-    const daysOfWeek = item.daysOfWeek;
-    const dayMap: { [key: string]: number } = {
-      'SUNDAY': 0, 'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3,
-      'THURSDAY': 4, 'FRIDAY': 5, 'SATURDAY': 6
+    const vals = item.completionDate ?? item.completion_date ?? item.completions ?? null;
+    const addIfValid = (v: any) => {
+      if (!v) return;
+      const d = new Date(v);
+      if (!isNaN(d.getTime())) {
+        dates.push(this.formatDateToYYYYMMDD(d));
+      }
     };
 
-    // Iterate through all dates in range
-    const current = new Date(startDate);
-    while (current <= endDate) {
-      // If daysOfWeek is specified, check if current day is included
-      if (daysOfWeek && Array.isArray(daysOfWeek) && daysOfWeek.length > 0) {
-        const currentDayOfWeek = current.getDay();
-        const isIncluded = daysOfWeek.some((day: string) => dayMap[day] === currentDayOfWeek);
-
-        if (isIncluded) {
-          dates.push(this.formatDateToYYYYMMDD(current));
-        }
-      } else {
-        // No daysOfWeek restriction, include all dates
-        dates.push(this.formatDateToYYYYMMDD(current));
-      }
-
-      // Move to next day
-      current.setDate(current.getDate() + 1);
+    if (Array.isArray(vals)) {
+      vals.forEach(addIfValid);
+    } else {
+      addIfValid(vals);
     }
 
     return dates;
+  }
+
+  /**
+   * Return true if an item has a completion date matching the target date string
+   */
+  private hasCompletionOnDate(item: any, targetDateStr: string): boolean {
+    const dates = this.getDatesFromCompletionDate(item);
+    return dates.includes(targetDateStr);
   }
 
   formatDateToYYYYMMDD(date: Date): string {
@@ -340,9 +341,9 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
             });
           }
 
-          // Filter habits to only those scheduled for the selected date
+          // Filter habits to only those with a completion on the selected date
           this.habitsForSelectedDate = rawHabits
-            .filter((h: any) => this.isItemScheduledForDate(h, dateStr))
+            .filter((h: any) => this.hasCompletionOnDate(h, dateStr))
             .map((h: any) => {
               const timestamps = this.buttonLogic.calculateTimestamps({
                 ...h,
@@ -358,9 +359,9 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
               };
             });
 
-          // Filter tasks to only those scheduled for the selected date
+          // Filter tasks to only those with a completion on the selected date
           this.tasksForSelectedDate = rawTasks
-            .filter((t: any) => this.isItemScheduledForDate(t, dateStr))
+            .filter((t: any) => this.hasCompletionOnDate(t, dateStr))
             .map((t: any) => {
               const timestamps = this.buttonLogic.calculateTimestamps({
                 ...t,
@@ -377,9 +378,9 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
               };
             });
 
-          // Filter events (timetable) to only those scheduled for the selected date
+          // Filter events (timetable) to only those with a completion on the selected date
           this.eventsForSelectedDate = rawEvents
-            .filter((e: any) => this.isItemScheduledForDate(e, dateStr))
+            .filter((e: any) => this.hasCompletionOnDate(e, dateStr))
             .map((e: any) => {
               const timestamps = this.buttonLogic.calculateTimestamps({
                 ...e,
@@ -405,13 +406,7 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Check if an item (habit/task/event) is scheduled for a specific date
-   */
-  private isItemScheduledForDate(item: any, targetDateStr: string): boolean {
-    const scheduledDates = this.getDateRangeFromItem(item);
-    return scheduledDates.includes(targetDateStr);
-  }
+
 
   // Extract a numeric timestamp from the first matching candidate field on the item
   private extractTimestamp(item: any, candidates: string[]): number {
@@ -526,6 +521,11 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
       return `${parts[0]}.${parts[1]}`;
     }
     return timeStr;
+  }
+
+  // Return true when the calendar shows the empty state (no items and mood toggle off)
+  isCalendarEmpty(): boolean {
+    return (!this.habitsForSelectedDate?.length && !this.tasksForSelectedDate?.length && !this.eventsForSelectedDate?.length) && !this.moodOn;
   }
 
   // Return true if the currently selected date is today's date

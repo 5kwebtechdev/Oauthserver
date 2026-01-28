@@ -254,6 +254,8 @@ export class JournalOutputComponent implements OnInit {
    * Navigate to the journal input page when the floating + button is clicked.
    */
   openJournalInput(): void {
+    // Prevent opening input if there's already a journal for today
+    if (this.hasEntryForToday) return;
     this.router.navigate(['/authed/journal-input']).catch(() => { /* ignore navigation errors */ });
   }
 
@@ -261,7 +263,23 @@ export class JournalOutputComponent implements OnInit {
    * Handler used by the fixed add button in the template.
    */
   onAddClick(): void {
+    if (this.hasEntryForToday) return;
     this.openJournalInput();
+  }
+
+  /** Return true when there is already a journal entry for today's date */
+  get hasEntryForToday(): boolean {
+    try {
+      if (!this.entries || !this.entries.length) return false;
+      const todayStr = new Date().toDateString();
+      return this.entries.some(e => {
+        if (!e || !e.date) return false;
+        const d = e.date instanceof Date ? e.date : new Date(e.date as any);
+        return d.toDateString() === todayStr;
+      });
+    } catch (e) {
+      return false;
+    }
   }
 
   /**
