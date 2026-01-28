@@ -28,13 +28,8 @@ export class ChildSelfImageService {
         try {
             if (!user) return { url: null, alt: null };
 
-            // Use backend URL if provided
-            if (user.avatar?.url) {
-                const alt = user.avatar.avatarImageName || 'Avatar';
-                return { url: user.avatar.url, alt };
-            }
-
-            // Extract avatar key from avatarImageName like "Avatar 3" -> 3, or avatarName like "avatar3" -> 3
+            // Always resolve image from avatarImageName. Ignore backend-provided `avatar.url` to maintain
+            // consistent client-side assets and avoid external URLs.
             let avatarKey: number | null = null;
             const imageName = user.avatar?.avatarImageName || user.avatarImageName || '';
             if (imageName) {
@@ -66,14 +61,9 @@ export class ChildSelfImageService {
         try {
             if (!member) return { url: null, alt: null };
 
-            // If member has a URL, use it
-            if (member.avatarName && typeof member.avatarName === 'string' && member.avatarName.startsWith('/')) {
-                return { url: member.avatarName, alt: member.avatarImageName || member.name };
-            }
-
-            // Try to resolve by avatarImageName
+            // Always resolve by `avatarImageName` (ignore `avatar.url` sent by server).
             let avatarKey: number | null = null;
-            const imageName = member.avatarImageName || '';
+            const imageName = member.avatarImageName || member.avatar?.avatarImageName || '';
             if (imageName) {
                 const match = String(imageName).match(/\d+/);
                 if (match) {
