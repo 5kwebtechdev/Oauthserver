@@ -222,4 +222,11 @@ export class MindfulDatepickerComponent implements ControlValueAccessor {
     const end = this.getEffectiveEnd();
     return end && this.isSameDay(date, end);
   }
+
+  /**
+   * Check if the provided date is today
+   */
+  isToday(date: Date): boolean {
+    return this.isSameDay(date, new Date());
+  }
 }

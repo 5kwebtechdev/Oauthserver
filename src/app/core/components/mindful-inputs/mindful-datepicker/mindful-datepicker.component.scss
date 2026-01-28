@@ -136,6 +136,24 @@
           z-index: 1;
         }
 
+          /* Highlight today's date with a small ring matching the selected date size */
+          &.today {
+            position: relative;
+          }
+
+          &.today::before {
+            position: absolute;
+            content: '';
+            top: calc(50% - 15px);
+            left: calc(50% - 15px);
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            border: 1px solid #90214D;
+            background: transparent;
+            z-index: 1;
+          }
+
         &.in-range:not(.selected):before {
           position: absolute;
           content: '';

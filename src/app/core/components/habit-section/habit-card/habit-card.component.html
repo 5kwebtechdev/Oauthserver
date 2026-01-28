@@ -54,7 +54,7 @@
   </div>
 
   <!-- CTA Buttons -->
-  <div class="add-button-container" [class.mt-4]="!isEmpty" class="empty-add-btn" *ngIf="isEmpty">
+  <div class="add-button-container empty-add-btn" [class.mt-4]="!isEmpty" *ngIf="isEmpty">
     <mindful-button type="magenta" large style="display:block; width:100%" text="Add New"
       (click)="openHabitInput()"></mindful-button>
   </div>

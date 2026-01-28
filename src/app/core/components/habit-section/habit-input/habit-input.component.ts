@@ -260,6 +260,10 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       // Then fall back to router navigation state or history.state
       const nav = this.router.getCurrentNavigation();
       const stateHabit = this.editingHabit ?? nav?.extras?.state?.['habit'] ?? (history && (history.state as any)?.habit);
+      // Respect an explicit initialTab passed via componentProps or navigation state even when
+      // no `habit` object is provided (creating a new activity). Use habit type as a fallback.
+      const stateCurrentActive = this.initialTab ?? nav?.extras?.state?.['currentActive'] ?? (history && (history.state as any)?.currentActive);
+      this.currentActive = (stateCurrentActive as any) || (stateHabit ? (stateHabit.type as any) : this.currentActive);
       if (!stateHabit) return;
       const h: any = stateHabit;
       this.originalHabit = h;
@@ -272,8 +276,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       this.startTime = this.to12Hour(h.startTime || h.start_time || '');
       this.endTime = this.to12Hour(h.endTime || h.end_time || '');
       // Auto-switch to the appropriate tab based on: @Input() initialTab, explicit currentActive in state, or habit type
-      const stateCurrentActive = this.initialTab ?? nav?.extras?.state?.['currentActive'] ?? (history && (history.state as any)?.currentActive);
-      this.currentActive = stateCurrentActive || (h.type as any) || this.currentActive;
+      // Reuse `stateCurrentActive` declared above and fall back to habit type when editing.
+      this.currentActive = (stateCurrentActive as any) || (h.type as any) || this.currentActive;
       this.isPrivate = !!h.isPrivate;
       this.coinReward = Number(h?.coinReward ?? h?.rewardCoins ?? h?.coin ?? 5);
       this.selectedRoutine = h.selectedRoutine || h.routine || (h.getRoutine as any) || this.selectedRoutine;
@@ -526,19 +530,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     this.serverErrorMessage = '';
     Object.keys(this.errors).forEach(k => (this.errors as any)[k] = false);
 
-    const validations = {
-      title: !this.title?.trim(),
-      tag: !this.selectedTags?.length,
-      routine: !!(this.selectedRoutine && this.startTime && !this.isStartTimeWithinRoutine()),
-      weekdays: !this.everyday && !this.selectedDays?.size,
-      time: !this.startTime?.trim() || !this.endTime?.trim(),
-      pastTime: this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime),
-      endTimeBeforeStart: this.isEndTimeNotAfterStart(this.startTime, this.endTime),
-      endTimeSingleDay: this.isEndTimeCrossingMidnight(this.startTime, this.endTime),
-      date: !this.startDate || !this.endDate || this.startDate > this.endDate,
-      priority: !this.priority,
-      notes: !this.notes?.trim()
-    };
+    const validations = this.computeValidations();
 
     Object.assign(this.errors, validations);
     // Debug: log validation flags and force change detection so template updates immediately
@@ -766,6 +758,40 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
 
   selectCoin(value: number) { this.coinReward = value; }
   isCoinSelected(value: number) { return this.coinReward === value; }
+
+  // Compute validation flags without performing submission; reused by submit() and click-on-disabled handler
+  private computeValidations() {
+    return {
+      title: !this.title?.trim(),
+      tag: !this.selectedTags?.length,
+      routine: !!(this.selectedRoutine && this.startTime && !this.isStartTimeWithinRoutine()),
+      weekdays: !this.everyday && !this.selectedDays?.size,
+      time: !this.startTime?.trim() || !this.endTime?.trim(),
+      pastTime: this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime),
+      endTimeBeforeStart: this.isEndTimeNotAfterStart(this.startTime, this.endTime),
+      endTimeSingleDay: this.isEndTimeCrossingMidnight(this.startTime, this.endTime),
+      date: !this.startDate || !this.endDate || (this.startDate instanceof Date && this.endDate instanceof Date && this.startDate > this.endDate),
+      priority: !this.priority,
+      notes: !this.notes?.trim()
+    } as any;
+  }
+
+  // Click handler on the submit-row container to show validation errors when users tap the disabled button
+  onSubmitRowClick(event: MouseEvent) {
+    // If form is complete and button enabled, do nothing here and let the button's (click) call submit()
+    if (this.isFormComplete && !this.isSubmitting) return;
+
+    // Otherwise, mark attempted and compute validations so the template shows errors
+    this.attemptedSubmit = true;
+    this.serverErrorMessage = '';
+    Object.keys(this.errors).forEach(k => (this.errors as any)[k] = false);
+    const validations = this.computeValidations();
+    Object.assign(this.errors, validations);
+    try { this.cd.detectChanges(); } catch (e: any) { }
+
+    // Prevent further handling if needed
+    try { event.stopPropagation(); } catch (e) { }
+  }
 
   private buildHabitFromResponse(res: any, baseHabit: Habit, type: 'habits' | 'tasks' | 'timetable', formattedStartTime: string, formattedEndTime: string, daysOfWeek: string[]): Habit {
     const data = res || {};

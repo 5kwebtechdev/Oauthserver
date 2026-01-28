@@ -148,11 +148,11 @@
 </ng-template>
 
 <ng-template #submitSection let-btnType="btnType" let-btnTypeFaded="btnTypeFaded" let-itemType="itemType">
-  <div class="submit-row">
+  <div class="submit-row" (click)="onSubmitRowClick($event)">
     <div *ngIf="serverErrorMessage && (currentActive === 'habits' || currentActive === 'tasks')" class="field-error"
       style="margin-top: -24px;" role="alert">{{serverErrorMessage}}</div>
     <mindful-button [type]="isFormComplete ? btnType : btnTypeFaded"
-      [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update ' + itemType : (selectedRoutine ? 'Create ' + itemType : 'Create Habit'))"
+      [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update ' + itemType : 'Create ' + itemType)"
       large [disabled]="isSubmitting || !isFormComplete" (click)="submit()"></mindful-button>
   </div>
 </ng-template>
