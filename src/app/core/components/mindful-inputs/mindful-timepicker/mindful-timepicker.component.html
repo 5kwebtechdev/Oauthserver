@@ -7,12 +7,14 @@
       <div class="popup-header">
         <div class="time-select">
           <input #hourInput type="tel" inputmode="numeric" maxlength="2" class="time-button"
-            [class.active]="selecting === 'hour'" (focus)="selecting = 'hour'" (click)="selecting = 'hour'"
-            [value]="selectedHour.toString().padStart(2, '0')" (input)="onHourInput($event)" />
+            [class.active]="selecting === 'hour'" (focus)="startEdit('hour')" (click)="startEdit('hour')"
+            [value]="editingField === 'hour' ? hourBuffer : selectedHour.toString().padStart(2, '0')"
+            (input)="onHourInput($event)" />
           <p style="font-size: 50px;width: 20px;display: inline-block;margin: 0 15px;font-weight: bold">:</p>
           <input #minuteInput type="tel" inputmode="numeric" maxlength="2" class="time-button"
-            [class.active]="selecting === 'minute'" (focus)="selecting = 'minute'" (click)="selecting = 'minute'"
-            [value]="selectedMinute.toString().padStart(2, '0')" (input)="onMinuteInput($event)" />
+            [class.active]="selecting === 'minute'" (focus)="startEdit('minute')" (click)="startEdit('minute')"
+            [value]="editingField === 'minute' ? minuteBuffer : selectedMinute.toString().padStart(2, '0')"
+            (input)="onMinuteInput($event)" />
         </div>
         <div class="ampm-box">
           <div class="container p-0" style="max-width: 75px">

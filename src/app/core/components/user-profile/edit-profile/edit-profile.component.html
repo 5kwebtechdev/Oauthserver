@@ -28,7 +28,7 @@
         </div>
         <div class="input-container">
           <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" (closed)="openBirthdayPicker = false" [showTrigger]="openBirthdayPicker"
-            [variant]="'white-green'" style="width: 100%">
+            [variant]="'white-green'" [initialDate]="birthdayInitialDate" style="width: 100%">
             <input class="dob-input" [ngClass]="{ 'invalid': ageError }" type="text" formControlName="dob"
               (click)="openBirthdayPickerNow()" placeholder="Date of Birth" readonly />
           </mindful-birthdaypicker>

@@ -1,4 +1,5 @@
 import { Component, OnInit, Renderer2, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
+import { IonContent } from '@ionic/angular';
 import { Router, ActivatedRoute } from "@angular/router";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { CoreService } from "../../core/services/core.service";
@@ -108,6 +109,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   @ViewChild('swiperEl', { static: false }) swiperEl?: ElementRef;
   @ViewChild('swiperEl', { static: false }) swiperRef!: ElementRef;
+  @ViewChild('content', { static: false }) ionContent?: IonContent;
 
   images = [
     'https://picsum.photos/id/1011/600/400',
@@ -273,6 +275,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.renderer.setStyle(document.documentElement, '--step', this.step);
       // Ensure birthday picker doesn't open automatically when navigating to step 3
       this.openBirthdayPicker = false;
+      // Ensure the view is at the top when step changes (prevents previous scroll position hiding the navigator)
+      setTimeout(() => {
+        try {
+          // use a short delay to let the DOM update after the step change
+          this.ionContent?.scrollToTop(250);
+        } catch (e) { /* ignore */ }
+      }, 30);
       // If we've navigated directly to pet selection, ensure a pet is selected and carousel shows
       try {
         if (this.step === 4) {

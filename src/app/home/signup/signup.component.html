@@ -1,4 +1,4 @@
-<ion-content [ngClass]="step === 5 ? 'bg-white' : 'bg-mindful-secondary'">
+<ion-content #content [ngClass]="step === 5 ? 'bg-white' : 'bg-mindful-secondary'">
   <mindful-navigator *ngIf="step !== 5"
     [heading]="headerText"
     [subtext]="headerSubtext"
