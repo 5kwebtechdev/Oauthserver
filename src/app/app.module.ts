@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 
@@ -14,13 +15,14 @@ import { LoadingInterceptor } from './core/interceptors/loading.interceptor';
 import {ProfileSelectorInterceptor} from "./core/interceptors/profile-selector.interceptor";
 import { NetworkInterceptor } from './core/interceptors/network.interceptor';
 import { NetworkIssueComponent } from './core/components/network-issue/network-issue.component';
+import { MindfulButtonComponent } from './core/components/mindful-button/mindful-button.component';
 
 @NgModule({
   declarations: [
     AppComponent,
   ],
 
-  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, BrowserAnimationsModule, HttpClientModule, SupermeLoadingComponent, NetworkIssueComponent],
+  imports: [BrowserModule, CommonModule, IonicModule.forRoot(), AppRoutingModule, BrowserAnimationsModule, HttpClientModule, SupermeLoadingComponent, NetworkIssueComponent, MindfulButtonComponent],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },

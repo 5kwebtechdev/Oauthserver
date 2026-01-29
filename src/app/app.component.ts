@@ -1,9 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError, Event } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { PetAgeService } from './core/services/pet-age.service';
 import { LoadingService } from './core/services/loading.service';
 import { NavigationService } from './core/services/navigation.service';
+import { BadgeSocketService, BadgePopupData } from './core/services/badge-socket.service';
+import { BadgeApi } from './core/api/badge.api';
+import { AuthApi } from './core/api/auth.api';
 
 @Component({
   selector: 'app-root',
@@ -11,20 +15,33 @@ import { NavigationService } from './core/services/navigation.service';
   styleUrls: ['app.component.scss'],
   standalone: false,
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   loading = false;
   private _navToken?: string;
+  private badgeSubscription?: Subscription;
+
+  // Badge popup state (global popup shown from any screen)
+  showBadgePopup = false;
+  currentBadge?: BadgePopupData;
+  private badgePopupQueue: BadgePopupData[] = [];
+
   constructor(
     private platform: Platform,
     private router: Router,
     private petAgeService: PetAgeService,
     private loadingService: LoadingService,
     private navigation: NavigationService,
+    private badgeSocketService: BadgeSocketService,
+    private badgeApi: BadgeApi,
+    private authApi: AuthApi,
   ) { }
 
   ngOnInit() {
     // Track app open for pet age progression
     this.recordDailyAppOpen();
+
+    // Initialize WebSocket connection for real-time badge notifications
+    this.initializeBadgeWebSocket();
 
     // Handle hardware back button on mobile devices
     this.platform.backButton.subscribeWithPriority(10, () => {
@@ -74,5 +91,119 @@ export class AppComponent implements OnInit {
     } else if (result.coinsEarned > 0) {
       console.log(`🔥 Day ${petData.currentStreak} streak! Earned ${result.coinsEarned} coins!`);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.badgeSubscription?.unsubscribe();
+    this.badgeSocketService.disconnect();
+  }
+
+  /**
+   * Initialize WebSocket connection for real-time badge notifications
+   */
+  private initializeBadgeWebSocket(): void {
+    // Only connect if user is authenticated
+    const token = this.authApi.getToken();
+    if (!token) {
+      console.log('[AppComponent] No auth token, skipping badge WebSocket initialization');
+      return;
+    }
+
+    // Connect to WebSocket
+    this.badgeSocketService.connect();
+
+    // Subscribe to badge notifications for global popup
+    this.badgeSubscription = this.badgeSocketService.onBadgeReceived().subscribe(
+      (badge: BadgePopupData) => {
+        console.log('[AppComponent] Received badge notification:', badge);
+        this.showBadgeNotification(badge);
+      }
+    );
+
+    // Check for any pending badge popups that were missed while offline
+    this.checkPendingBadgePopups();
+  }
+
+  /**
+   * Check for pending badge popups from API
+   */
+  private checkPendingBadgePopups(): void {
+    this.badgeApi.getPendingPopups().subscribe({
+      next: (response: any) => {
+        console.log('[AppComponent] Pending popups response:', response);
+        // Handle array of pending badges or single badge
+        const pendingBadges = Array.isArray(response) ? response : (response?.badges || []);
+        
+        pendingBadges.forEach((badge: any) => {
+          if (badge && (badge.badgeId || badge.id)) {
+            const badgeData: BadgePopupData = {
+              badgeId: badge.badgeId || badge.id,
+              title: badge.title || badge.name || 'Badge Earned',
+              name: badge.name || badge.title || 'Badge Earned',
+              levelText: badge.levelText || '',
+              description: badge.description || '',
+              achievementText: badge.achievementText || '',
+              iconUrl: badge.iconUrl || badge.icon || 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png',
+              celebrationTitle: badge.celebrationTitle || 'Badge Unlocked!',
+              celebrationMessage: badge.celebrationMessage || `You earned a badge!`,
+              shareMessage: badge.shareMessage || 'I earned a badge on SuperMe! 🚀',
+              currentLevel: badge.currentLevel || 1,
+              totalLevels: badge.totalLevels || 1,
+              isMaxLevel: badge.isMaxLevel || false
+            };
+            this.badgeSocketService.enqueueBadge(badgeData);
+          }
+        });
+      },
+      error: (error) => {
+        console.error('[AppComponent] Failed to fetch pending badge popups:', error);
+      }
+    });
+  }
+
+  /**
+   * Show badge notification popup
+   */
+  private showBadgeNotification(badge: BadgePopupData): void {
+    this.currentBadge = badge;
+    this.showBadgePopup = true;
+  }
+
+  /**
+   * Handle badge popup close
+   */
+  onBadgePopupClose(): void {
+    if (this.currentBadge) {
+      // Acknowledge the badge popup to backend
+      this.badgeApi.acknowledgeBadgePopup(this.currentBadge.badgeId).subscribe({
+        next: () => {
+          console.log('[AppComponent] Badge popup acknowledged:', this.currentBadge?.badgeId);
+        },
+        error: (error) => {
+          console.error('[AppComponent] Failed to acknowledge badge popup:', error);
+        }
+      });
+    }
+
+    this.showBadgePopup = false;
+    this.currentBadge = undefined;
+
+    // Notify socket service to show next badge in queue
+    this.badgeSocketService.popupClosed();
+  }
+
+  /**
+   * Handle "View all Badges" click
+   */
+  onViewAllBadges(): void {
+    this.onBadgePopupClose();
+    this.router.navigate(['/authenticated/badges']);
+  }
+
+  /**
+   * Handle "Awesome" click
+   */
+  onAwesomeClick(): void {
+    this.onBadgePopupClose();
   }
 }

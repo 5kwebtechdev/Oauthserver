@@ -172,6 +172,20 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
     this.saveDraft();
   }
 
+  // Called by RTE when HTML content changes
+  onEditorHtml(html: string) {
+    // store HTML string in `text` so rest of the component persists it as draft/content
+    this.text = html || '';
+    this.saveDraft();
+  }
+
+  // Attachment button pressed in RTE
+  onAttach() {
+    // placeholder: show file UI or emit event; for now we keep previous behavior (no-op)
+    // You can implement file picker here and insert an <img> or attachment placeholder into the editor
+    console.log('Attach pressed');
+  }
+
   onDelete() {
     // If editing an existing saved note, show confirmation popup and delete via API.
     if (this.editing && this.editId) {

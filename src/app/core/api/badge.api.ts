@@ -32,5 +32,24 @@ export class BadgeApi {
         const url = `${this.base}/badges/progress`;
         return this.http.get(url, { headers: this.headers() });
     }
+
+    /**
+     * Get pending badge popups that were missed while offline.
+     * Endpoint: GET {base}/badges/pending-popup
+     */
+    getPendingPopups(): Observable<any> {
+        const url = `${this.base}/badges/pending-popup`;
+        return this.http.get(url, { headers: this.headers() });
+    }
+
+    /**
+     * Acknowledge a badge popup has been shown to the user.
+     * Endpoint: POST {base}/badges/popup/{badgeId}/ack
+     * @param badgeId The ID of the badge to acknowledge
+     */
+    acknowledgeBadgePopup(badgeId: number): Observable<any> {
+        const url = `${this.base}/badges/popup/${badgeId}/ack`;
+        return this.http.post(url, {}, { headers: this.headers() });
+    }
 }
 

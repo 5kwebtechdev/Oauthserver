@@ -53,3 +53,7 @@ import 'zone.js';  // Included with Angular CLI.
 /***************************************************************************************************
  * APPLICATION IMPORTS
  */
+
+// Some third-party libraries expect a global `global` variable (Node-like env).
+// Ensure `global` is defined in browser builds to avoid runtime ReferenceError.
+(window as any).global = window;
