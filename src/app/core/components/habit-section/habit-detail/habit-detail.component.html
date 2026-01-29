@@ -33,7 +33,7 @@
                 <img class="routine-icon" [src]="getRoutineIcon()" [alt]="getRoutineName() + ' Routine Icon'" width="24"
                     height="24" />
                 <mindful-badge *ngIf="habit"
-                    [type]="cameFromLongPress && navigationOriginType === 'habits' ? 'habit' : 'habit-detail-orange'"
+                    [type]="habit?.type === 'tasks' ? 'habit-detail-orange' : 'habit'"
                     [text]="habit.tags?.[0] || 'Focus'">
                 </mindful-badge>
             </div>

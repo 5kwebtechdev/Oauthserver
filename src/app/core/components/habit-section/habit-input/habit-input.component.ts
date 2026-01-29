@@ -569,7 +569,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     const daysOfWeek = this.getSelectedDaysOfWeek();
     const tags = this.getTagValues();
     const priority = (habit.priority || 'medium').toString().toUpperCase();
-    const routine = ((habit.selectedRoutine || this.selectedRoutine) || 'MORNING').toString().toUpperCase();
+    const rawRoutine = (habit.selectedRoutine || this.selectedRoutine);
+    const routine = rawRoutine ? String(rawRoutine).toUpperCase() : null;
 
     // Check if date range covers all weekdays
     const daysInRange = this.getDaysInRange();
@@ -582,7 +583,6 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         description: habit.notes || '',
         status: 'PENDING',
         priority: priority,
-        routine: routine,
         tags: tags,
         startDate: this.formatDateStr(this.startDate) || '',
         startTime: formattedStartTime || '',
@@ -593,6 +593,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         rewardCoins: habit.coinReward ?? 5,
         sharedWithParent: this.isChild ? !this.isPrivate : false
       };
+      if (routine) payload.routine = routine;
       // Only include daysOfWeek if NOT everyday
       if (!(this.everyday && coversAllDays)) {
         payload.daysOfWeek = daysOfWeek;
@@ -622,7 +623,6 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         description: habit.notes || '',
         status: 'PENDING',
         priority: priority,
-        routine: routine,
         tags: tags,
         startDate: this.formatDateStr(this.startDate) || '',
         startTime: formattedStartTime || '',
@@ -633,6 +633,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         coinReward: 5,
         sharedWithParent: this.isChild ? !this.isPrivate : false
       };
+      if (routine) payload.routine = routine;
       // Only include daysOfWeek if NOT everyday
       if (!(this.everyday && coversAllDays)) {
         payload.daysOfWeek = daysOfWeek;
@@ -768,7 +769,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       weekdays: !this.everyday && !this.selectedDays?.size,
       time: !this.startTime?.trim() || !this.endTime?.trim(),
       pastTime: this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime),
-      endTimeBeforeStart: this.isEndTimeNotAfterStart(this.startTime, this.endTime),
+      endTimeBeforeStart: this.isSameDateRange() && this.isEndTimeNotAfterStart(this.startTime, this.endTime),
       endTimeSingleDay: this.isEndTimeCrossingMidnight(this.startTime, this.endTime),
       date: !this.startDate || !this.endDate || (this.startDate instanceof Date && this.endDate instanceof Date && this.startDate > this.endDate),
       priority: !this.priority,
@@ -880,9 +881,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       const single = this.getSingleDayFromRange();
       if (single) {
         const hadInvalid = currentSelected.some(d => d !== single);
-        this.selectedDays.clear();
-        this.selectedDays.add(single);
         if (hadInvalid) {
+          // Do not auto-change user's selection; show an error instead
           this.showDaySelectionError = true;
         }
       }
@@ -892,10 +892,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     const hasInvalidDays = currentSelected.some(day => !daysInRangeSet.has(day));
 
     if (hasInvalidDays) {
-      const validSelectedDays = currentSelected.filter(day => daysInRangeSet.has(day));
-      this.selectedDays.clear();
-      validSelectedDays.forEach(day => this.selectedDays.add(day));
-      console.log(`Auto-adjusted days: ${currentSelected.join(', ')} → ${validSelectedDays.join(', ')}`);
+      // Do not auto-adjust the user's selected days. Instead, flag an error
+      // so the user can correct their selection to match the new date range.
       this.showDaySelectionError = true;
     }
   }
@@ -927,6 +925,11 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     if (this.selectedDays.has(d)) {
       this.selectedDays.delete(d);
       if (this.everyday) this.everyday = false;
+      // If date range is a single date and user deselected the only allowed day,
+      // show an explicit day-selection error until they pick a valid day.
+      if (this._startDate && this._endDate && this.isSameDateRange() && this.selectedDays.size === 0) {
+        this.showDaySelectionError = true;
+      }
     } else {
       if (this.isSameDateRange()) {
         const allowed = this.getSingleDayFromRange();
@@ -982,11 +985,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         this.showDaySelectionError = false;
       }
     } else {
+      // User turned off Everyday: deselect all days (do not auto-populate from date range)
       this.selectedDays.clear();
-      if (this._startDate && this._endDate) {
-        const daysInRange = this.getDaysInRange();
-        daysInRange.forEach(day => this.selectedDays.add(day));
-      }
       this.showDaySelectionError = false;
       this.clearWeekdaysError();
     }
@@ -1288,7 +1288,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     this.clearError('time');
     setTimeout(() => {
       this.errors.pastTime = this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime);
-      this.errors.endTimeBeforeStart = this.isEndTimeNotAfterStart(this.startTime, this.endTime);
+      this.errors.endTimeBeforeStart = this.isSameDateRange() && this.isEndTimeNotAfterStart(this.startTime, this.endTime);
       this.errors.endTimeSingleDay = this.isEndTimeCrossingMidnight(this.startTime, this.endTime);
       // Do not auto-adjust startTime or endTime here. Let user correct times manually when an error occurs.
       // Validate routine/time mismatch
@@ -1301,7 +1301,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     setTimeout(() => {
       if (this.startTime || this.endTime) {
         this.errors.pastTime = this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime);
-        this.errors.endTimeBeforeStart = this.isEndTimeNotAfterStart(this.startTime, this.endTime);
+        this.errors.endTimeBeforeStart = this.isSameDateRange() && this.isEndTimeNotAfterStart(this.startTime, this.endTime);
         this.errors.endTimeSingleDay = this.isEndTimeCrossingMidnight(this.startTime, this.endTime);
         this.validateRoutineTime();
       } else {
@@ -1406,6 +1406,24 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
         }
       }
     } catch (e: any) { console.warn('Failed to ensure tagsComponent options or set selected keys', e); }
+    
+    try {
+      if (this.selectorsComponent) {
+        let n: any = null;
+        if (this.selectedRoutine) {
+          const byKey = this.routineOptions.find(o => String(o.key) === String(this.selectedRoutine));
+          if (byKey) n = byKey.key;
+          else {
+            const byVal = this.routineOptions.find(o => String(o.value).toLowerCase() === String(this.selectedRoutine).toLowerCase());
+            if (byVal) n = byVal.key;
+          }
+        }
+        if (n != null) {
+          this.selectorsComponent.selectedKeys = [n];
+          this.selectorsComponent.selectedKeysChange.emit(this.selectorsComponent.selectedKeys);
+        }
+      }
+    } catch (e: any) { console.warn('Failed to set selectorsComponent selected keys', e); }
   } catch(e: any) { console.warn('Failed in ngAfterViewInit tag sync', e); }
 
 }

@@ -40,26 +40,27 @@
       align-items: center;
       margin-bottom: 1rem;
 
-      span {
-        font-family: 'Nunito', sans-serif;
-        font-size: 18px;
-        font-weight: 500;
-      }
-    }
+          &.today {
+            position: relative;
+            z-index: 3; /* raise today's cell above in-range background */
+          }
 
-    .nav-buttons button {
-      margin-left: 0.5rem;
-      background: transparent !important;
-      font-size: 16px;
-      transform: scale(2) translate(0px, -3px);
-      opacity: 0.5;
-    }
-
-    .range-selector {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-
+          /* Render today's outline using ::after so it isn't scaled by the in-range ::before transform */
+          &.today::after {
+            position: absolute;
+            content: '';
+            top: 50%;
+            left: 50%;
+            width: 30px;
+            height: 30px;
+            transform: translate(-50%, -50%);
+            box-sizing: border-box;
+            border-radius: 5px;
+            border: 1px solid #90214D; /* preserved visual for today's border */
+            background: transparent;
+            z-index: 5; /* ensure ring is above any transformed range background */
+            pointer-events: none;
+          }
       .box {
         box-sizing: unset;
         border: 1px solid #ccc;
@@ -117,7 +118,7 @@
           font-size: 15px;
           margin-bottom: 0;
           position: relative;
-          z-index: 2;
+          z-index: 3; /* keep date number above any pseudo backgrounds */
         }
 
         &.selected p {
@@ -133,7 +134,7 @@
           aspect-ratio: 1;
           background: #90214D !important;
           color: white;
-          z-index: 1;
+          z-index: 2; /* sit below the number but above range background */
         }
 
           /* Highlight today's date with a small ring matching the selected date size */
@@ -163,6 +164,16 @@
           aspect-ratio: 1;
           background: #FAE9F3;
           transform: scaleX(250%);
+          transform-origin: center;
+          z-index: 0; /* keep the range background beneath everything */
+          pointer-events: none;
+        }
+
+        /* When today falls inside a selected range, apply a reduced X-scale specifically to today's range background */
+        &.in-range.today::before {
+          transform: scaleX(1.5) !important; /* 150% */
+          transform-origin: center !important;
+          z-index: 1 !important;
         }
 
         &:not(.currentMonth) {
