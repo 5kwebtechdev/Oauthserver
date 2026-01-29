@@ -165,14 +165,10 @@ export class UserProfileComponent implements OnInit, OnChanges {
     if (!member) return null;
 
     try {
-      const rel = String(member.relationship || '').toLowerCase();
-
-      if (rel === 'child') {
-        const resolved = this.childSelfImageService.resolveAvatarForMember(member as any);
-        return resolved || { url: null, alt: null };
-      }
-
-      return null;
+      // Always attempt to resolve via ChildSelfImageService using `avatarImageName`.
+      // We intentionally ignore any `avatar.url` values coming from the server.
+      const resolved = this.childSelfImageService.resolveAvatarForMember(member as any);
+      return resolved || { url: null, alt: null };
     } catch (e) {
       console.error('[UserProfile] getMemberAvatar error', e);
       return null;
@@ -190,17 +186,19 @@ export class UserProfileComponent implements OnInit, OnChanges {
         console.log('[UserProfile] Loaded user_data from localStorage:', parsedData);
 
         // Map user basic info
+        // Map basic user info but do NOT trust server-provided `avatar.url` for image display.
+        // We will resolve avatar URL from `avatarImageName` using our resolver below.
         this.user = {
           name: parsedData.name || 'User',
           email: parsedData.email,
           phone: parsedData.phone,
           age: parsedData.age,
           gender: parsedData.gender,
-          avatarUrl: parsedData.avatar?.url || this.userAvatarUrl,
+          avatarUrl: this.userAvatarUrl,
           relationship: parsedData.relationship
         };
 
-        // Update avatar URL using shared resolver
+        // Resolve avatar using avatarImageName (ignore parsedData.avatar?.url)
         const resolved = this.childSelfImageService.resolveAvatarFromUser(parsedData);
         if (resolved.url) this.userAvatarUrl = resolved.url;
         if (resolved.alt) this.avatarImageName = resolved.alt;

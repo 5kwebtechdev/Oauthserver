@@ -389,6 +389,10 @@ export interface FamilyMember {
     userId: number;
     name: string;
     avatarName: string;
+    // Optional avatar object/url for compatibility with client templates
+    avatar?: Avatar;
+    avatarUrl?: string;
+    avatarImageName?: string;
     relationship: string;
     age: number;
     you: boolean;

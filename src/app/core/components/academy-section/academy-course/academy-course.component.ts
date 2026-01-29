@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NavigationService } from '../../../services/navigation.service';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { CourseCard } from '../academy-section.component';
 import { AcademyLessonsComponent } from '../academy-lessons/academy-lessons.component';
@@ -37,12 +38,13 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private modalCtrl: ModalController,
-    private academyService: AcademyService
+    private academyService: AcademyService,
+    private navigation: NavigationService
   ) { }
 
-  // navigate back to the academy home
+  // navigate back using history-aware NavigationService
   goBack(): void {
-    this.router.navigate(['/authed/academy']);
+    this.navigation.back();
   }
 
   ngOnInit(): void {

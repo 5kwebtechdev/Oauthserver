@@ -65,7 +65,10 @@
                   </ng-container>
 
                   <ng-template #nonChildAvatar>
-                    <img *ngIf="m.avatarName; else placeholder" [src]="m.avatarName" alt="{{m.name}} avatar" />
+                    <!-- Resolve avatar via shared resolver; ignore server-provided avatar.url -->
+                    <ng-container *ngIf="getMemberAvatar(m) as resolvedAvatar">
+                      <img *ngIf="resolvedAvatar.url; else placeholder" [src]="resolvedAvatar.url" [alt]="resolvedAvatar.alt || (m.name + ' avatar')" />
+                    </ng-container>
                     <ng-template #placeholder>
                       <div class="avatar-placeholder"></div>
                     </ng-template>

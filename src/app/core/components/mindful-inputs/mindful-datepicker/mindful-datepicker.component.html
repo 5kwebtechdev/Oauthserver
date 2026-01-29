@@ -29,7 +29,7 @@
         <button *ngFor="let date of getVisibleMonthDays()" [class.isStartDate]="isStartOfRange(date)"
           [class.isEndDate]="isEndOfRange(date)" [class.currentMonth]="isDateinCurrentMonth(date)"
           [class.selected]="isSameDay(date, getEffectiveStart()) || isSameDay(date, getEffectiveEnd())"
-          [class.in-range]="isInRange(date)" [class.disabled]="isDisabled(date)" [disabled]="isDisabled(date)"
+          [class.in-range]="isInRange(date)" [class.disabled]="isDisabled(date)" [class.today]="isToday(date)" [disabled]="isDisabled(date)"
           (click)="selectDate(date)">
           <p>{{ date.getDate() }}</p>
         </button>
