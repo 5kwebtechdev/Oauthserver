@@ -376,8 +376,7 @@ label {
 ion-content {
   --background: transparent;
   width: 100vw;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: calc(100dvh - env(safe-area-inset-bottom)) !important;  
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch;
   padding-top: calc(36px + env(safe-area-inset-top));

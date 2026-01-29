@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ToastController } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-input.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
@@ -24,6 +24,11 @@ export class ResetPaswordComponent {
   newPassword = '';
   retypeNewPassword = '';
 
+  // Inline toast state
+  toastVisible = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'success';
+
   // Error messages
   currentPasswordError = '';
   newPasswordError = '';
@@ -32,7 +37,6 @@ export class ResetPaswordComponent {
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
-    private toastCtrl: ToastController,
     private navCtrl: NavController
   ) {
     this.form = this.fb.group({
@@ -62,55 +66,78 @@ export class ResetPaswordComponent {
 
   validateCurrentPassword(): void {
     const control = this.form.get('currentPassword');
-    if (control?.touched || this.currentPassword) {
-      if (control?.hasError('required')) {
+    if (!control) {
+      this.currentPasswordError = '';
+      return;
+    }
+
+    const value = control.value || '';
+
+    // Show errors only when field was touched or when user has typed something
+    if (control.touched || value.length > 0) {
+      if (control.hasError('required') && control.touched) {
         this.currentPasswordError = 'Current password is required';
-      } else if (control?.hasError('minlength')) {
+      } else if (control.hasError('minlength') && value.length > 0) {
         this.currentPasswordError = 'Minimum 8 characters required';
       } else {
         this.currentPasswordError = '';
       }
+    } else {
+      this.currentPasswordError = '';
     }
   }
 
   validateNewPassword(): void {
     const control = this.form.get('newPassword');
-    if (control?.touched || this.newPassword) {
-      if (control?.hasError('required')) {
+    if (!control) {
+      this.newPasswordError = '';
+      return;
+    }
+
+    const value = control.value || '';
+    if (control.touched || value.length > 0) {
+      if (control.hasError('required') && control.touched) {
         this.newPasswordError = 'New password is required';
-      } else if (control?.hasError('minlength')) {
+      } else if (control.hasError('minlength') && value.length > 0) {
         this.newPasswordError = 'Minimum 8 characters required';
       } else {
         this.newPasswordError = '';
       }
+    } else {
+      this.newPasswordError = '';
     }
   }
 
   validateRetypePassword(): void {
     const control = this.form.get('retypeNewPassword');
-    if (control?.touched || this.retypeNewPassword) {
-      if (control?.hasError('required')) {
+    if (!control) {
+      this.retypePasswordError = '';
+      return;
+    }
+
+    const value = control.value || '';
+    if (control.touched || value.length > 0) {
+      if (control.hasError('required') && control.touched) {
         this.retypePasswordError = 'Please retype your new password';
-      } else if (this.newPassword && this.retypeNewPassword && this.newPassword !== this.retypeNewPassword) {
+      } else if (this.newPassword && value.length > 0 && this.newPassword !== value) {
         this.retypePasswordError = 'Mismatch of password';
       } else {
         this.retypePasswordError = '';
       }
+    } else {
+      this.retypePasswordError = '';
     }
   }
 
-  async presentToast(message: string, color: string = 'dark', duration = 3000, cssClass?: string): Promise<void> {
-    const opts: any = {
-      message,
-      duration,
-      color,
-      position: 'bottom'
-    };
-    if (cssClass) {
-      opts.cssClass = cssClass;
-    }
-    const toast = await this.toastCtrl.create(opts);
-    await toast.present();
+  private showToast(message: string, type: 'success' | 'error' = 'error', duration = 3000): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.toastVisible = true;
+
+    // Auto-hide after duration
+    setTimeout(() => {
+      this.toastVisible = false;
+    }, duration);
   }
 
   async saveProfile(): Promise<void> {
@@ -129,12 +156,12 @@ export class ResetPaswordComponent {
 
     if (this.newPassword !== this.retypeNewPassword) {
       this.retypePasswordError = 'Mismatch of password';
-      this.presentToast('New passwords do not match', 'warning');
+      this.showToast('New passwords do not match', 'error', 3000);
       return;
     }
 
     if (this.currentPassword === this.newPassword) {
-      this.presentToast('New password must be different from current password', 'warning');
+      this.showToast('New password must be different from current password', 'error', 3000);
       return;
     }
 
@@ -150,13 +177,12 @@ export class ResetPaswordComponent {
     // AuthInterceptor will automatically add the token from localStorage
     // Use responseType 'text' because server returns no/ plain-text body which
     // would otherwise cause HttpClient to try parsing JSON and throw a parse error.
-    const toastDuration = 2000;
     this.http.put(url, body, { responseType: 'text' }).subscribe({
       next: async (_response: any) => {
         this.loading = false;
-        await this.presentToast('Password updated successfully', 'success', toastDuration, 'green-success-toast');
+        // Show inline success toast, then clear and navigate back
+        this.showToast('Password updated successfully', 'success', 3000);
 
-        // Give the user a moment to see the toast, then reset and navigate back
         setTimeout(() => {
           // Clear form
           this.currentPassword = '';
@@ -171,12 +197,41 @@ export class ResetPaswordComponent {
 
           // Navigate back to previous page (entry)
           this.navCtrl.back();
-        }, toastDuration + 200);
+        }, 3200);
       },
       error: async (error: HttpErrorResponse) => {
         this.loading = false;
-        const errorMessage = error?.error || error?.error?.message || error?.message || 'Failed to update password. Please try again.';
-        await this.presentToast(String(errorMessage), 'danger', 4000);
+        let serverMessage = 'Failed to update password. Please try again.';
+        try {
+          const errBody = error?.error;
+          if (typeof errBody === 'string') {
+            try {
+              const parsed = JSON.parse(errBody);
+              if (parsed && parsed.message) {
+                serverMessage = parsed.message;
+              } else if (typeof parsed === 'string') {
+                serverMessage = parsed;
+              } else {
+                serverMessage = errBody;
+              }
+            } catch (e) {
+              serverMessage = errBody || error?.message || serverMessage;
+            }
+          } else if (errBody && typeof errBody === 'object') {
+            serverMessage = errBody.message || JSON.stringify(errBody) || error?.message || serverMessage;
+          } else {
+            serverMessage = error?.message || serverMessage;
+          }
+        } catch (e) {
+          serverMessage = error?.message || serverMessage;
+        }
+
+        // If server indicates current password is incorrect, show it as a field error too
+        if (serverMessage && /current password/i.test(serverMessage)) {
+          this.currentPasswordError = serverMessage;
+        }
+
+        this.showToast(String(serverMessage), 'error', 3000);
         console.error('Password change error:', error);
       }
     });

@@ -20,4 +20,9 @@
     <mindful-button type="green" [text]="loading ? 'Updating...' : 'Change password'" size="full"
       [disabled]="loading || form.invalid" (click)="saveProfile()"></mindful-button>
   </div>
+
+  <!-- Inline custom toast -->
+  <div class="mb-toast" *ngIf="toastVisible" [ngClass]="{'mb-toast--error': toastType === 'error', 'mb-toast--success': toastType === 'success'}">
+    <div class="mb-toast__text">{{ toastMessage }}</div>
+  </div>
 </ion-content>

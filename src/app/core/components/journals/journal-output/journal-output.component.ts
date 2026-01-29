@@ -54,9 +54,10 @@ export class JournalOutputComponent implements OnInit {
       return { ...e, date: normalizedDate, images } as JournalOutputEntry;
     });
 
-    // If entries still empty, fetch from backend API
+    // If entries still empty, fetch from backend API for the current month
     if (!this.entries || this.entries.length === 0) {
-      this.loadEntriesFromApi();
+      const now = this.currentMonthDate || new Date();
+      this.loadEntriesFromApi(now.getMonth() + 1, now.getFullYear());
     }
 
     // initialize month label (will show current month/year)
@@ -92,6 +93,8 @@ export class JournalOutputComponent implements OnInit {
     d.setMonth(d.getMonth() - 1);
     this.currentMonthDate = d;
     this.updateMonthLabel();
+    // Load entries for selected month from backend
+    this.loadEntriesFromApi(this.currentMonthDate.getMonth() + 1, this.currentMonthDate.getFullYear());
   }
 
   public nextMonth(): void {
@@ -99,6 +102,8 @@ export class JournalOutputComponent implements OnInit {
     d.setMonth(d.getMonth() + 1);
     this.currentMonthDate = d;
     this.updateMonthLabel();
+    // Load entries for selected month from backend
+    this.loadEntriesFromApi(this.currentMonthDate.getMonth() + 1, this.currentMonthDate.getFullYear());
   }
 
   /** Return true when the currently selected month is the same as the real current month/year */
@@ -130,8 +135,14 @@ export class JournalOutputComponent implements OnInit {
     });
   }
 
-  private loadEntriesFromApi(): void {
-    const url = `${environment.apiUrl}/journal/entries`;
+  private loadEntriesFromApi(month?: number, year?: number): void {
+    let url = `${environment.apiUrl}/journal/entries`;
+    // If month/year provided, call the MONTH view on the API
+    if (typeof month === 'number' && typeof year === 'number') {
+      // API expects month as 1-12
+      url = `${url}?type=MONTH&month=${month}&year=${year}`;
+    }
+
     const token = this.authApi.getToken();
     let headers = new HttpHeaders();
     if (token) {
@@ -184,6 +195,13 @@ export class JournalOutputComponent implements OnInit {
           if (Array.isArray(item.attachmentUrls)) {
             item.attachmentUrls.forEach((u: string) => { if (u) images.push(u); });
           } else if (item.attachmentUrl) {
+            // If we fetched month-specific data, ensure currentMonthDate is set to the request
+            if (typeof month === 'number' && typeof year === 'number') {
+              try {
+                this.currentMonthDate = new Date(year, month - 1, 1);
+                this.updateMonthLabel();
+              } catch (e) { /* ignore */ }
+            }
             images.push(item.attachmentUrl);
           }
 
