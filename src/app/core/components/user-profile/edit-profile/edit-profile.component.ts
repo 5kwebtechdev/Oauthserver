@@ -300,37 +300,15 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     if (this.accountType !== 'parent') {
       // Get avatar info from nested avatar object or top-level properties
       const avatarInfo = userData.avatar || {};
-      const avatarName = avatarInfo.avatarName || userData.avatarName;
+      // avatarName is textual/ID only; do not use it to infer image URL or selection.
+      this.avatarName = avatarInfo.avatarName || userData.avatarName || this.avatarName;
       const avatarImageName = avatarInfo.avatarImageName || userData.avatarImageName;
 
-      if (avatarName) {
-        this.avatarName = avatarName;
-        console.log('[EditProfile] Avatar Name set to:', this.avatarName);
-
-        // Extract numeric key from avatar name (e.g., 'pare261551' or 'avatar5')
-        const match = avatarName.match(/\d+/);
-        if (match) {
-          const numKey = parseInt(match[0], 10);
-          if (numKey > 0 && numKey <= this.avatars.length) {
-            this.avatarSelected = numKey;
-            console.log('[EditProfile] Avatar selected (key):', numKey);
-
-            // Set avatar image name from avatars array
-            const avatar = this.avatars.find(a => a.key === numKey);
-            if (avatar) {
-              this.avatarImageName = avatar.imageName;
-              console.log('[EditProfile] Avatar Image Name set to:', this.avatarImageName);
-            }
-          }
-        }
-      }
-
-      // Override with explicit avatarImageName if provided
+      // Only use explicit avatarImageName to select image; do NOT derive from avatarName.
       if (avatarImageName) {
         this.avatarImageName = avatarImageName;
-        console.log('[EditProfile] Avatar Image Name overridden to:', this.avatarImageName);
+        console.log('[EditProfile] Avatar Image Name set to:', this.avatarImageName);
 
-        // Try to find and select the matching avatar by imageName
         const avatar = this.avatars.find(a => a.imageName === avatarImageName);
         if (avatar) {
           this.avatarSelected = avatar.key;
@@ -375,16 +353,11 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     if (payload.dateOfBirth !== undefined) updatedProfile.dob = payload.dateOfBirth;
     if (payload.gender !== undefined) updatedProfile.gender = payload.gender.toLowerCase() === 'male' ? 'male' : 'female';
     if (payload.avatarName !== undefined) {
+      // avatarName remains as textual identifier only
       updatedProfile.avatarName = payload.avatarName;
-      // Update avatar URL if avatarImageName is provided
-      if (payload.avatarImageName) {
-        updatedProfile.avatarUrl = this.deriveAvatarUrlFromImageName(payload.avatarImageName);
-      } else {
-        // Otherwise try to derive from avatarName
-        updatedProfile.avatarUrl = this.deriveAvatarUrlFromName(payload.avatarName);
-      }
-    } else if (payload.avatarImageName) {
-      // If only avatarImageName is provided
+    }
+    // Only use avatarImageName to derive avatarUrl
+    if (payload.avatarImageName) {
       updatedProfile.avatarUrl = this.deriveAvatarUrlFromImageName(payload.avatarImageName);
     }
 
@@ -403,10 +376,14 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     const match = imageName.match(/\d+/);
     if (match) {
       const num = parseInt(match[0], 10);
-      // Determine gender based on the number (even = female, odd = male, or based on your logic)
-      const isFemale = num <= 6; // First 6 avatars are female
-      const gender = isFemale ? 'Female' : 'Male';
-      return `/assets/Images-Transparent/Image-Onboarding-Avatar-${gender}${num}.png`;
+      if (num >= 1 && num <= 12) {
+        if (num <= 6) {
+          return `/assets/Images-Transparent/Image-Onboarding-Avatar-Female${num}.png`;
+        } else {
+          const maleIndex = num - 6; // map 7..12 -> 1..6
+          return `/assets/Images-Transparent/Image-Onboarding-Avatar-Male${maleIndex}.png`;
+        }
+      }
     }
     return undefined;
   }
@@ -421,12 +398,13 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     const match = avatarName.match(/\d+/);
     if (match) {
       const num = parseInt(match[0], 10);
-      // Validate that it's a valid avatar number (1-12)
       if (num >= 1 && num <= 12) {
-        // Determine gender based on the number (first 6 are female, next 6 are male)
-        const isFemale = num <= 6;
-        const gender = isFemale ? 'Female' : 'Male';
-        return `/assets/Images-Transparent/Image-Onboarding-Avatar-${gender}${num}.png`;
+        if (num <= 6) {
+          return `/assets/Images-Transparent/Image-Onboarding-Avatar-Female${num}.png`;
+        } else {
+          const maleIndex = num - 6;
+          return `/assets/Images-Transparent/Image-Onboarding-Avatar-Male${maleIndex}.png`;
+        }
       }
     }
     return undefined;
@@ -559,7 +537,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
                 phone: response.phone,
                 gender: response.gender?.toLowerCase() as 'male' | 'female',
                 dob: response.dateOfBirth,
-                avatarUrl: response.avatar?.url,
+                avatarUrl: response.avatar?.avatarImageName ? this.deriveAvatarUrlFromImageName(response.avatar.avatarImageName) : undefined,
                 avatarName: response.avatar?.avatarName
               });
 
@@ -1033,14 +1011,14 @@ export class EditProfileComponent implements OnInit, OnDestroy {
             console.log('[EditProfile] Profile update response:', response);
 
             // Update local user profile
-            if (response) {
+              if (response) {
               this.userService.updateUserProfile({
                 name: response.name,
                 email: response.email,
                 phone: response.phone,
                 gender: response.gender?.toLowerCase() as 'male' | 'female',
                 dob: response.dateOfBirth,
-                avatarUrl: response.avatar?.url,
+                avatarUrl: response.avatar?.avatarImageName ? this.deriveAvatarUrlFromImageName(response.avatar.avatarImageName) : undefined,
                 avatarName: response.avatar?.avatarName
               });
 

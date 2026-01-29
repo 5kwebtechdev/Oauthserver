@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+import { NavigationService } from '../../../services/navigation.service';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { AcademyService, Course } from '../../../services/academy.service';
@@ -44,7 +45,8 @@ export class AcademySubjectComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private academyService: AcademyService
+    private academyService: AcademyService,
+    private navigation: NavigationService
   ) { }
 
   ngOnInit() {
@@ -133,8 +135,7 @@ export class AcademySubjectComponent implements OnInit {
   }
 
   goBack() {
-    // navigate back to academy home (app routing uses '/authed/academy')
-    this.router.navigate(['/authed/academy']);
+    this.navigation.back();
   }
 
   // currently selected course to show in the course detail component

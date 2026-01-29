@@ -975,9 +975,12 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
   async openHabitInput() {
     const { HabitInputComponent } = await import('../habit-input/habit-input.component');
+    // Determine which tab to open in the HabitInput modal. If the dashboard/list toggle
+    // is set to 'tasks', open the modal on the tasks tab; otherwise default to 'habits'.
+    const initialTab = (this.currentActive === 'tasks') ? 'tasks' : (this.currentActive === 'habits' ? 'habits' : (this.habit?.type === 'tasks' ? 'tasks' : 'habits'));
     const modal = await this.modalCtrl.create({
       component: HabitInputComponent,
-      componentProps: {}
+      componentProps: { initialTab }
     });
     await modal.present();
 

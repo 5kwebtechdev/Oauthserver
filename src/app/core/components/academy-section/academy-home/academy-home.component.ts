@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
+import { NavigationService } from '../../../services/navigation.service';
 import { AcademyService, Course } from '../../../services/academy.service';
 import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { MindfulSpeechBubbleComponent } from '../../mindful-speech-bubble/mindful-speech-bubble.component';
@@ -33,7 +34,7 @@ export class AcademyHomeComponent {
       { category: 'CULTURAL_VALUES', title: 'Cultural Values', displayTitle: 'Cultural<br>Values', color: 'green', image: '/assets/Images-Transparent/Image-Academy-Cat4.png', thumbnail: null, courses: [] }
     ];
 
-  constructor(private router: Router, private academyService: AcademyService) { }
+  constructor(private router: Router, private academyService: AcademyService, private navigation: NavigationService) { }
 
   ngOnInit(): void {
     this.loadCourses();
@@ -56,7 +57,7 @@ export class AcademyHomeComponent {
   }
 
   onBackClick(): void {
-    this.router.navigate(['/authed/user-dashboard']);
+    this.navigation.back();
   }
 
   openSubject(category: string): void {
