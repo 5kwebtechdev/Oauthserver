@@ -1,12 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { MindfulInputsModule } from '../mindful-inputs/mindful-inputs.module';
 import { Badge, RecentAchievement, BadgeProgressResponse, CelebrationCard } from './badge-section.interface';
 import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { MindfulPopupComponent, MindfulPopupConfig } from '../mindful-popup/mindful-popup.component';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
 import { BadgeApi } from '../../api/badge.api';
+import { BadgeSocketService, BadgePopupData } from '../../services/badge-socket.service';
 
 @Component({
     selector: 'app-badge-section',
@@ -15,11 +18,15 @@ import { BadgeApi } from '../../api/badge.api';
     standalone: true,
     imports: [CommonModule, IonicModule, MindfulInputsModule, MindfulCardHeaderComponent, MindfulPopupComponent, MindfulButtonComponent]
 })
-export class BadgeSectionComponent implements OnInit {
+export class BadgeSectionComponent implements OnInit, OnDestroy {
     recentAchievement: RecentAchievement | null = null;
     badges: Badge[] = [];
     celebrationCard: CelebrationCard | null = null;
     private currentShareMessage: string = '';
+    private badgeSubscription?: Subscription;
+
+    // Track the current badge being shown for acknowledgement
+    private currentPopupBadgeId?: number;
 
     // Icon mapping for badge titles
     private readonly BADGE_ICON_MAP: Readonly<Record<string, string>> = {
@@ -39,10 +46,59 @@ export class BadgeSectionComponent implements OnInit {
         'Streak Keeper': 'assets/Icons-Neutral/Icon-Badge-StreakKeeper.png'
     };
 
-    constructor(private badgeApi: BadgeApi) { }
+    constructor(
+        private badgeApi: BadgeApi,
+        private badgeSocketService: BadgeSocketService,
+        private router: Router
+    ) { }
 
     ngOnInit(): void {
         this.loadBadges();
+        this.subscribeToBadgeNotifications();
+    }
+
+    ngOnDestroy(): void {
+        this.badgeSubscription?.unsubscribe();
+    }
+
+    /**
+     * Subscribe to real-time badge notifications from WebSocket
+     */
+    private subscribeToBadgeNotifications(): void {
+        this.badgeSubscription = this.badgeSocketService.onBadgeReceived().subscribe(
+            (badge: BadgePopupData) => {
+                console.log('[BadgeSection] Received badge notification:', badge);
+                this.showBadgePopup(badge);
+            }
+        );
+    }
+
+    /**
+     * Show badge popup from WebSocket notification
+     */
+    private showBadgePopup(badgeData: BadgePopupData): void {
+        // Convert BadgePopupData to Badge format for the popup
+        this.selectedBadge = {
+            id: badgeData.badgeId.toString(),
+            name: badgeData.name,
+            description: badgeData.description,
+            iconUrl: badgeData.iconUrl,
+            currentProgress: 0,
+            targetProgress: 0,
+            isLocked: false,
+            levelText: badgeData.levelText,
+            achievementText: badgeData.achievementText,
+            isEarned: true,
+            isMaxLevel: badgeData.isMaxLevel,
+            currentLevel: badgeData.currentLevel,
+            totalLevels: badgeData.totalLevels,
+            celebrationTitle: badgeData.celebrationTitle,
+            celebrationMessage: badgeData.celebrationMessage,
+            shareMessage: badgeData.shareMessage
+        };
+        this.currentPopupBadgeId = badgeData.badgeId;
+        this.currentShareMessage = badgeData.shareMessage;
+        this.congratsVisible = true;
     }
 
     /**
@@ -244,26 +300,50 @@ export class BadgeSectionComponent implements OnInit {
      * View all badges - close congrats popup
      */
     onViewAllBadges(): void {
-        this.congratsVisible = false;
-        this.selectedBadge = undefined;
-        this.currentShareMessage = this.celebrationCard?.shareMessage || '';
+        this.acknowledgeBadgeAndClose();
+        // Stay on badge section page - user clicked "View all Badges"
     }
 
     /**
-     * Awesome clicked - close congrats popup
+     * Awesome clicked - close congrats popup and acknowledge
      */
     onAwesomeClick(): void {
-        this.congratsVisible = false;
-        this.selectedBadge = undefined;
-        this.currentShareMessage = this.celebrationCard?.shareMessage || '';
+        this.acknowledgeBadgeAndClose();
     }
 
     /**
      * Close congrats popup and clear selection
      */
     closeCongrats(): void {
+        this.acknowledgeBadgeAndClose();
+    }
+
+    /**
+     * Acknowledge the badge popup and close it
+     */
+    private acknowledgeBadgeAndClose(): void {
+        // Acknowledge to backend if we have a badge ID
+        if (this.currentPopupBadgeId) {
+            this.badgeApi.acknowledgeBadgePopup(this.currentPopupBadgeId).subscribe({
+                next: () => {
+                    console.log('[BadgeSection] Badge popup acknowledged:', this.currentPopupBadgeId);
+                },
+                error: (error) => {
+                    console.error('[BadgeSection] Failed to acknowledge badge popup:', error);
+                }
+            });
+        }
+
+        // Close popup
         this.congratsVisible = false;
         this.selectedBadge = undefined;
+        this.currentPopupBadgeId = undefined;
         this.currentShareMessage = this.celebrationCard?.shareMessage || '';
+
+        // Notify socket service that popup is closed (to show next badge in queue)
+        this.badgeSocketService.popupClosed();
+
+        // Refresh badges to update progress
+        this.loadBadges();
     }
 }

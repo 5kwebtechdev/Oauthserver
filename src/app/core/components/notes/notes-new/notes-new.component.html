@@ -27,7 +27,7 @@
 
   <!-- Notes Section -->
   <div class="notes-section">
-    <textarea placeholder="Notes here...." rows="8" [(ngModel)]="text" (ngModelChange)="saveDraft()"></textarea>
+    <textarea class="notes-textarea" placeholder="Notes here...." [value]="text" (input)="text = ($any($event.target).value); saveDraft()"></textarea>
   </div>
 
   <footer class="notes-new__footer">
