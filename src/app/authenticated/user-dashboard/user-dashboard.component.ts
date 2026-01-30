@@ -27,6 +27,7 @@ import { HabitService } from '../../core/components/habit-section/habit.service'
 import { Habit } from '../../core/components/habit-section/habit.types';
 import { TaskApi } from '../../core/api/task.api';
 import { HabitApi } from '../../core/api/habit.api';
+import { CalendarService } from '../../core/services/calendar.service';
 import { HabitButtonLogicService } from '../../core/components/habit-section/habit-button-logic.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ChildSelfImageService } from '../../core/services/child-self-image.service';
@@ -85,6 +86,7 @@ export class UserDashboardComponent implements OnInit {
     private habitService: HabitService,
     private taskApi: TaskApi,
     private habitApi: HabitApi,
+    private calendarService: CalendarService,
     private buttonLogic: HabitButtonLogicService,
     private authService: AuthService
     ,
@@ -159,159 +161,92 @@ export class UserDashboardComponent implements OnInit {
    * Load recent habits and tasks
    */
   private loadRecentHabitsAndTasks(): void {
-    // Load today's habits (not all habits)
-    this.habitService.loadTodayHabits().subscribe({
-      next: (response: any) => {
-        // Get habits from the service
-        let habitsData = this.habitService.getCurrentHabits();
+    // Use a single calendar API to fetch both habits and tasks for today
+    const today = new Date();
+    const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-        // Filter out completed and skipped habits (case-insensitive)
-        habitsData = habitsData.filter((habit: Habit) => {
-          const status = (habit.status || '').toLowerCase();
-          return status !== 'completed' && status !== 'skipped';
-        });
+    this.calendarService.getUserCalendar(formatted, 'day').subscribe({
+      next: (resp: any) => {
+        if (!resp) return;
 
-        // Since createdAt field is not available in the API response, 
-        // we'll sort by id (assuming higher id means more recent)
-        // or by completionDate if available
-        this.recentHabits = [...habitsData]
-          .sort((a: Habit, b: Habit) => {
-            // Try to sort by id first (assuming higher id means more recent)
+        // Process habits
+        if (Array.isArray(resp.habits)) {
+          let habitsData = resp.habits.map((item: any) => {
+            const start = this.buttonLogic.calculateTimestamps(item);
+            return {
+              id: item.id || '',
+              title: item.title || '',
+              notes: item.description || '',
+              startDate: item.startDate ? new Date(item.startDate) : new Date(),
+              endDate: item.endDate ? new Date(item.endDate) : new Date(),
+              startTime: item.startTime || '07:00:00',
+              endTime: item.endTime || '08:00:00',
+              startTimeStamp: start.startTimeStamp,
+              endTimeStamp: start.endTimeStamp,
+              type: 'habits',
+              status: item.status,
+              tags: item.tags || [],
+              coinReward: item.rewardCoins || item.coinReward || 0,
+              createdAt: item.createdAt ? new Date(item.createdAt) : new Date()
+            };
+          });
+
+          habitsData = habitsData.filter((h: any) => {
+            const status = (h.status || '').toLowerCase();
+            return status !== 'completed' && status !== 'skipped';
+          })
+          .sort((a: any, b: any) => {
             const aId = parseInt(a.id || '0', 10);
             const bId = parseInt(b.id || '0', 10);
-
-            // If ids are available, sort by id (descending)
-            if (aId > 0 && bId > 0) {
-              return bId - aId;
-            }
-
-            // Fallback to completionDate if available
-            if (a.completionDate && b.completionDate) {
-              const aDate = new Date(a.completionDate).getTime();
-              const bDate = new Date(b.completionDate).getTime();
-              return bDate - aDate;
-            }
-
-            // Last resort: sort by start date
-            if (a.startDate && b.startDate) {
-              const aStartDate = new Date(a.startDate).getTime();
-              const bStartDate = new Date(b.startDate).getTime();
-              return bStartDate - aStartDate;
-            }
-
-            // If all else fails, keep original order
+            if (aId > 0 && bId > 0) return bId - aId;
             return 0;
           })
-          // Take only the first 4 items
-          .slice(0, 4);
+          .slice(0,4);
 
-        // Force change detection
-        setTimeout(() => {
-          this.recentHabits = [...this.recentHabits];
-        }, 0);
-      },
-      error: (error) => {
-        console.error('Failed to load habits:', error);
-      }
-    });
+          this.recentHabits = habitsData;
+          setTimeout(() => this.recentHabits = [...this.recentHabits], 0);
+        }
 
-    // Load today's tasks
-    this.taskApi.getTodayTasks().subscribe({
-      next: (response: any) => {
-        if (response && Array.isArray(response.data || response)) {
-          const tasksData = response.data || response;
-          // Filter out completed and skipped tasks and map them (case-insensitive)
-          const filteredTasks = tasksData
-            .filter((item: any) => {
-              const status = (item.status || '').toLowerCase();
-              return status !== 'completed' && status !== 'skipped';
-            })
-            .map((item: any) => {
-              // Calculate proper timestamps using shared service
-              const timestamps = this.buttonLogic.calculateTimestamps(item);
+        // Process tasks
+        if (Array.isArray(resp.tasks)) {
+          let tasksData = resp.tasks.map((item: any) => {
+            const timestamps = this.buttonLogic.calculateTimestamps(item);
+            return {
+              id: item.id || '',
+              title: item.title || '',
+              notes: item.description || '',
+              startDate: item.startDate ? new Date(item.startDate) : new Date(),
+              endDate: item.endDate ? new Date(item.endDate) : new Date(),
+              startTime: item.startTime || '07:00:00',
+              endTime: item.endTime || '08:00:00',
+              startTimeStamp: timestamps.startTimeStamp,
+              endTimeStamp: timestamps.endTimeStamp,
+              type: 'tasks',
+              status: item.status,
+              tags: item.tags || [],
+              coinReward: item.rewardCoins || item.coinReward || 0,
+              createdAt: item.createdAt ? new Date(item.createdAt) : new Date()
+            };
+          });
 
-              return {
-                id: item.id || '',
-                title: item.title || '',
-                notes: item.description || '',
-                startDate: item.startDate ? new Date(item.startDate) : new Date(),
-                endDate: item.endDate ? new Date(item.endDate) : new Date(),
-                startTime: item.startTime || "07:00:00",
-                endTime: item.endTime || "08:00:00",
-                startTimeStamp: timestamps.startTimeStamp,
-                endTimeStamp: timestamps.endTimeStamp,
-                type: 'tasks',
-                isPrivate: !!item.isPrivate,
-                selectedRoutine: item.getRoutine,
-                routineTags: item.routineTags || [],
-                everyday: item.everyday || false,
-                selectedDays: item.daysOfWeek || item.selectedDays || [],
-                priority: item.priority,
-                routine: item.routine,
-                status: item.status,
-                tags: item.tags || [],
-                coinReward: item.coinReward || 0,
-                coinsEarned: item.coinsEarned || item.coins || 0,
-                streak: item.streak || item.streakCount || 0,
-                highestStreak: item.highestStreak || item.topStreak || 0,
-                completionPercentage: item.completionPercentage || item.completionRate || 0,
-                totalCompletedDays: item.totalCompletedDays || item.completedDays || 0,
-                milestoneBadges: item.milestoneBadges || item.badges || [],
-                createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
-                completionDate: item.completionDate ? new Date(item.completionDate) : null,
-                assignedToId: item.assignedToId,
-                assignedToName: item.assignedToName,
-                createdById: item.createdById,
-                createdByName: item.createdByName,
-                createdBy: item.createdBy || item.createdByName,
-                sharedWithParents: item.sharedWithParents || false,
-                completed: item.completed || false,
-                rewardCoins: item.rewardCoins || 0,
-                familyId: item.familyId,
-                updatedAt: item.updatedAt
-              };
-            })
-            // Sort by id (assuming higher id means more recent)
-            .sort((a: any, b: any) => {
-              // Try to sort by id first (assuming higher id means more recent)
-              const aId = parseInt(a.id || '0', 10);
-              const bId = parseInt(b.id || '0', 10);
+          tasksData = tasksData.filter((t: any) => {
+            const status = (t.status || '').toLowerCase();
+            return status !== 'completed' && status !== 'skipped';
+          })
+          .sort((a: any, b: any) => {
+            const aId = parseInt(a.id || '0', 10);
+            const bId = parseInt(b.id || '0', 10);
+            if (aId > 0 && bId > 0) return bId - aId;
+            return 0;
+          })
+          .slice(0,4);
 
-              // If ids are available, sort by id (descending)
-              if (aId > 0 && bId > 0) {
-                return bId - aId;
-              }
-
-              // Fallback to completionDate if available
-              if (a.completionDate && b.completionDate) {
-                const aDate = new Date(a.completionDate).getTime();
-                const bDate = new Date(b.completionDate).getTime();
-                return bDate - aDate;
-              }
-
-              // Last resort: sort by start date
-              if (a.startDate && b.startDate) {
-                const aStartDate = new Date(a.startDate).getTime();
-                const bStartDate = new Date(b.startDate).getTime();
-                return bStartDate - aStartDate;
-              }
-
-              // If all else fails, keep original order
-              return 0;
-            })
-            // Take only the first 4 items
-            .slice(0, 4);
-
-          this.recentTasks = filteredTasks;
-
-          // Force change detection
-          setTimeout(() => {
-            this.recentTasks = [...this.recentTasks];
-          }, 0);
+          this.recentTasks = tasksData;
+          setTimeout(() => this.recentTasks = [...this.recentTasks], 0);
         }
       },
-      error: (error) => {
-        console.error('Failed to load tasks:', error);
+      error: (err) => {
+        console.error('Failed to load calendar data:', err);
       }
     });
   }

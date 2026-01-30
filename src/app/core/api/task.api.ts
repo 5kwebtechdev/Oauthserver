@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthApi } from './auth.api';
 
@@ -35,8 +35,12 @@ export class TaskApi {
     }
 
     getTodayTasks(): Observable<any> {
-        const url = `${this.base}/tasks/tasks-by-date`;
-        return this.http.get(url, { headers: this.headers() });
+        const today = new Date();
+        const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const url = `${this.base}/calendar/user-calendar?date=${date}&viewType=day`;
+        return this.http.get(url, { headers: this.headers() }).pipe(
+            map((resp: any) => (resp && Array.isArray(resp.tasks)) ? resp.tasks : (resp?.tasks || []))
+        );
     }
 
     /**
@@ -49,8 +53,10 @@ export class TaskApi {
      * when a child is selected by the parent.
      */
     getTasksByDate(date: string): Observable<any> {
-        const url = `${this.base}/tasks/tasks-by-date?date=${date}`;
-        return this.http.get(url, { headers: this.headers() });
+        const url = `${this.base}/calendar/user-calendar?date=${date}&viewType=day`;
+        return this.http.get(url, { headers: this.headers() }).pipe(
+            map((resp: any) => (resp && Array.isArray(resp.tasks)) ? resp.tasks : (resp?.tasks || []))
+        );
     }
 
     /**

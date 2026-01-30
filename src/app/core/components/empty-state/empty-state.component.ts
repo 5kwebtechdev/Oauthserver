@@ -9,7 +9,7 @@ import { buttonStyles } from '../mindful-button/button.types';
   imports: [CommonModule, MindfulButtonComponent],
   template: `
     <div class="empty-state__body">
-      <img class="empty-state__illustration" [src]="imageSrc" [alt]="imageAlt">
+      <img *ngIf="imageSrc" class="empty-state__illustration" [src]="imageSrc" [alt]="imageAlt">
 
       <div class="empty-state__texts">
         <p class="empty-state__lead">{{ leadText }}</p>

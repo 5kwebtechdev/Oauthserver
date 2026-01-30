@@ -196,9 +196,9 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   private readonly _streakSvg = `<img src="assets/Icons-Neutral/Icon-Streak.png" alt="Streak" style="width:18px;height:auto;"/>`;
 
   private buildDeletePopupConfig(coin: number, streak: number): MindfulPopupConfig {
-    const headingHtml = `Delete this activity?<br/><div style="margin-top:12px;font-size:14px;color:#6b656a">You are about to lose:<div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">` +
-      `<div style="display:flex;align-items:center;gap:8px">${this._coinSvg}<div style=\"flex:1;\">Coins</div><div style=\"font-weight:600;\">${coin}</div></div>` +
-      `<div style="display:flex;align-items:center;gap:8px">${this._streakSvg}<div style=\"flex:1;\">Streak</div><div style=\"font-weight:600;\">${streak}</div></div>` +
+    const headingHtml = `Delete this activity?<br/><div style="margin-top:12px;font-size:14px;color:#6b656a">This will remove every instance of this activity in the date range you selected.<div style="display:flex;flex-direction:column;gap:8px;align-items: center;margin-top:8px">` +
+      `<div style="display:flex;align-items:center;gap:8px">You are about to lose:</div>` +
+      `<div style="display:flex;align-items:center;gap:8px">${this._streakSvg}<div style=\"font-weight:600;\">${streak}</div></div>` +
       `</div></div>`;
 
     return {
@@ -206,8 +206,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       imageAlt: 'Delete activity',
       heading: headingHtml,
       subtitle: '',
-      primaryCTA: { text: 'Delete', buttonStyle: 'bronze', buttonSmall: true },
-      secondaryCTA: { text: 'Cancel', buttonStyle: 'bronze-transparent', buttonSmall: true },
+      primaryCTA: { text: 'Delete', buttonStyle: 'bronze', buttonMedium: true },
+      secondaryCTA: { text: 'Cancel', buttonStyle: 'bronze-transparent', buttonMedium: true },
       backdrop: true,
       ctaDirection: 'row'
     } as MindfulPopupConfig;
@@ -1020,7 +1020,17 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       this.deletePopupVisible = false;
 
       // Navigate back using the navigation service
-      this.navigation.back();
+      // If previous page is a habit-detail route, skip it and go back to the page before it
+      try {
+        const prev = this.navigation.getPreviousUrl && this.navigation.getPreviousUrl();
+        if (prev && String(prev).includes('/authed/habit-detail')) {
+          this.navigation.backN(2);
+        } else {
+          this.navigation.back();
+        }
+      } catch (e) {
+        this.navigation.back();
+      }
     };
 
     if (!backendId) {

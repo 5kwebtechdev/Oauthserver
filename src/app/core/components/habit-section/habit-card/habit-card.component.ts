@@ -7,11 +7,13 @@ import { MindfulPopupComponent, MindfulPopupConfig, MindfulPopupCTA } from '../.
 
 import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.component';
+import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { HabitCardService } from 'src/app/core/components/habit-section/habit-card/habit-card.service';
 import { HabitApi } from 'src/app/core/api/habit.api';
 import { TaskApi } from 'src/app/core/api/task.api';
+import { CalendarService } from '../../../services/calendar.service';
 import { HabitService } from '../habit.service';
 import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { CoerceBoolean } from "../../../coerceBoolean.decorator";
@@ -37,6 +39,7 @@ import { AuthService } from '../../../services/auth.service';
     ViewAllComponent,
     RouterModule,
     MindfulPopupComponent,
+    EmptyStateComponent,
   ]
 })
 export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
@@ -89,6 +92,10 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   public tasks: any[] = [];
   public hasHabits: boolean = false;
   public hasTasks: boolean = false;
+  // Flags to control task-specific empty states
+  public taskAllDoneComputed: boolean = false;
+  // Flags to control habit-specific empty states
+  public habitAllDoneComputed: boolean = false;
   private habitSubscription?: Subscription;
   private taskSubscription?: Subscription;
 
@@ -123,6 +130,7 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     private habitCardService: HabitCardService,
     private habitApi: HabitApi,
     private taskApi: TaskApi,
+    private calendarService: CalendarService,
     private habitService: HabitService,
     private modalCtrl: ModalController,
     private router: Router,
@@ -662,7 +670,42 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     if (this.mode === 'recent') {
       this.hasHabits = this.filteredRecentHabits.length > 0;
       this.hasTasks = this.filteredRecentTasks.length > 0;
-      this.isEmpty = !this.hasHabits && !this.hasTasks;
+
+      // Compute habit-all-done for recent mode using `recentHabits` if provided (it may contain completed items)
+      const recentList = (this.recentHabits && this.recentHabits.length > 0) ? this.recentHabits : this.filteredRecentHabits;
+      this.habitAllDoneComputed = Array.isArray(recentList) && recentList.length > 0 && recentList.every(h => {
+        const s = (h?.status || '').toString().toLowerCase();
+        return s === 'completed' || s === 'skipped';
+      });
+
+      // Compute task-all-done for recent mode using `recentTasks` if provided
+      const recentTaskList = (this.recentTasks && this.recentTasks.length > 0) ? this.recentTasks : this.filteredRecentTasks;
+      this.taskAllDoneComputed = Array.isArray(recentTaskList) && recentTaskList.length > 0 && recentTaskList.every(t => {
+        const s = (t?.status || '').toString().toLowerCase();
+        return s === 'completed' || s === 'skipped';
+      });
+
+      // Determine empty: for recent mode, if user selected 'habits' tab and all habits are done, show empty
+      if (this.currentActive === 'habits') {
+        if (!recentList || recentList.length === 0) {
+          this.isEmpty = true;
+        } else if (this.habitAllDoneComputed) {
+          this.isEmpty = true;
+        } else {
+          this.isEmpty = false;
+        }
+      } else if (this.currentActive === 'tasks') {
+        if (!recentTaskList || recentTaskList.length === 0) {
+          this.isEmpty = true;
+          this.taskAllDoneComputed = false;
+        } else if (this.taskAllDoneComputed) {
+          this.isEmpty = true;
+        } else {
+          this.isEmpty = false;
+        }
+      } else {
+        this.isEmpty = !this.hasHabits && !this.hasTasks;
+      }
       this.showContent = !this.isEmpty;
 
       // Force change detection
@@ -1030,11 +1073,49 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
       // Use filtered arrays to determine if we have habits/tasks
       this.hasHabits = this.filteredRecentHabits.length > 0;
       this.hasTasks = this.filteredRecentTasks.length > 0;
-      this.isEmpty = !this.hasHabits && !this.hasTasks;
+
+      // Compute habit-all-done and task-all-done using recent arrays (these may include completed items)
+      const recentList = (this.recentHabits && this.recentHabits.length > 0) ? this.recentHabits : this.filteredRecentHabits;
+      this.habitAllDoneComputed = Array.isArray(recentList) && recentList.length > 0 && recentList.every(h => {
+        const s = (h?.status || '').toString().toLowerCase();
+        return s === 'completed' || s === 'skipped';
+      });
+
+      const recentTaskList = (this.recentTasks && this.recentTasks.length > 0) ? this.recentTasks : this.filteredRecentTasks;
+      this.taskAllDoneComputed = Array.isArray(recentTaskList) && recentTaskList.length > 0 && recentTaskList.every(t => {
+        const s = (t?.status || '').toString().toLowerCase();
+        return s === 'completed' || s === 'skipped';
+      });
+
+      // Decide empty state based on the currently selected tab
+      if (this.currentActive === 'habits') {
+        if (!recentList || recentList.length === 0) {
+          this.isEmpty = true;
+          this.habitAllDoneComputed = false;
+        } else if (this.habitAllDoneComputed) {
+          this.isEmpty = true;
+        } else {
+          this.isEmpty = false;
+        }
+      } else if (this.currentActive === 'tasks') {
+        if (!recentTaskList || recentTaskList.length === 0) {
+          this.isEmpty = true;
+          this.taskAllDoneComputed = false;
+        } else if (this.taskAllDoneComputed) {
+          this.isEmpty = true;
+        } else {
+          this.isEmpty = false;
+        }
+      } else {
+        this.isEmpty = !this.hasHabits && !this.hasTasks;
+      }
+
       this.showContent = !this.isEmpty;
 
       // Force change detection
       this.cdr.detectChanges();
+      // Also run fallback check to detect "all completed" when parent passed filtered arrays
+      this.checkAllCompletedFallback();
     }
   }
 
@@ -1130,50 +1211,48 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   loadTodayTasks() {
-    this.taskApi.getTodayTasks().subscribe({
-      next: (tasks) => {
+    const today = new Date();
+    const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+    this.calendarService.getUserCalendar(formatted, 'day').subscribe({
+      next: (resp: any) => {
+        const tasks = Array.isArray(resp?.tasks) ? resp.tasks : [];
+
         this.tasks = (tasks || [])
           .map((task: any) => {
-            // Combine date and time to create proper timestamps
-            // Always recalculate from date+time to ensure accuracy
             const startTimeStr = task.startTime || '00:00:00';
             const endTimeStr = task.endTime || '23:59:59';
-            const startDateStr = task.startDate || new Date().toISOString().split('T')[0];
+            const startDateStr = task.startDate || formatted;
             const endDateStr = task.endDate || startDateStr;
 
-            // Calculate proper timestamps using date + time combination
             const calculatedStartTimeStamp = this.combineDateAndTime(startDateStr, startTimeStr);
             const calculatedEndTimeStamp = this.combineDateAndTime(endDateStr, endTimeStr);
 
             return {
               ...task,
               type: 'tasks',
-              // Always use calculated timestamps when we have startTime/endTime strings
               startTimeStamp: (task.startTime && task.startDate) ? calculatedStartTimeStamp : (task.startTimeStamp || calculatedStartTimeStamp),
               endTimeStamp: (task.endTime && task.endDate) ? calculatedEndTimeStamp : (task.endTimeStamp || calculatedEndTimeStamp),
               createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
-              // Normalize status to lowercase for consistency
               status: task.status ? task.status.toLowerCase() : 'pending'
             };
           })
           .sort((a: any, b: any) => {
             const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
             const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-            return bTime - aTime; // newest first
+            return bTime - aTime;
           })
           .slice(0, this.maxItemsToShow);
 
         this.hasTasks = this.tasks.length > 0;
         this.updateEmptyState();
-        // Trigger change detection to update button states
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('Error fetching tasks:', error);
+        console.error('Error fetching calendar tasks:', error);
         this.tasks = [];
         this.hasTasks = false;
         this.updateEmptyState();
-        // Trigger change detection to update button states
         this.cdr.detectChanges();
       }
     });
@@ -1184,15 +1263,61 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
    */
   updateEmptyState() {
     if (this.currentActive === 'habits') {
-      this.isEmpty = !this.hasHabits;
+      // If there are no habits at all, show 'no habit lined up' empty state
+      if (!this.habits || this.habits.length === 0) {
+        this.isEmpty = true;
+        this.habitAllDoneComputed = false;
+      } else if (this.areAllHabitsCompletedOrSkipped()) {
+        // If all habits exist but are either completed or skipped, show 'All habits done' empty state
+        this.isEmpty = true;
+        this.habitAllDoneComputed = true;
+      } else {
+        this.isEmpty = false;
+        this.habitAllDoneComputed = false;
+      }
     } else if (this.currentActive === 'tasks') {
-      this.isEmpty = !this.hasTasks;
+      // If there are no tasks at all, show 'no tasks lined up' empty state
+      if (!this.tasks || this.tasks.length === 0) {
+        this.isEmpty = true;
+        this.taskAllDoneComputed = false;
+      } else if (this.areAllTasksCompletedOrSkipped()) {
+        // If all tasks are either completed or skipped, show 'All tasks done' empty state
+        this.isEmpty = true;
+        this.taskAllDoneComputed = true;
+      } else {
+        this.isEmpty = false;
+        this.taskAllDoneComputed = false;
+      }
     } else {
       // 'all' tab
       this.isEmpty = !this.hasHabits && !this.hasTasks;
     }
 
     this.showContent = !this.isEmpty;
+  }
+
+  /**
+   * Return true when all habits in the current list are either completed or skipped
+   */
+  areAllHabitsCompletedOrSkipped(): boolean {
+    const list = Array.isArray(this.habits) ? this.habits : [];
+    if (!list.length) return false;
+    return list.every(h => {
+      const s = (h?.status || '').toString().toLowerCase();
+      return s === 'completed' || s === 'skipped';
+    });
+  }
+
+  /**
+   * Return true when all tasks in the current list are either completed or skipped
+   */
+  areAllTasksCompletedOrSkipped(): boolean {
+    const list = Array.isArray(this.tasks) ? this.tasks : [];
+    if (!list.length) return false;
+    return list.every(t => {
+      const s = (t?.status || '').toString().toLowerCase();
+      return s === 'completed' || s === 'skipped';
+    });
   }
 
   /**
@@ -1219,7 +1344,39 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     if (this.mode === 'recent') {
       this.hasHabits = this.filteredRecentHabits.length > 0;
       this.hasTasks = this.filteredRecentTasks.length > 0;
-      this.isEmpty = !this.hasHabits && !this.hasTasks;
+
+      const recentList = (this.recentHabits && this.recentHabits.length > 0) ? this.recentHabits : this.filteredRecentHabits;
+      this.habitAllDoneComputed = Array.isArray(recentList) && recentList.length > 0 && recentList.every(h => {
+        const s = (h?.status || '').toString().toLowerCase();
+        return s === 'completed' || s === 'skipped';
+      });
+
+      if (this.currentActive === 'habits') {
+        if (!recentList || recentList.length === 0) {
+          this.isEmpty = true;
+        } else if (this.habitAllDoneComputed) {
+          this.isEmpty = true;
+        } else {
+          this.isEmpty = false;
+        }
+      } else if (this.currentActive === 'tasks') {
+        const recentTaskList = (this.recentTasks && this.recentTasks.length > 0) ? this.recentTasks : this.filteredRecentTasks;
+        this.taskAllDoneComputed = Array.isArray(recentTaskList) && recentTaskList.length > 0 && recentTaskList.every(t => {
+          const s = (t?.status || '').toString().toLowerCase();
+          return s === 'completed' || s === 'skipped';
+        });
+        if (!recentTaskList || recentTaskList.length === 0) {
+          this.isEmpty = true;
+          this.taskAllDoneComputed = false;
+        } else if (this.taskAllDoneComputed) {
+          this.isEmpty = true;
+        } else {
+          this.isEmpty = false;
+        }
+      } else {
+        this.isEmpty = !this.hasHabits && !this.hasTasks;
+      }
+
       this.showContent = !this.isEmpty;
       // Trigger change detection to update button states
       this.cdr.detectChanges();
@@ -1403,6 +1560,74 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     return this.recentTasks.filter(task => {
       const status = (task.status || '').toLowerCase();
       return status !== 'completed' && status !== 'skipped';
+    });
+  }
+
+  /**
+   * Return true when all items (habits+tasks) for the current mode are completed.
+   * Used to show a different empty state when everything is completed for the day.
+   */
+  get isAllCompleted(): boolean {
+    // Determine lists to check depending on mode. Use original lists (which include completed items)
+    const habitList = (this.mode === 'recent') ? (this.recentHabits || []) : (this.habits || []);
+    const taskList = (this.mode === 'recent') ? (this.recentTasks || []) : (this.tasks || []);
+
+    const allItems = [...habitList, ...taskList];
+
+    // If no items returned from API, not considered 'all completed'
+    if (!allItems || allItems.length === 0) return false;
+
+    // If at least one item exists and every item's status is 'completed', return true
+    return allItems.every(item => ((item?.status || '').toString().toLowerCase() === 'completed'));
+  }
+
+  /**
+   * True when current tab is 'tasks' and there are habits present but no tasks.
+   * Used to show a task-specific empty message in the Tasks tab.
+   */
+  get isTaskTabNoTasks(): boolean {
+    return this.currentActive === 'tasks' && !!this.hasHabits && !this.hasTasks;
+  }
+
+  // Fallback computed flag used for recent mode when parent inputs may be pre-filtered.
+  public isAllCompletedComputed: boolean = false;
+
+  /**
+   * Check API/service data to determine if ALL items for today are completed.
+   * Used as a fallback in `recent` mode when parent passes pre-filtered arrays.
+   */
+  private checkAllCompletedFallback(): void {
+    // Only run this in recent mode, otherwise rely on isAllCompleted getter
+    if (this.mode !== 'recent') {
+      this.isAllCompletedComputed = false;
+      return;
+    }
+
+    // Get habits from HabitService (synchronous current value)
+    const allHabits = this.habitService.getCurrentHabits() || [];
+
+    // Get tasks from calendar API for today (async). Combine and evaluate when response arrives.
+    const today = new Date();
+    const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+    this.calendarService.getUserCalendar(formatted, 'day').subscribe({
+      next: (resp: any) => {
+        const allTasks = Array.isArray(resp?.tasks) ? resp.tasks : [];
+        const combined = [...allHabits, ...allTasks];
+
+        if (!combined || combined.length === 0) {
+          this.isAllCompletedComputed = false;
+          this.cdr.detectChanges();
+          return;
+        }
+
+        this.isAllCompletedComputed = combined.every(item => ((item?.status || '').toString().toLowerCase() === 'completed'));
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isAllCompletedComputed = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 

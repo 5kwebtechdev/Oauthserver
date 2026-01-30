@@ -80,6 +80,36 @@ export class NavigationService {
   }
 
   /**
+   * Navigate back by N steps (including current). For example, backN(1) behaves like back(),
+   * backN(2) skips the previous entry and navigates to the one before that.
+   */
+  backN(steps: number): void {
+    if (!steps || steps <= 0) return;
+
+    const history = this.getStoredHistory();
+    // Remove current page first
+    if (history.length > 0) history.pop();
+
+    // Then remove (steps-1) more entries to reach the target
+    for (let i = 1; i < steps; i++) {
+      if (history.length > 0) history.pop();
+      else break;
+    }
+
+    // The target to navigate to is now the last entry in history
+    const target = history.length ? history.pop() : undefined;
+    this.saveHistory(history);
+
+    if (target) {
+      this.router.navigateByUrl(target, { replaceUrl: false }).catch(() => this.location.back());
+      return;
+    }
+
+    // Fallback
+    this.location.back();
+  }
+
+  /**
    * Get a copy of the navigation history
    */
   getHistory(): string[] {

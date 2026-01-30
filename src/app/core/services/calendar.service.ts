@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, of, catchError, shareReplay, tap } from 'rxjs';
 import { CalendarResponse, TimelineEvent } from '../models/calendar.model';
 import { environment } from 'src/environments/environment';
 
@@ -9,6 +9,8 @@ import { environment } from 'src/environments/environment';
 })
 export class CalendarService {
     private readonly apiUrl = `${environment.apiUrl}/calendar`;
+    // Simple cache to avoid duplicate network calls for the same date+viewType
+    private cache = new Map<string, Observable<CalendarResponse>>();
 
     constructor(private http: HttpClient) { }
 
@@ -16,9 +18,48 @@ export class CalendarService {
      * Get user calendar. The ProfileSelectorInterceptor automatically adds userId
      * when a child is selected by the parent.
      */
-    getUserCalendar(date: string, viewType: 'day' | 'month' = 'day'): Observable<CalendarResponse> {
-        const url = `${this.apiUrl}/user-calendar?date=${date}&viewType=${viewType}`;
-        return this.http.get<CalendarResponse>(url);
+    /**
+     * Get user calendar. Accepts a Date or date string (YYYY-MM-DD). Returns a cached shared observable
+     * to prevent multiple duplicate HTTP requests for the same date/viewType.
+     * Use `forceReload=true` to bypass cache and re-fetch.
+     */
+    getUserCalendar(date: string | Date, viewType: 'day' | 'month' = 'day', forceReload: boolean = false): Observable<CalendarResponse> {
+        const dateStr = this.formatDateToYYYYMMDD(date);
+        const key = `${dateStr}|${viewType}`;
+
+        if (!forceReload && this.cache.has(key)) {
+            return this.cache.get(key) as Observable<CalendarResponse>;
+        }
+
+        const url = `${this.apiUrl}/user-calendar?date=${dateStr}&viewType=${viewType}`;
+        const request$ = this.http.get<CalendarResponse>(url).pipe(
+            // keep a shared replay so multiple subscribers share same network result
+            shareReplay({ bufferSize: 1, refCount: true }),
+            // if error, remove from cache so subsequent calls can retry
+            catchError(err => {
+                this.cache.delete(key);
+                return of({ events: [], tasks: [], habits: [], totalTasks: 0, totalTasksCompleted: 0, taskCompletionRate: 0, totalHabits: 0, totalHabitsCompleted: 0, habitCompletionRate: 0 } as CalendarResponse);
+            })
+        );
+
+        this.cache.set(key, request$);
+        return request$;
+    }
+
+    /** Clear cached entry for a date/viewType or clear all when called without args */
+    clearCache(date?: string | Date, viewType?: 'day' | 'month') {
+        if (!date) {
+            this.cache.clear();
+            return;
+        }
+        const d = this.formatDateToYYYYMMDD(date);
+        const key = `${d}|${viewType || 'day'}`;
+        this.cache.delete(key);
+    }
+
+    private formatDateToYYYYMMDD(date: string | Date): string {
+        const d = typeof date === 'string' ? new Date(date) : date;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
     /**

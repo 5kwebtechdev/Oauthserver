@@ -89,21 +89,6 @@ p {
   font-size: 16px;
 }
 
-.empty-state {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  margin-top: 16px;
-}
-
-.empty-state-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 /* Added styles for clickable habit header */
 .habit-header-container.clickable {
   display: flex;
@@ -152,25 +137,7 @@ p {
   }
 }
 
-// padding: 24px;
 
-.empty-state-image {
-  margin-bottom: 24px;
-}
-
-.empty-state-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-
-.empty-state-description {
-  color: #666;
-  font-size: 13px;
-  line-height: 1.5;
-  margin-bottom: 0px !important;
-  max-width: 300px;
-}
 
 .add-button-container {
   display: flex;
