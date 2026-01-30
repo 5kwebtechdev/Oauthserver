@@ -40,6 +40,14 @@
       align-items: center;
       margin-bottom: 1rem;
 
+      span {
+        color: #282527;
+        font-family: Nunito;
+        font-size: 1rem;
+        font-style: normal;
+        font-weight: 600;
+      }
+
           &.today {
             position: relative;
             z-index: 3; /* raise today's cell above in-range background */
@@ -207,4 +215,8 @@
       }
     }
   }
+}
+
+.nav-arrow{
+  background: none;
 }

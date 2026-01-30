@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { IonicModule } from '@ionic/angular';
 import { MindfulDatepickerComponent } from "./mindful-datepicker/mindful-datepicker.component";
 import { MindfulCalendarComponent } from "./mindful-calendar/mindful-calendar.component";
 import { MindfulTimepickerComponent } from "./mindful-timepicker/mindful-timepicker.component";
@@ -18,6 +19,7 @@ import { MindfulInputComponent } from './mindful-input.component';
   ],
   imports: [
     CommonModule,
+    IonicModule,
     MindfulCalendarComponent,
   ],
   exports: [

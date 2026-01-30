@@ -111,6 +111,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   @ViewChild('swiperEl', { static: false }) swiperRef!: ElementRef;
   @ViewChild('content', { static: false }) ionContent?: IonContent;
 
+  // track active slide index so UI can react (e.g. enable button only on first slide)
+  public currentSlideIndex: number = 0;
+
   images = [
     'https://picsum.photos/id/1011/600/400',
     'https://picsum.photos/id/1015/600/400',
@@ -119,25 +122,25 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   ];
 
   pets: any[] = [{
-    displayName: 'Bubu the Panda',
+    displayName: 'Bao the mindful Panda',
     name: 'Panda',
     image: 'assets/Images-Pet/Panda-Age1-Happy.png',
-    text: ['Loves quiet focus and gentle growth', 'Loves quiet focus and gentle growth']
+    text: ['Your gentle guide to inner peace', 'Celebrates small acts of kindness']
   }, {
-    displayName: 'Kiko the Llama',
+    displayName: 'Koda the Chill Llama',
     name: 'Llama',
     image: 'assets/Images-Pet/Llama-Age1-Happy.png',
-    text: ['Loves quiet focus and gentle growth', 'Loves quiet focus and gentle growth']
+    text: ['Master of staying cool under pressure', 'Loves colorful, quirky adventures']
   }, {
-    displayName: 'Gradon the dragon',
+    displayName: 'Zuki the Fierce Dragon',
     name: 'Dragon',
     image: 'assets/Images-Pet/Dragon-Age1-Happy.png',
-    text: ['Loves quiet focus and gentle growth', 'Loves quiet focus and gentle growth']
+    text: ['Loves big ideas and bold moves', 'Celebrates when you go on streaks']
   }, {
-    displayName: 'Olly the Owl',
+    displayName: 'Luna the Wise Owl',
     name: 'Owl',
     image: 'assets/Images-Pet/Owl-Age1-Happy.png',
-    text: ['Loves quiet focus and gentle growth', 'Loves quiet focus and gentle growth']
+    text: ['Your midnight study buddy', 'Celebrates "aha!" moments']
   }]
 
   public currentImage: any = this.pets[0];
@@ -153,6 +156,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       const swiperInstance = swiperEl.swiper;
       // Initialize with first pet
       this.currentImage = this.pets[0];
+      this.currentSlideIndex = 0;
       // Store the selected pet name
       try {
         sessionStorage.setItem('signup_pet', this.pets[0].name);
@@ -163,6 +167,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       const swiperInstance = swiperEl.swiper;
       const realIndex = swiperInstance.realIndex;
       this.currentImage = this.pets[realIndex];
+      this.currentSlideIndex = realIndex;
       // Store the selected pet name whenever it changes
       try {
         sessionStorage.setItem('signup_pet', this.pets[realIndex].name);
@@ -305,6 +310,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
               if (swiperInstance) {
                 const targetIndex = this.pets.findIndex(p => p.name === (petFromSession || this.pets[0].name));
                 if (targetIndex >= 0) swiperInstance.slideTo(targetIndex);
+                // reflect in UI state
+                this.currentSlideIndex = targetIndex >= 0 ? targetIndex : 0;
               }
             } catch (e) { /* ignore */ }
           }, 200);
@@ -771,6 +778,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       const currentIndex = swiperInstance.realIndex;
 
       this.currentImage = this.pets[currentIndex];
+      this.currentSlideIndex = currentIndex;
 
       // Store the selected pet name
       if (this.pets[currentIndex]) {
@@ -779,6 +787,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
     } else {
     }
+  }
+
+  // Helper getter for template: only enable certain actions for first slide
+  get isFirstSlideActive(): boolean {
+    return this.currentSlideIndex === 0;
   }
 
   openBirthdayPickerNow() {
