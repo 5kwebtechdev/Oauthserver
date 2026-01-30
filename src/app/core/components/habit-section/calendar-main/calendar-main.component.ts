@@ -354,6 +354,10 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
                 ...h,
                 title: h.title || h.name || h.habitName || 'Habit',
                 status: this.buttonLogic.normalizeStatus(h.status),
+                // API uses `rewardCoins` (or `reward_coins`) — map it to `coinReward` which the card expects
+                coinReward: h.rewardCoins ?? h.reward_coins ?? h.coinReward ?? 0,
+                // Ensure streak is available on the object (some responses include this)
+                streak: (h.streak ?? h.habitStreak ?? 0),
                 startTimeStamp: timestamps.startTimeStamp,
                 endTimeStamp: timestamps.endTimeStamp
               };
@@ -373,6 +377,9 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
                 type: t?.type || 'tasks',
                 title: t.title || t.name || t.taskName || 'Task',
                 status: this.buttonLogic.normalizeStatus(t.status),
+                // map rewardCoins -> coinReward for display in habit-card
+                coinReward: t.rewardCoins ?? t.reward_coins ?? t.coinReward ?? 0,
+                streak: (t.streak ?? t.habitStreak ?? 0),
                 startTimeStamp: timestamps.startTimeStamp,
                 endTimeStamp: timestamps.endTimeStamp
               };

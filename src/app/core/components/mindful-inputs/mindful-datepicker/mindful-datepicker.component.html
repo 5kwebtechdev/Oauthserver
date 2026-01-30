@@ -7,9 +7,13 @@
     <div class="calendar-popup">
       <div class="calendar-header">
         <span>{{ currentMonth | date: 'MMMM yyyy' }}</span>
-        <div class="nav-buttons">
-          <button (click)="prevMonth()">&#8249;</button>
-          <button (click)="nextMonth()" style="margin-left: 20px">&#8250;</button>
+        <div class="nav-buttons d-flex gap-4">
+          <button class="nav-arrow" (click)="prevMonth()">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+          </button>
+          <button class="nav-arrow" (click)="nextMonth()">
+            <ion-icon name="chevron-forward-outline"></ion-icon>
+          </button>
         </div>
       </div>
 

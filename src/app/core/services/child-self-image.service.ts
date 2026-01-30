@@ -27,11 +27,10 @@ export class ChildSelfImageService {
     resolveAvatarFromUser(user: any): { url: string | null; alt: string | null } {
         try {
             if (!user) return { url: null, alt: null };
-
-            // Always resolve image from avatarImageName. Ignore backend-provided `avatar.url` to maintain
-            // consistent client-side assets and avoid external URLs.
+            // Always resolve image from avatarImageName (or common variations).
+            // Ignore backend-provided `avatar.url` to maintain consistent client-side assets.
             let avatarKey: number | null = null;
-            const imageName = user.avatar?.avatarImageName || user.avatarImageName || '';
+            const imageName = this.extractAvatarImageName(user);
             if (imageName) {
                 const match = String(imageName).match(/\d+/);
                 if (match) {
@@ -60,10 +59,9 @@ export class ChildSelfImageService {
     resolveAvatarForMember(member: any): { url: string | null; alt: string | null } {
         try {
             if (!member) return { url: null, alt: null };
-
-            // Always resolve by `avatarImageName` (ignore `avatar.url` sent by server).
+            // Always resolve by avatar image name (support a few common property names).
             let avatarKey: number | null = null;
-            const imageName = member.avatarImageName || member.avatar?.avatarImageName || '';
+            const imageName = this.extractAvatarImageName(member);
             if (imageName) {
                 const match = String(imageName).match(/\d+/);
                 if (match) {
@@ -83,5 +81,32 @@ export class ChildSelfImageService {
             console.error('[ChildSelfImageService] Error resolving member avatar:', e);
             return { url: null, alt: null };
         }
+    }
+
+    /**
+     * Robust extractor for avatar image name. Accepts multiple possible shapes
+     * that might appear in `user_data` or API responses (e.g. `avatarImageName`,
+     * `imageName`, `avatarName`, nested under `avatar`, etc.).
+     */
+    private extractAvatarImageName(obj: any): string {
+        if (!obj) return '';
+
+        // Common keys we've seen in various payloads
+        const candidates = [
+            obj.avatar?.avatarImageName,
+            obj.avatarImageName,
+            obj.avatar?.imageName,
+            obj.avatar?.avatarName,
+            obj.avatar?.name,
+            obj.avatarName,
+            obj.imageName,
+            obj.avatar?.image?.name
+        ];
+
+        for (const c of candidates) {
+            if (c && String(c).trim().length > 0) return String(c).trim();
+        }
+
+        return '';
     }
 }

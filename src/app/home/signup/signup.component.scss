@@ -616,25 +616,91 @@ swiper-slide.swiper-slide-active .pet-card {
   background: #EE6621;
 }
 
+/* responsive card: increased width and consistent height */
 .pet-card {
-  background: #FAD2AE;
-  border-radius: 20px;
+  width: 100%; /* increased width */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  height: 60vh;
   padding: 20px;
-  padding-bottom: 0;
+  padding-bottom: 16px;
+  border-radius: 20px;
+  background: #FAD2AE;
   transition: 0.2s;
   transform: scale(0.95);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Use an overlay pseudo-element to visually dim non-panda cards so the lock
+   badge (rendered outside the card) can remain fully opaque above the card. */
+.pet-card img {
+  width: 100%;
+  height: auto;
+  margin-top: auto; /* push image to bottom when text is short */
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.pet-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(255 255 255 / 46%);
+  border-radius: 20px;
+  display: none;
+  z-index: 20; /* sits above card content to dim it */
+}
+
+/* Show overlay for non-panda cards */
+.pet-card:not(.panda)::after {
+  display: block;
 }
 
 .pet-card h4 {
   font-weight: 500;
-  font-size: 20px;
-  line-height: 130%;
+  font-size: 1.25rem;
   color: white;
 }
 
 .pet-card p {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: white;
+}
+
+/* Ensure swiper-slide is a positioning context for the overlay badge */
+swiper-slide {
+  position: relative;
+}
+
+/* Lock badge shown for non-panda slides. Rendered as a sibling of the card so it
+   does not inherit the card opacity. Positioned to sit between the text and image.
+   Adjust `bottom` as needed if layout changes. */
+.pet-lock {
+  display: inline-flex;
+  height: 34px;
+  padding: 8px 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 32px;
+  background: #FAD2AE;
+  z-index: 30; /* above the card overlay */
+  color: #EE6621;
+  font-family: Nunito, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  align-self: flex-start;
+  margin: 8px 0;
+  position: relative;
+}
+
+.pet-lock img {
+  width: 11px;
+  height: 14px;
+  display: inline-block;
 }
 
 .age-modal-backdrop {

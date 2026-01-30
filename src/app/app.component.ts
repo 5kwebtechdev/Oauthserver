@@ -8,6 +8,7 @@ import { NavigationService } from './core/services/navigation.service';
 import { BadgeSocketService, BadgePopupData } from './core/services/badge-socket.service';
 import { BadgeApi } from './core/api/badge.api';
 import { AuthApi } from './core/api/auth.api';
+import { UserService } from './core/services/user.service';
 
 @Component({
   selector: 'app-root',
@@ -34,6 +35,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private badgeSocketService: BadgeSocketService,
     private badgeApi: BadgeApi,
     private authApi: AuthApi,
+    private userService: UserService,
   ) { }
 
   ngOnInit() {
@@ -102,10 +104,10 @@ export class AppComponent implements OnInit, OnDestroy {
    * Initialize WebSocket connection for real-time badge notifications
    */
   private initializeBadgeWebSocket(): void {
-    // Only connect if user is authenticated
-    const token = this.authApi.getToken();
-    if (!token) {
-      console.log('[AppComponent] No auth token, skipping badge WebSocket initialization');
+    // Only connect if a real user token exists (do not use environment fallback)
+    const userToken = localStorage.getItem('auth_token');
+    if (!userToken) {
+      console.log('[AppComponent] No user auth token in localStorage, skipping badge WebSocket initialization');
       return;
     }
 
@@ -121,7 +123,12 @@ export class AppComponent implements OnInit, OnDestroy {
     );
 
     // Check for any pending badge popups that were missed while offline
-    this.checkPendingBadgePopups();
+    const profile = this.userService.getUserProfile();
+    if (userToken && profile && (profile.relationship === 'CHILD' || profile.relationship === 'SELF')) {
+      this.checkPendingBadgePopups();
+    } else {
+      console.log('[AppComponent] Skipping pending badge popups for non-child/self account or missing user token');
+    }
   }
 
   /**

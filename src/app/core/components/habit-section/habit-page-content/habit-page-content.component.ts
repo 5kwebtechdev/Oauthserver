@@ -288,7 +288,17 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
     }
 
     private filterByStatus(items: any[]): any[] {
-        return this.journeySubFilter === 'all' ? items : items.filter(i => i.status === this.journeySubFilter);
+        if (this.journeySubFilter === 'all') return items;
+
+        // When viewing 'pending' journey, include both 'pending' and 'skipped' statuses
+        if (this.journeySubFilter === 'pending') {
+            return items.filter(i => {
+                const s = (i?.status || '').toLowerCase();
+                return s === 'pending' || s === 'skipped';
+            });
+        }
+
+        return items.filter(i => (i?.status || '').toLowerCase() === this.journeySubFilter);
     }
 
     private filterByPriority(items: any[]): any[] {

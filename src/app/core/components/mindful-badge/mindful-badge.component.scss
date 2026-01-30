@@ -47,6 +47,21 @@
   display: none;
 }
 
+/* When displayed inside the habit-page-content (routine selectors),
+   remove the gradient stroke and use a simple 1px solid border */
+:host-context(habit-page-content) .badge.morning,
+:host-context(habit-page-content) .badge.evening,
+:host-context(habit-page-content) .badge.night {
+  --stroke_gradient: transparent !important;
+  border: 1px solid #90214D !important;
+}
+
+:host-context(habit-page-content) .badge.morning:before,
+:host-context(habit-page-content) .badge.evening:before,
+:host-context(habit-page-content) .badge.night:before {
+  display: none !important; 
+}
+
 .badge {
   &.medium {
     /* keep medium font but ensure consistent height */

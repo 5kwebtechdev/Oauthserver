@@ -6,7 +6,7 @@
       <div class="user-profile" *ngIf="user?.relationship !== 'PARENT'">
         <div class="avatar w-100 d-flex justify-content-center gap-2 flex-column align-items-center">
           <div class="avatar-wrapper">
-            <img [src]="user?.avatarUrl || userAvatarUrl || '/assets/app-assets/Default-avatar-home.svg'"
+            <img [src]="userAvatarUrl || user?.avatarUrl || '/assets/app-assets/Default-avatar-home.svg'"
               [alt]="avatarImageName ? avatarImageName : (user?.name || 'User') + ' avatar'" />
           </div>
           <div class="user-info w-100 d-flex justify-content-center gap-2 flex-column align-items-center">
