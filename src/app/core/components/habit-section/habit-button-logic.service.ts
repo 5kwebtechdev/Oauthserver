@@ -40,12 +40,13 @@ export class HabitButtonLogicService {
   }
 
   /**
-   * Check if within "Let's Go" window (5 min before start to end time)
+   * Check if within "Let's Go" window (5 minutes before start to 5 minutes after start)
    */
   isWithinLetsGoWindow(startTimeStamp: number, endTimeStamp: number): boolean {
     if (!startTimeStamp || !endTimeStamp) return false;
     const now = Date.now();
-    return (now >= (startTimeStamp - this.FIVE_MINUTES)) && (now <= endTimeStamp);
+    // Window: [start - 5min, start + 5min]
+    return (now >= (startTimeStamp - this.FIVE_MINUTES)) && (now <= (startTimeStamp + this.FIVE_MINUTES));
   }
 
   /**
@@ -70,6 +71,9 @@ export class HabitButtonLogicService {
   isLetsGoEnabled(habit: any, hasOtherOngoing: boolean = false): boolean {
     if (hasOtherOngoing) return false;
     const { startTimeStamp, endTimeStamp } = this.getTimestamps(habit);
+    // Enabled only within the tight start window and when not past the activity end
+    if (!startTimeStamp || !endTimeStamp) return false;
+    if (Date.now() > endTimeStamp) return false; // hidden/disabled after end time
     return this.isWithinLetsGoWindow(startTimeStamp, endTimeStamp);
   }
 
@@ -79,7 +83,11 @@ export class HabitButtonLogicService {
   isLetsGoVisible(habit: any): boolean {
     if (!habit) return false;
     const status = habit.status?.toLowerCase();
-    return status !== 'ongoing' && status !== 'completed' && status !== 'skipped';
+    // Not visible for ongoing/completed/skipped, and not visible after activity end
+    if (status === 'ongoing' || status === 'completed' || status === 'skipped') return false;
+    const { endTimeStamp } = this.getTimestamps(habit);
+    if (endTimeStamp && Date.now() > endTimeStamp) return false;
+    return true;
   }
 
   /**
@@ -93,19 +101,57 @@ export class HabitButtonLogicService {
   /**
    * Check if "Done" button should be enabled
    */
-  isDoneEnabled(habit: any): boolean {
+  isDoneEnabled(habit: any, hasOtherOngoing: boolean = false): boolean {
     if (!habit) return false;
+    if (hasOtherOngoing) return false;
     const status = habit.status?.toLowerCase();
     const { startTimeStamp } = this.getTimestamps(habit);
-    
+
     // For skipped status, always enable
     if (status === 'skipped') return true;
-    // Cannot click Done before start time
-    if (this.isBeforeStartTime(startTimeStamp)) return false;
-    // If ongoing, enable
+
+    // If ongoing, enable (but caller must ensure `hasOtherOngoing` is false)
     if (status === 'ongoing') return true;
-    // For pending, disable
+
+    // For pending: enable Done only if it's for today and the Let's Go window has closed
+    if (status === 'pending') {
+      if (!startTimeStamp) return false;
+      if (!this.isToday(startTimeStamp)) return false; // only today's pending
+      // Enable only after start + FIVE_MINUTES (Let's Go window closed)
+      return Date.now() > (startTimeStamp + this.FIVE_MINUTES);
+    }
+
     return false;
+  }
+
+  /**
+   * Check if "Done" button should be visible (shows/hides button)
+   */
+  isDoneVisible(habit: any): boolean {
+    if (!habit) return false;
+    const status = habit.status?.toLowerCase();
+    // Completed items should not show Done
+    if (status === 'completed') return false;
+    // Skipped items show Done (user can mark completed)
+    if (status === 'skipped') return true;
+    // Ongoing items show Done
+    if (status === 'ongoing') return true;
+
+    // For pending, show only for today's activities and only after the Let's Go window has closed
+    const { startTimeStamp } = this.getTimestamps(habit);
+    if (!startTimeStamp) return false;
+    if (!this.isToday(startTimeStamp)) return false;
+    return Date.now() > (startTimeStamp + this.FIVE_MINUTES);
+  }
+
+  /**
+   * Check whether a timestamp falls on today's date (local timezone)
+   */
+  private isToday(timestamp: number): boolean {
+    if (!timestamp) return false;
+    const d = new Date(timestamp);
+    const t = new Date();
+    return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
   }
 
   /**

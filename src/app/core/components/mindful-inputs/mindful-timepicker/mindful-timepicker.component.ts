@@ -92,8 +92,35 @@ export class MindfulTimepickerComponent implements ControlValueAccessor {
   }
 
   selectTime(unit: number) {
-    if (this.selecting === 'hour') this.selectedHour = unit;
-    else this.selectedMinute = unit;
+    if (this.selecting === 'hour') {
+      this.selectedHour = unit;
+      this.hourBuffer = this.selectedHour.toString().padStart(2, '0');
+    } else {
+      this.selectedMinute = unit;
+      this.minuteBuffer = this.selectedMinute.toString().padStart(2, '0');
+    }
+    // If user was in edit mode for this field, finalize the edit so the chosen
+    // digit remains visible even if they click elsewhere without typing.
+    if (this.editingField === this.selecting) {
+      this.editingField = null;
+    }
+    // Notify parent form/model immediately when a value is chosen from the clock
+    // so validations (like end-time-after-start) can run without requiring the
+    // user to press OK.
+    try { this.onChange(this.timeString); } catch (e) { }
+  }
+
+  finishEdit(field: 'hour' | 'minute') {
+    // When the input loses focus, ensure the displayed value reflects the
+    // currently selected time instead of an empty buffer.
+    if (field === 'hour') {
+      if (!this.hourBuffer) this.hourBuffer = this.selectedHour.toString().padStart(2, '0');
+    } else {
+      if (!this.minuteBuffer) this.minuteBuffer = this.selectedMinute.toString().padStart(2, '0');
+    }
+    this.editingField = null;
+    // propagate final value to parent model as user finishes editing
+    try { this.onChange(this.timeString); } catch (e) { }
   }
 
   onHourInput(event: any) {
