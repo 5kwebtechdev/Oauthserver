@@ -261,13 +261,9 @@
             <mindful-button *ngIf="isAbortVisible() && habit?.type !== 'tasks' && !isParent" type="lavendar-transparent" small
               text="Abort" (click)="openAbortPopup()"></mindful-button>
             
-            <!-- Done Button: For PENDING or ONGOING status - Disabled when PENDING, Enabled when ONGOING -->
-            <mindful-button *ngIf="getStatus() !== 'completed' && getStatus() !== 'skipped' && !isParent" type="green" small text="Done?"
+            <!-- Done Button: visible/disabled per new rules -->
+            <mindful-button *ngIf="isDoneVisible() && !isParent" type="green" small text="Done?"
               (click)="openCompletePopup()" [disabled]="!isDoneEnabled()"></mindful-button>
-            
-            <!-- Done Button: For SKIPPED status - Always enabled so user can mark as done -->
-            <mindful-button *ngIf="getStatus() === 'skipped' && !isParent" type="green" small text="Done?"
-              (click)="openCompletePopup()"></mindful-button>
             
             <!-- Completion Message: Show when status is COMPLETED -->
             <!-- <div class="d-flex gap-2" *ngIf="getStatus() === 'completed'">

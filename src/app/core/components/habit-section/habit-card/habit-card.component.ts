@@ -611,6 +611,12 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.progressInterval = setInterval(() => {
       // Update the percentageCompleted property which will trigger change detection
       this.percentageCompleted = this.calculateProgressPercentage();
+
+      // Stop updating when progress reaches 100% (scheduled end reached)
+      if (this.percentageCompleted >= 100) {
+        this.percentageCompleted = 100;
+        this.clearProgress();
+      }
     }, 1000);
   }
 
@@ -1127,16 +1133,24 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     // this.habitService.loadHabitsBySearch({}).subscribe({
     this.habitService.loadTodayHabits().subscribe({
       next: () => {
+        // Only today's activities show on Home. Sort by proximity to current time (recency relative to now)
+        const now = Date.now();
         this.habits = this.habitService.getCurrentHabits()
           .map((habit: Habit) => ({
             ...habit,
             // Normalize status to lowercase for consistency
             status: habit.status ? habit.status.toLowerCase() as any : 'pending'
           }))
+          // Exclude completed and skipped items from Home (completed disappear instantly)
+          .filter((h: Habit) => {
+            const s = (h.status || '').toString().toLowerCase();
+            return s !== 'completed' && s !== 'skipped';
+          })
+          // Sort by absolute difference between start time and now (closest to now first)
           .sort((a: Habit, b: Habit) => {
-            const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-            const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-            return bTime - aTime; // newest first
+            const aDiff = Math.abs((a.startTimeStamp || 0) - now);
+            const bDiff = Math.abs((b.startTimeStamp || 0) - now);
+            return aDiff - bDiff;
           })
           .slice(0, this.maxItemsToShow);
         this.hasHabits = this.habits.length > 0;
@@ -1145,6 +1159,33 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
         this.cdr.detectChanges();
         // Re-setup auto-reload timers after loading new habits
         this.setupAutoReloadTimers();
+
+        // Schedule grace removal timers for ongoing habits:
+        const fiveMinutes = 5 * 60 * 1000;
+        this.habits.forEach(h => {
+          try {
+            if (!h || !h.endTimeStamp) return;
+            const now2 = Date.now();
+            // Only apply grace when habit was started (ongoing)
+            if ((h.status || '').toLowerCase() === 'ongoing') {
+              const graceExpiry = h.endTimeStamp + fiveMinutes;
+              if (now2 >= graceExpiry) {
+                // Grace already expired - enforce removal immediately
+                this.handleGraceRemoval(h);
+              } else if (now2 >= h.endTimeStamp) {
+                // End time passed, schedule removal at end + 5min
+                const delay = graceExpiry - now2;
+                setTimeout(() => this.handleGraceRemoval(h), delay);
+              } else {
+                // End time still in future - schedule removal at end + 5min
+                const delay = (h.endTimeStamp + fiveMinutes) - now2;
+                setTimeout(() => this.handleGraceRemoval(h), delay);
+              }
+            }
+          } catch (e) {
+            console.error('Error scheduling grace removal:', e);
+          }
+        });
       },
       error: (error) => {
         console.error('Error fetching habits:', error);
@@ -1750,6 +1791,37 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   /**
+   * Handle grace-period removal for an ongoing habit when end time + grace has passed
+   */
+  private handleGraceRemoval(habit: Habit): void {
+    if (!habit) return;
+    try {
+      // Get current habit from service to ensure latest status
+      const current = this.habitService.getHabitById(habit.id as string) as Habit | undefined;
+      const target = current || habit;
+
+      // If already completed or skipped, nothing to do
+      const s = (target.status || '').toString().toLowerCase();
+      if (s === 'completed' || s === 'skipped') return;
+
+      // Only apply grace-removal if it was started (ongoing) and still not completed
+      if (s === 'ongoing') {
+        // Set status -> pending for the day (user can still mark done via history or other flows)
+        const updated = { ...target, status: 'pending' } as Habit;
+        this.habitService.updateHabit(updated);
+
+        // Remove from the local Home display (so it disappears from Home)
+        this.habits = (this.habits || []).filter(h => h.id !== (habit.id));
+        this.hasHabits = this.habits.length > 0;
+        this.updateEmptyState();
+        this.cdr.detectChanges();
+      }
+    } catch (e) {
+      console.error('Error in handleGraceRemoval:', e);
+    }
+  }
+
+  /**
    * Check if "Abort" button should be visible
    */
   isAbortVisible(): boolean {
@@ -1760,7 +1832,14 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
    * Check if "Done" button should be enabled
    */
   isDoneEnabled(): boolean {
-    return this.buttonLogic.isDoneEnabled(this.habit);
+    return this.buttonLogic.isDoneEnabled(this.habit, this.hasOtherOngoingActivity());
+  }
+
+  /**
+   * Check if "Done" button should be visible (uses button logic service)
+   */
+  isDoneVisible(): boolean {
+    return this.buttonLogic.isDoneVisible(this.habit);
   }
 
   /**

@@ -770,7 +770,11 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       time: !this.startTime?.trim() || !this.endTime?.trim(),
       pastTime: this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime),
       endTimeBeforeStart: this.isSameDateRange() && this.isEndTimeNotAfterStart(this.startTime, this.endTime),
-      endTimeSingleDay: this.isEndTimeCrossingMidnight(this.startTime, this.endTime),
+      // Show the "finish before midnight" error when either it's a single-day
+      // range and the end time is midnight/overflow, OR when it's a multi-day
+      // range but the end time is not after the start time (user likely set
+      // an earlier clock time unintentionally).
+      endTimeSingleDay: (this.isSameDateRange() && this.isEndTimeCrossingMidnight(this.startTime, this.endTime)) || (!this.isSameDateRange() && this.isEndTimeNotAfterStart(this.startTime, this.endTime)),
       date: !this.startDate || !this.endDate || (this.startDate instanceof Date && this.endDate instanceof Date && this.startDate > this.endDate),
       priority: !this.priority,
       notes: !this.notes?.trim()
@@ -896,6 +900,12 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       // so the user can correct their selection to match the new date range.
       this.showDaySelectionError = true;
     }
+    // Recompute validations after adjusting selected days
+    try {
+      const validations = this.computeValidations();
+      Object.assign(this.errors, validations);
+      try { this.cd.detectChanges(); } catch (e) { }
+    } catch (e) { /* ignore */ }
   }
 
   toggleDay(d: string) {
@@ -944,6 +954,13 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       }
       if (this.selectedDays.size === this.weekdays.length) this.everyday = true;
     }
+    // Recompute validations whenever repeat/day selection changes so
+    // time-related errors (single-day end<=start) update immediately.
+    try {
+      const validations = this.computeValidations();
+      Object.assign(this.errors, validations);
+      try { this.cd.detectChanges(); } catch (e) { }
+    } catch (e) { /* ignore */ }
   }
 
   onEverydayChange(event: any) {
@@ -990,6 +1007,12 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       this.showDaySelectionError = false;
       this.clearWeekdaysError();
     }
+    // Recompute validations when everyday toggle changes
+    try {
+      const validations = this.computeValidations();
+      Object.assign(this.errors, validations);
+      try { this.cd.detectChanges(); } catch (e) { }
+    } catch (e) { /* ignore */ }
   }
 
   onDelete() {
@@ -1296,28 +1319,21 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
 
   clearTimeError() {
     this.clearError('time');
-    setTimeout(() => {
-      this.errors.pastTime = this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime);
-      this.errors.endTimeBeforeStart = this.isSameDateRange() && this.isEndTimeNotAfterStart(this.startTime, this.endTime);
-      this.errors.endTimeSingleDay = this.isEndTimeCrossingMidnight(this.startTime, this.endTime);
-      // Do not auto-adjust startTime or endTime here. Let user correct times manually when an error occurs.
-      // Validate routine/time mismatch
-      this.validateRoutineTime();
-    }, 100);
+    // Recompute all validations so single-day end<=start errors appear reliably.
+    try {
+      const validations = this.computeValidations();
+      Object.assign(this.errors, validations);
+      try { this.cd.detectChanges(); } catch (e) { }
+    } catch (e) { /* ignore */ }
   }
 
   clearDateError() {
     this.clearError('date');
-    setTimeout(() => {
-      if (this.startTime || this.endTime) {
-        this.errors.pastTime = this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime);
-        this.errors.endTimeBeforeStart = this.isSameDateRange() && this.isEndTimeNotAfterStart(this.startTime, this.endTime);
-        this.errors.endTimeSingleDay = this.isEndTimeCrossingMidnight(this.startTime, this.endTime);
-        this.validateRoutineTime();
-      } else {
-        this.errors.pastTime = this.errors.endTimeBeforeStart = this.errors.endTimeSingleDay = false;
-      }
-    }, 100);
+    try {
+      const validations = this.computeValidations();
+      Object.assign(this.errors, validations);
+      try { this.cd.detectChanges(); } catch (e) { }
+    } catch (e) { /* ignore */ }
   }
 
   hasAnyErrors(): boolean {

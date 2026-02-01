@@ -191,18 +191,37 @@ export class HabitService {
   }
 
   completeHabit(id: string): void {
+    // Mark habit as completed and remove from today's active list so it disappears from Home
     const currentHabits = this.habitsSubject.value;
-    this.habitsSubject.next(currentHabits.filter(h => h.id !== id));
+    const idx = currentHabits.findIndex(h => h.id === id);
+    if (idx !== -1) {
+      const updated = { ...currentHabits[idx], status: 'completed' } as Habit;
+      // Update internal list to remove it from active view (completed moves to completed lists)
+      const newList = currentHabits.filter(h => h.id !== id);
+      this.habitsSubject.next(newList);
+    }
   }
 
   letsGoHabit(id: string): void {
+    // Mark habit as ongoing in the current habits list
     const currentHabits = this.habitsSubject.value;
-    this.habitsSubject.next(currentHabits.filter(h => h.id !== id));
+    const idx = currentHabits.findIndex(h => h.id === id);
+    if (idx !== -1) {
+      const updated = { ...currentHabits[idx], status: 'ongoing' } as Habit;
+      currentHabits[idx] = updated;
+      this.habitsSubject.next([...currentHabits]);
+    }
   }
 
   abortHabit(id: string): void {
+    // Set habit status to pending (do not remove from Home). The card should remain until scheduled end time.
     const currentHabits = this.habitsSubject.value;
-    this.habitsSubject.next(currentHabits.filter(h => h.id !== id));
+    const idx = currentHabits.findIndex(h => h.id === id);
+    if (idx !== -1) {
+      const updated = { ...currentHabits[idx], status: 'pending' } as Habit;
+      currentHabits[idx] = updated;
+      this.habitsSubject.next([...currentHabits]);
+    }
   }
 
   /**
