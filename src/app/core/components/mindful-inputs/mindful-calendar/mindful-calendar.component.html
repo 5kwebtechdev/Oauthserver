@@ -35,10 +35,10 @@
 
     <button *ngFor="let date of getVisibleMonthDays()" [class.isStartDate]="isStartOfRange(date)"
       [class.isEndDate]="isEndOfRange(date)" [class.currentMonth]="isDateinCurrentMonth(date)"
-      [class.selected]="isSameDay(date, startDate) || isSameDay(date, endDate)" [class.in-range]="isInRange(date)"
+      [class.selected]="allowDateSelection && (isSameDay(date, startDate) || isSameDay(date, endDate))" [class.in-range]="allowDateSelection && isInRange(date)"
       [class.mood-active]="moodOn && useCalendarMainStyle" [class.mood-inactive]="!moodOn && useCalendarMainStyle"
       [class.today]="isToday(date)"
-      (click)="selectDate(date)">
+      (click)="handleDateClick(date)">
       <p>{{ date.getDate() }}</p>
 
       <!-- Mood emoji shown under the date when mood toggle is ON and mood data exists -->

@@ -169,9 +169,10 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
                 next: (res: any) => {
                     let habitData = Array.isArray(res) ? res : (res?.data || []);
 
-                    // Filter by selected child if parent is viewing
+                    // ONLY filter by selected child if PARENT is viewing a child profile
+                    const isParent = this.authService.isParentUser();
                     const selectedChildId = this.profileSelector.getChildId();
-                    if (selectedChildId !== null) {
+                    if (isParent && selectedChildId !== null) {
                         habitData = habitData.filter((h: any) => {
                             const habitUserId = h.userId ?? h.user_id ?? h.assignedTo ?? h.assigned_to;
                             return habitUserId == selectedChildId;
@@ -205,9 +206,10 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
                 next: (res: any) => {
                     let list = Array.isArray(res?.data || res?.tasks || res) ? res.data || res.tasks || res : [];
 
-                    // Filter by selected child if parent is viewing
+                    // ONLY filter by selected child if PARENT is viewing a child profile
+                    const isParent = this.authService.isParentUser();
                     const selectedChildId = this.profileSelector.getChildId();
-                    if (selectedChildId !== null) {
+                    if (isParent && selectedChildId !== null) {
                         list = list.filter((t: any) => {
                             const taskUserId = t.userId ?? t.user_id ?? t.assignedTo ?? t.assigned_to;
                             return taskUserId == selectedChildId;
@@ -347,6 +349,15 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
 
     private getHabitsForSelectedDate(): Habit[] {
         return this.filterByDate(this.allHabits);
+    }
+
+    /**
+     * Check if the selected date is today
+     */
+    isSelectedDateToday(): boolean {
+        if (!this.selectedDate) return false;
+        const today = new Date();
+        return this.habitService.formatDateToYYYYMMDD(this.selectedDate) === this.habitService.formatDateToYYYYMMDD(today);
     }
 
     private countByJourney(items: Array<{ status?: string }>) {

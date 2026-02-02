@@ -22,6 +22,7 @@ export class MindfulCalendarComponent implements OnChanges {
   @Input() useCalendarMainStyle: boolean = false; // New input for calendar-main specific styling
   @Input() moodData: { [key: string]: any } = {}; // Mood data keyed by date (YYYY-MM-DD)
   @Input() statusData: { [key: string]: 'COMPLETED' | 'SKIPPED' | 'PENDING' } = {}; // Status data for habit detail calendar
+  @Input() allowDateSelection: boolean = true; // When false, clicking dates won't select them (read-only view)
 
   @Output() dateSelected = new EventEmitter<Date | { start: Date | null, end: Date | null }>();
   @Output() moodToggled = new EventEmitter<boolean>();
@@ -82,6 +83,16 @@ export class MindfulCalendarComponent implements OnChanges {
   }
 
   selectDate(date: Date) {
+    // legacy direct selection method remains, but callers should prefer handleDateClick
+    this.handleDateClick(date);
+  }
+
+  /**
+   * Centralized click handler for dates. Respects `allowDateSelection`.
+   */
+  handleDateClick(date: Date) {
+    if (!this.allowDateSelection) return;
+
     date = new Date(date);
     if (this.type === 'date') {
       this.startDate = date;
