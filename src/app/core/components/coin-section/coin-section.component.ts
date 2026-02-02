@@ -8,6 +8,7 @@ import { FooterComponent } from '../footer/footer.component';
 import { MindfulSpeechBubbleComponent } from '../mindful-speech-bubble/mindful-speech-bubble.component';
 import { MindfulPetComponent } from '../mindful-pet/mindful-pet.component';
 import { CoinService, CoinHistoryItem } from '../../services/coin.service';
+import { AuthService } from '../../services/auth.service';
 
 interface CoinItem {
     id: number;
@@ -31,10 +32,12 @@ export class CoinSectionComponent implements OnInit {
     message = "Whoa! That's a lot of coins! Let's go dress me up or grab something shiny!";
     coinItems: CoinItem[] = [];
     isLoading = false;
+    isParent: boolean = false;
 
     constructor(
         private router: Router,
         private coinService: CoinService
+        , private authService: AuthService
     ) {
         const nav = this.router.getCurrentNavigation?.();
         if (nav?.extras && (nav.extras as any).state?.coins !== undefined) {
@@ -43,6 +46,7 @@ export class CoinSectionComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.isParent = this.authService.isParentUser();
         this.loadCoinHistory();
     }
 

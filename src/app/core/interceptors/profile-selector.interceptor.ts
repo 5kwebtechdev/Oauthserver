@@ -21,23 +21,24 @@ export class ProfileSelectorInterceptor implements HttpInterceptor {
       switchMap((forUserId) => {
         console.log('[ProfileSelectorInterceptor] forUserId:', forUserId, 'method:', req.method, 'url:', req.url);
 
-        // If no child selected, forward request unchanged
-        if (forUserId === null || forUserId === undefined) {
-          console.log('[ProfileSelectorInterceptor] No child selected, forwarding request unchanged');
+        // If no valid child id selected, forward request unchanged
+        const idStr = forUserId === null || forUserId === undefined ? null : String(forUserId);
+        if (!idStr || idStr.trim() === '' || idStr.toLowerCase() === 'nan') {
+          console.log('[ProfileSelectorInterceptor] No valid child id selected, forwarding request unchanged', forUserId);
           return next.handle(req);
         }
 
         // Add forUserId to request body for POST/PUT requests, or to params for GET/DELETE
         if (req.method === 'POST' || req.method === 'PUT') {
           const body = typeof req.body === 'object' && req.body !== null
-            ? { ...req.body, forUserId: String(forUserId) }
-            : { forUserId: String(forUserId) };
+            ? { ...req.body, forUserId: idStr }
+            : { forUserId: idStr };
           console.log('[ProfileSelectorInterceptor] Adding forUserId to body:', body);
           const modifiedReq = req.clone({ body });
           return next.handle(modifiedReq);
         } else {
           // For GET, DELETE, and other methods, add to params
-          const newParams = req.params.set('forUserId', String(forUserId));
+          const newParams = req.params.set('forUserId', idStr as string);
           const modifiedReq = req.clone({ params: newParams });
           return next.handle(modifiedReq);
         }
