@@ -26,12 +26,34 @@ import { Article } from 'src/app/core/models/learning.models';
 export class ArticlePageComponent implements OnInit {
   article: Article | null = null;
   isLoading = true;
+  isMarking = false;
 
   constructor(
     private route: ActivatedRoute,
     private learningService: LearningService,
     public router: Router
   ) { }
+
+  /**
+   * Mark the current article as read by calling the API
+   */
+  markAsRead(): void {
+    if (!this.article || this.isMarking) return;
+
+    this.isMarking = true;
+    this.learningService.markArticleComplete(this.article.id).subscribe({
+      next: (res) => {
+        console.log('Article marked as read response:', res);
+        this.isMarking = false;
+        // Navigate back to Learning main after successful completion
+        this.router.navigate(['/authed/content']);
+      },
+      error: (err) => {
+        console.error('Failed to mark article as read:', err);
+        this.isMarking = false;
+      }
+    });
+  }
 
   ngOnInit() {
     // Get article ID from route parameters

@@ -12,13 +12,14 @@ import { LearningChallengeCardComponent } from '../learning-card/learning-challe
 import { LearningArticleCardComponent } from '../learning-card/learning-article-card.component';
 import { LearningService } from 'src/app/core/services/learning.service';
 import { LearningCardData } from 'src/app/core/models/learning.models';
+import { EmptyStateComponent } from 'src/app/core/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'learning-main',
   templateUrl: './learning-main.component.html',
   styleUrls: ['./learning-main.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, HttpClientModule, FooterComponent, MindfulSpeechBubbleComponent, MindfulPetComponent, LearningChallengeCardComponent, LearningArticleCardComponent],
+  imports: [CommonModule, IonicModule, RouterModule, HttpClientModule, FooterComponent, MindfulSpeechBubbleComponent, MindfulPetComponent, LearningChallengeCardComponent, LearningArticleCardComponent, EmptyStateComponent],
   providers: [LearningService]
 })
 export class LearningMainComponent implements OnInit, OnDestroy {
