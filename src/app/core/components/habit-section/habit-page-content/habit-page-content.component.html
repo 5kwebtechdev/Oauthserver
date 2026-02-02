@@ -42,7 +42,8 @@
                 *ngIf="filteredHabitsByJourney && filteredHabitsByJourney.length > 0; else noHabitsTemplate">
                 <div *ngFor="let habit of filteredHabitsByJourney">
                     <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
-                        [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp">
+                        [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp"
+                        [isCurrentDateView]="isSelectedDateToday()">
                     </habit-card>
                 </div>
             </div>
@@ -77,7 +78,8 @@
                     class="habit-list-content">
                     <div *ngFor="let habit of filteredHabitsByPriority">
                         <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
-                            [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp">
+                            [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp"
+                            [isCurrentDateView]="isSelectedDateToday()">
                         </habit-card>
                     </div>
                 </div>
@@ -114,7 +116,8 @@
                     class="habit-list-content">
                     <div *ngFor="let habit of filteredHabitsByRoutine">
                         <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
-                            [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp">
+                            [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp"
+                            [isCurrentDateView]="isSelectedDateToday()">
                         </habit-card>
                     </div>
                 </div>
@@ -173,7 +176,8 @@
                 *ngIf="filteredTasksByJourney && filteredTasksByJourney.length > 0; else noTasksJourneyTemplate">
                 <div *ngFor="let task of filteredTasksByJourney">
                     <habit-card [habit]="task" [startTime]="task.startTimeStamp" [endTime]="task.endTimeStamp"
-                        [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp">
+                        [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp"
+                        [isCurrentDateView]="isSelectedDateToday()">
                     </habit-card>
                 </div>
             </div>
@@ -200,7 +204,8 @@
                     <div *ngFor="let task of filteredTasksByPriority">
                         <habit-card [habit]="task.task ? task.task : task" [startTime]="task.startTimeStamp"
                             [endTime]="task.endTimeStamp"
-                            [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp">
+                            [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp"
+                            [isCurrentDateView]="isSelectedDateToday()">
                         </habit-card>
                     </div>
                 </div>
@@ -228,7 +233,8 @@
                     <div *ngFor="let task of filteredTasksByRoutine">
                         <habit-card [habit]="task.task ? task.task : task" [startTime]="task.startTimeStamp"
                             [endTime]="task.endTimeStamp"
-                            [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp">
+                            [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp"
+                            [isCurrentDateView]="isSelectedDateToday()">
                         </habit-card>
                     </div>
                 </div>

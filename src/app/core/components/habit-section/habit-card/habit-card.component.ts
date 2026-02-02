@@ -80,6 +80,14 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   @Input()
   isParentOverride?: boolean;
 
+  /**
+   * Optional input to indicate if viewing today's date (for calendar-main and habit-page).
+   * When false (viewing past or future dates), CTA buttons will be hidden.
+   * Default is true to show buttons.
+   */
+  @Input({ transform: booleanAttribute })
+  isCurrentDateView: boolean = true;
+
   // Properties for list mode
   public currentActive: string = 'all';
   public showContent: boolean = false;
