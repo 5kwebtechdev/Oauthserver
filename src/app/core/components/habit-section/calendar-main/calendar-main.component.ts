@@ -35,6 +35,8 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   moodData: MoodData = {}; // Mood transitions keyed by date
   selectedMoodTransition: MoodTransition | null = null; // Mood data for selected date
   private destroy$ = new Subject<void>();
+  // Combined items for selected date (events + habits + tasks) sorted for display
+  public combinedForSelectedDate: any[] = [];
 
   constructor(
     private modalCtrl: ModalController,
@@ -416,6 +418,17 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
           this.habitsForSelectedDate = this.sortArrayByUpcoming(this.habitsForSelectedDate);
           this.tasksForSelectedDate = this.sortArrayByUpcoming(this.tasksForSelectedDate);
           this.eventsForSelectedDate = this.sortArrayByUpcoming(this.eventsForSelectedDate);
+
+          // Also prepare combined sorted list for template convenience
+          // (combined: events + habits + tasks)
+          // Note: we intentionally concatenate events first so timetable events appear alongside other items
+          // when sorted; final ordering is determined by sortArrayByUpcoming.
+          // Keep this as a property so template can bind to it.
+          (this as any).combinedForSelectedDate = this.sortArrayByUpcoming([
+            ...(this.eventsForSelectedDate || []),
+            ...(this.habitsForSelectedDate || []),
+            ...(this.tasksForSelectedDate || [])
+          ]);
 
           console.log('Final arrays - habitsForSelectedDate:', this.habitsForSelectedDate.length, 'tasksForSelectedDate:', this.tasksForSelectedDate.length, 'eventsForSelectedDate:', this.eventsForSelectedDate.length);
         },

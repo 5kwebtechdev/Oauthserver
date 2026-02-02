@@ -1613,6 +1613,35 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   /**
+   * Get combined habits and tasks sorted by start time (closest to current time on top)
+   */
+  get combinedAndSortedItems(): any[] {
+    // For list mode, combine habits and tasks
+    if (this.mode === 'list') {
+      const combined = [...(this.habits || []), ...(this.tasks || [])];
+      return combined.sort((a, b) => {
+        // Sort by start time: closest to current time first
+        const aStart = a.startTimeStamp || 0;
+        const bStart = b.startTimeStamp || 0;
+        return Math.abs(aStart - Date.now()) - Math.abs(bStart - Date.now());
+      });
+    }
+
+    // For recent mode, combine recent habits and tasks
+    if (this.mode === 'recent') {
+      const combined = [...(this.recentHabits || []), ...(this.recentTasks || [])];
+      return combined.sort((a, b) => {
+        // Sort by start time: closest to current time first
+        const aStart = a.startTimeStamp || 0;
+        const bStart = b.startTimeStamp || 0;
+        return Math.abs(aStart - Date.now()) - Math.abs(bStart - Date.now());
+      });
+    }
+
+    return [];
+  }
+
+  /**
    * Return true when all items (habits+tasks) for the current mode are completed.
    * Used to show a different empty state when everything is completed for the day.
    */
