@@ -54,7 +54,9 @@
       </div>
       <ng-container *ngIf="componentType === 'button'">
         <mindful-button *ngFor="let option of options" [text]="option.value"
-          [type]="selectedKeys.includes(option.key) ? option.type : option.type +'-transparent'"
+          [type]="selectedKeys.includes(option.key)
+            ? (buttonVariant === 'flat' ? option.type + '-flat' : option.type)
+            : (buttonVariant === 'flat' ? option.type + '-flat-transparent' : option.type + '-transparent')"
           [large]="size === 'large'" [medium]="size === 'medium'" (click)="toggleSelection(option.key)">
         </mindful-button>
       </ng-container>

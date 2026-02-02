@@ -52,7 +52,7 @@
     </empty-state>
 
     <!-- Generic blank empty state when nothing exists at all -->
-    <empty-state *ngIf="isEmpty && !hasHabits && !hasTasks"
+    <empty-state *ngIf="isEmpty && !hasHabits && !hasTasks && !(isAllCompleted || isAllCompletedComputed)"
       imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
       imageAlt="Empty day illustration"
       leadText="Nothing added yet!"
@@ -146,11 +146,11 @@
     </empty-state>
 
     <!-- Generic blank empty state when nothing exists at all -->
-    <empty-state *ngIf="isEmpty && !hasHabits && !hasTasks"
+    <empty-state *ngIf="isEmpty && !hasHabits && !hasTasks && !(isAllCompleted || isAllCompletedComputed)"
       imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
       imageAlt="Empty day illustration"
-      leadText="Nothing added yet!"
-      subText="Add tasks and habits to see them appear here."
+      leadText="Your day’s a blank slate!"
+      subText="Add habits and tasks to earn coins and level up your day. Don’t miss out!"
       buttonText="">
     </empty-state>
 

@@ -1,4 +1,4 @@
-<ion-content style="height: 100vh; overflow-y: scroll">
+<ion-content>
   <mindful-navigator heading="Timeline" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
     [rightIcon2]="'/assets/Icons-Neutral/Icon-Notes.png'" (rightIconClick)="onCalendarClick()"
     (rightIcon2Click)="onNotesClick()"></mindful-navigator>
@@ -31,17 +31,17 @@
         </div>
       </div>
     </div>
-    <div class="container p-0" style="margin-bottom: 20px">
+    <div class="selectors-container">
       <mindful-selectors [options]="[
     {key: 'all', value: 'All', type: 'magenta'},
     {key: 'habit', value: 'Habits', type: 'lavendar'},
     {key: 'task', value: 'Tasks', type: 'orange'},
     {key: 'timetable', value: 'Time Table', type: 'aqua'},
-    ]" componentType="button" size="small" [singleSelection]="true" style="transform: scale(1.5)"
+    ]" componentType="button" size="small" [singleSelection]="true" [buttonVariant]="'flat'"
         (selectedKeysChange)="keysUpdated($event)">
       </mindful-selectors>
     </div>
-    <div class="container w-full p-0" style="overflow:hidden ">
+    <div class="timeline-wrapper">
       <mindful-timeline [events]="filteredEvents" (eventLongPressed)="onTimetableLongPress($event)"></mindful-timeline>
     </div>
 
