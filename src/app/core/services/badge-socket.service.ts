@@ -213,11 +213,11 @@ export class BadgeSocketService implements OnDestroy {
         this.stompClient = new Client({
             webSocketFactory: () => new SockJS(sockJsUrl),
             connectHeaders: { Authorization: `Bearer ${cleanToken}` },
-            debug: (str) => { /* console.log('[STOMP]', str); */ },
+            debug: (str: string) => { /* console.log('[STOMP]', str); */ },
             heartbeatIncoming: 20000,
             heartbeatOutgoing: 20000,
             reconnectDelay: 5000,
-            onConnect: (frame) => {
+            onConnect: (frame: any) => {
                 this.ngZone.run(() => {
                     console.log('[BadgeSocket] STOMP connected');
                     this.connectionState$.next('connected');
@@ -239,12 +239,12 @@ export class BadgeSocketService implements OnDestroy {
                     }
                 });
             },
-            onStompError: (frame) => {
+            onStompError: (frame: any) => {
                 this.ngZone.run(() => {
                     console.error('[BadgeSocket] STOMP error', frame.headers, frame.body);
                 });
             },
-            onDisconnect: (frame) => {
+            onDisconnect: (frame: any) => {
                 this.ngZone.run(() => {
                     console.log('[BadgeSocket] STOMP disconnected');
                     this.connectionState$.next('disconnected');

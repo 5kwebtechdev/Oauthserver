@@ -251,18 +251,21 @@
           </div>
           <div class="d-flex footer-cta">
             <!-- Let's Go Button: Visible when status is PENDING, hidden when ONGOING, COMPLETED, or SKIPPED -->
-            <mindful-button *ngIf="isLetsGoVisible() && !isParent"
+            <!-- Also hidden when not viewing current date -->
+            <mindful-button *ngIf="isLetsGoVisible() && !isParent && isCurrentDateView"
               [type]="habit?.type === 'tasks' ? 'orange' : 'lavendar'" small text="Let`s Go" (click)="openStartPopup()"
               [disabled]="!isLetsGoEnabled()"></mindful-button>
             
             <!-- Abort Button: Visible only when status is ONGOING -->
-            <mindful-button *ngIf="isAbortVisible() && habit?.type === 'tasks' && !isParent" type="orange-transparent" small
+            <!-- Also hidden when not viewing current date -->
+            <mindful-button *ngIf="isAbortVisible() && habit?.type === 'tasks' && !isParent && isCurrentDateView" type="orange-transparent" small
               text="Abort" (click)="openAbortPopup()"></mindful-button>
-            <mindful-button *ngIf="isAbortVisible() && habit?.type !== 'tasks' && !isParent" type="lavendar-transparent" small
+            <mindful-button *ngIf="isAbortVisible() && habit?.type !== 'tasks' && !isParent && isCurrentDateView" type="lavendar-transparent" small
               text="Abort" (click)="openAbortPopup()"></mindful-button>
             
             <!-- Done Button: visible/disabled per new rules -->
-            <mindful-button *ngIf="isDoneVisible() && !isParent" type="green" small text="Done?"
+            <!-- Also hidden when not viewing current date -->
+            <mindful-button *ngIf="isDoneVisible() && !isParent && isCurrentDateView" type="green" small text="Done?"
               (click)="openCompletePopup()" [disabled]="!isDoneEnabled()"></mindful-button>
             
             <!-- Completion Message: Show when status is COMPLETED -->
