@@ -1,7 +1,9 @@
-<ion-content>
-  <mindful-navigator heading="Timeline" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
+<ion-content style="height: 100vh; overflow-y: scroll">
+  <mindful-navigator *ngIf="!isParentUser()" heading="Timeline" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
     [rightIcon2]="'/assets/Icons-Neutral/Icon-Notes.png'" (rightIconClick)="onCalendarClick()"
     (rightIcon2Click)="onNotesClick()"></mindful-navigator>
+  <mindful-navigator *ngIf="isParentUser()" heading="Timeline" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
+    (rightIconClick)="onCalendarClick()"></mindful-navigator>
 
   <div class="timeline-page-container">
     <mindful-week (dateSelected)="onDateSelected($event)"></mindful-week>

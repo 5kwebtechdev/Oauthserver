@@ -62,6 +62,18 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
         private cdr: ChangeDetectorRef
     ) { }
 
+    /**
+     * Whether to show the pet illustration in empty states.
+     * Pets are hidden for parent accounts.
+     */
+    public get showPet(): boolean {
+        try {
+            return !this.authService || !this.authService.isParentUser ? true : !this.authService.isParentUser();
+        } catch (e) {
+            return true;
+        }
+    }
+
     ngOnInit(): void {
         // Ensure we show today's data by default when component opens
         this.selectedDate = new Date();

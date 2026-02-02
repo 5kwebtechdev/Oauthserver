@@ -43,18 +43,14 @@
             </div>
         </div>
 
-        <div *ngIf="(!habitsForSelectedDate?.length && !tasksForSelectedDate?.length && !eventsForSelectedDate?.length) && !moodOn"
-            class="empty-calendar">
-            <div class="empty-calendar-message">
-                <div class="empty-calendar-image">
-                    <img src="assets/Images-Transparent/Image-Calendar-Blank.png" alt="Empty calendar" width="208"
-                        height="121" style="width:208px;height:121px;aspect-ratio:208/121;object-fit:contain;" />
-                </div>
-                <div class="empty-calendar-text">
-                    <h2>{{ isSelectedDateToday() ? "Your Calendar's Looking Clear Today!" : "Your Calendar's Looking Clear" }}</h2>
-                    <p>{{ isSelectedDateToday() ? 'No tasks or habits set for today yet. Get started by adding some tasks or habits to make the most of your day!' : 'No tasks or habits set for this day yet. Get started by adding some tasks or habits to make the most of this day!' }}</p>
-                </div>
-            </div>
+        <div *ngIf="(!habitsForSelectedDate?.length && !tasksForSelectedDate?.length && !eventsForSelectedDate?.length) && !moodOn">
+            <empty-state
+                [imageSrc]="'assets/Images-Transparent/Image-Calendar-Blank.png'"
+                [imageAlt]="'Empty calendar'"
+                [leadText]="isParent ? (isSelectedDateToday() ? 'Your Child\'s Calendar is Clear Today' : 'Your Child\'s Calendar is Clear') : (isSelectedDateToday() ? 'Your Calendar\'s Looking Clear Today!' : 'Your Calendar\'s Looking Clear')"
+                [subText]="isParent ? 'No activities scheduled for today yet. Your child can add their own tasks and habits, or you can assign some to help them get started.' : (isSelectedDateToday() ? 'No tasks or habits set for today yet. Get started by adding some tasks or habits to make the most of your day!' : 'No tasks or habits set for this day yet. Get started by adding some tasks or habits to make the most of this day!')"
+                [buttonText]="''">
+            </empty-state>
         </div>
 
         <div *ngIf="(habitsForSelectedDate?.length || tasksForSelectedDate?.length || eventsForSelectedDate?.length) && !moodOn"

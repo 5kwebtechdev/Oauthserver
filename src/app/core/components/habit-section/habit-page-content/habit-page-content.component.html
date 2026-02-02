@@ -50,12 +50,12 @@
             </div>
             <ng-template #noHabitsTemplate>
                 <empty-state
-                    [imageSrc]="'/assets/Images-Pet/Panda-Age1-Base.png'"
-                    [imageAlt]="'Panda illustration'"
-                    [leadText]="journeySubFilter === 'pending' ? 'No pending habits yet' : (journeySubFilter === 'ongoing' ? 'No ongoing habits yet' : 'No completed habits yet')"
-                    [subText]="'Add habits to your journey to view them here'"
-                    [buttonText]="''">
-                </empty-state>
+                        [imageSrc]="showPet ? '/assets/Images-Pet/Panda-Age1-Base.png' : ''"
+                        [imageAlt]="'Panda illustration'"
+                        [leadText]="journeySubFilter === 'pending' ? 'No pending habits yet' : (journeySubFilter === 'ongoing' ? 'No ongoing habits yet' : 'No completed habits yet')"
+                        [subText]="'Add habits to your journey to view them here'"
+                        [buttonText]="''">
+                    </empty-state>
             </ng-template>
         </div>
 
@@ -87,7 +87,7 @@
                 </div>
                 <ng-template #noPriorityHabitsTemplate>
                     <empty-state
-                        [imageSrc]="'/assets/Images-Pet/Panda-Age1-Base.png'"
+                        [imageSrc]="showPet ? '/assets/Images-Pet/Panda-Age1-Base.png' : ''"
                         [imageAlt]="'Panda illustration'"
                         [leadText]="prioritySubFilter === 'high' ? 'No high priority habits yet' : (prioritySubFilter === 'medium' ? 'No medium priority habits yet' : 'No low priority habits yet')"
                         [subText]="'Add habits with this priority to view them here'"
@@ -126,7 +126,7 @@
                 </div>
                 <ng-template #noRoutineHabitsTemplate>
                     <empty-state
-                        [imageSrc]="'/assets/Images-Pet/Panda-Age1-Base.png'"
+                        [imageSrc]="showPet ? '/assets/Images-Pet/Panda-Age1-Base.png' : ''"
                         [imageAlt]="'Panda illustration'"
                         [leadText]="routineSubFilter === 'morning' ? 'No morning routine yet' : (routineSubFilter === 'evening' ? 'No evening routine yet' : 'No night routine yet')"
                         [subText]="routineSubFilter === 'morning' ? 'Add morning routine to your habits and tasks to view them here' : (routineSubFilter === 'evening' ? 'Add evening routine to your habits and tasks to view them here' : 'Add night routine to your habits and tasks to view them here')"
@@ -141,7 +141,7 @@
     <div class="task-filters-container" *ngIf="currentMainTab === 'tasks'">
         <ng-template #noTasksJourneyTemplate>
             <empty-state
-                [imageSrc]="'/assets/Images-Pet/Panda-Age1-Base.png'"
+                [imageSrc]="showPet ? '/assets/Images-Pet/Panda-Age1-Base.png' : ''"
                 [imageAlt]="'Panda illustration'"
                 [leadText]="journeySubFilter === 'pending' ? 'No pending tasks yet' : (journeySubFilter === 'ongoing' ? 'No ongoing tasks yet' : 'No completed tasks yet')"
                 [subText]="'Add tasks to your journey to view them here'"
@@ -151,7 +151,7 @@
 
         <ng-template #noTasksPriorityTemplate>
             <empty-state
-                [imageSrc]="'/assets/Images-Pet/Panda-Age1-Base.png'"
+                [imageSrc]="showPet ? '/assets/Images-Pet/Panda-Age1-Base.png' : ''"
                 [imageAlt]="'Panda illustration'"
                 [leadText]="prioritySubFilter === 'high' ? 'No high priority tasks yet' : (prioritySubFilter === 'medium' ? 'No medium priority tasks yet' : 'No low priority tasks yet')"
                 [subText]="'Add tasks with this priority to view them here'"
@@ -246,7 +246,7 @@
                 </div>
                 <ng-template #noRoutineTasksTemplate>
                     <empty-state
-                        [imageSrc]="'/assets/Images-Pet/Panda-Age1-Base.png'"
+                        [imageSrc]="showPet ? '/assets/Images-Pet/Panda-Age1-Base.png' : ''"
                         [imageAlt]="'Panda illustration'"
                         [leadText]="routineSubFilter === 'morning' ? 'No morning routine yet' : (routineSubFilter === 'evening' ? 'No evening routine yet' : 'No night routine yet')"
                         [subText]="routineSubFilter === 'morning' ? 'Add morning routine to your habits and tasks to view them here' : (routineSubFilter === 'evening' ? 'Add evening routine to your habits and tasks to view them here' : 'Add night routine to your habits and tasks to view them here')"
