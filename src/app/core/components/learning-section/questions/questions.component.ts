@@ -99,12 +99,14 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         primaryCTA: {
             text: 'Keep going',
             buttonStyle: 'green',
-            callback: () => this.showLeaveChallengePopup = false
+            callback: () => this.showLeaveChallengePopup = false,
+            buttonMedium: true
         },
         secondaryCTA: {
             text: 'Exit',
             buttonStyle: 'bronze-transparent',
-            callback: () => this.quitQuiz()
+            callback: () => this.quitQuiz(),
+            buttonMedium: true
         },
         showCloseButton: false,
         backdrop: true
@@ -119,13 +121,15 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         primaryCTA: {
             text: 'Try Again',
             buttonStyle: 'green',
-            callback: () => this.restartQuiz()
+            callback: () => this.restartQuiz(),
+            buttonMedium: true
         },
         secondaryCTA: {
 
             text: 'Quit',
             buttonStyle: 'bronze-transparent',
-            callback: () => this.quitQuiz()
+            callback: () => this.quitQuiz(),
+            buttonMedium: true
         },
         showCloseButton: false,
         backdrop: true
@@ -712,7 +716,34 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     }
 
     restartQuiz() {
-        // Reset quiz to start over
+        // Try to refresh the challenge from backend if we have an id so the quiz
+        // truly restarts (useful when questions are randomized server-side).
+        const challengeId = this.challenge?.challengeId;
+        if (challengeId) {
+            this.learningService.fetchChallengeById(challengeId).subscribe({
+                next: (challenge) => {
+                    this.challenge = challenge;
+                    // Reinitialize quiz state from fresh challenge data
+                    this.initializeQuiz();
+                    // Ensure any popups are closed
+                    this.showLeaveChallengePopup = false;
+                    this.showContentTimeExhaustPopup = false;
+                },
+                error: (err) => {
+                    console.error('Failed to refresh challenge on restart:', err);
+                    // fallback to local restart behavior
+                    this.performLocalRestart();
+                }
+            });
+            return;
+        }
+
+        // fallback when no challenge id available
+        this.performLocalRestart();
+    }
+
+    /** Perform a local restart without refetching from the server */
+    private performLocalRestart() {
         this.currentQuestionIndex = 0;
         this.selectedAnswer = null;
         this.selectedOption = null;

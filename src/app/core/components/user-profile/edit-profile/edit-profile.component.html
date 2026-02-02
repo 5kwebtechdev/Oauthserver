@@ -89,7 +89,7 @@
               text="Verify" 
               size="small"
               class="phone-verify-btn"
-              [disabled]="!isPhoneValid(profileForm.get('phone')?.value) || !profileForm.get('phone')?.dirty"
+              [disabled]="!isPhoneValid(profileForm.get('phone')?.value) || !profileForm.get('phone')?.dirty || !isPhoneChangedForVerify()"
               (click)="verifyPhone()">
             </mindful-button>
           </div>
@@ -140,7 +140,7 @@
               text="Verify" 
               size="small"
               class="email-verify-btn"
-              [disabled]="profileForm.get('email')!.invalid || !profileForm.get('email')!.dirty"
+              [disabled]="profileForm.get('email')!.invalid || !profileForm.get('email')!.dirty || !isEmailChangedForVerify()"
               (click)="verifyEmail()">
             </mindful-button>
           </div>

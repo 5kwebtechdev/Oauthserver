@@ -136,10 +136,12 @@
 
       <!-- Empty State Template -->
       <ng-template #emptyState>
-        <div class="empty-state">
-          <ion-icon name="document-text-outline" size="large"></ion-icon>
-          <p>No content available</p>
-        </div>
+        <empty-state
+          [imageSrc]="'/assets/Images-Pet/Panda-Age1-Curious.png'"
+          imageAlt="Curious Panda"
+          leadText="Fresh Content Coming Soon!"
+          subText="Nothing recently added yet, but check back soon — new things will start appearing here once they're live!">
+        </empty-state>
       </ng-template>
     </div>
   </div>
