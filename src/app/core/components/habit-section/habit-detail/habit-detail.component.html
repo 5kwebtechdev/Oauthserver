@@ -33,7 +33,7 @@
                 <img class="routine-icon" [src]="getRoutineIcon()" [alt]="getRoutineName() + ' Routine Icon'" width="24"
                     height="24" />
                 <mindful-badge *ngIf="habit"
-                    [type]="habit?.type === 'tasks' ? 'habit-detail-orange' : 'habit'"
+                    [type]="habit.type === 'tasks' ? 'habit-detail-orange' : 'habit'"
                     [text]="habit.tags?.[0] || 'Focus'">
                 </mindful-badge>
             </div>
@@ -75,9 +75,9 @@
             </div>
             <div class="detail-cta">
                 <!-- Let's Go Button - visible when pending (not ongoing, completed, or skipped) -->
-                <mindful-button *ngIf="isLetsGoVisible()" [ngClass]="habit?.type === 'habits' ? 'w-100' : 'w-full'"
-                    [type]="habit?.type === 'habits' ? 'lavendar' : 'orange'"
-                    [style.width]="habit?.type === 'habits' ? '100%' : null" [disabled]="!isLetsGoEnabled()"
+                <mindful-button *ngIf="isLetsGoVisible()" [ngClass]="habit.type === 'habits' ? 'w-100' : 'w-full'"
+                    [type]="habit.type === 'habits' ? 'lavendar' : 'orange'"
+                    [style.width]="habit.type === 'habits' ? '100%' : null" [disabled]="!isLetsGoEnabled()"
                     (click)="onStartHabit()" medium text="Let's Go">
                 </mindful-button>
 
@@ -150,7 +150,7 @@
 
         <div class="detail-calendar">
             <mindful-calendar [useArrowNavigation]="true" [showMoodToggle]="false" [statusData]="calendarStatusData"
-                [currentMonth]="currentCalendarMonth" (monthChanged)="onCalendarMonthChange($event)"></mindful-calendar>
+                [currentMonth]="currentCalendarMonth" [allowDateSelection]="false" (monthChanged)="onCalendarMonthChange($event)"></mindful-calendar>
         </div>
 
         <div class="completion-days">

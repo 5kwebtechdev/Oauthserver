@@ -314,19 +314,31 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   // Fetch habits and tasks for the currently selected date and populate arrays used by template
   updateHabitsAndTasksForSelectedDate() {
     const dateStr = this.formatDateToYYYYMMDD(this.selectedDate);
+    console.log('updateHabitsAndTasksForSelectedDate - dateStr:', dateStr, 'selectedDate:', this.selectedDate);
+    
     // Interceptor handles userId - no need to pass manually
     this.calendarService.getUserCalendar(dateStr, 'day')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          // Use the raw habit/task/event objects but filter them by selected date
+          console.log('Calendar response received:', response);
+          
           let rawHabits = response.habits || [];
           let rawTasks = response.tasks || [];
           let rawEvents = response.events || [];
+          
+          console.log('Raw data - habits:', rawHabits.length, 'tasks:', rawTasks.length, 'events:', rawEvents.length);
 
-          // Filter by selected child if parent is viewing
+          // ONLY filter by selected child if PARENT is viewing a child profile
+          // This prevents filtering when regular users are viewing their own data
           const selectedChildId = this.profileSelector.getChildId();
-          if (selectedChildId !== null) {
+          console.log('isParent:', this.isParent, 'selectedChildId:', selectedChildId);
+          
+          if (this.isParent && selectedChildId !== null) {
+            const beforeHabits = rawHabits.length;
+            const beforeTasks = rawTasks.length;
+            const beforeEvents = rawEvents.length;
+            
             rawHabits = rawHabits.filter((h: any) => {
               const userId = h.userId ?? h.user_id ?? h.assignedTo ?? h.assigned_to;
               return userId == selectedChildId;
@@ -337,13 +349,16 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
             });
             rawEvents = rawEvents.filter((e: any) => {
               const userId = e.userId ?? e.user_id ?? e.assignedTo ?? e.assigned_to;
+              // If event doesn't have a user ID field, include it (don't filter it out)
+              if (userId === undefined || userId === null) return true;
               return userId == selectedChildId;
             });
+            
+            console.log('After child filter - habits:', beforeHabits, '->', rawHabits.length, 'tasks:', beforeTasks, '->', rawTasks.length, 'events:', beforeEvents, '->', rawEvents.length);
           }
 
-          // Filter habits to only those with a completion on the selected date
+          // Display ALL habits regardless of completion status (no completion date filtering)
           this.habitsForSelectedDate = rawHabits
-            .filter((h: any) => this.hasCompletionOnDate(h, dateStr))
             .map((h: any) => {
               const timestamps = this.buttonLogic.calculateTimestamps({
                 ...h,
@@ -354,18 +369,15 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
                 ...h,
                 title: h.title || h.name || h.habitName || 'Habit',
                 status: this.buttonLogic.normalizeStatus(h.status),
-                // API uses `rewardCoins` (or `reward_coins`) — map it to `coinReward` which the card expects
                 coinReward: h.rewardCoins ?? h.reward_coins ?? h.coinReward ?? 0,
-                // Ensure streak is available on the object (some responses include this)
                 streak: (h.streak ?? h.habitStreak ?? 0),
                 startTimeStamp: timestamps.startTimeStamp,
                 endTimeStamp: timestamps.endTimeStamp
               };
             });
 
-          // Filter tasks to only those with a completion on the selected date
+          // Display ALL tasks regardless of completion status (no completion date filtering)
           this.tasksForSelectedDate = rawTasks
-            .filter((t: any) => this.hasCompletionOnDate(t, dateStr))
             .map((t: any) => {
               const timestamps = this.buttonLogic.calculateTimestamps({
                 ...t,
@@ -377,7 +389,6 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
                 type: t?.type || 'tasks',
                 title: t.title || t.name || t.taskName || 'Task',
                 status: this.buttonLogic.normalizeStatus(t.status),
-                // map rewardCoins -> coinReward for display in habit-card
                 coinReward: t.rewardCoins ?? t.reward_coins ?? t.coinReward ?? 0,
                 streak: (t.streak ?? t.habitStreak ?? 0),
                 startTimeStamp: timestamps.startTimeStamp,
@@ -385,9 +396,8 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
               };
             });
 
-          // Filter events (timetable) to only those with a completion on the selected date
+          // Display ALL events regardless of completion status (no completion date filtering)
           this.eventsForSelectedDate = rawEvents
-            .filter((e: any) => this.hasCompletionOnDate(e, dateStr))
             .map((e: any) => {
               const timestamps = this.buttonLogic.calculateTimestamps({
                 ...e,
@@ -403,6 +413,8 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
                 endTimeStamp: timestamps.endTimeStamp
               };
             });
+            
+          console.log('Final arrays - habitsForSelectedDate:', this.habitsForSelectedDate.length, 'tasksForSelectedDate:', this.tasksForSelectedDate.length, 'eventsForSelectedDate:', this.eventsForSelectedDate.length);
         },
         error: (err) => {
           console.error('Error loading items for selected date', err);
