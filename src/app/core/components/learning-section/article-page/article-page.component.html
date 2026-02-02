@@ -14,7 +14,8 @@
     <div class="article-content-section" style="padding:0px 16px 40px 16px;">
       <div class="article-content" style="margin-top: 16px; line-height: 1.6;" [innerHTML]="article.content">
       </div>
-      <mindful-button type="green" text="Mark as read"></mindful-button>
+      <mindful-button type="green" text="Mark as read" (click)="markAsRead()"
+        [disabled]="isMarking"></mindful-button>
     </div>
   </div>
 

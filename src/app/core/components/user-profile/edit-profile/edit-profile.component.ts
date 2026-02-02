@@ -467,6 +467,40 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     return initialValue !== currentValue;
   }
 
+  /**
+   * Returns true when the current phone value is different from the stored initial value.
+   * This normalizes both values to the full international string (country code + digits)
+   * so that deleting and retyping the same value does not count as a change.
+   */
+  public isPhoneChangedForVerify(): boolean {
+    try {
+      if (!this.initialValues) return true;
+      const currentPhoneRaw = (this.profileForm.get('phone')?.value || '').toString().replace(/\D/g, '');
+      const initialPhoneRaw = (this.initialValues.phone || '').toString().replace(/\D/g, '');
+      const currentFull = `${this.selectedCountry?.code || ''}${currentPhoneRaw}`;
+      const initialFull = `${this.initialValues.selectedCountryCode || ''}${initialPhoneRaw}`;
+      return currentFull !== initialFull;
+    } catch (e) {
+      return true;
+    }
+  }
+
+  /**
+   * Returns true when the current email value is different from the stored initial value.
+   * Comparison is case-insensitive and trims whitespace so deleting+retyping the same
+   * address will not mark it as changed.
+   */
+  public isEmailChangedForVerify(): boolean {
+    try {
+      if (!this.initialValues) return true;
+      const current = (this.profileForm.get('email')?.value || '').toString().trim().toLowerCase();
+      const initial = (this.initialValues.email || '').toString().trim().toLowerCase();
+      return current !== initial;
+    } catch (e) {
+      return true;
+    }
+  }
+
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
   }
