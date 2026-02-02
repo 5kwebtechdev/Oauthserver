@@ -5,6 +5,7 @@ import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navig
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { HabitCardComponent } from '../habit-card/habit-card.component';
+import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { ModalController } from '@ionic/angular';
 import { CalendarService } from '../../../services/calendar.service';
 import { MoodService } from '../../../services/mood.service';
@@ -21,7 +22,7 @@ import { LongPressDirective } from '../../../directives/gestureControlDirective'
   selector: 'calendar-main',
   templateUrl: './calendar-main.component.html',
   styleUrls: ['./calendar-main.component.scss'],
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulInputsModule, MindfulButtonComponent, HabitCardComponent, LongPressDirective]
+  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulInputsModule, MindfulButtonComponent, HabitCardComponent, LongPressDirective, EmptyStateComponent]
 })
 export class CalendarMainComponent implements OnInit, OnDestroy {
   dateActivities: { [key: string]: { timetable?: boolean, task?: boolean, habit?: boolean } } = {};
