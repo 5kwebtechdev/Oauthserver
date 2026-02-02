@@ -126,6 +126,7 @@ export class HabitButtonLogicService {
 
   /**
    * Check if "Done" button should be visible (shows/hides button)
+   * For today's items: always show (but it will be disabled until Let's Go window closes)
    */
   isDoneVisible(habit: any): boolean {
     if (!habit) return false;
@@ -137,11 +138,10 @@ export class HabitButtonLogicService {
     // Ongoing items show Done
     if (status === 'ongoing') return true;
 
-    // For pending, show only for today's activities and only after the Let's Go window has closed
+    // For pending: show Done button for today's activities (it will be disabled until Let's Go window closes)
     const { startTimeStamp } = this.getTimestamps(habit);
     if (!startTimeStamp) return false;
-    if (!this.isToday(startTimeStamp)) return false;
-    return Date.now() > (startTimeStamp + this.FIVE_MINUTES);
+    return this.isToday(startTimeStamp);
   }
 
   /**

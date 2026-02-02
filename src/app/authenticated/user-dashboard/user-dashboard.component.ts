@@ -171,8 +171,13 @@ export class UserDashboardComponent implements OnInit {
 
         // Process habits
         if (Array.isArray(resp.habits)) {
+          const today = new Date();
+          const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
           let habitsData = resp.habits.map((item: any) => {
-            const start = this.buttonLogic.calculateTimestamps(item);
+            // For recurring items, use today's date to calculate correct timestamps
+            const isRecurring = item.daysOfWeek?.length || item.everyday || item.everyWeekend;
+            const itemForTimestamp = isRecurring ? { ...item, startDate: todayStr, endDate: todayStr } : item;
+            const start = this.buttonLogic.calculateTimestamps(itemForTimestamp);
             return {
               id: item.id || '',
               title: item.title || '',
@@ -191,16 +196,18 @@ export class UserDashboardComponent implements OnInit {
             };
           });
 
+          // Filter out completed/skipped and items 5 min past their endTime
+          const now = Date.now();
+          const fiveMinMs = 5 * 60 * 1000;
           habitsData = habitsData.filter((h: any) => {
             const status = (h.status || '').toLowerCase();
-            return status !== 'completed' && status !== 'skipped';
+            if (status === 'completed' || status === 'skipped') return false;
+            // Hide card if current time > endTime + 5 minutes
+            const endTs = Number(h.endTimeStamp || 0);
+            if (endTs > 0 && now > endTs + fiveMinMs) return false;
+            return true;
           })
-          .sort((a: any, b: any) => {
-            const aId = parseInt(a.id || '0', 10);
-            const bId = parseInt(b.id || '0', 10);
-            if (aId > 0 && bId > 0) return bId - aId;
-            return 0;
-          })
+          .sort((a: any, b: any) => this.sortByUpcoming(a, b))
           .slice(0,4);
 
           this.recentHabits = habitsData;
@@ -209,8 +216,13 @@ export class UserDashboardComponent implements OnInit {
 
         // Process tasks
         if (Array.isArray(resp.tasks)) {
+          const today = new Date();
+          const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
           let tasksData = resp.tasks.map((item: any) => {
-            const timestamps = this.buttonLogic.calculateTimestamps(item);
+            // For recurring items, use today's date to calculate correct timestamps
+            const isRecurring = item.daysOfWeek?.length || item.everyday || item.everyWeekend;
+            const itemForTimestamp = isRecurring ? { ...item, startDate: todayStr, endDate: todayStr } : item;
+            const timestamps = this.buttonLogic.calculateTimestamps(itemForTimestamp);
             return {
               id: item.id || '',
               title: item.title || '',
@@ -229,16 +241,18 @@ export class UserDashboardComponent implements OnInit {
             };
           });
 
+          // Filter out completed/skipped and items 5 min past their endTime
+          const nowMs = Date.now();
+          const fiveMin = 5 * 60 * 1000;
           tasksData = tasksData.filter((t: any) => {
             const status = (t.status || '').toLowerCase();
-            return status !== 'completed' && status !== 'skipped';
+            if (status === 'completed' || status === 'skipped') return false;
+            // Hide card if current time > endTime + 5 minutes
+            const endTs = Number(t.endTimeStamp || 0);
+            if (endTs > 0 && nowMs > endTs + fiveMin) return false;
+            return true;
           })
-          .sort((a: any, b: any) => {
-            const aId = parseInt(a.id || '0', 10);
-            const bId = parseInt(b.id || '0', 10);
-            if (aId > 0 && bId > 0) return bId - aId;
-            return 0;
-          })
+          .sort((a: any, b: any) => this.sortByUpcoming(a, b))
           .slice(0,4);
 
           this.recentTasks = tasksData;
@@ -249,6 +263,23 @@ export class UserDashboardComponent implements OnInit {
         console.error('Failed to load calendar data:', err);
       }
     });
+  }
+
+  // Sort comparator to order items by upcoming time relative to now.
+  // Items with startTimeStamp >= now come first (ascending), then past items (closest past first).
+  private sortByUpcoming(a: any, b: any): number {
+    const now = Date.now();
+    const aTs = Number(a?.startTimeStamp || 0);
+    const bTs = Number(b?.startTimeStamp || 0);
+
+    const aFuture = aTs >= now;
+    const bFuture = bTs >= now;
+
+    if (aFuture && bFuture) return aTs - bTs; // both future - nearest first
+    if (aFuture && !bFuture) return -1; // future comes before past
+    if (!aFuture && bFuture) return 1;
+    // both past - show closest past first
+    return bTs - aTs;
   }
 
   /**

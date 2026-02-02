@@ -45,7 +45,7 @@
     transition: all 0.3s ease;
 
     &.active {
-      color: #8B8DCB;
+      color: #90214D;
       font-weight: bold;
     }
   }
@@ -418,7 +418,7 @@ h4 {
   height: 2px;
   left: 20%;
   bottom: 0;
-  background: #8B8DCB;
+  background: #90214D;
 }
 
 .toggler div:not(:last-child) {
@@ -502,6 +502,7 @@ h4 {
 
   width: 40px;
   height: auto;
+      margin-bottom: -14px;
 }
 
 /* Text 'View All' button replaced from mindful-button */

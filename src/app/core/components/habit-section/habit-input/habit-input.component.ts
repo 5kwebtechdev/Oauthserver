@@ -671,7 +671,6 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
               const updatedHabit = this.buildHabitFromResponse(res, habit, 'tasks', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.updateHabit(updatedHabit);
               this.modalCtrl.dismiss().catch(() => {});
-              this.navigation.back();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => { this.isSubmitting = false; console.error('Failed to update task', err); this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to update task. Please try again.'; }
@@ -684,7 +683,6 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
               this.habitService.addHabit(createdHabit);
               this.habitService.notifyTaskAdded();
               this.modalCtrl.dismiss().catch(() => {});
-              this.navigation.back();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => {
@@ -705,7 +703,6 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
               const updatedHabit = this.buildHabitFromResponse(res, habit, 'timetable', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.updateHabit(updatedHabit);
               this.modalCtrl.dismiss().catch(() => {});
-              this.navigation.back();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => { this.isSubmitting = false; console.error('Failed to update timetable', err); alert('Failed to update timetable. Please try again.'); }
@@ -717,7 +714,6 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
               const createdHabit = this.buildHabitFromResponse(res, habit, 'timetable', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.addHabit(createdHabit);
               this.modalCtrl.dismiss().catch(() => {});
-              this.navigation.back();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => {
@@ -736,7 +732,6 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
               const updatedHabit = this.buildHabitFromResponse(res, habit, 'habits', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.updateHabit(updatedHabit);
               this.modalCtrl.dismiss().catch(() => {});
-              this.navigation.back();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => { this.isSubmitting = false; console.error('Failed to update habit', err); this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to update habit. Please try again.'; }
@@ -748,7 +743,6 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
               const createdHabit = this.buildHabitFromResponse(res, habit, 'habits', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.addHabit(createdHabit);
               this.modalCtrl.dismiss().catch(() => {});
-              this.navigation.back();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => { this.isSubmitting = false; console.error('Failed to create habit', err); this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to create habit. Please try again.'; }
@@ -1047,8 +1041,10 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       try {
         const prev = this.navigation.getPreviousUrl && this.navigation.getPreviousUrl();
         if (prev && String(prev).includes('/authed/habit-detail')) {
+          // Skip habit-detail and go back 2 steps total: this habit-input + habit-detail
           this.navigation.backN(2);
         } else {
+          // Just go back once normally
           this.navigation.back();
         }
       } catch (e) {

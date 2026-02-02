@@ -184,6 +184,21 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
                         status: this.normalizeStatus(h.status),
                         priority: h.priority?.trim().toLowerCase(),
                         routine: h.routine?.trim().toLowerCase(),
+                        // Ensure startTimeStamp is calculated for today's date for recurring items
+                        startTimeStamp: (() => {
+                          const isRecurring = h.daysOfWeek?.length || h.everyday || h.everyWeekend;
+                          const ts = this.buttonLogic.calculateTimestamps(
+                            isRecurring ? { ...h, startDate: formattedDate, endDate: formattedDate } : h
+                          );
+                          return ts.startTimeStamp;
+                        })(),
+                        endTimeStamp: (() => {
+                          const isRecurring = h.daysOfWeek?.length || h.everyday || h.everyWeekend;
+                          const ts = this.buttonLogic.calculateTimestamps(
+                            isRecurring ? { ...h, startDate: formattedDate, endDate: formattedDate } : h
+                          );
+                          return ts.endTimeStamp;
+                        })()
                     }));
                     this.loading = false;
                     this.applyFilters();
@@ -217,11 +232,10 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
                     }
 
                     this.tasks = list.map((t: any) => {
-                        const timestamps = this.buttonLogic.calculateTimestamps({
-                            ...t,
-                            startDate: t.startDate || formatted,
-                            endDate: t.endDate || formatted
-                        });
+                        // For recurring items, use today's date to calculate correct timestamps
+                        const isRecurring = t.daysOfWeek?.length || t.everyday || t.everyWeekend;
+                        const itemForTimestamp = isRecurring ? { ...t, startDate: formatted, endDate: formatted } : { ...t, startDate: t.startDate || formatted, endDate: t.endDate || formatted };
+                        const timestamps = this.buttonLogic.calculateTimestamps(itemForTimestamp);
                         return {
                             ...t,
                             type: t.type || 'tasks',
@@ -279,15 +293,28 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
             this.filteredTasksByJourney = this.filterByStatus(this.tasks);
             this.filteredTasksByPriority = this.filterByPriority(this.tasks);
             this.filteredTasksByRoutine = this.filterByRoutine(this.tasks);
-            this.filteredTasks = this.filteredTasksByJourney;
+                this.filteredTasks = this.filteredTasksByJourney;
+                // Order tasks by upcoming time
+                this.filteredTasks = this.sortArrayByUpcoming(this.filteredTasks);
         } else {
             const dateFiltered = this.filterByDate(this.allHabits);
             this.filteredHabitsByJourney = this.filterByStatus(dateFiltered);
             this.filteredHabitsByPriority = this.filterByPriority(dateFiltered);
             this.filteredHabitsByRoutine = this.filterByRoutine(dateFiltered);
-            this.filteredHabits = this.filteredHabitsByJourney;
+                this.filteredHabits = this.filteredHabitsByJourney;
+                // Order habits by upcoming time
+                this.filteredHabits = this.sortArrayByUpcoming(this.filteredHabits);
         }
     }
+
+        // Helper to sort arrays by upcoming startTimeStamp
+        private sortArrayByUpcoming(arr: any[] = []): any[] {
+            if (!Array.isArray(arr) || arr.length <= 1) return arr || [];
+            const now = Date.now();
+            const future = arr.filter(i => (Number(i?.startTimeStamp || 0) >= now)).sort((a,b) => Number(a.startTimeStamp || 0) - Number(b.startTimeStamp || 0));
+            const past = arr.filter(i => (Number(i?.startTimeStamp || 0) < now)).sort((a,b) => Number(b.startTimeStamp || 0) - Number(a.startTimeStamp || 0));
+            return future.concat(past);
+        }
 
     private filterByStatus(items: any[]): any[] {
         if (this.journeySubFilter === 'all') return items;
@@ -400,5 +427,33 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
         console.log('[HabitPageContent] Refreshing data...');
         this.loadHabits(true);
         this.loadTasksForSelectedDate(this.selectedDate);
+    }
+
+    /**
+     * Handle single tap on a habit/task card - open single mode view
+     */
+    onCardTap(habit: any): void {
+        this.singleModeHabit = habit;
+        this.showSingleMode = true;
+        try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
+    }
+
+    /**
+     * Handle long press on a habit/task card
+     * Navigation is already handled by habit-card component
+     */
+    onCardLongPress(habit: any): void {
+        // Long press navigation is handled by habit-card component
+        // This handler can be used for parent-level logic if needed
+        console.log('[HabitPageContent] Card long-pressed:', habit?.title);
+    }
+
+    /**
+     * Close single mode view
+     */
+    closeSingleMode(): void {
+        this.showSingleMode = false;
+        this.singleModeHabit = null;
+        try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
     }
 }
