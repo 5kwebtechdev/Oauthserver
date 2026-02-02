@@ -10,6 +10,13 @@
 
 }
 
+/* When viewing as a parent (no panda message), pin coins and redeem button to bottom */
+.coin-card.parent-view {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
 .header {
     display: flex;
     justify-content: space-between;

@@ -229,6 +229,9 @@
                 <span>Family code is invalid!</span>
               </div>
             </div>
+            <div class="error-message" *ngIf="maxParentsErrorMessage">
+              <span>{{ maxParentsErrorMessage }}</span>
+            </div>
           </div>
 
           <mindful-button 
