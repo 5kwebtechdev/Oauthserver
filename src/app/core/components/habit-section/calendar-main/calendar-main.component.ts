@@ -360,11 +360,10 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
           // Display ALL habits regardless of completion status (no completion date filtering)
           this.habitsForSelectedDate = rawHabits
             .map((h: any) => {
-              const timestamps = this.buttonLogic.calculateTimestamps({
-                ...h,
-                startDate: h.startDate || dateStr,
-                endDate: h.endDate || dateStr
-              });
+              // For recurring items, use today's date to calculate correct timestamps
+              const isRecurring = h.daysOfWeek?.length || h.everyday || h.everyWeekend;
+              const itemForTimestamp = isRecurring ? { ...h, startDate: dateStr, endDate: dateStr } : { ...h, startDate: h.startDate || dateStr, endDate: h.endDate || dateStr };
+              const timestamps = this.buttonLogic.calculateTimestamps(itemForTimestamp);
               return {
                 ...h,
                 title: h.title || h.name || h.habitName || 'Habit',
@@ -379,11 +378,10 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
           // Display ALL tasks regardless of completion status (no completion date filtering)
           this.tasksForSelectedDate = rawTasks
             .map((t: any) => {
-              const timestamps = this.buttonLogic.calculateTimestamps({
-                ...t,
-                startDate: t.startDate || dateStr,
-                endDate: t.endDate || dateStr
-              });
+              // For recurring items, use today's date to calculate correct timestamps
+              const isRecurring = t.daysOfWeek?.length || t.everyday || t.everyWeekend;
+              const itemForTimestamp = isRecurring ? { ...t, startDate: dateStr, endDate: dateStr } : { ...t, startDate: t.startDate || dateStr, endDate: t.endDate || dateStr };
+              const timestamps = this.buttonLogic.calculateTimestamps(itemForTimestamp);
               return {
                 ...t,
                 type: t?.type || 'tasks',
@@ -399,11 +397,10 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
           // Display ALL events regardless of completion status (no completion date filtering)
           this.eventsForSelectedDate = rawEvents
             .map((e: any) => {
-              const timestamps = this.buttonLogic.calculateTimestamps({
-                ...e,
-                startDate: e.startDate || dateStr,
-                endDate: e.endDate || dateStr
-              });
+              // For recurring items, use today's date to calculate correct timestamps
+              const isRecurring = e.daysOfWeek?.length || e.everyday || e.everyWeekend;
+              const itemForTimestamp = isRecurring ? { ...e, startDate: dateStr, endDate: dateStr } : { ...e, startDate: e.startDate || dateStr, endDate: e.endDate || dateStr };
+              const timestamps = this.buttonLogic.calculateTimestamps(itemForTimestamp);
               return {
                 ...e,
                 type: 'EVENT',
@@ -414,6 +411,11 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
               };
             });
             
+          // Sort items so upcoming (future) times appear first
+          this.habitsForSelectedDate = this.sortArrayByUpcoming(this.habitsForSelectedDate);
+          this.tasksForSelectedDate = this.sortArrayByUpcoming(this.tasksForSelectedDate);
+          this.eventsForSelectedDate = this.sortArrayByUpcoming(this.eventsForSelectedDate);
+
           console.log('Final arrays - habitsForSelectedDate:', this.habitsForSelectedDate.length, 'tasksForSelectedDate:', this.tasksForSelectedDate.length, 'eventsForSelectedDate:', this.eventsForSelectedDate.length);
         },
         error: (err) => {
@@ -552,6 +554,15 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     if (!this.selectedDate) return false;
     const today = new Date();
     return this.formatDateToYYYYMMDD(this.selectedDate) === this.formatDateToYYYYMMDD(today);
+  }
+
+  // Sort helper: upcoming items (startTimeStamp >= now) first (ascending), then past items (closest past first)
+  private sortArrayByUpcoming(arr: any[] = []): any[] {
+    if (!Array.isArray(arr) || arr.length <= 1) return arr || [];
+    const now = Date.now();
+    const future = arr.filter(i => (Number(i?.startTimeStamp || 0) >= now)).sort((a,b) => Number(a.startTimeStamp || 0) - Number(b.startTimeStamp || 0));
+    const past = arr.filter(i => (Number(i?.startTimeStamp || 0) < now)).sort((a,b) => Number(b.startTimeStamp || 0) - Number(a.startTimeStamp || 0));
+    return future.concat(past);
   }
 
   // Format a timestamp to time display format (HH.mm)
