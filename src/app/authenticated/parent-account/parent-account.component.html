@@ -27,7 +27,7 @@
                         <span class="user-name">{{ userName }}</span>
 
                         <!-- Switch user trigger -->
-                        <button *ngIf="children?.length" class="switch-trigger" aria-label="Switch user" (click)="toggleSwitchPopup($event)">
+                        <button *ngIf="children.length" class="switch-trigger" aria-label="Switch user" (click)="toggleSwitchPopup($event)">
                             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="8" viewBox="0 0 13 8"
                                 fill="none">
                                 <path
@@ -41,13 +41,13 @@
                             <div class="switch-popup" (click)="$event.stopPropagation()">
                                 <div class="switch-popup-list">
                                     <ng-container *ngFor="let c of children">
-                                        <button class="child-row" (click)="selectChild(c)">
+                                        <button class="child-row" (click)="selectChild(c)" [attr.aria-selected]="selectedChild?.id === c.id">
                                             <img [src]="c.avatarUrl" [alt]="c.name + ' avatar'" class="child-avatar">
                                             <div class="child-info">
                                                 <div class="child-name">{{ c.name }}</div>
                                                 <div class="child-meta">{{ c.relationship || 'Child' }}</div>
                                             </div>
-                                            <div class="child-selected" *ngIf="selectedChild === c">
+                                            <div class="child-selected" *ngIf="selectedChild && selectedChild.id !== null && (''+selectedChild.id) === (''+c.id)">
                                                 <!-- simple check mark -->
                                                 ✓
                                             </div>

@@ -1,71 +1,57 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, distinctUntilChanged, skip } from 'rxjs';
+import { Observable, map } from 'rxjs';
+import { ProfileStoreService } from './profile-store.service';
+import { ChildInfo } from '../models/child-info.model';
 
-const STORAGE_KEY = 'mb_selected_child_id';
-
-@Injectable({
-  providedIn: 'root'
-})
+/**
+ * ProfileSelectorService - Thin facade over ProfileStoreService.
+ * Provides backward-compatible API for existing code.
+ * Prefer using ProfileStoreService directly in new code.
+ */
+@Injectable({ providedIn: 'root' })
 export class ProfileSelectorService {
-  private childSubject: BehaviorSubject<number | null>;
-
   /** Current selected child ID observable */
-  public child$: Observable<number | null>;
+  readonly child$: Observable<string | number | null>;
 
-  /** Emits only when child actually changes (skips initial null) */
-  public childChanged$: Observable<number | null>;
+  /** Emits only when child actually changes */
+  readonly childChanged$: Observable<string | number | null>;
 
-  constructor() {
-    // Restore from localStorage on service init
-    const stored = this.getStoredChildId();
-    this.childSubject = new BehaviorSubject<number | null>(stored);
-    this.child$ = this.childSubject.asObservable();
-    this.childChanged$ = this.child$.pipe(
-      distinctUntilChanged(),
-      skip(1) // Skip initial value - only emit on actual changes
-    );
+  constructor(private store: ProfileStoreService) {
+    this.child$ = this.store.selectedChildId$;
+    this.childChanged$ = this.store.selectionChanged$.pipe(map(c => c?.id ?? null));
   }
 
-  /** Set the currently selected child ID (forUserId) */
-  setChild(value: number | null): void {
-    this.childSubject.next(value);
-    this.persistChildId(value);
+  /** Set the currently selected child by ID (looks up in store) */
+  setChild(value: string | number | null): void {
+    if (value === null) {
+      this.store.clearSelection();
+    } else {
+      this.store.selectById(value);
+    }
   }
 
-  /** Get current child ID (forUserId) synchronously */
-  getChildId(): number | null {
-    return this.childSubject.value;
+  /** Set the currently selected child by full object */
+  setChildInfo(child: ChildInfo | null): void {
+    this.store.select(child);
+  }
+
+  /** Get current child ID synchronously */
+  getChildId(): string | number | null {
+    return this.store.getSelectedChildIdSync();
+  }
+
+  /** Get full selected child synchronously */
+  getSelectedChild(): ChildInfo | null {
+    return this.store.getSelectedChildSync();
   }
 
   /** Check if a child is currently selected */
   hasSelectedChild(): boolean {
-    return this.childSubject.value !== null;
+    return this.store.hasSelectedChild();
   }
 
   /** Clear the selected child */
   clearChild(): void {
-    this.childSubject.next(null);
-    try { localStorage.removeItem(STORAGE_KEY); } catch { }
-  }
-
-  private persistChildId(value: number | null): void {
-    try {
-      if (value !== null) {
-        localStorage.setItem(STORAGE_KEY, String(value));
-      } else {
-        localStorage.removeItem(STORAGE_KEY);
-      }
-    } catch { }
-  }
-
-  private getStoredChildId(): number | null {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = Number(stored);
-        return isNaN(parsed) ? null : parsed;
-      }
-    } catch { }
-    return null;
+    this.store.clearSelection();
   }
 }

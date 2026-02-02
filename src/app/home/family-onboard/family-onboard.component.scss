@@ -223,8 +223,10 @@ font-weight: 600;
 
 .error-message {
   color: #d32f2f;
-  font-size: 0.75rem;
-  line-height: 1.3;
+          font-size: 13px;
+        font-family: Nunito;
+        font-weight: 500;
+    
   
   small {
     display: block;

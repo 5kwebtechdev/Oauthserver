@@ -56,6 +56,9 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     private codeCheckTimeout: any;
     private joinFamilyCodeCheckTimeout: any;
 
+    // Max parents error state
+    maxParentsErrorMessage: string | null = null;
+
     // FAQs
     faqs: FaqItem[] = [];
     createModeFaqs: FaqItem[] = [];
@@ -291,6 +294,9 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             return;
         }
 
+        // Clear any previous max parents error when user changes the code
+        this.maxParentsErrorMessage = null;
+
         // Auto-check when exactly 8 characters
         this.checkFamilyCodeValidity(trimmedCode, 'parent');
     }
@@ -397,6 +403,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
      */
     selectMode(mode: FamilyMode): void {
         this.selectedMode = mode;
+        // Clear any max parents error when changing mode
+        this.maxParentsErrorMessage = null;
         // Update FAQs based on selected mode
         if (this.viewMode === 'join-family-parent') {
             this.updateParentFaqs();
@@ -674,6 +682,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             this.authService.register(payload).subscribe({
                 next: () => {
                     this.isParentRegistered = true;
+                    this.maxParentsErrorMessage = null; // Clear any previous error
                     this.core.triggerToasrt('Account registered successfully!');
                     
                     // Store credentials for auto-login
@@ -728,7 +737,16 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
                 error: (error) => {
                     this.isLoading = false;
                     this.isParentRegistered = false;
-                    this.core.triggerToasrt(error.error?.message || 'Registration failed. Please try again.');
+                    const errorMessage = error.error?.message || 'Registration failed. Please try again.';
+                    
+                    // Check if error is about maximum parents
+                    if (errorMessage && errorMessage.includes('maximum number of parents')) {
+                        this.maxParentsErrorMessage = errorMessage;
+                        this.core.triggerToasrt(errorMessage);
+                    } else {
+                        this.maxParentsErrorMessage = null;
+                        this.core.triggerToasrt(errorMessage);
+                    }
                 }
             });
         } catch (error) {
