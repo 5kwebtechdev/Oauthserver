@@ -102,6 +102,13 @@ ion-content.streaks-page {
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
+.streak-item.current-user {
+    background: rgba(76, 175, 80, 0.20);
+    border-radius: 8px;
+    /* remove bottom border so highlight looks clean */
+    border-bottom: none;
+}
+
 .left {
     display: flex;
     align-items: center;

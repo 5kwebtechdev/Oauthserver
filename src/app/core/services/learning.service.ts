@@ -405,4 +405,22 @@ export class LearningService {
                 })
             );
     }
+
+    /**
+     * Mark an article as complete/read for the current user
+     */
+    markArticleComplete(articleId: number): Observable<any> {
+        const url = `${this.apiUrl}/articles/${articleId}/complete`;
+        console.log('Marking article complete at:', url);
+        return this.http.post<any>(url, {}, { headers: this.getHeaders() })
+            .pipe(
+                tap(response => {
+                    console.log('Article marked complete:', response);
+                }),
+                catchError(error => {
+                    console.error('Error marking article complete:', error);
+                    throw error;
+                })
+            );
+    }
 }
