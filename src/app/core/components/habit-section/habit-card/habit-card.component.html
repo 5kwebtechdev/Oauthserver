@@ -23,7 +23,7 @@
     </div>
 
     <!-- Empty State (uses shared EmptyStateComponent) -->
-    <!-- Task-specific: all tasks completed/skipped -->
+    <!-- Task-specific: all tasks completed -->
     <empty-state *ngIf="isEmpty && currentActive === 'tasks' && taskAllDoneComputed"
       leadText="All tasks done!"
       subText="Your tasks can be reviewed in the main habits screen. You can even mark them done from there."
@@ -37,7 +37,7 @@
       buttonText="">
     </empty-state>
 
-    <!-- Habit-specific: all habits completed/skipped -->
+    <!-- Habit-specific: all habits completed -->
     <empty-state *ngIf="isEmpty && currentActive === 'habits' && habitAllDoneComputed"
       leadText="All habits done!"
       subText="Your habits can be reviewed in the main habits screen. You can even mark them done from there."
@@ -249,10 +249,9 @@
               <p class="score p-l-0">{{getCoinReward()}}</p>
             </div>
           </div>
-          <div class="d-flex footer-cta">
-            <!-- Let's Go Button: Visible when status is PENDING, hidden when ONGOING, COMPLETED, or SKIPPED -->
-            <!-- Also hidden when not viewing current date -->
-            <mindful-button *ngIf="isLetsGoVisible() && !isParent && isCurrentDateView"
+          <div class="d-flex footer-cta" *ngIf="getStatus() !== 'completed'">
+            <!-- Let's Go Button: always rendered (visibility checks removed) -->
+            <mindful-button
               [type]="habit?.type === 'tasks' ? 'orange' : 'lavendar'" small text="Let`s Go" (click)="openStartPopup()"
               [disabled]="!isLetsGoEnabled()"></mindful-button>
             

@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../services/auth.service';
 import { CalendarService } from '../../../services/calendar.service';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { TimelineEvent } from '../../../models/calendar.model';
@@ -32,8 +33,14 @@ export class TimelineComponent implements OnInit, OnDestroy {
     private calendarService: CalendarService,
     private router: Router,
     private profileSelector: ProfileSelectorService,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private authService: AuthService
   ) { }
+
+  /** Expose parent-check for template */
+  isParentUser(): boolean {
+    try { return this.authService.isParentUser(); } catch { return false; }
+  }
 
   ngOnInit() {
     this.loadEvents();
