@@ -55,39 +55,26 @@
 
         <div *ngIf="(habitsForSelectedDate?.length || tasksForSelectedDate?.length || eventsForSelectedDate?.length) && !moodOn"
             class="selected-date-cards d-flex flex-column gap-2">
-            <div *ngIf="habitsForSelectedDate?.length" class="selected-date-cards d-flex flex-column gap-2">
-                <div *ngFor="let habit of habitsForSelectedDate">
-                    <!-- Use the app's habit-card component to render habits -->
-                    <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
-                        [inProgress]="isItemInProgress(habit)" [isParentOverride]="isParent" [isCurrentDateView]="isSelectedDateToday()" mode="single"></habit-card>
-                </div>
-            </div>
-            <div *ngIf="tasksForSelectedDate?.length" class="d-flex flex-column gap-2">
-                <div *ngFor="let task of tasksForSelectedDate">
-                    <!-- Reuse habit-card for tasks; the component supports tasks shape in practice -->
-                    <habit-card [habit]="task" [startTime]="task.startTimeStamp" [endTime]="task.endTimeStamp"
-                        [inProgress]="isItemInProgress(task)" [isParentOverride]="isParent" [isCurrentDateView]="isSelectedDateToday()" mode="single"></habit-card>
-                </div>
-            </div>
-            <div *ngIf="eventsForSelectedDate?.length" class="d-flex flex-column gap-2">
-                <div *ngFor="let event of eventsForSelectedDate">
-                    <!-- Timetable event cards with long-press support -->
-                    <div class="timetable-card" long-press [delay]="1500" (press)="onTimetableLongPress(event)">
+            <div *ngFor="let item of combinedForSelectedDate">
+                <ng-container *ngIf="item.type === 'EVENT'">
+                    <div class="timetable-card" long-press [delay]="1500" (press)="onTimetableLongPress(item)">
                         <div class="timetable-card__header">
                             <div class="timetable-card__info">
-                                <h3 class="timetable-card__title">{{event?.title || 'Event'}}</h3>
-                                <h4 class="timetable-card__time">{{ formatTimeString(event?.startTime) ||
-                                    getFormattedTime(event?.startTimeStamp) }} - {{ formatTimeString(event?.endTime) ||
-                                    getFormattedTime(event?.endTimeStamp) }}</h4>
+                                <h3 class="timetable-card__title">{{item?.title || 'Event'}}</h3>
+                                <h4 class="timetable-card__time">{{ formatTimeString(item?.startTime) || getFormattedTime(item?.startTimeStamp) }} - {{ formatTimeString(item?.endTime) || getFormattedTime(item?.endTimeStamp) }}</h4>
                             </div>
                             <div class="timetable-card__tag-container">
-                                <div class="timetable-card__tag" *ngFor="let tag of event?.tags">
+                                <div class="timetable-card__tag" *ngFor="let tag of item?.tags">
                                     {{tag}}
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </ng-container>
+                <ng-container *ngIf="item.type !== 'EVENT'">
+                    <habit-card [habit]="item" [startTime]="item.startTimeStamp" [endTime]="item.endTimeStamp"
+                        [inProgress]="isItemInProgress(item)" [isParentOverride]="isParent" [isCurrentDateView]="isSelectedDateToday()" mode="single"></habit-card>
+                </ng-container>
             </div>
         </div>
 
