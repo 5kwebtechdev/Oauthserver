@@ -408,6 +408,99 @@ p {
   }
 }
 
+  // ===========================================
+  // FLAT VARIANTS (simple solid blocks)
+  // ===========================================
+  .magenta-flat,
+  .lavendar-flat,
+  .orange-flat,
+  .aqua-flat {
+    display: flex;
+    padding: 8px 20px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+  }
+
+  .magenta-flat {
+    border: 1px solid #90214D;
+    background: #90214D;
+    --text_color: #FFFFFF;
+  }
+
+  .lavendar-flat {
+    border: 1px solid #8B8DCB;
+    background: #8B8DCB;
+    --text_color: #FFFFFF;
+  }
+
+  .orange-flat {
+    border: 1px solid #F6AC72;
+    background: #F6AC72;
+    --text_color: #FFFFFF;
+  }
+
+  .aqua-flat {
+    border: 1px solid #89B3B6;
+    background: #89B3B6;
+    --text_color: #FFFFFF;
+  }
+
+  // flat text size
+  .magenta-flat p,
+  .lavendar-flat p,
+  .orange-flat p,
+  .aqua-flat p {
+    font-size: 13px;
+  }
+
+  // ===========================================
+  // FLAT TRANSPARENT (unselected flat buttons)
+  // ===========================================
+  .magenta-flat-transparent,
+  .lavendar-flat-transparent,
+  .orange-flat-transparent,
+  .aqua-flat-transparent {
+    display: flex;
+    padding: 8px 20px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    border-radius: 8px;
+    background: transparent;
+    --text_color: #282527;
+  }
+
+  .magenta-flat-transparent {
+    border: 1px solid #90214D;
+  }
+
+  .lavendar-flat-transparent {
+    border: 1px solid #8B8DCB;
+  }
+
+  .orange-flat-transparent {
+    border: 1px solid #F6AC72;
+  }
+
+  .aqua-flat-transparent {
+    border: 1px solid #89B3B6;
+  }
+
+  // ensure text style for flat transparent
+  .magenta-flat-transparent p,
+  .lavendar-flat-transparent p,
+  .orange-flat-transparent p,
+  .aqua-flat-transparent p {
+    color: #282527;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+  }
+
 .white-black {
   border: 1px solid rgba(40, 37, 39, 0.70);
   background: #FFFFFF;

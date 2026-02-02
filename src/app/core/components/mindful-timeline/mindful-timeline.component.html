@@ -1,32 +1,54 @@
 <div class="timetable-container" [class.empty-state]="!events || events.length === 0">
+  <!-- Time Labels Column -->
   <div class="time-labels">
     <ng-container *ngFor="let time of timeSlots; let i = index">
       <div *ngIf="!isCompressedSlot(i)" class="time-slot" [style.height.px]="hourHeight">
-        <p>{{ time }}</p>
+        <p>{{ formatTimeLabel(time) }}</p>
       </div>
-      <div *ngIf="isCompressedSlot(i)" class="compressed-gap" [style.height.px]="getCompressedHeight(i)">
-        <div class="dotted-line"></div>
+      <!-- Always render compressed space; only show dotted line for middle blocks -->
+      <div *ngIf="isCompressedSlot(i) && isCompressedStart(i)" class="compressed-gap" [style.height.px]="compressedVisualHeight">
+        <div *ngIf="isCompressedVisibleStart(i)" class="dotted-line"></div>
       </div>
     </ng-container>
   </div>
 
+  <!-- Vertical Separator Line -->
   <div class="separator-line"></div>
 
-  <div class="event-area" style="overflow-x: auto;">
-    <div class="time-grid">
+  <!-- Event Area -->
+  <div class="event-area">
+    <div class="time-grid" [style.height.px]="totalGridHeight">
+      <!-- Grid lines for each visible hour -->
       <ng-container *ngFor="let time of timeSlots; let i = index">
-        <div *ngIf="!isCompressedSlot(i)" class="grid-line" [style.height.px]="hourHeight" [attr.custom]="i"></div>
-        <div *ngIf="isCompressedSlot(i)" [style.height.px]="getCompressedHeight(i)"></div>
+        <div *ngIf="!isCompressedSlot(i)" class="grid-line" [style.height.px]="hourHeight"></div>
+        <!-- Always render compressed space; only show dashed line for middle blocks -->
+        <div *ngIf="isCompressedSlot(i) && isCompressedStart(i)" class="compressed-grid" [style.height.px]="compressedVisualHeight">
+          <div *ngIf="isCompressedVisibleStart(i)" class="dashed-indicator"></div>
+        </div>
       </ng-container>
 
+      <!-- Event Cards -->
       <ng-container *ngFor="let event of events">
-        <div class="event-box {{event.type}}" [style.top.px]="event._top" [style.height.px]="event._height"
-          [style.left]="'calc(' + ((event._column || 0) / (event._columnCount || 1) * 100) + '% + 10px)'"
-          [style.width]="'calc(' + (100 / (event._columnCount || 1)) + '% - 15px)'"
-          long-press [delay]="1500" (press)="onEventLongPress(event)">
-          <div class="container w-full p-0">
-            <h4>{{ event.title }}</h4>
-            <h5>{{ event.startTime }} - {{ event.endTime }}</h5>
+          <div 
+            class="event-box {{event.type}}" 
+            [class.selected]="selectedEventId === event.id"
+            [style.zIndex]="selectedEventId === event.id ? 1100 : 1"
+            [style.top.px]="event._top" 
+            [style.height.px]="event._height"
+            [style.left]="getEventLeft(event)"
+            [style.width]="getEventWidth(event)"
+            [style.min-height.px]="minCardHeight"
+            (click)="onEventClick(event)"
+            long-press [delay]="1500" 
+            (press)="onEventLongPress(event)">
+          <div class="event-content">
+            <div class="event-header">
+              <div class="event-title-wrap">
+                <h4>{{ event.title }}</h4>
+                <h5>{{ event.startTime }}-{{ event.endTime }}</h5>
+              </div>
+              <span *ngIf="event.tags && event.tags.length > 0" class="event-badge">{{ event.tags[0] }}</span>
+            </div>
           </div>
         </div>
       </ng-container>
