@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { RouterModule } from '@angular/router';
 import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.service';
 
 @Component({
   selector: 'app-trophy-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent],
+  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, RouterModule],
   template: `
         <mindful-card-header [title]="pageTitle" [subtitleMiddle]="'See wins • Know dates • Keep going'"
           [showBackArrow]="true" (backClick)="onBack()">
@@ -35,10 +36,10 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
 
         <!-- Empty State -->
         <div class="empty-state" *ngIf="!isLoading && !errorMessage && !grouped.length">
-          <img class="empty-art" src="/assets/app-assets/trophy-empty.png" alt="No trophies illustration" />
+          <img class="empty-art" src="/assets/Images-Transparent/Image-Trophies-Blank.png" alt="No trophies illustration" />
           <h2 class="empty-title">No Trophies Yet!</h2>
           <p class="empty-sub">Your journey is just beginning. Earn some cool trophies and show them off here!</p>
-          <ion-button expand="block" class="earn-btn" aria-label="Earn Trophies">Earn Trophies</ion-button>
+          <ion-button expand="block" class="earn-btn" aria-label="Earn Trophies" routerLink="/content">Earn Trophies</ion-button>
         </div>
 
         <!-- Trophy List -->
@@ -74,12 +75,21 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
     </ion-content>
   `,
   styles: [`
+    .trophy-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     .trophy-page-container {
       padding: 16px;
       gap: 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 60vh;
     }
     
     /* Loading State */
