@@ -138,71 +138,134 @@ Copy this mermaid block into any mermaid editor or Markdown that supports mermai
 ```mermaid
 flowchart TD
   subgraph Feed
-    R[Card Render] --> T{Is activity for Today?}
-    T -- No --> X[Hide from Home]
-    T -- Yes --> S[Include in Today's List]
-    S --> Sort[Sort by proximity to now]
-    Sort --> Top4[Take Top 4]
-  end
+    Habit Card — Implementation Notes & Deep Reference
+    ================================================
 
-  subgraph CardFlow
-    Top4 --> Status{Status}
-    Status -- completed --> Completed[Move to Completed / Hide]
-    Status -- skipped --> Skipped[Show Done (enabled)]
-    Status -- ongoing --> Ongoing[Show Abort + Done + Progress]
-    Status -- pending --> Pending[Show Let's Go (visible) / Done depending on window]
+    Purpose
+    -------
+    - This document is a detailed, implementation-accurate reference for the `habit-card` UI component used by the Home feed and recent lists. It maps the runtime behaviour, inputs, timers, storage, and known edge-cases to the actual code in `habit-card.component.ts` and the template.
 
-    Pending --> W{Within Let's Go window?}
-    W -- Yes --> LG_enabled[Let's Go: ENABLED]
-    W -- No --> LG_disabled[Let's Go: DISABLED]
+    Files
+    -----
+    - Component: src/app/core/components/habit-section/habit-card/habit-card.component.ts
+    - Template: src/app/core/components/habit-section/habit-card/habit-card.component.html
+    - Styles: src/app/core/components/habit-section/habit-card/habit-card.component.scss
+    - Button/time logic: src/app/core/components/habit-section/habit-button-logic.service.ts
 
-    LG_enabled --> ClickLG[User taps Let's Go]
-    ClickLG --> StartPopup[Show "Ready to Start?" popup]
-    StartPopup -- Confirm --> Start[Set status -> ongoing; saveOngoingState]
-    Start --> Ongoing
+    High-level behaviour (implementation summary)
+    --------------------------------------------
+    - Modes supported: `single` (individual card), `list` (Home feed), and `recent` (recent activity list). Mode is controlled by the `mode` input.
+    - The card shows only "today" activities in Home (`list` mode). The component calls `HabitService` / `CalendarService` to load today's activities and applies filtering:
+      - Exclude `completed` and `skipped` from Home lists.
+      - Sort by proximity to now and slice to the top `maxItemsToShow` (default 4).
+    - Progress bar is shown only when the status is `ongoing` and is computed from scheduled timestamps (`startTimeStamp`/`endTimeStamp`).
 
-    Ongoing --> AbortClick[User taps Abort]
-    AbortClick --> AbortPopup[Show "You're Halfway There!" popup]
-    AbortPopup -- AbortAnyways --> AbortConfirm[Set status -> pending; clearOngoingState]
-    AbortConfirm --> Pending
+    Inputs & important props
+    ------------------------
+    - `@Input() habit: Habit | null` — the activity object (may be habit or task).
+    - `@Input() mode: 'single' | 'list' | 'recent'` — rendering mode.
+    - `@Input() startTime` / `endTime` — numeric timestamps passed by caller when available.
+    - `@Input() inProgress` — coerced boolean; used by parent rendering.
+    - `@Input() isParentOverride?: boolean` — optional explicit override to force parent-mode UI (takes precedence over profile detection).
+    - `@Input() isCurrentDateView: boolean` — hide CTAs when viewing non-current dates.
 
-    Ongoing --> DoneClick[User taps Done]
-    DoneClick --> DonePopup[Show "Great Work!" popup]
-    DonePopup -- Confirm --> Complete[Set status -> completed; clearOngoingState]
-    Complete --> Completed
+    Parent detection & overrides
+    ---------------------------
+    - The component determines `isParent` using several fallbacks (in order):
+      1. If `isParentOverride` input is provided, it is respected immediately.
+      2. Subscribe to `UserService.userProfile$` and inspect `profile.relationship` (checks for `'PARENT'`).
+      3. Fallbacks: `sessionStorage`/`localStorage` keys like `signup_role` or `user_profile` are parsed for `relationship`/`role`.
+      4. `AuthService.isParentUser()` is consulted as final authoritative source.
+    - Template uses `!isParent` to hide elements (bubble, timer icon, CTAs) when the current user is a parent.
 
-    %% Grace removal: if ongoing not completed by endTime -> keep on Home until end+5m -> then set pending and remove from Home
-    Ongoing --> EndReached{endTime reached?}
-    EndReached -- Yes --> Grace[Wait endTime + 5min]
-    Grace --> GraceExpire[Set status -> pending; remove from Home]
-  end
+    CTA (Let's Go / Abort / Done) rules — exact runtime mapping
+    ---------------------------------------------------------
+    - Visibility and enable rules are implemented in methods and wired to template conditionals:
+      - `isLetsGoVisible()` — controls presence of "Let's Go" button.
+      - `isLetsGoEnabled()` — controls enabled state of "Let's Go" (true only inside the [start - 5m, start + 5m] window and other conditions).
+      - `isAbortVisible()` — visible only when status is `ongoing`.
+      - `isDoneVisible()` / `isDoneEnabled()` — visible for `ongoing` and for today's `pending` after LetsGo window has closed.
+    - Template examples (actual checks):
+      - `<mindful-button *ngIf="isLetsGoVisible() && !isParent && isCurrentDateView" ...>`
+      - Abort/Done buttons also include `!isParent` and `isCurrentDateView` guards.
+    - Behavior on click:
+      - `Let's Go` → `openStartPopup()` → on confirm runs `onStartHabit()` which calls API (`habitApi.letsGoHabit` / `taskApi.letsGoTask`) then:
+        * updates local habit state to `ongoing`,
+        * `saveOngoingState()` stores ongoing state to localStorage,
+        * sets `showLocalTimer = true`, and starts progress (`startProgress()` / `startProgressUpdater()`).
+      - `Abort` → `openAbortPopup()` → on confirm runs `onAbortHabit()` which calls API (`abortHabit`/`abortTask`) then:
+        * sets status back to `pending`,
+        * clears ongoing localStorage key via `clearOngoingState()`,
+        * resets progress and local UI timers.
+      - `Done` → `openCompletePopup()` → on confirm runs `onCompleteHabit()` which calls API (`completeHabit` / `completeTask`) then:
+        * sets status `completed`, clears ongoing state, sets progress to 100%, hides local timer, and triggers list reload.
 
-  click StartPopup href "src/app/core/components/habit-section/habit-card/habit-card.component.ts" "Open start popup"
-  click AbortPopup href "src/app/core/components/habit-section/habit-card/habit-card.component.ts" "Open abort popup"
-  click DonePopup href "src/app/core/components/habit-section/habit-card/habit-card.component.ts" "Open complete popup"
-```
+    Progress & timers (detailed)
+    ---------------------------
+    - Progress calculation: `calculateProgressPercentage()` uses `startTimeStamp` and `endTimeStamp` from the `habit` or calculates timestamps via `buttonLogic.calculateTimestamps(habit)` if missing.
+    - `startProgress()` initializes `percentageCompleted` from `calculateProgressPercentage()` and calls `startProgressUpdater()` which:
+      - sets an interval updating the percentage every second,
+      - stops and clears the interval once percentage >= 100.
+    - Ongoing persistence: `saveOngoingState()` writes a JSON object under key `ongoing_${habit.type}_${habit.id}` with `{ startedAt, habitStartTime, habitEndTime }`.
+    - Restore: `restoreOngoingState()` reads the key and validates stored timestamps against current `habit` timestamps; if valid and `habit.status === 'ongoing'`, it restarts progress and `showLocalTimer = true`.
+    - Grace handling: when a habit is `ongoing` but reaches scheduled `endTime` without completion, a 5-minute grace window is applied. A timer is scheduled at `endTime + 5min` to call `handleGraceRemoval()` which resets or removes the card according to rules.
+    - Auto-reload timers: in `list`/`recent` modes the component scans activities to schedule the next upcoming event (letsGo window open or activity end) and sets a single timeout to `reloadData()` at that time. This prevents busy polling while ensuring the UI refreshes when relevant windows open/close.
 
-8) Mapping of flow nodes to functions (quick)
-------------------------------------------
-- `Let's Go` enabled check => `isLetsGoEnabled(habit, hasOtherOngoing)` in the service.
-- `Let's Go` visible => `isLetsGoVisible(habit)`.
-- `Abort` visible => `isAbortVisible(habit)`.
-- `Done` enabled => `isDoneEnabled(habit)`.
-- Progress percent => `calculateProgressPercentage(habit)`.
-- Save/clear ongoing => `saveOngoingState(habit)` / `clearOngoingState(habit)`.
-- Timestamp building => `combineDateAndTime(...)` and `calculateTimestamps(...)`.
+    Lifecycle, subscriptions & cleanup
+    ---------------------------------
+    - Subscriptions created:
+      - `userProfileSubscription` to `UserService.userProfile$` for parent detection.
+      - Observables from `HabitService`/`CalendarService` during `loadHabits()` / `loadTodayTasks()`.
+      - Internal intervals/timers: `progressInterval`, `buttonStateCheckerInterval`, `letsGoWindowTimer`, `endTimeTimer`.
+    - Cleanup: `ngOnDestroy()` clears intervals, timeouts, and unsubscribes from all subscriptions.
 
-9) Quick edits you can make
---------------------------
-- Change the 5-minute pre-start window in the service by editing `FIVE_MINUTES`.
-- To allow multiple concurrent ongoing items, remove the `hasOtherOngoing` check before enabling "Let's Go".
-- To hide completed items immediately, update the component's list filter to exclude `status === 'completed'`.
+    State variables (short list of key fields)
+    -----------------------------------------
+    - `isParent: boolean` — computed via override/profile/auth.
+    - `showLocalTimer: boolean` — shows clock icon for locally-started cards.
+    - `percentageCompleted: number` — progress bar width (0..100).
+    - `habit`, `habits`, `tasks` — core data.
+    - `isEmpty`, `hasHabits`, `hasTasks` — UI empty-state flags.
 
-10) Next steps I can do for you
-------------------------------
-- Update the mermaid to match any changes you want.
-- Modify the code to change a rule (example: make "Done" allowed before start).
-- Add UI notes or component line references if you want precise edit locations.
+    Edge cases and failure handling (what the code does)
+    --------------------------------------------------
+    - If API calls fail for letsGo/abort/complete, errors are logged and the UI is not updated (no silent state drift).
+    - If localStorage contains outdated `ongoing_*` state (timestamps mismatch), the entry is cleared to avoid resuming invalid sessions.
+    - If timestamp fields are missing, `buttonLogic.calculateTimestamps()` builds them from date+time strings and sensible fallbacks (`00:00:00` / `23:59:59`).
 
----
-File created here: src/app/core/components/habit-section/habit-card/README.md
+    Where to change behaviour
+    -------------------------
+    - Pre-start window (5 minutes): controlled by `FIVE_MINUTES` constant inside `habit-button-logic.service.ts` (or by the service logic used by `isLetsGoEnabled()`).
+    - Top-N items on Home: change `maxItemsToShow` in the component or how `loadHabits()` slices results.
+    - Grace window behaviour: modify the logic scheduling `handleGraceRemoval()` in `loadHabits()` and related scheduled timers.
+
+    Testing hints
+    -------------
+    - Unit tests should mock `HabitService`/`TaskApi`/`CalendarService` and verify:
+      - `isLetsGoVisible()`/`isLetsGoEnabled()` behaviour around the boundaries (start -5m, start, start +5m, end).
+      - `saveOngoingState()` / `restoreOngoingState()` persist & restore correctly and clear invalid entries.
+      - Parent-mode UI: set `isParentOverride` and assert CTAs and bubble are hidden.
+    - Manual test checklist:
+      - Start a habit inside the lets-go window, confirm progress starts and localStorage key is created.
+      - Reload the page: progress should restore for ongoing habit.
+      - Let activity reach `endTime` without completing: ensure it remains for an additional 5 minutes and then is removed or set to `pending` as designed.
+
+    Mapping of public functions → behaviour (quick reference)
+    -----------------------------------------------------
+    - `onStartHabit()` — called after confirming start popup; sets status to `ongoing`, persists state and starts progress.
+    - `onAbortHabit()` — called after confirming abort popup; clears ongoing state and resets progress.
+    - `onCompleteHabit()` — called after confirming completion; sets status `completed`, clears state and updates UI.
+    - `calculateProgressPercentage()` — single source of truth for progress percent calculation.
+    - `saveOngoingState()` / `clearOngoingState()` / `restoreOngoingState()` — localStorage persistence helpers.
+
+    Appendix: quick file references
+    ------------------------------
+    - Template conditionals and CTAs: src/app/core/components/habit-section/habit-card/habit-card.component.html
+    - Timer/interval logic & persistence: src/app/core/components/habit-section/habit-card/habit-card.component.ts
+    - Button enable/visibility decisions: src/app/core/components/habit-section/habit-button-logic.service.ts
+
+    If you want, I can also:
+    - Add inline code comments in `habit-card.component.ts` to explain each timer and state mutation.
+    - Add unit tests that cover boundary timing windows and localStorage persistence.
+
+    File updated: src/app/core/components/habit-section/habit-card/README.md
