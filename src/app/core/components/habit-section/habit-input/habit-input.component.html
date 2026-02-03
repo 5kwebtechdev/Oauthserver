@@ -64,19 +64,20 @@
       <label>Start Date</label>
       <div class="mindful-input-group" [class.missing-placeholder]="showDateError && attemptedSubmit">
         <mindful-datepicker type="date" [(ngModel)]="startDate" (ngModelChange)="clearDateError()" [minDate]="today"
-          [rangeStart]="startDate" [rangeEnd]="endDate" placeholder="Add Start Date"></mindful-datepicker>
+          [rangeStart]="rangeStartShown" [rangeEnd]="rangeEndShown" placeholder="Add Start Date"></mindful-datepicker>
       </div>
     </div>
     <div class="date-align">
       <label>End Date</label>
       <div class="mindful-input-group" [class.missing-placeholder]="showDateError && attemptedSubmit">
         <mindful-datepicker type="date" [(ngModel)]="endDate" (ngModelChange)="clearDateError()"
-          [minDate]="startDate || today" [rangeStart]="startDate" [rangeEnd]="endDate"
+          [minDate]="today" [rangeStart]="rangeStartShown" [rangeEnd]="rangeEndShown"
           placeholder="Add End Date"></mindful-datepicker>
       </div>
     </div>
     <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Please pick both dates.
     </div>
+    <div *ngIf="showStartAfterEnd" class="field-error" role="alert">End date must be after the start date</div>
     <div *ngIf="showPastTimeForTodayRepeat" class="field-error top-margin" role="alert">Time passed for today. Please
       change Start Date to tomorrow.</div>
     <div *ngIf="showDaySelectionError" class="field-error top-margin" role="alert">{{ daySelectionErrorMessage }}</div>
@@ -232,13 +233,14 @@
             <div class="date-align">
               <label>End Date</label>
               <div class="mindful-input-group" [class.missing-placeholder]="attemptedSubmit && showDateError">
-                <mindful-datepicker type="date" [(ngModel)]="endDate" [minDate]="startDate || today"
+                <mindful-datepicker type="date" [(ngModel)]="endDate" [minDate]="today"
                   [rangeStart]="startDate" [rangeEnd]="endDate" placeholder="Add End Date"></mindful-datepicker>
               </div>
             </div>
           </div>
           <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Please pick both
             dates.</div>
+          <div *ngIf="showStartAfterEnd" class="field-error" role="alert">End date must be after the start date</div>
           <div *ngIf="showDaySelectionError" class="day-selection-error field-error top-margin">{{
             daySelectionErrorMessage }}</div>
         </div>

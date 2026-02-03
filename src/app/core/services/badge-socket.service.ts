@@ -42,6 +42,7 @@ export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'rec
 export class BadgeSocketService implements OnDestroy {
     private stompClient: Client | null = null;
     private connectedUserId: string | null = null;
+    private connectionTimeoutId: any = null;
 
     // Badge queue - FIFO, show one at a time
     private badgeQueue: BadgePopupData[] = [];
@@ -149,6 +150,11 @@ export class BadgeSocketService implements OnDestroy {
      */
     disconnect(): void {
         try {
+            if (this.connectionTimeoutId) {
+                clearTimeout(this.connectionTimeoutId);
+                this.connectionTimeoutId = null;
+            }
+
             if (this.stompSubscription) {
                 this.stompSubscription.unsubscribe();
                 this.stompSubscription = null;
@@ -209,6 +215,13 @@ export class BadgeSocketService implements OnDestroy {
         // Clean token
         const cleanToken = token.startsWith('Bearer ') ? token.substring(7) : token;
 
+        // Set a connection timeout to prevent hanging the app
+        // If connection doesn't establish in 10 seconds, disconnect
+        this.connectionTimeoutId = setTimeout(() => {
+            console.warn('[BadgeSocket] WebSocket connection timeout - auto-disconnecting');
+            this.disconnect();
+        }, 10000);
+
         // Create STOMP client
         this.stompClient = new Client({
             webSocketFactory: () => new SockJS(sockJsUrl),
@@ -219,6 +232,12 @@ export class BadgeSocketService implements OnDestroy {
             reconnectDelay: 5000,
             onConnect: (frame: any) => {
                 this.ngZone.run(() => {
+                    // Clear connection timeout on successful connect
+                    if (this.connectionTimeoutId) {
+                        clearTimeout(this.connectionTimeoutId);
+                        this.connectionTimeoutId = null;
+                    }
+
                     console.log('[BadgeSocket] STOMP connected');
                     this.connectionState$.next('connected');
                     // Subscribe to user-specific topic
@@ -241,11 +260,22 @@ export class BadgeSocketService implements OnDestroy {
             },
             onStompError: (frame: any) => {
                 this.ngZone.run(() => {
+                    // Clear timeout on error
+                    if (this.connectionTimeoutId) {
+                        clearTimeout(this.connectionTimeoutId);
+                        this.connectionTimeoutId = null;
+                    }
                     console.error('[BadgeSocket] STOMP error', frame.headers, frame.body);
+                    // Don't let WebSocket errors crash the app - silently fail
                 });
             },
             onDisconnect: (frame: any) => {
                 this.ngZone.run(() => {
+                    // Clear timeout on disconnect
+                    if (this.connectionTimeoutId) {
+                        clearTimeout(this.connectionTimeoutId);
+                        this.connectionTimeoutId = null;
+                    }
                     console.log('[BadgeSocket] STOMP disconnected');
                     this.connectionState$.next('disconnected');
                 });
@@ -256,6 +286,11 @@ export class BadgeSocketService implements OnDestroy {
         try {
             this.stompClient.activate();
         } catch (err) {
+            // Clear timeout on error
+            if (this.connectionTimeoutId) {
+                clearTimeout(this.connectionTimeoutId);
+                this.connectionTimeoutId = null;
+            }
             console.error('[BadgeSocket] Failed to activate STOMP client', err);
             this.connectionState$.next('disconnected');
         }

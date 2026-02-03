@@ -59,21 +59,25 @@
         </div>
         <div class="detail-message d-flex align-items-center"
             style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-            <div class="bubble-speech" style="flex:1;min-width:0;margin-right:12px;">
-                <app-speech-bubble [arrowSide]="'right'" [arrowOffset]="'50%'" [message]="speechMessage"
-                    style="display:block;width:100%;"></app-speech-bubble>
-            </div>
-            <div class="detail-pet" style="flex:0 0 auto;margin-left:8px;">
-                <mindful-pet></mindful-pet>
-            </div>
+            <ng-container *ngIf="!isParent">
+              <div class="bubble-speech" style="flex:1;min-width:0;margin-right:12px;">
+                  <app-speech-bubble [arrowSide]="'right'" [arrowOffset]="'50%'" [message]="speechMessage"
+                      style="display:block;width:100%;"></app-speech-bubble>
+              </div>
+              <div class="detail-pet" style="flex:0 0 auto;margin-left:8px;">
+                  <mindful-pet></mindful-pet>
+              </div>
+            </ng-container>
         </div>
 
         <div class="d-flex flex-column gap-4 align-items-stretch">
-            <!-- Progress Bar - shows when habit is ongoing -->
-            <div class="detail-progress-bar-box" *ngIf="habit?.status?.toLowerCase() === 'ongoing'">
+            <!-- Progress Bar - show only for habit/task when ongoing; parent sees a half-width container -->
+              <div class="detail-progress-bar-box"
+                  *ngIf="(habit?.type === 'habits' || habit?.type === 'tasks') && habit?.status?.toLowerCase() === 'ongoing' && (isChild || (!isChild && percentageCompleted > 0))"
+                  [style.width.%]="isParent ? 50 : 100">
                 <div class="detail-progress-bar" [style.width.%]="percentageCompleted"></div>
             </div>
-            <div class="detail-cta">
+            <div class="detail-cta" *ngIf="!isParent">
                 <!-- Let's Go Button - visible when pending (not ongoing, completed, or skipped) -->
                 <mindful-button *ngIf="isLetsGoVisible()" [ngClass]="habit.type === 'habits' ? 'w-100' : 'w-full'"
                     [type]="habit.type === 'habits' ? 'lavendar' : 'orange'"
