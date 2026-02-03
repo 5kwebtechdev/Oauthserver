@@ -6,6 +6,7 @@ import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navig
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { LearningService } from 'src/app/core/services/learning.service';
 import { Challenge } from 'src/app/core/models/learning.models';
+import { NavigationService } from 'src/app/core/services/navigation.service';
 
 @Component({
   selector: 'app-learning-description',
@@ -110,12 +111,19 @@ export class LearningDescriptionComponent implements OnInit {
   heading: string = 'Apple Orchard Math Challenge';
   challenge: Challenge | null = null;
   isLoading = true;
+  /** Source route passed via navigation state; used by onBack() */
+  private sourceRoute: string | null = null;
 
   constructor(
     public router: Router,
     private route: ActivatedRoute,
-    private learningService: LearningService
-  ) { }
+    private learningService: LearningService,
+    private navigationService: NavigationService
+  ) {
+    // Capture source from navigation extras (available only on first navigation)
+    const nav = this.router.getCurrentNavigation?.();
+    this.sourceRoute = (nav?.extras?.state as any)?.source || null;
+  }
 
   ngOnInit() {
     // Get challenge ID from route parameters
@@ -154,6 +162,11 @@ export class LearningDescriptionComponent implements OnInit {
   }
 
   onBack() {
-    this.router.navigate(['/authed/content']);
+    // If we know the source, go there; otherwise use canonical history back
+    if (this.sourceRoute) {
+      this.router.navigateByUrl(this.sourceRoute);
+    } else {
+      this.navigationService.back();
+    }
   }
 }
