@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 /**
  * Shared service for habit/task button logic and timestamp utilities.
- * Used across habit-card, habit-detail, calendar-main, and habit-page-content components.
+ * Used across activity-card, activity-detail, activity-calendar, and activity-page-content components.
  */
 @Injectable({ providedIn: 'root' })
 export class HabitButtonLogicService {

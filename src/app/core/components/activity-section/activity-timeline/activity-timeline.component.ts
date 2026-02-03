@@ -8,12 +8,12 @@ import { Subscription } from 'rxjs';
 import { ModalController } from '@ionic/angular';
 
 @Component({
-  selector: 'app-timeline',
-  templateUrl: './timeline.component.html',
-  styleUrls: ['./timeline.component.scss'],
+  selector: 'app-activity-timeline',
+  templateUrl: './activity-timeline.component.html',
+  styleUrls: ['./activity-timeline.component.scss'],
   standalone: false
 })
-export class TimelineComponent implements OnInit, OnDestroy {
+export class ActivityTimelineComponent implements OnInit, OnDestroy {
   allEvents: TimelineEvent[] = [];
   filteredEvents: TimelineEvent[] = [];
   selectedDate: string = this.formatDate(new Date());
@@ -111,7 +111,7 @@ export class TimelineComponent implements OnInit, OnDestroy {
   }
 
   onCalendarClick(): void {
-    this.router.navigateByUrl('/authed/calendar-main');
+    this.router.navigateByUrl('/authed/activity-calendar');
   }
 
   onDateSelected(date: Date): void {
@@ -120,11 +120,11 @@ export class TimelineComponent implements OnInit, OnDestroy {
   }
 
   onAddClick(): void {
-    this.router.navigateByUrl('/authed/habit-input');
+    this.router.navigateByUrl('/authed/activity-input');
   }
 
   /**
-   * Handle long-press on timetable event in timeline
+   * Handle long-press on timetable event in activity-timeline
    */
   async onTimetableLongPress(event: TimelineEvent): Promise<void> {
     if (!event || !event.id) {
@@ -133,11 +133,11 @@ export class TimelineComponent implements OnInit, OnDestroy {
 
     const eventType = event.type;
 
-    // For timetable events, open habit-input in edit mode
+    // For timetable events, open activity-input in edit mode
     if (eventType === 'timetable') {
-      const { HabitInputComponent } = await import('../habit-input/habit-input.component');
+      const { ActivityInputComponent } = await import('../activity-input/activity-input.component');
     const modal = await this.modalCtrl.create({
-      component: HabitInputComponent,
+      component: ActivityInputComponent,
       componentProps: {
         editingHabit: event,
         initialTab: 'timetable'
@@ -154,12 +154,12 @@ export class TimelineComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // For habits and tasks, navigate to habit-detail page
+    // For habits and tasks, navigate to activity-detail page
     if (eventType === 'habit' || eventType === 'task') {
       const itemType = eventType === 'habit' ? 'habits' : 'tasks';
       const itemId = Number(event.id);
 
-      this.router.navigate(['/authed/habit-detail', itemId], {
+      this.router.navigate(['/authed/activity-detail', itemId], {
         state: { 
           habit: event, 
           type: itemType, 

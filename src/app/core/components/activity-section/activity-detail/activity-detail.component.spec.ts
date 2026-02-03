@@ -1,13 +1,13 @@
-import { HabitDetailComponent } from './habit-detail.component';
+import { ActivityDetailComponent } from './activity-detail.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Habit } from '../habit.types';
 
-describe('HabitDetailComponent', () => {
-    let component: HabitDetailComponent;
+describe('ActivityDetailComponent', () => {
+    let component: ActivityDetailComponent;
 
     beforeEach(() => {
         // instantiate without Angular testbed to avoid template dependency resolution
-        component = new HabitDetailComponent(null as any, null as any, null as any);
+        component = new ActivityDetailComponent(null as any, null as any, null as any);
     });
 
     it('should display Everyday when everyday flag is true', () => {
