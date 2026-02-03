@@ -107,6 +107,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   public tasks: any[] = [];
   public hasHabits: boolean = false;
   public hasTasks: boolean = false;
+  // Track total items loaded AND how many were completed (for correct empty state)
+  public totalHabitsLoaded: number = 0;
+  public totalHabitsCompleted: number = 0;
+  public totalTasksLoaded: number = 0;
+  public totalTasksCompleted: number = 0;
   // Flags to control task-specific empty states
   public taskAllDoneComputed: boolean = false;
   // Flags to control habit-specific empty states
@@ -1234,16 +1239,35 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       next: () => {
         // Only today's activities show on Home. Sort by proximity to current time (recency relative to now)
         const now = Date.now();
-        this.habits = this.habitService.getCurrentHabits()
+        
+        // Get all today's habits BEFORE filtering to track total loaded
+        const allHabits = this.habitService.getCurrentHabits()
           .map((habit: Habit) => ({
             ...habit,
             // Normalize status to lowercase for consistency
             status: habit.status ? habit.status.toLowerCase() as any : 'pending'
-          }))
+          }));
+        
+        this.totalHabitsLoaded = allHabits.length;
+        
+        // Count how many habits are actually completed/skipped (from raw data)
+        this.totalHabitsCompleted = allHabits.filter((h: Habit) => {
+          const s = (h.status || '').toString().toLowerCase();
+          return s === 'completed' || s === 'skipped';
+        }).length;
+        
+        this.habits = allHabits
           // Exclude completed and skipped items from Home (completed disappear instantly)
           .filter((h: Habit) => {
             const s = (h.status || '').toString().toLowerCase();
             return s !== 'completed' && s !== 'skipped';
+          })
+          // Hide expired items: if endTime has passed and status is not ongoing, exclude them
+          .filter((h: Habit) => {
+            const endTime = h.endTimeStamp || 0;
+            const isOngoing = (h.status || '').toString().toLowerCase() === 'ongoing';
+            // Keep item if end time hasn't passed yet, or if it's ongoing (show during grace period)
+            return endTime > now || isOngoing;
           })
           // Sort by absolute difference between start time and now (closest to now first)
           .sort((a: Habit, b: Habit) => {
@@ -1290,6 +1314,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         console.error('Error fetching habits:', error);
         this.habits = [];
         this.hasHabits = false;
+        this.totalHabitsLoaded = 0;
+        this.totalHabitsCompleted = 0;
         this.updateEmptyState();
         // Trigger change detection to update button states
         this.cdr.detectChanges();
@@ -1303,7 +1329,19 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   loadTasks() {
     this.taskApi.getAllTasks().subscribe({
       next: (tasks) => {
-        this.tasks = (tasks || [])
+        const now = Date.now();
+        const rawTasks = tasks || [];
+        
+        // Track total tasks loaded BEFORE filtering
+        this.totalTasksLoaded = rawTasks.length;
+        
+        // Count how many tasks are actually completed/skipped (from raw API data)
+        this.totalTasksCompleted = rawTasks.filter((t: any) => {
+          const s = (t.status || '').toString().toUpperCase();
+          return s === 'COMPLETED' || s === 'SKIPPED';
+        }).length;
+        
+        this.tasks = rawTasks
           .map((task: any) => {
             // Combine date and time to create proper timestamps
             // Always recalculate from date+time to ensure accuracy
@@ -1327,6 +1365,18 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
               status: task.status ? task.status.toLowerCase() : 'pending'
             };
           })
+          // Exclude completed and skipped items
+          .filter((t: any) => {
+            const s = (t.status || '').toString().toLowerCase();
+            return s !== 'completed' && s !== 'skipped';
+          })
+          // Hide expired items: if endTime has passed and status is not ongoing, exclude them
+          .filter((t: any) => {
+            const endTime = t.endTimeStamp || 0;
+            const isOngoing = (t.status || '').toString().toLowerCase() === 'ongoing';
+            // Keep item if end time hasn't passed yet, or if it's ongoing
+            return endTime > now || isOngoing;
+          })
           .sort((a: any, b: any) => {
             const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
             const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -1343,6 +1393,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         console.error('Error fetching tasks:', error);
         this.tasks = [];
         this.hasTasks = false;
+        this.totalTasksLoaded = 0;
+        this.totalTasksCompleted = 0;
         this.updateEmptyState();
         // Trigger change detection to update button states
         this.cdr.detectChanges();
@@ -1353,12 +1405,22 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   loadTodayTasks() {
     const today = new Date();
     const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const now = Date.now();
 
     this.calendarService.getUserCalendar(formatted, 'day').subscribe({
       next: (resp: any) => {
-        const tasks = Array.isArray(resp?.tasks) ? resp.tasks : [];
+        const rawTasks = Array.isArray(resp?.tasks) ? resp.tasks : [];
 
-        this.tasks = (tasks || [])
+        // Track total tasks loaded BEFORE any filtering
+        this.totalTasksLoaded = rawTasks.length;
+        
+        // Count how many tasks are actually completed/skipped (from raw API data)
+        this.totalTasksCompleted = rawTasks.filter((t: any) => {
+          const s = (t.status || '').toString().toUpperCase();
+          return s === 'COMPLETED' || s === 'SKIPPED';
+        }).length;
+
+        this.tasks = (rawTasks || [])
           .map((task: any) => {
             const startTimeStr = task.startTime || '00:00:00';
             const endTimeStr = task.endTime || '23:59:59';
@@ -1377,6 +1439,18 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
               status: task.status ? task.status.toLowerCase() : 'pending'
             };
           })
+          // Exclude completed and skipped items
+          .filter((t: any) => {
+            const s = (t.status || '').toString().toLowerCase();
+            return s !== 'completed' && s !== 'skipped';
+          })
+          // Hide expired items: if endTime has passed and status is not ongoing, exclude them
+          .filter((t: any) => {
+            const endTime = t.endTimeStamp || 0;
+            const isOngoing = (t.status || '').toString().toLowerCase() === 'ongoing';
+            // Keep item if end time hasn't passed yet, or if it's ongoing
+            return endTime > now || isOngoing;
+          })
           .sort((a: any, b: any) => {
             const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
             const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -1392,6 +1466,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         console.error('Error fetching calendar tasks:', error);
         this.tasks = [];
         this.hasTasks = false;
+        this.totalTasksLoaded = 0;
+        this.totalTasksCompleted = 0;
         this.updateEmptyState();
         this.cdr.detectChanges();
       }
@@ -1401,37 +1477,26 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   /**
    * Update the empty state based on current tab
    */
+  /**
+   * Update the empty state based on current tab
+   * 
+   * ALGORITHM:
+   * - taskAllDoneComputed = TRUE when: totalTasksLoaded > 0 AND totalTasksCompleted === totalTasksLoaded
+   * - habitAllDoneComputed = TRUE when: totalHabitsLoaded > 0 AND totalHabitsCompleted === totalHabitsLoaded
+   * - "All done" shows when: no pending items to display AND all items were completed
+   * - "No items" shows when: no pending items to display AND NO items were completed (nothing scheduled)
+   */
   updateEmptyState() {
-    if (this.currentActive === 'habits') {
-      // If there are no habits at all, show 'no habit lined up' empty state
-      if (!this.habits || this.habits.length === 0) {
-        this.isEmpty = true;
-        this.habitAllDoneComputed = false;
-      } else if (this.areAllHabitsCompletedOrSkipped()) {
-        // If all habits exist but are either completed or skipped, show 'All habits done' empty state
-        this.isEmpty = true;
-        this.habitAllDoneComputed = true;
-      } else {
-        this.isEmpty = false;
-        this.habitAllDoneComputed = false;
-      }
-    } else if (this.currentActive === 'tasks') {
-      // If there are no tasks at all, show 'no tasks lined up' empty state
-      if (!this.tasks || this.tasks.length === 0) {
-        this.isEmpty = true;
-        this.taskAllDoneComputed = false;
-      } else if (this.areAllTasksCompletedOrSkipped()) {
-        // If all tasks are either completed or skipped, show 'All tasks done' empty state
-        this.isEmpty = true;
-        this.taskAllDoneComputed = true;
-      } else {
-        this.isEmpty = false;
-        this.taskAllDoneComputed = false;
-      }
-    } else {
-      // 'all' tab
-      this.isEmpty = !this.hasHabits && !this.hasTasks;
-    }
+    // Calculate whether ALL items of each type are completed (based on actual API counts BEFORE filtering)
+    const allTasksCompleted = this.totalTasksLoaded > 0 && this.totalTasksCompleted === this.totalTasksLoaded;
+    const allHabitsCompleted = this.totalHabitsLoaded > 0 && this.totalHabitsCompleted === this.totalHabitsLoaded;
+    
+    // Update completion flags based purely on API counts, regardless of filter
+    this.habitAllDoneComputed = allHabitsCompleted;
+    this.taskAllDoneComputed = allTasksCompleted;
+    
+    // Update isEmpty based on filtered items
+    this.isEmpty = !this.hasHabits && !this.hasTasks;
 
     this.showContent = !this.isEmpty;
   }
@@ -1439,27 +1504,6 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   /**
    * Return true when all habits in the current list are either completed or skipped
    */
-  areAllHabitsCompletedOrSkipped(): boolean {
-    const list = Array.isArray(this.habits) ? this.habits : [];
-    if (!list.length) return false;
-    return list.every(h => {
-      const s = (h?.status || '').toString().toLowerCase();
-      return s === 'completed' || s === 'skipped';
-    });
-  }
-
-  /**
-   * Return true when all tasks in the current list are either completed or skipped
-   */
-  areAllTasksCompletedOrSkipped(): boolean {
-    const list = Array.isArray(this.tasks) ? this.tasks : [];
-    if (!list.length) return false;
-    return list.every(t => {
-      const s = (t?.status || '').toString().toLowerCase();
-      return s === 'completed' || s === 'skipped';
-    });
-  }
-
   /**
    * Determines if a habit is currently in progress based on time
    * @param habit The habit to check
