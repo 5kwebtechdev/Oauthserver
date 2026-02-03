@@ -3,7 +3,7 @@ import { CommonModule } from "@angular/common";
 import { ModalController, RefresherCustomEvent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { NotesComponent } from '../../core/components/notes/notes.component';
-import { HabitCardComponent } from "../../core/components/habit-section/habit-card/habit-card.component";
+import { ActivityCardComponent } from "../../core/components/activity-section/activity-card/activity-card.component";
 import { LearningSectionComponent } from "../../core/components/learning-section/learning-section.component";
 import { AdBannerComponent } from '../../core/components/ad-banner/ad-banner.component';
 import { TutorCardComponent } from "../../core/components/tutor-section/tutor-card/tutor-card.component";
@@ -23,12 +23,12 @@ import { PetMessagesService, PetMessage, PetMood } from '../../core/services/pet
 import { UserService } from '../../core/services/user.service';
 import { MoodService } from '../../core/services/mood.service';
 import { VibesDisplayResponse } from '../../core/models/mood.model';
-import { HabitService } from '../../core/components/habit-section/habit.service';
-import { Habit } from '../../core/components/habit-section/habit.types';
+import { HabitService } from '../../core/components/activity-section/habit.service';
+import { Habit } from '../../core/components/activity-section/habit.types';
 import { TaskApi } from '../../core/api/task.api';
 import { HabitApi } from '../../core/api/habit.api';
 import { CalendarService } from '../../core/services/calendar.service';
-import { HabitButtonLogicService } from '../../core/components/habit-section/habit-button-logic.service';
+import { HabitButtonLogicService } from '../../core/components/activity-section/habit-button-logic.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ChildSelfImageService } from '../../core/services/child-self-image.service';
 
@@ -40,7 +40,7 @@ import { ChildSelfImageService } from '../../core/services/child-self-image.serv
   imports: [
     CommonModule,
     RouterModule,
-    HabitCardComponent,
+    ActivityCardComponent,
     AdBannerComponent,
     LearningSectionComponent,
     ReelsCardComponent,
@@ -345,8 +345,8 @@ export class UserDashboardComponent implements OnInit {
   }
 
   openCalendar() {
-    // Navigate to the calendar-main component route
-    this.router.navigate(['/authed/calendar-main']);
+    // Navigate to the activity-calendar component route
+    this.router.navigate(['/authed/activity-calendar']);
   }
 
   protected readonly console = console;

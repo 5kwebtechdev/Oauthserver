@@ -1,10 +1,10 @@
 <ion-content fullscreen>
     <mindful-navigator class="calendar-navigator" heading="One Day at a Time!" backIcon="arrowSvg">
     </mindful-navigator>
-    <div class="calendar-main-container">
+    <div class="activity-calendar-container">
 
         <!-- calendar-component -->
-        <div class="calendar-main">
+        <div class="activity-calendar">
             <mindful-calendar [useArrowNavigation]="true" [dateActivities]="dateActivities"
                 [useCalendarMainStyle]="true" [startDate]="selectedDate" [moodData]="moodData"
                 (dateSelected)="onDateSelected($event)" (moodToggled)="onMoodToggled($event)" (monthChanged)="onMonthChanged($event)">
@@ -72,10 +72,10 @@
                     </div>
                 </ng-container>
                 <ng-container *ngIf="item.type !== 'EVENT'">
-                    <habit-card [habit]="item" [startTime]="item.startTimeStamp" [endTime]="item.endTimeStamp"
+                    <activity-card [habit]="item" [startTime]="item.startTimeStamp" [endTime]="item.endTimeStamp"
                         [inProgress]="isItemInProgress(item)" [isParentOverride]="isParent" 
                         [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()" 
-                        mode="single"></habit-card>
+                        mode="single"></activity-card>
                 </ng-container>
             </div>
         </div>

@@ -2,18 +2,18 @@ import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, RefresherCustomEvent } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { HabitPageContentComponent } from '../habit-page-content/habit-page-content.component';
+import { ActivityPageContentComponent } from '../activity-page-content/activity-page-content.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 
 /**
- * Habit page wrapper component that provides navigation context
- * for the habit page content component.
+ * Activity page wrapper component that provides navigation context
+ * for the activity page content component.
  */
 @Component({
   standalone: true,
-  selector: 'habit-page',
+  selector: 'activity-page',
   template: `<ion-content>
     <!-- Pull-to-refresh -->
     <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
@@ -28,7 +28,7 @@ import { AuthService } from '../../../services/auth.service';
     <mindful-navigator heading="Your Universe" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
         rightIconAlt="Calendar" (rightIconClick)="onOpenCalendar()" (back)="onBack()"></mindful-navigator>
 
-    <habit-page-content #habitContent style="padding:0px 16px;"></habit-page-content>
+    <activity-page-content #habitContent style="padding:0px 16px;"></activity-page-content>
 
     <div class="habit-add-btn">
       <mindful-button
@@ -59,12 +59,12 @@ import { AuthService } from '../../../services/auth.service';
     CommonModule,
     IonicModule,
     MindfulNavigatorComponent,
-    HabitPageContentComponent,
+    ActivityPageContentComponent,
     MindfulButtonComponent
   ]
 })
-export class HabitPageComponent {
-  @ViewChild('habitContent') habitContent!: HabitPageContentComponent;
+export class ActivityPageComponent {
+  @ViewChild('habitContent') habitContent!: ActivityPageContentComponent;
 
   constructor(
     private router: Router,
@@ -72,14 +72,14 @@ export class HabitPageComponent {
   ) { }
 
   onAddHabit(): void {
-    this.router.navigate(['/authed/habit-input']).catch(() => { });
+    this.router.navigate(['/authed/activity-input']).catch(() => { });
   }
 
   /**
-   * Navigate to calendar main page
+   * Navigate to activity calendar page
    */
   onOpenCalendar(): void {
-    this.router.navigateByUrl('/authed/calendar-main');
+    this.router.navigateByUrl('/authed/activity-calendar');
   }
 
   /**
@@ -102,7 +102,7 @@ export class HabitPageComponent {
       // Validate session and refresh user data
       await this.authService.refreshUserData().toPromise();
       
-      // Refresh habit content
+      // Refresh activity content
       if (this.habitContent) {
         await this.habitContent.refresh();
       }

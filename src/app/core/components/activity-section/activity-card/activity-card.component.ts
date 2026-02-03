@@ -10,7 +10,7 @@ import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.comp
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { HabitCardService } from 'src/app/core/components/habit-section/habit-card/habit-card.service';
+import { HabitCardService } from 'src/app/core/components/activity-section/activity-card/activity-card.service';
 import { HabitApi } from 'src/app/core/api/habit.api';
 import { TaskApi } from 'src/app/core/api/task.api';
 import { CalendarService } from '../../../services/calendar.service';
@@ -23,9 +23,9 @@ import { UserService } from '../../../services/user.service';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({
-  selector: 'habit-card',
-  templateUrl: './habit-card.component.html',
-  styleUrls: ['./habit-card.component.scss'],
+  selector: 'activity-card',
+  templateUrl: './activity-card.component.html',
+  styleUrls: ['./activity-card.component.scss'],
   standalone: true,
   imports: [
     CommonModule,
@@ -42,7 +42,7 @@ import { AuthService } from '../../../services/auth.service';
     EmptyStateComponent,
   ]
 })
-export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
 
   @Input()
   habit: Habit | null = null;
@@ -81,7 +81,7 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   isParentOverride?: boolean;
 
   /**
-   * Optional input to indicate if viewing today's date (for calendar-main and habit-page).
+   * Optional input to indicate if viewing today's date (for activity-calendar and activity-page).
    * When false (viewing past or future dates), CTA buttons will be hidden.
    * Default is true to show buttons.
    */
@@ -1058,7 +1058,7 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     const itemType = this.habit.type || 'habits';
     const itemId = Number(this.habit.id);
 
-    // For timetable, open habit-input in edit mode
+    // For timetable, open activity-input in edit mode
     if (itemType === 'timetable') {
       this.openTimetableEditor();
       return;
@@ -1074,8 +1074,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
       dateForApi = this.formatDateForApi(today);
     }
 
-    // For habits and tasks, navigate to habit-detail page with date information
-    this.router.navigate(['/authed/habit-detail', itemId], {
+    // For habits and tasks, navigate to activity-detail page with date information
+    this.router.navigate(['/authed/activity-detail', itemId], {
       state: { 
         habit: this.habit, 
         type: itemType, 
@@ -1089,14 +1089,14 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   /**
-   * Open habit-input component in edit mode for timetable
+   * Open activity-input component in edit mode for timetable
    */
   private async openTimetableEditor() {
     if (!this.habit) return;
 
-    const { HabitInputComponent } = await import('../habit-input/habit-input.component');
+    const { ActivityInputComponent } = await import('../activity-input/activity-input.component');
     const modal = await this.modalCtrl.create({
-      component: HabitInputComponent,
+      component: ActivityInputComponent,
       componentProps: {
         editingHabit: this.habit,
         initialTab: 'timetable'
@@ -1114,20 +1114,20 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
 
   async openHabitPage() {
     // Navigate to the authenticated habit page route
-    await this.router.navigateByUrl('/authed/habit-page');
+    await this.router.navigateByUrl('/authed/activity-page');
   }
 
   async openTimeline() {
-    await this.router.navigateByUrl('/authed/timeline');
+    await this.router.navigateByUrl('/authed/activity-timeline');
   }
 
   async openHabitInput() {
-    const { HabitInputComponent } = await import('../habit-input/habit-input.component');
-    // Determine which tab to open in the HabitInput modal. If the dashboard/list toggle
+    const { ActivityInputComponent } = await import('../activity-input/activity-input.component');
+    // Determine which tab to open in the ActivityInput modal. If the dashboard/list toggle
     // is set to 'tasks', open the modal on the tasks tab; otherwise default to 'habits'.
     const initialTab = (this.currentActive === 'tasks') ? 'tasks' : (this.currentActive === 'habits' ? 'habits' : (this.habit?.type === 'tasks' ? 'tasks' : 'habits'));
     const modal = await this.modalCtrl.create({
-      component: HabitInputComponent,
+      component: ActivityInputComponent,
       componentProps: { initialTab }
     });
     await modal.present();

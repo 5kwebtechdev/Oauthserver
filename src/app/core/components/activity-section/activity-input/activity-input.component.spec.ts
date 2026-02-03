@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HabitInputComponent } from './habit-input.component';
+import { ActivityInputComponent } from './activity-input.component';
 
-describe('HabitInputComponent', () => {
-  let component: HabitInputComponent;
-  let fixture: ComponentFixture<HabitInputComponent>;
+describe('ActivityInputComponent', () => {
+  let component: ActivityInputComponent;
+  let fixture: ComponentFixture<ActivityInputComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({

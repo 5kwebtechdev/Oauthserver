@@ -21,12 +21,12 @@ import { finalize } from 'rxjs/operators';
 @Component({
   standalone: true,
 
-  selector: 'habit-detail',
-  templateUrl: './habit-detail.component.html',
-  styleUrls: ['./habit-detail.component.scss'],
+  selector: 'activity-detail',
+  templateUrl: './activity-detail.component.html',
+  styleUrls: ['./activity-detail.component.scss'],
   imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulSpeechBubbleComponent, MindfulPetComponent, MindfulCoinsStatsComponent, MindfulCalendarComponent, MindfulButtonComponent, MindfulInputsModule, MindfulBadgeComponent]
 })
-export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
+export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   public title: string = 'Habit Details';
 
   // true when navigated from a long-press on a card
@@ -391,16 +391,16 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onEdit() {
-    // Navigate to the habit-input page and pass the current habit/task in navigation state
+    // Navigate to the activity-input page and pass the current habit/task in navigation state
     if (this.habit) {
-      this.router.navigate(['/authed/habit-input'], {
+      this.router.navigate(['/authed/activity-input'], {
         state: {
           habit: this.habit,
           type: this.habit.type
         }
       });
     } else {
-      this.router.navigate(['/authed/habit-input']);
+      this.router.navigate(['/authed/activity-input']);
     }
   }
 

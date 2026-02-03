@@ -73,28 +73,28 @@
   <!-- Habit Items (when habits tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="currentActive === 'habits' && hasHabits">
-    <habit-card *ngFor="let habitItem of habits.slice(0, maxItemsToShow)" [habit]="habitItem"
+    <activity-card *ngFor="let habitItem of habits.slice(0, maxItemsToShow)" [habit]="habitItem"
       [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
       [inProgress]="isHabitInProgress(habitItem)" mode="single">
-    </habit-card>
+    </activity-card>
   </div>
 
   <!-- Task Items (when tasks tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="currentActive === 'tasks' && hasTasks">
-    <habit-card *ngFor="let taskItem of tasks.slice(0, maxItemsToShow)" [habit]="taskItem"
+    <activity-card *ngFor="let taskItem of tasks.slice(0, maxItemsToShow)" [habit]="taskItem"
       [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
-    </habit-card>
+    </activity-card>
   </div>
 
   <!-- Combined Items (when all tab is active - sorted by closest start time) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="currentActive === 'all' && (hasHabits || hasTasks)">
-    <habit-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
+    <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
       [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
       [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)" mode="single">
-    </habit-card>
+    </activity-card>
   </div>
 
   <!-- CTA Buttons -->
@@ -103,7 +103,7 @@
       (click)="openHabitInput()"></mindful-button>
   </div>
   <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
-    <button class="text-view-all" [routerLink]="['/authed/habit-page']">View All</button>
+    <button class="text-view-all" [routerLink]="['/authed/activity-page']">View All</button>
     <mindful-view-all [text]="'Add New +'" (clicked)="openHabitInput()" [hideIcon]="true"></mindful-view-all>
   </div>
 </div>
@@ -176,28 +176,28 @@
   <!-- Recent Habit Items (when habits tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="currentActive === 'habits' && hasHabits">
-    <habit-card *ngFor="let habitItem of filteredRecentHabits" [habit]="habitItem"
+    <activity-card *ngFor="let habitItem of filteredRecentHabits" [habit]="habitItem"
       [startTime]="habitItem.startTimeStamp" [endTime]="habitItem.endTimeStamp"
       [inProgress]="isHabitInProgress(habitItem)" mode="single">
-    </habit-card>
+    </activity-card>
   </div>
 
   <!-- Recent Task Items (when tasks tab is active) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="currentActive === 'tasks' && hasTasks">
-    <habit-card *ngFor="let taskItem of filteredRecentTasks" [habit]="taskItem"
+    <activity-card *ngFor="let taskItem of filteredRecentTasks" [habit]="taskItem"
       [startTime]="taskItem.startTimeStamp || 0" [endTime]="taskItem.endTimeStamp || 0" [inProgress]="false"
       mode="single">
-    </habit-card>
+    </activity-card>
   </div>
 
   <!-- Recent Combined Items (when all tab is active - sorted by closest start time) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
     *ngIf="currentActive === 'all' && (hasHabits || hasTasks)">
-    <habit-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
+    <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
       [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
       [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)" mode="single">
-    </habit-card>
+    </activity-card>
   </div>
 
   <!-- CTA Buttons -->
@@ -208,12 +208,12 @@
       (click)="openHabitInput()"></mindful-button>
   </div>
   <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
-    <button class="text-view-all" [routerLink]="['/authed/habit-page']">View All</button>
+    <button class="text-view-all" [routerLink]="['/authed/activity-page']">View All</button>
     <mindful-view-all [text]="'Add New +'" (clicked)="openHabitInput()" [hideIcon]="true"></mindful-view-all>
   </div>
 </div>
 
-<!-- habit-task-card -->
+<!-- activity-task-card -->
 <div *ngIf="mode === 'single'" class="container w-full h-full p-0">
   <div class="habit-wrapper"
     [ngClass]="{'expanded': expanded, 'isRunningLate': isRunningLate,'missedTime': missedTime, 'task': habit?.type === 'tasks'}">

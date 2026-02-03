@@ -1,11 +1,11 @@
-<div class="habit-page-content">
+<div class="activity-page-content">
     <div class="habit-week">
         <mindful-week (dateSelected)="onDateSelected($event)"></mindful-week>
     </div>
 
 
     <div *ngIf="showSingleMode && singleModeHabit" class="single-mode-container" (click)="closeSingleMode()">
-        <habit-card mode="single" [habit]="singleModeHabit" (click)="$event.stopPropagation()"></habit-card>
+        <activity-card mode="single" [habit]="singleModeHabit" (click)="$event.stopPropagation()"></activity-card>
     </div>
 
     <div class="habit-task-switch w-full" *ngIf="showContent">
@@ -41,11 +41,11 @@
             <div class="habit-list-content"
                 *ngIf="filteredHabitsByJourney && filteredHabitsByJourney.length > 0; else noHabitsTemplate">
                 <div *ngFor="let habit of filteredHabitsByJourney">
-                    <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
+                    <activity-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
                         [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp"
                         [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()"
                         (cardTap)="onCardTap($event)" (cardLongPress)="onCardLongPress($event)">
-                    </habit-card>
+                    </activity-card>
                 </div>
             </div>
             <ng-template #noHabitsTemplate>
@@ -78,11 +78,11 @@
                 <div *ngIf="filteredHabitsByPriority && filteredHabitsByPriority.length > 0; else noPriorityHabitsTemplate"
                     class="habit-list-content">
                     <div *ngFor="let habit of filteredHabitsByPriority">
-                        <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
+                        <activity-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
                             [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp"
                             [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()"
                             (cardTap)="onCardTap($event)" (cardLongPress)="onCardLongPress($event)">
-                        </habit-card>
+                        </activity-card>
                     </div>
                 </div>
                 <ng-template #noPriorityHabitsTemplate>
@@ -117,11 +117,11 @@
                 <div *ngIf="filteredHabitsByRoutine && filteredHabitsByRoutine.length > 0; else noRoutineHabitsTemplate"
                     class="habit-list-content">
                     <div *ngFor="let habit of filteredHabitsByRoutine">
-                        <habit-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
+                        <activity-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
                             [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp"
                             [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()"
                             (cardTap)="onCardTap($event)" (cardLongPress)="onCardLongPress($event)">
-                        </habit-card>
+                        </activity-card>
                     </div>
                 </div>
                 <ng-template #noRoutineHabitsTemplate>
@@ -178,11 +178,11 @@
             <div class="habit-list-content"
                 *ngIf="filteredTasksByJourney && filteredTasksByJourney.length > 0; else noTasksJourneyTemplate">
                 <div *ngFor="let task of filteredTasksByJourney">
-                    <habit-card [habit]="task" [startTime]="task.startTimeStamp" [endTime]="task.endTimeStamp"
+                    <activity-card [habit]="task" [startTime]="task.startTimeStamp" [endTime]="task.endTimeStamp"
                         [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp"
                         [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()"
                         (cardTap)="onCardTap($event)" (cardLongPress)="onCardLongPress($event)">
-                    </habit-card>
+                    </activity-card>
                 </div>
             </div>
         </div>
@@ -206,12 +206,12 @@
                 <div *ngIf="filteredTasksByPriority && filteredTasksByPriority.length > 0; else noTasksPriorityTemplate"
                     class="habit-list-content">
                     <div *ngFor="let task of filteredTasksByPriority">
-                        <habit-card [habit]="task.task ? task.task : task" [startTime]="task.startTimeStamp"
+                        <activity-card [habit]="task.task ? task.task : task" [startTime]="task.startTimeStamp"
                             [endTime]="task.endTimeStamp"
                             [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp"
                             [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()"
                             (cardTap)="onCardTap($event)" (cardLongPress)="onCardLongPress($event)">
-                        </habit-card>
+                        </activity-card>
                     </div>
                 </div>
             </div>
@@ -236,12 +236,12 @@
                 <div *ngIf="filteredTasksByRoutine && filteredTasksByRoutine.length > 0; else noRoutineTasksTemplate"
                     class="habit-list-content">
                     <div *ngFor="let task of filteredTasksByRoutine">
-                        <habit-card [habit]="task.task ? task.task : task" [startTime]="task.startTimeStamp"
+                        <activity-card [habit]="task.task ? task.task : task" [startTime]="task.startTimeStamp"
                             [endTime]="task.endTimeStamp"
                             [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp"
                             [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()"
                             (cardTap)="onCardTap($event)" (cardLongPress)="onCardLongPress($event)">
-                        </habit-card>
+                        </activity-card>
                     </div>
                 </div>
                 <ng-template #noRoutineTasksTemplate>

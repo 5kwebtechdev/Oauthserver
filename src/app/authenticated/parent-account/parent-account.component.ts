@@ -11,8 +11,8 @@ import { MoodSelectorComponent } from '../../core/components/mood-selector/mood-
 import { MoodService } from '../../core/services/mood.service';
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { AdBannerComponent } from '../../core/components/ad-banner/ad-banner.component';
-import { HabitPageContentComponent } from '../../core/components/habit-section/habit-page-content/habit-page-content.component';
-import { HabitService } from '../../core/components/habit-section/habit.service';
+import { ActivityPageContentComponent } from '../../core/components/activity-section/activity-page-content/activity-page-content.component';
+import { HabitService } from '../../core/components/activity-section/habit.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ChildSelfImageService } from '../../core/services/child-self-image.service';
 import { ParentImageService } from '../../core/services/parent-image.service';
@@ -33,7 +33,7 @@ import { ChildInfo, mapVibeToChildInfo } from '../../core/models/child-info.mode
         MoodSelectorComponent,
         AdBannerComponent,
         FooterComponent,
-        HabitPageContentComponent,
+        ActivityPageContentComponent,
 
     ]
 })
@@ -90,7 +90,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy {
     public selectedChild: ChildInfo | null = null;
 
     @ViewChild('moodSel') moodSelector?: MoodSelectorComponent;
-    @ViewChild(HabitPageContentComponent) habitPageContent?: HabitPageContentComponent;
+    @ViewChild(ActivityPageContentComponent) habitPageContent?: ActivityPageContentComponent;
 
     constructor(
         private modalCtrl: ModalController,
@@ -290,7 +290,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy {
     }
 
     openCalendar() {
-        this.router.navigateByUrl('/calendar-main');
+        this.router.navigateByUrl('/authed/activity-calendar');
     }
 
     /**

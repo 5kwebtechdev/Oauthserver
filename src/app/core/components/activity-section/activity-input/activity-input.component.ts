@@ -22,12 +22,12 @@ import { ProfileSelectorService } from '../../../services/profile-selector-servi
 
 @Component({
   standalone: true,
-  selector: 'habit-input',
-  templateUrl: './habit-input.component.html',
-  styleUrls: ['./habit-input.component.scss'],
+  selector: 'activity-input',
+  templateUrl: './activity-input.component.html',
+  styleUrls: ['./activity-input.component.scss'],
   imports: [CommonModule, IonicModule, FormsModule, MindfulButtonComponent, MindfulInputsModule, MindfulSelectorsComponent, MindfulTagsComponent, MindfulBadgeComponent, MindfulNavigatorComponent, MindfulToggleComponent, MindfulPopupComponent]
 })
-export class HabitInputComponent implements OnInit, AfterViewInit {
+export class ActivityInputComponent implements OnInit, AfterViewInit {
   private static readonly TIME_REGEX = /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?$/i;
   private static readonly DAY_MAP: Record<string, string> = {
     S: 'SUNDAY', M: 'MONDAY', T: 'TUESDAY', W: 'WEDNESDAY', Th: 'THURSDAY', F: 'FRIDAY', Sa: 'SATURDAY'
@@ -175,7 +175,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     if (this._endDate && this._endDate.getTime() > this._startDate.getTime()) return true;
 
     // If any selected weekday other than today's code is selected, it repeats later
-    const todayCode = HabitInputComponent.DAY_NUM_TO_CODE[this._startDate.getDay()];
+    const todayCode = ActivityInputComponent.DAY_NUM_TO_CODE[this._startDate.getDay()];
     for (const d of this.selectedDays) {
       if (d !== todayCode) return true;
     }
@@ -315,7 +315,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       const rawPriority = (h.priority ?? h.priorityLevel ?? '').toString().trim().toLowerCase();
       this.priority = (['low', 'medium', 'high'].includes(rawPriority)
         ? rawPriority
-        : HabitInputComponent.PRIORITY_MAP[rawPriority] || '') as any;
+        : ActivityInputComponent.PRIORITY_MAP[rawPriority] || '') as any;
 
       this.activities = Array.isArray(h.activities) && h.activities.length ? h.activities : this.activities;
 
@@ -389,7 +389,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   }
 
   private parseTime(timeStr: string): { hours: number; minutes: number } | null {
-    const match = HabitInputComponent.TIME_REGEX.exec(timeStr.trim());
+    const match = ActivityInputComponent.TIME_REGEX.exec(timeStr.trim());
     if (!match) return null;
 
     let hours = parseInt(match[1], 10);
@@ -532,10 +532,10 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       const coversAllDays = daysInRange.length === 7;
       // Only return FULL_WEEK if the range actually covers all 7 weekdays
       if (coversAllDays) {
-        return HabitInputComponent.FULL_WEEK;
+        return ActivityInputComponent.FULL_WEEK;
       }
     }
-    return Array.from(this.selectedDays).map(d => HabitInputComponent.DAY_MAP[d] || d.toString().toUpperCase());
+    return Array.from(this.selectedDays).map(d => ActivityInputComponent.DAY_MAP[d] || d.toString().toUpperCase());
   }
 
   private getTagValues(): string[] {
@@ -828,7 +828,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       selectedRoutine: data.routine ?? baseHabit.selectedRoutine ?? this.selectedRoutine,
       routineTags: this.routineTags,
       everyday: !!data.everyday,
-      selectedDays: Array.isArray(data.daysOfWeek) ? data.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek),
+      selectedDays: Array.isArray(data.daysOfWeek) ? data.daysOfWeek : (this.everyday ? ActivityInputComponent.FULL_WEEK : daysOfWeek),
       priority: (data.priority ?? baseHabit.priority) as 'low' | 'medium' | 'high',
       routine: data.routine ?? baseHabit.routine ?? this.selectedRoutine,
       status: data.status ?? baseHabit.status,
@@ -842,7 +842,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       completionPercentage: data.completionPercentage ?? data.completionRate ?? 0,
       totalCompletedDays: data.totalCompletedDays ?? data.completedDays ?? 0,
       milestoneBadges: data.milestoneBadges ?? data.badgeList ?? null,
-      daysOfWeek: Array.isArray(data.daysOfWeek) ? data.daysOfWeek : (this.everyday ? HabitInputComponent.FULL_WEEK : daysOfWeek)
+      daysOfWeek: Array.isArray(data.daysOfWeek) ? data.daysOfWeek : (this.everyday ? ActivityInputComponent.FULL_WEEK : daysOfWeek)
     };
   }
 
@@ -858,7 +858,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       current.setDate(current.getDate() + 1);
     }
 
-    return Array.from(daysInRange).map(num => HabitInputComponent.DAY_NUM_TO_CODE[num]);
+    return Array.from(daysInRange).map(num => ActivityInputComponent.DAY_NUM_TO_CODE[num]);
   }
 
   private isSameDateRange(): boolean {
@@ -870,7 +870,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
 
   private getSingleDayFromRange(): string | null {
     if (!this.isSameDateRange() || !this._startDate) return null;
-    return HabitInputComponent.DAY_NUM_TO_CODE[this._startDate.getDay()];
+    return ActivityInputComponent.DAY_NUM_TO_CODE[this._startDate.getDay()];
   }
 
   private autoAdjustSelectedDays(): void {
@@ -1056,11 +1056,11 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       this.deletePopupVisible = false;
 
       // Navigate back using the navigation service
-      // If previous page is a habit-detail route, skip it and go back to the page before it
+      // If previous page is a activity-detail route, skip it and go back to the page before it
       try {
         const prev = this.navigation.getPreviousUrl && this.navigation.getPreviousUrl();
-        if (prev && String(prev).includes('/authed/habit-detail')) {
-          // Skip habit-detail and go back 2 steps total: this habit-input + habit-detail
+        if (prev && String(prev).includes('/authed/activity-detail')) {
+          // Skip activity-detail and go back 2 steps total: this activity-input + activity-detail
           this.navigation.backN(2);
         } else {
           // Just go back once normally
@@ -1360,8 +1360,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   get daySelectionErrorMessage(): string {
     if (!this.showDaySelectionError) return "";
     if (this.isSameDateRange() && this._startDate) {
-      const code = HabitInputComponent.DAY_NUM_TO_CODE[this._startDate.getDay()];
-      const full = HabitInputComponent.DAY_MAP[code] || '';
+      const code = ActivityInputComponent.DAY_NUM_TO_CODE[this._startDate.getDay()];
+      const full = ActivityInputComponent.DAY_MAP[code] || '';
       return `Your date is set for ${full} only.`;
     }
     return "That day isn't in your chosen date range.";
