@@ -121,6 +121,7 @@ export interface LearningCardData {
     difficultyImage?: string; // Optional difficulty image path
     buttonText: string;
     type: 'quiz' | 'puzzle' | 'article';
+    category?: ChallengeCategory; // backend category for challenges (QUIZ | PUZZLE)
     subType?: string;
     timeDuration?: string;
     totalQuestions?: number;

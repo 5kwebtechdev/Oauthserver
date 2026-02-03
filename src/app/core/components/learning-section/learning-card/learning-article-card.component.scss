@@ -73,3 +73,27 @@ box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
     height: auto;
     margin-right: 0.35rem
 }
+
+/* Tag badge styles (show above title) */
+.tags-row {
+    display: flex;
+    padding: 5px 16px;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 8px;
+}
+
+.tag {
+    display: flex;
+    padding: 5px 16px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 16px;
+    border: 1px solid #E1527C;
+    background: #FCF3F6;
+    color: #942038;
+    font-family: Nunito, sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+}
+

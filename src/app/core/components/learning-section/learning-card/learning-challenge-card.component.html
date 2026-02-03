@@ -12,7 +12,9 @@
             <div>
                 <h3>{{ item.title }}</h3>
             </div>
-            <mindful-badge [type]="item.subType || item.type"></mindful-badge>
+              <!-- Prefer backend category (QUIZ/PUZZLE) mapped to lowercase for badge type,
+                  fallback to subType or type if not present -->
+              <mindful-badge [type]="item.category ? (item.category.toLowerCase()) : (item.subType || item.type)"></mindful-badge>
 
         </div>
 
