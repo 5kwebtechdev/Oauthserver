@@ -240,6 +240,8 @@ export class LearningService {
             difficulty: challenge.difficultyDisplay || challenge.difficulty,
             buttonText: `Finish in ${timeText}`,
             type: isQuiz ? 'quiz' : 'puzzle',
+            // Preserve backend category for use by UI (e.g. mindful-badge)
+            category: challenge.category,
             subType: challenge.categoryDisplay,
             totalQuestions: challenge.totalQuestions,
             timeDuration: timeText,
@@ -257,16 +259,21 @@ export class LearningService {
         if (article.timeDuration === 'MEDIUM') readTime = '5 min';
         if (article.timeDuration === 'LONG') readTime = '10 min';
 
+        const normalizedTags = Array.isArray((article as any).tags) ? (article as any).tags : ((article as any).tags ? [String((article as any).tags)] : []);
+        console.log(`transformArticleToCard: article id=${article.id} incoming tags=`, (article as any).tags, 'normalized=', normalizedTags, 'coins=', (article as any).coins);
+
         return {
             id: article.id,
             title: article.title,
             description: article.description,
             image: article.thumbnailUrl || '/assets/icons/Flux_Dev_a_surreal_and_vibrant_cinematic_photo_of_A_minimal_ye_3%201.jpg',
-            coins: 0, // Articles might not have coins, adjust if needed
+            // Prefer coins from backend article if provided, otherwise fall back to 0
+            coins: (article as any)?.coins ?? 0,
             buttonText: `Read in ${readTime}`,
             type: 'article',
             timeDuration: article.timeDuration,
-            tags: article.tags,
+            // Normalized tags
+            tags: normalizedTags,
             rawData: article
         };
     }
@@ -422,5 +429,83 @@ export class LearningService {
                     throw error;
                 })
             );
+    }
+
+    /**
+     * Search learning content by keyword and optional category
+     * @param keyword Search keyword
+     * @param category Optional category: 'puzzle', 'quiz', 'article' (omit for all)
+     */
+    search(keyword: string, category?: string): Observable<LearningCardData[]> {
+        this.isLoading$.next(true);
+        let url = `${this.apiUrl}/learning/search?keyword=${encodeURIComponent(keyword)}`;
+        if (category) {
+            url += `&category=${encodeURIComponent(category)}`;
+        }
+        console.log('LearningService.search -> URL:', url, 'keyword:', keyword, 'category:', category);
+        return this.http.get<any[]>(url, { headers: this.getHeaders() }).pipe(
+            map(results => results.map(item => this.mapSearchItemToCard(item))),
+            tap(() => this.isLoading$.next(false)),
+            catchError(error => {
+                console.error('Search error:', error);
+                this.isLoading$.next(false);
+                return of([]);
+            })
+        );
+    }
+
+    /**
+     * Map a raw search result item to LearningCardData, handling different shapes
+     */
+    private mapSearchItemToCard(item: any): LearningCardData {
+        const rawType = (item?.type || item?.category || '').toString().toUpperCase();
+
+        if (rawType === 'ARTICLE' || rawType === 'ARTICLE') {
+            try {
+                return this.transformArticleToCard(item as Article);
+            } catch (e) {
+                // Fallback mapping for article-like objects
+                return {
+                    id: item.id ?? 0,
+                    title: item.title ?? item.name ?? 'Untitled',
+                    description: item.description ?? '',
+                    image: item.thumbnailUrl ?? item.image ?? '/assets/icons/placeholder.png',
+                    coins: (item.coins as number) ?? 0,
+                    buttonText: `Read in ${item.timeDuration ?? '5 min'}`,
+                    type: 'article',
+                    timeDuration: item.timeDuration,
+                    rawData: item
+                } as LearningCardData;
+            }
+        }
+
+        // Treat as challenge (quiz / puzzle)
+        const typeLower = rawType === 'PUZZLE' ? 'puzzle' : rawType === 'QUIZ' ? 'quiz' : (item.type || '').toString().toLowerCase();
+
+        const id = item.challengeId ?? item.id ?? 0;
+        const title = item.name ?? item.title ?? item.name ?? 'Untitled Challenge';
+        const description = item.description ?? '';
+        const image = item.thumbnailImageUrl ?? item.thumbnailUrl ?? item.image ?? '/assets/icons/placeholder.png';
+        const coins = (item.coins as number) ?? 0;
+        const trophy = (item.trophies as number) ?? undefined;
+        const difficulty = item.difficultyDisplay ?? item.difficulty ?? undefined;
+        const timeText = item.timeDuration ?? item.estimatedTimeMinutes ? `${item.estimatedTimeMinutes} minutes` : (item.timeDuration ?? '10 Minutes');
+
+        return {
+            id,
+            title,
+            description,
+            image,
+            coins,
+            trophy,
+            difficulty,
+            buttonText: `Finish in ${timeText}`,
+            type: (typeLower === 'quiz' || typeLower === 'puzzle') ? (typeLower as 'quiz' | 'puzzle') : 'quiz',
+            category: (item.category as any) ?? undefined,
+            subType: item.categoryDisplay ?? item.subType,
+            totalQuestions: item.totalQuestions ?? undefined,
+            timeDuration: timeText,
+            rawData: item
+        } as LearningCardData;
     }
 }

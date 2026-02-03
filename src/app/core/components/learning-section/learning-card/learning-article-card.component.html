@@ -4,10 +4,18 @@
     </div>
 
     <div class="article-body">
-        <div class="d-flex justify-content-between align-items-center w-100">
+        <!-- Tags shown above title -->
+        <div *ngIf="item.tags?.length" class="tags-row">
+            <ng-container *ngFor="let tag of item.tags">
+                <span class="tag">{{ tag }}</span>
+            </ng-container>
+        </div>
+
+        <!-- tags are rendered above title -->
+
+        <div class="d-flex justify-content-between align-items-center w-100 head">
             <h3>{{ item.title }}</h3>
-            <span class="coins"><img src="/assets/Icons-Neutral/Icons-Coins.png" alt="coins"
-                    style="width:24px;height:auto;" /> {{ item.coins || 0 }}</span>
+            <span class="coins"><img src="/assets/Icons-Neutral/Icons-Coins.png" alt="coins" /> {{ item.coins || 0 }}</span>
         </div>
 
         <div class="meta-row">

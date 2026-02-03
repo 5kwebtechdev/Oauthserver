@@ -14,6 +14,8 @@ import { LearningArticleCardComponent } from './learning-article-card.component'
 export class LearningCardComponent {
     @Input() item: any;
     @Input() index: number = 0;
+    /** Optional source route for back navigation from description page */
+    @Input() source?: string;
     @Output() cardClick = new EventEmitter<{ item: any; index: number }>();
 
     onCardClick() {
