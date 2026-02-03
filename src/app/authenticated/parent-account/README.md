@@ -1,3 +1,141 @@
+# Parent Account — Child Selection & Data Mapping
+
+This document explains how selecting a child in the Parent Account context determines which child's data is shown in the Calendar and across the app. It describes the data model conventions, how selection is stored and propagated, common filtering rules, and implementation recommendations.
+
+## Overview
+
+- **Selected child**: the single child the parent has actively chosen to view/manage (identified by `child.id`).
+- **Effect**: Calendar views, habit lists, reminders, metrics and any child-scoped components must show only data belonging to the selected child.
+
+## Data model (conventions)
+
+- Child record fields (typical):
+  - `id` (string, UUID) — unique child identifier.
+  - `name` (string)
+  - `birthDate` (string | ISO date)
+  - `avatarUrl` (string)
+  - `habits` (array of habit IDs or objects)
+  - `preferences` (object)
+
+- Event / data objects should include a `childId` field that ties them to a specific child:
+
+```ts
+interface HabitEvent {
+  id: string;
+  childId: string; // ties event to child
+  habitId: string;
+  date: string; // ISO
+  status: 'completed' | 'missed' | 'planned';
+}
+```
+
+### Clarification: `forUserId` and `assignedTo`
+
+- In this codebase `forUserId` and `assignedTo` are used interchangeably to indicate the child user id. Treat them as equivalent aliases for the child's `id` when filtering or sending payloads.
+
+- Client-side filtering example (cover both fields):
+
+```ts
+const displayed = allEvents.filter(e => e.childId === selectedChildId
+  || e.forUserId === selectedChildId
+  || e.assignedTo === selectedChildId);
+```
+
+- Server-side requests: prefer passing the same identifier in whichever query param the API expects, or both if the API accepts either. Example:
+
+```
+GET /api/events?forUserId=<selectedChildId>
+```
+
+If the API supports `assignedTo` instead, use that consistently. The key point is the selected child id should be the authoritative filter value across the app.
+
+## How selection is stored & propagated
+
+1. User selects a child from the Parent Account UI (e.g., `ParentAccountComponent`).
+2. The selection is saved in a shared place so all child-scoped components can react:
+   - Preferred: a small shared service (e.g., `ChildSelectionService`) that exposes an observable `selectedChild$` and methods `setSelectedChild(child)` / `getSelectedChild()`.
+   - Optional persistence: store the selected child id in `localStorage` (key example: `selectedChildId`) so selection persists across reloads.
+
+Example service API:
+
+```ts
+class ChildSelectionService {
+  private selectedChildSubject = new BehaviorSubject<string | null>(null);
+  selectedChild$ = this.selectedChildSubject.asObservable();
+
+  setSelectedChild(childId: string) {
+    this.selectedChildSubject.next(childId);
+    localStorage.setItem('selectedChildId', childId);
+  }
+
+  loadFromStorage() {
+    const id = localStorage.getItem('selectedChildId');
+    if (id) this.selectedChildSubject.next(id);
+  }
+}
+```
+
+3. Components (Calendar, Habit list, Dashboards) subscribe to `selectedChild$`. When a new `childId` emits they should re-query or re-filter their data.
+
+## Filtering rules (calendar and lists)
+
+- Always filter child-scoped collections by `childId`.
+- Example filter for events shown in calendar:
+
+```ts
+const displayed = allEvents.filter(e => e.childId === selectedChildId);
+```
+
+- If your API supports server-side filtering, include `?childId=<id>` in the request to avoid fetching unrelated data.
+
+## Routing / params
+
+- Prefer shared service for selection rather than encoding `childId` in every route. Use route params only if deep-linking/bookmarking a specific child's view is required (e.g., `/parent/child/<id>/calendar`). If using route params, keep them synced with the shared service.
+
+## Update/Sync patterns
+
+- When selection changes:
+  - Components should show a loading state while fetching or filtering new child data.
+  - Cancel or ignore inflight requests for prior `childId` to prevent race conditions.
+  - Use RxJS switchMap on `selectedChild$` to automatically cancel previous requests.
+
+Example (RxJS):
+
+```ts
+this.childSelection.selectedChild$
+  .pipe(
+    filter(id => !!id),
+    switchMap(id => this.api.getChildEvents(id))
+  )
+  .subscribe(events => this.events = events);
+```
+
+## Backend / API considerations
+
+- API endpoints that return child-scoped data should accept `childId` as a query or path param and enforce access control so parents can only request data for children they manage.
+- On writes (creating events / marking habit complete) include `childId` in the payload.
+
+## Edge cases & UX notes
+
+- If parent manages multiple children and none is selected, show a chooser modal or default to first child.
+- When switching child quickly, debounce the selection UI if it triggers heavy network traffic.
+- If a child's data is missing (deleted or revoked), clear selection and prompt user.
+
+## Developer checklist
+
+- [ ] Add `ChildSelectionService` if not present.
+- [ ] Ensure all child-scoped data objects include `childId`.
+- [ ] Update CalendarComponent to subscribe to `selectedChild$` and filter via `childId`.
+- [ ] Persist `selectedChildId` to `localStorage` (optional but recommended).
+- [ ] Update API calls to accept `childId` for server-side filtering.
+
+## Where to look in this repo
+
+Parent account UI lives in `src/app/authenticated/parent-account` — update `parent-account.component.ts` to call the selection service when the user chooses a child. The Calendar lives at `src/app/core/components/habit-section/...` (see calendar-related components) and should subscribe to `selectedChild$` and filter by `childId` as shown above.
+
+---
+
+If you'd like, I can add a `ChildSelectionService` skeleton and wire the calendar component to it in this repo.
 Parent Account Component
 ========================
 

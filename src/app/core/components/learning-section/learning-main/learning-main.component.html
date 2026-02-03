@@ -17,7 +17,11 @@
                   fill="#6B656A" />
               </svg>
             </span>
-            <input type="text" placeholder="Looking for a quiz?" aria-label="Search" />
+                 <input type="text" placeholder="Looking for a quiz?" aria-label="Search" 
+                   [(ngModel)]="searchKeyword" (keyup)="onSearch($event)" />
+                 <button type="button" class="search-btn" aria-label="Search" (click)="performSearch()">
+              Search
+                 </button>
             <button type="button" class="mic" aria-label="Voice search">
               <svg xmlns="http://www.w3.org/2000/svg" width="9.333" height="12.667" viewBox="0 0 10 13" fill="none"
                 aria-hidden="true">
@@ -85,8 +89,33 @@
         <p>Loading content...</p>
       </div>
 
+      <!-- Search Results -->
+      <ng-container *ngIf="isSearching && !(isLoading$ | async)">
+        <div *ngIf="(searchResults$ | async) as searchResults" class="cards-section">
+          <div *ngIf="searchResults.length > 0; else emptySearch" class="cards-grid">
+            <ng-container *ngFor="let card of searchResults; let i = index">
+              <learning-challenge-card *ngIf="card.type === 'quiz' || card.type === 'puzzle'" [item]="card" [index]="i"
+                (cardClick)="onCardClick($event)">
+              </learning-challenge-card>
+              <learning-article-card *ngIf="card.type === 'article'" [item]="card" [index]="i"
+                (cardClick)="onCardClick($event)">
+              </learning-article-card>
+            </ng-container>
+          </div>
+          <ng-template #emptySearch>
+            <empty-state
+              [imageSrc]="'/assets/Images-Pet/Panda-Age1-Curious.png'"
+              imageAlt="Curious Panda"
+              leadText="No Results Found"
+              subText="Try a different search term or browse by category."
+              buttonText="">
+            </empty-state>
+          </ng-template>
+        </div>
+      </ng-container>
+
       <!-- For You Tab - Shows all content (puzzles, quizzes, and articles) -->
-      <ng-container *ngIf="selectedCategory === 'for-you' && !(isLoading$ | async)">
+      <ng-container *ngIf="!isSearching && selectedCategory === 'for-you' && !(isLoading$ | async)">
         <div *ngIf="(forYouContent$ | async) as forYouContent" class="cards-section">
           <div *ngIf="forYouContent.length > 0; else emptyState" class="cards-grid">
             <ng-container *ngFor="let card of forYouContent; let i = index">
@@ -102,7 +131,7 @@
       </ng-container>
 
       <!-- Puzzles Tab -->
-      <ng-container *ngIf="selectedCategory === 'puzzles' && !(isLoading$ | async)">
+      <ng-container *ngIf="!isSearching && selectedCategory === 'puzzles' && !(isLoading$ | async)">
         <div *ngIf="(puzzleCards$ | async) as puzzleCards" class="cards-section">
           <div *ngIf="puzzleCards.length > 0; else emptyState" class="cards-grid">
             <learning-challenge-card *ngFor="let card of puzzleCards; let i = index" [item]="card" [index]="i"
@@ -113,7 +142,7 @@
       </ng-container>
 
       <!-- Quizzes Tab -->
-      <ng-container *ngIf="selectedCategory === 'quizzes' && !(isLoading$ | async)">
+      <ng-container *ngIf="!isSearching && selectedCategory === 'quizzes' && !(isLoading$ | async)">
         <div *ngIf="(quizCards$ | async) as quizCards" class="cards-section">
           <div *ngIf="quizCards.length > 0; else emptyState" class="cards-grid">
             <learning-challenge-card *ngFor="let card of quizCards; let i = index" [item]="card" [index]="i"
@@ -124,7 +153,7 @@
       </ng-container>
 
       <!-- Articles Tab -->
-      <ng-container *ngIf="selectedCategory === 'articles' && !(isLoading$ | async)">
+      <ng-container *ngIf="!isSearching && selectedCategory === 'articles' && !(isLoading$ | async)">
         <div *ngIf="(articleCards$ | async) as articleCards" class="cards-section">
           <div *ngIf="articleCards.length > 0; else emptyState" class="cards-grid">
             <learning-article-card *ngFor="let card of articleCards; let i = index" [item]="card" [index]="i"
