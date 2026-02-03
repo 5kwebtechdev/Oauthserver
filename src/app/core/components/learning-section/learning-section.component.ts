@@ -37,6 +37,7 @@ import { LearningService } from 'src/app/core/services/learning.service';
           *ngFor="let item of items; trackBy: trackByFn; let i = index" 
           [item]="item" 
           [index]="i"
+          [source]="source"
           (cardClick)="onItemClick($event.item, $event.index)"
           (click)="onItemClick(item, i)">
         </learning-card>
@@ -242,6 +243,8 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
   @Input() likes: number = 0;
   @Input() views: number = 0;
   @Input() isNew: boolean = false;
+  /** Optional source route for back navigation from child pages */
+  @Input() source?: string;
 
   // array of slide items to render. Each item can contain the fields used in the default template.
   @Input() items: Array<any> = [];
