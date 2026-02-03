@@ -1,9 +1,11 @@
 import { Component, Input, TemplateRef, ContentChild, EventEmitter, Output, OnInit, ElementRef, ViewChild, AfterViewInit, Renderer2, OnDestroy } from '@angular/core';
 import { NgIf, NgForOf } from "@angular/common";
+import { forkJoin } from 'rxjs';
 import { ViewAllComponent } from 'src/app/core/components/mindful-navigator/view-all/view-all.component';
 import { IonicModule } from "@ionic/angular";
 import { RouterModule } from '@angular/router';
 import { LearningCardComponent } from './learning-card/learning-card.component';
+import { LearningService } from 'src/app/core/services/learning.service';
 
 @Component({
   selector: 'learning-section',
@@ -258,7 +260,7 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
 
   private scrollHandler?: () => void;
 
-  constructor(private renderer: Renderer2) { }
+  constructor(private renderer: Renderer2, private learningService: LearningService) { }
 
   ngAfterViewInit(): void {
     if (!this.slidesRef) return;
@@ -318,8 +320,17 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   ngOnInit(): void {
-    // If no items provided by the consumer, provide a small default set so the slides render
+    // If no items provided by the consumer, attempt to load latest items from API
     if (!this.items || this.items.length === 0) {
+      // Load latest quiz, puzzle and article from service
+      try {
+        this.loadLatestFromService();
+        return;
+      } catch (e) {
+        console.error('Error loading learning service items', e);
+      }
+
+      // Fallback static defaults so UI renders even if API unavailable
       this.items = [
         // Quiz (challenge) card
         {
@@ -365,5 +376,39 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
         }
       ];
     }
+  }
+
+  private loadLatestFromService() {
+    forkJoin([this.learningService.getQuizCards(), this.learningService.getPuzzleCards(), this.learningService.getArticleCards()])
+      .subscribe({
+        next: ([quizzes, puzzles, articles]) => {
+          const latestQuiz = this.pickLatest(quizzes);
+          const latestPuzzle = this.pickLatest(puzzles);
+          const latestArticle = this.pickLatest(articles);
+          const combined = [latestQuiz, latestPuzzle, latestArticle].filter(x => !!x) as any[];
+          if (combined.length) this.items = combined;
+        },
+        error: (err) => {
+          console.error('Error fetching latest learning items', err);
+        }
+      });
+  }
+
+  private pickLatest(cards: any[] = []) {
+    if (!cards || !cards.length) return null;
+    // Prefer publishedAt / createdAt / updatedAt on rawData if available
+    const withDates = cards.map(c => {
+      const raw = c.rawData || c;
+      const dateStr = raw && (raw.publishedAt || raw.createdAt || raw.updatedAt || raw.published_at || raw.created_at);
+      const date = dateStr ? new Date(dateStr) : null;
+      return { card: c, date };
+    });
+    withDates.sort((a, b) => {
+      if (!a.date && !b.date) return 0;
+      if (!a.date) return 1;
+      if (!b.date) return -1;
+      return b.date.getTime() - a.date.getTime();
+    });
+    return withDates[0].card;
   }
 }
