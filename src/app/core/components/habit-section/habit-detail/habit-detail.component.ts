@@ -3,6 +3,7 @@ import { Habit } from '../habit.types';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
+import { AuthService } from '../../../services/auth.service';
 import { HabitApi } from 'src/app/core/api/habit.api';
 import { TaskApi } from 'src/app/core/api/task.api';
 import { HabitService } from '../habit.service';
@@ -33,6 +34,11 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
   // 'habits' | 'tasks' | 'timetable' - origin type from navigation state
   public navigationOriginType: string = '';
 
+  // true when the current user is a parent account
+  public isParent: boolean = false;
+  // true when the current user is a child account
+  public isChild: boolean = false;
+
   @Input()
   public habit: Habit | null = null;
 
@@ -52,10 +58,29 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
     private TaskApi: TaskApi,
     private habitService: HabitService,
     private buttonLogic: HabitButtonLogicService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
   ) { }
 
   ngOnInit() {
+    // Determine whether current user is a child (only children see some UI like private toggle)
+    try {
+      const ud = localStorage.getItem('user_data');
+      if (ud) {
+        const parsed = JSON.parse(ud || '{}');
+        const rel = (parsed.relationship || parsed.role || '').toString().toUpperCase();
+        this.isChild = rel === 'CHILD';
+      }
+    } catch (e) {
+      this.isChild = false;
+    }
+
+    // Determine whether current user is a parent - parent accounts should not see CTA buttons
+    try {
+      this.isParent = !!(this.authService && this.authService.isParentUser && this.authService.isParentUser());
+    } catch (e) {
+      this.isParent = false;
+    }
     // Detect whether we arrived here via a long-press navigation
     this.cameFromLongPress = !!history.state?.['fromLongPress'];
 
@@ -488,9 +513,10 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
   startProgressUpdater(): void {
     this.clearProgress();
     this.percentageCompleted = this.calculateProgressPercentage();
+    // Update every 10 seconds (reduced from 1s to prevent System UI ANR)
     this.progressInterval = setInterval(() => {
       this.percentageCompleted = this.calculateProgressPercentage();
-    }, 1000);
+    }, 10000);
   }
 
   // ============================================
@@ -498,8 +524,9 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
   // ============================================
 
   private setupButtonStateChecker(): void {
+    // Removed aggressive 1-second polling that was causing System UI ANR
+    // Button states are now updated reactively via OnPush change detection
     if (this.buttonStateCheckerInterval) clearInterval(this.buttonStateCheckerInterval);
-    this.buttonStateCheckerInterval = setInterval(() => this.cdr.detectChanges(), 1000);
   }
 
   isLetsGoEnabled(): boolean {

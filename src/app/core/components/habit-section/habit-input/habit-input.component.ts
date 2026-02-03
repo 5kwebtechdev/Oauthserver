@@ -56,13 +56,12 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
 
 
   set startDate(value: Date | null) {
-    if (value && this._endDate && value > this._endDate) {
-      console.warn('Start date cannot be after end date');
-      return;
-    }
+    // Allow assigning a start date even if it's after the current end date.
+    // Validation will catch and surface the error to the user instead of silently blocking the selection.
     this._startDate = value;
     this.showDaySelectionError = false;
     this.autoAdjustSelectedDays();
+    try { const validations = this.computeValidations(); Object.assign(this.errors, validations); this.cd.detectChanges(); } catch (e) { }
   }
 
   get endDate(): Date | null {
@@ -70,13 +69,12 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   }
 
   set endDate(value: Date | null) {
-    if (value && this._startDate && value < this._startDate) {
-      console.warn('End date cannot be before start date');
-      return;
-    }
+    // Allow assigning an end date even if it's before the current start date.
+    // We will surface a validation error instead of preventing the user from picking the date.
     this._endDate = value;
     this.showDaySelectionError = false;
     this.autoAdjustSelectedDays();
+    try { const validations = this.computeValidations(); Object.assign(this.errors, validations); this.cd.detectChanges(); } catch (e) { }
   }
   currentActive: 'habits' | 'tasks' | 'timetable' = 'habits';
 
@@ -143,7 +141,8 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   errors = {
     title: false, time: false, date: false, notes: false, tag: false,
     routine: false, weekdays: false, priority: false, pastTime: false,
-    endTimeBeforeStart: false, endTimeSingleDay: false
+    endTimeBeforeStart: false, endTimeSingleDay: false,
+    startAfterEnd: false
   };
 
   // Backward compatibility getters
@@ -158,6 +157,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
   get showPastTimeError() { return this.errors.pastTime; }
   get showEndTimeSingleDayError() { return this.errors.endTimeSingleDay; }
   get showEndTimeBeforeStart() { return this.errors.endTimeBeforeStart; }
+  get showStartAfterEnd() { return this.errors.startAfterEnd; }
 
   // When start date is today and the start time is in the past, but the
   // activity repeats on future days (everyday or selected days beyond today),
@@ -506,6 +506,24 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     return d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : '';
   }
 
+  // When providing rangeStart/rangeEnd to the datepicker, always supply
+  // the ordered range so the calendar can highlight the trail even if the
+  // user has selected start > end. The UI still treats this as a validation
+  // error, but we show the visual range between the two dates.
+  get rangeStartShown(): Date | null {
+    if (!this._startDate && !this._endDate) return null;
+    if (!this._startDate) return this._endDate;
+    if (!this._endDate) return this._startDate;
+    return this._startDate <= this._endDate ? this._startDate : this._endDate;
+  }
+
+  get rangeEndShown(): Date | null {
+    if (!this._startDate && !this._endDate) return null;
+    if (!this._startDate) return this._endDate;
+    if (!this._endDate) return this._startDate;
+    return this._startDate <= this._endDate ? this._endDate : this._startDate;
+  }
+
   private getSelectedDaysOfWeek(): string[] {
     // When everyday is true AND the date range covers all weekdays, send full week
     // Otherwise, only send the specific selected days
@@ -770,6 +788,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
       // an earlier clock time unintentionally).
       endTimeSingleDay: (this.isSameDateRange() && this.isEndTimeCrossingMidnight(this.startTime, this.endTime)) || (!this.isSameDateRange() && this.isEndTimeNotAfterStart(this.startTime, this.endTime)),
       date: !this.startDate || !this.endDate || (this.startDate instanceof Date && this.endDate instanceof Date && this.startDate > this.endDate),
+      startAfterEnd: !!(this._startDate && this._endDate && this._startDate > this._endDate),
       priority: !this.priority,
       notes: !this.notes?.trim()
     } as any;
@@ -1358,6 +1377,7 @@ export class HabitInputComponent implements OnInit, AfterViewInit {
     if (this.showPastTimeError) msgs.push('Cannot set time in the past for today');
     if (this.showEndTimeBeforeStart) msgs.push('End time must be after the start time');
     if (this.showEndTimeSingleDayError) msgs.push('Activities must finish before midnight (11:59 PM).');
+    if (this.showStartAfterEnd) msgs.push('End date must be after the start date');
     if (this.showDateError) msgs.push('Add start and end date');
     if (this.showPriorityError) msgs.push('Select priority');
     if (this.showNotesError) msgs.push('Add notes');

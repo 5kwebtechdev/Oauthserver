@@ -111,23 +111,45 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Connect to WebSocket
-    this.badgeSocketService.connect();
+    // Safely initialize WebSocket with timeout and error boundary
+    // Prevents WebSocket connection issues from blocking System UI
+    try {
+      // Connect to WebSocket with a safety timeout
+      const connectionTimeout = setTimeout(() => {
+        console.warn('[AppComponent] Badge WebSocket connection timeout - disconnecting to prevent ANR');
+        this.badgeSocketService.disconnect();
+      }, 8000); // 8 second timeout for WebSocket to establish
 
-    // Subscribe to badge notifications for global popup
-    this.badgeSubscription = this.badgeSocketService.onBadgeReceived().subscribe(
-      (badge: BadgePopupData) => {
-        console.log('[AppComponent] Received badge notification:', badge);
-        this.showBadgeNotification(badge);
+      // Connect to WebSocket
+      this.badgeSocketService.connect();
+
+      // Subscribe to badge notifications for global popup
+      this.badgeSubscription = this.badgeSocketService.onBadgeReceived().subscribe(
+        (badge: BadgePopupData) => {
+          clearTimeout(connectionTimeout);
+          console.log('[AppComponent] Received badge notification:', badge);
+          this.showBadgeNotification(badge);
+        },
+        (error) => {
+          console.error('[AppComponent] Badge WebSocket error:', error);
+          clearTimeout(connectionTimeout);
+          // Silently fail - don't crash the app for badge notifications
+        }
+      );
+
+      // Clear timeout if connection succeeds
+      setTimeout(() => clearTimeout(connectionTimeout), 8000);
+
+      // Check for any pending badge popups that were missed while offline
+      const profile = this.userService.getUserProfile();
+      if (userToken && profile && (profile.relationship === 'CHILD' || profile.relationship === 'SELF')) {
+        this.checkPendingBadgePopups();
+      } else {
+        console.log('[AppComponent] Skipping pending badge popups for non-child/self account or missing user token');
       }
-    );
-
-    // Check for any pending badge popups that were missed while offline
-    const profile = this.userService.getUserProfile();
-    if (userToken && profile && (profile.relationship === 'CHILD' || profile.relationship === 'SELF')) {
-      this.checkPendingBadgePopups();
-    } else {
-      console.log('[AppComponent] Skipping pending badge popups for non-child/self account or missing user token');
+    } catch (error) {
+      console.error('[AppComponent] Failed to initialize badge WebSocket:', error);
+      // Silently fail - don't crash the app for badge notifications
     }
   }
 

@@ -160,10 +160,13 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
     }
 
     private startTimestampInterval(): void {
+        // Reduced polling from 1 minute to 5 minutes to prevent excessive change detection
+        // Using markForCheck() instead of detectChanges() to avoid forced cycles
         this.timestampInterval = setInterval(() => {
             this.currentTimestamp = Date.now();
             this.applyFilters();
-        }, 60000);
+            try { this.cdr.markForCheck(); } catch (e) { /* ignore */ }
+        }, 300000);
     }
 
     onDateSelected(date: Date): void {
@@ -256,6 +259,11 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
                             status: this.buttonLogic.normalizeStatus(t.status),
                             priority: t.priority?.trim().toLowerCase(),
                             routine: t.routine?.trim().toLowerCase(),
+                            // Normalize reward/streak fields so HabitCardComponent can read them
+                            coinReward: Number(t.coinReward ?? t.rewardCoins ?? t.reward_coins ?? t.rewardsCoins ?? t.rewards?.coins ?? t.rewards?.rewardCoins ?? 0),
+                            coinsEarned: Number(t.coinsEarned ?? t.coins ?? t.coins_earned ?? 0),
+                            streak: Number(t.streak ?? t.streakCount ?? t.streak_count ?? 0),
+                            highestStreak: Number(t.highestStreak ?? t.topStreak ?? t.highest_streak ?? 0),
                         };
                     });
                     this.loading = false;
@@ -305,17 +313,50 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
             this.filteredTasksByJourney = this.filterByStatus(this.tasks);
             this.filteredTasksByPriority = this.filterByPriority(this.tasks);
             this.filteredTasksByRoutine = this.filterByRoutine(this.tasks);
-                this.filteredTasks = this.filteredTasksByJourney;
-                // Order tasks by upcoming time
-                this.filteredTasks = this.sortArrayByUpcoming(this.filteredTasks);
+
+            // Ensure each rendered list is ordered by upcoming time
+            this.filteredTasksByJourney = this.sortArrayByUpcoming(this.filteredTasksByJourney);
+            this.filteredTasksByPriority = this.sortArrayByUpcoming(this.filteredTasksByPriority);
+            this.filteredTasksByRoutine = this.sortArrayByUpcoming(this.filteredTasksByRoutine);
+
+            // Maintain a unified filteredTasks reference based on current subFilter
+            switch (this.subFilter) {
+                case 'priorities':
+                    this.filteredTasks = this.filteredTasksByPriority;
+                    break;
+                case 'routine':
+                    this.filteredTasks = this.filteredTasksByRoutine;
+                    break;
+                case 'all':
+                    this.filteredTasks = this.sortArrayByUpcoming(this.tasks.slice());
+                    break;
+                default:
+                    this.filteredTasks = this.filteredTasksByJourney;
+            }
         } else {
             const dateFiltered = this.filterByDate(this.allHabits);
             this.filteredHabitsByJourney = this.filterByStatus(dateFiltered);
             this.filteredHabitsByPriority = this.filterByPriority(dateFiltered);
             this.filteredHabitsByRoutine = this.filterByRoutine(dateFiltered);
-                this.filteredHabits = this.filteredHabitsByJourney;
-                // Order habits by upcoming time
-                this.filteredHabits = this.sortArrayByUpcoming(this.filteredHabits);
+
+            // Ensure each rendered list is ordered by upcoming time
+            this.filteredHabitsByJourney = this.sortArrayByUpcoming(this.filteredHabitsByJourney);
+            this.filteredHabitsByPriority = this.sortArrayByUpcoming(this.filteredHabitsByPriority);
+            this.filteredHabitsByRoutine = this.sortArrayByUpcoming(this.filteredHabitsByRoutine);
+
+            switch (this.subFilter) {
+                case 'priorities':
+                    this.filteredHabits = this.filteredHabitsByPriority;
+                    break;
+                case 'routine':
+                    this.filteredHabits = this.filteredHabitsByRoutine;
+                    break;
+                case 'all':
+                    this.filteredHabits = this.sortArrayByUpcoming(dateFiltered.slice());
+                    break;
+                default:
+                    this.filteredHabits = this.filteredHabitsByJourney;
+            }
         }
     }
 

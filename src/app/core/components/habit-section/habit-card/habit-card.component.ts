@@ -615,7 +615,7 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     // Update progress immediately when starting
     this.percentageCompleted = this.calculateProgressPercentage();
 
-    // Update progress every second
+    // Update progress every 10 seconds (reduced from 1s to prevent System UI ANR)
     this.progressInterval = setInterval(() => {
       // Update the percentageCompleted property which will trigger change detection
       this.percentageCompleted = this.calculateProgressPercentage();
@@ -625,7 +625,7 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
         this.percentageCompleted = 100;
         this.clearProgress();
       }
-    }, 1000);
+    }, 10000);
   }
 
   /**
@@ -795,16 +795,9 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
    * Set up interval to periodically check button states
    */
   private setupButtonStateChecker(): void {
-    // Clear any existing interval
-    if (this.buttonStateCheckerInterval) {
-      clearInterval(this.buttonStateCheckerInterval);
-    }
-
-    // Check button states every second
-    this.buttonStateCheckerInterval = setInterval(() => {
-      // Trigger change detection to update button states
-      this.cdr.detectChanges();
-    }, 1000);
+    // Removed aggressive polling that was causing System UI ANR
+    // Change detection now relies on Angular's OnPush strategy and natural component updates
+    // This prevents excessive detectChanges() calls that blocked the main thread
 
     // Set up auto-reload timers for key time points
     this.setupAutoReloadTimers();
@@ -1466,13 +1459,14 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     this.percentageCompleted = 0;
     this.calculatePercentage(); // initial fill
 
+    // Update every 10 seconds (reduced from 1s to prevent System UI ANR)
     this.progressInterval = setInterval(() => {
       this.calculatePercentage();
 
       if (this.percentageCompleted >= 100) {
         this.clearProgress();
       }
-    }, 1000); // update every 1 sec
+    }, 10000);
   }
 
   calculatePercentage() {
@@ -1559,11 +1553,15 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
    * Safely get the coin reward
    */
   getCoinReward(): number {
-    return this.habit && this.habit.coinReward ? this.habit.coinReward : 0;
+    if (!this.habit) return 0;
+    const h: any = this.habit;
+    return Number(h.coinReward ?? h.rewardCoins ?? h.reward_coins ?? h.rewardsCoins ?? (h.rewards && (h.rewards.coins ?? h.rewards.rewardCoins)) ?? h.coins ?? 0);
   }
 
   getStreak(): number {
-    return this.habit && this.habit.streak ? this.habit.streak : 0;
+    if (!this.habit) return 0;
+    const h: any = this.habit;
+    return Number(h.streak ?? h.streakCount ?? h.streak_count ?? (h.rewards && h.rewards.streak) ?? 0);
   }
 
   /**
