@@ -85,10 +85,10 @@
 // Vertical separator line between time labels and event area
 .separator-line {
   width: 2px;
-  background-color: #E0E0E0;
+  background-color: #6B656A;
   flex-shrink: 0;
   align-self: stretch;
-  margin: 0 6px;
+margin: 0 0px 0px 6px;
   border-radius: 1px;
 }
 
@@ -107,7 +107,7 @@
 
 // Horizontal grid lines for each hour
 .grid-line {
-  border-top: 1px solid #F0F0F0;
+  border-top: 1px solid #6B656A;
   box-sizing: border-box;
 }
 
@@ -201,7 +201,7 @@
     align-items: center;
     justify-content: flex-end;
     gap: 8px;
-    margin-top: 6px;
+    margin-top: auto;
 
     img, ion-icon {
       width: 18px;

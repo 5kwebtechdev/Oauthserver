@@ -87,6 +87,13 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
    */
   @Input({ transform: booleanAttribute })
   isCurrentDateView: boolean = true;
+  /**
+   * Optional input for the selected date (used when long-pressing to view details)
+   * Format: YYYY-MM-DD
+   */
+  @Input()
+  selectedDate?: string;
+
 
   // Properties for list mode
   public currentActive: string = 'all';
@@ -112,6 +119,8 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   progressInterval: any;
   // Local flag to show timer icon only for this card when user clicked "Let's Go"
   public showLocalTimer: boolean = false;
+  // Local flag to show the short-lived "Start focus timer" bubble
+  public showStartBubble: boolean = false;
 
   // Popup state for start confirmation
   public showStartPopup: boolean = false;
@@ -126,6 +135,7 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   // Auto-reload timers
   private letsGoWindowTimer: any;
   private endTimeTimer: any;
+  private startBubbleTimer: any;
 
   public maxItemsToShow: number = 4;  // percentageWrapper is inside the single-card template which is rendered conditionally,
   // so query it with static: false and guard access in code.
@@ -193,6 +203,19 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           // Start progress with proper initialization
           // Show timer icon locally for this card since user pressed Let's Go
           this.showLocalTimer = true;
+          // Show the short-lived start bubble for 3s
+          if (!this.showStartBubble) {
+            if (this.startBubbleTimer) {
+              clearTimeout(this.startBubbleTimer);
+              this.startBubbleTimer = null;
+            }
+            this.showStartBubble = true;
+            this.startBubbleTimer = setTimeout(() => {
+              this.showStartBubble = false;
+              this.startBubbleTimer = null;
+              this.cdr.detectChanges();
+            }, 5000);
+          }
           this.startProgress();
           this.loadTodayTasks(); // This might need adjustment for tasks
           // Trigger change detection to update button states in other components
@@ -214,6 +237,19 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           this.saveOngoingState();
           // Show timer icon locally for this card since user pressed Let's Go
           this.showLocalTimer = true;
+          // Show the short-lived start bubble for 3s
+          if (!this.showStartBubble) {
+            if (this.startBubbleTimer) {
+              clearTimeout(this.startBubbleTimer);
+              this.startBubbleTimer = null;
+            }
+            this.showStartBubble = true;
+            this.startBubbleTimer = setTimeout(() => {
+              this.showStartBubble = false;
+              this.startBubbleTimer = null;
+              this.cdr.detectChanges();
+            }, 3000);
+          }
           // Start progress with proper initialization
           this.startProgress();
           this.loadHabits();
@@ -236,19 +272,14 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
       text: 'Start Now',
       buttonStyle: 'green',
       buttonMedium: true,
-      callback: () => {
-        this.onStartHabit();
-        this.closeStartPopup();
-      }
+      // callback intentionally omitted; handled via (primaryAction) output
     };
 
     const secondary: MindfulPopupCTA = {
       text: 'Discard',
       buttonStyle: 'bronze-transparent',
       buttonMedium: true,
-      callback: () => {
-        this.closeStartPopup();
-      }
+      // callback intentionally omitted; handled via (secondaryAction) output
     };
 
     this.startPopupConfig = {
@@ -271,6 +302,19 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
   }
 
   handlePopupPrimary() {
+    // Show the start bubble immediately for 3s and show local timer icon
+    if (this.startBubbleTimer) {
+      clearTimeout(this.startBubbleTimer);
+      this.startBubbleTimer = null;
+    }
+    this.showLocalTimer = true;
+    this.showStartBubble = true;
+    this.startBubbleTimer = setTimeout(() => {
+      this.showStartBubble = false;
+      this.startBubbleTimer = null;
+      this.cdr.detectChanges();
+    }, 3000);
+
     this.onStartHabit();
     this.closeStartPopup();
   }
@@ -293,19 +337,14 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
       text: 'Confirm',
       buttonStyle: 'green',
       buttonMedium: true,
-      callback: () => {
-        this.onCompleteHabit();
-        this.closeCompletePopup();
-      }
+      // callback intentionally omitted; handled via (primaryAction) output
     };
 
     const secondary: MindfulPopupCTA = {
       text: 'Discard',
       buttonStyle: 'bronze-transparent',
       buttonMedium: true,
-      callback: () => {
-        this.closeCompletePopup();
-      }
+      // callback intentionally omitted; handled via (secondaryAction) output
     };
 
     this.completePopupConfig = {
@@ -350,19 +389,14 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
       text: 'Keep Going',
       buttonStyle: 'green',
       buttonMedium: true,
-      callback: () => {
-        this.closeAbortPopup();
-      }
+      // callback intentionally omitted; handled via (primaryAction) output
     };
 
     const secondary: MindfulPopupCTA = {
       text: 'Abort Anyways',
       buttonStyle: 'bronze-transparent',
       buttonMedium: true,
-      callback: () => {
-        this.onAbortHabit();
-        this.closeAbortPopup();
-      }
+      // callback intentionally omitted; handled via (secondaryAction) output
     };
 
     this.abortPopupConfig = {
@@ -411,6 +445,12 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           this.resetProgress();
           // Hide local timer icon for this card
           this.showLocalTimer = false;
+          // Hide and clear start bubble timer if present
+          this.showStartBubble = false;
+          if (this.startBubbleTimer) {
+            clearTimeout(this.startBubbleTimer);
+            this.startBubbleTimer = null;
+          }
           this.loadTodayTasks();
           // Trigger change detection to update button states in other components
           this.cdr.detectChanges();
@@ -434,6 +474,12 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           this.resetProgress();
           // Hide local timer icon for this card
           this.showLocalTimer = false;
+          // Hide and clear start bubble timer if present
+          this.showStartBubble = false;
+          if (this.startBubbleTimer) {
+            clearTimeout(this.startBubbleTimer);
+            this.startBubbleTimer = null;
+          }
           this.loadHabits();
           // Trigger change detection to update button states in other components
           this.cdr.detectChanges();
@@ -543,11 +589,27 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           // Set progress to 100% when completed
           this.percentageCompleted = 100;
           // Hide local timer icon for this card when completed
-          this.showLocalTimer = false;
+              this.showLocalTimer = false;
+              // Hide and clear start bubble timer if present
+              this.showStartBubble = false;
+              if (this.startBubbleTimer) {
+                clearTimeout(this.startBubbleTimer);
+                this.startBubbleTimer = null;
+              }
           this.loadTodayTasks();
           this.clearProgress();
           // Trigger change detection to update button states in other components
           this.cdr.detectChanges();
+
+          // Ensure today's habits endpoint is refreshed after marking done
+          try {
+            const today = new Date();
+            const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            console.log('Refreshing habits-by-date API for', formatted);
+            this.habitService.loadHabitsForDate(formatted, true).subscribe({ next: () => { this.cdr.detectChanges(); }, error: () => {} });
+          } catch (e) {
+            // ignore
+          }
         },
         error: (err: any) => {
           console.error('Failed to complete task', err);
@@ -566,10 +628,26 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
           this.percentageCompleted = 100;
           // Hide local timer icon for this card when completed
           this.showLocalTimer = false;
+          // Hide and clear start bubble timer if present
+          this.showStartBubble = false;
+          if (this.startBubbleTimer) {
+            clearTimeout(this.startBubbleTimer);
+            this.startBubbleTimer = null;
+          }
           this.loadHabits();
           this.clearProgress();
           // Trigger change detection to update button states in other components
           this.cdr.detectChanges();
+
+          // Ensure today's habits endpoint is refreshed after marking done
+          try {
+            const today = new Date();
+            const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            console.log('Refreshing habits-by-date API for', formatted);
+            this.habitService.loadHabitsForDate(formatted, true).subscribe({ next: () => { this.cdr.detectChanges(); }, error: () => {} });
+          } catch (e) {
+            // ignore
+          }
         },
         error: (err: any) => {
           console.error('Failed to complete habit', err);
@@ -928,6 +1006,11 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
     if (this.userProfileSubscription) {
       this.userProfileSubscription.unsubscribe();
     }
+    // Clear start bubble timer if present
+    if (this.startBubbleTimer) {
+      clearTimeout(this.startBubbleTimer);
+      this.startBubbleTimer = null;
+    }
   }
 
   calculatePercentageCompleted() {
@@ -981,9 +1064,24 @@ export class HabitCardComponent implements OnInit, OnChanges, AfterViewInit, OnD
       return;
     }
 
-    // For habits and tasks, navigate to habit-detail page
+    // Determine the date to use - either the provided selectedDate or today's date
+    let dateForApi: string;
+    if (this.selectedDate) {
+      dateForApi = this.selectedDate;
+    } else {
+      // Default to today's date in YYYY-MM-DD format
+      const today = new Date();
+      dateForApi = this.formatDateForApi(today);
+    }
+
+    // For habits and tasks, navigate to habit-detail page with date information
     this.router.navigate(['/authed/habit-detail', itemId], {
-      state: { habit: this.habit, type: itemType, fromLongPress: true },
+      state: { 
+        habit: this.habit, 
+        type: itemType, 
+        fromLongPress: true,
+        selectedDate: dateForApi 
+      },
       queryParams: { type: itemType }
     }).catch(err => {
       console.error('Navigation to habit detail failed:', err);

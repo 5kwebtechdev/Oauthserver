@@ -89,6 +89,9 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
     const habitType = history.state?.['type'] || stateHabit?.type;
     this.navigationOriginType = String(habitType || 'habits');
 
+    // Get selectedDate from navigation state (from long-press)
+    const selectedDate = history.state?.['selectedDate'];
+
     // Get ID from state or URL
     const idFromState = stateHabit?.id;
     const idFromUrl = this.route.snapshot.paramMap.get('id');
@@ -101,7 +104,7 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
 
     // Always call API to get fresh data
     if (id) {
-      this.loadDetail(+id, type);
+      this.loadDetail(+id, type, selectedDate);
     } else {
       console.warn('❌ No ID found in navigation state or URL params');
     }
@@ -127,8 +130,20 @@ export class HabitDetailComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  loadDetail(id: number, type: 'habits' | 'tasks' | 'timetable') {
-    const api$ = type === 'tasks' ? this.TaskApi.getTaskById(id) : this.HabitApi.getHabitById(id);
+  loadDetail(id: number, type: 'habits' | 'tasks' | 'timetable', date?: string) {
+    // Use date-specific API if date is provided, otherwise use regular API
+    let api$;
+    if (date) {
+      // Call date-specific API endpoints
+      api$ = type === 'tasks' 
+        ? this.TaskApi.getTaskByIdWithDate(id, date) 
+        : this.HabitApi.getHabitByIdWithDate(id, date);
+    } else {
+      // Call regular API endpoints
+      api$ = type === 'tasks' 
+        ? this.TaskApi.getTaskById(id) 
+        : this.HabitApi.getHabitById(id);
+    }
 
     api$.pipe(
       finalize(() => {

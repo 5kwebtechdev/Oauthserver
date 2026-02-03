@@ -314,6 +314,13 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   }
 
+  /**
+   * Get the currently selected date as a YYYY-MM-DD string
+   */
+  getSelectedDateString(): string {
+    return this.formatDateToYYYYMMDD(this.selectedDate);
+  }
+
   // Fetch habits and tasks for the currently selected date and populate arrays used by template
   updateHabitsAndTasksForSelectedDate() {
     const dateStr = this.formatDateToYYYYMMDD(this.selectedDate);

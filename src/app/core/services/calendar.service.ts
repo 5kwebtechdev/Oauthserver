@@ -96,7 +96,9 @@ export class CalendarService {
                 type: 'task',
                 description: task.description,
                 tags: task.tags,
-                priority: task.priority
+                priority: task.priority,
+                // Preserve creator id if provided by backend (createdBy or created_by)
+                createdBy: (task as any).createdBy ?? (task as any).created_by ?? (task as any).created_by_id ?? undefined
             });
         });
 
@@ -123,7 +125,9 @@ export class CalendarService {
                 description: habit.description,
                 tags: habit.tags,
                 priority: habit.priority,
-                status: habit.status
+                status: habit.status,
+                // Preserve creator id if provided by backend
+                createdBy: (habit as any).createdBy ?? (habit as any).created_by ?? (habit as any).created_by_id ?? undefined
             });
         });
 

@@ -80,6 +80,17 @@ export class TaskApi {
     }
 
     /**
+     * Get task by id with specific date
+     * @param id Task id
+     * @param date The date in YYYY-MM-DD format
+     * @returns Observable with task details for the specified date
+     */
+    getTaskByIdWithDate(id: number, date: string): Observable<any> {
+        const url = `${this.base}/tasks/task-by-id?taskId=${id}&date=${date}`;
+        return this.http.get(url, { headers: this.headers() });
+    }
+
+    /**
      * Update a task by id
      * @param id Task id
      * @param payload Body to send to the update endpoint

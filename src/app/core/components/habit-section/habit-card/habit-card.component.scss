@@ -463,9 +463,16 @@ h4 {
 
 /* Timer icon shown when an activity is in-progress */
 .timer-icon {
-  width: 32px;
-  height: 32px;
-  aspect-ratio: 1/1;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px; /* ensure at least 4px space between svg and bubble */
+  cursor: pointer;
+}
+
+.timer-icon svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 /* Size the header "view all" icon in the Day At A Glance card */
@@ -538,22 +545,17 @@ h4 {
 }
 
 .bubble {
-  position: relative;
-  position: relative;
-  background: #A1A7ED;
-  color: #FFFFFF;
-  /* text color */
-  font-family: 'Nunito', sans-serif;
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 21px;
-
-  border: #A1A7D8 solid 1px;
-  display: inline-flex;
-  padding: 0px 2px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 4px;
+    position: relative;
+    background: #A1A7ED;
+    color: #FFFFFF;
+    font-family: "Nunito", sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    border: #A1A7D8 solid 1px;
+    padding: 0px 2px;
+    align-items: center;
+    border-radius: 4px;
+    white-space: nowrap;
 }
 
 .bubble:after {

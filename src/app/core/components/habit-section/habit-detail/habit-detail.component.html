@@ -24,7 +24,7 @@
                         }}</span>
                 </div>
                 <span>
-                    {{ habit.startDate | date:'MMM d' }}.
+                    {{ habit?.completionDate ? (habit.completionDate | date:'MMM d') : (habit.startDate | date:'MMM d') }}.
                     {{ habit.startTime.slice(0,5) }} - {{ habit.endTime.slice(0,5) }}
                 </span>
                 <span style="color:#6B656A;">Created on {{ habit.createdAt | date:'MMM d, y' }}</span>

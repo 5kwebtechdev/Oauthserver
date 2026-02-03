@@ -55,7 +55,7 @@
 
                 <div class="coin-count">
                     <img src="/assets/Icons-Neutral/Icons-Coins.png" alt="Coin" class="count-icon">
-                    <div class="count-value">+{{ item.count }}</div>
+                    <div class="count-value" [ngClass]="{ 'negative': item.count < 0 }">{{ item.count < 0 ? item.count : ('+' + item.count) }}</div>
                 </div>
             </div>
         </div>

@@ -127,11 +127,15 @@ export class TimelineComponent implements OnInit, OnDestroy {
    * Handle long-press on timetable event in timeline
    */
   async onTimetableLongPress(event: TimelineEvent): Promise<void> {
-    if (!event || !event.id || event.type !== 'timetable') {
+    if (!event || !event.id) {
       return;
     }
 
-    const { HabitInputComponent } = await import('../habit-input/habit-input.component');
+    const eventType = event.type;
+
+    // For timetable events, open habit-input in edit mode
+    if (eventType === 'timetable') {
+      const { HabitInputComponent } = await import('../habit-input/habit-input.component');
     const modal = await this.modalCtrl.create({
       component: HabitInputComponent,
       componentProps: {
@@ -146,6 +150,26 @@ export class TimelineComponent implements OnInit, OnDestroy {
     const { data } = await modal.onWillDismiss();
     if (data) {
       this.loadEvents();
+    }
+      return;
+    }
+
+    // For habits and tasks, navigate to habit-detail page
+    if (eventType === 'habit' || eventType === 'task') {
+      const itemType = eventType === 'habit' ? 'habits' : 'tasks';
+      const itemId = Number(event.id);
+
+      this.router.navigate(['/authed/habit-detail', itemId], {
+        state: { 
+          habit: event, 
+          type: itemType, 
+          fromLongPress: true,
+          selectedDate: this.selectedDate 
+        },
+        queryParams: { type: itemType }
+      }).catch(err => {
+        console.error('Navigation to habit detail failed:', err);
+      });
     }
   }
 }

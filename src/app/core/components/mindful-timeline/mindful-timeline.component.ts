@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges, Output, EventEmitter } from '@angular/core';
+import { AuthService } from '../../services/auth.service';
 
 import { TimelineEvent } from '../../models/calendar.model';
 
@@ -26,6 +27,7 @@ export class MindfulTimelineComponent implements OnInit, OnChanges {
   @Input() events: EventPosition[] = [];
   @Output() eventLongPressed = new EventEmitter<TimelineEvent>();
   selectedEventId: number | null = null;
+  currentUserId: number | null = null;
 
   timeSlots: string[] = [];
   compressedSlots: CompressedBlock[] = [];
@@ -34,6 +36,12 @@ export class MindfulTimelineComponent implements OnInit, OnChanges {
   minCardHeight = 64; // Minimum card height to ensure title and time are always visible
   cardGap = 6; // Gap between overlapping cards
   totalGridHeight = 0;
+
+  constructor(private authService: AuthService) {
+    // read current user id at construction - authService reads from localStorage
+    const uid = this.authService.getUserId();
+    this.currentUserId = uid ? Number(uid) : null;
+  }
 
   ngOnInit(): void {
     this.initializeTimeline();
@@ -321,6 +329,19 @@ export class MindfulTimelineComponent implements OnInit, OnChanges {
   /** Mark event as selected (bring to front) */
   onEventClick(event: TimelineEvent): void {
     this.selectedEventId = event?.id ?? null;
+  }
+
+  /**
+   * Return appropriate note icon path for habit/task cards.
+   * If the event was created by someone other than current user, show parent icon.
+   * Otherwise show child icon.
+   */
+  getNoteIcon(event: any): string {
+    const createdBy = event?.createdBy ?? event?.created_by ?? null;
+    if (createdBy !== null && this.currentUserId !== null && Number(createdBy) !== this.currentUserId) {
+      return '/assets/icons/notes-parent.svg';
+    }
+    return '/assets/icons/note-child.svg';
   }
 
   /**

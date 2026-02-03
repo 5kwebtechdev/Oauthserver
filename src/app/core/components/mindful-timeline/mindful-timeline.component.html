@@ -47,7 +47,10 @@
                 <h4>{{ event.title }}</h4>
                 <h5>{{ event.startTime }}-{{ event.endTime }}</h5>
               </div>
-              <span *ngIf="event.tags && event.tags.length > 0" class="event-badge">{{ event.tags[0] }}</span>
+              <span *ngIf="event.type === 'timetable' && event.tags && event.tags.length > 0" class="event-badge">{{ event.tags[0] }}</span>
+              <div class="event-actions">
+                <img *ngIf="event.type === 'habit' || event.type === 'task'" [src]="getNoteIcon(event)" alt="note icon" />
+              </div>
             </div>
           </div>
         </div>
