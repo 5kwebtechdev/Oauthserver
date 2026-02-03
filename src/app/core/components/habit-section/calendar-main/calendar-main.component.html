@@ -73,7 +73,9 @@
                 </ng-container>
                 <ng-container *ngIf="item.type !== 'EVENT'">
                     <habit-card [habit]="item" [startTime]="item.startTimeStamp" [endTime]="item.endTimeStamp"
-                        [inProgress]="isItemInProgress(item)" [isParentOverride]="isParent" [isCurrentDateView]="isSelectedDateToday()" mode="single"></habit-card>
+                        [inProgress]="isItemInProgress(item)" [isParentOverride]="isParent" 
+                        [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()" 
+                        mode="single"></habit-card>
                 </ng-container>
             </div>
         </div>

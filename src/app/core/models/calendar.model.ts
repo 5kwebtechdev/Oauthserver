@@ -65,4 +65,6 @@ export interface TimelineEvent {
     _height?: number;
     _column?: number;
     _columnCount?: number;
+    // Who created this item (server may return `createdBy` or `created_by`)
+    createdBy?: number;
 }

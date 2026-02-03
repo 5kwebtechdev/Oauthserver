@@ -175,6 +175,14 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
         this.loadTasksForSelectedDate(date);
     }
 
+    /**
+     * Get the selected date as a YYYY-MM-DD string
+     */
+    getSelectedDateString(): string {
+        const date = this.selectedDate;
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
+
     loadHabits(forceReload: boolean = false): void {
         this.loading = true;
         const formattedDate = this.habitService.formatDateToYYYYMMDD(this.selectedDate);

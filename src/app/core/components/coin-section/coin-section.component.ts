@@ -54,9 +54,17 @@ export class CoinSectionComponent implements OnInit {
         this.isLoading = true;
         this.coinService.loadCoinHistory().subscribe({
             next: (response) => {
-                if (response && response.history) {
-                    this.coinTotal = response.history.reduce((sum: number, item: CoinHistoryItem) => sum + item.amount, 0);
-                    this.coinItems = this.mapHistoryToCoinItems(response.history);
+                if (response) {
+                    // Prefer server-provided totalCoins if available, otherwise compute from history
+                    if (response.totalCoins !== undefined && response.totalCoins !== null) {
+                        this.coinTotal = response.totalCoins;
+                    } else if (response.history) {
+                        this.coinTotal = response.history.reduce((sum: number, item: CoinHistoryItem) => sum + item.amount, 0);
+                    }
+
+                    if (response.history) {
+                        this.coinItems = this.mapHistoryToCoinItems(response.history);
+                    }
                 }
                 this.isLoading = false;
             },

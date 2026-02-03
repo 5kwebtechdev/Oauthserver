@@ -50,6 +50,17 @@ export class HabitApi {
         return this.http.get(url, { headers: this.headers() });
     }
 
+    /**
+     * Get habit by id with specific date
+     * @param id Habit id
+     * @param date The date in YYYY-MM-DD format
+     * @returns Observable with habit details for the specified date
+     */
+    getHabitByIdWithDate(id: number, date: string): Observable<any> {
+        const url = `${this.base}/habits/habit-by-id?habitId=${id}&date=${date}`;
+        return this.http.get(url, { headers: this.headers() });
+    }
+
     getHabitsBySearch(filters?: any): Observable<any> {
         const url = `${this.base}/habits/search`;
         let params = new HttpParams();
