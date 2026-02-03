@@ -15,14 +15,18 @@ import { LearningCardData } from 'src/app/core/models/learning.models';
 export class LearningChallengeCardComponent {
     @Input() item!: LearningCardData;
     @Input() index: number = 0;
+    /** Optional source route to return to when back is pressed from the description page */
+    @Input() source?: string;
     @Output() cardClick = new EventEmitter<{ item: LearningCardData; index: number }>();
 
     constructor(private router: Router) { }
 
     onCardClick() {
         this.cardClick.emit({ item: this.item, index: this.index });
-        // Navigate with the challenge ID
-        this.router.navigate(['/authed/content/description', this.item.id]);
+        // Navigate with the challenge ID, passing source so description page can return correctly
+        this.router.navigate(['/authed/content/description', this.item.id], {
+            state: this.source ? { source: this.source } : undefined
+        });
     }
 
     // Type-safe image error handler used by the template.
