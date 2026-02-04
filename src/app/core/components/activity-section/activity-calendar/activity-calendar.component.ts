@@ -4,13 +4,14 @@ import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { HabitCardComponent } from '../habit-card/habit-card.component';
+import { ActivityCardComponent } from '../activity-card/activity-card.component';
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { ModalController } from '@ionic/angular';
 import { CalendarService } from '../../../services/calendar.service';
 import { MoodService } from '../../../services/mood.service';
 import { MoodTransition, MoodData } from '../../../models/mood.model';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, Observable } from 'rxjs';
+import { CustomToastService, Toast } from '../../../services/custom-toast.service';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
@@ -19,12 +20,12 @@ import { LongPressDirective } from '../../../directives/gestureControlDirective'
 
 @Component({
   standalone: true,
-  selector: 'calendar-main',
-  templateUrl: './calendar-main.component.html',
-  styleUrls: ['./calendar-main.component.scss'],
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulInputsModule, MindfulButtonComponent, HabitCardComponent, LongPressDirective, EmptyStateComponent]
+  selector: 'activity-calendar',
+  templateUrl: './activity-calendar.component.html',
+  styleUrls: ['./activity-calendar.component.scss'],
+  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulInputsModule, MindfulButtonComponent, ActivityCardComponent, LongPressDirective, EmptyStateComponent]
 })
-export class CalendarMainComponent implements OnInit, OnDestroy {
+export class ActivityCalendarComponent implements OnInit, OnDestroy {
   dateActivities: { [key: string]: { timetable?: boolean, task?: boolean, habit?: boolean } } = {};
   selectedDate: Date = new Date(); // Current date selected by default
   habitsForSelectedDate: any[] = [];
@@ -37,6 +38,7 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   // Combined items for selected date (events + habits + tasks) sorted for display
   public combinedForSelectedDate: any[] = [];
+  public toast$: Observable<Toast | null>;
 
   constructor(
     private modalCtrl: ModalController,
@@ -45,15 +47,17 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     private router: Router,
     private buttonLogic: HabitButtonLogicService,
     private profileSelector: ProfileSelectorService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastService: CustomToastService
   ) {
-    console.log('CalendarMainComponent initialized');
+    console.log('ActivityCalendarComponent initialized');
+    this.toast$ = this.toastService.toast$;
   }
 
 
   ngOnInit() {
-    console.log('CalendarMainComponent ngOnInit');
-    // Detect whether current viewer is a parent so we can pass the flag to habit-card instances
+    console.log('ActivityCalendarComponent ngOnInit');
+    // Detect whether current viewer is a parent so we can pass the flag to activity-card instances
     try {
       const authParent = this.authService && this.authService.isParentUser && this.authService.isParentUser();
       if (authParent) {
@@ -76,7 +80,7 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Flag used to indicate viewer is a parent (passed down to habit-card)
+  // Flag used to indicate viewer is a parent (passed down to activity-card)
   public isParent: boolean = false;
 
   // Handler called from template when mindful-calendar emits a dateSelected event
@@ -527,9 +531,9 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
   }
 
   async openHabitInput() {
-    const { HabitInputComponent } = await import('../habit-input/habit-input.component');
+    const { ActivityInputComponent } = await import('../activity-input/activity-input.component');
     const modal = await this.modalCtrl.create({
-      component: HabitInputComponent,
+      component: ActivityInputComponent,
       componentProps: {}
     });
     await modal.present();
@@ -603,9 +607,9 @@ export class CalendarMainComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const { HabitInputComponent } = await import('../habit-input/habit-input.component');
+    const { ActivityInputComponent } = await import('../activity-input/activity-input.component');
     const modal = await this.modalCtrl.create({
-      component: HabitInputComponent,
+      component: ActivityInputComponent,
       componentProps: {
         editingHabit: event,
         initialTab: 'timetable'

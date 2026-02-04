@@ -87,6 +87,12 @@
   --text_color: #45456A;
 }
 
+.activity {
+  --background: #E8ECF7;
+  --border-color: #524F84;
+  --text_color: #45456A;
+}
+
 .task {
   --background: #FDEAD7;
   --border-color: #EE6621;
@@ -204,29 +210,8 @@
   display: none;
 }
 
-.badge.pending {
-
-  display: inline-flex;
-  white-space: nowrap;
-  width: auto;
-  height: 34px;
-  padding: 10px 24px;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-}
-
-.badge.ongoing {
-  display: inline-flex;
-  white-space: nowrap;
-  width: auto;
-  height: 34px;
-  padding: 10px 24px;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-}
-
+.badge.pending,
+.badge.ongoing,
 .badge.completed {
   display: inline-flex;
   white-space: nowrap;
@@ -370,8 +355,7 @@
   display: inline-flex;
   white-space: nowrap;
   width: auto;
-  height: 34px;
-  padding: 10px 24px;
+    padding: 10px 16px;
   justify-content: center;
   align-items: center;
   gap: 8px;
@@ -409,6 +393,70 @@
   font-size: 13px;
   font-weight: 600;
 
+}
+
+/* On activity-page: make routine badges use same visuals as the journey badges
+   and hide the small time sublabel only on this page. Targets the selectors
+   used in activity-page-content component. */
+:host-context(.activity-page-content) .badge .badge-sub {
+  display: none;
+}
+
+:host-context(.activity-page-content) .routine-selectors .badge:not(.active) {
+  background: white;
+  border: 1px solid #90214D;
+}
+
+:host-context(.activity-page-content) .routine-selectors .badge.active {
+  background: #90214D;
+  border: none;
+}
+
+:host-context(.activity-page-content) .routine-selectors .badge {
+  display: inline-flex;
+  white-space: nowrap;
+  width: auto;
+  padding: 8px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 26px;
+}
+
+:host-context(.activity-page-content) .routine-selectors .badge p {
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+:host-context(.activity-page-content) .routine-selectors .badge.active p {
+  color: #FDFDFD;
+}
+
+/* Ensure the stroke gradient is removed and the border matches the journey/pending
+   look for routine badges when shown on the activity page */
+:host-context(.activity-page-content) .routine-selectors .badge {
+  border: 1px solid #90214D !important;
+}
+
+:host-context(.activity-page-content) .routine-selectors .badge:before {
+  display: none !important;
+}
+
+/* Also target the routine badge classes directly (in case they are not wrapped
+   by .routine-selectors in the DOM) to ensure the gradient stroke is removed */
+:host-context(.activity-page-content) .badge.morning,
+:host-context(.activity-page-content) .badge.evening,
+:host-context(.activity-page-content) .badge.night {
+  --stroke_gradient: transparent !important;
+  border: 1px solid #90214D !important;
+}
+
+:host-context(.activity-page-content) .badge.morning:before,
+:host-context(.activity-page-content) .badge.evening:before,
+:host-context(.activity-page-content) .badge.night:before {
+  display: none !important;
 }
 
 .habit-input.inactive,

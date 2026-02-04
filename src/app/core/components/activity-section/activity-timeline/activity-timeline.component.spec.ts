@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { TimelineComponent } from './timeline.component';
+import { ActivityTimelineComponent } from './activity-timeline.component';
 
-describe('TimelineComponent', () => {
-  let component: TimelineComponent;
-  let fixture: ComponentFixture<TimelineComponent>;
+describe('ActivityTimelineComponent', () => {
+  let component: ActivityTimelineComponent;
+  let fixture: ComponentFixture<ActivityTimelineComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ TimelineComponent ],
+      declarations: [ ActivityTimelineComponent ],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TimelineComponent);
+    fixture = TestBed.createComponent(ActivityTimelineComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

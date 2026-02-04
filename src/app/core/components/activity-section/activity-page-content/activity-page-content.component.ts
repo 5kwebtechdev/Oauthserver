@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
-import { HabitCardComponent } from '../habit-card/habit-card.component';
+import { ActivityCardComponent } from '../activity-card/activity-card.component';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
@@ -11,18 +11,19 @@ import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { TaskApi } from '../../../api/task.api';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { AuthService } from '../../../services/auth.service';
+import { CustomToastService, Toast } from '../../../services/custom-toast.service';
 import { Habit } from '../habit.types';
-import { Subscription, filter, take } from 'rxjs';
+import { Observable, Subscription, filter, take } from 'rxjs';
 
 @Component({
     standalone: true,
-    selector: 'habit-page-content',
-    templateUrl: './habit-page-content.component.html',
-    styleUrls: ['./habit-page-content.component.scss'],
-    imports: [CommonModule, IonicModule, HabitCardComponent, MindfulInputsModule, MindfulBadgeComponent, EmptyStateComponent]
+    selector: 'activity-page-content',
+    templateUrl: './activity-page-content.component.html',
+    styleUrls: ['./activity-page-content.component.scss'],
+    imports: [CommonModule, IonicModule, ActivityCardComponent, MindfulInputsModule, MindfulBadgeComponent, EmptyStateComponent]
 })
 
-export class HabitPageContentComponent implements OnInit, OnDestroy {
+export class ActivityPageContentComponent implements OnInit, OnDestroy {
     public currentMainTab: 'habits' | 'tasks' = 'habits';
     public showContent: boolean = true;
     public subFilter: 'journey' | 'priorities' | 'routine' | 'all' = 'journey';
@@ -52,6 +53,9 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
     private subscriptions = new Subscription();
     private timestampInterval: any;
 
+    // Observable for shared toast service
+    toast$: Observable<Toast | null>;
+
     constructor(
         private habitService: HabitService,
         private buttonLogic: HabitButtonLogicService,
@@ -59,8 +63,11 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private profileSelector: ProfileSelectorService,
         private authService: AuthService,
-        private cdr: ChangeDetectorRef
-    ) { }
+        private cdr: ChangeDetectorRef,
+        private toastService: CustomToastService
+    ) {
+        this.toast$ = this.toastService.toast$;
+    }
 
     /**
      * Whether to show the pet illustration in empty states.
@@ -267,7 +274,7 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
                             status: this.buttonLogic.normalizeStatus(t.status),
                             priority: t.priority?.trim().toLowerCase(),
                             routine: t.routine?.trim().toLowerCase(),
-                            // Normalize reward/streak fields so HabitCardComponent can read them
+                            // Normalize reward/streak fields so ActivityCardComponent can read them
                             coinReward: Number(t.coinReward ?? t.rewardCoins ?? t.reward_coins ?? t.rewardsCoins ?? t.rewards?.coins ?? t.rewards?.rewardCoins ?? 0),
                             coinsEarned: Number(t.coinsEarned ?? t.coins ?? t.coins_earned ?? 0),
                             streak: Number(t.streak ?? t.streakCount ?? t.streak_count ?? 0),
@@ -501,10 +508,10 @@ export class HabitPageContentComponent implements OnInit, OnDestroy {
 
     /**
      * Handle long press on a habit/task card
-     * Navigation is already handled by habit-card component
+     * Navigation is already handled by activity-card component
      */
     onCardLongPress(habit: any): void {
-        // Long press navigation is handled by habit-card component
+        // Long press navigation is handled by activity-card component
         // This handler can be used for parent-level logic if needed
         console.log('[HabitPageContent] Card long-pressed:', habit?.title);
     }

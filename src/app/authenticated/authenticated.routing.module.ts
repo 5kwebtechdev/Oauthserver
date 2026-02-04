@@ -4,8 +4,8 @@ import { AuthenticatedComponent } from "./authenticated.component";
 import { UserDashboardComponent } from "./user-dashboard/user-dashboard.component";
 import { DashboardRedirectGuard } from '../core/guards/dashboard-redirect.guard';
 import { UserProfileComponent } from '../core/components/user-profile/user-profile.component';
-import { TimelineComponent } from "../core/components/habit-section/timeline/timeline.component";
-import { HabitDetailComponent } from "../core/components/habit-section/habit-detail/habit-detail.component";
+import { ActivityTimelineComponent } from "../core/components/activity-section/activity-timeline/activity-timeline.component";
+import { ActivityDetailComponent } from "../core/components/activity-section/activity-detail/activity-detail.component";
 
 
 const routes: Routes = [
@@ -67,14 +67,14 @@ const routes: Routes = [
         path: 'delete-account',
         loadComponent: () => import('../core/components/user-profile/delete-account/delete-account.component').then(m => m.DeleteAccountComponent)
       }, {
-        path: 'timeline',
-        component: TimelineComponent
+        path: 'activity-timeline',
+        component: ActivityTimelineComponent
       }, {
-        path: 'habit-detail/:id',
-        component: HabitDetailComponent
+        path: 'activity-detail/:id',
+        component: ActivityDetailComponent
       }, {
-        path: 'habit-input',
-        loadComponent: () => import('../core/components/habit-section/habit-input/habit-input.component').then(m => m.HabitInputComponent)
+        path: 'activity-input',
+        loadComponent: () => import('../core/components/activity-section/activity-input/activity-input.component').then(m => m.ActivityInputComponent)
       },
       {
         path: 'content',
@@ -98,11 +98,11 @@ const routes: Routes = [
         path: 'notes/new',
         loadComponent: () => import('../core/components/notes/notes-new/notes-new.component').then(m => m.NotesNewComponent)
       }, {
-        path: 'habit-page',
-        loadComponent: () => import('../core/components/habit-section/habit-page/habit-page.component').then(m => m.HabitPageComponent)
+        path: 'activity-page',
+        loadComponent: () => import('../core/components/activity-section/activity-page/activity-page.component').then(m => m.ActivityPageComponent)
       }, {
-        path: 'calendar-main',
-        loadComponent: () => import('../core/components/habit-section/calendar-main/calendar-main.component').then(m => m.CalendarMainComponent)
+        path: 'activity-calendar',
+        loadComponent: () => import('../core/components/activity-section/activity-calendar/activity-calendar.component').then(m => m.ActivityCalendarComponent)
       }, {
         path: 'coin',
         loadComponent: () => import('../core/components/coin-section/coin-section.component').then(m => m.CoinSectionComponent)
