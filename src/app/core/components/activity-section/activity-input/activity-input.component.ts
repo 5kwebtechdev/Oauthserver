@@ -19,6 +19,7 @@ import { Router } from '@angular/router';
 import { NavigationService } from '../../../services/navigation.service';
 import { AuthService } from '../../../services/auth.service';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
+import { CustomToastService } from '../../../services/custom-toast.service';
 
 @Component({
   standalone: true,
@@ -223,7 +224,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
     private navigation: NavigationService,
     private authService: AuthService,
     private profileSelector: ProfileSelectorService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private toastService: CustomToastService
   ) { }
 
   get navigatorActions(): Array<{ type: 'edit' | 'icon', src?: string, alt?: string }> {
@@ -542,6 +544,13 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
     return Array.isArray(this.selectedTags) && this.selectedTags.length ? this.selectedTags.map(t => t.value || t.key) : [];
   }
 
+  private showSuccessToast(activityName: string, category: string): void {
+    const categoryLabel = category.charAt(0).toUpperCase() + category.slice(1);
+    const message = `${activityName} secured as ${categoryLabel}. Check View all if it is not for today.`;
+    this.toastService.successWithIcon(message, 'assets/icons/tick-small.svg', '#2D6830', 4000);
+  }
+
+
   submit() {
     this.attemptedSubmit = true;
     // clear any previous server-side message
@@ -611,7 +620,10 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
         rewardCoins: habit.coinReward ?? 5,
         sharedWithParent: this.isChild ? !this.isPrivate : false
       };
-      if (routine) payload.routine = routine;
+      // Always include the routine field in the payload. If the user did not select
+      // a routine (or explicitly deselected it), `routine` will be `null` and we
+      // want to send that so the backend can clear any existing routine value.
+      payload.routine = routine;
       // Only include daysOfWeek if NOT everyday
       if (!(this.everyday && coversAllDays)) {
         payload.daysOfWeek = daysOfWeek;
@@ -651,7 +663,9 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
         coinReward: 5,
         sharedWithParent: this.isChild ? !this.isPrivate : false
       };
-      if (routine) payload.routine = routine;
+      // Always include the routine field so a missing selection is represented
+      // explicitly as `null` in the payload.
+      payload.routine = routine;
       // Only include daysOfWeek if NOT everyday
       if (!(this.everyday && coversAllDays)) {
         payload.daysOfWeek = daysOfWeek;
@@ -688,6 +702,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
             try {
               const updatedHabit = this.buildHabitFromResponse(res, habit, 'tasks', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.updateHabit(updatedHabit);
+              this.showSuccessToast(this.title, 'tasks');
               this.modalCtrl.dismiss().catch(() => {});
             } finally { this.isSubmitting = false; }
           },
@@ -700,6 +715,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
               const createdHabit = this.buildHabitFromResponse(res, habit, 'tasks', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.addHabit(createdHabit);
               this.habitService.notifyTaskAdded();
+              this.showSuccessToast(this.title, 'tasks');
               this.modalCtrl.dismiss().catch(() => {});
             } finally { this.isSubmitting = false; }
           },
@@ -720,6 +736,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
             try {
               const updatedHabit = this.buildHabitFromResponse(res, habit, 'timetable', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.updateHabit(updatedHabit);
+              this.showSuccessToast(this.title, 'timetable');
               this.modalCtrl.dismiss().catch(() => {});
             } finally { this.isSubmitting = false; }
           },
@@ -731,6 +748,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
             try {
               const createdHabit = this.buildHabitFromResponse(res, habit, 'timetable', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.addHabit(createdHabit);
+              this.showSuccessToast(this.title, 'timetable');
               this.modalCtrl.dismiss().catch(() => {});
             } finally { this.isSubmitting = false; }
           },
@@ -749,6 +767,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
             try {
               const updatedHabit = this.buildHabitFromResponse(res, habit, 'habits', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.updateHabit(updatedHabit);
+              this.showSuccessToast(this.title, 'habits');
               this.modalCtrl.dismiss().catch(() => {});
             } finally { this.isSubmitting = false; }
           },
@@ -760,6 +779,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
             try {
               const createdHabit = this.buildHabitFromResponse(res, habit, 'habits', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.addHabit(createdHabit);
+              this.showSuccessToast(this.title, 'habits');
               this.modalCtrl.dismiss().catch(() => {});
             } finally { this.isSubmitting = false; }
           },
@@ -1052,6 +1072,12 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
 
     const finalizeLocalDelete = (idToRemove?: string) => {
       try { this.habitService.deleteHabit((idToRemove || this.editingId) as string); } catch (e: any) { console.warn('Local delete failed', e); }
+      
+      // Show delete toast before dismissing modal
+      const categoryLabel = this.currentActive.charAt(0).toUpperCase() + this.currentActive.slice(1);
+      const deleteMessage = `${this.title} deleted from ${categoryLabel}`;
+      this.toastService.successWithIcon(deleteMessage, 'assets/icons/tick-small.svg', '#2D6830', 4000);
+      
       try { this.modalCtrl.dismiss(); } catch { /* ignore if not modal */ }
       this.deletePopupVisible = false;
 

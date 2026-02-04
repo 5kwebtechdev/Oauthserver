@@ -90,7 +90,8 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     this.navigationOriginType = String(habitType || 'habits');
 
     // Get selectedDate from navigation state (from long-press)
-    const selectedDate = history.state?.['selectedDate'];
+      const selectedDate = history.state?.['selectedDate'];
+      this.selectedDateFromState = selectedDate || null;
 
     // Get ID from state or URL
     const idFromState = stateHabit?.id;
@@ -113,6 +114,9 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     this.setupButtonStateChecker();
   }
 
+  // If navigation provided a selected date (from long-press), store it here for view checks
+  private selectedDateFromState: string | null = null;
+
   ngOnDestroy(): void {
     // Clear all intervals
     this.clearProgress();
@@ -131,17 +135,30 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   loadDetail(id: number, type: 'habits' | 'tasks' | 'timetable', date?: string) {
-    // Use date-specific API if date is provided, otherwise use regular API
-    let api$;
-    if (date) {
-      // Call date-specific API endpoints
-      api$ = type === 'tasks' 
-        ? this.TaskApi.getTaskByIdWithDate(id, date) 
-        : this.HabitApi.getHabitByIdWithDate(id, date);
+    // If a date was provided, persist it for this id so future reloads (eg. after
+    // returning from edit/cancel) can reuse the same date-aware API. If no date
+    // is provided, consult sessionStorage for a previously saved date for this id.
+    let effectiveDate = date;
+    if (!effectiveDate) {
+      const stored = this.getStoredSelectedDate(type, id);
+      if (stored) {
+        effectiveDate = stored;
+      }
     } else {
-      // Call regular API endpoints
-      api$ = type === 'tasks' 
-        ? this.TaskApi.getTaskById(id) 
+      // persist provided date
+      this.setStoredSelectedDate(type, id, effectiveDate);
+    }
+
+    // Choose the appropriate API observable: prefer date-specific endpoints when
+    // we have an effectiveDate.
+    let api$;
+    if (effectiveDate) {
+      api$ = type === 'tasks'
+        ? this.TaskApi.getTaskByIdWithDate(id, effectiveDate)
+        : this.HabitApi.getHabitByIdWithDate(id, effectiveDate);
+    } else {
+      api$ = type === 'tasks'
+        ? this.TaskApi.getTaskById(id)
         : this.HabitApi.getHabitById(id);
     }
 
@@ -151,6 +168,13 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     ).subscribe({
       next: (res) => {
         this.habit = this.normalizeResponse(res, type);
+        // Debug: log tags so we can see what the backend returned and what we normalized
+        try {
+          // eslint-disable-next-line no-console
+          console.debug('ActivityDetail loaded tags ->', res?.tags, 'normalized ->', this.habit?.tags);
+        } catch (e) {}
+        // Ensure view updates immediately after async load
+        try { this.cdr.detectChanges(); } catch (e) {}
         this.prepareCoinStats();
         this.prepareMilestoneBadges();
 
@@ -169,6 +193,23 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
         console.error(`Error loading ${type} detail:`, err);
       }
     });
+  }
+
+  /** Store selected date in sessionStorage for a given id & type */
+  private setStoredSelectedDate(type: string, id: number, dateStr: string) {
+    try {
+      const key = `activity_detail_selected_date:${type}:${id}`;
+      sessionStorage.setItem(key, String(dateStr));
+    } catch (e) { /* ignore storage errors */ }
+  }
+
+  /** Retrieve stored selected date (yyyy-mm-dd) for a given id & type */
+  private getStoredSelectedDate(type: string, id: number): string | null {
+    try {
+      const key = `activity_detail_selected_date:${type}:${id}`;
+      const v = sessionStorage.getItem(key);
+      return v && v.length ? v : null;
+    } catch (e) { return null; }
   }
 
   /** Normalize API response to Habit type */
@@ -198,7 +239,12 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
       routine: res.routine || '',
       status: this.buttonLogic.normalizeStatus(res.status) as 'pending' | 'ongoing' | 'completed',
       createdAt: res.createdAt ? new Date(res.createdAt) : new Date(),
-      tags: res.tags || [],
+      tags: (res.tags || []).map((t: any) => {
+        if (!t && t !== 0) return '';
+        if (typeof t === 'string') return t;
+        if (typeof t === 'object') return (t.value || t.text || t.name || t.key || '').toString();
+        return String(t);
+      }),
       // Preserve coin/streak fields regardless of backend naming (coinReward, rewardCoins, coin)
       coinReward: (res.coinReward ?? res.rewardCoins ?? res.coin) || 0,
       rewardCoins: (res.rewardCoins ?? res.coinReward ?? res.coin) || 0,
@@ -243,7 +289,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     const h: any = this.habit as any;
     // Normalize numbers safely
     const coins = Number(h?.coinsEarned ?? h?.coinReward ?? 0) || 0;
-    const streak = Number(h?.streak ?? 0) || 0; // current streak
+    const streak = Number(h?.streak ?? 0) || 0; // current streak (use direct API value)
     const highestStreak = Number(h?.highestStreak ?? 0) || 0;
     const totalCompletedDays = Number(h?.totalCompletedDays ?? 0) || 0; // completed days
     const completion = this.getDisplayCompletion(h?.completionPercentage ?? 0);
@@ -251,8 +297,10 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
 
     this.coinStats = {
       userCoins: coins,
-      userStreaks: totalCompletedDays, // using completed days for the trophy slot
-      userDays: streak,
+      // Show the API-provided `streak` value directly in the `streak` slot
+      userStreaks: streak,
+      // Keep `userDays` as the completed-days/trophy value
+      userDays: totalCompletedDays,
       userBadges: badgesEarned,
       successPercentage: completion,
       totalStreaks: highestStreak,
@@ -310,6 +358,50 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   /**
+   * Return true if the currently loaded habit/task is scheduled for today's date
+   */
+  isViewingToday(): boolean {
+    // If a selected date was provided via navigation (long-press), prefer that
+    try {
+      // Prefer explicit selected date from navigation state
+      let effectiveSelected = this.selectedDateFromState || null;
+      // If not present, check persisted sessionStorage for this item
+      if (!effectiveSelected && this.habit) {
+        const stored = this.getStoredSelectedDate(this.habit.type || 'habits', Number(this.habit.id));
+        if (stored) effectiveSelected = stored;
+      }
+
+      if (effectiveSelected) {
+        const selected = new Date(effectiveSelected);
+        if (!isNaN(selected.getTime())) {
+          const t = new Date();
+          return selected.getFullYear() === t.getFullYear() && selected.getMonth() === t.getMonth() && selected.getDate() === t.getDate();
+        }
+      }
+    } catch (e) {
+      // ignore and fall back
+    }
+
+    // Fallback: use habit timestamps or startDate
+    if (this.habit) {
+      const ts = Number((this.habit as any).startTimeStamp || 0);
+      if (ts) {
+        const d = new Date(ts);
+        const t = new Date();
+        return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
+      }
+      if (this.habit.startDate) {
+        const d = new Date(this.habit.startDate);
+        if (!isNaN(d.getTime())) {
+          const t = new Date();
+          return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
    * Load monthly completion status for the habit/task
    */
   loadMonthlyStatus(monthDate: Date): void {
@@ -350,6 +442,17 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   onCalendarMonthChange(newMonth: Date): void {
     this.currentCalendarMonth = newMonth;
     this.loadMonthlyStatus(newMonth);
+  }
+
+  get tagText(): string {
+    const tags: any[] = (this.habit?.tags || []) as any[];
+    if (!tags || tags.length === 0) return 'Focus';
+    const firstTag: any = tags[0];
+    if (!firstTag) return 'Focus';
+    // Handle both string and object tags
+    if (typeof firstTag === 'string') return String(firstTag).trim() || 'Focus';
+    if (typeof firstTag === 'object') return (firstTag.value || firstTag.text || firstTag.name || firstTag.key || 'Focus').toString();
+    return String(firstTag).trim() || 'Focus';
   }
 
   get speechMessage(): string {
@@ -396,7 +499,12 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
       this.router.navigate(['/authed/activity-input'], {
         state: {
           habit: this.habit,
-          type: this.habit.type
+          type: this.habit.type,
+          // preserve the selectedDate and navigation origin so returning to detail
+          // will be able to call the same date-aware API (getHabitByIdWithDate / getTaskByIdWithDate)
+          selectedDate: this.selectedDateFromState || null,
+          originType: this.navigationOriginType || null,
+          fromDetail: true
         }
       });
     } else {
@@ -408,8 +516,9 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   getRoutineIcon(): string {
     try {
       const routineValue = this.habit?.routine;
-      if (!routineValue) {
-        return 'assets/Icons-Neutral/Icon-Routine-Morning.png';
+      // If backend explicitly returned null or an empty value, do not show any icon
+      if (routineValue === null || routineValue === undefined || String(routineValue).toLowerCase() === 'null' || String(routineValue).trim() === '') {
+        return null as any;
       }
 
       // Convert to proper case for filename
@@ -419,17 +528,38 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
 
       return `assets/Icons-Neutral/${fileName}`;
     } catch (e) {
-      return 'assets/Icons-Neutral/Icon-Routine-Morning.png';
+      return null as any;
     }
   }
 
 
   getRoutineName(): string {
     const routineValue = this.habit?.routine;
-    if (!routineValue) return 'Morning';
+    if (routineValue === null || routineValue === undefined || String(routineValue).toLowerCase() === 'null' || String(routineValue).trim() === '') return '';
 
     const routine = String(routineValue).toLowerCase();
     return routine.charAt(0).toUpperCase() + routine.slice(1);
+  }
+
+  /**
+   * Return true when the current logged-in user is the creator of the habit/task
+   * so they are allowed to edit it.
+   */
+  canEdit(): boolean {
+    try {
+      const currentUserId = this.authService?.getUserId?.();
+      if (!currentUserId || !this.habit) return false;
+      const createdBy = (this.habit as any).createdById ?? (this.habit as any).createdBy ?? (this.habit as any).createdByName;
+      if (createdBy == null) return false;
+      return String(createdBy) === String(currentUserId);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  hasRoutine(): boolean {
+    const routineValue = this.habit?.routine;
+    return !(routineValue === null || routineValue === undefined || String(routineValue).toLowerCase() === 'null' || String(routineValue).trim() === '');
   }
 
   // ============================================
@@ -545,18 +675,85 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   isLetsGoEnabled(): boolean {
-    return this.buttonLogic.isLetsGoEnabled(this.habit);
+    if (this.isViewingFutureDate()) return false;
+    return this.buttonLogic.isLetsGoEnabled(this.getHabitForButtonLogic(), false);
   }
 
   isLetsGoVisible(): boolean {
-    return this.buttonLogic.isLetsGoVisible(this.habit);
+    if (this.isViewingFutureDate()) return false;
+    return this.buttonLogic.isLetsGoVisible(this.getHabitForButtonLogic());
   }
 
   isAbortVisible(): boolean {
-    return this.buttonLogic.isAbortVisible(this.habit);
+    if (this.isViewingFutureDate()) return false;
+    return this.buttonLogic.isAbortVisible(this.getHabitForButtonLogic());
   }
 
   isDoneEnabled(): boolean {
-    return this.buttonLogic.isDoneEnabled(this.habit);
+    if (this.isViewingFutureDate()) return false;
+    return this.buttonLogic.isDoneEnabled(this.getHabitForButtonLogic(), false);
+  }
+
+  /**
+   * Return true when the currently selected / viewed date is strictly in the future
+   * compared to today. Uses the navigation-provided selected date or a persisted
+   * sessionStorage date for the current item.
+   */
+  private isViewingFutureDate(): boolean {
+    try {
+      if (!this.habit) return false;
+      // Determine effective selected date (navigation state preferred)
+      let effectiveDate = this.selectedDateFromState || null;
+      if (!effectiveDate) {
+        const stored = this.getStoredSelectedDate(this.habit.type || 'habits', Number(this.habit.id));
+        if (stored) effectiveDate = stored;
+      }
+      if (!effectiveDate) return false;
+
+      const d = new Date(effectiveDate);
+      if (isNaN(d.getTime())) return false;
+
+      const today = new Date();
+      const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      return dateOnly.getTime() > todayOnly.getTime();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * Provide a habit-like object adjusted for the navigation-selected date (if any)
+   * so the shared button-logic service evaluates visibility/enabled state correctly
+   */
+  private getHabitForButtonLogic(): any {
+    if (!this.habit) return null;
+    try {
+      // Prefer the explicit selected date passed via navigation state
+      let effectiveDate = this.selectedDateFromState;
+      // If not present, consult persisted sessionStorage value for this item
+      if (!effectiveDate) {
+        try {
+          const stored = this.getStoredSelectedDate(this.habit.type || 'habits', Number(this.habit.id));
+          if (stored) effectiveDate = stored;
+        } catch (e) { /* ignore */ }
+      }
+
+      if (effectiveDate) {
+        // Recalculate timestamps using the effective date so the button logic evaluates correctly
+        const copy: any = { ...this.habit, startDate: effectiveDate, endDate: effectiveDate };
+        try {
+          const ts = this.buttonLogic.calculateTimestamps(copy);
+          copy.startTimeStamp = ts.startTimeStamp;
+          copy.endTimeStamp = ts.endTimeStamp;
+        } catch (e) {
+          // ignore calculation errors and fall back to shallow copy
+        }
+        return copy;
+      }
+    } catch (e) {
+      // ignore and fall back
+    }
+    return this.habit;
   }
 }

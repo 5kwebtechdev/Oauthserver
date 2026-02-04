@@ -89,7 +89,6 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
       align-items: center;
       justify-content: center;
       width: 100%;
-      min-height: 60vh;
     }
     
     /* Loading State */

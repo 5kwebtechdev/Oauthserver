@@ -71,6 +71,8 @@ export class HabitButtonLogicService {
   isLetsGoEnabled(habit: any, hasOtherOngoing: boolean = false): boolean {
     if (hasOtherOngoing) return false;
     const { startTimeStamp, endTimeStamp } = this.getTimestamps(habit);
+    // Only enable for activities scheduled for today
+    if (!this.isToday(startTimeStamp)) return false;
     // Enabled only within the tight start window and when not past the activity end
     if (!startTimeStamp || !endTimeStamp) return false;
     if (Date.now() > endTimeStamp) return false; // hidden/disabled after end time
@@ -85,7 +87,9 @@ export class HabitButtonLogicService {
     const status = habit.status?.toLowerCase();
     // Not visible for ongoing/completed/skipped, and not visible after activity end
     if (status === 'ongoing' || status === 'completed' || status === 'skipped') return false;
-    const { endTimeStamp } = this.getTimestamps(habit);
+    const { startTimeStamp, endTimeStamp } = this.getTimestamps(habit);
+    // Only show Let's Go for items scheduled for today
+    if (!this.isToday(startTimeStamp)) return false;
     if (endTimeStamp && Date.now() > endTimeStamp) return false;
     return true;
   }
@@ -95,7 +99,9 @@ export class HabitButtonLogicService {
    */
   isAbortVisible(habit: any): boolean {
     if (!habit) return false;
-    return habit.status?.toLowerCase() === 'ongoing';
+    const { startTimeStamp } = this.getTimestamps(habit);
+    // Only allow abort for ongoing activities happening today
+    return habit.status?.toLowerCase() === 'ongoing' && this.isToday(startTimeStamp);
   }
 
   /**
@@ -106,6 +112,8 @@ export class HabitButtonLogicService {
     if (hasOtherOngoing) return false;
     const status = habit.status?.toLowerCase();
     const { startTimeStamp } = this.getTimestamps(habit);
+    // No Done action for past/future dates
+    if (!this.isToday(startTimeStamp)) return false;
 
     // For skipped status, always enable
     if (status === 'skipped') return true;
@@ -133,12 +141,7 @@ export class HabitButtonLogicService {
     const status = habit.status?.toLowerCase();
     // Completed items should not show Done
     if (status === 'completed') return false;
-    // Skipped items show Done (user can mark completed)
-    if (status === 'skipped') return true;
-    // Ongoing items show Done
-    if (status === 'ongoing') return true;
-
-    // For pending: show Done button for today's activities (it will be disabled until Let's Go window closes)
+    // For all statuses, only show Done when the activity is scheduled for today
     const { startTimeStamp } = this.getTimestamps(habit);
     if (!startTimeStamp) return false;
     return this.isToday(startTimeStamp);

@@ -346,29 +346,6 @@ height: 24px;
 
 @keyframes sheetIn { from { transform: translateY(24px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
 
-/* Transient contact toast shown to child users when they try to contact a tutor */
-.contact-toast {
-	display: flex;
-    height: 48px;
-    width: 92%;
-    padding: 12px;
-    justify-content: center;
-    align-items: center;
-    position: fixed;
-    right: 16px;
-    left: 16px;
-    bottom: 70px;
-    border-radius: 8px;
-    border: 1px solid #BB2124;
-    background: #FDCBCC;
-    color: #BB2124;
-    text-align: center;
-    font-family: Nunito, sans-serif;
-    font-size: 13px;
-    font-weight: 400;
-    z-index: 400;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
-}
 
 /* Visual disabled state for Contact button when user is child - still clickable to show toast */
 .footer-actions mindful-button.disabled {
