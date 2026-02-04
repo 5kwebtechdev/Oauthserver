@@ -108,9 +108,9 @@ export class NavigationContextService {
             return true;
         }
 
-        // Last resort: navigate to habit-page
-        console.log('[NavigationContext] Using last resort navigation to /authed/habit-page');
-        return await this.router.navigate(['/authed/habit-page']);
+        // Last resort: navigate to activity-page
+        console.log('[NavigationContext] Using last resort navigation to /authed/activity-page');
+        return await this.router.navigate(['/authed/activity-page']);
     }
 
     /**

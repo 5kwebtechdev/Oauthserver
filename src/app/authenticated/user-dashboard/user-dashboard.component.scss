@@ -476,3 +476,20 @@ ion-refresher {
     }
   }
 }
+
+// Toast icon styles
+.mb-toast__icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.mb-toast__icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  color: inherit;
+}

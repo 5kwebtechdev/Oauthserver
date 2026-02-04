@@ -3,6 +3,12 @@
 h2, p {
   margin: 0;
 }
+.activity-calendar-container {
+    display: flex;
+    flex-direction: column;
+    padding: 16px 16px 80px 16px;
+    gap: 24px;
+}
 .calendar-mood-satus-popup {
   .daily-mood-status {
     .mood-staus-message {
