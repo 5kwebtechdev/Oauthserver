@@ -581,13 +581,20 @@ export class ActivityCalendarComponent implements OnInit, OnDestroy {
     return this.formatDateToYYYYMMDD(this.selectedDate) === this.formatDateToYYYYMMDD(today);
   }
 
-  // Sort helper: upcoming items (startTimeStamp >= now) first (ascending), then past items (closest past first)
+  // Sort helper: order items strictly by their start time (ascending)
+  // No "now" logic — items are ordered morning → night based on `startTimeStamp`.
   private sortArrayByUpcoming(arr: any[] = []): any[] {
     if (!Array.isArray(arr) || arr.length <= 1) return arr || [];
-    const now = Date.now();
-    const future = arr.filter(i => (Number(i?.startTimeStamp || 0) >= now)).sort((a,b) => Number(a.startTimeStamp || 0) - Number(b.startTimeStamp || 0));
-    const past = arr.filter(i => (Number(i?.startTimeStamp || 0) < now)).sort((a,b) => Number(b.startTimeStamp || 0) - Number(a.startTimeStamp || 0));
-    return future.concat(past);
+    // Use a stable-ish sort by startTimeStamp ascending. Items without a timestamp
+    // (0 / undefined) are placed after items with valid timestamps.
+    return arr.slice().sort((a, b) => {
+      const ta = Number(a?.startTimeStamp ?? 0);
+      const tb = Number(b?.startTimeStamp ?? 0);
+      if (ta === tb) return 0;
+      if (ta === 0) return 1;
+      if (tb === 0) return -1;
+      return ta - tb;
+    });
   }
 
   // Format a timestamp to time display format (HH.mm)

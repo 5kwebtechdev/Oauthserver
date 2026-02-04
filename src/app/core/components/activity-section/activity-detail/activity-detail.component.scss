@@ -1,14 +1,9 @@
-.habit-detail-page {
-  padding: 16px;
-}
-
-p {
-  margin: 0px
-}
+// === Base Layout ===
+.habit-detail-page { padding: 16px; }
+p { margin: 0; }
 
 .detail-container {
   padding: 16px;
-  // margin-left:16px;
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -18,35 +13,33 @@ h2 {
   color: #282527;
   font-family: Fredoka;
   font-size: 16px;
-  font-style: normal;
   font-weight: 500;
   line-height: 140%;
-  /* 22.4px */
 }
 
-.detail-header {
-  display: flex;
-  align-items: center;
-  gap: 119px;
-}
-
+// === Header ===
 .detail-header {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 12px;
+
+  h2 {
+    font-family: Nunito;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 140%;
+  }
 }
 
-.detail-right h2 {
-  color: #282527;
-  font-family: Nunito;
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: 140%;
-  /* 28px */
+.detail-left,
+.habit-detail-focus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
+// === Routine Icon ===
 .routine-icon {
   width: 24px;
   height: 24px;
@@ -54,43 +47,32 @@ h2 {
   flex-shrink: 0;
 }
 
-.habit-detail-focus {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.detail-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
+// === CTA & Progress ===
 .detail-cta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px
+  gap: 16px;
 }
 
-// Progress bar styles
 .detail-progress-bar-box {
   width: 100%;
   height: 6px;
-  background: #ddd; // Grey background for empty progress
+  background: #ddd;
   border-radius: 4px;
   overflow: hidden;
 }
 
 .detail-progress-bar {
   height: 100%;
-  width: 0%; // Initially 0%, updated by Angular binding
-  background: #4CAF50; // Green color for progress
-  transition: width 0.3s ease; // Smooth transition
+  width: 0%;
+  background: #4CAF50;
+  transition: width 0.3s ease;
   border-radius: 4px;
   box-shadow: 0 0 4px 0 rgba(110, 241, 110, 0.6);
 }
 
+// === Repeat Days ===
 .repeat-days {
   display: flex;
   justify-content: space-between;
@@ -99,14 +81,12 @@ h2 {
 
 .repeat-head {
   display: inline-flex;
-  // align-items: center;
   gap: 12px;
 
   p {
     color: #282527;
     font-family: Nunito;
     font-size: 16px;
-    font-style: normal;
     font-weight: 600;
     line-height: 140%;
   }
@@ -118,23 +98,22 @@ h2 {
   display: inline-block;
 }
 
+// === Message Section ===
 .detail-message {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-
+// === Completion Days Legend ===
 .completion-days {
   display: inline-flex;
   justify-content: center;
   align-items: center;
   gap: 40px;
   width: 360.5px;
-  /* match other blocks */
   max-width: 100%;
   margin: 16px auto;
-  /* center horizontally */
 }
 
 .completedays-header,
@@ -150,44 +129,31 @@ h2 {
     color: #6B656A;
     font-family: Nunito;
     font-size: 13px;
-    font-style: normal;
     font-weight: 600;
     line-height: 120%;
-    /* 15.6px */
+  }
+
+  > span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
   }
 }
 
-/* Completion/skipped indicator dots */
-.completedays-header>span,
-.skipped-days>span {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
+.completedays-header > span { background: #4CAF50; }
+.skipped-days > span { background: #BB2124; }
 
-.completedays-header>span {
-  background: #4CAF50;
-  /* complete */
-}
-
-.skipped-days>span {
-  background: #BB2124;
-  /* skipped */
-}
-
-/* Divider SVG styling: center and make responsive */
+// === Divider ===
 .divider-svg {
   display: block;
-  /* centers with auto margins */
   margin: 20px auto;
-  /* vertical spacing + center horizontally */
   width: 298px;
   height: 2px;
   max-width: 100%;
-  /* prevent overflow on small screens */
 }
 
+// === Progress Status Section ===
 .detail-progess-status {
   display: inline-flex;
   padding: 16px;
@@ -210,10 +176,8 @@ h2 {
   text-align: center;
   font-family: Nunito;
   font-size: 13px;
-  font-style: normal;
   font-weight: 600;
   line-height: 140%;
-  /* 18.2px */
 }
 
 .progress-stat {
@@ -227,11 +191,10 @@ h2 {
   position: relative;
   width: 64px;
   height: 64px;
-  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 1;
+  flex-shrink: 0;
 }
 
 .progress-badge-icon {
@@ -241,7 +204,6 @@ h2 {
   transform: translate(-50%, -50%);
   width: 45px;
   height: 45px;
-  flex-shrink: 0;
   aspect-ratio: 1/1;
   object-fit: contain;
   pointer-events: none;
@@ -251,11 +213,9 @@ h2 {
 .progress-circle {
   width: 64px;
   height: 64px;
-  flex-shrink: 0;
   aspect-ratio: 1/1;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.06);
-  /* subtle placeholder */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -267,37 +227,13 @@ h2 {
   text-align: center;
   font-family: Nunito;
   font-size: 10px;
-  font-style: normal;
   font-weight: 700;
   line-height: 140%;
-  /* 14px */
   max-width: 64px;
   margin: 0;
 }
 
-/* custom edit button projected into mindful-navigator slot */
-.right-custom-edit {
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  aspect-ratio: 1/1;
-  border-radius: 48px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(98deg, rgba(226, 226, 226, 0.60) 8.57%, rgba(241, 241, 241, 0.30) 90.15%);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  border: none;
-  padding: 0;
-}
-
-.right-custom-edit svg {
-  width: 18px;
-  height: 18px;
-  display: block;
-}
-
+// === Edit Button ===
 .eclipse {
   display: inline-flex;
   align-items: center;
@@ -308,16 +244,38 @@ h2 {
   background: radial-gradient(circle at 35% 35%, rgba(144, 33, 77, 0.12), rgba(226, 226, 226, 0.18) 45%, transparent 60%);
   box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08);
   flex-shrink: 0;
+
+  .right-custom-edit {
+    background: transparent;
+    border-radius: 999px;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+  }
 }
 
-.eclipse .right-custom-edit {
-  background: transparent;
-  border-radius: 999px;
+.right-custom-edit {
   width: 48px;
   height: 48px;
+  aspect-ratio: 1/1;
+  border-radius: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(98deg, rgba(226, 226, 226, 0.6) 8.57%, rgba(241, 241, 241, 0.3) 90.15%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: none;
   padding: 0;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+  }
 }
 
+// === Priority Badge ===
 .priority-badge {
   display: flex;
   padding: 6px 12px;
@@ -329,39 +287,26 @@ h2 {
   color: #FDFDFD;
   font-family: Nunito;
   font-size: 10px;
+
+  &.priority-high { background: #BB2124; }
+  &.priority-medium { background: #F0AD4E; }
+  &.priority-low { background: #4CAF50; }
 }
 
-/* Priority-specific overrides */
-.priority-badge.priority-high {
-  background: #BB2124;
-}
-
-.priority-badge.priority-medium {
-  background: #F0AD4E;
-}
-
-.priority-badge.priority-low {
-  background: #4CAF50;
-}
-
-
+// === Habit Title ===
 .habit-title {
   h1 {
     color: #282527;
     font-family: Nunito;
     font-size: 20px;
-    font-style: normal;
     font-weight: 700;
     margin: 0;
   }
 
-  >span:first-of-type {
+  > span:first-of-type {
     color: #282527;
     font-family: Nunito;
     font-size: 16px;
-    font-style: normal;
     font-weight: 500;
-    line-height: 140%;
-    /* 22.4px */
   }
 }
