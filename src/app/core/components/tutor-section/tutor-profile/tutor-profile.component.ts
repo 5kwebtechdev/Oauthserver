@@ -18,6 +18,8 @@ import {
 import { environment } from '../../../../../environments/environment';
 import { AuthService } from '../../../services/auth.service';
 import { TutorLikeService } from '../../../services/tutor-like.service';
+import { CustomToastService, Toast } from '../../../services/custom-toast.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'tutor-profile',
@@ -49,10 +51,10 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   showContactSheet = false;
   selectedContactMethod: 'call' | 'email' | null = 'call';
 
-  // Transient contact toast for child users
-  showContactToast = false;
+  // Transient contact message
   contactToastMessage = 'Ask your parent to reach out';
-  private toastTimeout: any = null;
+  // Observable for shared toast service (add toast HTML to template)
+  toast$: Observable<Toast | null> = this.toastService.toast$;
 
   constructor(
     private http: HttpClient,
@@ -60,6 +62,7 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     private likeService: TutorLikeService,
     private location: Location,
     private modalCtrl: ModalController
+    , private toastService: CustomToastService
   ) { }
 
   ngOnInit(): void {
@@ -269,22 +272,12 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   private showTransientContactToast(durationMs = 3000): void {
-    this.contactToastMessage = 'Ask your parent to reach out';
-    this.showContactToast = true;
-    if (this.toastTimeout) {
-      clearTimeout(this.toastTimeout);
-    }
-    this.toastTimeout = setTimeout(() => {
-      this.showContactToast = false;
-      this.toastTimeout = null;
-    }, durationMs);
+    // Use shared toast service for transient message
+    this.toastService.error(this.contactToastMessage, durationMs);
   }
 
   ngOnDestroy(): void {
-    if (this.toastTimeout) {
-      clearTimeout(this.toastTimeout);
-      this.toastTimeout = null;
-    }
+    // no local timeouts to clear; shared toast service auto-hides
   }
 
   openContactSheet(): void {

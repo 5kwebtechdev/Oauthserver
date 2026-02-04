@@ -88,16 +88,18 @@
 .mood-progress {
   width: 234px;
   height: 3px;
-  background: rgba(0, 0, 0, 0.06);
+  background: rgb(196 104 104 / 26%);
   border-radius: 8px;
   overflow: hidden;
 
   .bar {
-    width: 234px;
-    height: 0;
-    stroke-width: 3px;
-    stroke: #90214D;
-    opacity: 0.2;
+    display: block;
+    width: 0%;
+    height: 100%;
+    background: #90214D;
+    border-radius: 8px;
+    opacity: 1;
+    transition: width 0.36s ease;
   }
 }
 

@@ -30,10 +30,10 @@
                     <mindful-badge [text]="`Pending (${habitJourneySummary.pending})`" type="pending"
                         [disabled]="journeySubFilter !== 'pending'" [active]="journeySubFilter === 'pending'"
                         (click)="selectJourneySubFilter('pending')"></mindful-badge>
-                    <mindful-badge [text]="`Ongoing (${habitJourneySummary.ongoing})`" type="inactive"
+                    <mindful-badge [text]="`Ongoing (${habitJourneySummary.ongoing})`" type="ongoing"
                         [disabled]="journeySubFilter !== 'ongoing'" [active]="journeySubFilter === 'ongoing'"
                         (click)="selectJourneySubFilter('ongoing')"></mindful-badge>
-                    <mindful-badge [text]="`Completed (${habitJourneySummary.completed})`" type="inactive"
+                    <mindful-badge [text]="`Completed (${habitJourneySummary.completed})`" type="completed"
                         [disabled]="journeySubFilter !== 'completed'" [active]="journeySubFilter === 'completed'"
                         (click)="selectJourneySubFilter('completed')"></mindful-badge>
                 </div>
@@ -166,10 +166,10 @@
                     <mindful-badge [text]="`Pending (${taskJourneySummary.pending})`" type="pending"
                         [disabled]="journeySubFilter !== 'pending'" [active]="journeySubFilter === 'pending'"
                         (click)="selectJourneySubFilter('pending')"></mindful-badge>
-                    <mindful-badge [text]="`Ongoing (${taskJourneySummary.ongoing})`" type="inactive"
+                    <mindful-badge [text]="`Ongoing (${taskJourneySummary.ongoing})`" type="ongoing"
                         [disabled]="journeySubFilter !== 'ongoing'" [active]="journeySubFilter === 'ongoing'"
                         (click)="selectJourneySubFilter('ongoing')"></mindful-badge>
-                    <mindful-badge [text]="`Completed (${taskJourneySummary.completed})`" type="inactive"
+                    <mindful-badge [text]="`Completed (${taskJourneySummary.completed})`" type="completed"
                         [disabled]="journeySubFilter !== 'completed'" [active]="journeySubFilter === 'completed'"
                         (click)="selectJourneySubFilter('completed')"></mindful-badge>
                 </div>
@@ -262,4 +262,13 @@
     <!-- <div class="ad-banner-container">
         <ad-banner></ad-banner>
     </div> -->
+</div>
+<!-- Success Toast with Icon -->
+<div class="mb-toast" *ngIf="(toast$ | async) as toast" [ngClass]="{'mb-toast--success': toast.type === 'success', 'mb-toast--error': toast.type === 'error'}" [style.display]="toast.visible ? 'flex' : 'none'" role="status" aria-live="polite">
+  <div class="mb-toast__icon-wrapper" *ngIf="toast.iconPath">
+    <svg class="mb-toast__icon" [style.fill]="toast.iconColor || '#2D6830'" viewBox="0 0 8 6" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.81319 5.70608C2.61793 5.90134 2.30134 5.90134 2.10608 5.70608L0.146523 3.74652C-0.0487396 3.55126 -0.0487401 3.23468 0.146522 3.03942L0.372748 2.81319C0.568011 2.61793 0.884593 2.61793 1.07986 2.81319L2.10608 3.83942C2.30134 4.03468 2.61793 4.03468 2.81319 3.83942L6.50608 0.146523C6.70134 -0.0487396 7.01793 -0.04874 7.21319 0.146522L7.43942 0.372748C7.63468 0.568011 7.63468 0.884593 7.43942 1.07986L2.81319 5.70608Z" fill="currentColor" />
+    </svg>
+  </div>
+  <div class="mb-toast__text">{{ toast.message }}</div>
 </div>

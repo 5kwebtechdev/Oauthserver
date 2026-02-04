@@ -11,8 +11,9 @@ import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { TaskApi } from '../../../api/task.api';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { AuthService } from '../../../services/auth.service';
+import { CustomToastService, Toast } from '../../../services/custom-toast.service';
 import { Habit } from '../habit.types';
-import { Subscription, filter, take } from 'rxjs';
+import { Observable, Subscription, filter, take } from 'rxjs';
 
 @Component({
     standalone: true,
@@ -52,6 +53,9 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     private subscriptions = new Subscription();
     private timestampInterval: any;
 
+    // Observable for shared toast service
+    toast$: Observable<Toast | null>;
+
     constructor(
         private habitService: HabitService,
         private buttonLogic: HabitButtonLogicService,
@@ -59,8 +63,11 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private profileSelector: ProfileSelectorService,
         private authService: AuthService,
-        private cdr: ChangeDetectorRef
-    ) { }
+        private cdr: ChangeDetectorRef,
+        private toastService: CustomToastService
+    ) {
+        this.toast$ = this.toastService.toast$;
+    }
 
     /**
      * Whether to show the pet illustration in empty states.

@@ -223,12 +223,7 @@
           <h3 class="habit-title">{{habit?.title || 'Habit'}}</h3>
           <div class="d-flex gap-1 align-items-center">
 
-            <img *ngIf="getRoutine() === 'MORNING'" class="morning-sun"
-              src="/assets/Icons-Neutral/Icon-Routine-Morning.png" alt="" height="24" width="24">
-            <img *ngIf="getRoutine() === 'EVENING'" class="morning-sun"
-              src="/assets/Icons-Neutral/Icon-Routine-Evening.png" alt="" height="24" width="24">
-            <img *ngIf="getRoutine() === 'NIGHT'" class="morning-sun" src="/assets/Icons-Neutral/Icon-Routine-Night.png"
-              alt="" height="24" width="24">
+            <img *ngIf="hasRoutine()" class="routine-icon" [src]="getRoutineIcon()" alt="" height="24" width="24">
             <div class="badge">
               {{getTagOrRoutine()}}
             </div>
@@ -276,7 +271,7 @@
           <div class="d-flex footer-cta" *ngIf="getStatus() !== 'completed' && !isParent">
             <!-- Let's Go Button: always rendered (visibility checks removed) -->
             <!-- Show "Let's Go" only when not ongoing; otherwise show Abort -->
-            <ng-container *ngIf="getStatus() !== 'ongoing'">
+            <ng-container *ngIf="getStatus() !== 'ongoing' && isCurrentDateView">
               <mindful-button
                 [type]="habit?.type === 'tasks' ? 'orange' : 'lavendar'" small text="Let`s Go" (click)="openStartPopup()"
                 [disabled]="!isLetsGoEnabled()"></mindful-button>

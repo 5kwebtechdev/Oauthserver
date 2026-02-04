@@ -10,7 +10,8 @@ import { ModalController } from '@ionic/angular';
 import { CalendarService } from '../../../services/calendar.service';
 import { MoodService } from '../../../services/mood.service';
 import { MoodTransition, MoodData } from '../../../models/mood.model';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, Observable } from 'rxjs';
+import { CustomToastService, Toast } from '../../../services/custom-toast.service';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
@@ -37,6 +38,7 @@ export class ActivityCalendarComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   // Combined items for selected date (events + habits + tasks) sorted for display
   public combinedForSelectedDate: any[] = [];
+  public toast$: Observable<Toast | null>;
 
   constructor(
     private modalCtrl: ModalController,
@@ -45,9 +47,11 @@ export class ActivityCalendarComponent implements OnInit, OnDestroy {
     private router: Router,
     private buttonLogic: HabitButtonLogicService,
     private profileSelector: ProfileSelectorService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastService: CustomToastService
   ) {
     console.log('ActivityCalendarComponent initialized');
+    this.toast$ = this.toastService.toast$;
   }
 
 

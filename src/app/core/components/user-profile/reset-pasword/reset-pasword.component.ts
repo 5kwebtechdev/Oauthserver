@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
@@ -8,6 +8,10 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { HttpClient, HttpErrorResponse, HttpClientModule } from '@angular/common/http';
 import { NavController } from '@ionic/angular';
 import { environment } from 'src/environments/environment';
+import { CustomToastService, Toast } from '../../../services/custom-toast.service';
+import { Observable } from 'rxjs';
+import { Subject } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'reset-pasword',
@@ -16,7 +20,7 @@ import { environment } from 'src/environments/environment';
   templateUrl: './reset-pasword.component.html',
   styleUrls: ['./reset-pasword.component.scss']
 })
-export class ResetPaswordComponent {
+export class ResetPaswordComponent implements OnDestroy {
   form: FormGroup;
   loading = false;
 
@@ -24,20 +28,20 @@ export class ResetPaswordComponent {
   newPassword = '';
   retypeNewPassword = '';
 
-  // Inline toast state
-  toastVisible = false;
-  toastMessage = '';
-  toastType: 'success' | 'error' = 'success';
-
   // Error messages
   currentPasswordError = '';
   newPasswordError = '';
   retypePasswordError = '';
 
+  // Toast state from service
+  toast$: Observable<Toast | null> = this.toastService.toast$;
+  private destroy$ = new Subject<void>();
+
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private toastService: CustomToastService
   ) {
     this.form = this.fb.group({
       currentPassword: ['', [Validators.required, Validators.minLength(8)]],
@@ -130,14 +134,15 @@ export class ResetPaswordComponent {
   }
 
   private showToast(message: string, type: 'success' | 'error' = 'error', duration = 3000): void {
-    this.toastMessage = message;
-    this.toastType = type;
-    this.toastVisible = true;
+    this.toastService.show(message, type, duration);
+  }
 
-    // Auto-hide after duration
-    setTimeout(() => {
-      this.toastVisible = false;
-    }, duration);
+  ngOnDestroy(): void {
+    // Signal teardown for any subscriptions
+    try { this.destroy$.next(); this.destroy$.complete(); } catch {}
+
+    // Ensure toast hidden when component is destroyed
+    this.toastService.hide();
   }
 
   async saveProfile(): Promise<void> {
@@ -177,64 +182,71 @@ export class ResetPaswordComponent {
     // AuthInterceptor will automatically add the token from localStorage
     // Use responseType 'text' because server returns no/ plain-text body which
     // would otherwise cause HttpClient to try parsing JSON and throw a parse error.
-    this.http.put(url, body, { responseType: 'text' }).subscribe({
-      next: async (_response: any) => {
-        this.loading = false;
-        // Show inline success toast, then clear and navigate back
-        this.showToast('Password updated successfully', 'success', 3000);
+    this.http.put(url, body, { responseType: 'text' })
+      .pipe(finalize(() => { this.loading = false; }))
+      .subscribe({
+        next: async (_response: any) => {
+          // Show inline success toast, then clear and navigate back
+          this.showToast('Password updated successfully', 'success', 3000);
 
-        setTimeout(() => {
-          // Clear form
-          this.currentPassword = '';
-          this.newPassword = '';
-          this.retypeNewPassword = '';
-          this.form.reset();
+          setTimeout(() => {
+            // Clear form
+            this.currentPassword = '';
+            this.newPassword = '';
+            this.retypeNewPassword = '';
+            this.form.reset();
 
-          // Clear errors
-          this.currentPasswordError = '';
-          this.newPasswordError = '';
-          this.retypePasswordError = '';
+            // Clear errors
+            this.currentPasswordError = '';
+            this.newPasswordError = '';
+            this.retypePasswordError = '';
 
-          // Navigate back to previous page (entry)
-          this.navCtrl.back();
-        }, 3200);
-      },
-      error: async (error: HttpErrorResponse) => {
-        this.loading = false;
-        let serverMessage = 'Failed to update password. Please try again.';
-        try {
-          const errBody = error?.error;
-          if (typeof errBody === 'string') {
-            try {
-              const parsed = JSON.parse(errBody);
-              if (parsed && parsed.message) {
-                serverMessage = parsed.message;
-              } else if (typeof parsed === 'string') {
-                serverMessage = parsed;
-              } else {
-                serverMessage = errBody;
-              }
-            } catch (e) {
-              serverMessage = errBody || error?.message || serverMessage;
-            }
-          } else if (errBody && typeof errBody === 'object') {
-            serverMessage = errBody.message || JSON.stringify(errBody) || error?.message || serverMessage;
-          } else {
-            serverMessage = error?.message || serverMessage;
+            // Navigate back to previous page (entry)
+            this.navCtrl.back();
+          }, 3200);
+        },
+        error: async (error: HttpErrorResponse) => {
+          const serverMessage = this.parseServerMessage(error) || 'Failed to update password. Please try again.';
+
+          // If server indicates current password is incorrect, show it as a field error too
+          if (serverMessage && /current password/i.test(serverMessage)) {
+            this.currentPasswordError = serverMessage;
           }
-        } catch (e) {
-          serverMessage = error?.message || serverMessage;
-        }
 
-        // If server indicates current password is incorrect, show it as a field error too
-        if (serverMessage && /current password/i.test(serverMessage)) {
-          this.currentPasswordError = serverMessage;
+          this.showToast(String(serverMessage), 'error', 3000);
+          console.error('Password change error:', error);
         }
-
-        this.showToast(String(serverMessage), 'error', 3000);
-        console.error('Password change error:', error);
-      }
-    });
+      });
   }
+
+  /**
+   * Parse server error payload to extract a friendly message
+   */
+  private parseServerMessage(error: HttpErrorResponse): string | null {
+    try {
+      const errBody = error?.error;
+      let serverMessage = null;
+
+      if (typeof errBody === 'string') {
+        try {
+          const parsed = JSON.parse(errBody);
+          if (parsed && parsed.message) serverMessage = parsed.message;
+          else if (typeof parsed === 'string') serverMessage = parsed;
+          else serverMessage = errBody;
+        } catch (e) {
+          serverMessage = errBody || error?.message || null;
+        }
+      } else if (errBody && typeof errBody === 'object') {
+        serverMessage = errBody.message || JSON.stringify(errBody) || error?.message || null;
+      } else {
+        serverMessage = error?.message || null;
+      }
+
+      return serverMessage;
+    } catch (e) {
+      return error?.message || null;
+    }
+  }
+
 }
 

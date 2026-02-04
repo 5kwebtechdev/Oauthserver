@@ -4,7 +4,8 @@ import { AuthService } from '../../../services/auth.service';
 import { CalendarService } from '../../../services/calendar.service';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { TimelineEvent } from '../../../models/calendar.model';
-import { Subscription } from 'rxjs';
+import { Subscription, Observable } from 'rxjs';
+import { CustomToastService, Toast } from '../../../services/custom-toast.service';
 import { ModalController } from '@ionic/angular';
 
 @Component({
@@ -28,6 +29,7 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy {
   taskCompletionRate: number = 0;
 
   private subscriptions = new Subscription();
+  public toast$: Observable<Toast | null>;
 
   constructor(
     private calendarService: CalendarService,
@@ -35,7 +37,10 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy {
     private profileSelector: ProfileSelectorService,
     private modalCtrl: ModalController,
     private authService: AuthService
-  ) { }
+    , private toastService: CustomToastService
+  ) {
+    this.toast$ = this.toastService.toast$;
+  }
 
   /** Expose parent-check for template */
   isParentUser(): boolean {

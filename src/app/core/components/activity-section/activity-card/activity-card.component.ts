@@ -219,7 +219,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
               this.showStartBubble = false;
               this.startBubbleTimer = null;
               this.cdr.detectChanges();
-            }, 5000);
+            }, 10000);
           }
           this.startProgress();
           this.loadTodayTasks(); // This might need adjustment for tasks
@@ -1710,12 +1710,13 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    * Return the asset path for the routine icon based on habit.routine or habit.selectedRoutine.
    * Accepts values like 'MORNING', 'EVENING', 'NIGHT' from backend. Falls back to Morning.
    */
-  getRoutineIcon(): string {
+  getRoutineIcon(): string | null {
     try {
       // Get routine from either routine or selectedRoutine field
-      const routineValue = this.habit?.routine || this.habit?.selectedRoutine;
-      if (!routineValue) {
-        return '/assets/Icons-Neutral/Icon-Routine-Morning.png';
+      const routineValue = this.habit?.routine ?? this.habit?.selectedRoutine;
+      // If backend explicitly returned null/empty, do not show any icon here
+      if (routineValue === null || routineValue === undefined || String(routineValue).toLowerCase() === 'null' || String(routineValue).trim() === '') {
+        return null;
       }
 
       // Convert to lowercase and capitalize first letter for filename
@@ -1726,8 +1727,13 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       return `/assets/Icons-Neutral/${fileName}`;
     } catch (e) {
       console.error('Error getting routine icon:', e);
-      return '/assets/Icons-Neutral/Icon-Routine-Morning.png';
+      return null;
     }
+  }
+
+  hasRoutine(): boolean {
+    const routineValue = this.habit?.routine ?? this.habit?.selectedRoutine;
+    return !(routineValue === null || routineValue === undefined || String(routineValue).toLowerCase() === 'null' || String(routineValue).trim() === '');
   }
 
   /**

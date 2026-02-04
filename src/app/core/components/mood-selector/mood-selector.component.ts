@@ -244,30 +244,8 @@ export class MoodSelectorComponent {
     const vibe = this.vibes[0];
     if (!vibe) return '';
 
-    const totalHabits = Number(vibe.totalHabits || 0);
-    const totalTasks = Number(vibe.totalTasks || 0);
-    const completedHabits = Number(vibe.completedHabits || 0);
-    const completedTasks = Number(vibe.completedTasks || 0);
-
-    const hasCounts = totalHabits > 0 || totalTasks > 0;
-    const allCompleted = hasCounts && (completedHabits === totalHabits) && (completedTasks === totalTasks);
-
-      if (hasCounts) {
-      if (allCompleted && vibe.completedStateDescription) {
-        return vibe.completedStateDescription;
-      }
-      return `${totalHabits} habits & ${totalTasks} tasks awaits.`;
-    }
-
-    if (!hasCounts && vibe.emptyStateDescription) {
-      return vibe.emptyStateDescription;
-    }
-
-    if (vibe.description) {
-      return vibe.description;
-    }
-
-    return '';
+    // Prefer the backend-provided description field and display it as-is.
+    return vibe.description || '';
   }
   get progressPercent() {
     const vibe = this.vibes[0];

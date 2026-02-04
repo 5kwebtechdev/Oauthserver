@@ -31,6 +31,8 @@ import { CalendarService } from '../../core/services/calendar.service';
 import { HabitButtonLogicService } from '../../core/components/activity-section/habit-button-logic.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ChildSelfImageService } from '../../core/services/child-self-image.service';
+import { CustomToastService, Toast } from '../../core/services/custom-toast.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-user-dashboard',
@@ -77,6 +79,9 @@ export class UserDashboardComponent implements OnInit {
   public recentHabits: Habit[] = [];
   public recentTasks: any[] = [];
 
+  // Observable for shared toast service
+  toast$: Observable<Toast | null>;
+
   constructor(
     private modalCtrl: ModalController,
     private router: Router,
@@ -88,10 +93,12 @@ export class UserDashboardComponent implements OnInit {
     private habitApi: HabitApi,
     private calendarService: CalendarService,
     private buttonLogic: HabitButtonLogicService,
-    private authService: AuthService
-    ,
-    private childSelfImageService: ChildSelfImageService
-  ) { }
+    private authService: AuthService,
+    private childSelfImageService: ChildSelfImageService,
+    private toastService: CustomToastService
+  ) {
+    this.toast$ = this.toastService.toast$;
+  }
 
   async openNotes() {
     // Navigate to the notes home page instead of opening the Notes modal
@@ -192,6 +199,8 @@ export class UserDashboardComponent implements OnInit {
               status: item.status,
               tags: item.tags || [],
               coinReward: item.rewardCoins || item.coinReward || 0,
+              // keep routine info so activity-card can render routine icon
+              routine: item.routine ?? item.selectedRoutine ?? item.selected_routine ?? null,
               createdAt: item.createdAt ? new Date(item.createdAt) : new Date()
             };
           });
@@ -237,6 +246,8 @@ export class UserDashboardComponent implements OnInit {
               status: item.status,
               tags: item.tags || [],
               coinReward: item.rewardCoins || item.coinReward || 0,
+              // preserve routine info when present
+              routine: item.routine ?? item.selectedRoutine ?? item.selected_routine ?? null,
               createdAt: item.createdAt ? new Date(item.createdAt) : new Date()
             };
           });
