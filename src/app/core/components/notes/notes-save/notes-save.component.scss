@@ -84,10 +84,23 @@ font-family: Nunito;
 font-size: 16px;
 font-weight: 600;
   margin: 0;
+  /* Preserve newlines and allow long words to wrap */
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .note-content p {
   margin: 0.6rem 0;
+}
+
+.note-raw {
+  background: #f7f7f7;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  white-space: pre-wrap;
+  color: #222;
+  font-family: monospace;
 }
 
 .note-list {
