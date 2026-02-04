@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, Output, EventEmitter, HostListener } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 
 import { TimelineEvent } from '../../models/calendar.model';
@@ -28,6 +28,9 @@ export class MindfulTimelineComponent implements OnInit, OnChanges {
   @Output() eventLongPressed = new EventEmitter<TimelineEvent>();
   selectedEventId: number | null = null;
   currentUserId: number | null = null;
+  // Tooltip state for note description bubble
+  tooltipEventId: number | null = null;
+  private bubbleArrowLeft = new Map<number, string>();
 
   timeSlots: string[] = [];
   compressedSlots: CompressedBlock[] = [];
@@ -329,6 +332,85 @@ export class MindfulTimelineComponent implements OnInit, OnChanges {
   /** Mark event as selected (bring to front) */
   onEventClick(event: TimelineEvent): void {
     this.selectedEventId = event?.id ?? null;
+    // clicking the card (not the note icon) should close any open note bubble
+    this.tooltipEventId = null;
+  }
+
+  toggleNoteBubble(ev: MouseEvent, event: TimelineEvent): void {
+    ev.stopPropagation();
+    const id = event?.id ?? null;
+    if (this.tooltipEventId === id) {
+      this.tooltipEventId = null;
+      this.clearBubblePosition(id);
+    } else {
+      this.tooltipEventId = id;
+      // adjust position after DOM updates
+      setTimeout(() => this.adjustBubblePosition(id), 0);
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(ev: MouseEvent): void {
+    const target = ev.target as HTMLElement;
+    // if click is outside note bubble and note icon, close the bubble
+    if (!target.closest('.note-bubble') && !target.closest('.note-icon-wrap')) {
+      const prevId = this.tooltipEventId;
+      this.tooltipEventId = null;
+      this.clearBubblePosition(prevId);
+    }
+  }
+
+  private adjustBubblePosition(id: number | null): void {
+    if (id === null) return;
+    const wrapperSelector = `.note-icon-wrap[data-event-id="${id}"]`;
+    const wrapper = document.querySelector(wrapperSelector) as HTMLElement | null;
+    const bubbleSelector = `${wrapperSelector} .note-bubble`;
+    const bubble = document.querySelector(bubbleSelector) as HTMLElement | null;
+    if (!wrapper || !bubble) return;
+
+    const margin = 16; // px from viewport edge
+    const bubbleRect = bubble.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const iconCenterX = wrapperRect.left + wrapperRect.width / 2;
+
+    let shiftX = 0;
+
+    // Check right overflow
+    const overflowRight = bubbleRect.right - (window.innerWidth - margin);
+    if (overflowRight > 0) {
+      shiftX = -overflowRight;
+    }
+
+    // Check left overflow (after applying right shift)
+    const newLeft = bubbleRect.left + shiftX;
+    if (newLeft < margin) {
+      shiftX += margin - newLeft;
+    }
+
+    // Apply shift to bubble
+    if (shiftX !== 0) {
+      bubble.style.transform = `translateX(50%) translateX(${shiftX}px)`;
+    } else {
+      bubble.style.transform = `translateX(50%)`;
+    }
+
+    // Calculate arrow position: where is icon center relative to bubble left?
+    const newBubbleRect = bubble.getBoundingClientRect();
+    const arrowLeftPx = iconCenterX - newBubbleRect.left;
+    this.bubbleArrowLeft.set(id, `${arrowLeftPx}px`);
+
+    // Apply arrow left via inline style (CSS variable)
+    bubble.style.setProperty('--arrow-left', `${arrowLeftPx}px`);
+  }
+
+  private clearBubblePosition(id: number | null): void {
+    if (id === null) return;
+    this.bubbleArrowLeft.delete(id);
+  }
+
+  getArrowLeft(id: number | undefined): string {
+    if (id === undefined) return '50%';
+    return this.bubbleArrowLeft.get(id) ?? '50%';
   }
 
   /**

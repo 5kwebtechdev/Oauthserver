@@ -125,7 +125,15 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy {
   }
 
   onAddClick(): void {
-    this.router.navigateByUrl('/authed/activity-input');
+    // Map current selector to ActivityInput tab keys and pass via navigation state
+    const map: Record<string, string> = {
+      all: 'habits',
+      habit: 'habits',
+      task: 'tasks',
+      timetable: 'timetable'
+    };
+    const currentActive = map[this.selectedType] || 'habits';
+    this.router.navigate(['/authed/activity-input'], { state: { currentActive } });
   }
 
   /**

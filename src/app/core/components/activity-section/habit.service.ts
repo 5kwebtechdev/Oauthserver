@@ -24,13 +24,13 @@ export class HabitService {
     // (e.g., parent account needs to wait for child selection first)
   }
 
-  loadHabitsForDate(dateStr: string, forceReload: boolean = false): Observable<any> {
+    loadHabitsForDate(dateStr: string, forceReload: boolean = false): Observable<any> {
     if (this.currentLoadedDate === dateStr && !forceReload) {
       return of(this.habitsSubject.value);
     }
 
     // Interceptor handles userId - no need to pass manually
-    return this.habitApi.getHabitsByDate(dateStr).pipe(
+    return this.habitApi.getHabitsByDate(dateStr, forceReload).pipe(
       tap(response => {
         if (response) {
           const habits = this.mapApiResponseToHabits(response);

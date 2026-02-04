@@ -1,12 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, of } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { AuthApi } from './auth.api';
 
 @Injectable({ providedIn: 'root' })
 export class TaskApi {
     private base = environment.apiUrl || '';
+    // Simple in-memory cache for calendar responses per date
+    private calendarDataCache: Map<string, any> = new Map();
+    // Track in-flight HTTP observables to coalesce concurrent requests
+    private inflightRequests: Map<string, Observable<any>> = new Map();
 
     constructor(private http: HttpClient, private authApi: AuthApi) { }
 
@@ -37,8 +42,7 @@ export class TaskApi {
     getTodayTasks(): Observable<any> {
         const today = new Date();
         const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        const url = `${this.base}/calendar/user-calendar?date=${date}&viewType=day`;
-        return this.http.get(url, { headers: this.headers() }).pipe(
+        return this.getCalendarByDate(date).pipe(
             map((resp: any) => (resp && Array.isArray(resp.tasks)) ? resp.tasks : (resp?.tasks || []))
         );
     }
@@ -52,12 +56,57 @@ export class TaskApi {
      * Get tasks by date. The ProfileSelectorInterceptor automatically adds userId
      * when a child is selected by the parent.
      */
-    getTasksByDate(date: string): Observable<any> {
-        const url = `${this.base}/calendar/user-calendar?date=${date}&viewType=day`;
-        return this.http.get(url, { headers: this.headers() }).pipe(
+    getTasksByDate(date: string, force: boolean = false): Observable<any> {
+        return this.getCalendarByDate(date, force).pipe(
             map((resp: any) => (resp && Array.isArray(resp.tasks)) ? resp.tasks : (resp?.tasks || []))
         );
     }
+
+    /**
+     * Get raw calendar response for a date. Cached per date to avoid duplicate network calls
+     * @param force When true, bypass cached data and fetch fresh
+     */
+    getCalendarByDate(date: string, force: boolean = false): Observable<any> {
+        if (!force && this.calendarDataCache.has(date)) {
+            return of(this.calendarDataCache.get(date));
+        }
+
+        if (this.inflightRequests.has(date)) {
+            return this.inflightRequests.get(date)!;
+        }
+
+        const url = `${this.base}/calendar/user-calendar?date=${date}&viewType=day`;
+        const obs = this.http.get(url, { headers: this.headers() }).pipe(
+            map(resp => resp),
+            // store response and clear inflight on completion
+            // use tap here but keep map to preserve types
+            // but we need to import tap; use subscription side-effect via map below
+        );
+
+        // Wrap to perform caching when the observable emits
+        const cached = new Observable<any>(subscriber => {
+            const sub = obs.subscribe({
+                next: (resp) => {
+                    this.calendarDataCache.set(date, resp);
+                    subscriber.next(resp);
+                },
+                error: (err) => subscriber.error(err),
+                complete: () => subscriber.complete()
+            });
+            return () => {
+                sub.unsubscribe();
+                this.inflightRequests.delete(date);
+            };
+        }).pipe(
+            // replay last value for current subscribers
+            shareReplay({ bufferSize: 1, refCount: true })
+        );
+
+        this.inflightRequests.set(date, cached);
+        return cached;
+    }
+
+    
 
     /**
      * Create a new task

@@ -28,7 +28,7 @@
 
 // Time labels column - left side
 .time-labels {
-  width: 52px;
+  width: 36px;
   flex-shrink: 0;
   padding-right: 0;
   box-sizing: border-box;
@@ -50,7 +50,7 @@
     line-height: 1;
     position: absolute;
     right: 0;
-    top: 6px; // align with grid line at top of hour slot
+    top: -6px;
     transform: none;
     font-family: 'Nunito', sans-serif;
   }
@@ -207,6 +207,52 @@ margin: 0 0px 0px 6px;
       width: 18px;
       height: 18px;
       opacity: 0.5;
+    }
+  }
+
+  .note-icon-wrap {
+    position: relative;
+    display: inline-block;
+
+    img {
+      width: 18px;
+      height: 18px;
+      opacity: 0.9;
+      cursor: pointer;
+    }
+
+    .note-bubble {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      right: 0;
+      transform: translateX(50%);
+      z-index: 2000;
+      border-radius: 6px;
+      background: #FDFDFD;
+      box-shadow: 0 0 8px 0 rgb(107 101 106 / 67%);
+      padding: 8px 10px;
+      color: #282527;
+      font-family: Nunito, sans-serif;
+      font-weight: 600;
+      font-size: 10px;
+      line-height: 1.4;
+      width: max-content;
+      max-width: 200px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .note-bubble:after {
+      content: "";
+      position: absolute;
+      display: block;
+      width: 0;
+      z-index: 1;
+      border-style: solid;
+      border-color: #FDFDFD transparent;
+      border-width: 8px 7px 0;
+      bottom: -7px;
+      left: var(--arrow-left, 50%);
+      transform: translateX(-50%);
     }
   }
 

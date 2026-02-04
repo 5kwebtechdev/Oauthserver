@@ -222,6 +222,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
             }, 10000);
           }
           this.startProgress();
+          try {
+            const today = new Date();
+            const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            this.calendarService.clearCache(formatted, 'day');
+          } catch (e) { /* ignore */ }
           this.loadTodayTasks(); // This might need adjustment for tasks
           // Trigger change detection to update button states in other components
           this.cdr.detectChanges();
@@ -257,6 +262,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           }
           // Start progress with proper initialization
           this.startProgress();
+          try {
+            const today = new Date();
+            const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            this.calendarService.clearCache(formatted, 'day');
+          } catch (e) { /* ignore */ }
           this.loadHabits();
           // Trigger change detection to update button states in other components
           this.cdr.detectChanges();
@@ -601,6 +611,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
                 clearTimeout(this.startBubbleTimer);
                 this.startBubbleTimer = null;
               }
+          try {
+            const today = new Date();
+            const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            this.calendarService.clearCache(formatted, 'day');
+          } catch (e) { /* ignore */ }
           this.loadTodayTasks();
           this.clearProgress();
           // Trigger change detection to update button states in other components
@@ -639,6 +654,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
             clearTimeout(this.startBubbleTimer);
             this.startBubbleTimer = null;
           }
+          try {
+            const today = new Date();
+            const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            this.calendarService.clearCache(formatted, 'day');
+          } catch (e) { /* ignore */ }
           this.loadHabits();
           this.clearProgress();
           // Trigger change detection to update button states in other components
@@ -1118,8 +1138,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   async openHabitPage() {
-    // Navigate to the authenticated habit page route
-    await this.router.navigateByUrl('/authed/activity-page');
+    // Navigate to the authenticated activity page route and pass the current tab
+    await this.router.navigate(['/authed/activity-page'], { queryParams: { tab: this.currentActive } });
   }
 
   async openTimeline() {
