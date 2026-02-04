@@ -1,39 +1,37 @@
-// Speech Bubble Component Styles - Redesigned
+// ═══════════════════════════════════════════════════════════════════════════════
+// MINDFUL SPEECH BUBBLE - Premium Styles
+// ═══════════════════════════════════════════════════════════════════════════════
 
-// Animation keyframes
+// ─────────────────────────────────────────────────────────────────────────────────
+// CSS Custom Properties (with fallbacks)
+// ─────────────────────────────────────────────────────────────────────────────────
+:host {
+  --bubble-bg: #ffffff;
+  --bubble-text: #282527;
+  --bubble-radius: 24px;
+  --bubble-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --bubble-max-width: 100%;
+  --arrow-size: 12px;
+  --arrow-offset: 50%;
+  --animation-duration: 500ms;
+
+  display: block;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────────
+// ANIMATIONS
+// ─────────────────────────────────────────────────────────────────────────────────
 @keyframes bubblePopIn {
   0% {
     opacity: 0;
     transform: scale(0.8) translateY(10px);
   }
-
   50% {
-    transform: scale(1.05) translateY(-2px);
+    transform: scale(1.03) translateY(-2px);
   }
-
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
-  }
-}
-
-@keyframes bounceIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.3);
-  }
-
-  50% {
-    transform: scale(1.1);
-  }
-
-  70% {
-    transform: scale(0.9);
-  }
-
-  100% {
-    opacity: 1;
-    transform: scale(1);
   }
 }
 
@@ -42,7 +40,6 @@
     opacity: 0;
     transform: translateY(5px);
   }
-
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -50,119 +47,147 @@
 }
 
 @keyframes float {
-
-  0%,
-  100% {
+  0%, 100% {
     transform: translateY(0);
   }
-
   50% {
-    transform: translateY(-8px);
+    transform: translateY(-6px);
   }
 }
 
-// Container
+@keyframes dotPulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────────
+// CONTAINER
+// ─────────────────────────────────────────────────────────────────────────────────
 .speech-bubble-container {
   position: relative;
-  display: flex;
-  justify-content: flex-start; // Align to left
-  // max-width: 90%;
+  display: inline-flex;
+  max-width: var(--bubble-max-width);
 
-  // Animation on entry
+  // Entry animation
   &.animate-in .speech-bubble {
-    animation: bubblePopIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    animation: bubblePopIn var(--animation-duration) cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 }
 
-// Main bubble
+// ─────────────────────────────────────────────────────────────────────────────────
+// MAIN BUBBLE
+// ─────────────────────────────────────────────────────────────────────────────────
 .speech-bubble {
   position: relative;
-  background: var(--bubble-bg, #FFFFFF);
-  border-radius: 24px;
+  background: var(--bubble-bg);
+  border-radius: var(--bubble-radius);
   padding: 16px 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08),
-    0 2px 4px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--bubble-shadow);
   display: inline-block;
-  min-width: 120px;
+  min-width: 80px;
   max-width: 100%;
   overflow: visible;
-  pointer-events: none; // Prevent click interactions
 }
 
-// Content area
+// ─────────────────────────────────────────────────────────────────────────────────
+// CONTENT
+// ─────────────────────────────────────────────────────────────────────────────────
 .bubble-content {
   position: relative;
   z-index: 2;
 }
 
-// Message text
 .message-text {
   margin: 0;
   font-size: 16px;
   line-height: 1.5;
-  color: var(--bubble-text, #282527);
+  color: var(--bubble-text);
   font-weight: 600;
   word-wrap: break-word;
   text-align: center;
-  animation: textFadeIn 0.4s ease 0.2s both;
-  font-family: Nunito, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  animation: textFadeIn 0.4s ease 0.15s both;
+  font-family: Nunito, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
-/* Allow host-level overrides to change alignment (e.g. .cheer-bubble on the host) */
-:host(.cheer-bubble) .message-text {
+// Host class override for left-aligned text
+:host(.text-left) .message-text {
   text-align: left;
 }
 
+:host(.text-right) .message-text {
+  text-align: right;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────────
+// ARROW BASE
+// ─────────────────────────────────────────────────────────────────────────────────
 .bubble-arrow {
   position: absolute;
   width: 0;
   height: 0;
   border-style: solid;
   z-index: 1;
-
+  // Smooth transitions when position changes dynamically
+  transition: top 0.2s ease, left 0.2s ease, right 0.2s ease, bottom 0.2s ease;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────────
+// ARROW POSITIONS
+// ─────────────────────────────────────────────────────────────────────────────────
+
+// Arrow on LEFT side (bubble is to the right of target)
+// Arrow points left ◀
 .bubble-arrow.arrow-left {
-  left: -13px;
-  top: var(--arrow-offset, 50%);
+  left: calc(-1 * var(--arrow-size));
+  top: var(--arrow-offset);
   transform: translateY(-50%);
-  border-width: 10px 0 8px 13px;
-  border-color: transparent var(--bubble-bg, #FFFFFF) transparent transparent;
+  border-width: calc(var(--arrow-size) * 0.7) var(--arrow-size) calc(var(--arrow-size) * 0.7) 0;
+  border-color: transparent var(--bubble-bg) transparent transparent;
 }
 
-// Arrow pointing RIGHT (bubble is on the left of character)
+// Arrow on RIGHT side (bubble is to the left of target)
+// Arrow points right ▶
 .bubble-arrow.arrow-right {
-  right: -12px;
-  top: var(--arrow-offset, 50%);
+  right: calc(-1 * var(--arrow-size));
+  top: var(--arrow-offset);
   transform: translateY(-50%);
-  border-width: 12px 0 12px 15px;
-  border-color: transparent transparent transparent var(--bubble-bg, #FFFFFF);
+  border-width: calc(var(--arrow-size) * 0.7) 0 calc(var(--arrow-size) * 0.7) var(--arrow-size);
+  border-color: transparent transparent transparent var(--bubble-bg);
 }
 
-// Arrow pointing TOP (bubble is below character)
+// Arrow on TOP side (bubble is below target)
+// Arrow points up ▲
 .bubble-arrow.arrow-top {
-  top: -12px;
-  left: var(--arrow-offset, 50%);
+  top: calc(-1 * var(--arrow-size));
+  left: var(--arrow-offset);
   transform: translateX(-50%);
-  border-width: 0 12px 15px 12px;
-  border-color: transparent transparent var(--bubble-bg, #FFFFFF) transparent;
+  border-width: 0 calc(var(--arrow-size) * 0.7) var(--arrow-size) calc(var(--arrow-size) * 0.7);
+  border-color: transparent transparent var(--bubble-bg) transparent;
 }
 
-// Arrow pointing BOTTOM (bubble is above character)
+// Arrow on BOTTOM side (bubble is above target)
+// Arrow points down ▼
 .bubble-arrow.arrow-bottom {
-  bottom: -12px;
-  left: var(--arrow-offset, 50%);
+  bottom: calc(-1 * var(--arrow-size));
+  left: var(--arrow-offset);
   transform: translateX(-50%);
-  border-width: 15px 12px 0 12px;
-  border-color: var(--bubble-bg, #FFFFFF) transparent transparent transparent;
+  border-width: var(--arrow-size) calc(var(--arrow-size) * 0.7) 0 calc(var(--arrow-size) * 0.7);
+  border-color: var(--bubble-bg) transparent transparent transparent;
 }
 
-// Thinking bubble styles
+// ─────────────────────────────────────────────────────────────────────────────────
+// THINKING MODE
+// ─────────────────────────────────────────────────────────────────────────────────
 .speech-bubble-container.thinking {
   .speech-bubble {
     min-width: 60px;
-    min-height: 40px;
     padding: 14px 20px;
     border-radius: 50px;
     animation: float 3s ease-in-out infinite;
@@ -171,42 +196,42 @@
 
 .thinking-dot {
   position: absolute;
-  background: var(--bubble-bg, #FFFFFF);
+  background: var(--bubble-bg);
   border-radius: 50%;
-  opacity: 0.7;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .dot1 {
-  width: 8px;
-  height: 8px;
-  left: 10px;
+  width: 10px;
+  height: 10px;
+  left: 8px;
   bottom: -14px;
-  animation: float 2s ease-in-out infinite;
+  animation: dotPulse 1.4s ease-in-out infinite;
 }
 
 .dot2 {
-  width: 6px;
-  height: 6px;
-  left: 18px;
-  bottom: -20px;
-  animation: float 2s ease-in-out infinite 0.2s;
+  width: 7px;
+  height: 7px;
+  left: 16px;
+  bottom: -22px;
+  animation: dotPulse 1.4s ease-in-out infinite 0.2s;
 }
 
 .dot3 {
-  width: 4px;
-  height: 4px;
-  left: 24px;
-  bottom: -24px;
-  animation: float 2s ease-in-out infinite 0.4s;
+  width: 5px;
+  height: 5px;
+  left: 22px;
+  bottom: -28px;
+  animation: dotPulse 1.4s ease-in-out infinite 0.4s;
 }
 
-// Responsive adjustments
+// ─────────────────────────────────────────────────────────────────────────────────
+// RESPONSIVE
+// ─────────────────────────────────────────────────────────────────────────────────
 @media (max-width: 768px) {
   .speech-bubble {
-    border-radius: 14px;
+    border-radius: calc(var(--bubble-radius) * 0.7);
     padding: 14px 18px;
-    // max-width: 280px;
   }
 
   .message-text {
@@ -216,9 +241,8 @@
 
 @media (max-width: 480px) {
   .speech-bubble {
-    border-radius: 10px;
+    border-radius: calc(var(--bubble-radius) * 0.5);
     padding: 12px 16px;
-    max-width: 100%;
   }
 
   .message-text {
@@ -226,10 +250,13 @@
   }
 }
 
-// Performance optimization
+// ─────────────────────────────────────────────────────────────────────────────────
+// PERFORMANCE
+// ─────────────────────────────────────────────────────────────────────────────────
 .speech-bubble-container,
 .speech-bubble,
-.bubble-arrow {
+.bubble-arrow,
+.thinking-dot {
   will-change: transform, opacity;
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;

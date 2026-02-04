@@ -10,7 +10,10 @@
 </mindful-navigator>
 <div class="note-view">
   <!--note content-->
-  <div class="note-content">{{content}} </div>
+  <div class="note-content" [innerHTML]="contentHtml"></div>
+
+    <!-- Debug: show raw payload for troubleshooting (remove in production) -->
+    <pre class="note-raw">{{content}}</pre>
 
   <!-- Use the shared MindfulPopup component for confirmation -->
   <app-mindful-popup [isVisible]="showMindfulPopup" [config]="{

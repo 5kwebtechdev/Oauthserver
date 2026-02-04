@@ -43,8 +43,90 @@ export class NotesSaveComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['content']) {
-      this.contentHtml = this.sanitizer.bypassSecurityTrustHtml(this.renderContentAsHtml(this.content || ''));
+      const raw = this.content || '';
+      console.debug('[NotesSave] incoming content length=', (raw || '').length, 'preview=', (raw || '').slice(0,200));
+      // If incoming content appears to contain HTML tags, treat as HTML
+      if (/<[a-z][\s\S]*>/i.test(raw)) {
+        const safeHtml = this.sanitizeHtmlForRendering(raw);
+        this.contentHtml = this.sanitizer.bypassSecurityTrustHtml(safeHtml);
+      } else {
+        this.contentHtml = this.sanitizer.bypassSecurityTrustHtml(this.renderContentAsHtml(raw));
+      }
     }
+  }
+
+  /**
+   * Lightweight sanitization to remove dangerous tags and attributes
+   * before trusting HTML from the editor. This is intentionally
+   * conservative but not a full HTML sanitizer - consider using
+   * a library like DOMPurify for production hardening.
+   */
+  private sanitizeHtmlForRendering(raw: string): string {
+    let s = raw || '';
+    // remove script/style/iframe/object/embed tags and their contents
+    s = s.replace(/<(script|style|iframe|object|embed)[\s\S]*?>[\s\S]*?<\/\1>/gi, '');
+    // remove on* event handler attributes (onclick, onerror, etc.)
+    s = s.replace(/\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+    // neutralize javascript: URIs in href/src
+    s = s.replace(/(href|src)\s*=\s*("|')\s*javascript:[^"']*("|')/gi, '$1=$2#$3');
+    s = s.replace(/(href|src)\s*=\s*javascript:[^\s>]+/gi, '');
+    // Convert newlines to <br> so they display as visible line breaks
+    s = s.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>').replace(/\r/g, '<br>');
+    return s;
+  }
+
+  /**
+   * Render plain text content as HTML.
+   * - Converts newlines to line breaks
+   * - Recognizes bullet lists (•, -, *)
+   * - Recognizes numbered lists (1., 2., etc.)
+   * - Preserves emojis and special characters
+   */
+  private renderContentAsHtml(raw: string): string {
+    const lines = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+    let html = '';
+    let inUl = false;
+    let inOl = false;
+
+    for (let line of lines) {
+      const trimmed = line.trim();
+      
+      // Empty line - close any open list and add spacing
+      if (trimmed === '') {
+        if (inUl) { html += '</ul>'; inUl = false; }
+        if (inOl) { html += '</ol>'; inOl = false; }
+        html += '<br>';
+        continue;
+      }
+
+      // Check for bullet list item (•, -, *, ▪, ▸)
+      const bulletMatch = trimmed.match(/^([•\-*▪▸])\s*(.*)/);
+      if (bulletMatch) {
+        if (inOl) { html += '</ol>'; inOl = false; }
+        if (!inUl) { inUl = true; html += '<ul class="note-list">'; }
+        html += `<li>${this.escapeHtml(bulletMatch[2])}</li>`;
+        continue;
+      }
+
+      // Check for numbered list item (1., 2., a., b., etc.)
+      const numberedMatch = trimmed.match(/^(\d+|[a-zA-Z])[.)]\s*(.*)/);
+      if (numberedMatch) {
+        if (inUl) { html += '</ul>'; inUl = false; }
+        if (!inOl) { inOl = true; html += '<ol class="note-list">'; }
+        html += `<li>${this.escapeHtml(numberedMatch[2])}</li>`;
+        continue;
+      }
+
+      // Regular text line - close any open lists
+      if (inUl) { html += '</ul>'; inUl = false; }
+      if (inOl) { html += '</ol>'; inOl = false; }
+      html += `<p>${this.escapeHtml(trimmed)}</p>`;
+    }
+
+    // Close any remaining open lists
+    if (inUl) html += '</ul>';
+    if (inOl) html += '</ol>';
+    return html;
   }
 
   onBack() {
@@ -95,45 +177,6 @@ export class NotesSaveComponent implements OnChanges {
       // Do not fallback to clipboard or show alerts — user requested native-only behavior.
       console.warn('Capacitor Share failed or unavailable', e);
     }
-  }
-
-  private renderContentAsHtml(raw: string): string {
-    // Convert plaintext note content into simple HTML.
-    // Recognize lines starting with a bullet (• or -) and group into a list.
-    const lines = raw.replace(/\r/g, '').split('\n');
-    let html = '';
-    let inList = false;
-
-    for (let line of lines) {
-      const trimmed = line.trim();
-      if (trimmed === '') {
-        if (inList) {
-          html += '</ul>';
-          inList = false;
-        }
-        html += '<p></p>';
-        continue;
-      }
-
-      const isBullet = /^[•\-*]/.test(trimmed);
-      if (isBullet) {
-        const item = trimmed.replace(/^[•\-*]\s*/, '');
-        if (!inList) {
-          inList = true;
-          html += '<ul class="note-list">';
-        }
-        html += `<li>${this.escapeHtml(item)}</li>`;
-      } else {
-        if (inList) {
-          html += '</ul>';
-          inList = false;
-        }
-        html += `<p>${this.escapeHtml(trimmed)}</p>`;
-      }
-    }
-
-    if (inList) html += '</ul>';
-    return html;
   }
 
   private escapeHtml(str: string) {
