@@ -703,7 +703,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
               const updatedHabit = this.buildHabitFromResponse(res, habit, 'tasks', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.updateHabit(updatedHabit);
               this.showSuccessToast(this.title, 'tasks');
-              this.modalCtrl.dismiss().catch(() => {});
+              this.finalizeAndReturn();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => { this.isSubmitting = false; console.error('Failed to update task', err); this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to update task. Please try again.'; }
@@ -716,7 +716,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
               this.habitService.addHabit(createdHabit);
               this.habitService.notifyTaskAdded();
               this.showSuccessToast(this.title, 'tasks');
-              this.modalCtrl.dismiss().catch(() => {});
+              this.finalizeAndReturn();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => {
@@ -737,7 +737,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
               const updatedHabit = this.buildHabitFromResponse(res, habit, 'timetable', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.updateHabit(updatedHabit);
               this.showSuccessToast(this.title, 'timetable');
-              this.modalCtrl.dismiss().catch(() => {});
+              this.finalizeAndReturn();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => { this.isSubmitting = false; console.error('Failed to update timetable', err); alert('Failed to update timetable. Please try again.'); }
@@ -749,7 +749,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
               const createdHabit = this.buildHabitFromResponse(res, habit, 'timetable', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.addHabit(createdHabit);
               this.showSuccessToast(this.title, 'timetable');
-              this.modalCtrl.dismiss().catch(() => {});
+              this.finalizeAndReturn();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => {
@@ -768,7 +768,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
               const updatedHabit = this.buildHabitFromResponse(res, habit, 'habits', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.updateHabit(updatedHabit);
               this.showSuccessToast(this.title, 'habits');
-              this.modalCtrl.dismiss().catch(() => {});
+              this.finalizeAndReturn();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => { this.isSubmitting = false; console.error('Failed to update habit', err); this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to update habit. Please try again.'; }
@@ -780,12 +780,31 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
               const createdHabit = this.buildHabitFromResponse(res, habit, 'habits', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.addHabit(createdHabit);
               this.showSuccessToast(this.title, 'habits');
-              this.modalCtrl.dismiss().catch(() => {});
+              this.finalizeAndReturn();
             } finally { this.isSubmitting = false; }
           },
           error: (err) => { this.isSubmitting = false; console.error('Failed to create habit', err); this.serverErrorMessage = err?.error?.message || err?.message || 'Failed to create habit. Please try again.'; }
         });
       }
+    }
+  }
+
+  private finalizeAndReturn(): void {
+    // Dismiss modal if opened as modal; ignore failures when not modal
+    try { this.modalCtrl.dismiss().catch(() => {}); } catch { /* ignore if not modal */ }
+
+    // Use NavigationService to go back to the origin page. If previous page
+    // was an activity-detail, skip it and go back one extra step so the
+    // user returns to the entry/list page that opened this input.
+    try {
+      const prev = this.navigation.getPreviousUrl && this.navigation.getPreviousUrl();
+      if (prev && String(prev).includes('/authed/activity-detail')) {
+        this.navigation.backN(2);
+      } else {
+        this.navigation.back();
+      }
+    } catch (e) {
+      this.navigation.back();
     }
   }
 

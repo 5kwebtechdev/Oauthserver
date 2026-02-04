@@ -1,12 +1,13 @@
 import { Component, Input, OnChanges, SimpleChanges, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { Habit } from '../habit.types';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
+import { finalize } from 'rxjs/operators';
+
+import { Habit } from '../habit.types';
 import { AuthService } from '../../../services/auth.service';
 import { HabitApi } from 'src/app/core/api/habit.api';
 import { TaskApi } from 'src/app/core/api/task.api';
-import { HabitService } from '../habit.service';
 import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulSpeechBubbleComponent } from '../../mindful-speech-bubble/mindful-speech-bubble.component';
@@ -16,109 +17,108 @@ import { MindfulCalendarComponent } from '../../mindful-inputs/mindful-calendar/
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
-import { finalize } from 'rxjs/operators';
+
+type ActivityType = 'habits' | 'tasks' | 'timetable';
 
 @Component({
   standalone: true,
-
   selector: 'activity-detail',
   templateUrl: './activity-detail.component.html',
   styleUrls: ['./activity-detail.component.scss'],
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulSpeechBubbleComponent, MindfulPetComponent, MindfulCoinsStatsComponent, MindfulCalendarComponent, MindfulButtonComponent, MindfulInputsModule, MindfulBadgeComponent]
+  imports: [
+    CommonModule, IonicModule, MindfulNavigatorComponent, MindfulSpeechBubbleComponent,
+    MindfulPetComponent, MindfulCoinsStatsComponent, MindfulCalendarComponent,
+    MindfulButtonComponent, MindfulInputsModule, MindfulBadgeComponent
+  ]
 })
 export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
-  public title: string = 'Habit Details';
+  // Navigation state
+  cameFromLongPress = false;
+  navigationOriginType = '';
+  private selectedDateFromState: string | null = null;
 
-  // true when navigated from a long-press on a card
-  public cameFromLongPress: boolean = false;
-  // 'habits' | 'tasks' | 'timetable' - origin type from navigation state
-  public navigationOriginType: string = '';
+  // User role flags
+  isParent = false;
+  isChild = false;
 
-  // true when the current user is a parent account
-  public isParent: boolean = false;
-  // true when the current user is a child account
-  public isChild: boolean = false;
+  @Input() habit: Habit | null = null;
 
-  @Input()
-  public habit: Habit | null = null;
+  // Progress & intervals
+  percentageCompleted = 0;
+  private progressInterval: ReturnType<typeof setInterval> | null = null;
+  private buttonStateCheckerInterval: ReturnType<typeof setInterval> | null = null;
 
-  // Progress tracking
-  percentageCompleted: number = 0;
-  private progressInterval: any;
-  private buttonStateCheckerInterval: any;
-
-  // Calendar status data
-  public calendarStatusData: { [key: string]: 'COMPLETED' | 'SKIPPED' | 'PENDING' } = {};
-  public currentCalendarMonth: Date = new Date();
+  // Calendar
+  calendarStatusData: Record<string, 'COMPLETED' | 'SKIPPED' | 'PENDING'> = {};
+  currentCalendarMonth = new Date();
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private HabitApi: HabitApi,
-    private TaskApi: TaskApi,
-    private habitService: HabitService,
+    private habitApi: HabitApi,
+    private taskApi: TaskApi,
     private buttonLogic: HabitButtonLogicService,
     private cdr: ChangeDetectorRef,
     private authService: AuthService
-  ) { }
+  ) {}
 
   ngOnInit() {
-    // Determine whether current user is a child (only children see some UI like private toggle)
-    try {
-      const ud = localStorage.getItem('user_data');
-      if (ud) {
-        const parsed = JSON.parse(ud || '{}');
-        const rel = (parsed.relationship || parsed.role || '').toString().toUpperCase();
-        this.isChild = rel === 'CHILD';
-      }
-    } catch (e) {
-      this.isChild = false;
-    }
-
-    // Determine whether current user is a parent - parent accounts should not see CTA buttons
-    try {
-      this.isParent = !!(this.authService && this.authService.isParentUser && this.authService.isParentUser());
-    } catch (e) {
-      this.isParent = false;
-    }
-    // Detect whether we arrived here via a long-press navigation
-    this.cameFromLongPress = !!history.state?.['fromLongPress'];
-
-    // Get ID and type from either navigation state or URL params
-    const stateHabit = history.state?.['habit'];
-    const habitType = history.state?.['type'] || stateHabit?.type;
-    this.navigationOriginType = String(habitType || 'habits');
-
-    // Get selectedDate from navigation state (from long-press)
-      const selectedDate = history.state?.['selectedDate'];
-      this.selectedDateFromState = selectedDate || null;
-
-    // Get ID from state or URL
-    const idFromState = stateHabit?.id;
-    const idFromUrl = this.route.snapshot.paramMap.get('id');
-    const id = idFromState || idFromUrl;
-
-    // Get type from state or URL query params
-    const typeFromState = history.state?.['type'] || stateHabit?.type;
-    const typeFromUrl = this.route.snapshot.queryParamMap.get('type');
-    const type = (typeFromState || typeFromUrl || 'habits') as 'habits' | 'tasks' | 'timetable';
-
-    // Always call API to get fresh data
-    if (id) {
-      this.loadDetail(+id, type, selectedDate);
-    } else {
-      console.warn('❌ No ID found in navigation state or URL params');
-    }
-
-    // Start progress tracking and button state checker
+    this.initUserRole();
+    this.initNavigationState();
+    this.loadActivityFromRoute();
     this.setupButtonStateChecker();
   }
 
-  // If navigation provided a selected date (from long-press), store it here for view checks
-  private selectedDateFromState: string | null = null;
-
   ngOnDestroy(): void {
-    // Clear all intervals
+    this.clearAllIntervals();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['habit'] && !changes['habit'].isFirstChange()) {
+      this.prepareCoinStats();
+      this.prepareMilestoneBadges();
+    }
+  }
+
+  // === Initialization Helpers ===
+
+  private initUserRole(): void {
+    try {
+      const userData = localStorage.getItem('user_data');
+      if (userData) {
+        const { relationship, role } = JSON.parse(userData);
+        this.isChild = (relationship || role || '').toString().toUpperCase() === 'CHILD';
+      }
+    } catch { this.isChild = false; }
+
+    try {
+      this.isParent = !!this.authService?.isParentUser?.();
+    } catch { this.isParent = false; }
+  }
+
+  private initNavigationState(): void {
+    const state = history.state || {};
+    this.cameFromLongPress = !!state['fromLongPress'];
+    this.selectedDateFromState = state['selectedDate'] || null;
+
+    const stateHabit = state['habit'];
+    this.navigationOriginType = String(state['type'] || stateHabit?.type || 'habits');
+  }
+
+  private loadActivityFromRoute(): void {
+    const state = history.state || {};
+    const stateHabit = state['habit'];
+
+    const id = stateHabit?.id || this.route.snapshot.paramMap.get('id');
+    const type = (state['type'] || stateHabit?.type ||
+      this.route.snapshot.queryParamMap.get('type') || 'habits') as ActivityType;
+
+    if (id) {
+      this.loadDetail(+id, type, this.selectedDateFromState || undefined);
+    }
+  }
+
+  private clearAllIntervals(): void {
     this.clearProgress();
     if (this.buttonStateCheckerInterval) {
       clearInterval(this.buttonStateCheckerInterval);
@@ -126,62 +126,25 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['habit'] && !changes['habit'].isFirstChange()) {
-      // Recompute derived values when habit @Input changes
-      this.prepareCoinStats();
-      this.prepareMilestoneBadges();
-    }
-  }
+  // === Data Loading ===
 
-  loadDetail(id: number, type: 'habits' | 'tasks' | 'timetable', date?: string) {
-    // If a date was provided, persist it for this id so future reloads (eg. after
-    // returning from edit/cancel) can reuse the same date-aware API. If no date
-    // is provided, consult sessionStorage for a previously saved date for this id.
-    let effectiveDate = date;
-    if (!effectiveDate) {
-      const stored = this.getStoredSelectedDate(type, id);
-      if (stored) {
-        effectiveDate = stored;
-      }
-    } else {
-      // persist provided date
-      this.setStoredSelectedDate(type, id, effectiveDate);
-    }
+  loadDetail(id: number, type: ActivityType, date?: string) {
+    const effectiveDate = date || this.getStoredSelectedDate(type, id);
 
-    // Choose the appropriate API observable: prefer date-specific endpoints when
-    // we have an effectiveDate.
-    let api$;
-    if (effectiveDate) {
-      api$ = type === 'tasks'
-        ? this.TaskApi.getTaskByIdWithDate(id, effectiveDate)
-        : this.HabitApi.getHabitByIdWithDate(id, effectiveDate);
-    } else {
-      api$ = type === 'tasks'
-        ? this.TaskApi.getTaskById(id)
-        : this.HabitApi.getHabitById(id);
-    }
+    if (date) this.setStoredSelectedDate(type, id, date);
 
-    api$.pipe(
-      finalize(() => {
-      })
-    ).subscribe({
+    const api$ = effectiveDate
+      ? (type === 'tasks' ? this.taskApi.getTaskByIdWithDate(id, effectiveDate) : this.habitApi.getHabitByIdWithDate(id, effectiveDate))
+      : (type === 'tasks' ? this.taskApi.getTaskById(id) : this.habitApi.getHabitById(id));
+
+    api$.pipe(finalize(() => {})).subscribe({
       next: (res) => {
         this.habit = this.normalizeResponse(res, type);
-        // Debug: log tags so we can see what the backend returned and what we normalized
-        try {
-          // eslint-disable-next-line no-console
-          console.debug('ActivityDetail loaded tags ->', res?.tags, 'normalized ->', this.habit?.tags);
-        } catch (e) {}
-        // Ensure view updates immediately after async load
-        try { this.cdr.detectChanges(); } catch (e) {}
+        this.cdr.detectChanges();
         this.prepareCoinStats();
         this.prepareMilestoneBadges();
-
-        // Load monthly completion data for the current month
         this.loadMonthlyStatus(this.currentCalendarMonth);
 
-        // Start progress tracking if habit is ongoing
         if (this.habit?.status?.toLowerCase() === 'ongoing') {
           this.percentageCompleted = this.calculateProgressPercentage();
           this.startProgress();
@@ -189,37 +152,37 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
           this.percentageCompleted = 0;
         }
       },
-      error: (err) => {
-        console.error(`Error loading ${type} detail:`, err);
-      }
+      error: (err) => console.error(`Error loading ${type} detail:`, err)
     });
   }
 
-  /** Store selected date in sessionStorage for a given id & type */
-  private setStoredSelectedDate(type: string, id: number, dateStr: string) {
-    try {
-      const key = `activity_detail_selected_date:${type}:${id}`;
-      sessionStorage.setItem(key, String(dateStr));
-    } catch (e) { /* ignore storage errors */ }
+  /** Legacy method for backward compatibility */
+  loadHabitDetail(id: number) {
+    this.loadDetail(id, 'habits');
   }
 
-  /** Retrieve stored selected date (yyyy-mm-dd) for a given id & type */
+  // === Storage Helpers ===
+
+  private setStoredSelectedDate(type: string, id: number, dateStr: string): void {
+    try {
+      sessionStorage.setItem(`activity_detail_selected_date:${type}:${id}`, dateStr);
+    } catch { /* Storage unavailable */ }
+  }
+
   private getStoredSelectedDate(type: string, id: number): string | null {
     try {
-      const key = `activity_detail_selected_date:${type}:${id}`;
-      const v = sessionStorage.getItem(key);
-      return v && v.length ? v : null;
-    } catch (e) { return null; }
+      return sessionStorage.getItem(`activity_detail_selected_date:${type}:${id}`) || null;
+    } catch { return null; }
   }
 
-  /** Normalize API response to Habit type */
-  private normalizeResponse(res: any, type: 'habits' | 'tasks' | 'timetable'): Habit {
-    // Calculate timestamps using the shared service
+  // === Response Normalization ===
+
+  private normalizeResponse(res: any, type: ActivityType): Habit {
     const timestamps = this.buttonLogic.calculateTimestamps(res);
+    const tags = (res.tags || []).map((t: any) => this.normalizeTag(t));
 
     return {
-      ...res,
-      type,
+      ...res, type,
       id: res.id?.toString() || '',
       notes: res.description || res.notes || '',
       description: res.description || res.notes || '',
@@ -239,16 +202,10 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
       routine: res.routine || '',
       status: this.buttonLogic.normalizeStatus(res.status) as 'pending' | 'ongoing' | 'completed',
       createdAt: res.createdAt ? new Date(res.createdAt) : new Date(),
-      tags: (res.tags || []).map((t: any) => {
-        if (!t && t !== 0) return '';
-        if (typeof t === 'string') return t;
-        if (typeof t === 'object') return (t.value || t.text || t.name || t.key || '').toString();
-        return String(t);
-      }),
-      // Preserve coin/streak fields regardless of backend naming (coinReward, rewardCoins, coin)
-      coinReward: (res.coinReward ?? res.rewardCoins ?? res.coin) || 0,
-      rewardCoins: (res.rewardCoins ?? res.coinReward ?? res.coin) || 0,
-      streak: (res.streak ?? res.streakCount) || 0,
+      tags,
+      coinReward: res.coinReward ?? res.rewardCoins ?? res.coin ?? 0,
+      rewardCoins: res.rewardCoins ?? res.coinReward ?? res.coin ?? 0,
+      streak: res.streak ?? res.streakCount ?? 0,
       highestStreak: res.highestStreak || 0,
       coinsEarned: res.coinsEarned || 0,
       completionPercentage: res.completionPercentage || 0,
@@ -267,81 +224,60 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     };
   }
 
-  /** Legacy method for backward compatibility */
-  loadHabitDetail(id: number) {
-    this.loadDetail(id, 'habits');
+  private normalizeTag(t: any): string {
+    if (!t && t !== 0) return '';
+    if (typeof t === 'string') return t;
+    if (typeof t === 'object') return (t.value || t.text || t.name || t.key || '').toString();
+    return String(t);
   }
 
-  /** Local UI fields */
-  public coinStats = {
-    userCoins: 0,
-    userStreaks: 0,
-    userDays: 0,
-    userBadges: 0,
-    successPercentage: 0,
-    totalStreaks: 0
+  // === Coin Stats & Badges ===
+
+  coinStats = {
+    userCoins: 0, userStreaks: 0, userDays: 0,
+    userBadges: 0, successPercentage: 0, totalStreaks: 0
   };
 
-  public badgeList: Array<any> = [];
+  badgeList: Array<any> = [];
 
-  /** Prepare coins widget data */
-  prepareCoinStats() {
-    const h: any = this.habit as any;
-    // Normalize numbers safely
-    const coins = Number(h?.coinsEarned ?? h?.coinReward ?? 0) || 0;
-    const streak = Number(h?.streak ?? 0) || 0; // current streak (use direct API value)
-    const highestStreak = Number(h?.highestStreak ?? 0) || 0;
-    const totalCompletedDays = Number(h?.totalCompletedDays ?? 0) || 0; // completed days
-    const completion = this.getDisplayCompletion(h?.completionPercentage ?? 0);
-    const badgesEarned = (h?.milestoneBadges || []).filter((b: any) => !!b.isEarned).length;
-
-    this.coinStats = {
-      userCoins: coins,
-      // Show the API-provided `streak` value directly in the `streak` slot
-      userStreaks: streak,
-      // Keep `userDays` as the completed-days/trophy value
-      userDays: totalCompletedDays,
-      userBadges: badgesEarned,
-      successPercentage: completion,
-      totalStreaks: highestStreak,
-    };
-  }
-
-  /** Convert completion value to a 0-100 percentage for display */
-  getDisplayCompletion(value: number) {
-    if (value === undefined || value === null) return 0;
-    const num = Number(value) || 0;
-    // If backend uses 0..1 decimal or 0..100, deal with both
-    if (num <= 1) return Math.round(num * 100);
-    return Math.round(num);
-  }
-
-  /** Badge helpers */
-  private BADGE_ICON_MAP: Record<string, string> = {
+  private readonly BADGE_ICON_MAP: Record<string, string> = {
     'Coin Collector': 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png',
     'Streak Keeper': 'assets/Icons-Neutral/Icon-Badge-StreakKeeper.png',
     'Habit Master': 'assets/Icons-Neutral/Icon-Badge-HabitMaster.png',
     'Task Terminator': 'assets/Icons-Neutral/Icon-Badges-TaskTerminator.png'
   };
 
-  getBadgeIcon(title: string) {
-    return this.BADGE_ICON_MAP[title] || ('assets/Icons-Neutral/Icon-Badge-CoinCollector.png');
+  prepareCoinStats() {
+    const h = this.habit as any;
+    const coins = Number(h?.coinsEarned ?? h?.coinReward ?? 0) || 0;
+    const streak = Number(h?.streak ?? 0) || 0;
+    const highestStreak = Number(h?.highestStreak ?? 0) || 0;
+    const totalCompletedDays = Number(h?.totalCompletedDays ?? 0) || 0;
+    const completion = this.normalizeCompletion(h?.completionPercentage ?? 0);
+    const badgesEarned = (h?.milestoneBadges || []).filter((b: any) => b.isEarned).length;
+
+    this.coinStats = {
+      userCoins: coins,
+      userStreaks: streak,
+      userDays: totalCompletedDays,
+      userBadges: badgesEarned,
+      successPercentage: completion,
+      totalStreaks: highestStreak
+    };
   }
 
-  private getBadgeColor(completionPercentage: number): string {
-    // Keep consistent with BadgeSection's getProgressColor implementation
-    if (completionPercentage >= 100) return '#4CAF50'; // Green - completed
-    if (completionPercentage >= 50) return '#FF9800';  // Orange - halfway
-    if (completionPercentage > 0) return '#2196F3';    // Blue - started
-    return '#9E9E9E';                                   // Gray - not started
+  private normalizeCompletion(value: number): number {
+    const num = Number(value) || 0;
+    return num <= 1 ? Math.round(num * 100) : Math.round(num);
   }
 
   prepareMilestoneBadges() {
-    const h: any = this.habit as any;
+    const h = this.habit as any;
     this.badgeList = (h?.milestoneBadges || []).map((b: any) => {
       const progress = Number(b?.progress ?? 0) || 0;
       const target = Number(b?.target ?? 0) || 0;
       const percent = target > 0 ? Math.round((progress / target) * 100) : 0;
+
       return {
         name: b.title || b.name || 'Badge',
         description: b.description || b.achievementText || '',
@@ -352,229 +288,175 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
         isEarned: !!b?.isEarned,
         levelText: b?.levelText || '',
         progressColor: this.getBadgeColor(percent),
-        iconUrl: this.getBadgeIcon(b.title || b.name || ''),
+        iconUrl: this.BADGE_ICON_MAP[b.title || b.name || ''] || 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png'
       };
     });
   }
 
-  /**
-   * Return true if the currently loaded habit/task is scheduled for today's date
-   */
-  isViewingToday(): boolean {
-    // If a selected date was provided via navigation (long-press), prefer that
-    try {
-      // Prefer explicit selected date from navigation state
-      let effectiveSelected = this.selectedDateFromState || null;
-      // If not present, check persisted sessionStorage for this item
-      if (!effectiveSelected && this.habit) {
-        const stored = this.getStoredSelectedDate(this.habit.type || 'habits', Number(this.habit.id));
-        if (stored) effectiveSelected = stored;
-      }
+  private getBadgeColor(percent: number): string {
+    if (percent >= 100) return '#4CAF50';
+    if (percent >= 50) return '#FF9800';
+    if (percent > 0) return '#2196F3';
+    return '#9E9E9E';
+  }
 
-      if (effectiveSelected) {
-        const selected = new Date(effectiveSelected);
-        if (!isNaN(selected.getTime())) {
-          const t = new Date();
-          return selected.getFullYear() === t.getFullYear() && selected.getMonth() === t.getMonth() && selected.getDate() === t.getDate();
-        }
-      }
-    } catch (e) {
-      // ignore and fall back
+  // === Calendar & Date Helpers ===
+
+  isViewingToday(): boolean {
+    const effectiveDate = this.getEffectiveSelectedDate();
+    if (effectiveDate) {
+      const selected = new Date(effectiveDate);
+      if (!isNaN(selected.getTime())) return this.isSameDay(selected, new Date());
     }
 
-    // Fallback: use habit timestamps or startDate
     if (this.habit) {
       const ts = Number((this.habit as any).startTimeStamp || 0);
-      if (ts) {
-        const d = new Date(ts);
-        const t = new Date();
-        return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
-      }
+      if (ts) return this.isSameDay(new Date(ts), new Date());
+
       if (this.habit.startDate) {
         const d = new Date(this.habit.startDate);
-        if (!isNaN(d.getTime())) {
-          const t = new Date();
-          return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
-        }
+        if (!isNaN(d.getTime())) return this.isSameDay(d, new Date());
       }
     }
     return false;
   }
 
-  /**
-   * Load monthly completion status for the habit/task
-   */
+  private isSameDay(d1: Date, d2: Date): boolean {
+    return d1.getFullYear() === d2.getFullYear() &&
+           d1.getMonth() === d2.getMonth() &&
+           d1.getDate() === d2.getDate();
+  }
+
+  private getEffectiveSelectedDate(): string | null {
+    if (this.selectedDateFromState) return this.selectedDateFromState;
+    if (this.habit) {
+      return this.getStoredSelectedDate(this.habit.type || 'habits', Number(this.habit.id));
+    }
+    return null;
+  }
+
   loadMonthlyStatus(monthDate: Date): void {
     if (!this.habit) return;
 
     const year = monthDate.getFullYear();
-    const month = monthDate.getMonth() + 1; // JavaScript months are 0-indexed
+    const month = monthDate.getMonth() + 1;
     const id = Number(this.habit.id);
 
     const api$ = this.habit.type === 'tasks'
-      ? this.TaskApi.getTaskMonthlyCompletion(id, year, month)
-      : this.HabitApi.getHabitMonthlyCompletion(id, year, month);
+      ? this.taskApi.getTaskMonthlyCompletion(id, year, month)
+      : this.habitApi.getHabitMonthlyCompletion(id, year, month);
 
     api$.subscribe({
       next: (res) => {
         this.calendarStatusData = {};
-        const completionArray = res.monthlyCompletion || [];
-
-        // Convert array to object keyed by date
-        completionArray.forEach((item: any) => {
-          if (item.date && item.status) {
-            this.calendarStatusData[item.date] = item.status;
-          }
+        (res.monthlyCompletion || []).forEach((item: any) => {
+          if (item.date && item.status) this.calendarStatusData[item.date] = item.status;
         });
-
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error loading monthly completion status:', err);
+        console.error('Error loading monthly completion:', err);
         this.calendarStatusData = {};
       }
     });
   }
 
-  /**
-   * Handle calendar month navigation
-   */
   onCalendarMonthChange(newMonth: Date): void {
     this.currentCalendarMonth = newMonth;
     this.loadMonthlyStatus(newMonth);
   }
 
+  // === Computed Properties ===
+
   get tagText(): string {
-    const tags: any[] = (this.habit?.tags || []) as any[];
-    if (!tags || tags.length === 0) return 'Focus';
-    const firstTag: any = tags[0];
-    if (!firstTag) return 'Focus';
-    // Handle both string and object tags
-    if (typeof firstTag === 'string') return String(firstTag).trim() || 'Focus';
-    if (typeof firstTag === 'object') return (firstTag.value || firstTag.text || firstTag.name || firstTag.key || 'Focus').toString();
-    return String(firstTag).trim() || 'Focus';
+    const tags = this.habit?.tags || [];
+    const first: any = tags[0];
+    if (!first) return 'Focus';
+    if (typeof first === 'string') return first.trim() || 'Focus';
+    if (typeof first === 'object') return (first.value || first.text || first.name || first.key || 'Focus').toString();
+    return String(first).trim() || 'Focus';
   }
 
   get speechMessage(): string {
     const desc = (this.habit as any)?.description ?? (this.habit as any)?.notes ?? '';
-    // Return the raw description (no prefixed text), trimmed for display safety
     return desc ? String(desc).trim() : '';
   }
 
   get shortDaysOfWeek(): string {
     const rawDays = this.habit?.daysOfWeek || [];
+    if (this.habit?.everyday || rawDays.length === 7) return 'Everyday';
 
-    // 1️⃣ If everyday flag true OR 7 days present
-    if (this.habit?.everyday || rawDays.length === 7) {
-      return 'Everyday';
-    }
-
-    // 2️⃣ No special weekend flag — rely on daysOfWeek or everyday
-
-    // 3️⃣ Normalize and format the days in canonical Mon..Sun order
-    const canonicalOrder = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
-    const abbrMap: Record<string, string> = {
-      MONDAY: 'Mon',
-      TUESDAY: 'Tue',
-      WEDNESDAY: 'Wed',
-      THURSDAY: 'Thu',
-      FRIDAY: 'Fri',
-      SATURDAY: 'Sat',
-      SUNDAY: 'Sun'
+    const order = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+    const abbr: Record<string, string> = {
+      MONDAY: 'Mon', TUESDAY: 'Tue', WEDNESDAY: 'Wed', THURSDAY: 'Thu',
+      FRIDAY: 'Fri', SATURDAY: 'Sat', SUNDAY: 'Sun'
     };
 
     const normalized = rawDays.map((d: string) => String(d).trim().toUpperCase());
-    const filtered = canonicalOrder.filter((c) => normalized.includes(c));
-    if (filtered.length > 0) {
-      return filtered.map((d) => abbrMap[d] || d.substring(0, 3)).join(', ');
-    }
+    const filtered = order.filter(c => normalized.includes(c));
 
-    // 4️⃣ Fallback if no data
-    return '—';
+    return filtered.length ? filtered.map(d => abbr[d]).join(', ') : '—';
   }
+
+  // === Navigation & Editing ===
 
   onEdit() {
-    // Navigate to the activity-input page and pass the current habit/task in navigation state
-    if (this.habit) {
-      this.router.navigate(['/authed/activity-input'], {
-        state: {
-          habit: this.habit,
-          type: this.habit.type,
-          // preserve the selectedDate and navigation origin so returning to detail
-          // will be able to call the same date-aware API (getHabitByIdWithDate / getTaskByIdWithDate)
-          selectedDate: this.selectedDateFromState || null,
-          originType: this.navigationOriginType || null,
-          fromDetail: true
-        }
-      });
-    } else {
+    if (!this.habit) {
       this.router.navigate(['/authed/activity-input']);
+      return;
     }
-  }
 
-  //routine handler
-  getRoutineIcon(): string {
-    try {
-      const routineValue = this.habit?.routine;
-      // If backend explicitly returned null or an empty value, do not show any icon
-      if (routineValue === null || routineValue === undefined || String(routineValue).toLowerCase() === 'null' || String(routineValue).trim() === '') {
-        return null as any;
+    this.router.navigate(['/authed/activity-input'], {
+      state: {
+        habit: this.habit,
+        type: this.habit.type,
+        selectedDate: this.selectedDateFromState,
+        originType: this.navigationOriginType,
+        fromDetail: true
       }
-
-      // Convert to proper case for filename
-      const routine = String(routineValue).toLowerCase();
-      const capitalizedRoutine = routine.charAt(0).toUpperCase() + routine.slice(1);
-      const fileName = `Icon-Routine-${capitalizedRoutine}.png`;
-
-      return `assets/Icons-Neutral/${fileName}`;
-    } catch (e) {
-      return null as any;
-    }
+    });
   }
 
-
-  getRoutineName(): string {
-    const routineValue = this.habit?.routine;
-    if (routineValue === null || routineValue === undefined || String(routineValue).toLowerCase() === 'null' || String(routineValue).trim() === '') return '';
-
-    const routine = String(routineValue).toLowerCase();
-    return routine.charAt(0).toUpperCase() + routine.slice(1);
-  }
-
-  /**
-   * Return true when the current logged-in user is the creator of the habit/task
-   * so they are allowed to edit it.
-   */
   canEdit(): boolean {
     try {
       const currentUserId = this.authService?.getUserId?.();
       if (!currentUserId || !this.habit) return false;
+
       const createdBy = (this.habit as any).createdById ?? (this.habit as any).createdBy ?? (this.habit as any).createdByName;
-      if (createdBy == null) return false;
-      return String(createdBy) === String(currentUserId);
-    } catch (e) {
-      return false;
-    }
+      return createdBy != null && String(createdBy) === String(currentUserId);
+    } catch { return false; }
   }
+
+  // === Routine Helpers ===
 
   hasRoutine(): boolean {
-    const routineValue = this.habit?.routine;
-    return !(routineValue === null || routineValue === undefined || String(routineValue).toLowerCase() === 'null' || String(routineValue).trim() === '');
+    const routine = this.habit?.routine;
+    return !!(routine && String(routine).toLowerCase() !== 'null' && String(routine).trim());
   }
 
-  // ============================================
-  // BUTTON LOGIC - Using shared service
-  // ============================================
+  getRoutineIcon(): string {
+    if (!this.hasRoutine()) return null as any;
 
-  /**
-   * Called when user taps "Let's Go" - set status to ONGOING
-   */
+    const routine = String(this.habit!.routine).toLowerCase();
+    const capitalized = routine.charAt(0).toUpperCase() + routine.slice(1);
+    return `assets/Icons-Neutral/Icon-Routine-${capitalized}.png`;
+  }
+
+  getRoutineName(): string {
+    if (!this.hasRoutine()) return '';
+
+    const routine = String(this.habit!.routine).toLowerCase();
+    return routine.charAt(0).toUpperCase() + routine.slice(1);
+  }
+
+  // === Habit Actions ===
+
   onStartHabit() {
     if (!this.habit || !this.isLetsGoEnabled()) return;
 
     const api$ = this.habit.type === 'tasks'
-      ? this.TaskApi.letsGoTask(this.habit.id)
-      : this.HabitApi.letsGoHabit(this.habit.id);
+      ? this.taskApi.letsGoTask(this.habit.id)
+      : this.habitApi.letsGoHabit(this.habit.id);
 
     api$.subscribe({
       next: () => {
@@ -587,15 +469,12 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     });
   }
 
-  /**
-   * Called when user taps "Abort" - reset to PENDING
-   */
   onAbortHabit() {
     if (!this.habit) return;
 
     const api$ = this.habit.type === 'tasks'
-      ? this.TaskApi.abortTask(this.habit.id)
-      : this.HabitApi.abortHabit(this.habit.id);
+      ? this.taskApi.abortTask(this.habit.id)
+      : this.habitApi.abortHabit(this.habit.id);
 
     api$.subscribe({
       next: () => {
@@ -608,15 +487,12 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     });
   }
 
-  /**
-   * Called when user taps "Done?" - set status to COMPLETED
-   */
   onCompleteHabit() {
     if (!this.habit || !this.isDoneEnabled()) return;
 
     const api$ = this.habit.type === 'tasks'
-      ? this.TaskApi.completeTask(this.habit.id)
-      : this.HabitApi.completeHabit(this.habit.id);
+      ? this.taskApi.completeTask(this.habit.id)
+      : this.habitApi.completeHabit(this.habit.id);
 
     api$.subscribe({
       next: () => {
@@ -629,14 +505,14 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     });
   }
 
-  // ============================================
-  // PROGRESS TRACKING
-  // ============================================
+  // === Progress Tracking ===
 
   startProgress(): void {
     this.clearProgress();
     this.percentageCompleted = this.buttonLogic.calculateProgressPercentage(this.habit);
-    this.startProgressUpdater();
+    this.progressInterval = setInterval(() => {
+      this.percentageCompleted = this.calculateProgressPercentage();
+    }, 10000); // Update every 10s to avoid ANR
   }
 
   resetProgress(): void {
@@ -655,105 +531,57 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     return this.buttonLogic.calculateProgressPercentage(this.habit);
   }
 
-  startProgressUpdater(): void {
-    this.clearProgress();
-    this.percentageCompleted = this.calculateProgressPercentage();
-    // Update every 10 seconds (reduced from 1s to prevent System UI ANR)
-    this.progressInterval = setInterval(() => {
-      this.percentageCompleted = this.calculateProgressPercentage();
-    }, 10000);
-  }
-
-  // ============================================
-  // BUTTON STATE LOGIC - Using shared service
-  // ============================================
+  // === Button State Logic ===
 
   private setupButtonStateChecker(): void {
-    // Removed aggressive 1-second polling that was causing System UI ANR
-    // Button states are now updated reactively via OnPush change detection
+    // Reactive updates via OnPush - no polling needed
     if (this.buttonStateCheckerInterval) clearInterval(this.buttonStateCheckerInterval);
   }
 
   isLetsGoEnabled(): boolean {
-    if (this.isViewingFutureDate()) return false;
-    return this.buttonLogic.isLetsGoEnabled(this.getHabitForButtonLogic(), false);
+    return !this.isViewingFutureDate() && this.buttonLogic.isLetsGoEnabled(this.getHabitForButtonLogic(), false);
   }
 
   isLetsGoVisible(): boolean {
-    if (this.isViewingFutureDate()) return false;
-    return this.buttonLogic.isLetsGoVisible(this.getHabitForButtonLogic());
+    return !this.isViewingFutureDate() && this.buttonLogic.isLetsGoVisible(this.getHabitForButtonLogic());
   }
 
   isAbortVisible(): boolean {
-    if (this.isViewingFutureDate()) return false;
-    return this.buttonLogic.isAbortVisible(this.getHabitForButtonLogic());
+    return !this.isViewingFutureDate() && this.buttonLogic.isAbortVisible(this.getHabitForButtonLogic());
   }
 
   isDoneEnabled(): boolean {
-    if (this.isViewingFutureDate()) return false;
-    return this.buttonLogic.isDoneEnabled(this.getHabitForButtonLogic(), false);
+    return !this.isViewingFutureDate() && this.buttonLogic.isDoneEnabled(this.getHabitForButtonLogic(), false);
   }
 
-  /**
-   * Return true when the currently selected / viewed date is strictly in the future
-   * compared to today. Uses the navigation-provided selected date or a persisted
-   * sessionStorage date for the current item.
-   */
   private isViewingFutureDate(): boolean {
-    try {
-      if (!this.habit) return false;
-      // Determine effective selected date (navigation state preferred)
-      let effectiveDate = this.selectedDateFromState || null;
-      if (!effectiveDate) {
-        const stored = this.getStoredSelectedDate(this.habit.type || 'habits', Number(this.habit.id));
-        if (stored) effectiveDate = stored;
-      }
-      if (!effectiveDate) return false;
+    if (!this.habit) return false;
 
-      const d = new Date(effectiveDate);
-      if (isNaN(d.getTime())) return false;
+    const effectiveDate = this.getEffectiveSelectedDate();
+    if (!effectiveDate) return false;
 
-      const today = new Date();
-      const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      return dateOnly.getTime() > todayOnly.getTime();
-    } catch (e) {
-      return false;
-    }
+    const d = new Date(effectiveDate);
+    if (isNaN(d.getTime())) return false;
+
+    const today = new Date();
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    return dateOnly.getTime() > todayOnly.getTime();
   }
 
-  /**
-   * Provide a habit-like object adjusted for the navigation-selected date (if any)
-   * so the shared button-logic service evaluates visibility/enabled state correctly
-   */
   private getHabitForButtonLogic(): any {
     if (!this.habit) return null;
-    try {
-      // Prefer the explicit selected date passed via navigation state
-      let effectiveDate = this.selectedDateFromState;
-      // If not present, consult persisted sessionStorage value for this item
-      if (!effectiveDate) {
-        try {
-          const stored = this.getStoredSelectedDate(this.habit.type || 'habits', Number(this.habit.id));
-          if (stored) effectiveDate = stored;
-        } catch (e) { /* ignore */ }
-      }
 
-      if (effectiveDate) {
-        // Recalculate timestamps using the effective date so the button logic evaluates correctly
-        const copy: any = { ...this.habit, startDate: effectiveDate, endDate: effectiveDate };
-        try {
-          const ts = this.buttonLogic.calculateTimestamps(copy);
-          copy.startTimeStamp = ts.startTimeStamp;
-          copy.endTimeStamp = ts.endTimeStamp;
-        } catch (e) {
-          // ignore calculation errors and fall back to shallow copy
-        }
-        return copy;
-      }
-    } catch (e) {
-      // ignore and fall back
-    }
-    return this.habit;
+    const effectiveDate = this.getEffectiveSelectedDate();
+    if (!effectiveDate) return this.habit;
+
+    const copy: any = { ...this.habit, startDate: effectiveDate, endDate: effectiveDate };
+    try {
+      const ts = this.buttonLogic.calculateTimestamps(copy);
+      copy.startTimeStamp = ts.startTimeStamp;
+      copy.endTimeStamp = ts.endTimeStamp;
+    } catch { /* Use shallow copy */ }
+
+    return copy;
   }
 }
