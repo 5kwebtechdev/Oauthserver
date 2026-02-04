@@ -103,7 +103,7 @@
       (click)="openHabitInput()"></mindful-button>
   </div>
   <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
-    <button class="text-view-all" [routerLink]="['/authed/activity-page']">View All</button>
+    <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">View All</button>
     <mindful-view-all [text]="'Add New +'" (clicked)="openHabitInput()" [hideIcon]="true"></mindful-view-all>
   </div>
 </div>
@@ -208,7 +208,7 @@
       (click)="openHabitInput()"></mindful-button>
   </div>
   <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
-    <button class="text-view-all" [routerLink]="['/authed/activity-page']">View All</button>
+    <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">View All</button>
     <mindful-view-all [text]="'Add New +'" (clicked)="openHabitInput()" [hideIcon]="true"></mindful-view-all>
   </div>
 </div>

@@ -26,6 +26,7 @@ export class MindfulSelectorsComponent implements OnInit {
   @Input() componentType: 'button' | 'badge' | 'tags' = 'badge';
   @Input() size: 'small' | 'medium' | 'large' = 'small';
   @Input() buttonVariant?: 'flat';
+  @Input() initialSelectedKeys: any[] = [];
   @Output() selectedKeysChange = new EventEmitter<string[]>();
 
   @Input()
@@ -61,7 +62,9 @@ export class MindfulSelectorsComponent implements OnInit {
   ngOnInit(): void {
     const control = this.formGroup?.get(this.formControlName) as FormControl;
     if (control) {
-      this.selectedKeys = control.value || [];
+      this.selectedKeys = control.value || this.initialSelectedKeys || [];
+    } else if (this.initialSelectedKeys && this.initialSelectedKeys.length) {
+      this.selectedKeys = [...this.initialSelectedKeys];
     }
   }
 

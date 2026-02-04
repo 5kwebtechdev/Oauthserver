@@ -132,6 +132,13 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                     const paramDate = new Date(params['date']);
                     if (!isNaN(paramDate.getTime())) this.selectedDate = paramDate;
                 }
+                // Allow opening the page with a specific main tab (habits|tasks)
+                if (params['tab']) {
+                    const t = String(params['tab']).toLowerCase();
+                    if (t === 'tasks') this.currentMainTab = 'tasks';
+                    else if (t === 'habits') this.currentMainTab = 'habits';
+                    // if 'all' or unknown, keep default (habits)
+                }
             })
         );
     }
@@ -242,12 +249,12 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         );
     }
 
-    loadTasksForSelectedDate(date: Date): void {
+    loadTasksForSelectedDate(date: Date, forceReload: boolean = false): void {
         this.loading = true;
         const formatted = this.habitService.formatDateToYYYYMMDD(date);
 
         this.subscriptions.add(
-            this.taskApi.getTasksByDate(formatted).subscribe({
+            this.taskApi.getTasksByDate(formatted, forceReload).subscribe({
                 next: (res: any) => {
                     let list = Array.isArray(res?.data || res?.tasks || res) ? res.data || res.tasks || res : [];
 
@@ -494,7 +501,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     public async refresh(): Promise<void> {
         console.log('[HabitPageContent] Refreshing data...');
         this.loadHabits(true);
-        this.loadTasksForSelectedDate(this.selectedDate);
+        this.loadTasksForSelectedDate(this.selectedDate, true);
     }
 
     /**

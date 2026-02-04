@@ -1,14 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthApi } from './auth.api';
+import { TaskApi } from './task.api';
 
 @Injectable({ providedIn: 'root' })
 export class HabitApi {
     private base = environment.apiUrl || '';
 
-    constructor(private http: HttpClient, private authApi: AuthApi) { }
+    constructor(private http: HttpClient, private authApi: AuthApi, private taskApi: TaskApi) { }
 
     private headers(): HttpHeaders {
         const token = this.authApi.getToken();
@@ -39,9 +40,23 @@ export class HabitApi {
      * Get habits by date. The ProfileSelectorInterceptor automatically adds userId
      * when a child is selected by the parent.
      */
-    getHabitsByDate(date: string): Observable<any> {
-        const url = `${this.base}/habits/habits-by-date?date=${date}`;
-        return this.http.get(url, { headers: this.headers() });
+    getHabitsByDate(date: string, force: boolean = false): Observable<any> {
+        // Reuse the calendar response from TaskApi (cached) and extract habit items
+        return this.taskApi.getCalendarByDate(date, force).pipe(
+            map((resp: any) => {
+                if (!resp) return [];
+                if (Array.isArray(resp.habits)) return resp.habits;
+                if (Array.isArray(resp.data)) return resp.data.filter((i: any) => {
+                    const t = (i?.type || '').toString().toLowerCase();
+                    return t.includes('habit') || t === 'habits';
+                });
+                if (Array.isArray(resp.tasks)) return resp.tasks.filter((i: any) => {
+                    const t = (i?.type || '').toString().toLowerCase();
+                    return t.includes('habit') || t === 'habits';
+                });
+                return [];
+            })
+        );
     }
 
     getHabitById(id: number): Observable<any> {
@@ -79,9 +94,24 @@ export class HabitApi {
         return this.http.get(url, { headers: this.headers(), params });
     }
 
-    getTodayHabits(): Observable<any> {
-        const url = `${this.base}/habits/habits-by-date`;
-        return this.http.get(url, { headers: this.headers() });
+    getTodayHabits(force: boolean = false): Observable<any> {
+        const today = new Date();
+        const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        return this.taskApi.getCalendarByDate(date, force).pipe(
+            map((resp: any) => {
+                if (!resp) return [];
+                if (Array.isArray(resp.habits)) return resp.habits;
+                if (Array.isArray(resp.data)) return resp.data.filter((i: any) => {
+                    const t = (i?.type || '').toString().toLowerCase();
+                    return t.includes('habit') || t === 'habits';
+                });
+                if (Array.isArray(resp.tasks)) return resp.tasks.filter((i: any) => {
+                    const t = (i?.type || '').toString().toLowerCase();
+                    return t.includes('habit') || t === 'habits';
+                });
+                return [];
+            })
+        );
     }
 
 
