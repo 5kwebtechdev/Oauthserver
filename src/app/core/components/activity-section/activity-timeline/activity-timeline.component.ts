@@ -7,6 +7,7 @@ import { TimelineEvent } from '../../../models/calendar.model';
 import { Subscription, Observable } from 'rxjs';
 import { CustomToastService, Toast } from '../../../services/custom-toast.service';
 import { ModalController } from '@ionic/angular';
+import { HabitService } from '../habit.service';
 
 @Component({
   selector: 'app-activity-timeline',
@@ -36,8 +37,9 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy {
     private router: Router,
     private profileSelector: ProfileSelectorService,
     private modalCtrl: ModalController,
-    private authService: AuthService
-    , private toastService: CustomToastService
+    private authService: AuthService,
+    private toastService: CustomToastService,
+    private habitService: HabitService
   ) {
     this.toast$ = this.toastService.toast$;
   }
@@ -47,11 +49,32 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy {
     try { return this.authService.isParentUser(); } catch { return false; }
   }
 
+  /** Get initial selected keys for the selector component */
+  get initialSelectedKeys(): string[] {
+    return [this.selectedType];
+  }
+
   ngOnInit() {
+    // Restore previously selected filter type
+    try {
+      const savedType = sessionStorage.getItem('activity-timeline-selected-type');
+      if (savedType && ['all', 'habit', 'task', 'timetable'].includes(savedType)) {
+        this.selectedType = savedType;
+      }
+    } catch (e) { /* ignore */ }
+
     this.loadEvents();
     // Reload when parent switches child
     this.subscriptions.add(
       this.profileSelector.childChanged$.subscribe(() => this.loadEvents())
+    );
+    // Reload when habits/tasks are added/changed/deleted
+    this.subscriptions.add(
+      this.habitService.dataChanged$.subscribe(() => {
+        // Clear cache for current date to ensure fresh data
+        this.calendarService.clearCache(this.selectedDate, 'day');
+        this.loadEvents();
+      })
     );
   }
 
@@ -93,6 +116,10 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy {
 
   keysUpdated(selection: string[]) {
     this.selectedType = selection[0] || 'all';
+    // Save selected type for persistence
+    try {
+      sessionStorage.setItem('activity-timeline-selected-type', this.selectedType);
+    } catch (e) { /* ignore */ }
     this.filterEvents();
   }
 
@@ -121,10 +148,17 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy {
 
   onDateSelected(date: Date): void {
     this.selectedDate = this.formatDate(date);
+    // Clear cache for new date to ensure fresh data
+    this.calendarService.clearCache(this.selectedDate, 'day');
     this.loadEvents();
   }
 
   onAddClick(): void {
+    // Save current selected type for restoration when returning
+    try {
+      sessionStorage.setItem('activity-timeline-selected-type', this.selectedType);
+    } catch (e) { /* ignore */ }
+
     // Map current selector to ActivityInput tab keys and pass via navigation state
     const map: Record<string, string> = {
       all: 'habits',
@@ -133,7 +167,8 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy {
       timetable: 'timetable'
     };
     const currentActive = map[this.selectedType] || 'habits';
-    this.router.navigate(['/authed/activity-input'], { state: { currentActive } });
+    const origin = this.router.url || '/authed/user-dashboard';
+    this.router.navigate(['/authed/activity-input'], { state: { currentActive, origin } });
   }
 
   /**

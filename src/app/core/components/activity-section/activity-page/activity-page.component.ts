@@ -72,7 +72,9 @@ export class ActivityPageComponent {
   ) { }
 
   onAddHabit(): void {
-    this.router.navigate(['/authed/activity-input']).catch(() => { });
+    const currentTab = this.habitContent?.currentMainTab ?? 'habits';
+    const origin = this.router.url || '/authed/user-dashboard';
+    this.router.navigate(['/authed/activity-input'], { state: { currentActive: currentTab, origin } }).catch(() => { });
   }
 
   /**

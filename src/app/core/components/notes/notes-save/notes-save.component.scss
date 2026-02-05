@@ -13,14 +13,10 @@
 
   .mindful-popup-dual-cta {
 
-    /* penetrate child component styles to override mindful-button's width */
     ::ng-deep .button.bronze.large {
       width: auto !important;
-      /* let content size the button */
       max-width: 240px !important;
-      /* prevent it from becoming too wide in popups */
       min-width: 120px !important;
-      /* keep a reasonable touch target */
       padding-left: 16px !important;
       padding-right: 16px !important;
     }
@@ -94,13 +90,13 @@ font-weight: 600;
 }
 
 .note-raw {
-  background: #f7f7f7;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem;
   border-radius: 8px;
-  margin-top: 1rem;
   white-space: pre-wrap;
-  color: #222;
-  font-family: monospace;
+  color: #282527;
+font-family: Nunito;
+font-size: 16px;
+font-weight: 600;
 }
 
 .note-list {

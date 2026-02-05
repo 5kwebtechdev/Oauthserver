@@ -235,7 +235,7 @@
 
         </div>
         <div class="habit-timing-container d-flex align-items-center">
-          <h4 [ngClass]="habit?.type === 'tasks' ? 'task-timing' : 'habit-timing'">
+          <h4 [ngClass]="(habit?.type === 'tasks' ? 'task-timing' : 'habit-timing') + ' ' + (habit?.status?.toLowerCase() || 'pending')">
             {{ formatTimeString(habit?.startTime) || getFormattedTime(startTime) }} - {{
             formatTimeString(habit?.endTime) || getFormattedTime(endTime) }}
             <!-- Inline SVG so we can control the fill color based on type -->
