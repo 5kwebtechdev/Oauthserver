@@ -5,12 +5,12 @@
             <div class="streaks-status-item">
                 <span class="status-label">Current Streak</span>
                 <img src="assets/Icons-Neutral/Icon-Streak.png" alt="fire icon" class="icon" />
-                <span class="status-value">{{ currentUser?.streakDays || 0 }} days</span>
+                <span class="status-value">{{ currentUser?.currentStreak || 0 }} days</span>
             </div>
             <div class="streaks-status-item">
                 <span class="status-label">Best Streak</span>
                 <img src="assets/Icons-Neutral/Icon-BestStreak.png" alt="trophy icon" class="icon" />
-                <span class="status-value">{{ currentUser?.streakDays || 0 }} days</span>
+                <span class="status-value">{{ currentUser?.highestStreak || 0 }} days</span>
             </div>
             <div class="streaks-status-item">
                 <span class="status-label">Total days Active</span>
