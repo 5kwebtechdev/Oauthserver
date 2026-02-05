@@ -1,6 +1,7 @@
 import { Component, Input, TemplateRef, ContentChild, EventEmitter, Output, OnInit, ElementRef, ViewChild, AfterViewInit, Renderer2, OnDestroy } from '@angular/core';
 import { NgIf, NgForOf } from "@angular/common";
 import { forkJoin } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ViewAllComponent } from 'src/app/core/components/mindful-navigator/view-all/view-all.component';
 import { IonicModule } from "@ionic/angular";
 import { RouterModule } from '@angular/router';
@@ -382,12 +383,22 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   private loadLatestFromService() {
-    forkJoin([this.learningService.getQuizCards(), this.learningService.getPuzzleCards(), this.learningService.getArticleCards()])
-      .subscribe({
-        next: ([quizzes, puzzles, articles]) => {
+    forkJoin([
+      this.learningService.fetchChallenges().pipe(
+        map(challenges => {
+          const quizzes = challenges.filter(c => c.category === 'QUIZ');
+          const puzzles = challenges.filter(c => c.category === 'PUZZLE');
           const latestQuiz = this.pickLatest(quizzes);
           const latestPuzzle = this.pickLatest(puzzles);
-          const latestArticle = this.pickLatest(articles);
+          return { latestQuiz, latestPuzzle };
+        })
+      ),
+      this.learningService.getArticleCards().pipe(
+        map(articles => this.pickLatest(articles))
+      )
+    ])
+      .subscribe({
+        next: ([{ latestQuiz, latestPuzzle }, latestArticle]) => {
           const combined = [latestQuiz, latestPuzzle, latestArticle].filter(x => !!x) as any[];
           if (combined.length) this.items = combined;
         },

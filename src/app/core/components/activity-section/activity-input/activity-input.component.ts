@@ -436,6 +436,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
   }
 
   private isTimeInPast(timeStr: string): boolean {
+    if (this.editingId) return false; // Allow past times in edit mode
+
     if (!timeStr || !this.startDate) return false;
 
     const today = new Date();
