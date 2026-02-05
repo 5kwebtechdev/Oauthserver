@@ -499,4 +499,18 @@ export class MindfulTimelineComponent implements OnInit, OnChanges {
     // update totalGridHeight to reflect stretched hours
     this.totalGridHeight = hourVisualHeights.reduce((s, v) => s + v, 0);
   }
+
+  getTimeColor(event: TimelineEvent): string {
+    const status = event.status?.toLowerCase() || 'pending';
+    const type = event.type;
+
+    if (status === 'completed') {
+      return '#4CAF50';
+    } else if (status === 'ongoing') {
+      return type === 'task' ? '#EE6621' : '#6360A2';
+    } else {
+      // pending or any other status
+      return '#BB2124';
+    }
+  }
 }

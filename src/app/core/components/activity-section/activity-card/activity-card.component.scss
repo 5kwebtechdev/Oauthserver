@@ -440,7 +440,6 @@ h4 {
 }
 
 .habit-timing {
-  color: #6360A2;
   font-size: 13px;
   font-weight: 600;
   line-height: 140%;
@@ -448,10 +447,21 @@ h4 {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+
+  &.pending {
+    color: #BB2124;
+  }
+
+  &.ongoing {
+    color: #6360A2;
+  }
+
+  &.completed {
+    color: #4CAF50;
+  }
 }
 
 .task-timing {
-  color: #BB2124;
   font-size: 13px;
   font-weight: 600;
   line-height: 140%;
@@ -459,6 +469,18 @@ h4 {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+
+  &.pending {
+    color: #BB2124;
+  }
+
+  &.ongoing {
+    color: #EE6621;
+  }
+
+  &.completed {
+    color: #4CAF50;
+  }
 }
 
 /* Timer icon shown when an activity is in-progress */

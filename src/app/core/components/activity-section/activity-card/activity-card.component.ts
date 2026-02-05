@@ -892,6 +892,13 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     this.setupButtonStateChecker();
   }
 
+  // Helper: normalize timestamps received from API (seconds -> ms)
+  private normalizePossibleTimestamp(ts: any): number {
+    if (!ts && ts !== 0) return ts;
+    const n = Number(ts) || 0;
+    return n > 0 && n < 1e12 ? n * 1000 : n;
+  }
+
   private buttonStateCheckerInterval: any;
 
   /**
@@ -1284,15 +1291,17 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           })
           // Hide expired items: if endTime has passed and status is not ongoing, exclude them
           .filter((h: Habit) => {
-            const endTime = h.endTimeStamp || 0;
+            const endTime = Number(h.endTimeStamp || 0) < 1e12 ? Number(h.endTimeStamp || 0) * 1000 : Number(h.endTimeStamp || 0);
             const isOngoing = (h.status || '').toString().toLowerCase() === 'ongoing';
             // Keep item if end time hasn't passed yet, or if it's ongoing (show during grace period)
             return endTime > now || isOngoing;
           })
           // Sort by absolute difference between start time and now (closest to now first)
           .sort((a: Habit, b: Habit) => {
-            const aDiff = Math.abs((a.startTimeStamp || 0) - now);
-            const bDiff = Math.abs((b.startTimeStamp || 0) - now);
+            const aStart = Number(a.startTimeStamp || 0) < 1e12 ? Number(a.startTimeStamp || 0) * 1000 : Number(a.startTimeStamp || 0);
+            const bStart = Number(b.startTimeStamp || 0) < 1e12 ? Number(b.startTimeStamp || 0) * 1000 : Number(b.startTimeStamp || 0);
+            const aDiff = Math.abs(aStart - now);
+            const bDiff = Math.abs(bStart - now);
             return aDiff - bDiff;
           })
           .slice(0, this.maxItemsToShow);
@@ -1377,9 +1386,9 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
             return {
               ...task,
               type: 'tasks',
-              // Always use calculated timestamps when we have startTime/endTime strings
-              startTimeStamp: (task.startTime && task.startDate) ? calculatedStartTimeStamp : (task.startTimeStamp || calculatedStartTimeStamp),
-              endTimeStamp: (task.endTime && task.endDate) ? calculatedEndTimeStamp : (task.endTimeStamp || calculatedEndTimeStamp),
+              // Always use calculated timestamps when we have startTime/endTime strings. Normalize any existing timestamps.
+              startTimeStamp: this.normalizePossibleTimestamp((task.startTime && task.startDate) ? calculatedStartTimeStamp : (task.startTimeStamp || calculatedStartTimeStamp)),
+              endTimeStamp: this.normalizePossibleTimestamp((task.endTime && task.endDate) ? calculatedEndTimeStamp : (task.endTimeStamp || calculatedEndTimeStamp)),
               createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
               // Normalize status to lowercase for consistency
               status: task.status ? task.status.toLowerCase() : 'pending'
@@ -1392,15 +1401,24 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           })
           // Hide expired items: if endTime has passed and status is not ongoing, exclude them
           .filter((t: any) => {
-            const endTime = t.endTimeStamp || 0;
+            const endTimeRaw = t.endTimeStamp || 0;
+            const endTime = Number(endTimeRaw) < 1e12 ? Number(endTimeRaw) * 1000 : Number(endTimeRaw);
             const isOngoing = (t.status || '').toString().toLowerCase() === 'ongoing';
             // Keep item if end time hasn't passed yet, or if it's ongoing
             return endTime > now || isOngoing;
           })
+          // Sort by upcoming logic: treat items as active until their endTimeStamp passes
           .sort((a: any, b: any) => {
-            const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-            const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-            return bTime - aTime; // newest first
+            const aEnd = Number(a.endTimeStamp ?? Number.MAX_SAFE_INTEGER);
+            const bEnd = Number(b.endTimeStamp ?? Number.MAX_SAFE_INTEGER);
+            const aStart = Number(a.startTimeStamp ?? 0);
+            const bStart = Number(b.startTimeStamp ?? 0);
+            const nowNum = now;
+            const aIsFuture = aEnd >= nowNum;
+            const bIsFuture = bEnd >= nowNum;
+            if (aIsFuture && bIsFuture) return aStart - bStart; // upcoming: earliest start first
+            if (!aIsFuture && !bIsFuture) return bStart - aStart; // past: most recent first
+            return aIsFuture ? -1 : 1; // future items come before past items
           })
           .slice(0, this.maxItemsToShow);
 
@@ -1453,8 +1471,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
             return {
               ...task,
               type: 'tasks',
-              startTimeStamp: (task.startTime && task.startDate) ? calculatedStartTimeStamp : (task.startTimeStamp || calculatedStartTimeStamp),
-              endTimeStamp: (task.endTime && task.endDate) ? calculatedEndTimeStamp : (task.endTimeStamp || calculatedEndTimeStamp),
+              startTimeStamp: this.normalizePossibleTimestamp((task.startTime && task.startDate) ? calculatedStartTimeStamp : (task.startTimeStamp || calculatedStartTimeStamp)),
+              endTimeStamp: this.normalizePossibleTimestamp((task.endTime && task.endDate) ? calculatedEndTimeStamp : (task.endTimeStamp || calculatedEndTimeStamp)),
               createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
               status: task.status ? task.status.toLowerCase() : 'pending'
             };
@@ -1466,15 +1484,23 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           })
           // Hide expired items: if endTime has passed and status is not ongoing, exclude them
           .filter((t: any) => {
-            const endTime = t.endTimeStamp || 0;
+            const endTime = this.normalizePossibleTimestamp(t.endTimeStamp || 0);
             const isOngoing = (t.status || '').toString().toLowerCase() === 'ongoing';
             // Keep item if end time hasn't passed yet, or if it's ongoing
             return endTime > now || isOngoing;
           })
+          // Sort by upcoming logic: treat items as active until their endTimeStamp passes
           .sort((a: any, b: any) => {
-            const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-            const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-            return bTime - aTime;
+            const aEnd = this.normalizePossibleTimestamp(a.endTimeStamp ?? Number.MAX_SAFE_INTEGER);
+            const bEnd = this.normalizePossibleTimestamp(b.endTimeStamp ?? Number.MAX_SAFE_INTEGER);
+            const aStart = this.normalizePossibleTimestamp(a.startTimeStamp ?? 0);
+            const bStart = this.normalizePossibleTimestamp(b.startTimeStamp ?? 0);
+            const nowNum = now;
+            const aIsFuture = aEnd >= nowNum;
+            const bIsFuture = bEnd >= nowNum;
+            if (aIsFuture && bIsFuture) return aStart - bStart; // upcoming: earliest start first
+            if (!aIsFuture && !bIsFuture) return bStart - aStart; // past: most recent first
+            return aIsFuture ? -1 : 1; // future items come before past items
           })
           .slice(0, this.maxItemsToShow);
 

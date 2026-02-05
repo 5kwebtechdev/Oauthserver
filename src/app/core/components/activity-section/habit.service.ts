@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, tap, catchError, of, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, tap, catchError, of, ReplaySubject } from 'rxjs';
 import { Habit } from './habit.types';
 import { HabitApi } from '../../api/habit.api';
 
@@ -10,7 +10,10 @@ export class HabitService {
   private habitsSubject = new BehaviorSubject<Habit[]>([]);
   public habits$ = this.habitsSubject.asObservable();
 
-  private dataChangedSubject = new Subject<{ type: 'habit' | 'task', action: 'added' | 'deleted' }>();
+  // Use ReplaySubject(1) so late subscribers (navigating back) still receive
+  // the last change event even if it was emitted before they subscribed.
+  // Extend actions to include 'updated' for edit flows.
+  private dataChangedSubject = new ReplaySubject<{ type: 'habit' | 'task', action: 'added' | 'deleted' | 'updated' }>(1);
   public dataChanged$ = this.dataChangedSubject.asObservable();
 
   private currentLoadedDate: string = '';
@@ -173,6 +176,8 @@ export class HabitService {
     if (index !== -1) {
       currentHabits[index] = updatedHabit;
       this.habitsSubject.next([...currentHabits]);
+      // Notify subscribers that a habit was updated so lists can refresh
+      try { this.dataChangedSubject.next({ type: 'habit', action: 'updated' }); } catch (e) { /* ignore */ }
     }
   }
 
@@ -184,6 +189,10 @@ export class HabitService {
 
   notifyTaskAdded(): void {
     this.dataChangedSubject.next({ type: 'task', action: 'added' });
+  }
+
+  notifyTaskUpdated(): void {
+    this.dataChangedSubject.next({ type: 'task', action: 'updated' });
   }
 
   notifyTaskDeleted(): void {

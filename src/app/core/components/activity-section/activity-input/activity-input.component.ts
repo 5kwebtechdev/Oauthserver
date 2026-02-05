@@ -54,6 +54,32 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
     return this._startDate;
   }
 
+  onNavigatorBack(): void {
+    // Persist the active tab so the list page can restore it after navigating back
+    try { sessionStorage.setItem('activityInitialTab', String(this.currentActive || 'habits')); } catch (e) { /* ignore */ }
+
+    // Check if we're in a modal first - if so, just dismiss and don't navigate
+    this.modalCtrl.getTop().then(topModal => {
+      if (topModal) {
+        this.modalCtrl.dismiss({ cancelled: true }).catch(() => {});
+        return;
+      }
+      // Not in a modal - use origin or navigation service
+      if (this.originUrl) {
+        this.router.navigateByUrl(this.originUrl).catch(() => { this.navigation.back(); });
+      } else {
+        this.navigation.back();
+      }
+    }).catch(() => {
+      // Fallback if modal check fails
+      if (this.originUrl) {
+        this.router.navigateByUrl(this.originUrl).catch(() => { this.navigation.back(); });
+      } else {
+        this.navigation.back();
+      }
+    });
+  }
+
 
 
   set startDate(value: Date | null) {
@@ -78,6 +104,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
     try { const validations = this.computeValidations(); Object.assign(this.errors, validations); this.cd.detectChanges(); } catch (e) { }
   }
   currentActive: 'habits' | 'tasks' | 'timetable' = 'habits';
+  originUrl: string | null = null;
 
   get isTasks(): boolean {
     return this.currentActive === 'tasks';
@@ -261,6 +288,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
       // First check @Input() properties (used when opened via modal componentProps)
       // Then fall back to router navigation state or history.state
       const nav = this.router.getCurrentNavigation();
+      const stateOrigin = nav?.extras?.state?.['origin'] ?? (history && (history.state as any)?.origin);
+      this.originUrl = stateOrigin || null;
       const stateHabit = this.editingHabit ?? nav?.extras?.state?.['habit'] ?? (history && (history.state as any)?.habit);
       // Respect an explicit initialTab passed via componentProps or navigation state even when
       // no `habit` object is provided (creating a new activity). Use habit type as a fallback.
@@ -702,6 +731,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
             try {
               const updatedHabit = this.buildHabitFromResponse(res, habit, 'tasks', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.updateHabit(updatedHabit);
+              // Notify listeners that a task was updated so the tasks list refreshes
+              try { this.habitService.notifyTaskUpdated(); } catch (e) { /* ignore */ }
               this.showSuccessToast(this.title, 'tasks');
               this.finalizeAndReturn();
             } finally { this.isSubmitting = false; }
@@ -790,22 +821,55 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
   }
 
   private finalizeAndReturn(): void {
-    // Dismiss modal if opened as modal; ignore failures when not modal
-    try { this.modalCtrl.dismiss().catch(() => {}); } catch { /* ignore if not modal */ }
+    // Persist the active tab so the list page can restore it after navigating back
+    try { sessionStorage.setItem('activityInitialTab', String(this.currentActive || 'habits')); } catch (e) { /* ignore if storage unavailable */ }
 
-    // Use NavigationService to go back to the origin page. If previous page
-    // was an activity-detail, skip it and go back one extra step so the
-    // user returns to the entry/list page that opened this input.
-    try {
-      const prev = this.navigation.getPreviousUrl && this.navigation.getPreviousUrl();
-      if (prev && String(prev).includes('/authed/activity-detail')) {
-        this.navigation.backN(2);
+    // Check if we're in a modal first - if so, just dismiss and don't navigate
+    this.modalCtrl.getTop().then(topModal => {
+      if (topModal) {
+        // We're in a modal - just dismiss it
+        this.modalCtrl.dismiss({ saved: true }).catch(() => {});
+        return;
+      }
+
+      // Not in a modal - handle navigation
+      // If an explicit origin URL was provided in navigation state, use it
+      // But if the origin is activity-detail, skip it since the item may be deleted
+      if (this.originUrl) {
+        if (String(this.originUrl).includes('/authed/activity-detail')) {
+          // Origin is activity-detail - skip it and go back one extra step
+          try {
+            this.navigation.backN(2);
+          } catch (e) {
+            this.navigation.back();
+          }
+        } else {
+          this.router.navigateByUrl(this.originUrl).catch(() => { this.navigation.back(); });
+        }
+        return;
+      }
+
+      // Use NavigationService to go back to the origin page. If previous page
+      // was an activity-detail, skip it and go back one extra step so the
+      // user returns to the entry/list page that opened this input.
+      try {
+        const prev = this.navigation.getPreviousUrl && this.navigation.getPreviousUrl();
+        if (prev && String(prev).includes('/authed/activity-detail')) {
+          this.navigation.backN(2);
+        } else {
+          this.navigation.back();
+        }
+      } catch (e) {
+        this.navigation.back();
+      }
+    }).catch(() => {
+      // Modal controller check failed, try navigation fallback
+      if (this.originUrl) {
+        this.router.navigateByUrl(this.originUrl).catch(() => { this.navigation.back(); });
       } else {
         this.navigation.back();
       }
-    } catch (e) {
-      this.navigation.back();
-    }
+    });
   }
 
   selectCoin(value: number) { this.coinReward = value; }
@@ -1091,6 +1155,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
 
     const finalizeLocalDelete = (idToRemove?: string) => {
       try { this.habitService.deleteHabit((idToRemove || this.editingId) as string); } catch (e: any) { console.warn('Local delete failed', e); }
+      // Persist current tab so list can restore it after returning
+      try { sessionStorage.setItem('activityInitialTab', String(this.currentActive || 'habits')); } catch (e) { /* ignore */ }
       
       // Show delete toast before dismissing modal
       const categoryLabel = this.currentActive.charAt(0).toUpperCase() + this.currentActive.slice(1);
@@ -1099,21 +1165,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
       
       try { this.modalCtrl.dismiss(); } catch { /* ignore if not modal */ }
       this.deletePopupVisible = false;
-
-      // Navigate back using the navigation service
-      // If previous page is a activity-detail route, skip it and go back to the page before it
-      try {
-        const prev = this.navigation.getPreviousUrl && this.navigation.getPreviousUrl();
-        if (prev && String(prev).includes('/authed/activity-detail')) {
-          // Skip activity-detail and go back 2 steps total: this activity-input + activity-detail
-          this.navigation.backN(2);
-        } else {
-          // Just go back once normally
-          this.navigation.back();
-        }
-      } catch (e) {
-        this.navigation.back();
-      }
+      // Use finalize path to persist tab and navigate back/origin
+      try { this.finalizeAndReturn(); } catch { try { this.navigation.back(); } catch {} }
     };
 
     if (!backendId) {

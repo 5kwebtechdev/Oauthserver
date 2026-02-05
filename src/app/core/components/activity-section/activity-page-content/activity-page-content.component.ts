@@ -50,6 +50,13 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     public singleModeHabit: Habit | null = null;
     public readonly MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER;
 
+    // Normalize timestamps coming from API: if timestamp looks like seconds, convert to ms
+    private normalizeTimestamp(ts: any): number {
+        if (!ts && ts !== 0) return ts;
+        const n = Number(ts) || 0;
+        // If timestamp looks like seconds (less than 1e12), convert to milliseconds
+        return n > 0 && n < 1e12 ? n * 1000 : n;
+    }
     private subscriptions = new Subscription();
     private timestampInterval: any;
 
@@ -141,6 +148,20 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                 }
             })
         );
+        // Also check sessionStorage for an explicit tab request set by activity input
+        try {
+            const stored = sessionStorage.getItem('activityInitialTab');
+            if (stored) {
+                const t = String(stored).toLowerCase();
+                if (t === 'tasks') this.currentMainTab = 'tasks';
+                else if (t === 'habits') this.currentMainTab = 'habits';
+                // remove key after consuming
+                sessionStorage.removeItem('activityInitialTab');
+                try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
+            }
+        } catch (e) {
+            // ignore storage errors
+        }
     }
 
     private initializeSubscriptions(): void {
@@ -158,11 +179,20 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
             this.habitService.dataChanged$.subscribe(evt => {
                 if (!evt) return;
                 if (evt.type === 'habit') {
-                    // refresh habits for current date
+                    // refresh habits for current date and ensure habits tab is selected
                     this.loadHabits(true);
+                    this.currentMainTab = 'habits';
+                    this.applyFilters();
+                    try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
                 }
                 if (evt.type === 'task') {
-                    this.loadTasksForSelectedDate(this.selectedDate);
+                    // refresh tasks for current date and switch to tasks tab so newly-created
+                    // or deleted/updated tasks are visible immediately when returning from the create flow
+                    // Force reload to bypass TaskApi cache
+                    this.loadTasksForSelectedDate(this.selectedDate, true);
+                    this.currentMainTab = 'tasks';
+                    this.applyFilters();
+                    try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
                 }
             })
         );
@@ -221,21 +251,21 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                         status: this.normalizeStatus(h.status),
                         priority: h.priority?.trim().toLowerCase(),
                         routine: h.routine?.trim().toLowerCase(),
-                        // Ensure startTimeStamp is calculated for today's date for recurring items
-                        startTimeStamp: (() => {
-                          const isRecurring = h.daysOfWeek?.length || h.everyday || h.everyWeekend;
-                          const ts = this.buttonLogic.calculateTimestamps(
-                            isRecurring ? { ...h, startDate: formattedDate, endDate: formattedDate } : h
-                          );
-                          return ts.startTimeStamp;
-                        })(),
-                        endTimeStamp: (() => {
-                          const isRecurring = h.daysOfWeek?.length || h.everyday || h.everyWeekend;
-                          const ts = this.buttonLogic.calculateTimestamps(
-                            isRecurring ? { ...h, startDate: formattedDate, endDate: formattedDate } : h
-                          );
-                          return ts.endTimeStamp;
-                        })()
+                                                // Ensure startTimeStamp and endTimeStamp are calculated and normalized for today's date for recurring items
+                                                startTimeStamp: (() => {
+                                                    const isRecurring = h.daysOfWeek?.length || h.everyday || h.everyWeekend;
+                                                    const ts = this.buttonLogic.calculateTimestamps(
+                                                        isRecurring ? { ...h, startDate: formattedDate, endDate: formattedDate } : h
+                                                    );
+                                                    return this.normalizeTimestamp(ts.startTimeStamp);
+                                                })(),
+                                                endTimeStamp: (() => {
+                                                    const isRecurring = h.daysOfWeek?.length || h.everyday || h.everyWeekend;
+                                                    const ts = this.buttonLogic.calculateTimestamps(
+                                                        isRecurring ? { ...h, startDate: formattedDate, endDate: formattedDate } : h
+                                                    );
+                                                    return this.normalizeTimestamp(ts.endTimeStamp);
+                                                })()
                     }));
                     this.loading = false;
                     this.applyFilters();
@@ -276,8 +306,8 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                         return {
                             ...t,
                             type: t.type || 'tasks',
-                            startTimeStamp: timestamps.startTimeStamp,
-                            endTimeStamp: timestamps.endTimeStamp,
+                            startTimeStamp: this.normalizeTimestamp(timestamps.startTimeStamp),
+                            endTimeStamp: this.normalizeTimestamp(timestamps.endTimeStamp),
                             status: this.buttonLogic.normalizeStatus(t.status),
                             priority: t.priority?.trim().toLowerCase(),
                             routine: t.routine?.trim().toLowerCase(),
@@ -382,12 +412,20 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         }
     }
 
-        // Helper to sort arrays by upcoming startTimeStamp
+        // Helper to sort arrays by upcoming time.
+        // Treat an item as "not past" until its endTimeStamp has passed so
+        // items do not shift position immediately when their start time arrives.
         private sortArrayByUpcoming(arr: any[] = []): any[] {
             if (!Array.isArray(arr) || arr.length <= 1) return arr || [];
             const now = Date.now();
-            const future = arr.filter(i => (Number(i?.startTimeStamp || 0) >= now)).sort((a,b) => Number(a.startTimeStamp || 0) - Number(b.startTimeStamp || 0));
-            const past = arr.filter(i => (Number(i?.startTimeStamp || 0) < now)).sort((a,b) => Number(b.startTimeStamp || 0) - Number(a.startTimeStamp || 0));
+            // Consider items with missing endTimeStamp as far-future so they remain in the
+            // 'future' group until explicitly ended.
+            const future = arr
+                .filter(i => (Number(i?.endTimeStamp ?? this.MAX_SAFE_INTEGER) >= now))
+                .sort((a, b) => Number(a.startTimeStamp ?? 0) - Number(b.startTimeStamp ?? 0));
+            const past = arr
+                .filter(i => (Number(i?.endTimeStamp ?? 0) < now))
+                .sort((a, b) => Number(b.startTimeStamp ?? 0) - Number(a.startTimeStamp ?? 0));
             return future.concat(past);
         }
 

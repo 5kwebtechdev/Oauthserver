@@ -160,7 +160,7 @@
 
 <ion-content fullscreen>
   <mindful-navigator [heading]="editingId ? 'Update Activity' : 'Create. Commit. Grow.'" backIcon="cancel"
-    [rightActions]="navigatorActions" (rightActionClick)="onNavigatorAction($event)">
+    [rightActions]="navigatorActions" (rightActionClick)="onNavigatorAction($event)" (back)="onNavigatorBack()">
     <div *ngIf="isChild" slot="end" class="header-toggle d-flex flex-column " aria-label="Private toggle">
       <label class="header-toggle-label">Private</label>
       <div class="toggle-right">

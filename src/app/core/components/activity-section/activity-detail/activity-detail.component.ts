@@ -152,7 +152,13 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
           this.percentageCompleted = 0;
         }
       },
-      error: (err) => console.error(`Error loading ${type} detail:`, err)
+      error: (err) => {
+        console.error(`Error loading ${type} detail:`, err);
+        // If habit not found (likely deleted), navigate back
+        if (err?.status === 404 || err?.status === 400) {
+          this.router.navigate(['/authed/activity-page']).catch(() => {});
+        }
+      }
     });
   }
 
@@ -402,7 +408,9 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
 
   onEdit() {
     if (!this.habit) {
-      this.router.navigate(['/authed/activity-input']);
+      this.router.navigate(['/authed/activity-input'], {
+        state: { origin: this.router.url || '/authed/user-dashboard' }
+      });
       return;
     }
 
@@ -410,8 +418,10 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
       state: {
         habit: this.habit,
         type: this.habit.type,
+        currentActive: this.habit.type || 'habits',
         selectedDate: this.selectedDateFromState,
         originType: this.navigationOriginType,
+        origin: this.router.url || '/authed/user-dashboard',
         fromDetail: true
       }
     });
@@ -447,6 +457,22 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
 
     const routine = String(this.habit!.routine).toLowerCase();
     return routine.charAt(0).toUpperCase() + routine.slice(1);
+  }
+
+  getTimeColor(habit: Habit | null): string {
+    if (!habit) return '#BB2124'; // default to pending color
+
+    const status = habit.status?.toLowerCase() || 'pending';
+    const type = habit.type;
+
+    if (status === 'completed') {
+      return '#4CAF50';
+    } else if (status === 'ongoing') {
+      return type === 'tasks' ? '#EE6621' : '#6360A2';
+    } else {
+      // pending or any other status
+      return '#BB2124';
+    }
   }
 
   // === Habit Actions ===

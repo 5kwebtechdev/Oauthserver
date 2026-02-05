@@ -23,7 +23,7 @@
                     <span class="priority-badge priority-{{ habit.priority | lowercase }}">{{ habit.priority | titlecase
                         }}</span>
                 </div>
-                <span>
+                <span [style.color]="getTimeColor(habit)">
                     {{ habit?.completionDate ? (habit.completionDate | date:'MMM d') : (habit.startDate | date:'MMM d') }}.
                     {{ habit.startTime.slice(0,5) }} - {{ habit.endTime.slice(0,5) }}
                 </span>

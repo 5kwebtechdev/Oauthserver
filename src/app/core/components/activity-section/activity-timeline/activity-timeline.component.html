@@ -40,7 +40,7 @@
     {key: 'task', value: 'Tasks', type: 'orange'},
     {key: 'timetable', value: 'Time Table', type: 'aqua'},
     ]" componentType="button" size="small" [singleSelection]="true" [buttonVariant]="'flat'"
-        [initialSelectedKeys]="['all']" (selectedKeysChange)="keysUpdated($event)">
+        [initialSelectedKeys]="initialSelectedKeys" (selectedKeysChange)="keysUpdated($event)">
       </mindful-selectors>
     </div>
     <div class="timeline-wrapper">
