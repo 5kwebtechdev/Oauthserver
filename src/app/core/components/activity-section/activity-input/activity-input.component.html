@@ -78,7 +78,7 @@
     <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Please pick both dates.
     </div>
     <div *ngIf="showStartAfterEnd" class="field-error" role="alert">End date must be after the start date</div>
-    <div *ngIf="showPastTimeForTodayRepeat" class="field-error top-margin" role="alert">Time passed for today. Please
+    <div *ngIf="showPastTimeForTodayRepeat && !editingId" class="field-error top-margin" role="alert">Time passed for today. Please
       change Start Date to tomorrow.</div>
     <div *ngIf="showDaySelectionError" class="field-error top-margin" role="alert">{{ daySelectionErrorMessage }}</div>
   </div>
