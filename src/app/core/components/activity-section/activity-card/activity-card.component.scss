@@ -588,7 +588,6 @@ h4 {
   z-index: 2;
   border-style: solid;
   border-width: 5px 8px 5px 0;
-  /* top right bottom left */
   border-color: transparent #a1a7d8 transparent transparent;
   top: 50%;
   left: -8px;
@@ -608,4 +607,8 @@ h4 {
   left: -9.5px;
   margin-top: -8px;
   display: block;
+}
+
+.task-bubble:after {
+  border-color: transparent #F6AC72 transparent transparent;
 }
