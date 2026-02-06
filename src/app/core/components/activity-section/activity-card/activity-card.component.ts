@@ -2145,6 +2145,17 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const status = habit.status?.toLowerCase() || 'pending';
     const type = habit.type;
 
+    // For timetable, always return the fixed color
+    if (type === 'timetable') {
+      return '#6B656A';
+    }
+
+    // For future dates (not current date view), use future colors
+    if (!this.isCurrentDateView) {
+      return type === 'tasks' ? '#EE6621' : '#6360A2';
+    }
+
+    // For current date, use status-based logic
     if (status === 'completed') {
       return '#4CAF50';
     } else if (status === 'skipped') {
@@ -2158,8 +2169,22 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       }
     }
 
-    // Default colors
+    // Default colors for current date pending/ongoing
     return type === 'tasks' ? '#EE6621' : '#6360A2';
+  }
+
+  getTitleColor(habit: Habit | null): string {
+    if (!habit) return '#BB2124'; // default to pending color
+
+    const type = habit.type;
+
+    // For tasks, always use the fixed color
+    if (type === 'tasks') {
+      return '#E04D16';
+    }
+
+    // For habits and timetables, use the same logic as time color
+    return this.getTimeColor(habit);
   }
 
 }
