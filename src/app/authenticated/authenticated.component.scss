@@ -1,0 +1,8 @@
+// Global pull-to-refresh styling for all authenticated pages
+ion-refresher {
+  --background: transparent;
+}
+
+ion-refresher-content {
+  --color: #7471BA;
+}

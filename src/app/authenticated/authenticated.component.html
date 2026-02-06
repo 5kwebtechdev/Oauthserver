@@ -1,1 +1,13 @@
-<router-outlet></router-outlet>
+<ion-content>
+  <!-- Global Pull-to-refresh for all authenticated pages -->
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Pull to refresh"
+      refreshingSpinner="circles"
+      refreshingText="Refreshing...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <router-outlet></router-outlet>
+</ion-content>

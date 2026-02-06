@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ModalController, RefresherCustomEvent } from '@ionic/angular';
+import { IonicModule, ModalController } from '@ionic/angular';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
@@ -8,6 +8,7 @@ import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigato
 import { NotesService, NoteModel } from './notes.service';
 import { NotesSaveComponent } from './notes-save/notes-save.component';
 import { AuthService } from '../../services/auth.service';
+import { RefreshService } from '../../services/refresh.service';
 
 @Component({
   selector: 'notes',
@@ -16,7 +17,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './notes.component.html',
   styleUrls: ['./notes.component.scss']
 })
-export class NotesComponent {
+export class NotesComponent implements OnInit, OnDestroy {
   // pages: 'empty' (default), 'home', 'input', 'save'
   public page: 'empty' | 'home' | 'input' | 'save' = 'empty';
   public noteText: string = '';
@@ -36,7 +37,8 @@ export class NotesComponent {
     private modalCtrl: ModalController,
     private router: Router,
     private notesService: NotesService,
-    private authService: AuthService
+    private authService: AuthService,
+    private refreshService: RefreshService
   ) {
     // restore session cache if present; otherwise fetch from server once
     this.notesService.initFromSession();
@@ -150,26 +152,22 @@ export class NotesComponent {
     } catch (e) { /* ignore DOM errors in SSR or test env */ }
   }
 
+  ngOnInit(): void {
+    // Register with global pull-to-refresh service
+    this.refreshService.registerRefreshHandler('Notes', () => this.onGlobalRefresh());
+  }
+
+  ngOnDestroy(): void {
+    this.refreshService.unregisterRefreshHandler('Notes');
+  }
+
   /**
-   * Handle pull-to-refresh event
-   * Validates session and refreshes notes data
+   * Called by the global RefreshService when the user pulls to refresh.
+   * Session validation is already handled by the authenticated shell.
    */
-  async handleRefresh(event: RefresherCustomEvent): Promise<void> {
-    console.log('[Notes] Pull to refresh triggered');
-    try {
-      // Validate session and refresh user data
-      await this.authService.refreshUserData().toPromise();
-      
-      // Reload notes from server
-      await this.loadFromServerAsync();
-      
-      // Wait a bit to show the refresh animation
-      await new Promise(resolve => setTimeout(resolve, 500));
-    } catch (error) {
-      console.error('[Notes] Error during refresh:', error);
-    } finally {
-      event.target.complete();
-    }
+  private async onGlobalRefresh(): Promise<void> {
+    console.log('[Notes] Global refresh triggered');
+    await this.loadFromServerAsync();
   }
 
   /**
