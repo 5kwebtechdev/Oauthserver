@@ -58,7 +58,6 @@ import { LearningService } from 'src/app/core/services/learning.service';
     .content-section {
       position: relative;
       width: 100%;
-      height: 460px;
       max-width: 90vw;
 
       background: #FBE8EF;

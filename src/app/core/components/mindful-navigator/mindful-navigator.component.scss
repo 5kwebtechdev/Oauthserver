@@ -24,8 +24,7 @@
 }
 
 .back-button {
-  width: 48px;
-  height: 48px;
+  color: #282527;
   flex-shrink: 0;
   background: none;
 }
@@ -37,10 +36,6 @@
   flex-shrink: 0;
 }
 
-/* Use color on the button so SVGs using currentColor inherit it */
-.back-button {
-  color: #282527;
-}
 
 .navigator-heading {
   color: #282527;
