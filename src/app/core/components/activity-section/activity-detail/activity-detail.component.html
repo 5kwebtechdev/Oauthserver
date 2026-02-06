@@ -23,13 +23,7 @@
                     <span class="priority-badge priority-{{ habit.priority | lowercase }}">{{ habit.priority | titlecase
                         }}</span>
                 </div>
-                <span [style.color]="getTimeColor(habit)">
-                    {{ habit?.completionDate ? (habit.completionDate | date:'MMM d') : (habit.startDate | date:'MMM d') }}.
-                    {{ habit.startTime.slice(0,5) }} - {{ habit.endTime.slice(0,5) }}
-                </span>
-                <span style="color:#6B656A;">Created on {{ habit.createdAt | date:'MMM d, y' }}</span>
-            </div>
-            <div class="activity-detail-focus d-flex  align-items-center gap-2">
+                  <div class="activity-detail-focus d-flex  align-items-center gap-2">
                 <img *ngIf="hasRoutine()" class="routine-icon" [src]="getRoutineIcon()" [alt]="getRoutineName() + ' Routine Icon'" width="24"
                     height="24" />
                 <mindful-badge *ngIf="habit"
@@ -37,6 +31,13 @@
                     [text]="tagText">
                 </mindful-badge>
             </div>
+                <span [style.color]="getTimeColor(habit)">
+                    {{ habit?.completionDate ? (habit.completionDate | date:'MMM d') : (habit.startDate | date:'MMM d') }}.
+                    {{ habit.startTime.slice(0,5) }} - {{ habit.endTime.slice(0,5) }}
+                </span>
+                <span style="color:#6B656A;">Created on {{ habit.createdAt | date:'MMM d, y' }}</span>
+            </div>
+          
         </div>
         <div class="repeat-days">
             <div class="repeat-head d-flex align-items-center gap-2">
@@ -58,13 +59,13 @@
             </div>
         </div>
         <div class="detail-message d-flex align-items-center"
-            style="display:flex;align-items:center;justify-content:space-between;gap:8px; align-self: flex-end;">
+            style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <ng-container *ngIf="!isParent">
-              <div class="bubble-speech" style="flex:1;min-width:0;">
+              <div class="bubble-speech" style="flex:1;min-width:0;margin-right:12px;">
                   <app-speech-bubble [arrowSide]="'right'" [arrowOffset]="'50%'" [message]="speechMessage"
                       style="display:block;width:100%;"></app-speech-bubble>
               </div>
-              <div class="detail-pet" style="flex:0 0 auto;">
+              <div class="detail-pet" style="flex:0 0 auto;margin-left:8px;">
                   <mindful-pet></mindful-pet>
               </div>
             </ng-container>
@@ -124,7 +125,7 @@
         </svg>
 
 
-        <mindful-coins-stats [slot1]="'streak'" [slot2]="'coins'" [slot3]="'total-streaks'" [slot4]="'success'"
+        <mindful-coins-stats [slot1]="'current-streak'" [slot2]="'coins'" [slot3]="'highest-streak'" [slot4]="'success'"
             [userDays]="coinStats.userDays" [userCoins]="coinStats.userCoins" [totalStreaks]="coinStats.totalStreaks"
             [successPercentage]="coinStats.successPercentage" [userStreaks]="coinStats.userStreaks"
             [userBadges]="coinStats.userBadges"></mindful-coins-stats>

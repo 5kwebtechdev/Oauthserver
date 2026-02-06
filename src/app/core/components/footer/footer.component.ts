@@ -1,6 +1,7 @@
 import { Component, OnInit, Renderer2, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -12,6 +13,8 @@ import { AuthService } from '../../services/auth.service';
 })
 export class FooterComponent implements OnInit, OnDestroy {
   private resizeListener: any;
+  private routerSub: Subscription | undefined;
+  isEducationActive: boolean = false;
 
   constructor(private authService: AuthService, private router: Router, private renderer: Renderer2, private elRef: ElementRef) { }
 
@@ -41,9 +44,20 @@ export class FooterComponent implements OnInit, OnDestroy {
     this.resizeListener = this.renderer.listen('window', 'resize', () => {
       checkNav();
     });
+
+    // Check education active
+    this.isEducationActive = this.router.url.includes('/authed/education') || this.router.url.includes('/authed/tutors');
+    this.routerSub = this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.isEducationActive = event.url.includes('/authed/education') || event.url.includes('/authed/tutors');
+      }
+    });
   }
 
   ngOnDestroy() {
+    if (this.routerSub) {
+      this.routerSub.unsubscribe();
+    }
     if (this.resizeListener) this.resizeListener();
   }
 

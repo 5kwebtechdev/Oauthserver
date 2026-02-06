@@ -5,6 +5,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { MindfulPopupComponent, MindfulPopupConfig } from '../../mindful-popup/mindful-popup.component';
 import { LearningService } from 'src/app/core/services/learning.service';
 import { Article } from 'src/app/core/models/learning.models';
 
@@ -19,7 +20,8 @@ import { Article } from 'src/app/core/models/learning.models';
     IonicModule,
     HttpClientModule,
     MindfulNavigatorComponent,
-    MindfulButtonComponent
+    MindfulButtonComponent,
+    MindfulPopupComponent
   ],
   providers: [LearningService]
 })
@@ -27,6 +29,27 @@ export class ArticlePageComponent implements OnInit {
   article: Article | null = null;
   isLoading = true;
   isMarking = false;
+  // Popup state and config
+  showMarkPopup = false;
+  markPopupConfig: MindfulPopupConfig = {
+    image: 'assets/Images-Transparent/Image-Home-GreatWork.png',
+    imageAlt: 'Great work',
+    heading: 'Great job reading!',
+    subtitle: "You'll earn 10 coins when you mark this article as read. Are you sure you want to complete it?",
+    primaryCTA: {
+      text: 'Mark as Read',
+      buttonStyle: 'green',
+      buttonMedium: true
+    },
+    secondaryCTA: {
+      text: 'Cancel',
+      buttonStyle: 'bronze-transparent',
+      buttonMedium: true
+    },
+    showCloseButton: true,
+    backdrop: true,
+    ctaDirection: 'row'
+  };
 
   constructor(
     private route: ActivatedRoute,
@@ -38,19 +61,33 @@ export class ArticlePageComponent implements OnInit {
    * Mark the current article as read by calling the API
    */
   markAsRead(): void {
-    if (!this.article || this.isMarking) return;
+    // Deprecated: markAsRead is now handled via the confirmation popup.
+    this.openMarkAsReadPopup();
+  }
 
+  openMarkAsReadPopup(): void {
+    if (!this.article) return;
+    this.showMarkPopup = true;
+  }
+
+  closeMarkPopup(): void {
+    this.showMarkPopup = false;
+  }
+
+  confirmMarkAsRead(): void {
+    if (!this.article || this.isMarking) return;
     this.isMarking = true;
     this.learningService.markArticleComplete(this.article.id).subscribe({
       next: (res) => {
         console.log('Article marked as read response:', res);
         this.isMarking = false;
-        // Navigate back to Learning main after successful completion
+        this.showMarkPopup = false;
         this.router.navigate(['/authed/content']);
       },
       error: (err) => {
         console.error('Failed to mark article as read:', err);
         this.isMarking = false;
+        this.showMarkPopup = false;
       }
     });
   }

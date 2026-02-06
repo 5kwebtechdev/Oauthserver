@@ -11,7 +11,7 @@
     <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
 
     <!-- Tab Navigation: show if there are items in any tab (even if current tab is done, user can see other tabs) -->
-    <div class="container w-full" *ngIf="hasHabits || hasTasks">
+    <div class="container w-full" *ngIf="(hasHabits || hasTasks) && !((taskCompletionRate === 100 && habitCompletionRate === 100) || (totalTasksLoaded === 0 && habitCompletionRate === 100) || (totalHabitsLoaded === 0 && taskCompletionRate === 100))">
       <div class="row toggler"
         [ngClass]="{ 'habits-active': currentActive === 'habits', 'tasks-active': currentActive === 'tasks' }">
         <div class="col-4" (click)="switchTab('all')" [ngClass]="currentActive === 'all' ? 'active' : ''">All</div>
@@ -23,36 +23,36 @@
     </div>
 
     <!-- Empty State (uses shared EmptyStateComponent) -->
-    <!-- Task-specific: all tasks completed -->
-    <empty-state *ngIf="currentActive === 'tasks' && !hasTasks && taskAllDoneComputed"
+    <!-- Task-specific: all tasks completed (taskCompletionRate === 100 AND totalHabits > 0) -->
+    <empty-state *ngIf="currentActive === 'tasks' && taskCompletionRate === 100 && totalHabitsLoaded > 0"
       leadText="All tasks done!"
       subText="Your tasks can be reviewed in the main habits screen. You can even mark them done from there."
       buttonText="">
     </empty-state>
 
-    <!-- Task-specific: no tasks at all -->
-    <empty-state *ngIf="currentActive === 'tasks' && !hasTasks && !taskAllDoneComputed"
+    <!-- Task-specific: no tasks at all (totalTasks === 0 AND habitCompletionRate < 100) -->
+    <empty-state *ngIf="currentActive === 'tasks' && totalTasksLoaded === 0 && habitCompletionRate < 100"
       leadText="No tasks lined up for today"
       subText="No tasks are scheduled for today. Add one to start building your streak and earn coins."
       buttonText="">
     </empty-state>
 
-    <!-- Habit-specific: all habits completed -->
-    <empty-state *ngIf="currentActive === 'habits' && !hasHabits && habitAllDoneComputed"
+    <!-- Habit-specific: all habits completed (habitCompletionRate === 100 AND totalTasks > 0) -->
+    <empty-state *ngIf="currentActive === 'habits' && habitCompletionRate === 100 && totalTasksLoaded > 0"
       leadText="All habits done!"
       subText="Your habits can be reviewed in the main habits screen. You can even mark them done from there."
       buttonText="">
     </empty-state>
 
-    <!-- Habit-specific: no habits at all -->
-    <empty-state *ngIf="currentActive === 'habits' && !hasHabits && !habitAllDoneComputed"
+    <!-- Habit-specific: no habits at all (totalHabits === 0 AND taskCompletionRate < 100) -->
+    <empty-state *ngIf="currentActive === 'habits' && totalHabitsLoaded === 0 && taskCompletionRate < 100"
       leadText="No habit lined up for today"
       subText="No habits are scheduled for today. Add one to start building your streak and earn coins."
       buttonText="">
     </empty-state>
 
-<!-- Generic blank empty state when nothing exists at all (no items scheduled AND no items completed) -->
-    <empty-state *ngIf="isEmpty && !hasHabits && !hasTasks && !habitAllDoneComputed && !taskAllDoneComputed"
+    <!-- Generic blank empty state when nothing exists at all (totalTasks === 0 AND totalHabits === 0) -->
+    <empty-state *ngIf="isEmpty && totalHabitsLoaded === 0 && totalTasksLoaded === 0"
       imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
       imageAlt="Empty day illustration"
       leadText="Your day's a blank slate!"
@@ -60,8 +60,26 @@
       buttonText="">
     </empty-state>
 
-    <!-- Completed State: show when items existed and ALL are now completed -->
-    <empty-state *ngIf="isEmpty && !hasHabits && !hasTasks && (habitAllDoneComputed || taskAllDoneComputed)"
+    <!-- Completed State: show when both completion rates are 100% (taskCompletionRate === 100 AND habitCompletionRate === 100) -->
+    <empty-state *ngIf="taskCompletionRate === 100 && habitCompletionRate === 100 && totalHabitsLoaded > 0 && totalTasksLoaded > 0"
+      imageSrc="/assets/Images-Transparent/Image-Home-Completed.png"
+      imageAlt="Completed illustration"
+      leadText="Great progress today!"
+      subText="Your tasks and habits can be reviewed in the main tasks and habits screen. You can even mark them done from there."
+      buttonText="">
+    </empty-state>
+
+    <!-- Completed State: only tasks with 100% completion (totalTasks === 0 AND habitCompletionRate === 100) -->
+    <empty-state *ngIf="totalTasksLoaded === 0 && habitCompletionRate === 100 && totalHabitsLoaded > 0"
+      imageSrc="/assets/Images-Transparent/Image-Home-Completed.png"
+      imageAlt="Completed illustration"
+      leadText="Great progress today!"
+      subText="Your tasks and habits can be reviewed in the main tasks and habits screen. You can even mark them done from there."
+      buttonText="">
+    </empty-state>
+
+    <!-- Completed State: only habits with 100% completion (totalHabits === 0 AND taskCompletionRate === 100) -->
+    <empty-state *ngIf="totalHabitsLoaded === 0 && taskCompletionRate === 100 && totalTasksLoaded > 0"
       imageSrc="/assets/Images-Transparent/Image-Home-Completed.png"
       imageAlt="Completed illustration"
       leadText="Great progress today!"
@@ -114,7 +132,7 @@
     <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
 
     <!-- Tab Navigation: show if there are items in any tab (even if current tab is done, user can see other tabs) -->
-    <div class="container w-full" *ngIf="hasHabits || hasTasks">
+    <div class="container w-full" *ngIf="(hasHabits || hasTasks) && !((taskCompletionRate === 100 && habitCompletionRate === 100) || (totalTasksLoaded === 0 && habitCompletionRate === 100) || (totalHabitsLoaded === 0 && taskCompletionRate === 100))">
       <div class="row toggler"
         [ngClass]="{ 'habits-active': currentActive === 'habits', 'tasks-active': currentActive === 'tasks' }">
         <div class="col-4" (click)="switchTab('all')" [ngClass]="currentActive === 'all' ? 'active' : ''">All</div>
@@ -126,36 +144,36 @@
     </div>
 
     <!-- Empty State (uses shared EmptyStateComponent) -->
-    <!-- Task-specific: all tasks completed/skipped -->
-    <empty-state *ngIf="currentActive === 'tasks' && !hasTasks && taskAllDoneComputed"
+    <!-- Task-specific: all tasks completed/skipped (taskCompletionRate === 100 AND totalHabits > 0) -->
+    <empty-state *ngIf="currentActive === 'tasks' && taskCompletionRate === 100 && totalHabitsLoaded > 0"
       leadText="All tasks done!"
       subText="Your tasks can be reviewed in the main habits screen. You can even mark them done from there."
       buttonText="">
     </empty-state>
 
-    <!-- Task-specific: no tasks at all -->
-    <empty-state *ngIf="currentActive === 'tasks' && !hasTasks && !taskAllDoneComputed"
+    <!-- Task-specific: no tasks at all (totalTasks === 0 AND habitCompletionRate < 100) -->
+    <empty-state *ngIf="currentActive === 'tasks' && totalTasksLoaded === 0 && habitCompletionRate < 100"
       leadText="No tasks lined up for today"
       subText="No tasks are scheduled for today. Add one to start building your streak and earn coins."
       buttonText="">
     </empty-state>
 
-    <!-- Habit-specific: all habits completed/skipped -->
-    <empty-state *ngIf="currentActive === 'habits' && !hasHabits && habitAllDoneComputed"
+    <!-- Habit-specific: all habits completed/skipped (habitCompletionRate === 100 AND totalTasks > 0) -->
+    <empty-state *ngIf="currentActive === 'habits' && habitCompletionRate === 100 && totalTasksLoaded > 0"
       leadText="All habits done!"
       subText="Your habits can be reviewed in the main habits screen. You can even mark them done from there."
       buttonText="">
     </empty-state>
 
-    <!-- Habit-specific: no habits at all -->
-    <empty-state *ngIf="currentActive === 'habits' && !hasHabits && !habitAllDoneComputed"
+    <!-- Habit-specific: no habits at all (totalHabits === 0 AND taskCompletionRate < 100) -->
+    <empty-state *ngIf="currentActive === 'habits' && totalHabitsLoaded === 0 && taskCompletionRate < 100"
       leadText="No habit lined up for today"
       subText="No habits are scheduled for today. Add one to start building your streak and earn coins."
       buttonText="">
     </empty-state>
 
-    <!-- Generic blank empty state when nothing exists at all -->
-    <empty-state *ngIf="isEmpty && !hasHabits && !hasTasks && !habitAllDoneComputed && !taskAllDoneComputed"
+    <!-- Generic blank empty state when nothing exists at all (totalTasks === 0 AND totalHabits === 0) -->
+    <empty-state *ngIf="isEmpty && totalHabitsLoaded === 0 && totalTasksLoaded === 0"
       imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
       imageAlt="Empty day illustration"
       leadText="Your day’s a blank slate!"
@@ -163,8 +181,8 @@
       buttonText="">
     </empty-state>
 
-    <!-- Completed State: show when items existed and ALL are now completed -->
-    <empty-state *ngIf="isEmpty && !hasHabits && !hasTasks && (habitAllDoneComputed || taskAllDoneComputed)"
+    <!-- Completed State: show when both completion rates are 100% OR when only one category exists with 100% -->
+    <empty-state *ngIf="(taskCompletionRate === 100 && habitCompletionRate === 100 && totalHabitsLoaded > 0 && totalTasksLoaded > 0) || (totalTasksLoaded === 0 && habitCompletionRate === 100 && totalHabitsLoaded > 0) || (totalHabitsLoaded === 0 && taskCompletionRate === 100 && totalTasksLoaded > 0)"
       imageSrc="/assets/Images-Transparent/Image-Home-Completed.png"
       imageAlt="Completed illustration"
       leadText="Great progress today!"

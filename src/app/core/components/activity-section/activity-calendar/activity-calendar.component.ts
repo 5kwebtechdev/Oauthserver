@@ -383,7 +383,7 @@ export class ActivityCalendarComponent implements OnInit, OnDestroy {
                 title: h.title || h.name || h.habitName || 'Habit',
                 status: this.buttonLogic.normalizeStatus(h.status),
                 coinReward: h.rewardCoins ?? h.reward_coins ?? h.coinReward ?? 0,
-                streak: (h.streak ?? h.habitStreak ?? 0),
+                streak: (h.currentHabitStreak ?? h.streak ?? h.habitStreak ?? 0),
                 startTimeStamp: timestamps.startTimeStamp,
                 endTimeStamp: timestamps.endTimeStamp
               };
@@ -402,7 +402,7 @@ export class ActivityCalendarComponent implements OnInit, OnDestroy {
                 title: t.title || t.name || t.taskName || 'Task',
                 status: this.buttonLogic.normalizeStatus(t.status),
                 coinReward: t.rewardCoins ?? t.reward_coins ?? t.coinReward ?? 0,
-                streak: (t.streak ?? t.habitStreak ?? 0),
+                streak: (t.currentTaskStreak ?? t.streak ?? t.habitStreak ?? 0),
                 startTimeStamp: timestamps.startTimeStamp,
                 endTimeStamp: timestamps.endTimeStamp
               };

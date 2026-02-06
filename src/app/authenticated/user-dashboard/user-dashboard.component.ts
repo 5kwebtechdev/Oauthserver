@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { ModalController, RefresherCustomEvent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
@@ -32,7 +32,8 @@ import { HabitButtonLogicService } from '../../core/components/activity-section/
 import { AuthService } from '../../core/services/auth.service';
 import { ChildSelfImageService } from '../../core/services/child-self-image.service';
 import { CustomToastService, Toast } from '../../core/services/custom-toast.service';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-user-dashboard',
@@ -60,7 +61,7 @@ import { Observable } from 'rxjs';
     FooterComponent,
   ]
 })
-export class UserDashboardComponent implements OnInit {
+export class UserDashboardComponent implements OnInit, OnDestroy {
   // Minimal properties used by the template
   public userName: string = 'User';
   public userAvatarUrl: string = '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
@@ -79,8 +80,20 @@ export class UserDashboardComponent implements OnInit {
   public recentHabits: Habit[] = [];
   public recentTasks: any[] = [];
 
+  // Completion data
+  public totalTasks: number = 0;
+  public totalTasksCompleted: number = 0;
+  public taskCompletionRate: number = 0;
+  public totalHabits: number = 0;
+  public totalHabitsCompleted: number = 0;
+  public habitCompletionRate: number = 0;
+
   // Observable for shared toast service
   toast$: Observable<Toast | null>;
+
+  // Subject for cleanup
+  private destroy$ = new Subject<void>();
+  private refreshScheduled$ = new Subject<void>();
 
   constructor(
     private modalCtrl: ModalController,
@@ -145,12 +158,28 @@ export class UserDashboardComponent implements OnInit {
     // Load recent habits and tasks
     this.loadRecentHabitsAndTasks();
 
-    // Subscribe to habit/task changes and reload data
-    this.habitService.dataChanged$.subscribe(() => {
-      console.log('[UserDashboard] Data changed, reloading...');
-      this.loadRecentHabitsAndTasks();
-      this.loadUserStats();
-    });
+    // Subscribe to habit/task changes and reload data with debounce to prevent multiple rapid calls
+    this.refreshScheduled$
+      .pipe(
+        debounceTime(300), // Wait 300ms after last change before refreshing
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        console.log('[UserDashboard] Data changed, reloading (debounced)...');
+        // Clear calendar cache to ensure fresh data
+        const today = new Date();
+        const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        this.calendarService.clearCache(formatted, 'day');
+        this.loadRecentHabitsAndTasks(true); // Force reload from API
+        this.loadUserStats();
+      });
+
+    // Trigger the debounced refresh when data changes
+    this.habitService.dataChanged$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.refreshScheduled$.next();
+      });
 
     // Initialize pet message for home page
     this.currentPetMessage = this.petMessagesService.getMessage('home', {
@@ -167,12 +196,12 @@ export class UserDashboardComponent implements OnInit {
   /**
    * Load recent habits and tasks
    */
-  private loadRecentHabitsAndTasks(): void {
+  private loadRecentHabitsAndTasks(forceReload: boolean = false): void {
     // Use a single calendar API to fetch both habits and tasks for today
     const today = new Date();
     const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-    this.calendarService.getUserCalendar(formatted, 'day').subscribe({
+    this.calendarService.getUserCalendar(formatted, 'day', forceReload).subscribe({
       next: (resp: any) => {
         if (!resp) return;
 
@@ -269,6 +298,14 @@ export class UserDashboardComponent implements OnInit {
           this.recentTasks = tasksData;
           setTimeout(() => this.recentTasks = [...this.recentTasks], 0);
         }
+
+        // Set completion data
+        this.totalTasks = resp.totalTasks || 0;
+        this.totalTasksCompleted = resp.totalTasksCompleted || 0;
+        this.taskCompletionRate = resp.taskCompletionRate || 0;
+        this.totalHabits = resp.totalHabits || 0;
+        this.totalHabitsCompleted = resp.totalHabitsCompleted || 0;
+        this.habitCompletionRate = resp.habitCompletionRate || 0;
       },
       error: (err) => {
         console.error('Failed to load calendar data:', err);
@@ -406,7 +443,7 @@ export class UserDashboardComponent implements OnInit {
       this.loadUserStats();
       
       // Reload habits and tasks
-      this.loadRecentHabitsAndTasks();
+      this.loadRecentHabitsAndTasks(true); // Force reload for pull-to-refresh
       
       // Update pet message
       this.currentPetMessage = this.petMessagesService.getMessage('home', {
@@ -425,6 +462,13 @@ export class UserDashboardComponent implements OnInit {
       // Complete the refresh
       event.target.complete();
     }
+  }
+
+  ngOnDestroy(): void {
+    // Cleanup all subscriptions
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.refreshScheduled$.complete();
   }
 
 }

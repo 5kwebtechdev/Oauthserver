@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { finalize } from 'rxjs/operators';
 
 import { Habit } from '../habit.types';
+import { HabitService } from '../habit.service';
 import { AuthService } from '../../../services/auth.service';
 import { HabitApi } from 'src/app/core/api/habit.api';
 import { TaskApi } from 'src/app/core/api/task.api';
@@ -59,7 +60,8 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     private taskApi: TaskApi,
     private buttonLogic: HabitButtonLogicService,
     private cdr: ChangeDetectorRef,
-    private authService: AuthService
+    private authService: AuthService,
+    private habitService: HabitService
   ) {}
 
   ngOnInit() {
@@ -213,6 +215,10 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
       rewardCoins: res.rewardCoins ?? res.coinReward ?? res.coin ?? 0,
       streak: res.streak ?? res.streakCount ?? 0,
       highestStreak: res.highestStreak || 0,
+      currentHabitStreak: res.currentHabitStreak ?? 0,
+      highestHabitStreak: res.highestHabitStreak ?? 0,
+      currentTaskStreak: res.currentTaskStreak ?? 0,
+      highestTaskStreak: res.highestTaskStreak ?? 0,
       coinsEarned: res.coinsEarned || 0,
       completionPercentage: res.completionPercentage || 0,
       totalScheduledDays: res.totalScheduledDays || 0,
@@ -256,15 +262,15 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   prepareCoinStats() {
     const h = this.habit as any;
     const coins = Number(h?.coinsEarned ?? h?.coinReward ?? 0) || 0;
-    const streak = Number(h?.streak ?? 0) || 0;
-    const highestStreak = Number(h?.highestStreak ?? 0) || 0;
+    const currentStreak = this.habit?.type === 'habits' ? Number(h?.currentHabitStreak ?? 0) : Number(h?.currentTaskStreak ?? 0);
+    const highestStreak = this.habit?.type === 'habits' ? Number(h?.highestHabitStreak ?? 0) : Number(h?.highestTaskStreak ?? 0);
     const totalCompletedDays = Number(h?.totalCompletedDays ?? 0) || 0;
     const completion = this.normalizeCompletion(h?.completionPercentage ?? 0);
     const badgesEarned = (h?.milestoneBadges || []).filter((b: any) => b.isEarned).length;
 
     this.coinStats = {
       userCoins: coins,
-      userStreaks: streak,
+      userStreaks: currentStreak,
       userDays: totalCompletedDays,
       userBadges: badgesEarned,
       successPercentage: completion,
@@ -433,7 +439,20 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
       if (!currentUserId || !this.habit) return false;
 
       const createdBy = (this.habit as any).createdById ?? (this.habit as any).createdBy ?? (this.habit as any).createdByName;
-      return createdBy != null && String(createdBy) === String(currentUserId);
+      const isCreator = createdBy != null && String(createdBy) === String(currentUserId);
+
+      // Check if end date has passed
+      if (this.habit.endDate) {
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0); // Set to start of day for comparison
+        const endDate = new Date(this.habit.endDate);
+        endDate.setHours(0, 0, 0, 0); // Set to start of day for comparison
+        if (currentDate > endDate) {
+          return false; // End date has passed, don't allow editing
+        }
+      }
+
+      return isCreator;
     } catch { return false; }
   }
 
@@ -467,12 +486,19 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
 
     if (status === 'completed') {
       return '#4CAF50';
-    } else if (status === 'ongoing') {
-      return type === 'tasks' ? '#EE6621' : '#6360A2';
-    } else {
-      // pending or any other status
+    } else if (status === 'skipped') {
       return '#BB2124';
+    } else if (status === 'pending') {
+      // Check if end time has passed
+      const now = Date.now();
+      const endTime = habit.endTimeStamp || 0;
+      if (now > endTime) {
+        return '#BB2124';
+      }
     }
+
+    // Default colors
+    return type === 'tasks' ? '#EE6621' : '#6360A2';
   }
 
   // === Habit Actions ===
@@ -480,7 +506,8 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   onStartHabit() {
     if (!this.habit || !this.isLetsGoEnabled()) return;
 
-    const api$ = this.habit.type === 'tasks'
+    const isTask = this.habit.type === 'tasks';
+    const api$ = isTask
       ? this.taskApi.letsGoTask(this.habit.id)
       : this.habitApi.letsGoHabit(this.habit.id);
 
@@ -489,6 +516,12 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
         this.habit = { ...this.habit!, status: 'ongoing' } as Habit;
         this.buttonLogic.saveOngoingState(this.habit);
         this.startProgress();
+        // Notify that activity was started so dashboard refreshes
+        if (isTask) {
+          this.habitService.notifyTaskStarted();
+        } else {
+          this.habitService.notifyHabitStarted();
+        }
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Failed to start', err)
@@ -498,7 +531,8 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   onAbortHabit() {
     if (!this.habit) return;
 
-    const api$ = this.habit.type === 'tasks'
+    const isTask = this.habit.type === 'tasks';
+    const api$ = isTask
       ? this.taskApi.abortTask(this.habit.id)
       : this.habitApi.abortHabit(this.habit.id);
 
@@ -507,6 +541,12 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
         this.habit = { ...this.habit!, status: 'pending' } as Habit;
         this.buttonLogic.clearOngoingState(this.habit);
         this.resetProgress();
+        // Notify that activity was aborted so dashboard refreshes
+        if (isTask) {
+          this.habitService.notifyTaskUpdated();
+        } else {
+          this.habitService.notifyHabitStarted(); // Uses same event as updated
+        }
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Failed to abort', err)
@@ -516,7 +556,8 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   onCompleteHabit() {
     if (!this.habit || !this.isDoneEnabled()) return;
 
-    const api$ = this.habit.type === 'tasks'
+    const isTask = this.habit.type === 'tasks';
+    const api$ = isTask
       ? this.taskApi.completeTask(this.habit.id)
       : this.habitApi.completeHabit(this.habit.id);
 
@@ -525,6 +566,12 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
         this.habit = { ...this.habit!, status: 'completed' } as Habit;
         this.buttonLogic.clearOngoingState(this.habit);
         this.resetProgress();
+        // Notify that activity was completed so dashboard refreshes
+        if (isTask) {
+          this.habitService.notifyTaskCompleted();
+        } else {
+          this.habitService.notifyHabitCompleted();
+        }
         this.cdr.detectChanges();
       },
       error: (err) => console.error('Failed to complete', err)

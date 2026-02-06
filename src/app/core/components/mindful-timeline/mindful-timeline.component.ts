@@ -358,6 +358,10 @@ export class MindfulTimelineComponent implements OnInit, OnChanges {
       this.tooltipEventId = null;
       this.clearBubblePosition(prevId);
     }
+    // if click is outside event cards, deselect the selected event
+    if (!target.closest('.event-box')) {
+      this.selectedEventId = null;
+    }
   }
 
   private adjustBubblePosition(id: number | null): void {
@@ -504,13 +508,30 @@ export class MindfulTimelineComponent implements OnInit, OnChanges {
     const status = event.status?.toLowerCase() || 'pending';
     const type = event.type;
 
+    // For timetable events, always return default color (no status conditions)
+    if (type === 'timetable') {
+      return '#3E5A60';
+    }
+
     if (status === 'completed') {
       return '#4CAF50';
-    } else if (status === 'ongoing') {
-      return type === 'task' ? '#EE6621' : '#6360A2';
-    } else {
-      // pending or any other status
+    } else if (status === 'skipped') {
       return '#BB2124';
+    } else if (status === 'pending') {
+      // Check if end time has passed (both conditions: pending AND endtime passed)
+      const now = Date.now();
+      const endTime = this.parseTime(event.endTime || '23:59') * 60 * 1000; // Convert to milliseconds
+      if (now > endTime) {
+        return '#BB2124';
+      }
+    }
+
+    // Default colors based on type
+    if (type === 'task') {
+      return '#EE6621';
+    } else {
+      // habit
+      return '#6360A2';
     }
   }
 }

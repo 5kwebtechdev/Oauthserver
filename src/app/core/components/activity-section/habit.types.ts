@@ -32,6 +32,10 @@ export interface Habit {
   totalScheduledDays?: number;
   totalCompletedDays?: number;
   milestoneBadges?: any[];
+  currentHabitStreak?: number;
+  highestHabitStreak?: number;
+  currentTaskStreak?: number;
+  highestTaskStreak?: number;
   // Task-specific fields
   assignedToId?: number;
   assignedToName?: string;

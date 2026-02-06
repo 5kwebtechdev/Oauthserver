@@ -454,10 +454,14 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     private filterByDate(habits: Habit[]): Habit[] {
         if (!habits.length) return [];
         const day = this.selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+        const selectedDateNormalized = new Date(this.selectedDate);
+        selectedDateNormalized.setHours(0, 0, 0, 0);
         return habits.filter(h => {
-            const start = h.startDate ? new Date(h.startDate) : this.selectedDate;
-            const end = h.endDate ? new Date(h.endDate) : this.selectedDate;
-            const isInRange = start <= this.selectedDate && this.selectedDate <= end;
+            const start = h.startDate ? new Date(h.startDate) : selectedDateNormalized;
+            const end = h.endDate ? new Date(h.endDate) : selectedDateNormalized;
+            start.setHours(0, 0, 0, 0);
+            end.setHours(23, 59, 59, 999);
+            const isInRange = start <= selectedDateNormalized && selectedDateNormalized <= end;
             const hasCorrectDay = h.selectedDays?.length > 0 ? h.selectedDays.includes(day) : true;
             return isInRange && hasCorrectDay;
         });

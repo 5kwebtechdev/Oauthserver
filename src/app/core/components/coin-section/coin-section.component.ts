@@ -39,15 +39,23 @@ export class CoinSectionComponent implements OnInit {
         private coinService: CoinService
         , private authService: AuthService
     ) {
-        const nav = this.router.getCurrentNavigation?.();
-        if (nav?.extras && (nav.extras as any).state?.coins !== undefined) {
-            this.coinTotal = (nav.extras as any).state.coins;
-        }
     }
 
     ngOnInit() {
         this.isParent = this.authService.isParentUser();
-        this.loadCoinHistory();
+        
+        // Subscribe to total coins updates
+        this.coinService.totalCoins$.subscribe(total => {
+            this.coinTotal = total;
+        });
+        
+        // If coin history is not loaded yet, load it
+        if (this.coinService.getCoinHistory().length === 0) {
+            this.loadCoinHistory();
+        } else {
+            // Use cached total
+            this.coinTotal = this.coinService.getTotalCoins();
+        }
     }
 
     loadCoinHistory() {
@@ -137,5 +145,9 @@ export class CoinSectionComponent implements OnInit {
             return '7 Day Streak Bonus';
         }
         return item.description || 'Coin Earned';
+    }
+
+    onRedeem() {
+        this.router.navigate(['/authed', 'coin-purchase']);
     }
 }

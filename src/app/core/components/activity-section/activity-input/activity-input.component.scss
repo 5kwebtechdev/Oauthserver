@@ -23,7 +23,7 @@ $theme-colors: (
  padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 10px;
 
 
   @each $theme, $color in $theme-colors {
@@ -252,7 +252,7 @@ $theme-colors: (
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 16px;
+  gap: 10px;
   border-bottom: 1px solid #7471BA;
   width: 100%;
 }
@@ -325,7 +325,7 @@ $theme-colors: (
 
 .habit-input-root ::ng-deep .date-align .mindful-input-group mindful-datepicker input,
 .habit-input-root ::ng-deep .date-align .mindful-input-group mindful-datepicker input::placeholder {
-  text-align: right;
+  text-align: left;
   padding-right: 0px;
 }
 

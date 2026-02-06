@@ -101,7 +101,7 @@
 
 
 
-        <mindful-button style="height: 56px;" *ngIf="selectedAnswer && !answerChecked" type="green" text="Check"
+        <mindful-button *ngIf="selectedAnswer && !answerChecked" type="green" size="full" text="Check"
             (click)="onCheck()">
         </mindful-button>
 
@@ -109,10 +109,10 @@
             <div class="popup-content" (click)="$event.stopPropagation()"
                 [ngStyle]="{'background': popupBackgroundColor}">
                 <div class="popup-text" [ngStyle]="{'color': popupTextColor}">{{ popupMessage }}</div>
-                <mindful-button style="width: 100%;height: 56px;" *ngIf="nextButtonType === 'green'" type="green"
+                <mindful-button style="width: 100%;" *ngIf="nextButtonType === 'green'" type="green" size="full"
                     [text]="nextButtonText" (click)="onNext()">
                 </mindful-button>
-                <mindful-button style="width: 100%;height: 56px;" *ngIf="nextButtonType === 'bronze'" type="bronze"
+                <mindful-button style="width: 100%;" *ngIf="nextButtonType === 'bronze'" type="bronze" size="full"
                     [text]="nextButtonText" (click)="onNext()">
                 </mindful-button>
             </div>
