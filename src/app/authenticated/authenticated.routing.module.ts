@@ -6,6 +6,7 @@ import { DashboardRedirectGuard } from '../core/guards/dashboard-redirect.guard'
 import { UserProfileComponent } from '../core/components/user-profile/user-profile.component';
 import { ActivityTimelineComponent } from "../core/components/activity-section/activity-timeline/activity-timeline.component";
 import { ActivityDetailComponent } from "../core/components/activity-section/activity-detail/activity-detail.component";
+import { CoinPurchaseComponent } from "../core/components/coin-section/coin-purchase/coin-purchase.component";
 
 
 const routes: Routes = [
@@ -106,6 +107,9 @@ const routes: Routes = [
       }, {
         path: 'coin',
         loadComponent: () => import('../core/components/coin-section/coin-section.component').then(m => m.CoinSectionComponent)
+      }, {
+        path: 'coin-purchase',
+        component: CoinPurchaseComponent
       }, {
         path: 'journal-input',
         loadComponent: () => import('../core/components/journals/journal-input/journal-input.component').then(m => m.JournalInputComponent)

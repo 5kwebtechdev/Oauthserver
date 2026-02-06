@@ -2,10 +2,10 @@
     <div class="coin-page">
         <div [ngClass]="{ 'coin-card': true, 'parent-view': isParent }">
             <div class="header">
-                                <p>Ready to Treat Yourself?</p>
-                                <a [routerLink]="['/authed','bot-helpline']" class="robot-link" aria-label="Helpline">
-                                    <img src="assets/Icons-Neutral/Icon-Chatbot.png" alt="Robot" class="robot-icon">
-                                </a>
+                 <p>Ready to Treat Yourself?</p>
+                <a [routerLink]="['/authed','bot-helpline']" class="robot-link" aria-label="Helpline">
+                  <img src="assets/Icons-Neutral/Icon-Chatbot.png" alt="Robot" class="robot-icon">
+                </a>
             </div>
 
             <div class="coins">
@@ -19,7 +19,7 @@
                 <mindful-pet></mindful-pet>
             </div>
 
-            <mindful-button text="Redeem" type="gold"></mindful-button>
+            <mindful-button (click)="onRedeem()" text="Redeem" type="gold" size="large"></mindful-button>
         </div>
 
         <div class="coin-list-section">

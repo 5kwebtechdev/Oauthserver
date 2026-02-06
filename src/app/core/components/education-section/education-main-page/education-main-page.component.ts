@@ -3,12 +3,13 @@ import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { FooterComponent } from '../../footer/footer.component';
 
 @Component({
     selector: 'app-education-main-page',
     standalone: true,
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    imports: [CommonModule, IonicModule, MindfulNavigatorComponent, RouterModule],
+    imports: [CommonModule, IonicModule, MindfulNavigatorComponent, RouterModule, FooterComponent],
     templateUrl: './education-main-page.component.html',
     styleUrls: ['./education-main-page.component.scss']
 })

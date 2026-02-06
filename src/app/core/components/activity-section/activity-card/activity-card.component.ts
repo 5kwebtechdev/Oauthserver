@@ -74,6 +74,58 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   endTime !: number;
 
   /**
+   * Optional input for total tasks (alias for totalTasksLoaded)
+   */
+  @Input()
+  set totalTasks(value: number) {
+    this.totalTasksLoaded = value;
+  }
+
+  /**
+   * Optional input for total tasks loaded from API
+   */
+  @Input()
+  totalTasksLoaded: number = 0;
+
+  /**
+   * Optional input for total tasks completed
+   */
+  @Input()
+  totalTasksCompleted: number = 0;
+
+  /**
+   * Optional input for total habits (alias for totalHabitsLoaded)
+   */
+  @Input()
+  set totalHabits(value: number) {
+    this.totalHabitsLoaded = value;
+  }
+
+  /**
+   * Optional input for total habits loaded from API
+   */
+  @Input()
+  totalHabitsLoaded: number = 0;
+
+  /**
+   * Optional input for total habits completed
+   */
+  @Input()
+  totalHabitsCompleted: number = 0;
+
+  /**
+   * Optional input for task completion rate (0-100)
+   */
+  @Input()
+  taskCompletionRate: number = 0;
+
+  /**
+   * Optional input for habit completion rate (0-100)
+   */
+  @Input()
+  habitCompletionRate: number = 0;
+
+  /**
    * Optional input that allows parent components to force parent-mode behavior.
    * When defined, this value takes precedence over internal user profile detection.
    */
@@ -107,11 +159,6 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   public tasks: any[] = [];
   public hasHabits: boolean = false;
   public hasTasks: boolean = false;
-  // Track total items loaded AND how many were completed (for correct empty state)
-  public totalHabitsLoaded: number = 0;
-  public totalHabitsCompleted: number = 0;
-  public totalTasksLoaded: number = 0;
-  public totalTasksCompleted: number = 0;
   // Flags to control task-specific empty states
   public taskAllDoneComputed: boolean = false;
   // Flags to control habit-specific empty states
@@ -228,6 +275,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
             this.calendarService.clearCache(formatted, 'day');
           } catch (e) { /* ignore */ }
           this.loadTodayTasks(); // This might need adjustment for tasks
+          // Notify that a task was started so dashboard refreshes
+          this.habitService.notifyTaskStarted();
           // Trigger change detection to update button states in other components
           this.cdr.detectChanges();
         },
@@ -618,6 +667,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           } catch (e) { /* ignore */ }
           this.loadTodayTasks();
           this.clearProgress();
+          // Notify that a task was completed so dashboard refreshes
+          this.habitService.notifyTaskCompleted();
           // Trigger change detection to update button states in other components
           this.cdr.detectChanges();
 
@@ -1526,20 +1577,25 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   /**
    * Update the empty state based on current tab
    * 
-   * ALGORITHM:
-   * - taskAllDoneComputed = TRUE when: totalTasksLoaded > 0 AND totalTasksCompleted === totalTasksLoaded
-   * - habitAllDoneComputed = TRUE when: totalHabitsLoaded > 0 AND totalHabitsCompleted === totalHabitsLoaded
-   * - "All done" shows when: no pending items to display AND all items were completed
-   * - "No items" shows when: no pending items to display AND NO items were completed (nothing scheduled)
+   * NEW ALGORITHM (based on completion rates):
+   * - habitCompletionRate = (totalHabitsCompleted / totalHabitsLoaded) * 100
+   * - taskCompletionRate = (totalTasksCompleted / totalTasksLoaded) * 100
+   * - "All done" shows when completion rate is 100%
+   * - "No items lined up" shows when total count is 0
    */
   updateEmptyState() {
-    // Calculate whether ALL items of each type are completed (based on actual API counts BEFORE filtering)
-    const allTasksCompleted = this.totalTasksLoaded > 0 && this.totalTasksCompleted === this.totalTasksLoaded;
-    const allHabitsCompleted = this.totalHabitsLoaded > 0 && this.totalHabitsCompleted === this.totalHabitsLoaded;
+    // Calculate completion rates based on total loaded vs completed
+    this.habitCompletionRate = this.totalHabitsLoaded > 0 
+      ? (this.totalHabitsCompleted / this.totalHabitsLoaded) * 100 
+      : 0;
     
-    // Update completion flags based purely on API counts, regardless of filter
-    this.habitAllDoneComputed = allHabitsCompleted;
-    this.taskAllDoneComputed = allTasksCompleted;
+    this.taskCompletionRate = this.totalTasksLoaded > 0 
+      ? (this.totalTasksCompleted / this.totalTasksLoaded) * 100 
+      : 0;
+    
+    // Update completion flags based on completion rates
+    this.habitAllDoneComputed = this.habitCompletionRate === 100 && this.totalHabitsLoaded > 0;
+    this.taskAllDoneComputed = this.taskCompletionRate === 100 && this.totalTasksLoaded > 0;
     
     // Update isEmpty based on filtered items
     this.isEmpty = !this.hasHabits && !this.hasTasks;
@@ -1749,6 +1805,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   getStreak(): number {
     if (!this.habit) return 0;
     const h: any = this.habit;
+    if (h.type === 'habits') {
+      return Number(h.currentHabitStreak ?? h.streak ?? h.streakCount ?? h.streak_count ?? (h.rewards && h.rewards.streak) ?? 0);
+    } else if (h.type === 'tasks') {
+      return Number(h.currentTaskStreak ?? h.streak ?? h.streakCount ?? h.streak_count ?? (h.rewards && h.rewards.streak) ?? 0);
+    }
     return Number(h.streak ?? h.streakCount ?? h.streak_count ?? (h.rewards && h.rewards.streak) ?? 0);
   }
 
@@ -2076,6 +2137,29 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    */
   private combineDateAndTime(dateStr: string, timeStr: string): number {
     return this.buttonLogic.combineDateAndTime(dateStr, timeStr);
+  }
+
+  getTimeColor(habit: Habit | null): string {
+    if (!habit) return '#BB2124'; // default to pending color
+
+    const status = habit.status?.toLowerCase() || 'pending';
+    const type = habit.type;
+
+    if (status === 'completed') {
+      return '#4CAF50';
+    } else if (status === 'skipped') {
+      return '#BB2124';
+    } else if (status === 'pending') {
+      // Check if end time has passed
+      const now = Date.now();
+      const endTime = habit.endTimeStamp || 0;
+      if (now > endTime) {
+        return '#BB2124';
+      }
+    }
+
+    // Default colors
+    return type === 'tasks' ? '#EE6621' : '#6360A2';
   }
 
 }

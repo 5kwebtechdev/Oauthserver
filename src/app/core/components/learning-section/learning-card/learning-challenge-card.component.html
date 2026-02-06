@@ -28,7 +28,7 @@
                 <span class="trophy"><img src="/assets/Icons-Neutral/Icon-Trophy.png" alt="trophy"
                         style="width:24px;height:auto;" /> {{ item.trophy || 0 }}</span>
             </div>
-            <mindful-button [type]="'pink-small'" [text]="item.buttonText" (click)="onCardClick()"></mindful-button>
+            <mindful-button [type]="'pink-small'" [text]="item.buttonText || 'Start Challenge'" (click)="onCardClick()"></mindful-button>
         </div>
     </div>
 </div>

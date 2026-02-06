@@ -41,11 +41,15 @@ export class MindfulCoinsStatsComponent {
         return this.userDays ?? 0;
       case 'streak':
         return this.userStreaks ?? 0;
+      case 'current-streak':
+        return this.userStreaks ?? 0;
       case 'badges':
         return this.userBadges ?? 0;
       case 'success':
         return typeof this.successPercentage === 'number' ? `${this.successPercentage}%` : this.successPercentage;
       case 'total-streaks':
+        return this.totalStreaks ?? 0;
+      case 'highest-streak':
         return this.totalStreaks ?? 0;
       default:
         return '';
@@ -60,11 +64,15 @@ export class MindfulCoinsStatsComponent {
         return this.trophyIcon;
       case 'streak':
         return this.streakIcon;
+      case 'current-streak':
+        return this.streakIcon;
       case 'badges':
         return this.badgesIcon;
       case 'success':
         return this.successIcon;
       case 'total-streaks':
+        return this.totalStreaksIcon;
+      case 'highest-streak':
         return this.totalStreaksIcon;
       default:
         return '';
@@ -86,7 +94,7 @@ export class MindfulCoinsStatsComponent {
   }
 
   async openStreakPageIf(slot: string) {
-    if (slot === 'streak') {
+    if (slot === 'streak' || slot === 'current-streak') {
       // Navigate to the streaks leaderboard inside the authenticated area
       await this.router.navigateByUrl('/authed/streaks');
     }

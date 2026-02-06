@@ -35,8 +35,8 @@ import { buttonStyles } from '../mindful-button/button.types';
     }
 
     .empty-state__illustration {
-      width: 208px;
-      height: 123px;
+      width: 216px;
+      height: auto;
       object-fit: contain;
     }
 

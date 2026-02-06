@@ -119,6 +119,10 @@ export class HabitService {
         coinsEarned: item.coinsEarned || item.coins || 0,
         streak: item.streak || item.streakCount || 0,
         highestStreak: item.highestStreak || item.topStreak || 0,
+        currentHabitStreak: item.currentHabitStreak || 0,
+        highestHabitStreak: item.highestHabitStreak || 0,
+        currentTaskStreak: item.currentTaskStreak || 0,
+        highestTaskStreak: item.highestTaskStreak || 0,
         completionPercentage: item.completionPercentage || item.completionRate || 0,
         totalCompletedDays: item.totalCompletedDays || item.completedDays || 0,
         milestoneBadges: item.milestoneBadges || item.badges || [],
@@ -199,6 +203,22 @@ export class HabitService {
     this.dataChangedSubject.next({ type: 'task', action: 'deleted' });
   }
 
+  notifyHabitCompleted(): void {
+    this.dataChangedSubject.next({ type: 'habit', action: 'updated' });
+  }
+
+  notifyTaskCompleted(): void {
+    this.dataChangedSubject.next({ type: 'task', action: 'updated' });
+  }
+
+  notifyHabitStarted(): void {
+    this.dataChangedSubject.next({ type: 'habit', action: 'updated' });
+  }
+
+  notifyTaskStarted(): void {
+    this.dataChangedSubject.next({ type: 'task', action: 'updated' });
+  }
+
   completeHabit(id: string): void {
     // Mark habit as completed and remove from today's active list so it disappears from Home
     const currentHabits = this.habitsSubject.value;
@@ -208,6 +228,8 @@ export class HabitService {
       // Update internal list to remove it from active view (completed moves to completed lists)
       const newList = currentHabits.filter(h => h.id !== id);
       this.habitsSubject.next(newList);
+      // Notify subscribers that data has changed
+      this.dataChangedSubject.next({ type: 'habit', action: 'updated' });
     }
   }
 
@@ -219,6 +241,8 @@ export class HabitService {
       const updated = { ...currentHabits[idx], status: 'ongoing' } as Habit;
       currentHabits[idx] = updated;
       this.habitsSubject.next([...currentHabits]);
+      // Notify subscribers that data has changed
+      this.dataChangedSubject.next({ type: 'habit', action: 'updated' });
     }
   }
 
@@ -230,6 +254,8 @@ export class HabitService {
       const updated = { ...currentHabits[idx], status: 'pending' } as Habit;
       currentHabits[idx] = updated;
       this.habitsSubject.next([...currentHabits]);
+      // Notify subscribers that data has changed
+      this.dataChangedSubject.next({ type: 'habit', action: 'updated' });
     }
   }
 

@@ -386,8 +386,8 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
     forkJoin([
       this.learningService.fetchChallenges().pipe(
         map(challenges => {
-          const quizzes = challenges.filter(c => c.category === 'QUIZ');
-          const puzzles = challenges.filter(c => c.category === 'PUZZLE');
+          const quizzes = challenges.filter(c => c.category === 'QUIZ').map(c => this.learningService.transformChallengeToCard(c));
+          const puzzles = challenges.filter(c => c.category === 'PUZZLE').map(c => this.learningService.transformChallengeToCard(c));
           const latestQuiz = this.pickLatest(quizzes);
           const latestPuzzle = this.pickLatest(puzzles);
           return { latestQuiz, latestPuzzle };

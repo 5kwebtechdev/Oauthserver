@@ -229,6 +229,7 @@ export class LearningService {
     transformChallengeToCard(challenge: Challenge): LearningCardData {
         const isQuiz = challenge.category === 'QUIZ';
         const timeText = challenge.timeDuration || '10 Minutes';
+        const buttonLabel = isQuiz ? 'Play Quiz' : 'Play Puzzle';
 
         return {
             id: challenge.challengeId,
@@ -238,7 +239,7 @@ export class LearningService {
             coins: challenge.coins,
             trophy: challenge.trophies,
             difficulty: challenge.difficultyDisplay || challenge.difficulty,
-            buttonText: `Finish in ${timeText}`,
+            buttonText: timeText ? `Finish in ${timeText}` : buttonLabel,
             type: isQuiz ? 'quiz' : 'puzzle',
             // Preserve backend category for use by UI (e.g. mindful-badge)
             category: challenge.category,

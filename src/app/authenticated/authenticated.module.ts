@@ -18,6 +18,7 @@ import { MindfulNavigatorComponent } from "../core/components/mindful-navigator/
 import { UserProfileComponent } from "../core/components/user-profile/user-profile.component";
 import { SupermeTimerComponent } from '../core/components/superme-timer/superme-timer.component';
 import { StreaksSectionComponent } from '../core/components/streaks-section/streaks-section.component';
+import { CoinPurchaseComponent } from '../core/components/coin-section/coin-purchase/coin-purchase.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +43,8 @@ import { StreaksSectionComponent } from '../core/components/streaks-section/stre
     MindfulSelectorsComponent,
     SupermeTimerComponent,
     StreaksSectionComponent,
-    MindfulNavigatorComponent
+    MindfulNavigatorComponent,
+    CoinPurchaseComponent
   ]
 })
 export class AuthenticatedModule { }
