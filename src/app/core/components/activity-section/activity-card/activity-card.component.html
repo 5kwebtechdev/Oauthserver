@@ -11,7 +11,7 @@
     <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
 
     <!-- Tab Navigation: show if there are items in any tab (even if current tab is done, user can see other tabs) -->
-    <div class="container w-full" *ngIf="(hasHabits || hasTasks) && !((taskCompletionRate === 100 && habitCompletionRate === 100) || (totalTasksLoaded === 0 && habitCompletionRate === 100) || (totalHabitsLoaded === 0 && taskCompletionRate === 100))">
+    <div class="container w-full" *ngIf="(totalTasksLoaded > 0 || totalHabitsLoaded > 0) && !((taskCompletionRate === 100 && habitCompletionRate === 100) || (totalTasksLoaded === 0 && habitCompletionRate === 100) || (totalHabitsLoaded === 0 && taskCompletionRate === 100))">
       <div class="row toggler"
         [ngClass]="{ 'habits-active': currentActive === 'habits', 'tasks-active': currentActive === 'tasks' }">
         <div class="col-4" (click)="switchTab('all')" [ngClass]="currentActive === 'all' ? 'active' : ''">All</div>
@@ -37,6 +37,13 @@
       buttonText="">
     </empty-state>
 
+    <!-- Task-specific: tasks existed but all cards hidden (end time passed, not all completed) -->
+    <empty-state *ngIf="currentActive === 'tasks' && !hasTasks && totalTasksLoaded > 0 && taskCompletionRate < 100"
+      leadText="Check pending items"
+      subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
+      buttonText="">
+    </empty-state>
+
     <!-- Habit-specific: all habits completed (habitCompletionRate === 100 AND totalTasks > 0) -->
     <empty-state *ngIf="currentActive === 'habits' && habitCompletionRate === 100 && totalTasksLoaded > 0"
       leadText="All habits done!"
@@ -48,6 +55,20 @@
     <empty-state *ngIf="currentActive === 'habits' && totalHabitsLoaded === 0 && taskCompletionRate < 100"
       leadText="No habit lined up for today"
       subText="No habits are scheduled for today. Add one to start building your streak and earn coins."
+      buttonText="">
+    </empty-state>
+
+    <!-- Habit-specific: habits existed but all cards hidden (end time passed, not all completed) -->
+    <empty-state *ngIf="currentActive === 'habits' && !hasHabits && totalHabitsLoaded > 0 && habitCompletionRate < 100"
+      leadText="Check pending items"
+      subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
+      buttonText="">
+    </empty-state>
+
+    <!-- Pending state for All tab: items existed but all cards hidden (end time passed, not all completed) -->
+    <empty-state *ngIf="currentActive === 'all' && isEmpty && (totalHabitsLoaded > 0 || totalTasksLoaded > 0) && !(taskCompletionRate === 100 && habitCompletionRate === 100) && !(totalTasksLoaded === 0 && habitCompletionRate === 100) && !(totalHabitsLoaded === 0 && taskCompletionRate === 100) && !(totalHabitsLoaded === 0 && totalTasksLoaded === 0)"
+      leadText="Check pending items"
+      subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
       buttonText="">
     </empty-state>
 
@@ -132,7 +153,7 @@
     <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
 
     <!-- Tab Navigation: show if there are items in any tab (even if current tab is done, user can see other tabs) -->
-    <div class="container w-full" *ngIf="(hasHabits || hasTasks) && !((taskCompletionRate === 100 && habitCompletionRate === 100) || (totalTasksLoaded === 0 && habitCompletionRate === 100) || (totalHabitsLoaded === 0 && taskCompletionRate === 100))">
+    <div class="container w-full" *ngIf="(totalTasksLoaded > 0 || totalHabitsLoaded > 0) && !((taskCompletionRate === 100 && habitCompletionRate === 100) || (totalTasksLoaded === 0 && habitCompletionRate === 100) || (totalHabitsLoaded === 0 && taskCompletionRate === 100))">
       <div class="row toggler"
         [ngClass]="{ 'habits-active': currentActive === 'habits', 'tasks-active': currentActive === 'tasks' }">
         <div class="col-4" (click)="switchTab('all')" [ngClass]="currentActive === 'all' ? 'active' : ''">All</div>
@@ -158,6 +179,13 @@
       buttonText="">
     </empty-state>
 
+    <!-- Task-specific: tasks existed but all cards hidden (end time passed, not all completed) -->
+    <empty-state *ngIf="currentActive === 'tasks' && !hasTasks && totalTasksLoaded > 0 && taskCompletionRate < 100"
+      leadText="Check pending items"
+      subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
+      buttonText="">
+    </empty-state>
+
     <!-- Habit-specific: all habits completed/skipped (habitCompletionRate === 100 AND totalTasks > 0) -->
     <empty-state *ngIf="currentActive === 'habits' && habitCompletionRate === 100 && totalTasksLoaded > 0"
       leadText="All habits done!"
@@ -171,7 +199,19 @@
       subText="No habits are scheduled for today. Add one to start building your streak and earn coins."
       buttonText="">
     </empty-state>
+    <!-- Habit-specific: habits existed but all cards hidden (end time passed, not all completed) -->
+    <empty-state *ngIf="currentActive === 'habits' && !hasHabits && totalHabitsLoaded > 0 && habitCompletionRate < 100"
+      leadText="Check pending items"
+      subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
+      buttonText="">
+    </empty-state>
 
+    <!-- Pending state for All tab: items existed but all cards hidden (end time passed, not all completed) -->
+    <empty-state *ngIf="currentActive === 'all' && isEmpty && (totalHabitsLoaded > 0 || totalTasksLoaded > 0) && !(taskCompletionRate === 100 && habitCompletionRate === 100) && !(totalTasksLoaded === 0 && habitCompletionRate === 100) && !(totalHabitsLoaded === 0 && taskCompletionRate === 100) && !(totalHabitsLoaded === 0 && totalTasksLoaded === 0)"
+      leadText="Check pending items"
+      subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
+      buttonText="">
+    </empty-state>
     <!-- Generic blank empty state when nothing exists at all (totalTasks === 0 AND totalHabits === 0) -->
     <empty-state *ngIf="isEmpty && totalHabitsLoaded === 0 && totalTasksLoaded === 0"
       imageSrc="/assets/Images-Transparent/Image-Home-Blank.png"
