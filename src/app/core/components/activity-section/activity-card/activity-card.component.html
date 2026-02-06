@@ -238,7 +238,7 @@
     <div class="habit-header-container clickable" (tap)="toggle()" long-press [delay]="1500" (press)="onLongPress()">
       <div class="container w-full p-0">
         <div class="d-flex justify-content-between">
-          <h3 class="habit-title">{{habit?.title || 'Habit'}}</h3>
+          <h3 class="habit-title" [style.color]="getTitleColor(habit)">{{habit?.title || 'Habit'}}</h3>
           <div class="d-flex gap-1 align-items-center">
 
             <img *ngIf="hasRoutine()" class="routine-icon" [src]="getRoutineIcon()" alt="" height="24" width="24">
@@ -253,7 +253,8 @@
 
         </div>
         <div class="habit-timing-container d-flex align-items-center">
-          <h4 [ngClass]="(habit?.type === 'tasks' ? 'task-timing' : 'habit-timing') + ' ' + (habit?.status?.toLowerCase() || 'pending')">
+          <h4 [ngClass]="(habit?.type === 'tasks' ? 'task-timing' : 'habit-timing') + ' ' + (habit?.status?.toLowerCase() || 'pending')"
+              [style.color]="getTimeColor(habit)">
             {{ formatTimeString(habit?.startTime) || getFormattedTime(startTime) }} - {{
             formatTimeString(habit?.endTime) || getFormattedTime(endTime) }}
             <!-- Inline SVG so we can control the fill color based on type -->
