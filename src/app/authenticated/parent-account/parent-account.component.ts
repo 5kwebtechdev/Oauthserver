@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from "@angular/common";
-import { ModalController, RefresherCustomEvent } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
-import { Subject, takeUntil, firstValueFrom } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { NotesComponent } from '../../core/components/notes/notes.component';
 import { UserService } from '../../core/services/user.service';
 import { IonicModule } from "@ionic/angular";
@@ -18,6 +18,7 @@ import { ChildSelfImageService } from '../../core/services/child-self-image.serv
 import { ParentImageService } from '../../core/services/parent-image.service';
 import { ProfileStoreService } from '../../core/services/profile-store.service';
 import { ChildInfo, mapVibeToChildInfo } from '../../core/models/child-info.model';
+import { RefreshService } from '../../core/services/refresh.service';
 
 
 @Component({
@@ -101,7 +102,8 @@ export class ParentAccountComponent implements OnInit, OnDestroy {
         private profileStore: ProfileStoreService,
         private authService: AuthService,
         private childSelfImage: ChildSelfImageService,
-        private parentImageService: ParentImageService
+        private parentImageService: ParentImageService,
+        private refreshService: RefreshService
     ) { }
 
     async openNotes() {
@@ -109,11 +111,14 @@ export class ParentAccountComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        this.refreshService.unregisterRefreshHandler('ParentAccount');
         this.destroy$.next();
         this.destroy$.complete();
     }
 
     ngOnInit(): void {
+        // Register with global pull-to-refresh service
+        this.refreshService.registerRefreshHandler('ParentAccount', () => this.onGlobalRefresh());
         // Redirect non-parent users
         if (!this.authService.isParentUser()) {
             this.router.navigate(['/authed/user-dashboard'], { replaceUrl: true });
@@ -294,27 +299,20 @@ export class ParentAccountComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Handle pull-to-refresh event
+     * Called by the global RefreshService when the user pulls to refresh.
+     * Session validation is already handled by the authenticated shell.
      */
-    async handleRefresh(event: RefresherCustomEvent): Promise<void> {
-        try {
-            const isValid = await firstValueFrom(this.authService.refreshUserData());
-            if (isValid) {
-                const userData = this.authService.getUserData();
-                if (userData) {
-                    this.userName = userData.name || this.userName;
-                    this.parentInitial = userData.name?.charAt(0) || this.parentInitial;
-                    const isFemale = (userData.gender || '').toLowerCase() === 'female';
-                    this.parentAvatarStyle = this.parentImageService.getAvatarStyle(this.parentInitial, isFemale, 54);
-                }
-            }
-            this.loadChildren();
-            this.loadUserStats();
-            await this.habitPageContent?.refresh();
-            await new Promise(r => setTimeout(r, 500));
-        } finally {
-            event.target.complete();
+    private async onGlobalRefresh(): Promise<void> {
+        const userData = this.authService.getUserData();
+        if (userData) {
+            this.userName = userData.name || this.userName;
+            this.parentInitial = userData.name?.charAt(0) || this.parentInitial;
+            const isFemale = (userData.gender || '').toLowerCase() === 'female';
+            this.parentAvatarStyle = this.parentImageService.getAvatarStyle(this.parentInitial, isFemale, 54);
         }
+        this.loadChildren();
+        this.loadUserStats();
+        await this.habitPageContent?.refresh();
     }
 
     protected readonly console = console;

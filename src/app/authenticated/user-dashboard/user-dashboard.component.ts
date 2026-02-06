@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from "@angular/common";
-import { ModalController, RefresherCustomEvent } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { NotesComponent } from '../../core/components/notes/notes.component';
 import { ActivityCardComponent } from "../../core/components/activity-section/activity-card/activity-card.component";
@@ -32,6 +32,7 @@ import { HabitButtonLogicService } from '../../core/components/activity-section/
 import { AuthService } from '../../core/services/auth.service';
 import { ChildSelfImageService } from '../../core/services/child-self-image.service';
 import { CustomToastService, Toast } from '../../core/services/custom-toast.service';
+import { RefreshService } from '../../core/services/refresh.service';
 import { Observable, Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 
@@ -108,7 +109,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     private buttonLogic: HabitButtonLogicService,
     private authService: AuthService,
     private childSelfImageService: ChildSelfImageService,
-    private toastService: CustomToastService
+    private toastService: CustomToastService,
+    private refreshService: RefreshService
   ) {
     this.toast$ = this.toastService.toast$;
   }
@@ -180,6 +182,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.refreshScheduled$.next();
       });
+
+    // Register with global pull-to-refresh service
+    this.refreshService.registerRefreshHandler('UserDashboard', () => this.onGlobalRefresh());
 
     // Initialize pet message for home page
     this.currentPetMessage = this.petMessagesService.getMessage('home', {
@@ -404,67 +409,49 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   // helper moved to ChildSelfImageService
 
   /**
-   * Handle pull-to-refresh event
-   * Validates session, refreshes user data from API, and reloads all data
+   * Called by the global RefreshService when the user pulls to refresh.
+   * Session validation is already handled by the authenticated shell.
    */
-  async handleRefresh(event: RefresherCustomEvent): Promise<void> {
-    console.log('[UserDashboard] Pull to refresh triggered');
-    
-    try {
-      // First, validate session and refresh user data from API
-      const isSessionValid = await this.authService.refreshUserData().toPromise();
-      
-      if (!isSessionValid) {
-        console.log('[UserDashboard] Session invalid or refresh failed');
-        // Session might be invalid, but don't redirect here - let auth guard handle it
-      } else {
-        // Update local user data from refreshed storage
-        const userData = this.authService.getUserData();
-        if (userData) {
-          this.userName = userData.name || this.userName;
-          
-          // Update avatar from refreshed data
-          const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
-          if (resolved.url) this.userAvatarUrl = resolved.url;
-          if (resolved.alt) this.avatarImageName = resolved.alt;
-          
-          // Update user profile in UserService
-          this.userService.updateUserProfile({
-            name: userData.name,
-            email: userData.email,
-            phone: userData.phone,
-            gender: userData.gender,
-            relationship: userData.relationship
-          });
-        }
-      }
-      
-      // Reload user stats from vibes API
-      this.loadUserStats();
-      
-      // Reload habits and tasks
-      this.loadRecentHabitsAndTasks(true); // Force reload for pull-to-refresh
-      
-      // Update pet message
-      this.currentPetMessage = this.petMessagesService.getMessage('home', {
-        userName: this.userName,
-        tasksCount: this.recentTasks.length,
-        habitsCount: this.recentHabits.length,
-        streakDays: this.userStreaks
+  private async onGlobalRefresh(): Promise<void> {
+    console.log('[UserDashboard] Global refresh triggered');
+
+    // Update local user data from refreshed storage
+    const userData = this.authService.getUserData();
+    if (userData) {
+      this.userName = userData.name || this.userName;
+
+      const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
+      if (resolved.url) this.userAvatarUrl = resolved.url;
+      if (resolved.alt) this.avatarImageName = resolved.alt;
+
+      this.userService.updateUserProfile({
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone,
+        gender: userData.gender,
+        relationship: userData.relationship
       });
-      this.petMood = this.currentPetMessage.mood;
-      
-      // Wait a bit to show the refresh animation
-      await new Promise(resolve => setTimeout(resolve, 800));
-    } catch (error) {
-      console.error('[UserDashboard] Error during refresh:', error);
-    } finally {
-      // Complete the refresh
-      event.target.complete();
     }
+
+    // Reload user stats from vibes API
+    this.loadUserStats();
+
+    // Reload habits and tasks
+    this.loadRecentHabitsAndTasks(true);
+
+    // Update pet message
+    this.currentPetMessage = this.petMessagesService.getMessage('home', {
+      userName: this.userName,
+      tasksCount: this.recentTasks.length,
+      habitsCount: this.recentHabits.length,
+      streakDays: this.userStreaks
+    });
+    this.petMood = this.currentPetMessage.mood;
   }
 
   ngOnDestroy(): void {
+    // Unregister from global refresh
+    this.refreshService.unregisterRefreshHandler('UserDashboard');
     // Cleanup all subscriptions
     this.destroy$.next();
     this.destroy$.complete();

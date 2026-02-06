@@ -1,11 +1,12 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, RefresherCustomEvent } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { ActivityPageContentComponent } from '../activity-page-content/activity-page-content.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { RefreshService } from '../../../services/refresh.service';
 
 /**
  * Activity page wrapper component that provides navigation context
@@ -15,16 +16,6 @@ import { AuthService } from '../../../services/auth.service';
   standalone: true,
   selector: 'activity-page',
   template: `<ion-content>
-    <!-- Pull-to-refresh -->
-    <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
-      <ion-refresher-content
-        pullingIcon="chevron-down-circle-outline"
-        pullingText="Pull to refresh"
-        refreshingSpinner="circles"
-        refreshingText="Refreshing...">
-      </ion-refresher-content>
-    </ion-refresher>
-
     <mindful-navigator heading="Your Universe" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
         rightIconAlt="Calendar" (rightIconClick)="onOpenCalendar()" (back)="onBack()"></mindful-navigator>
 
@@ -42,12 +33,6 @@ import { AuthService } from '../../../services/auth.service';
 
 </ion-content>`,
     styles: [`
-    ion-refresher {
-      --background: transparent;
-    }
-    ion-refresher-content {
-      --color: #7471BA;
-    }
     .habit-add-btn {
       position: fixed;
       right: 16px;
@@ -63,13 +48,23 @@ import { AuthService } from '../../../services/auth.service';
     MindfulButtonComponent
   ]
 })
-export class ActivityPageComponent {
+export class ActivityPageComponent implements OnInit, OnDestroy {
   @ViewChild('habitContent') habitContent!: ActivityPageContentComponent;
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private refreshService: RefreshService
   ) { }
+
+  ngOnInit(): void {
+    // Register with global pull-to-refresh service
+    this.refreshService.registerRefreshHandler('ActivityPage', () => this.onGlobalRefresh());
+  }
+
+  ngOnDestroy(): void {
+    this.refreshService.unregisterRefreshHandler('ActivityPage');
+  }
 
   onAddHabit(): void {
     const currentTab = this.habitContent?.currentMainTab ?? 'habits';
@@ -94,27 +89,13 @@ export class ActivityPageComponent {
   }
 
   /**
-   * Handle pull-to-refresh event
-   * Validates session and refreshes habit/task data
+   * Called by the global RefreshService when the user pulls to refresh.
+   * Session validation is already handled by the authenticated shell.
    */
-  async handleRefresh(event: RefresherCustomEvent): Promise<void> {
-    console.log('[HabitPage] Pull to refresh triggered');
-    
-    try {
-      // Validate session and refresh user data
-      await this.authService.refreshUserData().toPromise();
-      
-      // Refresh activity content
-      if (this.habitContent) {
-        await this.habitContent.refresh();
-      }
-      
-      // Wait a bit to show the refresh animation
-      await new Promise(resolve => setTimeout(resolve, 800));
-    } catch (error) {
-      console.error('[HabitPage] Error during refresh:', error);
-    } finally {
-      event.target.complete();
+  private async onGlobalRefresh(): Promise<void> {
+    console.log('[ActivityPage] Global refresh triggered');
+    if (this.habitContent) {
+      await this.habitContent.refresh();
     }
   }
 }
