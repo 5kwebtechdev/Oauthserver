@@ -576,8 +576,8 @@ body.barcode-scanner-active {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 24px;
-  z-index: 9999;
+  bottom: 90px;
+  z-index: 100000; /* above loader (99999) */
   width: 90%;
   max-width: 500px;
   box-sizing: border-box;
@@ -592,22 +592,32 @@ body.barcode-scanner-active {
   border: var(--mb-toast-border);
 
   @media (max-width: 480px) {
-    bottom: 16px;
     width: 95%;
   }
+}
+
+.mb-toast__icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mb-toast__icon {
+  width: 12px;
+  height: 9px;
+  aspect-ratio: 4/3;
+  object-fit: contain;
+  color: #2D6830;
 }
 
 .mb-toast__text {
   text-align: center;
   font-family: Nunito, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 500;
   line-height: 1.4;
   color: var(--mb-toast-text);
-
-  @media (max-width: 480px) {
-    font-size: 12px;
-  }
 }
 
 /* Variants only change color tokens */

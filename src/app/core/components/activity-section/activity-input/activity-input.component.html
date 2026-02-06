@@ -51,9 +51,7 @@
     <div *ngIf="attemptedSubmit && showTimeError" class="field-error" role="alert">Please set a time.</div>
     <div *ngIf="showPastTimeError && !showPastTimeForTodayRepeat" class="field-error" role="alert">That time has already
       passed! Pick a later time.</div>
-    <div *ngIf="showEndTimeBeforeStart" class="field-error" role="alert">End time must be after the start time</div>
-    <div *ngIf="showEndTimeSingleDayError" class="field-error" role="alert">Activities must finish before midnight
-      (11:59 PM).</div>
+    <div *ngIf="showEndTimeBeforeStart || showEndTimeSingleDayError" class="field-error" role="alert">End time must be later than start time (and before midnight).</div>
     <div *ngIf="showRoutineError" class="field-error" role="alert">{{ routineErrorMessage }}</div>
   </div>
 </ng-template>

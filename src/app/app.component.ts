@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError, Event } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { PetAgeService } from './core/services/pet-age.service';
 import { LoadingService } from './core/services/loading.service';
 import { NavigationService } from './core/services/navigation.service';
@@ -9,6 +9,7 @@ import { BadgeSocketService, BadgePopupData } from './core/services/badge-socket
 import { BadgeApi } from './core/api/badge.api';
 import { AuthApi } from './core/api/auth.api';
 import { UserService } from './core/services/user.service';
+import { CustomToastService, Toast } from './core/services/custom-toast.service';
 
 @Component({
   selector: 'app-root',
@@ -18,6 +19,7 @@ import { UserService } from './core/services/user.service';
 })
 export class AppComponent implements OnInit, OnDestroy {
   loading = false;
+  toast$: Observable<Toast | null>;
   private _navToken?: string;
   private badgeSubscription?: Subscription;
 
@@ -36,7 +38,10 @@ export class AppComponent implements OnInit, OnDestroy {
     private badgeApi: BadgeApi,
     private authApi: AuthApi,
     private userService: UserService,
-  ) { }
+    private toastService: CustomToastService,
+  ) {
+    this.toast$ = this.toastService.toast$;
+  }
 
   ngOnInit() {
     // Track app open for pet age progression

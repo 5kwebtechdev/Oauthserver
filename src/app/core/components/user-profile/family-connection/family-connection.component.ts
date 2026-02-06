@@ -16,6 +16,8 @@ import { ChildSelfImageService } from '../../../services/child-self-image.servic
 import { take } from 'rxjs/operators';
 import { AuthService as CoreAuthService } from '../../../services/auth.service';
 import { ChangeDetectorRef } from '@angular/core';
+import { Share } from '@capacitor/share';
+import { ToastController } from '@ionic/angular';
 @Component({
   standalone: true,
   selector: 'family-connection',
@@ -38,8 +40,15 @@ export class FamilyConnectionComponent implements OnInit {
   showRemovePopup: boolean = false;
   memberToRemove: FamilyMember | null = null;
 
-  constructor(private router: Router, private authService: AuthService, private coreAuthService: CoreAuthService,
-    public parentImageService: ParentImageService, private childSelfImageService: ChildSelfImageService, private cdr: ChangeDetectorRef) { }
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private coreAuthService: CoreAuthService,
+    public parentImageService: ParentImageService,
+    private childSelfImageService: ChildSelfImageService,
+    private cdr: ChangeDetectorRef,
+    private toastController: ToastController
+  ) { }
 
   // Return the first uppercase initial for a name (safe for template bindings)
   getInitial(name?: string): string {
@@ -101,7 +110,7 @@ export class FamilyConnectionComponent implements OnInit {
   }
 
   /**
-   * Share QR code using Web Share API (Capacitor-safe)
+   * Share QR code using native mobile share method (Capacitor) with fallback
    */
   async shareQrCode(): Promise<void> {
     try {
@@ -111,34 +120,119 @@ export class FamilyConnectionComponent implements OnInit {
         return;
       }
 
+      // Convert canvas to blob
       canvas.toBlob(async (blob) => {
         if (!blob) return;
 
-        const file = new File([blob], 'family-qr-code.png', { type: 'image/png' });
+        // For native mobile apps, use Capacitor Share with base64 image
+        if ((window as any).capacitor) {
+          try {
+            // Convert blob to base64
+            const reader = new FileReader();
+            reader.onload = async () => {
+              const base64String = (reader.result as string).split(',')[1];
 
-        if (navigator.share && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: 'Family QR Code',
-            text: `Join our family with code: ${this.familyCode}`,
-            files: [file]
-          });
+              // Share using Capacitor with title, text, and base64 image
+              await Share.share({
+                title: 'Family QR Code',
+                text: `Join our family with code: ${this.familyCode}\n\nShare this QR code with family members to connect!`,
+                url: undefined // We'll use data URL instead
+              });
+
+              // Additionally, try to share the image directly if the platform supports it
+              try {
+                const response = await fetch(`data:image/png;base64,${base64String}`);
+                const imageBlob = await response.blob();
+                const file = new File([imageBlob], 'family-qr-code.png', { type: 'image/png' });
+
+                // Check if web share API supports files (for hybrid apps)
+                if (navigator.share && navigator.canShare({ files: [file] })) {
+                  await navigator.share({
+                    title: 'Family QR Code',
+                    text: `Join our family with code: ${this.familyCode}`,
+                    files: [file]
+                  });
+                }
+              } catch (e) {
+                console.log('Image file sharing not available, using text-based share');
+              }
+
+              await this.showToast('QR code shared successfully!', 'success');
+            };
+            reader.readAsDataURL(blob);
+          } catch (error) {
+            console.error('Error with Capacitor share:', error);
+            // Fallback to download
+            await this.fallbackShareQrCode(blob);
+          }
         } else {
-          // Fallback: download the image
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'family-qr-code.png';
-          a.click();
-          URL.revokeObjectURL(url);
+          // For web/browser environment, use Web Share API
+          await this.webShareQrCode(blob);
         }
       }, 'image/png');
     } catch (error) {
       console.error('Error sharing QR code:', error);
+      await this.showToast('Failed to share QR code', 'error');
     }
   }
 
   /**
-   * Copy family code to clipboard
+   * Web Share API fallback for browsers
+   */
+  private async webShareQrCode(blob: Blob): Promise<void> {
+    try {
+      const file = new File([blob], 'family-qr-code.png', { type: 'image/png' });
+
+      if (navigator.share && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Family QR Code',
+          text: `Join our family with code: ${this.familyCode}`,
+          files: [file]
+        });
+        await this.showToast('QR code shared successfully!', 'success');
+      } else {
+        // Fallback to download
+        await this.fallbackShareQrCode(blob);
+      }
+    } catch (error) {
+      console.error('Error with web share:', error);
+      await this.fallbackShareQrCode(blob);
+    }
+  }
+
+  /**
+   * Fallback: Download QR code as image
+   */
+  private async fallbackShareQrCode(blob: Blob): Promise<void> {
+    try {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `family-qr-code-${this.familyCode}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+      await this.showToast('QR code downloaded!', 'success');
+    } catch (error) {
+      console.error('Error downloading QR code:', error);
+      await this.showToast('Failed to download QR code', 'error');
+    }
+  }
+
+  /**
+   * Show toast notification
+   */
+  private async showToast(message: string, color: 'success' | 'error' | 'warning' = 'success'): Promise<void> {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2000,
+      position: 'bottom',
+      color
+    });
+    await toast.present();
+  }
+
+  /**
+   * Copy family code to clipboard with native toast feedback
    */
   async copyFamilyCode(): Promise<void> {
     if (!this.familyCode) {
@@ -149,8 +243,8 @@ export class FamilyConnectionComponent implements OnInit {
     try {
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(this.familyCode);
-        // Show a brief visual feedback (you can enhance this with a toast)
         console.log('Family code copied to clipboard:', this.familyCode);
+        await this.showToast(`Code ${this.familyCode} copied!`, 'success');
       } else {
         // Fallback for older browsers or non-secure contexts
         const textArea = document.createElement('textarea');
@@ -164,9 +258,11 @@ export class FamilyConnectionComponent implements OnInit {
         document.execCommand('copy');
         document.body.removeChild(textArea);
         console.log('Family code copied to clipboard (fallback):', this.familyCode);
+        await this.showToast(`Code ${this.familyCode} copied!`, 'success');
       }
     } catch (error) {
       console.error('Error copying family code:', error);
+      await this.showToast('Failed to copy code', 'error');
     }
   }
 
