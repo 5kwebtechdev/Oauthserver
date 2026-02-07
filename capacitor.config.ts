@@ -4,14 +4,10 @@ const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
   appName: 'Superme',
   webDir: 'www',
-  // server: {
-  //   cleartext: true,
-  //   androidScheme: 'http',
-  //   allowNavigation: [
-  //     'api.supermeapp.com:3000',
-  //     'localhost'
-  //   ]
-  // },
+  server: {
+    url: 'http://10.0.2.2:4200',
+    cleartext: true
+  },
   android: {
     allowMixedContent: true
   }

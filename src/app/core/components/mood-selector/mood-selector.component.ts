@@ -289,6 +289,10 @@ export class MoodSelectorComponent {
     return this.setsToday < 2;
   }
 
+  get isParent(): boolean {
+    return this.authService.getUserRelationship() === 'PARENT';
+  }
+
   private loadDailySetCount() {
     try {
       const key = this.dailyKey();

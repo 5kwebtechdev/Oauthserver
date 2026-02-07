@@ -168,7 +168,7 @@
     <!-- Task-specific: all tasks completed/skipped (taskCompletionRate === 100 AND totalHabits > 0) -->
     <empty-state *ngIf="currentActive === 'tasks' && taskCompletionRate === 100 && totalHabitsLoaded > 0"
       leadText="All tasks done!"
-      subText="Your tasks can be reviewed in the main habits screen. You can even mark them done from there."
+      subText="Your tasks can be reviewed in the main habits screen."
       buttonText="">
     </empty-state>
 
@@ -189,7 +189,7 @@
     <!-- Habit-specific: all habits completed/skipped (habitCompletionRate === 100 AND totalTasks > 0) -->
     <empty-state *ngIf="currentActive === 'habits' && habitCompletionRate === 100 && totalTasksLoaded > 0"
       leadText="All habits done!"
-      subText="Your habits can be reviewed in the main habits screen. You can even mark them done from there."
+      subText="Your habits can be reviewed in the main habits screen."
       buttonText="">
     </empty-state>
 
@@ -226,7 +226,7 @@
       imageSrc="/assets/Images-Transparent/Image-Home-Completed.png"
       imageAlt="Completed illustration"
       leadText="Great progress today!"
-      subText="Your tasks and habits can be reviewed in the main tasks and habits screen. You can even mark them done from there."
+      subText="Your tasks and habits can be reviewed in the main tasks and habits screen."
       buttonText="">
     </empty-state>
   </div>
@@ -278,7 +278,7 @@
     <div class="habit-header-container clickable" (tap)="toggle()" long-press [delay]="1500" (press)="onLongPress()">
       <div class="container w-full p-0">
         <div class="d-flex justify-content-between">
-          <h3 class="habit-title" [style.color]="getTitleColor(habit)">{{habit?.title || 'Habit'}}</h3>
+          <h3 class="habit-title">{{habit?.title || 'Habit'}}</h3>
           <div class="d-flex gap-1 align-items-center">
 
             <img *ngIf="hasRoutine()" class="routine-icon" [src]="getRoutineIcon()" alt="" height="24" width="24">

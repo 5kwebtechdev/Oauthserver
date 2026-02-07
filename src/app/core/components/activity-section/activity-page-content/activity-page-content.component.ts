@@ -248,9 +248,13 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
 
                     this.allHabits = habitData.map((h: any) => ({
                         ...h,
+                        type: h.type || 'habits',
                         status: this.normalizeStatus(h.status),
                         priority: h.priority?.trim().toLowerCase(),
                         routine: h.routine?.trim().toLowerCase(),
+                        // Preserve streak fields from API response
+                        currentHabitStreak: Number(h.currentHabitStreak ?? h.streak ?? 0),
+                        highestHabitStreak: Number(h.highestHabitStreak ?? h.highestStreak ?? 0),
                                                 // Ensure startTimeStamp and endTimeStamp are calculated and normalized for today's date for recurring items
                                                 startTimeStamp: (() => {
                                                     const isRecurring = h.daysOfWeek?.length || h.everyday || h.everyWeekend;
@@ -316,6 +320,9 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                             coinsEarned: Number(t.coinsEarned ?? t.coins ?? t.coins_earned ?? 0),
                             streak: Number(t.streak ?? t.streakCount ?? t.streak_count ?? 0),
                             highestStreak: Number(t.highestStreak ?? t.topStreak ?? t.highest_streak ?? 0),
+                            // Preserve task streak fields from API response
+                            currentTaskStreak: Number(t.currentTaskStreak ?? t.streak ?? t.streakCount ?? 0),
+                            highestTaskStreak: Number(t.highestTaskStreak ?? t.highestStreak ?? t.topStreak ?? 0),
                         };
                     });
                     this.loading = false;

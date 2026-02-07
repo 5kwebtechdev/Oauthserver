@@ -143,8 +143,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
   readonly tagVariants: Record<string, 'blue' | 'orange' | 'green' | 'gray'> = { habits: 'blue', tasks: 'orange', timetable: 'green' };
 
   // Coin selector
-  coinOptions = [10, 20, 30, 40, 50];
-  coinReward: number = 5;
+  // coin selector removed for parent accounts
 
   activities: { name: string; startTime: string; endTime: string }[] = [
     { name: '', startTime: '', endTime: '' },
@@ -310,7 +309,6 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
       // Reuse `stateCurrentActive` declared above and fall back to habit type when editing.
       this.currentActive = (stateCurrentActive as any) || (h.type as any) || this.currentActive;
       this.isPrivate = !!h.isPrivate;
-      this.coinReward = Number(h?.coinReward ?? h?.rewardCoins ?? h?.coin ?? 5);
       this.selectedRoutine = h.selectedRoutine || h.routine || (h.getRoutine as any) || this.selectedRoutine;
 
       // Merge incoming routineTags with default tags instead of replacing
@@ -620,8 +618,6 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
       status: 'pending',
       createdAt: new Date(),
       activities: this.currentActive === 'timetable' ? this.activities.filter(a => a.name.trim()) : undefined
-      ,
-      coinReward: this.coinReward ?? 5
     };
 
     const daysOfWeek = this.getSelectedDaysOfWeek();
@@ -648,7 +644,6 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
         endTime: formattedEndTime || '',
         everyday: !!(this.everyday && coversAllDays),
         everyWeekend: false,
-        rewardCoins: habit.coinReward ?? 5,
         sharedWithParent: this.isChild ? !this.isPrivate : false
       };
       // Always include the routine field in the payload. If the user did not select
@@ -691,7 +686,6 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
         endTime: formattedEndTime || '',
         everyday: !!(this.everyday && coversAllDays),
         everyWeekend: false,
-        coinReward: 5,
         sharedWithParent: this.isChild ? !this.isPrivate : false
       };
       // Always include the routine field so a missing selection is represented
@@ -874,8 +868,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
     });
   }
 
-  selectCoin(value: number) { this.coinReward = value; }
-  isCoinSelected(value: number) { return this.coinReward === value; }
+  // selectCoin / isCoinSelected removed
 
   // Compute validation flags without performing submission; reused by submit() and click-on-disabled handler
   private computeValidations() {
@@ -940,8 +933,6 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
       createdAt: data.createdAt ? new Date(data.createdAt) : (this.originalHabit?.createdAt ? new Date(this.originalHabit.createdAt) : new Date()),
       activities: baseHabit.activities,
       tags: Array.isArray(data.tags) ? data.tags : this.selectedTags.map(t => t.value || t.key),
-      coinReward: data.rewardCoins ?? data.coinReward ?? baseHabit.coinReward ?? 0,
-      coinsEarned: data.coinsEarned ?? data.coins ?? 0,
       streak: data.streak ?? data.streakCount ?? 0,
       highestStreak: data.highestStreak ?? 0,
       completionPercentage: data.completionPercentage ?? data.completionRate ?? 0,
@@ -1135,7 +1126,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
 
   onDelete() {
     if (!this.editingId) return;
-    const coin = Number(this.originalHabit?.coinReward ?? this.originalHabit?.coin ?? 0);
+    const coin = 0; // Default coin value since coin assignment is removed
     const streak = Number(this.originalHabit?.streak ?? this.originalHabit?.streakCount ?? 0);
     this.deletePopupConfig = this.buildDeletePopupConfig(coin, streak);
     this.deletePopupVisible = true;
