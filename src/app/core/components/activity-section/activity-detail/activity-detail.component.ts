@@ -10,6 +10,7 @@ import { AuthService } from '../../../services/auth.service';
 import { HabitApi } from 'src/app/core/api/habit.api';
 import { TaskApi } from 'src/app/core/api/task.api';
 import { HabitButtonLogicService } from '../habit-button-logic.service';
+import { AutoAbortService } from '../auto-abort.service';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
 import { MindfulSpeechBubbleComponent } from '../../mindful-speech-bubble/mindful-speech-bubble.component';
 import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
@@ -61,7 +62,8 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     private buttonLogic: HabitButtonLogicService,
     private cdr: ChangeDetectorRef,
     private authService: AuthService,
-    private habitService: HabitService
+    private habitService: HabitService,
+    private autoAbortService: AutoAbortService
   ) {}
 
   ngOnInit() {
@@ -515,6 +517,11 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
       next: () => {
         this.habit = { ...this.habit!, status: 'ongoing' } as Habit;
         this.buttonLogic.saveOngoingState(this.habit);
+        this.autoAbortService.scheduleAutoAbort({
+          id: this.habit!.id,
+          type: this.habit!.type || 'habits',
+          endTimeStamp: this.habit!.endTimeStamp
+        });
         this.startProgress();
         // Notify that activity was started so dashboard refreshes
         if (isTask) {
@@ -540,6 +547,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
       next: () => {
         this.habit = { ...this.habit!, status: 'pending' } as Habit;
         this.buttonLogic.clearOngoingState(this.habit);
+        this.autoAbortService.cancelAutoAbort(this.habit!.id, this.habit!.type || 'habits');
         this.resetProgress();
         // Notify that activity was aborted so dashboard refreshes
         if (isTask) {
@@ -565,6 +573,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
       next: () => {
         this.habit = { ...this.habit!, status: 'completed' } as Habit;
         this.buttonLogic.clearOngoingState(this.habit);
+        this.autoAbortService.cancelAutoAbort(this.habit!.id, this.habit!.type || 'habits');
         this.resetProgress();
         // Notify that activity was completed so dashboard refreshes
         if (isTask) {
