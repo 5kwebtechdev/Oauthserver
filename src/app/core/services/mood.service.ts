@@ -10,6 +10,7 @@ import { environment } from 'src/environments/environment';
 export class MoodService {
   private readonly apiUrl = `${environment.apiUrl}/mood`;
   private vibesDisplayCache$: Observable<VibesDisplayResponse[]> | null = null;
+  private monthlyTransitionsCache = new Map<string, Observable<MoodTransition[]>>();
 
   constructor(private http: HttpClient) { }
 
@@ -24,8 +25,14 @@ export class MoodService {
    * The ProfileSelectorInterceptor automatically adds userId when a child is selected.
    */
   getMoodTransitionsMonthly(year: number, month: number): Observable<MoodTransition[]> {
+    const key = `${year}-${month}`;
+    if (this.monthlyTransitionsCache.has(key)) {
+      return this.monthlyTransitionsCache.get(key)!;
+    }
     const url = `${this.apiUrl}/vibes/transition/monthly?year=${year}&month=${month}`;
-    return this.http.get<MoodTransition[]>(url);
+    const obs = this.http.get<MoodTransition[]>(url).pipe(shareReplay(1));
+    this.monthlyTransitionsCache.set(key, obs);
+    return obs;
   }
 
   /**

@@ -123,17 +123,7 @@
   </div>
 </ng-template>
 
-<ng-template #coinSection>
-  <div *ngIf="isParent" class="assign-coin">
-    <label>Assign Coins</label>
-    <div class="coin-badges">
-      <button type="button" class="coin-badge" [ngClass]="{'task-coin': isTasks}" *ngFor="let c of coinOptions"
-        (click)="selectCoin(c)" [attr.aria-pressed]="isCoinSelected(c)">
-        <span class="coin-value">{{c}}</span>
-      </button>
-    </div>
-  </div>
-</ng-template>
+<!-- coinSection removed (parent-only assign coins UI) -->
 
 <ng-template #notesSection let-showNotesValidation="showNotesValidation">
   <div class="section notes">
@@ -189,7 +179,7 @@
         </div>
       </div>
       <ng-container *ngTemplateOutlet="prioritySection"></ng-container>
-      <ng-container *ngTemplateOutlet="coinSection"></ng-container>
+      <!-- coinSection removed -->
       <ng-container *ngTemplateOutlet="notesSection; context: {showNotesValidation: true}"></ng-container>
       <ng-container
         *ngTemplateOutlet="submitSection; context: {btnType: 'lavendar', btnTypeFaded: 'lavender-light', itemType: 'Habit'}"></ng-container>
@@ -207,7 +197,7 @@
         </div>
       </div>
       <ng-container *ngTemplateOutlet="prioritySection"></ng-container>
-      <ng-container *ngTemplateOutlet="coinSection"></ng-container>
+      <!-- coinSection removed -->
       <ng-container *ngTemplateOutlet="notesSection; context: {showNotesValidation: true}"></ng-container>
       <ng-container
         *ngTemplateOutlet="submitSection; context: {btnType: 'orange', btnTypeFaded: 'orange-light', itemType: 'Task'}"></ng-container>

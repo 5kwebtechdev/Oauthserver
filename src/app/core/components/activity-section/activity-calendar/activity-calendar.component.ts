@@ -131,14 +131,18 @@ export class ActivityCalendarComponent implements OnInit, OnDestroy {
     const firstDay = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
     const dateStr = this.formatDateToYYYYMMDD(firstDay);
     this.loadDayData(dateStr);
+    // Load mood data for the new month
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth() + 1;
+    this.loadMoodData(year, month);
   }
 
   /**
    * Load mood transition data for the current month
    */
-  loadMoodData() {
-    const year = this.selectedDate.getFullYear();
-    const month = this.selectedDate.getMonth() + 1; // JavaScript months are 0-indexed
+  loadMoodData(year?: number, month?: number) {
+    if (year === undefined) year = this.selectedDate.getFullYear();
+    if (month === undefined) month = this.selectedDate.getMonth() + 1; // JavaScript months are 0-indexed
 
     // Interceptor handles userId - no need to pass manually
     this.moodService.getMoodTransitionsMonthly(year, month)

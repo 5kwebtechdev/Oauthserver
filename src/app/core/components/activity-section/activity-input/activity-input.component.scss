@@ -28,7 +28,7 @@ $theme-colors: (
 
   @each $theme, $color in $theme-colors {
     &.#{$theme} {
-      .title-input, .routine-section, .priority-selection, .assign-coin{
+      .title-input, .routine-section, .priority-selection{
         @include border-color($color);
         color: $color;
       }
@@ -39,91 +39,7 @@ $theme-colors: (
     }
   }
 
-.assign-coin {
-  display: flex;
-    justify-content: space-between;
-    padding: 0px 16px 16px 16px;
-    border-bottom: 1px solid;
-
-  label {
-    font-weight: 600;
-    color: #6B656A;
-  }
-
-  .coin-badges {
-    display: grid;
-    grid-template-columns: repeat(2, auto);
-    gap: 8px;
-    align-items: center;
-    justify-content: start;
-  }
-
-  .coin-badge {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 10px 40px;
-    border-radius: 26px;
-    border: 1px solid #46456A;
-    background: transparent;
-    cursor: pointer;
-    font-family: Nunito, sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    color: #282527;
-    min-height: 34px;
-    position: relative;
-    --text_color: #282527;
-    --stroke_gradient: transparent;
-  }
-
-  .coin-badge:before {
-    content: '';
-    position: absolute;
-    z-index: -1;
-    width: calc(100% + 3px);
-    height: calc(100% + 3px);
-    top: -1.5px;
-    left: -1.5px;
-    border-radius: 1000px;
-    background: var(--stroke_gradient);
-    opacity: 0;
-  }
-
-  /* Selected badge: filled dark background matching 'add new' */
-  .coin-badge[aria-pressed="true"] {
-    background: #46456A;
-    border-color: #46456A;
-    color: #ffffff;
-    --text_color: white;
-    --stroke_gradient: #46456A;
-  }
-
-  .coin-badge[aria-pressed="true"]:before {
-    opacity: 1;
-  }
-}
-
-/* Tasks-specific coin badge colors */
-.habit-input-root.tasks .coin-badge,
-.habit-input-root.tasks .assign-coin .coin-badge,
-.coin-badge.task-coin {
-  border-radius: 26px !important;
-  border: 1px solid #F28745 !important;
-  background: transparent !important;
-  color: #282527 !important;
-}
-
-.habit-input-root.tasks .coin-badge[aria-pressed="true"],
-.habit-input-root.tasks .assign-coin .coin-badge[aria-pressed="true"],
-.coin-badge.task-coin[aria-pressed="true"] {
-  background: #B93915 !important;
-  border: 1px solid #B93915 !important;
-  color: #ffffff !important;
-  --text_color: white;
-  --stroke_gradient: #B93915;
-}
+/* coin selector removed: styles for .assign-coin and .coin-badge deleted */
 }
 
 .habit-input-header mindful-navigator {

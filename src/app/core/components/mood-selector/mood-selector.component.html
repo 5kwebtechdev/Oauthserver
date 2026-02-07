@@ -17,7 +17,7 @@
           <img class="active-asset" [src]="displayAssetSrc" alt="active mood" />
         </ng-container>
       <ng-template #unicodeEmoji>{{activeEmoji}}</ng-template>
-      <img class="mood-edit-icon" src="assets/icons/edit-icon.svg" alt="" style="position:absolute; top:0; right:0; width:12px; height:12px; pointer-events:none;" aria-hidden="true" />
+      <img *ngIf="!isParent" class="mood-edit-icon" src="assets/icons/edit-icon.svg" alt="" style="position:absolute; top:0; right:0; width:12px; height:12px; pointer-events:none;" aria-hidden="true" />
     </div>
   </div>
 

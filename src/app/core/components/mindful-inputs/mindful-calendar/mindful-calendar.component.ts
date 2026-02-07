@@ -249,7 +249,32 @@ export class MindfulCalendarComponent implements OnChanges {
       'Nervous': 'assets/Images-Transparent/Image-Mood-Nervous.png',
     };
 
-    return moodMap[moodName] || 'assets/Images-Transparent/Image-Mood-Happy.png';
+    // Normalize input from backend: handle case/spacing/underscores/dashes consistently
+    const normalize = (s: string) => s
+      .trim()
+      .toLowerCase()
+      .replace(/[_\-\s]+/g, ' ') // collapse separators to single space
+      .replace(/\s+/g, ' ');
+
+    const canonicalByNormalized: { [key: string]: keyof typeof moodMap } = {
+      'happy': 'Happy',
+      'very happy': 'Very Happy',
+      'excited': 'Excited',
+      'sad': 'Sad',
+      'upset': 'Upset',
+      'nervous': 'Nervous',
+    };
+
+    const DEFAULT = moodMap['Happy'];
+    if (!moodName) return DEFAULT;
+
+    const norm = normalize(String(moodName));
+    const canonical = canonicalByNormalized[norm];
+    if (canonical && moodMap[canonical]) {
+      return moodMap[canonical];
+    }
+
+    return DEFAULT;
   }
 
   /**

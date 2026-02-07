@@ -2166,17 +2166,20 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       return '#6B656A';
     }
 
+    // Status-based logic first, regardless of date
+    if (status === 'completed') {
+      return '#4CAF50';
+    } else if (status === 'skipped') {
+      return '#BB2124';
+    }
+
     // For future dates (not current date view), use future colors
     if (!this.isCurrentDateView) {
       return type === 'tasks' ? '#EE6621' : '#6360A2';
     }
 
-    // For current date, use status-based logic
-    if (status === 'completed') {
-      return '#4CAF50';
-    } else if (status === 'skipped') {
-      return '#BB2124';
-    } else if (status === 'pending') {
+    // For current date pending/ongoing
+    if (status === 'pending') {
       // Check if end time has passed
       const now = Date.now();
       const endTime = habit.endTimeStamp || 0;

@@ -15,7 +15,6 @@
 .left-group {
   display: flex;
   align-items: center;
-  gap: 0px;
 }
 
 .right-group {
@@ -76,7 +75,7 @@
 
 /* smaller cancel icon size per design */
 .back-button.cancel img {
-  width: 14px;
+  width: 48px;
   height: 14px;
 }
 

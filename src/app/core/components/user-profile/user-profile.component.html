@@ -147,8 +147,8 @@
       imageAlt: 'Logout image',
       heading: 'Leaving already?',
       subtitle: 'You can come back anytime to continue your adventure.',
-      primaryCTA: { text: 'Logout', callback: confirmLogout.bind(this), buttonStyle: 'bronze' },
-      secondaryCTA: { text: 'Stay Here', callback: closeLogoutPopup.bind(this), buttonStyle: 'bronze-transparent' },
+      primaryCTA: { text: 'Logout', callback: confirmLogout.bind(this), buttonStyle: 'bronze', buttonMedium: true },
+      secondaryCTA: { text: 'Stay Here', callback: closeLogoutPopup.bind(this), buttonStyle: 'bronze-transparent', buttonMedium: true },
       backdrop: true,
       showCloseButton: true
     }" (primaryAction)="confirmLogout()" (secondaryAction)="closeLogoutPopup()" (backdropClick)="closeLogoutPopup()"
