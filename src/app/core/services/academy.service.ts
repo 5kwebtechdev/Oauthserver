@@ -46,6 +46,7 @@ export interface CourseLesson {
     thumbnailUrl: string;
     content: string;
     status: string | null;
+    lessonStatus: string | null;
     createdAt: string | null;
     updatedAt: string | null;
     isCompleted: boolean;
@@ -88,6 +89,7 @@ export interface LessonDetailResponse {
     thumbnailUrl: string;
     content: string;
     status: string | null;
+    lessonStatus?: string | null;
     createdAt: string | null;
     updatedAt: string | null;
     isCompleted: boolean;

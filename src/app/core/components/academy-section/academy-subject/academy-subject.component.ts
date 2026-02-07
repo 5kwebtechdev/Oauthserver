@@ -76,7 +76,7 @@ export class AcademySubjectComponent implements OnInit {
         // Map courses to lesson display format
         this.lessons = filteredCourses.map(course => ({
           title: course.courseName,
-          meta: `${course.noOfLessons} lessons • ${course.duration} min`,
+          meta: `${course.noOfLessons} ${course.noOfLessons === 1 ? 'lesson' : 'lessons'} • ${course.duration} min`,
           coins: course.totalCoins || 0,
           badge: this.formatDifficulty(course.difficulty || 'BEGINNER'),
           thumb: this.convertDriveLink(course.thumbnailUrl || ''),
