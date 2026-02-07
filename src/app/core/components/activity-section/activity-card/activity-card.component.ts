@@ -16,6 +16,7 @@ import { TaskApi } from 'src/app/core/api/task.api';
 import { CalendarService } from '../../../services/calendar.service';
 import { HabitService } from '../habit.service';
 import { HabitButtonLogicService } from '../habit-button-logic.service';
+import { AutoAbortService } from '../auto-abort.service';
 import { CoerceBoolean } from "../../../coerceBoolean.decorator";
 import { Habit } from '../habit.types';
 import { Subscription } from 'rxjs';
@@ -207,7 +208,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     private userService: UserService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
-    private buttonLogic: HabitButtonLogicService
+    private buttonLogic: HabitButtonLogicService,
+    private autoAbortService: AutoAbortService
   ) {
     this.habitCardService.lastToggled$.subscribe((data: any) => {
       if (!data) return;
@@ -252,6 +254,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           this.habit = updated;
           // Store the start time in localStorage for progress persistence
           this.saveOngoingState();
+          this.autoAbortService.scheduleAutoAbort({
+            id: this.habit!.id,
+            type: 'tasks',
+            endTimeStamp: this.habit!.endTimeStamp
+          });
           // Start progress with proper initialization
           // Show timer icon locally for this card since user pressed Let's Go
           this.showLocalTimer = true;
@@ -294,6 +301,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           this.habit = updated;
           // Store the start time in localStorage for progress persistence
           this.saveOngoingState();
+          this.autoAbortService.scheduleAutoAbort({
+            id: this.habit!.id,
+            type: 'habits',
+            endTimeStamp: this.habit!.endTimeStamp
+          });
           // Show timer icon locally for this card since user pressed Let's Go
           this.showLocalTimer = true;
           // Show the short-lived start bubble for 3s
@@ -504,6 +516,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           this.habit = updated;
           // Clear the saved ongoing state
           this.clearOngoingState();
+          this.autoAbortService.cancelAutoAbort(this.habit!.id, 'tasks');
           // Reset progress when aborting
           this.percentageCompleted = 0;
           this.resetProgress();
@@ -533,6 +546,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           this.habit = updated;
           // Clear the saved ongoing state
           this.clearOngoingState();
+          this.autoAbortService.cancelAutoAbort(this.habit!.id, 'habits');
           // Reset progress when aborting
           this.percentageCompleted = 0;
           this.resetProgress();
@@ -650,6 +664,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           this.habit = updated;
           // Clear the saved ongoing state
           this.clearOngoingState();
+          this.autoAbortService.cancelAutoAbort(this.habit!.id, 'tasks');
           // Set progress to 100% when completed
           this.percentageCompleted = 100;
           // Hide local timer icon for this card when completed
@@ -695,6 +710,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
           this.habit = updated;
           // Clear the saved ongoing state
           this.clearOngoingState();
+          this.autoAbortService.cancelAutoAbort(this.habit!.id, 'habits');
           // Set progress to 100% when completed
           this.percentageCompleted = 100;
           // Hide local timer icon for this card when completed
