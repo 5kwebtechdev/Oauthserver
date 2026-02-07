@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { AcademyService, LessonDetailResponse } from '../../../services/academy.service';
+import { AcademyService, CourseLesson, LessonDetailResponse } from '../../../services/academy.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -18,14 +18,29 @@ export class AcademyLessonsComponent {
   @Input() lessonId: number | string | undefined;
   @Input() courseId: string | undefined;
   @Input() courseTitle: string | undefined;
+  @Input() courseLessons: CourseLesson[] = [];
+  @Input() currentLessonIndex: number = 0;
 
   lesson: LessonDetailResponse | null = null;
   isLoading = false;
   loadError: string | null = null;
+  doneClicked = false;
+  wasCompletedOnLoad = false;
 
   // Parsed content sections
   learningOutcomes: string[] = [];
   contentSections: Array<{ heading: string; body: string; isFunFact?: boolean }> = [];
+
+  get isLastLesson(): boolean {
+    return this.courseLessons.length === 0 || this.currentLessonIndex >= this.courseLessons.length - 1;
+  }
+
+  get nextLessonOrder(): number {
+    if (this.currentLessonIndex < this.courseLessons.length - 1) {
+      return this.courseLessons[this.currentLessonIndex + 1].order;
+    }
+    return this.currentLessonIndex + 2;
+  }
 
   constructor(
     private modalCtrl: ModalController,
@@ -56,6 +71,7 @@ export class AcademyLessonsComponent {
       .subscribe(response => {
         if (response) {
           this.lesson = response;
+          this.wasCompletedOnLoad = response.isCompleted;
           this.parseContent(response.content);
         }
       });
@@ -119,12 +135,10 @@ export class AcademyLessonsComponent {
   }
 
   close(): void {
-    // Mark lesson as complete before closing if lesson is loaded
-    if (this.lesson && this.lesson.id && !this.lesson.isCompleted) {
-      this.markLessonComplete(true);
-    } else {
-      this.modalCtrl.dismiss();
-    }
+    this.modalCtrl.dismiss({
+      completed: this.doneClicked,
+      lessonId: this.lesson?.id
+    });
   }
 
   /**
@@ -158,10 +172,20 @@ export class AcademyLessonsComponent {
    */
   onDoneClick(): void {
     if (!this.lesson) return;
-    if (this.lesson.isCompleted) return;
+    if (this.wasCompletedOnLoad) return;
 
     // Optimistically mark completed locally so UI updates immediately
     this.lesson.isCompleted = true;
+    this.doneClicked = true;
+
+    // Unlock next lesson in local courseLessons array
+    if (this.currentLessonIndex < this.courseLessons.length - 1) {
+      this.courseLessons[this.currentLessonIndex + 1].isLocked = false;
+    }
+    if (this.courseLessons[this.currentLessonIndex]) {
+      this.courseLessons[this.currentLessonIndex].isCompleted = true;
+    }
+
     this.markLessonComplete(false);
   }
 
@@ -169,8 +193,28 @@ export class AcademyLessonsComponent {
    * Handler for the Next button: only allowed when lesson.isCompleted === true
    */
   goToNext(): void {
-    if (!this.lesson || !this.lesson.isCompleted) return;
-    // Signal caller to navigate to next lesson
-    this.modalCtrl.dismiss({ next: true, lessonId: this.lesson.id });
+    if (this.isLastLesson || this.courseLessons.length === 0) return;
+
+    const nextIndex = this.currentLessonIndex + 1;
+    const nextLesson = this.courseLessons[nextIndex];
+    if (!nextLesson) return;
+
+    // Update status to ONGOING for the next lesson
+    this.academyService.updateLessonStatus(nextLesson.id, 'ONGOING')
+      .pipe(catchError(() => of(null)))
+      .subscribe();
+
+    // Reset state for new lesson
+    this.doneClicked = false;
+    this.wasCompletedOnLoad = false;
+    this.learningOutcomes = [];
+    this.contentSections = [];
+
+    // Update tracking
+    this.currentLessonIndex = nextIndex;
+    this.lessonId = nextLesson.id;
+
+    // Fetch the new lesson data
+    this.fetchLesson(nextLesson.id);
   }
 }

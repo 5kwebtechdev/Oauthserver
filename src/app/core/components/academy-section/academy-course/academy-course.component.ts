@@ -24,7 +24,7 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
   @Output() courseOpen = new EventEmitter<CourseCard>();
   @Output() lessonStart = new EventEmitter<{ courseId: string; lessonIndex: number }>();
 
-  lessons: Array<{ title: string; desc: string; time: string; image?: string; coins?: number; lessonId?: number; isCompleted?: boolean; lessonStatus?: string | null; status?: string | null }> = [];
+  lessons: Array<{ title: string; desc: string; time: string; image?: string; coins?: number; lessonId?: number; isCompleted?: boolean; isLocked?: boolean; lessonStatus?: string | null; status?: string | null }> = [];
 
   // If the user has an in-progress lesson, index of that lesson in `lessons`; null when none
   resumeLessonIndex: number | null = null;
@@ -95,10 +95,10 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
 
     if (this.course.id === 'budget-1') {
       this.lessons = [
-        { title: '1. What is a Budget?', desc: 'Discover what a budget is and why it matters.', time: 'Text-based • 3 mins', image: '/assets/app-assets/notebook-labeled.svg', isCompleted: false },
-        { title: '2. Track Your Spending', desc: 'Learn how to track your everyday spending.', time: 'Text-based • 4 mins', image: '/assets/app-assets/child-lesson.svg', isCompleted: false },
-        { title: '3. Set Spending Limits', desc: 'Find out how to set and stick to spending limits.', time: 'Text-based • 3 mins', image: '/assets/app-assets/timer-lesson.svg', isCompleted: false },
-        { title: '4. Save for Your Goals', desc: 'See how to save money toward your goals.', time: 'Text-based • 4 mins', image: '/assets/app-assets/piggy-lesson.svg', isCompleted: false },
+        { title: '1. What is a Budget?', desc: 'Discover what a budget is and why it matters.', time: 'Text-based • 3 mins', image: '/assets/app-assets/notebook-labeled.svg', isCompleted: false, isLocked: false },
+        { title: '2. Track Your Spending', desc: 'Learn how to track your everyday spending.', time: 'Text-based • 4 mins', image: '/assets/app-assets/child-lesson.svg', isCompleted: false, isLocked: true },
+        { title: '3. Set Spending Limits', desc: 'Find out how to set and stick to spending limits.', time: 'Text-based • 3 mins', image: '/assets/app-assets/timer-lesson.svg', isCompleted: false, isLocked: true },
+        { title: '4. Save for Your Goals', desc: 'See how to save money toward your goals.', time: 'Text-based • 4 mins', image: '/assets/app-assets/piggy-lesson.svg', isCompleted: false, isLocked: true },
       ];
       // demo/static content: no resume index by default
       this.resumeLessonIndex = null;
@@ -112,6 +112,7 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
       time: 'Text-based • 3 mins',
       image: '/assets/img/lesson-binder.png',
       isCompleted: false,
+      isLocked: i > 0,
       lessonId: undefined
     }));
     this.resumeLessonIndex = null;
@@ -179,12 +180,20 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
       coins: typeof lesson.coins === 'number' ? lesson.coins : fallbackPerLesson,
       lessonId: lesson.id,
       isCompleted: !!lesson.isCompleted,
+      isLocked: !!lesson.isLocked,
       // API recently moved the status field to `lessonStatus` — preserve either
-      lessonStatus: (lesson as any).lessonStatus ?? lesson.status ?? null,
-      status: lesson.status ?? (lesson as any).lessonStatus ?? null
+      lessonStatus: lesson.lessonStatus ?? lesson.status ?? null,
+      status: lesson.status ?? lesson.lessonStatus ?? null
     }));
-    // Find a lesson that has been started but not completed: prefer time spent or lastAccessedAt
-    const inProgressIndex = apiLessons.findIndex(l => !l.isCompleted && (!!l.timeSpentMinutes || !!l.lastAccessedAt));
+    // Find a lesson that has been started but not completed: check lessonStatus, time spent or lastAccessedAt
+    const inProgressIndex = apiLessons.findIndex(l =>
+      !l.isCompleted && (
+        l.lessonStatus === 'ONGOING' ||
+        l.status === 'ONGOING' ||
+        !!l.timeSpentMinutes ||
+        !!l.lastAccessedAt
+      )
+    );
     this.resumeLessonIndex = inProgressIndex >= 0 ? inProgressIndex : null;
   }
 
@@ -275,9 +284,19 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
       componentProps: {
         lessonId: lessonId,
         courseId: this.course.id,
-        courseTitle: this.course.title
+        courseTitle: this.course.title,
+        courseLessons: this.courseDetail?.lessons || [],
+        currentLessonIndex: lessonIndex
       }
     });
+
+    modal.onDidDismiss().then(() => {
+      // Re-fetch course data to update button states (Continue, Read Again, etc.)
+      if (this.courseDetail) {
+        this.fetchCourseFromApi(this.courseDetail.id);
+      }
+    });
+
     await modal.present();
   }
 

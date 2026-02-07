@@ -30,10 +30,11 @@
   </div>
 
   <!-- Footer Buttons -->
-  <div class="footer-cta d-flex w-100 gap-2">
-    <mindful-button [type]="'green'" [text]="'Done'" (click)="onDoneClick()"></mindful-button>
-    <mindful-button [type]="'magenta'" [text]="'Go to Lesson-2'" [disabled]="!lesson?.isCompleted"
-      [style.opacity]="lesson ? (lesson.isCompleted ? 1 : 0.5) : 1" (click)="goToNext()">
+  <div class="footer-cta d-flex w-100 gap-2" *ngIf="lesson && !wasCompletedOnLoad && (!doneClicked || !isLastLesson)">
+    <mindful-button *ngIf="!doneClicked"
+      [type]="'green'" [text]="'Done'" (click)="onDoneClick()"></mindful-button>
+    <mindful-button *ngIf="doneClicked && !isLastLesson"
+      [type]="'magenta'" [text]="'Go to Lesson ' + nextLessonOrder" (click)="goToNext()">
     </mindful-button>
   </div>
 
