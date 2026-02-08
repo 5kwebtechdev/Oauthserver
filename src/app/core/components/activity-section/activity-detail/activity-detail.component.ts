@@ -19,6 +19,7 @@ import { MindfulCalendarComponent } from '../../mindful-inputs/mindful-calendar/
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
 import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
+import { MindfulPopupComponent, MindfulPopupConfig, MindfulPopupCTA } from '../../mindful-popup/mindful-popup.component';
 
 type ActivityType = 'habits' | 'tasks' | 'timetable';
 
@@ -30,7 +31,7 @@ type ActivityType = 'habits' | 'tasks' | 'timetable';
   imports: [
     CommonModule, IonicModule, MindfulNavigatorComponent, MindfulSpeechBubbleComponent,
     MindfulPetComponent, MindfulCoinsStatsComponent, MindfulCalendarComponent,
-    MindfulButtonComponent, MindfulInputsModule, MindfulBadgeComponent
+    MindfulButtonComponent, MindfulInputsModule, MindfulBadgeComponent, MindfulPopupComponent
   ]
 })
 export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
@@ -53,6 +54,14 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   // Calendar
   calendarStatusData: Record<string, 'COMPLETED' | 'SKIPPED' | 'PENDING'> = {};
   currentCalendarMonth = new Date();
+
+  // Popup states
+  public showStartPopup: boolean = false;
+  public startPopupConfig: MindfulPopupConfig = {};
+  public showCompletePopup: boolean = false;
+  public completePopupConfig: MindfulPopupConfig = {};
+  public showAbortPopup: boolean = false;
+  public abortPopupConfig: MindfulPopupConfig = {};
 
   constructor(
     private router: Router,
@@ -505,6 +514,53 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
 
   // === Habit Actions ===
 
+  /**
+   * Open the start-confirmation popup for Let's Go
+   */
+  openStartPopup() {
+    // Configure popup content (image, heading, subtitle, CTAs)
+    const primary: MindfulPopupCTA = {
+      text: 'Start Now',
+      buttonStyle: 'green',
+      buttonMedium: true,
+      // callback intentionally omitted; handled via (primaryAction) output
+    };
+
+    const secondary: MindfulPopupCTA = {
+      text: 'Discard',
+      buttonStyle: 'bronze-transparent',
+      buttonMedium: true,
+      // callback intentionally omitted; handled via (secondaryAction) output
+    };
+
+    this.startPopupConfig = {
+      image: 'assets/Images-Transparent/Image-Home-Start.png',
+      imageAlt: 'Ready to Start',
+      heading: 'Ready to Start?',
+      subtitle: "You're about to begin this habit!",
+      primaryCTA: primary,
+      secondaryCTA: secondary,
+      showCloseButton: false,
+      backdrop: true,
+      ctaDirection: 'row'
+    };
+
+    this.showStartPopup = true;
+  }
+
+  closeStartPopup() {
+    this.showStartPopup = false;
+  }
+
+  handlePopupPrimary() {
+    this.onStartHabit();
+    this.closeStartPopup();
+  }
+
+  handlePopupSecondary() {
+    this.closeStartPopup();
+  }
+
   onStartHabit() {
     if (!this.habit || !this.isLetsGoEnabled()) return;
 
@@ -535,6 +591,58 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     });
   }
 
+  /**
+   * Open the completion confirmation popup for Done?
+   */
+  openCompletePopup() {
+    const coins = this.getCoinReward();
+    const streak = this.getStreak();
+
+    // Build heading HTML to include coin and streak rows
+    const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:16px;">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style=\"display:flex;flex-direction:column;align-items: center;gap:8px;margin-top:12px;text-align:left;\"><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/Icons-Neutral/Icons-Coins.png' style=\"width:20px;height:20px;\" alt=\"coins\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${coins}</div></div><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/Icons-Neutral/Icon-Streak.png' style=\"width:20px;height:20px;\" alt=\"streak\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${streak}</div></div></div>`;
+
+    const primary: MindfulPopupCTA = {
+      text: 'Confirm',
+      buttonStyle: 'green',
+      buttonMedium: true,
+      // callback intentionally omitted; handled via (primaryAction) output
+    };
+
+    const secondary: MindfulPopupCTA = {
+      text: 'Discard',
+      buttonStyle: 'bronze-transparent',
+      buttonMedium: true,
+      // callback intentionally omitted; handled via (secondaryAction) output
+    };
+
+    this.completePopupConfig = {
+      image: 'assets/Images-Transparent/Image-Home-GreatWork.png',
+      imageAlt: 'Great Work',
+      heading: headingHtml,
+      subtitle: '',
+      primaryCTA: primary,
+      secondaryCTA: secondary,
+      showCloseButton: false,
+      backdrop: true,
+      ctaDirection: 'row'
+    };
+
+    this.showCompletePopup = true;
+  }
+
+  closeCompletePopup() {
+    this.showCompletePopup = false;
+  }
+
+  handleCompletePrimary() {
+    this.onCompleteHabit();
+    this.closeCompletePopup();
+  }
+
+  handleCompleteSecondary() {
+    this.closeCompletePopup();
+  }
+
   onAbortHabit() {
     if (!this.habit) return;
 
@@ -559,6 +667,54 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
       },
       error: (err) => console.error('Failed to abort', err)
     });
+  }
+
+  openAbortPopup() {
+    const coins = this.getCoinReward();
+    const streak = this.getStreak();
+
+    const headingHtml = `You\u2019re halfway there! Want to stop now?<br/><span style="font-weight:400;font-size:16px;">You are about to lose:</span><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;align-items:center;justify-content:center;"><div style="display:flex;align-items:center;gap:12px;"><img src='assets/Icons-Neutral/Icons-Coins.png' style="width:20px;height:20px;" alt="coins"/><div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:12px;"><img src='assets/Icons-Neutral/Icon-Streak.png' style="width:20px;height:20px;" alt="streak"/><div style="font-weight:600;">${streak}</div></div></div>`;
+
+    const primary: MindfulPopupCTA = {
+      text: 'Keep Going',
+      buttonStyle: 'green',
+      buttonMedium: true,
+      // callback intentionally omitted; handled via (primaryAction) output
+    };
+
+    const secondary: MindfulPopupCTA = {
+      text: 'Abort Anyways',
+      buttonStyle: 'bronze-transparent',
+      buttonMedium: true,
+      // callback intentionally omitted; handled via (secondaryAction) output
+    };
+
+    this.abortPopupConfig = {
+      image: 'assets/Images-Transparent/Image-Home-Abort.png',
+      imageAlt: 'Abort',
+      heading: headingHtml,
+      subtitle: '',
+      primaryCTA: primary,
+      secondaryCTA: secondary,
+      showCloseButton: false,
+      backdrop: true,
+      ctaDirection: 'row'
+    };
+
+    this.showAbortPopup = true;
+  }
+
+  closeAbortPopup() {
+    this.showAbortPopup = false;
+  }
+
+  handleAbortPrimary() {
+    this.closeAbortPopup();
+  }
+
+  handleAbortSecondary() {
+    this.onAbortHabit();
+    this.closeAbortPopup();
   }
 
   onCompleteHabit() {
@@ -665,5 +821,22 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     } catch { /* Use shallow copy */ }
 
     return copy;
+  }
+
+  getCoinReward(): number {
+    if (!this.habit) return 0;
+    const h: any = this.habit;
+    return Number(h.coinReward ?? h.rewardCoins ?? h.reward_coins ?? h.rewardsCoins ?? (h.rewards && (h.rewards.coins ?? h.rewards.rewardCoins)) ?? h.coins ?? 0);
+  }
+
+  getStreak(): number {
+    if (!this.habit) return 0;
+    const h: any = this.habit;
+    if (h.type === 'habits') {
+      return Number(h.currentHabitStreak ?? h.streak ?? h.streakCount ?? h.streak_count ?? (h.rewards && h.rewards.streak) ?? 0);
+    } else if (h.type === 'tasks') {
+      return Number(h.currentTaskStreak ?? h.streak ?? h.streakCount ?? h.streak_count ?? (h.rewards && h.rewards.streak) ?? 0);
+    }
+    return Number(h.streak ?? h.streakCount ?? h.streak_count ?? (h.rewards && h.rewards.streak) ?? 0);
   }
 }

@@ -372,32 +372,6 @@ $accent: #90214D;
 	padding: 0;
 }
 
-/* Empty state styles */
-.empty-state {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 16px;
-	padding: 36px 12px;
-	text-align: center;
-}
-
-.empty-state img {
-	width: 200px;
-	height: auto;
-	display: block;
-}
-
-.empty-state h1 {
-	color: #282527;
-	text-align: center;
-	font-family: Fredoka, sans-serif;
-	font-size: 16px;
-	font-weight: 500;
-	margin: 0;
-}
-
 .product-info {
 	display: flex;
 	padding: 0 8px;

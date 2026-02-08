@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -9,6 +9,7 @@ import { MindfulSpeechBubbleComponent } from '../mindful-speech-bubble/mindful-s
 import { MindfulPetComponent } from '../mindful-pet/mindful-pet.component';
 import { CoinService, CoinHistoryItem } from '../../services/coin.service';
 import { AuthService } from '../../services/auth.service';
+import { RefreshService } from '../../services/refresh.service';
 
 interface CoinItem {
     id: number;
@@ -27,7 +28,7 @@ interface CoinItem {
     templateUrl: './coin-section.component.html',
     styleUrls: ['./coin-section.component.scss']
 })
-export class CoinSectionComponent implements OnInit {
+export class CoinSectionComponent implements OnInit, OnDestroy {
     coinTotal: number = 0;
     message = "Whoa! That's a lot of coins! Let's go dress me up or grab something shiny!";
     coinItems: CoinItem[] = [];
@@ -36,8 +37,9 @@ export class CoinSectionComponent implements OnInit {
 
     constructor(
         private router: Router,
-        private coinService: CoinService
-        , private authService: AuthService
+        private coinService: CoinService,
+        private authService: AuthService,
+        private refreshService: RefreshService
     ) {
     }
 
@@ -56,30 +58,42 @@ export class CoinSectionComponent implements OnInit {
             // Use cached total
             this.coinTotal = this.coinService.getTotalCoins();
         }
+
+        // Register for pull-to-refresh
+        this.refreshService.registerRefreshHandler('CoinSectionComponent', () => this.loadCoinHistory());
     }
 
-    loadCoinHistory() {
-        this.isLoading = true;
-        this.coinService.loadCoinHistory().subscribe({
-            next: (response) => {
-                if (response) {
-                    // Prefer server-provided totalCoins if available, otherwise compute from history
-                    if (response.totalCoins !== undefined && response.totalCoins !== null) {
-                        this.coinTotal = response.totalCoins;
-                    } else if (response.history) {
-                        this.coinTotal = response.history.reduce((sum: number, item: CoinHistoryItem) => sum + item.amount, 0);
-                    }
+    ngOnDestroy() {
+        // Unregister the refresh handler
+        this.refreshService.unregisterRefreshHandler('CoinSectionComponent');
+    }
 
-                    if (response.history) {
-                        this.coinItems = this.mapHistoryToCoinItems(response.history);
+    loadCoinHistory(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.isLoading = true;
+            this.coinService.loadCoinHistory().subscribe({
+                next: (response) => {
+                    if (response) {
+                        // Prefer server-provided totalCoins if available, otherwise compute from history
+                        if (response.totalCoins !== undefined && response.totalCoins !== null) {
+                            this.coinTotal = response.totalCoins;
+                        } else if (response.history) {
+                            this.coinTotal = response.history.reduce((sum: number, item: CoinHistoryItem) => sum + item.amount, 0);
+                        }
+
+                        if (response.history) {
+                            this.coinItems = this.mapHistoryToCoinItems(response.history);
+                        }
                     }
+                    this.isLoading = false;
+                    resolve();
+                },
+                error: (error) => {
+                    console.error('Error loading coin history:', error);
+                    this.isLoading = false;
+                    reject(error);
                 }
-                this.isLoading = false;
-            },
-            error: (error) => {
-                console.error('Error loading coin history:', error);
-                this.isLoading = false;
-            }
+            });
         });
     }
 

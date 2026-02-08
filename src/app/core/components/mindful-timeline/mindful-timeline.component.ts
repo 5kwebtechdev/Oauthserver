@@ -25,6 +25,8 @@ interface CompressedBlock {
 })
 export class MindfulTimelineComponent implements OnInit, OnChanges {
   @Input() events: EventPosition[] = [];
+  @Input() isCurrentDateView: boolean = true;
+  @Input() selectedDate: string = '';
   @Output() eventLongPressed = new EventEmitter<TimelineEvent>();
   selectedEventId: number | null = null;
   currentUserId: number | null = null;
@@ -508,30 +510,51 @@ export class MindfulTimelineComponent implements OnInit, OnChanges {
     const status = event.status?.toLowerCase() || 'pending';
     const type = event.type;
 
-    // For timetable events, always return default color (no status conditions)
+    // For timetable, always return the fixed color
     if (type === 'timetable') {
-      return '#3E5A60';
+      return '#6B656A';
     }
 
+    // Status-based logic first, regardless of date
     if (status === 'completed') {
       return '#4CAF50';
     } else if (status === 'skipped') {
       return '#BB2124';
-    } else if (status === 'pending') {
-      // Check if end time has passed (both conditions: pending AND endtime passed)
+    }
+
+    // For future dates (not current date view), use future colors
+    if (!this.isCurrentDateView) {
+      return type === 'task' ? '#EE6621' : '#6360A2';
+    }
+
+    // For current date pending/ongoing
+    if (status === 'pending') {
+      // Check if end time has passed
       const now = Date.now();
-      const endTime = this.parseTime(event.endTime || '23:59') * 60 * 1000; // Convert to milliseconds
+      const endTime = this.combineDateAndTime(this.selectedDate, event.endTime || '23:59');
       if (now > endTime) {
         return '#BB2124';
       }
     }
 
-    // Default colors based on type
-    if (type === 'task') {
-      return '#EE6621';
-    } else {
-      // habit
-      return '#6360A2';
-    }
+    // Default colors for current date pending/ongoing
+    return type === 'task' ? '#EE6621' : '#6360A2';
+  }
+
+  private combineDateAndTime(dateStr: string, timeStr: string): number {
+    // Parse date string (YYYY-MM-DD)
+    const dateParts = dateStr.split('-');
+    const year = parseInt(dateParts[0], 10);
+    const month = parseInt(dateParts[1], 10) - 1; // JS months are 0-based
+    const day = parseInt(dateParts[2], 10);
+
+    // Parse time string (HH:MM or HH:MM:SS)
+    const timeParts = timeStr.split(':');
+    const hours = parseInt(timeParts[0], 10);
+    const minutes = parseInt(timeParts[1], 10);
+    const seconds = timeParts[2] ? parseInt(timeParts[2], 10) : 0;
+
+    // Create Date object and return timestamp
+    return new Date(year, month, day, hours, minutes, seconds).getTime();
   }
 }
