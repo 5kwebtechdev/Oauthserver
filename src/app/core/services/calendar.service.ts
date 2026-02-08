@@ -88,6 +88,7 @@ export class CalendarService {
 
         // Transform tasks
         response.tasks.forEach(task => {
+            const rawStatus = (task as any).status || (task.completed ? 'completed' : 'pending');
             timelineEvents.push({
                 id: task.id,
                 title: task.title,
@@ -97,6 +98,7 @@ export class CalendarService {
                 description: task.description,
                 tags: task.tags,
                 priority: task.priority,
+                status: rawStatus.toLowerCase(),
                 // Preserve creator id if provided by backend (createdBy or created_by)
                 createdBy: (task as any).createdBy ?? (task as any).created_by ?? (task as any).created_by_id ?? undefined
             });

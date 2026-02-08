@@ -6,6 +6,7 @@ import { MindfulButtonComponent } from '../../mindful-button/mindful-button.comp
 import { Router, ActivatedRoute } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { AddressInputComponent } from '../address-input/address-input.components';
+import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 
 // top-level Product type used in component and template
 type Product = {
@@ -27,7 +28,7 @@ type Product = {
   selector: 'product-store',
   templateUrl: './product-store.components.html',
   styleUrls: ['./product-store.components.scss'],
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent]
+  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent, EmptyStateComponent]
   ,
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

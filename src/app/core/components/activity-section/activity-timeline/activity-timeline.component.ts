@@ -49,6 +49,12 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy {
     try { return this.authService.isParentUser(); } catch { return false; }
   }
 
+  /** Check if selected date is today */
+  get isCurrentDateView(): boolean {
+    const today = this.formatDate(new Date());
+    return this.selectedDate === today;
+  }
+
   /** Get initial selected keys for the selector component */
   get initialSelectedKeys(): string[] {
     return [this.selectedType];

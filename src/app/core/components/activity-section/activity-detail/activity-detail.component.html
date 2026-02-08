@@ -83,7 +83,7 @@
                 <mindful-button *ngIf="isLetsGoVisible()" [ngClass]="habit.type === 'habits' ? 'w-100' : 'w-full'"
                     [type]="habit.type === 'habits' ? 'lavendar' : 'orange'"
                     [style.width]="habit.type === 'habits' ? '100%' : null" [disabled]="!isLetsGoEnabled()"
-                    (click)="onStartHabit()" medium text="Let's Go">
+                    (click)="openStartPopup()" medium text="Let's Go">
                 </mindful-button>
 
                 <!-- Abort Button - visible when ongoing -->
@@ -91,19 +91,19 @@
                     [ngClass]="cameFromLongPress && navigationOriginType === 'habits' ? 'w-100' : 'w-full'"
                     [type]="cameFromLongPress && navigationOriginType === 'habits' ? 'lavendar-transparent' : 'orange-transparent'"
                     [style.width]="cameFromLongPress && navigationOriginType === 'habits' ? '100%' : null"
-                    (click)="onAbortHabit()" medium text="Abort">
+                    (click)="openAbortPopup()" medium text="Abort">
                 </mindful-button>
 
                 <!-- Done Button - for pending/ongoing (disabled when pending, enabled when ongoing) -->
                 <mindful-button
                     *ngIf="isViewingToday() && habit?.status?.toLowerCase() !== 'completed' && habit?.status?.toLowerCase() !== 'skipped'"
-                    class="w-full" type="green" [disabled]="!isDoneEnabled()" (click)="onCompleteHabit()" medium
+                    class="w-full" type="green" [disabled]="!isDoneEnabled()" (click)="openCompletePopup()" medium
                     text="Done?">
                 </mindful-button>
 
                 <!-- Done Button - for skipped status (always enabled) -->
                 <mindful-button *ngIf="isViewingToday() && habit?.status?.toLowerCase() === 'skipped'" class="w-full" type="green"
-                    (click)="onCompleteHabit()" medium text="Done?">
+                    (click)="openCompletePopup()" medium text="Done?">
                 </mindful-button>
             </div>
 
@@ -169,4 +169,17 @@
             </div>
         </div>
     </div>
+
+    <!-- Popups -->
+    <app-mindful-popup [config]="startPopupConfig" [isVisible]="showStartPopup"
+      (primaryAction)="handlePopupPrimary()" (secondaryAction)="handlePopupSecondary()"
+      (closeAction)="closeStartPopup()" (backdropClick)="closeStartPopup()"></app-mindful-popup>
+
+    <app-mindful-popup [config]="completePopupConfig" [isVisible]="showCompletePopup"
+      (primaryAction)="handleCompletePrimary()" (secondaryAction)="handleCompleteSecondary()"
+      (closeAction)="closeCompletePopup()" (backdropClick)="closeCompletePopup()"></app-mindful-popup>
+
+    <app-mindful-popup [config]="abortPopupConfig" [isVisible]="showAbortPopup"
+      (primaryAction)="handleAbortPrimary()" (secondaryAction)="handleAbortSecondary()"
+      (closeAction)="closeAbortPopup()" (backdropClick)="closeAbortPopup()"></app-mindful-popup>
 </ion-content>

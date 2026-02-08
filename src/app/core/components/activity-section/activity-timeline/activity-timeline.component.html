@@ -44,7 +44,7 @@
       </mindful-selectors>
     </div>
     <div class="timeline-wrapper">
-      <mindful-timeline [events]="filteredEvents" (eventLongPressed)="onTimetableLongPress($event)"></mindful-timeline>
+      <mindful-timeline [events]="filteredEvents" [isCurrentDateView]="isCurrentDateView" [selectedDate]="selectedDate" (eventLongPressed)="onTimetableLongPress($event)"></mindful-timeline>
     </div>
 
     <!-- Fixed Add Button -->

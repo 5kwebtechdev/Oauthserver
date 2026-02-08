@@ -86,12 +86,14 @@
                 </ng-container>
 
                 <ng-template #emptyState>
-                    <div class="empty-state">
-                        <img src="assets/School-assets/empty-product-list.png" alt="No products">
-                        <h1>Nothing Here... Yet!</h1>
-                        <mindful-button type="magenta" text="View all Products"
-                            (click)="selectSubCategory({ id: 'all', label: 'All' })"></mindful-button>
-                    </div>
+                    <empty-state
+                        [imageSrc]="'assets/School-assets/empty-product-list.png'"
+                        [imageAlt]="'No products'"
+                        [leadText]="'Nothing Here... Yet!'"
+                        [buttonText]="'View all Products'"
+                        [buttonType]="'magenta'"
+                        (buttonClick)="selectSubCategory({ id: 'all', label: 'All' })">
+                    </empty-state>
                 </ng-template>
             </div>
         </div>
