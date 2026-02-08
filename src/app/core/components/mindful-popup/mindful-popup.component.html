@@ -4,19 +4,7 @@
 
     <button class="mindful-popup-close" *ngIf="finalConfig.showCloseButton" (click)="onCloseClick()"
       aria-label="Close popup">
-      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-        <g opacity="0.7">
-          <mask id="popup-close-mask" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="4" y="4" width="24"
-            height="24">
-            <rect x="4" y="4" width="24" height="24" fill="#D9D9D9" />
-          </mask>
-          <g mask="url(#popup-close-mask)">
-            <path
-              d="M10.7536 22.6464C10.5583 22.8417 10.2417 22.8417 10.0464 22.6464L9.35355 21.9536C9.15829 21.7583 9.15829 21.4417 9.35355 21.2464L14.2464 16.3536C14.4417 16.1583 14.4417 15.8417 14.2464 15.6464L9.35355 10.7536C9.15829 10.5583 9.15829 10.2417 9.35355 10.0464L10.0464 9.35355C10.2417 9.15829 10.5583 9.15829 10.7536 9.35355L15.6464 14.2464C15.8417 14.4417 16.1583 14.4417 16.3536 14.2464L21.2464 9.35355C21.4417 9.15829 21.7583 9.15829 21.9536 9.35355L22.6464 10.0464C22.8417 10.2417 22.8417 10.5583 22.6464 10.7536L17.7536 15.6464C17.5583 15.8417 17.5583 16.1583 17.7536 16.3536L22.6464 21.2464C22.8417 21.4417 22.8417 21.7583 22.6464 21.9536L21.9536 22.6464C21.7583 22.8417 21.4417 22.8417 21.2464 22.6464L16.3536 17.7536C16.1583 17.5583 15.8417 17.5583 15.6464 17.7536L10.7536 22.6464Z"
-              fill="#282527" />
-          </g>
-        </g>
-      </svg>
+      <img src="assets/icons/cancel-cross.svg" alt="Close" width="24" height="24" aria-hidden="true">
     </button>
 
     <div class="mindful-popup-content" *ngIf="hasAnyContent">

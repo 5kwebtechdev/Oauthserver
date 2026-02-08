@@ -28,18 +28,12 @@
 }
 
 .mindful-popup-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: #666;
-  font-size: 24px;
-  z-index: 1;
-  padding: 4px;
-  border-radius: 50%;
-  transition: all 0.2s ease;
+        position: absolute;
+    width: 16px;
+    top: 6px;
+    right: 10px;
+    background: transparent;
+
 
   &:hover {
     background: rgba(0, 0, 0, 0.05);

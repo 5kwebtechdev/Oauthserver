@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../../mindful-navigator/mindful-navigator.component';
 import { MindfulButtonComponent } from '../../../mindful-button/mindful-button.component';
+import { SizeGuideComponent } from '../size-guide/size-guide.component';
 import { Router } from '@angular/router';
 
 @Component({
@@ -23,6 +24,7 @@ import { Router } from '@angular/router';
     IonicModule,
     MindfulNavigatorComponent,
     MindfulButtonComponent,
+    SizeGuideComponent,
   ],
 })
 export class ProductDetailComponent implements OnInit, AfterViewInit {
@@ -158,31 +160,6 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
     }
 
     this.loadSizeChartFromBackend();
-  }
-
-
-  displayChest(r: { chest: number }): string {
-    return this.formatMeasurement(r.chest);
-  }
-
-
-  displayLength(r: { length: number }): string {
-    return this.formatMeasurement(r.length);
-  }
-
-
-  displaySleeve(r: { sleeve: number }): string {
-    return this.formatMeasurement(r.sleeve);
-  }
-
-  private formatMeasurement(value: number): string {
-    if (value === null || value === undefined) return '';
-    if (this.unit === 'in') {
-      return `${value}`;
-    }
-    const cm = value * 2.54;
-    const rounded = Math.round(cm * 10) / 10;
-    return `${rounded}`;
   }
 
 
