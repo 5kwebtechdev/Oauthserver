@@ -1,6 +1,6 @@
 <ion-content>
   <main class="product-detail-main">
-    <mindful-navigator [heading]="heading" [rightActions]="[{ type: 'cart', count: cartCount, alt: 'My cart' }]" (back)="goBack()">
+    <mindful-navigator [heading]="heading" [rightActions]="[{ type: 'cart', count: cartCount, alt: 'My cart' }]" (back)="goBack()" (rightActionClick)="handleRightAction($event)">
     </mindful-navigator>
 
     <!-- Product detail content goes here -->
@@ -177,39 +177,5 @@
     </div>
   </main>
 
-  <!-- Size Guide Modal -->
-  <ion-modal [isOpen]="showSizeGuide" swipeToClose="true" (ionModalDidDismiss)="closeSizeGuide()"
-    (ionModalDidPresent)="onSizeModalPresented()">
-    <ng-template>
-      <ion-content>
-        <mindful-navigator heading="Size Guide" backIcon="arrowSvg" (back)="closeSizeGuide()"></mindful-navigator>
-        <button #sizeGuideFirstFocus class="visually-hidden" aria-hidden="false" tabindex="0"></button>
-        <main class="size-guide-container w-100">
-          <div class="product-breif">
-            <div class="product-brief-img">
-              <img src="assets/School-assets/temp/Shirt-l.jpg" alt="{{ heading }}" />
-            </div>
-            <div class="product-brief-text d-flex flex-column gap-2">
-              <h2>Classic White Half-Sleeve Shirt</h2>
-              <p>St. Xavier’s High School</p>
-              <div class="price d-flex gap-2">
-                <span class="discounted-price" style="font-size: 16px">₹799</span>
-                <span class="original-price" style="font-size: 16px">₹999</span>
-              </div>
-            </div>
-          </div>
-
-          <size-guide [sizeChart]="sizeChart" [selectedSize]="selectedSize" [unit]="unit" [outOfStockSizes]="outOfStockSizes" (sizeSelected)="selectSize($event)" (unitSelected)="selectUnit($event)"></size-guide>
-
-        </main>
-        <!--apply size-->
-        <div class="product-purchase-bar">
-          <span class="selected-size">Size: {{ selectedSize }}</span>
-          <mindful-button class="page-cta" type="magenta" text="Apply Size" large
-            (click)="closeSizeGuide()"></mindful-button>
-
-        </div>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
+  <size-guide [sizeChart]="sizeChart" [selectedSize]="selectedSize" [unit]="unit" [outOfStockSizes]="outOfStockSizes" [isOpen]="showSizeGuide" [heading]="heading" [productTitle]="product?.title || 'Classic White Half-Sleeve Shirt'" [productSubtitle]="product?.tag || 'St. Xavier’s High School'" [discountedPrice]="product?.price ?? product?.discountedPrice ? (product.price ?? product.discountedPrice) : '₹799'" [originalPrice]="product?.originalPrice ?? product?.mrp ?? '₹999'" [productImage]="images[0] || 'assets/School-assets/temp/Shirt-l.jpg'" (sizeSelected)="selectSize($event)" (unitSelected)="selectUnit($event)" (closeModal)="closeSizeGuide()"></size-guide>
 </ion-content>

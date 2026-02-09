@@ -1,0 +1,94 @@
+<ion-content>
+    <div class="nav-head">
+            <mindful-navigator heading="Return/ Exchange Item" backIcon="arrowSvg" (back)="goBack()">
+                <mindful-view-all slot="end" text="Help" [hideIcon]="true" (click)="onHelpClick()"></mindful-view-all>
+            </mindful-navigator>
+        </div>
+    
+  <main class="return-exchange-container">
+      <div class="return-exchange-form">
+        <!-- Order Details Section -->
+        <div class="form-section">
+          <div class="order-info-card">
+            <div class="order-item">
+              <img src="assets/School-assets/temp/Shirt-l.jpg" alt="Product Image" class="product-image">
+              <div class="item-details">
+                <h4>Classic White Half-Sleeve Shirt</h4>
+                <p>St. Xavier's High School</p>
+                <p class="price">₹799</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Return/Exchange Type -->
+        <div class="form-section">
+          <h2>What would you like to do?</h2>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="requestType" value="return" checked>
+              <span class="radio-label">Return Item</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="requestType" value="exchange">
+              <span class="radio-label">Exchange Item</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Reason for Return/Exchange (radio options as per Figma) -->
+        <div class="form-section">
+          <h2>Reason</h2>
+          <div class="radio-group reason-options">
+            <label class="radio-option">
+              <input type="radio" name="reason" value="too-small-big" checked>
+              <div>
+                <span class="radio-label">Too Small/ Too Big</span>
+              </div>
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="reason" value="damaged">
+              <div>
+                <span class="radio-label">Damaged / Defective</span>
+                <div class="radio-subtitle">(Requires Photo)</div>
+              </div>
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="reason" value="wrong-item">
+              <div>
+                <span class="radio-label">Wrong Item Received</span>
+                <div class="radio-subtitle">(Requires Photo)</div>
+              </div>
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="reason" value="material-quality">
+              <div>
+                <span class="radio-label">Material quality not good</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Additional Comments -->
+        <div class="form-section">
+          <h2>Additional Comments (Optional)</h2>
+          <textarea
+            class="comments-textarea"
+            placeholder="Please provide any additional details about your return/exchange request..."
+            rows="4">
+          </textarea>
+        </div>
+
+    
+          <mindful-button
+            type="magenta"
+            size="large"
+            text="Next"
+            (click)="onNext()">
+          </mindful-button>
+        </div>
+  </main>
+</ion-content>
