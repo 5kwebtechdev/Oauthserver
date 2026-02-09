@@ -1,4 +1,5 @@
 import { Component, Input, output, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonModal, IonContent } from '@ionic/angular/standalone';
 import { MindfulNavigatorComponent } from '../../../mindful-navigator/mindful-navigator.component';
@@ -99,11 +100,22 @@ export class SizeGuideComponent implements OnDestroy {
     this.closeModal.emit();
   }
 
+  constructor(private router: Router) {}
+
   onReturn(): void {
+    if (this.isFromReturnExchange) {
+      // navigate to pickup & refund flow
+      try { this.router.navigateByUrl('/authed/school-store/pickup-refund'); } catch (e) { }
+      return;
+    }
     this.returnSelected.emit();
   }
 
   onExchange(): void {
+    if (this.isFromReturnExchange) {
+      try { this.router.navigateByUrl('/authed/school-store/pickup-refund'); } catch (e) { }
+      return;
+    }
     this.exchangeSelected.emit();
   }
 

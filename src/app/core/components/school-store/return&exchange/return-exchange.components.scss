@@ -13,7 +13,10 @@ h2{
     box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
     flex: 0 0 auto;
 }
-.return-exchange-container {
+.return-exchange-container{
+  padding: 16px;
+}
+.next-cta{
   padding: 16px;
 }
 
@@ -111,4 +114,129 @@ opacity: 0.7;
 
 .comments-textarea::placeholder {
   color: rgba(40, 37, 39, 0.5);
+}
+
+/* Upload Proof Page */
+.upload-proof-form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.upload-proof-content {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.upload-boxes {
+  display: flex;
+  gap: 12px;
+}
+
+.upload-box {
+  flex: 1;
+  aspect-ratio: 1;
+  border: 2px dashed rgba(40, 37, 39, 0.3);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.upload-remove {
+  display: flex;
+  padding: 4px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  position: absolute;
+  right: 4.667px;
+  top: 4.667px;
+  border-radius: 8px;
+  background: #FFF;
+  border: none;
+}
+
+.upload-remove img {
+  width: 8px;
+  height: 8px;
+  aspect-ratio: 1/1;
+}
+
+.upload-icon {
+  width: 32px;
+  height: 32px;
+  opacity: 0.5;
+}
+
+.upload-text {
+  font-family: Nunito;
+  font-size: 12px;
+  font-weight: 600;
+  color: #282527;
+  opacity: 0.5;
+}
+
+.uploaded-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-hint {
+  font-family: Nunito;
+  font-size: 14px;
+  font-weight: 600;
+  color: #282527;
+  opacity: 0.7;
+}
+
+.refund-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.refund-label {
+  font-size: 16px;
+  opacity: 0.5;
+}
+
+.refund-radio {
+  .radio-label {
+    font-family: Nunito;
+    font-size: 14px;
+    font-weight: 600;
+    color: #282527;
+  }
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.upload-error {
+  color: #BB2124;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.next-cta mindful-button[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
 }

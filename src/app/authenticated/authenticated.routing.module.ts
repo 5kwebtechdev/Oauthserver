@@ -168,6 +168,9 @@ const routes: Routes = [
         path: 'school-store/return-exchange',
         loadComponent: () => import('../core/components/school-store/return&exchange/return-exchange.components').then(m => m.ReturnExchangeComponent)
       }, {
+        path: 'school-store/pickup-refund',
+        loadComponent: () => import('../core/components/school-store/pickup&refund/pickup-refund.components').then(m => m.PickupRefundComponent)
+      }, {
         path: 'cart',
         loadComponent: () => import('../core/components/school-store/product-store/my-cart/my-cart.components').then(m => m.MyCartComponent)
       }, {

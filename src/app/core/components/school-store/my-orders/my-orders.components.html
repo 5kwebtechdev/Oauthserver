@@ -273,3 +273,21 @@
         (closeAction)="closeCancelPopup()"
     (backdropClick)="closeCancelPopup()">
 </app-mindful-popup>
+
+<!-- Share Tracking Popup -->
+<app-mindful-popup
+    class="share-tracking-popup"
+    [isVisible]="sharePopupVisible"
+    [config]="{
+        heading: 'Share Tracking',
+        ctaDirection: 'column',
+        primaryCTA: sharePrimaryCTA,
+        secondaryCTA: shareSecondaryCTA,
+        showCloseButton: true,
+        backdrop: true
+    }"
+    (primaryAction)="copyLink()"
+    (secondaryAction)="shareWhatsapp()"
+    (closeAction)="closeSharePopup()"
+    (backdropClick)="closeSharePopup()">
+</app-mindful-popup>
