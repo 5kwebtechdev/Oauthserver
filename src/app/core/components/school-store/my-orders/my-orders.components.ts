@@ -242,7 +242,9 @@ export class MyOrdersComponent {
     }
 
     openFilterScreen(): void { this.isFilterScreenVisible = true; }
-    onHelpClick(): void { console.log('Help clicked'); }
+    onHelpClick(): void {
+        this.router.navigate(['/authed', 'bot-helpline']);
+    }
 
     // --- Filters ---
 
