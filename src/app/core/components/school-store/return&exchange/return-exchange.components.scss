@@ -33,7 +33,7 @@ h2{
 
 .order-info-card {
     display: flex;
-    padding: 16px 0;
+    padding: 16px;
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
@@ -51,10 +51,9 @@ h2{
 }
 
 .product-image {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 8px;
+    object-fit: cover;
+    width: 5.5rem;
+    align-items: center;
 }
 
 .item-details {
@@ -64,24 +63,14 @@ h2{
   gap: 4px;
 }
 
-.item-details h4 {
-  font-size: 16px;
-  font-weight: 600;
-  color: #282527;
-  margin: 0;
+.item-details {
+    p {
+  font-size: 13px;
+opacity: 0.7;
 }
-
-.item-details p {
-  font-size: 14px;
-  color: rgba(40, 37, 39, 0.7);
-  margin: 0;
-}
-
-.item-details .price {
-  font-size: 16px;
-  font-weight: 600;
+.price {
   color: #90214D;
-  margin: 0;
+}
 }
 
 .radio-group {
@@ -103,32 +92,6 @@ h2{
   accent-color: #90214D;
 }
 
-.radio-label {
-  font-size: 16px;
-  color: #282527;
-}
-
-.radio-subtitle {
-  font-size: 14px;
-  color: rgba(40, 37, 39, 0.6);
-  margin-top: 4px;
-}
-
-.reason-select {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid rgba(40, 37, 39, 0.3);
-  border-radius: 8px;
-  font-size: 16px;
-  background: #fff;
-  color: #282527;
-}
-
-.reason-select:focus {
-  outline: none;
-  border-color: #90214D;
-}
-
 .comments-textarea {
   width: 100%;
   padding: 12px 16px;
@@ -148,10 +111,4 @@ h2{
 
 .comments-textarea::placeholder {
   color: rgba(40, 37, 39, 0.5);
-}
-
-.submit-section {
-  padding: 24px 0;
-  display: flex;
-  justify-content: center;
 }
