@@ -3,19 +3,19 @@
   (ionModalDidPresent)="onSizeModalPresented()">
   <ng-template>
     <ion-content>
-      <mindful-navigator heading="Size Guide" backIcon="arrowSvg" (back)="closeSizeGuide()"></mindful-navigator>
+      <mindful-navigator [heading]="isFromReturnExchange ? 'Select New Size' : 'Size Guide'" backIcon="arrowSvg" (back)="closeSizeGuide()"></mindful-navigator>
       <button #sizeGuideFirstFocus class="visually-hidden" aria-hidden="false" tabindex="0"></button>
       <main class="size-guide-container w-100">
-        <div class="product-breif">
-          <div class="product-brief-img">
-            <img [src]="productImage" [alt]="heading" />
-          </div>
-          <div class="product-brief-text d-flex flex-column gap-2">
-            <h2>{{ productTitle }}</h2>
-            <p>{{ productSubtitle }}</p>
-            <div class="price d-flex gap-2">
-              <span class="discounted-price" style="font-size: 16px">{{ discountedPrice }}</span>
-              <span class="original-price" style="font-size: 16px">{{ originalPrice }}</span>
+        <div class="order-info-card">
+          <div class="order-item">
+            <img [src]="productImage" [alt]="heading" class="product-image">
+            <div class="item-details">
+              <h2>{{ productTitle }}</h2>
+              <div class="d-flex gap-2">
+                <p>Size: {{ selectedSize }}</p>
+              </div>
+              <p>{{ productSubtitle }}</p>
+              <h2 class="price">{{ discountedPrice }}</h2>
             </div>
           </div>
         </div>
@@ -48,21 +48,30 @@
               </tr>
             </thead>
             <tbody>
-              <tr class="cell-body" *ngFor="let r of sizeChart" [class.out-of-stock-row]="isOutOfStock(r.size)">
-                <td class="cell-center">
-                  <label class="custom-radio" [attr.aria-label]="'Select size ' + r.size">
-                    <input type="radio" name="size" [value]="r.size" (change)="selectSize(r.size)"
-                      [checked]="selectedSize === r.size" [disabled]="isOutOfStock(r.size)"
-                      [attr.aria-disabled]="isOutOfStock(r.size)" />
-                    <span class="custom-radio-mark" aria-hidden="true"></span>
-                  </label>
-                </td>
-                <td class="cell-center">{{ r.size }}</td>
-                <td class="cell-center">{{ displayChest(r) }}</td>
-                <td class="cell-center">{{ displayLength(r) }}</td>
-                <td class="cell-center">{{ displaySleeve(r) }}</td>
-                <td class="cell-center">{{ r.age }}</td>
-              </tr>
+              <ng-container *ngFor="let r of sizeChart">
+                    
+                <tr class="cell-body" [class.out-of-stock-row]="isOutOfStock(r.size)">
+                  <td class="cell-center">
+                    <label class="custom-radio" [attr.aria-label]="'Select size ' + r.size">
+                      <input type="radio" name="size" [value]="r.size" (change)="selectSize(r.size)"
+                        [checked]="selectedSize === r.size" [disabled]="isOutOfStock(r.size)"
+                        [attr.aria-disabled]="isOutOfStock(r.size)" />
+                      <span class="custom-radio-mark" aria-hidden="true"></span>
+                    </label>
+                  </td>
+                  <td class="cell-center">{{ r.size }}</td>
+                  <td class="cell-center">{{ displayChest(r) }}</td>
+                  <td class="cell-center">{{ displayLength(r) }}</td>
+                  <td class="cell-center">{{ displaySleeve(r) }}</td>
+                  <td class="cell-center">{{ r.age }}</td>
+                </tr>
+                    <tr *ngIf="selectedSize === r.size && !isOutOfStock(r.size)">
+                  <td colspan="6" class="stock-message-cell">
+                    <p style="color: #4CAF50;text-align: center;">In Stock. Will be delivered by Thu, 4th Jan.</p>
+                  </td>
+                </tr>
+        
+              </ng-container>
             </tbody>
           </table>
         </div>
@@ -72,27 +81,52 @@
           <img src="assets/School-assets/Size Chart- Shirt.jpg" alt="shirt-size-chart">
           <!-- Measurement Instructions -->
           <div>
-            <div class="measure-instructions d-flex align-items-baseline gap-1">
-              <h2 style="white-space: nowrap;">1. Chest:</h2>
-              <p>Measure around the fullest part of the chest, keeping the tape horizontal.</p>
+              <div class="measure-instructions">
+              <h2 class="count">1</h2>
+              <div class="body-type">Shoulder:<span>Measure around the fullest part of the chest, keeping the tape horizontal.</span></div>
             </div>
-            <div class="measure-instructions d-flex align-items-baseline gap-1">
-              <h2 style="white-space: nowrap;">2. Length:</h2>
-              <p>Measure around the fullest part of the chest, keeping the tape horizontal.</p>
+            <div class="measure-instructions">
+              <h2 class="count">2</h2>
+              <div class="body-type">Chest:<span>Measure around the fullest part of the chest, keeping the tape horizontal.</span></div>
             </div>
-            <div class="measure-instructions d-flex align-items-baseline gap-1">
-              <h2 style="white-space: nowrap;">3. Sleeve:</h2>
-              <p>Measure around the fullest part of the chest, keeping the tape horizontal.</p>
+               <div class="measure-instructions">
+              <h2 class="count">3</h2>
+              <div class="body-type">Waist:<span>Measure around the fullest part of the chest, keeping the tape horizontal.</span></div>
             </div>
           </div>
         </div>
+
+        <!-- Item Summary -->
+        <div class="bill-summary" *ngIf="isFromReturnExchange">
+          <h2>Price Difference</h2>
+          <div class="d-flex flex-column gap-2 w-100">
+            <div class="txt-amount">
+              <p style="opacity: 0.7;">Item Cost (Size {{ originalSize }})</p>
+              <p>{{ totalPriceDisplay }}</p>
+            </div>
+            <div class="txt-amount">
+              <p style="opacity: 0.7;">Item Cost (Size {{ selectedSize }})</p>
+              <p>{{ gstDisplay }}</p>
+            </div>
+            <div class="txt-amount" style="align-items: baseline;">
+              <p style="opacity: 0.7;">Difference amount (To Pay at checkout)</p>
+              <p style="color: #90214D; white-space: nowrap;">{{ toPayDisplay }}</p>
+            </div>
+          </div>
+        </div>
+
+
+
       </main>
       <!--apply size-->
-      <div class="product-purchase-bar">
+      <div class="product-purchase-bar" *ngIf="!isFromReturnExchange">
         <span class="selected-size">Size: {{ selectedSize }}</span>
         <mindful-button class="page-cta" type="magenta" text="Apply Size" large
           (click)="closeSizeGuide()"></mindful-button>
-
+      </div>
+      <div class="product-purchase-bar return-exchange-bar" *ngIf="isFromReturnExchange">
+        <mindful-button class="return-exchange-btn" type="magenta-transparent" size="large" text="Return" (click)="onReturn()"></mindful-button>
+        <mindful-button class="return-exchange-btn" type="magenta" size="large" text="Exchange" (click)="onExchange()"></mindful-button>
       </div>
     </ion-content>
   </ng-template>

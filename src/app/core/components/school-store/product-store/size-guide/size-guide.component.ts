@@ -20,15 +20,52 @@ export class SizeGuideComponent implements OnDestroy {
   @Input() heading = 'Product';
   @Input() productTitle = 'Classic White Half-Sleeve Shirt';
   @Input() productSubtitle = 'St. Xavier’s High School';
+  @Input() isFromReturnExchange = false;
+  @Input() originalSize = 8; // Delivered size
+  @Input() sizePrices: { [size: number]: number } = { 4: 799, 6: 849, 8: 879, 10: 899, 12: 919 }; // Dummy prices per size
   @Input() discountedPrice = '₹799';
   @Input() originalPrice = '₹999';
   @Input() productImage = 'assets/School-assets/temp/Shirt-l.jpg';
 
-  @ViewChild('sizeGuideFirstFocus') sizeGuideFirstFocus!: ElementRef<HTMLElement>;
+  returnSelected = output<void>();
+  exchangeSelected = output<void>();
 
   sizeSelected = output<number>();
   unitSelected = output<'in' | 'cm'>();
   closeModal = output<void>();
+
+  @ViewChild('sizeGuideFirstFocus') sizeGuideFirstFocus!: ElementRef<HTMLElement>;
+
+  // Item summary properties - now computed
+  get totalPriceDisplay(): string {
+    return this.formatPrice(this.deliveredPrice);
+  }
+
+  get gstDisplay(): string {
+    return this.formatPrice(this.newPrice);
+  }
+
+  get toPayDisplay(): string {
+    const diff = this.priceDifference;
+    if (diff > 0) {
+      return this.formatPrice(diff);
+    } else if (diff < 0) {
+      return `-${this.formatPrice(Math.abs(diff))}`;
+    }
+    return '₹0';
+  }
+
+  get deliveredPrice(): number {
+    return this.sizePrices[this.originalSize] || 0;
+  }
+
+  get newPrice(): number {
+    return this.sizePrices[this.selectedSize] || 0;
+  }
+
+  get priceDifference(): number {
+    return this.newPrice - this.deliveredPrice;
+  }
 
   selectSize(size: number): void {
     if (this.isOutOfStock(size)) return;
@@ -36,6 +73,7 @@ export class SizeGuideComponent implements OnDestroy {
   }
 
   selectUnit(u: 'in' | 'cm'): void {
+    this.unit = u;
     this.unitSelected.emit(u);
   }
 
@@ -59,6 +97,14 @@ export class SizeGuideComponent implements OnDestroy {
     this.isOpen = false;
     this.setBackgroundInert(false);
     this.closeModal.emit();
+  }
+
+  onReturn(): void {
+    this.returnSelected.emit();
+  }
+
+  onExchange(): void {
+    this.exchangeSelected.emit();
   }
 
   onSizeModalPresented(): void {
@@ -97,5 +143,9 @@ export class SizeGuideComponent implements OnDestroy {
     const cm = value * 2.54;
     const rounded = Math.round(cm * 10) / 10;
     return `${rounded}`;
+  }
+
+  private formatPrice(price: number): string {
+    return `₹${price}`;
   }
 }
