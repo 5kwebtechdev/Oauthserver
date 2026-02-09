@@ -19,6 +19,23 @@ export class ReturnExchangeComponent {
   selectedRequestType = 'return';
   selectedReason = 'too-small-big';
   showSizeGuide = false;
+  showUploadProof = false;
+  uploadedImages: (string | null)[] = [null, null, null];
+  uploadErrorMessage = '';
+
+  get disableRequest(): boolean {
+    // Disable when no images uploaded or when there's an upload error
+    const hasImage = this.uploadedImages.some(i => !!i);
+    return !hasImage || !!this.uploadErrorMessage;
+  }
+
+  removeImage(index: number): void {
+    this.uploadedImages[index] = null;
+    // clear error if there is at least one valid image
+    if (this.uploadedImages.some(i => !!i)) {
+      this.uploadErrorMessage = '';
+    }
+  }
   selectedSize = 16; // Default to current size
   unit: 'in' | 'cm' = 'in';
   outOfStockSizes: number[] = [6, 8, 16];
@@ -56,11 +73,55 @@ export class ReturnExchangeComponent {
   }
 
   onNext(): void {
-    if (this.selectedRequestType === 'exchange' && this.selectedReason === 'too-small-big') {
+    if (this.requiresPhoto()) {
+      this.showUploadProof = true;
+    } else if (this.selectedRequestType === 'exchange' && this.selectedReason === 'too-small-big') {
       this.showSizeGuide = true;
     } else {
       this.submitRequest();
     }
+  }
+
+  requiresPhoto(): boolean {
+    return this.selectedReason === 'damaged' || this.selectedReason === 'wrong-item';
+  }
+
+  onUploadProofBack(): void {
+    this.showUploadProof = false;
+  }
+
+  triggerUpload(index: number): void {
+    const inputs = document.querySelectorAll<HTMLInputElement>('.upload-box input[type="file"]');
+    inputs[index]?.click();
+  }
+
+  onImageSelected(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const name = file.name.toLowerCase();
+      const isJpeg = file.type === 'image/jpeg' || name.endsWith('.jpg') || name.endsWith('.jpeg');
+      if (!isJpeg) {
+        this.uploadErrorMessage = 'Invalid file format. Upload jpg, jpeg';
+        this.uploadedImages[index] = null;
+        input.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        this.uploadedImages[index] = e.target?.result as string;
+        this.uploadErrorMessage = '';
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  onRequestRefund(): void {
+    if (this.disableRequest) return;
+    console.log('Request refund with images:', this.uploadedImages.filter(Boolean).length);
+    // Open pickup & refund confirmation page
+    this.router.navigateByUrl('/authed/school-store/pickup-refund');
   }
 
   onReturnSelected(): void {

@@ -399,10 +399,11 @@ export class MyOrdersComponent {
     // Cancel confirmation popup state
     isCancelPopupVisible = false;
 
-    // CTA config for mindful-popup (secondary only)
-    // Swap: mindful-popup renders secondary then primary in row layout.
-    // To show Cancel (bronze) on the left and Don't Cancel (green) on the right
-    // we set Cancel as the secondary CTA and Don't Cancel as the primary CTA.
+    // Share Tracking popup state & CTAs
+    sharePopupVisible = false;
+    sharePrimaryCTA: MindfulPopupCTA = { text: 'Copy Link', icon: 'assets/icons/attachment-small.svg', iconPosition: 'start', buttonStyle: 'white', buttonLarge: true };
+    shareSecondaryCTA: MindfulPopupCTA = { text: 'Share through Whatsapp', icon: 'assets/icons/whatsapp-small.svg', iconPosition: 'start', buttonStyle: 'white', buttonLarge: true };
+  
     cancelPrimaryCTA: MindfulPopupCTA = { text: "Don't Cancel", buttonStyle: 'green', buttonLarge: true };
     cancelSecondaryCTA: MindfulPopupCTA = { text: 'Cancel', buttonStyle: 'bronze', buttonLarge: true };
 
@@ -443,7 +444,27 @@ export class MyOrdersComponent {
     }
 
     onCancelOrder(): void { console.log('Cancel order'); }
-    onShareTracking(): void { console.log('Share tracking'); }
+    onShareTracking(): void { this.sharePopupVisible = true; }
+    closeSharePopup(): void { this.sharePopupVisible = false; }
+
+    // Actions for share popup
+    copyLink(): void {
+        const link = this.selectedOrder ? `https://mindful.app/track/${this.selectedOrder.orderNumber || this.selectedOrder.id}` : window.location.href;
+        try {
+            navigator.clipboard.writeText(link);
+            console.log('Copied link:', link);
+        } catch (e) {
+            console.log('Copy failed, link:', link);
+        }
+        this.sharePopupVisible = false;
+    }
+
+    shareWhatsapp(): void {
+        const link = this.selectedOrder ? `https://mindful.app/track/${this.selectedOrder.orderNumber || this.selectedOrder.id}` : window.location.href;
+        const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(link)}`;
+        window.open(url, '_blank');
+        this.sharePopupVisible = false;
+    }
     onCancelReturn(): void { console.log('Cancel return'); }
     onDownloadInvoice(): void { console.log('Download invoice'); }
     onReturnExchange(): void {
