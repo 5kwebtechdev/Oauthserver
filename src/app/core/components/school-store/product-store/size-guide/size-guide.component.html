@@ -1,66 +1,99 @@
-<div class="size-unit d-flex justify-content-between align-items-center">
-  <h2>Select size in</h2>
-  <div class="unit-switch" role="tablist" aria-label="Select size unit">
-    <button type="button" role="tab" class="unit-btn" [class.selected]="unit === 'in'"
-      (click)="selectUnit('in')" [attr.aria-selected]="unit === 'in'">
-      <span class="unit-label">in</span>
-    </button>
-    <button type="button" role="tab" class="unit-btn" [class.selected]="unit === 'cm'"
-      (click)="selectUnit('cm')" [attr.aria-selected]="unit === 'cm'">
-      <span class="unit-label">cm</span>
-    </button>
-  </div>
-</div>
+<!-- Size Guide Modal -->
+<ion-modal [isOpen]="isOpen" swipeToClose="true" (ionModalDidDismiss)="closeSizeGuide()"
+  (ionModalDidPresent)="onSizeModalPresented()">
+  <ng-template>
+    <ion-content>
+      <mindful-navigator heading="Size Guide" backIcon="arrowSvg" (back)="closeSizeGuide()"></mindful-navigator>
+      <button #sizeGuideFirstFocus class="visually-hidden" aria-hidden="false" tabindex="0"></button>
+      <main class="size-guide-container w-100">
+        <div class="product-breif">
+          <div class="product-brief-img">
+            <img [src]="productImage" [alt]="heading" />
+          </div>
+          <div class="product-brief-text d-flex flex-column gap-2">
+            <h2>{{ productTitle }}</h2>
+            <p>{{ productSubtitle }}</p>
+            <div class="price d-flex gap-2">
+              <span class="discounted-price" style="font-size: 16px">{{ discountedPrice }}</span>
+              <span class="original-price" style="font-size: 16px">{{ originalPrice }}</span>
+            </div>
+          </div>
+        </div>
 
-<!-- Size Guide Table -->
-<div class="size-guide-table">
-  <table style="width: 100%;">
-    <thead>
-      <tr>
-        <th class="cell-center"></th>
-        <th class="cell-center">Size</th>
-        <th class="cell-center">Chest</th>
-        <th class="cell-center">Length</th>
-        <th class="cell-center">Sleeve Length</th>
-        <th class="cell-center">Age (Approx)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr class="cell-body" *ngFor="let r of sizeChart" [class.out-of-stock-row]="isOutOfStock(r.size)">
-        <td class="cell-center">
-          <label class="custom-radio" [attr.aria-label]="'Select size ' + r.size">
-            <input type="radio" name="size" [value]="r.size" (change)="selectSize(r.size)"
-              [checked]="selectedSize === r.size" [disabled]="isOutOfStock(r.size)"
-              [attr.aria-disabled]="isOutOfStock(r.size)" />
-            <span class="custom-radio-mark" aria-hidden="true"></span>
-          </label>
-        </td>
-        <td class="cell-center">{{ r.size }}</td>
-        <td class="cell-center">{{ displayChest(r) }}</td>
-        <td class="cell-center">{{ displayLength(r) }}</td>
-        <td class="cell-center">{{ displaySleeve(r) }}</td>
-        <td class="cell-center">{{ r.age }}</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+        <div class="size-unit d-flex justify-content-between align-items-center">
+          <h2>Select size in</h2>
+          <div class="unit-switch" role="tablist" aria-label="Select size unit">
+            <button type="button" role="tab" class="unit-btn" [class.selected]="unit === 'in'"
+              (click)="selectUnit('in')" [attr.aria-selected]="unit === 'in'">
+              <span class="unit-label">in</span>
+            </button>
+            <button type="button" role="tab" class="unit-btn" [class.selected]="unit === 'cm'"
+              (click)="selectUnit('cm')" [attr.aria-selected]="unit === 'cm'">
+              <span class="unit-label">cm</span>
+            </button>
+          </div>
+        </div>
 
-<div class="how-to-measure">
-  <h1>How to measure</h1>
-  <img src="assets/School-assets/Size Chart- Shirt.jpg" alt="shirt-size-chart">
-  <!-- Measurement Instructions -->
-  <div>
-    <div class="measure-instructions d-flex align-items-baseline gap-1">
-      <h2 style="white-space: nowrap;">1. Chest:</h2>
-      <p>Measure around the fullest part of the chest, keeping the tape horizontal.</p>
-    </div>
-    <div class="measure-instructions d-flex align-items-baseline gap-1">
-      <h2 style="white-space: nowrap;">2. Length:</h2>
-      <p>Measure around the fullest part of the chest, keeping the tape horizontal.</p>
-    </div>
-    <div class="measure-instructions d-flex align-items-baseline gap-1">
-      <h2 style="white-space: nowrap;">3. Sleeve:</h2>
-      <p>Measure around the fullest part of the chest, keeping the tape horizontal.</p>
-    </div>
-  </div>
-</div>
+        <!-- Size Guide Table -->
+        <div class="size-guide-table">
+          <table style="width: 100%;">
+            <thead>
+              <tr>
+                <th class="cell-center"></th>
+                <th class="cell-center">Size</th>
+                <th class="cell-center">Chest</th>
+                <th class="cell-center">Length</th>
+                <th class="cell-center">Sleeve Length</th>
+                <th class="cell-center">Age (Approx)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="cell-body" *ngFor="let r of sizeChart" [class.out-of-stock-row]="isOutOfStock(r.size)">
+                <td class="cell-center">
+                  <label class="custom-radio" [attr.aria-label]="'Select size ' + r.size">
+                    <input type="radio" name="size" [value]="r.size" (change)="selectSize(r.size)"
+                      [checked]="selectedSize === r.size" [disabled]="isOutOfStock(r.size)"
+                      [attr.aria-disabled]="isOutOfStock(r.size)" />
+                    <span class="custom-radio-mark" aria-hidden="true"></span>
+                  </label>
+                </td>
+                <td class="cell-center">{{ r.size }}</td>
+                <td class="cell-center">{{ displayChest(r) }}</td>
+                <td class="cell-center">{{ displayLength(r) }}</td>
+                <td class="cell-center">{{ displaySleeve(r) }}</td>
+                <td class="cell-center">{{ r.age }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="how-to-measure">
+          <h1>How to measure</h1>
+          <img src="assets/School-assets/Size Chart- Shirt.jpg" alt="shirt-size-chart">
+          <!-- Measurement Instructions -->
+          <div>
+            <div class="measure-instructions d-flex align-items-baseline gap-1">
+              <h2 style="white-space: nowrap;">1. Chest:</h2>
+              <p>Measure around the fullest part of the chest, keeping the tape horizontal.</p>
+            </div>
+            <div class="measure-instructions d-flex align-items-baseline gap-1">
+              <h2 style="white-space: nowrap;">2. Length:</h2>
+              <p>Measure around the fullest part of the chest, keeping the tape horizontal.</p>
+            </div>
+            <div class="measure-instructions d-flex align-items-baseline gap-1">
+              <h2 style="white-space: nowrap;">3. Sleeve:</h2>
+              <p>Measure around the fullest part of the chest, keeping the tape horizontal.</p>
+            </div>
+          </div>
+        </div>
+      </main>
+      <!--apply size-->
+      <div class="product-purchase-bar">
+        <span class="selected-size">Size: {{ selectedSize }}</span>
+        <mindful-button class="page-cta" type="magenta" text="Apply Size" large
+          (click)="closeSizeGuide()"></mindful-button>
+
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

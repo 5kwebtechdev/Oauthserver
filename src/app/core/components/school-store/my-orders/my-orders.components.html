@@ -254,6 +254,7 @@
             </div>
             <div *ngIf="showDownloadInvoiceFooter" class="footer-buttons">
                 <mindful-button type="magenta-transparent" size="large" text="Download Invoice" (click)="onDownloadInvoice()"></mindful-button>
+                <mindful-button *ngIf="showReturnExchangeFooter" type="magenta" size="large" text="Return/Exchange" (click)="onReturnExchange()"></mindful-button>
             </div>
         </div>
     </div>

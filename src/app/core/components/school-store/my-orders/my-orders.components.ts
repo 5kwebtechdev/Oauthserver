@@ -7,6 +7,7 @@ import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulPopupComponent, MindfulPopupCTA } from '../../mindful-popup/mindful-popup.component';
 import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.component';
+import { Router } from '@angular/router';
 
 interface TransitStep {
     label: string;
@@ -69,6 +70,8 @@ export class MyOrdersComponent {
     appliedStatus: string[] = [];
     appliedTime = '';
     showPaymentInfo = false;
+
+    constructor(private router: Router) {}
 
     orders: Order[] = [
         {
@@ -341,8 +344,12 @@ export class MyOrdersComponent {
 
     get showDownloadInvoiceFooter(): boolean { return this.showOrderInfo; }
 
+    get showReturnExchangeFooter(): boolean {
+        return !!this.selectedOrder && this.selectedOrder.status === 'delivered';
+    }
+
     get hasFooter(): boolean {
-        return this.showCancelShareFooter || this.showCancelReturnFooter || this.showDownloadInvoiceFooter;
+        return this.showCancelShareFooter || this.showCancelReturnFooter || this.showDownloadInvoiceFooter || this.showReturnExchangeFooter;
     }
 
     // --- Price Calculations ---
@@ -437,4 +444,7 @@ export class MyOrdersComponent {
     onShareTracking(): void { console.log('Share tracking'); }
     onCancelReturn(): void { console.log('Cancel return'); }
     onDownloadInvoice(): void { console.log('Download invoice'); }
+    onReturnExchange(): void {
+        this.router.navigateByUrl('/authed/school-store/return-exchange');
+    }
 }

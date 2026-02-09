@@ -5,7 +5,6 @@ import {
   ViewChild,
   ElementRef,
   HostListener,
-  OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
@@ -51,9 +50,6 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
 
   @ViewChild('swiper', { static: true }) swiperRef!: ElementRef<HTMLElement>;
   @ViewChild('slides', { static: true }) slidesRef!: ElementRef<HTMLElement>;
-  @ViewChild('sizeGuideFirstFocus') sizeGuideFirstFocus!:
-    | ElementRef<HTMLElement>
-    | undefined;
   // Controls embedded size guide modal
   showSizeGuide = false;
   // selected unit for size display
@@ -69,7 +65,6 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
 
   openSizeGuide(): void {
     this.showSizeGuide = true;
-    this.setBackgroundInert(true);
   }
 
   openAddressPopup(): void {
@@ -78,35 +73,6 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
 
   closeSizeGuide(): void {
     this.showSizeGuide = false;
-    this.setBackgroundInert(false);
-  }
-
-  onSizeModalPresented(): void {
-    try {
-      // focus the hidden focus target inside the modal to ensure assistive tech focuses modal content
-      this.sizeGuideFirstFocus?.nativeElement?.focus?.();
-    } catch (e) { }
-  }
-
-  private setBackgroundInert(val: boolean): void {
-    try {
-      const outlet =
-        document.querySelector('ion-router-outlet.hydrated') ||
-        document.querySelector('ion-router-outlet');
-      if (!outlet) return;
-      if (val) {
-        outlet.setAttribute('inert', '');
-      } else {
-        outlet.removeAttribute('inert');
-      }
-    } catch (e) { }
-  }
-
-  ngOnDestroy(): void {
-    // ensure inert is removed if component is destroyed while modal open
-    try {
-      this.setBackgroundInert(false);
-    } catch (e) { }
   }
 
   increaseQuantity(): void {
@@ -253,6 +219,12 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
       (event as KeyboardEvent).preventDefault?.();
     }
     this.detailsExpanded = !this.detailsExpanded;
+  }
+
+  handleRightAction(event: { index: number, action: any }): void {
+    if (event.action?.type === 'cart') {
+      this.router.navigate(['/authed/cart']);
+    }
   }
 
   addToCart(): void {
