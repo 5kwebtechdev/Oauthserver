@@ -5,7 +5,7 @@ import { environment } from 'src/environments/environment';
 import { catchError, map } from 'rxjs/operators';
 
 export interface StreakLeaderboardUser {
-    name: string;
+    avatarName: string;
     highestStreak: number;
     avatar?: string;
 }
@@ -17,7 +17,7 @@ export interface CurrentUserStreak {
     streakDays: number;
     totalActiveDays: number;
     rank: number;
-    name: string;
+    avatarName: string;
     hasStreak: boolean;
 }
 
@@ -43,12 +43,12 @@ export class StreaksService {
                     streakDays: Number(res.currentUser.streakDays || res.currentUser.highestStreak || 0),
                     totalActiveDays: Number(res.currentUser.totalActiveDays || 0),
                     rank: Number(res.currentUser.rank || 0),
-                    name: String(res.currentUser.name || ''),
+                    avatarName: String(res.currentUser.avatarName || ''),
                     hasStreak: Boolean(res.currentUser.hasStreak || false)
-                } : { petMessage: '', currentStreak: 0, highestStreak: 0, streakDays: 0, totalActiveDays: 0, rank: 0, name: '', hasStreak: false };
+                } : { petMessage: '', currentStreak: 0, highestStreak: 0, streakDays: 0, totalActiveDays: 0, rank: 0, avatarName: '', hasStreak: false };
 
                 const topUsers: StreakLeaderboardUser[] = Array.isArray(res && res.topUsers) ? res.topUsers.map((u: any) => ({
-                    name: String(u.name || ''),
+                    avatarName: String(u.avatarName || ''),
                     // include rank if provided by API
                     rank: typeof u.rank !== 'undefined' ? Number(u.rank) : undefined,
                     // support APIs that return `currentStreak` or `highestStreak`

@@ -30,17 +30,16 @@
         </div>
         <div class="streaks-card">
             <ul class="streaks-list">
-                <li *ngFor="let item of rankedStreaks; let i = index" class="streak-item"
-                    [ngClass]="{ 'current-user': item.name === currentUser?.name }">
+                <li *ngFor="let item of rankedStreaks; let i = index" class="streak-item">
                     <div class="left">
                         <div class="d-flex flex-column" style="align-items: center; margin-right: 16px;">
                             <div class="rank">{{ item.rank }}</div>
                         </div>
                         <div class="avatar-wrap">
                             <img class="avatar" [src]="item.avatar || 'assets/avatar/ChildAvatar.png'"
-                                [alt]="item.avatarAlt || (item.name + ' avatar')">
+                                [alt]="item.avatarAlt || (item.avatarName + ' avatar')">
                         </div>
-                        <div class="name">{{ item.name }}</div>
+                        <div class="name">{{ item.avatarName }}</div>
                     </div>
                     <div class="right">
                         <div class="days">{{ item.highestStreak }} days</div>

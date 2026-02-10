@@ -1,6 +1,6 @@
 // ============ REUSABLE / SHARED STYLES ============
 .mindful-page-container {
-  padding: 0 16px;
+  padding: 16px!important;
 }
 
 .mindful-step-indicator {
@@ -306,7 +306,7 @@ font-weight: 600;
 }
 
 .section-header {
-display: flex;
+    display: flex;
     flex-direction: row-reverse;
   }
 
@@ -425,8 +425,17 @@ font-weight: 700;
 }
 
 .share-qr-btn {
- display: flex;
+  border-radius: 32px;
+    background: #FAD2AE;
+    display: flex;
     padding: 8px;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    color: #772817;
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 // ============ RESPONSIVE ============
@@ -443,7 +452,7 @@ font-weight: 700;
       font-weight: 500;
     }
   .mindful-page-container {
-    padding: 0 16px 40px;
+    padding:16px !important;
             gap: 24px;
         display: flex;
         flex-direction: column;

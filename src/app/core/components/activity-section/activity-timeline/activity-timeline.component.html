@@ -46,10 +46,11 @@
     <div class="timeline-wrapper">
       <mindful-timeline [events]="filteredEvents" [isCurrentDateView]="isCurrentDateView" [selectedDate]="selectedDate" (eventLongPressed)="onTimetableLongPress($event)"></mindful-timeline>
     </div>
-
     <!-- Fixed Add Button -->
     <div class="add-button-fixed" (click)="onAddClick()">
       <mindful-button type="add"></mindful-button>
     </div>
+
   </div>
+  <app-footer></app-footer>
 </ion-content>

@@ -19,13 +19,12 @@
                 <mindful-pet></mindful-pet>
             </div>
 
-            <mindful-button (click)="onRedeem()" text="Redeem" type="gold" size="large"></mindful-button>
+            <mindful-button *ngIf="!isParent" (click)="onRedeem()" text="Redeem" type="gold" size="large"></mindful-button>
+            <mindful-button *ngIf="isParent" text="Add" type="gold" size="large"></mindful-button>
         </div>
 
         <div class="coin-list-section">
-            <div class="list-header">
-                <h2>Spent Smart, Spent Fun!</h2>
-            </div>
+                <h2>{{ isParent ? 'Your Spending & Top-Up History' : 'Spent Smart, Spent Fun!' }}</h2>
 
             <ng-container *ngIf="isLoading">
                 <div class="loading-container">

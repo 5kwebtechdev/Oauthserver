@@ -573,9 +573,22 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
     return Array.isArray(this.selectedTags) && this.selectedTags.length ? this.selectedTags.map(t => t.value || t.key) : [];
   }
 
-  private showSuccessToast(activityName: string, category: string): void {
+  private showSuccessToast(activityName: string, category: string, isUpdate: boolean = false): void {
     const categoryLabel = category.charAt(0).toUpperCase() + category.slice(1);
-    const message = `${activityName} secured as ${categoryLabel}. Check View all if it is not for today.`;
+    let message: string;
+
+    if (this.isParent) {
+      const selectedChild = this.profileSelector.getSelectedChild();
+      const avatarName = selectedChild?.name || 'Child';
+      if (isUpdate) {
+        message = `${activityName} updated successfully for ${avatarName}.`;
+      } else {
+        message = `${activityName} assigned as ${categoryLabel} to ${avatarName}. Check under the selected dates.`;
+      }
+    } else {
+      message = `${activityName} secured as ${categoryLabel}. Check View all if it is not for today.`;
+    }
+
     this.toastService.successWithIcon(message, 'assets/icons/tick-small.svg', '#2D6830', 4000);
   }
 
@@ -729,7 +742,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
               this.habitService.updateHabit(updatedHabit);
               // Notify listeners that a task was updated so the tasks list refreshes
               try { this.habitService.notifyTaskUpdated(); } catch (e) { /* ignore */ }
-              this.showSuccessToast(this.title, 'tasks');
+              this.showSuccessToast(this.title, 'tasks', true);
               this.finalizeAndReturn();
             } finally { this.isSubmitting = false; }
           },
@@ -763,7 +776,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
             try {
               const updatedHabit = this.buildHabitFromResponse(res, habit, 'timetable', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.updateHabit(updatedHabit);
-              this.showSuccessToast(this.title, 'timetable');
+              this.showSuccessToast(this.title, 'timetable', true);
               this.finalizeAndReturn();
             } finally { this.isSubmitting = false; }
           },
@@ -794,7 +807,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
             try {
               const updatedHabit = this.buildHabitFromResponse(res, habit, 'habits', formattedStartTime, formattedEndTime, daysOfWeek);
               this.habitService.updateHabit(updatedHabit);
-              this.showSuccessToast(this.title, 'habits');
+              this.showSuccessToast(this.title, 'habits', true);
               this.finalizeAndReturn();
             } finally { this.isSubmitting = false; }
           },
@@ -1153,7 +1166,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
       
       // Show delete toast before dismissing modal
       const categoryLabel = this.currentActive.charAt(0).toUpperCase() + this.currentActive.slice(1);
-      const deleteMessage = `${this.title} deleted from ${categoryLabel}`;
+      const deleteMessage = this.isParent ? `${this.title} deleted. It's gone from all days.` : `${this.title} deleted from ${categoryLabel}`;
       this.toastService.successWithIcon(deleteMessage, 'assets/icons/tick-small.svg', '#2D6830', 4000);
       
       try { this.modalCtrl.dismiss(); } catch { /* ignore if not modal */ }

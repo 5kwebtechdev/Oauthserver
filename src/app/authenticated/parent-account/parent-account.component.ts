@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { ModalController } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
@@ -19,6 +19,7 @@ import { ParentImageService } from '../../core/services/parent-image.service';
 import { ProfileStoreService } from '../../core/services/profile-store.service';
 import { ChildInfo, mapVibeToChildInfo } from '../../core/models/child-info.model';
 import { RefreshService } from '../../core/services/refresh.service';
+import { MindfulButtonComponent } from '../../core/components/mindful-button/mindful-button.component';
 
 
 @Component({
@@ -35,10 +36,12 @@ import { RefreshService } from '../../core/services/refresh.service';
         AdBannerComponent,
         FooterComponent,
         ActivityPageContentComponent,
+        MindfulButtonComponent,
 
-    ]
+    ],
+    providers: [RefreshService]
 })
-export class ParentAccountComponent implements OnInit, OnDestroy {
+export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly destroy$ = new Subject<void>();
     
     public userName: string = 'User';
@@ -92,6 +95,10 @@ export class ParentAccountComponent implements OnInit, OnDestroy {
 
     @ViewChild('moodSel') moodSelector?: MoodSelectorComponent;
     @ViewChild(ActivityPageContentComponent) habitPageContent?: ActivityPageContentComponent;
+    @ViewChild('habitPage', { static: false }) habitPageElement?: ElementRef;
+
+    // Button visibility
+    public isAddButtonVisible: boolean = false;
 
     constructor(
         private modalCtrl: ModalController,
@@ -171,6 +178,24 @@ export class ParentAccountComponent implements OnInit, OnDestroy {
 
         // Fetch children from API and populate store
         this.loadChildren();
+    }
+
+    ngAfterViewInit(): void {
+        // Set up intersection observer for the habit page
+        if (this.habitPageElement) {
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        this.isAddButtonVisible = entry.isIntersecting;
+                    });
+                },
+                {
+                    root: null, // viewport
+                    threshold: 0.3 // trigger when 30% of the element is visible
+                }
+            );
+            observer.observe(this.habitPageElement.nativeElement);
+        }
     }
 
     /** Load children from API and set into store */
@@ -296,6 +321,10 @@ export class ParentAccountComponent implements OnInit, OnDestroy {
 
     openCalendar() {
         this.router.navigateByUrl('/authed/activity-calendar');
+    }
+
+    openActivityInput() {
+        this.router.navigate(['/authed/activity-input']);
     }
 
     /**

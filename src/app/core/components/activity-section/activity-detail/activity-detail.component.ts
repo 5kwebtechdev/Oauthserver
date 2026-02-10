@@ -153,6 +153,17 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     api$.pipe(finalize(() => {})).subscribe({
       next: (res) => {
         this.habit = this.normalizeResponse(res, type);
+        
+        // Update timestamps for selected date
+        if (effectiveDate) {
+          const copy: any = { ...this.habit, startDate: effectiveDate, endDate: effectiveDate };
+          try {
+            const ts = this.buttonLogic.calculateTimestamps(copy);
+            this.habit.startTimeStamp = ts.startTimeStamp;
+            this.habit.endTimeStamp = ts.endTimeStamp;
+          } catch { /* Use original timestamps */ }
+        }
+        
         this.cdr.detectChanges();
         this.prepareCoinStats();
         this.prepareMilestoneBadges();
@@ -505,10 +516,12 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
       const endTime = habit.endTimeStamp || 0;
       if (now > endTime) {
         return '#BB2124';
+      } else {
+        return '#282527';
       }
     }
 
-    // Default colors
+    // Default colors for ongoing
     return type === 'tasks' ? '#EE6621' : '#6360A2';
   }
 

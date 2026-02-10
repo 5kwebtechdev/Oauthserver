@@ -3,7 +3,7 @@
     <div class="left-group">
       <button class="back-button" (click)="goBack()" aria-label="Go back" [class.cancel]="backIcon === 'cancel'">
         <ng-container *ngIf="backIcon !== 'cancel'; else imgIcon">
-          <img src="/assets/icons/back-arrow.svg" alt="Back" class="back-svg" aria-hidden="true">
+          <img [src]="variant === 'warm' ? '/assets/icons/back-arrow-warm.svg' : '/assets/icons/back-arrow.svg'" alt="Back" class="back-svg" aria-hidden="true">
         </ng-container>
         <ng-template #imgIcon>
           <!-- Render inline 'cancel' SVG when backIcon is 'cancel', otherwise use the provided image src -->

@@ -28,7 +28,7 @@
 
 .add-button-fixed {
     position: fixed;
-    bottom: max(24px, env(safe-area-inset-bottom, 24px));
+    bottom: max(72px, env(safe-area-inset-bottom, 24px));
     right: 20px;
     z-index: 1000;
     cursor: pointer;
