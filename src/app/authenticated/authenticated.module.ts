@@ -44,7 +44,8 @@ import { CoinPurchaseComponent } from '../core/components/coin-section/coin-purc
     SupermeTimerComponent,
     StreaksSectionComponent,
     MindfulNavigatorComponent,
-    CoinPurchaseComponent
+    CoinPurchaseComponent,
+    FooterComponent
   ]
 })
 export class AuthenticatedModule { }

@@ -58,9 +58,9 @@
                 {{ shortDaysOfWeek }}
             </div>
         </div>
-        <div class="detail-message d-flex align-items-center"
+        <div *ngIf="!isParent" class="detail-message d-flex align-items-center"
             style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-            <ng-container *ngIf="!isParent">
+            <ng-container>
               <div class="bubble-speech" style="flex:1;min-width:0;margin-right:12px;">
                   <app-speech-bubble [arrowSide]="'right'" [arrowOffset]="'50%'" [message]="speechMessage"
                       style="display:block;width:100%;"></app-speech-bubble>
@@ -150,7 +150,7 @@
         </div>
 
         <div class="your-journey-header">
-            <h2>Your Journey in Days</h2>
+            <h2>{{ isParent ? 'Their Journey in Days' : 'Your Journey in Days' }}</h2>
         </div>
 
         <div class="detail-calendar">

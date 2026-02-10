@@ -50,8 +50,8 @@
                 </div>
 
                 <nav class="header-tools" role="navigation" aria-label="Profile tools">
-                    <a class="tool-item-lock" aria-label="Notes" [routerLink]="['/authed/notes']">
-                        <img src="/assets/Icons-Neutral/Icon-Parents-ParentalControl.png" alt="Notes" class="tool-icon">
+                    <a class="tool-item-lock" aria-label="Parental Control" [routerLink]="['/authed','parental-control']">
+                        <img src="/assets/Icons-Neutral/Icon-Parents-ParentalControl.png" alt="Parental Control" class="tool-icon">
                     </a>
                     <a class="tool-item" aria-label="Calendar" [routerLink]="['/authed/activity-calendar']">
                         <img src="/assets/Icons-Neutral/Icon-Calendar.png" alt="Calendar" class="tool-icon">
@@ -111,11 +111,12 @@
                 <ad-banner></ad-banner>
             </div>
 
-            <div class="habit-page w-full">
+            <div class="habit-page w-full" #habitPage>
                 <activity-page-content></activity-page-content>
             </div>
 
         </div>
     </div>
+    <mindful-button *ngIf="isAddButtonVisible" type="add" class="fab-add-button" text="Add" (click)="openActivityInput()"></mindful-button>
     <app-footer></app-footer>
 </ion-content>

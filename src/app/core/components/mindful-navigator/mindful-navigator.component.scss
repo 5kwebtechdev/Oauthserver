@@ -51,6 +51,13 @@
 .navigator-root.warm {
   .back-button {
     color: #772817;
+    width: 36px;
+    margin-right: 8px;
+  }
+
+  .back-button .back-svg {
+    width: 24px;
+    height: auto;
   }
 
   .navigator-heading {

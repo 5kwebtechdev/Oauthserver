@@ -43,10 +43,10 @@ export class StreaksSectionComponent implements OnInit {
           const avatarInfo = this.childImageService.resolveAvatarForMember(avatarSource);
           return {
             rank: uu.rank,
-            name: uu.name || '',
+            avatarName: uu.avatarName || '',
             highestStreak: highest,
             avatar: avatarInfo.url || null,
-            avatarAlt: avatarInfo.alt || (uu.name ? `${uu.name} avatar` : null)
+            avatarAlt: avatarInfo.alt || (uu.avatarName ? `${uu.avatarName} avatar` : null)
           };
         });
       },

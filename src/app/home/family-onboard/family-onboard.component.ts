@@ -605,8 +605,58 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         }
 
         if (this.isParentRegistered || (!this.showRegisterButton && this.familyCreated)) {
-            const route = this.authService.getDashboardRoute() || '/authed/parent-account';
-            this.router.navigate([route]);
+            // If parent is registered, perform auto-login before navigating
+            if (this.isParentRegistered) {
+                const email = sessionStorage.getItem('login_email');
+                const phone = sessionStorage.getItem('login_phone');
+                const password = sessionStorage.getItem('login_password');
+
+                const loginCredentials: any = { password: password };
+                if (email) {
+                    loginCredentials.email = email;
+                } else if (phone) {
+                    loginCredentials.phone = phone;
+                }
+
+                if (loginCredentials.email || loginCredentials.phone) {
+                    this.authService.login(loginCredentials).subscribe({
+                        next: () => {
+                            // Clear signup session data after successful login
+                            try {
+                                sessionStorage.removeItem('signup_profile');
+                                sessionStorage.removeItem('signup_password');
+                                sessionStorage.removeItem('signup_role');
+                                sessionStorage.removeItem('requestedIdentifier');
+                                sessionStorage.removeItem('loginMode');
+                                sessionStorage.removeItem('countryCode');
+                                sessionStorage.removeItem('familyCode');
+                                sessionStorage.removeItem('familyName');
+                                sessionStorage.removeItem('familyCreator');
+                                sessionStorage.removeItem('login_email');
+                                sessionStorage.removeItem('login_phone');
+                                sessionStorage.removeItem('login_password');
+                            } catch (e) { }
+
+                            // Navigate to parent dashboard
+                            const route = this.authService.getDashboardRoute() || '/authed/parent-account';
+                            this.router.navigate([route]);
+                        },
+                        error: (loginErr) => {
+                            console.error('Auto-login failed', loginErr);
+                            // If auto-login fails, still navigate to dashboard
+                            const route = this.authService.getDashboardRoute() || '/authed/parent-account';
+                            this.router.navigate([route]);
+                        }
+                    });
+                } else {
+                    // No credentials, just navigate
+                    const route = this.authService.getDashboardRoute() || '/authed/parent-account';
+                    this.router.navigate([route]);
+                }
+            } else {
+                const route = this.authService.getDashboardRoute() || '/authed/parent-account';
+                this.router.navigate([route]);
+            }
             return;
         }
 
@@ -685,54 +735,14 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
                     this.maxParentsErrorMessage = null; // Clear any previous error
                     this.core.triggerToasrt('Account registered successfully!');
                     
-                    // Store credentials for auto-login
+                    // Store credentials for later auto-login
                     try {
                         if (payload.email) sessionStorage.setItem('login_email', payload.email);
                         if (payload.phone) sessionStorage.setItem('login_phone', payload.phone);
                         sessionStorage.setItem('login_password', password);
                     } catch (e) { }
 
-                    // Auto-login parent after registration
-                    const loginCredentials: any = { password: password };
-                    if (payload.email) {
-                        loginCredentials.email = payload.email;
-                    } else if (payload.phone) {
-                        loginCredentials.phone = payload.phone;
-                    }
-
-                    if (loginCredentials.email || loginCredentials.phone) {
-                        this.authService.login(loginCredentials).subscribe({
-                            next: () => {
-                                // Clear signup session data after successful login
-                                try {
-                                    sessionStorage.removeItem('signup_profile');
-                                    sessionStorage.removeItem('signup_password');
-                                    sessionStorage.removeItem('signup_role');
-                                    sessionStorage.removeItem('requestedIdentifier');
-                                    sessionStorage.removeItem('loginMode');
-                                    sessionStorage.removeItem('countryCode');
-                                    sessionStorage.removeItem('familyCode');
-                                    sessionStorage.removeItem('familyName');
-                                    sessionStorage.removeItem('familyCreator');
-                                } catch (e) { }
-
-                                // Navigate to parent dashboard
-                                this.isLoading = false;
-                                const route = this.authService.getDashboardRoute() || '/authed/parent-account';
-                                this.router.navigate([route]);
-                            },
-                            error: (loginErr) => {
-                                console.error('Auto-login failed after registration', loginErr);
-                                // If auto-login fails, keep as registered and redirect to dashboard
-                                this.isLoading = false;
-                                const route = this.authService.getDashboardRoute() || '/authed/parent-account';
-                                this.router.navigate([route]);
-                            }
-                        });
-                    } else {
-                        this.isLoading = false;
-                        this.childCompleted();
-                    }
+                    this.isLoading = false;
                 },
                 error: (error) => {
                     this.isLoading = false;

@@ -254,48 +254,50 @@ export class FamilyConnectionComponent implements OnInit {
   consentChecked: boolean = false;
 
   ngOnInit(): void {
-    // Refresh user data from API to get current relationship status
-    this.refreshUserRelationship();
+    // Load family details (this will also refresh user relationship using the same response)
     this.loadFamilyDetails();
     this.setFamilyFaqs();
   }
 
   /**
-   * Refresh user relationship from family-details API to ensure correct UI display
+   * Refresh user relationship using an optional family-details response.
+   * If a response is provided we use it (avoids duplicate API calls). Otherwise
+   * we fetch the family-details from the server.
    */
-  private refreshUserRelationship(): void {
-    this.authService.getFamilyDetails().pipe(take(1)).subscribe({
-      next: (response) => {
-        // Check if user has a family and update relationship accordingly
-        if (response && response.family) {
-          // User is part of a family - check their role from the response
-          const family = response.family as any;
-          const members = family.members || [];
-          const creator = family.creator;
+  private refreshUserRelationship(response?: any): void {
+    const process = (resp: any) => {
+      if (resp && resp.family) {
+        const family = resp.family as any;
+        const members = family.members || [];
+        const creator = family.creator;
 
-          // Find current user in members or check if they are creator
-          const userData = this.coreAuthService.getUserData() || {};
-          const userId = userData.id;
+        const userData = this.coreAuthService.getUserData() || {};
 
-          // Update relationship based on family data
-          if (creator && creator.you) {
-            userData.relationship = creator.relationship?.toUpperCase() || 'PARENT';
-          } else {
-            const currentUserMember = members.find((m: any) => m.you === true);
-            if (currentUserMember) {
-              userData.relationship = currentUserMember.relationship?.toUpperCase() || 'CHILD';
-            }
+        if (creator && creator.you) {
+          userData.relationship = creator.relationship?.toUpperCase() || 'PARENT';
+        } else {
+          const currentUserMember = members.find((m: any) => m.you === true);
+          if (currentUserMember) {
+            userData.relationship = currentUserMember.relationship?.toUpperCase() || 'CHILD';
           }
-
-          localStorage.setItem('user_data', JSON.stringify(userData));
-          console.log('[FamilyConnection] Refreshed user relationship:', userData.relationship);
-          this.setFamilyFaqs(); // Refresh FAQs after relationship update
-          this.cdr.detectChanges();
         }
-      },
-      error: (err) => {
-        console.error('[FamilyConnection] Failed to refresh user relationship:', err);
+
+        localStorage.setItem('user_data', JSON.stringify(userData));
+        console.log('[FamilyConnection] Refreshed user relationship:', userData.relationship);
+        this.setFamilyFaqs();
+        try { this.cdr.detectChanges(); } catch (e) { /* noop */ }
       }
+    };
+
+    if (response) {
+      process(response);
+      return;
+    }
+
+    // No response provided — make a single API call
+    this.authService.getFamilyDetails().pipe(take(1)).subscribe({
+      next: (resp) => process(resp),
+      error: (err) => console.error('[FamilyConnection] Failed to refresh user relationship:', err)
     });
   }
 
@@ -382,6 +384,9 @@ export class FamilyConnectionComponent implements OnInit {
           // In some API variants familyCode might be at the root
           this.familyCode = (response as any).familyCode;
         }
+
+        // Use the same response to refresh user relationship to avoid a second API call
+        try { this.refreshUserRelationship(response); } catch (e) { /* noop */ }
 
         // Set QR code data with GROUP: prefix for consistent scanning validation
         if (this.familyCode) {
