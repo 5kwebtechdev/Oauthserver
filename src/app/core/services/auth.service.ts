@@ -14,7 +14,7 @@ export interface LoginCredentials {
   rememberMe?: boolean; // Optional remember me flag
 }
 
-export interface AuthResponse {
+export interface AuthResponse { 
   token: string;
   user: {
     id: number;
