@@ -1,84 +1,49 @@
-# APK Rebuild and Deploy Script
-# Run this after making changes to rebuild and deploy your APK
+Write-Host "========================================"
+Write-Host "MindfulBuddy APK Rebuild Script"
+Write-Host "========================================"
 
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "MindfulBuddy APK Rebuild Script" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host ""
-
-# Step 1: Clean previous build
-Write-Host "[Step 1/5] Cleaning previous build..." -ForegroundColor Yellow
+# Step 1: Clean www folder
+Write-Host "[1/4] Cleaning previous web build..."
 if (Test-Path "www") {
     Remove-Item -Recurse -Force www
-    Write-Host "✓ Cleaned www folder" -ForegroundColor Green
+    Write-Host "Done: Cleaned www folder"
 }
 
-# Step 2: Build production
+# Step 2: Build Angular app
 Write-Host ""
-Write-Host "[Step 2/5] Building for production..." -ForegroundColor Yellow
-ionic build --prod
+Write-Host "[2/4] Building Angular app..."
+npm run build -- --configuration production
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "✗ Build failed!" -ForegroundColor Red
+    Write-Host "FAILED: Angular build failed!"
     exit 1
 }
-Write-Host "✓ Production build completed" -ForegroundColor Green
+Write-Host "Done: Angular build completed"
 
 # Step 3: Sync with Capacitor
 Write-Host ""
-Write-Host "[Step 3/5] Syncing with Capacitor Android..." -ForegroundColor Yellow
+Write-Host "[3/4] Syncing with Capacitor..."
 npx cap sync android
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "✗ Capacitor sync failed!" -ForegroundColor Red
+    Write-Host "FAILED: Capacitor sync failed!"
     exit 1
 }
-Write-Host "✓ Capacitor sync completed" -ForegroundColor Green
+Write-Host "Done: Capacitor sync completed"
 
-# Step 4: Build APK
+# Step 4: Build debug APK
 Write-Host ""
-Write-Host "[Step 4/5] Building APK with Gradle..." -ForegroundColor Yellow
-Write-Host "This may take a few minutes..." -ForegroundColor Gray
+Write-Host "[4/4] Building debug APK (this takes a few minutes)..."
 Set-Location android
-./gradlew clean
-./gradlew assembleDebug
+./gradlew clean assembleDebug
+$result = $LASTEXITCODE
 Set-Location ..
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "✗ APK build failed!" -ForegroundColor Red
+
+if ($result -ne 0) {
+    Write-Host "FAILED: APK build failed!"
     exit 1
 }
-Write-Host "✓ APK built successfully" -ForegroundColor Green
-
-# Step 5: Check if device is connected
-Write-Host ""
-Write-Host "[Step 5/5] Checking for connected devices..." -ForegroundColor Yellow
-$devices = adb devices
-if ($devices -match "device$") {
-    Write-Host "✓ Device detected" -ForegroundColor Green
-    Write-Host ""
-    $install = Read-Host "Install APK on connected device? (Y/N)"
-    if ($install -eq "Y" -or $install -eq "y") {
-        Write-Host "Uninstalling old version..." -ForegroundColor Yellow
-        adb uninstall io.ionic.starter 2>$null
-        Write-Host "Installing new APK..." -ForegroundColor Yellow
-        adb install android\app\build\outputs\apk\debug\app-debug.apk
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "✓ APK installed successfully" -ForegroundColor Green
-            Write-Host ""
-            Write-Host "Opening logcat to monitor app..." -ForegroundColor Yellow
-            Write-Host "Press Ctrl+C to stop monitoring" -ForegroundColor Gray
-            Write-Host ""
-            Start-Sleep -Seconds 2
-            adb logcat -c  # Clear logs
-            adb logcat | Select-String "AuthService|LoginComponent|AuthInterceptor"
-        } else {
-            Write-Host "✗ Installation failed!" -ForegroundColor Red
-        }
-    }
-} else {
-    Write-Host "! No device detected" -ForegroundColor Yellow
-    Write-Host "APK location: android\app\build\outputs\apk\debug\app-debug.apk" -ForegroundColor Cyan
-}
 
 Write-Host ""
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Build Complete!" -ForegroundColor Green
-Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "========================================"
+Write-Host "BUILD COMPLETE!"
+Write-Host "APK: android\app\build\outputs\apk\debug\app-debug.apk"
+Write-Host "========================================"
