@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-apiUrl: 'https://api.supermeapp.com:3000/v1',
+  apiUrl: 'https://api.supermeapp.com/v1',
   // apiAuthToken should NOT be hardcoded in production
   // Users must login to get their own token stored in localStorage
   apiAuthToken: ''
