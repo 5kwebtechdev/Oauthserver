@@ -1,10 +1,12 @@
-<ion-content>
+<ion-content class="bg-mindful-secondary">
   <div class="login_section">
+    <div class="safe-area-nav">
     <mindful-navigator [heading]="'Login your account'" [variant]="'warm'" (back)="goBack()"></mindful-navigator>
-  <div class="signup-container">
+    </div>
+    <div class="signup-container">
     <div class="login-header-toggle-wrapper">
       <div class="login-toggle-form-wrapper">
-        <h1>Test 47</h1>
+        <!-- <h1>Test 47</h1> -->
         <div class="toggle-buttons">
 
           <button [class.active]="loginMode === 'phone'" (click)="switchMode('phone')">
