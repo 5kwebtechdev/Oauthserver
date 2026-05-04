@@ -27,16 +27,18 @@ import { QRCodeComponent } from 'angularx-qrcode';
 				[class.active]="selectedRole === 'child'" [attr.aria-pressed]="selectedRole === 'child'">
 
 				<div class="row">
-					<div class="col-6">
+				
 						<h2>Child</h2>
 						<h4>Learn and grow</h4>
 						<h4>Link with your parents</h4>
 						<h4>Earn rewards together</h4>
-					</div>
+					
 
-					<div class="col-6">
+					<div class="col-4 w-80 col-md-6">
+          
 						<img src="assets/Images-Transparent/Image-Role-Child.png" alt="">
-					</div>
+					
+        </div>
 				</div>
 			</div>
 
@@ -458,23 +460,40 @@ import { QRCodeComponent } from 'angularx-qrcode';
   }
 }
 
-/* Ensure the image column places the image at the bottom */
+/* Role card image sizing */
 .role-selector {
+  height: 150px;
+
   .row {
     display: flex;
     align-items: stretch;
+    height: 100%;
   }
 
   .col-6 {
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
   }
 
   .col-6 img {
+    max-height: 130px;
+    width: auto;
     max-width: 100%;
-    height: auto;
-    margin-top: auto; /* push image to bottom */
+    object-fit: contain;
+    margin-top: auto;
     display: block;
+    align-self: flex-end;
+  }
+
+  h2 {
+    font-size: 26px !important;
+    margin: 0 0 6px 0 !important;
+  }
+
+  h4 {
+    font-size: 13px !important;
   }
 }
 

@@ -116,7 +116,6 @@ export class CoinSectionComponent implements OnInit, OnDestroy {
     }
 
     private getIconForType(type: string, habit: any, task: any): string {
-        // Use habit or task icon if available, otherwise use default based on type
         if (type === 'HABIT_COMPLETION' && habit?.tags?.length > 0) {
             return this.getTagIcon(habit.tags[0]);
         }
@@ -124,28 +123,31 @@ export class CoinSectionComponent implements OnInit, OnDestroy {
             return this.getTagIcon(task.tags[0]);
         }
 
-        // Default icons based on type
         switch (type) {
             case 'HABIT_COMPLETION':
-                return '/assets/Icons-Neutral/Icon-Habit.png';
+                return '/assets/Icons-Neutral/Icon-Streak.png';
             case 'TASK_COMPLETION':
-                return '/assets/Icons-Neutral/Icon-Task.png';
+                return '/assets/Icons-Neutral/Icon-Calendar.png';
             case 'STREAK_7DAY_BONUS':
                 return '/assets/Icons-Neutral/Icon-Streak.png';
+            case 'DAILY_LOGIN':
+            case 'DAILY_LOGIN_BONUS':
+            case 'LOGIN_BONUS':
+            case 'REFERRAL_BONUS':
+                return '/assets/Icons-Neutral/Icons-Coins.png';
             default:
-                return '/assets/app-assets/Panda Sitting Tired.svg';
+                return '/assets/Icons-Neutral/Icons-Coins.png';
         }
     }
 
     private getTagIcon(tag: string): string {
-        // Map tags to icons - adjust paths as needed
         const tagIconMap: { [key: string]: string } = {
-            'Reading': '/assets/Icons-Neutral/Icon-Reading.png',
-            'Running': '/assets/Icons-Neutral/Icon-Running.png',
-            'Exercise': '/assets/Icons-Neutral/Icon-Exercise.png',
-            'Skill': '/assets/Icons-Neutral/Icon-Skill.png',
+            'Reading':  '/assets/Icons-Neutral/Icon-Content-Articles.png',
+            'Running':  '/assets/Icons-Neutral/Icon-Streak.png',
+            'Exercise': '/assets/Icons-Neutral/Icon-Streak.png',
+            'Skill':    '/assets/Icons-Neutral/Icon-Trophy.png',
         };
-        return tagIconMap[tag] || '/assets/app-assets/Panda Sitting Tired.svg';
+        return tagIconMap[tag] || '/assets/Icons-Neutral/Icons-Coins.png';
     }
 
     private getLabelForItem(item: CoinHistoryItem): string {

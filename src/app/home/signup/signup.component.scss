@@ -1,7 +1,11 @@
 p,h1,h2,h3,h4,h5,h6, ul {
   margin: 0;
- 
 }
+
+.safe-area-nav {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
 .signup-container {
   display: flex;
   flex-direction: column;
@@ -35,7 +39,7 @@ p,h1,h2,h3,h4,h5,h6, ul {
 
   h2 {
     gap: 14px;
-    margin-top: 52px !important
+    margin-top: 20px !important
   }
 
   .title-text {
@@ -422,7 +426,8 @@ p,h1,h2,h3,h4,h5,h6, ul {
   }
 
   .role-selector {
-    background: #FAD2AE;
+
+    background:#FAD2AE;
     border-radius: 25px;
     overflow: hidden;
     padding: 0px 0px 0px 15px;
@@ -1573,8 +1578,7 @@ ion-content.bg-white {
     list-style-type: disc;
   }
 
-  li {
-  }
+ 
 
   .first-word {
     color: #90214D;

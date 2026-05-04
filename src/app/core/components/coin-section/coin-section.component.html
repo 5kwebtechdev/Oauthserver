@@ -45,7 +45,8 @@
 
             <div *ngFor="let item of sortedCoinItems" class="coin-list-item">
                 <div class="coin-detail">
-                    <img [src]="item.icon" alt="{{ item.label }} icon" class="item-icon">
+                    <img [src]="item.icon" alt="{{ item.label }} icon" class="item-icon"
+                         (error)="$any($event.target).src='/assets/Icons-Neutral/Icons-Coins.png'">
                     <div class="coin-label">
                         <div class="item-title">{{ item.label }}</div>
                         <div class="item-date">{{ item.date | date:'mediumDate' }}</div>

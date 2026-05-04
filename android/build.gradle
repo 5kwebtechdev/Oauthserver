@@ -24,19 +24,17 @@ subprojects {
     afterEvaluate { proj ->
         def androidExt = proj.extensions.findByName('android')
         if (androidExt != null) {
-            androidExt.compileOptions.sourceCompatibility = JavaVersion.VERSION_17
-            androidExt.compileOptions.targetCompatibility = JavaVersion.VERSION_17
+            androidExt.compileOptions.sourceCompatibility = JavaVersion.VERSION_21
+            androidExt.compileOptions.targetCompatibility = JavaVersion.VERSION_21
         }
 
         proj.tasks.withType(JavaCompile).configureEach {
-            it.sourceCompatibility = '17'
-            it.targetCompatibility = '17'
+            it.sourceCompatibility = '21'
+            it.targetCompatibility = '21'
         }
 
-        // barcode-scanner and filesystem use kotlin { jvmToolchain(21) }.
-        // Override that here so our JDK 17 is used for Kotlin compilation too.
         try {
-            proj.kotlin.jvmToolchain(17)
+            proj.kotlin.jvmToolchain(21)
         } catch (Exception ignored) {}
     }
 }

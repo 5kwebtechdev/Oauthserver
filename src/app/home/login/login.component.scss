@@ -1,7 +1,15 @@
-.login_section{
-    min-height: 100vh;
-      background: #FDEAD7;
+ion-content {
+  --background: #FDEAD7;
+}
 
+.login_section {
+  min-height: 100dvh;
+  background: #FDEAD7;
+}
+
+.safe-area-nav {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: 12px;
 }
 .signup-container {
   display: flex;

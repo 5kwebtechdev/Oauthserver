@@ -632,6 +632,70 @@ body.barcode-scanner-active {
   --mb-toast-bg: #FDCBCC;
   --mb-toast-text: #BB2124;
 }
+// .role-selector  .role-selection-info .ng-tns-c2933442544-0{
+ 
+// }
+.role-selector  .role-selection-info{
+ display:grid;
+ grid-template-columns: 2fr 1fr;
+}
+.role-selection-info {
+  display: flex;
+  align-items: center; /* optional */
+}
+
+.role-selection-info .text-role {
+  flex: 0 0 60%;
+}
+
+.role-selection-info img {
+  flex: 0 0 40%;
+      max-width: 37% !important;
+    margin-top: 50px;
+}
+.role-selector .row {
+  display: flex;
+}
+
+.role-selector .row > div:first-child {
+  flex: 0 0 45%;
+  max-width: 45%;
+}
+
+.role-selector .row > div:last-child {
+  flex: 0 0 55%;
+  max-width: 55%;
+}
+.role-selector .row > div:first-child .role-selector img {
+    
+    margin-top: 40px;
+}
+.role-selector img {
+    width: 99% !important;
+    height: auto;
+    margin-top: 56px;
+}
+.role-selector .self-role {
+  display: flex;
+  align-items: center;
+}
+.signup-container[_ngcontent-ng-c2224025112]   .role-selector[_ngcontent-ng-c2224025112]:nth-child(2) {
+    padding: 0px!important;
+}
+.role-selector .text-role {
+  flex: 0 0 60%;
+  max-width: 60%;
+}
+
+.role-selector .role-img {
+  flex: 0 0 40%;
+  max-width: 40%;
+}
+
+.role-selector .role-img img {
+  width: 100%;
+  height: auto;
+}
 
 // Slide-in animation for toast
 @keyframes slideInUp {
