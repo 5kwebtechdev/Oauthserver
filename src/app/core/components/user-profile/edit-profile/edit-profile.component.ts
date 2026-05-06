@@ -8,7 +8,7 @@ import { MindfulButtonComponent } from '../../mindful-button/mindful-button.comp
 import { CountriesService, Country } from '../../../services/countries.service';
 import { Subscription, Subject, of } from 'rxjs';
 import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-input.component';
-import { AuthService as PackageAuthService, EditProfilePayload } from '../../../../../package/api/auth.service';
+import { AuthService as PackageAuthService } from '../../../../../package/api/auth.service';
 import { AuthService as CoreAuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
 import { UserService } from '../../../services/user.service';
@@ -127,6 +127,9 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   // Store current user data from backend
   currentUserData: any = null;
 
+  // Store avatarId from backend for update payload
+  private currentAvatarId: number | null = null;
+
   // Track initial values to detect changes
   private initialValues: {
     fullName: string | null;
@@ -195,45 +198,17 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   }
 
   private loadUserProfile(): void {
-    // First try to get from UserService (user_profile in localStorage)
-    let userProfile = this.userService.getUserProfile();
-
-    // If not available, try to read from user_data (set during login)
-    if (!userProfile) {
-      try {
-        const userData = localStorage.getItem('user_data');
-        if (userData) {
-          const parsedData = JSON.parse(userData);
-          console.log('[EditProfile] Loaded user_data from login:', parsedData);
-          // Use the helper method to prefill form
-          this.prefillFormFromUserData(parsedData);
-          return;
+    this.subscription.add(
+      this.authService.getProfileFromAPI().subscribe({
+        next: (data) => {
+          console.log('[EditProfile] Loaded profile from API:', data);
+          this.prefillFormFromUserData(data);
+        },
+        error: (err) => {
+          console.error('[EditProfile] Failed to load profile from API:', err);
         }
-      } catch (e) {
-        console.error('[EditProfile] Error loading user_data:', e);
-      }
-    }
-
-    if (userProfile) {
-      console.log('[EditProfile] Loading from UserService:', userProfile);
-      // Map UserService profile to user_data format and prefill
-      const mappedData = {
-        id: userProfile.userId,
-        name: userProfile.name,
-        email: userProfile.email,
-        phone: userProfile.phone,
-        dateOfBirth: userProfile.dob,
-        gender: userProfile.gender,
-        relationship: userProfile.relationship,
-        avatar: {
-          url: userProfile.avatarUrl,
-          avatarName: userProfile.avatarName
-        }
-      };
-      this.prefillFormFromUserData(mappedData);
-    } else {
-      console.warn('[EditProfile] No user profile data found to autofill');
-    }
+      })
+    );
   }
 
   /**
@@ -298,17 +273,29 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
     // 7. Auto-fill Avatar for non-parent accounts
     if (this.accountType !== 'parent') {
-      // Get avatar info from nested avatar object or top-level properties
+      // Support both flat (new API) and nested avatar object (legacy)
       const avatarInfo = userData.avatar || {};
-      // avatarName is textual/ID only; do not use it to infer image URL or selection.
-      this.avatarName = avatarInfo.avatarName || userData.avatarName || this.avatarName;
-      const avatarImageName = avatarInfo.avatarImageName || userData.avatarImageName;
+      this.avatarName = userData.avatarName || avatarInfo.avatarName || this.avatarName;
+      const avatarImageName = userData.avatarImageName || avatarInfo.avatarImageName;
 
-      // Only use explicit avatarImageName to select image; do NOT derive from avatarName.
+      // Store avatarId from API response (flat format)
+      if (userData.avatarId != null) {
+        this.currentAvatarId = userData.avatarId;
+      }
+
       if (avatarImageName) {
         this.avatarImageName = avatarImageName;
         console.log('[EditProfile] Avatar Image Name set to:', this.avatarImageName);
+      }
 
+      // Select avatar by avatarId (new flat format) or imageName (legacy)
+      if (this.currentAvatarId != null) {
+        const avatar = this.avatars.find(a => a.key === this.currentAvatarId);
+        if (avatar) {
+          this.avatarSelected = avatar.key;
+          console.log('[EditProfile] Avatar selected by avatarId:', avatar.key);
+        }
+      } else if (avatarImageName) {
         const avatar = this.avatars.find(a => a.imageName === avatarImageName);
         if (avatar) {
           this.avatarSelected = avatar.key;
@@ -556,33 +543,31 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     // Submit to backend
     this.isSubmitting = true;
     this.subscription.add(
-      this.authService.editProfile(payload)
+      this.authService.updateProfileOnAPI(payload)
         .pipe(finalize(() => { this.isSubmitting = false; }))
         .subscribe({
           next: (response) => {
             this.coreService.triggerToasrt('Profile updated successfully!');
             console.log('[EditProfile] Profile update response:', response);
 
-            // Update local user profile with response data
             if (response) {
+              // Response is flat: avatarId, avatarImageName at top level
+              const avatarImgName = response.avatarImageName || response.avatar?.avatarImageName;
               this.userService.updateUserProfile({
                 name: response.name,
                 email: response.email,
                 phone: response.phone,
                 gender: response.gender?.toLowerCase() as 'male' | 'female',
                 dob: response.dateOfBirth,
-                avatarUrl: response.avatar?.avatarImageName ? this.deriveAvatarUrlFromImageName(response.avatar.avatarImageName) : undefined,
-                avatarName: response.avatar?.avatarName
+                avatarUrl: avatarImgName ? this.deriveAvatarUrlFromImageName(avatarImgName) : undefined,
+                avatarName: response.avatarName || response.avatar?.avatarName
               });
 
-              if (response.avatar?.avatarImageName) {
-                this.avatarImageName = response.avatar.avatarImageName;
-              }
+              if (avatarImgName) this.avatarImageName = avatarImgName;
+              if (response.avatarId != null) this.currentAvatarId = response.avatarId;
 
               this.currentUserData = response;
-              // Also sync legacy localStorage user_data (login cache) if present
               this.syncUserDataStorage(response);
-              // update stored initial values after successful update
               this.storeInitialValues();
               this.router.navigate(['/authed/user-profile']);
             }
@@ -590,34 +575,19 @@ export class EditProfileComponent implements OnInit, OnDestroy {
           error: (error) => {
             console.error('Profile update error:', error);
 
-            // Restore previous user profile in UserService if API call failed
-            if (this.currentUserData) {
-              this.userService.setUserProfile(this.currentUserData);
-              console.log('[EditProfile] Restored previous user profile after API failure');
-            }
-
-            // If backend returns the specific avatar-change limit message, show it in
-            // the avatar suggestions area instead of a toast.
             if (error?.status === 400 && error?.error?.message === 'Avatar name can be changed only once') {
               this.avatarSuggestionError = error.error.message || 'Avatar name can be changed only once';
-              // Ensure suggestions list is hidden when showing the error
               this.avatarSuggestions = [];
               this.showAvatarSuggestions = false;
               return;
             }
 
             let errorMessage = 'Failed to update profile. Please try again.';
-
-            if (error?.status === 404 && error?.error?.message?.includes('Avatar')) {
-              errorMessage = 'Avatar not found. Profile updated without avatar changes.';
-              this.retryProfileUpdateWithoutAvatar();
-              return;
-            } else if (error?.error?.message) {
+            if (error?.error?.message) {
               errorMessage = error.error.message;
             } else if (error?.message) {
               errorMessage = error.message;
             }
-
             this.coreService.triggerToasrt(errorMessage);
           }
         })
@@ -672,68 +642,28 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     const initialEmail = (this.initialValues.email || '').trim().toLowerCase();
     if (currentEmail && currentEmail !== initialEmail) payload.email = this.profileForm.get('email')!.value!.trim();
 
-    // Avatar selection (numeric avatar key)
-    // NOTE: selecting an avatar image should only send `avatarImageName`.
-    // `avatarName` is considered a user-provided custom name and should only be
-    // sent when explicitly edited by the user.
-    if (this.avatarSelected !== this.initialValues.avatarSelected) {
-      if (this.avatarSelected) {
-        const selectedAvatarData = this.avatars.find(a => a.key === this.avatarSelected);
-        if (selectedAvatarData) {
-          // send only the image name when user picks an avatar image
-          payload.avatarImageName = selectedAvatarData.imageName;
-        }
-      //} else if (this.avatarName && this.avatarName.trim() && this.avatarName.trim() !== this.currentUserData?.avatarName) {
-        // avatar selection cleared but the user provided a custom name -> send it
-        //payload.avatarName = this.avatarName.trim();
-        //if (this.avatarImageName?.trim()) payload.avatarImageName = this.avatarImageName.trim();
-      } else if (!this.avatarSelected && this.avatarName && this.avatarName.trim()) {
-        // if avatarSelected cleared but avatarName present and differs
-        payload.avatarName = this.avatarName.trim();
-        if (this.avatarImageName?.trim()) payload.avatarImageName = this.avatarImageName.trim();
-      }
-    } else {
-      // avatarSelected unchanged, but custom name might have changed
-      const currentAvatarName = this.avatarName?.trim() || '';
-      const initialAvatarName = this.initialValues.avatarName?.trim() || '';
-      if (currentAvatarName && currentAvatarName !== initialAvatarName) {
-        payload.avatarName = currentAvatarName;
-        if (this.avatarImageName?.trim()) payload.avatarImageName = this.avatarImageName.trim();
-      }
-      // If the avatar name was prefilled and the user didn't change it,
-      // include the prefilled/avatar name in the payload so backend receives it as-is.
-      if (initialAvatarName && currentAvatarName === initialAvatarName) {
-        payload.avatarName = currentAvatarName;
-        if (this.avatarImageName?.trim()) payload.avatarImageName = this.avatarImageName.trim();
-      }
+    // Avatar selection
+    if (this.avatarSelected !== this.initialValues.avatarSelected && this.avatarSelected) {
+      payload.avatarId = this.avatarSelected;
+      const sel = this.avatars.find(a => a.key === this.avatarSelected);
+      if (sel) payload.avatarImageName = sel.imageName;
     }
 
-    // If there are any other changes to send, include an avatar name automatically:
-    // priority: user-edited `avatarName` > generated from `avatarSelected` > existing backend `avatarName`.
-    if (Object.keys(payload).length) {
-      const currentAvatarName = this.avatarName?.trim();
-      if (!payload.avatarName) {
-        if (currentAvatarName) {
-          payload.avatarName = currentAvatarName;
-        } else if (this.avatarSelected) {
-          payload.avatarName = `avatar${this.avatarSelected}`;
-        } else if (this.currentUserData?.avatarName) {
-          payload.avatarName = this.currentUserData.avatarName;
-        }
-      }
-
-      // ensure avatarImageName is sent when available
-      if (!payload.avatarImageName) {
-        if (this.avatarImageName?.trim()) payload.avatarImageName = this.avatarImageName.trim();
-        else if (this.avatarSelected) {
-          const sel = this.avatars.find(a => a.key === this.avatarSelected);
-          if (sel) payload.avatarImageName = sel.imageName;
-        }
-      }
-      return payload;
+    // Always include avatarName if it changed
+    const currentAvatarName = this.avatarName?.trim() || '';
+    const initialAvatarName = this.initialValues.avatarName?.trim() || '';
+    if (currentAvatarName !== initialAvatarName) {
+      payload.avatarName = currentAvatarName;
     }
 
-    return null;
+    if (Object.keys(payload).length === 0) return null;
+
+    // Always send avatarId, avatarName, avatarImageName so backend has full context
+    if (!payload.avatarId && this.currentAvatarId != null) payload.avatarId = this.currentAvatarId;
+    if (!payload.avatarName && this.avatarName?.trim()) payload.avatarName = this.avatarName.trim();
+    if (!payload.avatarImageName && this.avatarImageName?.trim()) payload.avatarImageName = this.avatarImageName.trim();
+
+    return payload;
   }
 
   /**
@@ -1014,63 +944,29 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Retry profile update without avatar if avatar 404 error occurs
+   * Returns true when any field has invalid data — disables the Update Info button.
    */
-  private retryProfileUpdateWithoutAvatar(): void {
-    const phoneRaw = (this.profileForm.get('phone')?.value || '').replace(/\D/g, '');
+  get isFormInvalid(): boolean {
+    // Full name: required, max 40 chars
+    if (!this.fullName?.trim() || this.showFullNameError) return true;
 
-    const payload: EditProfilePayload = {
-      name: this.fullName!.trim(),
-      dateOfBirth: this.formatDateForBackend(this.profileForm.get('dob')!.value!),
-      gender: this.gender!,
-      email: this.profileForm.get('email')!.value!.trim()
-      // Explicitly not including avatarName or avatarImageName
-    } as any;
+    // Date of birth: required, no age constraint error
+    if (!this.profileForm.get('dob')?.value || !!this.ageError) return true;
 
-    if (phoneRaw) {
-      payload.phone = `${this.selectedCountry.code}${phoneRaw}`;
-    }
+    // Gender: required
+    if (!this.gender) return true;
 
-    this.isSubmitting = true;
-    this.subscription.add(
-      this.authService.editProfile(payload)
-        .pipe(
-          finalize(() => {
-            this.isSubmitting = false;
-          })
-        )
-        .subscribe({
-          next: (response) => {
-            this.coreService.triggerToasrt('Profile updated successfully (avatar unchanged)!');
-            console.log('[EditProfile] Profile update response:', response);
+    // Phone: optional — validate only when a value is present
+    const phone = this.profileForm.get('phone')?.value;
+    if (phone && !this.isPhoneValid(phone)) return true;
 
-            // Update local user profile
-              if (response) {
-              this.userService.updateUserProfile({
-                name: response.name,
-                email: response.email,
-                phone: response.phone,
-                gender: response.gender?.toLowerCase() as 'male' | 'female',
-                dob: response.dateOfBirth,
-                avatarUrl: response.avatar?.avatarImageName ? this.deriveAvatarUrlFromImageName(response.avatar.avatarImageName) : undefined,
-                avatarName: response.avatar?.avatarName
-              });
+    // Email: required and must pass format validation
+    if (this.profileForm.get('email')?.invalid) return true;
 
-              // Update avatar image name if available
-              if (response.avatar?.avatarImageName) {
-                this.avatarImageName = response.avatar.avatarImageName;
-              }
-              // Sync legacy login cache as well
-              this.syncUserDataStorage(response);
-            }
-          },
-          error: (error) => {
-            console.error('[EditProfile] Retry profile update error:', error);
-            const errorMessage = error?.error?.message || error?.message || 'Failed to update profile.';
-            this.coreService.triggerToasrt(errorMessage);
-          }
-        })
-    );
+    // Avatar name: max 20 chars (shown error means invalid)
+    if (this.showAvatarNameError) return true;
+
+    return false;
   }
 
   /**

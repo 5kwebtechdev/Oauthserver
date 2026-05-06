@@ -166,14 +166,14 @@ export class UserService {
    * Fetch user profile from API
    */
   fetchUserProfileFromAPI(userId: number): Observable<UserProfile> {
-    return this.http.get<UserProfile>(`${this.apiUrl}/users/${userId}/profile`);
+    return this.http.get<UserProfile>(`${this.apiUrl}/profile`);
   }
 
   /**
    * Update user profile on API
    */
   updateUserProfileOnAPI(userId: number, profile: Partial<UserProfile>): Observable<UserProfile> {
-    return this.http.put<UserProfile>(`${this.apiUrl}/users/${userId}/profile`, profile);
+    return this.http.put<UserProfile>(`${this.apiUrl}/profile`, profile);
   }
 
   /**

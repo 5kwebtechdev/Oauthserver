@@ -6,7 +6,7 @@
         flex-direction:column;
         justify-content:center;
         align-items:center;
-        height:calc(100vh - 300px); /* Adjust height considering navigator height */
+        height:calc(100dvh - 300px); /* Adjust height considering navigator height */
     }
 
 p,h1{

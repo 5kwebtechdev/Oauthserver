@@ -7,7 +7,7 @@
 	/* center vertically within the page when empty */
 	justify-content: center;
 	/* leave room for header/navigation; tweak if your header height differs */
-	min-height: calc(100vh - 120px);
+	min-height: calc(100dvh - 120px);
 	width: 100%;
 }
 

@@ -178,7 +178,7 @@ label {
 
 .mindful-page-container {
   padding: 20px;
-  min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   box-sizing: border-box;
   color: #772817;
@@ -353,7 +353,6 @@ label {
 .bg-mindful-primary,
 .bg-mindful-secondary,
 .bg-mindful-accent {
-  min-height: 100vh;
   min-height: 100dvh;
   width: 100vw;
   position: relative;
@@ -373,13 +372,16 @@ label {
   background: #FAD2AE;
 }
 
+ion-app {
+  padding-top: env(safe-area-inset-top);
+  box-sizing: border-box;
+}
+
 ion-content {
   --background: transparent;
   width: 100vw;
-  height: calc(100dvh - env(safe-area-inset-bottom)) !important;  
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
-  padding-top: calc(36px + env(safe-area-inset-top));
+  height: 100dvh !important;
+  padding-top: 36px;
 
   >* {
     margin-top: 0 !important;
@@ -404,11 +406,10 @@ ion-content {
   }
 
   .mindful-page-container {
-    min-height: 100vh;
     min-height: 100dvh;
     width: 100%;
     position: relative;
-    padding-top: calc(36px + env(safe-area-inset-top)) !important;
+    padding-top: 36px !important;
 
     >* {
       margin-top: 0 !important;
@@ -425,9 +426,8 @@ ion-content {
     &.bg-mindful-secondary,
     &.bg-mindful-accent {
       .mindful-page-container {
-        min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
         min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-        padding-top: env(safe-area-inset-top);
+        padding-top: 36px;
         padding-bottom: calc(var(--footer-visual-height, 80px) + env(safe-area-inset-bottom, 0px));
       }
     }
@@ -439,7 +439,6 @@ ion-content {
   .bg-mindful-primary,
   .bg-mindful-secondary,
   .bg-mindful-accent {
-    min-height: 100vh;
     min-height: 100dvh;
   }
 
@@ -459,7 +458,7 @@ ion-content {
   .bg-mindful-primary,
   .bg-mindful-secondary,
   .bg-mindful-accent {
-    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   ion-content {
@@ -468,7 +467,7 @@ ion-content {
     &.bg-mindful-secondary,
     &.bg-mindful-accent {
       .mindful-page-container {
-        min-height: 100vh;
+        min-height: 100dvh;
       }
     }
   }
