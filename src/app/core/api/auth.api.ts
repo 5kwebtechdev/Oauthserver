@@ -18,4 +18,8 @@ export class AuthApi {
         // Fallback to environment token if no user token is found
         return environment.apiAuthToken || null;
     }
+
+    getUserId(): string | null {
+        return localStorage.getItem('user_id');
+    }
 }

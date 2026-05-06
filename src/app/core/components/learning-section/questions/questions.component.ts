@@ -82,13 +82,15 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     showHint = false;
 
     // Hint usage tracking
-    hintsUsed = 0;
-    maxHints = 2;
+    hintsUsed = 0;          // hints consumed in this challenge session
+    maxHints = 2;           // per-challenge session limit
     coinsPerHint = 3;
     totalCoins = 100; // Default value, should be fetched from user profile
-    isHintLoading = false; // Track hint request state
-    currentHintText = ''; // Store hint text from API response
-    hintLimitReached = false; // Track if hint limit is reached from API
+    isHintLoading = false;
+    currentHintText = '';
+    hintErrorText = '';
+    hintLimitReached = false;
+    questionHints: { [questionId: number]: string } = {}; // cached hint per question
 
     // Leave challenge popup configuration
     leaveChallengePopupConfig: MindfulPopupConfig = {
@@ -211,6 +213,14 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             this.questionAnswers[this.questions[i].id] = { selected: null, correct: false, selectedOptionId: null };
         }
 
+        // Reset hint state for this challenge session
+        this.hintsUsed = 0;
+        this.hintLimitReached = false;
+        this.questionHints = {};
+        this.showHint = false;
+        this.currentHintText = '';
+        this.hintErrorText = '';
+
         // Parse and set timer from timeDuration (e.g., "5 Minutes")
         this.parseTimeDuration(this.challenge.timeDuration);
 
@@ -300,8 +310,13 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         this.selectedAnswer = this.questionAnswers[currentQuestion.id].selected;
         // Reset answer checked state for new question
         this.answerChecked = false;
-        this.showHint = false;
         this.selectedOption = null;
+
+        // Restore hint state for this question (already fetched hints stay visible)
+        const cached = this.questionHints[currentQuestion.id];
+        this.currentHintText = cached || '';
+        this.showHint = !!cached;
+        this.hintErrorText = '';
 
         // Reset all buttons when loading a new question
         setTimeout(() => {
@@ -608,99 +623,61 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Toggle hint visibility and deduct coins
+     * Toggle hint for the current question.
+     * - Each challenge session allows maxHints (2) total hint fetches.
+     * - Once a hint is fetched for a question it is cached; re-toggling
+     *   the same question's hint never consumes another slot.
+     * - Restarting the challenge resets hintsUsed and the cache.
      */
     toggleHint() {
-        // Prevent multiple simultaneous requests
-        if (this.isHintLoading) {
-            console.log('Hint request already in progress');
+        const currentQuestion = this.questions[this.currentQuestionIndex];
+        if (!currentQuestion?.id) return;
+
+        // If this question's hint is already cached, just toggle visibility
+        if (this.questionHints[currentQuestion.id]) {
+            this.currentHintText = this.questionHints[currentQuestion.id];
+            this.showHint = !this.showHint;
             return;
         }
 
-        // Check if max hints reached
+        if (this.isHintLoading) return;
+
         if (this.hintsUsed >= this.maxHints) {
-            console.log('Maximum hints reached');
+            this.hintLimitReached = true;
             return;
         }
 
-        // Check if user has enough coins
-        if (this.totalCoins < this.coinsPerHint) {
-            console.log('Not enough coins');
-            return;
-        }
+        if (this.totalCoins < this.coinsPerHint) return;
 
-        // Validate challenge availability
-        if (!this.challenge?.challengeId) {
-            console.error('Challenge ID not available');
-            return;
-        }
-
-        // Set loading state
         this.isHintLoading = true;
 
-        // Call API to use hint
-        this.learningService.useHint(this.challenge.challengeId).subscribe({
+        this.learningService.useHint(currentQuestion.id).subscribe({
             next: (response) => {
-                console.log('Hint used successfully:', response);
+                this.isHintLoading = false;
+                this.hintErrorText = '';
 
-                // Update hints used from API response
-                if (response.hintCount !== undefined) {
-                    this.hintsUsed = response.hintCount;
-                }
-
-                // Store hint text from API
-                if (response.hint) {
-                    this.currentHintText = response.hint;
-                }
-
-                // Show hint on successful API response
+                const hintText = response.hint || '';
+                this.questionHints[currentQuestion.id] = hintText;
+                this.currentHintText = hintText;
                 this.showHint = true;
 
-                // Deduct coins
+                this.hintsUsed++;
                 this.totalCoins -= this.coinsPerHint;
 
-                console.log(`Hint used. Remaining coins: ${this.totalCoins}, Hints used: ${this.hintsUsed}/${this.maxHints}`);
-
-                // Reset loading state
-                this.isHintLoading = false;
+                if (this.hintsUsed >= this.maxHints) {
+                    this.hintLimitReached = true;
+                }
             },
             error: (error) => {
-                console.error('Failed to use hint:', error);
-
-                // Reset loading state
                 this.isHintLoading = false;
 
-                // Check if hint limit reached
                 if (error.error?.message === 'Hint limit reached') {
                     this.hintLimitReached = true;
-                    console.log('Hint limit reached from API');
                     return;
                 }
 
-                // Handle specific error cases
-                let errorMessage = 'Unable to use hint. Please try again.';
-
-                if (error.status === 400) {
-                    errorMessage = 'Invalid request. Please check your input.';
-                    console.error('Bad request: Invalid challenge or hint data');
-                } else if (error.status === 403) {
-                    errorMessage = 'You don\'t have enough coins or permission to use this hint.';
-                    console.error('Insufficient coins or permissions');
-                } else if (error.status === 404) {
-                    errorMessage = 'Hint not found for this challenge.';
-                    console.error('Challenge or hint not found');
-                } else if (error.status === 500) {
-                    errorMessage = 'Server error occurred. Please try again later.';
-                    console.error('Server error:', error.error?.message || error.message);
-                } else {
-                    errorMessage = 'Network error. Please check your connection.';
-                }
-
-                // Log the error message for debugging
-                console.error('Error message:', errorMessage);
-
-                // TODO: Show user-friendly error popup
-                // this.showErrorPopup(errorMessage);
+                // Show API error message (e.g. "Insufficient coins.") in the hint area
+                this.hintErrorText = error.error?.message || 'Unable to use hint. Please try again.';
             }
         });
     }

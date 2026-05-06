@@ -9,7 +9,7 @@
 	gap: 8px;
 	justify-content: center;
 	align-items: center;
-	height: calc(100vh - 300px); /* account for header/navigation */
+	height: calc(100dvh - 300px); /* account for header/navigation */
 	text-align: center;
 	padding-top: 24px;
 }

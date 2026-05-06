@@ -141,6 +141,34 @@ export class AuthService {
         return this.http.put<EditProfileResponse>(url, payload, { headers });
     }
 
+    /**
+     * Get user profile from API.
+     * Endpoint: GET /v1/user/profile
+     */
+    getProfileFromAPI(): Observable<any> {
+        const url = `${this.apiUrl}/user/profile`;
+        const userToken = this.getToken();
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`
+        });
+        return this.http.get<any>(url, { headers });
+    }
+
+    /**
+     * Update user profile via new endpoint.
+     * Endpoint: PUT /v1/user/profile
+     */
+    updateProfileOnAPI(payload: any): Observable<any> {
+        const url = `${this.apiUrl}/user/profile`;
+        const userToken = this.getToken();
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`
+        });
+        return this.http.put<any>(url, payload, { headers });
+    }
+
     logout(): void {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_id');

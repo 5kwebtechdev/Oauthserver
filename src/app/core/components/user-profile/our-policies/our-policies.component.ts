@@ -34,11 +34,12 @@ export class OurPoliciesComponent implements OnInit {
     this.selectedTab = tab;
   }
 
-  openFullPolicies() {
-    // Placeholder: open an external or internal policies page.
-    // Replace URL with the real policies route when available.
+  openFullPolicies(tab: 'terms' | 'privacy') {
+    const url = tab === 'privacy'
+      ? 'https://supermeapp.com/privacy'
+      : 'https://supermeapp.com/terms-use';
     try {
-      window.open('/assets/policies/full-policies.html', '_blank');
+      window.open(url, '_blank');
     } catch (e) {
       console.warn('Could not open policies:', e);
     }

@@ -35,11 +35,14 @@ export class NotesApi {
 
     /**
      * Fetch all notes from the backend.
-     * Expected endpoint: GET {base}/notes/all
+     * Endpoint: GET {base}/notes/all?userId={userId}
      */
     getAll(): Observable<any> {
+        const userId = this.authApi.getUserId();
         const url = `${this.base}/notes/all`;
-        return this.http.get(url, { headers: this.headers() });
+        const params: any = {};
+        if (userId) params['userId'] = userId;
+        return this.http.get(url, { headers: this.headers(), params });
     }
 
     /**

@@ -5,7 +5,7 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
         // Match the package name in android/app/google-services.json
-        applicationId "com.supr.mind"
+        applicationId "com.superme"
         minSdkVersion 26
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 20
@@ -22,6 +22,7 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
         }
     }
 }

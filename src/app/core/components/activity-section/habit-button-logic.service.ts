@@ -66,17 +66,16 @@ export class HabitButtonLogicService {
   }
 
   /**
-   * Check if "Let's Go" button should be enabled
+   * Check if "Let's Go" button should be enabled.
+   * Enabled once the activity start time has been reached and until the end time.
    */
   isLetsGoEnabled(habit: any, hasOtherOngoing: boolean = false): boolean {
     if (hasOtherOngoing) return false;
     const { startTimeStamp, endTimeStamp } = this.getTimestamps(habit);
-    // Only enable for activities scheduled for today
-    if (!this.isToday(startTimeStamp)) return false;
-    // Enabled only within the tight start window and when not past the activity end
     if (!startTimeStamp || !endTimeStamp) return false;
-    if (Date.now() > endTimeStamp) return false; // hidden/disabled after end time
-    return this.isWithinLetsGoWindow(startTimeStamp, endTimeStamp);
+    if (!this.isToday(startTimeStamp)) return false;
+    const now = Date.now();
+    return now >= startTimeStamp && now <= endTimeStamp;
   }
 
   /**
@@ -121,12 +120,11 @@ export class HabitButtonLogicService {
     // If ongoing, enable (but caller must ensure `hasOtherOngoing` is false)
     if (status === 'ongoing') return true;
 
-    // For pending: enable Done only if it's for today and the Let's Go window has closed
+    // For pending: enable Done once start time has been reached
     if (status === 'pending') {
       if (!startTimeStamp) return false;
-      if (!this.isToday(startTimeStamp)) return false; // only today's pending
-      // Enable only after start + FIVE_MINUTES (Let's Go window closed)
-      return Date.now() > (startTimeStamp + this.FIVE_MINUTES);
+      if (!this.isToday(startTimeStamp)) return false;
+      return Date.now() >= startTimeStamp;
     }
 
     return false;

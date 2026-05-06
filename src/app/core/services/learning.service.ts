@@ -400,8 +400,8 @@ export class LearningService {
      * @param challengeId The ID of the challenge
      * @returns Observable with the API response
      */
-    useHint(challengeId: number): Observable<any> {
-        const url = `${this.apiUrl}/challenges/hint/${challengeId}/use`;
+    useHint(questionId: number): Observable<any> {
+        const url = `${this.apiUrl}/challenges/hint/${questionId}/use`;
         return this.http.get<any>(url, { headers: this.getHeaders() })
             .pipe(
                 tap(response => {

@@ -17,9 +17,9 @@ interface Slide {
 })
 export class AdBannerComponent implements OnInit, OnDestroy {
   slides: Slide[] = [
-    { head: 'Become a Young Scientist!', desc: 'Discover fun experiments with the Science Explorer Kit!', cta: 'Get yours today!', image: 'assets/images/Image 1.png' },
-    { head: 'Explore Nature', desc: 'Outdoor discovery activities and step-by-step guides.', cta: 'Get yours today!', image: 'assets/images/Image 1.png' },
-    { head: 'Creative Crafts', desc: 'Easy craft ideas for curious minds.', cta: 'Get yours today!', image: 'assets/images/Image 1.png' }
+    { head: 'Become a Young Scientist!', desc: 'Discover fun experiments with the Science Explorer Kit!', cta: 'Get yours today!', image: 'assets/images/Image1.png' },
+    { head: 'Explore Nature', desc: 'Outdoor discovery activities and step-by-step guides.', cta: 'Get yours today!', image: 'assets/images/Image1.png' },
+    { head: 'Creative Crafts', desc: 'Easy craft ideas for curious minds.', cta: 'Get yours today!', image: 'assets/images/Image1.png' }
   ];
 
   currentIndex = 0;
