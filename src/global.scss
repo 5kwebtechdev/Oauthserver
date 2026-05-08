@@ -73,6 +73,15 @@ $svg-icons: (
   --font-sans: 'Nunito', sans-serif;
   /* Visual footer height used across app to reserve space for fixed footer */
   --footer-visual-height: 80px;
+
+  // ── Safe Area Inset Variables ─────────────────────────────────────────
+  // Fallback 0px for devices/browsers that don't support env().
+  // On Android (setOverlaysWebView=false) these evaluate to 0.
+  // On iOS (viewport-fit=cover) these return the real notch/gesture values.
+  --sat: env(safe-area-inset-top,    0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left,   0px);
+  --sar: env(safe-area-inset-right,  0px);
 }
 
 html,
@@ -115,6 +124,62 @@ label {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+// ── Safe Area Utility Classes ─────────────────────────────────────────────
+// Add these to any element that needs to respect device safe areas.
+// Works on all: Samsung, Pixel, Xiaomi, iPhone (notch/Dynamic Island/rounded).
+
+// Pad all four sides
+.safe-area {
+  padding-top:    var(--sat) !important;
+  padding-bottom: var(--sab) !important;
+  padding-left:   var(--sal) !important;
+  padding-right:  var(--sar) !important;
+}
+
+// Individual sides
+.safe-top    { padding-top:    var(--sat) !important; }
+.safe-bottom { padding-bottom: var(--sab) !important; }
+.safe-left   { padding-left:   var(--sal) !important; }
+.safe-right  { padding-right:  var(--sar) !important; }
+
+// Horizontal + vertical pairs
+.safe-x {
+  padding-left:  var(--sal) !important;
+  padding-right: var(--sar) !important;
+}
+.safe-y {
+  padding-top:    var(--sat) !important;
+  padding-bottom: var(--sab) !important;
+}
+
+// Margin equivalents (for cases where padding can't be used)
+.safe-margin-top    { margin-top:    var(--sat) !important; }
+.safe-margin-bottom { margin-bottom: var(--sab) !important; }
+
+// Min-height that always fills the safe viewport (useful for full-screen pages)
+.safe-full-height {
+  min-height: calc(100dvh - var(--sat) - var(--sab)) !important;
+}
+
+// Fixed-positioned element that is automatically safe-area aware
+// Usage: add .fixed-safe to any position:fixed element
+.fixed-safe {
+  padding-top:    var(--sat);
+  padding-bottom: var(--sab);
+  padding-left:   var(--sal);
+  padding-right:  var(--sar);
+}
+
+// Header that never hides behind the status bar
+.safe-header {
+  padding-top: var(--sat);
+}
+
+// Footer / bottom bar that never hides behind gesture nav
+.safe-footer {
+  padding-bottom: var(--sab);
 }
 
 :root {
@@ -372,16 +437,23 @@ label {
   background: #FAD2AE;
 }
 
-ion-app {
-  padding-top: env(safe-area-inset-top);
-  box-sizing: border-box;
-}
-
 ion-content {
   --background: transparent;
   width: 100vw;
-  height: 100dvh !important;
-  padding-top: 36px;
+
+  // Height: full dynamic viewport minus bottom safe area.
+  // On Android (setOverlaysWebView=false): --sab=0 → 100dvh (WebView already inset by system).
+  // On iOS (viewport-fit=cover):           --sab=34px → avoids gesture bar.
+  height: calc(100dvh - var(--sab)) !important;
+
+  // ── Ionic CSS-variable padding (pierces shadow DOM) ──────────────────
+  // These are the ONLY reliable way to push content inside ion-content's
+  // internal scroll container. Regular padding on the host is ignored.
+  --padding-top:   var(--sat);  // clears status bar / notch / Dynamic Island
+  --padding-start: var(--sal);  // clears left notch in landscape
+  --padding-end:   var(--sar);  // clears right notch in landscape
+  // --padding-bottom intentionally omitted; mindful-page-container handles
+  // footer + gesture-bar clearance per-page.
 
   >* {
     margin-top: 0 !important;
@@ -393,45 +465,34 @@ ion-content {
     margin-top: 0 !important;
   }
 
-  &.bg-mindful-primary {
-    --background: #FFE9D6;
-  }
-
-  &.bg-mindful-secondary {
-    --background: #FDEAD7;
-  }
-
-  &.bg-mindful-accent {
-    --background: #FAD2AE;
-  }
+  &.bg-mindful-primary  { --background: #FFE9D6; }
+  &.bg-mindful-secondary { --background: #FDEAD7; }
+  &.bg-mindful-accent   { --background: #FAD2AE; }
 
   .mindful-page-container {
-    min-height: 100dvh;
+    // min-height fills visible safe area (top + bottom already inset above)
+    min-height: calc(100dvh - var(--sat) - var(--sab));
     width: 100%;
     position: relative;
+    // 36px aesthetic gap below navigator / between notch-offset and first content
     padding-top: 36px !important;
 
     >* {
       margin-top: 0 !important;
     }
-    /* Ensure page container reserves bottom space for fixed footer on all devices */
-    padding-bottom: calc(var(--footer-visual-height, 80px) + env(safe-area-inset-bottom, 0px));
+
+    // Bottom: reserve space for fixed footer + bottom gesture bar on every device.
+    // Samsung/Pixel/Xiaomi with gesture nav: --sab=0 (overlay=false) → just 80px.
+    // iPhone with home indicator:           --sab=34px              → 114px.
+    padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab));
   }
 }
 
+// @supports block previously duplicated env() calculations inline.
+// Now handled by --sat/--sab variables defined in :root, so this block
+// is no longer needed. Kept as empty guard in case future overrides land here.
 @supports (padding: max(0px)) {
-  ion-content {
-
-    &.bg-mindful-primary,
-    &.bg-mindful-secondary,
-    &.bg-mindful-accent {
-      .mindful-page-container {
-        min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-        padding-top: 36px;
-        padding-bottom: calc(var(--footer-visual-height, 80px) + env(safe-area-inset-bottom, 0px));
-      }
-    }
-  }
+  // intentionally empty — all safe-area logic uses var(--sat)/var(--sab) above
 }
 
 @media (max-width: 768px) {
@@ -453,6 +514,8 @@ ion-content {
   }
 }
 
+// Landscape on notch/punch-hole devices: side insets (--sal/--sar) are
+// handled by ion-content's --padding-start/--padding-end set above.
 @media (orientation: landscape) and (max-height: 500px) {
 
   .bg-mindful-primary,
@@ -467,7 +530,7 @@ ion-content {
     &.bg-mindful-secondary,
     &.bg-mindful-accent {
       .mindful-page-container {
-        min-height: 100dvh;
+        min-height: calc(100dvh - var(--sat) - var(--sab));
       }
     }
   }
