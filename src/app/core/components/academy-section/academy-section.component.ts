@@ -64,6 +64,6 @@ export class AcademySectionComponent {
   }
 
   onStart(course: CourseCard): void {
-    console.log('Start course', course.id);
+    this.router.navigate(['/authed/academy/course', course.id], { state: { course } });
   }
 }

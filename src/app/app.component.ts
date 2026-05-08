@@ -10,6 +10,7 @@ import { BadgeApi } from './core/api/badge.api';
 import { AuthApi } from './core/api/auth.api';
 import { UserService } from './core/services/user.service';
 import { CustomToastService, Toast } from './core/services/custom-toast.service';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 @Component({
   selector: 'app-root',
@@ -44,6 +45,17 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.platform.ready().then(() => {
+      if (this.platform.is('capacitor')) {
+        StatusBar.setStyle({ style: Style.Light }).catch(() => {});
+        StatusBar.setBackgroundColor({ color: '#FFE9D6' }).catch(() => {});
+        StatusBar.show().catch(() => {});
+        if (this.platform.is('android')) {
+          StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
+        }
+      }
+    });
+
     // Track app open for pet age progression
     this.recordDailyAppOpen();
 

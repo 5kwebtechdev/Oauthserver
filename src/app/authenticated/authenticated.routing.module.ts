@@ -150,6 +150,9 @@ const routes: Routes = [
         path: 'academy/course/:id',
         loadComponent: () => import('../core/components/academy-section/academy-course/academy-course.component').then(m => m.AcademyCourseComponent)
       }, {
+        path: 'analytics',
+        loadComponent: () => import('../core/components/analytics-section/analytics.component').then(m => m.AnalyticsComponent)
+      }, {
         path: 'trophies',
         loadComponent: () => import('../core/components/trophy-section/trophy-page.component').then(m => m.TrophyPageComponent)
       }, {
