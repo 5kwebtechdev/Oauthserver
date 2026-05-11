@@ -1,12 +1,14 @@
 :host {
     display: block;
+    height: 100%;
 }
 
 .card-root {
-    flex: 0 0 263px;
-   border-radius: 12px;
-background: #FFF;
-box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+    width: 263px;
+    height: 100%;
+    border-radius: 12px;
+    background: #FFF;
+    box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -51,6 +53,11 @@ box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
 
 .slide-body {
     padding: 12px 8px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
 }
 
 .head {
@@ -83,20 +90,21 @@ box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
 }
 
 .desc {
-    margin: 0.5rem 0;
     color: #6B656A;
     font-family: 'Nunito', sans-serif;
     font-size: 10px;
     font-weight: 500;
-    width: 247px;
-    margin: 0;
+    margin: 4px 0 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .meta-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 8px;
 }
 
 .meta-left {

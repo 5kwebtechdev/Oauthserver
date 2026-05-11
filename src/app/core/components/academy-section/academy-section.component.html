@@ -6,8 +6,15 @@
   </mindful-card-header>
 
   <div class="academy__cards">
-    <!-- prevent-clicks="false" stops Swiper from eating tap events on Android WebView -->
-    <swiper-container class="academy-swiper" [slides-per-view]="'auto'" [space-between]="10" [pagination]="false"
+
+    <!-- Loading -->
+    <div class="academy__loading" *ngIf="loading">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+
+    <!-- Courses -->
+    <swiper-container *ngIf="!loading && courses.length"
+      class="academy-swiper" [slides-per-view]="'auto'" [space-between]="10" [pagination]="false"
       [scrollbar]="false" [centeredSlides]="false" [freeMode]="true"
       prevent-clicks="false" prevent-clicks-propagation="false">
       <swiper-slide class="academy-slide" *ngFor="let c of courses" (click)="onStart(c)">
@@ -31,5 +38,9 @@
         </article>
       </swiper-slide>
     </swiper-container>
+
+    <!-- Empty state -->
+    <p class="academy__empty" *ngIf="!loading && !courses.length">No courses available right now.</p>
+
   </div>
 </section>

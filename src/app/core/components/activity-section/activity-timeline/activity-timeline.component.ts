@@ -69,6 +69,8 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy {
       }
     } catch (e) { /* ignore */ }
 
+    // Always fetch fresh data when the timetable page opens
+    this.calendarService.clearCache(this.selectedDate, 'day');
     this.loadEvents();
     // Reload when parent switches child
     this.subscriptions.add(

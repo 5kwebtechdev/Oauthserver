@@ -758,6 +758,9 @@ body.barcode-scanner-active {
   width: 100%;
   height: auto;
 }
+.child-role-image img{
+      width: 46% !important;
+}
 
 // Slide-in animation for toast
 @keyframes slideInUp {

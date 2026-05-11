@@ -3,6 +3,20 @@ $primary: #282527;
 $accent: #90214D;
 $card-bg: #FFFFFF;
 
+.academy__loading {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.academy__empty {
+  text-align: center;
+  color: #6B656A;
+  font-family: Nunito, sans-serif;
+  font-size: 14px;
+  padding: 24px 0;
+}
+
 .academy {
   width: 100%;
   display: flex;
