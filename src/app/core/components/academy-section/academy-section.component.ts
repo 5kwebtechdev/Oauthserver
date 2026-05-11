@@ -1,11 +1,11 @@
-import { Component, Input } from '@angular/core';
-import { NgFor } from '@angular/common';
-import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
 import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { ViewAllComponent } from '../mindful-navigator/view-all/view-all.component';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { AcademyService } from '../../services/academy.service';
 
 export interface CourseCard {
   id: string;
@@ -17,49 +17,45 @@ export interface CourseCard {
   image?: string;
 }
 
+const FALLBACK_IMAGES = [
+  '/assets/Images-Transparent/Academy-Course-Thubmnail3.png',
+  '/assets/Images-Transparent/Academy-Course-Thubmnail4.png',
+  '/assets/Images-Transparent/Academy-Course-Thubmnail5.png',
+];
+
 @Component({
   selector: 'academy-section',
   templateUrl: './academy-section.component.html',
   styleUrls: ['./academy-section.component.scss'],
   standalone: true,
-  imports: [NgFor, IonicModule, MindfulButtonComponent, MindfulCardHeaderComponent, ViewAllComponent],
+  imports: [CommonModule, IonicModule, MindfulButtonComponent, MindfulCardHeaderComponent, ViewAllComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class AcademySectionComponent {
-  @Input() courses: CourseCard[] = [
-    {
-      id: 'budget-1',
-      title: 'Budgeting Basics',
-      lessons: 10,
-      duration: '20 min',
-      level: 'Beginner',
-      description: 'Learn simple steps to plan, track, and adjust your money so you can reach your goals with confidence.',
-      image: '/assets/Images-Transparent/Academy-Course-Thubmnail3.png'
-    },
-    {
-      id: 'communication-1',
-      title: 'Communication Skills',
-      lessons: 8,
-      duration: '15 min',
-      level: 'Intermediate',
-      description: 'Master the art of clear communication and build stronger relationships in all areas of life.',
-      image: '/assets/Images-Transparent/Academy-Course-Thubmnail4.png'
-    },
-    {
-      id: 'time-management-1',
-      title: 'Time Management',
-      lessons: 12,
-      duration: '25 min',
-      level: 'Beginner',
-      description: 'Discover effective strategies to organize your time and boost productivity while maintaining balance.',
-      image: '/assets/Images-Transparent/Academy-Course-Thubmnail5.png'
-    }
-  ];
+export class AcademySectionComponent implements OnInit {
+  courses: CourseCard[] = [];
+  loading = true;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private academyService: AcademyService) {}
+
+  ngOnInit(): void {
+    this.academyService.getCourses().subscribe({
+      next: (res) => {
+        this.courses = res.map((c, i) => ({
+          id: String(c.id),
+          title: c.courseName,
+          lessons: c.noOfLessons ?? 0,
+          duration: c.duration ? `${c.duration} min` : '',
+          level: c.difficulty ?? '',
+          description: c.description ?? '',
+          image: FALLBACK_IMAGES[i % FALLBACK_IMAGES.length],
+        }));
+        this.loading = false;
+      },
+      error: () => { this.loading = false; }
+    });
+  }
 
   onViewAll(): void {
-    // Navigate to the academy home page
     this.router.navigate(['/authed/academy']);
   }
 

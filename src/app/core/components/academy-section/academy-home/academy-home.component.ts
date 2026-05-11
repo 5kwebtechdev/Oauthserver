@@ -46,8 +46,7 @@ export class AcademyHomeComponent {
         // Group courses by category and set thumbnails/counts
         for (const card of this.categoryCards) {
           card.courses = courses.filter(c => c.category === card.category && (c.enabled ?? true));
-          const firstThumb = card.courses && card.courses.length ? card.courses[0].thumbnailUrl : null;
-          card.thumbnail = firstThumb || card.image;
+          card.thumbnail = card.image;
         }
       },
       error: (err) => {

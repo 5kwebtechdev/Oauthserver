@@ -27,18 +27,15 @@ import { QRCodeComponent } from 'angularx-qrcode';
 				[class.active]="selectedRole === 'child'" [attr.aria-pressed]="selectedRole === 'child'">
 
 				<div class="row">
-				
-						<h2>Child</h2>
-						<h4>Learn and grow</h4>
-						<h4>Link with your parents</h4>
-						<h4>Earn rewards together</h4>
-					
-
-					<div class="col-4 w-80 col-md-6">
-          
+					<div class="col-6">
+						<h2 style="padding-left:10px;">Child</h2>
+						<h4 style="padding-left:10px;">Learn and grow</h4>
+						<h4 style="padding-left:10px;">Link with your parents</h4>
+						<h4 style="padding-left:10px;">Earn rewards together</h4>
+					</div>
+					<div class="col-6 p-l-0 child-role-image">
 						<img src="assets/Images-Transparent/Image-Role-Child.png" alt="">
-					
-        </div>
+					</div>
 				</div>
 			</div>
 
@@ -47,15 +44,15 @@ import { QRCodeComponent } from 'angularx-qrcode';
 				[class.active]="selectedRole === 'parent'" [attr.aria-pressed]="selectedRole === 'parent'">
 
 				<div class="row">
-					<div class="col-6 p-l-0">
+					<div class="col-6 p-l-0 image-parent">
 						<img src="assets/Images-Transparent/Image-Role-Parent.png" alt="">
 					</div>
 
 					<div class="col-6">
-						<h2>Parent</h2>
-						<h4>Grow together</h4>
-						<h4>Link with child</h4>
-						<h4>Track progress</h4>
+						<h2 style="text-align: right; padding-right: 10px;">Parent</h2>
+						<h4 style="text-align: right; padding-right: 10px;">Grow together</h4>
+						<h4 style="text-align: right; padding-right: 10px;">Link with child</h4>
+						<h4 style="text-align: right; padding-right: 10px;">Track progress</h4>
 					</div>
 				</div>
 			</div>
@@ -256,7 +253,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 .role-selector {
   overflow: hidden;
   padding-top: 25px !important;
-  padding-left: 15px !important;
+  // padding-left: 15px !important;
   position: relative;
   border: 5px solid transparent;
   transition: 0.2s;
@@ -462,7 +459,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 
 /* Role card image sizing */
 .role-selector {
-  height: 150px;
+  // height: 150px;
 
   .row {
     display: flex;
@@ -478,10 +475,10 @@ import { QRCodeComponent } from 'angularx-qrcode';
   }
 
   .col-6 img {
-    max-height: 130px;
+    max-height: 150px;
     width: auto;
     max-width: 100%;
-    object-fit: contain;
+    object-fit: cover;
     margin-top: auto;
     display: block;
     align-self: flex-end;

@@ -67,29 +67,28 @@ export class HabitButtonLogicService {
 
   /**
    * Check if "Let's Go" button should be enabled.
-   * Enabled 5 min before start time and disabled 5 min after end time.
+   * Window: 5 min before start time → 5 min after start time.
    */
   isLetsGoEnabled(habit: any, hasOtherOngoing: boolean = false): boolean {
     if (hasOtherOngoing) return false;
-    const { startTimeStamp, endTimeStamp } = this.getTimestamps(habit);
-    if (!startTimeStamp || !endTimeStamp) return false;
+    const { startTimeStamp } = this.getTimestamps(habit);
+    if (!startTimeStamp) return false;
     if (!this.isToday(startTimeStamp)) return false;
     const now = Date.now();
-    return now >= (startTimeStamp - this.FIVE_MINUTES) && now <= (endTimeStamp + this.FIVE_MINUTES);
+    return now >= (startTimeStamp - this.FIVE_MINUTES) && now <= (startTimeStamp + this.FIVE_MINUTES);
   }
 
   /**
-   * Check if "Let's Go" button should be visible
+   * Check if "Let's Go" button should be visible.
+   * Hidden once the 5-min grace window after start time has passed.
    */
   isLetsGoVisible(habit: any): boolean {
     if (!habit) return false;
     const status = habit.status?.toLowerCase();
-    // Not visible for ongoing/completed/skipped, and not visible after activity end
     if (status === 'ongoing' || status === 'completed' || status === 'skipped') return false;
-    const { startTimeStamp, endTimeStamp } = this.getTimestamps(habit);
-    // Only show Let's Go for items scheduled for today
+    const { startTimeStamp } = this.getTimestamps(habit);
     if (!this.isToday(startTimeStamp)) return false;
-    if (endTimeStamp && Date.now() > (endTimeStamp + this.FIVE_MINUTES)) return false;
+    if (startTimeStamp && Date.now() > (startTimeStamp + this.FIVE_MINUTES)) return false;
     return true;
   }
 
