@@ -7,7 +7,7 @@ import { ActivityCardComponent } from "../../core/components/activity-section/ac
 import { LearningSectionComponent } from "../../core/components/learning-section/learning-section.component";
 import { AdBannerComponent } from '../../core/components/ad-banner/ad-banner.component';
 import { TutorCardComponent } from "../../core/components/tutor-section/tutor-card/tutor-card.component";
-import { ReelsCardComponent } from "../../core/components/reel-section/reels-card/reels-card.component";
+
 import { JournalsComponent } from "../../core/components/journals/journals.component";
 import { AcademySectionComponent } from "../../core/components/academy-section/academy-section.component";
 import { IonicModule } from "@ionic/angular";
@@ -16,8 +16,7 @@ import { MoodSelectorComponent } from "../../core/components/mood-selector/mood-
 import { MindfulSpeechBubbleComponent } from '../../core/components/mindful-speech-bubble/mindful-speech-bubble.component';
 import { MindfulPetComponent } from '../../core/components/mindful-pet/mindful-pet.component';
 import { MindfulCoinsStatsComponent } from '../../core/components/mindful-coins-stats/mindful-coins-stats.component';
-import { MindfulCardHeaderComponent } from '../../core/components/mindful-navigator/mindful-card-header/mindful-card-header.component';
-import { ViewAllComponent } from '../../core/components/mindful-navigator/view-all/view-all.component';
+
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { PetMessagesService, PetMessage, PetMood } from '../../core/services/pet-messages.service';
 import { UserService } from '../../core/services/user.service';
@@ -47,7 +46,6 @@ import { debounceTime, takeUntil } from 'rxjs/operators';
     ActivityCardComponent,
     AdBannerComponent,
     LearningSectionComponent,
-    ReelsCardComponent,
     TutorCardComponent,
     JournalsComponent,
     AcademySectionComponent,
@@ -57,8 +55,6 @@ import { debounceTime, takeUntil } from 'rxjs/operators';
     MindfulPetComponent,
     MindfulSpeechBubbleComponent,
     MindfulCoinsStatsComponent,
-    MindfulCardHeaderComponent,
-    ViewAllComponent,
     FooterComponent,
   ]
 })

@@ -67,7 +67,7 @@ export class HabitButtonLogicService {
 
   /**
    * Check if "Let's Go" button should be enabled.
-   * Enabled once the activity start time has been reached and until the end time.
+   * Enabled 5 min before start time and disabled 5 min after end time.
    */
   isLetsGoEnabled(habit: any, hasOtherOngoing: boolean = false): boolean {
     if (hasOtherOngoing) return false;
@@ -75,7 +75,7 @@ export class HabitButtonLogicService {
     if (!startTimeStamp || !endTimeStamp) return false;
     if (!this.isToday(startTimeStamp)) return false;
     const now = Date.now();
-    return now >= startTimeStamp && now <= endTimeStamp;
+    return now >= (startTimeStamp - this.FIVE_MINUTES) && now <= (endTimeStamp + this.FIVE_MINUTES);
   }
 
   /**
@@ -89,7 +89,7 @@ export class HabitButtonLogicService {
     const { startTimeStamp, endTimeStamp } = this.getTimestamps(habit);
     // Only show Let's Go for items scheduled for today
     if (!this.isToday(startTimeStamp)) return false;
-    if (endTimeStamp && Date.now() > endTimeStamp) return false;
+    if (endTimeStamp && Date.now() > (endTimeStamp + this.FIVE_MINUTES)) return false;
     return true;
   }
 
@@ -120,11 +120,13 @@ export class HabitButtonLogicService {
     // If ongoing, enable (but caller must ensure `hasOtherOngoing` is false)
     if (status === 'ongoing') return true;
 
-    // For pending: enable Done once start time has been reached
+    // For pending: enable Done 5 min before start time, disable 5 min after end time
     if (status === 'pending') {
       if (!startTimeStamp) return false;
       if (!this.isToday(startTimeStamp)) return false;
-      return Date.now() >= startTimeStamp;
+      const { endTimeStamp } = this.getTimestamps(habit);
+      const now = Date.now();
+      return now >= (startTimeStamp - this.FIVE_MINUTES) && now <= (endTimeStamp + this.FIVE_MINUTES);
     }
 
     return false;

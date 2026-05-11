@@ -14,7 +14,7 @@ import { Subscription } from 'rxjs';
   selector: 'tutor-card',
   templateUrl: './tutor-card.component.html',
   styleUrls: ['./tutor-card.component.scss'],
-  imports: [CommonModule, IonicModule, ViewAllComponent, TutorListComponent, MindfulCardHeaderComponent, TutorProfileComponent],
+  imports: [CommonModule, IonicModule, ViewAllComponent, TutorListComponent, MindfulCardHeaderComponent],
   standalone: true
 })
 export class TutorCardComponent implements OnInit, OnDestroy {

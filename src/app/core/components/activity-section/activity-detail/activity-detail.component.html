@@ -32,7 +32,7 @@
                 </mindful-badge>
             </div>
                 <span [style.color]="getTimeColor(habit)">
-                    {{ habit?.completionDate ? (habit.completionDate | date:'MMM d') : (habit.startDate | date:'MMM d') }}.
+                    {{ habit.completionDate ? (habit.completionDate | date:'MMM d') : (habit.startDate | date:'MMM d') }}.
                     {{ habit.startTime.slice(0,5) }} - {{ habit.endTime.slice(0,5) }}
                 </span>
                 <span style="color:#6B656A;">Created on {{ habit.createdAt | date:'MMM d, y' }}</span>
@@ -74,7 +74,7 @@
         <div *ngIf="!isParent && isViewingToday()" class="d-flex flex-column gap-4 align-items-stretch">
             <!-- Progress Bar - show only for habit/task when ongoing; parent sees a half-width container -->
               <div class="detail-progress-bar-box"
-                  *ngIf="(habit?.type === 'habits' || habit?.type === 'tasks') && habit?.status?.toLowerCase() === 'ongoing' && (isChild || (!isChild && percentageCompleted > 0))"
+                  *ngIf="(habit.type === 'habits' || habit.type === 'tasks') && habit.status.toLowerCase() === 'ongoing' && (isChild || (!isChild && percentageCompleted > 0))"
                   [style.width.%]="isParent ? 50 : 100">
                 <div class="detail-progress-bar" [style.width.%]="percentageCompleted"></div>
             </div>
@@ -96,13 +96,13 @@
 
                 <!-- Done Button - for pending/ongoing (disabled when pending, enabled when ongoing) -->
                 <mindful-button
-                    *ngIf="isViewingToday() && habit?.status?.toLowerCase() !== 'completed' && habit?.status?.toLowerCase() !== 'skipped'"
+                    *ngIf="isViewingToday() && habit.status.toLowerCase() !== 'completed' && habit.status.toLowerCase() !== 'skipped'"
                     class="w-full" type="green" [disabled]="!isDoneEnabled()" (click)="openCompletePopup()" medium
                     text="Done?">
                 </mindful-button>
 
                 <!-- Done Button - for skipped status (always enabled) -->
-                <mindful-button *ngIf="isViewingToday() && habit?.status?.toLowerCase() === 'skipped'" class="w-full" type="green"
+                <mindful-button *ngIf="isViewingToday() && habit.status.toLowerCase() === 'skipped'" class="w-full" type="green"
                     (click)="openCompletePopup()" medium text="Done?">
                 </mindful-button>
             </div>
