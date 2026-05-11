@@ -6,9 +6,11 @@
   </mindful-card-header>
 
   <div class="academy__cards">
+    <!-- prevent-clicks="false" stops Swiper from eating tap events on Android WebView -->
     <swiper-container class="academy-swiper" [slides-per-view]="'auto'" [space-between]="10" [pagination]="false"
-      [scrollbar]="false" [centeredSlides]="false" [freeMode]="true">
-      <swiper-slide class="academy-slide" *ngFor="let c of courses">
+      [scrollbar]="false" [centeredSlides]="false" [freeMode]="true"
+      prevent-clicks="false" prevent-clicks-propagation="false">
+      <swiper-slide class="academy-slide" *ngFor="let c of courses" (click)="onStart(c)">
         <article class="academy__card">
           <div class="academy__content">
             <div class="academy-main-title">
@@ -23,8 +25,7 @@
             </div>
             <p class="desc">{{c.description}}</p>
             <div class="card-footer">
-              <mindful-button class="start" type="pink-small" size="medium" text="Start Course"
-                (click)="onStart(c)"></mindful-button>
+              <mindful-button class="start" type="pink-small" size="medium" text="Start Course"></mindful-button>
             </div>
           </div>
         </article>

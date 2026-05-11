@@ -1,25 +1,39 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { Router } from '@angular/router';
 import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigator.component';
 import { NavigationService } from '../../services/navigation.service';
-import { StreaksSectionComponent } from '../streaks-section/streaks-section.component';
+import { StreaksService, CurrentUserStreak, StreakLeaderboardResponse } from '../../services/streaks.service';
 
 @Component({
   selector: 'app-analytics',
   standalone: true,
-  imports: [IonicModule, MindfulNavigatorComponent, StreaksSectionComponent],
-  template: `
-    <ion-content class="bg-mindful-primary">
-      <div class="mindful-page-container">
-        <mindful-navigator heading="Analytics" backIcon="arrowSvg" (back)="goBack()"></mindful-navigator>
-        <app-streaks-section></app-streaks-section>
-      </div>
-    </ion-content>
-  `,
+  imports: [CommonModule, IonicModule, MindfulNavigatorComponent],
+  templateUrl: './analytics.component.html',
+  styleUrls: ['./analytics.component.scss'],
 })
-export class AnalyticsComponent {
-  constructor(private navigation: NavigationService, private router: Router) {}
+export class AnalyticsComponent implements OnInit {
+  currentUser: CurrentUserStreak | null = null;
+  topStreaks: any[] = [];
+  loading = true;
+
+  constructor(
+    private navigation: NavigationService,
+    private streaksService: StreaksService
+  ) {}
+
+  ngOnInit(): void {
+    this.streaksService.getLeaderboard().subscribe({
+      next: (response: StreakLeaderboardResponse) => {
+        this.currentUser = response.currentUser;
+        this.topStreaks = (response.topUsers || [])
+          .slice()
+          .sort((a: any, b: any) => (b.highestStreak || 0) - (a.highestStreak || 0));
+        this.loading = false;
+      },
+      error: () => { this.loading = false; }
+    });
+  }
 
   goBack(): void {
     this.navigation.back();

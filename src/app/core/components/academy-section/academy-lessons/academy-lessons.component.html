@@ -10,16 +10,16 @@
   </div>
 
   <!-- Lesson Outcomes -->
-  <div class="outcomes" *ngIf="learningOutcomes.length > 0">
+  <!-- <div class="outcomes" *ngIf="learningOutcomes.length > 0">
     <h2>In this lesson you will learn</h2>
     <p class="sub">By the end, you'll be able to:</p>
     <ul>
       <li *ngFor="let outcome of learningOutcomes">✔ {{ stripNumbering(outcome) }}</li>
     </ul>
-  </div>
+  </div> -->
 
   <!-- Content Sections -->
-  <div class="content">
+  <!-- <div class="content">
     <div *ngFor="let section of contentSections">
       <h2>{{ section.heading }}</h2>
       <div *ngIf="section.isFunFact" class="fun-fact">
@@ -27,7 +27,11 @@
       </div>
       <p *ngIf="!section.isFunFact">{{ section.body }}</p>
     </div>
-  </div>
+  </div> -->
+
+
+  <div class="content" [innerHTML]="lesson?.content"></div>
+
 
   <!-- Footer Buttons -->
   <div class="footer-cta d-flex w-100 gap-2" *ngIf="lesson && !wasCompletedOnLoad && (!doneClicked || !isLastLesson)">

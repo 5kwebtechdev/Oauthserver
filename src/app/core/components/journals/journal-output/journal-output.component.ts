@@ -48,7 +48,7 @@ export class JournalOutputComponent implements OnInit {
     this.entries = (this.entries || []).map(e => {
       const normalizedDate = e.date ? new Date(e.date) : undefined;
       let images: string[] = [];
-      const src = (e as any).attachmentUrls ?? (e as any).attachmentUrl ?? (e as any).images;
+      const src = (e as any).attachments ?? (e as any).attachmentUrls ?? (e as any).attachmentUrl ?? (e as any).images;
       if (Array.isArray(src)) images = (src as any[]).filter(Boolean);
       else if (typeof src === 'string' && src) images = [src];
       return { ...e, date: normalizedDate, images } as JournalOutputEntry;
@@ -77,8 +77,8 @@ export class JournalOutputComponent implements OnInit {
     this.viewerSrc = null;
   }
 
-  @HostListener('document:keydown.escape', ['$event'])
-  onEscapeKey(event: KeyboardEvent) {
+  @HostListener('document:keydown.escape')
+  onEscapeKey() {
     if (this.viewerOpen) this.closeImageViewer();
   }
 
@@ -192,17 +192,11 @@ export class JournalOutputComponent implements OnInit {
           });
 
           const images: string[] = [];
-          if (Array.isArray(item.attachmentUrls)) {
-            item.attachmentUrls.forEach((u: string) => { if (u) images.push(u); });
-          } else if (item.attachmentUrl) {
-            // If we fetched month-specific data, ensure currentMonthDate is set to the request
-            if (typeof month === 'number' && typeof year === 'number') {
-              try {
-                this.currentMonthDate = new Date(year, month - 1, 1);
-                this.updateMonthLabel();
-              } catch (e) { /* ignore */ }
-            }
-            images.push(item.attachmentUrl);
+          const urlArrayField = item.attachments ?? item.attachmentUrls ?? item.imageUrls;
+          if (Array.isArray(urlArrayField)) {
+            urlArrayField.forEach((u: string) => { if (u) images.push(u); });
+          } else if (item.attachmentUrl ?? item.imageUrl) {
+            images.push(item.attachmentUrl ?? item.imageUrl);
           }
 
           return {

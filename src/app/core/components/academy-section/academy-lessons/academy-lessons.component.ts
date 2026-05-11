@@ -28,8 +28,8 @@ export class AcademyLessonsComponent {
   wasCompletedOnLoad = false;
 
   // Parsed content sections
-  learningOutcomes: string[] = [];
-  contentSections: Array<{ heading: string; body: string; isFunFact?: boolean }> = [];
+  // learningOutcomes: string[] = [];
+  // contentSections: Array<{ heading: string; body: string; isFunFact?: boolean }> = [];
 
   get isLastLesson(): boolean {
     return this.courseLessons.length === 0 || this.currentLessonIndex >= this.courseLessons.length - 1;
@@ -72,54 +72,54 @@ export class AcademyLessonsComponent {
         if (response) {
           this.lesson = response;
           this.wasCompletedOnLoad = response.isCompleted;
-          this.parseContent(response.content);
+          // this.parseContent(response.content);
         }
       });
   }
 
-  private parseContent(content: string): void {
-    if (!content) return;
+  // private parseContent(content: string): void {
+  //   if (!content) return;
 
-    const lines = content.split('\n').filter(line => line.trim());
-    let currentSection: { heading: string; body: string; isFunFact?: boolean } | null = null;
+  //   const lines = content.split('\n').filter(line => line.trim());
+  //   let currentSection: { heading: string; body: string; isFunFact?: boolean } | null = null;
 
-    for (const line of lines) {
-      const trimmed = line.trim();
+  //   for (const line of lines) {
+  //     const trimmed = line.trim();
 
-      // Check for learning outcomes section
-      if (trimmed === 'In this lesson you will learn' || trimmed.startsWith('By the end')) {
-        continue;
-      }
+  //     // Check for learning outcomes section
+  //     if (trimmed === 'In this lesson you will learn' || trimmed.startsWith('By the end')) {
+  //       continue;
+  //     }
 
-      // Parse numbered learning outcomes
-      if (/^\d+\./.test(trimmed) && this.learningOutcomes.length < 5 && !currentSection) {
-        this.learningOutcomes.push(trimmed);
-        continue;
-      }
+  //     // Parse numbered learning outcomes
+  //     if (/^\d+\./.test(trimmed) && this.learningOutcomes.length < 5 && !currentSection) {
+  //       this.learningOutcomes.push(trimmed);
+  //       continue;
+  //     }
 
-      // Detect section headings (lines without periods, typically capitalized)
-      if (trimmed && !trimmed.endsWith('.') && !trimmed.endsWith(':') && !trimmed.match(/^\d+\./)) {
-        // Save previous section
-        if (currentSection) {
-          this.contentSections.push(currentSection);
-        }
-        // Start new section
-        const isFunFact = trimmed.toLowerCase().includes('fun fact');
-        currentSection = { heading: trimmed, body: '', isFunFact };
-        continue;
-      }
+  //     // Detect section headings (lines without periods, typically capitalized)
+  //     if (trimmed && !trimmed.endsWith('.') && !trimmed.endsWith(':') && !trimmed.match(/^\d+\./)) {
+  //       // Save previous section
+  //       if (currentSection) {
+  //         this.contentSections.push(currentSection);
+  //       }
+  //       // Start new section
+  //       const isFunFact = trimmed.toLowerCase().includes('fun fact');
+  //       currentSection = { heading: trimmed, body: '', isFunFact };
+  //       continue;
+  //     }
 
-      // Add to current section body
-      if (currentSection) {
-        currentSection.body += (currentSection.body ? ' ' : '') + trimmed;
-      }
-    }
+  //     // Add to current section body
+  //     if (currentSection) {
+  //       currentSection.body += (currentSection.body ? ' ' : '') + trimmed;
+  //     }
+  //   }
 
-    // Push last section
-    if (currentSection) {
-      this.contentSections.push(currentSection);
-    }
-  }
+  //   // Push last section
+  //   if (currentSection) {
+  //     this.contentSections.push(currentSection);
+  //   }
+  // }
 
   convertGoogleDriveUrl(url: string): string {
     if (!url) return '';
@@ -207,8 +207,8 @@ export class AcademyLessonsComponent {
     // Reset state for new lesson
     this.doneClicked = false;
     this.wasCompletedOnLoad = false;
-    this.learningOutcomes = [];
-    this.contentSections = [];
+    // this.learningOutcomes = [];
+    // this.contentSections = [];
 
     // Update tracking
     this.currentLessonIndex = nextIndex;
