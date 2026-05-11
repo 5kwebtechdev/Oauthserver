@@ -1,0 +1,114 @@
+.analytics-loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.stats-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 8px;
+  box-shadow: 0 0 8px 2px rgba(107, 101, 106, 0.10);
+  min-height: 110px;
+}
+
+.stat-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.stat-value {
+  color: #282527;
+  font-family: Fredoka, sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.stat-label {
+  color: #6B656A;
+  font-family: Nunito, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.leaderboard-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 0 8px 2px rgba(107, 101, 106, 0.10);
+}
+
+.section-title {
+  font-family: Fredoka, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #282527;
+  margin: 0 0 16px;
+}
+
+.streaks-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.streak-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.streak-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rank {
+  width: 24px;
+  text-align: center;
+  font-family: Nunito, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #90214D;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.name {
+  font-family: Nunito, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #282527;
+}
+
+.days {
+  font-family: Nunito, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6B656A;
+}

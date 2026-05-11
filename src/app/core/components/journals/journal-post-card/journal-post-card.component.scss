@@ -69,6 +69,7 @@
   font-style: normal;
   font-weight: 700;
   line-height: 140%;
+  text-transform: capitalize;
 }
 
 .post-tags {
@@ -86,6 +87,7 @@
   font-style: normal;
   font-weight: 600;
   line-height: 140%;
+  text-transform: capitalize;
 }
 
 .tag-title {
@@ -96,6 +98,7 @@
   line-height: 140%;
   opacity: 0.5;
   margin-right: 3px;
+  text-transform: capitalize;
 }
 
 .tag-text {
@@ -103,6 +106,7 @@
   font-family: Nunito;
   font-size: 13px;
   font-weight: 600;
+  text-transform: capitalize;
 }
 
 .tag::after {

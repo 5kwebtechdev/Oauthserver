@@ -7,7 +7,7 @@ import { environment } from '../../../../environments/environment';
 import { AuthApi } from '../../api/auth.api';
 import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { ViewAllComponent } from '../mindful-navigator/view-all/view-all.component';
-import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
+
 import { JournalPostCardComponent } from './journal-post-card/journal-post-card.component';
 import { EmptyStateComponent } from '../empty-state/empty-state.component';
 
@@ -177,7 +177,7 @@ export interface JournalEntry {
       object-fit: cover;
     }
   `],
-  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, ViewAllComponent, MindfulButtonComponent, JournalPostCardComponent, EmptyStateComponent],
+  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, ViewAllComponent, JournalPostCardComponent, EmptyStateComponent],
   standalone: true
 })
 export class JournalsComponent {
@@ -265,10 +265,12 @@ export class JournalsComponent {
           });
 
           const images: string[] = [];
-          if (item.attachmentUrls && Array.isArray(item.attachmentUrls)) {
-            images.push(...item.attachmentUrls);
-          } else if (item.attachmentUrl) {
-            images.push(item.attachmentUrl);
+          const urlArrayField = item.attachments ?? item.attachmentUrls ?? item.imageUrls ?? item.images ?? item.mediaUrls;
+          if (urlArrayField && Array.isArray(urlArrayField)) {
+            images.push(...urlArrayField.filter(Boolean));
+          } else {
+            const singleUrl = item.attachmentUrl ?? item.imageUrl ?? item.mediaUrl;
+            if (singleUrl) images.push(singleUrl);
           }
 
           return {
