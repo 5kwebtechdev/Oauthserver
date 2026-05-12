@@ -47,7 +47,7 @@ export class AcademySectionComponent implements OnInit {
           duration: c.duration ? `${c.duration} min` : '',
           level: c.difficulty ?? '',
           description: c.description ?? '',
-          image: FALLBACK_IMAGES[i % FALLBACK_IMAGES.length],
+          image: c.thumbnailUrl || FALLBACK_IMAGES[i % FALLBACK_IMAGES.length],
         }));
         this.loading = false;
       },

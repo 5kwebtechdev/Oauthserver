@@ -119,13 +119,11 @@ export class HabitButtonLogicService {
     // If ongoing, enable (but caller must ensure `hasOtherOngoing` is false)
     if (status === 'ongoing') return true;
 
-    // For pending: enable Done 5 min before start time, disable 5 min after end time
+    // For pending: enable Done only after Let's Go window closes (startTime + 5min).
+    // Does not disable with end time — only disables when the day passes (handled above).
     if (status === 'pending') {
       if (!startTimeStamp) return false;
-      if (!this.isToday(startTimeStamp)) return false;
-      const { endTimeStamp } = this.getTimestamps(habit);
-      const now = Date.now();
-      return now >= (startTimeStamp - this.FIVE_MINUTES) && now <= (endTimeStamp + this.FIVE_MINUTES);
+      return Date.now() > (startTimeStamp + this.FIVE_MINUTES);
     }
 
     return false;
