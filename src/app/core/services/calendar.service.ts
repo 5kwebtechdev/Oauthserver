@@ -58,7 +58,9 @@ export class CalendarService {
     }
 
     private formatDateToYYYYMMDD(date: string | Date): string {
-        const d = typeof date === 'string' ? new Date(date) : date;
+        // String already in YYYY-MM-DD — use directly to avoid UTC-midnight timezone shift
+        if (typeof date === 'string') return date.split('T')[0];
+        const d = date;
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 

@@ -9,6 +9,7 @@ import { IonicModule } from "@ionic/angular";
 import { MindfulInputsModule } from "../../core/components/mindful-inputs/mindful-inputs.module";
 import { MoodSelectorComponent } from '../../core/components/mood-selector/mood-selector.component';
 import { MoodService } from '../../core/services/mood.service';
+import { VibesDisplayResponse } from '../../core/models/mood.model';
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { AdBannerComponent } from '../../core/components/ad-banner/ad-banner.component';
 import { ActivityPageContentComponent } from '../../core/components/activity-section/activity-page-content/activity-page-content.component';
@@ -280,7 +281,32 @@ export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit 
         this.vibeDescription = c.vibeDescription ?? '';
         this.emptyStateDescription = c.emptyStateDescription ?? '';
         this.completedStateDescription = c.completedStateDescription ?? '';
-        // Refresh mood selector
+        // Push child's vibe data directly into the mood selector cache so text updates instantly
+        const vibeOverride: VibesDisplayResponse = {
+            userId: Number(c.id) || 0,
+            userName: c.name || '',
+            relationship: c.relationship || 'Child',
+            mood: c.mood || 'NEUTRAL',
+            audience: 'PARENT',
+            title: c.vibeTitle || '',
+            description: c.vibeDescription || '',
+            emptyStateDescription: c.emptyStateDescription || '',
+            completedStateDescription: c.completedStateDescription || '',
+            totalHabits: c.totalHabits ?? 0,
+            completedHabits: c.completedHabits ?? 0,
+            totalTasks: c.totalTasks ?? 0,
+            completedTasks: c.completedTasks ?? 0,
+            progressPercentage: c.progressPercentage ?? 0,
+            coins: c.coins ?? 0,
+            trophies: c.trophies ?? 0,
+            streak: c.streak ?? 0,
+            badges: c.badges ?? 0,
+            completionRate: c.completionRate ?? 0,
+            consistencyRate: c.consistencyRate ?? 0,
+            improvementRate: c.improvementRate ?? 0,
+            appScore: c.appScore ?? 0,
+        };
+        this.moodService.setVibesDisplayOverride([vibeOverride]);
         this.moodSelector?.getTodayVibe?.();
     }
 

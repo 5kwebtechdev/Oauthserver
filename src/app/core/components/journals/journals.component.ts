@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { IonicModule } from "@ionic/angular";
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -188,8 +188,13 @@ export class JournalsComponent {
   // show a loading flag while fetching
   public loading: boolean = false;
 
-  constructor(private router: Router, private http: HttpClient, private authApi: AuthApi) {
-  }
+  constructor(
+    private router: Router,
+    private http: HttpClient,
+    private authApi: AuthApi,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
+  ) { }
 
   ngOnInit(): void {
     // If entries were not passed in, fetch from backend
@@ -226,6 +231,7 @@ export class JournalsComponent {
     this.loading = true;
     this.http.get<any[]>(url, { headers }).subscribe({
       next: (res) => {
+        this.ngZone.run(() => {
         this.loading = false;
         if (!Array.isArray(res)) {
           console.warn('Unexpected journal entries response, expected array', res);
@@ -286,9 +292,14 @@ export class JournalsComponent {
             isPrivate: !!item.isPrivate
           } as JournalEntry;
         });
+        this.cdr.detectChanges();
+        }); // end ngZone.run
       },
       error: (err) => {
-        this.loading = false;
+        this.ngZone.run(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        });
         console.error('Failed to load journal entries', err);
         // fallback to sample entries so UI still shows something
         // this.entries = this.sampleEntries;

@@ -7,15 +7,6 @@
     <div class="login-header-toggle-wrapper">
       <div class="login-toggle-form-wrapper">
         <!-- <h1>Test 47</h1> -->
-        <div class="toggle-buttons">
-
-          <button [class.active]="loginMode === 'phone'" (click)="switchMode('phone')">
-            Phone Number
-          </button>
-          <button [class.active]="loginMode === 'email'" (click)="switchMode('email')">
-            Email
-          </button>
-        </div>
         <!-- Helper text -->
         <small class="helper-text">Only for login and safety</small>
         <form [formGroup]="signInForm" (ngSubmit)="onSubmit()" class="login-form-fields">

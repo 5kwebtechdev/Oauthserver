@@ -38,7 +38,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   public signupForm: FormGroup;
   public profileForm: FormGroup;
   public passwordForm: FormGroup; // Add password form
-  public loginMode: 'email' | 'phone' = 'phone';
+  public loginMode: 'email' | 'phone' = 'email';
   public whatsappConsent = true;
   public step !: number;
 
@@ -204,11 +204,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.requestedIdentifier = savedIdentifier;
     }
 
-    // Restore login mode
-    const savedLoginMode = sessionStorage.getItem('loginMode') as 'email' | 'phone';
-    if (savedLoginMode) {
-      this.loginMode = savedLoginMode;
-    }
+    this.loginMode = 'email';
 
     // Restore country code
     const savedCountryCode = sessionStorage.getItem('countryCode');
@@ -397,120 +393,21 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   signupFromLogin() {
-    // Validate form first
-    if (this.loginMode === 'phone') {
-      if (!this.isPhoneValid(this.phone?.value)) {
-        this.core.triggerToasrt('Please enter a valid phone number');
-        return;
-      }
-      const identifier = this.phone?.value;
-      const countryCode = this.selectedCountry.code;
-      this.authService.registerRequestOtp(identifier, false, countryCode).subscribe({
-        next: (resp) => {
-          this.errorMessage = null; // Clear any previous errors
-          this.requestedIdentifier = identifier;
-          try {
-            if (this.requestedIdentifier) {
-              sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier);
-
-              sessionStorage.setItem('loginMode', this.loginMode);
-              sessionStorage.setItem('countryCode', countryCode);
-            }
-          } catch (e) { }
-
-          this.startOtpTimer();
-          this.router.navigate(['home/sign-up'], { queryParams: { step: 0.2 } });
-
-          setTimeout(() => {
-            const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
-            if (firstInput) {
-              firstInput.focus();
-            }
-          }, 100);
-        },
-        error: (err) => {
-          console.error('Failed to request OTP (phone):', err);
-          console.error('Error type:', err?.constructor?.name);
-          console.error('Error status:', err?.status);
-          console.error('Error url:', err?.url);
-          // Handle ProgressEvent errors (network failures on Android)
-          if (err instanceof ProgressEvent || (err && err.type === 'error' && err.target)) {
-            this.errorMessage = 'Network error. Cannot reach server. Please check your connection.';
-            this.core.triggerToasrt('Network error. Cannot reach server at ' + (err?.url || 'API'));
-          } else if (err?.error?.message) {
-            this.errorMessage = err.error.message;
-            this.core.triggerToasrt(err.error.message);
-          } else if (typeof err?.error === 'string') {
-            // Sometimes backend returns a JSON string body; try to parse and extract `message`.
-            try {
-              const parsed = JSON.parse(err.error);
-              const msg = parsed?.message || parsed?.error?.message || err.error;
-              this.errorMessage = msg;
-              this.core.triggerToasrt(msg);
-            } catch (e) {
-              this.errorMessage = err.error;
-              this.core.triggerToasrt(err.error);
-            }
-          } else {
-            this.errorMessage = 'Failed to send OTP. Status: ' + (err?.status || 'unknown');
-            this.core.triggerToasrt(this.errorMessage);
-          }
-        }
-      });
-    } else {
-      if (this.email?.invalid) {
-        this.errorMessage = 'Please enter a valid email address';
-        return;
-      }
-      const identifier = this.email?.value;
-      this.authService.registerRequestOtp(identifier, true).subscribe({
-        next: (resp) => {
-          this.errorMessage = null; // Clear any previous errors
-          this.requestedIdentifier = identifier;
-          try {
-            if (this.requestedIdentifier) {
-              sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier);
-
-              sessionStorage.setItem('loginMode', this.loginMode);
-            }
-          } catch (e) { }
-
-          this.startOtpTimer();
-          this.router.navigate(['home/sign-up'], { queryParams: { step: 0.2 } });
-
-          setTimeout(() => {
-            const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
-            if (firstInput) {
-              firstInput.focus();
-            }
-          }, 100);
-        },
-        error: (err) => {
-          console.error('Failed to request OTP (email):', err);
-          console.error('Error type:', err?.constructor?.name);
-          console.error('Error status:', err?.status);
-          console.error('Error url:', err?.url);
-          let msg: string;
-          // Handle ProgressEvent errors (network failures on Android)
-          if (err instanceof ProgressEvent || (err && err.type === 'error' && err.target)) {
-            msg = 'Network error. Cannot reach server at ' + (err?.url || 'API');
-          } else if (err?.error?.message) {
-            msg = err.error.message;
-          } else if (typeof err?.error === 'string') {
-            try {
-              const parsed = JSON.parse(err.error);
-              msg = parsed?.message || parsed?.error?.message || err.error;
-            } catch (e) {
-              msg = err.error;
-            }
-          } else {
-            msg = 'Failed to send OTP. Status: ' + (err?.status || 'unknown');
-          }
-          this.errorMessage = msg;
-          try { this.core.triggerToasrt(msg); } catch (e) { /* swallow */ }
-        }
-      });
+    if (this.email?.invalid) {
+      this.errorMessage = 'Please enter a valid email address';
+      return;
     }
+    const identifier = this.email?.value;
+    this.errorMessage = null;
+    this.requestedIdentifier = identifier;
+    try {
+      if (identifier) {
+        sessionStorage.setItem('requestedIdentifier', identifier);
+        sessionStorage.setItem('loginMode', 'email');
+      }
+    } catch (e) { }
+    // Skip OTP — go directly to password creation
+    this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
   }
 
   dob() {
@@ -729,8 +626,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.clearOtpTimer();
       this.router.navigate(['home/sign-up'], { queryParams: { step: 0.1 } });
     } else if (this.step === 0.3) {
-      // From step 0.3 (password creation), go back to step 0.2 (OTP verification)
-      this.router.navigate(['home/sign-up'], { queryParams: { step: 0.2 } });
+      // From step 0.3 (password creation), go back to step 0.1 (email entry)
+      this.router.navigate(['home/sign-up'], { queryParams: { step: 0.1 } });
     } else if (this.step === 1) {
       // From step 1 (role selection), go back to step 0.3 (password creation)
       this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });

@@ -24,10 +24,6 @@
 ">
       <div class="container w-full p-0" style="display: flex; justify-content: flex-start; align-items: flex-start;">
         <div class="container w-full p-0" style="padding: 10px 0px !important;">
-          <div class="toggle-buttons">
-            <button [class.active]="loginMode === 'phone'" (click)="switchMode('phone')">Phone Number</button>
-            <button [class.active]="loginMode === 'email'" (click)="switchMode('email')">Email</button>
-          </div>
           <!-- Helper text -->
           <small class="helper-text">Only for login and safety</small>
           <div class="d-flex flex-column gap-3">
@@ -311,10 +307,6 @@
     <div *ngIf="step === 3" [@slideIn]>
       <div class="container w-full p-0" style="display: flex; justify-content: center; align-items: center;">
         <div class="container w-full p-0" style="padding: 0px 0px 50px!important;">
-          <div class="toggle-buttons">
-            <button [class.active]="loginMode === 'phone'" (click)="switchMode('phone')">Phone Number</button>
-            <button [class.active]="loginMode === 'email'" (click)="switchMode('email')">Email</button>
-          </div>
           <small class="helper-text">Only for login and safety</small>
 
           <form [formGroup]="signupForm">
