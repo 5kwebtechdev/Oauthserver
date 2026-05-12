@@ -474,16 +474,14 @@ ion-content {
     min-height: calc(100dvh - var(--sat) - var(--sab));
     width: 100%;
     position: relative;
-    // 36px aesthetic gap below navigator / between notch-offset and first content
-    padding-top: 36px !important;
+    // Safe area top is handled by ion-content --padding-top above — no extra top needed
+    padding-top: 0 !important;
 
     >* {
       margin-top: 0 !important;
     }
 
     // Bottom: reserve space for fixed footer + bottom gesture bar on every device.
-    // Samsung/Pixel/Xiaomi with gesture nav: --sab=0 (overlay=false) → just 80px.
-    // iPhone with home indicator:           --sab=34px              → 114px.
     padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab));
   }
 }
