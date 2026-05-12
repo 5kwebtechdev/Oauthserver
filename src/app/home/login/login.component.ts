@@ -193,7 +193,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     console.log('[LoginComponent] Return URL set to:', this.returnUrl || 'Will be determined after login');
 
     // Initialize login mode and its validators
-    this.switchMode('phone');
+    this.switchMode('email');
     console.log('LoginComponent initialized');
 
     // Load countries from service

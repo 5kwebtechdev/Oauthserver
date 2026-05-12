@@ -1,13 +1,16 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { CalendarService } from '../../../services/calendar.service';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { TimelineEvent } from '../../../models/calendar.model';
 import { Subscription, Observable } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { CustomToastService, Toast } from '../../../services/custom-toast.service';
-import { ModalController } from '@ionic/angular';
+import { ModalController, ViewWillEnter } from '@ionic/angular';
 import { HabitService } from '../habit.service';
+
+const CACHE_KEY = 'timeline_events_cache';
 
 @Component({
   selector: 'app-activity-timeline',
@@ -15,13 +18,12 @@ import { HabitService } from '../habit.service';
   styleUrls: ['./activity-timeline.component.scss'],
   standalone: false
 })
-export class ActivityTimelineComponent implements OnInit, OnDestroy {
+export class ActivityTimelineComponent implements OnInit, OnDestroy, ViewWillEnter {
   allEvents: TimelineEvent[] = [];
   filteredEvents: TimelineEvent[] = [];
   selectedDate: string = this.formatDate(new Date());
   selectedType: string = 'all';
 
-  // Completion statistics
   totalHabits: number = 0;
   totalHabitsCompleted: number = 0;
   habitCompletionRate: number = 0;
@@ -39,29 +41,31 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy {
     private modalCtrl: ModalController,
     private authService: AuthService,
     private toastService: CustomToastService,
-    private habitService: HabitService
+    private habitService: HabitService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {
     this.toast$ = this.toastService.toast$;
   }
 
-  /** Expose parent-check for template */
   isParentUser(): boolean {
     try { return this.authService.isParentUser(); } catch { return false; }
   }
 
-  /** Check if selected date is today */
   get isCurrentDateView(): boolean {
-    const today = this.formatDate(new Date());
-    return this.selectedDate === today;
+    return this.selectedDate === this.formatDate(new Date());
   }
 
-  /** Get initial selected keys for the selector component */
   get initialSelectedKeys(): string[] {
     return [this.selectedType];
   }
 
+  ionViewWillEnter() {
+    this.calendarService.clearCache(this.selectedDate, 'day');
+    this.loadEvents();
+  }
+
   ngOnInit() {
-    // Restore previously selected filter type
     try {
       const savedType = sessionStorage.getItem('activity-timeline-selected-type');
       if (savedType && ['all', 'habit', 'task', 'timetable'].includes(savedType)) {
@@ -69,17 +73,42 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy {
       }
     } catch (e) { /* ignore */ }
 
-    // Always fetch fresh data when the timetable page opens
+    const reloadFlag = 'timeline_did_reload';
+    if (!sessionStorage.getItem(reloadFlag)) {
+      // First landing — show cache, set flag, then reload page
+      this.loadFromCache();
+      sessionStorage.setItem(reloadFlag, '1');
+      window.location.reload();
+      return;
+    }
+
+    // Arrived after reload — clear flag, load fresh data
+    sessionStorage.removeItem(reloadFlag);
     this.calendarService.clearCache(this.selectedDate, 'day');
     this.loadEvents();
+
+    // Catch subsequent tab switches (component stays cached by Ionic)
+    this.subscriptions.add(
+      this.router.events.pipe(
+        filter(e => e instanceof NavigationEnd),
+        filter((e: any) => e.urlAfterRedirects.includes('activity-timeline'))
+      ).subscribe(() => {
+        this.calendarService.clearCache(this.selectedDate, 'day');
+        this.loadEvents();
+      })
+    );
+
     // Reload when parent switches child
     this.subscriptions.add(
-      this.profileSelector.childChanged$.subscribe(() => this.loadEvents())
+      this.profileSelector.childChanged$.subscribe(() => {
+        this.calendarService.clearCache(this.selectedDate, 'day');
+        this.loadEvents();
+      })
     );
+
     // Reload when habits/tasks are added/changed/deleted
     this.subscriptions.add(
       this.habitService.dataChanged$.subscribe(() => {
-        // Clear cache for current date to ensure fresh data
         this.calendarService.clearCache(this.selectedDate, 'day');
         this.loadEvents();
       })
@@ -91,30 +120,38 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy {
   }
 
   loadEvents() {
-    // Interceptor handles userId - no need to pass manually
     this.calendarService.getUserCalendar(this.selectedDate, 'day').subscribe({
       next: (response) => {
-        let events = this.calendarService.transformToTimelineEvents(response);
+        // NgZone.run ensures Angular change detection fires even if the HTTP
+        // callback arrives outside Angular's zone (common on Capacitor/Android)
+        this.ngZone.run(() => {
+          let events = this.calendarService.transformToTimelineEvents(response);
 
-        // Filter by selected child if parent is viewing
-        const selectedChildId = this.profileSelector.getChildId();
-        if (selectedChildId !== null) {
-          events = events.filter((e: any) => {
-            const userId = e.userId ?? e.user_id ?? e.assignedTo ?? e.assigned_to;
-            return userId == selectedChildId;
-          });
-        }
+          const selectedChildId = this.profileSelector.getChildId();
+          if (selectedChildId !== null) {
+            events = events.filter((e: any) => {
+              const userId = e.userId ?? e.user_id ?? e.assignedTo ?? e.assigned_to;
+              return userId == selectedChildId;
+            });
+          }
 
-        this.allEvents = events;
-        this.filterEvents();
+          this.allEvents = [...events];
+          this.filteredEvents = this.selectedType === 'all'
+            ? [...events]
+            : [...events.filter(e => e.type === this.selectedType)];
 
-        // Update completion statistics
-        this.totalHabits = response.totalHabits || 0;
-        this.totalHabitsCompleted = response.totalHabitsCompleted || 0;
-        this.habitCompletionRate = response.habitCompletionRate || 0;
-        this.totalTasks = response.totalTasks || 0;
-        this.totalTasksCompleted = response.totalTasksCompleted || 0;
-        this.taskCompletionRate = response.taskCompletionRate || 0;
+          this.totalHabits = response.totalHabits || 0;
+          this.totalHabitsCompleted = response.totalHabitsCompleted || 0;
+          this.habitCompletionRate = response.habitCompletionRate || 0;
+          this.totalTasks = response.totalTasks || 0;
+          this.totalTasksCompleted = response.totalTasksCompleted || 0;
+          this.taskCompletionRate = response.taskCompletionRate || 0;
+
+          // Persist to localStorage so next visit shows data instantly
+          this.saveToCache(events, response);
+
+          this.cdr.detectChanges();
+        });
       },
       error: (error) => {
         console.error('Error fetching calendar events:', error);
@@ -122,9 +159,44 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadFromCache() {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (!raw) return;
+      const cached = JSON.parse(raw);
+      if (cached.date !== this.selectedDate) return; // stale date — ignore
+      const events: TimelineEvent[] = cached.events || [];
+      this.allEvents = [...events];
+      this.filteredEvents = this.selectedType === 'all'
+        ? [...events]
+        : [...events.filter((e: TimelineEvent) => e.type === this.selectedType)];
+      this.totalHabits = cached.totalHabits || 0;
+      this.totalHabitsCompleted = cached.totalHabitsCompleted || 0;
+      this.habitCompletionRate = cached.habitCompletionRate || 0;
+      this.totalTasks = cached.totalTasks || 0;
+      this.totalTasksCompleted = cached.totalTasksCompleted || 0;
+      this.taskCompletionRate = cached.taskCompletionRate || 0;
+      this.cdr.detectChanges();
+    } catch (e) { /* ignore */ }
+  }
+
+  private saveToCache(events: TimelineEvent[], response: any) {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        date: this.selectedDate,
+        events,
+        totalHabits: response.totalHabits || 0,
+        totalHabitsCompleted: response.totalHabitsCompleted || 0,
+        habitCompletionRate: response.habitCompletionRate || 0,
+        totalTasks: response.totalTasks || 0,
+        totalTasksCompleted: response.totalTasksCompleted || 0,
+        taskCompletionRate: response.taskCompletionRate || 0,
+      }));
+    } catch (e) { /* ignore */ }
+  }
+
   keysUpdated(selection: string[]) {
     this.selectedType = selection[0] || 'all';
-    // Save selected type for persistence
     try {
       sessionStorage.setItem('activity-timeline-selected-type', this.selectedType);
     } catch (e) { /* ignore */ }
@@ -132,11 +204,14 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy {
   }
 
   filterEvents() {
-    if (this.selectedType === 'all') {
-      this.filteredEvents = [...this.allEvents];
-    } else {
-      this.filteredEvents = this.allEvents.filter(event => event.type === this.selectedType);
-    }
+    this.filteredEvents = this.selectedType === 'all'
+      ? [...this.allEvents]
+      : [...this.allEvents.filter(event => event.type === this.selectedType)];
+    this.cdr.detectChanges();
+  }
+
+  trackByEvent(_index: number, event: TimelineEvent) {
+    return event.id;
   }
 
   private formatDate(date: Date): string {
@@ -156,76 +231,44 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy {
 
   onDateSelected(date: Date): void {
     this.selectedDate = this.formatDate(date);
-    // Clear cache for new date to ensure fresh data
     this.calendarService.clearCache(this.selectedDate, 'day');
     this.loadEvents();
   }
 
   onAddClick(): void {
-    // Save current selected type for restoration when returning
     try {
       sessionStorage.setItem('activity-timeline-selected-type', this.selectedType);
     } catch (e) { /* ignore */ }
 
-    // Map current selector to ActivityInput tab keys and pass via navigation state
     const map: Record<string, string> = {
-      all: 'habits',
-      habit: 'habits',
-      task: 'tasks',
-      timetable: 'timetable'
+      all: 'habits', habit: 'habits', task: 'tasks', timetable: 'timetable'
     };
     const currentActive = map[this.selectedType] || 'habits';
     const origin = this.router.url || '/authed/user-dashboard';
     this.router.navigate(['/authed/activity-input'], { state: { currentActive, origin } });
   }
 
-  /**
-   * Handle long-press on timetable event in activity-timeline
-   */
   async onTimetableLongPress(event: TimelineEvent): Promise<void> {
-    if (!event || !event.id) {
-      return;
-    }
+    if (!event || !event.id) return;
 
-    const eventType = event.type;
-
-    // For timetable events, open activity-input in edit mode
-    if (eventType === 'timetable') {
+    if (event.type === 'timetable') {
       const { ActivityInputComponent } = await import('../activity-input/activity-input.component');
-    const modal = await this.modalCtrl.create({
-      component: ActivityInputComponent,
-      componentProps: {
-        editingHabit: event,
-        initialTab: 'timetable'
-      }
-    });
-
-    await modal.present();
-
-    // Reload events when modal is dismissed
-    const { data } = await modal.onWillDismiss();
-    if (data) {
-      this.loadEvents();
-    }
+      const modal = await this.modalCtrl.create({
+        component: ActivityInputComponent,
+        componentProps: { editingHabit: event, initialTab: 'timetable' }
+      });
+      await modal.present();
+      const { data } = await modal.onWillDismiss();
+      if (data) this.loadEvents();
       return;
     }
 
-    // For habits and tasks, navigate to activity-detail page
-    if (eventType === 'habit' || eventType === 'task') {
-      const itemType = eventType === 'habit' ? 'habits' : 'tasks';
-      const itemId = Number(event.id);
-
-      this.router.navigate(['/authed/activity-detail', itemId], {
-        state: { 
-          habit: event, 
-          type: itemType, 
-          fromLongPress: true,
-          selectedDate: this.selectedDate 
-        },
+    if (event.type === 'habit' || event.type === 'task') {
+      const itemType = event.type === 'habit' ? 'habits' : 'tasks';
+      this.router.navigate(['/authed/activity-detail', Number(event.id)], {
+        state: { habit: event, type: itemType, fromLongPress: true, selectedDate: this.selectedDate },
         queryParams: { type: itemType }
-      }).catch(err => {
-        console.error('Navigation to habit detail failed:', err);
-      });
+      }).catch(err => console.error('Navigation to habit detail failed:', err));
     }
   }
 }
