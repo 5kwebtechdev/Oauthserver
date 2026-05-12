@@ -426,6 +426,15 @@ export class AuthService {
     localStorage.removeItem(this.LAST_ACTIVITY_KEY);
     localStorage.removeItem('user_data');
     localStorage.removeItem('user_stats');
+    localStorage.removeItem('mindful_buddy_pet_data');
+    localStorage.removeItem('platform');
+    localStorage.removeItem('user_profile');
+    localStorage.removeItem('mb_selected_child_id');
+
+    // Remove all date-keyed vibe_sets entries (e.g. vibe_sets_2026-05-12)
+    Object.keys(localStorage)
+      .filter(key => key.startsWith('vibe_sets_'))
+      .forEach(key => localStorage.removeItem(key));
 
     this.isAuthenticatedSubject.next(false);
     this.currentUserSubject.next(null);
