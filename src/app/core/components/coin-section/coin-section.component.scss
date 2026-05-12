@@ -1,13 +1,11 @@
 .coin-card {
     width: 100%;
-    height: calc(254px + env(safe-area-inset-top));
+    height: 254px;
     border-radius: 0px 0px 48px 48px;
     background: linear-gradient(109deg, #BE6F03 1.38%, #EBA235 50.47%, #CB7D0C 98.62%);
     padding: 16px;
     position: relative;
     color: white;
-        padding-top: env(safe-area-inset-top, 0) !important;
-
 }
 
 /* When viewing as a parent (no panda message), pin coins and redeem button to bottom */

@@ -2,44 +2,10 @@
   <div class="mindful-page-container">
     <mindful-navigator heading="Analytics" backIcon="arrowSvg" (back)="goBack()"></mindful-navigator>
 
-    <div class="analytics-loading" *ngIf="loading">
-      <ion-spinner name="crescent"></ion-spinner>
+    <div class="coming-soon">
+      <img src="assets/Images-Transparent/Image-Analytics.png" alt="analytics coming soon" class="coming-soon__img" />
+      <h2 class="coming-soon__title">Your Analytics Are on the Way!</h2>
+      <p class="coming-soon__text">Unlock meaningful data to support your growth launching soon.</p>
     </div>
-
-    <ng-container *ngIf="!loading">
-      <!-- Streak Stats -->
-      <div class="stats-row">
-        <div class="stat-card">
-          <img src="assets/Icons-Neutral/Icon-Streak.png" alt="streak" class="stat-icon" />
-          <span class="stat-value">{{ currentUser?.currentStreak || 0 }}</span>
-          <span class="stat-label">Current Streak</span>
-        </div>
-        <div class="stat-card">
-          <img src="assets/Icons-Neutral/Icon-BestStreak.png" alt="best streak" class="stat-icon" />
-          <span class="stat-value">{{ currentUser?.highestStreak || 0 }}</span>
-          <span class="stat-label">Best Streak</span>
-        </div>
-        <div class="stat-card">
-          <img src="assets/Icons-Neutral/Icon-TotalActiveDays.png" alt="active days" class="stat-icon" />
-          <span class="stat-value">{{ currentUser?.totalActiveDays || 0 }}</span>
-          <span class="stat-label">Active Days</span>
-        </div>
-      </div>
-
-      <!-- Leaderboard -->
-      <div class="leaderboard-card" *ngIf="topStreaks.length">
-        <h2 class="section-title">Top Streakers</h2>
-        <ul class="streaks-list">
-          <li class="streak-item" *ngFor="let item of topStreaks; let i = index">
-            <div class="streak-left">
-              <span class="rank">{{ i + 1 }}</span>
-              <img class="avatar" [src]="item.avatar || 'assets/avatar/ChildAvatar.png'" [alt]="item.avatarName" />
-              <span class="name">{{ item.avatarName }}</span>
-            </div>
-            <span class="days">{{ item.highestStreak }} days</span>
-          </li>
-        </ul>
-      </div>
-    </ng-container>
   </div>
 </ion-content>
