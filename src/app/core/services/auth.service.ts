@@ -302,6 +302,11 @@ export class AuthService {
     });
   }
 
+  checkEmailExists(email: string) {
+    const url = `${this.apiUrl}/api/public/check-mail-already-exists`;
+    return this.http.get<{ exists: boolean }>(url, { params: { email } });
+  }
+
   requestOtp(identifier: string) {
     const headers = environment.apiAuthToken ? new HttpHeaders({
       Authorization: environment.apiAuthToken,

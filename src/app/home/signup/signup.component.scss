@@ -2,9 +2,6 @@ p,h1,h2,h3,h4,h5,h6, ul {
   margin: 0;
 }
 
-.safe-area-nav {
-  padding-top: env(safe-area-inset-top, 0px);
-}
 
 .signup-container {
   display: flex;
@@ -1386,6 +1383,10 @@ aspect-ratio: 25/16;
 .step-5-container {
   background: #ffffff !important;
   margin-bottom: 24px;
+}
+
+ion-content {
+  --padding-top: 0px;
 }
 
 ion-content.bg-white {
