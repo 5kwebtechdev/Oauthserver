@@ -2,6 +2,14 @@ Write-Host "========================================"
 Write-Host "MindfulBuddy APK Rebuild Script"
 Write-Host "========================================"
 
+# Ensure JDK 21 is used (required by Capacitor 7)
+$jdk21 = "C:\Program Files\Eclipse Adoptium\jdk-21.0.6.7-hotspot"
+if (Test-Path $jdk21) {
+    $env:JAVA_HOME = $jdk21
+    $env:PATH = "$jdk21\bin;$env:PATH"
+    Write-Host "Using JDK 21: $jdk21"
+}
+
 # Step 1: Clean www folder
 Write-Host "[1/4] Cleaning previous web build..."
 if (Test-Path "www") {
