@@ -1,8 +1,6 @@
-<ion-content class="bg-mindful-secondary">
+<ion-content class="bg-mindful-secondary" [scrollY]="false">
   <div class="login_section">
-    <div class="safe-area-nav">
     <mindful-navigator [heading]="'Login your account'" [variant]="'warm'" (back)="goBack()"></mindful-navigator>
-    </div>
     <div class="signup-container">
     <div class="login-header-toggle-wrapper">
       <div class="login-toggle-form-wrapper">
@@ -39,15 +37,12 @@
 
           <div class="input-group">
             <input formControlName="password"
-              [ngClass]="{'error' : (password?.invalid || password?.value.length < 8) && password?.dirty }"
+              [ngClass]="{'error' : password?.invalid && password?.dirty }"
               [type]="hidePassword ? 'password' : 'text'" placeholder="Password" />
             <span class="toggle-eye" (click)="hidePassword = !hidePassword">
               <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
             </span>
 
-            <div class="error" *ngIf="(password?.invalid || password?.value.length < 8) && password?.dirty">
-              Password should be atleast 8 characters long
-            </div>
             <!-- Forgot password link -->
             <a class="forgot-password" [routerLink]="['/home/reset-password']"
               [queryParams]="{ mode: loginMode }">Forgot

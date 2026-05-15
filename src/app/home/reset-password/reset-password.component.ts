@@ -50,6 +50,9 @@ export class ResetPasswordComponent {
   public otpError: string | null = null;
   public otpIncorrect: boolean = false;
 
+  // API error shown under step 1 input
+  public step1Error: string | null = null;
+
   // Password match validation error
   public passwordMismatchError: boolean = false;
 
@@ -168,6 +171,7 @@ export class ResetPasswordComponent {
       if (emailControl?.valid) {
         // Call API to request OTP with identifier = email
         const identifier = emailControl.value;
+        this.step1Error = null;
         this.authService.requestOtp(identifier).subscribe({
           next: () => {
             this.step = 2; // Move to OTP screen
@@ -181,7 +185,9 @@ export class ResetPasswordComponent {
             this.router.navigate(['home/reset-password'], { queryParams: { step: this.step, mode: this.mode } });
           },
           error: (err) => {
-            console.error('Failed to request OTP:', err);
+            let body = err?.error;
+            if (typeof body === 'string') { try { body = JSON.parse(body); } catch { } }
+            this.step1Error = body?.error || body?.message || err?.message || 'Something went wrong. Please try again.';
           }
         });
       } else {
@@ -193,6 +199,7 @@ export class ResetPasswordComponent {
         // Format phone with country code
         // const rawPhone = phoneControl.value;
         const identifier = phoneControl.value;
+        this.step1Error = null;
         this.authService.requestOtp(identifier).subscribe({
           next: () => {
             this.step = 2; // Move to OTP screen
@@ -204,7 +211,9 @@ export class ResetPasswordComponent {
             this.router.navigate(['home/reset-password'], { queryParams: { step: this.step, mode: this.mode } });
           },
           error: (err) => {
-            console.error('Failed to request OTP:', err);
+            let body = err?.error;
+            if (typeof body === 'string') { try { body = JSON.parse(body); } catch { } }
+            this.step1Error = body?.error || body?.message || err?.message || 'Something went wrong. Please try again.';
           }
         });
       } else {
@@ -303,6 +312,15 @@ export class ResetPasswordComponent {
       return false;
     }
     return true;
+  }
+
+  getMaskedEmail(): string {
+    const email = this.requestedIdentifier || this.resetPasswordForm.get('email')?.value || '';
+    if (!email || !email.includes('@')) return email;
+    const [local, domain] = email.split('@');
+    const visible = local.substring(0, Math.min(3, local.length));
+    const masked = '*'.repeat(Math.max(0, local.length - 3));
+    return `${visible}${masked}@${domain}`;
   }
 
   // Get masked phone number for OTP display

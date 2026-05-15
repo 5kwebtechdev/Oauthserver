@@ -132,7 +132,7 @@ label {
 
 // Pad all four sides
 .safe-area {
-  padding-top:    var(--sat) !important;
+  // padding-top:    var(--sat) !important;
   padding-bottom: var(--sab) !important;
   padding-left:   var(--sal) !important;
   padding-right:  var(--sar) !important;
@@ -449,8 +449,8 @@ ion-content {
   // ── Ionic CSS-variable padding (pierces shadow DOM) ──────────────────
   // These are the ONLY reliable way to push content inside ion-content's
   // internal scroll container. Regular padding on the host is ignored.
-  --padding-top:   var(--sat);  // clears status bar / notch / Dynamic Island
-  --padding-start: var(--sal);  // clears left notch in landscape
+  // --padding-top:   var(--sat);  // clears status bar / notch / Dynamic Island
+  // --padding-start: var(--sal);  // clears left notch in landscape
   --padding-end:   var(--sar);  // clears right notch in landscape
   // --padding-bottom intentionally omitted; mindful-page-container handles
   // footer + gesture-bar clearance per-page.
