@@ -42,7 +42,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.signInForm = this.fb.group({
       // Email/phone validators are applied dynamically in switchMode()
       email: ['', [Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      password: ['', [Validators.required]],
       phone: ['', []],
     });
   }

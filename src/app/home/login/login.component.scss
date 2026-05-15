@@ -1,26 +1,29 @@
 ion-content {
   --background: #FDEAD7;
+  --overflow: hidden;
+  --padding-top: 0px;
 }
 
 .login_section {
-  min-height: 100dvh;
+  height: 100dvh;
   background: #FDEAD7;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.safe-area-nav {
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: 12px;
-}
 .signup-container {
   display: flex;
   flex-direction: column;
   width: 100%;
+  flex: 1;
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 16px clamp(12px, 4dvh, 24px);
   font-family: var(--font-sans);
   color: #532b19;
+  overflow: hidden;
+  // justify-content: space-between;
 
-  // min-width: 360px;
   border-radius: 0;
 
   h2 {
@@ -64,17 +67,15 @@ ion-content {
   }
 
   .login-header-toggle-wrapper {
-    // display: flex;
     flex-direction: column;
     padding: 0;
-    gap: 32px;
+    gap: clamp(12px, 3dvh, 32px);
     align-self: center;
     width: 100%;
     flex: none;
     order: 0;
     flex-grow: 0;
-    margin-top: 20px;
-
+    margin-top: clamp(8px, 2dvh, 20px);
   }
 
   // .toggle-buttons {
@@ -155,7 +156,7 @@ ion-content {
   }
 
   .input-group {
-    margin-bottom: 1rem;
+    margin-bottom: clamp(0.5rem, 2dvh, 1rem);
     position: relative;
 
     input {
@@ -389,7 +390,7 @@ ion-content {
     border: none;
     border-radius: 12px;
     color: white;
-    margin-bottom: 2rem;
+    margin-bottom: clamp(0.75rem, 2dvh, 2rem);
     cursor: pointer;
     transition: box-shadow 0.2s, background 0.2s, opacity 0.2s;
 
@@ -409,7 +410,7 @@ ion-content {
 
   .or-divider {
     text-align: center;
-    padding: 32px 0px 24px 0px;
+    padding: clamp(10px, 2.5dvh, 24px) 0px clamp(8px, 2dvh, 20px) 0px;
 
     span {
       background: #ffe9db;
@@ -767,6 +768,7 @@ ion-content {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding-bottom: 15%;
 
   p {
     font-size: 14px;
