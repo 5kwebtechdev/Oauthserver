@@ -12,7 +12,6 @@ $RECYCLE.BIN/
 *.log
 log.txt
 
-
 /.sourcemaps
 /.versions
 /coverage
@@ -52,7 +51,6 @@ yarn-error.log
 !.vscode/extensions.json
 .history/*
 
-
 # Miscellaneous
 /.angular
 /.angular/cache
@@ -68,3 +66,29 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# =========================
+# Android / Keystore सुरक्षा
+# =========================
+
+# Keystore files
+*.keystore
+*.jks
+
+android/*.keystore
+android/*.jks
+
+android/app/*.keystore
+android/app/*.jks
+
+# Local gradle secrets
+android/gradle.properties
+
+# Android build folders
+android/build/
+android/app/build/
+
+# Local environment files
+local.properties
+.env
+.env.*
