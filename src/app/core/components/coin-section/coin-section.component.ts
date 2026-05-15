@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ViewWillEnter } from '@ionic/angular';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
 import { FooterComponent } from '../footer/footer.component';
 import { MindfulSpeechBubbleComponent } from '../mindful-speech-bubble/mindful-speech-bubble.component';
@@ -28,7 +28,7 @@ interface CoinItem {
     templateUrl: './coin-section.component.html',
     styleUrls: ['./coin-section.component.scss']
 })
-export class CoinSectionComponent implements OnInit, OnDestroy {
+export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
     coinTotal: number = 0;
     message = "Whoa! That's a lot of coins! Let's go dress me up or grab something shiny!";
     coinItems: CoinItem[] = [];
@@ -40,60 +40,36 @@ export class CoinSectionComponent implements OnInit, OnDestroy {
         private coinService: CoinService,
         private authService: AuthService,
         private refreshService: RefreshService
-    ) {
-    }
+    ) {}
 
     ngOnInit() {
         this.isParent = this.authService.isParentUser();
-        
-        // Subscribe to total coins updates
-        this.coinService.totalCoins$.subscribe(total => {
-            this.coinTotal = total;
-        });
-        
-        // If coin history is not loaded yet, load it
-        if (this.coinService.getCoinHistory().length === 0) {
-            this.loadCoinHistory();
-        } else {
-            // Use cached total
-            this.coinTotal = this.coinService.getTotalCoins();
-        }
+        this.refreshService.registerRefreshHandler('CoinSectionComponent', async () => { this.fetchHistory(); });
+    }
 
-        // Register for pull-to-refresh
-        this.refreshService.registerRefreshHandler('CoinSectionComponent', () => this.loadCoinHistory());
+    ionViewWillEnter() {
+        this.fetchHistory();
     }
 
     ngOnDestroy() {
-        // Unregister the refresh handler
         this.refreshService.unregisterRefreshHandler('CoinSectionComponent');
     }
 
-    loadCoinHistory(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            this.isLoading = true;
-            this.coinService.loadCoinHistory().subscribe({
-                next: (response) => {
-                    if (response) {
-                        // Prefer server-provided totalCoins if available, otherwise compute from history
-                        if (response.totalCoins !== undefined && response.totalCoins !== null) {
-                            this.coinTotal = response.totalCoins;
-                        } else if (response.history) {
-                            this.coinTotal = response.history.reduce((sum: number, item: CoinHistoryItem) => sum + item.amount, 0);
-                        }
-
-                        if (response.history) {
-                            this.coinItems = this.mapHistoryToCoinItems(response.history);
-                        }
-                    }
-                    this.isLoading = false;
-                    resolve();
-                },
-                error: (error) => {
-                    console.error('Error loading coin history:', error);
-                    this.isLoading = false;
-                    reject(error);
+    fetchHistory() {
+        this.isLoading = true;
+        this.coinService.loadCoinHistory().subscribe({
+            next: (response) => {
+                if (response?.totalCoins != null) {
+                    this.coinTotal = response.totalCoins;
+                } else if (response?.history) {
+                    this.coinTotal = response.history.reduce((s: number, i: CoinHistoryItem) => s + i.amount, 0);
                 }
-            });
+                this.coinItems = response?.history ? this.mapHistoryToCoinItems(response.history) : [];
+                this.isLoading = false;
+            },
+            error: () => {
+                this.isLoading = false;
+            }
         });
     }
 
@@ -110,56 +86,34 @@ export class CoinSectionComponent implements OnInit, OnDestroy {
     }
 
     get sortedCoinItems(): CoinItem[] {
-        const items = [...this.coinItems];
-        items.sort((a, b) => b.date.getTime() - a.date.getTime());
-        return items;
+        return [...this.coinItems].sort((a, b) => b.date.getTime() - a.date.getTime());
     }
 
     private getIconForType(type: string, habit: any, task: any): string {
-        if (type === 'HABIT_COMPLETION' && habit?.tags?.length > 0) {
-            return this.getTagIcon(habit.tags[0]);
-        }
-        if (type === 'TASK_COMPLETION' && task?.tags?.length > 0) {
-            return this.getTagIcon(task.tags[0]);
-        }
-
+        if (type === 'HABIT_COMPLETION' && habit?.tags?.length > 0) return this.getTagIcon(habit.tags[0]);
+        if (type === 'TASK_COMPLETION' && task?.tags?.length > 0) return this.getTagIcon(task.tags[0]);
         switch (type) {
-            case 'HABIT_COMPLETION':
-                return '/assets/Icons-Neutral/Icon-Streak.png';
-            case 'TASK_COMPLETION':
-                return '/assets/Icons-Neutral/Icon-Calendar.png';
-            case 'STREAK_7DAY_BONUS':
-                return '/assets/Icons-Neutral/Icon-Streak.png';
-            case 'DAILY_LOGIN':
-            case 'DAILY_LOGIN_BONUS':
-            case 'LOGIN_BONUS':
-            case 'REFERRAL_BONUS':
-                return '/assets/Icons-Neutral/Icons-Coins.png';
-            default:
-                return '/assets/Icons-Neutral/Icons-Coins.png';
+            case 'HABIT_COMPLETION': return '/assets/Icons-Neutral/Icon-Streak.png';
+            case 'TASK_COMPLETION': return '/assets/Icons-Neutral/Icon-Calendar.png';
+            case 'STREAK_7DAY_BONUS': return '/assets/Icons-Neutral/Icon-Streak.png';
+            default: return '/assets/Icons-Neutral/Icons-Coins.png';
         }
     }
 
     private getTagIcon(tag: string): string {
-        const tagIconMap: { [key: string]: string } = {
-            'Reading':  '/assets/Icons-Neutral/Icon-Content-Articles.png',
-            'Running':  '/assets/Icons-Neutral/Icon-Streak.png',
+        const map: { [key: string]: string } = {
+            'Reading': '/assets/Icons-Neutral/Icon-Content-Articles.png',
+            'Running': '/assets/Icons-Neutral/Icon-Streak.png',
             'Exercise': '/assets/Icons-Neutral/Icon-Streak.png',
-            'Skill':    '/assets/Icons-Neutral/Icon-Trophy.png',
+            'Skill': '/assets/Icons-Neutral/Icon-Trophy.png',
         };
-        return tagIconMap[tag] || '/assets/Icons-Neutral/Icons-Coins.png';
+        return map[tag] || '/assets/Icons-Neutral/Icons-Coins.png';
     }
 
     private getLabelForItem(item: CoinHistoryItem): string {
-        if (item.habit) {
-            return item.habit.title || 'Habit Completed';
-        }
-        if (item.task) {
-            return item.task.title || 'Task Completed';
-        }
-        if (item.type === 'STREAK_7DAY_BONUS') {
-            return '7 Day Streak Bonus';
-        }
+        if (item.habit) return item.habit.title || 'Habit Completed';
+        if (item.task) return item.task.title || 'Task Completed';
+        if (item.type === 'STREAK_7DAY_BONUS') return '7 Day Streak Bonus';
         return item.description || 'Coin Earned';
     }
 

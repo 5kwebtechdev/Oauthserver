@@ -70,7 +70,7 @@
           <p class="login-text">Already have an Account ?<a [routerLink]="['/home/login']">LogIn</a></p>
         </div>
       </div>
-      <div class="terms-consent-fixed">
+      <!-- <div class="terms-consent-fixed">
         <label class="whatsapp-checkbox">
           <input type="checkbox" [(ngModel)]="whatsappConsent" />
           Receive offers, updates and reminders on <b><i class="fa-brands fa-whatsapp"></i> WhatsApp</b>.
@@ -80,7 +80,7 @@
             (click)="navigateToPrivacyPolicy(); $event.preventDefault()">Privacy Policy</a> and <a href="#"
             (click)="navigateToTermsOfUse(); $event.preventDefault()">Terms of Use</a>.
         </p>
-      </div>
+      </div> -->
     </div>
 
     <div *ngIf="step === 0.2" [@slideIn]>
