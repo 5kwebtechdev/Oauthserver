@@ -352,7 +352,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   // Header helpers for template bindings to avoid complex inline expressions
   get headerText(): string {
     if (this.step === 1) return "Who's using the app?";
-    if (this.step === 0.1) return 'Add phone number or email address';
+    if (this.step === 0.1) return 'Add email address';
     if (this.step === 0.2) return this.loginMode === 'phone' ? 'Check your phone' : 'Check your email';
     if (this.step === 0.3) return 'Create Password';
     return "Let's set you up!";
@@ -399,15 +399,26 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
     const identifier = this.email?.value;
     this.errorMessage = null;
-    this.requestedIdentifier = identifier;
-    try {
-      if (identifier) {
-        sessionStorage.setItem('requestedIdentifier', identifier);
-        sessionStorage.setItem('loginMode', 'email');
+
+    this.authService.checkEmailExists(identifier).subscribe({
+      next: (res) => {
+        if (res.exists) {
+          this.errorMessage = 'This email is already registered. Please login instead.';
+          return;
+        }
+        this.requestedIdentifier = identifier;
+        try {
+          if (identifier) {
+            sessionStorage.setItem('requestedIdentifier', identifier);
+            sessionStorage.setItem('loginMode', 'email');
+          }
+        } catch (e) { }
+        this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
+      },
+      error: () => {
+        this.errorMessage = 'Unable to verify email. Please try again.';
       }
-    } catch (e) { }
-    // Skip OTP — go directly to password creation
-    this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
+    });
   }
 
   dob() {

@@ -1,13 +1,11 @@
-<ion-content #content [ngClass]="step === 5 ? 'bg-white' : 'bg-mindful-secondary'">
-  <div class="safe-area-nav" *ngIf="step !== 5">
-    <mindful-navigator
-      [heading]="headerText"
-      [subtext]="headerSubtext"
-      [showSubtext]="showHeaderSubtext"
-      [variant]="'warm'"
-      (back)="goBack()">
-    </mindful-navigator>
-  </div>
+<ion-content #content [scrollY]="step !== 0.1 && step !== 0.3 && step !== 5" [ngClass]="step === 5 ? 'bg-white' : 'bg-mindful-secondary'">
+  <mindful-navigator *ngIf="step !== 5"
+    [heading]="headerText"
+    [subtext]="headerSubtext"
+    [showSubtext]="showHeaderSubtext"
+    [variant]="'warm'"
+    (back)="goBack()">
+  </mindful-navigator>
   <div class="signup-container" [ngClass]="{'step-5-container': step === 5}">
     <h4 class="step-text" *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 5">
       Step {{step}} of 4
@@ -26,8 +24,7 @@
         <div class="container w-full p-0" style="padding: 10px 0px !important;">
           <!-- Helper text -->
           <small class="helper-text">Only for login and safety</small>
-          <div class="d-flex flex-column gap-3">
-            <form [formGroup]="signupForm">
+          <form [formGroup]="signupForm">
               <ng-container *ngIf="loginMode === 'email'">
                 <div class="input-group">
                   <input [ngClass]="{'error' : email?.invalid && (email?.dirty)}" formControlName="email" type="email"
@@ -56,8 +53,6 @@
                 </div>
               </ng-container>
 
-
-
               <mindful-button type="orange-onboard" full [text]="'Next'"
                 [disabled]="!signupForm.dirty || !(phone?.value || email?.value)" (click)="signupFromLogin()">
               </mindful-button>
@@ -67,10 +62,10 @@
               </div>
             </form>
 
+          <div class="container w-full p-0" style="align-self: center;">
             <div class="or-divider"><span>OR</span></div>
-
+            <social-media [variant]="'login-with'"></social-media>
           </div>
-          <social-media [variant]="'login-with'"></social-media>
 
           <p class="login-text">Already have an Account ?<a [routerLink]="['/home/login']">LogIn</a></p>
         </div>
