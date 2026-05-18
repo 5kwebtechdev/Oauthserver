@@ -3,9 +3,7 @@
 }
 
 ion-content.streaks-page {
-    --padding-top: 0 !important;
-    --ion-safe-area-top: 0 !important;
-    padding-top: 0 !important;
+    --padding-top: var(--sat);
 }
 
 .leaderboard-card {

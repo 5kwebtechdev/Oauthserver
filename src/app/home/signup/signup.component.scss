@@ -625,7 +625,7 @@ swiper-slide.swiper-slide-active .pet-card {
   flex-direction: column;
   justify-content: flex-start;
   box-sizing: border-box;
-  height: 60vh;
+  height: 60dvh;
   padding: 20px;
   padding-bottom: 16px;
   border-radius: 20px;
@@ -852,7 +852,7 @@ swiper-slide {
 
 @media (min-height: 1000px) {
   .signup-container {
-    min-height: 100vh;
+    min-height: 100dvh;
   }
 }
 
@@ -873,7 +873,7 @@ swiper-slide {
   background: #FDEAD7;
   border-radius: 20px 20px 0 0;
   z-index: 1001;
-  max-height: 80vh;
+  max-height: 80dvh;
   display: flex;
   flex-direction: column;
   animation: slideUpIn 0.3s ease-out;
@@ -1011,7 +1011,7 @@ swiper-slide {
 
 @media (max-width: 480px) {
   .country-modal {
-    max-height: 85vh;
+    max-height: 85dvh;
 
     &__header {
       padding: 16px 20px;
@@ -1087,7 +1087,7 @@ swiper-slide {
 
 @media (orientation: landscape) and (max-height: 500px) {
   .country-modal {
-    max-height: 90vh;
+    max-height: 90dvh;
   }
 }
 
@@ -1386,7 +1386,7 @@ aspect-ratio: 25/16;
 }
 
 ion-content {
-  --padding-top: 0px;
+  --padding-top: var(--sat);
 }
 
 ion-content.bg-white {

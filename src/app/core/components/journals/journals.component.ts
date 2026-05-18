@@ -238,6 +238,7 @@ export class JournalsComponent {
           return;
         }
 
+        if (res.length > 0) console.log('[Journal] raw API item[0]:', JSON.stringify(res[0]));
         this.entries = res.map(item => {
           let dateVal: Date = new Date();
           try {
@@ -271,12 +272,21 @@ export class JournalsComponent {
           });
 
           const images: string[] = [];
-          const urlArrayField = item.attachments ?? item.attachmentUrls ?? item.imageUrls ?? item.images ?? item.mediaUrls;
+          const toAbsUrl = (u: any): string => {
+            if (!u) return '';
+            const raw = typeof u === 'string' ? u : (u.url || u.uri || u.src || u.fileUrl || '');
+            if (!raw) return '';
+            if (raw.startsWith('https://')) return raw;
+            if (raw.startsWith('http://')) return raw.replace('http://', 'https://');
+            return raw.startsWith('/') ? `https://api.supermeapp.com${raw}` : `https://api.supermeapp.com/${raw}`;
+          };
+          const urlArrayField = item.attachments ?? item.files ?? item.attachmentUrls ?? item.imageUrls ?? item.images ?? item.mediaUrls;
           if (urlArrayField && Array.isArray(urlArrayField)) {
-            images.push(...urlArrayField.filter(Boolean));
+            images.push(...urlArrayField.map(toAbsUrl).filter(Boolean));
           } else {
-            const singleUrl = item.attachmentUrl ?? item.imageUrl ?? item.mediaUrl;
-            if (singleUrl) images.push(singleUrl);
+            const singleUrl = item.attachmentUrl ?? item.fileUrl ?? item.imageUrl ?? item.mediaUrl;
+            const abs = toAbsUrl(singleUrl);
+            if (abs) images.push(abs);
           }
 
           return {

@@ -7,7 +7,7 @@
   <div class="post-body" [class.center-emoji]="!hasDetails(entry)">
     <div class="emoji">
       <ng-container *ngIf="getEmotion(entry) as em; else emojiFallback">
-        <img class="emotion-thumb" [src]="em.image" [alt]="em.label" />
+        <img class="emotion-thumb" [src]="em.image" [alt]="em.label" (error)="$any($event.target).style.display='none'" />
       </ng-container>
       <ng-template #emojiFallback>
         {{ entry.emoji }}
