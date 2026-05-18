@@ -350,7 +350,7 @@
     </div>
     <div *ngIf="step === 4 && (currentRole === 'self' || currentRole === 'child')" [@slideIn]>
       <swiper-container slides-per-view="1.2" centered-slides="true" space-between="10" grab-cursor="true"
-        (slidechange)="onSlideChange()" (swiperstateupdate)="onSlideChange()" #swiperEl [style]="{padding: '0 0 24px 0', height: '67vh'}">
+        (slidechange)="onSlideChange()" (swiperstateupdate)="onSlideChange()" #swiperEl [style]="{padding: '0 0 24px 0', height: '67dvh'}">
         <swiper-slide *ngFor="let pet of pets; let i = index">
           <div class="pet-card d-flex flex-column" [ngClass]="{ 'panda': pet.name === 'Panda' }">
             <h4>{{pet.displayName}}</h4>
@@ -376,7 +376,7 @@
     </div>
 
     <div *ngIf="step === 5 && (currentRole === 'self' || currentRole === 'child')" [@slideIn]
-      class="welcome-page d-flex flex-column align-items-center justify-content-center gap-3" style="min-height: 90vh; margin-top: 10vh;">
+      class="welcome-page d-flex flex-column align-items-center justify-content-center gap-3" style="min-height: 90dvh; margin-top: 10dvh;">
       <img src="assets/Images-Transparent/SuperMe-Wordmark-Logo-2.png" alt="Onboarding pet" class="onboarding-image" />
 
       <div class="welcome-content d-flex flex-column justify-content-center align-items-center gap-2">

@@ -25,7 +25,7 @@
 ion-content {
   --padding-start: 0;
   --padding-end: 0;
-  --padding-top: 0;
+  --padding-top: var(--sat);
   --padding-bottom: 91px; // Footer height (75px) + margin (16px)
 }
 

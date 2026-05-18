@@ -1,7 +1,7 @@
 ion-content {
   --background: #FDEAD7;
   --overflow: hidden;
-  --padding-top: 0px;
+  --padding-top: var(--sat);
 }
 
 .login_section {
@@ -288,6 +288,7 @@ ion-content {
         &[type=number],
         &[type=tel] {
           -moz-appearance: textfield;
+          appearance: textfield;
         }
 
         /* Only allow numeric input */
@@ -502,7 +503,7 @@ ion-content {
   background: #FDEAD7;
   border-radius: 20px 20px 0 0;
   z-index: 1001;
-  max-height: 80vh;
+  max-height: 80dvh;
   display: flex;
   flex-direction: column;
   animation: slideUpIn 0.3s ease-out;
@@ -632,7 +633,7 @@ ion-content {
 /* Mobile optimizations for country modal */
 @media (max-width: 480px) {
   .country-modal {
-    max-height: 85vh;
+    max-height: 85dvh;
   }
 
   .country-modal__header {
@@ -713,7 +714,7 @@ ion-content {
 /* Landscape mode adjustments */
 @media (orientation: landscape) and (max-height: 500px) {
   .country-modal {
-    max-height: 90vh;
+    max-height: 90dvh;
   }
 }
 
