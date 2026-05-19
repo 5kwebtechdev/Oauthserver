@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from "@angular/common";
-import { ModalController } from '@ionic/angular';
+import { ModalController, RefresherCustomEvent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { NotesComponent } from '../../core/components/notes/notes.component';
 import { ActivityCardComponent } from "../../core/components/activity-section/activity-card/activity-card.component";
@@ -403,6 +403,21 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
    * Resolve avatar URL from an avatarImageName like "Avatar 3" and optional gender
    */
   // helper moved to ChildSelfImageService
+
+  /**
+   * Pull-to-refresh handler wired to ion-refresher in the template.
+   */
+  async handleRefresh(event: RefresherCustomEvent): Promise<void> {
+    try {
+      await this.authService.refreshUserData().toPromise();
+      await this.refreshService.triggerRefresh();
+      await new Promise(resolve => setTimeout(resolve, 600));
+    } catch (error) {
+      console.error('[UserDashboard] Refresh error:', error);
+    } finally {
+      event.target.complete();
+    }
+  }
 
   /**
    * Called by the global RefreshService when the user pulls to refresh.

@@ -434,7 +434,8 @@ ion-content {
     display: flex;
     justify-content: space-around;
     margin-bottom: 1rem;
-    width: 50vw;
+    width: auto;
+    gap: 32px;
     margin-top: 1.2rem;
 
     .social-btn {

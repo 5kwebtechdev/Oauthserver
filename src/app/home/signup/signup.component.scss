@@ -352,7 +352,7 @@ p,h1,h2,h3,h4,h5,h6, ul {
     align-items: center;
     padding: 0px;
     gap: 40px;
-    width: 200px;
+    width: auto;
     height: 40px;
     margin-bottom: 2rem;
     margin-top: 1.2rem;
@@ -439,7 +439,7 @@ p,h1,h2,h3,h4,h5,h6, ul {
 
     h2 {
       font-weight: 500;
-      font-size: 40px;
+      font-size: clamp(24px, 6vw, 40px);
       text-align: left;
       color: #772817;
       margin: 10px 0 15px 0;
@@ -447,7 +447,7 @@ p,h1,h2,h3,h4,h5,h6, ul {
 
     h4 {
       font-weight: 400;
-      font-size: 20px;
+      font-size: clamp(14px, 3.5vw, 20px);
       text-align: left;
       opacity: 0.5;
     }
@@ -1147,13 +1147,13 @@ swiper-slide {
 }
 
 .otp-digit {
-  width: 80px !important;
-  height: 80px !important;
+  width: clamp(52px, 17vw, 80px) !important;
+  height: clamp(52px, 17vw, 80px) !important;
   border: 2px solid #EE6621;
   border-radius: 12px;
   background: #fdead7;
   font-weight: 600;
-  font-size: 32px;
+  font-size: clamp(20px, 5vw, 32px);
   color: #000;
   text-align: center;
   transition: all 0.2s ease;
@@ -1173,7 +1173,7 @@ swiper-slide {
 }
 
 .otp-next-btn {
-  min-width: 200px;
+  min-width: min(200px, 80vw);
   margin-bottom: 2rem;
 
   &:disabled {
@@ -1258,7 +1258,7 @@ display: flex;
 .password-title {
   font-family: 'Fredoka', sans-serif;
   font-weight: 600;
-  font-size: 28px;
+  font-size: clamp(20px, 5.5vw, 28px);
   color: #772817;
   margin: 0 0 1rem 0;
   text-align: center;
@@ -1315,7 +1315,7 @@ display: flex;
 }
 
 .password-next-btn {
-  min-width: 200px;
+  min-width: min(200px, 80vw);
   margin-top: 2rem;
 
   &:disabled {
