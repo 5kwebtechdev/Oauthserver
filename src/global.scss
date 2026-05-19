@@ -437,6 +437,12 @@ label {
   background: #FAD2AE;
 }
 
+/* Give every routed page a solid background so it blocks the page behind it
+   during Ionic's slide transition. Individual pages override via :host. */
+.ion-page {
+  background: #ffffff;
+}
+
 ion-content {
   --background: transparent;
   width: 100vw;
@@ -653,6 +659,50 @@ body.barcode-scanner-active {
 
   @media (max-width: 480px) {
     width: 95%;
+  }
+}
+
+/* ── 420px breakpoint: targets ~393-420 CSS px phones (e.g. 2640×1216 @ DPR 3)
+   Only tighten things that genuinely overflow — do not change anything that works fine. */
+@media (max-width: 420px) {
+  /* Shared page container: reduce horizontal padding */
+  .mindful-page-container,
+  .content-page,
+  .main-container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  /* Card headers: tighter subtitle text */
+  .mindful-header {
+    font-size: 20px;
+  }
+
+  /* Global badge grid: keep 2 columns on narrow screens */
+  .badge-grid {
+    gap: 12px;
+    padding: 16px;
+  }
+
+  /* Category tabs (learning, etc.): scale down icons/labels */
+  .categories {
+    gap: 4px;
+    padding: 0 8px;
+  }
+
+  /* Cards grid: single column on very narrow screens */
+  .cards-grid {
+    gap: 12px;
+  }
+
+  /* Streaks status row: allow wrapping */
+  .streaks-status {
+    gap: 10px;
+  }
+
+  /* Coin stats: tighter divider */
+  .stat-divider-vertical {
+    margin: 0 6px;
   }
 }
 

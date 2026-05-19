@@ -27,7 +27,7 @@
   /* Ensure anchors don't show default blue underline */
   text-decoration: none;
   color: inherit;
-  width: 70px;
+  width: clamp(48px, 14vw, 70px);
 
   svg {
     width: 24px;
