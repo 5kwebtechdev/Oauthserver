@@ -1,11 +1,10 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { CalendarService } from '../../../services/calendar.service';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { TimelineEvent } from '../../../models/calendar.model';
 import { Subscription, Observable } from 'rxjs';
-import { filter } from 'rxjs/operators';
 import { CustomToastService, Toast } from '../../../services/custom-toast.service';
 import { ModalController, ViewWillEnter } from '@ionic/angular';
 import { HabitService } from '../habit.service';
@@ -61,6 +60,8 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy, ViewWillEnt
   }
 
   ionViewWillEnter() {
+    // Clear API cache and reload every time this screen becomes active —
+    // covers ALL user types (regular + parent) on both first load and return navigation.
     this.calendarService.clearCache(this.selectedDate, 'day');
     this.loadEvents();
   }
@@ -73,32 +74,10 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy, ViewWillEnt
       }
     } catch (e) { /* ignore */ }
 
-    const reloadFlag = 'timeline_did_reload';
-    if (!sessionStorage.getItem(reloadFlag)) {
-      // First landing — show cache, set flag, then reload page
-      this.loadFromCache();
-      sessionStorage.setItem(reloadFlag, '1');
-      window.location.reload();
-      return;
-    }
+    // Show stale localStorage cache instantly while fresh data loads
+    this.loadFromCache();
 
-    // Arrived after reload — clear flag, load fresh data
-    sessionStorage.removeItem(reloadFlag);
-    this.calendarService.clearCache(this.selectedDate, 'day');
-    this.loadEvents();
-
-    // Catch subsequent tab switches (component stays cached by Ionic)
-    this.subscriptions.add(
-      this.router.events.pipe(
-        filter(e => e instanceof NavigationEnd),
-        filter((e: any) => e.urlAfterRedirects.includes('activity-timeline'))
-      ).subscribe(() => {
-        this.calendarService.clearCache(this.selectedDate, 'day');
-        this.loadEvents();
-      })
-    );
-
-    // Reload when parent switches child
+    // Reload when parent switches to a different child (distinct change only — not initial selection)
     this.subscriptions.add(
       this.profileSelector.childChanged$.subscribe(() => {
         this.calendarService.clearCache(this.selectedDate, 'day');
@@ -125,15 +104,9 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy, ViewWillEnt
         // NgZone.run ensures Angular change detection fires even if the HTTP
         // callback arrives outside Angular's zone (common on Capacitor/Android)
         this.ngZone.run(() => {
-          let events = this.calendarService.transformToTimelineEvents(response);
-
-          const selectedChildId = this.profileSelector.getChildId();
-          if (selectedChildId !== null) {
-            events = events.filter((e: any) => {
-              const userId = e.userId ?? e.user_id ?? e.assignedTo ?? e.assigned_to;
-              return userId == selectedChildId;
-            });
-          }
+          // The ProfileSelectorInterceptor already sends forUserId to the server,
+          // so the response is already scoped to the selected child. No client-side filter needed.
+          const events = this.calendarService.transformToTimelineEvents(response);
 
           this.allEvents = [...events];
           this.filteredEvents = this.selectedType === 'all'

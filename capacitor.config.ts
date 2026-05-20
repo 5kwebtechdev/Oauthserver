@@ -14,6 +14,15 @@ const config: CapacitorConfig = {
   // },
   android: {
     allowMixedContent: true
+  },
+  plugins: {
+    GoogleAuth: {
+      // TODO: Replace with your Web client ID from Google Cloud Console > APIs & Services > Credentials
+      // It must be the "Web application" type client ID, not the Android one.
+      serverClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
+      scopes: ['profile', 'email'],
+      forceCodeForRefreshToken: true
+    }
   }
 };
 

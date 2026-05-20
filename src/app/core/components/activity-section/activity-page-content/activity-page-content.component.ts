@@ -116,7 +116,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
             this.subscriptions.add(
                 this.profileSelector.childChanged$.subscribe(() => {
                     this.loadHabits(true);
-                    this.loadTasksForSelectedDate(this.selectedDate);
+                    this.loadTasksForSelectedDate(this.selectedDate, true); // force-clear task cache
                 })
             );
         } else {
@@ -241,7 +241,8 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                     const selectedChildId = this.profileSelector.getChildId();
                     if (isParent && selectedChildId !== null) {
                         habitData = habitData.filter((h: any) => {
-                            const habitUserId = h.userId ?? h.user_id ?? h.assignedTo ?? h.assigned_to;
+                            // Check assignedTo first — tasks/habits created by a parent have userId=parent but assignedTo=child
+                            const habitUserId = h.assignedTo ?? h.assigned_to ?? h.userId ?? h.user_id;
                             return habitUserId == selectedChildId;
                         });
                     }
@@ -297,7 +298,8 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                     const selectedChildId = this.profileSelector.getChildId();
                     if (isParent && selectedChildId !== null) {
                         list = list.filter((t: any) => {
-                            const taskUserId = t.userId ?? t.user_id ?? t.assignedTo ?? t.assigned_to;
+                            // Check assignedTo first — tasks created by a parent have userId=parent but assignedTo=child
+                            const taskUserId = t.assignedTo ?? t.assigned_to ?? t.userId ?? t.user_id;
                             return taskUserId == selectedChildId;
                         });
                     }

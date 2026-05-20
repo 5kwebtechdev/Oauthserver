@@ -124,21 +124,25 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   pets: any[] = [{
     displayName: 'Bao the mindful Panda',
     name: 'Panda',
+    apiName: 'Panda-Age1-Happy.png',
     image: 'assets/Images-Pet/Panda-Age1-Happy.png',
     text: ['Your gentle guide to inner peace', 'Celebrates small acts of kindness']
   }, {
     displayName: 'Koda the Chill Llama',
     name: 'Llama',
+    apiName: 'Llama-Age1-Happy.png',
     image: 'assets/Images-Pet/Llama-Age1-Happy.png',
     text: ['Master of staying cool under pressure', 'Loves colorful, quirky adventures']
   }, {
     displayName: 'Zuki the Fierce Dragon',
     name: 'Dragon',
+    apiName: 'Dragon-Age1-Happy.png',
     image: 'assets/Images-Pet/Dragon-Age1-Happy.png',
     text: ['Loves big ideas and bold moves', 'Celebrates when you go on streaks']
   }, {
     displayName: 'Luna the Wise Owl',
     name: 'Owl',
+    apiName: 'Owl-Age1-Happy.png',
     image: 'assets/Images-Pet/Owl-Age1-Happy.png',
     text: ['Your midnight study buddy', 'Celebrates "aha!" moments']
   }]
@@ -292,7 +296,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
           const petFromSession = sessionStorage.getItem('signup_pet');
           if (petFromSession) {
-            const idx = this.pets.findIndex(p => p.name === petFromSession);
+            const idx = this.pets.findIndex(p => p.apiName === petFromSession || p.name === petFromSession);
             this.currentImage = idx >= 0 ? this.pets[idx] : this.pets[0];
           } else {
             this.currentImage = this.pets[0];
@@ -400,20 +404,29 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const identifier = this.email?.value;
     this.errorMessage = null;
 
+    // Step 1: check if email already exists
     this.authService.checkEmailExists(identifier).subscribe({
       next: (res) => {
         if (res.exists) {
           this.errorMessage = 'This email is already registered. Please login instead.';
           return;
         }
-        this.requestedIdentifier = identifier;
-        try {
-          if (identifier) {
-            sessionStorage.setItem('requestedIdentifier', identifier);
-            sessionStorage.setItem('loginMode', 'email');
+        // Step 2: email is new — send OTP
+        this.authService.sendLoginOtp(identifier).subscribe({
+          next: () => {
+            this.requestedIdentifier = identifier;
+            try {
+              if (identifier) {
+                sessionStorage.setItem('requestedIdentifier', identifier);
+                sessionStorage.setItem('loginMode', 'email');
+              }
+            } catch (e) { }
+            this.router.navigate(['home/sign-up'], { queryParams: { step: 0.2 } });
+          },
+          error: (err) => {
+            this.errorMessage = err?.error?.message || 'Failed to send OTP. Please try again.';
           }
-        } catch (e) { }
-        this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
+        });
       },
       error: () => {
         this.errorMessage = 'Unable to verify email. Please try again.';
@@ -458,9 +471,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       let selectedPetName;
       if (swiperInstance) {
         const currentIndex = swiperInstance.realIndex;
-        selectedPetName = this.pets[currentIndex]?.name;
+        selectedPetName = this.pets[currentIndex]?.apiName;
       } else {
-        selectedPetName = this.currentImage?.name;
+        selectedPetName = this.currentImage?.apiName;
       }
 
       // If still no pet name, check session storage
@@ -470,7 +483,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
       // Last resort: use first pet
       if (!selectedPetName && this.pets.length > 0) {
-        selectedPetName = this.pets[0].name;
+        selectedPetName = this.pets[0].apiName;
       }
 
       if (selectedPetName) {
@@ -1120,19 +1133,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // Get saved values from session storage if available
     const savedLoginMode = sessionStorage.getItem('loginMode') as 'email' | 'phone' || this.loginMode;
     const identifier = this.requestedIdentifier || (savedLoginMode === 'phone' ? this.phone?.value : this.email?.value);
-    const isEmail = savedLoginMode === 'email';
-    const countryCode = savedLoginMode === 'phone' ? (sessionStorage.getItem('countryCode') || this.selectedCountry.code) : undefined;
 
-    this.authService.registerVerifyOtp(identifier || '', otp, isEmail, countryCode).subscribe({
-      next: (resp) => {
-        this.errorMessage = null; // Clear any previous errors
+    this.authService.verifyLoginOtp(identifier || '', otp).subscribe({
+      next: () => {
+        this.errorMessage = null;
         this.clearOtpTimer();
         // Proceed to password creation
         this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
       },
       error: (err) => {
         console.error('OTP verification failed:', err);
-        // Handle ProgressEvent errors (network failures on Android)
         if (err instanceof ProgressEvent || (err && err.type === 'error' && err.target)) {
           this.errorMessage = 'Network error. Please check your internet connection and try again.';
         } else if (err?.error?.message) {
@@ -1372,7 +1382,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       const swiperInstance = this.swiperRef?.nativeElement?.swiper;
       if (swiperInstance) {
         const currentIndex = swiperInstance.realIndex;
-        petName = this.pets[currentIndex]?.name;
+        petName = this.pets[currentIndex]?.apiName;
       }
 
       // If no pet from swiper, try session storage
@@ -1382,12 +1392,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
       // If still no pet, try current image
       if (!petName && this.currentImage) {
-        petName = this.currentImage.name;
+        petName = this.currentImage.apiName;
       }
 
       // Last resort: use first pet
       if (!petName && this.pets.length > 0) {
-        petName = this.pets[0].name;
+        petName = this.pets[0].apiName;
       }
 
       if (petName) {
@@ -1564,8 +1574,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // petName
     try {
-      let petName = sessionStorage.getItem('signup_pet') || this.currentImage?.name;
-      if (!petName && this.pets.length > 0) petName = this.pets[0].name;
+      let petName = sessionStorage.getItem('signup_pet') || this.currentImage?.apiName;
+      if (!petName && this.pets.length > 0) petName = this.pets[0].apiName;
       if (petName) payload.petName = petName;
     } catch (e) { }
 

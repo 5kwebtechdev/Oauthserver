@@ -3,15 +3,15 @@
   "version": "0.0.1",
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
- "scripts": {
-  "ng": "ng",
-  "start": "ng serve",
-  "build": "ng build",
-  "watch": "ng build --watch --configuration development",
-  "test": "ng test",
-  "lint": "ng lint",
-  "build-android": "powershell -ExecutionPolicy Bypass -File ./rebuild-apk.ps1"
-},
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "lint": "ng lint",
+    "build-android": "powershell -ExecutionPolicy Bypass -File ./rebuild-apk.ps1"
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "^19.0.0",
@@ -37,6 +37,7 @@
     "@capacitor/keyboard": "7.0.1",
     "@capacitor/share": "^7.0.3",
     "@capacitor/status-bar": "7.0.1",
+    "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4",
     "@ionic/angular": "^8.0.0",
     "@nativescript/angular": "^19.0.1",
     "@nativescript/datetimepicker": "^3.0.0",

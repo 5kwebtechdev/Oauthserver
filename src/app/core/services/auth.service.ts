@@ -307,26 +307,21 @@ export class AuthService {
     return this.http.get<{ exists: boolean }>(url, { params: { email } });
   }
 
-  requestOtp(identifier: string) {
+  requestOtp(email: string) {
     const headers = environment.apiAuthToken ? new HttpHeaders({
       Authorization: environment.apiAuthToken,
       'Content-Type': 'application/json'
     }) : undefined;
 
-    const url = `${this.apiUrl}/auth/forgot-password/request-otp`;
+    const url = `${this.apiUrl}/auth/forgot-password`;
 
-    const options: any = {
-      responseType: 'text'
-    };
+    const options: any = { responseType: 'text' };
+    if (headers) options.headers = headers;
 
-    if (headers) {
-      options.headers = headers;
-    }
-
-    return this.http.post<string>(url, { identifier }, options);
+    return this.http.post<string>(url, { email }, options);
   }
 
-  verifyOtp(identifier: string, otp: string) {
+  verifyOtp(email: string, otp: string) {
     const url = `${this.apiUrl}/auth/forgot-password/verify-otp`;
 
     const headers = environment.apiAuthToken ? new HttpHeaders({
@@ -334,39 +329,56 @@ export class AuthService {
       'Content-Type': 'application/json'
     }) : undefined;
 
-    const options: any = {
-      responseType: 'text'
-    };
+    const options: any = { responseType: 'text' };
+    if (headers) options.headers = headers;
 
-    if (headers) {
-      options.headers = headers;
-    }
-
-    return this.http.post<string>(url, { identifier, otp }, options);
+    return this.http.post<string>(url, { email, otp }, options);
   }
 
-  resetPassword(identifier: string, newPassword: string, confirmPassword: string) {
-    const url = `${this.apiUrl}/auth/forgot-password/reset`;
+  resetPassword(email: string, password: string) {
+    const url = `${this.apiUrl}/auth/forgot-password/reset-password`;
 
     const headers = environment.apiAuthToken ? new HttpHeaders({
       Authorization: environment.apiAuthToken,
       'Content-Type': 'application/json'
     }) : undefined;
 
-    const options: any = {
-      responseType: 'text'
-    };
+    const options: any = { responseType: 'text' };
+    if (headers) options.headers = headers;
 
-    if (headers) {
-      options.headers = headers;
-    }
-
-    return this.http.post<string>(url, { identifier, newPassword, confirmPassword }, options);
+    return this.http.post<string>(url, { email, password }, options);
   }
 
   register(payload: any) {
     const url = `${this.apiUrl}/auth/register`;
     return this.http.post<any>(url, payload);
+  }
+
+  /**
+   * Sign in / register with Google.
+   * Sends the Google idToken to the backend which creates or retrieves the user.
+   * Backend endpoint: POST /auth/google  { idToken: string }
+   */
+  googleAuth(idToken: string): Observable<AuthResponse> {
+    const url = `${this.apiUrl}/auth/google`;
+    return this.http.post<AuthResponse>(url, { idToken }).pipe(
+      tap({
+        next: (response) => {
+          const userId = response.user?.id;
+          if (response && response.token && userId) {
+            this.setSession({ token: response.token, userId, expiresIn: response.expiresIn, user: response.user }, false);
+          }
+        }
+      })
+    );
+  }
+
+  sendLoginOtp(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/api/auth/send-otp`, { email });
+  }
+
+  verifyLoginOtp(email: string, otp: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/api/auth/verify-otp`, { email, otp });
   }
 
   registerRequestOtp(identifier: string, isEmail: boolean, countryCode?: string) {
