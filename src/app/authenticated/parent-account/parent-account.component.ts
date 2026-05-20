@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from "@angular/common";
 import { ModalController } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
@@ -42,7 +43,7 @@ import { MindfulButtonComponent } from '../../core/components/mindful-button/min
     ],
     providers: [RefreshService]
 })
-export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit {
+export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit, ViewWillEnter {
     private readonly destroy$ = new Subject<void>();
     
     public userName: string = 'User';
@@ -177,8 +178,16 @@ export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit 
             this.userBadges = stats.badges || 0;
         }
 
-        // Fetch children from API and populate store
+    }
+
+    ionViewWillEnter(): void {
+        // Fires on initial load AND every time this screen becomes active (return from navigation).
+        // Always clear stale in-memory cache so a fresh HTTP call is made to /mood/vibes/display.
+        this.moodService.clearVibesDisplayCache();
         this.loadChildren();
+        this.loadUserStats();
+        // Refresh habits/tasks in the child component (Ionic hooks don't propagate to child components)
+        this.habitPageContent?.refresh();
     }
 
     ngAfterViewInit(): void {

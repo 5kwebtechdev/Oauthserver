@@ -63,13 +63,11 @@
             </div>
           </div>
 
-          <!-- Add more (max 3 images) -->
-          <div *ngIf="uploadedImages.length > 0 && uploadedImages.length < 3">
-            <button *ngFor="let slot of getEmptySlotArray()" class="upload-slot-btn"
-              (click)="triggerFileInput(uploadedImages.length + slot)" type="button">
-              +
-            </button>
-          </div>
+          <!-- Add more (max 3 images) — always show one + button -->
+          <button *ngIf="uploadedImages.length > 0 && uploadedImages.length < 3"
+            class="upload-slot-btn" (click)="triggerFileInput(uploadedImages.length)" type="button">
+            +
+          </button>
         </div>
 
         <!-- Error -->

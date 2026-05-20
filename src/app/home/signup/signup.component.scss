@@ -438,18 +438,31 @@ p,h1,h2,h3,h4,h5,h6, ul {
     }
 
     h2 {
-      font-weight: 500;
-      font-size: clamp(24px, 6vw, 40px);
+      font-weight: 600;
+      font-size: 26px;
       text-align: left;
       color: #772817;
-      margin: 10px 0 15px 0;
+      margin: 10px 0 10px 0;
+      line-height: 1.2;
     }
 
     h4 {
-      font-weight: 400;
-      font-size: clamp(14px, 3.5vw, 20px);
+      font-weight: 500;
+      font-size: 15px;
       text-align: left;
-      opacity: 0.5;
+      opacity: 0.6;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    @media (max-width: 360px) {
+      h2 { font-size: 22px; }
+      h4 { font-size: 13px; }
+    }
+
+    @media (min-width: 430px) {
+      h2 { font-size: 28px; }
+      h4 { font-size: 16px; }
     }
 
     &:nth-child(2) {

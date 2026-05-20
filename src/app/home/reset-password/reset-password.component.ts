@@ -236,15 +236,11 @@ export class ResetPasswordComponent {
         if (newPasswordControl.value === confirmPasswordControl.value) {
           this.passwordMismatchError = false;
           // Call backend to reset password
-          const identifier = this.requestedIdentifier ?? (this.mode === 'email'
-            ? this.resetPasswordForm.get('email')?.value
-            : this.resetPasswordForm.get('phone')?.value);
+          const email = this.requestedIdentifier
+            ?? this.resetPasswordForm.get('email')?.value
+            ?? '';
 
-
-          const newPassword = newPasswordControl.value;
-          const confirmPassword = confirmPasswordControl.value;
-
-          this.authService.resetPassword(identifier, newPassword, confirmPassword).subscribe({
+          this.authService.resetPassword(email, newPasswordControl.value).subscribe({
             next: (resp) => {
               this.resetError = null;
               // clear persisted identifier
@@ -518,13 +514,12 @@ export class ResetPasswordComponent {
     }
 
     const otp = this.otpDigits.join('');
-    
-    // Call backend to verify OTP
-    const identifier = this.mode === 'email'
-      ? this.resetPasswordForm.get('email')?.value
-      : this.resetPasswordForm.get('phone')?.value;
 
-    this.authService.verifyOtp(identifier, otp).subscribe({
+    const email = this.requestedIdentifier
+      ?? this.resetPasswordForm.get('email')?.value
+      ?? '';
+
+    this.authService.verifyOtp(email, otp).subscribe({
       next: (resp) => {
         this.otpIncorrect = false;
         this.otpError = null;
