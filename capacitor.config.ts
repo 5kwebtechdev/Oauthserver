@@ -17,9 +17,8 @@ const config: CapacitorConfig = {
   },
   plugins: {
     GoogleAuth: {
-      // TODO: Replace with your Web client ID from Google Cloud Console > APIs & Services > Credentials
-      // It must be the "Web application" type client ID, not the Android one.
-      serverClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
+      // Get this from Firebase Console → Project Settings → Your web app → OAuth 2.0 Client IDs
+      serverClientId: '124581866222-gblqv0k2a75uo4183ahl0u8336nbcsku.apps.googleusercontent.com',
       scopes: ['profile', 'email'],
       forceCodeForRefreshToken: true
     }

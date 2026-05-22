@@ -13,7 +13,6 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./social-media.component.scss']
 })
 export class SocialMediaComponent {
-  /** variant controls rendering behavior; "login-with" shows provider icons for sign-in */
   @Input() variant?: string;
   links = [
     { name: 'facebook', label: 'Facebook', icon: 'facebook', url: 'https://www.facebook.com' },
@@ -35,20 +34,16 @@ export class SocialMediaComponent {
       this.signInWithGoogle();
       return;
     }
-
     if (link.url) {
       window.open(link.url, '_blank', 'noopener,noreferrer');
       return;
     }
-
-    console.warn('No handler for social link', link.name);
   }
 
   private async signInWithGoogle(): Promise<void> {
     const isNative = this.platform.is('capacitor') || this.platform.is('android');
 
     if (!isNative) {
-      // On web, Google auth requires OAuth redirect — not implemented for web yet.
       const toast = await this.toastCtrl.create({
         message: 'Google sign-in is only available in the mobile app.',
         duration: 2500,
@@ -63,21 +58,32 @@ export class SocialMediaComponent {
 
     try {
       const googleUser = await GoogleAuth.signIn();
-      const idToken = googleUser.authentication?.idToken;
+      console.log('[SocialMedia] Google user:', JSON.stringify(googleUser));
 
-      if (!idToken) {
-        throw new Error('No ID token returned from Google');
+      const providerId = googleUser.id;
+      const email = googleUser.email;
+      const name = googleUser.name || `${googleUser.givenName || ''} ${googleUser.familyName || ''}`.trim();
+      const avatarUrl = googleUser.imageUrl || '';
+
+      if (!providerId || !email) {
+        throw new Error('Google sign-in did not return user ID or email.');
       }
 
-      this.authService.googleAuth(idToken).subscribe({
-        next: (response) => {
+      this.authService.googleOAuthLogin({
+        provider: 'google',
+        providerId,
+        email,
+        name,
+        avatarUrl
+      }).subscribe({
+        next: () => {
           loading.dismiss();
           const route = this.authService.getDashboardRoute();
           this.router.navigate([route], { replaceUrl: true });
         },
         error: async (err) => {
           loading.dismiss();
-          console.error('[SocialMedia] Google auth backend error:', err);
+          console.error('[SocialMedia] Backend error:', err);
           const toast = await this.toastCtrl.create({
             message: err?.error?.message || 'Google sign-in failed. Please try again.',
             duration: 3000,
@@ -88,11 +94,13 @@ export class SocialMediaComponent {
       });
     } catch (err: any) {
       await loading.dismiss();
-      console.error('[SocialMedia] Google signIn error:', err);
-      if (err?.error !== 'popup_closed_by_user' && err?.message !== 'The user canceled the sign-in flow.') {
+      console.error('[SocialMedia] Google signIn error:', err?.message, err?.code);
+      const cancelled = err?.error === 'popup_closed_by_user'
+        || err?.message === 'The user canceled the sign-in flow.';
+      if (!cancelled) {
         const toast = await this.toastCtrl.create({
-          message: 'Google sign-in was cancelled or failed.',
-          duration: 2500,
+          message: err?.message || 'Google sign-in failed.',
+          duration: 3000,
           position: 'bottom'
         });
         await toast.present();
