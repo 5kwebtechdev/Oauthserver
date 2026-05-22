@@ -53,6 +53,13 @@ export const guestGuard: CanActivateFn = (
     const router = inject(Router);
     const authService = inject(AuthService);
 
+    // Allow Google OAuth new-user flow to access sign-up even when authenticated
+    const isGoogleOnboarding = sessionStorage.getItem('signup_via_google') === 'true'
+        && state.url.includes('/sign-up');
+    if (isGoogleOnboarding) {
+        return true;
+    }
+
     const isLoggedIn = authService.isLoggedIn();
 
     console.log('[GuestGuard] Route activation check:', {

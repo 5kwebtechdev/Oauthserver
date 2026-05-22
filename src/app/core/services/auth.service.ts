@@ -269,7 +269,7 @@ export class AuthService {
   /**
    * Set user session after successful login
    */
-  private setSession(authResponse: { token: string; userId: number; expiresIn?: number; user?: any }, rememberMe: boolean = false)
+  setSession(authResponse: { token: string; userId: number; expiresIn?: number; user?: any }, rememberMe: boolean = false)
     : void {
     const currentTime = Date.now().toString();
     const platformType = this.isMobilePlatform ? 'mobile' : 'web';
@@ -360,16 +360,12 @@ export class AuthService {
    */
   googleOAuthLogin(profile: { provider: string; providerId: string; email: string; name: string; avatarUrl: string }): Observable<AuthResponse> {
     const url = `${this.apiUrl}/api/public/oauth2-login`;
-    return this.http.post<AuthResponse>(url, profile).pipe(
-      tap({
-        next: (response) => {
-          const userId = response.user?.id;
-          if (response && response.token && userId) {
-            this.setSession({ token: response.token, userId, expiresIn: response.expiresIn, user: response.user }, false);
-          }
-        }
-      })
-    );
+    return this.http.post<AuthResponse>(url, profile);
+  }
+
+  completeGoogleOnboarding(payload: any): Observable<any> {
+    const url = `${this.apiUrl}/api/auth/complete-google-profile`;
+    return this.http.post<any>(url, payload);
   }
 
   sendLoginOtp(email: string): Observable<any> {
