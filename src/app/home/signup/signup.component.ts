@@ -224,6 +224,19 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (savedRole) {
       this.roleSelected = savedRole;
     }
+
+    // Pre-fill profile data if coming from Google sign-in
+    if (sessionStorage.getItem('signup_via_google') === 'true') {
+      const googleName = sessionStorage.getItem('google_signup_name');
+      const googleEmail = sessionStorage.getItem('google_signup_email');
+      if (googleName) {
+        this.profileForm.patchValue({ name: googleName });
+      }
+      if (googleEmail) {
+        this.signupForm.patchValue({ email: googleEmail });
+        this.requestedIdentifier = googleEmail;
+      }
+    }
   }
 
   attachSlideChangeListener(swiperEl: HTMLElement) {
@@ -653,8 +666,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       // From step 0.3 (password creation), go back to step 0.1 (email entry)
       this.router.navigate(['home/sign-up'], { queryParams: { step: 0.1 } });
     } else if (this.step === 1) {
-      // From step 1 (role selection), go back to step 0.3 (password creation)
-      this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
+      // From step 1 (role selection), go back to login if Google flow, else step 0.3
+      if (sessionStorage.getItem('signup_via_google') === 'true') {
+        this.router.navigate(['home/login']);
+      } else {
+        this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
+      }
     } else if (this.step > 1) {
       // Special-case: if user is in "self" flow and on pet-selection (step 4),
       // back should return to profile/details entry (step 2) rather than step 3.
@@ -1310,6 +1327,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   registerFromSession(): void {
     this.errorMessage = null;
 
+    // Google OAuth flow: user already has an account, just complete their profile
+    if (sessionStorage.getItem('signup_via_google') === 'true') {
+      const role = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;
+      this.completeGoogleOnboardingFlow(role);
+      return;
+    }
+
     // Collect values from session and forms
     const profileStr = sessionStorage.getItem('signup_profile');
     const password = sessionStorage.getItem('signup_password') || this.password?.value;
@@ -1521,8 +1545,97 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   /**
    * Register a child/self account using session data and then navigate to welcome (step 5).
    */
+  private completeGoogleOnboardingFlow(role: 'child' | 'parent' | 'self'): void {
+    this.errorMessage = null;
+
+    const profileStr = sessionStorage.getItem('signup_profile');
+    let profile: any = {};
+    try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) {}
+
+    const email = sessionStorage.getItem('google_signup_email') || this.email?.value;
+    const avatarKey = profile.avatar ?? this.avatarSelected ?? null;
+    const avatarNameValue = avatarKey ? `avatar${avatarKey}` : undefined;
+    const avatarImageNameValue = avatarKey ? `Avatar ${Number(avatarKey)}` : undefined;
+    const familyCode = sessionStorage.getItem('familyCode');
+    const referralCode = sessionStorage.getItem('referralCode');
+
+    const payload: any = {
+      name: profile.name || this.profileForm.get('name')?.value || sessionStorage.getItem('google_signup_name'),
+      gender: (profile.gender || this.gender || '').toUpperCase(),
+      relationship: role.toUpperCase(),
+      email,
+      avatarName: avatarNameValue,
+      avatarImageName: avatarImageNameValue,
+      familyCode: familyCode || '',
+      referralCode: referralCode || null
+    };
+
+    const dobValue = profile.dob || this.profileForm.get('dob')?.value;
+    if (dobValue) {
+      const dobDate = new Date(dobValue);
+      payload.dateOfBirth = dobDate.toISOString().split('T')[0];
+    }
+
+    if (role !== 'parent') {
+      try {
+        let petName = sessionStorage.getItem('signup_pet') || this.currentImage?.apiName;
+        if (!petName && this.pets.length > 0) petName = this.pets[0].apiName;
+        if (petName) payload.petName = petName;
+      } catch (e) {}
+    }
+
+    // Retrieve the temp auth response stored before onboarding started
+    let tempAuthResponse: any = null;
+    try {
+      const stored = sessionStorage.getItem('google_auth_response');
+      if (stored) tempAuthResponse = JSON.parse(stored);
+    } catch (e) {}
+
+    // Temporarily store token so the auth interceptor can attach it to the API call
+    if (tempAuthResponse?.token && tempAuthResponse?.user?.id) {
+      this.authService.setSession(
+        { token: tempAuthResponse.token, userId: tempAuthResponse.user.id, expiresIn: tempAuthResponse.expiresIn, user: tempAuthResponse.user },
+        false
+      );
+    }
+
+    this.authService.completeGoogleOnboarding(payload).subscribe({
+      next: () => {
+        try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) {}
+        this.clearGoogleSignupSession();
+        const route = role === 'parent' ? '/authed/parent-account' : '/authed/user-dashboard';
+        setTimeout(() => {
+          this.loadingService.forceHide();
+          this.router.navigate([route], { replaceUrl: true });
+        }, 50);
+      },
+      error: (err) => {
+        const serverMsg = err?.error?.message || 'Profile completion failed. Please try again.';
+        this.errorMessage = serverMsg;
+        try { this.core.triggerToasrt(this.errorMessage!); } catch (e) {}
+      }
+    });
+  }
+
+  private clearGoogleSignupSession(): void {
+    try {
+      ['signup_via_google', 'google_auth_response', 'google_signup_email', 'google_signup_name',
+        'google_signup_avatar', 'google_signup_provider_id', 'signup_profile',
+        'signup_role', 'signup_avatar', 'signup_pet', 'requestedIdentifier',
+        'familyCode', 'familyName', 'familyCreator', 'referralCode'].forEach(k => {
+        sessionStorage.removeItem(k);
+      });
+    } catch (e) {}
+  }
+
   private registerChildOrSelfFromSession(role: 'child' | 'self') {
     this.errorMessage = null;
+
+    // Google OAuth flow: user already has an account, just complete their profile
+    if (sessionStorage.getItem('signup_via_google') === 'true') {
+      this.completeGoogleOnboardingFlow(role);
+      return;
+    }
 
     // Collect values from session and forms (reuse registerFromSession logic)
     const profileStr = sessionStorage.getItem('signup_profile');
