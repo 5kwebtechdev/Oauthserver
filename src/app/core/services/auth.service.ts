@@ -355,13 +355,12 @@ export class AuthService {
   }
 
   /**
-   * Sign in / register with Google.
-   * Sends the Google idToken to the backend which creates or retrieves the user.
-   * Backend endpoint: POST /auth/google  { idToken: string }
+   * Sign in / register with Google OAuth profile data.
+   * Backend endpoint: POST /api/public/oauth2-login
    */
-  googleAuth(idToken: string): Observable<AuthResponse> {
-    const url = `${this.apiUrl}/auth/google`;
-    return this.http.post<AuthResponse>(url, { idToken }).pipe(
+  googleOAuthLogin(profile: { provider: string; providerId: string; email: string; name: string; avatarUrl: string }): Observable<AuthResponse> {
+    const url = `${this.apiUrl}/api/public/oauth2-login`;
+    return this.http.post<AuthResponse>(url, profile).pipe(
       tap({
         next: (response) => {
           const userId = response.user?.id;

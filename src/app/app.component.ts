@@ -54,7 +54,6 @@ export class AppComponent implements OnInit, OnDestroy {
         if (this.platform.is('android')) {
           StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
         }
-        // Initialize Google Auth plugin for native sign-in
         GoogleAuth.initialize().catch((e: any) => console.warn('[AppComponent] GoogleAuth init:', e));
       }
     });
