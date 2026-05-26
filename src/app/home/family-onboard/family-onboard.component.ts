@@ -464,11 +464,21 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.isLoading = true;
         const familyName = this.familyForm.get('familyName')?.value;
         sessionStorage.setItem('familyName', familyName);
         this.createdFamilyName = familyName;
 
+        // Google OAuth signup: backend creates the family via oauth2-login (familyName param).
+        // Do NOT pre-create the family here — it would create a duplicate.
+        if (sessionStorage.getItem('signup_via_google') === 'true') {
+            sessionStorage.setItem('familyCreator', 'true');
+            sessionStorage.removeItem('familyCode');
+            this.familyCreated = true;
+            this.showRegisterButton = true;
+            return;
+        }
+
+        this.isLoading = true;
         this.familyService.createFamily(familyName).subscribe({
             next: (response) => {
                 this.isLoading = false;
@@ -499,6 +509,12 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         const familyCode = this.joinFamilyForm.get('familyCode')?.value;
         sessionStorage.setItem('familyCode', familyCode);
         try { sessionStorage.removeItem('familyCreator'); } catch (e) { }
+
+        // Google OAuth signup: no password available — use oauth2-login instead
+        if (sessionStorage.getItem('signup_via_google') === 'true') {
+            this.completeGoogleParentSignup();
+            return;
+        }
 
         const profileStr = sessionStorage.getItem('signup_profile');
         const password = sessionStorage.getItem('signup_password');
@@ -672,6 +688,12 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
      * Register parent account
      */
     registerAccount(): void {
+        // Google OAuth signup: no password — use oauth2-login instead
+        if (sessionStorage.getItem('signup_via_google') === 'true') {
+            this.completeGoogleParentSignup();
+            return;
+        }
+
         const profileStr = sessionStorage.getItem('signup_profile');
         const password = sessionStorage.getItem('signup_password');
 
@@ -763,6 +785,80 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             this.core.triggerToasrt('Error processing registration data');
             this.redirectToLogin();
         }
+    }
+
+    /**
+     * Complete Google signup for parent: calls oauth2-login with all collected profile + family data.
+     *
+     * Case A (creator):  sends familyName only  → backend creates the family in the same call
+     * Case B (joiner):   sends familyCode only  → backend links to existing family
+     */
+    private completeGoogleParentSignup(): void {
+        const profileStr = sessionStorage.getItem('signup_profile');
+        let profile: any = {};
+        try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) {}
+
+        const email      = sessionStorage.getItem('google_signup_email') || '';
+        const providerId = sessionStorage.getItem('google_signup_provider_id') || '';
+        const avatarUrl  = sessionStorage.getItem('google_signup_avatar') || '';
+        const isCreator  = sessionStorage.getItem('familyCreator') === 'true';
+        const familyCode = sessionStorage.getItem('familyCode') || this.familyCode || '';
+        const familyName = sessionStorage.getItem('familyName') || this.createdFamilyName || '';
+
+        const googlePayload: any = {
+            provider:     'google',
+            providerId,
+            email,
+            name:         profile.name || sessionStorage.getItem('google_signup_name') || '',
+            avatarUrl,
+            role:         'PARENT',              // backend uses "role", not "relationship"
+            gender:       (profile.gender || '').toUpperCase(),
+            referralCode: sessionStorage.getItem('referralCode') || null
+        };
+
+        // Case A: creating new family — send familyName, backend creates family + user in one call
+        // Case B: joining existing family — send familyCode only
+        if (isCreator && familyName) {
+            googlePayload.familyName = familyName;
+        } else if (familyCode) {
+            googlePayload.familyCode = familyCode;
+        }
+
+        if (profile.dob) {
+            const dobDate = new Date(profile.dob);
+            if (!isNaN(dobDate.getTime())) {
+                googlePayload.dob = dobDate.toISOString().split('T')[0];
+            }
+        }
+
+        console.log('[Google parent signup] payload:', JSON.stringify(googlePayload));
+
+        this.isLoading = true;
+        this.authService.googleOAuthLogin(googlePayload).subscribe({
+            next: (response) => {
+                this.isLoading = false;
+                const userId = response.user?.id;
+                if (response.token && userId) {
+                    this.authService.setSession(
+                        { token: response.token, userId, expiresIn: response.expiresIn, user: response.user },
+                        false
+                    );
+                }
+                try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) {}
+                ['signup_via_google', 'google_signup_email', 'google_signup_name',
+                 'google_signup_avatar', 'google_signup_provider_id', 'signup_profile',
+                 'signup_role', 'signup_avatar', 'requestedIdentifier',
+                 'familyCode', 'familyName', 'familyCreator', 'referralCode'].forEach(k => {
+                    try { sessionStorage.removeItem(k); } catch (e) {}
+                });
+                this.router.navigate(['/authed/parent-account'], { replaceUrl: true });
+            },
+            error: (err) => {
+                this.isLoading = false;
+                const msg = err?.error?.message || 'Sign-up failed. Please try again.';
+                this.core.triggerToasrt(msg);
+            }
+        });
     }
 
     /**
