@@ -1559,40 +1559,45 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const avatarUrl  = sessionStorage.getItem('google_signup_avatar') || '';
     const avatarKey  = profile.avatar ?? this.avatarSelected ?? null;
 
-    const familyCode   = sessionStorage.getItem('familyCode') || '';
-    const familyName   = sessionStorage.getItem('familyName') || '';
-    const familyCreator = sessionStorage.getItem('familyCreator');
+    // Resolve avatar filename from the avatars list (e.g. "Image-Onboarding-Avatar-Female1.png")
+    const foundAvatar = avatarKey ? this.avatars.find(a => a.key === avatarKey) : null;
+    const avatarImageName = foundAvatar
+      ? (foundAvatar.value.split('/').pop() ?? `Avatar ${Number(avatarKey)}`)
+      : (avatarKey ? `Avatar ${Number(avatarKey)}` : undefined);
 
     const googlePayload: any = {
-      provider:     'google',
+      provider:        'google',
       providerId,
       email,
-      name:         profile.name || this.profileForm.get('name')?.value || sessionStorage.getItem('google_signup_name'),
+      name:            profile.name || this.profileForm.get('name')?.value || sessionStorage.getItem('google_signup_name'),
       avatarUrl,
-      relationship: role.toUpperCase(),
-      gender:       (profile.gender || this.gender || '').toUpperCase(),
-      avatarName:   avatarKey ? `avatar${avatarKey}` : undefined,
-      avatarImageName: avatarKey ? `Avatar ${Number(avatarKey)}` : undefined,
-      familyCode,
-      familyName,
-      referralCode: sessionStorage.getItem('referralCode') || null
+      role:            role.toUpperCase(),          // backend uses "role", not "relationship"
+      gender:          (profile.gender || this.gender || '').toUpperCase(),
+      avatarName:      avatarKey ? `avatar${avatarKey}` : undefined,
+      avatarImageName,
+      referralCode:    sessionStorage.getItem('referralCode') || null
     };
 
-    if (familyCreator === 'true') {
-      googlePayload.familyRole = 'CREATOR';
-    } else if (familyCode) {
-      googlePayload.familyRole = 'CO_PARENT';
-    }
-
+    // Use field name "dob" as expected by oauth2-login endpoint
     const dobValue = profile.dob || this.profileForm.get('dob')?.value;
     if (dobValue) {
-      googlePayload.dateOfBirth = new Date(dobValue).toISOString().split('T')[0];
+      googlePayload.dob = new Date(dobValue).toISOString().split('T')[0];
+    }
+
+    // Child role: attach familyCode to join existing family
+    if (role === 'child') {
+      const familyCode = sessionStorage.getItem('familyCode') || '';
+      if (familyCode) googlePayload.familyCode = familyCode;
     }
 
     if (role !== 'parent') {
       try {
-        let petName = sessionStorage.getItem('signup_pet') || this.currentImage?.apiName;
-        if (!petName && this.pets.length > 0) petName = this.pets[0].apiName;
+        // Backend expects short pet name ("Dragon"), not the filename ("Dragon-Age1-Happy.png")
+        const storedPet = sessionStorage.getItem('signup_pet') || this.currentImage?.apiName;
+        const foundPet = storedPet
+          ? this.pets.find(p => p.apiName === storedPet || p.name === storedPet)
+          : null;
+        const petName = foundPet?.name ?? (this.pets.length > 0 ? this.pets[0].name : undefined);
         if (petName) googlePayload.petName = petName;
       } catch (e) {}
     }
