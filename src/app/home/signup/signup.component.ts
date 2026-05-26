@@ -1552,55 +1552,48 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     let profile: any = {};
     try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) {}
 
-    const email = sessionStorage.getItem('google_signup_email') || this.email?.value;
-    const avatarKey = profile.avatar ?? this.avatarSelected ?? null;
-    const avatarNameValue = avatarKey ? `avatar${avatarKey}` : undefined;
-    const avatarImageNameValue = avatarKey ? `Avatar ${Number(avatarKey)}` : undefined;
-    const familyCode = sessionStorage.getItem('familyCode');
-    const referralCode = sessionStorage.getItem('referralCode');
+    const email     = sessionStorage.getItem('google_signup_email') || this.email?.value;
+    const providerId = sessionStorage.getItem('google_signup_provider_id') || '';
+    const avatarUrl  = sessionStorage.getItem('google_signup_avatar') || '';
+    const avatarKey  = profile.avatar ?? this.avatarSelected ?? null;
 
-    const payload: any = {
-      name: profile.name || this.profileForm.get('name')?.value || sessionStorage.getItem('google_signup_name'),
-      gender: (profile.gender || this.gender || '').toUpperCase(),
-      relationship: role.toUpperCase(),
+    const googlePayload: any = {
+      provider:     'google',
+      providerId,
       email,
-      avatarName: avatarNameValue,
-      avatarImageName: avatarImageNameValue,
-      familyCode: familyCode || '',
-      referralCode: referralCode || null
+      name:         profile.name || this.profileForm.get('name')?.value || sessionStorage.getItem('google_signup_name'),
+      avatarUrl,
+      relationship: role.toUpperCase(),
+      gender:       (profile.gender || this.gender || '').toUpperCase(),
+      avatarName:   avatarKey ? `avatar${avatarKey}` : undefined,
+      avatarImageName: avatarKey ? `Avatar ${Number(avatarKey)}` : undefined,
+      familyCode:   sessionStorage.getItem('familyCode') || '',
+      referralCode: sessionStorage.getItem('referralCode') || null
     };
 
     const dobValue = profile.dob || this.profileForm.get('dob')?.value;
     if (dobValue) {
-      const dobDate = new Date(dobValue);
-      payload.dateOfBirth = dobDate.toISOString().split('T')[0];
+      googlePayload.dateOfBirth = new Date(dobValue).toISOString().split('T')[0];
     }
 
     if (role !== 'parent') {
       try {
         let petName = sessionStorage.getItem('signup_pet') || this.currentImage?.apiName;
         if (!petName && this.pets.length > 0) petName = this.pets[0].apiName;
-        if (petName) payload.petName = petName;
+        if (petName) googlePayload.petName = petName;
       } catch (e) {}
     }
 
-    // Retrieve the temp auth response stored before onboarding started
-    let tempAuthResponse: any = null;
-    try {
-      const stored = sessionStorage.getItem('google_auth_response');
-      if (stored) tempAuthResponse = JSON.parse(stored);
-    } catch (e) {}
-
-    // Temporarily store token so the auth interceptor can attach it to the API call
-    if (tempAuthResponse?.token && tempAuthResponse?.user?.id) {
-      this.authService.setSession(
-        { token: tempAuthResponse.token, userId: tempAuthResponse.user.id, expiresIn: tempAuthResponse.expiresIn, user: tempAuthResponse.user },
-        false
-      );
-    }
-
-    this.authService.completeGoogleOnboarding(payload).subscribe({
-      next: () => {
+    // Use oauth2-login — it creates the user if new, returns a valid token
+    this.authService.googleOAuthLogin(googlePayload).subscribe({
+      next: (response) => {
+        const userId = response.user?.id;
+        if (response.token && userId) {
+          this.authService.setSession(
+            { token: response.token, userId, expiresIn: response.expiresIn, user: response.user },
+            false
+          );
+        }
         try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) {}
         this.clearGoogleSignupSession();
         const route = role === 'parent' ? '/authed/parent-account' : '/authed/user-dashboard';
@@ -1610,7 +1603,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         }, 50);
       },
       error: (err) => {
-        const serverMsg = err?.error?.message || 'Profile completion failed. Please try again.';
+        const serverMsg = err?.error?.message || 'Sign-up failed. Please try again.';
         this.errorMessage = serverMsg;
         try { this.core.triggerToasrt(this.errorMessage!); } catch (e) {}
       }
@@ -1619,7 +1612,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   private clearGoogleSignupSession(): void {
     try {
-      ['signup_via_google', 'google_auth_response', 'google_signup_email', 'google_signup_name',
+      ['signup_via_google', 'google_signup_email', 'google_signup_name',
         'google_signup_avatar', 'google_signup_provider_id', 'signup_profile',
         'signup_role', 'signup_avatar', 'signup_pet', 'requestedIdentifier',
         'familyCode', 'familyName', 'familyCreator', 'referralCode'].forEach(k => {

@@ -69,30 +69,40 @@ export class SocialMediaComponent {
         throw new Error('Google sign-in did not return user ID or email.');
       }
 
-      this.authService.googleOAuthLogin({ provider: 'google', providerId, email, name, avatarUrl }).subscribe({
-        next: (response) => {
-          loading.dismiss();
-
-          // Use onboardingComplete flag — reliable regardless of backend response shape
-          const alreadyOnboarded = localStorage.getItem('onboardingComplete') === 'true';
-
-          if (alreadyOnboarded) {
-            // Returning user — store session and go straight to dashboard
-            const userId = response.user?.id;
-            if (response.token && userId) {
-              this.authService.setSession(
-                { token: response.token, userId, expiresIn: response.expiresIn, user: response.user },
-                false
-              );
-            }
-            const route = this.authService.getDashboardRoute();
-            this.router.navigate([route], { replaceUrl: true });
+      // Step 1: check if email is already registered
+      this.authService.checkEmailExists(email).subscribe({
+        next: (res) => {
+          if (res.exists) {
+            // Existing user — login via oauth2-login and go to dashboard
+            this.authService.googleOAuthLogin({ provider: 'google', providerId, email, name, avatarUrl }).subscribe({
+              next: (response) => {
+                loading.dismiss();
+                const userId = response.user?.id;
+                if (response.token && userId) {
+                  this.authService.setSession(
+                    { token: response.token, userId, expiresIn: response.expiresIn, user: response.user },
+                    false
+                  );
+                }
+                const route = this.authService.getDashboardRoute();
+                this.router.navigate([route], { replaceUrl: true });
+              },
+              error: async (err) => {
+                loading.dismiss();
+                console.error('[SocialMedia] Login error:', err);
+                const toast = await this.toastCtrl.create({
+                  message: err?.error?.message || 'Google sign-in failed. Please try again.',
+                  duration: 3000,
+                  position: 'bottom'
+                });
+                await toast.present();
+              }
+            });
           } else {
-            // New user — store auth response temporarily, do NOT log in yet
-            // (keeps guestGuard working normally on sign-up route)
+            // New user — store Google data, do NOT log in yet, go to step 1
+            loading.dismiss();
             try {
               sessionStorage.setItem('signup_via_google', 'true');
-              sessionStorage.setItem('google_auth_response', JSON.stringify(response));
               sessionStorage.setItem('google_signup_email', email);
               sessionStorage.setItem('google_signup_name', name);
               sessionStorage.setItem('google_signup_avatar', avatarUrl);
@@ -104,9 +114,9 @@ export class SocialMediaComponent {
         },
         error: async (err) => {
           loading.dismiss();
-          console.error('[SocialMedia] Backend error:', err);
+          console.error('[SocialMedia] Email check error:', err);
           const toast = await this.toastCtrl.create({
-            message: err?.error?.message || 'Google sign-in failed. Please try again.',
+            message: 'Unable to verify account. Please try again.',
             duration: 3000,
             position: 'bottom'
           });
