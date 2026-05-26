@@ -231,6 +231,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       const googleEmail = sessionStorage.getItem('google_signup_email');
       if (googleName) {
         this.profileForm.patchValue({ name: googleName });
+        this.profileForm.get('name')?.markAsDirty();
+        this.profileForm.markAsDirty();
       }
       if (googleEmail) {
         this.signupForm.patchValue({ email: googleEmail });
@@ -1557,6 +1559,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const avatarUrl  = sessionStorage.getItem('google_signup_avatar') || '';
     const avatarKey  = profile.avatar ?? this.avatarSelected ?? null;
 
+    const familyCode   = sessionStorage.getItem('familyCode') || '';
+    const familyName   = sessionStorage.getItem('familyName') || '';
+    const familyCreator = sessionStorage.getItem('familyCreator');
+
     const googlePayload: any = {
       provider:     'google',
       providerId,
@@ -1567,9 +1573,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       gender:       (profile.gender || this.gender || '').toUpperCase(),
       avatarName:   avatarKey ? `avatar${avatarKey}` : undefined,
       avatarImageName: avatarKey ? `Avatar ${Number(avatarKey)}` : undefined,
-      familyCode:   sessionStorage.getItem('familyCode') || '',
+      familyCode,
+      familyName,
       referralCode: sessionStorage.getItem('referralCode') || null
     };
+
+    if (familyCreator === 'true') {
+      googlePayload.familyRole = 'CREATOR';
+    } else if (familyCode) {
+      googlePayload.familyRole = 'CO_PARENT';
+    }
 
     const dobValue = profile.dob || this.profileForm.get('dob')?.value;
     if (dobValue) {
@@ -1583,6 +1596,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         if (petName) googlePayload.petName = petName;
       } catch (e) {}
     }
+
+    console.log('[Google signup] payload:', JSON.stringify(googlePayload));
 
     // Use oauth2-login — it creates the user if new, returns a valid token
     this.authService.googleOAuthLogin(googlePayload).subscribe({
