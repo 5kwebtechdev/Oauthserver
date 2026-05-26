@@ -358,7 +358,7 @@ export class AuthService {
    * Sign in / register with Google OAuth profile data.
    * Backend endpoint: POST /api/public/oauth2-login
    */
-  googleOAuthLogin(profile: { provider: string; providerId: string; email: string; name: string; avatarUrl: string }): Observable<AuthResponse> {
+  googleOAuthLogin(profile: any): Observable<AuthResponse> {
     const url = `${this.apiUrl}/api/public/oauth2-login`;
     return this.http.post<AuthResponse>(url, profile);
   }
