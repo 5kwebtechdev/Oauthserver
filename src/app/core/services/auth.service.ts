@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 import { HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
+import { MoodService } from './mood.service';
 
 export interface LoginCredentials {
   email?: string;
@@ -104,7 +105,8 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private platform: Platform
+    private platform: Platform,
+    private moodService: MoodService
   ) {
     this.detectPlatform();
     this.initSessionMonitoring();
@@ -447,6 +449,8 @@ export class AuthService {
     Object.keys(localStorage)
       .filter(key => key.startsWith('vibe_sets_'))
       .forEach(key => localStorage.removeItem(key));
+
+    this.moodService.clearVibesDisplayCache();
 
     this.isAuthenticatedSubject.next(false);
     this.currentUserSubject.next(null);

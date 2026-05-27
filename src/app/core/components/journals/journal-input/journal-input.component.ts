@@ -16,6 +16,7 @@ import { MindfulButtonComponent } from '../../mindful-button/mindful-button.comp
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import { AuthApi } from '../../../api/auth.api';
+import { RefreshService } from '../../../services/refresh.service';
 import { S3UploadService } from '../../../services/s3-upload/s3-upload.service';
 
 interface JournalOption {
@@ -234,6 +235,7 @@ export class JournalInputComponent implements OnInit {
     private router: Router,
     private http: HttpClient,
     private authApi: AuthApi,
+    private refreshService: RefreshService,
     private s3UploadService: S3UploadService,
     private location: Location,
   ) {}
@@ -347,6 +349,7 @@ export class JournalInputComponent implements OnInit {
       // ✅ DO NOT set Content-Type manually
       this.http.post(journalUrl, formData, this.authHeaders()).subscribe({
         next: (res: any) => {
+          this.refreshService.notifyJournalAdded();
           this.save.emit(this.text);
           this.resetForm();
 

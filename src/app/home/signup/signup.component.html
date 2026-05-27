@@ -105,7 +105,7 @@
         </div>
 
         <div class="otp-resend" *ngIf="canResendOtp">
-          <p>Didn't receive the code? <a href="#" (click)="resendOtp()">Resend</a></p>
+          <p>Didn't receive the code? <span class="resend-link" (click)="resendOtp()">Resend</span></p>
         </div>
       </div>
     </div>
@@ -133,48 +133,44 @@
       </div>
     </div>
 
-    <div class="role-selection d-flex flex-column gap-3" *ngIf="step === 1" [@slideIn]>
+    <div class="role-selection" *ngIf="step === 1" [@slideIn]>
 
-      <div class="role-selector d-flex" [ngClass]="{'active': roleSelected === 'child'}"
-        (click)="roleSelected = 'child'">
-        <div class="role-selection-info d-flex stretch">
-          <div class="text-role d-flex flex-column">
-            <h2>Child</h2>
-            <h4>Learn and grow</h4>
-            <h4>Link with your parents</h4>
-            <h4>Earn rewards together</h4>
-          </div>
-
-          <img class="parents-img" src="assets/Images-Transparent/Image-Role-Child.png" alt="">
-
+      <!-- Child -->
+      <div class="role-card" [class.active]="roleSelected === 'child'" (click)="roleSelected = 'child'">
+        <div class="role-info">
+          <h2>Child</h2>
+          <p>Learn and grow</p>
+          <p>Link with your parents</p>
+          <p>Earn rewards together</p>
         </div>
-      </div>
-      <div class="role-selector d-flex" [ngClass]="{'active': roleSelected === 'parent'}"
-        (click)="roleSelected = 'parent'">
-        <div class="row">
-          <div class="col-6 p-l-0">
-            <img src="assets/Images-Transparent/Image-Role-Parent.png" alt="">
-          </div>
-          <div class="col-6">
-            <h2 style="justify-content: end;">Parent</h2>
-            <h4>Grow together</h4>
-            <h4>Link with child</h4>
-            <h4>Track progress</h4>
-          </div>
+        <div class="role-artwork">
+          <img src="assets/Images-Transparent/Image-Role-Child.png" alt="Child">
         </div>
       </div>
 
-      <div class="role-selector " [ngClass]="{'active': roleSelected === 'self'}" (click)="roleSelected = 'self'">
-        <div class="self-role d-flex">
-          <div class="text-role">
-            <h2>Self</h2>
-            <h4>Learn and grow.</h4>
-            <h4>No linking required.</h4>
-            <h4>Enjoy for yourself</h4>
-          </div>
-          <div class="role-img">
-            <img src="assets/Images-Transparent/Image-Role-Self.png" alt="">
-          </div>
+      <!-- Parent -->
+      <div class="role-card role-card--reverse" [class.active]="roleSelected === 'parent'" (click)="roleSelected = 'parent'">
+        <div class="role-artwork">
+          <img src="assets/Images-Transparent/Image-Role-Parent.png" alt="Parent">
+        </div>
+        <div class="role-info role-info--end">
+          <h2>Parent</h2>
+          <p>Grow together</p>
+          <p>Link with child</p>
+          <p>Track progress</p>
+        </div>
+      </div>
+
+      <!-- Self -->
+      <div class="role-card" [class.active]="roleSelected === 'self'" (click)="roleSelected = 'self'">
+        <div class="role-info">
+          <h2>Self</h2>
+          <p>Learn and grow</p>
+          <p>No linking required</p>
+          <p>Enjoy for yourself</p>
+        </div>
+        <div class="role-artwork">
+          <img src="assets/Images-Transparent/Image-Role-Self.png" alt="Self">
         </div>
       </div>
 

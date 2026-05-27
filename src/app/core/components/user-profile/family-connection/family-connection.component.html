@@ -144,7 +144,7 @@
                             </div>
 
                             <div class="relationship-badge" [class.child]="m.relationship === 'Child'"
-                                [class.parent]="m.relationship === 'Parent' || m.relationship === 'Co-Parent'" (click)="toggleMemberActive(m)">
+                                [class.parent]="m.relationship === 'Parent' || m.relationship === 'Co-Parent'">
                                 {{ getBadgeText(m) }}
                             </div>
                             <a *ngIf="isParentUser()" (click)="removeMember(m)" role="button" tabindex="0"
