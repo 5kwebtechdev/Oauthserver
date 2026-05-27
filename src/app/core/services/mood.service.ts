@@ -120,5 +120,6 @@ export class MoodService {
    */
   clearVibesDisplayCache(): void {
     this.vibesDisplayCache$ = null;
+    this.monthlyTransitionsCache.clear();
   }
 }

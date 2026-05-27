@@ -1,10 +1,13 @@
-import { Component, Input, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { IonicModule } from "@ionic/angular";
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import { AuthApi } from '../../api/auth.api';
+import { RefreshService } from '../../services/refresh.service';
 import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { ViewAllComponent } from '../mindful-navigator/view-all/view-all.component';
 
@@ -180,30 +183,38 @@ export interface JournalEntry {
   imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, ViewAllComponent, JournalPostCardComponent, EmptyStateComponent],
   standalone: true
 })
-export class JournalsComponent {
+export class JournalsComponent implements OnInit, OnDestroy {
   @Input() entries: JournalEntry[] = [];
   @Input() showCreateButton: boolean = true;
   @Input() maxDisplayEntries: number = 3;
 
-  // show a loading flag while fetching
   public loading: boolean = false;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private router: Router,
     private http: HttpClient,
     private authApi: AuthApi,
     private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private refreshService: RefreshService
   ) { }
 
   ngOnInit(): void {
-    // If entries were not passed in, fetch from backend
     if (!this.entries || this.entries.length === 0) {
       this.loadEntriesFromApi();
     } else {
-      // normalize any date strings into Date objects
       this.entries = (this.entries || []).map(e => ({ ...e, date: e.date ? new Date(e.date as any) : e.date }));
     }
+
+    this.refreshService.journalAdded$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.loadEntriesFromApi());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   getDisplayEntries(): JournalEntry[] {
@@ -220,7 +231,7 @@ export class JournalsComponent {
     });
   }
 
-  private loadEntriesFromApi(): void {
+  public loadEntriesFromApi(): void {
     const url = `${environment.apiUrl}/journal/entries`;
     const token = this.authApi.getToken();
     let headers = new HttpHeaders();

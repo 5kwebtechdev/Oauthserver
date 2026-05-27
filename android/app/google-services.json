@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "124581866222-lh40gkcbfp5blkdpa1v0d9pg0q227i7h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.superme.app",
+            "certificate_hash": "4b1ac358233c089dffef8fcd9adbcd995416b002"
+          }
+        },
+        {
           "client_id": "124581866222-n2qpuuq87k7i1qtddnsih894aatis1dq.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

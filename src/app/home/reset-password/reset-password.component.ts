@@ -105,16 +105,13 @@ export class ResetPasswordComponent {
 
         // If we're starting directly at step 3, ensure form controls are set up properly
         if (this.step === 3) {
-          // Make sure password fields are properly initialized
+          this.resetError = null;
           const newPasswordControl = this.resetPasswordForm.get('newPassword');
           const confirmPasswordControl = this.resetPasswordForm.get('confirmPassword');
 
           if (newPasswordControl && confirmPasswordControl) {
-            // Reset values in case there are any cached values
             newPasswordControl.setValue('');
             confirmPasswordControl.setValue('');
-
-            // Mark as pristine/untouched to prevent validation errors on initial load
             newPasswordControl.markAsPristine();
             confirmPasswordControl.markAsPristine();
           }
@@ -249,8 +246,9 @@ export class ResetPasswordComponent {
             },
             error: (err) => {
               console.error('Password reset failed:', err);
-              const serverMsg = err?.error || 'Password reset failed';
-              this.resetError = typeof serverMsg === 'string' ? serverMsg : 'Password reset failed';
+              let body = err?.error;
+              if (typeof body === 'string') { try { body = JSON.parse(body); } catch { } }
+              this.resetError = body?.message || body?.error || 'Something went wrong. Please try again.';
             }
           });
         } else {
@@ -523,9 +521,9 @@ export class ResetPasswordComponent {
       next: (resp) => {
         this.otpIncorrect = false;
         this.otpError = null;
-        this.step = 3; // Move to new password screen
+        this.resetError = null;
+        this.step = 3;
 
-        // reflect step in query params so deep links / reloads show correct step
         this.router.navigate(['home/reset-password'], { queryParams: { step: this.step, mode: this.mode } });
       },
       error: (err) => {
@@ -542,7 +540,7 @@ export class ResetPasswordComponent {
 
   startOtpTimer(): void {
     this.canResendOtp = false;
-    this.otpResendTimer = 300; // 5 minutes
+    this.otpResendTimer = 120; // 2 minutes
 
     this.resendInterval = setInterval(() => {
       this.otpResendTimer--;
@@ -570,6 +568,7 @@ export class ResetPasswordComponent {
    * Checks if passwords match and updates error state
    */
   checkPasswordsMatch(): void {
+    this.resetError = null;
     const newPassword = this.resetPasswordForm.get('newPassword')?.value;
     const confirmPassword = this.resetPasswordForm.get('confirmPassword')?.value;
 
@@ -618,32 +617,35 @@ export class ResetPasswordComponent {
   }
 
   resendOtp(): void {
-    // Clear any previous errors
+    const identifier = this.requestedIdentifier
+      ?? this.resetPasswordForm.get('email')?.value
+      ?? this.resetPasswordForm.get('phone')?.value
+      ?? '';
+
+    if (!identifier) return;
+
     this.otpError = null;
     this.otpIncorrect = false;
 
-    // Clear OTP inputs
-    this.otpDigits = ['', '', '', ''];
-
-    // Clear all input values
-    for (let i = 0; i < 4; i++) {
-      const input = document.getElementById(`otp-input-${i}`) as HTMLInputElement;
-      if (input) {
-        input.value = '';
+    this.authService.requestOtp(identifier).subscribe({
+      next: () => {
+        // Clear OTP inputs
+        this.otpDigits = ['', '', '', ''];
+        for (let i = 0; i < 4; i++) {
+          const input = document.getElementById(`otp-input-${i}`) as HTMLInputElement;
+          if (input) input.value = '';
+        }
+        setTimeout(() => {
+          const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
+          if (firstInput) firstInput.focus();
+        }, 10);
+        this.startOtpTimer();
+      },
+      error: (err) => {
+        let body = err?.error;
+        if (typeof body === 'string') { try { body = JSON.parse(body); } catch { } }
+        this.otpError = body?.message || body?.error || 'Failed to resend OTP. Please try again.';
       }
-    }
-
-    // Focus first input
-    setTimeout(() => {
-      const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
-      if (firstInput) {
-        firstInput.focus();
-      }
-    }, 10);
-
-    // Restart timer
-    this.startOtpTimer();
-
-    // Simulate sending a new OTP (replace with actual API call)
+    });
   }
 }

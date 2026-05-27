@@ -436,6 +436,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
                 sessionStorage.setItem('loginMode', 'email');
               }
             } catch (e) { }
+            this.startOtpTimer();
             this.router.navigate(['home/sign-up'], { queryParams: { step: 0.2 } });
           },
           error: (err) => {
@@ -1195,62 +1196,23 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     this.authService.registerRequestOtp(identifier, isEmail, countryCode).subscribe({
       next: () => {
-        this.errorMessage = null; // Clear any previous errors
-        this.core.triggerToasrt('OTP resent successfully');
-
-        // Reset OTP inputs
+        this.errorMessage = null;
         this.otpDigits = ['', '', '', ''];
-
-        // Clear all input values
         for (let i = 0; i < 4; i++) {
           const input = document.getElementById(`otp-input-${i}`) as HTMLInputElement;
-          if (input) {
-            input.value = '';
-          }
+          if (input) input.value = '';
         }
-
-        // Focus first input
         setTimeout(() => {
           const firstInput = document.getElementById('otp-input-0') as HTMLInputElement;
-          if (firstInput) {
-            firstInput.focus();
-          }
+          if (firstInput) firstInput.focus();
         }, 50);
-
-        // Persist identifier and related information
-        this.requestedIdentifier = identifier;
-        try {
-          if (this.requestedIdentifier) {
-            sessionStorage.setItem('requestedIdentifier', this.requestedIdentifier);
-
-            sessionStorage.setItem('loginMode', isEmail ? 'email' : 'phone');
-            if (countryCode) {
-              sessionStorage.setItem('countryCode', countryCode);
-            }
-          }
-        } catch (e) { }
-
-        // Restart timer
         this.startOtpTimer();
+        this.core.triggerToasrt('OTP resent successfully');
       },
       error: (err) => {
-        console.error('Failed to resend OTP:', err);
-        // Handle ProgressEvent errors (network failures on Android)
-        let msg: string;
-        if (err instanceof ProgressEvent || (err && err.type === 'error' && err.target)) {
-          msg = 'Network error. Please check your internet connection and try again.';
-        } else if (err?.error?.message) {
-          msg = err.error.message;
-        } else if (typeof err?.error === 'string') {
-          try {
-            const parsed = JSON.parse(err.error);
-            msg = parsed?.message || parsed?.error?.message || err.error;
-          } catch (e) {
-            msg = err.error;
-          }
-        } else {
-          msg = 'Failed to resend OTP. Please try again.';
-        }
+        let body = err?.error;
+        if (typeof body === 'string') { try { body = JSON.parse(body); } catch { } }
+        const msg = body?.message || body?.error || 'Failed to resend OTP. Please try again.';
         this.core.triggerToasrt(msg);
       }
     });

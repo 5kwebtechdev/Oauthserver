@@ -43,6 +43,15 @@ export class RefreshService {
     this.handlers.delete(id);
   }
 
+  /** Emits when a new journal entry has been saved successfully. */
+  private journalAddedSubject = new Subject<void>();
+  journalAdded$: Observable<void> = this.journalAddedSubject.asObservable();
+
+  /** Call this after successfully saving a journal entry. */
+  notifyJournalAdded(): void {
+    this.journalAddedSubject.next();
+  }
+
   /**
    * Called by the authenticated shell after it validates the session.
    * Runs **all** currently-registered handlers in parallel and waits
