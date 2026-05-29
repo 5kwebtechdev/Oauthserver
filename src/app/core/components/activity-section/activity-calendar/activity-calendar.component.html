@@ -73,8 +73,9 @@
                 </ng-container>
                 <ng-container *ngIf="item.type !== 'EVENT'">
                     <activity-card [habit]="item" [startTime]="item.startTimeStamp" [endTime]="item.endTimeStamp"
-                        [inProgress]="isItemInProgress(item)" [isParentOverride]="isParent" 
-                        [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()" 
+                        [inProgress]="isItemInProgress(item)" [isParentOverride]="isParent"
+                        [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()"
+                        [trackOnComplete]="true"
                         mode="single"></activity-card>
                 </ng-container>
             </div>

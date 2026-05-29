@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, HostListener } from '@angular/core';
+import { ViewWillEnter } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
@@ -25,7 +26,7 @@ export interface JournalOutputEntry {
   templateUrl: './journal-output.component.html',
   styleUrls: ['./journal-output.component.scss']
 })
-export class JournalOutputComponent implements OnInit {
+export class JournalOutputComponent implements OnInit, ViewWillEnter {
   // Image viewer state
   public viewerOpen: boolean = false;
   public viewerSrc: string | null = null;
@@ -36,6 +37,11 @@ export class JournalOutputComponent implements OnInit {
   // Month navigator state
   public currentMonthDate: Date = new Date();
   public monthLabel: string = '';
+
+  ionViewWillEnter(): void {
+    const now = this.currentMonthDate || new Date();
+    this.loadEntriesFromApi(now.getMonth() + 1, now.getFullYear());
+  }
 
   ngOnInit(): void {
     // If no entries were provided as an @Input(), try to read from navigation state

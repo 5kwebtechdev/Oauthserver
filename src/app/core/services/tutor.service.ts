@@ -100,26 +100,10 @@ export class TutorService {
      * Subsequent calls return cached data
      */
     fetchTutors(forceRefresh = false): Observable<Tutor[]> {
-        // Return cached data if available and not forcing refresh
-        if (this.tutorsLoaded && !forceRefresh) {
-            console.log('[TutorService] Returning cached tutors:', this.tutorsCache$.value.length);
-            this.applyFiltersAndSort();
-            return of(this.tutorsCache$.value);
-        }
-
-        // Prevent multiple simultaneous API calls
-        if (this.tutorsLoading$.value) {
-            console.log('[TutorService] Already loading, returning cache observable');
-            return this.tutorsCache$.asObservable();
-        }
-
         this.tutorsLoading$.next(true);
-        console.log('[TutorService] Fetching tutors from API...');
-
         return this.http.get<Tutor[]>(`${this.apiUrl}/tutors`, { headers: this.getHeaders() })
             .pipe(
                 tap(tutors => {
-                    console.log('[TutorService] Tutors received:', tutors.length);
                     this.tutorsCache$.next(tutors);
                     this.tutorsLoaded = true;
                     this.tutorsLoading$.next(false);
@@ -138,16 +122,6 @@ export class TutorService {
      * First checks cache, then fetches from API if needed
      */
     getTutorById(id: number): Observable<Tutor | null> {
-        // Check cache first
-        const cached = this.tutorsCache$.value.find(t => t.id === id);
-        if (cached) {
-            console.log('[TutorService] Returning cached tutor:', id);
-            this.selectedTutor$.next(cached);
-            return of(cached);
-        }
-
-        // Fetch from API
-        console.log('[TutorService] Fetching tutor from API:', id);
         return this.http.get<Tutor>(`${this.apiUrl}/tutors/${id}`, { headers: this.getHeaders() })
             .pipe(
                 tap(tutor => {

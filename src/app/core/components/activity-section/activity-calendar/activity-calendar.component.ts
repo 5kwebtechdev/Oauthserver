@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
@@ -25,7 +26,7 @@ import { LongPressDirective } from '../../../directives/gestureControlDirective'
   styleUrls: ['./activity-calendar.component.scss'],
   imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulInputsModule, MindfulButtonComponent, ActivityCardComponent, LongPressDirective, EmptyStateComponent]
 })
-export class ActivityCalendarComponent implements OnInit, OnDestroy {
+export class ActivityCalendarComponent implements OnInit, OnDestroy, ViewWillEnter {
   dateActivities: { [key: string]: { timetable?: boolean, task?: boolean, habit?: boolean } } = {};
   selectedDate: Date = new Date(); // Current date selected by default
   habitsForSelectedDate: any[] = [];
@@ -54,6 +55,12 @@ export class ActivityCalendarComponent implements OnInit, OnDestroy {
     this.toast$ = this.toastService.toast$;
   }
 
+
+  ionViewWillEnter(): void {
+    this.loadCalendarData();
+    this.loadMoodData();
+    this.updateHabitsAndTasksForSelectedDate();
+  }
 
   ngOnInit() {
     console.log('ActivityCalendarComponent ngOnInit');

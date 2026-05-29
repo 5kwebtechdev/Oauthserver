@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
@@ -344,7 +345,7 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
     }
   `]
 })
-export class TrophyPageComponent implements OnInit {
+export class TrophyPageComponent implements OnInit, ViewWillEnter {
   pageTitle = 'Your Trophy Trail';
   grouped: GroupedTrophies[] = [];
   trophyCount = 0;
@@ -353,9 +354,9 @@ export class TrophyPageComponent implements OnInit {
 
   constructor(private trophyService: TrophyService, private location: Location) { }
 
-  ngOnInit() {
-    this.loadTrophies();
-  }
+  ngOnInit() { this.loadTrophies(); }
+
+  ionViewWillEnter() { this.loadTrophies(); }
 
   loadTrophies() {
     this.isLoading = true;

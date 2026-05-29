@@ -1219,8 +1219,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   private startOtpTimer(): void {
+    this.clearOtpTimer();
     this.canResendOtp = false;
-    this.otpResendTimer = 120; // 2 minutes
+    this.otpResendTimer = 120;
 
     this.resendInterval = setInterval(() => {
       this.otpResendTimer--;

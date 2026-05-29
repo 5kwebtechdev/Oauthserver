@@ -22,6 +22,9 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
   /** List of available filter labels */
   @Input() filters: string[] = [];
 
+  /** Previously applied filters to pre-populate selections */
+  @Input() initialFilters: SelectedFilters | null = null;
+
   /** Loading state */
   isLoading = false;
 
@@ -81,10 +84,20 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
           this.apiCategories = categories;
           this.mapCategoriesToUI(categories);
 
-          // Select first category by default
-          if (this.categories.length > 0) {
-            this.selectedCategory = this.categories[0].key;
-            this.setSidebarForCategory(this.selectedCategory);
+          // Restore previously applied category, or default to first
+          const restoreCategory = this.initialFilters?.categoryKey ?? (this.categories.length > 0 ? this.categories[0].key : null);
+          if (restoreCategory) {
+            this.selectedCategory = restoreCategory;
+            this.setSidebarForCategory(restoreCategory);
+          }
+
+          // Pre-populate selected filters from initialFilters
+          if (this.initialFilters?.filters) {
+            Object.entries(this.initialFilters.filters).forEach(([fieldKey, values]) => {
+              if (values.length > 0) {
+                this.selectedFiltersMap.set(fieldKey, new Set(values));
+              }
+            });
           }
         },
         error: (error) => {
@@ -251,8 +264,9 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
    */
   clearAll(): void {
     this.selectedFiltersMap.clear();
-    // Reset interaction state so count hides until next user action
     this.resultCount = null;
+    // Dismiss modal with clearAll flag so parent can refetch all tutors from API
+    this.modalCtrl.dismiss({ clearAll: true });
   }
 
   /**

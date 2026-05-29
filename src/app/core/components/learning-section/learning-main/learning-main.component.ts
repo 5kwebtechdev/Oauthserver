@@ -1,10 +1,11 @@
-import { Component, Input, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Observable, Subject, BehaviorSubject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { HttpClientModule } from '@angular/common/http';
 import { FooterComponent } from 'src/app/core/components/footer/footer.component';
 import { MindfulPetComponent } from 'src/app/core/components/mindful-pet/mindful-pet.component';
@@ -23,55 +24,66 @@ import { EmptyStateComponent } from 'src/app/core/components/empty-state/empty-s
   imports: [CommonModule, IonicModule, RouterModule, FormsModule, HttpClientModule, FooterComponent, MindfulSpeechBubbleComponent, MindfulPetComponent, LearningChallengeCardComponent, LearningArticleCardComponent, EmptyStateComponent],
   providers: [LearningService]
 })
-export class LearningMainComponent implements OnInit, OnDestroy {
+export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   @Input() title: string = '';
   @Input() body: string = '';
 
   selectedCategory: 'for-you' | 'puzzles' | 'quizzes' | 'articles' | null = 'for-you';
 
-  puzzleCards$!: Observable<LearningCardData[]>;
-  quizCards$!: Observable<LearningCardData[]>;
-  articleCards$!: Observable<LearningCardData[]>;
-  forYouContent$!: Observable<LearningCardData[]>;
-  searchResults$!: Observable<LearningCardData[]>;
+  // Plain arrays — bound directly in the template
+  forYouItems: LearningCardData[] = [];
+  puzzleItems: LearningCardData[] = [];
+  quizItems: LearningCardData[] = [];
+  articleItems: LearningCardData[] = [];
+  searchItems: LearningCardData[] = [];
 
+  isLoading = false;
   searchKeyword = '';
   isSearching = false;
 
-  isLoading$!: Observable<boolean>;
-
   private destroy$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
 
   constructor(private learningService: LearningService) { }
 
   ngOnInit(): void {
-    console.log('Learning Main Component initialized');
-    console.log('API URL:', 'http://ec2-13-126-1-142.ap-south-1.compute.amazonaws.com:3000/v1');
-
-    // Reset loading state when component initializes
-    this.learningService.resetLoadingState();
-
-    // Initialize observables from the learning service
-    this.puzzleCards$ = this.learningService.getPuzzleCards();
-    this.quizCards$ = this.learningService.getQuizCards();
-    this.articleCards$ = this.learningService.getArticleCards();
-    this.forYouContent$ = this.learningService.getAllContent();
-
-    // Combine loading states
-    this.isLoading$ = this.learningService.isLoading$;
-
-    console.log('Observables initialized');
-
-    // Trigger initial data load by subscribing to the default category
-    console.log('Triggering initial data load for For You category');
-    this.forYouContent$.pipe(takeUntil(this.destroy$)).subscribe({
-      next: (content) => {
-        console.log('For You content loaded:', content.length, 'items');
-      },
-      error: (error) => {
-        console.error('Error loading For You content:', error);
+    this.loadData();
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(keyword => {
+      if (keyword.trim()) {
+        this.performSearch();
+      } else {
+        this.clearSearch();
       }
     });
+  }
+
+  ionViewWillEnter(): void { this.loadData(); }
+
+  private loadData(): void {
+    this.isLoading = true;
+    this.forYouItems = [];
+    this.puzzleItems = [];
+    this.quizItems = [];
+    this.articleItems = [];
+
+    // Single call fetches GET /challenges + GET /articles, then filter per tab
+    this.learningService.getAllContent()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (items) => {
+          const all = items || [];
+          this.forYouItems = all;
+          this.puzzleItems  = all.filter(c => c.type === 'puzzle');
+          this.quizItems    = all.filter(c => c.type === 'quiz');
+          this.articleItems = all.filter(c => c.type === 'article');
+          this.isLoading = false;
+        },
+        error: () => { this.isLoading = false; }
+      });
   }
 
   ngOnDestroy(): void {
@@ -81,44 +93,32 @@ export class LearningMainComponent implements OnInit, OnDestroy {
 
   selectCategory(cat: 'for-you' | 'puzzles' | 'quizzes' | 'articles') {
     this.selectedCategory = cat;
-    // Re-trigger search if already searching
     if (this.isSearching && this.searchKeyword.trim()) {
       this.performSearch();
     }
   }
 
-  openForYou() {
-    this.selectCategory('for-you');
+  openForYou() { this.selectCategory('for-you'); }
+  openPuzzles() { this.selectCategory('puzzles'); }
+  openQuizzes() { this.selectCategory('quizzes'); }
+  openArticles() { this.selectCategory('articles'); }
+
+  onSearchInput(): void {
+    this.searchSubject.next(this.searchKeyword);
   }
 
-  openPuzzles() {
-    this.selectCategory('puzzles');
-  }
-
-  openQuizzes() {
-    this.selectCategory('quizzes');
-  }
-
-  openArticles() {
-    this.selectCategory('articles');
-  }
-
-  onSearch(event: KeyboardEvent): void {
-    console.log('onSearch event.key=', event.key, 'keyword=', this.searchKeyword);
-    if (event.key === 'Enter' && this.searchKeyword.trim()) {
-      this.performSearch();
-    }
+  onSearch(): void {
+    this.searchSubject.next(this.searchKeyword);
   }
 
   performSearch(): void {
     const keyword = this.searchKeyword.trim();
-    if (!keyword) {
-      this.clearSearch();
-      return;
-    }
+    if (!keyword) { this.clearSearch(); return; }
+
     this.isSearching = true;
-    console.log('performSearch -> keyword:', keyword, 'selectedCategory:', this.selectedCategory);
-    // Map category: for-you = no category, others = puzzle/quiz/article
+    this.isLoading = true;
+    this.searchItems = [];
+
     const categoryMap: Record<string, string | undefined> = {
       'for-you': undefined,
       'puzzles': 'puzzle',
@@ -126,20 +126,20 @@ export class LearningMainComponent implements OnInit, OnDestroy {
       'articles': 'article'
     };
     const category = categoryMap[this.selectedCategory || 'for-you'];
-    this.searchResults$ = this.learningService.search(keyword, category);
-    // Subscribe once to log results for debugging (will not replace async pipe)
-    this.searchResults$.pipe(takeUntil(this.destroy$)).subscribe({
-      next: res => console.log('searchResults received, count=', (res || []).length),
-      error: err => console.error('searchResults error', err)
-    });
+
+    this.learningService.search(keyword, category)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: LearningCardData[]) => { this.searchItems = res || []; this.isLoading = false; },
+        error: () => { this.isLoading = false; }
+      });
   }
 
   clearSearch(): void {
     this.searchKeyword = '';
     this.isSearching = false;
+    this.searchItems = [];
   }
 
-  onCardClick(event: any) {
-    console.log('Card clicked:', event);
-  }
+  onCardClick(event: any) { }
 }
