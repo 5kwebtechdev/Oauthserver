@@ -17,8 +17,8 @@
                   fill="#6B656A" />
               </svg>
             </span>
-                 <input type="text" placeholder="Looking for a quiz?" aria-label="Search" 
-                   [(ngModel)]="searchKeyword" (keyup)="onSearch($event)" />
+                 <input type="text" placeholder="Looking for a quiz?" aria-label="Search"
+                   [(ngModel)]="searchKeyword" (input)="onSearchInput()" (keyup.enter)="onSearch()" />
                  <button type="button" class="search-btn" aria-label="Search" style="background: none;" (click)="performSearch()">
               Search
                  </button>
@@ -84,16 +84,16 @@
     </div>
     <div class="learning-content">
       <!-- Loading State -->
-      <div *ngIf="isLoading$ | async" class="loading-container">
+      <div *ngIf="isLoading" class="loading-container">
         <ion-spinner name="crescent"></ion-spinner>
         <p>Loading content...</p>
       </div>
 
       <!-- Search Results -->
-      <ng-container *ngIf="isSearching && !(isLoading$ | async)">
-        <div *ngIf="(searchResults$ | async) as searchResults" class="cards-section">
-          <div *ngIf="searchResults.length > 0; else emptySearch" class="cards-grid">
-            <ng-container *ngFor="let card of searchResults; let i = index">
+      <ng-container *ngIf="isSearching && !isLoading">
+        <div class="cards-section">
+          <div *ngIf="searchItems.length > 0; else emptySearch" class="cards-grid">
+            <ng-container *ngFor="let card of searchItems; let i = index">
               <learning-challenge-card *ngIf="card.type === 'quiz' || card.type === 'puzzle'" [item]="card" [index]="i"
                 (cardClick)="onCardClick($event)">
               </learning-challenge-card>
@@ -114,11 +114,11 @@
         </div>
       </ng-container>
 
-      <!-- For You Tab - Shows all content (puzzles, quizzes, and articles) -->
-      <ng-container *ngIf="!isSearching && selectedCategory === 'for-you' && !(isLoading$ | async)">
-        <div *ngIf="(forYouContent$ | async) as forYouContent" class="cards-section">
-          <div *ngIf="forYouContent.length > 0; else emptyState" class="cards-grid">
-            <ng-container *ngFor="let card of forYouContent; let i = index">
+      <!-- For You Tab -->
+      <ng-container *ngIf="!isSearching && !isLoading && selectedCategory === 'for-you'">
+        <div class="cards-section">
+          <div *ngIf="forYouItems.length > 0; else emptyState" class="cards-grid">
+            <ng-container *ngFor="let card of forYouItems; let i = index">
               <learning-challenge-card *ngIf="card.type === 'quiz' || card.type === 'puzzle'" [item]="card" [index]="i"
                 (cardClick)="onCardClick($event)">
               </learning-challenge-card>
@@ -131,10 +131,10 @@
       </ng-container>
 
       <!-- Puzzles Tab -->
-      <ng-container *ngIf="!isSearching && selectedCategory === 'puzzles' && !(isLoading$ | async)">
-        <div *ngIf="(puzzleCards$ | async) as puzzleCards" class="cards-section">
-          <div *ngIf="puzzleCards.length > 0; else emptyState" class="cards-grid">
-            <learning-challenge-card *ngFor="let card of puzzleCards; let i = index" [item]="card" [index]="i"
+      <ng-container *ngIf="!isSearching && !isLoading && selectedCategory === 'puzzles'">
+        <div class="cards-section">
+          <div *ngIf="puzzleItems.length > 0; else emptyState" class="cards-grid">
+            <learning-challenge-card *ngFor="let card of puzzleItems; let i = index" [item]="card" [index]="i"
               (cardClick)="onCardClick($event)">
             </learning-challenge-card>
           </div>
@@ -142,10 +142,10 @@
       </ng-container>
 
       <!-- Quizzes Tab -->
-      <ng-container *ngIf="!isSearching && selectedCategory === 'quizzes' && !(isLoading$ | async)">
-        <div *ngIf="(quizCards$ | async) as quizCards" class="cards-section">
-          <div *ngIf="quizCards.length > 0; else emptyState" class="cards-grid">
-            <learning-challenge-card *ngFor="let card of quizCards; let i = index" [item]="card" [index]="i"
+      <ng-container *ngIf="!isSearching && !isLoading && selectedCategory === 'quizzes'">
+        <div class="cards-section">
+          <div *ngIf="quizItems.length > 0; else emptyState" class="cards-grid">
+            <learning-challenge-card *ngFor="let card of quizItems; let i = index" [item]="card" [index]="i"
               (cardClick)="onCardClick($event)">
             </learning-challenge-card>
           </div>
@@ -153,10 +153,10 @@
       </ng-container>
 
       <!-- Articles Tab -->
-      <ng-container *ngIf="!isSearching && selectedCategory === 'articles' && !(isLoading$ | async)">
-        <div *ngIf="(articleCards$ | async) as articleCards" class="cards-section">
-          <div *ngIf="articleCards.length > 0; else emptyState" class="cards-grid">
-            <learning-article-card *ngFor="let card of articleCards; let i = index" [item]="card" [index]="i"
+      <ng-container *ngIf="!isSearching && !isLoading && selectedCategory === 'articles'">
+        <div class="cards-section">
+          <div *ngIf="articleItems.length > 0; else emptyState" class="cards-grid">
+            <learning-article-card *ngFor="let card of articleItems; let i = index" [item]="card" [index]="i"
               (cardClick)="onCardClick($event)">
             </learning-article-card>
           </div>

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, shareReplay, of } from 'rxjs';
+import { Observable, map, of } from 'rxjs';
 import { MoodTransition, MoodData, MOOD_EMOJI_MAP, VibesDisplayResponse } from '../models/mood.model';
 import { environment } from 'src/environments/environment';
 
@@ -9,8 +9,6 @@ import { environment } from 'src/environments/environment';
 })
 export class MoodService {
   private readonly apiUrl = `${environment.apiUrl}/mood`;
-  private vibesDisplayCache$: Observable<VibesDisplayResponse[]> | null = null;
-  private monthlyTransitionsCache = new Map<string, Observable<MoodTransition[]>>();
 
   constructor(private http: HttpClient) { }
 
@@ -25,14 +23,8 @@ export class MoodService {
    * The ProfileSelectorInterceptor automatically adds userId when a child is selected.
    */
   getMoodTransitionsMonthly(year: number, month: number): Observable<MoodTransition[]> {
-    const key = `${year}-${month}`;
-    if (this.monthlyTransitionsCache.has(key)) {
-      return this.monthlyTransitionsCache.get(key)!;
-    }
     const url = `${this.apiUrl}/vibes/transition/monthly?year=${year}&month=${month}`;
-    const obs = this.http.get<MoodTransition[]>(url).pipe(shareReplay(1));
-    this.monthlyTransitionsCache.set(key, obs);
-    return obs;
+    return this.http.get<MoodTransition[]>(url);
   }
 
   /**
@@ -93,33 +85,12 @@ export class MoodService {
    * @returns Observable of VibesDisplayResponse array
    */
   getVibesDisplay(): Observable<VibesDisplayResponse[]> {
-    if (!this.vibesDisplayCache$) {
-      this.vibesDisplayCache$ = this.http.get<VibesDisplayResponse[]>(`${this.apiUrl}/vibes/display`).pipe(
-        shareReplay(1) // Cache the result and share it with all subscribers
-      );
-    }
-    return this.vibesDisplayCache$;
+    return this.http.get<VibesDisplayResponse[]>(`${this.apiUrl}/vibes/display`);
   }
 
-  /**
-   * Override the cached vibes display with a provided array.
-   * Useful when parent selects a specific child and we want to show
-   * that child's vibe as the primary entry to other components.
-   */
-  setVibesDisplayOverride(vibes: VibesDisplayResponse[] | null): void {
-    if (!vibes) {
-      this.vibesDisplayCache$ = null;
-      return;
-    }
-    this.vibesDisplayCache$ = of(vibes);
-  }
+  /** No-op kept for call-site compatibility */
+  setVibesDisplayOverride(vibes: VibesDisplayResponse[] | null): void { }
 
-  /**
-   * Clear the vibes display cache to force a fresh API call on next request
-   * Call this after updating mood or when you need fresh data
-   */
-  clearVibesDisplayCache(): void {
-    this.vibesDisplayCache$ = null;
-    this.monthlyTransitionsCache.clear();
-  }
+  /** No-op kept for call-site compatibility */
+  clearVibesDisplayCache(): void { }
 }

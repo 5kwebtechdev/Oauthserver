@@ -1,9 +1,10 @@
-import { Component, Input, Output, EventEmitter, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { Component, Output, EventEmitter, HostListener, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, ModalController } from '@ionic/angular';
-import { ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { IonicModule, ModalController, ViewWillEnter } from '@ionic/angular';
+
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
 import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
 import { MindfulSpeechBubbleComponent } from '../../mindful-speech-bubble/mindful-speech-bubble.component';
@@ -33,10 +34,11 @@ import { TutorListItem, TutorSortOption, Tutor } from '../../../models/tutor.mod
   templateUrl: './tutor-homepage.component.html',
   styleUrls: ['./tutor-homepage.component.scss']
 })
-export class TutorHomepageComponent implements OnInit, OnDestroy {
+export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter {
   tutors: TutorListItem[] = [];
   isLoading = false;
   searchQuery = '';
+  private lastAppliedFilters: any = null;
 
   /** Emitted when a tutor profile is requested */
   @Output() viewProfile = new EventEmitter<TutorListItem>();
@@ -54,76 +56,42 @@ export class TutorHomepageComponent implements OnInit, OnDestroy {
     { key: 'recent', label: 'Recently added' }
   ];
 
-  private subscriptions = new Subscription();
+  private destroy$ = new Subject<void>();
 
   constructor(
     private modalCtrl: ModalController,
     private tutorService: TutorService,
-    private route: ActivatedRoute,
-    private tutorApi: TutorApi
+    private tutorApi: TutorApi,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     this.loadTutors();
   }
 
+  ionViewWillEnter(): void {
+    this.loadTutors();
+  }
+
   ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  /**
-   * Load tutors from service
-   */
   private loadTutors(): void {
-    // Subscribe to loading state
-    this.subscriptions.add(
-      this.tutorService.isLoading$.subscribe(loading => {
-        this.isLoading = loading;
-      })
-    );
+    this.tutorService.isLoading$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(loading => { this.isLoading = loading; });
 
-    // Fetch tutors (will use cache if available)
-    this.subscriptions.add(
-      this.tutorService.fetchTutors().subscribe()
-    );
+    this.tutorService.fetchTutors()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
 
-    // Subscribe to filtered tutors
-    this.subscriptions.add(
-      this.tutorService.tutors$.subscribe(tutors => {
-        this.tutors = tutors;
-      })
-    );
+    this.tutorService.tutors$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(tutors => { this.tutors = tutors; });
 
-    // Set initial sort
     this.currentSort = this.tutorService.getCurrentSort();
-  }
-
-  /**
-   * Check if we should open a tutor profile from query params
-   */
-  private checkForTutorProfile(): void {
-    this.subscriptions.add(
-      this.route.queryParams.subscribe(params => {
-        const tutorId = params['tutorId'];
-        if (tutorId) {
-          const id = parseInt(tutorId, 10);
-          this.openProfileById(id);
-        }
-      })
-    );
-  }
-
-  /**
-   * Open profile modal by tutor ID
-   */
-  private async openProfileById(id: number): Promise<void> {
-    this.subscriptions.add(
-      this.tutorService.getTutorById(id).subscribe(async tutor => {
-        if (tutor) {
-          await this.openProfileModal(tutor);
-        }
-      })
-    );
   }
 
   onViewProfile(tutor: TutorListItem): void {
@@ -152,92 +120,64 @@ export class TutorHomepageComponent implements OnInit, OnDestroy {
     const modal = await this.modalCtrl.create({
       component: TutorAllFilterComponent,
       componentProps: {
-        filters: ['Mathematics', 'Science', 'English', 'Computer Science', 'Social Studies', 'Hindi', 'Art & Craft']
+        filters: ['Mathematics', 'Science', 'English', 'Computer Science', 'Social Studies', 'Hindi', 'Art & Craft'],
+        initialFilters: this.lastAppliedFilters
       }
     });
     await modal.present();
 
     const { data } = await modal.onWillDismiss();
-    // TutorAllFilter returns payload as { filters: SelectedFilters }
-    if (data && data.filters) {
+
+    // Clear All pressed — refetch all tutors from API and reset filter state
+    if (data?.clearAll) {
+      this.lastAppliedFilters = null;
+      this.tutorService.clearFilters();
+      this.isLoading = true;
+      this.tutorService.fetchTutors().pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => { this.isLoading = false; },
+        error: () => { this.isLoading = false; }
+      });
+      return;
+    }
+
+    // Filters applied — search tutors with selected filters
+    if (data?.filters) {
       const sel = data.filters as any;
+      this.lastAppliedFilters = sel;
 
-      // First try server-side search using the exact SelectedFilters payload
-      // this lets the backend match any field/keyword precisely.
-      this.tutorApi.searchTutors(sel).subscribe(resp => {
-        // TutorApi may return { tutors: [], total: 0 } or an array - handle both
-        const tutors = Array.isArray(resp) ? resp : (resp && resp.tutors ? resp.tutors : []);
-        if (tutors && tutors.length > 0) {
-          // Replace client cache with server-provided results and update list
-          this.tutorService.setCacheAndApply(tutors);
-        } else {
-          // If server returned no results, fall back to local derived filters
-          const tf: any = {};
-          if (sel.filters) {
-            Object.keys(sel.filters).forEach((fieldKey: string) => {
-              const values: string[] = sel.filters[fieldKey] || [];
-              const k = fieldKey.toLowerCase();
-
-              if (k.includes('subject')) {
-                tf.subjects = values;
-              } else if (k.includes('level') || k.includes('class') || k.includes('grade')) {
-                tf.levels = values;
-              } else if (k.includes('availability') || k.includes('day')) {
-                tf.availability = values;
-              } else if (k.includes('contact') || k.includes('mode')) {
-                tf.contactModes = values;
-              } else if (k.includes('location')) {
-                tf.location = values.length > 0 ? values[0] : undefined;
-              } else if (k.includes('experience')) {
-                tf.experience = values.length > 0 ? values[0] : undefined;
-              } else if (k.includes('fee') || k.includes('rate') || k.includes('price')) {
-                // try to extract numeric values for min/max
-                const nums = values.map(v => Number(String(v).replace(/[^0-9.]/g, ''))).filter(n => !isNaN(n));
-                if (nums.length === 1) tf.minRate = nums[0];
-                else if (nums.length >= 2) { tf.minRate = Math.min(...nums); tf.maxRate = Math.max(...nums); }
-              } else {
-                // Fallback: add to subjects if nothing better
-                tf.subjects = tf.subjects ? [...tf.subjects, ...values] : values;
-              }
-            });
+      this.tutorApi.searchTutors(sel).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (resp: any) => {
+          const tutors = Array.isArray(resp) ? resp : (resp?.tutors ?? []);
+          if (tutors.length > 0) {
+            this.tutorService.setCacheAndApply(tutors);
+          } else {
+            this.applyLocalFilters(sel);
           }
-
-          // Apply derived filters locally
-          this.tutorService.setFilters(tf);
-        }
-      }, err => {
-        // On error use local filtering as fallback
-        console.error('[TutorHomepage] server search failed, falling back to local filters', err);
-        const tf: any = {};
-        if (sel.filters) {
-          Object.keys(sel.filters).forEach((fieldKey: string) => {
-            const values: string[] = sel.filters[fieldKey] || [];
-            const k = fieldKey.toLowerCase();
-
-            if (k.includes('subject')) {
-              tf.subjects = values;
-            } else if (k.includes('level') || k.includes('class') || k.includes('grade')) {
-              tf.levels = values;
-            } else if (k.includes('availability') || k.includes('day')) {
-              tf.availability = values;
-            } else if (k.includes('contact') || k.includes('mode')) {
-              tf.contactModes = values;
-            } else if (k.includes('location')) {
-              tf.location = values.length > 0 ? values[0] : undefined;
-            } else if (k.includes('experience')) {
-              tf.experience = values.length > 0 ? values[0] : undefined;
-            } else if (k.includes('fee') || k.includes('rate') || k.includes('price')) {
-              const nums = values.map(v => Number(String(v).replace(/[^0-9.]/g, ''))).filter(n => !isNaN(n));
-              if (nums.length === 1) tf.minRate = nums[0];
-              else if (nums.length >= 2) { tf.minRate = Math.min(...nums); tf.maxRate = Math.max(...nums); }
-            } else {
-              tf.subjects = tf.subjects ? [...tf.subjects, ...values] : values;
-            }
-          });
-        }
-        this.tutorService.setFilters(tf);
+        },
+        error: () => this.applyLocalFilters(sel)
       });
     }
+  }
+
+  private applyLocalFilters(sel: any): void {
+    const tf: any = {};
+    if (!sel?.filters) { return; }
+    Object.keys(sel.filters).forEach((fieldKey: string) => {
+      const values: string[] = sel.filters[fieldKey] || [];
+      const k = fieldKey.toLowerCase();
+      if (k.includes('subject')) { tf.subjects = values; }
+      else if (k.includes('level') || k.includes('class') || k.includes('grade')) { tf.levels = values; }
+      else if (k.includes('availability') || k.includes('day')) { tf.availability = values; }
+      else if (k.includes('contact') || k.includes('mode')) { tf.contactModes = values; }
+      else if (k.includes('location')) { tf.location = values[0]; }
+      else if (k.includes('experience')) { tf.experience = values[0]; }
+      else if (k.includes('fee') || k.includes('rate') || k.includes('price')) {
+        const nums = values.map(v => Number(String(v).replace(/[^0-9.]/g, ''))).filter(n => !isNaN(n));
+        if (nums.length === 1) { tf.minRate = nums[0]; }
+        else if (nums.length >= 2) { tf.minRate = Math.min(...nums); tf.maxRate = Math.max(...nums); }
+      } else { tf.subjects = tf.subjects ? [...tf.subjects, ...values] : values; }
+    });
+    this.tutorService.setFilters(tf);
   }
 
   /**
@@ -296,7 +236,28 @@ export class TutorHomepageComponent implements OnInit, OnDestroy {
   selectSort(option: TutorSortOption): void {
     this.currentSort = option;
     this.isSortOpen = false;
+    this.tutors = this.sortTutors([...this.tutors], option);
     this.tutorService.setSort(option);
+    this.cdr.detectChanges();
+  }
+
+  private sortTutors(tutors: TutorListItem[], sort: TutorSortOption): TutorListItem[] {
+    switch (sort) {
+      case 'alphabets':
+        return tutors.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      case 'mostLiked':
+        return tutors.sort((a, b) => (b.champsLiked || 0) - (a.champsLiked || 0));
+      case 'experience':
+        return tutors.sort((a, b) => {
+          const parse = (s: string) => parseInt((s || '').replace(/\D/g, ''), 10) || 0;
+          return parse(b.experience) - parse(a.experience);
+        });
+      case 'recent':
+      default:
+        return tutors.sort((a, b) =>
+          new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+        );
+    }
   }
 
   get currentSortLabel(): string {

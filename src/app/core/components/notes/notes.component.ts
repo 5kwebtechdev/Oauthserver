@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ModalController } from '@ionic/angular';
+import { IonicModule, ModalController, ViewWillEnter } from '@ionic/angular';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
@@ -17,7 +17,7 @@ import { RefreshService } from '../../services/refresh.service';
   templateUrl: './notes.component.html',
   styleUrls: ['./notes.component.scss']
 })
-export class NotesComponent implements OnInit, OnDestroy {
+export class NotesComponent implements OnInit, OnDestroy, ViewWillEnter {
   // pages: 'empty' (default), 'home', 'input', 'save'
   public page: 'empty' | 'home' | 'input' | 'save' = 'empty';
   public noteText: string = '';
@@ -153,8 +153,11 @@ export class NotesComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Register with global pull-to-refresh service
     this.refreshService.registerRefreshHandler('Notes', () => this.onGlobalRefresh());
+  }
+
+  ionViewWillEnter(): void {
+    this.loadFromServerAsync();
   }
 
   ngOnDestroy(): void {

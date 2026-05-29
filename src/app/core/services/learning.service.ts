@@ -47,23 +47,10 @@ export class LearningService {
      * Fetch all challenges from backend
      */
     fetchChallenges(): Observable<Challenge[]> {
-        console.log('fetchChallenges called');
-
-        // Return cached data if available
-        if (this.challengesCache$.value.length > 0) {
-            console.log('Returning cached challenges:', this.challengesCache$.value.length);
-            return of(this.challengesCache$.value);
-        }
-
         this.challengesLoading$.next(true);
-
-        const url = `${this.apiUrl}/challenges`;
-        console.log('Fetching challenges from:', url);
-
-        return this.http.get<Challenge[]>(url, { headers: this.getHeaders() })
+        return this.http.get<Challenge[]>(`${this.apiUrl}/challenges`, { headers: this.getHeaders() })
             .pipe(
                 tap(challenges => {
-                    console.log('Challenges received:', challenges);
                     this.challengesCache$.next(challenges);
                     this.challengesLoading$.next(false);
                 }),
@@ -159,23 +146,10 @@ export class LearningService {
      * Fetch all articles from backend
      */
     fetchArticles(): Observable<Article[]> {
-        console.log('fetchArticles called');
-
-        // Return cached data if available
-        if (this.articlesCache$.value.length > 0) {
-            console.log('Returning cached articles:', this.articlesCache$.value.length);
-            return of(this.articlesCache$.value);
-        }
-
         this.articlesLoading$.next(true);
-
-        const url = `${this.apiUrl}/articles`;
-        console.log('Fetching articles from:', url);
-
-        return this.http.get<Article[]>(url, { headers: this.getHeaders() })
+        return this.http.get<Article[]>(`${this.apiUrl}/articles`, { headers: this.getHeaders() })
             .pipe(
                 tap(articles => {
-                    console.log('Articles received:', articles);
                     this.articlesCache$.next(articles);
                     this.articlesLoading$.next(false);
                 }),

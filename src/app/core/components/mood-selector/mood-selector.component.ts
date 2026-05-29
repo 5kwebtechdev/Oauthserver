@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -18,7 +19,7 @@ export interface MoodOption { key: string; label: string; emoji?: string }
   templateUrl: './mood-selector.component.html',
   styleUrls: ['./mood-selector.component.scss']
 })
-export class MoodSelectorComponent {
+export class MoodSelectorComponent implements ViewWillEnter {
   @Input() options: MoodOption[] = [];
   @Input() value: string | null = null;
   @Output() valueChange = new EventEmitter<string>();
@@ -57,6 +58,10 @@ export class MoodSelectorComponent {
   ngOnInit() {
     this.getTodayVibe();
     this.loadDailySetCount();
+  }
+
+  ionViewWillEnter(): void {
+    this.getTodayVibe();
   }
 
   // Fetch today's vibe via service

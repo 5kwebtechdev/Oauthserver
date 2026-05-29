@@ -10,6 +10,7 @@ import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.comp
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { HabitCardService } from 'src/app/core/components/activity-section/activity-card/activity-card.service';
 import { HabitApi } from 'src/app/core/api/habit.api';
 import { TaskApi } from 'src/app/core/api/task.api';
@@ -22,6 +23,8 @@ import { Habit } from '../habit.types';
 import { Subscription } from 'rxjs';
 import { UserService } from '../../../services/user.service';
 import { AuthService } from '../../../services/auth.service';
+import { environment } from '../../../../../environments/environment';
+import { AuthApi } from '../../../api/auth.api';
 
 @Component({
   selector: 'activity-card',
@@ -140,6 +143,13 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    */
   @Input({ transform: booleanAttribute })
   isCurrentDateView: boolean = true;
+
+  /**
+   * When true, fires POST /tasks-habits-track/add on Done completion.
+   * Only enable from the calendar page — not the dashboard.
+   */
+  @Input({ transform: booleanAttribute })
+  trackOnComplete: boolean = false;
   /**
    * Optional input for the selected date (used when long-pressing to view details)
    * Format: YYYY-MM-DD
@@ -207,6 +217,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     private router: Router,
     private userService: UserService,
     private authService: AuthService,
+    private authApiService: AuthApi,
+    private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private buttonLogic: HabitButtonLogicService,
     private autoAbortService: AutoAbortService
@@ -638,6 +650,31 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   /**
+   * POST /tasks-habits-track/add after a successful completion
+   */
+  private trackCompletion(type: 'habits' | 'tasks', name: string): void {
+    if (!this.trackOnComplete) return;
+    const userId = Number(localStorage.getItem('user_id')) || 0;
+    if (!userId || !name) return;
+
+    const payload: any = { userId };
+    if (type === 'tasks') {
+      payload.task = name;
+    } else {
+      payload.habit = name;
+    }
+
+    const token = this.authApiService.getToken();
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) headers = headers.set('Authorization', token.startsWith('Bearer ') ? token : `Bearer ${token}`);
+
+    this.http.post(`${environment.apiUrl}/tasks-habits-track/add`, payload, { headers }).subscribe({
+      next: () => console.log('[Track] completion recorded:', payload),
+      error: (err) => console.warn('[Track] failed to record completion:', err)
+    });
+  }
+
+  /**
    * Called when user taps "Done?" - set status to COMPLETED
    */
   onCompleteHabit() {
@@ -659,8 +696,8 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
       this.taskApi.completeTask(this.habit.id).subscribe({
         next: (res: any) => {
+          this.trackCompletion('tasks', this.habit?.title || '');
           const updated = { ...this.habit!, status: 'completed' } as any;
-          // For tasks, we might need to update differently
           this.habit = updated;
           // Clear the saved ongoing state
           this.clearOngoingState();
@@ -705,6 +742,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       // Call habit API for habits (existing code)
       this.habitApi.completeHabit(this.habit.id).subscribe({
         next: (res: any) => {
+          this.trackCompletion('habits', this.habit?.title || '');
           const updated = { ...this.habit!, status: 'completed' } as Habit;
           this.habitService.completeHabit(updated.id);
           this.habit = updated;

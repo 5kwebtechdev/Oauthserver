@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ViewWillEnter } from '@ionic/angular';
 import { StreaksService, StreakLeaderboardUser, CurrentUserStreak, StreakLeaderboardResponse } from '../../services/streaks.service';
 import { ChildSelfImageService } from '../../services/child-self-image.service';
 import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigator.component';
@@ -14,7 +14,7 @@ import { MindfulPetComponent } from '../mindful-pet/mindful-pet.component';
   standalone: true,
   imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulSpeechBubbleComponent, MindfulPetComponent]
 })
-export class StreaksSectionComponent implements OnInit {
+export class StreaksSectionComponent implements OnInit, ViewWillEnter {
   @Input() title = 'Top Streakers';
   @Input() showRankBanner = true;
 
@@ -27,7 +27,11 @@ export class StreaksSectionComponent implements OnInit {
 
   constructor(private streaksService: StreaksService, private childImageService: ChildSelfImageService) { }
 
-  ngOnInit(): void {
+  ngOnInit(): void { this.loadData(); }
+
+  ionViewWillEnter(): void { this.loadData(); }
+
+  private loadData(): void {
     this.streaksService.getLeaderboard().subscribe({
       next: (response: StreakLeaderboardResponse) => {
         this.currentUser = response.currentUser;
