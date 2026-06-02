@@ -12,6 +12,7 @@ import { UserService } from './core/services/user.service';
 import { CustomToastService, Toast } from './core/services/custom-toast.service';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+import { AnalyticsService } from './core/services/analytics.service';
 
 @Component({
   selector: 'app-root',
@@ -41,6 +42,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private authApi: AuthApi,
     private userService: UserService,
     private toastService: CustomToastService,
+    private analytics: AnalyticsService,
   ) {
     this.toast$ = this.toastService.toast$;
   }
@@ -54,7 +56,11 @@ export class AppComponent implements OnInit, OnDestroy {
         if (this.platform.is('android')) {
           StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
         }
-        GoogleAuth.initialize().catch((e: any) => console.warn('[AppComponent] GoogleAuth init:', e));
+        GoogleAuth.initialize({
+          clientId: '124581866222-gblqv0k2a75uo4183ahl0u8336nbcsku.apps.googleusercontent.com',
+          scopes: ['profile', 'email'],
+          grantOfflineAccess: true,
+        }).catch((e: any) => console.warn('[AppComponent] GoogleAuth init:', e));
       }
     });
 
@@ -75,6 +81,11 @@ export class AppComponent implements OnInit, OnDestroy {
         // start nav loader (returns token)
         this._navToken = this.loadingService.show(undefined, { delayMs: 80, minVisibleMs: 120 });
         this.loading = true;
+      }
+      if (event instanceof NavigationEnd) {
+        const screen = event.urlAfterRedirects.split('?')[0];
+        this.analytics.setScreen(screen);
+        this.analytics.logScreenView(screen);
       }
       if (event instanceof NavigationEnd || event instanceof NavigationCancel || event instanceof NavigationError) {
         // hide nav loader immediately

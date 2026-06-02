@@ -7,6 +7,7 @@ import { HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
 import { MoodService } from './mood.service';
+import { AnalyticsService } from './analytics.service';
 
 export interface LoginCredentials {
   email?: string;
@@ -106,7 +107,8 @@ export class AuthService {
     private http: HttpClient,
     private router: Router,
     private platform: Platform,
-    private moodService: MoodService
+    private moodService: MoodService,
+    private analytics: AnalyticsService
   ) {
     this.detectPlatform();
     this.initSessionMonitoring();
@@ -259,6 +261,8 @@ export class AuthService {
                 },
                 credentials.rememberMe || false
               );
+              this.analytics.logLogin(credentials.email ? 'email' : 'phone');
+              this.analytics.setUserId(String(userId));
             } else {
               console.error('[AuthService] Invalid login response structure:', response);
             }
@@ -353,7 +357,9 @@ export class AuthService {
 
   register(payload: any) {
     const url = `${this.apiUrl}/auth/register`;
-    return this.http.post<any>(url, payload);
+    return this.http.post<any>(url, payload).pipe(
+      tap(() => this.analytics.logSignUp(payload.email ? 'email' : 'phone'))
+    );
   }
 
   /**

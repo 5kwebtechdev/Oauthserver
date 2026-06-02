@@ -4,11 +4,11 @@ android {
     namespace "io.ionic.starter"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        // Match the package name in android/app/google-services.json
+        // Match the package name in android/app/gootermgle-services.json
         applicationId "com.superme.app"
         minSdkVersion 26
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 7
+        versionCode 18
         versionName "0.0.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
@@ -53,9 +53,10 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
-    // Firebase Authentication (uses google-services.json for auto-config)
+    // Firebase (uses google-services.json for auto-config)
     implementation platform('com.google.firebase:firebase-bom:33.1.0')
     implementation 'com.google.firebase:firebase-auth'
+    implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.android.gms:play-services-auth:21.2.0'
 }
 

@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { IonicModule, Platform, LoadingController, ToastController } from '@ionic/angular';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { AuthService } from '../../services/auth.service';
+import { AnalyticsService } from '../../services/analytics.service';
 
 @Component({
   selector: 'social-media',
@@ -26,7 +27,8 @@ export class SocialMediaComponent {
     private router: Router,
     private platform: Platform,
     private loadingCtrl: LoadingController,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private analytics: AnalyticsService
   ) {}
 
   open(link: { name: string; url?: string }) {
@@ -57,6 +59,13 @@ export class SocialMediaComponent {
     await loading.present();
 
     try {
+      // Re-initialize before each sign-in attempt to ensure plugin is ready
+      await GoogleAuth.initialize({
+        clientId: '124581866222-gblqv0k2a75uo4183ahl0u8336nbcsku.apps.googleusercontent.com',
+        scopes: ['profile', 'email'],
+        grantOfflineAccess: true,
+      }).catch(() => {});
+
       const googleUser = await GoogleAuth.signIn();
       console.log('[SocialMedia] Google user:', JSON.stringify(googleUser));
 
@@ -83,9 +92,18 @@ export class SocialMediaComponent {
                     { token: response.token, userId, expiresIn: response.expiresIn, user: response.user },
                     false
                   );
+                  this.analytics.logLogin('google');
+                  this.analytics.setUserId(String(userId));
+                  const route = this.authService.getDashboardRoute();
+                  this.router.navigate([route], { replaceUrl: true });
+                } else {
+                  console.error('[SocialMedia] Login response missing token or userId:', response);
+                  this.toastCtrl.create({
+                    message: 'Sign-in failed: invalid server response. Please try again.',
+                    duration: 3000,
+                    position: 'bottom'
+                  }).then(t => t.present());
                 }
-                const route = this.authService.getDashboardRoute();
-                this.router.navigate([route], { replaceUrl: true });
               },
               error: async (err) => {
                 loading.dismiss();
@@ -109,6 +127,7 @@ export class SocialMediaComponent {
               sessionStorage.setItem('google_signup_provider_id', providerId);
               sessionStorage.setItem('requestedIdentifier', email);
             } catch (e) {}
+            this.analytics.logSignUp('google');
             this.router.navigate(['home/sign-up'], { queryParams: { step: 1 }, replaceUrl: true });
           }
         },
@@ -125,12 +144,16 @@ export class SocialMediaComponent {
       });
     } catch (err: any) {
       await loading.dismiss();
-      console.error('[SocialMedia] Google signIn error:', err?.message, err?.code);
-      const cancelled = err?.error === 'popup_closed_by_user'
-        || err?.message === 'The user canceled the sign-in flow.';
+      console.error('[SocialMedia] Google signIn error:', err?.message, err?.code, err?.error);
+      // Android error code 12501 = user cancelled; also check string messages
+      const cancelled = err?.code === 12501
+        || err?.error === 'popup_closed_by_user'
+        || err?.message === 'The user canceled the sign-in flow.'
+        || err?.message?.includes('canceled')
+        || err?.message?.includes('cancelled');
       if (!cancelled) {
         const toast = await this.toastCtrl.create({
-          message: err?.message || 'Google sign-in failed.',
+          message: err?.message || 'Google sign-in failed. Please try again.',
           duration: 3000,
           position: 'bottom'
         });
