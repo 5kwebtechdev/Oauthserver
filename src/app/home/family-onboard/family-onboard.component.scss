@@ -1,0 +1,480 @@
+// ============ REUSABLE / SHARED STYLES ============
+.mindful-page-container {
+  padding: 16px!important;
+}
+
+.mindful-step-indicator {
+  margin: 1.5rem 0;
+  
+  &__step {
+   color: #772817;
+font-family: Nunito;
+font-size: 16px;
+font-weight: 500;
+  }
+  
+  &__title {
+   color: #772817;
+font-family: Nunito;
+font-size: 20px;
+font-weight: 600;
+  }
+  
+  &__progress {
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  
+
+}
+
+.mindful-instructions {
+  margin: 0;
+  
+  &__item {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  &__number {
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: #f5a962;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  
+  &__text {
+    flex: 1;
+    margin: 0;
+    line-height: 1.5;
+    color: #555;
+    font-size: 0.95rem;
+  }
+}
+
+.family-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mindful-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  
+  input[type="text"] {
+    width: 100%;
+    padding: 1rem;
+    background: #FAD2AE;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    
+    &::placeholder {
+      color: rgba(119, 40, 23, 0.6);
+    }
+    
+    &:focus {
+      outline: none;
+      border-color: #ff823b;
+      box-shadow: 0 0 0 3px rgba(255, 130, 59, 0.1);
+    }
+    
+    &.error {
+      border-color: #d32f2f;
+      background: #ffebee;
+    }
+  }
+}
+
+.input-container,
+.code-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #FAD2AE;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  transition: 0.2s;
+  box-sizing: border-box;
+  
+  ion-input,
+  input {
+    flex: 1;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-family: inherit;
+    background: transparent;
+    border: none;
+    
+    &.error {
+      border-color: #d32f2f;
+      background: #ffebee;
+    }
+    
+    &::placeholder {
+      color: rgba(119, 40, 23, 0.6);
+    }
+  }
+
+  /* Ionic input specific styling */
+  ion-input {
+    --padding-start: 16px;
+    --padding-end: 56px; /* leave room for QR button */
+    --highlight-color-focused: transparent;
+    --background: transparent;
+    
+    &::part(native) {
+      padding: 1rem 0;
+      font-size: 1rem;
+      border-radius: 12px;
+    }
+    
+    &::part(native)::placeholder {
+      color: rgba(119, 40, 23, 0.6);
+      opacity: 1;
+    }
+  }
+  
+  /* Focus ring */
+  &:focus-within {
+    border: 2px solid #ff823b;
+  }
+}
+
+.qr-icon,
+.qr-scanner-btn {
+  flex-shrink: 0;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #772817;
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  touch-action: manipulation;
+  z-index: 10;
+  
+  svg {
+    width: 18px;
+    height: 18px;
+    pointer-events: none;
+  }
+
+  &:hover {
+    background: rgba(238, 102, 33, 0.1);
+    transform: translateY(-50%) scale(1.05);
+  }
+
+  &:active {
+    transform: translateY(-50%) scale(0.95);
+    background: rgba(238, 102, 33, 0.2);
+  }
+
+  @media (max-width: 480px) {
+    right: 6px;
+    padding: 10px;
+    min-width: 40px;
+    min-height: 40px;
+    border-radius: 6px;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    &:hover {
+      transform: translateY(-50%) scale(1.03);
+    }
+
+    &:active {
+      transform: translateY(-50%) scale(0.97);
+    }
+  }
+}
+
+.error-message {
+  color: #d32f2f;
+          font-size: 13px;
+        font-family: Nunito;
+        font-weight: 500;
+    
+  
+  small {
+    display: block;
+    margin: 0.25rem 0 0 0;
+    
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+}
+
+/* Removed deprecated .validation-message styles; using .error-message and simple spans for status messages */
+
+.note-text {
+  font-size: 0.85rem;
+  color: #777;
+  margin: 0;
+  line-height: 1.4;
+  
+  strong {
+    color: #333;
+  }
+}
+
+// ============ MODE SELECTION (Parent view) ============
+.mode-selection {
+  
+  .toggle-buttons {
+    border-radius: 40px;
+    background: #FAD2AE;
+    display: flex;
+    height: 64px;
+    padding: 8px;
+    justify-content: center;
+    justify-content: space-between;
+    align-self: stretch;
+    
+    button {
+        background: none;
+    cursor: pointer;
+    color: #772817;
+    font-family: Nunito;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    height: 48px;
+    padding: 8px 16px;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+      
+      &.active {
+        border-radius: 40px;
+    background: #EE6621;
+    display: flex;
+    height: 48px;
+    padding: 8px 16px;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    color: #FFF;
+    font-family: Nunito;
+    font-size: 16px;
+    font-weight: 600;
+      }
+      
+      &:not(.active):hover {
+        border-color: #ddd;
+      }
+    }
+  }
+}
+
+// ============ CREATE/JOIN SECTIONS (Parent view) ============
+.family-creation-section,
+.family-join-section {
+}
+
+.section-header {
+    display: flex;
+    flex-direction: row-reverse;
+  }
+
+.section-label {
+  color: #EE6621;
+    font-family: Nunito;
+    font-size: 13px;
+    font-weight: 500;
+    margin: 0;
+}
+
+// ============ FAMILY SUCCESS STATE (Parent view) ============
+.family-success-section {
+  margin: 2rem 0;
+}
+
+.success-title {
+ color: #4CAF50;
+text-align: center;
+font-family: Nunito;
+font-size: 16px;
+font-weight: 600;
+  margin: 0;
+}
+
+
+.code-label, .code-text{
+ color: #772817;
+text-align: center;
+font-family: Nunito;
+}
+.code-label {
+ 
+font-size: 16px;
+font-weight: 500;
+}
+
+.code-display {
+  display: flex;
+justify-content: center;
+align-items: center;
+gap: 8px;
+}
+
+.code-text {
+font-size: 20px;
+font-weight: 700;
+}
+
+.copy-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+  
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+// ============ DIVIDER ============
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+
+  /* Validation / success text styling */
+  .validation-success,
+  .status-text.success,
+  .validation-status.valid .status-text {
+    color: #4CAF50 !important;
+    font-size: 13px;
+    font-family: Nunito, sans-serif;
+    font-weight: 500;
+  }
+    height: 1px;
+    background: #772817;
+  }
+  
+
+}
+
+// ============ QR CODE SECTION ============
+.qr-code-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  padding: 1.5rem 0;
+}
+
+.qr-code-container {
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  
+  .qr-canvas {
+    canvas {
+      max-width: 100%;
+      height: auto;
+    }
+  }
+}
+
+.share-qr-btn {
+  border-radius: 32px;
+    background: #FAD2AE;
+    display: flex;
+    padding: 8px;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    color: #772817;
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+// ============ RESPONSIVE ============
+@media (max-width: 480px) {
+    .validation-success,
+    .status-text.success,
+    .validation-status.valid .status-text,
+    .family-form .valid,
+    .family-join-section .valid,
+    .valid {
+      color: #4CAF50 !important;
+      font-size: 13px;
+      font-family: Nunito;
+      font-weight: 500;
+    }
+  .mindful-page-container {
+    padding:16px !important;
+            gap: 24px;
+        display: flex;
+        flex-direction: column;
+  }
+  
+  .family-code-section,
+  .qr-code-container {
+    padding: 1rem;
+  }
+  
+  .code-text {
+    font-size: 1.25rem;
+    letter-spacing: 1px;
+  }
+  
+  .mindful-instructions__item {
+    gap: 0.75rem;
+  }
+  
+  .mindful-instructions__number {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.875rem;
+  }
+}

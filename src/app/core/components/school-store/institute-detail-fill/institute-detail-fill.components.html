@@ -1,0 +1,72 @@
+<ion-content>
+    <main class="institute-detail-fill-container">
+        <div class="find-your-institute">
+            <mindful-navigator heading="" [showSubtext]="false" (back)="goBack()"></mindful-navigator>
+            <div class="image-n-text d-flex flex-column justify-content-center align-items-center">
+                    <img src="/assets/School-assets/find-your-child's-school.png" alt="Institute Detail Fill">
+                    <h1>Let's find your child's school</h1>
+                    <p>Unlock uniforms, books & more</p>
+            </div>
+        </div>
+        <section class="form-container">
+        <div class="institute-detail-form">
+            <ng-template #chev>
+                <svg xmlns="http://www.w3.org/2000/svg" width="8" height="5" viewBox="0 0 8 5" fill="none">
+                  <path d="M7.43942 0.373009C7.63468 0.568271 7.63468 0.884854 7.43942 1.08012L4.14652 4.37301C3.95126 4.56827 3.63468 4.56827 3.43942 4.37301L0.146522 1.08012C-0.0487403 0.884853 -0.0487401 0.568271 0.146522 0.373009L0.372748 0.146782C0.568011 -0.0484796 0.884593 -0.04848 1.07986 0.146782L3.43942 2.50634C3.63468 2.7016 3.95126 2.7016 4.14652 2.50634L6.50608 0.146782C6.70134 -0.0484805 7.01793 -0.0484796 7.21319 0.146782L7.43942 0.373009Z" fill="#282527"/>
+                </svg>
+            </ng-template>
+
+            <ng-container *ngFor="let f of fields">
+                <div class="institute-field" [style.opacity]="selectedValues[f.key] ? '1' : '0.5'">
+                    <div class="field-label">{{ f.label }}</div>
+                    <div class="input-select" role="button" tabindex="0" [attr.aria-label]="f.aria" (click)="openFieldPopup(f.key)">
+                        <span class="placehold">{{ f.placeholder }}</span>
+                        <span class="input-icon"><ng-container *ngTemplateOutlet="chev"></ng-container></span>
+                    </div>
+
+                    <div *ngIf="f.key === 'school'" class="helper-text">We need this to show the correct catalog.<br>
+                        <span class="request-link">Can't find your school? <a role="button" tabindex="0" (click)="openRequestPopup()">Request to Add</a></span>
+                    </div>
+                </div>
+            </ng-container>
+
+            <!-- Field selection bottom popup (reusable) -->
+            <div *ngIf="showFieldPopup" class="field-popup-backdrop" (click)="closeFieldPopup()">
+                <div class="field-popup" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+                    <div class="popup-handle"></div>
+                    <div class="popup-title">{{ getActiveLabel() }}</div>
+                    <div class="popup-list">
+                        <button *ngFor="let o of getActiveOptions()" class="popup-option" (click)="selectOption(o)">{{ o }}</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="enter-btn-container">
+                <mindful-button type="magenta" text="Enter Store" large (click)="enterStore()"></mindful-button>
+            </div>
+        </div>
+        </section>
+
+            <!-- Request new school modal -->
+            <div *ngIf="showRequestPopup" class="request-popup-backdrop" (click)="closeRequestPopup()">
+                <div class="request-popup" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+                    <button class="request-close" aria-label="Close" (click)="closeRequestPopup()">✕</button>
+                    <h3 class="request-title">Request New School</h3>
+
+                    <div class="request-inputs">
+                        <ng-container *ngFor="let rf of requestFields">
+                            <div class="request-row">
+                                <div class="input-select">
+                                    <input type="text" [placeholder]="rf.placeholder" [(ngModel)]="requestForm[rf.key]" />
+                                </div>
+                            </div>
+                        </ng-container>
+                    </div>
+
+                    <div class="request-action">
+                        <mindful-button type="magenta" text="Send request" (click)="sendRequest()"></mindful-button>
+                    </div>
+                </div>
+            </div>
+    </main>
+    </ion-content>

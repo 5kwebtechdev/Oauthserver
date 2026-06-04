@@ -1,0 +1,190 @@
+<ion-content fullscreen>
+    <div class="coming-soon-container">
+        <mindful-navigator heading="Parental Control" backIcon="arrowSvg"></mindful-navigator>
+    <div class="coming-soon-message">
+        <img src="/assets/Images-Transparent/Parental Coming Soon.png" alt="Parental Coming Soon" />
+        <h1>Advanced controls are on the way</h1>
+        <p>A detailed dashboard for managing limits and permissions is currently being built.</p>
+    </div>
+</div>
+    <!-- <section class="parental-instructions" *ngIf="!showParentalControlBlank">
+        <mindful-navigator heading="Get this done on your device" backIcon="arrowSvg"></mindful-navigator>
+
+        <div class="parental-control-content">
+            <instructio-list [items]="instructions">
+            </instructio-list>
+            <mindful-button type="green" large text="Done" style="width: 100%; display: block;"
+                (click)="onDone()"></mindful-button>
+        </div>
+    </section>
+
+    <section class="parental-control-blank" *ngIf="showParentalControlBlank">
+        <mindful-navigator heading="Parental Control" backIcon="arrowSvg"></mindful-navigator>
+
+        <h1 class="subtitle">View restrictions</h1>
+        <main class="blank-content">
+            <div class="free-screen">
+                <h1>Free screen time!</h1>
+            </div>
+            <div class="no-restrictions">
+                <div class="no-restrictions-content">
+                    <h1>All apps are available</h1>
+                    <p>No app restrictions right now. Your parents trust you to use apps wisely</p>
+                </div>
+            </div>
+        </main>
+
+        <main class="parental-control-page">
+            <div class="screen-time">
+                <div class="screen-time-content">
+                    <div class="screen-time-head">
+                        <h1>Screen time</h1>
+                        <p>4 hours 15min</p>
+                    </div>
+                    <div class="app-total-time">
+                        <div class="total-time-progress-ring">
+                            <mindful-completion [completionPercentage]="70" [borderColor]="'#BB2124'"
+                                [innerText]="'4h 15m'" [belowText]="'Total'">
+                            </mindful-completion>
+                        </div>
+                        <div class="app-time-list">
+                            <div class="app-usage-data">
+                                <div class="app-row">
+                                    <div class="app-left">
+                                        <div class="app-icon youtube-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="14"
+                                                viewBox="0 0 20 14" fill="none">
+                                                <g clip-path="url(#clip0_4300_42498)">
+                                                    <path
+                                                        d="M13.3035 6.79626C11.476 5.81964 9.72617 4.92179 7.9375 3.98438V9.59224C9.81973 8.56903 11.8037 7.63198 13.3113 6.79626H13.3035Z"
+                                                        fill="white" />
+                                                    <path
+                                                        d="M13.3035 6.79626C11.476 5.81964 7.9375 3.98438 7.9375 3.98438L12.6553 7.15532C12.6553 7.15532 11.7959 7.63198 13.3035 6.79626Z"
+                                                        fill="#E8E0E0" />
+                                                    <path
+                                                        d="M8.28603 13.981C4.49013 13.9111 3.19365 13.8483 2.39675 13.6841C1.8576 13.575 1.38908 13.3328 1.04554 12.9815C0.780033 12.7156 0.568883 12.3099 0.405067 11.7471C0.264547 11.2782 0.209818 10.8881 0.131792 9.93514C0.0123499 7.78444 -0.0161239 6.02609 0.131792 4.0614C0.253823 2.97644 0.312989 1.68846 1.12357 0.937047C1.5063 0.585377 1.95153 0.359066 2.45148 0.265509C3.23248 0.117223 6.55985 0 10.0044 0C13.4413 0 16.776 0.117223 17.5578 0.265509C18.1823 0.382732 18.7681 0.734032 19.112 1.18702C19.8516 2.35038 19.8645 3.797 19.9396 4.92856C19.9706 5.46771 19.9706 8.5292 19.9396 9.06835C19.8227 10.8567 19.7288 11.4894 19.4633 12.1454C19.2991 12.5595 19.159 12.7781 18.9164 13.0203C18.5359 13.393 18.0509 13.641 17.526 13.731C14.2411 13.9781 11.4518 14.0317 8.28603 13.981ZM13.3163 6.79525C11.4888 5.81864 9.73893 4.91303 7.95026 3.97561V9.58384C9.83249 8.56063 11.8168 7.62321 13.324 6.78749L13.3163 6.79525Z"
+                                                        fill="#CD201F" />
+                                                </g>
+                                                <defs>
+                                                    <clipPath id="clip0_4300_42498">
+                                                        <rect width="19.9317" height="14" fill="white"
+                                                            transform="translate(0.03125)" />
+                                                    </clipPath>
+                                                </defs>
+                                            </svg>
+                                        </div>
+                                        <div class="app-name">YouTube</div>
+                                    </div>
+                                    <div class="app-time">1hr 15min</div>
+                                </div>
+
+                                <div class="app-row">
+                                    <div class="app-left">
+                                        <div class="app-icon whatsapp-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                viewBox="0 0 20 20" fill="none">
+                                                <g clip-path="url(#clip0_4300_42507)">
+                                                    <path
+                                                        d="M19.9992 14.9448C19.9992 15.0543 19.9959 15.2918 19.9893 15.4753C19.9732 15.9241 19.9376 16.5034 19.8838 16.7673C19.8029 17.1639 19.6809 17.5382 19.5217 17.8498C19.3333 18.2184 19.0931 18.5485 18.8076 18.8335C18.5228 19.1179 18.1929 19.3571 17.8249 19.5447C17.5117 19.7043 17.135 19.8265 16.7362 19.907C16.4749 19.9598 15.9 19.9947 15.454 20.0105C15.2704 20.0171 15.0328 20.0204 14.9237 20.0204L5.07555 20.0188C4.96603 20.0188 4.72857 20.0154 4.54512 20.0089C4.09623 19.9928 3.51701 19.9572 3.25309 19.9034C2.85648 19.8225 2.48213 19.7004 2.17057 19.5412C1.80197 19.3529 1.47184 19.1127 1.18689 18.8272C0.90252 18.5423 0.663223 18.2125 0.475664 17.8445C0.316016 17.5313 0.193867 17.1546 0.11334 16.7557C0.0606055 16.4945 0.0257031 15.9196 0.00982422 15.4735C0.00330078 15.2899 0 15.0524 0 14.9433L0.0015625 5.0951C0.0015625 4.98559 0.00490234 4.74811 0.0114844 4.56465C0.0275977 4.11576 0.0631641 3.53654 0.116973 3.27264C0.197852 2.87604 0.319922 2.50168 0.479121 2.1901C0.667461 1.82152 0.907715 1.49137 1.19316 1.20643C1.47801 0.92207 1.80785 0.682754 2.17588 0.495176C2.4891 0.335566 2.8658 0.213418 3.26465 0.132891C3.52592 0.0801367 4.10082 0.0452344 4.54684 0.029375C4.73047 0.022832 4.96803 0.0195312 5.07709 0.0195312L14.9253 0.0211133C15.0348 0.0211133 15.2723 0.0244531 15.4557 0.0310352C15.9046 0.0471484 16.4838 0.0827148 16.7478 0.136523C17.1443 0.217402 17.5187 0.339473 17.8303 0.498672C18.1988 0.687012 18.529 0.927266 18.8139 1.21271C19.0983 1.49756 19.3376 1.82738 19.5252 2.19543C19.6848 2.50865 19.807 2.88533 19.8875 3.28418C19.9402 3.54547 19.9751 4.12035 19.991 4.56639C19.9975 4.75002 20.0008 4.98756 20.0008 5.09666L19.9992 14.9448Z"
+                                                        fill="url(#paint0_linear_4300_42507)" />
+                                                    <path
+                                                        d="M15.298 4.75113C13.9439 3.39592 12.1431 2.6492 10.2245 2.64844C6.27131 2.64844 3.05391 5.86461 3.05232 9.81781C3.05182 11.0815 3.38207 12.315 4.00969 13.4022L2.99219 17.1176L6.79424 16.1206C7.84182 16.6918 9.02123 16.9928 10.2216 16.9933H10.2246C14.1773 16.9933 17.395 13.7768 17.3966 9.82352C17.3974 7.90775 16.6521 6.10635 15.298 4.75113ZM10.2246 15.7824H10.2221C9.15246 15.782 8.10332 15.4947 7.18807 14.9518L6.97037 14.8226L4.71418 15.4143L5.31641 13.2152L5.17463 12.9897C4.57791 12.0409 4.26275 10.9443 4.26322 9.81828C4.26451 6.53256 6.93871 3.85938 10.2269 3.85938C11.8191 3.85998 13.3158 4.48068 14.4413 5.60707C15.5668 6.73346 16.1863 8.23074 16.1857 9.82307C16.1844 13.1091 13.5102 15.7824 10.2246 15.7824ZM13.4944 11.3192C13.3152 11.2296 12.4341 10.7961 12.2698 10.7363C12.1056 10.6765 11.9861 10.6467 11.8666 10.826C11.7472 11.0054 11.4038 11.4089 11.2992 11.5285C11.1946 11.648 11.0901 11.663 10.9109 11.5733C10.7317 11.4836 10.1543 11.2945 9.46978 10.6841C8.93707 10.2091 8.57738 9.62242 8.47285 9.44305C8.36832 9.26369 8.46174 9.16676 8.55145 9.07742C8.63205 8.99717 8.73064 8.86818 8.82025 8.76357C8.90984 8.65899 8.93973 8.58422 8.99945 8.46467C9.0592 8.3451 9.02932 8.24047 8.98451 8.1508C8.93973 8.06113 8.58131 7.17934 8.43197 6.82064C8.28652 6.47131 8.13875 6.51857 8.02875 6.51309C7.92434 6.50789 7.80475 6.5068 7.68529 6.5068C7.56584 6.5068 7.37168 6.55162 7.20742 6.73098C7.04316 6.91033 6.58021 7.34375 6.58021 8.22553C6.58021 9.1073 7.22234 9.9592 7.31195 10.0788C7.40156 10.1983 8.57561 12.0079 10.3733 12.7839C10.8009 12.9684 11.1347 13.0787 11.3949 13.1612C11.8242 13.2976 12.2149 13.2783 12.5237 13.2322C12.868 13.1808 13.5839 12.7988 13.7333 12.3804C13.8827 11.9619 13.8827 11.6032 13.8379 11.5285C13.793 11.4537 13.6736 11.4089 13.4944 11.3192Z"
+                                                        fill="white" />
+                                                </g>
+                                                <defs>
+                                                    <linearGradient id="paint0_linear_4300_42507" x1="10.0004"
+                                                        y1="0.0195312" x2="10.0004" y2="20.0204"
+                                                        gradientUnits="userSpaceOnUse">
+                                                        <stop stop-color="#61FD7D" />
+                                                        <stop offset="1" stop-color="#2BB826" />
+                                                    </linearGradient>
+                                                    <clipPath id="clip0_4300_42507">
+                                                        <rect width="20" height="20" fill="white" />
+                                                    </clipPath>
+                                                </defs>
+                                            </svg>
+                                        </div>
+                                        <div class="app-name">Whatsapp</div>
+                                    </div>
+                                    <div class="app-time">1hr 5min</div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h1>App Blocker</h1>
+            <div class="app-blocker">
+                <div class="app-block-list">
+                    <div class="app-name-time" *ngFor="let app of blockedApps">
+                        <div class="app-list-item">
+                            <div class="app-icon" *ngIf="app.iconType === 'svg'">
+                                <ng-container [ngSwitch]="app.svg">
+                                    <ng-container *ngSwitchCase="'youtube'">
+                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M13.3163 6.79525C11.4888 5.81864 9.73893 4.91303 7.95026 3.97561V9.58384C9.83249 8.56063 11.8168 7.62321 13.324 6.78749L13.3163 6.79525Z"
+                                                fill="#CD201F" />
+                                        </svg>
+                                    </ng-container>
+                                    <ng-container *ngSwitchCase="'whatsapp'">
+                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M15.298 4.75113C13.9439 3.39592 12.1431 2.6492 10.2245 2.64844C6.27131 2.64844 3.05391 5.86461 3.05232 9.81781C3.05182 11.0815 3.38207 12.315 4.00969 13.4022L2.99219 17.1176L6.79424 16.1206C7.84182 16.6918 9.02123 16.9928 10.2216 16.9933H10.2246C14.1773 16.9933 17.395 13.7768 17.3966 9.82352C17.3974 7.90775 16.6521 6.10635 15.298 4.75113Z"
+                                                fill="#2BB826" />
+                                        </svg>
+                                    </ng-container>
+                                </ng-container>
+                            </div>
+                            <div class="app-name">{{ app.name }}</div>
+                            <span class="app-time">{{ app.time }}</span>
+                        </div>
+                        <button class="request-extend-btn" (click)="requestExtend(app.id)">Request Extend</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="request-extend-overlay" *ngIf="showRequestPopup">
+                <div class="request-extend-backdrop" (click)="closeRequestPopup()"></div>
+                <div class="request-extend-popup" role="dialog" aria-modal="true">
+                    <div class="req-pop-msg">
+                        <h1>Request Extend</h1>
+                        <p>Select the duration and we will send the notification to your parent</p>
+                    </div>
+                    <div class="duration-options">
+                        <ul class="duration-list">
+                            <li *ngFor="let duration of durationOptions" (click)="selectDuration(duration)"
+                                class="duration-item">
+                                <span>{{ duration.label }}</span>
+                                <svg *ngIf="duration.selected" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none">
+                                    <mask id="mask0_4784_40794" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0"
+                                        y="0" width="24" height="24">
+                                        <rect width="24" height="24" rx="0.5" fill="#D9D9D9" />
+                                    </mask>
+                                    <g mask="url(#mask0_4784_40794)">
+                                        <path
+                                            d="M10.3536 15.0464C10.1583 15.2417 9.84171 15.2417 9.64645 15.0464L6.35355 11.7536C6.15829 11.5583 6.15829 11.2417 6.35355 11.0464L7.04645 10.3536C7.24171 10.1583 7.55829 10.1583 7.75355 10.3536L9.64645 12.2464C9.84171 12.4417 10.1583 12.4417 10.3536 12.2464L16.2464 6.35355C16.4417 6.15829 16.7583 6.15829 16.9536 6.35355L17.6464 7.04645C17.8417 7.24171 17.8417 7.55829 17.6464 7.75355L10.3536 15.0464Z"
+                                            fill="#1C1B1F" />
+                                    </g>
+                                </svg>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="send-request-btn">
+                        <mindful-button type="bronze-transparent" small text="Cancel"
+                            style="width: 100%; display: block;" (click)="closeRequestPopup()"></mindful-button>
+                        <mindful-button type="green" small text="Send Request" style="width: 100%; display: block;"
+                            (click)="sendRequest()"></mindful-button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </section> -->
+
+</ion-content>

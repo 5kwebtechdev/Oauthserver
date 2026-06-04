@@ -1,0 +1,377 @@
+/* Address block and popup styles copied from product-detail/store pages (scoped to My Cart) */
+.my-cart-container{
+	  padding: 0 16px;
+	  display: flex;
+	  flex-direction: column;
+	  gap: 24px;
+	      padding-bottom: 100px;
+
+}
+.address-detail {
+	border-radius: 16px;
+	border: 0.5px solid #90214d;
+	display: flex;
+	padding: 8px 16px;
+	align-items: flex-start;
+	gap: 16px;
+	align-self: stretch;
+	background: #fff;
+}
+ h2, p, span ,h3{
+	margin: 0;
+	color: #282527;
+font-family: Nunito;
+font-weight: 600;
+font-size: 16px;
+}
+
+
+
+p{
+	font-size: 13px;
+	opacity: 0.7;
+}
+h3{
+	font-size: 13px;
+}
+
+span{
+	color: #90214D;
+}
+
+.original-price{
+	text-decoration-line: line-through;
+	opacity: 0.7;
+}
+
+
+.underline-link {
+	color: #90214D;
+font-family: Nunito;
+font-size: 16px;
+font-weight: 600;
+text-decoration-skip-ink: none;
+text-underline-position: from-font;
+}
+.address-text {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+
+/* Address styling copied from product-detail (scoped to My Cart) */
+.address-empty {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 14px;
+	border-radius: 20px;
+	border: 1px solid #90214d;
+	background: #fff;
+}
+
+.address-empty .empty-right {
+	display: flex;
+	padding: 8px;
+	justify-content: flex-end;
+	align-items: center;
+	border-radius: 12px;
+	border: 1px solid rgba(40, 37, 39, 0.50);
+}
+
+.pincode-input {
+	color: #282527;
+	font-family: Nunito;
+	font-size: 13px;
+	font-weight: 500;
+	border: none;
+	width: 100%;
+	outline: none;
+}
+
+:host ::ng-deep mindful-button.pincode-check .button {
+	padding: 8px !important;
+	font-size: 13px !important;
+}
+
+/* Address popup styles copied from product-store to enable bottom address popup */
+.address-popup {
+	position: fixed;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: -100%;
+	display: flex;
+	justify-content: center;
+	/* ensure overlay covers full viewport so outside clicks register */
+	align-items: flex-end;
+	pointer-events: none;
+	transition: bottom 320ms cubic-bezier(.2, .8, .2, 1), opacity 220ms ease;
+	z-index: 1200;
+}
+
+.address-popup.open {
+	bottom: 0;
+	pointer-events: auto;
+}
+
+.address-popup-inner {
+	display: flex;
+	width: 100%;
+	max-width: 980px;
+	padding: 16px;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 16px;
+	border-radius: 32px 32px 24px 24px;
+	background: #FFF;
+	box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+	box-sizing: border-box;
+}
+
+.address-popup .popup-close {
+	align-self: flex-end;
+	background: transparent;
+	border: 0;
+	font-size: 20px;
+	line-height: 1;
+	padding: 6px;
+	cursor: pointer;
+}
+
+.address-item {
+	display: flex;
+	width: 100%;
+	justify-content: space-between;
+	gap: 12px;
+	align-items: center;
+}
+
+.address-text {
+	color: #282527;
+	font-family: Nunito, sans-serif;
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.address-item {
+	cursor: pointer;
+	padding: 6px 0;
+	border-bottom: 1px solid rgba(40, 37, 39, 0.20);
+}
+
+.address-item.selected .address-text {
+	color: #90214D;
+}
+
+.add-address {
+	background: transparent;
+	border: 0;
+	color: #90214D;
+	font-family: Nunito, sans-serif;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	padding: 6px 0;
+	align-self: flex-start;
+	text-decoration: underline;
+}
+
+/* Size popup styles (bottom fixed) */
+.size-popup {
+	position: fixed;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: -100%;
+	display: flex;
+	justify-content: center;
+	align-items: flex-end;
+	/* ensure overlay covers full viewport so outside clicks register */
+	pointer-events: none;
+	transition: bottom 320ms cubic-bezier(.2, .8, .2, 1), opacity 220ms ease;
+	z-index: 1200;
+}
+
+.size-popup.open {
+	bottom: 0;
+	pointer-events: auto;
+}
+
+.size-popup-inner {
+	display: flex;
+	width: 100%;
+	max-width: 980px;
+	padding: 16px;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 16px;
+	border-radius: 32px 32px 24px 24px;
+	background: #FFF;
+	box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+	box-sizing: border-box;
+	/* Limit height so popup never covers entire viewport; make content scrollable */
+	max-height: 65vh;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+	padding-bottom: 24px;
+}
+
+.size-popup .popup-close {
+	align-self: flex-end;
+	background: transparent;
+	border: 0;
+	font-size: 20px;
+	line-height: 1;
+	padding: 6px;
+	cursor: pointer;
+}
+
+.size-item {
+	display: flex;
+	width: 100%;
+	gap: 45px;
+	align-items: center;
+	padding: 8px 0;
+	border-bottom: 1px solid rgba(40, 37, 39, 0.06);
+}
+
+.size-item.selected h2 {
+	color: #90214D;
+}
+
+.cart-product-item{
+	display: flex;
+width: 100%;
+padding: 8px 16px 16px 8px;
+align-items: flex-start;
+gap: 8px;
+border-radius: 16px;
+background: #FFF;
+box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+
+.product-item-img{
+	display: flex;
+max-width: 148.5px;
+padding: 4px;
+align-items: center;
+gap: 8px;
+align-self: stretch;
+}
+
+/* On small devices (360px wide and below) make the product image column a fixed
+	 width so layout remains consistent. Use both min and max to enforce 135px. */
+@media (max-width: 360px) {
+	.product-item-img {
+		min-width: 120px;
+		max-width: 120px;
+		width: 120px;
+	}
+}
+
+/* Quantity selector copied from product-detail styles */
+.quantity-selector {
+	.qty-btn {
+		display: flex;
+		padding: 2px 10px;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		gap: 8px;
+		border-radius: 4px;
+		background: #90214d;
+		border: 0;
+		cursor: pointer;
+		width: 32px;
+
+		span {
+			color: #fff;
+			text-align: center;
+			font-size: 20px;
+			font-style: normal;
+			font-weight: 600;
+			line-height: 1;
+			display: inline-block;
+			user-select: none;
+		}
+	}
+
+	.qty-btn:focus {
+		outline: 2px solid rgba(144, 33, 77, 0.18);
+	}
+}
+
+.quantity-count {
+	color: #90214d;
+	font-family: Nunito;
+	font-size: 20px;
+	font-weight: 600;
+}
+
+.size-picker{
+	display: flex;
+	gap:4px;
+	border-radius: 8px;
+background: #FAD7E0;
+padding: 8px;
+justify-content: center;
+align-items: center;
+}
+
+/* Purchase bar styles copied from product-detail component */
+:host ::ng-deep mindful-button.page-cta .button,
+mindful-button.page-cta .button,
+.product-purchase-bar mindful-button.page-cta .button {
+	padding: 10px 40px !important;
+
+}
+
+.product-purchase-bar {
+	display: flex;
+	padding: 16px;
+	justify-content: space-between;
+	align-items: center;
+	align-self: stretch;
+	background: #fff;
+	box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
+}
+
+.product-purchase-bar {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 60;
+	width: 100%;
+	box-sizing: border-box;
+}
+.to-pay{
+	font-size: 20px;
+}
+
+.cart-products-list{
+	    display: flex;
+    flex-direction: column;
+	gap: 24px;
+}
+
+.bill-summary{
+	display: flex;
+padding: 16px;
+flex-direction: column;
+align-items: flex-start;
+gap: 16px;
+align-self: stretch;
+	border-radius: 16px;
+background: #FFF;
+box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+
+.txt-amount{
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}

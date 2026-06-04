@@ -1,0 +1,18 @@
+<div class="course-card">
+  <div class="course-image-container">
+    <img src="/assets/Images-Transparent/Academy-Course-Thubmnail3.png" [alt]="title" class="course-image">
+    <div class="course-badge" *ngIf="isNew">
+      <span class="new-badge">NEW</span>
+    </div>
+  </div>
+  <div class="course-content">
+    <h4 class="course-title">{{ title }}</h4>
+    <p class="course-description">{{ description }}</p>
+    <div class="course-meta">
+      <span class="duration">{{ duration }}</span>
+      <div class="course-action">
+        <button class="start-course-btn">Start Course</button>
+      </div>
+    </div>
+  </div>
+</div>

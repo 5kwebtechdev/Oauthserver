@@ -1,0 +1,261 @@
+package io.ionic.starter.plugins;
+
+import android.net.Uri;
+import android.util.Log;
+
+import com.arthenica.ffmpegkit.FFmpegKit;
+import com.arthenica.ffmpegkit.FFmpegSession;
+import com.arthenica.ffmpegkit.ReturnCode;
+import com.arthenica.ffmpegkit.Statistics;
+import com.arthenica.ffmpegkit.StatisticsCallback;
+import com.getcapacitor.JSObject;
+import com.getcapacitor.Plugin;
+import com.getcapacitor.PluginCall;
+import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.CapacitorPlugin;
+
+import java.io.File;
+
+@CapacitorPlugin(name = "VideoCompressor")
+public class VideoCompressorPlugin extends Plugin {
+
+    private static final String TAG = "VideoCompressor";
+    private FFmpegSession currentSession = null;
+
+    @PluginMethod
+    public void compressVideo(PluginCall call) {
+        String inputPath = call.getString("inputPath");
+        String outputPath = call.getString("outputPath");
+        Integer quality = call.getInt("quality", 23); // CRF value (18-28)
+        String preset = call.getString("preset", "veryfast");
+        String videoCodec = call.getString("videoCodec", "libx264");
+        String audioCodec = call.getString("audioCodec", "aac");
+        Integer maxWidth = call.getInt("maxWidth");
+        Integer maxHeight = call.getInt("maxHeight");
+
+        if (inputPath == null || outputPath == null) {
+            call.reject("Input and output paths are required");
+            return;
+        }
+
+        // Get file sizes
+        File inputFile = new File(getRealPathFromURI(inputPath));
+        if (!inputFile.exists()) {
+            call.reject("Input file does not exist: " + inputPath);
+            return;
+        }
+
+        long originalSize = inputFile.length();
+        long startTime = System.currentTimeMillis();
+
+        // Build FFmpeg command
+        StringBuilder command = new StringBuilder();
+        command.append("-i \"").append(getRealPathFromURI(inputPath)).append("\"");
+        
+        // Video codec and quality
+        command.append(" -vcodec ").append(videoCodec);
+        command.append(" -crf ").append(quality);
+        command.append(" -preset ").append(preset);
+        
+        // Audio codec
+        command.append(" -acodec ").append(audioCodec);
+        
+        // Scale if max dimensions specified
+        if (maxWidth != null || maxHeight != null) {
+            String scale = buildScaleFilter(maxWidth, maxHeight);
+            command.append(" -vf \"").append(scale).append("\"");
+        }
+        
+        // Optimize for streaming (faststart for MP4)
+        command.append(" -movflags +faststart");
+        
+        // Overwrite output file
+        command.append(" -y");
+        
+        // Output path
+        command.append(" \"").append(outputPath).append("\"");
+
+        Log.d(TAG, "FFmpeg command: " + command.toString());
+
+        // Execute FFmpeg command
+        currentSession = FFmpegKit.executeAsync(
+                command.toString(),
+                session -> {
+                    ReturnCode returnCode = session.getReturnCode();
+                    
+                    if (ReturnCode.isSuccess(returnCode)) {
+                        // Compression successful
+                        File outputFile = new File(outputPath);
+                        long compressedSize = outputFile.length();
+                        long processingTime = System.currentTimeMillis() - startTime;
+                        double compressionRatio = (double) compressedSize / originalSize;
+
+                        JSObject result = new JSObject();
+                        result.put("outputPath", outputPath);
+                        result.put("originalSize", originalSize);
+                        result.put("compressedSize", compressedSize);
+                        result.put("compressionRatio", compressionRatio);
+                        result.put("processingTime", processingTime);
+
+                        Log.d(TAG, "Compression successful: " + result.toString());
+                        call.resolve(result);
+                    } else {
+                        // Compression failed
+                        String error = "Compression failed with return code: " + returnCode.toString();
+                        Log.e(TAG, error);
+                        Log.e(TAG, "FFmpeg output: " + session.getOutput());
+                        call.reject(error);
+                    }
+                    
+                    currentSession = null;
+                },
+                log -> {
+                    // Log FFmpeg output
+                    Log.d(TAG, "FFmpeg: " + log.getMessage());
+                },
+                statistics -> {
+                    // Progress callback - can be used to notify UI
+                    // Note: Statistics include time, size, bitrate, speed, etc.
+                    int time = statistics.getTime();
+                    double speed = statistics.getSpeed();
+                    Log.d(TAG, "Progress - Time: " + time + "ms, Speed: " + speed + "x");
+                    
+                    // Optionally notify progress to JavaScript
+                    JSObject progressData = new JSObject();
+                    progressData.put("time", time);
+                    progressData.put("speed", speed);
+                    notifyListeners("compressionProgress", progressData);
+                }
+        );
+    }
+
+    @PluginMethod
+    public void extractThumbnail(PluginCall call) {
+        String inputPath = call.getString("inputPath");
+        String outputPath = call.getString("outputPath");
+        Double timeInSeconds = call.getDouble("timeInSeconds", 1.0);
+        Integer width = call.getInt("width");
+        Integer height = call.getInt("height");
+        Integer quality = call.getInt("quality", 85);
+
+        if (inputPath == null || outputPath == null) {
+            call.reject("Input and output paths are required");
+            return;
+        }
+
+        // Build FFmpeg command for thumbnail extraction
+        StringBuilder command = new StringBuilder();
+        command.append("-i \"").append(getRealPathFromURI(inputPath)).append("\"");
+        command.append(" -ss ").append(timeInSeconds);
+        command.append(" -vframes 1");
+        
+        // Scale if dimensions specified
+        if (width != null || height != null) {
+            String scale = buildScaleFilter(width, height);
+            command.append(" -vf \"").append(scale).append("\"");
+        }
+        
+        // JPEG quality
+        command.append(" -q:v ").append(Math.round(31 - (quality * 0.31))); // Convert 0-100 to 31-2
+        
+        command.append(" -y \"").append(outputPath).append("\"");
+
+        Log.d(TAG, "Thumbnail command: " + command.toString());
+
+        FFmpegKit.executeAsync(
+                command.toString(),
+                session -> {
+                    ReturnCode returnCode = session.getReturnCode();
+                    
+                    if (ReturnCode.isSuccess(returnCode)) {
+                        JSObject result = new JSObject();
+                        result.put("outputPath", outputPath);
+                        
+                        // Try to get dimensions from output file
+                        // For simplicity, just return requested dimensions or 0
+                        result.put("width", width != null ? width : 0);
+                        result.put("height", height != null ? height : 0);
+                        
+                        call.resolve(result);
+                    } else {
+                        call.reject("Thumbnail extraction failed: " + returnCode.toString());
+                    }
+                }
+        );
+    }
+
+    @PluginMethod
+    public void getVideoMetadata(PluginCall call) {
+        String inputPath = call.getString("inputPath");
+
+        if (inputPath == null) {
+            call.reject("Input path is required");
+            return;
+        }
+
+        // Use ffprobe to get metadata
+        String command = "-v error -show_entries format=duration,size,bit_rate " +
+                "-show_entries stream=width,height,r_frame_rate,codec_name " +
+                "-of json \"" + getRealPathFromURI(inputPath) + "\"";
+
+        // For simplicity, we'll use a basic approach
+        // In production, you might want to parse ffprobe JSON output
+        File inputFile = new File(getRealPathFromURI(inputPath));
+        
+        JSObject result = new JSObject();
+        result.put("fileSize", inputFile.length());
+        result.put("duration", 0); // Would need ffprobe parsing
+        result.put("width", 0);
+        result.put("height", 0);
+        result.put("bitrate", 0);
+        result.put("codec", "unknown");
+        result.put("fps", 0);
+        
+        call.resolve(result);
+    }
+
+    @PluginMethod
+    public void cancelCompression(PluginCall call) {
+        if (currentSession != null) {
+            currentSession.cancel();
+            currentSession = null;
+            call.resolve();
+        } else {
+            call.reject("No active compression session");
+        }
+    }
+
+    /**
+     * Convert content:// URI to actual file path
+     */
+    private String getRealPathFromURI(String uriString) {
+        // If it's already a file path, return it
+        if (!uriString.startsWith("content://") && !uriString.startsWith("file://")) {
+            return uriString;
+        }
+
+        // Remove file:// prefix if present
+        if (uriString.startsWith("file://")) {
+            return uriString.substring(7);
+        }
+
+        // For content:// URIs, we'd need to resolve them
+        // This is a simplified version
+        Uri uri = Uri.parse(uriString);
+        return uri.getPath();
+    }
+
+    /**
+     * Build FFmpeg scale filter
+     */
+    private String buildScaleFilter(Integer maxWidth, Integer maxHeight) {
+        if (maxWidth != null && maxHeight != null) {
+            return "scale='min(" + maxWidth + ",iw)':'min(" + maxHeight + ",ih)':force_original_aspect_ratio=decrease";
+        } else if (maxWidth != null) {
+            return "scale=" + maxWidth + ":-2";
+        } else if (maxHeight != null) {
+            return "scale=-2:" + maxHeight;
+        }
+        return "";
+    }
+}

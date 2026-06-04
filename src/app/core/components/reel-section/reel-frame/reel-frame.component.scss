@@ -1,0 +1,270 @@
+.reel { 
+  display: block;
+  width: 136px;
+  height: 194px;
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+
+.card-media { 
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  border-radius: 12px;
+  overflow: hidden;
+  width: 136px;
+  height: 130px; // Leaving space for the details section
+  flex-shrink: 0;
+}
+
+.card-media img { 
+  max-width: 100%; 
+  height: 100%;
+  object-fit: cover;
+}
+
+.top-bar {
+  position: absolute;
+  // top: 12px;
+  // left: 12px;
+  right: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 5;
+  width: calc(100% - 24px); // Account for left and right padding
+}
+
+.category { 
+  display: flex;
+  padding: 4px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 4px;
+  background: #FFA9A1;
+  color: #282527;
+  font-family: Nunito;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%; /* 11.2px */
+  flex-shrink: 0;
+}
+
+.bookmark { 
+  background: transparent;
+  border: 0; 
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: transform 0.2s ease;
+  margin-left: auto; // Ensure it's pushed to the right
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  /* Circle always stays the same color */
+  svg {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+  
+  svg circle {
+    fill: #EDECED !important;
+  }
+  
+  /* Default state - outline bookmark icon */
+  svg path {
+    fill: #1C1B1F;
+    width: 11.982px;
+    height: 15.5px;
+    flex-shrink: 0;
+    aspect-ratio: 11.98/15.50;
+  }
+  
+  /* When saved - fill bookmark icon with black */
+  &.saved svg path {
+    fill: #000000 !important;
+  }
+}
+
+.play { 
+  position: absolute; 
+  left: 50%; 
+  top: 50%; 
+  transform: translate(-100%, 0%);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  
+  .play-circle {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+  
+  .play-icon {
+    position: relative;
+    z-index: 1;
+    width: 16px;
+    height: 18px;
+    margin-left: 1px; // Slight adjustment for visual centering
+  }
+}
+
+.reel-body { 
+  padding: 8px 4px 4px;
+  height: 64px; // Remaining height from 194px total
+}
+
+.details {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1px;
+  height: 100%;
+}
+
+.content-section {
+  display: flex;
+  width:100px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0px;
+  flex: 1;
+}
+
+.meta-row { 
+  display: inline-flex; 
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.avatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+  flex-shrink: 0;
+}
+
+.author { 
+  color: #FFF;
+  font-family: Fredoka;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 130%;
+}
+
+.title { 
+  margin: 0;
+  color: #FFF;
+  font-family: Fredoka;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 130%; /* 13px */
+  width: 100px;
+}
+
+.tags {
+  color: #E6E6E6;
+  font-family: Nunito;
+  font-size: 7px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%; /* 9.8px */
+  width: 103px;
+}
+
+.stats-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-self: stretch;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  align-self: stretch;
+}
+
+.stat-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.duration,
+.likes {
+  color: #E6E6E6;
+  font-family: Nunito;
+  font-size: 7px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+}
+
+// Mobile responsive
+@media (max-width: 768px) {
+  .reel {
+    width: 136px;
+    height: 194px;
+  }
+  
+  .card-media {
+    width: 136px;
+    height: 130px;
+  }
+  
+  .play {
+    width: 28px;
+    height: 28px;
+    
+    .play-circle {
+      width: 28px;
+      height: 28px;
+    }
+    
+    .play-icon {
+      width: 14px;
+      height: 16px;
+    }
+  }
+  
+  .bookmark {
+    width: 28px;
+    height: 28px;
+    
+    svg {
+      width: 28px;
+      height: 28px;
+    }
+  }
+}

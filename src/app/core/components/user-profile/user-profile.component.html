@@ -1,0 +1,158 @@
+<ion-content>
+  <mindful-navigator heading="My Profile" backIcon="arrowSvg" (back)="onBack()"></mindful-navigator>
+  <div class="profile">
+
+    <section class="user-profile-main">
+      <div class="user-profile" *ngIf="user?.relationship !== 'PARENT'">
+        <div class="avatar w-100 d-flex justify-content-center gap-2 flex-column align-items-center">
+          <div class="avatar-wrapper">
+            <img [src]="userAvatarUrl || user?.avatarUrl || '/assets/app-assets/Default-avatar-home.svg'"
+              [alt]="avatarImageName ? avatarImageName : (user?.name || 'User') + ' avatar'" />
+          </div>
+          <div class="user-info w-100 d-flex justify-content-center gap-2 flex-column align-items-center">
+            <div class="user-name">{{ user?.name || 'You' }}</div>
+            <div class="user-age" *ngIf="user?.age">{{ user.age }} yrs</div>
+          </div>
+        </div>
+        <div class="user-stats">
+          <mindful-coins-stats [userCoins]="userCoins" [userStreaks]="userStreaks" [userDays]="userDays"
+            [userBadges]="userBadges">
+          </mindful-coins-stats>
+        </div>
+      </div>
+
+      <div class="d-flex flex-column gap-3" parent-profile-detail *ngIf="user?.relationship === 'PARENT'">
+        <section class="family-con-detail" aria-label="Family details" *ngIf="creator">
+          <div class="f-head">
+              <div class="family-avatar">
+              <div class="initial-avatar-circle" [ngStyle]="parentImageService.getAvatarStyle(getInitial(creator.name), isFemale(creator), 80)">
+                {{ getInitial(creator.name) }}
+              </div>
+            </div>
+
+            <div class="f-head">
+              <h1>{{ creator.name }}</h1>
+              <p>{{ creator.age }} years old</p>
+
+              <div class="relationship-badge" [class.child]="creator.relationship === 'Child'"
+                [class.parent]="creator.relationship === 'Parent' || creator.relationship === 'Co-Parent'">
+                {{ (creator.relationship === 'Co-Parent' ? 'Parent' : creator.relationship) + ' / Creator' + (creator.you ? ' / You' : '') }}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="family-members" aria-label="Family members">
+          <div class="member-detail" *ngFor="let m of members">
+            <div class="member-info">
+              <div class="avtar-img" [class.is-you]="m.you">
+                <!-- Parent: show styled initial avatar -->
+                <ng-container *ngIf="m.relationship === 'Parent' || m.relationship === 'Co-Parent'; else regularAvatar">
+                  <div class="initial-avatar-circle" [ngStyle]="parentImageService.getAvatarStyle(getInitial(m.name), isFemale(m), 56)">
+                    {{ getInitial(m.name) }}
+                  </div>
+                </ng-container>
+
+                <!-- Regular avatar: for Child use child resolver; otherwise prefer server-provided image, fallback placeholder -->
+                <ng-template #regularAvatar>
+                  <ng-container *ngIf="m.relationship === 'Child'; else nonChildAvatar">
+                    <ng-container *ngIf="getMemberAvatar(m) as resolvedAvatar">
+                      <img *ngIf="resolvedAvatar.url; else childPlaceholder" [src]="resolvedAvatar.url" [alt]="resolvedAvatar.alt || (m.name + ' avatar')" />
+                    </ng-container>
+                    <ng-template #childPlaceholder>
+                      <div class="avatar-placeholder"></div>
+                    </ng-template>
+                  </ng-container>
+
+                  <ng-template #nonChildAvatar>
+                    <!-- Resolve avatar via shared resolver; ignore server-provided avatar.url -->
+                    <ng-container *ngIf="getMemberAvatar(m) as resolvedAvatar">
+                      <img *ngIf="resolvedAvatar.url; else placeholder" [src]="resolvedAvatar.url" [alt]="resolvedAvatar.alt || (m.name + ' avatar')" />
+                    </ng-container>
+                    <ng-template #placeholder>
+                      <div class="avatar-placeholder"></div>
+                    </ng-template>
+                  </ng-template>
+                </ng-template>
+              </div>
+              <div class="name-age">
+                <h1>{{ m.name }}</h1>
+                <p>{{ m.age }} years old</p>
+              </div>
+            </div>
+
+            <div class="relationship-badge" [class.child]="m.relationship === 'Child'"
+              [class.parent]="m.relationship === 'Parent' || m.relationship === 'Co-Parent'" (click)="toggleMemberActive(m)">
+              {{ getBadgeText(m) }}
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="profile-content">
+      <profile-content-card iconName="profile" title="Edit Profile Info" subtitle="Avatar name, age, email, number ...."
+        (select)="onEdit()"></profile-content-card>
+
+      <profile-content-card iconName="key" title="Password and security" subtitle="Change your password"
+        (select)="onPassword()"></profile-content-card>
+
+      <profile-content-card iconName="owl" title="Change your pet" subtitle="Switch your buddy anytime you like!"
+        (select)="onChangePet()" *ngIf="user?.relationship !== 'PARENT'"></profile-content-card>
+
+      <profile-content-card iconName="creditCard" title="Manage Your Membership"
+        subtitle="See your perks, upgrade, or cancel anytime" (select)="onManageMembership()"></profile-content-card>
+
+      <profile-content-card iconName="notification" title="Notifications" subtitle="Manage your notifications"
+        (select)="onNotifications()"></profile-content-card>
+
+      <profile-content-card iconName="gift" title="Refer a friend" subtitle="Refer this to friends for exciting rewards"
+        (select)="onRefer()"></profile-content-card>
+
+      <profile-content-card iconName="link" title="My Family" subtitle="View your family details"
+        (select)="onMyFamily()"></profile-content-card>
+
+      <profile-content-card iconName="lock" title="Parental Control" subtitle="View app restrictions and permissions"
+        (select)="onParentalControl()"></profile-content-card>
+
+      <profile-content-card iconName="feedback" title="Feedback & Suggestions"
+        subtitle="Share your thoughts to help us improve!" (select)="onFeedback()"></profile-content-card>
+
+      <profile-content-card iconName="support" title="Help & Support" subtitle="FAQ's and chat support"
+        (select)="onHelpSupport()"></profile-content-card>
+
+      <profile-content-card iconName="policies" title="Our policies" subtitle="Learn how we follow the guidelines"
+        (select)="onOurPolicies()"></profile-content-card>
+
+      <profile-content-card iconName="danger" title="Delete My Data"
+        subtitle="Erase all your info safely and permanently" (select)="onDeleteMyData()"></profile-content-card>
+
+      <div class="logout-section" (click)="openLogoutPopup()">
+        <ion-icon name="log-out-outline"></ion-icon>
+        <div class="log-out-outline-text">
+          <span>Logout</span>
+          <p>See you next time!</p>
+        </div>
+      </div>
+
+
+    </section>
+
+    <!--social media-->
+    <social-media></social-media>
+
+    <!--mindful-popup-->
+    <app-mindful-popup [isVisible]="showLogoutPopup" [config]="{
+      image: '/assets/Images-Transparent/Image-Log Out.png',
+      imageAlt: 'Logout image',
+      heading: 'Leaving already?',
+      subtitle: 'You can come back anytime to continue your adventure.',
+      primaryCTA: { text: 'Logout', callback: confirmLogout.bind(this), buttonStyle: 'bronze', buttonMedium: true },
+      secondaryCTA: { text: 'Stay Here', callback: closeLogoutPopup.bind(this), buttonStyle: 'bronze-transparent', buttonMedium: true },
+      backdrop: true,
+      showCloseButton: true
+    }" (primaryAction)="confirmLogout()" (secondaryAction)="closeLogoutPopup()" (backdropClick)="closeLogoutPopup()"
+      (closeAction)="closeLogoutPopup()"></app-mindful-popup>
+
+  </div>
+</ion-content>

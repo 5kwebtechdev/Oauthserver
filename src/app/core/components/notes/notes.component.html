@@ -1,0 +1,102 @@
+<ion-content class="notes-fullscreen">
+
+  <mindful-navigator [heading]="'Quick Notes. Big Ideas'" [backIcon]="'arrowSvg'" (back)="close()"></mindful-navigator>
+
+  <div class="empty-notes-container" *ngIf="!notes || notes.length === 0">
+    <div class="empty-notes-content">
+      <img class="notes-blank-image" src="/assets/Images-Transparent/Image-Notes-Blank.png" alt="Blank Notes">
+      <div class="empty-notes-text">
+        <h2>No Notes Yet?</h2>
+        <p>Write what’s on your mind. Notes help you save ideas, feelings, and cool moments.</p>
+      </div>
+    </div>
+    <mindful-button type="magenta" large text="Write your first note" style="width: 100%; display: block;"
+      (click)="goToNewNote()"></mindful-button>
+  </div>
+
+  <!--notes-->
+  <div class="note-container" *ngIf="notes && notes.length > 0">
+    <div class="sort-row">
+      <details class="sort-dropdown" role="listbox">
+        <summary class="sort-btn" aria-haspopup="listbox" aria-expanded="false">
+          <span class="sort-label">{{ ({created:'Date Created',modified:'Date Modified',az:'A - Z',za:'Z - A'})[sortKey] }}</span>
+          <span class="sort-arrow" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 16 16" fill="none">
+              <path d="M11.6464 6.31295C11.8417 6.50821 11.8417 6.8248 11.6464 7.02006L8.35355 10.313C8.15829 10.5082 7.84171 10.5082 7.64645 10.313L4.35355 7.02006C4.15829 6.82479 4.15829 6.50821 4.35355 6.31295L4.57978 6.08672C4.77504 5.89146 5.09162 5.89146 5.28689 6.08672L7.64645 8.44628C7.84171 8.64155 8.15829 8.64155 8.35355 8.44628L10.7131 6.08672C10.9084 5.89146 11.225 5.89146 11.4202 6.08672L11.6464 6.31295Z" fill="#282527" />
+            </svg>
+          </span>
+        </summary>
+
+          <div class="sort-options" role="presentation">
+          <button *ngFor="let o of sortOptions" type="button" class="sort-option" role="option" (click)="setSort(o.k)" [class.selected]="sortKey===o.k">
+            <span>{{ o.l }}</span>
+            <span class="option-tick" aria-hidden="true" *ngIf="sortKey===o.k"><img src="assets/icons/tick-small.svg" width="8" height="6" alt="" /></span>
+          </button>
+        </div>
+      </details>
+    </div>
+
+    <!-- Notes List -->
+    <!-- show loading -->
+    <ng-container *ngIf="loading">
+      <div class="notes-loading" style="padding: 20px; text-align: center;">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+    </ng-container>
+
+    <!-- show error -->
+    <ng-container *ngIf="!loading && loadError">
+      <div class="notes-error" style="padding: 16px; text-align: center; color: var(--ion-color-danger);">
+        <p>{{ loadError }}</p>
+        <mindful-button type="magenta" small text="Retry" (click)="loadFromServer()"></mindful-button>
+      </div>
+    </ng-container>
+
+    <!-- Draft Cards (if any) - allow multiple drafts stored locally -->
+    <div class="note-card" *ngFor="let d of drafts" (click)="openDraft(d.id)" role="button" tabindex="0">
+      <p class="note-text">{{ d.text }}</p>
+      <div class="note-footer" style="position:relative;">
+        <div>
+          <h3>{{ d.title || 'Untitled' }}</h3>
+          <span class="date">Draft</span>
+        </div>
+        <span class="tag" [ngClass]="primaryTagClassFromTags(d.tags)">{{ (d.tags && d.tags.length) ? d.tags[0] : 'No Tag' }}</span>
+      </div>
+    </div>
+
+    <ng-container *ngIf="!loading && notes && notes.length; else noNotes">
+      <div class="note-card" *ngFor="let note of notes; let i = index; trackBy: trackByIndex" (click)="openNote(note)"
+        role="button" tabindex="0">
+        <ng-container *ngIf="isList(note.text); else plainText">
+          <ul class="note-text">
+            <li *ngFor="let item of getList(note)">{{ item }}</li>
+          </ul>
+        </ng-container>
+        <ng-template #plainText>
+          <p class="note-text">{{ note.text }}</p>
+        </ng-template>
+
+        <div class="note-footer" style="position:relative;">
+          <div>
+            <h3>{{ note.title }}</h3>
+            <span class="date">{{ formatDate(note.createdAt) }}</span>
+          </div>
+          <span class="tag" [ngClass]="primaryTagClass(note)">{{ primaryTag(note) }}</span>
+          <div class="edit-back"><img src="assets/icons/edit-icon.svg" alt="Edit" class="note-edit-icon" style="width: 16px;height: 16px;" aria-hidden="true"
+            (click)="editNote(note); $event.stopPropagation();" /></div>
+        </div>
+      </div>
+    </ng-container>
+    <!--Note Empty State-->
+    <ng-template #noNotes>
+      <div class="note-empty">No notes yet. Tap + to add your first note.</div>
+    </ng-template>
+
+  </div>
+
+  <!-- Fixed Add Button (hidden when there are no notes) -->
+  <div class="add-button-fixed" *ngIf="notes && notes.length > 0" (click)="goToNewNote()">
+    <mindful-button type="add"></mindful-button>
+  </div>
+
+</ion-content>

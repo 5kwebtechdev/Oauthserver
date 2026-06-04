@@ -1,0 +1,174 @@
+/* Styles scoped for tutor-list component. Many classes mirror the }tutors-section__card rules so visuals remain consistent. */
+
+.tutor-list-root {
+  width: 100%;
+}
+
+.tutor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tutors-section__card {
+  display: flex;
+  padding: 8px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+  border-radius: 12px;
+  background: #D6E3EF;
+  box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
+
+  .thumbnail {
+    width: 91.667px;
+    height: 90px;
+    flex-shrink: 0;
+    aspect-ratio: 55/54;
+
+    .avatar {
+      width: 91.67px;
+      height: 90px;
+      background-size: cover;
+      background-position: center;
+      border-radius: 8px;
+    }
+  }
+
+ 
+}
+
+.content {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+}
+
+.name-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.name {
+  color: #282527;
+font-family: Nunito;
+font-size: 13px;
+font-weight: 600;
+  margin: 0px !important;
+}
+
+.role {
+  color: #282527;
+  font-family: Nunito;
+  font-size: 10px;
+  font-weight: 600;
+  margin-bottom: 0px !important;
+}
+
+.stats {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+}
+
+.icon.heart-icon,
+.icon.time-icon{
+  width: 16px;
+  height: auto;
+}
+
+.meta {
+  color: var(--Neutral-Grey, rgba(40, 37, 39, 0.70));
+text-align: center;
+font-family: Nunito;
+font-size: 10px;
+font-weight: 600;
+}
+
+.cta-row {
+display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+
+}
+
+.info {
+  
+  gap: 8px;
+  width: 100%;
+
+  .time {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+
+}
+
+
+.tutor-role-detail{ 
+p, label, .time span {
+font-family: Nunito;
+font-size: 10px;
+font-weight: 600;
+}
+
+  p{
+color: var(--Neutral-Black, #282527);
+  }
+  
+  label{
+    color: var(--Neutral-Grey, rgba(40, 37, 39, 0.70));
+  }
+  .time span{
+color: #505D83;
+}
+}
+
+.fees {
+
+  p{
+    color: var(--Neutral-Black, #282527);
+font-family: Nunito;
+font-size: 13px;
+font-weight: 600;
+margin: 0;
+  }
+ span{
+  color: #6B656A;
+font-family: Nunito;
+font-size: 8px;
+font-weight: 600;
+ }
+}
+
+/* Empty state styles */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+
+  p {
+    color: #6B656A;
+    font-family: Nunito, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}

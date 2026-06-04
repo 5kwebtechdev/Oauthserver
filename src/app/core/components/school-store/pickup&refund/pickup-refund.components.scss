@@ -1,0 +1,130 @@
+p, h2, h3 {
+    color: #282527;
+    font-family: Nunito;
+    font-style: normal;
+    font-weight: 600;
+    margin: 0;
+}
+
+h2 {
+    font-size: 16px;
+}
+
+h3 {
+    color: #282527;
+    font-size: 13px;
+}
+
+p {
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+.nav-head {
+    box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+    flex: 0 0 auto;
+}
+
+.pickup-refund-container {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.next-cta {
+    padding: 16px;
+}
+
+/* Address card — reuses my-orders address-detail pattern */
+.address-detail {
+    border-radius: 16px;
+    border: 0.5px solid #90214d;
+    display: flex;
+    padding: 8px 16px;
+    align-items: flex-start;
+    gap: 16px;
+    align-self: stretch;
+    background: #fff;
+}
+
+.address-text-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.address-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Form section — reuses return-exchange pattern */
+.form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.radio-option input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #90214D;
+}
+
+.radio-label {
+    font-family: Nunito;
+    font-size: 16px;
+    font-weight: 600;
+    color: #282527;
+}
+
+/* Bill summary / Price difference card — reuses my-orders bill-summary */
+.bill-summary {
+    display: flex;
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    align-self: stretch;
+    border-radius: 16px;
+    background: #FFF;
+    box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+
+.txt-amount {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Utility classes */
+.d-flex {
+    display: flex;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.gap-2 {
+    gap: 8px;
+}
+
+.w-100 {
+    width: 100%;
+}

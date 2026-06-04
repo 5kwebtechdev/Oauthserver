@@ -1,0 +1,141 @@
+.ad-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  font-family: Fredoka, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+.ad-banner .slides-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.ad-banner .slider {
+  height: 216px;
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid #FDFDFD;
+  background: #F9D2DC;
+  overflow: hidden;
+  position: relative;
+}
+
+.ad-banner .slides {
+  height: 100%;
+  display: flex;
+  transition: transform 400ms ease;
+  will-change: transform;
+}
+
+.ad-banner .slide {
+  min-width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.ad-banner .slide-content {
+  display: flex;
+  width: 199px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.ad-banner .head {
+  color: #282527;
+  font-family: Fredoka, sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 140%;
+  margin: 0;
+}
+
+.ad-banner .desc {
+  color: #6B656A;
+  font-family: Fredoka, sans-serif;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 140%;
+  margin: 0;
+}
+
+.ad-banner .cta {
+  display: flex;
+  padding: 6px 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 2px;
+  background: #FFD3AC;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.ad-banner .slide-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.08));
+}
+
+.ad-banner .slide-image::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(249, 210, 220, 0.9) 0%, rgba(249, 210, 220, 0.35) 40%, rgba(249, 210, 220, 0.0) 100%);
+  pointer-events: none;
+}
+
+.ad-banner .slide-image img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: center;
+}
+
+.ad-banner .dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+  justify-content: center;
+}
+
+.ad-banner .dot {
+  width: 10px;
+  height: auto;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.12);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  aspect-ratio: 1/1;
+}
+
+.ad-banner .dot.active {
+  background: #52223D;
+}
+
+.ad-banner .dot:focus,
+.ad-banner .cta:focus {
+  outline: 2px solid rgba(82, 34, 61, 0.2);
+  outline-offset: 2px;
+}

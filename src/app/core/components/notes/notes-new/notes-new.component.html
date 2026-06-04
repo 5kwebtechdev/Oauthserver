@@ -1,0 +1,47 @@
+<div class="d-flex">
+<mindful-navigator (back)="goBack()"></mindful-navigator>
+
+    <div class="header">
+      <input class="title-input" placeholder="Title"
+        [value]="displayValue"
+        (input)="handleTitleInput($event)"
+        (focus)="onTitleFocus()"
+        (blur)="onTitleBlur()"
+        [attr.title]="title || 'Title'"
+        aria-label="Note title" />
+      <button type="button" *ngIf="isDraft || editing" class="delete-draft-icon" (click)="onDelete()" aria-label="Delete draft">
+        <div class="eclipse">
+          <img src="/assets/icons/delete.svg" alt="Delete" />
+        </div>
+      </button>
+      <div class="title-limit-tooltip" *ngIf="showLimitTooltip">Maximum 24 characters allowed</div>
+    </div>
+</div>
+  <div class="note-new-container">
+
+  <!-- Header -->
+
+  <!-- Tag Section -->
+  <mindful-tags variant="gray" [singleSelection]="true" [maxTags]="10"
+    (selectedKeysChange)="onSelectedKeysChange($event)"></mindful-tags>
+
+  <!-- Notes Section -->
+  <div class="notes-section">
+    <textarea class="notes-textarea" placeholder="Notes here...." [value]="text" (input)="text = ($any($event.target).value); saveDraft()"></textarea>
+  </div>
+
+  <footer class="notes-new__footer">
+    <mindful-button type="magenta" text="Save" full [disabled]="!canSave" (click)="save()"></mindful-button>
+  </footer>
+
+  <!-- Confirmation popup for deletion when editing an existing note -->
+  <app-mindful-popup [isVisible]="showMindfulPopup" [config]="{
+      heading: 'Are you sure you want to delete this note?',
+      subtitle: '',
+      primaryCTA: { text: 'Delete', type: 'secondary', buttonStyle: 'bronze', buttonMedium: true },
+      secondaryCTA: { text: 'Cancel', type: 'secondary', buttonStyle: 'bronze-transparent', buttonMedium: true },
+      showCloseButton: false,
+      backdrop: true
+    }" (primaryAction)="confirmDelete()" (secondaryAction)="confirmCancel()" (backdropClick)="confirmCancel()"></app-mindful-popup>
+
+</div>

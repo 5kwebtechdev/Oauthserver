@@ -1,0 +1,122 @@
+<ion-content>
+    <div class="container w-100 p-0">
+        <section class="user-profile-section profile" aria-labelledby="profile-heading">
+            <header class="profile-header" role="banner">
+                <div class="user-info" role="group" aria-label="User info">
+                    <div class="user-avatar" aria-hidden="false">
+                        <a [routerLink]="['/authed','user-profile']" aria-label="Open profile">
+                            <ng-container *ngIf="userAvatarUrl; else parentAvatar">
+                                <img [src]="userAvatarUrl" alt="{{ userName }} avatar">
+                            </ng-container>
+                            <ng-template #parentAvatar>
+                                <div class="parent-avatar" [ngStyle]="parentAvatarStyle" aria-hidden="false">{{ parentInitial }}</div>
+                            </ng-template>
+                        </a>
+                    </div>
+                    <div class="user-name-wrap">
+                        <span class="user-name">{{ userName }}</span>
+
+                        <!-- Switch user trigger -->
+                        <button *ngIf="children.length" class="switch-trigger" aria-label="Switch user" (click)="toggleSwitchPopup($event)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="8" viewBox="0 0 13 8"
+                                fill="none">
+                                <path
+                                    d="M0.246614 1.42734C-0.0801544 1.10057 -0.0801535 0.570779 0.246615 0.244011C0.573383 -0.0827579 1.10318 -0.082758 1.42995 0.24401L5.61451 4.42857C6.00503 4.8191 6.6382 4.8191 7.02872 4.42857L11.2133 0.24401C11.5401 -0.0827585 12.0698 -0.0827579 12.3966 0.244011C12.7234 0.570779 12.7234 1.10058 12.3966 1.42734L7.02872 6.79524C6.6382 7.18576 6.00503 7.18576 5.61451 6.79524L0.246614 1.42734Z"
+                                    fill="#282527" />
+                            </svg>
+                        </button>
+
+                        <!-- Switch user popup + backdrop -->
+                        <div *ngIf="showSwitchPopup" class="switch-popup-backdrop" (click)="closeSwitchPopup()">
+                            <div class="switch-popup" (click)="$event.stopPropagation()">
+                                <div class="switch-popup-list">
+                                    <ng-container *ngFor="let c of children">
+                                        <button class="child-row" (click)="selectChild(c)" [attr.aria-selected]="selectedChild?.id === c.id">
+                                            <img [src]="c.avatarUrl" [alt]="c.name + ' avatar'" class="child-avatar">
+                                            <div class="child-info">
+                                                <div class="child-name">{{ c.name }}</div>
+                                                <div class="child-meta">{{ c.relationship || 'Child' }}</div>
+                                            </div>
+                                            <div class="child-selected" *ngIf="selectedChild && selectedChild.id !== null && (''+selectedChild.id) === (''+c.id)">
+                                                <!-- simple check mark -->
+                                                ✓
+                                            </div>
+                                        </button>
+                                    </ng-container>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <nav class="header-tools" role="navigation" aria-label="Profile tools">
+                    <a class="tool-item-lock" aria-label="Parental Control" [routerLink]="['/authed','parental-control']">
+                        <img src="/assets/Icons-Neutral/Icon-Parents-ParentalControl.png" alt="Parental Control" class="tool-icon">
+                    </a>
+                    <a class="tool-item" aria-label="Calendar" [routerLink]="['/authed/activity-calendar']">
+                        <img src="/assets/Icons-Neutral/Icon-Calendar.png" alt="Calendar" class="tool-icon">
+                    </a>
+                </nav>
+            </header>
+            <div class="child-progress">
+                <div class="timeline-score-card container w-full p-0">
+                    <div class="d-flex justify-content-between w-100 m-0 p-3">
+                        <div class="col-3 p-0">
+                            <mindful-completion [completionPercentage]="completionRate" [borderColor]="'#4CAF50'"
+                                [innerText]="completionRate + '%'" [belowText]="'Completion Rate'">
+                            </mindful-completion>
+                        </div>
+                        <div class="col-3 p-0">
+                            <mindful-completion [completionPercentage]="consistencyRate" [borderColor]="'#F0AD4E'"
+                                [innerText]="consistencyRate + '%'" [belowText]="'Consistency Rate'">
+                            </mindful-completion>
+                        </div>
+                        <div class="col-3 p-0">
+                            <mindful-completion [completionPercentage]="Math.abs(improvementRate)"
+                                [borderColor]="'#BB2124'" [innerText]="improvementRate + '%'"
+                                [belowText]="'Improvement Rate'">
+                            </mindful-completion>
+                        </div>
+                        <div class="col-3 p-0">
+                            <mindful-completion [completionPercentage]="appScore" [borderColor]="'#F0AD4E'"
+                                [innerText]="appScore + ''" [belowText]="'App\'s Score'">
+                            </mindful-completion>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="dashboard-content">
+            <a class="school-shopping-link w-100" style="
+    text-decoration: none;
+" [routerLink]="['/authed','school-store']" role="link">
+                <div class="school-shopping-banner d-flex">
+                    <div class="school-shop-txt">
+                        <h1>School Shopping, Done?</h1>
+                        <p>Get your child's Uniforms & Books here.</p>
+                    </div>
+                    <div class="school-mascot">
+                        <img src="/assets/School-assets/school-mascot.png" alt="School Mascot" />
+                    </div>
+                </div>
+            </a>
+
+            <div class="mood-selector w-full parent-mood-readonly" aria-label=" Mood (view
+                only)">
+                <mood-selector #moodSel [value]="selectedMood"></mood-selector>
+            </div>
+
+            <div class="ad-banner w-full">
+                <ad-banner></ad-banner>
+            </div>
+
+            <div class="habit-page w-full" #habitPage>
+                <activity-page-content></activity-page-content>
+            </div>
+
+        </div>
+    </div>
+    <mindful-button *ngIf="isAddButtonVisible" type="add" class="fab-add-button" text="Add" (click)="openActivityInput()"></mindful-button>
+    <app-footer></app-footer>
+</ion-content>

@@ -1,0 +1,146 @@
+// Academy section styles (Figma-inspired)
+$primary: #282527;
+$accent: #90214D;
+$card-bg: #FFFFFF;
+
+.academy__loading {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.academy__empty {
+  text-align: center;
+  color: #6B656A;
+  font-family: Nunito, sans-serif;
+  font-size: 14px;
+  padding: 24px 0;
+}
+
+.academy {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  &__cards {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .academy-swiper {
+    width: 100%;
+    padding: 0 16px 0px 0px;
+    overflow: visible;
+  }
+
+  .academy-slide {
+    width: 320px !important;
+    flex-shrink: 0;
+    margin: 5px 10px 5px 0px;
+    padding-left: 3px;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+  &__card {
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px 12px 12px 12px;
+    border-radius: 24px;
+    background: #FFF;
+    box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+
+    .academy__img {
+      width: 90px;
+      height: 70px;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
+    .academy__content {
+      display: inline-flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-end;
+
+      .title {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0px !important;
+        color: $primary;
+      }
+
+      .meta {
+        color: rgba(40, 37, 39, 0.70);
+        font-size: 13px;
+        font-weight: 500px;
+        // margin-bottom: 12px;
+      }
+
+      .desc {
+        color: #282527;
+        font-family: Nunito;
+        font-size: 13px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 140%;
+        /* 18.2px */
+        opacity: 0.7;
+        width: 220px;
+        margin-bottom: 0px !important;
+      }
+
+
+
+      .level {
+        margin-left: auto;
+        padding: 10px 12px;
+        border-radius: 26px;
+        border: 1px solid #4CAF50;
+        color: #282527;
+        font-weight: 600;
+        font-size: 10px;
+      }
+    }
+  }
+
+  // @media (max-width: 720px) {
+  //   &__cards { flex-direction: column; }
+  // }
+}
+
+.academy-main-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  align-self: stretch;
+}
+
+.title-time-level {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0px;
+  width: 100%;
+}
+
+.title-n-time {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.card-footer {
+  display: flex;
+  text-align: left;
+  align-self: flex-end;
+  width: 220px;
+}

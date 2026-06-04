@@ -1,0 +1,45 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    ext {
+        kotlin_version = "1.9.24"
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.13.0'
+        classpath 'com.google.gms:google-services:4.4.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply from: "variables.gradle"
+
+// Do NOT declare repositories here. `dependencyResolutionManagement` in
+// `settings.gradle` is authoritative (repositoriesMode = FAIL_ON_PROJECT_REPOS).
+// This file should avoid adding project-level repositories to comply with Gradle 8.
+
+subprojects {
+    afterEvaluate { proj ->
+        def androidExt = proj.extensions.findByName('android')
+        if (androidExt != null) {
+            androidExt.compileOptions.sourceCompatibility = JavaVersion.VERSION_21
+            androidExt.compileOptions.targetCompatibility = JavaVersion.VERSION_21
+        }
+
+        proj.tasks.withType(JavaCompile).configureEach {
+            it.sourceCompatibility = '21'
+            it.targetCompatibility = '21'
+        }
+
+        try {
+            proj.kotlin.jvmToolchain(21)
+        } catch (Exception ignored) {}
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

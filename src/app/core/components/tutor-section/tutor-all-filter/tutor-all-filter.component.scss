@@ -1,0 +1,230 @@
+.filters-page {
+  padding: 16px;
+  padding-bottom: 96px;
+  /* leave space for fixed footer */
+}
+
+/* Loading and Error States */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  min-height: 300px;
+
+  ion-spinner {
+    width: 48px;
+    height: 48px;
+    color: #7284B9;
+  }
+
+  p {
+    margin-top: 16px;
+    color: #282527;
+    font-family: Nunito;
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+.error-container {
+  ion-icon {
+    font-size: 64px;
+    color: #e74c3c;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: #666;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.topbar-slider {
+  width: 100%;
+}
+
+/* Swiper container and slides */
+.swiper {
+  width: 100%;
+}
+
+.swiper-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.swiper-slide {
+  width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px;
+}
+
+.topbar-slider-item {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 6px;
+  cursor: pointer;
+
+
+}
+
+.topbar-slider-item img {
+  width: 48px;
+  height: 48px;
+}
+
+span {
+  color: #282527;
+  font-family: Nunito;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.topbar-slider-item.active {
+  display: flex;
+  // padding-bottom: 8px;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 2px;
+  border-bottom: 3px solid #9BB2D4;
+}
+
+.sidebar-section {
+  width: 45%;
+}
+
+.sidebar-filters {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-radius: 0 8px 8px 0;
+  background: #FFF;
+  box-shadow: 3px 0 2px 2px rgba(107, 101, 106, 0.10);
+
+
+  span {
+    padding: 16px 12px 16px 0px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+.sidebar-filters span {
+  cursor: pointer;
+  display: flex;
+  width: 100%;
+}
+
+.sidebar-filters span.selected {
+  border-radius: 2px;
+  border-right: 2px solid #9BB2D4;
+  padding-right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sub-filter-items {
+  display: flex;
+  justify-content: space-between;
+  padding: 0px;
+}
+
+.sub-filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Make the sub-filter list scroll vertically when content overflows
+   Keeps visual styling intact while providing inner scrolling */
+.sub-filters-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sub-filter-list {
+  overflow-y: auto;
+  max-height: 60vh;
+  padding-right: 8px;
+  /* space for scrollbar */
+  -webkit-overflow-scrolling: touch;
+}
+
+.sub-filter-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.03);
+}
+
+.sub-filter-label {
+  color: #282527;
+  font-weight: 600;
+}
+
+.sub-filter-checkbox {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 4px;
+  background: transparent;
+  display: inline-block;
+  position: relative;
+}
+
+.sub-filter-checkbox:checked {
+  background: #7284B9;
+  border-color: #505D83;
+}
+
+.sub-filter-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 2px;
+  width: 6px;
+  height: 10px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+
+.footer-actions {
+  max-width: 1024px;
+  margin: 0 auto;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px 16px;
+  background: #FFF;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+  z-index: 50;
+}
+
+/* Tighten the small count next to sidebar labels */
+.sidebar-filters span>span {
+display: contents;
+  padding: 0;
+}

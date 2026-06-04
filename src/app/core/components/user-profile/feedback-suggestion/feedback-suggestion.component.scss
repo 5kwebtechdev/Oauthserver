@@ -1,0 +1,117 @@
+.feedback-suggestion {
+    display: flex;
+    width: 100%;
+
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 33px;
+    padding: 16px;
+}
+
+.feed-sugg {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+p {
+   color: #282527;
+font-family: Nunito;
+font-size: 16px;
+font-weight: 600;
+    margin-bottom: 0px;
+}
+
+.feedback-emoji {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.select-emoji {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+
+    .emoji-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+
+        img {
+            width: 61px;
+            height: 48px;
+            aspect-ratio: 61/48;
+            display: block;
+        }
+
+        .tick {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            padding: 5px 4px;
+            border-radius: 8px;
+            background: #4CAF50;
+        }
+
+        &.selected {
+            .tick {
+                display: flex;
+            }
+        }
+    }
+}
+
+.disclaimer-text {
+    display: flex;
+    width: 361px;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 2px;
+
+
+}
+
+.dis-text {
+    color: #282527;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 130%;
+    /* 16.9px */
+    width: 342px;
+    flex-shrink: 0;
+}
+
+.privacy {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 160px;
+    color: #282527;
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 22px;
+    letter-spacing: 1.3px;
+    text-decoration: underline;
+}
+
+.thank-you-popup {
+    width: 301px;
+    height: 268px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: #FFF;
+}

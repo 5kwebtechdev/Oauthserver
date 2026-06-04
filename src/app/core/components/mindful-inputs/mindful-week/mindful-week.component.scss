@@ -1,0 +1,55 @@
+.week-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+  background: #fff;
+  gap: 5px;
+}
+
+.day-card {
+  flex: 1;
+  border-radius: 5px;
+  text-align: center;
+  padding: 10px 0;
+  color: #333;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  user-select: none;
+
+  .day {
+    font-size: 14px;
+    font-weight: 400;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .date {
+    font-size: 16px;
+    font-weight: 400;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  &.today {
+    border: 1px solid #90214D;
+
+    /* Make the day and date text use the primary accent for today */
+    .day,
+    .date {
+      color: #90214D;
+    }
+
+    /* If today is also the selected day, ensure text is white for contrast */
+    &.selected {
+
+      .day,
+      .date {
+        color: #fff;
+      }
+    }
+  }
+
+  &.selected {
+    background-color: #90214D;
+    color: #fff;
+  }
+}

@@ -1,0 +1,597 @@
+.journal-input-container {}
+
+.mindful-navigator {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+}
+
+
+
+.nav-right {
+  width: 56px;
+  display: flex;
+  align-items: center;
+}
+
+.nav-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.navigator-title {
+  color: #282527;
+  font-family: Fredoka;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  width: 361px;
+  line-height: 140%;
+  /* 28px */
+}
+
+
+
+.navigator-subtitle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  opacity: 0.7;
+  color: #282527;
+  font-family: Nunito;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  /* 18.2px */
+}
+
+.back-btn {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  stroke-width: 2px;
+  stroke: #282527;
+}
+
+.journal-input-container {
+  padding: 16px;
+}
+
+.timeline {
+  position: relative;
+  margin-left: 20px;
+
+}
+
+.options {
+  display: flex;
+  justify-content: space-between;
+
+}
+
+.option {
+  position: relative;
+  width: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  outline: none;
+}
+
+// .option img {
+//   width: 96px;
+//   height: 96px;
+//   object-fit: cover;
+//   border-radius: 12px;
+//   box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+
+// }
+
+.j-img{
+  width: 4rem;
+  height: 4rem;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+.option .check {
+  position: absolute;
+  top: -10px;
+  right: 6px;
+  background: #2ecc71;
+  color: #fff;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.option.selected img {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12), inset 0 -2px 0 rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+.option span {
+  /* label */
+  font-size: 14px;
+  color: #222;
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: -21px;
+  top: 8px;
+  bottom: 0;
+  width: 3px;
+  background: #FCE7EB;
+  ;
+  /* dark pink */
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.section {
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.section::before {
+  content: "";
+  position: absolute;
+  left: -27px;
+  top: 5px;
+  width: 16px;
+  height: 16px;
+  background: #8c2150;
+  border-radius: 50%;
+}
+
+.section h2 {
+  color: #282527;
+  font-family: Nunito;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 140%;
+  /* 22.4px */
+}
+
+/* Error state for the emotion section title */
+.section-title-error {
+  color: #BB2124;
+}
+
+/* More specific selector to override the base .section h2 color */
+.section h2.section-title-error {
+  color: #BB2124;
+}
+
+/* Error field styling provided by user */
+.field-error {
+    width: 100%;
+    color: #BB2124;
+    font-family: Nunito;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 4px 12px;
+    background-color: #FFEBEE;
+    border-left: 3px solid #D32F2F;
+    animation: fadeIn 0.25s ease-in;
+    margin: 0 0 8px 0;
+}
+
+
+
+
+.option {
+  display: flex;
+  width: 65px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+  color: #282527;
+  text-align: center;
+  font-family: Nunito;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 140%;
+  /* 18.2px */
+
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+// .option img {
+//   width: 50px;
+//   height: 50px;
+//   object-fit: contain;
+// }
+
+.option span {
+  display: block;
+  margin-top: 5px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.option:hover {
+  transform: scale(1.05);
+}
+
+/* Notes textarea styling (matches attached mockup) */
+.note-area {
+  width: 100%;
+  display: flex;
+}
+
+.note-area textarea {
+  width: 100%;
+  min-height: 30px;
+  max-height: 300px;
+  resize: none;
+  overflow-y: hidden;
+  border: none;
+  font-family: Nunito;
+  font-size: 15px;
+  color: #282527;
+  line-height: 1.4;
+  transition: border-color 180ms ease-in-out;
+}
+
+.note-area textarea::placeholder {
+  color: rgba(40, 37, 39, 0.35);
+}
+
+.char-counter {
+  text-align: right;
+  font-family: Nunito;
+  font-size: 13px;
+  color: rgba(40, 37, 39, 0.6);
+  margin-top: 6px;
+}
+
+.note-area textarea:focus {
+  outline: none;
+  border-color: #8c2150;
+
+  box-shadow: none;
+}
+
+/* Pin moment selector */
+.pin-moment {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1px solid rgba(40, 37, 39, 0.08);
+  cursor: pointer;
+}
+
+.pin-moment:focus {
+  outline: none;
+  border-color: #8c2150;
+}
+
+.pin-inner {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+}
+.pin-text {
+  color: rgba(40, 37, 39, 0.7);
+  font-family: Nunito;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.note-area {
+  padding: 16px;
+  border-radius: 8px;
+  background: #FFF;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+
+.post-button {
+  display: flex;
+  width: 361px;
+  padding: 10px 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  border: 1px solid #4A0D25;
+  background: linear-gradient(271deg, #90214D 0.07%, #CD3578 99.93%);
+  box-shadow: 0 0 1px 0.5px rgba(144, 33, 77, 0.20), 0 -2px 2px 0 #EA7CB5 inset;
+  color: #FFF;
+  font-family: Nunito;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 140%;
+  /* 22.4px */
+}
+
+/* Attach permission popup styles */
+.attach-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+
+.attach-popup {
+  width: min(480px, 92%);
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px 22px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.attach-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.attach-title {
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.attach-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.attach-allow {
+  background: transparent;
+  border: none;
+  color: #007aff;
+  font-weight: 600;
+  padding: 10px 18px;
+}
+
+.attach-deny {
+  background: transparent;
+  border: none;
+  color: #007aff;
+  padding: 10px 18px;
+}
+
+@media (min-width: 768px) {
+  .navigator-img {
+    height: 34px;
+  }
+
+  .navigator-subtitle {
+    font-size: 13px;
+  }
+}
+
+/* end mindful navigator */
+
+/* Image Preview & Upload Progress Styles */
+.image-preview-container {
+  border-radius: 0.5rem;   
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  width: 4rem;
+  height: 4rem;
+  position: relative; /* anchor absolute controls like .remove-image-btn */
+}
+
+
+.image-preview {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 0.5rem;
+  object-fit: cover;
+}
+
+.remove-image-btn {
+  display: flex;
+  padding: 0.25rem;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  right: 0.125rem;
+  top: 0.25rem;
+  border-radius: 0.5rem;
+  background: var(--Neutral-White, #FFF);
+  border: none;
+  cursor: pointer;
+
+  /* Box Shadow */
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+
+  &:hover {
+    transform: scale(1.03);
+  }
+
+  &:active { transform: scale(0.98); }
+
+  svg {
+    width: 0.25rem;
+    height: 0.25rem;
+    aspect-ratio: 1 / 1;
+    display: block;
+  }
+}
+
+.upload-progress {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(40, 37, 39, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(271deg, #90214D 0.07%, #CD3578 99.93%);
+  transition: width 0.3s ease;
+  border-radius: 3px;
+}
+
+.progress-text {
+  color: rgba(40, 37, 39, 0.7);
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.upload-success {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #34C759;
+  font-family: Nunito;
+  font-size: 14px;
+  font-weight: 600;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    stroke: #34C759;
+  }
+}
+
+// Multi-image upload slots
+.image-upload-section {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+
+  @media (max-width: 480px) {
+    gap: 0.375rem;
+  }
+}
+
+.image-slot {
+  flex-shrink: 0;
+  width: fit-content;
+}
+
+.image-preview-container {
+  position: relative;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(40, 37, 39, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.upload-slot-btn {
+  flex-shrink: 0;
+  width: 4rem;
+  height: 4rem;
+  padding: 0;
+  border: 1px dashed rgba(40, 37, 39, 0.70);
+  border-radius: 0.5rem;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  font-family: inherit;
+
+  &:hover {
+    border-color: rgba(40, 37, 39, 0.9);
+    background-color: rgba(40, 37, 39, 0.02);
+  }
+
+  &:active {
+    background-color: rgba(40, 37, 39, 0.05);
+  }
+
+  img {
+    width: 16px;
+    height: 16px;
+    display: block;
+    pointer-events: none;
+  }
+
+  @media (max-width: 480px) {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+}
+
+.upload-progress-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(40, 37, 39, 0.1);
+  border-radius: 0 0 0.5rem 0.5rem;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.upload-status {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: rgba(40, 37, 39, 0.7);
+  font-weight: 500;
+}
+
+.image-error {
+  color: var(--Error, #BB2124);
+  text-align: center;
+  font-family: Nunito;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-top: 8px;
+}

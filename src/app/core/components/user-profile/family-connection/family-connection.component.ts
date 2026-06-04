@@ -1,0 +1,613 @@
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
+import { QRCodeComponent } from 'angularx-qrcode';
+import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { ProfileFactsComponent, FaqItem, PROFILE_FAQS } from '../profile-facts/profile-facts.component';
+import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
+import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
+import { InstructioListComponent } from './instructio-list';
+import { AuthService, FamilyInfo, FamilyMember } from '../../../../../package/api/auth.service';
+import { ParentImageService } from '../../../services/parent-image.service';
+import { ChildSelfImageService } from '../../../services/child-self-image.service';
+import { take } from 'rxjs/operators';
+import { AuthService as CoreAuthService } from '../../../services/auth.service';
+import { ChangeDetectorRef } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+@Component({
+  standalone: true,
+  selector: 'family-connection',
+  imports: [CommonModule, FormsModule, IonicModule, QRCodeComponent, MindfulNavigatorComponent, ProfileFactsComponent, MindfulPetComponent, MindfulButtonComponent, MindfulPopupComponent, InstructioListComponent],
+  templateUrl: './family-connection.component.html',
+  styleUrls: ['./family-connection.component.scss']
+})
+export class FamilyConnectionComponent implements OnInit {
+  familyName: string = 'Your Family';
+  familyStatus: string = 'ACTIVE';
+  createdOn: string = '';
+  creator: FamilyMember | null = null;
+  members: FamilyMember[] = [];
+  familyCode: string = '';
+  qrCodeData: string = ''; // Prefixed QR code data for scanning validation
+  showInstructions: boolean = false;
+  isLoading: boolean = true;
+  showQrModal: boolean = false;
+  familyFaqs: FaqItem[] = [];
+  showRemovePopup: boolean = false;
+  memberToRemove: FamilyMember | null = null;
+
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private coreAuthService: CoreAuthService,
+    public parentImageService: ParentImageService,
+    private childSelfImageService: ChildSelfImageService,
+    private cdr: ChangeDetectorRef
+  ) { }
+
+  // Return the first uppercase initial for a name (safe for template bindings)
+  getInitial(name?: string): string {
+    if (!name) return '';
+    return name.trim().charAt(0).toUpperCase();
+  }
+
+  // Determine female flag for member/creator (case-insensitive check)
+  isFemale(member?: FamilyMember | null): boolean {
+    try {
+      const g = (member as any)?.gender;
+      if (!g) return false;
+      return String(g).toLowerCase() === 'female';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * Resolve avatar URL+alt for a family member.
+   * Use ChildSelfImageService only for members whose relationship is Child.
+   */
+  getMemberAvatar(member: FamilyMember | null): { url: string | null; alt: string | null } | null {
+    if (!member) return null;
+
+    try {
+      const rel = String(member.relationship || '').toLowerCase();
+
+      // Only use child resolver for children — avoid using avatarImageName for parents/co-parents
+      if (rel === 'child') {
+        // ChildSelfImageService gracefully handles multiple input shapes (avatarName/avatarImageName)
+        const resolved = this.childSelfImageService.resolveAvatarForMember(member as any);
+        return resolved || { url: null, alt: null };
+      }
+
+      return null;
+    } catch (e) {
+      console.error('[FamilyConnection] getMemberAvatar error', e);
+      return null;
+    }
+  }
+
+  /**
+   * Open full-screen QR code modal
+   */
+  openQrModal(): void {
+    if (!this.familyCode) {
+      console.warn('No family code available');
+      return;
+    }
+    this.showQrModal = true;
+  }
+
+  /**
+   * Close QR code modal
+   */
+  closeQrModal(): void {
+    this.showQrModal = false;
+  }
+
+  /**
+   * Share QR code image + family code text via native share sheet.
+   *
+   * On native (Android / iOS):
+   *   1. Render the QR canvas to a base64 PNG.
+   *   2. Write it to a temporary file via Capacitor Filesystem.
+   *   3. Open the native share sheet with the image file URI + family code text.
+   *
+   * On web / PWA:
+   *   Use the Web Share API with a File object (image + text).
+   *   Falls back to a simple file download if the API is unavailable.
+   */
+  async shareQrCode(): Promise<void> {
+    try {
+      const canvas = document.querySelector('.qr-modal-content qrcode canvas') as HTMLCanvasElement;
+      if (!canvas) {
+        console.error('[FamilyConnection] QR canvas element not found');
+        return;
+      }
+
+      const base64Data = canvas.toDataURL('image/png').split(',')[1];
+      if (!base64Data) {
+        console.error('[FamilyConnection] Failed to export canvas to base64');
+        return;
+      }
+
+      const shareText = `Join my family on MindfulBuddy!\n\nFamily Code: ${this.familyCode}\n\nScan the QR code or enter the code above to connect.`;
+
+      if (Capacitor.isNativePlatform()) {
+        await this.nativeShare(base64Data, shareText);
+      } else {
+        await this.webShare(base64Data, shareText);
+      }
+    } catch (error) {
+      // User cancelled the share sheet — not an error
+      if ((error as any)?.message?.includes('cancel') || (error as any)?.message?.includes('abort')) {
+        return;
+      }
+      console.error('[FamilyConnection] shareQrCode error:', error);
+    }
+  }
+
+  /**
+   * Native share: write QR image to cache, then open the OS share sheet
+   * with the file URI so the user can pick any app (WhatsApp, Telegram, etc.).
+   */
+  private async nativeShare(base64Data: string, text: string): Promise<void> {
+    const fileName = `family-qr-${this.familyCode}.png`;
+
+    // Write the image into the app's cache directory
+    const savedFile = await Filesystem.writeFile({
+      path: fileName,
+      data: base64Data,
+      directory: Directory.Cache
+    });
+
+    // Capacitor Share accepts a file URI
+    await Share.share({
+      title: 'MindfulBuddy Family Code',
+      text,
+      url: savedFile.uri,
+      dialogTitle: 'Share Family QR Code'
+    });
+
+    // Clean up temp file after share sheet closes (fire-and-forget)
+    Filesystem.deleteFile({ path: fileName, directory: Directory.Cache }).catch(() => {});
+  }
+
+  /**
+   * Web fallback: use the Web Share API with a File blob if supported,
+   * otherwise trigger a direct download of the QR image.
+   */
+  private async webShare(base64Data: string, text: string): Promise<void> {
+    const byteString = atob(base64Data);
+    const bytes = new Uint8Array(byteString.length);
+    for (let i = 0; i < byteString.length; i++) {
+      bytes[i] = byteString.charCodeAt(i);
+    }
+    const blob = new Blob([bytes], { type: 'image/png' });
+    const file = new File([blob], `family-qr-${this.familyCode}.png`, { type: 'image/png' });
+
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      await navigator.share({
+        title: 'MindfulBuddy Family Code',
+        text,
+        files: [file]
+      });
+    } else {
+      // Direct download fallback
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  /**
+   * Copy family code to clipboard with native toast feedback
+   */
+  async copyFamilyCode(): Promise<void> {
+    if (!this.familyCode) {
+      console.warn('No family code available to copy');
+      return;
+    }
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(this.familyCode);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = this.familyCode;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        textArea.style.top = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+    } catch (error) {
+      console.error('Error copying family code:', error);
+    }
+  }
+
+  instructionItems: string[] = [
+    'You will link your account to your family and get benefits like learning together and earning rewards.',
+    'Your Parents can view your progress (habits, tasks etc) and give you rewards.',
+    'If later you are removed from the family or the family gets deleted, your account returns to normal with all your data safe and no family connection.',
+    '<span style="color:#282527; opacity: 1;font-family:Nunito; font-size:16px; font-weight:500; text-decoration:underline;">Note:</span> <span style="color:#282527; font-family:Nunito; font-size:16px; font-weight:500;">Any data related to family will not be there</span>',
+    'You can always use the app on your own that\'s your regular account experience.'
+  ];
+
+  instructionItemsParent: string[] = [
+    'You can connect with your child\'s progress and celebrate achievements together.',
+    'You must create or join a family (step-by-step instructions will guide you through this).',
+    'If you are removed from the family or if you delete your family, your account returns to self role and all parent features and data will be permanently lost.',
+    'Keep your current account and create a separate parent account with different login details - this way you never lose any data and can switch between accounts.'
+  ];
+
+  consentChecked: boolean = false;
+
+  ngOnInit(): void {
+    // Load family details (this will also refresh user relationship using the same response)
+    this.loadFamilyDetails();
+    this.setFamilyFaqs();
+  }
+
+  /**
+   * Refresh user relationship using an optional family-details response.
+   * If a response is provided we use it (avoids duplicate API calls). Otherwise
+   * we fetch the family-details from the server.
+   */
+  private refreshUserRelationship(response?: any): void {
+    const process = (resp: any) => {
+      if (resp && resp.family) {
+        const family = resp.family as any;
+        const members = family.members || [];
+        const creator = family.creator;
+
+        const userData = this.coreAuthService.getUserData() || {};
+
+        if (creator && creator.you) {
+          userData.relationship = creator.relationship?.toUpperCase() || 'PARENT';
+        } else {
+          const currentUserMember = members.find((m: any) => m.you === true);
+          if (currentUserMember) {
+            userData.relationship = currentUserMember.relationship?.toUpperCase() || 'CHILD';
+          }
+        }
+
+        localStorage.setItem('user_data', JSON.stringify(userData));
+        console.log('[FamilyConnection] Refreshed user relationship:', userData.relationship);
+        this.setFamilyFaqs();
+        try { this.cdr.detectChanges(); } catch (e) { /* noop */ }
+      }
+    };
+
+    if (response) {
+      process(response);
+      return;
+    }
+
+    // No response provided — make a single API call
+    this.authService.getFamilyDetails().pipe(take(1)).subscribe({
+      next: (resp) => process(resp),
+      error: (err) => console.error('[FamilyConnection] Failed to refresh user relationship:', err)
+    });
+  }
+
+  private setFamilyFaqs(): void {
+    try {
+      let targetSection: string;
+      let targetScreen: string;
+
+      if (this.isParentUser()) {
+        targetSection = 'My Family';
+        targetScreen = 'Parent';
+      } else if (this.isSelfUser()) {
+        targetSection = 'Profile';
+        targetScreen = 'Self Mode (Child)';
+      } else {
+        // Child mode
+        targetSection = 'Profile';
+        targetScreen = 'My Family (Child)';
+      }
+
+      this.familyFaqs = PROFILE_FAQS.filter(faq =>
+        faq.section === targetSection && faq.screen === targetScreen
+      );
+
+      // If no exact matches, fallback to broader search
+      if (this.familyFaqs.length === 0) {
+        console.warn(`No FAQs found for section: ${targetSection}, screen: ${targetScreen}. Falling back to broader search.`);
+        this.familyFaqs = PROFILE_FAQS.filter(faq =>
+          faq.section?.toLowerCase().includes(targetSection.toLowerCase()) ||
+          faq.screen?.toLowerCase().includes(targetScreen.toLowerCase())
+        );
+      }
+
+      // Ultimate fallback
+      if (this.familyFaqs.length === 0) {
+        console.warn('No relevant FAQs found. Using all FAQs as fallback.');
+        this.familyFaqs = PROFILE_FAQS;
+      }
+    } catch (e) {
+      console.error('Error selecting family faqs:', e);
+      this.familyFaqs = PROFILE_FAQS;
+    }
+  }
+
+  loadFamilyDetails(): void {
+    this.isLoading = true;
+    this.authService.getFamilyDetails().pipe(take(1)).subscribe({
+      next: (response) => {
+        // If server indicates the user has been moved to SELF mode, update stored user data
+        if (response && (response as any).mode === 'SELF') {
+          try {
+            const userData = this.coreAuthService.getUserData() || {};
+            userData.relationship = 'SELF';
+            localStorage.setItem('user_data', JSON.stringify(userData));
+          } catch (e) {
+            console.error('Failed to update local user_data for SELF mode', e);
+          }
+
+          // Clear family-related UI state and refresh faqs for SELF
+          this.familyName = 'Your Family';
+          this.familyStatus = '';
+          this.createdOn = '';
+          this.creator = null;
+          this.members = [];
+          this.familyCode = '';
+          this.qrCodeData = '';
+          this.setFamilyFaqs();
+          this.isLoading = false;
+          // Ensure change detection so template updates immediately
+          try { this.cdr.detectChanges(); } catch (e) { /* noop */ }
+          return;
+        }
+
+        if (response && response.family) {
+          const f = response.family as any;
+          this.familyName = f.familyName || this.familyName;
+          this.familyStatus = f.status || this.familyStatus;
+          this.createdOn = f.createdOn || this.createdOn;
+          this.creator = f.creator || this.creator;
+          this.members = f.members || this.members;
+          // Defensive set for familyCode: support both nested and top-level shapes
+          this.familyCode = f.familyCode || (response as any).familyCode || this.familyCode;
+        } else if (response && (response as any).familyCode) {
+          // In some API variants familyCode might be at the root
+          this.familyCode = (response as any).familyCode;
+        }
+
+        // Use the same response to refresh user relationship to avoid a second API call
+        try { this.refreshUserRelationship(response); } catch (e) { /* noop */ }
+
+        // Set QR code data with GROUP: prefix for consistent scanning validation
+        if (this.familyCode) {
+          this.qrCodeData = 'GROUP:' + this.familyCode;
+        }
+
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading family details:', error);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  onMemberActiveChange(userId: number, active: boolean): void {
+    // Handle member active state change if needed
+    console.log(`Member ${userId} active state changed to ${active}`);
+  }
+
+  toggleMemberActive(member: FamilyMember): void {
+    member.you = !member.you;
+    this.onMemberActiveChange(member.userId, member.you);
+  }
+
+  getBadgeText(member: FamilyMember): string {
+    if (member.you) {
+      return (member.relationship === 'Parent' || member.relationship === 'Co-Parent') ? 'Parent / You' : 'Child / You';
+    }
+    return (member.relationship === 'Parent' || member.relationship === 'Co-Parent') ? 'Parent' : 'Child';
+  }
+
+  onRemovedPetClick() {
+    console.log('Removed pet clicked');
+  }
+
+  onFeedback() {
+    this.router.navigate(['/authed/select-role']).catch(() => { });
+  }
+
+  /**
+   * Handle back action from mindful-navigator — return to the user profile page
+   */
+  onBackFromFamily() {
+    // Prefer explicit navigation to the authenticated user-profile route
+    this.router.navigate(['/authed', 'user-profile']).catch(err => {
+      console.error('Navigation to user-profile failed, falling back to history.back()', err);
+      try {
+        history.back();
+      } catch (e) {
+        // no-op
+      }
+    });
+  }
+
+  /**
+   * Triggered when user clicks Delete Family button. Shows confirmation and
+   * serves as a placeholder for the deletion API call.
+   */
+  onDeleteFamily(): void {
+    const ok = confirm('Are you sure you want to delete the family? This action is irreversible.');
+    if (!ok) return;
+
+    // TODO: call backend API to delete the family. For now, log and show a message.
+    console.log('[FamilyConnection] Delete family confirmed by user');
+    // Example placeholder: this.authService.deleteFamily().subscribe(...)
+    alert('Delete family action is not yet implemented.');
+  }
+
+  /**
+   * Open the remove member confirmation popup.
+   */
+  removeMember(member: FamilyMember): void {
+    if (!this.isParentUser()) return;
+    this.memberToRemove = member;
+    this.showRemovePopup = true;
+  }
+
+  /**
+   * Confirm and proceed with removing the member from the family.
+   */
+  confirmRemoveMember(): void {
+    if (!this.memberToRemove) return;
+
+    const member = this.memberToRemove;
+    this.showRemovePopup = false;
+
+    // Show loading state while removing
+    const originalMembers = this.members;
+    this.members = this.members.filter(m => m.userId !== member.userId);
+
+    // Call backend API to remove the member from the family
+    this.authService.removeMemberFromFamily(member.userId).pipe(take(1)).subscribe({
+      next: (response) => {
+        console.log('[FamilyConnection] Member removed successfully:', member);
+        this.memberToRemove = null;
+
+        // Refresh family details by requesting the server endpoint with forUserId
+        // (matches: http://.../v1/auth/family-details?forUserId=88)
+        this.authService.getFamilyDetailsForUser(member.userId).pipe(take(1)).subscribe({
+          next: (resp) => {
+            if (resp && resp.family) {
+              const f = resp.family as any;
+              this.familyName = f.familyName || this.familyName;
+              this.familyStatus = f.status || this.familyStatus;
+              this.createdOn = f.createdOn || this.createdOn;
+              this.creator = f.creator || this.creator;
+              this.members = f.members || this.members;
+              this.familyCode = f.familyCode || this.familyCode;
+            }
+          },
+          error: (err) => {
+            console.error('[FamilyConnection] Failed to refresh family details after removal', err);
+            // fallback to local reload
+            try { window.location.reload(); } catch (e) { this.loadFamilyDetails(); }
+          }
+        });
+      },
+      error: (error) => {
+        console.error('[FamilyConnection] Error removing member:', error);
+        // Restore the member to the list if the API call fails
+        this.members = originalMembers;
+        this.memberToRemove = null;
+        // Do not show blocking window.alert; keep console error and UI restore.
+      }
+    });
+  }
+
+  /**
+   * Cancel the remove member operation and close the popup.
+   */
+  cancelRemoveMember(): void {
+    this.showRemovePopup = false;
+    this.memberToRemove = null;
+  }
+
+  /**
+   * Return the heading text for the remove-member popup.
+   */
+  getRemoveHeading(): string {
+    const name = this.memberToRemove?.name || '';
+    return `Are you sure you want to remove "${name}" from your family?`;
+  }
+
+
+  continueWithNewRole() {
+    console.log('Continue with a new role clicked');
+    this.showInstructions = true;
+  }
+
+  /**
+   * Helper to determine if current user is a parent (used by template)
+   */
+  isParentUser(): boolean {
+    try {
+      return this.coreAuthService.isParentUser();
+    } catch (e) {
+      console.error('Failed to determine user role:', e);
+      return false;
+    }
+  }
+
+  /**
+   * Helper to determine if current user is in SELF role
+   */
+  isSelfUser(): boolean {
+    try {
+      return this.coreAuthService.getUserRelationship() === 'SELF';
+    } catch (e) {
+      console.error('Failed to determine user relationship:', e);
+      return false;
+    }
+  }
+
+  /**
+   * Helper to check if user is self and age is between 18-24
+   */
+  isSelfUserWithIndependentGrowth(): boolean {
+    try {
+      const userData = this.coreAuthService.getUserData();
+      if (!userData) return false;
+
+      // Check if user is in SELF mode
+      if (userData.relationship !== 'SELF') return false;
+
+      // Check if age is between 18-24
+      const age = userData.age;
+      if (typeof age === 'number' && age >= 18 && age <= 24) {
+        return true;
+      }
+
+      // If age is stored as dateOfBirth, calculate it
+      if (userData.dateOfBirth) {
+        const dob = new Date(userData.dateOfBirth);
+        const today = new Date();
+        let calculatedAge = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+          calculatedAge--;
+        }
+        return calculatedAge >= 18 && calculatedAge <= 24;
+      }
+
+      return false;
+    } catch (e) {
+      console.error('Failed to check independent growth eligibility:', e);
+      return false;
+    }
+  }
+
+  onInstructionsBack() {
+    this.showInstructions = false;
+  }
+
+  goToRoleSelect() {
+    // navigate to the select-role page (global route)
+    console.log('Navigating to role selector');
+    this.router.navigate(['/select-role']).catch(err => {
+      console.error('Navigation to select-role failed', err);
+      // fallback to authed path if global path doesn't work
+      this.router.navigate(['/authed/select-role']).catch(() => { });
+    });
+  }
+}

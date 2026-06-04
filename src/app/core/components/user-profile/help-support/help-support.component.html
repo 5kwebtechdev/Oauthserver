@@ -1,0 +1,51 @@
+<ion-content fullscreen>
+	<mindful-navigator heading="Help & Support" backIcon="arrowSvg"></mindful-navigator>
+
+	<div class="help-support-page">
+        <div class="help-support-tems">
+            <h1 class="help-heading">Account & Access</h1>
+                <profile-facts [faqs]="accountFaqs" heading=""></profile-facts>
+        </div>
+
+        <div class="help-support-tems" *ngIf="!isParentUser()">
+            <h1 class="help-heading">Pets & Rewards</h1>
+                <profile-facts [faqs]="petsFaqs" heading=""></profile-facts>
+        </div>
+
+        <div class="help-support-tems" *ngIf="isParentUser()">
+            <h1 class="help-heading">Coins & Rewards</h1>
+                <profile-facts [faqs]="coinsFaqs" heading=""></profile-facts>
+        </div>
+
+        <div class="help-support-tems" *ngIf="!isParentUser()">
+            <h1 class="help-heading">Habits & Tasks</h1>
+                <profile-facts [faqs]="habitsChildFaqs" heading=""></profile-facts>
+        </div>
+
+        <div class="help-support-tems" *ngIf="isParentUser()">
+            <h1 class="help-heading">Habits & Tasks Management</h1>
+                <profile-facts [faqs]="habitsParentFaqs" heading=""></profile-facts>
+        </div>
+
+
+        <div class="help-support-tems">
+            <h1 class="help-heading">Parent Controls</h1>
+                <profile-facts [faqs]="parentControlsFaqs" heading=""></profile-facts>
+        </div>
+
+         <div class="help-support-tems" *ngIf="isParentUser()">
+            <h1 class="help-heading">Security</h1>
+                <profile-facts [faqs]="securityFaqs" heading=""></profile-facts>
+        </div>
+
+        <div class="help-support-tems">
+            <h1 class="help-heading">Troubleshooting</h1>
+                <profile-facts [faqs]="troubleshootingFaqs" heading=""></profile-facts>
+        </div>
+    </div>
+    
+    <button aria-label="Open chat" class="chat-fab" (click)="openChat()">
+        <img src="assets/Icons-Neutral/Icon-Chatbot.png" alt="Chatbot">
+    </button>
+
+</ion-content>

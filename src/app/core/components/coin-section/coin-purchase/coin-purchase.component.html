@@ -1,0 +1,28 @@
+<ion-content>
+    <mindful-card-header
+        [showBackArrow]="true"
+        [title]="'Spend Your Coins!'"
+        [subtitleLeft]="'Earn coins'"
+        [subtitleMiddle]="'Pick your prize'"
+        [subtitleRight]="'Flaunt your style'"
+        (backClick)="onBack()">
+    </mindful-card-header>
+
+    <div class="coin-purchases-page mt-3">
+        <div class="coin-balance">
+            <h1>Your Coin Balance</h1>
+            <div class="balance-display d-flex align-items-center gap-2">
+             <img src="\assets\Icons-Neutral\Icons-Coins.png" alt="Coin" class="coin-icon">
+                <span class="coin-value">{{ coinTotal}}</span>
+            </div>
+        </div>
+        <div class="coming-soon" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;">       
+            <empty-state imageSrc="/assets/Images-Transparent/Redeem Coins-Blank.png"
+                     imageAlt="Redeem coins blank"
+                     leadText="Your treasure vault is loading"
+                     subText="You've been crushing it and stacking coins. Soon, you'll see pets and accessories to spend them on. Keep building your balance, the store opens soon."
+                     buttonText="">
+            </empty-state>
+        </div>
+    </div>
+</ion-content>

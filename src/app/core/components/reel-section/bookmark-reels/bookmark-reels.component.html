@@ -1,0 +1,24 @@
+<ion-content [fullscreen]="true" class="ion-padding-top">
+  <div class="safe-area-top"></div>
+
+  <mindful-card-header [title]="title" [showBackArrow]="true" (backClick)="goBack()">
+    <div mindful-header-actions *ngIf="title === 'My Reels'">
+    </div>
+  </mindful-card-header>
+
+  <div class="bookmark-reels-page">
+    <div class="categories-container">
+      <div class="category-item" *ngFor="let category of bookmarkedCategories">
+        <div class="reels-collage" (click)="openReel(category)">
+          <div class="collage-item" *ngFor="let reel of category.reels.slice(0, 4)">
+            <img [src]="reel.image" [alt]="reel.title">
+          </div>
+        </div>
+
+        <div class="category-name">
+          {{ category.category }}
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

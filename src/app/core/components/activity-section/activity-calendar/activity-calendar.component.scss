@@ -1,0 +1,324 @@
+/* Styles for the mood status timeline */
+
+h2, p {
+  margin: 0;
+}
+.activity-calendar-container {
+    display: flex;
+    flex-direction: column;
+    padding: 16px 16px 80px 16px;
+    gap: 24px;
+}
+.calendar-mood-satus-popup {
+  .daily-mood-status {
+    .mood-staus-message {
+      padding: 16px 0;
+
+      .mood-meesage {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        .mood-message-item {
+          display: flex;
+
+
+          .mood-left {
+            width: 24px;
+            display: flex;
+            position: relative;
+            margin: 5px;
+
+            .dot {
+              width: 12px;
+              height: 12px;
+              flex-shrink: 0;
+              background: #90214D;
+              /* fall-back for non-SVG */
+              fill: #90214D;
+              /* if the dot is an SVG */
+              border-radius: 50%;
+              display: block;
+              z-index: 10;
+            }
+
+            .connector {
+              width: 0.5px;
+              height: 41px;
+              background: #6B656A;
+              display: block;
+              margin-top: 35px;
+              margin-left: 5.5px;
+              align-self: center;
+              position: absolute;
+            }
+          }
+
+          .mood-content {
+            width: 275px;
+            /* requested width */
+            color: #6B656A;
+            font-size: 13px;
+            font-style: normal;
+            font-weight: 600;
+            line-height: 150%;
+            letter-spacing: 0.25px;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* Make sure last item's connector isn't visible */
+.calendar-mood-satus-popup .daily-mood-status .mood-staus-message .mood-message-item:last-child .connector {
+  display: none;
+}
+
+.calendar-main-container {
+  padding: 16px 16px 80px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+
+
+.calendar-component {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+}
+
+.calendar-component__timetable,
+.calendar-component__tasks,
+.calendar-component__habits {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+}
+
+.item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+}
+
+.item__text {
+  color: #6B656A;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 120%;
+  /* 15.6px */
+}
+
+.empty-calendar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+
+}
+
+.empty-calendar-message {
+  display: flex;
+  width: 278px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.empty-calendar-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+
+  h2{
+color: #282527;
+text-align: center;
+font-family: Fredoka;
+font-size: 16px;
+font-weight: 500;
+  }
+  p{
+    color: #282527;
+text-align: center;
+font-family: Nunito;
+font-size: 13px;
+font-weight: 500;
+opacity: 0.7;
+  }
+}
+
+.empty-calendar-text {
+  color: #282527;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  align-self: stretch;
+}
+
+.calendar-mood-satus-popup {
+  display: inline-flex;
+  padding: 16px 70px 32px 24px;
+  align-items: center;
+  border-radius: 24px 24px 0 0;
+  background: #FFF;
+  box-shadow: 0 -29px 8px 0 rgba(107, 101, 106, 0.00), 0 -19px 7px 0 rgba(107, 101, 106, 0.01), 0 -11px 6px 0 rgba(107, 101, 106, 0.05), 0 -5px 5px 0 rgba(107, 101, 106, 0.09), 0 -1px 3px 0 rgba(107, 101, 106, 0.10);
+}
+
+.daily-mood-status {
+  display: flex;
+  width: 299px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.emoji-status {
+  width: 292px;
+}
+
+.status-header h2 {
+  width: 300px;
+  color: #282527;
+  font-size: 16px;
+  font-weight: 500;
+ 
+}
+
+.calendar-mood-satus-popup {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: -100%;
+  display: flex;
+  align-items: flex-end;
+  transition: bottom 300ms ease-in-out, opacity 300ms ease-in-out;
+  opacity: 0;
+  z-index: 1200;
+}
+
+.calendar-mood-satus-popup.show {
+  bottom: 0;
+  /* slide to bottom */
+  opacity: 1;
+}
+
+.daily-mood-status.visible {
+  transform: translateY(0);
+}
+
+/* Selected date cards (habits/tasks) */
+.selected-date-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+}
+
+.habit-card,
+.task-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  padding: 16px;
+}
+
+.habit-card__title,
+.task-card__title {
+  font-weight: 700;
+  color: #5D4B9A;
+}
+
+.habit-card__time,
+.task-card__time {
+  color: #C33;
+  margin-top: 6px;
+}
+
+/* Timetable card styles */
+.timetable-card {
+  display: flex;
+  padding: 8px 12px 12px 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  border-left: 4px solid #89B3B6;
+  background: #FDFDFD;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+
+.timetable-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  gap: 8px;
+}
+
+.timetable-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.timetable-card__title {
+  color: #282527;
+  font-family: Nunito;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.timetable-card__time {
+  color: #6B656A;
+  font-family: Nunito;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.timetable-card__tag-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.timetable-card__tag {
+  display: flex;
+  align-items: center;
+  padding: 5px 16px;
+  height: 24px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: bold;
+  font-size: 10px;
+  color: #3D6466;
+  border-radius: 16px;
+  border: 1px solid #6FA5A8;
+  background: #E1F0F1;
+}
+
+/* Floating add button container */
+.calendar-add-btn {
+  position: fixed;
+  right: 16px;
+  bottom: 24px;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

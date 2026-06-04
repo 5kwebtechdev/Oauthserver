@@ -1,0 +1,153 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+.habit-page-content {
+    width: 100%;
+}
+
+.habit-page {
+    padding: 16px;
+}
+
+.habit-list {
+    margin-top: 12px;
+}
+
+.loading-indicator {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+
+    ion-spinner {
+        width: 40px;
+        height: 40px;
+        --color: var(--ion-color-primary, #90214D);
+    }
+}
+
+.no-habits-message {
+    padding: 15px;
+    text-align: center;
+    background: rgba(144, 33, 77, 0.05);
+    border-radius: 12px;
+    margin: 10px 0;
+
+    p {
+        color: #90214D;
+        font-size: 14px;
+        margin: 0;
+    }
+}
+
+
+.habit-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.calendar-button {
+    width: 40px;
+    height: 40px;
+    aspect-ratio: 1/1;
+    border: none;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.calendar-button img {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+}
+
+.habit-week {
+    margin-top: 16px;
+}
+
+.toggler {
+    margin-top: 16px;
+}
+
+/* When the toggler indicates the Habits tab is active, color the .active element with the habits color */
+.toggler.habits-active {
+    .active {
+        color: #8B8DCB;
+        /* habits color */
+    }
+}
+
+/* When the toggler indicates the Tasks tab is active, color the .active element with the tasks color */
+.toggler.tasks-active {
+    .active {
+        color: #F6AC72;
+        /* tasks color */
+    }
+}
+
+.toggler .col-6 {
+    position: relative;
+}
+
+.toggler.habits-active .col-6.active::before {
+    position: absolute;
+    content: "";
+    width: 60%;
+    height: 2px;
+    left: 20%;
+    bottom: 0;
+    background: #8B8DCB;
+}
+
+.toggler.tasks-active .col-6.active::before {
+    position: absolute;
+    content: "";
+    width: 60%;
+    height: 2px;
+    left: 20%;
+    bottom: 0;
+    background: #F6AC72;
+}
+
+.habit-journey-container {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.habit-filters-container,
+.task-filters-container {
+    padding: 0px 0px 80px 0px;
+}
+
+.habit-list-content {
+    // margin-top: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.priority-container {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.routine-container {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+// Override empty-state image width for activity page
+::ng-deep empty-state .empty-state__illustration {
+    width: 100px!important;
+}

@@ -1,0 +1,101 @@
+<ion-content class="bg-mindful-secondary" [scrollY]="false">
+  <div class="login_section">
+    <mindful-navigator [heading]="'Login your account'" [variant]="'warm'" (back)="goBack()"></mindful-navigator>
+    <div class="signup-container">
+    <div class="login-header-toggle-wrapper">
+      <div class="login-toggle-form-wrapper">
+        <!-- <h1>Test 47</h1> -->
+        <!-- Helper text -->
+        <small class="helper-text">Only for login and safety</small>
+        <form [formGroup]="signInForm" (ngSubmit)="onSubmit()" class="login-form-fields">
+          <ng-container *ngIf="loginMode === 'email'">
+            <div class="input-group">
+              <input [ngClass]="{'error' : email?.invalid && (email?.dirty)}" formControlName="email" type="email"
+                placeholder="Email" />
+              <div class="error" *ngIf="email?.invalid && (email?.dirty)">
+                Oops! That email looks off. Please check it again.
+              </div>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="loginMode === 'phone'">
+            <div class="input-group">
+              <div class="phone-input-container" [ngClass]="{'error' : !isPhoneValid(phone?.value) && phone?.dirty }">
+                <div class="country-code-selector" (click)="openCountryCodeModal()">
+                  <span class="flag-emoji">{{selectedCountry.flag}}</span>
+                  <span class="country-code">{{selectedCountry.code}}</span>
+                  <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <input formControlName="phone" type="tel" [maxlength]="currentPhoneLength" pattern="[0-9]*"
+                  inputmode="numeric" (input)="onPhoneInput($event)" (keypress)="onKeyPress($event)"
+                  placeholder="Enter {{currentPhoneLength}} digit number" />
+              </div>
+              <div class="error" *ngIf="!isPhoneValid(phone?.value) && phone?.dirty ">
+                {{getPhoneErrorMessage()}}
+              </div>
+            </div>
+          </ng-container>
+
+          <div class="input-group">
+            <input formControlName="password"
+              [ngClass]="{'error' : password?.invalid && password?.dirty }"
+              [type]="hidePassword ? 'password' : 'text'" placeholder="Password" />
+            <span class="toggle-eye" (click)="hidePassword = !hidePassword">
+              <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+            </span>
+
+            <!-- Forgot password link -->
+            <a class="forgot-password" [routerLink]="['/home/reset-password']"
+              [queryParams]="{ mode: loginMode }">Forgot
+              password?</a>
+          </div>
+
+          <!-- (Removed Remember Me - session persists until logout) -->
+
+          <mindful-button type="orange-onboard" full [text]="loading ? 'Logging in...' : 'Login'"
+            [disabled]="!signInForm.dirty || !isLoginFormValid() || loading" (click)="onSubmit()">
+          </mindful-button>
+
+          <div class="error-message" *ngIf="loginError">
+            {{ loginError }}
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <div class="container w-full p-0" style="align-self: center;">
+      <div class="or-divider"><span>OR</span></div>
+      <social-media [variant]="'login-with'"></social-media>
+    </div>
+    <div class="signup-link">
+      <p>Don't have an account? <a [routerLink]="['/home/sign-up']" [queryParams]="{ step: '0.1' }">Sign up</a></p>
+    </div>
+
+
+
+    <!-- Country Code Modal -->
+    <div class="country-modal-backdrop" *ngIf="showCountryCodeModal" (click)="closeCountryCodeModal()"></div>
+    <div class="country-modal" *ngIf="showCountryCodeModal" role="dialog" aria-modal="true">
+      <div class="country-modal__header">
+        <h3 class="country-modal__title">Country code</h3>
+        <button class="country-modal__close" (click)="closeCountryCodeModal()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      <div class="country-modal__content">
+        <div class="country-list">
+          <div class="country-item" *ngFor="let country of countries" (click)="selectCountry(country)"
+            [class.selected]="selectedCountry.code === country.code">
+            <span class="country-flag">{{country.flag}}</span>
+            <span class="country-name">{{country.name}}</span>
+            <span class="country-code">{{country.code}}</span>
+          </div>
+        </div>
+      </div>
+      <div class="country-modal__footer">
+        <button class="country-modal__done-btn" (click)="closeCountryCodeModal()">Done</button>
+      </div>
+    </div>
+  </div>
+  </div>
+</ion-content>

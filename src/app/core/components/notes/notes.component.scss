@@ -1,0 +1,327 @@
+.empty-notes-container {
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 16px;
+	/* center vertically within the page when empty */
+	justify-content: center;
+	/* leave room for header/navigation; tweak if your header height differs */
+	min-height: calc(100dvh - 120px);
+	width: 100%;
+}
+
+.empty-notes-content {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+}
+
+.notes-blank-image {
+	width: 256px;
+	height: 149px;
+	aspect-ratio: 256/149;
+}
+
+.empty-notes-text {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	align-self: stretch;
+
+	h2 {
+		color: #282527;
+		text-align: center;
+		font-family: Fredoka;
+		font-size: 16px;
+		font-style: normal;
+		font-weight: 500;
+		line-height: 140%;
+		/* 22.4px */
+		align-self: stretch;
+	}
+
+	p {
+		color: #282527;
+		text-align: center;
+		font-family: Nunito;
+		font-size: 13px;
+		font-style: normal;
+		font-weight: 500;
+		line-height: 140%;
+		/* 18.2px */
+		width: 311px;
+	}
+}
+
+.note-container {
+
+	background: #fff;
+	padding: 16px;
+	/* ensure content sits above system safe area + extra 80px for fixed add button */
+	padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
+	box-sizing: border-box;
+	position: relative;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+
+/* Header */
+.header {
+	display: flex;
+	width: 100%;
+	justify-content: flex-start;
+	/* left-align items so title can flex and sort button can be pushed right */
+	align-items: center;
+	gap: 16px;
+	/* moderate gap between back arrow and title */
+}
+
+.header .back-arrow {
+	width: 48px;
+	height: 48px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	margin-right: 8px;
+}
+
+.header .back-arrow svg {
+	width: 48px;
+	height: 48px;
+	display: block;
+}
+
+.header h1 {
+	font-size: 16px;
+	font-weight: bold;
+	flex: 1 1 auto;
+	margin: 0;
+}
+
+.sort-btn {
+	display: inline-flex;
+	height: 38px;
+	padding: 8px 16px;
+	justify-content: center;
+	align-items: center;
+	gap: 4px;
+	flex-shrink: 0;
+	border-radius: 33px;
+	background: #FFF;
+	box-shadow: 0 0 8px 2px rgba(107, 101, 106, 0.15);
+	color: #282527;
+	font-family: Nunito;
+	font-size: 13px;
+	font-style: normal;
+	font-weight: 600;
+	line-height: 140%;
+	/* 18.2px */
+	margin: 0;
+	/* reset margins - layout handled by .sort-row */
+}
+
+.sort-row {
+	display: flex;
+	justify-content: flex-end;
+}
+
+/* Dropdown using native <details> element */
+.sort-dropdown {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+}
+
+.sort-dropdown summary {
+	list-style: none;
+	-webkit-user-select: none;
+	user-select: none;
+	cursor: pointer;
+	border: none;
+}
+
+/* Closed dropdown looks like pill (existing .sort-btn styles) */
+.sort-dropdown>summary.sort-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	height: 38px;
+	padding: 8px 16px;
+	border-radius: 33px;
+	background: #fff;
+	box-shadow: 0 0 8px 2px rgba(107, 101, 106, 0.15);
+	color: #282527;
+}
+
+.sort-dropdown .sort-label {
+	font-family: Nunito;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.sort-dropdown .sort-arrow {
+	display: inline-flex;
+	width: 16px;
+	height: 16px;
+	align-items: center;
+}
+
+/* Open dropdown: change shape to box and reveal options */
+.sort-dropdown[open]>summary.sort-btn {
+	border-radius: 33px;
+	padding: 8px 16px;
+	justify-content: flex-end;
+	align-items: center;
+}
+
+.sort-options {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	min-width: 180px;
+	background: #fff;
+	border-radius: 16px;
+	box-shadow: 0 6px 18px rgba(30, 30, 30, 0.12), 0 2px 6px rgba(30, 30, 30, 0.06);
+	padding: 12px 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	z-index: 60;
+}
+
+.sort-option {
+	background: transparent;
+	border: none;
+	text-align: left;
+	padding: 10px 12px;
+	font-family: Nunito;
+	font-size: 15px;
+	color: #6b656a;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	border-radius: 10px;
+}
+
+.sort-option:hover {
+	background: rgba(0, 0, 0, 0.03);
+	color: #282527;
+}
+
+.sort-option.selected {
+	color: #282527;
+	font-weight: 600;
+	background: rgba(0, 0, 0, 0.02);
+}
+
+.option-tick {
+	display: inline-flex;
+	margin-left: 8px;
+	width: 12px;
+	height: 12px;
+}
+
+/* rotate the arrow when the dropdown is open */
+.sort-dropdown[open] .sort-arrow {
+	transform: rotate(180deg);
+	transition: transform 160ms ease-in-out;
+}
+
+/* Hide native marker in some browsers */
+details::-webkit-details-marker {
+	display: none
+}
+
+
+/* Notes */
+.note-card {
+	border-radius: 12px;
+	background: #FFF;
+	box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	gap: 18px;
+}
+
+.note-text {
+color: #6B656A;
+    font-size: 14px;
+	display: block;
+    padding: 16px;
+	font-family: 'Nunito';
+    font-weight: 600;
+	margin: 0;
+	max-height: 138px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: normal;
+}
+
+.note-footer {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-radius: 12px;
+	background: #FFF;
+	box-shadow: 0 0 8px 2px rgba(107, 101, 106, 0.10);
+	display: inline-flex;
+	padding: 10px 16px;
+	align-items: center;
+}
+
+.note-footer h3 {
+	color: #282527;
+	font-size: 13px;
+	line-height: 140%;
+	margin: 0px !important;
+	/* 18.2px */
+}
+
+.note-footer .date {
+	color: #282527;
+	font-size: 10px;
+	line-height: 140%;
+	/* 14px */
+}
+
+.tag {
+	padding: 4px 10px;
+	border-radius: 12px;
+	font-size: 12px;
+	color: #fff;
+	background: #6B656A;
+}
+
+
+
+/* Fixed Add Button */
+.add-button-fixed {
+	position: fixed;
+	bottom: 24px;
+	right: 24px;
+	z-index: 1000;
+	cursor: pointer;
+}
+
+.edit-back{position: absolute;
+    border-radius: 10vw;
+    background: #FFF;
+    box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+    top: -38px;
+    right: 5px;
+    width: 33px;
+    height: 31px;
+display: flex;
+    justify-content: center;
+    align-items: center;}

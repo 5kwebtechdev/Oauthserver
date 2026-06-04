@@ -1,0 +1,181 @@
+<ion-content>
+  <main class="product-detail-main">
+    <mindful-navigator [heading]="heading" [rightActions]="[{ type: 'cart', count: cartCount, alt: 'My cart' }]" (back)="goBack()" (rightActionClick)="handleRightAction($event)">
+    </mindful-navigator>
+
+    <!-- Product detail content goes here -->
+    <div class="product-detail-view">
+      <div #swiper class="product-swiper" (pointerdown)="onPointerDown($event)" (pointermove)="onPointerMove($event)"
+        (pointerup)="onPointerUp($event)" (pointercancel)="onPointerUp($event)" (pointerleave)="onPointerUp($event)">
+        <div #slides class="slides" [style.transition]="isDragging ? 'none' : 'transform 320ms ease'">
+          <div class="slide" *ngFor="let img of images">
+            <img [src]="img" [alt]="heading" />
+          </div>
+        </div>
+      </div>
+
+      <div class="dots" *ngIf="images.length">
+        <button type="button" *ngFor="let img of images; let i = index" (click)="goTo(i)"
+          [class.active]="i === currentIndex" [attr.aria-label]="'Slide ' + (i + 1)"></button>
+      </div>
+    </div>
+
+    <!-- Additional product details-->
+    <div class="product-info-section">
+      <div class="product-name-price d-flex flex-column gap-1">
+        <div class="title-n-name d-flex flex-column gap-1 align-start">
+          <h1 class="product-title">{{ product?.title || heading }}</h1>
+          <p class="product-subtitle">
+            {{ isBook ? (product?.subtitle || '') : (product?.tag || '') }}
+          </p>
+        </div>
+        <div class="price-n-quantity d-flex justify-content-between">
+          <div class="price d-flex gap-2">
+            <span class="discounted-price">
+              {{ product?.price ?? product?.discountedPrice ? ( (product.price ?? product.discountedPrice)) :
+              '₹799' }}
+            </span>
+            <span *ngIf="product?.originalPrice || product?.mrp" class="original-price">
+              {{ (product?.originalPrice ?? product?.mrp) }}
+            </span>
+          </div>
+          <div class="quantity-selector d-flex align-center gap-2">
+            <button class="qty-btn decrease" aria-label="Decrease quantity" (click)="decreaseQuantity()">
+              <span>-</span>
+            </button>
+            <span class="quantity-count">{{ quantity }}</span>
+            <button class="qty-btn increase" aria-label="Increase quantity" (click)="increaseQuantity()">
+              <span>+</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!--product size-->
+      <div *ngIf="!isBook" class="product-size-section d-flex flex-column gap-3">
+        <div class="size-descrip d-flex flex-column">
+          <div class="d-flex justify-content-between">
+            <h2>Size: {{ selectedSize }}</h2>
+            <div class="d-flex gap-1">
+              <p>Not sure?</p>
+              <a role="button" tabindex="0" (click)="openSizeGuide()">Check size guide</a>
+            </div>
+          </div>
+          <p>Recommended for <br />Age 3-4</p>
+        </div>
+        <div class="size-selector">
+          <button *ngFor="let s of sizes" class="size-tag" [class.selected]="selectedSize === s"
+            [class.out-of-stock]="isOutOfStock(s)" (click)="selectSize(s)" [attr.aria-pressed]="selectedSize === s"
+            [disabled]="isOutOfStock(s)" [attr.aria-disabled]="isOutOfStock(s)">
+            <h2>{{ s }}</h2>
+          </button>
+        </div>
+        <h2 style="color: #bb2124">Hurry up! Only 3 left in Size 2.</h2>
+      </div>
+
+      <!--book-detail-->
+      <div class="book-info d-flex align-items-center justify-content-between">
+        <div class="book-detail">
+          <p>Subject</p>
+          <h2>Math</h2>
+        </div>
+        <div class="book-detail">
+          <p>Language</p>
+          <h2>English</h2>
+        </div>
+        <div class="book-detail">
+          <p>Pages</p>
+          <h2>140</h2>
+        </div>
+        <div class="book-detail">
+          <p>Binding</p>
+          <h2>Soft Cover</h2>
+        </div>
+
+      </div>
+      <!-- address-detail: show filled address or an empty-state prompting for pincode -->
+      <ng-container *ngIf="selectedAddress; else emptyAddress">
+        <div class="address-detail">
+          <img src="assets/icons/location-icon.svg" alt="Location" width="16" height="20" />
+          <div class="address-text-detail d-flex flex-column w-100">
+            <h2 style="font-size: 13px">Deliver to:</h2>
+            <div class="address-text d-flex justify-content-between">
+              <h2>{{ selectedAddress }}</h2>
+              <a role="button" tabindex="0" (click)="openAddressPopup()">Change</a>
+            </div>
+            <span class="shipping-date" style="font-size: 16px">Get it by Mon, 2nd Jan</span>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #emptyAddress>
+        <div class="d-flex flex-column gap-2">
+          <div class="address-empty" role="group" aria-label="Check delivery date">
+            <div class="empty-left">
+              <h2>Check delivery date</h2>
+            </div>
+            <div class="empty-right">
+              <input class="pincode-input" type="text" inputmode="numeric" maxlength="6" placeholder="Enter Pincode"
+                #pincode />
+              <mindful-button class="pincode-check" type="magenta" text="Check"
+                (click)="checkPincode(pincode.value)"></mindful-button>
+            </div>
+          </div>
+          <div class="pincode-message" *ngIf="pincodeAvailable !== null">
+            <h2 style="color:#90214D" *ngIf="pincodeAvailable">Get it by Mon, 2nd Jan</h2>
+            <h2 style="color: #BB2124;" *ngIf="pincodeAvailable === false">Not available for {{ lastCheckedPincode }}
+              pincode</h2>
+          </div>
+        </div>
+      </ng-template>
+
+
+      <!--exchange-->
+      <div class="footer-exchange" role="contentinfo" aria-label="Store footer features">
+        <div class="footer-item">
+          <img src="/assets/School-assets/School Partner.png" alt="Official School Partner" />
+          <h2 class="footer-text">Official School Partner</h2>
+        </div>
+
+        <div class="footer-item">
+          <img src="/assets/School-assets/Easy Exchange.png" alt="Easy Exchange" />
+          <h2 class="footer-text">Easy 7 day Return & Exchange</h2>
+        </div>
+
+        <div class="footer-item">
+          <img src="/assets/School-assets/Secure Payment.png" alt="Secure Payment" />
+          <h2 class="footer-text">Secure Payment</h2>
+        </div>
+      </div>
+
+      <!--product-detail-dropdown-->
+      <div class="product-detail-dropdown" role="button" tabindex="0" [attr.aria-expanded]="detailsExpanded"
+        (click)="toggleDetails($event)" (keydown.enter)="toggleDetails($event)" (keydown.space)="toggleDetails($event)"
+        [class.open]="detailsExpanded">
+        <div class="product-detail-summary">
+          <h2>Product Details</h2>
+          <ion-icon name="caret-down" [class.open]="detailsExpanded"></ion-icon>
+        </div>
+        <div class="product-detail-body">
+          <ul>
+            <li>
+              <strong>Material:</strong> 65% Polyester, 35% Cotton (Durable).
+            </li>
+            <li><strong>Fit:</strong> Regular School Fit.</li>
+            <li><strong>Care:</strong> Machine Wash.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!--purchase-bar-->
+    <div class="product-purchase-bar">
+      <span class="discounted-price">
+        {{ product?.price ?? product?.discountedPrice ? ((product.price ?? product.discountedPrice)) : '₹799' }}
+      </span>
+      <mindful-button class="page-cta" type="magenta" text="Add To Bag" large (click)="addToCart()"></mindful-button>
+    </div>
+  </main>
+
+  <size-guide [sizeChart]="sizeChart" [selectedSize]="selectedSize" [unit]="unit" [outOfStockSizes]="outOfStockSizes" [isOpen]="showSizeGuide" [heading]="heading" [productTitle]="product?.title || 'Classic White Half-Sleeve Shirt'" [productSubtitle]="product?.tag || 'St. Xavier’s High School'" [discountedPrice]="product?.price ?? product?.discountedPrice ? (product.price ?? product.discountedPrice) : '₹799'" [originalPrice]="product?.originalPrice ?? product?.mrp ?? '₹999'" [productImage]="images[0] || 'assets/School-assets/temp/Shirt-l.jpg'" (sizeSelected)="selectSize($event)" (unitSelected)="selectUnit($event)" (closeModal)="closeSizeGuide()"></size-guide>
+</ion-content>

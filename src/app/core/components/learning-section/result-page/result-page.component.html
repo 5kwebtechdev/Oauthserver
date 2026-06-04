@@ -1,0 +1,121 @@
+<ion-content>
+  <mindful-navigator heading="" backIcon="cancel" (back)="onCancel()">
+  </mindful-navigator>
+  <div class="result-container">
+    <div class="pet-container">
+      <mindful-pet [name]="'Buddy'" [pet]="'panda'" [mood]="getPetMood()" [age]="2" [sizePreset]="142">
+      </mindful-pet>
+      <h2>{{ celebrationText || 'Great Work!' }}</h2>
+
+      <div class="congrats-img">
+        <img class="confetti left" src="assets/Images-Transparent/congrats.png" alt="confetti left"
+          *ngIf="isExcellentScore()" />
+        <div class="result-wrap" [ngStyle]="{'border-color': getScoreColor()}">
+          <span class="question-count" [ngStyle]="{'color': getScoreColor()}">{{ correctAnswers }}/{{ totalQuestions
+            }}</span>
+        </div>
+        <img class="confetti right" src="assets/Images-Transparent/congrats.png" alt="confetti right"
+          *ngIf="isExcellentScore()" />
+      </div>
+    </div>
+
+    <div class="reward-u-got">
+      <div class="reward-item">
+        <span class="plus">+</span>
+        <img src="assets\Icons-Neutral\Icons-Coins.png" alt="Coins" class="reward-icon" />
+        <span class="reward-count">{{ coinsEarned }}</span>
+      </div>
+      <div class="reward-item">
+        <span class="plus">+</span>
+        <img src="assets\Icons-Neutral\Icon-Trophy.png" alt="Trophy" class="reward-icon" />
+        <span class="reward-count">{{ trophiesEarned }}</span>
+      </div>
+    </div>
+
+    <!-- Overall Feedback -->
+    <!-- <div class="feedback-section" *ngIf="overallFeedback">
+      <p class="feedback-text">{{ overallFeedback }}</p>
+    </div> -->
+
+    <!-- First Completion Message -->
+    <!-- <div class="first-completion-badge" *ngIf="firstCompletion">
+      <p class="first-completion-text">🎉 First time completing this challenge!</p>
+    </div> -->
+
+    <!-- Badges Section -->
+    <div class="badges-section">
+      <!-- Newly Earned Badges -->
+      <div *ngIf="earnedNewBadge && newlyEarnedBadges && newlyEarnedBadges.length > 0">
+        <h3 class="badge-celebration-title">{{ badgeCelebrationMessage || 'New Badges Unlocked!' }}</h3>
+        <div class="badge-grid w-100 d-flex">
+          <div *ngFor="let badge of newlyEarnedBadges" class="badge-card w-100">
+            <div class="badge-content">
+              <div class="badge-info">
+                <p class="progress-text">{{ badge.progress || '1/1' }}</p>
+                <div class="badge-visual">
+                  <div class="badge-icon-container">
+                    <img [src]="badge.iconUrl || 'assets/Icons-Neutral/Icon-Trophy.png'" [alt]="badge.name"
+                      class="badge-icon" />
+                  </div>
+                  <mindful-completion [completionPercentage]="100" [borderColor]="getScoreColor()" [innerText]="''"
+                    [belowText]="''">
+                  </mindful-completion>
+                </div>
+              </div>
+              <p class="badge-name">{{ badge.name }}</p>
+              <p class="badge-level-text">{{ badge.level || 'Expert Level' }}</p>
+              <p class="badge-description">{{ badge.description }}</p>
+              <p class="badge-achievement">Achievement Unlocked!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Achievement Badges Based on Performance -->
+      <div class="badge-grid w-100 d-flex">
+        <!-- Quiz Ace Badge -->
+        <div class="badge-card w-100">
+          <div class="badge-content">
+            <div class="badge-info">
+              <p class="progress-text">1/1</p>
+              <div class="badge-visual">
+                <div class="badge-icon-container">
+                  <img [src]="quizAceBadge.iconUrl" [alt]="quizAceBadge.name" class="badge-icon" />
+                </div>
+                <mindful-completion [completionPercentage]="100" [borderColor]="getScoreColor()" [innerText]="''"
+                  [belowText]="''">
+                </mindful-completion>
+              </div>
+            </div>
+            <p class="badge-name">{{ quizAceBadge.name }}</p>
+            <p class="badge-level-text">Expert Level</p>
+            <p class="badge-description">{{ quizAceBadge.description }}</p>
+            <p class="badge-achievement">Achievement Unlocked!</p>
+          </div>
+        </div>
+
+        <!-- Puzzle Master Badge -->
+        <div class="badge-card w-100">
+          <div class="badge-content">
+            <div class="badge-info">
+              <p class="progress-text">1/1</p>
+              <div class="badge-visual">
+                <div class="badge-icon-container">
+                  <img [src]="puzzleMasterBadge.iconUrl" [alt]="puzzleMasterBadge.name" class="badge-icon" />
+                </div>
+                <mindful-completion [completionPercentage]="100" [borderColor]="getScoreColor()" [innerText]="''"
+                  [belowText]="''">
+                </mindful-completion>
+              </div>
+            </div>
+            <p class="badge-name">{{ puzzleMasterBadge.name }}</p>
+            <p class="badge-level-text">Master Level</p>
+            <p class="badge-description">{{ puzzleMasterBadge.description }}</p>
+            <p class="badge-achievement">Achievement Unlocked!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</ion-content>

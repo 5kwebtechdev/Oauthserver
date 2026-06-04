@@ -1,0 +1,29 @@
+<ion-content>
+<mindful-navigator 
+  [heading]="title" 
+  [rightActions]="[
+    { type: 'icon', src: '/assets/icons/delete.svg', alt: 'Delete' },
+    { type: 'icon', src: '/assets/icons/share.svg', alt: 'Share' }
+  ]"
+  (back)="onBack()"
+  (rightActionClick)="onNavigatorAction($event)">
+</mindful-navigator>
+<div class="note-view">
+  <!--note content-->
+  <div class="note-content" [innerHTML]="contentHtml"></div>
+
+    <!-- Debug: show raw payload for troubleshooting (remove in production) -->
+    <pre class="note-raw">{{content}}</pre>
+
+  <!-- Use the shared MindfulPopup component for confirmation -->
+  <app-mindful-popup [isVisible]="showMindfulPopup" [config]="{
+      heading: 'Are you sure you want to delete this note?',
+      subtitle: '',
+      primaryCTA: { text: 'Delete', type: 'secondary', buttonStyle: 'bronze', buttonMedium: true },
+      secondaryCTA: { text: 'Cancel', type: 'secondary', buttonStyle: 'bronze-transparent', buttonMedium: true },
+      showCloseButton: false,
+      backdrop: true
+    }" (primaryAction)="confirmDelete()" (secondaryAction)="confirmCancel()"
+    (backdropClick)="confirmCancel()"></app-mindful-popup>
+</div>
+</ion-content>

@@ -1,0 +1,33 @@
+<!-- Speech Bubble Component Template -->
+<div
+  class="speech-bubble-container"
+  [class.animate-in]="animate"
+  [class.thinking]="type === 'thinking'"
+  [attr.data-arrow-side]="arrowSide">
+
+  <!-- Speech Bubble -->
+  <div class="speech-bubble" [attr.data-side]="arrowSide">
+
+    <!-- Message Content -->
+    <div class="bubble-content">
+      <p class="message-text">{{ displayMessage }}</p>
+    </div>
+
+    <!-- Arrow - Only for talking type with a valid side -->
+    <div
+      *ngIf="showArrow"
+      class="bubble-arrow"
+      [class.arrow-left]="arrowSide === 'left'"
+      [class.arrow-right]="arrowSide === 'right'"
+      [class.arrow-top]="arrowSide === 'top'"
+      [class.arrow-bottom]="arrowSide === 'bottom'">
+    </div>
+
+    <!-- Thinking bubbles - Only for thinking type -->
+    <ng-container *ngIf="type === 'thinking'">
+      <span class="thinking-dot dot1"></span>
+      <span class="thinking-dot dot2"></span>
+      <span class="thinking-dot dot3"></span>
+    </ng-container>
+  </div>
+</div>

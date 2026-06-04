@@ -1,0 +1,35 @@
+.timeline-page-container {
+    padding: 0 16px;
+    padding-bottom: 100px; // Space for FAB
+}
+
+.timeline-score-card {
+    display: flex;
+    padding: 16px;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    border-radius: 32px;
+    background: #FDFDFD;
+    box-shadow: 0 0 8px 2px rgba(107, 101, 106, 0.15);
+    margin-top: 24px;
+    margin-bottom: 24px;
+}
+
+.selectors-container {
+    margin-bottom: 16px;
+    padding: 0;
+}
+
+.timeline-wrapper {
+    width: 100%;
+    overflow: visible;
+}
+
+.add-button-fixed {
+    position: fixed;
+    bottom: max(72px, env(safe-area-inset-bottom, 24px));
+    right: 20px;
+    z-index: 1000;
+    cursor: pointer;
+}

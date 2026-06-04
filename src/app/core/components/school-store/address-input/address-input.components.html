@@ -1,0 +1,64 @@
+<ion-content>
+    <main class="address-input-container">
+        <mindful-navigator heading="Add Delivery Address" backIcon="arrowSvg" (back)="goBack()">
+        </mindful-navigator>
+        <div class="map-picker">
+
+        </div>
+            <form class="address-input-wrap" [formGroup]="addressForm" (ngSubmit)="saveAddress()">
+            <div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="input-fields" style="width: 30%;">
+                <h2>Pincode</h2>
+                <input class="address-input" formControlName="pincode" type="text" placeholder="600071" inputmode="numeric" pattern="[0-9]*" maxlength="6" [class.invalid]="pincodeControl.invalid && (pincodeControl.touched || pincodeControl.dirty)" (input)="onPincodeInput($event)">
+            </div>
+            <div class="input-fields" style="width: 70%;">
+                <h2>City & State</h2>
+                <input class="address-input" formControlName="cityState" type="text" placeholder="Chennai, Tamil Nadu">
+            </div>
+            </div>
+            <div class="error" *ngIf="pincodeError">{{ pincodeError }}</div>
+            </div>
+            <div class="input-fields">
+                <h2>Flat, House No, Building, Company, Apartment *</h2>
+                <input class="address-input" formControlName="flat" type="text" placeholder="502, Galaxy Apartments" [class.invalid]="flatControl.invalid && (flatControl.touched || flatControl.dirty)">
+                <div class="error" *ngIf="flatError">{{ flatError }}</div>
+            </div>
+            <div class="input-fields">
+                <h2>Area, Street, Sector, Village *</h2>
+                <input class="address-input" formControlName="area" type="text" placeholder="Association Road" [class.invalid]="areaControl.invalid && (areaControl.touched || areaControl.dirty)">
+                <div class="error" *ngIf="areaError">{{ areaError }}</div>
+            </div>
+
+            <div class="input-fields">
+                <h2>Landmark (Optional)</h2>
+                <input class="address-input" type="text" placeholder="Eg. Near Hospital">
+            </div>
+
+            <div class="input-fields">
+                <h2>Full Name</h2>
+                <input class="address-input" formControlName="fullName" type="text" placeholder="Enter Name" [class.invalid]="fullNameControl.invalid && (fullNameControl.touched || fullNameControl.dirty)">
+                <div class="error" *ngIf="fullNameError">{{ fullNameError }}</div>
+            </div>
+
+            <div class="input-fields">
+                <h2>Phone Number</h2>
+                <div class="phone-input">
+                    <span class="phone-prefix">+91</span>
+                    <input class="address-input phone-number" formControlName="phone" type="tel" placeholder="Enter Number" inputmode="numeric" pattern="[0-9]*" maxlength="10" [class.invalid]="phoneControl.invalid && (phoneControl.touched || phoneControl.dirty)" (input)="onPhoneInput($event)">
+                </div>
+                <div class="error" *ngIf="phoneError">{{ phoneError }}</div>
+            </div>
+
+            <div class="input-fields d-flex align-items-center gap-2">
+                <h2 class="set-default">
+                    <input type="checkbox" /> Set address as default
+                </h2>
+            </div>
+
+            <div class="input-fields">
+                <mindful-button type="magenta" class="page-cta" text="Add Address" large [class.disabled]="addressForm.invalid"></mindful-button>
+            </div>
+        </form>
+    </main>
+</ion-content>

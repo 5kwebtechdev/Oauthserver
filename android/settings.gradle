@@ -1,0 +1,28 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+    plugins {
+        id "org.jetbrains.kotlin.android" version "1.9.24"
+    }
+}
+
+dependencyResolutionManagement {
+    // Prefer repositories declared in settings, but allow project modules to add
+    // their own repositories when necessary (some Capacitor modules add Google/Maven).
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+rootProject.name = "MindfulBuddy-App"
+
+apply from: "capacitor.settings.gradle"
+
+include(":app")
+include(":capacitor-cordova-android-plugins")

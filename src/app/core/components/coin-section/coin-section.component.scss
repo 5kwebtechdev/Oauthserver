@@ -1,0 +1,189 @@
+.coin-card {
+    width: 100%;
+    border-radius: 0px 0px 48px 48px;
+    background: linear-gradient(109deg, #BE6F03 1.38%, #EBA235 50.47%, #CB7D0C 98.62%);
+    padding: 16px 16px 24px;
+    position: relative;
+    color: white;
+}
+
+/* When viewing as a parent (no panda message), pin coins and redeem button to bottom */
+.coin-card.parent-view {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    p {
+        color: #FDFDFD;
+        font-family: Fredoka;
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0;
+    }
+}
+
+.robot-icon {
+    width: 56px;
+    height: 56px;
+}
+
+.coins {
+    display: flex;
+    align-items: center;
+
+    .coin-icon {
+        width: 40px;
+        height: auto;
+        aspect-ratio: 20/23;
+    }
+
+    .coin-value {
+        color: #FDFDFD;
+        font-family: Nunito;
+        font-size: 32px;
+        font-weight: 700;
+        line-height: 140%;
+    }
+}
+
+
+
+.coin-list-section {
+    padding: 16px 16px 100px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+    gap: 16px;
+
+    ion-spinner {
+        width: 40px;
+        height: 40px;
+        color: #EBA235;
+    }
+
+    p {
+        color: #6B656A;
+        font-family: Nunito;
+        font-size: 14px;
+        font-weight: 500;
+    }
+}
+
+.blank-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+
+    .home-blank {
+        width: 256px;
+        height: 158px;
+        aspect-ratio: 128/79;
+    }
+
+    .blank-text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+
+        h1 {
+            width: 339px;
+            color: #282527;
+            text-align: center;
+            font-family: Fredoka;
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 140%;
+        }
+
+        p {
+            width: 269px;
+            color: #282527;
+            text-align: center;
+            font-family: Nunito;
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 140%;
+            opacity: 0.7;
+        }
+    }
+}
+
+.coin-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.coin-detail {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .item-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .coin-label {
+        display: flex;
+        width: 136px;
+        flex-direction: column;
+        gap: 2px;
+
+        .item-title {
+            color: #282527;
+            font-family: Nunito;
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 140%;
+        }
+
+        .item-date {
+            color: #6B656A;
+            font-family: Nunito;
+            font-size: 10px;
+            font-weight: 600;
+            line-height: 140%;
+        }
+    }
+}
+
+.coin-count {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .count-icon {
+        width: 24px;
+        height: auto;
+        aspect-ratio: 6/7;
+        object-fit: contain;
+    }
+
+    .count-value {
+        color: #28A745;
+        font-family: Nunito;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 140%;
+    }
+    .count-value.negative {
+        color: #BB2124;
+    }
+}

@@ -1,0 +1,32 @@
+<ion-content [fullscreen]="true" style="--padding-top: var(--sat)">
+  <div class="main-container">
+    <!-- Header -->
+    <mindful-card-header [title]="'Welcome to Your Life Skills Quest!'" [subtitleLeft]="'Real lessons'"
+      [subtitleMiddle]="'Life ready'" [subtitleRight]="'Future strong'" [showBackArrow]="true"
+      (backClick)="onBackClick()">
+    </mindful-card-header>
+
+    <!-- Panda Section -->
+    <div class="panda-section">
+      <mindful-pet pet="panda"></mindful-pet>
+      <app-speech-bubble message="These lessons are like superpowers for your real world!"></app-speech-bubble>
+    </div>
+
+    <div class="question">
+      Where do you want to grow today?
+    </div>
+
+    <div class="subject-cards">
+      <div *ngFor="let card of categoryCards" class="card" [ngClass]="card.color" (click)="openSubject(card.category)">
+        <img [src]="card.thumbnail || card.image" [alt]="card.title">
+        <p [innerHTML]="card.displayTitle"></p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-note">
+      Tap a card to learn real-life stuff!
+    </div>
+  </div>
+</ion-content>
+<footer></footer>
