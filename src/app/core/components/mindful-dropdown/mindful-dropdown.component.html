@@ -1,0 +1,12 @@
+<div class='dropdown-container' [ngClass]='width'>
+  <div class='dropdown-selector' (click)='toggleDropdown()'>
+    <div class='dropdown-label'>{{ selectedOption ? selectedOption.value : label }}</div>
+    <div class='dropdown-chevron' [ngClass]="{ 'open': isOpen }"><ion-icon name='chevron-down-outline'></ion-icon></div>
+  </div>
+  <div class='dropdown-options' *ngIf='isOpen'>
+    <div class='option-item' *ngFor='let option of options' (click)='selectOption(option)'>
+      <div class='option-value'>{{ option.value }}</div>
+      <div class='option-check' *ngIf='selectedOption && selectedOption.key === option.key'><ion-icon name='checkmark-outline'></ion-icon></div>
+    </div>
+  </div>
+</div>

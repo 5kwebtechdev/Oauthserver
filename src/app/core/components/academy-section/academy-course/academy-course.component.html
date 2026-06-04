@@ -1,0 +1,40 @@
+<ion-content>
+  <div class="container">
+    <mindful-navigator backIcon="arrowSvg" (back)="goBack()"></mindful-navigator>
+
+
+    <div *ngIf="!isLoadingCourse && !loadError && course">
+      <img [src]="course.image || 'header-img.png'" alt="{{ course.title }} Illustration">
+      <h3>{{ course.title }}</h3>
+      <p class="subtitle">{{ course.lessons }} {{ course.lessons === 1 ? 'lesson' : 'lessons' }} • {{ course.duration }}</p>
+      <mindful-button *ngIf="resumeLessonIndex !== null" [type]="'magenta'" full
+        [text]="'Continue with lesson ' + (resumeLessonIndex + 1)"
+        (click)="onStartLesson(resumeLessonIndex)"></mindful-button>
+
+      <p class="desc">{{ course.description }}</p>
+    </div>
+  </div>
+
+  <div class="lesson" *ngFor="let lesson of lessons; let i = index"
+    [class.locked]="lesson.isLocked">
+    <div class="lesson-thumb">
+      <img [src]="lesson.image" [alt]="lesson.title" />
+    </div>
+    <div class="lesson-info">
+      <h3>{{ lesson.title }}</h3>
+      <p>{{ lesson.desc }}</p>
+      <span class="time">{{ lesson.time }}
+        <span class="dot">•</span>
+        <img class="coin-icon" src="/assets/Icons-Neutral/Icons-Coins.png" alt="coins" />
+        <span class="coin-value">{{ lesson.coins || 0 }}</span>
+      </span>
+
+      <mindful-button [type]="'magenta'" small (click)="onStartLesson(i)"
+        [text]="lesson.isCompleted ? 'Read Again' : ((lesson.lessonStatus === 'ONGOING' || lesson.status === 'ONGOING') ? 'Continue' : 'Start Lesson')"
+        [disabled]="lesson.isLocked"></mindful-button>
+    </div>
+
+    <div class="overlay" *ngIf="lesson.isLocked"></div>
+  </div>
+
+</ion-content>

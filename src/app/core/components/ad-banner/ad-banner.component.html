@@ -1,0 +1,29 @@
+<div class="ad-banner" role="region" aria-label="Advertisement banner">
+  <div #slidesContainer class="slides-wrapper">
+      <div class="slider">
+        <div class="slides" [style.transform]="'translateX(' + (-currentIndex * 100) + '%)'">
+          <div class="slide" *ngFor="let slide of slides; let i = index">
+            <div class="slide-content">
+              <h3 class="head">{{ slide.head }}</h3>
+              <p class="desc">{{ slide.desc }}</p>
+              <button class="cta">{{ slide.cta }}</button>
+            </div>
+            <div class="slide-image">
+              <img *ngIf="slide.image" [src]="slide.image" [attr.alt]="slide.head" loading="lazy" />
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="dots">
+        <button
+          *ngFor="let _ of slides; let i = index"
+          class="dot"
+          [class.active]="i === currentIndex"
+          (click)="goTo(i)"
+          [attr.aria-label]="'Go to slide ' + (i + 1)"
+        ></button>
+      </div>
+  </div>
+  <div #pagerContainer class="pager"></div>
+</div>

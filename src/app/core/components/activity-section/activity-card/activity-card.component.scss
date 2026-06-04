@@ -1,0 +1,585 @@
+@use 'sass:color';
+.day-at-glance-container {
+  display: flex;
+  flex-direction: column;
+  // padding: 0px 16px;
+  gap: 24px;
+  width: 100%;
+  // margin-bottom: 24px;
+}
+
+.glance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.glance-in-day {
+  font-weight: bold;
+  font-size: 24px;
+}
+
+
+
+.glance-subtitle {
+  // margin-top: 1vw;
+  align-self: flex-start;
+  margin-left: 4vw;
+  margin-bottom: 20px;
+}
+
+// Tab Navigation
+.toggler {
+  display: flex;
+  // background-color: #f5f5f5;
+  // border-radius: 20px;
+  overflow: hidden;
+  margin: 0 16px 16px 16px;
+
+  .col-4 {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &.active {
+      color: #90214D;
+      font-weight: bold;
+    }
+  }
+}
+
+/* Mode-specific styles: change active color and underline based on selected mode */
+.toggler .col-4 {
+  position: relative;
+}
+
+.toggler.habits-active .col-4.active {
+  color: #8B8DCB;
+}
+
+.toggler.habits-active .col-4.active::before {
+  content: "";
+  position: absolute;
+  left: 20%;
+  bottom: 0;
+  width: 60%;
+  height: 2px;
+  background: #8B8DCB;
+}
+
+.toggler.tasks-active .col-4.active {
+  color: #F6AC72;
+}
+
+.toggler.tasks-active .col-4.active::before {
+  content: "";
+  position: absolute;
+  left: 20%;
+  bottom: 0;
+  width: 60%;
+  height: 2px;
+  background: #F6AC72;
+}
+
+p {
+  color: #666;
+  font-size: 16px;
+}
+
+/* Added styles for clickable habit header */
+.habit-header-container.clickable {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  border-radius: 12px;
+
+  &:hover {
+    background-color: #ffffff;
+  }
+
+  &:active {
+    background-color: #ffffff;
+    transform: scale(0.99);
+  }
+
+  &:active {
+    background-color: #ffffff;
+  }
+}
+
+.expand-indicator {
+  margin-left: 8px;
+  color: #90214D;
+  font-size: 18px;
+  font-weight: bold;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(144, 33, 77, 0.1);
+  transition: all 0.3s ease;
+
+  span {
+    line-height: 1;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+
+  &.rotated span {
+    transform: rotate(45deg);
+  }
+}
+
+
+
+.add-button-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0px 16px;
+  margin: 0 !important;
+
+  .empty-add-btn {
+    padding: 0px !important;
+  }
+}
+
+.habit-wrapper {
+  display: flex;
+  height: auto;
+  padding: 8px 12px 12px 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  border-left: 4px solid #8B8DCB;
+  background: #FDFDFD;
+  border-radius: 16px;
+  background: #FFF;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+
+/* Task variant: use orange left border */
+.habit-wrapper.task {
+  border-left: 4px solid #F6AC72;
+}
+
+// .habit-wrapper.expanded {
+//   margin-bottom: 28px;
+// }
+
+.habit-tease {
+  display: block;
+  width: calc(100% - var(--card_offset));
+  position: relative;
+  left: var(--card_offset);
+  border-radius: 10px;
+  background: white;
+  padding: 10px;
+  transition: 0.2s;
+
+  .col-8 {
+    padding-left: 24px !important;
+  }
+}
+
+.habit-tease:after {
+  content: '';
+  position: absolute;
+  left: calc(var(--card_offset)* -1);
+  top: 0;
+  border-radius: 10px;
+  background: var(--offset_color);
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.expanded .habit-tease {
+  padding-bottom: 25px;
+}
+
+h3 {
+  font-family: 'Nunito', sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+  color: var(--primary_text);
+  margin-bottom: 0px !important;
+}
+
+/* Task title color override */
+.habit-wrapper.task h3 {
+  color: #E04D16;
+}
+
+h4 {
+  font-family: 'Nunito', sans-serif;
+  font-weight: bold;
+  font-size: 13px;
+  margin-bottom: 0;
+  color: var(--primary_text);
+}
+
+.habit-expandable-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.0s ease-out;
+  opacity: 0;
+
+  &.expanded {
+    width: 100%;
+    max-height: 500px;
+    /* Set this to a value that would accommodate your content */
+    opacity: 1;
+    transition: max-height 0.5s ease-in, opacity 0s ease-in;
+  }
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  padding: 5px 16px;
+  height: 24px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: bold;
+  font-size: 10px;
+  color: #45456A;
+  border-radius: 16px;
+  border: 1px solid #524F84;
+  background: #E8ECF7;
+  // padding: 7px 14px;
+  // position: absolute;
+  // top: 0;
+  // right: 10px;
+}
+
+/* Routine icon styling */
+.routine-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* Task-specific badge styling (routine badge) */
+.habit-wrapper.task .badge {
+  border-radius: 16px;
+  border: 1px solid #EE6621;
+  background: #FDEAD7;
+  color: #772817;
+}
+
+.habit-footer {
+  position: absolute;
+  opacity: 0;
+  top: 40px;
+  background: white;
+  z-index: 2;
+  width: calc(100% - var(--card_offset));
+  left: var(--card_offset);
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.0);
+  transition: 0.2s;
+
+}
+
+.habit-footer:before {
+  content: '';
+  position: absolute;
+  left: calc(var(--card_offset)* -1);
+  top: 0px;
+  border-radius: 10px;
+  background: var(--offset_color);
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.expanded .habit-footer {
+  top: 65px;
+  opacity: 1;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.15);
+}
+
+.expanded .habit-footer:before,
+.expanded .habit-tease:after {
+  border-radius: 20px;
+}
+
+// Progress bar container
+.habit-footer-progress-box {
+  width: 100%;
+  height: 6px;
+  background: #ddd; // Grey background for empty progress
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+// Progress bar fill
+.habit-footer-progress {
+  height: 100%;
+  width: 0%; // Initially 0%, updated by Angular binding
+  background: #4CAF50; // Green color for progress
+  transition: width 0.3s ease; // Smooth transition
+  border-radius: 4px;
+}
+
+// Green glow when expanded and in progress
+.expanded .habit-footer-progress {
+  box-shadow: 0 0 4px 0 rgba(110, 241, 110, 0.6);
+}
+
+// Red glow when running late
+.expanded.isRunningLate .habit-footer-progress {
+  background: #E74C3C; // Red color for running late
+  box-shadow: 0 0 4px 0 rgba(190, 10, 10, 0.6);
+}
+
+// Hide progress when time missed
+.expanded.missedTime .habit-footer-progress {
+  display: none !important;
+}
+
+.expanded.missedTime .habit-footer {
+  box-shadow: 0 0 2px 0 rgb(190, 10, 10);
+  border: 1px solid red;
+}
+
+.reward-section {
+  gap: 32px;
+}
+
+.footer-cta {
+  gap: 12px;
+}
+
+.habit-footer-container {
+  display: flex;
+  width: 100%;
+  position: relative;
+  margin-top: 12px !important;
+}
+
+.score {
+  display: inline-block;
+  margin: 0px;
+  vertical-align: middle;
+}
+
+.single-point-container img.score {
+  width: 24px;
+  height: auto;
+  object-fit: contain;
+  display: inline-block;
+  margin: 0;
+  padding-top: 1px;
+  vertical-align: middle;
+}
+
+// List mode styles
+.glance-in-day {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  margin-top: 30px;
+}
+
+.toggler {
+  margin-top: 25px;
+}
+
+.toggler div {
+  text-align: center;
+  font-size: 18px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 500;
+  color: black;
+  position: relative;
+  padding: 8px 0;
+}
+
+.toggler div.active {
+  color: #8B8DCB;
+}
+
+.toggler div.active:before {
+  position: absolute;
+  content: '';
+  width: 60%;
+  height: 2px;
+  left: 20%;
+  bottom: 0;
+  background: #90214D;
+}
+
+.toggler div:not(:last-child) {
+  border-right: 1px solid black;
+}
+
+.d-flex flex-column .container w-full {
+  --bs-gutter-x: 0px !important;
+  margin-left: 0px !important;
+  padding-left: 0px !important;
+}
+
+.habit-title {
+  color: #524F84;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 140%;
+  /* 22.4px */
+}
+
+.habit-timing {
+  color: #6360A2;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 140%;
+  /* 18.2px */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-timing {
+  color: #BB2124;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 140%;
+  /* 18.2px */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Timer icon shown when an activity is in-progress */
+.timer-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px; /* ensure at least 4px space between svg and bubble */
+  cursor: pointer;
+}
+
+.timer-icon svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Size the header "view all" icon in the Day At A Glance card */
+.day-at-glance__view-all {
+
+  /* Timer speech bubble shown after timer icon when user clicks Let's Go */
+  .bubble {
+    position: relative;
+    background: #a1a7d8;
+    color: #FFFFFF;
+    font-family: Arial;
+    font-size: 10px;
+    line-height: 21px;
+    text-align: center;
+    width: 121px;
+    height: 25px;
+    border-radius: 4px;
+    padding: 0px;
+  }
+
+  .bubble:after {
+    content: '';
+    position: absolute;
+    display: block;
+    width: 0;
+    z-index: 1;
+    border-style: solid;
+    border-color: transparent #a1a7d8;
+    border-width: 5px 8px 5px 0;
+    top: 50%;
+    left: -8px;
+    margin-top: -5px;
+  }
+
+  width: 40px;
+  height: auto;
+      margin-bottom: -14px;
+}
+
+/* Text 'View All' button replaced from mindful-button */
+.text-view-all {
+  display: block;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+  /* keep same alignment as other CTAs */
+  color: #282527;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 140%;
+  /* 22.4px */
+  cursor: pointer;
+
+  /* subtle hover effect */
+  transition: color 0.15s ease, transform 0.06s ease;
+
+
+  &:active {
+    transform: translateY(0);
+  }
+
+
+}
+
+.bubble {
+    position: relative;
+    background: #A1A7ED;
+    color: #FFFFFF;
+    font-family: "Nunito", sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    border: #A1A7D8 solid 1px;
+    padding: 0px 2px;
+    align-items: center;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.bubble:after {
+  content: '';
+  position: absolute;
+  display: block;
+  width: 0;
+  z-index: 2;
+  border-style: solid;
+  border-width: 5px 8px 5px 0;
+  /* top right bottom left */
+  border-color: transparent #a1a7d8 transparent transparent;
+  top: 50%;
+  left: -8px;
+  margin-top: -5px;
+}
+
+.bubble:before {
+  /* subtle shadow/outline behind the arrow */
+  content: '';
+  position: absolute;
+  width: 0;
+  z-index: 1;
+  border-style: solid;
+  border-width: 8px 10px 8px 0;
+  border-color: transparent rgba(0, 0, 0, 0.06) transparent transparent;
+  top: 50%;
+  left: -9.5px;
+  margin-top: -8px;
+  display: block;
+}

@@ -1,0 +1,823 @@
+@use 'sass:map';
+
+@import "@ionic/angular/css/core.css";
+
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
+// SVG Icon System - Store all icon paths in one place
+$svg-icons: (
+  back: '/assets/icons/back.svg',
+  menu: '/assets/icons/menu.svg',
+  close: '/assets/icons/close.svg',
+  delete: '/assets/icons/delete.svg',
+  share: '/assets/icons/share.svg',
+  resize_grip: '/assets/icons/resize-grip.svg',
+  edit: '/assets/icons/edit.svg',
+  heart: '/assets/icons/heart.svg',
+  search: '/assets/icons/search.svg'
+);
+
+// Function to get icon URL by type
+@function icon-url($name){
+  $path: map.get($svg-icons, $name);
+
+@if $path ==null {
+  @error "Unknown icon `#{$name}`. Add it to $svg-icons map in global.scss";
+}
+
+@return url(#{$path});
+}
+
+// Mixin to apply SVG icon as background or mask
+@mixin svg-icon($name, $size: 20px, $color: null) {
+  $path: map.get($svg-icons, $name);
+
+  @if $path ==null {
+    @error "Unknown icon `#{$name}`. Add it to $svg-icons map in global.scss";
+  }
+
+  width: $size;
+  height: $size;
+  display: inline-block;
+
+  @if $color ==null {
+    background: icon-url($name) no-repeat center/contain;
+  }
+
+  @else {
+    -webkit-mask: url(#{$path}) no-repeat center/contain;
+    mask: url(#{$path}) no-repeat center/contain;
+    background-color: $color;
+  }
+}
+
+// Optional: Generate utility classes for each icon
+@each $name, $path in $svg-icons {
+  .icon-#{$name} {
+    @include svg-icon($name);
+  }
+}
+
+:root {
+  --error_color: #bb2124;
+  --font-heading: 'Fredoka', sans-serif;
+  --font-sans: 'Nunito', sans-serif;
+  /* Visual footer height used across app to reserve space for fixed footer */
+  --footer-visual-height: 80px;
+
+  // ── Safe Area Inset Variables ─────────────────────────────────────────
+  // Fallback 0px for devices/browsers that don't support env().
+  // On Android (setOverlaysWebView=false) these evaluate to 0.
+  // On iOS (viewport-fit=cover) these return the real notch/gesture values.
+  --sat: env(safe-area-inset-top,    0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left,   0px);
+  --sar: env(safe-area-inset-right,  0px);
+}
+
+html,
+body {
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+label {
+  font-family: var(--font-heading);
+}
+
+.fredoka {
+  font-family: var(--font-heading);
+}
+
+.w-full {
+  width: 100%;
+  max-width: unset;
+}
+
+.p-0 {
+  padding: 0 !important;
+}
+
+.p-l-0 {
+  padding-left: 0 !important;
+}
+
+.p-r-0 {
+  padding-right: 0 !important;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// ── Safe Area Utility Classes ─────────────────────────────────────────────
+// Add these to any element that needs to respect device safe areas.
+// Works on all: Samsung, Pixel, Xiaomi, iPhone (notch/Dynamic Island/rounded).
+
+// Pad all four sides
+.safe-area {
+  // padding-top:    var(--sat) !important;
+  padding-bottom: var(--sab) !important;
+  padding-left:   var(--sal) !important;
+  padding-right:  var(--sar) !important;
+}
+
+// Individual sides
+.safe-top    { padding-top:    var(--sat) !important; }
+.safe-bottom { padding-bottom: var(--sab) !important; }
+.safe-left   { padding-left:   var(--sal) !important; }
+.safe-right  { padding-right:  var(--sar) !important; }
+
+// Horizontal + vertical pairs
+.safe-x {
+  padding-left:  var(--sal) !important;
+  padding-right: var(--sar) !important;
+}
+.safe-y {
+  padding-top:    var(--sat) !important;
+  padding-bottom: var(--sab) !important;
+}
+
+// Margin equivalents (for cases where padding can't be used)
+.safe-margin-top    { margin-top:    var(--sat) !important; }
+.safe-margin-bottom { margin-bottom: var(--sab) !important; }
+
+// Min-height that always fills the safe viewport (useful for full-screen pages)
+.safe-full-height {
+  min-height: calc(100dvh - var(--sat) - var(--sab)) !important;
+}
+
+// Fixed-positioned element that is automatically safe-area aware
+// Usage: add .fixed-safe to any position:fixed element
+.fixed-safe {
+  padding-top:    var(--sat);
+  padding-bottom: var(--sab);
+  padding-left:   var(--sal);
+  padding-right:  var(--sar);
+}
+
+// Header that never hides behind the status bar
+.safe-header {
+  padding-top: var(--sat);
+}
+
+// Footer / bottom bar that never hides behind gesture nav
+.safe-footer {
+  padding-bottom: var(--sab);
+}
+
+:root {
+  --footer_text: #6B656A;
+}
+
+.card {
+  background: #FDFDFD;
+  box-shadow: 0px 0px 8px 2px rgba(107, 101, 106, 0.15);
+  border-radius: 32px;
+}
+
+.typical-header {
+  top: 0;
+  left: 0;
+  width: 100vw;
+  min-height: 60px;
+
+  h3 {
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 140%;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.toggler {
+  margin-top: 25px;
+}
+
+.toggler div {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 500;
+  color: black;
+  position: relative;
+  padding: 8px 0;
+}
+
+.toggler div.active {
+  color: #8B8DCB;
+}
+
+.toggler div.active:before {
+  position: absolute;
+  content: '';
+  width: 60%;
+  height: 2px;
+  left: 20%;
+  bottom: 0;
+  background: #8B8DCB;
+}
+
+.toggler div:not(:last-child) {
+  border-right: 1px solid black;
+}
+
+.mindful-page-container {
+  padding: 20px;
+  min-height: 100dvh;
+  width: 100%;
+  box-sizing: border-box;
+  color: #772817;
+  position: relative;
+  overflow-x: hidden;
+
+  @media (max-width: 480px) {
+    padding: 16px;
+  }
+
+  @media (max-width: 360px) {
+    padding: 12px;
+  }
+}
+
+.mindful-header {
+  font-weight: 500;
+  font-size: 25px;
+  color: #772817;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+
+  .back-icon {
+    margin-right: 10px;
+    font-size: 21px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: #EE6621;
+    }
+  }
+
+  @media (max-width: 480px) {
+    font-size: 22px;
+  }
+}
+
+// .mindful-btn {
+//   width: 100%;
+//   padding: 16px;
+//   border: none;
+//   border-radius: 12px;
+//   font-weight: 700;
+//   font-size: 16px;
+//   cursor: pointer;
+//   transition: all 0.3s ease;
+
+//   &--primary {
+//     background: #EE6621;
+//     color: #FFFFFF;
+
+//     &:hover:not(:disabled) {
+//       background: #d55a1e;
+//       transform: translateY(-2px);
+//       box-shadow: 0 4px 12px rgba(238, 102, 33, 0.3);
+//     }
+
+//     &:disabled {
+//       background: #ccc;
+//       cursor: not-allowed;
+//       transform: none;
+//     }
+//   }
+
+//   &--secondary {
+//     background: transparent;
+//     border: 2px solid #772817;
+//     color: #772817;
+//     font-weight: 600;
+//     font-size: 14px;
+//     padding: 12px;
+
+//     &:hover {
+//       background: #772817;
+//       color: #FFE9D6;
+//     }
+//   }
+
+//   @media (max-width: 480px) {
+//     padding: 14px;
+//     font-size: 15px;
+
+//     &.mindful-btn--secondary {
+//       font-size: 13px;
+//     }
+//   }
+// }
+
+
+.mindful-instructions {
+
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    gap: 15px;
+
+    @media (max-width: 480px) {
+      gap: 12px;
+    }
+  }
+
+  &__number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #FAD2AE;
+    color: #772817;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+
+    @media (max-width: 480px) {
+      width: 28px;
+      height: 28px;
+      font-size: 14px;
+    }
+  }
+
+  &__text {
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0;
+    color: #772817;
+    font-weight: 500;
+
+    @media (max-width: 480px) {
+      font-size: 15px;
+    }
+  }
+}
+
+.mindful-step-indicator {
+  margin-bottom: 30px;
+
+  &__step {
+    font-weight: 600;
+    font-size: 16px;
+    color: #772817;
+    margin: 0 0 8px 0;
+  }
+
+  &__title {
+    font-weight: 500;
+    font-size: 20px;
+    color: #772817;
+    margin: 0 0 15px 0;
+  }
+
+  &__progress {
+    width: 100%;
+    height: 4px;
+    background: #FAD2AE;
+    border-radius: 20px;
+    overflow: hidden;
+
+    &-fill {
+      width: 100%;
+      height: 100%;
+      background: #772817;
+      border-radius: 20px;
+    }
+  }
+}
+
+.bg-mindful-primary,
+.bg-mindful-secondary,
+.bg-mindful-accent {
+  min-height: 100dvh;
+  width: 100vw;
+  position: relative;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.bg-mindful-primary {
+  background: #FFE9D6;
+}
+
+.bg-mindful-secondary {
+  background: #FDEAD7;
+}
+
+.bg-mindful-accent {
+  background: #FAD2AE;
+}
+
+/* Give every routed page a solid background so it blocks the page behind it
+   during Ionic's slide transition. Individual pages override via :host. */
+.ion-page {
+  background: #ffffff;
+}
+
+ion-content {
+  --background: transparent;
+  width: 100vw;
+
+  // Height: full dynamic viewport minus bottom safe area.
+  // On Android (setOverlaysWebView=false): --sab=0 → 100dvh (WebView already inset by system).
+  // On iOS (viewport-fit=cover):           --sab=34px → avoids gesture bar.
+  height: calc(100dvh - var(--sab)) !important;
+
+  // ── Ionic CSS-variable padding (pierces shadow DOM) ──────────────────
+  // These are the ONLY reliable way to push content inside ion-content's
+  // internal scroll container. Regular padding on the host is ignored.
+  --padding-top:   var(--sat);  // clears status bar / notch / Dynamic Island
+  // --padding-start: var(--sal);  // clears left notch in landscape
+  --padding-end:   var(--sar);  // clears right notch in landscape
+  // --padding-bottom intentionally omitted; mindful-page-container handles
+  // footer + gesture-bar clearance per-page.
+
+  >* {
+    margin-top: 0 !important;
+  }
+
+  .container>*:first-child,
+  .signup-container>*:first-child,
+  .mindful-page-container>*:first-child {
+    margin-top: 0 !important;
+  }
+
+  &.bg-mindful-primary  { --background: #FFE9D6; }
+  &.bg-mindful-secondary { --background: #FDEAD7; }
+  &.bg-mindful-accent   { --background: #FAD2AE; }
+
+  .mindful-page-container {
+    // min-height fills visible safe area (top + bottom already inset above)
+    min-height: calc(100dvh - var(--sat) - var(--sab));
+    width: 100%;
+    position: relative;
+    // Safe area top is handled by ion-content --padding-top above — no extra top needed
+    padding-top: 0 !important;
+
+    >* {
+      margin-top: 0 !important;
+    }
+
+    // Bottom: reserve space for fixed footer + bottom gesture bar on every device.
+    padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab));
+  }
+}
+
+// @supports block previously duplicated env() calculations inline.
+// Now handled by --sat/--sab variables defined in :root, so this block
+// is no longer needed. Kept as empty guard in case future overrides land here.
+@supports (padding: max(0px)) {
+  // intentionally empty — all safe-area logic uses var(--sat)/var(--sab) above
+}
+
+@media (max-width: 768px) {
+
+  .bg-mindful-primary,
+  .bg-mindful-secondary,
+  .bg-mindful-accent {
+    min-height: 100dvh;
+  }
+
+  ion-content {
+
+    &.bg-mindful-primary,
+    &.bg-mindful-secondary,
+    &.bg-mindful-accent {
+      width: 100vw;
+      max-width: 100vw;
+    }
+  }
+}
+
+// Landscape on notch/punch-hole devices: side insets (--sal/--sar) are
+// handled by ion-content's --padding-start/--padding-end set above.
+@media (orientation: landscape) and (max-height: 500px) {
+
+  .bg-mindful-primary,
+  .bg-mindful-secondary,
+  .bg-mindful-accent {
+    min-height: 100dvh;
+  }
+
+  ion-content {
+
+    &.bg-mindful-primary,
+    &.bg-mindful-secondary,
+    &.bg-mindful-accent {
+      .mindful-page-container {
+        min-height: calc(100dvh - var(--sat) - var(--sab));
+      }
+    }
+  }
+}
+
+.text-mindful-primary {
+  color: #772817;
+}
+
+.text-mindful-secondary {
+  color: #6b3d2b;
+}
+
+.text-mindful-accent {
+  color: #EE6621;
+}
+
+body.reel-expanded {
+
+  footer,
+  ion-tab-bar,
+  ion-tabs,
+  .footer,
+  [class*="footer"],
+  [id*="footer"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    z-index: -9999 !important;
+    position: absolute !important;
+    top: -9999px !important;
+    pointer-events: none !important;
+  }
+}
+
+/* Category popover border radius */
+ion-popover {
+  --border-radius: 20px;
+}
+
+/* Barcode Scanner Active State */
+body.barcode-scanner-active {
+  /* Make body transparent so native camera shows through */
+  background: transparent !important;
+
+  /* Make the entire app shell transparent */
+  ion-app {
+    background: transparent !important;
+    --background: transparent !important;
+  }
+
+  ion-router-outlet,
+  ion-nav,
+  app-root,
+  .ion-page {
+    background: transparent !important;
+    --background: transparent !important;
+  }
+
+  ion-content {
+    background: transparent !important;
+    --background: transparent !important;
+    
+    &::part(background) {
+      background: transparent !important;
+    }
+    
+    &::part(scroll) {
+      background: transparent !important;
+    }
+  }
+
+  /* QR Scanner UI overlay */
+  .qr-scanner {
+    background: transparent !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 9999 !important;
+
+    .header,
+    .scanner-viewport,
+    .upload-gallery-btn,
+    .divider-section {
+      z-index: 10000 !important;
+    }
+  }
+}
+
+/* Custom Toast Styles (Reusable across all components) */
+.mb-toast {
+  /* base layout */
+  --mb-toast-border: 1px solid #000;
+  --mb-toast-bg: #fff;
+  --mb-toast-text: #000;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 90px;
+  z-index: 100000; /* above loader (99999) */
+  width: 90%;
+  max-width: 500px;
+  box-sizing: border-box;
+  animation: slideInUp 0.3s ease-out;
+
+  border-radius: 8px;
+  height: 48px;
+  padding: 12px;
+  gap: 8px;
+
+  background: var(--mb-toast-bg);
+  border: var(--mb-toast-border);
+
+  @media (max-width: 480px) {
+    width: 95%;
+  }
+}
+
+/* ── 420px breakpoint: targets ~393-420 CSS px phones (e.g. 2640×1216 @ DPR 3)
+   Only tighten things that genuinely overflow — do not change anything that works fine. */
+@media (max-width: 420px) {
+  /* Shared page container: reduce horizontal padding */
+  .mindful-page-container,
+  .content-page,
+  .main-container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  /* Card headers: tighter subtitle text */
+  .mindful-header {
+    font-size: 20px;
+  }
+
+  /* Global badge grid: keep 2 columns on narrow screens */
+  .badge-grid {
+    gap: 12px;
+    padding: 16px;
+  }
+
+  /* Category tabs (learning, etc.): scale down icons/labels */
+  .categories {
+    gap: 4px;
+    padding: 0 8px;
+  }
+
+  /* Cards grid: single column on very narrow screens */
+  .cards-grid {
+    gap: 12px;
+  }
+
+  /* Streaks status row: allow wrapping */
+  .streaks-status {
+    gap: 10px;
+  }
+
+  /* Coin stats: tighter divider */
+  .stat-divider-vertical {
+    margin: 0 6px;
+  }
+}
+
+.mb-toast__icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mb-toast__icon {
+  width: 12px;
+  height: 9px;
+  aspect-ratio: 4/3;
+  object-fit: contain;
+  color: #2D6830;
+}
+
+.mb-toast__text {
+  text-align: center;
+  font-family: Nunito, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--mb-toast-text);
+}
+
+/* Variants only change color tokens */
+.mb-toast--success {
+  --mb-toast-border: 1px solid #4CAF50;
+  --mb-toast-bg: #C8EAC9;
+  --mb-toast-text: #2D6830;
+}
+
+.mb-toast--error {
+  --mb-toast-border: 1px solid #BB2124;
+  --mb-toast-bg: #FDCBCC;
+  --mb-toast-text: #BB2124;
+}
+// .role-selector  .role-selection-info .ng-tns-c2933442544-0{
+ 
+// }
+.role-selector  .role-selection-info{
+ display:grid;
+ grid-template-columns: 2fr 1fr;
+}
+.role-selection-info {
+  display: flex;
+  align-items: center; /* optional */
+}
+
+.role-selection-info .text-role {
+  flex: 0 0 60%;
+}
+
+.role-selection-info img {
+  flex: 0 0 40%;
+      max-width: 37% !important;
+    margin-top: 50px;
+}
+.role-selector .row {
+  display: flex;
+}
+
+.role-selector .row > div:first-child {
+  flex: 0 0 45%;
+  max-width: 45%;
+}
+
+.role-selector .row > div:last-child {
+  flex: 0 0 55%;
+  max-width: 55%;
+}
+.role-selector .row > div:first-child .role-selector img {
+    
+    margin-top: 40px;
+}
+.role-selector img {
+    width: 99% !important;
+    height: auto;
+    margin-top: 56px;
+}
+.role-selector .self-role {
+  display: flex;
+  align-items: center;
+}
+.signup-container[_ngcontent-ng-c2224025112]   .role-selector[_ngcontent-ng-c2224025112]:nth-child(2) {
+    padding: 0px!important;
+}
+.role-selector .text-role {
+  flex: 0 0 60%;
+  max-width: 60%;
+}
+
+.role-selector .role-img {
+  flex: 0 0 40%;
+  max-width: 40%;
+}
+
+.role-selector .role-img img {
+  width: 100%;
+  height: auto;
+}
+.child-role-image img{
+      width: 46% !important;
+}
+
+// Slide-in animation for toast
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}

@@ -1,0 +1,43 @@
+<div class="mood-card" role="group" aria-label="Mood selector">
+  <div class="mood-left">
+    <div class="mood-text">
+      <div class="mood-title" *ngIf="currentVibeTitleSafe" [innerHTML]="currentVibeTitleSafe"></div>
+      <div class="mood-sub">{{activeSubtitle}}</div>
+    </div>
+    <div class="mood-progress" aria-hidden="true"><span class="bar" [style.width.%]="progressPercent"></span></div>
+  </div>
+  <div class="mood-right">
+    <div class="mood-emoji" role="button" tabindex="0" (click)="onMoodClick()" (keydown.enter)="onMoodClick()"
+      aria-label="Open mood picker" style="position:relative;">
+        <!-- blocked-tooltip: appears when the user reached daily limit -->
+        <div *ngIf="blockedTooltipVisible" class="blocked-tooltip" (click)="$event.stopPropagation()">
+          You can only input your mood twice a day
+        </div>
+        <ng-container *ngIf="displayAssetSrc; else unicodeEmoji">
+          <img class="active-asset" [src]="displayAssetSrc" alt="active mood" />
+        </ng-container>
+      <ng-template #unicodeEmoji>{{activeEmoji}}</ng-template>
+      <img *ngIf="!isParent" class="mood-edit-icon" src="assets/icons/edit-icon.svg" alt="" style="position:absolute; top:0; right:0; width:12px; height:12px; pointer-events:none;" aria-hidden="true" />
+    </div>
+  </div>
+
+</div>
+<div class="mood-popup-backdrop" *ngIf="showPopup" (click)="closePopup()">
+  <div class="mood-popup" role="dialog" aria-modal="true" aria-label="Pick your mood"
+    (click)="$event.stopPropagation()">
+    <div class="mood-popup-grid">
+      <button *ngFor="let p of popupOptions" type="button" class="popup-emoji" (click)="choosePopup(p.src)"
+        [class.selected]="popupSelection === p.src">
+        <img [src]="p.src" [alt]="p.label" />
+        <span class="check-icon" *ngIf="popupSelection === p.src">
+          <svg xmlns="http://www.w3.org/2000/svg" width="8" height="6" viewBox="0 0 8 6" fill="none">
+            <path
+              d="M3.01245 5.66893C2.8191 5.85406 2.51424 5.85406 2.32088 5.66893L0.377205 3.80796C0.171586 3.61109 0.171586 3.28252 0.377205 3.08565L0.587547 2.88426C0.780903 2.69914 1.08576 2.69914 1.27912 2.88426L2.32088 3.88169C2.51424 4.06682 2.8191 4.06682 3.01245 3.88169L6.72088 0.331072C6.91424 0.145944 7.2191 0.145943 7.41245 0.331072L7.62279 0.532463C7.82841 0.729332 7.82841 1.0579 7.62279 1.25477L3.01245 5.66893Z"
+              fill="white" />
+          </svg>
+        </span>
+      </button>
+    </div>
+    <mindful-button type="magenta" large [disabled]="!popupSelection" text="Set the vibe" (click)="setVibe()"></mindful-button>
+  </div>
+</div>

@@ -1,0 +1,48 @@
+<ion-app>
+  <div class="app-router-container w-full p-0">
+    <ion-router-outlet></ion-router-outlet>
+  </div>
+
+  <app-superme-loading [visible]="loading"></app-superme-loading>
+  <app-network-issue></app-network-issue>
+
+  <!-- Global Toast (z-indexed above loader) -->
+  <div class="mb-toast" *ngIf="(toast$ | async) as toast" [ngClass]="{'mb-toast--success': toast.type === 'success', 'mb-toast--error': toast.type === 'error'}" [style.display]="toast.visible ? 'flex' : 'none'" role="status" aria-live="polite">
+    <div class="mb-toast__icon-wrapper" *ngIf="toast.iconPath">
+      <svg class="mb-toast__icon" [style.fill]="toast.iconColor || '#2D6830'" viewBox="0 0 8 6" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2.81319 5.70608C2.61793 5.90134 2.30134 5.90134 2.10608 5.70608L0.146523 3.74652C-0.0487396 3.55126 -0.0487401 3.23468 0.146522 3.03942L0.372748 2.81319C0.568011 2.61793 0.884593 2.61793 1.07986 2.81319L2.10608 3.83942C2.30134 4.03468 2.61793 4.03468 2.81319 3.83942L6.50608 0.146523C6.70134 -0.0487396 7.01793 -0.04874 7.21319 0.146522L7.43942 0.372748C7.63468 0.568011 7.63468 0.884593 7.43942 1.07986L2.81319 5.70608Z" fill="currentColor" />
+      </svg>
+    </div>
+    <div class="mb-toast__text">{{ toast.message }}</div>
+  </div>
+
+  <!-- Global Badge Popup - shown from any screen when user earns a badge -->
+  <div *ngIf="showBadgePopup && currentBadge" class="d-flex flex-column justify-content-center gap-4 congrats-popup global-badge-popup">
+    <button class="congrats-close" aria-label="Close" (click)="onBadgePopupClose()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <path
+          d="M1.89652 16.9355C1.70126 17.1308 1.38468 17.1308 1.18942 16.9355L0.146522 15.8926C-0.0487404 15.6974 -0.04874 15.3808 0.146522 15.1855L6.43942 8.89262C6.63468 8.69735 6.63468 8.38077 6.43942 8.18551L0.146522 1.89262C-0.0487406 1.69735 -0.04874 1.38077 0.146522 1.18551L1.18942 0.142616C1.38468 -0.0526466 1.70126 -0.0526462 1.89652 0.142616L8.18942 6.43551C8.38468 6.63077 8.70126 6.63077 8.89652 6.43551L15.1894 0.142615C15.3847 -0.0526468 15.7013 -0.0526462 15.8965 0.142616L16.9394 1.18551C17.1347 1.38077 17.1347 1.69735 16.9394 1.89262L10.6465 8.18551C10.4513 8.38077 10.4513 8.69735 10.6465 8.89262L16.9394 15.1855C17.1347 15.3808 17.1347 15.6974 16.9394 15.8926L15.8965 16.9355C15.7013 17.1308 15.3847 17.1308 15.1894 16.9355L8.89652 10.6426C8.70126 10.4474 8.38468 10.4474 8.18941 10.6426L1.89652 16.9355Z"
+          fill="#282527" />
+      </svg>
+    </button>
+    <div class="congrats-img">
+      <img class="confetti left" src="assets/Images-Transparent/congrats.png" alt="confetti left" />
+      <div class="ring">
+        <div class="badge-wrap">
+          <img class="badge-icon" [src]="currentBadge.iconUrl || 'assets/Images-Transparent/congrats.png'" alt="badge" />
+        </div>
+      </div>
+      <img class="confetti right" src="assets/Images-Transparent/congrats.png" alt="confetti right" />
+    </div>
+    <div class="congrats-text">
+      <h1>{{ currentBadge.celebrationTitle || 'Badge Unlocked!' }}</h1>
+      <h2>{{ currentBadge.name || 'Badge Earned' }}</h2>
+      <p>{{ currentBadge.celebrationMessage || 'Congratulations!' }}</p>
+      <p class="level-info" *ngIf="currentBadge.levelText">{{ currentBadge.levelText }}</p>
+    </div>
+    <div class="awesome-cta">
+      <mindful-button type="magenta-transparent" text="View all Badges" large (click)="onViewAllBadges()"></mindful-button>
+      <mindful-button type="magenta" text="Awesome" large (click)="onAwesomeClick()"></mindful-button>
+    </div>
+  </div>
+</ion-app>

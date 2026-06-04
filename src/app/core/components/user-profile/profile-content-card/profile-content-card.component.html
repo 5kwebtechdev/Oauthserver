@@ -1,0 +1,32 @@
+<div class="profile-content-main" role="button" (click)="onClick()">
+  
+  <div class="content-left">
+    <div class="content-icon">
+      
+      <div class="eclipse">
+          <ng-container *ngIf="sanitizedIcon; else imgTpl">
+            <div class="svg-icon" [innerHTML]="sanitizedIcon" role="img" [attr.aria-label]="title || 'icon'"></div>
+          </ng-container>
+          <ng-template #imgTpl>
+            <img [src]="iconSrc" alt="{{ title || 'icon' }}" />
+          </ng-template>
+      </div>
+    </div>
+    <div class="content-text">
+      <div class="heading">{{ title }}</div>
+      <p class="paragraph">{{ subtitle }}</p>
+    </div>
+  </div>
+
+  <!-- Middle block: text -->
+  <div class="content-right">
+     <div class="chev-area">
+    <div class="chev">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M11.9213 8.52934L5.84805 14.6026C5.55514 14.8955 5.08027 14.8955 4.78739 14.6026L4.07905 13.8942C3.78664 13.6018 3.78608 13.1279 4.0778 12.8348L8.89095 7.99899L4.0778 3.16321C3.78608 2.87012 3.78664 2.39621 4.07905 2.1038L4.78739 1.39546C5.0803 1.10255 5.55517 1.10255 5.84805 1.39546L11.9213 7.46868C12.2142 7.76155 12.2142 8.23643 11.9213 8.52934Z" fill="#282527"/>
+      </svg>
+    </div>
+  </div>
+  </div>
+</div>
+

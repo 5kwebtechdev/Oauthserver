@@ -1,0 +1,361 @@
+.mindful-calendar {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  border-radius: 12px;
+  width: 100%;
+
+  /* calendar-grid styles are below; removed header/nav/range styles for non-popup layout */
+
+  .calendar-grid {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    grid-auto-rows: 35px;
+
+    .day-bar {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 24px;
+    }
+
+    .day {
+      color: #6B656A;
+      font-family: 'Nunito', sans-serif;
+      font-size: 13px;
+      font-style: normal;
+      font-weight: 600;
+      line-height: 120%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      /* ensures vertical centering within the grid row */
+    }
+
+    .dates-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    button {
+      border: none;
+      background: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 500;
+      color: #6B656A;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-self: center;
+      /* Use internal padding to space content consistently instead of margin */
+      margin: 0;
+      padding: 8px 4px;
+
+      p {
+        font-weight: 500;
+        font-size: 15px;
+        margin: 0;
+        position: relative;
+        z-index: 2;
+        display: block;
+        line-height: 1;
+      }
+
+      /* emoji shown beneath the date number when mood toggle is active */
+      img.mood-emoji {
+        width: 18px;
+        height: 18px;
+        display: block;
+        object-fit: contain;
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      /* Activity dots shown beneath the date when mood is off.
+         Use normal document flow so spacing from the date is consistent (4px).
+         This avoids overlap issues on the final week while keeping layout stable. */
+      .activity-dots {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        z-index: 2;
+        pointer-events: none;
+        min-height: 6px;
+        position: static;
+        margin-top: 4px;
+
+        svg {
+          display: block;
+          width: 4px;
+          height: 4px;
+        }
+      }
+
+      /* Status dot for habit detail calendar */
+      .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2;
+        pointer-events: none;
+
+        &.status-completed {
+          background-color: #4CAF50;
+        }
+
+        &.status-skipped {
+          background-color: #BB2124;
+        }
+      }
+
+      &.selected p {
+        color: white;
+      }
+
+      /* Highlight today's date with a distinct border */
+      &.today {
+        box-sizing: border-box;
+        border: 1px solid #90214D !important;
+        border-radius: 6px;
+        width: 100%;
+    height: 100%;
+
+      }
+
+      &.selected::before {
+        position: absolute;
+        content: '';
+        /* place the background circle approximately behind the number */
+        top: 18%;
+        left: calc(50% - 15px);
+        width: 30px;
+        aspect-ratio: 1;
+        background: #90214D !important;
+        color: white;
+        z-index: 1;
+      }
+
+      &.in-range:not(.selected):before {
+        position: absolute;
+        content: '';
+        top: 18%;
+        left: calc(50% - 15px);
+        width: 30px;
+        aspect-ratio: 1;
+        background: #FAE9F3;
+        transform: scaleX(250%);
+      }
+
+      &:not(.currentMonth) {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      &.isStartDate:before {
+        border-bottom-left-radius: 5px;
+        border-top-left-radius: 5px;
+      }
+
+      &.isEndDate:before {
+        border-bottom-right-radius: 5px;
+        border-top-right-radius: 5px;
+      }
+    }
+  }
+
+  /* Actions removed: calendar no longer shows Cancel/OK buttons */
+
+  /* Header: month/year + mood toggle */
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .month-navigation {
+      display: flex;
+      align-items: center;
+      gap: 0px;
+
+      .nav-arrow {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        ion-icon {
+          font-size: 20px;
+          color: #282527;
+        }
+      }
+
+      .month-text {
+        color: #282527;
+        font-family: Nunito;
+        font-size: 16px;
+        font-weight: 600;
+        min-width: 100px;
+        text-align: center;
+      }
+    }
+
+    .month-year {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+
+      .month-text {
+        color: #282527;
+        font-family: Nunito;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: 120%;
+        /* 19.2px */
+      }
+
+      .chev {
+        width: 12px;
+        height: 12px
+      }
+    }
+
+    .toggle-mood-buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .mood-label {
+        color: #282527;
+        font-family: 'Nunito';
+        font-weight: 600;
+        font-size: 16px
+      }
+
+      .mood-toggle {
+        width: 40px;
+        height: 24px;
+        border-radius: 12px;
+        background: #eee;
+        border: none;
+        position: relative;
+        padding: 3px;
+        cursor: pointer
+      }
+
+      .mood-toggle span {
+        display: block;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #90214D;
+        position: absolute;
+        left: 3px;
+        top: 3px;
+        transition: all .2s
+      }
+
+      .mood-toggle span.on {
+        left: 19px
+      }
+    }
+  }
+
+  .month-picker {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 8px;
+    display: flex;
+    gap: 8px;
+    z-index: 50
+  }
+
+  .month-picker .months button,
+  .month-picker .years button {
+    background: transparent;
+    border: none;
+    padding: 6px 8px;
+    cursor: pointer
+  }
+
+  /* Calendar-main specific styling */
+  &.calendar-main-style {
+    .calendar-grid {
+      button {
+        /* default for habit/calendar buttons inside calendar-main */
+        padding: 4px;
+
+        /* When mood toggle is ACTIVE (ON) */
+        &.selected.mood-active {
+          display: inline-flex;
+          padding: 8px;
+          flex-direction: column;
+          align-items: center;
+          border-radius: 6px;
+          background: #90214D;
+          width: 100%;
+    height: 100%;
+
+          p {
+            color: white;
+            font-weight: 600;
+          }
+
+          img.mood-emoji {
+            filter: none;
+          }
+
+          &::before {
+            display: none;
+          }
+        }
+
+        /* When mood toggle is INACTIVE (OFF) */
+        &.selected.mood-inactive {
+          display: inline-flex;
+          padding: 4px;
+          flex-direction: column;
+          align-items: center;
+          border-radius: 6px;
+          background: #90214D;
+          width: 100%;
+          height: 100%;
+
+          p {
+            color: white;
+            font-weight: 600;
+          }
+
+          .activity-dots {
+            position: static;
+            transform: none;
+          }
+
+          &::before {
+            display: none;
+          }
+        }
+      }
+
+        /* When mood toggle is ON for calendar-main style, make each date slightly taller */
+        button.mood-active {
+          padding: 8px;
+        }
+    }
+  }
+}

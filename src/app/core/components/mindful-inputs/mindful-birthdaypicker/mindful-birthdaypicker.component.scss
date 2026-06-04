@@ -1,0 +1,176 @@
+.birthday-input {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  margin-left: 16px;
+}
+
+.overlay {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.popover {
+  width: 100%;
+  max-height: calc(5 * 40px + 48px + 64px); // picker + header + footer
+  background: #FDEAD7;
+  border-radius: 20px 20px 0 0;
+  padding-top: 10px;
+  max-width: unset;
+}
+
+/* Variant: white-green (use by passing [variant]="'white-green'") */
+.popover.variant-white-green {
+  background: #FFFFFF; // main layout background as requested
+  border-radius: 15px 15px 0 0; // per supplied main layout
+  height: 308px; // fixed height as provided
+  padding-top: 0;
+  margin: 0 auto; // center horizontally when possible
+}
+
+.header {
+  text-align: right;
+  padding: 0 16px;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.picker {
+  position: relative;
+  display: flex;
+  justify-content: space-around;
+  height: 200px; // 5 rows * 40
+}
+
+.column {
+  width: 33%;
+  height: 100%;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  text-align: center;
+}
+
+.item {
+  height: 40px;
+  line-height: 40px;
+  opacity: 0.5;
+  color: #772817;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.item.selected {
+  font-weight: bold;
+  color: white;
+  opacity: 1;
+  border-radius: 6px;
+}
+
+/* Adjust selected item and highlight for white-green variant */
+.popover.variant-white-green .item.selected {
+  background: transparent; // remove solid green background per request
+  color: #FFFFFF;
+}
+
+// removed empty ruleset
+
+.highlight-bar {
+ 
+  border-radius: 10px;
+  background: #EE6621;
+      position: absolute;
+    top: 38%;
+    height: 50px;
+    width: 90%;
+    pointer-events: none;
+}
+
+/* highlight for variant */
+.popover.variant-white-green .highlight-bar {
+  background: #4CAF50; // date selection area color
+      top: 32%;
+
+}
+
+/* Done button styling for white-green variant */
+.popover.variant-white-green .footer button {
+  color: #4CAF50;
+  text-align: center;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 20px;
+  /* 125% */
+  background: transparent;
+  border: none;
+  padding: 10px 24px;
+}
+
+/* Day / Month / Year typography & layout for white-green variant */
+.popover.variant-white-green .column .item {
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px;
+  /* 90% */
+}
+
+.popover.variant-white-green .day-column .item {
+  width: 24.185px;
+  margin: 0 auto;
+  /* center the fixed-width day item */
+  text-align: center;
+}
+
+
+/* Year right-aligned */
+.popover.variant-white-green .year-column .item {
+  text-align: center;
+  /* center year as requested */
+}
+
+/* Center the month column items */
+.popover.variant-white-green .month-column .item {
+  text-align: center;
+}
+
+.popover.variant-white-green .column .item.selected {
+  color: #FFFFFF;
+  font-family: 'Nunito', sans-serif;
+  font-size: 24px;
+  font-weight: 400;
+  width: 100%;
+
+}
+
+
+
+.footer {
+  padding: 16px;
+  text-align: center;
+}
+
+button {
+  background: transparent;
+  color: #EE6621;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 24px;
+  font-size: 16px;
+}

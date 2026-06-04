@@ -1,0 +1,101 @@
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Pull to refresh"
+      refreshingSpinner="circles"
+      refreshingText="Refreshing...">
+    </ion-refresher-content>
+  </ion-refresher>
+  <div class="container w-100 p-0">
+    <section class="user-profile-section profile" aria-labelledby="profile-heading">
+      <div class="dasboard-wrapper">
+        <div class="profile-content">
+
+          <header class="profile-header" role="banner">
+            <div class="user-info" role="group" aria-label="User info">
+              <div class="user-avatar" aria-hidden="false">
+                <a [routerLink]="['/authed','user-profile']" aria-label="Open profile">
+                  <img [src]="userAvatarUrl" [alt]="avatarImageName ? avatarImageName : (userName + ' avatar')">
+                </a>
+              </div>
+              <div class="user-name-wrap">
+                <span class="user-name">{{ userName }}</span>
+              </div>
+            </div>
+
+            <nav class="header-tools" role="navigation" aria-label="Profile tools">
+              <a class="tool-item" aria-label="Notes" [routerLink]="['/authed/notes']">
+                <img src="/assets/Icons-Neutral/Icon-Notes.png" alt="Notes" class="tool-icon">
+              </a>
+              <a class="tool-item" type="button" aria-label="Calendar" (click)="openCalendar()">
+                <img src="/assets/Icons-Neutral/Icon-Calendar.png" alt="Calendar" class="tool-icon">
+              </a>
+            </nav>
+          </header>
+
+          <mindful-coins-stats [userCoins]="userCoins" [userStreaks]="userStreaks" [userDays]="userDays"
+            [userBadges]="userBadges"></mindful-coins-stats>
+        </div>
+        <div class="d-flex" style="padding-left: 16px; height: 10vh;">
+          <app-speech-bubble [message]="greetingMessage" [petMessage]="currentPetMessage" type="talking"
+            arrowSide="right" [arrowSize]="16" arrowOffset="30px" [arrowAngle]="10" color="#fff" textColor="#282527"
+            style=" width: 100%;" aria-label="Greeting message" role="status" aria-live="polite">
+          </app-speech-bubble>
+
+          <div class="digital-pet" aria-hidden="false">
+            <mindful-pet pet="panda" [age]="1" [mood]="petMood">
+            </mindful-pet>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="dashboard-content">
+      <div class="mood-selector w-full">
+        <mood-selector [value]="selectedMood" (valueChange)="onMoodChange($event)"></mood-selector>
+      </div>
+
+      <!-- activity Card -->
+      <activity-card style="width: 100%;" mode="recent" [recentHabits]="recentHabits"
+        [recentTasks]="recentTasks" [totalTasks]="totalTasks" [totalTasksCompleted]="totalTasksCompleted"
+        [taskCompletionRate]="taskCompletionRate" [totalHabits]="totalHabits" [totalHabitsCompleted]="totalHabitsCompleted"
+        [habitCompletionRate]="habitCompletionRate"></activity-card>
+
+      <!-- Ad-banner -->
+      <div class="w-full">
+        <ad-banner></ad-banner>
+      </div>
+
+      <!-- Content Card -->
+      <div class="w-full" style="width: 100%;">
+        <learning-section source="/authed/user-dashboard"></learning-section>
+      </div>
+
+      <!-- Reels- card -->
+      <!-- <div class="w-full">
+        <mindful-card-header [title]="'Made by Kids, for Kids!'" [subtitleLeft]="'Watch reels'"
+          [subtitleMiddle]="'Create'" [subtitleRight]="'Get Inspired'">
+          <mindful-view-all mindful-header-actions [routerLink]="['/authed/reel-section']" class="see-all">
+          </mindful-view-all>
+        </mindful-card-header>
+        <div style="margin-top: 10px;">
+          <reels-card></reels-card>
+        </div>
+      </div> -->
+
+      <!-- Tutor card-->
+      <tutor-card style="width: 100%;"></tutor-card>
+
+      <!-- Journals component-->
+      <journals class="w-full" [showCreateButton]="true" [maxDisplayEntries]="3">
+      </journals>
+
+      <!--Academy section-->
+      <academy-section class="w-full"></academy-section>
+
+
+    </div>
+  </div>
+  <app-footer></app-footer>
+</ion-content>

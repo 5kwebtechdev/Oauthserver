@@ -1,0 +1,82 @@
+:host {
+    display: block;
+}
+
+.social-media {
+    text-align: center;
+    padding: 0px 0px 24px 0px;
+}
+
+.social-media .heading {
+    color: rgba(28, 27, 31, 0.6);
+    letter-spacing: 2px;
+    font-size: 12px;
+    margin-bottom: 12px;
+}
+
+.social-media .icons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+/* login-with variant styles */
+.login-with {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    /* requested spacing */
+}
+
+.login-icon {
+    background: transparent;
+    border: none;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.login-icon svg {
+    width: auto;
+    height: 32px;
+    /* match provided SVG heights */
+    display: block;
+}
+
+.icon-btn {
+    background: transparent;
+    /* no background color */
+    border: none;
+    padding: 0;
+    border-radius: 0;
+    width: auto;
+    height: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-svg {
+    width: 24px;
+    height: 24px;
+    aspect-ratio: 1/1;
+    display: inline-block;
+}
+
+.icon-svg path {
+    vector-effect: non-scaling-stroke;
+}
+
+.icon-fallback {
+    font-size: 12px;
+    color: rgba(28, 27, 31, 0.8);
+}
+
+/* remove visual hover/focus effects per request; keep a minimal focus outline for keyboard users */
+.icon-btn:focus {
+    outline: 2px solid rgba(24, 119, 242, 0.15);
+    outline-offset: 2px;
+}

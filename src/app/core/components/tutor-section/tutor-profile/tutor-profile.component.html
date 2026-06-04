@@ -1,0 +1,122 @@
+<ion-content>
+  <mindful-navigator heading="Tutor profile" backIcon="arrowSvg" (back)="close()" [rightActions]="navActions"
+    (rightActionClick)="handleNavAction($event)"></mindful-navigator>
+  <div class="tutor-profile-root">
+    <div class="hero">
+      <div class="avatar"
+        [ngStyle]="{'background-image': 'url(' + (tutor?.profilePicUrl || 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png') + ')'}">
+      </div>
+      <div class="info">
+        <h2 class="name">{{ tutor?.name || 'Unknown Tutor' }}</h2>
+        <h3 class="achievement">{{ tutor?.qualification || 'Subject Expert' }}</h3>
+      </div>
+      <div class="meta-row">
+        <div class="meta">
+          <img src="/assets/Icons-Neutral/Experience.png" alt="experience" />
+          <h3><strong>{{ getExperienceYears() }}</strong> years Exp</h3>
+        </div>
+        <h4>|</h4>
+        <div class="meta like" (click)="handleNavAction({index: 0, action: navActions[0]})">
+          <img src="/assets/Icons-Neutral/Icon-Tutor-Like.png" alt="likes" />
+          <h3>{{ getLikesCount() }} likes</h3>
+        </div>
+        <h4>|</h4>
+        <div class="meta">
+          <img src="/assets/Icons-Neutral/Students.png" alt="students" />
+          <h3><strong>{{ tutor?.totalStudents || 0 }}</strong> students</h3>
+        </div>
+      </div>
+    </div>
+    <div class="what-teach">
+      <h1>What I teach</h1>
+      <div class="teaching-details">
+        <div class="teaching-row">
+          <h3>Subjects</h3>
+          <p>{{ getSubjectsString() }}</p>
+        </div>
+
+        <div class="teaching-row">
+          <h3>Class</h3>
+          <p>{{ getLevelsString() }}</p>
+        </div>
+
+        <div class="teaching-row">
+          <h3>Board</h3>
+          <p>{{ getBoardString() }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="teacher-details">
+        <div class="teach-detail-list">
+          <h3><img src="assets/Icons-Neutral/Tutor-Mode.png" alt="">Mode</h3>
+          <p>{{ getContactModesString() }}</p>
+        </div>
+        <div class="teach-detail-list">
+          <h3><img src="assets/Icons-Neutral/Tutor-LanguageSpoken.png" alt="">Languages Spoken</h3>
+          <p>English, Hindi</p>
+        </div>
+        <div class="teach-detail-list">
+          <h3><img src="assets/Icons-Neutral/Tutor-Qualification.png" alt="">Qualification</h3>
+          <p>{{ tutor?.qualification || 'Not specified' }}</p>
+        </div>
+        <div class="teach-detail-list">
+          <h3><img src="assets/Icons-Neutral/Tutor-TimeDay.png" alt="">Days & Time</h3>
+          <p>{{ getAvailabilityString() }}</p>
+        </div>
+         <div class="teach-detail-list">
+          <h3><img src="assets/Icons-Neutral/Tutor-Location.png" alt="">Location</h3>
+         <p class="location">{{ tutor?.location || 'Location not specified' }} <br>
+          <a *ngIf="tutor?.location">See on map</a></p>
+        </div>
+    </div>
+    <profile-facts [faqs]="tutorFaqs"></profile-facts>
+  </div>
+  <div class="footer-actions d-flex justify-content-between align-items-center" *ngIf="true">
+    <div class="d-flex align-items-center gap-1">
+    <h2>₹ {{ getHourlyRate() }}</h2>
+    <h3>{{ getFeeTypeString() }}</h3>
+    </div>
+    <!-- Make button visually disabled for child users but keep it clickable so toast can show -->
+    <mindful-button type="columbian-blue" size="medium" text="Contact Tutor"
+      [attr.aria-disabled]="isChildUser()"
+      [class.disabled]="isChildUser()"
+      (click)="contactTutor()"
+      style="height: 42px !important; width: 170px;"></mindful-button>
+  </div>
+
+
+
+  <!-- Shared transient toast (uses global .mb-toast styles) -->
+  <div class="mb-toast" *ngIf="(toast$ | async) as toast" [ngClass]="{'mb-toast--error': toast.type === 'error', 'mb-toast--success': toast.type === 'success'}" role="status" aria-live="polite">
+    <div class="mb-toast__text">{{ toast.message }}</div>
+  </div>
+  
+  <!-- Inline bottom sheet for contact (parent or self only) -->
+  <div class="contact-backdrop" *ngIf="showContactSheet" (click)="closeContactSheet()">
+    <div class="contact-sheet" (click)="$event.stopPropagation()">
+      <div class="sheet-header">
+        <h2 class="title">Get in touch with Tutor</h2>
+        <button class="btn-close" (click)="closeContactSheet()"><img src="assets/icons/cancel-cross.svg" alt="close" /></button>
+      </div>
+
+      <div class="options">
+        <label class="option" [class.selected]="selectedContactMethod === 'call'" (click)="selectContact('call')">
+          <input type="radio" name="contactMethod" [checked]="selectedContactMethod === 'call'" aria-label="Call option" />
+          <span class="radio" aria-hidden="true"></span>
+          <span class="label-text">Call</span>
+        </label>
+
+        <label class="option" [class.selected]="selectedContactMethod === 'email'" (click)="selectContact('email')">
+          <input type="radio" name="contactMethod" [checked]="selectedContactMethod === 'email'" aria-label="Email option" />
+          <span class="radio" aria-hidden="true"></span>
+          <span class="label-text">Email</span>
+        </label>
+      </div>
+
+      <div class="action">
+        <mindful-button type="columbian-blue" size="large" [disabled]="!selectedContactMethod" [text]="selectedContactMethod === 'call' ? 'Call Now' : 'Send Email'" (click)="confirmContact()"></mindful-button>
+      </div>
+    </div>
+  </div>
+</ion-content>

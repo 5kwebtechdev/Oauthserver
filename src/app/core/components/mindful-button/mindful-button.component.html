@@ -1,0 +1,29 @@
+<ng-container *ngIf="type; else missingType">
+  <div
+    class="button"
+    [ngClass]="classMap"
+    [attr.role]="buttonRole"
+    [attr.tabindex]="disabled ? -1 : 0"
+    [attr.aria-disabled]="disabled"
+    [attr.disabled]="disabled ? true : null"
+    (click)="handleClick($event)"
+    (keydown)="handleKeydown($event)">
+    <ng-container *ngIf="showLeadingIcon">
+      <img class="btn-icon start" [src]="icon ?? ''" alt="" />
+    </ng-container>
+
+    <!-- Allow projected inline SVG or custom icon markup as leading content -->
+    <ng-content></ng-content>
+
+    <p>{{ text }}</p>
+
+    <ng-container *ngIf="showTrailingIcon">
+      <img class="btn-icon end" [src]="icon ?? ''" alt="" />
+      <span class="btn-count" *ngIf="count !== null">{{ count }}</span>
+    </ng-container>
+  </div>
+</ng-container>
+
+<ng-template #missingType>
+  <p class="missing-type">Button Style Not defined</p>
+</ng-template>

@@ -1,0 +1,43 @@
+<ion-content style="--padding-top: var(--sat)">
+    <div class="education-main-page-container ">
+        <mindful-navigator heading="Education & Essentials" backIcon="arrowSvg" (back)="goBack()"></mindful-navigator>
+        <div>
+            <swiper-container #swiperEl class="edu-swiper" [slides-per-view]="1" [loop]="true"
+                [autoplay]="{ delay: 3000, disableOnInteraction: false }">
+                <swiper-slide *ngFor="let i of [0,1,2,3]">
+                    <div class="edu-banner-image"></div>
+                </swiper-slide>
+            </swiper-container>
+
+            <!-- custom pager: match LearningSection pager style and placement -->
+            <div class="edu-pagination" aria-hidden="true">
+                <button type="button" class="edu-dot" *ngFor="let n of [0,1,2,3]; let idx = index"
+                    [class.active]="currentSlide === idx" (click)="goToSlide(idx)"></button>
+            </div>
+        </div>
+        <div class="edu-item-list">
+            <a class="edu-item-cards" routerLink="/authed/tutors">
+                <h1>Find Tutors</h1>
+                <img src="assets/Images-Transparent/Find-Tutors.png" alt="">
+            </a>
+            <!-- <a class="edu-item-cards" routerLink="/authed/academy"> -->
+            <a class="edu-item-cards">
+                <h1>Academies</h1>
+                <span>Coming soon</span>
+                <img src="assets/Images-Transparent/Academies.png" alt="">
+            </a>
+            <a class="edu-item-cards">
+                <h1>Stationery</h1>
+                <span>Coming soon</span>
+                <img src="assets/Images-Transparent/Stationery.png" alt="Stationery">
+            </a>
+
+            <a class="edu-item-cards">
+                <h1>Book Store</h1>
+                <span>Coming soon</span>
+                <img src="assets/Images-Transparent/Book-store.png" alt="Book Store">
+            </a>
+        </div>
+    </div>
+    <app-footer></app-footer>
+</ion-content>

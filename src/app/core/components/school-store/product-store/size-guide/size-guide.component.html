@@ -1,0 +1,133 @@
+<!-- Size Guide Modal -->
+<ion-modal [isOpen]="isOpen" swipeToClose="true" (ionModalDidDismiss)="closeSizeGuide()"
+  (ionModalDidPresent)="onSizeModalPresented()">
+  <ng-template>
+    <ion-content>
+      <mindful-navigator [heading]="isFromReturnExchange ? 'Select New Size' : 'Size Guide'" backIcon="arrowSvg" (back)="closeSizeGuide()"></mindful-navigator>
+      <button #sizeGuideFirstFocus class="visually-hidden" aria-hidden="false" tabindex="0"></button>
+      <main class="size-guide-container w-100">
+        <div class="order-info-card">
+          <div class="order-item">
+            <img [src]="productImage" [alt]="heading" class="product-image">
+            <div class="item-details">
+              <h2>{{ productTitle }}</h2>
+              <div class="d-flex gap-2">
+                <p>Size: {{ selectedSize }}</p>
+              </div>
+              <p>{{ productSubtitle }}</p>
+              <h2 class="price">{{ discountedPrice }}</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="size-unit d-flex justify-content-between align-items-center">
+          <h2>Select size in</h2>
+          <div class="unit-switch" role="tablist" aria-label="Select size unit">
+            <button type="button" role="tab" class="unit-btn" [class.selected]="unit === 'in'"
+              (click)="selectUnit('in')" [attr.aria-selected]="unit === 'in'">
+              <span class="unit-label">in</span>
+            </button>
+            <button type="button" role="tab" class="unit-btn" [class.selected]="unit === 'cm'"
+              (click)="selectUnit('cm')" [attr.aria-selected]="unit === 'cm'">
+              <span class="unit-label">cm</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Size Guide Table -->
+        <div class="size-guide-table">
+          <table style="width: 100%;">
+            <thead>
+              <tr>
+                <th class="cell-center"></th>
+                <th class="cell-center">Size</th>
+                <th class="cell-center">Chest</th>
+                <th class="cell-center">Length</th>
+                <th class="cell-center">Sleeve Length</th>
+                <th class="cell-center">Age (Approx)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let r of sizeChart">
+                    
+                <tr class="cell-body" [class.out-of-stock-row]="isOutOfStock(r.size)">
+                  <td class="cell-center">
+                    <label class="custom-radio" [attr.aria-label]="'Select size ' + r.size">
+                      <input type="radio" name="size" [value]="r.size" (change)="selectSize(r.size)"
+                        [checked]="selectedSize === r.size" [disabled]="isOutOfStock(r.size)"
+                        [attr.aria-disabled]="isOutOfStock(r.size)" />
+                      <span class="custom-radio-mark" aria-hidden="true"></span>
+                    </label>
+                  </td>
+                  <td class="cell-center">{{ r.size }}</td>
+                  <td class="cell-center">{{ displayChest(r) }}</td>
+                  <td class="cell-center">{{ displayLength(r) }}</td>
+                  <td class="cell-center">{{ displaySleeve(r) }}</td>
+                  <td class="cell-center">{{ r.age }}</td>
+                </tr>
+                    <tr *ngIf="selectedSize === r.size && !isOutOfStock(r.size)">
+                  <td colspan="6" class="stock-message-cell">
+                    <p style="color: #4CAF50;text-align: center;">In Stock. Will be delivered by Thu, 4th Jan.</p>
+                  </td>
+                </tr>
+        
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="how-to-measure">
+          <h1>How to measure</h1>
+          <img src="assets/School-assets/Size Chart- Shirt.jpg" alt="shirt-size-chart">
+          <!-- Measurement Instructions -->
+          <div>
+              <div class="measure-instructions">
+              <h2 class="count">1</h2>
+              <div class="body-type">Shoulder:<span>Measure around the fullest part of the chest, keeping the tape horizontal.</span></div>
+            </div>
+            <div class="measure-instructions">
+              <h2 class="count">2</h2>
+              <div class="body-type">Chest:<span>Measure around the fullest part of the chest, keeping the tape horizontal.</span></div>
+            </div>
+               <div class="measure-instructions">
+              <h2 class="count">3</h2>
+              <div class="body-type">Waist:<span>Measure around the fullest part of the chest, keeping the tape horizontal.</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Item Summary -->
+        <div class="bill-summary" *ngIf="isFromReturnExchange">
+          <h2>Price Difference</h2>
+          <div class="d-flex flex-column gap-2 w-100">
+            <div class="txt-amount">
+              <p style="opacity: 0.7;">Item Cost (Size {{ originalSize }})</p>
+              <p>{{ totalPriceDisplay }}</p>
+            </div>
+            <div class="txt-amount">
+              <p style="opacity: 0.7;">Item Cost (Size {{ selectedSize }})</p>
+              <p>{{ gstDisplay }}</p>
+            </div>
+            <div class="txt-amount" style="align-items: baseline;">
+              <p style="opacity: 0.7;">Difference amount (To Pay at checkout)</p>
+              <p style="color: #90214D; white-space: nowrap;">{{ toPayDisplay }}</p>
+            </div>
+          </div>
+        </div>
+
+
+
+      </main>
+      <!--apply size-->
+      <div class="product-purchase-bar" *ngIf="!isFromReturnExchange">
+        <span class="selected-size">Size: {{ selectedSize }}</span>
+        <mindful-button class="page-cta" type="magenta" text="Apply Size" large
+          (click)="closeSizeGuide()"></mindful-button>
+      </div>
+      <div class="product-purchase-bar return-exchange-bar" *ngIf="isFromReturnExchange">
+        <mindful-button class="return-exchange-btn" type="magenta-transparent" size="large" text="Return" (click)="onReturn()"></mindful-button>
+        <mindful-button class="return-exchange-btn" type="magenta" size="large" text="Exchange" (click)="onExchange()"></mindful-button>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

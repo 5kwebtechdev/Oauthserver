@@ -1,0 +1,94 @@
+import { Component, AfterViewInit, ViewChild, ElementRef, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { IonicModule, ModalController } from '@ionic/angular';
+import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+
+@Component({
+  selector: 'app-change-pet',
+  standalone: true,
+  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  templateUrl: './change-pet.component.html',
+  styleUrls: ['./change-pet.component.scss'],
+})
+export class ChangePetComponent implements AfterViewInit, OnInit, OnDestroy {
+  @ViewChild('swiperEl', { static: false }) swiperEl?: ElementRef;
+
+  pets: any[] = [];
+  currentIndex = 0;
+  private resizeObserver?: ResizeObserver;
+
+  constructor(private modalCtrl: ModalController) { }
+
+  ngOnInit() {
+    this.pets = [
+      {
+        displayName: 'Bao the mindful Panda',
+        name: 'Panda',
+        image: 'assets/Images-Pet/Panda-Age3-Happy.png',
+        text: ['Your gentle guide to inner peace', 'Celebrates small acts of kindness']
+      },
+      {
+        displayName: 'Luna the Wise Owl',
+        name: 'Owl',
+        image: 'assets/Images-Pet/Owl-Age3-Happy.png',
+        text: ['Your midnight study buddy', 'Celebrates "aha!" moments']
+      },
+      {
+        displayName: 'Zuki the Fierce Dragon',
+        name: 'Dragon',
+        image: 'assets/Images-Pet/Dragon-Age3-Happy.png',
+        text: ['Loves big ideas and bold moves', 'Celebrates when you go on streaks']
+      },
+      {
+        displayName: 'Koda the Chill Llama',
+        name: 'Llama',
+        image: 'assets/Images-Pet/Llama-Age3-Happy.png',
+        text: ['Master of staying cool under pressure', 'Loves colorful, quirky adventures']
+      }
+    ];
+  }
+
+  onSlideChange() {
+    if (!this.swiperEl?.nativeElement) return;
+    const swiperInstance = this.swiperEl.nativeElement.swiper;
+    if (!swiperInstance) return;
+    // prefer realIndex (when looped) else fallback to activeIndex
+    this.currentIndex = (swiperInstance.realIndex !== undefined && swiperInstance.realIndex !== null)
+      ? swiperInstance.realIndex
+      : (swiperInstance.activeIndex ?? 0);
+  }
+
+  ngAfterViewInit(): void {
+    if (!this.swiperEl?.nativeElement) return;
+    const swiperEl = this.swiperEl.nativeElement;
+    swiperEl.addEventListener('swiperinit', () => {
+      const swiperInstance = swiperEl.swiper;
+      this.currentIndex = swiperInstance.realIndex || 0;
+    });
+    // ensure slide change updates are captured for other event names
+    swiperEl.addEventListener('swiperslidechange', () => {
+      const swiperInstance = swiperEl.swiper;
+      if (!swiperInstance) return;
+      this.currentIndex = (swiperInstance.realIndex !== undefined && swiperInstance.realIndex !== null)
+        ? swiperInstance.realIndex
+        : (swiperInstance.activeIndex ?? 0);
+    });
+  }
+
+  async confirmSelection() {
+    const selected = this.pets[this.currentIndex];
+    await this.modalCtrl.dismiss({ selected });
+  }
+
+  async close() {
+    await this.modalCtrl.dismiss();
+  }
+
+  ngOnDestroy(): void {
+    if (this.resizeObserver && this.swiperEl?.nativeElement) {
+      this.resizeObserver.unobserve(this.swiperEl.nativeElement);
+    }
+  }
+}

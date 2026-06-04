@@ -1,0 +1,63 @@
+<div class="timetable-container" [class.empty-state]="!events || events.length === 0">
+  <!-- Time Labels Column -->
+  <div class="time-labels">
+    <ng-container *ngFor="let time of timeSlots; let i = index">
+      <div *ngIf="!isCompressedSlot(i)" class="time-slot" [style.height.px]="hourHeight">
+        <p>{{ formatTimeLabel(time) }}</p>
+      </div>
+      <!-- Always render compressed space; only show dotted line for middle blocks -->
+      <div *ngIf="isCompressedSlot(i) && isCompressedStart(i)" class="compressed-gap" [style.height.px]="compressedVisualHeight">
+        <div *ngIf="isCompressedVisibleStart(i)" class="dotted-line"></div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- Vertical Separator Line -->
+  <div class="separator-line"></div>
+
+  <!-- Event Area -->
+  <div class="event-area">
+    <div class="time-grid" [style.height.px]="totalGridHeight">
+      <!-- Grid lines for each visible hour -->
+      <ng-container *ngFor="let time of timeSlots; let i = index">
+        <div *ngIf="!isCompressedSlot(i)" class="grid-line" [style.height.px]="hourHeight"></div>
+        <!-- Always render compressed space; only show dashed line for middle blocks -->
+        <div *ngIf="isCompressedSlot(i) && isCompressedStart(i)" class="compressed-grid" [style.height.px]="compressedVisualHeight">
+          <div *ngIf="isCompressedVisibleStart(i)" class="dashed-indicator"></div>
+        </div>
+      </ng-container>
+
+      <!-- Event Cards -->
+      <ng-container *ngFor="let event of events">
+          <div 
+            class="event-box {{event.type}}" 
+            [class.selected]="selectedEventId === event.id"
+            [style.zIndex]="selectedEventId === event.id ? 1100 : 1"
+            [style.top.px]="event._top" 
+            [style.height.px]="event._height"
+            [style.left]="getEventLeft(event)"
+            [style.width]="getEventWidth(event)"
+            [style.min-height.px]="minCardHeight"
+            (click)="onEventClick(event)"
+            long-press [delay]="1500" 
+            (press)="onEventLongPress(event)">
+          <div class="event-content">
+            <div class="event-header">
+              <div class="event-title-wrap">
+                <h4>{{ event.title }}</h4>
+                <h5 [style.color]="getTimeColor(event)">{{ event.startTime }}-{{ event.endTime }}</h5>
+              </div>
+              <span *ngIf="event.type === 'timetable' && event.tags && event.tags.length > 0" class="event-badge">{{ event.tags[0] }}</span>
+              <div class="event-actions">
+                <div class="note-icon-wrap" *ngIf="event.type === 'habit' || event.type === 'task'" [attr.data-event-id]="event.id">
+                  <img (click)="toggleNoteBubble($event, event)" [src]="getNoteIcon(event)" alt="note icon" />
+                  <div *ngIf="tooltipEventId === event.id" class="note-bubble" [style.--arrow-left]="getArrowLeft(event.id)">{{ event.description }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

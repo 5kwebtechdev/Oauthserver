@@ -1,0 +1,111 @@
+<ion-content [fullscreen]="true" class="ion-padding-top">
+    <main class="reel-upload-guidlines" *ngIf="!showMetaPage">
+        <mindful-card-header title="Share Your Moment" [subtitleLeft]="'Create and share amazing reels in few minutes'"
+            [showBackArrow]="true" (backClick)="goBack()">
+        </mindful-card-header>
+
+        <div class="guidlines-steps-list">
+            <div class="uploading-guidline">
+                <span>
+                    <i class="upload-icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24" fill="none">
+                            <mask id="mask0_4038_39769" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="4" y="4"
+                                width="17" height="16">
+                                <rect x="4.5" y="4" width="16" height="16" fill="#D9D9D9" />
+                            </mask>
+                            <g mask="url(#mask0_4038_39769)">
+                                <path
+                                    d="M12.4987 15.3359C12.6876 15.3359 12.8459 15.272 12.9737 15.1443C13.1015 15.0165 13.1654 14.8582 13.1654 14.6693C13.1654 14.4804 13.1015 14.322 12.9737 14.1943C12.8459 14.0665 12.6876 14.0026 12.4987 14.0026C12.3098 14.0026 12.1515 14.0665 12.0237 14.1943C11.8959 14.322 11.832 14.4804 11.832 14.6693C11.832 14.8582 11.8959 15.0165 12.0237 15.1443C12.1515 15.272 12.3098 15.3359 12.4987 15.3359ZM11.832 12.6693H13.1654V8.66927H11.832V12.6693ZM12.4987 18.6693C11.5765 18.6693 10.7098 18.4943 9.8987 18.1443C9.08759 17.7943 8.38203 17.3193 7.78203 16.7193C7.18203 16.1193 6.70703 15.4137 6.35703 14.6026C6.00703 13.7915 5.83203 12.9248 5.83203 12.0026C5.83203 11.0804 6.00703 10.2137 6.35703 9.4026C6.70703 8.59149 7.18203 7.88594 7.78203 7.28594C8.38203 6.68594 9.08759 6.21094 9.8987 5.86094C10.7098 5.51094 11.5765 5.33594 12.4987 5.33594C13.4209 5.33594 14.2876 5.51094 15.0987 5.86094C15.9098 6.21094 16.6154 6.68594 17.2154 7.28594C17.8154 7.88594 18.2904 8.59149 18.6404 9.4026C18.9904 10.2137 19.1654 11.0804 19.1654 12.0026C19.1654 12.9248 18.9904 13.7915 18.6404 14.6026C18.2904 15.4137 17.8154 16.1193 17.2154 16.7193C16.6154 17.3193 15.9098 17.7943 15.0987 18.1443C14.2876 18.4943 13.4209 18.6693 12.4987 18.6693ZM12.4987 17.3359C13.9876 17.3359 15.2487 16.8193 16.282 15.7859C17.3154 14.7526 17.832 13.4915 17.832 12.0026C17.832 10.5137 17.3154 9.2526 16.282 8.21927C15.2487 7.18594 13.9876 6.66927 12.4987 6.66927C11.0098 6.66927 9.7487 7.18594 8.71536 8.21927C7.68203 9.2526 7.16536 10.5137 7.16536 12.0026C7.16536 13.4915 7.68203 14.7526 8.71536 15.7859C9.7487 16.8193 11.0098 17.3359 12.4987 17.3359Z"
+                                    fill="#282527" />
+                            </g>
+                        </svg>
+                    </i>
+                    Uploading Guidelines
+                </span>
+                <ol class="guidelines-list">
+                    <li>The reel should not be less than 5 seconds</li>
+                    <li>File format would be MP4, MOV files up to 100 MB</li>
+                    <li>Follow our guidelines and keep content appropriate</li>
+                </ol>
+            </div>
+            <div class="not-allowed-guidline">
+                <span>X What’s Not allowed</span>
+                <ol class="not-allowed-list">
+                    <li>Inappropriate language or behavior</li>
+                    <li>Personal information sharing</li>
+                    <li>Bullying or mean comments</li>
+                    <li>Dangerous activities or challenges</li>
+                </ol>
+            </div>
+        </div>
+
+        <mindful-button type="peach" [large]="true" full icon="/assets/Icons-Neutral/camera.png" iconPosition="start"
+            text="Upload Reel" (click)="onUploadClick()"></mindful-button>
+        <!-- Hidden file input for video selection -->
+        <input #fileInput type="file" accept="video/mp4,video/quicktime,.mp4,.mov" style="display:none"
+            (change)="onFileSelected($event)" />
+    </main>
+    <!--reel meta data-->
+    <main class="reel-meta-data" *ngIf="showMetaPage">
+        <mindful-navigator heading="New Reel" (back)="goBack()"></mindful-navigator>
+
+        <!-- Compression Progress Indicator -->
+        <div class="progress-container" *ngIf="isCompressing">
+            <ion-progress-bar [value]="compressionProgress.percentage / 100" color="primary"></ion-progress-bar>
+            <p class="progress-text">{{ compressionProgress.status }}</p>
+        </div>
+
+        <!-- Upload Progress Indicator -->
+        <div class="progress-container" *ngIf="isUploading">
+            <ion-progress-bar [value]="uploadProgress.percentage / 100" color="success"></ion-progress-bar>
+            <p class="progress-text">{{ uploadProgress.status }}</p>
+            <p class="progress-details" *ngIf="uploadProgress.speed > 0">
+                Speed: {{ formatBytes(uploadProgress.speed) }}/s |
+                ETA: {{ formatTime(uploadProgress.estimatedTimeRemaining) }}
+            </p>
+        </div>
+
+        <div class="meta-detail-container">
+            <div class="reel-showcase">
+                <!-- Video Preview -->
+                <video *ngIf="videoPreviewUrl" [src]="videoPreviewUrl" controls playsinline
+                    class="reel-video-preview"></video>
+            </div>
+
+            <div class="reel-meta-data-inputs">
+                <p class="meta-title">Enter a title</p>
+                <div class="input-with-counter">
+                    <input class="mindful-input" placeholder="Title" [(ngModel)]="reelTitle"
+                        (input)="onTitleInput($event)" />
+                    <span class="alpha-counter">{{ letterCount }}/40</span>
+                </div>
+            </div>
+            <div class="reel-meta-data-inputs">
+                <p class="meta-title">Add hashtags</p>
+                <div class="input-with-counter">
+                    <input class="mindful-input" placeholder="Hashtags" [(ngModel)]="reelHashtags"
+                        (input)="onHashtagsInput($event)" />
+                    <span class="alpha-counter">{{ maxHashtags - hashtagCount }}</span>
+                </div>
+            </div>
+            <div class="reel-meta-data-inputs">
+                <p class="meta-title">Enter Category</p>
+                <input class="mindful-input" placeholder="Category" [(ngModel)]="reelCategory" />
+            </div>
+
+            <div class="ai-label">
+                <div class="ai-label-text">
+                    <h1>Add AI label</h1>
+                    <p>We require you to label certain realistic content that’s made with AI</p>
+                </div>
+                <mindful-toggle [checked]="aiLabel" (checkedChange)="aiLabel = $event"></mindful-toggle>
+            </div>
+        </div>
+
+        <mindful-button type="peach" [large]="true" full text="Share" [disabled]="isCompressing || isUploading"
+            (click)="onShare()"></mindful-button>
+        <app-mindful-popup [isVisible]="showUploadSuccess" [config]="uploadSuccessConfig"
+            (closeAction)="showUploadSuccess = false" (backdropClick)="showUploadSuccess = false">
+        </app-mindful-popup>
+    </main>
+</ion-content>

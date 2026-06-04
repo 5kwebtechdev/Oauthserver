@@ -1,0 +1,148 @@
+.notification-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.notification-container h2 {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 20px;
+  margin: 8px 0 12px;
+}
+
+.empty {
+  color: #666;
+  font-size: 14px;
+}
+
+.notification-card {
+  display: inline-flex;
+  padding: 16.5px 16px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 24px;
+  width: 100%;
+  background: #FFF;
+  box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
+}
+
+.quiet-hours {
+  padding: 16px 16px 33px 16px;
+  width: 100%;
+
+  .n-title h2 {
+    width: auto;
+  }
+}
+
+.n-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+}
+
+.n-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  align-self: stretch;
+}
+
+.n-title h2 {
+color: #282527;
+font-family: Nunito;
+font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.n-desc {
+  color: #282527;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.7;
+  margin: 0;
+}
+
+/* small spacing for the ion-toggle inside the card */
+.n-head ion-toggle {
+  --padding-start: 0px;
+}
+
+.quiet-hours-picker {
+  .time-input {
+    padding: 0px !important;
+    width: auto !important;
+  }
+
+  ::ng-deep .mindful-timepicker-wrapper .time-display-input {
+    padding: 0px !important;
+    font-size: 13px !important;
+    color: #282527 !important;
+    font-weight: 600 !important;
+    width: 38px !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: clip !important;
+    padding: 0px 2px !important;
+
+  }
+
+}
+
+.time-main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.time-input {
+  display: flex;
+  width: 100px;
+  padding: 4px 12px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-input input[type="text"] {
+  width: 100%;
+  text-align: center;
+}
+
+.sep {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.time-head {
+  display: flex;
+  align-items: center;
+  gap: 50px;
+  align-self: stretch;
+  justify-content: space-between;
+}
+
+/* Ensure any mindful-button placed inside the notification container fills the available width */
+mindful-button {
+  display: block;
+  width: 100%;
+}
+
+/* Target the inner .button element inside the mindful-button to guarantee full-width */
+mindful-button .button {
+  width: 100%;
+  box-sizing: border-box;
+  float: none;
+  /* override any float that might be set globally */
+  margin: 0;
+  /* align with container spacing */
+}

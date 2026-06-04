@@ -1,0 +1,203 @@
+.navigator-root {
+  position: relative;
+  display: block;
+}
+
+.navigator-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding:0px 16px 0px 6px;
+}
+
+.left-group {
+  display: flex;
+  align-items: center;
+}
+
+.right-group {
+  display: flex;
+  align-items: center;
+}
+
+.back-button {
+  color: #282527;
+  flex-shrink: 0;
+  background: none;
+}
+
+.back-button .back-svg,
+.back-button img {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+
+.navigator-heading {
+  color: #282527;
+  font-family: Fredoka;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  text-align: left;
+  margin: 0;
+}
+
+/* Warm variant overrides */
+.navigator-root.warm {
+  .back-button {
+    color: #772817;
+    width: 36px;
+    margin-right: 8px;
+  }
+
+  .back-button .back-svg {
+    width: 24px;
+    height: auto;
+  }
+
+  .navigator-heading {
+    color: #772817;
+    font-size: 25px;
+  }
+
+  .navigator-subtext-text {
+    color: #772817;
+    font-family: Nunito, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    opacity: 1;
+    line-height: 1;
+  }
+
+  /* hide the small chevron after subtext for the warm variant */
+  .navigator-subtext-icon {
+    display: none;
+  }
+}
+
+/* smaller cancel icon size per design */
+.back-button.cancel img {
+  width: 48px;
+  height: 14px;
+}
+
+/* right-side action button (optional) */
+.right-button {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.right-button img {
+  width: 40px;
+  height: 40px;
+  aspect-ratio: 1/1;
+}
+
+/* custom layout for 'edit' action: centered eclipse with icon */
+.right-edit-layout {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+}
+
+.right-edit-layout .eclipse {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
+  border-radius: 48px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(98deg, rgba(226, 226, 226, 0.60) 8.57%, rgba(241, 241, 241, 0.30) 90.15%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.right-edit-layout .eclipse img {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
+}
+
+/* icon-with-count specific layout */
+.icon-with-count {
+  position: relative;
+}
+
+.icon-with-count .eclipse {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
+  border-radius: 48px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(98deg, rgba(226, 226, 226, 0.60) 8.57%, rgba(241, 241, 241, 0.30) 90.15%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  filter: drop-shadow(0 0 6px rgba(107, 101, 106, 0.15));
+}
+
+.icon-with-count .eclipse img {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+
+.right-actions {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding-left: 0;
+  gap: 6px;
+}
+
+.right-button-2 img {
+  width: 40px;
+  height: 40px;
+}
+
+/* Subtext row shown under the main heading (e.g., address or location) */
+.navigator-heading-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.navigator-subtext-row {
+  margin-top: 0px;
+}
+
+.navigator-subtext {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navigator-subtext-text {
+  color: #282527;
+  font-family: Nunito, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  opacity: 0.7;
+  line-height: 1;
+}
+
+.navigator-subtext-icon svg {
+  display: inline-block;
+}

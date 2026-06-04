@@ -1,0 +1,91 @@
+:host {
+  --rte-toolbar-height: 56px;
+  --rte-keyboard-height: 0px; /* updated at runtime */
+  display: block;
+}
+
+.rte-host {
+  position: relative;
+}
+
+.rte-editor {
+  min-height: 220px;
+  padding: 1rem 1rem calc(var(--rte-toolbar-height) + 1rem + env(safe-area-inset-bottom));
+  outline: none;
+  font-family: Nunito, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  font-size: 16px;
+  color: #282527;
+  /* enforce left-to-right typing and normal writing mode */
+  direction: ltr;
+  unicode-bidi: embed;
+  writing-mode: horizontal-tb;
+  text-align: left;
+  /* mobile composition tweaks */
+  -webkit-user-modify: read-write-plaintext-only;
+  caret-color: auto;
+}
+
+.rte-plain {
+  width: 100%;
+  min-height: 220px;
+  padding: 1rem;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: Nunito, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  font-size: 16px;
+  color: #282527;
+}
+
+/* try to reduce native selection/suggestion UI visual chrome */
+.rte-editor::selection {
+  background: rgba(0,0,0,0.08);
+}
+
+/* placeholder styling when empty */
+.rte-editor:empty:before {
+  content: attr(data-placeholder);
+  opacity: 0.45;
+  color: #9b9b9b;
+}
+
+/* toolbar fixed above keyboard using CSS variable */
+.rte-toolbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: var(--rte-toolbar-height);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 12px;
+  background: #ffffff;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  /* make it sit above the keyboard and safe area */
+  bottom: calc(var(--rte-keyboard-height) + env(safe-area-inset-bottom));
+  z-index: 1200;
+
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+
+.rte-toolbar.hidden {
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rte-toolbar .tool {
+  background: transparent;
+  border: none;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.rte-toolbar .tool:active {
+  background: rgba(0,0,0,0.06);
+}

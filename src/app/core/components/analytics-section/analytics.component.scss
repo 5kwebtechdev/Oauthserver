@@ -1,0 +1,33 @@
+.coming-soon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+  gap: 20px;
+
+  &__img {
+    width: 240px;
+    height: 240px;
+    object-fit: contain;
+  }
+
+  &__title {
+    font-family: Nunito, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #282527;
+    text-align: center;
+    margin: 0;
+  }
+
+  &__text {
+    font-family: Nunito, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6B656A;
+    text-align: center;
+    line-height: 1.5;
+    margin: 0;
+  }
+}

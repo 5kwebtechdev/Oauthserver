@@ -1,0 +1,451 @@
+  .tutor-homepage {
+}
+h2{margin: 0;}
+
+.tutor-header {
+      height: calc(254px + env(safe-area-inset-top));
+    flex-shrink: 0;
+    background-image: url(/assets/Images-Thumbnails/Imgae-Tutor-TopBg.jpg);
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    padding: 0 16px;
+    box-sizing: border-box;
+    position: relative;
+    border-radius: 0px 0px 48px 48px;
+    display: flex;
+    flex-direction: column;
+    padding-top: env(safe-area-inset-top, 0) !important;
+    gap: 24px;
+}
+
+/* Top heading & button */
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0px;
+}
+
+.header-top h2 {
+  color: #FDFDFD;
+  font-family: Fredoka;
+  font-size: 16px;
+  font-weight: 500;
+
+}
+
+
+
+/* Search Bar */
+.search-bar {
+  
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 14px;
+}
+
+.search-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+
+.search-bar {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.search-bar input::placeholder {
+  color: #6B656A;
+  opacity: 1;
+}
+
+.divider {
+  width: 1px;
+  height: 22px;
+  background: rgba(0, 0, 0, 0.08);
+  margin: 0 12px;
+  flex-shrink: 0;
+}
+
+.mic {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+
+
+.controls-row {
+display: flex;
+    justify-content: space-between;
+    align-items: center;
+   
+    width: 100%;
+    padding: 16px;
+   
+}
+
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(180deg, #7a7fd6, #5663a8);
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.filter-icon {
+  font-size: 1.05rem;
+  opacity: 0.95;
+}
+
+.sort-btn {
+  background: #fff;
+  border-radius: 28px;
+  padding: 8px 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Sort label and item typography (exact values requested) */
+.sort-label {
+  color: #282527;
+  font-family: Nunito, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+}
+
+.sort-item {
+  color: #282527;
+  font-family: Nunito, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+
+
+/* Add spacing above the tutor list area so header doesn't crowd it */
+::ng-deep tutor-list {
+  display: block;
+  margin-top: 18px;
+  padding-top: 6px;
+}
+
+
+
+.refer-btn {
+  pointer-events: auto;
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  background: rgba(72, 94, 128, 0.95);
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: 120px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.tutor-list-section {
+  padding: 0 16px 130px 16px;
+  gap: 16px;
+}
+
+.title-tutor-list {
+      color: #282527;
+    font-family: 'Nunito';
+    font-size: 13px;
+    font-weight: 500;
+  margin-bottom: 16px;
+}
+
+/* Refer modal styles */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 1200;
+}
+
+.refer-modal {
+  position: fixed;
+  right: 16px;
+  top: 80px;
+  width: calc(100% - 32px);
+  max-width: 360px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
+  z-index: 1300;
+  padding: 16px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: #222;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.modal-sub {
+  color: #666;
+  margin: 12px 0 18px 0;
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-btn {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.action-btn.copy {
+  background: #fff;
+  border: 1px solid #eee;
+  color: #222;
+}
+
+.action-btn.whatsapp {
+  background: #25D366;
+  color: #fff;
+}
+
+@media (min-width: 420px) {
+  .refer-modal {
+    right: 40px;
+    top: 100px;
+  }
+}
+
+/* Sort dropdown styles */
+.sort-wrapper {
+  position: relative;
+}
+
+.sort-menu {
+  position: absolute;
+  left: -44px;
+  top: calc(100% + 10px);
+  background: #fff;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  padding: 8px 0;
+  width: 150px;
+  z-index: 1400;
+  list-style: none;
+  overflow: hidden;
+}
+
+.sort-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  color: #282527;
+  font-size: 13px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sort-item:hover {
+  background: #F6F6F8;
+}
+
+.sort-item.active {
+  font-weight: 700;
+}
+
+.sort-item span {
+  color: #282527;
+  font-weight: 700;
+}
+
+
+
+/* Explicit button styling to inherit underline and typography while keeping clickable area */
+.view-all-btn {
+  color: #90214D;
+  font-family: Nunito;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+
+}
+
+/* Loading state styles */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 12px;
+
+  p {
+    color: #6B656A;
+    font-family: Nunito, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  ion-spinner {
+    --color: #7284B9;
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* No results state */
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0px 20px;
+  gap: 12px;
+  text-align: center;
+
+  &__image {
+    max-width: 220px;
+    width: 40%;
+    height: auto;
+    opacity: 0.95;
+  }
+
+  &__primary {
+    color: #282527;
+    text-align: center;
+    font-family: Fredoka, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  &__secondary {
+    color: #282527;
+    text-align: center;
+    font-family: Nunito, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0.7;
+    margin: 0;
+  }
+
+  /* Ensure the mindful-button shows as a medium-sized columbian-blue CTA */
+  mindful-button {
+    margin-top: 8px;
+
+    ::ng-deep .button p {
+      font-family: Nunito;
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+}
+
+/* Tutor count badge */
+.tutor-count {
+  color: #6B656A;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+/* Clear search button in search bar */
+.clear-btn {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Ensure the shared popup's CTA buttons are stacked vertically for this page only */
+:host ::ng-deep app-mindful-popup .mindful-popup-actions .mindful-popup-dual-cta,
+:host ::ng-deep app-mindful-popup .mindful-popup-actions .mindful-popup-dual-cta.column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+}
+
+/* Make the inner buttons take full width when stacked */
+:host ::ng-deep app-mindful-popup .mindful-popup-actions .mindful-popup-dual-cta > * {
+  width: 100%;
+}

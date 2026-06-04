@@ -1,0 +1,265 @@
+<div class="activity-page-content">
+    <div class="habit-week">
+        <mindful-week (dateSelected)="onDateSelected($event)"></mindful-week>
+    </div>
+
+
+    <div *ngIf="showSingleMode && singleModeHabit" class="single-mode-container" (click)="closeSingleMode()">
+        <activity-card mode="single" [habit]="singleModeHabit" (click)="$event.stopPropagation()"></activity-card>
+    </div>
+
+    <div class="habit-task-switch w-full" *ngIf="showContent">
+        <div class="row toggler"
+            [ngClass]="{ 'habits-active': currentMainTab === 'habits', 'tasks-active': currentMainTab === 'tasks' }">
+            <div class="col-6" (click)="selectMainTab('habits')"
+                [ngClass]="currentMainTab === 'habits' ? 'active' : 'null'">Habits</div>
+            <div class="col-6" (click)="selectMainTab('tasks')"
+                [ngClass]="currentMainTab === 'tasks' ? 'active' : 'null'">Tasks</div>
+        </div>
+    </div>
+
+    <div class="habit-filters-container" *ngIf="currentMainTab === 'habits'">
+        <ng-template #emptyStateTpl>
+            <div class="empty-state">No habits found.</div>
+        </ng-template>
+        <!-- Group: Journey, Priority, Routine selectors -->
+        <div class="habit-journey-container">
+            <div class="habit-journey">
+                <h2>Your Habit Journey</h2>
+                <div class="habit-journey-week d-flex justify-content-between">
+                    <mindful-badge [text]="`Pending (${habitJourneySummary.pending})`" type="pending"
+                        [disabled]="journeySubFilter !== 'pending'" [active]="journeySubFilter === 'pending'"
+                        (click)="selectJourneySubFilter('pending')"></mindful-badge>
+                    <mindful-badge [text]="`Ongoing (${habitJourneySummary.ongoing})`" type="ongoing"
+                        [disabled]="journeySubFilter !== 'ongoing'" [active]="journeySubFilter === 'ongoing'"
+                        (click)="selectJourneySubFilter('ongoing')"></mindful-badge>
+                    <mindful-badge [text]="`Completed (${habitJourneySummary.completed})`" type="completed"
+                        [disabled]="journeySubFilter !== 'completed'" [active]="journeySubFilter === 'completed'"
+                        (click)="selectJourneySubFilter('completed')"></mindful-badge>
+                </div>
+            </div>
+            <div class="habit-list-content"
+                *ngIf="filteredHabitsByJourney && filteredHabitsByJourney.length > 0; else noHabitsTemplate">
+                <div *ngFor="let habit of filteredHabitsByJourney">
+                    <activity-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
+                        [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp"
+                        [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()"
+                        (cardTap)="onCardTap($event)" (cardLongPress)="onCardLongPress($event)">
+                    </activity-card>
+                </div>
+            </div>
+            <ng-template #noHabitsTemplate>
+                <empty-state
+                        [imageSrc]="showPet ? '/assets/Images-Pet/Panda-Age1-Base.png' : ''"
+                        [imageAlt]="'Panda illustration'"
+                        [leadText]="journeySubFilter === 'pending' ? 'No pending habits yet' : (journeySubFilter === 'ongoing' ? 'No ongoing habits yet' : 'No completed habits yet')"
+                        [subText]="'Add habits to your journey to view them here'"
+                        [buttonText]="''">
+                    </empty-state>
+            </ng-template>
+        </div>
+
+        <div class="priority-container">
+            <div class="priority-header">
+                <h3>Navigate Your Priorities</h3>
+                <div class="priority-selectors d-flex justify-content-between">
+                    <mindful-badge [text]="`High (${habitPrioritySummary.high})`" type="red"
+                        [disabled]="prioritySubFilter !== 'high'" [active]="prioritySubFilter === 'high'"
+                        (click)="selectPrioritySubFilter('high')"></mindful-badge>
+                    <mindful-badge [text]="`Medium (${habitPrioritySummary.medium})`" type="yellow"
+                        [disabled]="prioritySubFilter !== 'medium'" [active]="prioritySubFilter === 'medium'"
+                        (click)="selectPrioritySubFilter('medium')"></mindful-badge>
+                    <mindful-badge [text]="`Low (${habitPrioritySummary.low})`" type="green"
+                        [disabled]="prioritySubFilter !== 'low'" [active]="prioritySubFilter === 'low'"
+                        (click)="selectPrioritySubFilter('low')"></mindful-badge>
+                </div>
+            </div>
+            <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">
+                <div *ngIf="filteredHabitsByPriority && filteredHabitsByPriority.length > 0; else noPriorityHabitsTemplate"
+                    class="habit-list-content">
+                    <div *ngFor="let habit of filteredHabitsByPriority">
+                        <activity-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
+                            [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp"
+                            [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()"
+                            (cardTap)="onCardTap($event)" (cardLongPress)="onCardLongPress($event)">
+                        </activity-card>
+                    </div>
+                </div>
+                <ng-template #noPriorityHabitsTemplate>
+                    <empty-state
+                        [imageSrc]="showPet ? '/assets/Images-Pet/Panda-Age1-Base.png' : ''"
+                        [imageAlt]="'Panda illustration'"
+                        [leadText]="prioritySubFilter === 'high' ? 'No high priority habits yet' : (prioritySubFilter === 'medium' ? 'No medium priority habits yet' : 'No low priority habits yet')"
+                        [subText]="'Add habits with this priority to view them here'"
+                        [buttonText]="''">
+                    </empty-state>
+                </ng-template>
+            </div>
+        </div>
+
+        <div class="routine-container">
+            <div class="routine-header">
+                <h3>Your Daily Routines</h3>
+
+                <div class="routine-selectors d-flex justify-content-between">
+                    <mindful-badge [text]="`Morning (${habitRoutineSummary.morning})`" type="morning"
+                        [disabled]="routineSubFilter !== 'morning'" [active]="routineSubFilter === 'morning'"
+                        (click)="selectRoutineSubFilter('morning')"></mindful-badge>
+                    <mindful-badge [text]="`Evening (${habitRoutineSummary.evening})`" type="evening"
+                        [disabled]="routineSubFilter !== 'evening'" [active]="routineSubFilter === 'evening'"
+                        (click)="selectRoutineSubFilter('evening')"></mindful-badge>
+                    <mindful-badge [text]="`Night (${habitRoutineSummary.night})`" type="night"
+                        [disabled]="routineSubFilter !== 'night'" [active]="routineSubFilter === 'night'"
+                        (click)="selectRoutineSubFilter('night')"></mindful-badge>
+                </div>
+            </div>
+            <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">
+                <div *ngIf="filteredHabitsByRoutine && filteredHabitsByRoutine.length > 0; else noRoutineHabitsTemplate"
+                    class="habit-list-content">
+                    <div *ngFor="let habit of filteredHabitsByRoutine">
+                        <activity-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
+                            [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp"
+                            [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()"
+                            (cardTap)="onCardTap($event)" (cardLongPress)="onCardLongPress($event)">
+                        </activity-card>
+                    </div>
+                </div>
+                <ng-template #noRoutineHabitsTemplate>
+                    <empty-state
+                        [imageSrc]="showPet ? '/assets/Images-Pet/Panda-Age1-Base.png' : ''"
+                        [imageAlt]="'Panda illustration'"
+                        [leadText]="routineSubFilter === 'morning' ? 'No morning routine yet' : (routineSubFilter === 'evening' ? 'No evening routine yet' : 'No night routine yet')"
+                        [subText]="routineSubFilter === 'morning' ? 'Add morning routine to your habits and tasks to view them here' : (routineSubFilter === 'evening' ? 'Add evening routine to your habits and tasks to view them here' : 'Add night routine to your habits and tasks to view them here')"
+                        [buttonText]="''">
+                    </empty-state>
+                </ng-template>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks layout mirrors Habits: Journey, Priority, Routine selectors and lists -->
+    <div class="task-filters-container" *ngIf="currentMainTab === 'tasks'">
+        <ng-template #noTasksJourneyTemplate>
+            <empty-state
+                [imageSrc]="showPet ? '/assets/Images-Pet/Panda-Age1-Base.png' : ''"
+                [imageAlt]="'Panda illustration'"
+                [leadText]="journeySubFilter === 'pending' ? 'No pending tasks yet' : (journeySubFilter === 'ongoing' ? 'No ongoing tasks yet' : 'No completed tasks yet')"
+                [subText]="'Add tasks to your journey to view them here'"
+                [buttonText]="''">
+            </empty-state>
+        </ng-template>
+
+        <ng-template #noTasksPriorityTemplate>
+            <empty-state
+                [imageSrc]="showPet ? '/assets/Images-Pet/Panda-Age1-Base.png' : ''"
+                [imageAlt]="'Panda illustration'"
+                [leadText]="prioritySubFilter === 'high' ? 'No high priority tasks yet' : (prioritySubFilter === 'medium' ? 'No medium priority tasks yet' : 'No low priority tasks yet')"
+                [subText]="'Add tasks with this priority to view them here'"
+                [buttonText]="''">
+            </empty-state>
+        </ng-template>
+
+        <div class="habit-journey-container">
+            <div class="habit-journey">
+                <h2>Your Task Journey</h2>
+                <div class="habit-journey-week d-flex justify-content-between">
+                    <mindful-badge [text]="`Pending (${taskJourneySummary.pending})`" type="pending"
+                        [disabled]="journeySubFilter !== 'pending'" [active]="journeySubFilter === 'pending'"
+                        (click)="selectJourneySubFilter('pending')"></mindful-badge>
+                    <mindful-badge [text]="`Ongoing (${taskJourneySummary.ongoing})`" type="ongoing"
+                        [disabled]="journeySubFilter !== 'ongoing'" [active]="journeySubFilter === 'ongoing'"
+                        (click)="selectJourneySubFilter('ongoing')"></mindful-badge>
+                    <mindful-badge [text]="`Completed (${taskJourneySummary.completed})`" type="completed"
+                        [disabled]="journeySubFilter !== 'completed'" [active]="journeySubFilter === 'completed'"
+                        (click)="selectJourneySubFilter('completed')"></mindful-badge>
+                </div>
+            </div>
+
+            <div class="habit-list-content"
+                *ngIf="filteredTasksByJourney && filteredTasksByJourney.length > 0; else noTasksJourneyTemplate">
+                <div *ngFor="let task of filteredTasksByJourney">
+                    <activity-card [habit]="task" [startTime]="task.startTimeStamp" [endTime]="task.endTimeStamp"
+                        [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp"
+                        [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()"
+                        (cardTap)="onCardTap($event)" (cardLongPress)="onCardLongPress($event)">
+                    </activity-card>
+                </div>
+            </div>
+        </div>
+
+        <div class="priority-container">
+            <div class="priority-header">
+                <h3>Navigate Your Priorities</h3>
+                <div class="priority-selectors d-flex justify-content-between">
+                    <mindful-badge [text]="`High (${taskPrioritySummary.high})`" type="red"
+                        [disabled]="prioritySubFilter !== 'high'" [active]="prioritySubFilter === 'high'"
+                        (click)="selectPrioritySubFilter('high')"></mindful-badge>
+                    <mindful-badge [text]="`Medium (${taskPrioritySummary.medium})`" type="yellow"
+                        [disabled]="prioritySubFilter !== 'medium'" [active]="prioritySubFilter === 'medium'"
+                        (click)="selectPrioritySubFilter('medium')"></mindful-badge>
+                    <mindful-badge [text]="`Low (${taskPrioritySummary.low})`" type="green"
+                        [disabled]="prioritySubFilter !== 'low'" [active]="prioritySubFilter === 'low'"
+                        (click)="selectPrioritySubFilter('low')"></mindful-badge>
+                </div>
+            </div>
+            <div class="habit-list-container">
+                <div *ngIf="filteredTasksByPriority && filteredTasksByPriority.length > 0; else noTasksPriorityTemplate"
+                    class="habit-list-content">
+                    <div *ngFor="let task of filteredTasksByPriority">
+                        <activity-card [habit]="task.task ? task.task : task" [startTime]="task.startTimeStamp"
+                            [endTime]="task.endTimeStamp"
+                            [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp"
+                            [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()"
+                            (cardTap)="onCardTap($event)" (cardLongPress)="onCardLongPress($event)">
+                        </activity-card>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="routine-container">
+            <div class="routine-header">
+                <h3>Your Daily Routines</h3>
+                <div class="routine-selectors d-flex justify-content-between">
+                    <mindful-badge [text]="`Morning (${taskRoutineSummary.morning})`" type="morning"
+                        [disabled]="routineSubFilter !== 'morning'" [active]="routineSubFilter === 'morning'"
+                        (click)="selectRoutineSubFilter('morning')"></mindful-badge>
+                    <mindful-badge [text]="`Evening (${taskRoutineSummary.evening})`" type="evening"
+                        [disabled]="routineSubFilter !== 'evening'" [active]="routineSubFilter === 'evening'"
+                        (click)="selectRoutineSubFilter('evening')"></mindful-badge>
+                    <mindful-badge [text]="`Night (${taskRoutineSummary.night})`" type="night"
+                        [disabled]="routineSubFilter !== 'night'" [active]="routineSubFilter === 'night'"
+                        (click)="selectRoutineSubFilter('night')"></mindful-badge>
+                </div>
+            </div>
+                <div class="habit-list-container">
+                <div *ngIf="filteredTasksByRoutine && filteredTasksByRoutine.length > 0; else noRoutineTasksTemplate"
+                    class="habit-list-content">
+                    <div *ngFor="let task of filteredTasksByRoutine">
+                        <activity-card [habit]="task.task ? task.task : task" [startTime]="task.startTimeStamp"
+                            [endTime]="task.endTimeStamp"
+                            [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp"
+                            [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()"
+                            (cardTap)="onCardTap($event)" (cardLongPress)="onCardLongPress($event)">
+                        </activity-card>
+                    </div>
+                </div>
+                <ng-template #noRoutineTasksTemplate>
+                    <empty-state
+                        [imageSrc]="showPet ? '/assets/Images-Pet/Panda-Age1-Base.png' : ''"
+                        [imageAlt]="'Panda illustration'"
+                        [leadText]="routineSubFilter === 'morning' ? 'No morning routine yet' : (routineSubFilter === 'evening' ? 'No evening routine yet' : 'No night routine yet')"
+                        [subText]="routineSubFilter === 'morning' ? 'Add morning routine to your habits and tasks to view them here' : (routineSubFilter === 'evening' ? 'Add evening routine to your habits and tasks to view them here' : 'Add night routine to your habits and tasks to view them here')"
+                        [buttonText]="''">
+                    </empty-state>
+                </ng-template>
+            </div>
+        </div>
+    </div>
+
+
+    <!--ad-banner-->
+    <!-- <div class="ad-banner-container">
+        <ad-banner></ad-banner>
+    </div> -->
+</div>

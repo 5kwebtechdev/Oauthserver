@@ -1,0 +1,73 @@
+<ion-content>
+  <mindful-navigator heading="Delete My Account" backIcon="arrowSvg"></mindful-navigator>
+
+  <div class="delete-account-container">
+    <span class="warning">This action is permanent. Think twice!</span>
+
+    <!-- Parent Account Content -->
+    <ng-container *ngIf="isParentUser()">
+      <div class="what-happens">
+        <h1>What happens when I delete my account ?</h1>
+        <div class="explanation">
+          <div class="explanation-list"><span class="list-count">1</span><p>Your profile and all child-related data are erased forever.</p></div>
+          <div class="explanation-list"><span class="list-count">2</span><p>You are instantly removed from the family (if you are co-parent)</p></div>
+          <div class="explanation-list"><span class="list-count">3</span><p>Your assigned activities are wiped.</p></div>
+          <div class="explanation-list"><span class="list-count">4</span><p>Deleted data cannot be recovered.</p></div>
+        </div>
+      </div>
+
+      <div class="for-your-safety">
+        <h1>Account & Privacy</h1>
+        <div class="explanation">
+          <div class="explanation-list"><span class="list-count">1</span><p>You cannot use this email or phone number to sign up for 14 days.</p></div>
+          <div class="explanation-list"><span class="list-count">2</span><p>Transaction records are retained for legal compliance.</p></div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Child / Self Account Content -->
+    <ng-container *ngIf="!isParentUser()">
+      <div class="what-happens">
+        <h1>What happens when I delete my account ?</h1>
+        <div class="explanation">
+          <div class="explanation-list"><span class="list-count">1</span><p>All activities, streaks, pets, and coins erased forever.</p></div>
+          <div class="explanation-list"><span class="list-count">2</span><p>You are instantly removed from your family.</p></div>
+          <div class="explanation-list"><span class="list-count">3</span><p>Your profile, saved addresses, and history are wiped.</p></div>
+          <div class="explanation-list"><span class="list-count">4</span><p>This action is immediate and cannot be undone.</p></div>
+        </div>
+      </div>
+
+      <div class="for-your-safety">
+        <h1>Account & Privacy</h1>
+        <div class="explanation">
+          <div class="explanation-list"><span class="list-count">1</span><p>You cannot use this email or phone number to sign up for 14 days.</p></div>
+          <div class="explanation-list"><span class="list-count">2</span><p>Past support chats are kept for safety reasons.</p></div>
+        </div>
+      </div>
+    </ng-container>
+
+    <div class="consent">
+      <ion-checkbox slot="start" [(ngModel)]="consentChecked"></ion-checkbox>
+      <p class="check-text">I understand this cannot be undone</p>
+    </div>
+
+    <div class="delete-action w-100">
+      <mindful-button type="bronze" text="Delete my account" size="full" [disabled]="!consentChecked" (click)="onDelete()"></mindful-button>
+    </div>
+
+    <p>Need help? Contact us at support <a href="mailto:support&#64;superme.com">support&#64;superme.com</a></p>
+  </div>
+</ion-content>
+
+<!-- Custom confirm popup -->
+<div class="confirm-backdrop" *ngIf="showConfirm" (click)="cancelDelete()">
+  <div class="confirm-modal" (click)="$event.stopPropagation()">
+    <div class="confirm-emoji">💔</div>
+    <h2 class="confirm-title">Are you absolutely sure?</h2>
+    <p class="confirm-desc">This is the point of no return. Your account will be permanently deleted and you will be logged out immediately.</p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" (click)="cancelDelete()">Cancel</button>
+      <button class="btn-delete" (click)="deleteAccount()">Yes, Delete</button>
+    </div>
+  </div>
+</div>

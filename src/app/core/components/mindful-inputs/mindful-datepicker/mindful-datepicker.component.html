@@ -1,0 +1,48 @@
+<div class="datepicker-wrapper">
+  <input type="text" [attr.placeholder]="placeholder"
+    [value]="startDate ? (type === 'range' && endDate ? startDate.toDateString() + ' - ' + endDate.toDateString() : startDate.toDateString()) : ''"
+    (click)="toggleCalendar()" readonly />
+
+  <div class="calendar-overlay" *ngIf="isOpen">
+    <div class="calendar-popup">
+      <div class="calendar-header">
+        <span>{{ currentMonth | date: 'MMMM yyyy' }}</span>
+        <div class="nav-buttons d-flex gap-4">
+          <button class="nav-arrow" (click)="prevMonth()">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+          </button>
+          <button class="nav-arrow" (click)="nextMonth()">
+            <ion-icon name="chevron-forward-outline"></ion-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="range-selector" *ngIf="type === 'range'">
+        <div class="box" [class.active]="selectingStart" (click)="selectingStart = true">
+          <label>Start Date</label>
+          <div>{{ startDate ? (startDate | date: 'mediumDate') : 'Not selected' }}</div>
+        </div>
+        <div class="box" [class.active]="!selectingStart" (click)="selectingStart = false">
+          <label>End Date</label>
+          <div>{{ endDate ? (endDate | date: 'mediumDate') : 'Not selected' }}</div>
+        </div>
+      </div>
+
+      <div class="calendar-grid">
+        <div class="day" *ngFor="let d of ['Sun','Mon','Tue','Wed','Thur','Fri','Sat']">{{ d }}</div>
+        <button *ngFor="let date of getVisibleMonthDays()" [class.isStartDate]="isStartOfRange(date)"
+          [class.isEndDate]="isEndOfRange(date)" [class.currentMonth]="isDateinCurrentMonth(date)"
+          [class.selected]="isSameDay(date, getEffectiveStart()) || isSameDay(date, getEffectiveEnd())"
+          [class.in-range]="isInRange(date)" [class.disabled]="isDisabled(date)" [class.today]="isToday(date)" [disabled]="isDisabled(date)"
+          (click)="selectDate(date)">
+          <p>{{ date.getDate() }}</p>
+        </button>
+      </div>
+
+      <div class="calendar-actions">
+        <button (click)="cancelSelection()">Cancel</button>
+        <button (click)="confirmSelection()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>

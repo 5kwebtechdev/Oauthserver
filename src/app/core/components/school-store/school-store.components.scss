@@ -1,0 +1,298 @@
+.school-store-content{
+     display: flex;
+flex-direction: column;
+gap: 24px;
+padding: 0px 16px;
+}
+/* Removed legacy navigator slot button styles: icons are now inlined via mindful-navigator rightActions */
+
+.school-store-main{
+    display: flex;
+flex-direction: column;
+gap: 24px;
+}
+
+/* Swiper / pager styles copied from Education main so the slider is visible */
+.edu-banner-image {
+	width: 100%;
+	height: 160px;
+	background-image: url('/assets/School-assets/school-store-banner.jpg');
+	background-position: center;
+	background-repeat: no-repeat;
+	border-radius: 8px;
+}
+
+.edu-swiper {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	position: relative;
+	overflow: visible;
+}
+
+.edu-pagination {
+	display: flex;
+	justify-content: center;
+	gap: 0.5rem;
+	padding: 6px 8px;
+	align-items: center;
+}
+
+.edu-dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.2);
+	border: none;
+	padding: 0;
+	transition: width 160ms ease, background 160ms ease, border-radius 160ms ease;
+}
+
+.edu-dot.active {
+	width: 16px;
+	background: #90214D;
+	border-radius: 23px;
+}
+
+/* Store cards layout */
+.store-cards{
+	/* Use grid so we can guarantee a minimum of 2 columns and expand on wider screens */
+	display: grid;
+	gap: 16px;
+	margin-top: 16px;
+	/* responsive columns: let the grid create as many equal columns as fit; minimum flexible column width */
+	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.store-card{
+	display: flex;
+	width: 100%; /* fill the grid cell */
+	padding: 12px 8px;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	background: #FFFFFF;
+	border-radius: 12px;
+	box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+	box-sizing: border-box;
+    text-decoration: none;
+}
+
+.store-card h3{
+	margin: 0;
+	color: #282527;
+	font-family: Nunito, sans-serif;
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.store-card img{
+	width: 126px;
+	height: 126px;
+	aspect-ratio: 1 / 1;
+	object-fit: contain;
+	display: block;
+}
+
+/* On wider screens allow more columns to fit automatically */
+@media (min-width: 740px) {
+    .store-cards {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+}
+
+/* Small screens: still keep two columns but let them shrink if necessary */
+@media (max-width: 360px) {
+	.store-cards {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+.store-card-2{
+    display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: flex-start;
+gap: 12px;
+flex: 1 0 0;
+align-self: stretch;
+}
+.store-card-2{
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.store-card-in-2{
+	position: relative;
+	width: 100%;
+	height: 85.5px;
+	padding: 8px 8px 0px 8px;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: flex-start;
+	gap: 8px;
+	border-radius: 16px;
+	background: #FFF;
+	box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+	box-sizing: border-box;
+	overflow: hidden;
+}
+
+.store-card-in-2 h3{
+	margin: 0;
+	color: #282527;
+	font-family: Nunito, sans-serif;
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.store-card-in-2 .store-img{
+	position: absolute;
+    right: 12px;
+    bottom: -1px;
+    display: flex;
+    align-items: flex-end;
+}
+
+/* Footer exchange row */
+.footer-exchange{
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 0;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.footer-item{
+	display: flex;
+    flex-direction: row;
+	align-items: center;
+	gap: 1px;
+}
+
+.footer-item img{
+	width: 24px;
+	height: 24px;
+	display: block;
+}
+
+.footer-text{
+	color: #282527;
+	font-family: Nunito, sans-serif;
+	font-size: 10px;
+	font-weight: 600;
+}
+
+
+.store-card-in-2 .store-img img{
+	width: 100%;
+	height: 56px;
+	object-fit: contain;
+	display: block;
+}
+
+/* Navigator wrapper and transparent trigger placed over the subtext area */
+.navigator-wrap{
+	position: relative;
+}
+
+.subtext-trigger{
+	position: absolute;
+	left: 16px;
+	top: 44px; /* adjust to align with subtext inside navigator */
+	height: 44px;
+	min-width: 160px;
+	background: transparent;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
+}
+
+/* Bottom fixed popup styles */
+.address-popup{
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: -100%;
+	display: flex;
+	justify-content: center;
+	pointer-events: none;
+	transition: bottom 320ms cubic-bezier(.2,.8,.2,1), opacity 220ms ease;
+	z-index: 1200;
+}
+
+.address-popup.open{
+	bottom: 0;
+	pointer-events: auto;
+}
+
+.address-popup-inner{
+	display: flex;
+	width: 100%;
+	max-width: 980px;
+	padding: 16px;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 16px;
+	border-radius: 32px 32px 24px 24px;
+	background: #FFF;
+	box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+	box-sizing: border-box;
+}
+
+.address-popup .popup-close{
+	align-self: flex-end;
+	background: transparent;
+	border: 0;
+	font-size: 20px;
+	line-height: 1;
+	padding: 6px;
+	cursor: pointer;
+}
+
+.address-item{
+	display: flex;
+	width: 100%;
+	justify-content: space-between;
+	gap: 12px;
+	align-items: center;
+}
+
+.address-text{
+	color: #282527;
+	font-family: Nunito, sans-serif;
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.address-item{
+	cursor: pointer;
+	padding: 6px 0;
+    border-bottom: 1px solid rgba(40, 37, 39, 0.20);
+}
+
+.address-item.selected .address-text{
+	color: #90214D;
+}
+
+.add-address{
+	background: transparent;
+	border: 0;
+	color: #90214D;
+	font-family: Nunito, sans-serif;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	padding: 6px 0;
+	align-self: flex-start;
+    text-decoration: underline;
+}
+
+@media (min-width: 740px){
+	.subtext-trigger{ left: 24px; top: 52px; }
+}

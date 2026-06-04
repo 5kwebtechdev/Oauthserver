@@ -1,0 +1,137 @@
+.journal-output-container {
+  width: 100%;
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px 16px 100px 16px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.04);
+}
+
+p{
+  margin: 0;
+
+}
+/* Month navigator center block */
+.month-navigator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.month-prev,
+.month-next {
+  background: transparent;
+  border: none;
+  color: #282527;
+  cursor: pointer;
+ font-size: 34px;
+    font-family: math;
+}
+
+.month-label {
+  color: #282527;
+  font-family: Nunito;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(40, 37, 39, 0.7);
+}
+
+.empty {
+  padding: 24px 12px;
+  text-align: center;
+  color: rgba(40, 37, 39, 0.6);
+}
+
+.lead{
+  color: #282527;
+text-align: center;
+font-family: Fredoka;
+font-size: 16px;
+font-weight: 500;
+}
+
+.sub{
+  color: #282527;
+text-align: center;
+font-family: Nunito;
+font-size: 13px;
+font-weight: 500;
+opacity: 0.7;
+}
+.entries {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.entry {
+  border-radius: 12px;
+  padding: 12px;
+  background: #FFF;
+  border: 1px solid rgba(40, 37, 39, 0.06);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+}
+
+.entry-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.entry-date {
+  font-size: 13px;
+  color: rgba(40, 37, 39, 0.8);
+}
+
+.entry-mood {
+  font-size: 12px;
+  color: #8c2150;
+  font-weight: 700;
+}
+
+.entry-body {
+  font-size: 14px;
+  color: #282527;
+  line-height: 1.4;
+}
+
+/* Floating button fixed to bottom-right */
+.journal-floating-post {
+  position: fixed;
+  right: 16px;
+  bottom: 24px;
+  z-index: 9999;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Since mindful-button adds its own .button and size styles, make the inner content fit */
+.journal-floating-post .button,
+.journal-floating-post .btn-icon,
+.journal-floating-post p {
+  height: 100%;
+  line-height: 1;
+}
+
+.add-button-fixed {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+    cursor: pointer;
+}

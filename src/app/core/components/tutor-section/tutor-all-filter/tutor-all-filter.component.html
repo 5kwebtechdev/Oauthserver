@@ -1,0 +1,73 @@
+<ion-content fullscreen>
+
+  <!--navigator header-->
+  <mindful-navigator [heading]="'All Filters'" (back)="close()">
+  </mindful-navigator>
+  <div class="filters-page">
+
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading filters...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-container">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <p>{{ errorMessage }}</p>
+    </div>
+
+    <!-- Content Section -->
+    <div class="content" *ngIf="!isLoading && !errorMessage">
+      <!-- Topbar slider -->
+      <div class="topbar-slider">
+        <div class="swiper" #categoriesSwiper>
+          <div class="swiper-wrapper">
+            <div class="swiper-slide" *ngFor="let c of categories">
+              <div class="topbar-slider-item" [class.active]="selectedCategory === c.key"
+                (click)="selectCategory(c.key)">
+                <img [src]="c.icon" [alt]="c.label">
+                <span>{{ c.label }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="filter-section d-flex gap-3">
+        <div class="sidebar-section">
+          <div class="sidebar-filters">
+            <span *ngFor="let g of sidebarGroups" (click)="selectSidebar(g.label)"
+              [class.selected]="selectedSidebar === g.label">
+              {{ g.label }}<span *ngIf="getSelectedCount(g.fieldKey) > 0">({{ getSelectedCount(g.fieldKey) }})</span>
+            </span>
+          </div>
+        </div>
+        <div class="sub-filters-section w-full">
+          <div class="sub-filter-list">
+            <div class="sub-filter-item" *ngFor="let s of selectedSubFilters">
+              <span class="sub-filter-label">{{ s.label }}</span>
+              <input type="checkbox" class="sub-filter-checkbox" [checked]="isSubFilterSelected(s)"
+                (change)="onToggleSubFilter(s, ($any($event.target)).checked)" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-actions d-flex align-items-center" *ngIf="!isLoading && !errorMessage">
+      <mindful-button *ngIf="hasSelectedFilters()" type="columbian-blue-transparent" text="Clear all" (click)="clearAll()"></mindful-button>
+      <div style="flex: 1;"></div>
+      <!-- small show-result button: shows count and enables when >= 1 -->
+      <mindful-button
+        type="columbian-blue"
+        small
+        [text]="resultCount === null ? 'Show result' : ('Show ' + resultCount + (resultCount === 1 ? ' result' : ' results'))"
+        [disabled]="(resultCount ?? 0) < 1"
+        (click)="showResult()">
+      </mindful-button>
+      
+    </div>
+  </div>
+
+</ion-content>

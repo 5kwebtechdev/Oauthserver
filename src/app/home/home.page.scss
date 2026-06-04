@@ -1,0 +1,174 @@
+.carousel-wrapper {
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.carousel-track {
+  white-space: nowrap;
+  transition: transform 0.5s ease-in-out;
+  height: 100%;
+}
+
+.carousel-slide {
+  display: inline-block;
+  width: 100vw;
+  height: 100dvh;
+  vertical-align: top;
+  background: linear-gradient(to top right, #ffb974, #ffe3c8);
+  position: relative;
+}
+
+.slide-image {
+  width: 100%;
+  object-fit: contain;
+  position: relative;
+  border-radius: 0px 0px 32px 32px ;
+}
+
+/* Image container exists in DOM but only styled on tablet so mobile layout stays the same */
+.image-container {
+  display: block;
+}
+
+/* Tablet-specific rules: center image, don't stretch it, give rounded corners, and fixed footer */
+@media (min-width: 768px) {
+  .carousel-slide {
+    /* stack content vertically and center image without changing its intrinsic size */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+
+  .image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 32px;
+    overflow: hidden;
+    /* ensure rounded corners clip image */
+    background: transparent;
+  }
+
+  .image-container .slide-image {
+    width: auto;
+    /* don't force full width */
+    height: auto;
+    max-width: 90%;
+    /* allow scaling down on very large screens but not up */
+    display: block;
+    border-radius: 32px;
+  }
+
+  /* Make footer fixed on tablet so it remains visible */
+  .carousel-footer {
+    position: fixed;
+    left: 0;
+    bottom: 1rem;
+    width: 100%;
+    z-index: 1200;
+  }
+}
+
+.text-content {
+  padding: clamp(1rem, 4vw, 1.5rem);
+  text-align: left;
+}
+
+.text-content h2 {
+  color: #512100;
+  font-size: clamp(24px, 8vw, 40px);
+  margin-bottom: clamp(0.5rem, 2vw, 1rem);
+  font-family: 'Fredoka', sans-serif;
+  line-height: 1.2;
+}
+
+.text-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: #fff;
+}
+
+.text-content li {
+  margin-bottom: clamp(0.25rem, 1.5vw, 0.5rem);
+  font-size: clamp(15px, 5vw, 25px);
+  font-family: 'Nunito', sans-serif;
+  line-height: 1.4;
+}
+
+.carousel-footer {
+  position: absolute;
+  bottom: 1rem;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ddd;
+  cursor: pointer;
+}
+
+.dots span.active {
+  background-color: #a61e4d;
+}
+
+.next-btn {
+  background: #fff;
+  border-radius: 50%;
+  width: clamp(48px, 13vw, 60px);
+  aspect-ratio: 1;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 5px;
+  font-size: clamp(20px, 5vw, 24px);
+  transition: 0.4s;
+}
+
+/* Small phones (height ≤ 700px) */
+@media (max-height: 700px) {
+  .text-content h2 {
+    font-size: clamp(20px, 7vw, 32px);
+    margin-bottom: 0.4rem;
+  }
+
+  .text-content li {
+    font-size: clamp(13px, 4.5vw, 20px);
+    margin-bottom: 0.2rem;
+  }
+
+  .text-content {
+    padding: clamp(0.75rem, 3vw, 1.25rem);
+  }
+}
+
+/* Very small phones (height ≤ 580px) */
+@media (max-height: 580px) {
+  .text-content h2 {
+    font-size: clamp(18px, 6vw, 26px);
+  }
+
+  .text-content li {
+    font-size: clamp(12px, 4vw, 16px);
+  }
+}

@@ -1,0 +1,11 @@
+<div class="week-container">
+  <div
+    *ngFor="let day of weekDays"
+    class="day-card"
+    [class.today]="isToday(day)"
+    [class.selected]="isSelected(day)"
+    (click)="selectDate(day)">
+    <div class="day">{{ day | date:'EEE' }}</div>
+    <div class="date">{{ day | date:'d' }}</div>
+  </div>
+</div>

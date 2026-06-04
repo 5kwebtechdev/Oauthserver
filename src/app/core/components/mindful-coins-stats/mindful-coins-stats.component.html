@@ -1,0 +1,77 @@
+<div class="stats-row" role="list" aria-label="User stats">
+  <div class="stats-inner">
+    <div class="stat-col" role="listitem" [attr.aria-label]="slot1">
+      <ng-container *ngIf="slot1 === 'coins'; else normal1">
+        <button (click)="openCoinPageIf(slot1)" class="coin-link" aria-label="Open coins" type="button">
+          <img [src]="getStatIcon(slot1)" [alt]="slot1" class="stat-icon">
+          <div class="stat-value">{{ getStatValue(slot1) }}</div>
+        </button>
+        <span class="stat-label visually-hidden">{{ slot1 }}</span>
+      </ng-container>
+      <ng-template #normal1>
+        <img [src]="getStatIcon(slot1)" [alt]="slot1" class="stat-icon">
+        <div class="stat-value">{{ getStatValue(slot1) }}</div>
+        <span class="stat-label visually-hidden">{{ slot1 }}</span>
+      </ng-template>
+    </div>
+    <span class="stat-divider-vertical" aria-hidden="true"></span>
+
+    <div class="stat-col" role="listitem" [attr.aria-label]="slot2">
+      <!-- If slot2 is 'trophy' make it clickable and navigate to trophies page -->
+      <ng-container *ngIf="slot2 === 'trophy'; else notTrophy">
+        <button (click)="openTrophyPageIf(slot2)" class="coin-link" aria-label="Open trophies" type="button">
+          <img [src]="getStatIcon(slot2)" [alt]="slot2" class="stat-icon">
+          <div class="stat-value">{{ getStatValue(slot2) }}</div>
+        </button>
+        <span class="stat-label visually-hidden">{{ slot2 }}</span>
+      </ng-container>
+      <ng-template #notTrophy>
+        <!-- existing special-case for 'streaks' (keeps routerLink behavior) -->
+        <ng-container *ngIf="slot2 === 'streaks'; else normal2">
+          <a [routerLink]="['/streaks']" class="streak-link">
+            <img [src]="getStatIcon(slot2)" [alt]="slot2" class="stat-icon">
+            <div class="stat-value">{{ getStatValue(slot2) }}</div>
+          </a>
+          <span class="stat-label visually-hidden">{{ slot2 }}</span>
+        </ng-container>
+        <ng-template #normal2>
+          <img [src]="getStatIcon(slot2)" [alt]="slot2" class="stat-icon">
+          <div class="stat-value">{{ getStatValue(slot2) }}</div>
+          <span class="stat-label visually-hidden">{{ slot2 }}</span>
+        </ng-template>
+      </ng-template>
+    </div>
+    <span class="stat-divider-vertical" aria-hidden="true"></span>
+
+    <div class="stat-col" role="listitem" [attr.aria-label]="slot3">
+      <ng-container *ngIf="slot3 === 'streak'; else normal3">
+        <button (click)="openStreakPageIf(slot3)" class="coin-link" aria-label="Open streaks" type="button">
+          <img [src]="getStatIcon(slot3)" [alt]="slot3" class="stat-icon">
+          <div class="stat-value">{{ getStatValue(slot3) }}</div>
+        </button>
+        <span class="stat-label visually-hidden">{{ slot3 }}</span>
+      </ng-container>
+      <ng-template #normal3>
+        <img [src]="getStatIcon(slot3)" [alt]="slot3" class="stat-icon">
+        <div class="stat-value">{{ getStatValue(slot3) }}</div>
+        <span class="stat-label visually-hidden">{{ slot3 }}</span>
+      </ng-template>
+    </div>
+    <span class="stat-divider-vertical" aria-hidden="true"></span>
+
+    <div class="stat-col" role="listitem" [attr.aria-label]="slot4">
+      <ng-container *ngIf="slot4 === 'badges'; else normal4">
+        <button (click)="openBadgesPageIf(slot4)" class="coin-link" aria-label="Open badges" type="button">
+          <img [src]="getStatIcon(slot4)" [alt]="slot4" class="stat-icon">
+          <div class="stat-value">{{ getStatValue(slot4) }}</div>
+        </button>
+        <span class="stat-label visually-hidden">{{ slot4 }}</span>
+      </ng-container>
+      <ng-template #normal4>
+        <img [src]="getStatIcon(slot4)" [alt]="slot4" class="stat-icon">
+        <div class="stat-value">{{ getStatValue(slot4) }}</div>
+        <span class="stat-label visually-hidden">{{ slot4 }}</span>
+      </ng-template>
+    </div>
+  </div>
+</div>

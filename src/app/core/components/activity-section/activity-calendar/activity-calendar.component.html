@@ -1,0 +1,129 @@
+<ion-content fullscreen>
+    <mindful-navigator class="calendar-navigator" heading="One Day at a Time!" backIcon="arrowSvg">
+    </mindful-navigator>
+    <div class="activity-calendar-container">
+
+        <!-- calendar-component -->
+        <div class="activity-calendar">
+            <mindful-calendar [useArrowNavigation]="true" [dateActivities]="dateActivities"
+                [useCalendarMainStyle]="true" [startDate]="selectedDate" [moodData]="moodData"
+                (dateSelected)="onDateSelected($event)" (moodToggled)="onMoodToggled($event)" (monthChanged)="onMonthChanged($event)">
+            </mindful-calendar>
+        </div>
+        <div class="calendar-component" *ngIf="!moodOn">
+            <div class="calendar-component__timetable">
+                <div class="item">
+                    <div class="item__dot">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="9" height="8" viewBox="0 0 9 8" fill="none">
+                            <circle cx="4.5" cy="4" r="4" fill="#89B3B6" />
+                        </svg>
+                    </div>
+                    <div class="item__text">Timetable</div>
+                </div>
+            </div>
+
+            <div class="calendar-component__tasks">
+                <div class="item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 8 8" fill="none">
+                        <circle cx="4" cy="4" r="4" fill="#F6AC72" />
+                    </svg>
+                    <div class="item__text">Tasks</div>
+                </div>
+            </div>
+
+            <div class="calendar-component__habits">
+                <div class="item">
+                    <div class="item__dot">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 8 8" fill="none">
+                            <circle cx="4" cy="4" r="4" fill="#8B8DCB" />
+                        </svg>
+                    </div>
+                    <div class="item__text">Habits</div>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="(!habitsForSelectedDate?.length && !tasksForSelectedDate?.length && !eventsForSelectedDate?.length) && !moodOn">
+            <empty-state
+                [imageSrc]="'assets/Images-Transparent/Image-Calendar-Blank.png'"
+                [imageAlt]="'Empty calendar'"
+                [leadText]="isParent ? (isSelectedDateToday() ? 'Your Child\'s Calendar is Clear Today' : 'Your Child\'s Calendar is Clear') : (isSelectedDateToday() ? 'Your Calendar\'s Looking Clear Today!' : 'Your Calendar\'s Looking Clear')"
+                [subText]="isParent ? 'No activities scheduled for today yet. Your child can add their own tasks and habits, or you can assign some to help them get started.' : (isSelectedDateToday() ? 'No tasks or habits set for today yet. Get started by adding some tasks or habits to make the most of your day!' : 'No tasks or habits set for this day yet. Get started by adding some tasks or habits to make the most of this day!')"
+                [buttonText]="''">
+            </empty-state>
+        </div>
+
+        <div *ngIf="(habitsForSelectedDate?.length || tasksForSelectedDate?.length || eventsForSelectedDate?.length) && !moodOn"
+            class="selected-date-cards d-flex flex-column gap-2">
+            <div *ngFor="let item of combinedForSelectedDate">
+                <ng-container *ngIf="item.type === 'EVENT'">
+                    <div class="timetable-card" long-press [delay]="1500" (press)="onTimetableLongPress(item)">
+                        <div class="timetable-card__header">
+                            <div class="timetable-card__info">
+                                <h3 class="timetable-card__title">{{item?.title || 'Event'}}</h3>
+                                <h4 class="timetable-card__time">{{ formatTimeString(item?.startTime) || getFormattedTime(item?.startTimeStamp) }} - {{ formatTimeString(item?.endTime) || getFormattedTime(item?.endTimeStamp) }}</h4>
+                            </div>
+                            <div class="timetable-card__tag-container">
+                                <div class="timetable-card__tag" *ngFor="let tag of item?.tags">
+                                    {{tag}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="item.type !== 'EVENT'">
+                    <activity-card [habit]="item" [startTime]="item.startTimeStamp" [endTime]="item.endTimeStamp"
+                        [inProgress]="isItemInProgress(item)" [isParentOverride]="isParent"
+                        [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()"
+                        [trackOnComplete]="true"
+                        mode="single"></activity-card>
+                </ng-container>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Floating add button (hidden when calendar is empty) -->
+    <div class="calendar-add-btn" *ngIf="!isCalendarEmpty()">
+        <mindful-button type="add" size="large" text="Add" (click)="openHabitInput()"></mindful-button>
+    </div>
+
+    <!-- Mood popup: hidden by default, slides up when showMoodPopup is true -->
+    <div class="calendar-mood-satus-popup" [class.show]="showMoodPopup" *ngIf="selectedMoodTransition">
+        <div class="daily-mood-status" [class.visible]="showMoodPopup">
+            <div class="emoji-status">
+                <!-- Display 'from' mood emoji if available -->
+                <img *ngIf="selectedMoodTransition?.fromMood"
+                    [src]="getMoodEmoji(selectedMoodTransition.fromMood)" alt="from mood" class="mood-emoji-large"
+                    style="width:40px;height:auto;" />
+
+                <!-- Display 'to' mood emoji only when it's present and different from 'from' -->
+                <img *ngIf="selectedMoodTransition?.toMood && selectedMoodTransition.toMood !== selectedMoodTransition.fromMood"
+                    [src]="getMoodEmoji(selectedMoodTransition.toMood)" alt="to mood" class="mood-emoji-large"
+                    style="width:40px;height:auto;" />
+            </div>
+            <div class="status-header">
+                <h2>{{ selectedMoodTransition.title }}</h2>
+            </div>
+            <div class="mood-staus-message">
+                <div class="mood-meesage">
+                    <div class="mood-message-item" *ngIf="isValidLine(selectedMoodTransition?.firstLine)">
+                        <div class="mood-left">
+                            <span class="dot"></span>
+                            <span class="connector" *ngIf="isValidLine(selectedMoodTransition?.secondLine)"></span>
+                        </div>
+                        <div class="mood-content">{{ displayLine(selectedMoodTransition.firstLine) }}</div>
+                    </div>
+
+                    <div class="mood-message-item" *ngIf="isValidLine(selectedMoodTransition?.secondLine)">
+                        <div class="mood-left">
+                            <span class="dot"></span>
+                        </div>
+                        <div class="mood-content">{{ displayLine(selectedMoodTransition.secondLine) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</ion-content>
+

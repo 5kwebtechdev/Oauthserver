@@ -1,0 +1,143 @@
+<ion-content class="ret-exch">
+    <div class="nav-head" *ngIf="!showUploadProof">
+            <mindful-navigator heading="Return/ Exchange Item" backIcon="arrowSvg" (back)="goBack()">
+                <mindful-view-all slot="end" text="Help" [hideIcon]="true" (click)="onHelpClick()"></mindful-view-all>
+            </mindful-navigator>
+        </div>
+    
+  <main class="return-exchange-container" *ngIf="!showUploadProof">
+      <div class="return-exchange-form">
+        <!-- Order Details Section -->
+        <div class="form-section">
+          <div class="order-info-card">
+            <div class="order-item">
+              <img src="assets/School-assets/temp/Shirt-l.jpg" alt="Product Image" class="product-image">
+              <div class="item-details">
+                <h2>Classic White Half-Sleeve Shirt</h2>
+                <div class="d-flex gap-2">
+                    <p>Size: 16</p>
+                    <p>Qty: 1</p>
+                </div>
+                <p>St. Xavier's High School</p>
+                <h2 class="price">₹799</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Return/Exchange Type -->
+        <div class="form-section">
+          <h2>What would you like to do?</h2>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="requestType" value="return" [checked]="selectedRequestType === 'return'" (change)="selectedRequestType = 'return'">
+              <span class="radio-label">Return Item</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="requestType" value="exchange" [checked]="selectedRequestType === 'exchange'" (change)="selectedRequestType = 'exchange'">
+              <span class="radio-label">Exchange Item</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Reason for Return/Exchange (radio options as per Figma) -->
+        <div class="form-section">
+          <h2>Reason</h2>
+          <div class="radio-group reason-options">
+            <label class="radio-option">
+              <input type="radio" name="reason" value="too-small-big" [checked]="selectedReason === 'too-small-big'" (change)="selectedReason = 'too-small-big'">
+              <h2 class="radio-label">Too Small/ Too Big</h2>
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="reason" value="damaged" [checked]="selectedReason === 'damaged'" (change)="selectedReason = 'damaged'">
+                <h2 class="radio-label">Damaged / Defective</h2>
+                <h2 class="radio-subtitle">(Requires Photo)</h2>
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="reason" value="wrong-item" [checked]="selectedReason === 'wrong-item'" (change)="selectedReason = 'wrong-item'">
+                <h2 class="radio-label">Wrong Item Received</h2>
+                <h2 class="radio-subtitle">(Requires Photo)</h2>
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="reason" value="material-quality" [checked]="selectedReason === 'material-quality'" (change)="selectedReason = 'material-quality'">
+              <h2 class="radio-label">Material quality not good</h2>
+            </label>
+          </div>
+        </div>
+
+        <!-- Additional Comments -->
+        <div class="form-section">
+          <h2>Additional Comments (Optional)</h2>
+          <textarea
+            class="comments-textarea"
+            placeholder="Please provide any additional details about your return/exchange request..."
+            rows="4">
+          </textarea>
+        </div>
+
+    </div>
+
+</main>
+<!-- Upload Photo Proof (only show if reason is damaged or wrong item) -->
+<div class="upload-proof-form" *ngIf="showUploadProof">
+  <div class="nav-head">
+    <mindful-navigator heading="Upload Proof" backIcon="arrowSvg" (back)="onUploadProofBack()">
+      <mindful-view-all slot="end" text="Help" [hideIcon]="true" (click)="onHelpClick()"></mindful-view-all>
+    </mindful-navigator>
+  </div>
+
+  <div class="upload-proof-content">
+    <!-- Image Upload Boxes -->
+    <div class="upload-boxes">
+      <div class="upload-box" *ngFor="let img of uploadedImages; let i = index" (click)="triggerUpload(i)">
+        <img *ngIf="img" [src]="img" alt="Uploaded image" class="uploaded-preview" />
+        <button *ngIf="img" class="upload-remove" (click)="removeImage(i); $event.stopPropagation()" aria-label="Remove image">
+          <img src="assets/icons/cancel-cross.svg" alt="remove" />
+        </button>
+        <div *ngIf="!img" class="upload-placeholder">
+          <img src="assets/icons/image-upload.svg" alt="Upload" class="upload-icon" />
+          <span class="upload-text">Upload Image</span>
+        </div>
+        <input type="file" accept="image/*" #fileInput hidden (change)="onImageSelected($event, i)" />
+      </div>
+    </div>
+
+    <p class="upload-hint">Please upload clear image of the damage/ item</p>
+    <div *ngIf="uploadErrorMessage" class="upload-error">{{uploadErrorMessage}}</div>
+
+    <!-- Refund To Section -->
+    <div class="refund-section">
+      <h2 class="refund-label">Refund to</h2>
+      <label class="radio-option refund-radio" [class.disabled]="disableRequest">
+        <input type="radio" name="refundTo" value="original" checked [disabled]="disableRequest" />
+        <span class="radio-label">Original Payment Source (5-7 days)</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Request Refund Button -->
+  <div class="next-cta">
+    <mindful-button
+      type="magenta"
+      size="large"
+      text="Request Refund"
+      [disabled]="disableRequest"
+      (click)="onRequestRefund()">
+    </mindful-button>
+  </div>
+</div>
+
+<!-- Next Button -->
+<div class="next-cta" *ngIf="!showUploadProof">
+  <mindful-button
+    type="magenta"
+    size="large"
+    text="Next"
+    (click)="onNext()">
+  </mindful-button>
+</div>
+  <size-guide [sizeChart]="sizeChart" [selectedSize]="selectedSize" [unit]="unit" [outOfStockSizes]="outOfStockSizes" [isOpen]="showSizeGuide" [isFromReturnExchange]="true" [originalSize]="16" (sizeSelected)="selectSize($event)" (unitSelected)="selectUnit($event)" (closeModal)="showSizeGuide = false" (returnSelected)="onReturnSelected()" (exchangeSelected)="onExchangeSelected()"></size-guide>
+</ion-content>

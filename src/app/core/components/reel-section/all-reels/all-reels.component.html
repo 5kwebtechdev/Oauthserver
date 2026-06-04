@@ -1,0 +1,12 @@
+<ion-content [fullscreen]="true" class="ion-padding-top">
+    <mindful-navigator [heading]="heading" (back)="onBack()" backIcon="arrowSvg">
+    </mindful-navigator>
+
+    <div class="all-reels-page">
+        <div class="reels-grid">
+            <div class="reel-cell" *ngFor="let r of reels">
+                <reel-frame [s]="r" (play)="onPlay($event)" (toggleSave)="onToggleSave($event)"></reel-frame>
+            </div>
+        </div>
+    </div>
+</ion-content>

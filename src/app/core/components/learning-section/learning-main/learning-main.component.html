@@ -1,0 +1,178 @@
+<ion-content fullscreen style="--padding-top: var(--sat)">
+  <div class="content-page">
+    <div class="content-main">
+      <div class="card">
+        <div class="card-bg" role="img" aria-label="Content background"></div>
+
+        <div class="card-content">
+          <h3 class="card-title">Challenge Your Mind: Play, Solve, Win!</h3>
+        </div>
+        <div class="search-row">
+          <div class="search-input">
+            <span class="search-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none"
+                aria-hidden="true">
+                <path
+                  d="M11.0667 12L6.86667 7.8C6.53333 8.06667 6.15 8.27778 5.71667 8.43333C5.28333 8.58889 4.82222 8.66667 4.33333 8.66667C3.12222 8.66667 2.09722 8.24722 1.25833 7.40833C0.419445 6.56944 0 5.54444 0 4.33333C0 3.12222 0.419445 2.09722 1.25833 1.25833C2.09722 0.419445 3.12222 0 4.33333 0C5.54444 0 6.56944 0.419445 7.40833 1.25833C8.24722 2.09722 8.66667 3.12222 8.66667 4.33333C8.66667 4.82222 8.58889 5.28333 8.43333 5.71667C8.27778 6.15 8.06667 6.53333 7.8 6.86667L12 11.0667L11.0667 12ZM4.33333 7.33333C5.16667 7.33333 5.875 7.04167 6.45833 6.45833C7.04167 5.875 7.33333 5.16667 7.33333 4.33333C7.33333 3.5 7.04167 2.79167 6.45833 2.20833C5.875 1.625 5.16667 1.33333 4.33333 1.33333C3.5 1.33333 2.79167 1.625 2.20833 2.20833C1.625 2.79167 1.33333 3.5 1.33333 4.33333C1.33333 5.16667 1.625 5.875 2.20833 6.45833C2.79167 7.04167 3.5 7.33333 4.33333 7.33333Z"
+                  fill="#6B656A" />
+              </svg>
+            </span>
+                 <input type="text" placeholder="Looking for a quiz?" aria-label="Search"
+                   [(ngModel)]="searchKeyword" (input)="onSearchInput()" (keyup.enter)="onSearch()" />
+                 <button type="button" class="search-btn" aria-label="Search" style="background: none;" (click)="performSearch()">
+              Search
+                 </button>
+            <button type="button" class="mic" aria-label="Voice search">
+              <svg xmlns="http://www.w3.org/2000/svg" width="9.333" height="12.667" viewBox="0 0 10 13" fill="none"
+                aria-hidden="true">
+                <path
+                  d="M5.00065 8.33398C4.4451 8.33398 3.97287 8.13954 3.58398 7.75065C3.1951 7.36176 3.00065 6.88954 3.00065 6.33398V2.33398C3.00065 1.77843 3.1951 1.30621 3.58398 0.917318C3.97287 0.528429 4.4451 0.333984 5.00065 0.333984C5.55621 0.333984 6.02843 0.528429 6.41732 0.917318C6.80621 1.30621 7.00065 1.77843 7.00065 2.33398V6.33398C7.00065 6.88954 6.80621 7.36176 6.41732 7.75065C6.02843 8.13954 5.55621 8.33398 5.00065 8.33398ZM4.33398 13.0007V10.9507C3.17843 10.7951 2.22287 10.2784 1.46732 9.40065C0.711762 8.52287 0.333984 7.50065 0.333984 6.33398H1.66732C1.66732 7.25621 1.99232 8.04232 2.64232 8.69232C3.29232 9.34232 4.07843 9.66732 5.00065 9.66732C5.92287 9.66732 6.70898 9.34232 7.35898 8.69232C8.00898 8.04232 8.33398 7.25621 8.33398 6.33398H9.66732C9.66732 7.50065 9.28954 8.52287 8.53398 9.40065C7.77843 10.2784 6.82287 10.7951 5.66732 10.9507V13.0007H4.33398ZM5.00065 7.00065C5.18954 7.00065 5.34787 6.93676 5.47565 6.80898C5.60343 6.68121 5.66732 6.52287 5.66732 6.33398V2.33398C5.66732 2.1451 5.60343 1.98676 5.47565 1.85898C5.34787 1.73121 5.18954 1.66732 5.00065 1.66732C4.81176 1.66732 4.65343 1.73121 4.52565 1.85898C4.39787 1.98676 4.33398 2.1451 4.33398 2.33398V6.33398C4.33398 6.52287 4.39787 6.68121 4.52565 6.80898C4.65343 6.93676 4.81176 7.00065 5.00065 7.00065Z"
+                  fill="#282527" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="cheer-replacement" style="display:flex;gap:12px;justify-content: flex-end;align-items: center;padding-left: 16px;">
+          <app-speech-bubble class="cheer-bubble" style="text-align:left;" message="I’m cheering for you! Let’s get things done!" type="talking" arrowSide="right"
+            [arrowSize]="14" arrowOffset="20px" color="#ffffff" textColor="#282527" role="status" aria-live="polite">
+          </app-speech-bubble>
+
+          <div class="digital-pet" aria-hidden="false">
+            <mindful-pet pet="panda" [age]="1" mood="happy" sizePreset="96"></mindful-pet>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="categories">
+      <div class="for-you-label">
+        <button class="category for-you" type="button" (click)="selectCategory('for-you'); openForYou()"
+          [class.selected]="selectedCategory === 'for-you'" aria-label="Open For You">
+          <div class="icon" aria-hidden="true">
+            <img src="/assets/Icons-Neutral/Icon-Content-ForYou.png" alt="For You" />
+          </div>
+          <div class="label">For You</div>
+        </button>
+      </div>
+      <div class="sep" aria-hidden="true"></div>
+
+      <button class="category puzzles" type="button" (click)="selectCategory('puzzles'); openPuzzles()"
+        [class.selected]="selectedCategory === 'puzzles'" aria-label="Open Puzzles">
+        <div class="icon" aria-hidden="true">
+          <img src="/assets/Icons-Neutral/Icon-Content-Puzzle.png" alt="Puzzles" />
+        </div>
+        <div class="label">Puzzles</div>
+      </button>
+      <div class="sep" aria-hidden="true"></div>
+
+      <button class="category quizzes" type="button" (click)="selectCategory('quizzes'); openQuizzes()"
+        [class.selected]="selectedCategory === 'quizzes'" aria-label="Open Quizzes">
+        <div class="icon" aria-hidden="true">
+          <img src="/assets/Icons-Neutral/Icon-Content-Quiz.png" alt="Quizzes" />
+        </div>
+        <div class="label">Quizzes</div>
+      </button>
+      <div class="sep" aria-hidden="true"></div>
+      <button class="category articles" type="button" (click)="selectCategory('articles'); openArticles()"
+        [class.selected]="selectedCategory === 'articles'" aria-label="Open Articles">
+        <div class="icon" aria-hidden="true">
+          <img src="/assets/Icons-Neutral/Icon-Content-Articles.png" alt="Articles" />
+        </div>
+        <div class="label">Articles</div>
+      </button>
+    </div>
+    <div class="learning-content">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-container">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Loading content...</p>
+      </div>
+
+      <!-- Search Results -->
+      <ng-container *ngIf="isSearching && !isLoading">
+        <div class="cards-section">
+          <div *ngIf="searchItems.length > 0; else emptySearch" class="cards-grid">
+            <ng-container *ngFor="let card of searchItems; let i = index">
+              <learning-challenge-card *ngIf="card.type === 'quiz' || card.type === 'puzzle'" [item]="card" [index]="i"
+                (cardClick)="onCardClick($event)">
+              </learning-challenge-card>
+              <learning-article-card *ngIf="card.type === 'article'" [item]="card" [index]="i"
+                (cardClick)="onCardClick($event)">
+              </learning-article-card>
+            </ng-container>
+          </div>
+          <ng-template #emptySearch>
+            <empty-state
+              [imageSrc]="'/assets/Images-Pet/Panda-Age1-Curious.png'"
+              imageAlt="Curious Panda"
+              leadText="No Results Found"
+              subText="Try a different search term or browse by category."
+              buttonText="">
+            </empty-state>
+          </ng-template>
+        </div>
+      </ng-container>
+
+      <!-- For You Tab -->
+      <ng-container *ngIf="!isSearching && !isLoading && selectedCategory === 'for-you'">
+        <div class="cards-section">
+          <div *ngIf="forYouItems.length > 0; else emptyState" class="cards-grid">
+            <ng-container *ngFor="let card of forYouItems; let i = index">
+              <learning-challenge-card *ngIf="card.type === 'quiz' || card.type === 'puzzle'" [item]="card" [index]="i"
+                (cardClick)="onCardClick($event)">
+              </learning-challenge-card>
+              <learning-article-card *ngIf="card.type === 'article'" [item]="card" [index]="i"
+                (cardClick)="onCardClick($event)">
+              </learning-article-card>
+            </ng-container>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Puzzles Tab -->
+      <ng-container *ngIf="!isSearching && !isLoading && selectedCategory === 'puzzles'">
+        <div class="cards-section">
+          <div *ngIf="puzzleItems.length > 0; else emptyState" class="cards-grid">
+            <learning-challenge-card *ngFor="let card of puzzleItems; let i = index" [item]="card" [index]="i"
+              (cardClick)="onCardClick($event)">
+            </learning-challenge-card>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Quizzes Tab -->
+      <ng-container *ngIf="!isSearching && !isLoading && selectedCategory === 'quizzes'">
+        <div class="cards-section">
+          <div *ngIf="quizItems.length > 0; else emptyState" class="cards-grid">
+            <learning-challenge-card *ngFor="let card of quizItems; let i = index" [item]="card" [index]="i"
+              (cardClick)="onCardClick($event)">
+            </learning-challenge-card>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Articles Tab -->
+      <ng-container *ngIf="!isSearching && !isLoading && selectedCategory === 'articles'">
+        <div class="cards-section">
+          <div *ngIf="articleItems.length > 0; else emptyState" class="cards-grid">
+            <learning-article-card *ngFor="let card of articleItems; let i = index" [item]="card" [index]="i"
+              (cardClick)="onCardClick($event)">
+            </learning-article-card>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Empty State Template -->
+      <ng-template #emptyState>
+        <empty-state
+          [imageSrc]="'/assets/Images-Pet/Panda-Age1-Curious.png'"
+          imageAlt="Curious Panda"
+          leadText="Fresh Content Coming Soon!"
+          subText="Nothing recently added yet, but check back soon — new things will start appearing here once they're live!">
+        </empty-state>
+      </ng-template>
+    </div>
+  </div>
+  <app-footer></app-footer>
+</ion-content>

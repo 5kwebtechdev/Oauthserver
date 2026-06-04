@@ -1,0 +1,41 @@
+<ion-content>
+  <mindful-card-header [title]="categoryTitle" [subtitleMiddle]="categorySubtitle" [showBackArrow]="true"
+    (backClick)="goBack()">
+  </mindful-card-header>
+  <div class="main-container">
+    <!-- Header -->
+
+    <!-- Course List -->
+    <div class="course-list">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" style="text-align: center; padding: 20px;">
+        <ion-spinner></ion-spinner>
+        <p>Loading courses...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && lessons.length === 0" style="text-align: center; padding: 40px 20px;">
+        <p style="color: rgba(40, 37, 39, 0.70);">No courses available in this category.</p>
+      </div>
+
+      <!-- Course Items -->
+      <div class="course" *ngFor="let l of lessons" (click)="openCourseByTitle(l.title)">
+        <img [src]="l.thumb" [alt]="l.title" class="course-img">
+        <div class="course-info">
+          <h3 class="course-title">{{ l.title }}</h3>
+          <p class="course-meta">{{ l.meta }}</p>
+          <div class="course-coins">
+            <img class="coin-icon-img" [src]="l.coinIcon" alt="coins" />
+            <span class="coins-value">{{ l.coins }}</span>
+          </div>
+        </div>
+        <span class="badge" [ngClass]="{ 
+        'beginner': l.badge === 'Beginner', 
+        'intermediate': l.badge === 'Intermediate',
+        'advanced': l.badge === 'Advanced',
+        'pro': l.badge === 'Pro' 
+      }">{{ l.badge }}</span>
+      </div>
+    </div>
+  </div>
+</ion-content>

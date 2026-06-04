@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Superme</string>
+    <string name="title_activity_main">Superme</string>
+    <string name="package_name">com.superme.app</string>
+    <string name="custom_url_scheme">com.superme.app</string>
+    <string name="server_client_id">124581866222-gblqv0k2a75uo4183ahl0u8336nbcsku.apps.googleusercontent.com</string>
+</resources>

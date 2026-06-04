@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "124581866222",
+    "project_id": "supermeapp-74589",
+    "storage_bucket": "supermeapp-74589.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:124581866222:android:3e58ea3c8d0932c42fe1ff",
+        "android_client_info": {
+          "package_name": "com.superme.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "124581866222-lh40gkcbfp5blkdpa1v0d9pg0q227i7h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.superme.app",
+            "certificate_hash": "4b1ac358233c089dffef8fcd9adbcd995416b002"
+          }
+        },
+        {
+          "client_id": "124581866222-n2qpuuq87k7i1qtddnsih894aatis1dq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.superme.app",
+            "certificate_hash": "7c3c82650c346e781996863ace7c83992d10470e"
+          }
+        },
+        {
+          "client_id": "124581866222-gblqv0k2a75uo4183ahl0u8336nbcsku.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBo8GqPQ0Ac2g8tzBS0YCewwLJ-vgouTi4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "124581866222-gblqv0k2a75uo4183ahl0u8336nbcsku.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

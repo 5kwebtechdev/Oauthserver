@@ -1,0 +1,206 @@
+.delete-account-container{
+  padding: 16px;
+  display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: flex-start;
+gap: 32px;
+ 
+}
+
+h1{
+    color: #282527;
+font-family: Nunito;
+font-size: 20px;
+font-weight: 600;
+margin-bottom: 0px;
+}
+
+p{
+    color: #282527;
+font-family: Nunito;
+font-size: 16px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 22.4px */
+opacity: 0.7;
+margin-bottom: 0px;
+}
+.warning{
+    color: #BB2124;
+text-align: center;
+font-family: Nunito;
+font-size: 16px;
+font-style: normal;
+font-weight: 500;
+line-height: 140%; /* 22.4px */
+}
+
+.what-happens, .for-your-safety{
+    display: flex;
+flex-direction: column;
+align-items: flex-start;
+gap: 24px;
+}
+
+.explanation{
+    display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: flex-start;
+gap: 16px;
+}
+
+.explanation-list{
+   display: flex;
+padding: 2px;
+justify-content: center;
+align-items: center;
+gap: 12px;
+}
+
+.list-count{
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    aspect-ratio: 1/1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* use inline SVG as background so we can control fill and opacity */
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'><circle cx='12' cy='12' r='12' fill='%23282527' opacity='0.2'/></svg>");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    /* center the number and ensure it's readable */
+    color: #282527;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    color: #282527;
+font-family: Nunito;
+font-size: 16px;
+font-style: normal;
+font-weight: 600;
+line-height: 130%; /* 20.8px */
+}
+
+.check-text{
+    color: #282527;
+font-family: Nunito;
+font-size: 16px;
+font-style: normal;
+font-weight: 600;
+line-height: 140%; /* 22.4px */
+}
+
+.consent{
+    display: inline-flex;
+align-items: center;
+gap: 7px;
+}
+
+ion-checkbox {
+  --size: 16px;
+  --checkbox-background-checked: #4CAF50;
+}
+
+ion-checkbox::part(container) {
+  border-radius: 3px;
+  border: 2px solid #282527B2;
+}
+
+/* Confirm popup */
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 24px;
+}
+
+.confirm-modal {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 24px 24px;
+  max-width: 340px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.confirm-emoji {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.confirm-title {
+  color: #282527;
+  font-family: Nunito;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+}
+
+.confirm-desc {
+  color: #282527;
+  font-family: Nunito;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: center;
+  opacity: 0.75;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.btn-cancel {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  border: 2px solid #BB2124;
+  background: transparent;
+  color: #BB2124;
+  font-family: Nunito;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-delete {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #8B1A1A;
+  color: #fff;
+  font-family: Nunito;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Link styling for support/contact anchors in this component */
+.delete-account-container a {
+    opacity: 0.7;
+    color: #282527;
+    font-family: Nunito;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+    text-underline-position: from-font;
+}

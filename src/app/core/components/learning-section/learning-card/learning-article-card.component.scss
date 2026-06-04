@@ -1,0 +1,102 @@
+:host {
+    display: block;
+    height: 100%;
+}
+
+.card-root {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    background: #FFF;
+    box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.media {
+    position: relative;
+    height: 138px;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover
+    }
+}
+
+.article-body {
+    padding: 12px 8px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    overflow: hidden;
+}
+
+/* Title styles requested by user */
+.article-body h3,
+.head h3 {
+    color: #282527;
+    font-family: "Nunito", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.desc {
+    margin: 0;
+    color: #6B656A;
+    font-family: 'Nunito', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.meta-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.coins {
+    font-weight: 700
+}
+
+.coins img {
+    width: 24px;
+    height: auto;
+    margin-right: 0.35rem
+}
+
+/* Tag badge styles (show above title) */
+.tags-row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 8px;
+}
+
+.tag {
+    display: flex;
+    padding: 5px 16px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 16px;
+    border: 1px solid #E1527C;
+    background: #FCF3F6;
+    color: #942038;
+    font-family: Nunito, sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+}
+

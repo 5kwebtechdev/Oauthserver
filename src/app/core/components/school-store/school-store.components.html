@@ -1,0 +1,103 @@
+<ion-content>
+    <main class="school-store-main">
+        <div class="navigator-wrap">
+            <mindful-navigator
+                #navigator
+                heading="Student-Store"
+                [subtext]="navigatorSubtext"
+                [showSubtext]="true"
+                (back)="goBack()"
+                [rightActions]="[{ type: 'cart', count: cartCount, alt: 'My cart' }, { type: 'package', count: packageCount, alt: 'Packages' }]"
+                (rightActionClick)="onNavigatorAction($event)">
+            </mindful-navigator>
+
+        </div>
+
+        <div class="school-store-content">
+
+            <div class="slider-wrap">
+                <swiper-container #swiperEl class="edu-swiper" [slides-per-view]="1" [loop]="true"
+                    [autoplay]="{ delay: 3000, disableOnInteraction: false }">
+                    <swiper-slide *ngFor="let i of [0,1,2,3]">
+                        <div class="edu-banner-image"></div>
+                    </swiper-slide>
+                </swiper-container>
+
+                <!-- custom pager: match LearningSection pager style and placement -->
+                <div class="edu-pagination" aria-hidden="true">
+                    <button type="button" class="edu-dot" *ngFor="let n of [0,1,2,3]; let idx = index"
+                        [class.active]="currentSlide === idx" (click)="goToSlide(idx)"></button>
+                </div>
+            </div>
+
+            <div class="store-cards">
+                <a class="store-card" role="link" [routerLink]="['/authed','school-store','institute-detail']" aria-label="Open Boys Uniforms details">
+                    <h3>Boys Uniforms</h3>
+                    <img src="/assets/School-assets/Boys Uniform.png" alt="Boys Uniforms">
+                </a>
+
+                <div class="store-card">
+                    <h3>Girls Uniforms</h3>
+                    <img src="/assets/School-assets/Girls Uniform.png" alt="Girls Uniforms">
+                </div>
+
+                <a class="store-card" role="link" [routerLink]="['/authed','school-store','product']" [queryParams]="{ category: 'textbooks' }" aria-label="Open Textbooks">
+                    <h3>Textbooks</h3>
+                    <img src="/assets/School-assets/text-books.png" alt="Textbooks">
+                </a>
+
+                <div class="store-card-2">
+                <div class="store-card-in-2  w-100">
+                    <h3>Footwears</h3>
+                    <div class="store-img">
+                    <img src="/assets/School-assets/Footwear.png" alt="Footwears">
+                    </div>
+                  </div>
+                    <div class="store-card-in-2  w-100">
+                    <h3>Accessories</h3>
+                    <div class="store-img">
+                    <img src="/assets/School-assets/Accessories.png" alt="Accessories">
+                         </div>
+                </div>
+                </div>
+
+                <div class="store-card">
+                    <h3>Entrance Exam Books</h3>
+                    <img src="/assets/School-assets/Entrance Exam.png" alt="Entrance Exam Books">
+                </div>
+
+                <div class="store-card">
+                    <h3>General Books</h3>
+                    <img src="/assets/School-assets/gernal-books.png" alt="General Books">
+                </div>
+            </div>
+            <div class="footer-exchange" role="contentinfo" aria-label="Store footer features">
+                <div class="footer-item">
+                    <img src="/assets/School-assets/School Partner.png" alt="Official School Partner" />
+                    <div class="footer-text">Official School Partner</div>
+                </div>
+
+                <div class="footer-item">
+                    <img src="/assets/School-assets/Easy Exchange.png" alt="Easy Exchange" />
+                    <div class="footer-text">Easy Exchange</div>
+                </div>
+
+                <div class="footer-item">
+                    <img src="/assets/School-assets/Secure Payment.png" alt="Secure Payment" />
+                    <div class="footer-text">Secure Payment</div>
+                </div>
+            </div>
+        </div>
+        <!-- Bottom fixed address popup -->
+        <div class="address-popup" [class.open]="showAddressPopup" role="dialog" aria-modal="true" aria-label="Address options">
+            <div class="address-popup-inner">
+                <button class="popup-close" aria-label="Close" (click)="closeAddressPopup()">✕</button>
+                <div class="address-item" *ngFor="let a of addresses" (click)="selectAddress(a)" [class.selected]="selectedId === a.id" role="button" tabindex="0" (keyup.enter)="selectAddress(a)">
+                    <div class="address-text" [innerHTML]="a.html"></div>
+                </div>
+
+                <button class="add-address">+ Add Address</button>
+            </div>
+        </div>
+    </main>
+</ion-content>

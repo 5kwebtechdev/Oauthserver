@@ -1,0 +1,149 @@
+.main-container {
+
+  background: #FFF;
+  padding: 16px;
+  font-family: Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.back-arrow {
+  width: 48px;
+  height: 48px;
+  padding-left: 16px;
+}
+
+.header-texts {
+  flex: 1;
+}
+
+.title {
+  color: #282527;
+  font-family: Fredoka;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  /* 28px */
+}
+
+.subtitle {
+  color: #282527;
+  font-family: Nunito;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  /* 18.2px */
+  margin: 4px 0 0;
+}
+
+/* Panda Section */
+.panda-section {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  gap: 12px;
+}
+
+.panda-img {
+  width: 116px;
+  height: 116px;
+  flex-shrink: 0;
+}
+
+.speech-bubble {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 12px;
+  width: 188px;
+  color: #282527;
+  font-family: Nunito;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  /* 18.2px */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Question */
+.question {
+  color: #282527;
+  font-family: Fredoka;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  /* 22.4px */
+  margin: 10px 0;
+}
+
+/* Subject cards */
+.subject-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.card {
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+  color: #333;
+}
+
+.card p {
+  color: #282527;
+  text-align: center;
+  font-family: Nunito;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  /* 28px */
+}
+
+.card img {
+  width: 104px;
+  height: 104px;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
+}
+
+.card.yellow {
+  background: #F9E56E;
+}
+
+.card.purple {
+  background: #E8D9F6;
+}
+
+.card.pink {
+  background: #F6C6C6;
+}
+
+.card.green {
+  background: #D1F0C8;
+}
+
+/* Footer */
+.footer-note {
+  color: #90214D;
+  font-family: Nunito;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 140%;
+  /* 22.4px */
+  margin-top: 20px;
+}

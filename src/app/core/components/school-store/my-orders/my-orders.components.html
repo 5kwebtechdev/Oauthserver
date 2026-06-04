@@ -1,0 +1,293 @@
+<ion-content>
+    <main class="my-order-container">
+        <mindful-navigator heading="My Orders" backIcon="arrowSvg" (back)="goBack()">
+        </mindful-navigator>
+       <div class="orders-container d-flex flex-column gap-3">
+            <div class="search-n-filter d-flex align-center justify-content-between gap-3">
+            <div class="search-bar">
+                <span class="search-icon" aria-hidden="true">
+                    <img src="assets/icons/search-icon.svg" alt="" aria-hidden="true">
+                </span>
+                <input type="text" placeholder="Search your orders" />
+            </div>
+
+            <button class="orders-filter-button" aria-label="Filter orders" role="button" (click)="openFilterScreen()">
+                <img src="assets/icons/filter-icon.svg" alt="" aria-hidden="true">
+                <p>Filter</p>
+            </button>
+
+            </div>
+            <div class="orders-section">
+                <h2>{{ resultsText }}</h2>
+
+                <div *ngIf="filteredOrders.length === 0" class="no-order-empty-state">
+                    <empty-state
+                        [imageSrc]="'assets/Images-Transparent/Cart-Blank.png'"
+                        [imageAlt]="'No orders found'"
+                        [leadText]="'No orders match that search'"
+                        [subText]="'Try searching by Order ID, Item Name, or School Name to find what you\'re looking for.'"
+                        [buttonText]="''">
+                    </empty-state>
+                </div>
+
+                <div *ngIf="filteredOrders.length > 0" class="order-card-list d-flex flex-column gap-4 mt-3">
+                    <div *ngFor="let order of filteredOrders" class="order-card" (click)="openOrderDetail(order)">
+                        <div class="order-delivery-date w-100">
+                            <h2 [style.color]="getStatusColor(order.status)">{{ order.statusHeading }}</h2>
+                        </div>
+                        <div class="order-item d-flex align-center gap-2 w-100">
+                            <div class="product-image">
+                            <img [src]="order.imageSrc" alt="Order Item Image">
+                            </div>
+                            <div class="item-info w-100">
+                                <h2>{{ truncateText(order.productName, 48) }}</h2>
+                                <p class="product-subtitle">{{ order.subtitle }}</p>
+                                <p class="school-name">{{ order.schoolName }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+       </div>
+    </main>
+
+    <!-- Filter Screen -->
+    <div class="order-filter-screen" [class.visible]="isFilterScreenVisible">
+        <div class="nav-head">
+            <mindful-navigator heading="All Filters" backIcon="arrowSvg" (back)="goBack()">
+        </mindful-navigator>
+        </div>
+        <div class="filter-content">
+            <div class="status-filter d-flex flex-column gap-3">
+                <h2>Status</h2>
+                <div class="status-options d-flex flex-column gap-4">
+                    <label>
+                        <input type="checkbox" name="status" value="on-the-way" [checked]="selectedStatus.includes('on-the-way')" (change)="onStatusChange($event, 'on-the-way')" />
+                        On the way
+                    </label>
+                    <label>
+                        <input type="checkbox" name="status" value="delivered" [checked]="selectedStatus.includes('delivered')" (change)="onStatusChange($event, 'delivered')" />
+                        Delivered
+                    </label>
+                    <label>
+                        <input type="checkbox" name="status" value="cancelled" [checked]="selectedStatus.includes('cancelled')" (change)="onStatusChange($event, 'cancelled')" />
+                        Cancelled
+                    </label>
+                     <label>
+                        <input type="checkbox" name="status" value="returned-exchanged" [checked]="selectedStatus.includes('returned-exchanged')" (change)="onStatusChange($event, 'returned-exchanged')" />
+                        Returned / Exchanged
+                    </label>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="time-filter d-flex flex-column gap-3">
+                <h2>Time</h2>
+                <div class="time-options d-flex flex-column gap-4">
+                    <label>
+                        <input type="radio" name="time" value="last-30-days" [checked]="selectedTime === 'last-30-days'" (change)="onTimeChange('last-30-days')" />
+                        Last 30 days
+                    </label>
+                    <label>
+                        <input type="radio" name="time" value="last-3-months" [checked]="selectedTime === 'last-3-months'" (change)="onTimeChange('last-3-months')" />
+                        Last 3 months
+                    </label>
+                    <label>
+                        <input type="radio" name="time" value="last-6-months" [checked]="selectedTime === 'last-6-months'" (change)="onTimeChange('last-6-months')" />
+                        Last 6 months
+                    </label>
+                     <label>
+                        <input type="radio" name="time" value="older" [checked]="selectedTime === 'older'" (change)="onTimeChange('older')" />
+                        Older
+                    </label>     
+                
+                </div>  
+            </div>            
+        </div>
+        <div class="filter-actions" style="padding:16px;">
+            <mindful-button type="magenta" size="large" [text]="'Apply (Showing ' + filteredOrders.length + ' results)'" (click)="applyFilters()"></mindful-button>
+        </div>
+    </div>
+
+      <!-- order-details -->
+    <div class="order-detail-screen" [class.visible]="isOrderDetailVisible">
+        <div class="nav-head">
+            <mindful-navigator heading="Order Details" backIcon="arrowSvg" (back)="goBack()">
+                <mindful-view-all slot="end" text="Help" [hideIcon]="true" (click)="onHelpClick()"></mindful-view-all>
+            </mindful-navigator>
+        </div>
+        <div class="order-content" [class.has-footer]="hasFooter">
+            <div class="order-information d-flex flex-column">
+                <div *ngIf="selectedOrder" class="order-card-2">
+                        <div class="order-item d-flex align-center gap-2 w-100">
+                            <div class="product-image">
+                                <img [src]="selectedOrder.imageSrc" alt="Order Item Image">
+                            </div>
+                            <div class="item-info w-100">
+                                <h2>{{ truncateText(selectedOrder.productName, 48) }}</h2>
+                                <p class="product-subtitle">{{ selectedOrder.subtitle }}</p>
+                                <p class="school-name">{{ selectedOrder.schoolName }}</p>
+                                <h2 *ngIf="showPrice" class="product-price">{{ selectedOrder.price }}</h2>
+                            </div>
+                        </div>
+
+                        <!-- Status Heading -->
+                        <h2 [style.color]="getStatusColor(selectedOrder.status)" class="order-status">
+                            {{ selectedOrder.statusHeading }}
+                        </h2>
+                        <p *ngIf="selectedOrder.statusSubtitle" class="order-status-subtitle"
+                           [style.color]="getStatusColor(selectedOrder.status)">
+                            {{ selectedOrder.statusSubtitle }}
+                        </p>
+
+                        <!-- Transit Timeline -->
+                        <div *ngIf="showTimeline" class="order-transit-info">
+                            <div class="transit-timeline">
+                                <div *ngFor="let step of selectedOrder.transitSteps; let i = index; let last = last"
+                                     class="transit-step" [class.completed]="step.completed" [class.last-step]="last">
+                                    <div *ngIf="!last" class="connector-line"
+                                         [style.background]="step.completed ? getStepColor(selectedOrder) : '#E0E0E0'">
+                                    </div>
+                                    <div class="step-dot" [class.checked]="step.completed"
+                                         [style.background]="step.completed ? getStepColor(selectedOrder) : '#E0E0E0'"
+                                         [style.borderColor]="step.completed ? getStepColor(selectedOrder) : '#E0E0E0'">
+                                        <svg *ngIf="step.completed" width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                            <path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </div>
+                                    <div class="step-content">
+                                        <span class="step-label" [class.active]="step.completed">
+                                            {{ step.label }}
+                                            <span *ngIf="step.date" class="step-date">({{ step.date }})</span>
+                                        </span>
+                                        <span *ngIf="step.subtitle" class="step-subtitle">{{ step.subtitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+            </div>
+
+            <!-- Refund Status (cancelled) -->
+            <div *ngIf="showRefundCard" class="info-card">
+                <div class="info-row">
+                    <p>Refund Status</p>
+                    <h3 style="color: #4CAF50;">{{ selectedOrder?.refundStatus || 'Initiated' }}</h3>
+                </div>
+                <div class="info-row">
+                    <p>Order number</p>
+                    <h3>{{ selectedOrder?.orderNumber }}</h3>
+                </div>
+            </div>
+
+            <!-- Address -->
+            <div class="address-detail">
+                <img src="assets/icons/location-icon.svg" alt="Location" width="24" height="24" style="opacity: 0.7;" />
+                <div class="address-text-detail d-flex flex-column w-100">
+                    <h2 style="font-size: 13px;">{{ addressLabel }}</h2>
+                    <div class="address-text">
+                        <h2>Rahul- 502, Galaxy Apartments, Mumbai</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Info (delivered / return-completed) -->
+            <div *ngIf="showOrderInfo" class="info-card">
+                <div class="info-row-inline">
+                    <p>Order Placed:</p>
+                    <h3>{{ selectedOrder?.orderDate }}</h3>
+                </div>
+                <div class="info-row-inline">
+                    <p>Order number:</p>
+                    <h3>{{ selectedOrder?.orderNumber }}</h3>
+                </div>
+            </div>
+
+            <!-- Item Summary (on-the-way / delayed) -->
+            <div *ngIf="showBillSummary" class="bill-summary">
+                <h2>Item Summary</h2>
+                <div class="d-flex flex-column gap-2 w-100">
+                    <div class="txt-amount">
+                        <p>Item Total</p>
+                        <h3>{{ totalPriceDisplay }}</h3>
+                    </div>
+                    <div class="txt-amount">
+                        <p>GST & Other Charges</p>
+                        <h3>{{ gstDisplay }}</h3>
+                    </div>
+                    <div class="txt-amount">
+                        <p>Delivery</p>
+                        <h3 [ngStyle]="{ color: deliveryFee === 0 ? '#4CAF50' : 'inherit' }">{{ deliveryDisplay }}</h3>
+                    </div>
+                    <div class="txt-amount">
+                        <p>TO PAY</p>
+                        <h3>{{ toPayDisplay }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Information (delivered / return-completed) -->
+            <div *ngIf="showPaymentAccordion" class="payment-accordion" role="button" tabindex="0"
+                 (click)="togglePaymentInfo()" (keyup.enter)="togglePaymentInfo()">
+                <h2>Payment Information</h2>
+                <ion-icon [name]="showPaymentInfo ? 'chevron-up' : 'chevron-down'" style="font-size: 20px;"></ion-icon>
+            </div>
+            <div *ngIf="showPaymentAccordion && showPaymentInfo" class="info-card">
+                <div class="info-row">
+                    <p>Payment Method</p>
+                    <h3>UPI</h3>
+                </div>
+                <div class="info-row">
+                    <p>Amount Paid</p>
+                    <h3>{{ toPayDisplay }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div *ngIf="hasFooter" class="footer-actions">
+            <div *ngIf="showCancelShareFooter" class="footer-buttons">
+                <mindful-button type="bronze" size="large" text="Cancel Order" [disabled]="isOutForDelivery" (click)="openCancelPopup()"></mindful-button>
+                <mindful-button type="bronze-transparent" size="large" text="Share Tracking" (click)="onShareTracking()"></mindful-button>
+            </div>
+            <div *ngIf="showCancelReturnFooter" class="footer-buttons">
+                <mindful-button type="bronze" size="large" text="Cancel Return" disabled (click)="onCancelReturn()"></mindful-button>
+            </div>
+            <div *ngIf="showDownloadInvoiceFooter" class="footer-buttons">
+                <mindful-button type="magenta-transparent" size="large" text="Download Invoice" (click)="onDownloadInvoice()"></mindful-button>
+                <mindful-button *ngIf="showReturnExchangeFooter" type="magenta" size="large" text="Return/Exchange" (click)="onReturnExchange()"></mindful-button>
+            </div>
+        </div>
+    </div>
+
+</ion-content>
+
+<!-- Cancel Confirmation Popup (use shared mindful-popup) -->
+<app-mindful-popup
+    [isVisible]="isCancelPopupVisible"
+    [showCloseButton]="true"
+    [heading]="'Are you sure you want to cancel?'"
+        [primaryCTA]="cancelPrimaryCTA"
+        [secondaryCTA]="cancelSecondaryCTA"
+        (primaryAction)="closeCancelPopup()"
+        (secondaryAction)="confirmCancel()"
+        (closeAction)="closeCancelPopup()"
+    (backdropClick)="closeCancelPopup()">
+</app-mindful-popup>
+
+<!-- Share Tracking Popup -->
+<app-mindful-popup
+    class="share-tracking-popup"
+    [isVisible]="sharePopupVisible"
+    [config]="{
+        heading: 'Share Tracking',
+        ctaDirection: 'column',
+        primaryCTA: sharePrimaryCTA,
+        secondaryCTA: shareSecondaryCTA,
+        showCloseButton: true,
+        backdrop: true
+    }"
+    (primaryAction)="copyLink()"
+    (secondaryAction)="shareWhatsapp()"
+    (closeAction)="closeSharePopup()"
+    (backdropClick)="closeSharePopup()">
+</app-mindful-popup>

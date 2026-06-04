@@ -1,0 +1,137 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup {
+  background: white;
+  width: calc(100vw - 24px);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+
+  .popup-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+
+    .time-select {
+      width: 70%;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+
+      .time-button {
+        background: white;
+        color: #90214D;
+        padding: 8px 12px;
+        cursor: pointer;
+        border: 1px solid gray;
+        border-radius: 7px;
+        width: 80%;
+        height: 100%;
+        font-size: 44px;
+
+        /* center the numeric digits horizontally */
+        text-align: center;
+        padding-left: 6px;
+        padding-right: 6px;
+        box-sizing: border-box;
+
+        /* keep identical look when used on input element */
+        &.active {
+          background: #90214D;
+          color: white;
+          border: none;
+          outline: none;
+        }
+      }
+    }
+
+    .ampm-box {
+      width: 30%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .container {
+        border: 1px solid #cecece;
+        border-radius: 5px;
+        overflow: hidden;
+      }
+
+      .ampm-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        border-radius: 0;
+        font-size: 16px;
+        padding: 15px 5px;
+
+        &.selected {
+          background-color: #90214D;
+          color: white;
+        }
+      }
+
+      hr {
+        width: 80%;
+        margin: 0;
+      }
+    }
+  }
+
+  .clock-face {
+    width: 90%;
+    max-width: 350px;
+    aspect-ratio: 1;
+    margin: 50px auto;
+
+    .clock-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .clock-number {
+      cursor: pointer;
+      user-select: none;
+    }
+  }
+
+  .popup-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+
+    .cancel,
+    .ok {
+      padding: 8px 14px;
+      margin-left: 10px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 20px;
+      background: transparent;
+    }
+  }
+}
+
+.mindful-timepicker-wrapper {
+  .time-display-input {
+    color: #6B656A;
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 140%;
+    background: transparent;
+    border: none;
+    padding: 8px 0;
+    text-align: center;
+    width: 80px;
+  }
+}
