@@ -6,12 +6,11 @@ export const GOOGLE_AUTH_SCOPES = ['profile', 'email'];
 export const GOOGLE_AUTH_INIT_OPTIONS = {
   clientId: GOOGLE_AUTH_WEB_CLIENT_ID,
   scopes: GOOGLE_AUTH_SCOPES,
-  grantOfflineAccess: true,
+  grantOfflineAccess: false,
 };
 
 export const GOOGLE_AUTH_CAPACITOR_CONFIG = {
   clientId: GOOGLE_AUTH_WEB_CLIENT_ID,
-  serverClientId: GOOGLE_AUTH_WEB_CLIENT_ID,
   scopes: GOOGLE_AUTH_SCOPES,
-  forceCodeForRefreshToken: true,
+  forceCodeForRefreshToken: false,
 };
