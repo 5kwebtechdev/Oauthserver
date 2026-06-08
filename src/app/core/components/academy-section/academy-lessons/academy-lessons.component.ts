@@ -26,6 +26,7 @@ export class AcademyLessonsComponent {
   loadError: string | null = null;
   doneClicked = false;
   wasCompletedOnLoad = false;
+  readonly fallbackLessonImage = '/assets/Images-Transparent/Academy-Course-Thubmnail2.png';
 
   // Parsed content sections
   // learningOutcomes: string[] = [];
@@ -122,12 +123,45 @@ export class AcademyLessonsComponent {
   // }
 
   convertGoogleDriveUrl(url: string): string {
-    if (!url) return '';
-    const match = url.match(/\/file\/d\/([^\/]+)/);
-    if (match && match[1]) {
-      return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+    const trimmedUrl = (url || '').trim();
+    if (!trimmedUrl) return this.fallbackLessonImage;
+
+    const driveFileId = this.getGoogleDriveFileId(trimmedUrl);
+    if (driveFileId) {
+      return `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveFileId)}&sz=w512`;
     }
-    return url;
+
+    if (/^data:image\//i.test(trimmedUrl) || /^https?:\/\//i.test(trimmedUrl)) {
+      return trimmedUrl;
+    }
+
+    if (trimmedUrl.startsWith('//')) {
+      return `https:${trimmedUrl}`;
+    }
+
+    if (/^\/?assets\//i.test(trimmedUrl)) {
+      return trimmedUrl.startsWith('/') ? trimmedUrl : `/${trimmedUrl}`;
+    }
+
+    return `/${trimmedUrl.replace(/^\/+/, '')}`;
+  }
+
+  onImageError(event: Event): void {
+    const image = event.target as HTMLImageElement | null;
+    if (image && image.getAttribute('src') !== this.fallbackLessonImage) {
+      image.src = this.fallbackLessonImage;
+    }
+  }
+
+  private getGoogleDriveFileId(url: string): string | null {
+    const viewMatch = url.match(/\/file\/d\/([^\/?]+)/);
+    if (viewMatch?.[1]) return viewMatch[1];
+
+    const openMatch = url.match(/[?&]id=([^&]+)/);
+    if (openMatch?.[1]) return openMatch[1];
+
+    const lh3Match = url.match(/googleusercontent\.com\/d\/([^\/?]+)/);
+    return lh3Match?.[1] || null;
   }
 
   stripNumbering(text: string): string {

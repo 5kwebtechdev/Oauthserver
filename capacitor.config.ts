@@ -1,4 +1,5 @@
 import type { CapacitorConfig } from '@capacitor/cli';
+import { GOOGLE_AUTH_CAPACITOR_CONFIG } from './src/app/core/config/google-auth.config';
 
 const config: CapacitorConfig = {
   appId: 'com.superme.app',
@@ -16,12 +17,7 @@ const config: CapacitorConfig = {
     allowMixedContent: true
   },
   plugins: {
-    GoogleAuth: {
-      // Get this from Firebase Console → Project Settings → Your web app → OAuth 2.0 Client IDs
-      serverClientId: '124581866222-gblqv0k2a75uo4183ahl0u8336nbcsku.apps.googleusercontent.com',
-      scopes: ['profile', 'email'],
-      forceCodeForRefreshToken: true
-    }
+    GoogleAuth: GOOGLE_AUTH_CAPACITOR_CONFIG
   }
 };
 

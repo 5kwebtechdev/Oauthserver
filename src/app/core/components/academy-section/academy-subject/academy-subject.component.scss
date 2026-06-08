@@ -37,6 +37,8 @@
   height: 50px;
   flex-shrink: 0;
   margin-right: 12px;
+  object-fit: contain;
+  display: block;
 }
 
 .course-info {

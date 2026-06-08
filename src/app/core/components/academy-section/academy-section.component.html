@@ -21,7 +21,7 @@
         <article class="academy__card">
           <div class="academy__content">
             <div class="academy-main-title">
-              <img class="academy__img" [src]="c.image" alt="{{c.title}}">
+              <img class="academy__img" [src]="c.image" alt="{{c.title}}" (error)="onCourseImageError($event, c)">
               <div class="title-time-level">
                 <div class="title-n-time">
                   <h4 class="title">{{c.title}}</h4>

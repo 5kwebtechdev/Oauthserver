@@ -6,6 +6,18 @@ import { IonicModule } from '@ionic/angular';
 import { AcademyService, Course } from '../../../services/academy.service';
 import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
 
+interface AcademyLessonCard {
+  title: string;
+  meta: string;
+  coins: number;
+  badge: string;
+  thumb: string;
+  fallbackThumb: string;
+  coinIcon: string;
+  courseId?: string;
+  rawCourse?: Course;
+}
+
 @Component({
   selector: 'app-academy-subject',
   standalone: true,
@@ -22,17 +34,17 @@ export class AcademySubjectComponent implements OnInit {
   categorySubtitle: string = '';
   isLoading: boolean = false;
 
+  private readonly defaultCourseThumbnail = '/assets/Images-Transparent/Academy-Course-Thubmnail1.png';
+  private readonly fallbackCourseThumbnails = [
+    '/assets/Images-Transparent/Academy-Course-Thubmnail1.png',
+    '/assets/Images-Transparent/Academy-Course-Thubmnail2.png',
+    '/assets/Images-Transparent/Academy-Course-Thubmnail3.png',
+    '/assets/Images-Transparent/Academy-Course-Thubmnail4.png',
+    '/assets/Images-Transparent/Academy-Course-Thubmnail5.png',
+  ];
+
   // Course model from API
-  lessons: Array<{
-    title: string;
-    meta: string;
-    coins: number;
-    badge: string;
-    thumb: string;
-    coinIcon: string;
-    courseId?: string;
-    rawCourse?: Course;
-  }> = [];
+  lessons: AcademyLessonCard[] = [];
 
   // Category title mapping
   private categoryTitles: { [key: string]: { title: string; subtitle: string } } = {
@@ -53,42 +65,53 @@ export class AcademySubjectComponent implements OnInit {
     // Get category from query params
     this.route.queryParams.subscribe(params => {
       this.category = params['category'] || 'MANAGING_MONEY';
-      const categoryInfo = this.categoryTitles[this.category];
-      this.categoryTitle = categoryInfo?.title || 'Academy';
-      this.categorySubtitle = categoryInfo?.subtitle || '';
+      const categoryInfo = this.categoryTitles[this.normalizeCategoryKey(this.category)];
+      this.categoryTitle = params['title'] || categoryInfo?.title || this.formatCategoryTitle(this.category);
+      this.categorySubtitle = params['subtitle'] || categoryInfo?.subtitle || '';
       this.loadCourses();
     });
   }
 
   loadCourses() {
+    this.isLoading = true;
+
     this.academyService.getCourses().subscribe({
       next: (courses: Course[]) => {
         console.log('All courses from API:', courses);
         console.log('Current category:', this.category);
 
         // Filter courses by category only (removed enabled filter for testing)
+        const selectedCategoryKey = this.normalizeCategoryKey(this.category);
         const filteredCourses = courses.filter(
-          course => course.category === this.category
+          course => this.normalizeCategoryKey(course.category || '') === selectedCategoryKey
         );
 
         console.log('Filtered courses:', filteredCourses);
 
         // Map courses to lesson display format
-        this.lessons = filteredCourses.map(course => ({
-          title: course.courseName,
-          meta: `${course.noOfLessons} ${course.noOfLessons === 1 ? 'lesson' : 'lessons'} • ${course.duration} min`,
-          coins: course.totalCoins || 0,
-          badge: this.formatDifficulty(course.difficulty || 'BEGINNER'),
-          thumb: this.convertDriveLink(course.thumbnailUrl || ''),
-          coinIcon: 'assets/Icons-Neutral/Icons-Coins.png',
-          courseId: course.id?.toString(),
-          rawCourse: course
-        }));
+        this.lessons = filteredCourses.map((course, index) => {
+          const fallbackThumb = this.getFallbackThumbnail(course, index);
+
+          return {
+            title: course.courseName,
+            meta: `${course.noOfLessons} ${course.noOfLessons === 1 ? 'lesson' : 'lessons'} • ${course.duration} min`,
+            coins: course.totalCoins || 0,
+            badge: this.formatDifficulty(course.difficulty || 'BEGINNER'),
+            thumb: this.convertDriveLink(course.thumbnailUrl || '', fallbackThumb),
+            fallbackThumb,
+            coinIcon: 'assets/Icons-Neutral/Icons-Coins.png',
+            courseId: course.id?.toString(),
+            rawCourse: course
+          };
+        });
 
         console.log('Mapped lessons:', this.lessons);
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading courses:', error);
+        this.lessons = [];
+        this.isLoading = false;
       }
     });
   }
@@ -104,34 +127,88 @@ export class AcademySubjectComponent implements OnInit {
   }
 
   // Convert Google Drive sharing link to direct image URL
-  convertDriveLink(url: string): string {
-    if (!url) return '/assets/Images-Transparent/Academy-Course-Thubmnail1.png';
+  convertDriveLink(url: string, fallback: string = this.defaultCourseThumbnail): string {
+    const trimmedUrl = (url || '').trim();
+    if (!trimmedUrl) return fallback;
 
-    // Check if it's a Google Drive link
-    if (url.includes('drive.google.com')) {
-      // Extract file ID from various Google Drive URL formats
-      let fileId = '';
-
-      // Format: https://drive.google.com/file/d/FILE_ID/view
-      const viewMatch = url.match(/\/file\/d\/([^\/]+)/);
-      if (viewMatch) {
-        fileId = viewMatch[1];
-      }
-
-      // Format: https://drive.google.com/open?id=FILE_ID
-      const openMatch = url.match(/[?&]id=([^&]+)/);
-      if (openMatch) {
-        fileId = openMatch[1];
-      }
-
-      // If we found a file ID, convert to thumbnail URL (works better for images)
-      if (fileId) {
-        return `https://lh3.googleusercontent.com/d/${fileId}`;
-      }
+    const driveFileId = this.getGoogleDriveFileId(trimmedUrl);
+    if (driveFileId) {
+      return `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveFileId)}&sz=w512`;
     }
 
-    // Return original URL if not a Drive link or already in correct format
-    return url;
+    if (/^data:image\//i.test(trimmedUrl) || /^https?:\/\//i.test(trimmedUrl)) {
+      return trimmedUrl;
+    }
+
+    if (trimmedUrl.startsWith('//')) {
+      return `https:${trimmedUrl}`;
+    }
+
+    if (/^\/?assets\//i.test(trimmedUrl)) {
+      return trimmedUrl.startsWith('/') ? trimmedUrl : `/${trimmedUrl}`;
+    }
+
+    if (/^Academy-Course-Thubmnail/i.test(trimmedUrl)) {
+      return `/assets/Images-Transparent/${trimmedUrl}`;
+    }
+
+    if (/^Images-/i.test(trimmedUrl)) {
+      return `/assets/${trimmedUrl}`;
+    }
+
+    return `/${trimmedUrl.replace(/^\/+/, '')}`;
+  }
+
+  onCourseImageError(event: Event, lesson: AcademyLessonCard): void {
+    const fallbackThumb = lesson.fallbackThumb || this.defaultCourseThumbnail;
+    lesson.thumb = fallbackThumb;
+
+    const image = event.target as HTMLImageElement | null;
+    if (image && image.getAttribute('src') !== fallbackThumb) {
+      image.src = fallbackThumb;
+    }
+  }
+
+  private getFallbackThumbnail(course: Course, index: number): string {
+    const title = (course.courseName || '').toLowerCase();
+
+    if (this.normalizeCategoryKey(course.category || '') === 'MANAGING_MONEY' || title.includes('money') || title.includes('budget')) {
+      return this.fallbackCourseThumbnails[0];
+    }
+
+    return this.fallbackCourseThumbnails[index % this.fallbackCourseThumbnails.length];
+  }
+
+  private getGoogleDriveFileId(url: string): string | null {
+    const viewMatch = url.match(/\/file\/d\/([^\/?]+)/);
+    if (viewMatch?.[1]) return viewMatch[1];
+
+    const openMatch = url.match(/[?&]id=([^&]+)/);
+    if (openMatch?.[1]) return openMatch[1];
+
+    const lh3Match = url.match(/googleusercontent\.com\/d\/([^\/?]+)/);
+    return lh3Match?.[1] || null;
+  }
+
+  private normalizeCategoryKey(category: string): string {
+    return (category || '')
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+  }
+
+  private formatCategoryTitle(category: string): string {
+    const title = (category || '').trim().replace(/_/g, ' ');
+    const isAllCaps = title === title.toUpperCase();
+
+    if (!isAllCaps) {
+      return title || 'Academy';
+    }
+
+    return title
+      .toLowerCase()
+      .replace(/\b\w/g, (letter) => letter.toUpperCase()) || 'Academy';
   }
 
   goBack() {

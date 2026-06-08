@@ -16,11 +16,20 @@
       Where do you want to grow today?
     </div>
 
-    <div class="subject-cards">
-      <div *ngFor="let card of categoryCards" class="card" [ngClass]="card.color" (click)="openSubject(card.category)">
-        <img [src]="card.thumbnail || card.image" [alt]="card.title">
-        <p [innerHTML]="card.displayTitle"></p>
+    <div class="academy-home-state" *ngIf="isLoadingCategories">
+      Loading categories...
+    </div>
+
+    <div class="subject-cards" *ngIf="!isLoadingCategories && categoryCards.length">
+      <div *ngFor="let card of categoryCards" class="card" [ngClass]="card.color" role="button" tabindex="0"
+        (click)="openSubject(card)" (keyup.enter)="openSubject(card)" (keyup.space)="openSubject(card)">
+        <img [src]="card.thumbnail" [alt]="card.title" (error)="onCategoryImageError($event, card)">
+        <p>{{ card.title }}</p>
       </div>
+    </div>
+
+    <div class="academy-home-state" *ngIf="!isLoadingCategories && !categoryCards.length">
+      {{ categoryError || 'No active categories available right now.' }}
     </div>
 
     <!-- Footer -->

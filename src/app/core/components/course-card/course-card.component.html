@@ -1,6 +1,6 @@
 <div class="course-card">
   <div class="course-image-container">
-    <img src="/assets/Images-Transparent/Academy-Course-Thubmnail3.png" [alt]="title" class="course-image">
+    <img [src]="imageUrl || fallbackImage" [alt]="title" class="course-image" (error)="onImageError($event)">
     <div class="course-badge" *ngIf="isNew">
       <span class="new-badge">NEW</span>
     </div>

@@ -391,19 +391,11 @@ export class UserProfileComponent implements OnInit, OnChanges {
     this.showLogoutPopup = true;
   }
 
-  confirmLogout() {
+  async confirmLogout() {
     // Close the popup first for smooth transition
     this.showLogoutPopup = false;
 
-    // Clear authentication data
-    this.coreAuthService.logout();
-
-    // Navigate to login page with animation
-    this.router.navigate(['/home/login'], {
-      replaceUrl: true // Replace history so user can't go back to authenticated pages
-    }).catch((err) => {
-      console.error('Navigation error:', err);
-    });
+    await this.coreAuthService.logout(true);
 
     // Emit logout event for parent components if needed
     this.onLogout();
