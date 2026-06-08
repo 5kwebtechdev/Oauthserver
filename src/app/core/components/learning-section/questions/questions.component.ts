@@ -170,32 +170,40 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit() {
-        // Get challenge from router state or fetch from API
         const navigation = this.router.getCurrentNavigation();
         const state = navigation?.extras?.state as { challenge?: Challenge };
 
-        if (state?.challenge) {
-            this.challenge = state.challenge;
-            this.initializeQuiz();
-        } else {
-            // If no state, fetch from API using challengeId from route params
-            const challengeId = this.route.snapshot.paramMap.get('id');
-            if (challengeId) {
-                this.learningService.fetchChallengeById(Number(challengeId)).subscribe({
-                    next: (challenge) => {
-                        this.challenge = challenge;
-                        this.initializeQuiz();
-                    },
-                    error: (error) => {
-                        console.error('Error loading challenge:', error);
-                        this.router.navigate(['/authed/content']);
-                    }
-                });
-            } else {
-                console.error('No challenge data or ID available');
-                this.router.navigate(['/authed/content']);
-            }
+        // Determine challenge ID — prefer from router state, fallback to route param
+        const challengeId = state?.challenge?.challengeId
+            ?? Number(this.route.snapshot.paramMap.get('id'));
+
+        if (!challengeId) {
+            console.error('No challenge ID available');
+            this.router.navigate(['/authed/content']);
+            return;
         }
+
+        // Always fetch full challenge by ID so positiveFeedback/negativeFeedback are included
+        this.learningService.fetchChallengeById(challengeId).subscribe({
+            next: (challenge) => {
+                if (!challenge) {
+                    this.router.navigate(['/authed/content']);
+                    return;
+                }
+                this.challenge = challenge;
+                this.initializeQuiz();
+            },
+            error: (error) => {
+                console.error('Error loading challenge:', error);
+                // Fallback: use router state challenge if API fails
+                if (state?.challenge) {
+                    this.challenge = state.challenge;
+                    this.initializeQuiz();
+                } else {
+                    this.router.navigate(['/authed/content']);
+                }
+            }
+        });
     }
 
     initializeQuiz() {

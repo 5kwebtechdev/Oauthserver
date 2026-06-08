@@ -116,6 +116,9 @@
         <div *ngIf="showPopup" class="popup-overlay" (click)="onNext()">
             <div class="popup-content" (click)="$event.stopPropagation()"
                 [ngStyle]="{'background': popupBackgroundColor}">
+                <div class="popup-label" [ngStyle]="{'color': popupTextColor}">
+                  {{ isAnswerCorrect ? 'Correct!' : 'Incorrect!' }}
+                </div>
                 <div class="popup-text" [ngStyle]="{'color': popupTextColor}">{{ popupMessage }}</div>
                 <mindful-button style="width: 100%;" *ngIf="nextButtonType === 'green'" type="green" size="full"
                     [text]="nextButtonText" (click)="onNext()">
