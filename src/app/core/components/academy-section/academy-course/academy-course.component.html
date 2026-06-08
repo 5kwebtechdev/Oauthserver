@@ -4,7 +4,8 @@
 
 
     <div *ngIf="!isLoadingCourse && !loadError && course">
-      <img [src]="course.image || 'header-img.png'" alt="{{ course.title }} Illustration">
+      <img [src]="course.image || fallbackCourseImage" alt="{{ course.title }} Illustration"
+        (error)="onImageError($event, fallbackCourseImage)">
       <h3>{{ course.title }}</h3>
       <p class="subtitle">{{ course.lessons }} {{ course.lessons === 1 ? 'lesson' : 'lessons' }} • {{ course.duration }}</p>
       <mindful-button *ngIf="resumeLessonIndex !== null" [type]="'magenta'" full
@@ -18,7 +19,8 @@
   <div class="lesson" *ngFor="let lesson of lessons; let i = index"
     [class.locked]="lesson.isLocked">
     <div class="lesson-thumb">
-      <img [src]="lesson.image" [alt]="lesson.title" />
+      <img [src]="lesson.image || fallbackLessonImage" [alt]="lesson.title"
+        (error)="onImageError($event, fallbackLessonImage)" />
     </div>
     <div class="lesson-info">
       <h3>{{ lesson.title }}</h3>

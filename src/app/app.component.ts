@@ -11,8 +11,8 @@ import { AuthApi } from './core/api/auth.api';
 import { UserService } from './core/services/user.service';
 import { CustomToastService, Toast } from './core/services/custom-toast.service';
 import { StatusBar, Style } from '@capacitor/status-bar';
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { AnalyticsService } from './core/services/analytics.service';
+import { AuthSessionCleanupService } from './core/services/auth-session-cleanup.service';
 
 @Component({
   selector: 'app-root',
@@ -43,6 +43,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private toastService: CustomToastService,
     private analytics: AnalyticsService,
+    private authSessionCleanup: AuthSessionCleanupService,
   ) {
     this.toast$ = this.toastService.toast$;
   }
@@ -56,11 +57,7 @@ export class AppComponent implements OnInit, OnDestroy {
         if (this.platform.is('android')) {
           StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
         }
-        GoogleAuth.initialize({
-          clientId: '124581866222-gblqv0k2a75uo4183ahl0u8336nbcsku.apps.googleusercontent.com',
-          scopes: ['profile', 'email'],
-          grantOfflineAccess: true,
-        }).catch((e: any) => console.warn('[AppComponent] GoogleAuth init:', e));
+        this.authSessionCleanup.initializeGoogleAuth();
       }
     });
 

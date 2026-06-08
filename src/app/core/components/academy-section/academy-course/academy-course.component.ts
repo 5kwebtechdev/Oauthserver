@@ -32,6 +32,15 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
   courseDetail: CourseDetailResponse | null = null;
   isLoadingCourse = false;
   loadError: string | null = null;
+  readonly fallbackCourseImage = '/assets/Images-Transparent/Academy-Course-Thubmnail1.png';
+  readonly fallbackLessonImage = '/assets/Images-Transparent/Academy-Course-Thubmnail2.png';
+  private readonly fallbackLessonImages = [
+    '/assets/Images-Transparent/Academy-Course-Thubmnail1.png',
+    '/assets/Images-Transparent/Academy-Course-Thubmnail2.png',
+    '/assets/Images-Transparent/Academy-Course-Thubmnail3.png',
+    '/assets/Images-Transparent/Academy-Course-Thubmnail4.png',
+    '/assets/Images-Transparent/Academy-Course-Thubmnail5.png',
+  ];
 
   // route-driven mode: if component is loaded via route we populate `course` from the id
   constructor(
@@ -95,10 +104,10 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
 
     if (this.course.id === 'budget-1') {
       this.lessons = [
-        { title: '1. What is a Budget?', desc: 'Discover what a budget is and why it matters.', time: 'Text-based • 3 mins', image: '/assets/app-assets/notebook-labeled.svg', isCompleted: false, isLocked: false },
-        { title: '2. Track Your Spending', desc: 'Learn how to track your everyday spending.', time: 'Text-based • 4 mins', image: '/assets/app-assets/child-lesson.svg', isCompleted: false, isLocked: true },
-        { title: '3. Set Spending Limits', desc: 'Find out how to set and stick to spending limits.', time: 'Text-based • 3 mins', image: '/assets/app-assets/timer-lesson.svg', isCompleted: false, isLocked: true },
-        { title: '4. Save for Your Goals', desc: 'See how to save money toward your goals.', time: 'Text-based • 4 mins', image: '/assets/app-assets/piggy-lesson.svg', isCompleted: false, isLocked: true },
+        { title: '1. What is a Budget?', desc: 'Discover what a budget is and why it matters.', time: 'Text-based • 3 mins', image: this.fallbackLessonImages[0], isCompleted: false, isLocked: false },
+        { title: '2. Track Your Spending', desc: 'Learn how to track your everyday spending.', time: 'Text-based • 4 mins', image: this.fallbackLessonImages[1], isCompleted: false, isLocked: true },
+        { title: '3. Set Spending Limits', desc: 'Find out how to set and stick to spending limits.', time: 'Text-based • 3 mins', image: this.fallbackLessonImages[2], isCompleted: false, isLocked: true },
+        { title: '4. Save for Your Goals', desc: 'See how to save money toward your goals.', time: 'Text-based • 4 mins', image: this.fallbackLessonImages[3], isCompleted: false, isLocked: true },
       ];
       // demo/static content: no resume index by default
       this.resumeLessonIndex = null;
@@ -110,7 +119,7 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
       title: `${i + 1}. Lesson ${i + 1}`,
       desc: this.course?.description || 'Lesson description',
       time: 'Text-based • 3 mins',
-      image: '/assets/img/lesson-binder.png',
+      image: this.getFallbackLessonImage(i),
       isCompleted: false,
       isLocked: i > 0,
       lessonId: undefined
@@ -158,7 +167,7 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
       duration: `${apiResponse.duration} min`,
       level: this.formatDifficulty(apiResponse.difficulty),
       description: apiResponse.description,
-      image: this.convertGoogleDriveUrl(apiResponse.thumbnailUrl)
+      image: this.convertGoogleDriveUrl(apiResponse.thumbnailUrl, this.fallbackCourseImage)
     };
   }
 
@@ -176,7 +185,7 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
       title: `${lesson.order}. ${lesson.title}`,
       desc: lesson.description,
       time: `${lesson.videoUrl ? 'Video' : 'Text-based'} • ${lesson.duration} min${lesson.duration > 1 ? 's' : ''}`,
-      image: this.convertGoogleDriveUrl(lesson.thumbnailUrl) || '/assets/app-assets/notebook-labeled.svg',
+      image: this.convertGoogleDriveUrl(lesson.thumbnailUrl, this.getFallbackLessonImage(index)),
       coins: typeof lesson.coins === 'number' ? lesson.coins : fallbackPerLesson,
       lessonId: lesson.id,
       isCompleted: !!lesson.isCompleted,
@@ -202,16 +211,58 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
    * @param url The Google Drive share URL
    * @returns Direct image URL or original URL if not a Google Drive link
    */
-  private convertGoogleDriveUrl(url: string): string {
-    if (!url) return '';
+  private convertGoogleDriveUrl(url: string, fallback: string): string {
+    const trimmedUrl = (url || '').trim();
+    if (!trimmedUrl) return fallback;
 
-    // Check if it's a Google Drive URL in format: https://drive.google.com/file/d/{id}/view
-    const match = url.match(/\/file\/d\/([^\/]+)/);
-    if (match && match[1]) {
-      return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+    const driveFileId = this.getGoogleDriveFileId(trimmedUrl);
+    if (driveFileId) {
+      return `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveFileId)}&sz=w512`;
     }
 
-    return url;
+    if (/^data:image\//i.test(trimmedUrl) || /^https?:\/\//i.test(trimmedUrl)) {
+      return trimmedUrl;
+    }
+
+    if (trimmedUrl.startsWith('//')) {
+      return `https:${trimmedUrl}`;
+    }
+
+    if (/^\/?assets\//i.test(trimmedUrl)) {
+      return trimmedUrl.startsWith('/') ? trimmedUrl : `/${trimmedUrl}`;
+    }
+
+    if (/^Academy-Course-Thubmnail/i.test(trimmedUrl)) {
+      return `/assets/Images-Transparent/${trimmedUrl}`;
+    }
+
+    if (/^Images-/i.test(trimmedUrl)) {
+      return `/assets/${trimmedUrl}`;
+    }
+
+    return `/${trimmedUrl.replace(/^\/+/, '')}`;
+  }
+
+  onImageError(event: Event, fallback: string = this.fallbackCourseImage): void {
+    const image = event.target as HTMLImageElement | null;
+    if (image && image.getAttribute('src') !== fallback) {
+      image.src = fallback;
+    }
+  }
+
+  private getFallbackLessonImage(index: number): string {
+    return this.fallbackLessonImages[index % this.fallbackLessonImages.length];
+  }
+
+  private getGoogleDriveFileId(url: string): string | null {
+    const viewMatch = url.match(/\/file\/d\/([^\/?]+)/);
+    if (viewMatch?.[1]) return viewMatch[1];
+
+    const openMatch = url.match(/[?&]id=([^&]+)/);
+    if (openMatch?.[1]) return openMatch[1];
+
+    const lh3Match = url.match(/googleusercontent\.com\/d\/([^\/?]+)/);
+    return lh3Match?.[1] || null;
   }
 
   /**
@@ -315,7 +366,7 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
         duration: '20 min',
         level: 'Beginner',
         description: 'Learn simple steps to plan, track, and adjust your money so you can reach your goals with confidence.',
-        image: '/assets/app-assets/Budget-basic.svg'
+        image: this.fallbackCourseImage
       };
     } else {
       // fallback: create a simple course from id

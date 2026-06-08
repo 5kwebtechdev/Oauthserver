@@ -26,6 +26,11 @@ export class AnalyticsService {
     FirebaseAnalytics.setUserId({ userId }).catch(() => {});
   }
 
+  clearUserId(): void {
+    if (!this.ready) return;
+    FirebaseAnalytics.setUserId({ userId: null }).catch(() => {});
+  }
+
   logEvent(name: string, params?: Record<string, string | number | boolean>): void {
     if (!this.ready) return;
     FirebaseAnalytics.logEvent({ name, params }).catch(() => {});

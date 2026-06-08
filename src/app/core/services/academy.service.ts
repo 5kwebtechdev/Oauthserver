@@ -35,6 +35,15 @@ export interface Course {
   lessons?: Lesson[];
 }
 
+export interface AcademyCategory {
+  id: number;
+  categoryName: string;
+  description?: string;
+  thumbnailUrl?: string;
+  status?: string;
+  courseCount?: number;
+}
+
 // Course detail response with progress tracking
 export interface CourseLesson {
   id: number;
@@ -127,6 +136,10 @@ export class AcademyService {
 
   getCourses(): Observable<Course[]> {
     return this.http.get<Course[]>(`${this.base}/courses`, { headers: this.getHeaders() });
+  }
+
+  getCategories(): Observable<AcademyCategory[]> {
+    return this.http.get<AcademyCategory[]>(`${this.base}/category`, { headers: this.getHeaders() });
   }
 
   getCourseById(courseId: number | string): Observable<CourseDetailResponse> {

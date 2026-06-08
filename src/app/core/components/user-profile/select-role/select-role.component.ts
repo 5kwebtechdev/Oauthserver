@@ -1137,7 +1137,7 @@ export class RoleSelectComponent implements OnDestroy {
   /**
    * Logout and redirect to login page
    */
-  goToParentAccount(): void {
+  async goToParentAccount(): Promise<void> {
     if (!this.familyCreated) return;
     this.isSubmitting = true;
     console.log('🚪 Logging out and redirecting to /home/login...');
@@ -1146,33 +1146,30 @@ export class RoleSelectComponent implements OnDestroy {
       if (this.authService && typeof this.authService.logout === 'function') {
         // Let AuthService perform logout and redirect to /home/login
         try {
-          (this.authService.logout as any)();
+          await this.authService.logout();
         } catch (e) {
           console.warn('AuthService.logout threw an error, falling back to client logout:', e);
-          localStorage.removeItem('user_data');
-          localStorage.removeItem('auth_token');
+          localStorage.clear();
           sessionStorage.clear();
-          this.router.navigate(['/home/login']).catch(err => {
+          this.router.navigate(['/home/login'], { replaceUrl: true }).catch(err => {
             console.error('Navigation error:', err);
             window.location.href = '/home/login';
           });
         }
       } else {
         // Fallback: clear storage and navigate to /home/login
-        localStorage.removeItem('user_data');
-        localStorage.removeItem('auth_token');
+        localStorage.clear();
         sessionStorage.clear();
-        this.router.navigate(['/home/login']).catch(err => {
+        this.router.navigate(['/home/login'], { replaceUrl: true }).catch(err => {
           console.error('Navigation error:', err);
           window.location.href = '/home/login';
         });
       }
     } catch (e) {
       console.error('Unexpected error during logout redirect:', e);
-      localStorage.removeItem('user_data');
-      localStorage.removeItem('auth_token');
+      localStorage.clear();
       sessionStorage.clear();
-      this.router.navigate(['/home/login']).catch(err => {
+      this.router.navigate(['/home/login'], { replaceUrl: true }).catch(err => {
         console.error('Navigation error:', err);
         window.location.href = '/home/login';
       });

@@ -5,6 +5,7 @@ import { IonicModule, Platform, LoadingController, ToastController } from '@ioni
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { AuthService } from '../../services/auth.service';
 import { AnalyticsService } from '../../services/analytics.service';
+import { AuthSessionCleanupService } from '../../services/auth-session-cleanup.service';
 
 @Component({
   selector: 'social-media',
@@ -28,7 +29,8 @@ export class SocialMediaComponent {
     private platform: Platform,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
-    private analytics: AnalyticsService
+    private analytics: AnalyticsService,
+    private authSessionCleanup: AuthSessionCleanupService
   ) {}
 
   open(link: { name: string; url?: string }) {
@@ -59,12 +61,7 @@ export class SocialMediaComponent {
     await loading.present();
 
     try {
-      // Re-initialize before each sign-in attempt to ensure plugin is ready
-      await GoogleAuth.initialize({
-        clientId: '124581866222-gblqv0k2a75uo4183ahl0u8336nbcsku.apps.googleusercontent.com',
-        scopes: ['profile', 'email'],
-        grantOfflineAccess: true,
-      }).catch(() => {});
+      await this.authSessionCleanup.prepareGoogleSignIn();
 
       const googleUser = await GoogleAuth.signIn();
       console.log('[SocialMedia] Google user:', JSON.stringify(googleUser));

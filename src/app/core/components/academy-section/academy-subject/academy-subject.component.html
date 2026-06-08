@@ -20,7 +20,7 @@
 
       <!-- Course Items -->
       <div class="course" *ngFor="let l of lessons" (click)="openCourseByTitle(l.title)">
-        <img [src]="l.thumb" [alt]="l.title" class="course-img">
+        <img [src]="l.thumb" [alt]="l.title" class="course-img" (error)="onCourseImageError($event, l)">
         <div class="course-info">
           <h3 class="course-title">{{ l.title }}</h3>
           <p class="course-meta">{{ l.meta }}</p>

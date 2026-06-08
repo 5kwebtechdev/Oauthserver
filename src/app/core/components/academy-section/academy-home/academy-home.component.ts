@@ -1,12 +1,23 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { NavigationService } from '../../../services/navigation.service';
-import { AcademyService, Course } from '../../../services/academy.service';
+import { AcademyCategory, AcademyService } from '../../../services/academy.service';
 import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
 import { MindfulSpeechBubbleComponent } from '../../mindful-speech-bubble/mindful-speech-bubble.component';
 import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
+
+interface CategoryCard {
+  id: number;
+  category: string;
+  title: string;
+  description: string;
+  color: string;
+  image: string;
+  thumbnail: string;
+  courseCount: number;
+}
 
 @Component({
   selector: 'app-academy-home',
@@ -19,38 +30,43 @@ export class AcademyHomeComponent {
   @Input() title: string | undefined;
   @Input() description: string | undefined;
 
-  categoryCards: Array<{
-    category: string;
-    title: string;
-    displayTitle: string;
-    color: string;
-    image: string;
-    thumbnail?: string | null;
-    courses?: Course[];
-  }> = [
-      { category: 'MANAGING_MONEY', title: 'Managing Money', displayTitle: 'Managing<br>Money', color: 'yellow', image: '/assets/Images-Transparent/Image-Academy-Cat1.png', thumbnail: null, courses: [] },
-      { category: 'COMMUNICATION', title: 'Communication', displayTitle: 'Communication', color: 'purple', image: '/assets/Images-Transparent/Image-Academy-Cat2.png', thumbnail: null, courses: [] },
-      { category: 'MEDITATION', title: 'Meditation', displayTitle: 'Meditation', color: 'pink', image: '/assets/Images-Transparent/Image-Academy-Cat3.png', thumbnail: null, courses: [] },
-      { category: 'CULTURAL_VALUES', title: 'Cultural Values', displayTitle: 'Cultural<br>Values', color: 'green', image: '/assets/Images-Transparent/Image-Academy-Cat4.png', thumbnail: null, courses: [] }
-    ];
+  categoryCards: CategoryCard[] = [];
+  isLoadingCategories = false;
+  categoryError = '';
+
+  private readonly cardColors = ['yellow', 'purple', 'pink', 'green'];
+  private readonly fallbackImages = [
+    '/assets/Images-Transparent/Image-Academy-Cat1.png',
+    '/assets/Images-Transparent/Image-Academy-Cat2.png',
+    '/assets/Images-Transparent/Image-Academy-Cat3.png',
+    '/assets/Images-Transparent/Image-Academy-Cat4.png',
+  ];
 
   constructor(private router: Router, private academyService: AcademyService, private navigation: NavigationService) { }
 
   ngOnInit(): void {
-    this.loadCourses();
+    this.loadCategories();
   }
 
-  private loadCourses(): void {
-    this.academyService.getCourses().subscribe({
-      next: (courses) => {
-        // Group courses by category and set thumbnails/counts
-        for (const card of this.categoryCards) {
-          card.courses = courses.filter(c => c.category === card.category && (c.enabled ?? true));
-          card.thumbnail = card.image;
-        }
+  private loadCategories(): void {
+    this.isLoadingCategories = true;
+    this.categoryError = '';
+
+    this.academyService.getCategories().subscribe({
+      next: (categories) => {
+        const activeCategories = (categories || [])
+          .filter(category => (category.status || '').toUpperCase() === 'ACTIVE');
+        const displayTitleCounts = this.countDisplayTitles(activeCategories);
+
+        this.categoryCards = activeCategories
+          .map((category, index) => this.mapCategoryToCard(category, index, displayTitleCounts));
+        this.isLoadingCategories = false;
       },
       error: (err) => {
-        console.error('Failed to load courses', err);
+        console.error('Failed to load academy categories', err);
+        this.categoryCards = [];
+        this.categoryError = 'No active categories available right now.';
+        this.isLoadingCategories = false;
       }
     });
   }
@@ -59,8 +75,87 @@ export class AcademyHomeComponent {
     this.navigation.back();
   }
 
-  openSubject(category: string): void {
-    // navigate to subject page with category as query param
-    this.router.navigate(['/authed/academy/subject'], { queryParams: { category } });
+  openSubject(card: CategoryCard): void {
+    this.router.navigate(['/authed/academy/subject'], {
+      queryParams: {
+        category: card.category,
+        categoryId: card.id,
+        title: card.title,
+        subtitle: card.description
+      }
+    });
+  }
+
+  onCategoryImageError(event: Event, card: CategoryCard): void {
+    card.thumbnail = card.image;
+
+    const image = event.target as HTMLImageElement | null;
+    if (image && image.getAttribute('src') !== card.image) {
+      image.src = card.image;
+    }
+  }
+
+  private mapCategoryToCard(
+    category: AcademyCategory,
+    index: number,
+    displayTitleCounts: Record<string, number>
+  ): CategoryCard {
+    const fallbackImage = this.fallbackImages[index % this.fallbackImages.length];
+    const rawTitle = (category.categoryName || '').trim();
+    const formattedTitle = this.formatCategoryTitle(category.categoryName);
+    const title = displayTitleCounts[formattedTitle] > 1 && rawTitle !== formattedTitle
+      ? rawTitle
+      : formattedTitle;
+
+    return {
+      id: category.id,
+      category: category.categoryName,
+      title,
+      description: category.description || '',
+      color: this.cardColors[index % this.cardColors.length],
+      image: fallbackImage,
+      thumbnail: this.normalizeImageUrl(category.thumbnailUrl || '', fallbackImage),
+      courseCount: category.courseCount || 0,
+    };
+  }
+
+  private countDisplayTitles(categories: AcademyCategory[]): Record<string, number> {
+    return categories.reduce((counts, category) => {
+      const title = this.formatCategoryTitle(category.categoryName);
+      counts[title] = (counts[title] || 0) + 1;
+      return counts;
+    }, {} as Record<string, number>);
+  }
+
+  private formatCategoryTitle(categoryName: string): string {
+    const title = (categoryName || '').trim().replace(/_/g, ' ');
+    const isAllCaps = title === title.toUpperCase();
+
+    if (!isAllCaps) {
+      return title;
+    }
+
+    return title
+      .toLowerCase()
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  }
+
+  private normalizeImageUrl(url: string, fallback: string): string {
+    const trimmedUrl = (url || '').trim();
+    if (!trimmedUrl) return fallback;
+
+    if (/^data:image\//i.test(trimmedUrl) || /^https?:\/\//i.test(trimmedUrl)) {
+      return trimmedUrl;
+    }
+
+    if (trimmedUrl.startsWith('//')) {
+      return `https:${trimmedUrl}`;
+    }
+
+    if (/^\/?assets\//i.test(trimmedUrl)) {
+      return trimmedUrl.startsWith('/') ? trimmedUrl : `/${trimmedUrl}`;
+    }
+
+    return `/${trimmedUrl.replace(/^\/+/, '')}`;
   }
 }

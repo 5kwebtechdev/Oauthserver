@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
 import { MoodService } from './mood.service';
 import { AnalyticsService } from './analytics.service';
+import { AuthSessionCleanupService } from './auth-session-cleanup.service';
 
 export interface LoginCredentials {
   email?: string;
@@ -108,7 +109,8 @@ export class AuthService {
     private router: Router,
     private platform: Platform,
     private moodService: MoodService,
-    private analytics: AnalyticsService
+    private analytics: AnalyticsService,
+    private authSessionCleanup: AuthSessionCleanupService
   ) {
     this.detectPlatform();
     this.initSessionMonitoring();
@@ -148,9 +150,10 @@ export class AuthService {
    */
   private hasValidSession(): boolean {
     const token = localStorage.getItem(this.TOKEN_KEY);
+    const userId = localStorage.getItem(this.USER_ID_KEY);
     const lastActivity = localStorage.getItem(this.LAST_ACTIVITY_KEY);
 
-    if (!token || !lastActivity) {
+    if (!token || !userId || !lastActivity) {
       return false;
     }
 
@@ -437,33 +440,21 @@ export class AuthService {
   /**
    * Logout user and clear session
    */
-  logout(redirectToLogin: boolean = true): void {
+  async logout(redirectToLogin: boolean = true): Promise<void> {
     console.log('[AuthService] Logging out user');
 
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_ID_KEY);
-    localStorage.removeItem(this.LOGIN_TIME_KEY);
-    localStorage.removeItem(this.LAST_ACTIVITY_KEY);
-    localStorage.removeItem('user_data');
-    localStorage.removeItem('user_stats');
-    localStorage.removeItem('mindful_buddy_pet_data');
-    localStorage.removeItem('platform');
-    localStorage.removeItem('user_profile');
-    localStorage.removeItem('mb_selected_child_id');
-
-    // Remove all date-keyed vibe_sets entries (e.g. vibe_sets_2026-05-12)
-    Object.keys(localStorage)
-      .filter(key => key.startsWith('vibe_sets_'))
-      .forEach(key => localStorage.removeItem(key));
-
+    this.authSessionCleanup.clearBrowserStorage();
     this.moodService.clearVibesDisplayCache();
+    this.analytics.clearUserId();
 
     this.isAuthenticatedSubject.next(false);
     this.currentUserSubject.next(null);
     this.userDataSubject.next(null);
 
+    await this.authSessionCleanup.clearExternalAuthSessions();
+
     if (redirectToLogin) {
-      this.router.navigate(['/home/login']);
+      await this.router.navigate(['/home/login'], { replaceUrl: true });
     }
   }
 
