@@ -43,12 +43,32 @@ export class LearningService {
         return headers;
     }
 
+    private getUserAge(): number | null {
+        try {
+            const raw = localStorage.getItem('user_data');
+            if (!raw) return null;
+            const profile = JSON.parse(raw);
+            const dob = profile?.dateOfBirth || profile?.dob;
+            if (!dob) return null;
+            const birth = new Date(dob);
+            const today = new Date();
+            let age = today.getFullYear() - birth.getFullYear();
+            const m = today.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+            return age > 0 ? age : null;
+        } catch {
+            return null;
+        }
+    }
+
     /**
      * Fetch all challenges from backend
      */
     fetchChallenges(): Observable<Challenge[]> {
         this.challengesLoading$.next(true);
-        return this.http.get<Challenge[]>(`${this.apiUrl}/challenges`, { headers: this.getHeaders() })
+        const age = this.getUserAge();
+        const url = age ? `${this.apiUrl}/challenges?age=${age}` : `${this.apiUrl}/challenges`;
+        return this.http.get<Challenge[]>(url, { headers: this.getHeaders() })
             .pipe(
                 tap(challenges => {
                     this.challengesCache$.next(challenges);
@@ -147,7 +167,9 @@ export class LearningService {
      */
     fetchArticles(): Observable<Article[]> {
         this.articlesLoading$.next(true);
-        return this.http.get<Article[]>(`${this.apiUrl}/articles`, { headers: this.getHeaders() })
+        const age = this.getUserAge();
+        const url = age ? `${this.apiUrl}/articles?age=${age}` : `${this.apiUrl}/articles`;
+        return this.http.get<Article[]>(url, { headers: this.getHeaders() })
             .pipe(
                 tap(articles => {
                     this.articlesCache$.next(articles);
@@ -197,12 +219,20 @@ export class LearningService {
         return this.getChallengesByCategory('PUZZLE');
     }
 
+    private ensureMinSuffix(timeText: string): string {
+        if (!timeText) return timeText;
+        const lower = timeText.toLowerCase();
+        if (lower.includes('min') || lower.includes('hour') || lower.includes('sec')) return timeText;
+        if (/^\d+(\.\d+)?\s*$/.test(timeText.trim())) return `${timeText.trim()} min`;
+        return timeText;
+    }
+
     /**
      * Transform Challenge to LearningCardData for UI display
      */
     transformChallengeToCard(challenge: Challenge): LearningCardData {
         const isQuiz = challenge.category === 'QUIZ';
-        const timeText = challenge.timeDuration || '10 Minutes';
+        const timeText = this.ensureMinSuffix(challenge.timeDuration || '10 min');
         const buttonLabel = isQuiz ? 'Play Quiz' : 'Play Puzzle';
 
         return {
@@ -464,7 +494,7 @@ export class LearningService {
         const coins = (item.coins as number) ?? 0;
         const trophy = (item.trophies as number) ?? undefined;
         const difficulty = item.difficultyDisplay ?? item.difficulty ?? undefined;
-        const timeText = item.timeDuration ?? item.estimatedTimeMinutes ? `${item.estimatedTimeMinutes} minutes` : (item.timeDuration ?? '10 Minutes');
+        const timeText = this.ensureMinSuffix(item.timeDuration ?? (item.estimatedTimeMinutes ? `${item.estimatedTimeMinutes} min` : '10 min'));
 
         return {
             id,

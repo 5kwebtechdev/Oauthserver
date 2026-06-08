@@ -271,11 +271,19 @@
 }
 
 // Popup styles
+.popup-label {
+    font-family: Nunito;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
 .popup-text {
     color: #4CAF50;
     font-family: Nunito;
     font-size: 16px;
     font-weight: 500;
+    margin-bottom: 12px;
 }
 
 .popup-content ::ng-deep .button {
