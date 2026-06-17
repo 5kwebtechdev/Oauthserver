@@ -9,6 +9,8 @@ import { Platform } from '@ionic/angular';
 import { MoodService } from './mood.service';
 import { AnalyticsService } from './analytics.service';
 import { AuthSessionCleanupService } from './auth-session-cleanup.service';
+import { CrashlyticsService } from './crashlytics.service';
+import { PushNotificationService } from './push-notification.service';
 
 export interface LoginCredentials {
   email?: string;
@@ -24,8 +26,11 @@ export interface AuthResponse {
     name: string;
     email: string;
     phone?: string;
+    age?: number;
     gender?: string;
-    dateOfBirth?: string;
+    dateOfBirth?: string | number;
+    dob?: string | number;
+    birthDate?: string | number;
     relationship?: 'CHILD' | 'PARENT' | 'SELF';
     role?: string;
     referralCode?: string | null;
@@ -110,7 +115,9 @@ export class AuthService {
     private platform: Platform,
     private moodService: MoodService,
     private analytics: AnalyticsService,
-    private authSessionCleanup: AuthSessionCleanupService
+    private authSessionCleanup: AuthSessionCleanupService,
+    private crashlytics: CrashlyticsService,
+    private pushNotifications: PushNotificationService
   ) {
     this.detectPlatform();
     this.initSessionMonitoring();
@@ -291,6 +298,7 @@ export class AuthService {
     
     // Store full user data and notify all subscribers
     this.setUserData(authResponse.user);
+    this.crashlytics.setUserId(authResponse.userId);
 
     console.log('[AuthService] Session established:', {
       userId: authResponse.userId,
@@ -309,6 +317,11 @@ export class AuthService {
       rememberMe: rememberMe,
       platform: platformType
     });
+
+    // Register the FCM token with the backend now that an auth token is available.
+    this.pushNotifications.onAuthenticated().catch(err =>
+      console.warn('[AuthService] FCM token sync failed:', err)
+    );
   }
 
   checkEmailExists(email: string) {
@@ -443,9 +456,13 @@ export class AuthService {
   async logout(redirectToLogin: boolean = true): Promise<void> {
     console.log('[AuthService] Logging out user');
 
+    // Deregister FCM token before clearing storage so we still have it.
+    await this.pushNotifications.clearToken().catch(() => {});
+
     this.authSessionCleanup.clearBrowserStorage();
     this.moodService.clearVibesDisplayCache();
     this.analytics.clearUserId();
+    this.crashlytics.clearUserId();
 
     this.isAuthenticatedSubject.next(false);
     this.currentUserSubject.next(null);
@@ -575,6 +592,14 @@ export class AuthService {
   }
 
   /**
+   * Get the current user's age from the stored auth profile.
+   */
+  getCurrentUserAge(): number | null {
+    const userData = this.getUserData();
+    return this.extractAgeFromUserData(userData);
+  }
+
+  /**
    * Load user data from localStorage (used for initializing the BehaviorSubject)
    */
   private loadUserDataFromStorage(): any {
@@ -628,6 +653,32 @@ export class AuthService {
     } catch (error) {
       console.error('[AuthService] Error setting user data:', error);
     }
+  }
+
+  private extractAgeFromUserData(userData: any): number | null {
+    if (!userData) return null;
+
+    const rawAge = userData.age ?? userData.userAge;
+    const age = Number(rawAge);
+    if (Number.isFinite(age) && age > 0) {
+      return Math.floor(age);
+    }
+
+    const rawDob = userData.dateOfBirth || userData.dob || userData.birthDate;
+    if (!rawDob) return null;
+
+    const birthDate = new Date(rawDob);
+    if (Number.isNaN(birthDate.getTime())) return null;
+
+    const today = new Date();
+    let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      calculatedAge--;
+    }
+
+    return calculatedAge > 0 ? calculatedAge : null;
   }
 
   /**
@@ -742,6 +793,22 @@ export class AuthService {
           }
         })
       );
+  }
+
+  deleteAccountByUserId(userId: string | number): Observable<{ message?: string }> {
+    const token = this.getToken();
+
+    if (!token) {
+      throw new Error('User not authenticated');
+    }
+
+    const headers = new HttpHeaders({
+      'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'X-Skip-Auth-Handler': 'true'
+    });
+
+    return this.http.delete<{ message?: string }>(`${this.apiUrl}/auth/delete-account/${userId}`, { headers });
   }
 
   /**

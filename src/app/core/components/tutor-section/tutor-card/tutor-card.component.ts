@@ -2,8 +2,8 @@ import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule, ModalController } from "@ionic/angular";
 import { CommonModule } from '@angular/common';
-import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.component';
-import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
+import { ViewAllComponent } from '../../superme-navigator/view-all/view-all.component';
+import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
 import { TutorListComponent } from '../tutor-list/tutor-list.component';
 import { TutorService } from '../../../services/tutor.service';
 import { TutorListItem, Tutor } from '../../../models/tutor.model';
@@ -14,7 +14,7 @@ import { Subscription } from 'rxjs';
   selector: 'tutor-card',
   templateUrl: './tutor-card.component.html',
   styleUrls: ['./tutor-card.component.scss'],
-  imports: [CommonModule, IonicModule, ViewAllComponent, TutorListComponent, MindfulCardHeaderComponent],
+  imports: [CommonModule, IonicModule, ViewAllComponent, TutorListComponent, SupermeCardHeaderComponent],
   standalone: true
 })
 export class TutorCardComponent implements OnInit, OnDestroy {

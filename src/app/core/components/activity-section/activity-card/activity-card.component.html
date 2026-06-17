@@ -1,10 +1,10 @@
 <!-- List Mode -->
 <!-- Shared header used by both list and recent modes -->
 <ng-template #dayHeader>
-  <mindful-card-header title="Today At a Glance" subtitleMiddle="Check tasks • Finish habits • Crush it">
+  <superme-card-header title="Today At a Glance" subtitleMiddle="Check tasks • Finish habits • Crush it">
     <img src="/assets/Icons-Neutral/Icon-Time Management.png" alt="View All" class="day-at-glance__view-all"
       (click)="openTimeline()" style="cursor:pointer;" />
-  </mindful-card-header>
+  </superme-card-header>
 </ng-template>
 <div *ngIf="mode === 'list'" class="d-flex flex-column gap-2">
   <div class="day-at-glance-container">
@@ -138,12 +138,12 @@
 
   <!-- CTA Buttons -->
   <div class="add-button-container empty-add-btn" [class.mt-4]="!isEmpty" *ngIf="isEmpty">
-    <mindful-button type="magenta" large style="display:block; width:100%" text="Add New"
-      (click)="openHabitInput()"></mindful-button>
+    <superme-button type="magenta" large style="display:block; width:100%" text="Add New"
+      (click)="openHabitInput()"></superme-button>
   </div>
   <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
     <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">View All</button>
-    <mindful-view-all [text]="'Add New +'" (clicked)="openHabitInput()" [hideIcon]="true"></mindful-view-all>
+    <superme-view-all [text]="'Add New +'" (clicked)="openHabitInput()" [hideIcon]="true"></superme-view-all>
   </div>
 </div>
 
@@ -260,14 +260,14 @@
 
   <!-- CTA Buttons -->
   <div class="add-button-container d-flex gap-2" [class.mt-4]="!isEmpty" *ngIf="isEmpty">
-    <mindful-button type="magenta-transparent" medium style="display:block; width:100%" text="View all"
-      (click)="openHabitPage()"></mindful-button>
-    <mindful-button type="magenta" medium style="display:block; width:100%" text="Add New"
-      (click)="openHabitInput()"></mindful-button>
+    <superme-button type="magenta-transparent" medium style="display:block; width:100%" text="View all"
+      (click)="openHabitPage()"></superme-button>
+    <superme-button type="magenta" medium style="display:block; width:100%" text="Add New"
+      (click)="openHabitInput()"></superme-button>
   </div>
   <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
     <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">View All</button>
-    <mindful-view-all [text]="'Add New +'" (clicked)="openHabitInput()" [hideIcon]="true"></mindful-view-all>
+    <superme-view-all [text]="'Add New +'" (clicked)="openHabitInput()" [hideIcon]="true"></superme-view-all>
   </div>
 </div>
 
@@ -331,24 +331,24 @@
             <!-- Let's Go Button: always rendered (visibility checks removed) -->
             <!-- Show "Let's Go" only when not ongoing; otherwise show Abort -->
             <ng-container *ngIf="getStatus() !== 'ongoing' && isCurrentDateView">
-              <mindful-button
+              <superme-button
                 [type]="habit?.type === 'tasks' ? 'orange' : 'lavendar'" small text="Let`s Go" (click)="openStartPopup()"
-                [disabled]="!isLetsGoEnabled()"></mindful-button>
+                [disabled]="!isLetsGoEnabled()"></superme-button>
             </ng-container>
             <ng-container *ngIf="getStatus() === 'ongoing'">
-              <mindful-button *ngIf="!isParent && isCurrentDateView" [type]="habit?.type === 'tasks' ? 'orange-transparent' : 'lavendar-transparent'" small
-                text="Abort" (click)="openAbortPopup()"></mindful-button>
+              <superme-button *ngIf="!isParent && isCurrentDateView" [type]="habit?.type === 'tasks' ? 'orange-transparent' : 'lavendar-transparent'" small
+                text="Abort" (click)="openAbortPopup()"></superme-button>
             </ng-container>
             
             <!-- Done Button: visible/disabled per new rules -->
             <!-- Also hidden when not viewing current date -->
-            <mindful-button *ngIf="isDoneVisible() && !isParent && isCurrentDateView" type="green" small text="Done?"
-              (click)="openCompletePopup()" [disabled]="!isDoneEnabled()"></mindful-button>
+            <superme-button *ngIf="isDoneVisible() && !isParent && isCurrentDateView" type="green" small text="Done?"
+              (click)="openCompletePopup()" [disabled]="!isDoneEnabled()"></superme-button>
             
             <!-- Completion Message: Show when status is COMPLETED -->
             <!-- <div class="d-flex gap-2" *ngIf="getStatus() === 'completed'">
               <div class="bubble">You did it</div>
-              <mindful-pet pet="panda" mood="tired" [size]="44"></mindful-pet>
+              <superme-pet pet="panda" mood="tired" [size]="44"></superme-pet>
             </div> -->
 
           </div>
@@ -358,18 +358,22 @@
   </div>
 </div>
 
-<!-- <app-mindful-popup-alert #longPressAlert title="DReady to Start?" message="You're about to begin this habit! "
+<!-- <app-superme-popup-alert #longPressAlert title="DReady to Start?" message="You're about to begin this habit! "
   [showLetButton]="true" cancelButtonText="Discard" confirmButtonText="Start Now" (confirm)="onStartHabit()">
-</app-mindful-popup-alert> -->
+</app-superme-popup-alert> -->
 
-<app-mindful-popup [config]="startPopupConfig" [isVisible]="showStartPopup"
+<app-superme-popup [config]="startPopupConfig" [isVisible]="showStartPopup"
   (primaryAction)="handlePopupPrimary()" (secondaryAction)="handlePopupSecondary()"
-  (closeAction)="closeStartPopup()" (backdropClick)="closeStartPopup()"></app-mindful-popup>
+  (closeAction)="closeStartPopup()" (backdropClick)="closeStartPopup()"></app-superme-popup>
 
-<app-mindful-popup [config]="completePopupConfig" [isVisible]="showCompletePopup"
+<app-superme-popup [config]="completePopupConfig" [isVisible]="showCompletePopup"
   (primaryAction)="handleCompletePrimary()" (secondaryAction)="handleCompleteSecondary()"
-  (closeAction)="closeCompletePopup()" (backdropClick)="closeCompletePopup()"></app-mindful-popup>
+  (closeAction)="closeCompletePopup()" (backdropClick)="closeCompletePopup()"></app-superme-popup>
 
-<app-mindful-popup [config]="abortPopupConfig" [isVisible]="showAbortPopup"
+<app-superme-popup [config]="abortPopupConfig" [isVisible]="showAbortPopup"
   (primaryAction)="handleAbortPrimary()" (secondaryAction)="handleAbortSecondary()"
-  (closeAction)="closeAbortPopup()" (backdropClick)="closeAbortPopup()"></app-mindful-popup>
+  (closeAction)="closeAbortPopup()" (backdropClick)="closeAbortPopup()"></app-superme-popup>
+
+<app-superme-popup [config]="coinCapPopupConfig" [isVisible]="showCoinCapPopup"
+  (primaryAction)="handleCoinCapConfirmPrimary()" (secondaryAction)="handleCoinCapConfirmSecondary()"
+  (closeAction)="closeCoinCapPopup()" (backdropClick)="closeCoinCapPopup()"></app-superme-popup>

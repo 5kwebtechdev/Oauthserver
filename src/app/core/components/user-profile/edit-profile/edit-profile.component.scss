@@ -164,7 +164,7 @@
   justify-content: stretch;
 }
 
-.button-row mindful-button {
+.button-row superme-button {
   width: 100%;
   display: block;
 }
@@ -364,23 +364,6 @@
 
 .validation-text-age.invalid {
   color: #BB2124 !important;
-}
-
-/* Verify button styling inside phone input */
-.phone-input-container {
-  .phone-verify-btn {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-right: 8px;
-    min-width: fit-content;
-  }
-
-  .phone-verify-btn ::ng-deep button {
-    white-space: nowrap;
-    font-size: 13px;
-  }
 }
 
 /* Email input container with verify button */

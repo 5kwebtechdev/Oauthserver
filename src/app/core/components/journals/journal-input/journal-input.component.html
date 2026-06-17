@@ -1,7 +1,7 @@
 <ion-content>
-  <mindful-card-header [title]="'Your Journal, Your Journey'" [subtitleLeft]="'Track moods'" [subtitleMiddle]="'Save'"
+  <superme-card-header [title]="'Your Journal, Your Journey'" [subtitleLeft]="'Track moods'" [subtitleMiddle]="'Save'"
     [subtitleRight]="'Feel Better'" [showBackArrow]="true" (backClick)="goBack()">
-  </mindful-card-header>
+  </superme-card-header>
 
 
 <div class="journal-input-container">
@@ -95,8 +95,8 @@
 
     <!-- Post Button -->
     <div class="post-button-container" (click)="onPostAttempt($event)">
-      <mindful-button type="magenta" size="full" text="Post" [disabled]="!isPostEnabled">
-      </mindful-button>
+      <superme-button type="magenta" size="full" text="Post" [disabled]="!isPostEnabled">
+      </superme-button>
     </div>
   </div>
 

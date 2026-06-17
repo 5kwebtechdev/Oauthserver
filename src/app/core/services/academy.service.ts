@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../../package/api/auth.service';
@@ -83,6 +83,7 @@ export interface CourseDetailResponse {
   completionPercentage: number;
   isCourseCompleted: boolean;
   progressStatus: string;
+  continueLessonId?: number | null;
   startedAt: string;
   completedAt: string | null;
   lessons: CourseLesson[];
@@ -138,6 +139,14 @@ export class AcademyService {
     return this.http.get<Course[]>(`${this.base}/courses`, { headers: this.getHeaders() });
   }
 
+  getCoursesByAge(age: number): Observable<Course[]> {
+    const params = new HttpParams().set('age', String(age));
+    return this.http.get<Course[]>(`${this.base}/courses/by-age`, {
+      headers: this.getHeaders(),
+      params,
+    });
+  }
+
   getCategories(): Observable<AcademyCategory[]> {
     return this.http.get<AcademyCategory[]>(`${this.base}/category`, { headers: this.getHeaders() });
   }
@@ -159,6 +168,14 @@ export class AcademyService {
   completeLessonById(lessonId: number | string): Observable<LessonDetailResponse> {
     return this.http.post<LessonDetailResponse>(
       `${this.base}/courses/lessons/${lessonId}/complete`,
+      {},
+      { headers: this.getHeaders() },
+    );
+  }
+
+  startLessonById(lessonId: number | string): Observable<LessonDetailResponse> {
+    return this.http.post<LessonDetailResponse>(
+      `${this.base}/courses/lessons/${lessonId}/start`,
       {},
       { headers: this.getHeaders() },
     );

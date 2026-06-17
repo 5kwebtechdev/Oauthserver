@@ -1,8 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { AcademyService, CourseLesson, LessonDetailResponse } from '../../../services/academy.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -10,7 +10,7 @@ import { of } from 'rxjs';
 @Component({
   selector: 'app-academy-lessons',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulButtonComponent, MindfulNavigatorComponent],
+  imports: [CommonModule, IonicModule, SupermeButtonComponent, SupermeNavigatorComponent],
   templateUrl: './academy-lessons.component.html',
   styleUrls: ['./academy-lessons.component.scss']
 })
@@ -20,6 +20,7 @@ export class AcademyLessonsComponent {
   @Input() courseTitle: string | undefined;
   @Input() courseLessons: CourseLesson[] = [];
   @Input() currentLessonIndex: number = 0;
+  @Input() readOnly: boolean = false;
 
   lesson: LessonDetailResponse | null = null;
   isLoading = false;
@@ -50,8 +51,35 @@ export class AcademyLessonsComponent {
 
   ngOnInit(): void {
     if (this.lessonId) {
-      this.fetchLesson(this.lessonId);
+      if (this.readOnly) {
+        this.fetchLesson(this.lessonId);
+      } else {
+        this.startLesson(this.lessonId);
+      }
     }
+  }
+
+  private startLesson(id: number | string): void {
+    this.isLoading = true;
+    this.loadError = null;
+
+    this.academyService.startLessonById(id)
+      .pipe(
+        catchError(error => {
+          console.error('Error starting lesson:', error);
+          this.loadError = 'Failed to load lesson. Please try again.';
+          return of(null);
+        }),
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
+      .subscribe(response => {
+        if (response) {
+          this.lesson = response;
+          this.wasCompletedOnLoad = response.isCompleted;
+        }
+      });
   }
 
   private fetchLesson(id: number | string): void {
@@ -73,7 +101,6 @@ export class AcademyLessonsComponent {
         if (response) {
           this.lesson = response;
           this.wasCompletedOnLoad = response.isCompleted;
-          // this.parseContent(response.content);
         }
       });
   }
@@ -233,22 +260,16 @@ export class AcademyLessonsComponent {
     const nextLesson = this.courseLessons[nextIndex];
     if (!nextLesson) return;
 
-    // Update status to ONGOING for the next lesson
-    this.academyService.updateLessonStatus(nextLesson.id, 'ONGOING')
-      .pipe(catchError(() => of(null)))
-      .subscribe();
-
     // Reset state for new lesson
     this.doneClicked = false;
     this.wasCompletedOnLoad = false;
-    // this.learningOutcomes = [];
-    // this.contentSections = [];
 
     // Update tracking
     this.currentLessonIndex = nextIndex;
     this.lessonId = nextLesson.id;
+    this.readOnly = false;
 
-    // Fetch the new lesson data
-    this.fetchLesson(nextLesson.id);
+    // Call /start for the next lesson
+    this.startLesson(nextLesson.id);
   }
 }

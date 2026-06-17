@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, Optional } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
-import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { SupermePopupComponent } from '../../superme-popup/superme-popup.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { NotesApi } from '../../../api/notes.api';
 import { NotesService } from '../notes.service';
 import { Share } from '@capacitor/share';
@@ -11,7 +11,7 @@ import { IonicModule } from '@ionic/angular';
 @Component({
   selector: 'app-notes-save',
   standalone: true,
-  imports: [CommonModule, MindfulPopupComponent, MindfulNavigatorComponent, IonicModule],
+  imports: [CommonModule, SupermePopupComponent, SupermeNavigatorComponent, IonicModule],
   templateUrl: './notes-save.component.html',
   styleUrls: ['./notes-save.component.scss']
 })
@@ -34,10 +34,10 @@ export class NotesSaveComponent implements OnChanges {
   @Input() noteId?: any;
 
   contentHtml: SafeHtml = '' as any;
-  // legacy flag removed in favor of MindfulPopup
+  // legacy flag removed in favor of SupermePopup
   // showConfirmDelete: boolean = false;
-  // Use MindfulPopup for confirmation UI
-  showMindfulPopup: boolean = false;
+  // Use SupermePopup for confirmation UI
+  showSupermePopup: boolean = false;
 
   constructor(private sanitizer: DomSanitizer, @Optional() private notesApi?: NotesApi, private notesService?: NotesService) { }
 
@@ -138,8 +138,8 @@ export class NotesSaveComponent implements OnChanges {
   }
 
   onDelete() {
-    // show confirmation popup (MindfulPopup)
-    this.showMindfulPopup = true;
+    // show confirmation popup (SupermePopup)
+    this.showSupermePopup = true;
   }
 
   async onShare() {
@@ -190,12 +190,12 @@ export class NotesSaveComponent implements OnChanges {
 
   // Confirmation dialog handlers
   confirmCancel() {
-    this.showMindfulPopup = false;
+    this.showSupermePopup = false;
   }
 
   confirmDelete() {
     // hide popup first
-    this.showMindfulPopup = false;
+    this.showSupermePopup = false;
     const id = this.noteId;
     // Prefer NotesService (handles local cache + optimistic delete). Fallback to NotesApi if service isn't available.
     if (id && this.notesService && this.notesService.deleteNote) {

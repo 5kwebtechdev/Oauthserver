@@ -1,8 +1,8 @@
 <ion-content [fullscreen]="true" class="ion-padding-top">
     <main class="reel-upload-guidlines" *ngIf="!showMetaPage">
-        <mindful-card-header title="Share Your Moment" [subtitleLeft]="'Create and share amazing reels in few minutes'"
+        <superme-card-header title="Share Your Moment" [subtitleLeft]="'Create and share amazing reels in few minutes'"
             [showBackArrow]="true" (backClick)="goBack()">
-        </mindful-card-header>
+        </superme-card-header>
 
         <div class="guidlines-steps-list">
             <div class="uploading-guidline">
@@ -39,15 +39,15 @@
             </div>
         </div>
 
-        <mindful-button type="peach" [large]="true" full icon="/assets/Icons-Neutral/camera.png" iconPosition="start"
-            text="Upload Reel" (click)="onUploadClick()"></mindful-button>
+        <superme-button type="peach" [large]="true" full icon="/assets/Icons-Neutral/camera.png" iconPosition="start"
+            text="Upload Reel" (click)="onUploadClick()"></superme-button>
         <!-- Hidden file input for video selection -->
         <input #fileInput type="file" accept="video/mp4,video/quicktime,.mp4,.mov" style="display:none"
             (change)="onFileSelected($event)" />
     </main>
     <!--reel meta data-->
     <main class="reel-meta-data" *ngIf="showMetaPage">
-        <mindful-navigator heading="New Reel" (back)="goBack()"></mindful-navigator>
+        <superme-navigator heading="New Reel" (back)="goBack()"></superme-navigator>
 
         <!-- Compression Progress Indicator -->
         <div class="progress-container" *ngIf="isCompressing">
@@ -75,7 +75,7 @@
             <div class="reel-meta-data-inputs">
                 <p class="meta-title">Enter a title</p>
                 <div class="input-with-counter">
-                    <input class="mindful-input" placeholder="Title" [(ngModel)]="reelTitle"
+                    <input class="superme-input" placeholder="Title" [(ngModel)]="reelTitle"
                         (input)="onTitleInput($event)" />
                     <span class="alpha-counter">{{ letterCount }}/40</span>
                 </div>
@@ -83,14 +83,14 @@
             <div class="reel-meta-data-inputs">
                 <p class="meta-title">Add hashtags</p>
                 <div class="input-with-counter">
-                    <input class="mindful-input" placeholder="Hashtags" [(ngModel)]="reelHashtags"
+                    <input class="superme-input" placeholder="Hashtags" [(ngModel)]="reelHashtags"
                         (input)="onHashtagsInput($event)" />
                     <span class="alpha-counter">{{ maxHashtags - hashtagCount }}</span>
                 </div>
             </div>
             <div class="reel-meta-data-inputs">
                 <p class="meta-title">Enter Category</p>
-                <input class="mindful-input" placeholder="Category" [(ngModel)]="reelCategory" />
+                <input class="superme-input" placeholder="Category" [(ngModel)]="reelCategory" />
             </div>
 
             <div class="ai-label">
@@ -98,14 +98,14 @@
                     <h1>Add AI label</h1>
                     <p>We require you to label certain realistic content that’s made with AI</p>
                 </div>
-                <mindful-toggle [checked]="aiLabel" (checkedChange)="aiLabel = $event"></mindful-toggle>
+                <superme-toggle [checked]="aiLabel" (checkedChange)="aiLabel = $event"></superme-toggle>
             </div>
         </div>
 
-        <mindful-button type="peach" [large]="true" full text="Share" [disabled]="isCompressing || isUploading"
-            (click)="onShare()"></mindful-button>
-        <app-mindful-popup [isVisible]="showUploadSuccess" [config]="uploadSuccessConfig"
+        <superme-button type="peach" [large]="true" full text="Share" [disabled]="isCompressing || isUploading"
+            (click)="onShare()"></superme-button>
+        <app-superme-popup [isVisible]="showUploadSuccess" [config]="uploadSuccessConfig"
             (closeAction)="showUploadSuccess = false" (backdropClick)="showUploadSuccess = false">
-        </app-mindful-popup>
+        </app-superme-popup>
     </main>
 </ion-content>

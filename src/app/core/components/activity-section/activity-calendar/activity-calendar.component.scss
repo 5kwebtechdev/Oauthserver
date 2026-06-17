@@ -212,6 +212,7 @@ opacity: 0.7;
   bottom: 0;
   /* slide to bottom */
   opacity: 1;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .daily-mood-status.visible {
@@ -316,7 +317,7 @@ opacity: 0.7;
 .calendar-add-btn {
   position: fixed;
   right: 16px;
-  bottom: 24px;
+  bottom: calc(var(--footer-visual-height, 80px) + var(--sab, 0px) + 16px);
   z-index: 1300;
   display: flex;
   align-items: center;

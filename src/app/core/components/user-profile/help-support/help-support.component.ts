@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../..//components/mindful-navigator/mindful-navigator.component';
+import { SupermeNavigatorComponent } from '../../..//components/superme-navigator/superme-navigator.component';
 import { Router } from '@angular/router';
 import { ProfileFactsComponent, FaqItem, PROFILE_FAQS } from '../profile-facts/profile-facts.component';
 import { AuthService as CoreAuthService } from '../../../services/auth.service';
@@ -9,7 +9,7 @@ import { AuthService as CoreAuthService } from '../../../services/auth.service';
 @Component({
   standalone: true,
   selector: 'help-support',
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, ProfileFactsComponent],
+  imports: [CommonModule, IonicModule, SupermeNavigatorComponent, ProfileFactsComponent],
   templateUrl: './help-support.component.html',
   styleUrls: ['./help-support.component.scss']
 })

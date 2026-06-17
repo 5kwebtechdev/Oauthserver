@@ -2,8 +2,8 @@ import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy, OnIn
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { ModalController } from '@ionic/angular';
 import { TutorApi } from '../../../api/tutor.api';
 import { TutorCategory, TutorCategoriesResponse, FilterGroup, FilterOption, SelectedFilters } from '../../../models/tutor.model';
@@ -14,7 +14,7 @@ import { TutorService } from '../../../services/tutor.service';
 @Component({
   selector: 'tutor-all-filter',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent],
+  imports: [CommonModule, FormsModule, IonicModule, SupermeNavigatorComponent, SupermeButtonComponent],
   templateUrl: './tutor-all-filter.component.html',
   styleUrls: ['./tutor-all-filter.component.scss']
 })

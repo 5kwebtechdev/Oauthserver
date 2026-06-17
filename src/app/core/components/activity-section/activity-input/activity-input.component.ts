@@ -2,14 +2,14 @@ import { Component, OnInit, AfterViewInit, ViewChild, Input, ChangeDetectorRef }
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
-import { MindfulSelectorsComponent } from '../../mindful-selectors/mindful-selectors.component';
-import { MindfulTagsComponent } from '../../mindful-selectors/mindful-tags/mindful-tags.component';
-import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulToggleComponent } from '../../mindful-selectors/mindful-toggle/mindful-toggle.component';
-import { MindfulPopupComponent, MindfulPopupConfig } from '../../mindful-popup/mindful-popup.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { SupermeInputsModule } from '../../superme-inputs/superme-inputs.module';
+import { SupermeSelectorsComponent } from '../../superme-selectors/superme-selectors.component';
+import { SupermeTagsComponent } from '../../superme-selectors/superme-tags/superme-tags.component';
+import { SupermeBadgeComponent } from '../../superme-badge/superme-badge.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeToggleComponent } from '../../superme-selectors/superme-toggle/superme-toggle.component';
+import { SupermePopupComponent, SupermePopupConfig } from '../../superme-popup/superme-popup.component';
 import { HabitService } from '../habit.service';
 import { HabitApi } from '../../../api/habit.api';
 import { TaskApi } from '../../../api/task.api';
@@ -26,7 +26,7 @@ import { CustomToastService } from '../../../services/custom-toast.service';
   selector: 'activity-input',
   templateUrl: './activity-input.component.html',
   styleUrls: ['./activity-input.component.scss'],
-  imports: [CommonModule, IonicModule, FormsModule, MindfulButtonComponent, MindfulInputsModule, MindfulSelectorsComponent, MindfulTagsComponent, MindfulBadgeComponent, MindfulNavigatorComponent, MindfulToggleComponent, MindfulPopupComponent]
+  imports: [CommonModule, IonicModule, FormsModule, SupermeButtonComponent, SupermeInputsModule, SupermeSelectorsComponent, SupermeTagsComponent, SupermeBadgeComponent, SupermeNavigatorComponent, SupermeToggleComponent, SupermePopupComponent]
 })
 export class ActivityInputComponent implements OnInit, AfterViewInit {
   private static readonly TIME_REGEX = /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?$/i;
@@ -124,7 +124,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
   // start empty so user must explicitly select routine — enables validation error to show
   selectedRoutine = '';
 
-  // Use centralized tags from MindfulTags; keep local container for dynamic additions
+  // Use centralized tags from SupermeTags; keep local container for dynamic additions
   routineTags: Array<{ key: string, value: string, type: string }> = [];
 
   everyday = false;
@@ -151,8 +151,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
     { name: '', startTime: '', endTime: '' }
   ];
 
-  @ViewChild(MindfulTagsComponent) tagsComponent?: MindfulTagsComponent;
-  @ViewChild(MindfulSelectorsComponent) selectorsComponent?: MindfulSelectorsComponent;
+  @ViewChild(SupermeTagsComponent) tagsComponent?: SupermeTagsComponent;
+  @ViewChild(SupermeSelectorsComponent) selectorsComponent?: SupermeSelectorsComponent;
 
   // store labels found during init so we can sync them to the child after view init
   private _pendingTagLabels: string[] = [];
@@ -211,7 +211,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
   }
   // Delete confirmation popup state
   deletePopupVisible = false;
-  deletePopupConfig: MindfulPopupConfig = {};
+  deletePopupConfig: SupermePopupConfig = {};
   // internal guard to prevent double-delete
   private deleting = false;
 
@@ -222,7 +222,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
   readonly _coinSvg = `<img src="assets/Icons-Neutral/Icons-Coins.png" alt="Coins" style="width:18px;height:auto;"/>`;
   private readonly _streakSvg = `<img src="assets/Icons-Neutral/Icon-Streak.png" alt="Streak" style="width:18px;height:auto;"/>`;
 
-  private buildDeletePopupConfig(coin: number, streak: number): MindfulPopupConfig {
+  private buildDeletePopupConfig(coin: number, streak: number): SupermePopupConfig {
     const headingHtml = `Delete this activity?<br/><div style="margin-top:12px;font-size:14px;color:#6b656a">This will remove every instance of this activity in the date range you selected.<div style="display:flex;flex-direction:column;gap:8px;align-items: center;margin-top:8px">` +
       `<div style="display:flex;align-items:center;gap:8px">You are about to lose:</div>` +
       `<div style="display:flex;align-items:center;gap:8px">${this._streakSvg}<div style=\"font-weight:600;\">${streak}</div></div>` +
@@ -237,7 +237,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
       secondaryCTA: { text: 'Cancel', buttonStyle: 'bronze-transparent', buttonMedium: true },
       backdrop: true,
       ctaDirection: 'row'
-    } as MindfulPopupConfig;
+    } as SupermePopupConfig;
   }
 
   constructor(
@@ -371,7 +371,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
           });
         }
       }
-      // Ensure the MindfulTags component contains these tags and select them.
+      // Ensure the SupermeTags component contains these tags and select them.
       try {
         if (this.tagsComponent) {
           const labels: string[] = [];
@@ -395,7 +395,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
             }
           }
         }
-      } catch (e: any) { console.warn('Failed to sync routine tags with MindfulTags component', e); }
+      } catch (e: any) { console.warn('Failed to sync routine tags with SupermeTags component', e); }
     } catch (e: any) {
       console.warn('Failed to read navigation state for habit-input', e);
     }
@@ -1327,7 +1327,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
       this.selectedTags = [];
     }
 
-    // If still empty but mindful-tags component exists, try mapping selectedKeys from that component
+    // If still empty but superme-tags component exists, try mapping selectedKeys from that component
     if ((!this.selectedTags || this.selectedTags.length === 0) && this.tagsComponent) {
       const keys = values.map(v => String(v));
       this.selectedTags = (this.tagsComponent.options || []).filter(o => keys.includes(String(o.key)));

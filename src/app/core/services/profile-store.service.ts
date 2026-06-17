@@ -45,12 +45,19 @@ export class ProfileStoreService {
   /** Set children list and auto-select restored or first child */
   setChildren(children: ChildInfo[]): void {
     this.childrenSubject.next(children);
+    if (!children.length) {
+      this.clearSelection();
+      return;
+    }
+
     // Try to match stored id (use string comparison for mixed types)
     const storedId = this.getStoredId();
     const match = storedId !== null ? children.find(c => String(c.id) === String(storedId)) : null;
     if (match) {
       this.selectedSubject.next(match);
     } else if (children.length && !this.selectedSubject.value) {
+      this.select(children[0]);
+    } else if (this.selectedSubject.value && !children.some(c => String(c.id) === String(this.selectedSubject.value?.id))) {
       this.select(children[0]);
     }
   }

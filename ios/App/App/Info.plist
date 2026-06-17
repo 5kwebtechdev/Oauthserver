@@ -14,6 +14,17 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.superme.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>superme</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -47,5 +58,19 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>This app requires camera access to scan QR codes for family connections.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app uses the microphone for voice search in Learnings.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Superme uses your location to personalise your experience and show relevant content nearby.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Superme uses your location to personalise your experience and show relevant content nearby.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app saves photos to your photo library.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app accesses your photo library to let you choose a profile picture or share images.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>

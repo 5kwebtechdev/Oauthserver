@@ -2,14 +2,14 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { Router } from '@angular/router';
 
 @Component({
     selector: 'address-input',
     standalone: true,
-    imports: [CommonModule, IonicModule, ReactiveFormsModule, MindfulNavigatorComponent, MindfulButtonComponent],
+    imports: [CommonModule, IonicModule, ReactiveFormsModule, SupermeNavigatorComponent, SupermeButtonComponent],
     templateUrl: './address-input.components.html',
     styleUrls: ['./address-input.components.scss']
 })

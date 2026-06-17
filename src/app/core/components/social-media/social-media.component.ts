@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { IonicModule, Platform, LoadingController, ToastController } from '@ionic/angular';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+import { getApps, getApp } from 'firebase/app';
+import { getAuth, signInWithCredential, GoogleAuthProvider } from 'firebase/auth';
 import { AuthService } from '../../services/auth.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { AuthSessionCleanupService } from '../../services/auth-session-cleanup.service';
@@ -65,6 +67,11 @@ export class SocialMediaComponent {
 
       const googleUser = await GoogleAuth.signIn();
       console.log('[SocialMedia] Google user:', JSON.stringify(googleUser));
+
+      // Register the user in Firebase Authentication so they appear in the
+      // Firebase console. This is independent of the backend auth flow and
+      // fails silently if Firebase is not yet initialized.
+      await this.registerWithFirebaseAuth(googleUser);
 
       const providerId = googleUser.id;
       const email = googleUser.email;
@@ -156,6 +163,35 @@ export class SocialMediaComponent {
         });
         await toast.present();
       }
+    }
+  }
+
+  /**
+   * Signs the user into Firebase Authentication using the Google ID token so
+   * they appear under Authentication > Users in the Firebase console.
+   * Non-fatal: failures are logged but never block the main auth flow.
+   */
+  private async registerWithFirebaseAuth(googleUser: any): Promise<void> {
+    try {
+      const idToken: string | undefined = googleUser?.authentication?.idToken;
+      if (!idToken) {
+        console.warn('[SocialMedia] No Google idToken available for Firebase sign-in.');
+        return;
+      }
+
+      const apps = getApps();
+      if (!apps.length) {
+        console.warn('[SocialMedia] Firebase not initialised yet — skipping Firebase Auth.');
+        return;
+      }
+
+      const auth = getAuth(getApp());
+      const credential = GoogleAuthProvider.credential(idToken);
+      const result = await signInWithCredential(auth, credential);
+      console.log('[SocialMedia] Firebase Auth: signed in as', result.user.email);
+    } catch (error: any) {
+      // auth/invalid-credential or network errors — never break the sign-in flow
+      console.warn('[SocialMedia] Firebase signInWithCredential failed (non-fatal):', error?.code ?? error);
     }
   }
 }

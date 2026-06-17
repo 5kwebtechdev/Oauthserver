@@ -1,0 +1,107 @@
+<div class="superme-popup-backdrop" *ngIf="isVisible && finalConfig.backdrop" (click)="onBackdropClick($event)">
+
+  <div class="superme-popup-container" *ngIf="isVisible">
+
+    <button class="superme-popup-close" *ngIf="finalConfig.showCloseButton" (click)="onCloseClick()"
+      aria-label="Close popup">
+      <img src="assets/icons/cancel-cross.svg" alt="Close" width="24" height="24" aria-hidden="true">
+    </button>
+
+    <div class="superme-popup-content" *ngIf="hasAnyContent">
+      <img *ngIf="hasImage" [src]="finalConfig.image" [alt]="finalConfig.imageAlt" class="superme-popup-image"
+        [class.superme-popup-image--reel-success]="isReelSuccessImage">
+      <h2 *ngIf="hasHeading" class="superme-popup-heading" [innerHTML]="headingHtml">
+      </h2>
+      <p *ngIf="hasSubtitle" class="superme-popup-subtitle">
+        {{ finalConfig.subtitle }}
+      </p>
+    </div>
+    <div class="superme-popup-actions" *ngIf="hasPrimaryCTA || hasSecondaryCTA || finalConfig.showShareButton">
+      <div class="superme-popup-single-cta" *ngIf="hasOneCTA">
+        <superme-button *ngIf="hasPrimaryCTA && finalConfig.primaryCTA?.buttonStyle"
+          [full]="finalConfig.primaryCTA?.buttonFull" [small]="finalConfig.primaryCTA?.buttonSmall"
+          [type]="finalConfig.primaryCTA?.buttonStyle" [text]="finalConfig.primaryCTA?.text"
+          [medium]="finalConfig.primaryCTA?.buttonMedium" [large]="finalConfig.primaryCTA?.buttonLarge"
+          [icon]="finalConfig.primaryCTA?.icon" [iconPosition]="finalConfig.primaryCTA?.iconPosition"
+          (click)="onPrimaryClick()"></superme-button>
+
+        <button *ngIf="hasPrimaryCTA && !finalConfig.primaryCTA?.buttonStyle"
+          class="superme-button superme-button-full superme-button-white" [disabled]="finalConfig.primaryCTA?.disabled"
+          (click)="onPrimaryClick()">
+          {{ finalConfig.primaryCTA?.text }}
+        </button>
+
+        <superme-button *ngIf="hasSecondaryCTA && !hasPrimaryCTA && finalConfig.secondaryCTA?.buttonStyle"
+          [full]="finalConfig.secondaryCTA?.buttonFull" [small]="finalConfig.secondaryCTA?.buttonSmall"
+          [type]="finalConfig.secondaryCTA?.buttonStyle" [text]="finalConfig.secondaryCTA?.text"
+          [medium]="finalConfig.secondaryCTA?.buttonMedium" [large]="finalConfig.secondaryCTA?.buttonLarge"
+          [icon]="finalConfig.secondaryCTA?.icon" [iconPosition]="finalConfig.secondaryCTA?.iconPosition"
+          (click)="onSecondaryClick()"></superme-button>
+
+        <button *ngIf="hasSecondaryCTA && !hasPrimaryCTA && !finalConfig.secondaryCTA?.buttonStyle"
+          class="superme-button superme-button-full superme-button-white"
+          [disabled]="finalConfig.secondaryCTA?.disabled" (click)="onSecondaryClick()">
+          {{ finalConfig.secondaryCTA?.text }}
+        </button>
+      </div>
+
+      <!-- Dual CTA: column layout (primary first, secondary second) -->
+      <div class="superme-popup-dual-cta column" *ngIf="hasTwoCTAs && finalConfig.ctaDirection==='column'">
+        <!-- Primary (top) -->
+        <superme-button *ngIf="finalConfig.primaryCTA?.buttonStyle"
+          [full]="finalConfig.primaryCTA?.buttonFull" [small]="finalConfig.primaryCTA?.buttonSmall"
+          [type]="finalConfig.primaryCTA?.buttonStyle" [text]="finalConfig.primaryCTA?.text"
+          [medium]="finalConfig.primaryCTA?.buttonMedium" [large]="finalConfig.primaryCTA?.buttonLarge"
+          [icon]="finalConfig.primaryCTA?.icon" [iconPosition]="finalConfig.primaryCTA?.iconPosition" (click)="onPrimaryClick()"></superme-button>
+
+        <button *ngIf="!finalConfig.primaryCTA?.buttonStyle" class="superme-button superme-button-white"
+          [disabled]="finalConfig.primaryCTA?.disabled" (click)="onPrimaryClick()">
+          {{ finalConfig.primaryCTA?.text }}
+        </button>
+
+        <!-- Secondary (bottom) -->
+        <superme-button *ngIf="finalConfig.secondaryCTA?.buttonStyle"
+          [full]="finalConfig.secondaryCTA?.buttonFull" [small]="finalConfig.secondaryCTA?.buttonSmall"
+          [type]="finalConfig.secondaryCTA?.buttonStyle" [text]="finalConfig.secondaryCTA?.text"
+          [medium]="finalConfig.secondaryCTA?.buttonMedium" [large]="finalConfig.secondaryCTA?.buttonLarge"
+          [icon]="finalConfig.secondaryCTA?.icon" [iconPosition]="finalConfig.secondaryCTA?.iconPosition" (click)="onSecondaryClick()"></superme-button>
+
+        <button *ngIf="!finalConfig.secondaryCTA?.buttonStyle" class="superme-button superme-button-white"
+          [disabled]="finalConfig.secondaryCTA?.disabled" (click)="onSecondaryClick()">
+          {{ finalConfig.secondaryCTA?.text }}
+        </button>
+      </div>
+
+      <!-- Dual CTA: row layout (legacy order: secondary then primary) -->
+      <div class="superme-popup-dual-cta" *ngIf="hasTwoCTAs && finalConfig.ctaDirection!=='column'">
+        <superme-button *ngIf="finalConfig.secondaryCTA?.buttonStyle"
+          [full]="finalConfig.secondaryCTA?.buttonFull" [small]="finalConfig.secondaryCTA?.buttonSmall"
+          [type]="finalConfig.secondaryCTA?.buttonStyle" [text]="finalConfig.secondaryCTA?.text"
+          [medium]="finalConfig.secondaryCTA?.buttonMedium" [large]="finalConfig.secondaryCTA?.buttonLarge"
+          [icon]="finalConfig.secondaryCTA?.icon" [iconPosition]="finalConfig.secondaryCTA?.iconPosition" (click)="onSecondaryClick()"></superme-button>
+
+        <button *ngIf="!finalConfig.secondaryCTA?.buttonStyle" class="superme-button superme-button-white"
+          [disabled]="finalConfig.secondaryCTA?.disabled" (click)="onSecondaryClick()">
+          {{ finalConfig.secondaryCTA?.text }}
+        </button>
+
+        <superme-button *ngIf="finalConfig.primaryCTA?.buttonStyle"
+          [full]="finalConfig.primaryCTA?.buttonFull" [small]="finalConfig.primaryCTA?.buttonSmall"
+          [type]="finalConfig.primaryCTA?.buttonStyle" [text]="finalConfig.primaryCTA?.text"
+          [medium]="finalConfig.primaryCTA?.buttonMedium" [large]="finalConfig.primaryCTA?.buttonLarge" [icon]="finalConfig.primaryCTA?.icon"
+          [iconPosition]="finalConfig.primaryCTA?.iconPosition" (click)="onPrimaryClick()"></superme-button>
+
+        <button *ngIf="!finalConfig.primaryCTA?.buttonStyle" class="superme-button superme-button-white"
+          [disabled]="finalConfig.primaryCTA?.disabled" (click)="onPrimaryClick()">
+          {{ finalConfig.primaryCTA?.text }}
+        </button>
+      </div>
+
+      <button *ngIf="finalConfig.showShareButton" class="superme-popup-share" (click)="onShareClick()"
+        aria-label="Share">
+        <ion-icon name="share-outline"></ion-icon>
+      </button>
+    </div>
+
+  </div>
+</div>

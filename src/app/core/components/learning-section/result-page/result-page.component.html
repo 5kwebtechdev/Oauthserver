@@ -1,10 +1,10 @@
 <ion-content>
-  <mindful-navigator heading="" backIcon="cancel" (back)="onCancel()">
-  </mindful-navigator>
+  <superme-navigator heading="" backIcon="cancel" (back)="onCancel()">
+  </superme-navigator>
   <div class="result-container">
     <div class="pet-container">
-      <mindful-pet [name]="'Buddy'" [pet]="'panda'" [mood]="getPetMood()" [age]="2" [sizePreset]="142">
-      </mindful-pet>
+      <superme-pet [name]="'Buddy'" [pet]="'panda'" [mood]="getPetMood()" [age]="2" [sizePreset]="142">
+      </superme-pet>
       <h2>{{ celebrationText || 'Great Work!' }}</h2>
 
       <div class="congrats-img">
@@ -57,9 +57,9 @@
                     <img [src]="badge.iconUrl || 'assets/Icons-Neutral/Icon-Trophy.png'" [alt]="badge.name"
                       class="badge-icon" />
                   </div>
-                  <mindful-completion [completionPercentage]="100" [borderColor]="getScoreColor()" [innerText]="''"
+                  <superme-completion [completionPercentage]="100" [borderColor]="getScoreColor()" [innerText]="''"
                     [belowText]="''">
-                  </mindful-completion>
+                  </superme-completion>
                 </div>
               </div>
               <p class="badge-name">{{ badge.name }}</p>
@@ -82,9 +82,9 @@
                 <div class="badge-icon-container">
                   <img [src]="quizAceBadge.iconUrl" [alt]="quizAceBadge.name" class="badge-icon" />
                 </div>
-                <mindful-completion [completionPercentage]="100" [borderColor]="getScoreColor()" [innerText]="''"
+                <superme-completion [completionPercentage]="100" [borderColor]="getScoreColor()" [innerText]="''"
                   [belowText]="''">
-                </mindful-completion>
+                </superme-completion>
               </div>
             </div>
             <p class="badge-name">{{ quizAceBadge.name }}</p>
@@ -103,9 +103,9 @@
                 <div class="badge-icon-container">
                   <img [src]="puzzleMasterBadge.iconUrl" [alt]="puzzleMasterBadge.name" class="badge-icon" />
                 </div>
-                <mindful-completion [completionPercentage]="100" [borderColor]="getScoreColor()" [innerText]="''"
+                <superme-completion [completionPercentage]="100" [borderColor]="getScoreColor()" [innerText]="''"
                   [belowText]="''">
-                </mindful-completion>
+                </superme-completion>
               </div>
             </div>
             <p class="badge-name">{{ puzzleMasterBadge.name }}</p>

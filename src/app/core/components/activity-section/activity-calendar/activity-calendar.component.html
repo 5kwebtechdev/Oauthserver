@@ -1,14 +1,14 @@
 <ion-content fullscreen>
-    <mindful-navigator class="calendar-navigator" heading="One Day at a Time!" backIcon="arrowSvg">
-    </mindful-navigator>
+    <superme-navigator class="calendar-navigator" heading="One Day at a Time!" backIcon="arrowSvg">
+    </superme-navigator>
     <div class="activity-calendar-container">
 
         <!-- calendar-component -->
         <div class="activity-calendar">
-            <mindful-calendar [useArrowNavigation]="true" [dateActivities]="dateActivities"
+            <superme-calendar [useArrowNavigation]="true" [dateActivities]="dateActivities"
                 [useCalendarMainStyle]="true" [startDate]="selectedDate" [moodData]="moodData"
                 (dateSelected)="onDateSelected($event)" (moodToggled)="onMoodToggled($event)" (monthChanged)="onMonthChanged($event)">
-            </mindful-calendar>
+            </superme-calendar>
         </div>
         <div class="calendar-component" *ngIf="!moodOn">
             <div class="calendar-component__timetable">
@@ -85,7 +85,7 @@
 
     <!-- Floating add button (hidden when calendar is empty) -->
     <div class="calendar-add-btn" *ngIf="!isCalendarEmpty()">
-        <mindful-button type="add" size="large" text="Add" (click)="openHabitInput()"></mindful-button>
+        <superme-button type="add" size="large" text="Add" (click)="openHabitInput()"></superme-button>
     </div>
 
     <!-- Mood popup: hidden by default, slides up when showMoodPopup is true -->

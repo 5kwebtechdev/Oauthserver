@@ -1174,7 +1174,6 @@ swiper-slide {
   font-size: 13px;
   color: #EE6621;
   align-self: flex-end;
-  width: 51px;
 }
 
 .otp-digit {
@@ -1251,26 +1250,27 @@ swiper-slide {
   }
 
   .otp-inputs {
-display: flex;
-        justify-content: space-between;
-        gap: 2px;  }
+    display: flex;
+    justify-content: center;
+    gap: clamp(4px, 1.5vw, 8px);
+  }
 
   .otp-digit {
-    width: 50px;
-    height: 50px;
-    font-size: 32px;
+    width: clamp(48px, calc((100vw - 80px) / 4), 70px) !important;
+    height: clamp(48px, calc((100vw - 80px) / 4), 70px) !important;
+    font-size: clamp(18px, 5.5vw, 28px);
   }
 }
 
 @media (max-width: 360px) {
   .otp-inputs {
-    gap: 2px;
+    gap: 4px;
   }
 
   .otp-digit {
-    width: 45px;
-    height: 45px;
-    font-size: 32px;
+    width: clamp(44px, calc((100vw - 72px) / 4), 60px) !important;
+    height: clamp(44px, calc((100vw - 72px) / 4), 60px) !important;
+    font-size: clamp(16px, 5vw, 24px);
   }
 }
 
@@ -1285,6 +1285,17 @@ display: flex;
   form {
     width: 100%;
   }
+}
+
+.credential-username-field {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .password-title {
@@ -1383,7 +1394,7 @@ display: flex;
   }
 }
 
-/* Header text replaced by shared `mindful-navigator` component (warm variant).
+/* Header text replaced by shared `superme-navigator` component (warm variant).
    Removed local `.header-text` rules to avoid duplication and to let the shared
    component control heading/subtext styling. */
 

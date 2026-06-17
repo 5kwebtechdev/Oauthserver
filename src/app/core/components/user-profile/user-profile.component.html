@@ -1,5 +1,5 @@
 <ion-content>
-  <mindful-navigator heading="My Profile" backIcon="arrowSvg" (back)="onBack()"></mindful-navigator>
+  <superme-navigator heading="My Profile" backIcon="arrowSvg" (back)="onBack()"></superme-navigator>
   <div class="profile">
 
     <section class="user-profile-main">
@@ -15,9 +15,9 @@
           </div>
         </div>
         <div class="user-stats">
-          <mindful-coins-stats [userCoins]="userCoins" [userStreaks]="userStreaks" [userDays]="userDays"
+          <superme-coins-stats [userCoins]="userCoins" [userStreaks]="userStreaks" [userDays]="userDays"
             [userBadges]="userBadges">
-          </mindful-coins-stats>
+          </superme-coins-stats>
         </div>
       </div>
 
@@ -141,8 +141,8 @@
     <!--social media-->
     <social-media></social-media>
 
-    <!--mindful-popup-->
-    <app-mindful-popup [isVisible]="showLogoutPopup" [config]="{
+    <!--superme-popup-->
+    <app-superme-popup [isVisible]="showLogoutPopup" [config]="{
       image: '/assets/Images-Transparent/Image-Log Out.png',
       imageAlt: 'Logout image',
       heading: 'Leaving already?',
@@ -152,7 +152,7 @@
       backdrop: true,
       showCloseButton: true
     }" (primaryAction)="confirmLogout()" (secondaryAction)="closeLogoutPopup()" (backdropClick)="closeLogoutPopup()"
-      (closeAction)="closeLogoutPopup()"></app-mindful-popup>
+      (closeAction)="closeLogoutPopup()"></app-superme-popup>
 
   </div>
 </ion-content>

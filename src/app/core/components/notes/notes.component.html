@@ -1,8 +1,14 @@
 <ion-content class="notes-fullscreen">
 
-  <mindful-navigator [heading]="'Quick Notes. Big Ideas'" [backIcon]="'arrowSvg'" (back)="close()"></mindful-navigator>
+  <superme-navigator [heading]="'Quick Notes. Big Ideas'" [backIcon]="'arrowSvg'" (back)="close()"></superme-navigator>
 
-  <div class="empty-notes-container" *ngIf="!notes || notes.length === 0">
+  <!-- Initial loading state (no cached notes yet) -->
+  <div class="notes-initial-loading" *ngIf="loading && (!notes || notes.length === 0)">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <!-- Empty state: only shown once the API has responded and returned zero notes -->
+  <div class="empty-notes-container" *ngIf="!loading && (!notes || notes.length === 0)">
     <div class="empty-notes-content">
       <img class="notes-blank-image" src="/assets/Images-Transparent/Image-Notes-Blank.png" alt="Blank Notes">
       <div class="empty-notes-text">
@@ -10,8 +16,8 @@
         <p>Write what’s on your mind. Notes help you save ideas, feelings, and cool moments.</p>
       </div>
     </div>
-    <mindful-button type="magenta" large text="Write your first note" style="width: 100%; display: block;"
-      (click)="goToNewNote()"></mindful-button>
+    <superme-button type="magenta" large text="Write your first note" style="width: 100%; display: block;"
+      (click)="goToNewNote()"></superme-button>
   </div>
 
   <!--notes-->
@@ -48,7 +54,7 @@
     <ng-container *ngIf="!loading && loadError">
       <div class="notes-error" style="padding: 16px; text-align: center; color: var(--ion-color-danger);">
         <p>{{ loadError }}</p>
-        <mindful-button type="magenta" small text="Retry" (click)="loadFromServer()"></mindful-button>
+        <superme-button type="magenta" small text="Retry" (click)="loadFromServer()"></superme-button>
       </div>
     </ng-container>
 
@@ -64,39 +70,54 @@
       </div>
     </div>
 
-    <ng-container *ngIf="!loading && notes && notes.length; else noNotes">
-      <div class="note-card" *ngFor="let note of notes; let i = index; trackBy: trackByIndex" (click)="openNote(note)"
-        role="button" tabindex="0">
-        <ng-container *ngIf="isList(note.text); else plainText">
-          <ul class="note-text">
-            <li *ngFor="let item of getList(note)">{{ item }}</li>
-          </ul>
-        </ng-container>
-        <ng-template #plainText>
-          <p class="note-text">{{ note.text }}</p>
-        </ng-template>
+    <ng-container *ngIf="notes && notes.length">
+      <!-- Swipe-to-delete wrapper per note -->
+      <div class="note-swipe-host"
+           *ngFor="let note of notes; let i = index; trackBy: trackByIndex"
+           [class.note-swipe-host--removing]="isNoteRemoving(note)"
+           (touchstart)="onSwipeStart($event, note)"
+           (touchmove)="onSwipeMove($event, note)"
+           (touchend)="onSwipeEnd($event, note)">
 
-        <div class="note-footer" style="position:relative;">
-          <div>
-            <h3>{{ note.title }}</h3>
-            <span class="date">{{ formatDate(note.createdAt) }}</span>
+        <!-- Delete action revealed behind the card -->
+        <div class="note-delete-action" (click)="deleteNoteItem(note, $event)" aria-label="Delete note">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+          </svg>
+          <span>Delete</span>
+        </div>
+
+        <!-- Note card (slides left to reveal delete action) -->
+        <div class="note-card" [attr.data-swipe-id]="note.id"
+             (click)="onNoteCardClick(note)" role="button" tabindex="0">
+          <ng-container *ngIf="isList(note.text); else plainText">
+            <ul class="note-text">
+              <li *ngFor="let item of getList(note)">{{ item }}</li>
+            </ul>
+          </ng-container>
+          <ng-template #plainText>
+            <p class="note-text">{{ note.text }}</p>
+          </ng-template>
+
+          <div class="note-footer" style="position:relative;">
+            <div>
+              <h3>{{ note.title }}</h3>
+              <span class="date">{{ formatDate(note.createdAt) }}</span>
+            </div>
+            <span class="tag" [ngClass]="primaryTagClass(note)">{{ primaryTag(note) }}</span>
+            <div class="edit-back"><img src="assets/icons/edit-icon.svg" alt="Edit" class="note-edit-icon"
+              style="width:16px;height:16px;" aria-hidden="true"
+              (click)="editNote(note); $event.stopPropagation();" /></div>
           </div>
-          <span class="tag" [ngClass]="primaryTagClass(note)">{{ primaryTag(note) }}</span>
-          <div class="edit-back"><img src="assets/icons/edit-icon.svg" alt="Edit" class="note-edit-icon" style="width: 16px;height: 16px;" aria-hidden="true"
-            (click)="editNote(note); $event.stopPropagation();" /></div>
         </div>
       </div>
     </ng-container>
-    <!--Note Empty State-->
-    <ng-template #noNotes>
-      <div class="note-empty">No notes yet. Tap + to add your first note.</div>
-    </ng-template>
 
   </div>
 
   <!-- Fixed Add Button (hidden when there are no notes) -->
   <div class="add-button-fixed" *ngIf="notes && notes.length > 0" (click)="goToNewNote()">
-    <mindful-button type="add"></mindful-button>
+    <superme-button type="add"></superme-button>
   </div>
 
 </ion-content>

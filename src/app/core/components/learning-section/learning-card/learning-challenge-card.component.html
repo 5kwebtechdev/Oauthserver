@@ -14,7 +14,7 @@
             </div>
               <!-- Prefer backend category (QUIZ/PUZZLE) mapped to lowercase for badge type,
                   fallback to subType or type if not present -->
-              <mindful-badge [type]="item.category ? (item.category.toLowerCase()) : (item.subType || item.type)"></mindful-badge>
+              <superme-badge [type]="item.category ? (item.category.toLowerCase()) : (item.subType || item.type)"></superme-badge>
 
         </div>
 
@@ -28,7 +28,7 @@
                 <span class="trophy"><img src="/assets/Icons-Neutral/Icon-Trophy.png" alt="trophy"
                         style="width:24px;height:auto;" /> {{ item.trophy || 0 }}</span>
             </div>
-            <mindful-button [type]="'pink-small'" [text]="item.buttonText || 'Start Challenge'" (click)="onCardClick()"></mindful-button>
+            <superme-button [type]="'pink-small'" [text]="item.buttonText || 'Start Challenge'" (click)="onCardClick()"></superme-button>
         </div>
     </div>
 </div>

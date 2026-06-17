@@ -192,16 +192,18 @@ h2 {
 .family-info {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     gap: 12px;
     align-self: stretch;
 }
 
 .familyinformation {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     gap: 8px;
+    width: 100%;
+    min-width: 0;
 }
 
 .family-con-detail {
@@ -213,15 +215,19 @@ h2 {
 
 .family-name {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     gap: 4px;
+    flex: 1 1 auto;
+    min-width: 0;
 
     p {
         color: rgba(40, 37, 39, 0.70);
         font-family: Nunito;
         font-size: 16px;
         font-weight: 600;
+        flex: 0 0 98px;
+        text-align: left;
     }
 
     h1 {
@@ -229,6 +235,9 @@ h2 {
         font-family: Nunito;
         font-size: 16px;
         font-weight: 600;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        text-align: left;
 
     }
 }
@@ -250,7 +259,7 @@ h2 {
 .family-date {
     align-self: stretch;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     gap: 4px;
 
@@ -259,6 +268,8 @@ h2 {
         font-family: Nunito;
         font-size: 16px;
         font-weight: 600;
+        flex: 0 0 98px;
+        text-align: left;
     }
 
     h1 {
@@ -266,6 +277,9 @@ h2 {
         font-family: Nunito;
         font-size: 16px;
         font-weight: 600;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        text-align: left;
 
     }
 }

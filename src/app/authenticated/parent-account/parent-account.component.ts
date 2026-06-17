@@ -1,13 +1,12 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from "@angular/common";
-import { ModalController } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { NotesComponent } from '../../core/components/notes/notes.component';
 import { UserService } from '../../core/services/user.service';
 import { IonicModule } from "@ionic/angular";
-import { MindfulInputsModule } from "../../core/components/mindful-inputs/mindful-inputs.module";
+import { SupermeInputsModule } from "../../core/components/superme-inputs/superme-inputs.module";
 import { MoodSelectorComponent } from '../../core/components/mood-selector/mood-selector.component';
 import { MoodService } from '../../core/services/mood.service';
 import { VibesDisplayResponse } from '../../core/models/mood.model';
@@ -21,7 +20,7 @@ import { ParentImageService } from '../../core/services/parent-image.service';
 import { ProfileStoreService } from '../../core/services/profile-store.service';
 import { ChildInfo, mapVibeToChildInfo } from '../../core/models/child-info.model';
 import { RefreshService } from '../../core/services/refresh.service';
-import { MindfulButtonComponent } from '../../core/components/mindful-button/mindful-button.component';
+import { SupermeButtonComponent } from '../../core/components/superme-button/superme-button.component';
 
 
 @Component({
@@ -33,12 +32,12 @@ import { MindfulButtonComponent } from '../../core/components/mindful-button/min
         CommonModule,
         RouterModule,
         IonicModule,
-        MindfulInputsModule,
+        SupermeInputsModule,
         MoodSelectorComponent,
         AdBannerComponent,
         FooterComponent,
         ActivityPageContentComponent,
-        MindfulButtonComponent,
+        SupermeButtonComponent,
 
     ],
     providers: [RefreshService]
@@ -95,6 +94,10 @@ export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit,
     public children: ChildInfo[] = [];
     public selectedChild: ChildInfo | null = null;
 
+    get hasLinkedChildren(): boolean {
+        return this.children.length > 0;
+    }
+
     @ViewChild('moodSel') moodSelector?: MoodSelectorComponent;
     @ViewChild(ActivityPageContentComponent) habitPageContent?: ActivityPageContentComponent;
     @ViewChild('habitPage', { static: false }) habitPageElement?: ElementRef;
@@ -103,7 +106,6 @@ export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit,
     public isAddButtonVisible: boolean = false;
 
     constructor(
-        private modalCtrl: ModalController,
         private router: Router,
         private userService: UserService,
         private moodService: MoodService,
@@ -240,6 +242,9 @@ export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit,
         if (ev) {
             ev.stopPropagation();
         }
+        if (!this.hasLinkedChildren) {
+            return;
+        }
         this.showSwitchPopup = !this.showSwitchPopup;
         // Debug log
         console.log('[ParentAccount] toggleSwitchPopup', {
@@ -360,6 +365,10 @@ export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit,
 
     openActivityInput() {
         this.router.navigate(['/authed/activity-input']);
+    }
+
+    openFamilyConnection(): void {
+        this.router.navigate(['/authed/family-connection']);
     }
 
     /**

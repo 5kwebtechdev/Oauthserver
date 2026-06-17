@@ -5,14 +5,14 @@ import { IonicModule, ModalController, ViewWillEnter } from '@ionic/angular';
 
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
-import { MindfulSpeechBubbleComponent } from '../../mindful-speech-bubble/mindful-speech-bubble.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
+import { SupermeSpeechBubbleComponent } from '../../superme-speech-bubble/superme-speech-bubble.component';
 import { TutorListComponent } from '../tutor-list/tutor-list.component';
 import { TutorAllFilterComponent } from '../tutor-all-filter/tutor-all-filter.component';
 import { TutorProfileComponent } from '../tutor-profile/tutor-profile.component';
 import { FooterComponent } from '../../footer/footer.component';
-import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
+import { SupermePopupComponent } from '../../superme-popup/superme-popup.component';
 import { TutorService } from '../../../services/tutor.service';
 import { TutorApi } from '../../../api/tutor.api';
 import { TutorListItem, TutorSortOption, Tutor } from '../../../models/tutor.model';
@@ -24,12 +24,12 @@ import { TutorListItem, TutorSortOption, Tutor } from '../../../models/tutor.mod
     CommonModule,
     FormsModule,
     IonicModule,
-    MindfulButtonComponent,
+    SupermeButtonComponent,
     TutorListComponent,
-    MindfulPetComponent,
-    MindfulSpeechBubbleComponent,
+    SupermePetComponent,
+    SupermeSpeechBubbleComponent,
     FooterComponent,
-    MindfulPopupComponent
+    SupermePopupComponent
   ],
   templateUrl: './tutor-homepage.component.html',
   styleUrls: ['./tutor-homepage.component.scss']
@@ -44,7 +44,7 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   @Output() viewProfile = new EventEmitter<TutorListItem>();
 
   isReferModalOpen = false;
-  referLink = 'https://example.com/refer-tutor';
+  referLink = 'https://supermeapp.com/find-a-tutor';
 
   // Sort dropdown state
   isSortOpen = false;

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BadgeSectionComponent } from './badge-section.component';
 import { IonicModule } from '@ionic/angular';
-import { MindfulInputsModule } from '../mindful-inputs/mindful-inputs.module';
+import { SupermeInputsModule } from '../superme-inputs/superme-inputs.module';
 
 describe('BadgeSectionComponent', () => {
     let component: BadgeSectionComponent;
@@ -9,7 +9,7 @@ describe('BadgeSectionComponent', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [BadgeSectionComponent, IonicModule.forRoot(), MindfulInputsModule]
+            imports: [BadgeSectionComponent, IonicModule.forRoot(), SupermeInputsModule]
         }).compileComponents();
 
         fixture = TestBed.createComponent(BadgeSectionComponent);

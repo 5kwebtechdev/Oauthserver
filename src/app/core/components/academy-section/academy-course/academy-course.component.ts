@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavigationService } from '../../../services/navigation.service';
 import { IonicModule, ModalController } from '@ionic/angular';
@@ -14,7 +14,7 @@ import { of } from 'rxjs';
 @Component({
   selector: 'app-academy-course',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent],
+  imports: [CommonModule, IonicModule, SupermeNavigatorComponent, SupermeButtonComponent],
   templateUrl: './academy-course.component.html',
   styleUrls: ['./academy-course.component.scss'],
 })
@@ -194,16 +194,17 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
       lessonStatus: lesson.lessonStatus ?? lesson.status ?? null,
       status: lesson.status ?? lesson.lessonStatus ?? null
     }));
-    // Find a lesson that has been started but not completed: check lessonStatus, time spent or lastAccessedAt
-    const inProgressIndex = apiLessons.findIndex(l =>
-      !l.isCompleted && (
-        l.lessonStatus === 'ONGOING' ||
-        l.status === 'ONGOING' ||
-        !!l.timeSpentMinutes ||
-        !!l.lastAccessedAt
-      )
-    );
-    this.resumeLessonIndex = inProgressIndex >= 0 ? inProgressIndex : null;
+    // Use continueLessonId from API for accurate resume position
+    if (this.courseDetail?.isCourseCompleted) {
+      this.resumeLessonIndex = null;
+    } else if (this.courseDetail?.continueLessonId != null) {
+      const idx = this.lessons.findIndex(l => l.lessonId === this.courseDetail!.continueLessonId);
+      this.resumeLessonIndex = idx >= 0 ? idx : null;
+    } else {
+      // Fallback: first accessible non-completed lesson
+      const firstIdx = apiLessons.findIndex(l => !l.isCompleted && !l.isLocked);
+      this.resumeLessonIndex = firstIdx >= 0 ? firstIdx : null;
+    }
   }
 
   /**
@@ -275,46 +276,33 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
     return difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase();
   }
 
+  isLessonInProgress(lesson: { lessonStatus?: string | null; status?: string | null }): boolean {
+    const s = lesson.lessonStatus ?? lesson.status ?? null;
+    return s === 'ONGOING' || s === 'PENDING';
+  }
+
   onStartLesson(index: number): void {
     if (!this.course) return;
-
     const lesson = this.lessons[index];
-    const lessonId = lesson?.lessonId;
+    if (!lesson?.lessonId) return;
+    this.openChaptersModal(index).catch(err => console.error('Failed opening lessons modal', err));
+  }
 
-    if (!lessonId) {
-      console.error('Lesson ID not found for index:', index);
-      return;
+  getProgressStatusLabel(): string {
+    switch (this.courseDetail?.progressStatus) {
+      case 'NOT_STARTED': return 'Not Started';
+      case 'IN_PROGRESS': return 'In Progress';
+      case 'COMPLETED': return 'Completed';
+      default: return '';
     }
+  }
 
-    // determine current status: prefer `lessonStatus` then `status`
-    const currentStatus = lesson.lessonStatus ?? lesson.status ?? null;
-
-    // If lesson status is PENDING, update it to ONGOING before opening
-    if (currentStatus === 'PENDING') {
-      this.academyService.updateLessonStatus(lessonId, 'ONGOING')
-        .pipe(
-          catchError(error => {
-            // Log and return null so subscription still runs
-            console.warn('Error updating lesson status:', error);
-            return of(null);
-          })
-        )
-        .subscribe((res) => {
-          // If API responded (res not null), assume update succeeded and update local status
-          if (res !== null) {
-            lesson.lessonStatus = 'ONGOING';
-            lesson.status = 'ONGOING';
-          } else {
-            // If the API returned an error (e.g. 400 "Lesson progress not found"), log and continue
-            console.warn('Lesson status update returned no response — opening lesson without local status change');
-          }
-
-          // Open the lessons modal regardless of update result
-          this.openChaptersModal(index).catch(err => console.error('Failed opening lessons modal', err));
-        });
-    } else {
-      // Open the lessons modal directly if status is not PENDING
-      this.openChaptersModal(index).catch(err => console.error('Failed opening lessons modal', err));
+  getProgressStatusClass(): string {
+    switch (this.courseDetail?.progressStatus) {
+      case 'NOT_STARTED': return 'status-not-started';
+      case 'IN_PROGRESS': return 'status-in-progress';
+      case 'COMPLETED': return 'status-completed';
+      default: return '';
     }
   }
 
@@ -337,7 +325,8 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
         courseId: this.course.id,
         courseTitle: this.course.title,
         courseLessons: this.courseDetail?.lessons || [],
-        currentLessonIndex: lessonIndex
+        currentLessonIndex: lessonIndex,
+        readOnly: !!lesson.isCompleted
       }
     });
 

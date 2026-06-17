@@ -4,6 +4,13 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthApi } from './auth.api';
 
+export interface NoteTagDto {
+    id: number;
+    name: string;
+    system: boolean;
+    userId: number | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class NotesApi {
     private base = environment.apiUrl || '';
@@ -24,13 +31,40 @@ export class NotesApi {
         return headers;
     }
 
+    private currentUserId(): number | string | null {
+        const userId = this.authApi.getUserId();
+        if (!userId) return null;
+        const numeric = Number(userId);
+        return Number.isFinite(numeric) ? numeric : userId;
+    }
+
+    private notePayload(payload: any, includeUserId: boolean): any {
+        const body: any = {
+            title: payload?.title || 'Untitled',
+            content: payload?.content ?? payload?.text ?? ''
+        };
+
+        if (payload?.tagId != null && payload?.tagId !== '') {
+            body.tagId = Number(payload.tagId);
+        }
+
+        if (includeUserId && payload?.userId == null) {
+            const userId = this.currentUserId();
+            if (userId != null) body.userId = userId;
+        } else if (includeUserId && payload?.userId != null) {
+            body.userId = payload.userId;
+        }
+
+        return body;
+    }
+
     /**
      * Add a new note via backend
      * Endpoint expected: POST {base}/v1/notes/add (based on user's Postman screenshot)
      */
     addNote(payload: any): Observable<any> {
         const url = `${this.base}/notes/add`;
-        return this.http.post(url, payload, { headers: this.headers() });
+        return this.http.post(url, this.notePayload(payload, true), { headers: this.headers() });
     }
 
     /**
@@ -38,9 +72,25 @@ export class NotesApi {
      * Endpoint: GET {base}/notes/all?userId={userId}
      */
     getAll(): Observable<any> {
-        const userId = this.authApi.getUserId();
+        const userId = this.currentUserId();
         const url = `${this.base}/notes/all`;
         const params: any = {};
+        if (userId) params['userId'] = userId;
+        return this.http.get(url, { headers: this.headers(), params });
+    }
+
+    getByTag(tagName: string): Observable<any> {
+        const userId = this.currentUserId();
+        const url = `${this.base}/notes/my/tag/${encodeURIComponent(tagName)}`;
+        const params: any = {};
+        if (userId) params['userId'] = userId;
+        return this.http.get(url, { headers: this.headers(), params });
+    }
+
+    searchNotes(query: string): Observable<any> {
+        const userId = this.currentUserId();
+        const url = `${this.base}/notes/my/search`;
+        const params: any = { query };
         if (userId) params['userId'] = userId;
         return this.http.get(url, { headers: this.headers(), params });
     }
@@ -58,6 +108,29 @@ export class NotesApi {
      */
     updateNote(id: any, payload: any): Observable<any> {
         const url = `${this.base}/notes/update/${id}`;
-        return this.http.put(url, payload, { headers: this.headers() });
+        return this.http.put(url, this.notePayload(payload, false), { headers: this.headers() });
+    }
+
+    getTags(): Observable<NoteTagDto[]> {
+        const userId = this.currentUserId();
+        const url = `${this.base}/notes/tags`;
+        const params: any = {};
+        if (userId) params['userId'] = userId;
+        return this.http.get<NoteTagDto[]>(url, { headers: this.headers(), params });
+    }
+
+    createTag(name: string): Observable<NoteTagDto> {
+        const url = `${this.base}/notes/tags`;
+        return this.http.post<NoteTagDto>(url, { name }, { headers: this.headers() });
+    }
+
+    updateTag(tagId: any, name: string): Observable<NoteTagDto> {
+        const url = `${this.base}/notes/tags/${tagId}`;
+        return this.http.put<NoteTagDto>(url, { name }, { headers: this.headers() });
+    }
+
+    deleteTag(tagId: any): Observable<{ message?: string }> {
+        const url = `${this.base}/notes/tags/${tagId}`;
+        return this.http.delete<{ message?: string }>(url, { headers: this.headers() });
     }
 }

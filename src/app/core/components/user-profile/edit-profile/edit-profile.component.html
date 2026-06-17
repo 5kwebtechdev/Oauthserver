@@ -1,5 +1,5 @@
 <ion-content >
-  <mindful-navigator heading="Edit Profile Info"></mindful-navigator>
+  <superme-navigator heading="Edit Profile Info"></superme-navigator>
   <form [formGroup]="profileForm">
     <div class="edit-profile-container">
 
@@ -27,11 +27,11 @@
           <div class="validation-text-age" [ngClass]="{ 'invalid': ageError }">{{ calculatedAge }}</div>
         </div>
         <div class="input-container">
-          <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" (closed)="openBirthdayPicker = false" [showTrigger]="openBirthdayPicker"
+          <superme-birthdaypicker (dateSelected)="birthdayChanged($event)" (closed)="openBirthdayPicker = false" [showTrigger]="openBirthdayPicker"
             [variant]="'white-green'" [initialDate]="birthdayInitialDate" style="width: 100%">
             <input class="dob-input" [ngClass]="{ 'invalid': ageError }" type="text" formControlName="dob"
               (click)="openBirthdayPickerNow()" placeholder="Date of Birth" readonly />
-          </mindful-birthdaypicker>
+          </superme-birthdaypicker>
           <div class="error-message" *ngIf="ageError">{{ ageError }}</div>
         </div>
       </div>
@@ -84,14 +84,6 @@
             <input formControlName="phone" type="tel" [attr.maxlength]="currentPhoneLength" pattern="[0-9]*"
               inputmode="numeric" (input)="onPhoneInput($event)" (keypress)="onKeyPress($event)"
               placeholder="Enter {{currentPhoneLength}} digit number" />
-            <mindful-button 
-              type="green" 
-              text="Verify" 
-              size="small"
-              class="phone-verify-btn"
-              [disabled]="!isPhoneValid(profileForm.get('phone')?.value) || !profileForm.get('phone')?.dirty || !isPhoneChangedForVerify()"
-              (click)="verifyPhone()">
-            </mindful-button>
           </div>
           <div class="error" *ngIf="!isPhoneValid(profileForm.get('phone')?.value) && profileForm.get('phone')?.dirty ">
             {{getPhoneErrorMessage()}}
@@ -135,14 +127,14 @@
               type="email" 
               placeholder="Email"
               (input)="onEmailChange(profileForm.get('email')!.value)" />
-            <mindful-button 
+            <superme-button 
               type="green" 
               text="Verify" 
               size="small"
               class="email-verify-btn"
-              [disabled]="profileForm.get('email')!.invalid || !profileForm.get('email')!.dirty || !isEmailChangedForVerify()"
+              [disabled]="isEmailVerifying || profileForm.get('email')!.invalid || !profileForm.get('email')!.dirty || !isEmailChangedForVerify()"
               (click)="verifyEmail()">
-            </mindful-button>
+            </superme-button>
           </div>
           <div class="error" *ngIf="profileForm.get('email')!.invalid && profileForm.get('email')!.dirty">
             Oops! That email looks off. Please check it again.
@@ -150,9 +142,9 @@
         </div>
       </div>
 
-      <!-- mindful-Button (replaced with disabled variant for testing) -->
+      <!-- superme-Button (replaced with disabled variant for testing) -->
       <div class="button-row">
-        <mindful-button type="green" text="Update info" size="full" [disabled]="isFormInvalid" (click)="saveProfile()"></mindful-button>
+        <superme-button type="green" text="Update info" size="full" [disabled]="isFormInvalid" (click)="saveProfile()"></superme-button>
       </div>
 
     </div>
@@ -165,7 +157,7 @@
     <div class="otp-modal">
       <div class="otp-modal__header">
         <div class="otp-modal__header-content">
-          <h1 class="otp-modal__title">Verify your {{ currentVerificationType === 'email' ? 'email' : 'number' }}</h1>
+          <h1 class="otp-modal__title">Verify your email</h1>
           <p class="otp-modal__subtitle">We've sent an OTP to {{ getMaskedDisplay() }}</p>
         </div>
         <button class="otp-modal__close-btn" (click)="closeOtpModal()" type="button">
@@ -203,13 +195,13 @@
         </div>
       </div>
 
-      <mindful-button
+      <superme-button
         type="green"
         text="Confirm"
         size="full"
         [disabled]="!isOtpComplete() || otpVerifying || isExpired"
         (click)="verifyOtp()">
-      </mindful-button>
+      </superme-button>
     </div>
   </div>
 </ion-content>

@@ -3,7 +3,7 @@
   (ionModalDidPresent)="onSizeModalPresented()">
   <ng-template>
     <ion-content>
-      <mindful-navigator [heading]="isFromReturnExchange ? 'Select New Size' : 'Size Guide'" backIcon="arrowSvg" (back)="closeSizeGuide()"></mindful-navigator>
+      <superme-navigator [heading]="isFromReturnExchange ? 'Select New Size' : 'Size Guide'" backIcon="arrowSvg" (back)="closeSizeGuide()"></superme-navigator>
       <button #sizeGuideFirstFocus class="visually-hidden" aria-hidden="false" tabindex="0"></button>
       <main class="size-guide-container w-100">
         <div class="order-info-card">
@@ -121,12 +121,12 @@
       <!--apply size-->
       <div class="product-purchase-bar" *ngIf="!isFromReturnExchange">
         <span class="selected-size">Size: {{ selectedSize }}</span>
-        <mindful-button class="page-cta" type="magenta" text="Apply Size" large
-          (click)="closeSizeGuide()"></mindful-button>
+        <superme-button class="page-cta" type="magenta" text="Apply Size" large
+          (click)="closeSizeGuide()"></superme-button>
       </div>
       <div class="product-purchase-bar return-exchange-bar" *ngIf="isFromReturnExchange">
-        <mindful-button class="return-exchange-btn" type="magenta-transparent" size="large" text="Return" (click)="onReturn()"></mindful-button>
-        <mindful-button class="return-exchange-btn" type="magenta" size="large" text="Exchange" (click)="onExchange()"></mindful-button>
+        <superme-button class="return-exchange-btn" type="magenta-transparent" size="large" text="Return" (click)="onReturn()"></superme-button>
+        <superme-button class="return-exchange-btn" type="magenta" size="large" text="Exchange" (click)="onExchange()"></superme-button>
       </div>
     </ion-content>
   </ng-template>

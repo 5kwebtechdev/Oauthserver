@@ -1,5 +1,5 @@
 <ion-content>
-  <mindful-navigator heading="Feedback & Suggestions" backIcon="arrowSvg"></mindful-navigator>
+  <superme-navigator heading="Feedback & Suggestions" backIcon="arrowSvg"></superme-navigator>
 
   <div class="feedback-suggestion">
     <div class="feed-sugg">
@@ -52,8 +52,8 @@
       <p>3. What would you like to see in our app?</p>
       <profile-edit-input placeholder="Write down your thoughts" type="text" [value]="details2" (valueChange)="details2 = $event"></profile-edit-input>
     </div>
-    <mindful-button type="green" text="Submit" [large]="true" [disabled]="!canSubmit" (click)="onSubmit()"
-      style="display:block; width:100%;"></mindful-button>
+    <superme-button type="green" text="Submit" [large]="true" [disabled]="!canSubmit" (click)="onSubmit()"
+      style="display:block; width:100%;"></superme-button>
     
     <!-- Error message display -->
     <div *ngIf="errorMessage" style="margin-top: 16px; padding: 12px; background-color: #ffebee; border-radius: 8px; color: #c62828;">
@@ -76,8 +76,8 @@
   </div>
 
 
-  <!-- Replaced inline thank-you markup with reusable mindful popup -->
-  <app-mindful-popup [isVisible]="showThankYouPopup" [config]="{
+  <!-- Replaced inline thank-you markup with reusable superme popup -->
+  <app-superme-popup [isVisible]="showThankYouPopup" [config]="{
       image: '/assets/Images-Transparent/Image-Profile-Feedback.png',
       imageAlt: 'Feedback image',
       heading: 'Thanks for making us better!',
@@ -85,7 +85,7 @@
       primaryCTA: { text: 'Share another idea', callback: onSubmit.bind(this), buttonLarge: true, buttonStyle: 'green' },
       backdrop: true
     }" (primaryAction)="onSubmit()" (backdropClick)="showThankYouPopup = false"
-    (closeAction)="showThankYouPopup = false"></app-mindful-popup>
+    (closeAction)="showThankYouPopup = false"></app-superme-popup>
 
   <span class="privacy">PRIVACY POLICY</span>
 </ion-content>

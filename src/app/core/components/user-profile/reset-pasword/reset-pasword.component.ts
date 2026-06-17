@@ -1,9 +1,9 @@
 import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-input.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse, HttpClientModule } from '@angular/common/http';
 import { NavController } from '@ionic/angular';
@@ -16,7 +16,7 @@ import { finalize } from 'rxjs/operators';
 @Component({
   selector: 'reset-pasword',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, ProfileEditInputComponent, MindfulButtonComponent, ReactiveFormsModule, HttpClientModule],
+  imports: [CommonModule, IonicModule, SupermeNavigatorComponent, ProfileEditInputComponent, SupermeButtonComponent, ReactiveFormsModule, HttpClientModule],
   templateUrl: './reset-pasword.component.html',
   styleUrls: ['./reset-pasword.component.scss']
 })

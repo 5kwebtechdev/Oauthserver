@@ -74,15 +74,105 @@
   pointer-events: auto;
 }
 
+// Progress section
+.progress-section {
+  margin: 12px 0 16px;
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+
+    .progress-label {
+      font-size: 13px;
+      color: #555;
+    }
+
+    .progress-chip {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+
+      &.status-not-started {
+        background: rgba(158, 158, 158, 0.18);
+        color: #757575;
+      }
+
+      &.status-in-progress {
+        background: rgba(233, 30, 99, 0.12);
+        color: #c2185b;
+      }
+
+      &.status-completed {
+        background: rgba(76, 175, 80, 0.14);
+        color: #388e3c;
+      }
+    }
+  }
+
+  .progress-bar-track {
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 4px;
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #e91e63, #f06292);
+      border-radius: 4px;
+      transition: width 0.6s ease;
+      min-width: 4px;
+    }
+  }
+
+  .progress-percent {
+    font-size: 12px;
+    color: #e91e63;
+    font-weight: 600;
+  }
+}
+
 .lesson-thumb {
   width: 64px;
   height: 64px;
   flex: 0 0 64px;
+  position: relative;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: contain;
+  }
+
+  .lesson-status-badge {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    border: 2px solid #fff;
+    line-height: 1;
+  }
+
+  .completed-badge {
+    background: #4caf50;
+    color: #fff;
+    font-weight: 700;
+    font-size: 11px;
+  }
+
+  .lock-badge {
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    font-size: 8px;
   }
 }
 
@@ -153,6 +243,11 @@
   border-radius: 8px;
   font-size: 14px;
   cursor: pointer;
+}
+
+// Completed lesson subtle tint
+.lesson.completed .lesson-info h3 {
+  color: #388e3c;
 }
 
 // Loading and Error States

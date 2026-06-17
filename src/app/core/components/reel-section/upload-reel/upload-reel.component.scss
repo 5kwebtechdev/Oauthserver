@@ -172,7 +172,7 @@
     opacity: 0.7;
 }
 
-.reel-meta-data-inputs input.mindful-input {
+.reel-meta-data-inputs input.superme-input {
     border: none;
     padding: 0;
     border-radius: 0;
@@ -194,7 +194,7 @@
     width: 100%;
 }
 
-.input-with-counter input.mindful-input {
+.input-with-counter input.superme-input {
     display: block;
     width: 100%;
     box-sizing: border-box;
@@ -219,8 +219,8 @@
     /* clicks go to input */
 }
 
-.reel-meta-data-inputs input.mindful-input:focus,
-.reel-meta-data-inputs input.mindful-input:focus-visible {
+.reel-meta-data-inputs input.superme-input:focus,
+.reel-meta-data-inputs input.superme-input:focus-visible {
     outline: none !important;
     box-shadow: none !important;
     border: none !important;

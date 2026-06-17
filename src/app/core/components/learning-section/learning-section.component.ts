@@ -2,7 +2,7 @@ import { Component, Input, TemplateRef, ContentChild, EventEmitter, Output, OnIn
 import { NgIf, NgForOf } from "@angular/common";
 import { forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ViewAllComponent } from 'src/app/core/components/mindful-navigator/view-all/view-all.component';
+import { ViewAllComponent } from 'src/app/core/components/superme-navigator/view-all/view-all.component';
 import { IonicModule } from "@ionic/angular";
 import { RouterModule } from '@angular/router';
 import { LearningCardComponent } from './learning-card/learning-card.component';
@@ -29,8 +29,8 @@ import { LearningService } from 'src/app/core/services/learning.service';
       </header>
 
       <nav class="content-actions">
-        <mindful-view-all class="see-all content-section__view-all" [ariaLabel]="'View all content'"
-          [routerLink]="['/authed','content']"></mindful-view-all>
+        <superme-view-all class="see-all content-section__view-all" [ariaLabel]="'View all content'"
+          [routerLink]="['/authed','content']"></superme-view-all>
       </nav>
 
       <div class="slides" #slides>

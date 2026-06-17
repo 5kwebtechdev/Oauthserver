@@ -1,6 +1,6 @@
 <ion-content style="--padding-top: var(--sat)">
     <div class="education-main-page-container ">
-        <mindful-navigator heading="Education & Essentials" backIcon="arrowSvg" (back)="goBack()"></mindful-navigator>
+        <superme-navigator heading="Education & Essentials" backIcon="arrowSvg" (back)="goBack()"></superme-navigator>
         <div>
             <swiper-container #swiperEl class="edu-swiper" [slides-per-view]="1" [loop]="true"
                 [autoplay]="{ delay: 3000, disableOnInteraction: false }">
@@ -20,7 +20,7 @@
                 <h1>Find Tutors</h1>
                 <img src="assets/Images-Transparent/Find-Tutors.png" alt="">
             </a>
-            <a class="edu-item-cards" routerLink="/authed/academy">
+            <a class="edu-item-cards" routerLink="/authed/academy" aria-label="Open Academies">
                 <h1>Academies</h1>
                 <img src="assets/Images-Transparent/Academies.png" alt="">
             </a>

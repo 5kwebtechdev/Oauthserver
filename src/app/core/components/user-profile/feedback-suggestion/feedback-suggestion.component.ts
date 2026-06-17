@@ -2,17 +2,18 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-input.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { SupermePopupComponent } from '../../superme-popup/superme-popup.component';
 import { environment } from '../../../../../environments/environment';
 import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   standalone: true,
   selector: 'feedback-suggestion',
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, ProfileEditInputComponent, MindfulButtonComponent, MindfulPopupComponent],
+  imports: [CommonModule, IonicModule, SupermeNavigatorComponent, ProfileEditInputComponent, SupermeButtonComponent, SupermePopupComponent],
   templateUrl: './feedback-suggestion.component.html',
   styleUrls: ['./feedback-suggestion.component.scss']
 })
@@ -37,7 +38,10 @@ export class FeedbackSuggestionComponent {
     'sad': 4
   };
 
-  constructor(private httpClient: HttpClient) { }
+  constructor(
+    private httpClient: HttpClient,
+    private authService: AuthService
+  ) { }
 
   get canSubmit(): boolean {
     const hasMood = !!this.selectedMood;
@@ -55,8 +59,38 @@ export class FeedbackSuggestionComponent {
     return {
       rating: this.getMoodRating(this.selectedMood),
       appExperience: this.details1?.trim() || '',
-      featureRequest: this.details2?.trim() || ''
+      featureRequest: this.details2?.trim() || '',
+      email: this.getCurrentUserEmail()
     };
+  }
+
+  private getCurrentUserEmail(): string {
+    const authUserData = this.authService.getUserData();
+    const authEmail = this.extractEmail(authUserData);
+    if (authEmail) return authEmail;
+
+    const storageKeys = ['user_data', 'user_profile'];
+    for (const key of storageKeys) {
+      const storedEmail = this.extractEmailFromStorage(key);
+      if (storedEmail) return storedEmail;
+    }
+
+    return sessionStorage.getItem('login_email') || '';
+  }
+
+  private extractEmail(data: any): string {
+    const email = data?.email || data?.user?.email;
+    return typeof email === 'string' ? email.trim() : '';
+  }
+
+  private extractEmailFromStorage(key: string): string {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return '';
+      return this.extractEmail(JSON.parse(raw));
+    } catch (e) {
+      return '';
+    }
   }
 
   private resetForm(): void {

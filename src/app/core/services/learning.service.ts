@@ -245,7 +245,7 @@ export class LearningService {
             difficulty: challenge.difficultyDisplay || challenge.difficulty,
             buttonText: timeText ? `Finish in ${timeText}` : buttonLabel,
             type: isQuiz ? 'quiz' : 'puzzle',
-            // Preserve backend category for use by UI (e.g. mindful-badge)
+            // Preserve backend category for use by UI (e.g. superme-badge)
             category: challenge.category,
             subType: challenge.categoryDisplay,
             totalQuestions: challenge.totalQuestions,

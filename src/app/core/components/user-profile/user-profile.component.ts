@@ -2,13 +2,13 @@ import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, OnIni
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { CommonModule } from '@angular/common';
-import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigator.component';
+import { SupermeNavigatorComponent } from '../superme-navigator/superme-navigator.component';
 import { IonicModule, ModalController } from '@ionic/angular';
-import { MindfulCoinsStatsComponent } from '../mindful-coins-stats/mindful-coins-stats.component';
+import { SupermeCoinsStatsComponent } from '../superme-coins-stats/superme-coins-stats.component';
 import { ProfileContentCardComponent } from './profile-content-card/profile-content-card.component';
 import { SocialMediaComponent } from '../social-media/social-media.component';
 import { ChangePetComponent } from './change-pet/change-pet.component';
-import { MindfulPopupComponent } from '../mindful-popup/mindful-popup.component';
+import { SupermePopupComponent } from '../superme-popup/superme-popup.component';
 import { AuthService as CoreAuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
 import { MoodService } from '../../services/mood.service';
@@ -20,7 +20,7 @@ import { ChildSelfImageService } from '../../services/child-self-image.service';
 @Component({
   selector: 'user-profile',
   standalone: true,
-  imports: [CommonModule, MindfulNavigatorComponent, IonicModule, MindfulCoinsStatsComponent, ProfileContentCardComponent, SocialMediaComponent, MindfulPopupComponent],
+  imports: [CommonModule, SupermeNavigatorComponent, IonicModule, SupermeCoinsStatsComponent, ProfileContentCardComponent, SocialMediaComponent, SupermePopupComponent],
   templateUrl: './user-profile.component.html',
   styleUrls: ['./user-profile.component.scss']
 })

@@ -1,6 +1,6 @@
 <ion-content>
-<mindful-card-header [title]="'Your Badge Quest'" [subtitleLeft]="'Earn badges'" [subtitleMiddle]="'Level up'"
-    [subtitleRight]="'Show the world'" [showBackArrow]="true" (backClick)="onBackClick()"></mindful-card-header>
+<superme-card-header [title]="'Your Badge Quest'" [subtitleLeft]="'Earn badges'" [subtitleMiddle]="'Level up'"
+    [subtitleRight]="'Show the world'" [showBackArrow]="true" (backClick)="onBackClick()"></superme-card-header>
     <!-- Recent Achievement Card -->
     <div class="recent-achievement-card" *ngIf="recentAchievement">
         <div class="achievement-content">
@@ -33,9 +33,9 @@
                         <div class="badge-icon-container">
                             <img [src]="badge.iconUrl" [alt]="badge.name" class="badge-icon" />
                         </div>
-                        <mindful-completion [completionPercentage]="getCompletionPercentage(badge)"
+                        <superme-completion [completionPercentage]="getCompletionPercentage(badge)"
                             [borderColor]="badge.progressColor || '#4CAF50'" [innerText]="''"
-                            [belowText]="''"></mindful-completion>
+                            [belowText]="''"></superme-completion>
                     </div>
                 </div>
                 <p class="badge-level-text" *ngIf="badge.levelText">{{ badge.levelText }}</p>
@@ -52,9 +52,9 @@
 
 
     <!-- Share Popup -->
-    <app-mindful-popup [isVisible]="sharePopupVisible" [config]="sharePopupConfig"
+    <app-superme-popup [isVisible]="sharePopupVisible" [config]="sharePopupConfig"
         (closeAction)="sharePopupVisible=false" (backdropClick)="sharePopupVisible=false">
-    </app-mindful-popup>
+    </app-superme-popup>
 
     <!--complete badge popup full screen-->
     <div *ngIf="congratsVisible" class="d-flex flex-column justify-content-center gap-4 congrats-popup">
@@ -83,9 +83,9 @@
             <p class="level-info" *ngIf="selectedBadge?.levelText">{{ selectedBadge?.levelText }}</p>
         </div>
         <div class="awesome-cta">
-            <mindful-button type="magenta-transparent" text="View all Badges" large
-                (click)="onViewAllBadges()"></mindful-button>
-            <mindful-button type="magenta" text="Awesome" large (click)="onAwesomeClick()"></mindful-button>
+            <superme-button type="magenta-transparent" text="View all Badges" large
+                (click)="onViewAllBadges()"></superme-button>
+            <superme-button type="magenta" text="Awesome" large (click)="onAwesomeClick()"></superme-button>
         </div>
 
     </div>

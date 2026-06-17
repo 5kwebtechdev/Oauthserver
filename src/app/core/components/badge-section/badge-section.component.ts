@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { MindfulInputsModule } from '../mindful-inputs/mindful-inputs.module';
+import { SupermeInputsModule } from '../superme-inputs/superme-inputs.module';
 import { Badge, RecentAchievement, BadgeProgressResponse, CelebrationCard } from './badge-section.interface';
-import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
-import { MindfulPopupComponent, MindfulPopupConfig } from '../mindful-popup/mindful-popup.component';
-import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
+import { SupermeCardHeaderComponent } from '../superme-navigator/superme-card-header/superme-card-header.component';
+import { SupermePopupComponent, SupermePopupConfig } from '../superme-popup/superme-popup.component';
+import { SupermeButtonComponent } from '../superme-button/superme-button.component';
 import { BadgeApi } from '../../api/badge.api';
 import { BadgeSocketService, BadgePopupData } from '../../services/badge-socket.service';
 
@@ -16,7 +16,7 @@ import { BadgeSocketService, BadgePopupData } from '../../services/badge-socket.
     templateUrl: './badge-section.component.html',
     styleUrls: ['./badge-section.component.scss'],
     standalone: true,
-    imports: [CommonModule, IonicModule, MindfulInputsModule, MindfulCardHeaderComponent, MindfulPopupComponent, MindfulButtonComponent]
+    imports: [CommonModule, IonicModule, SupermeInputsModule, SupermeCardHeaderComponent, SupermePopupComponent, SupermeButtonComponent]
 })
 export class BadgeSectionComponent implements OnInit, OnDestroy {
     recentAchievement: RecentAchievement | null = null;
@@ -215,7 +215,7 @@ export class BadgeSectionComponent implements OnInit, OnDestroy {
 
     // Share popup state and config
     sharePopupVisible: boolean = false;
-    sharePopupConfig: MindfulPopupConfig = {
+    sharePopupConfig: SupermePopupConfig = {
         heading: 'Share Now',
         showCloseButton: true,
         backdrop: true,

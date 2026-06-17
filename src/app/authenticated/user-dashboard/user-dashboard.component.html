@@ -34,8 +34,8 @@
             </nav>
           </header>
 
-          <mindful-coins-stats [userCoins]="userCoins" [userStreaks]="userStreaks" [userDays]="userDays"
-            [userBadges]="userBadges"></mindful-coins-stats>
+          <superme-coins-stats [userCoins]="userCoins" [userStreaks]="userStreaks" [userDays]="userDays"
+            [userBadges]="userBadges"></superme-coins-stats>
         </div>
         <div class="d-flex" style="padding-left: 16px; height: 10vh;">
           <app-speech-bubble [message]="greetingMessage" [petMessage]="currentPetMessage" type="talking"
@@ -44,8 +44,8 @@
           </app-speech-bubble>
 
           <div class="digital-pet" aria-hidden="false">
-            <mindful-pet pet="panda" [age]="1" [mood]="petMood">
-            </mindful-pet>
+            <superme-pet pet="panda" [age]="1" [mood]="petMood">
+            </superme-pet>
           </div>
         </div>
       </div>
@@ -74,11 +74,11 @@
 
       <!-- Reels- card -->
       <!-- <div class="w-full">
-        <mindful-card-header [title]="'Made by Kids, for Kids!'" [subtitleLeft]="'Watch reels'"
+        <superme-card-header [title]="'Made by Kids, for Kids!'" [subtitleLeft]="'Watch reels'"
           [subtitleMiddle]="'Create'" [subtitleRight]="'Get Inspired'">
-          <mindful-view-all mindful-header-actions [routerLink]="['/authed/reel-section']" class="see-all">
-          </mindful-view-all>
-        </mindful-card-header>
+          <superme-view-all superme-header-actions [routerLink]="['/authed/reel-section']" class="see-all">
+          </superme-view-all>
+        </superme-card-header>
         <div style="margin-top: 10px;">
           <reels-card></reels-card>
         </div>

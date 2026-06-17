@@ -2,9 +2,9 @@ import { Component, OnInit, OnDestroy, ViewChildren, QueryList, ElementRef, Afte
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeInputsModule } from '../../superme-inputs/superme-inputs.module';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { CountriesService, Country } from '../../../services/countries.service';
 import { Subscription, Subject, of } from 'rxjs';
 import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-input.component';
@@ -18,7 +18,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'edit-profile',
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, MindfulNavigatorComponent, MindfulInputsModule, MindfulButtonComponent, ProfileEditInputComponent],
+  imports: [CommonModule, IonicModule, ReactiveFormsModule, SupermeNavigatorComponent, SupermeInputsModule, SupermeButtonComponent, ProfileEditInputComponent],
   templateUrl: './edit-profile.component.html',
   styleUrls: ['./edit-profile.component.scss']
 })
@@ -522,6 +522,12 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.isEmailChangedForVerify() && !this.emailVerified) {
+      this.coreService.triggerToasrt('Please verify your new email before updating profile.');
+      this.profileForm.get('email')?.markAsDirty();
+      return;
+    }
+
     // Build payload containing only changed fields
     const payload = this.buildChangedPayload();
 
@@ -547,7 +553,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
         .pipe(finalize(() => { this.isSubmitting = false; }))
         .subscribe({
           next: (response) => {
-            this.coreService.triggerToasrt('Profile updated successfully!');
+            this.coreService.triggerToasrt('Profile updated successfully!', 'success');
             console.log('[EditProfile] Profile update response:', response);
 
             if (response) {
@@ -853,6 +859,24 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     return `Please enter a valid ${this.currentPhoneLength} digit phone number for ${this.selectedCountry?.name}`;
   }
 
+  private getApiErrorMessage(error: any, fallback: string): string {
+    const errorBody = error?.error;
+
+    if (typeof errorBody === 'string') {
+      try {
+        const parsed = JSON.parse(errorBody);
+        if (parsed?.message) return parsed.message;
+      } catch (e) {
+        return errorBody || fallback;
+      }
+    }
+
+    if (errorBody?.message) return errorBody.message;
+    if (errorBody?.error?.message) return errorBody.error.message;
+    if (error?.message) return error.message;
+    return fallback;
+  }
+
   openBirthdayPickerNow(): void {
     this.openBirthdayPicker = true;
   }
@@ -862,6 +886,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     if (!control) return;
     control.setValue(value);
     try { control.markAsDirty(); } catch (e) { }
+    this.emailVerified = false;
   }
 
   birthdayChanged(date: any): void {
@@ -1033,14 +1058,31 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // No backend integration for now — just open the OTP modal for local testing
+    const newEmail = emailValue.trim();
     this.emailVerificationError = null;
-    this.maskedEmail = emailValue.trim();
-    this.clearOtp();
-    this.currentVerificationType = 'email';
-    this.showEmailOtpModal = true;
-    this.startOtpTimer();
-    console.log('[EditProfile] (no-api) Opening Email OTP modal for', this.maskedEmail);
+    this.isEmailVerifying = true;
+
+    this.subscription.add(
+      this.authService.requestEmailChangeOtp(newEmail)
+        .pipe(finalize(() => { this.isEmailVerifying = false; }))
+        .subscribe({
+          next: (response) => {
+            this.maskedEmail = newEmail;
+            this.clearOtp();
+            this.currentVerificationType = 'email';
+            this.showEmailOtpModal = true;
+            this.startOtpTimer();
+            this.coreService.triggerToasrt(response?.message || 'OTP sent successfully!', 'success');
+            console.log('[EditProfile] Email change OTP requested:', response);
+          },
+          error: (error) => {
+            const errorMsg = this.getApiErrorMessage(error, 'Failed to send OTP. Please try again.');
+            this.emailVerificationError = errorMsg;
+            this.coreService.triggerToasrt(errorMsg);
+            console.error('[EditProfile] Email change OTP request error:', error);
+          }
+        })
+    );
   }
 
   /**
@@ -1074,7 +1116,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (response) => {
             this.phoneVerified = true;
-            this.coreService.triggerToasrt('Phone verified successfully!');
+            this.coreService.triggerToasrt('Phone verified successfully!', 'success');
             this.showPhoneOtpModal = false;
             console.log('[EditProfile] Phone OTP verified:', response);
           },
@@ -1093,18 +1135,26 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   private verifyEmailOtp(otp: string): void {
     const emailValue = this.profileForm.get('email')?.value;
     if (!emailValue) return;
+    const newEmail = emailValue.trim();
 
     this.subscription.add(
-      this.authService.verifyEmailOtp(emailValue.trim(), otp)
+      this.authService.verifyEmailChangeOtp(otp)
         .subscribe({
           next: (response) => {
             this.emailVerified = true;
-            this.coreService.triggerToasrt('Email verified successfully!');
-            this.showEmailOtpModal = false;
+            this.updateUserDataInLocalStorage({ email: newEmail });
+            this.updateUserServiceImmediately({ email: newEmail });
+            if (this.currentUserData) {
+              this.currentUserData = { ...this.currentUserData, email: newEmail };
+            }
+            this.syncUserDataStorage({ email: newEmail });
+            this.storeInitialValues();
+            this.coreService.triggerToasrt(response?.message || 'Email updated successfully', 'success');
+            this.closeOtpModal();
             console.log('[EditProfile] Email OTP verified:', response);
           },
           error: (error) => {
-            const errorMsg = error?.error?.message || 'Incorrect OTP';
+            const errorMsg = this.getApiErrorMessage(error, 'Invalid OTP. Please check and try again.');
             this.markInvalid(errorMsg);
             console.error('[EditProfile] Email OTP verification error:', error);
           }
@@ -1126,7 +1176,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
         this.authService.sendPhoneOtp(fullPhone)
           .subscribe({
             next: (response) => {
-              this.coreService.triggerToasrt('OTP resent successfully!');
+              this.coreService.triggerToasrt('OTP resent successfully!', 'success');
               console.log('[EditProfile] Phone OTP resent:', response);
             },
             error: (error) => {
@@ -1139,18 +1189,25 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     } else if (this.currentVerificationType === 'email') {
       const emailValue = this.profileForm.get('email')?.value;
       if (!emailValue) return;
+      const newEmail = emailValue.trim();
 
       this.subscription.add(
-        this.authService.sendEmailOtp(emailValue.trim())
+        this.authService.requestEmailChangeOtp(newEmail)
           .subscribe({
             next: (response) => {
-              this.coreService.triggerToasrt('OTP resent successfully!');
-              console.log('[EditProfile] Email OTP resent:', response);
+              this.maskedEmail = newEmail;
+              this.clearOtp();
+              this.otpError = null;
+              this.otpInvalid = false;
+              this.otpVerifying = false;
+              this.startOtpTimer();
+              this.coreService.triggerToasrt(response?.message || 'OTP resent successfully!', 'success');
+              console.log('[EditProfile] Email change OTP resent:', response);
             },
             error: (error) => {
-              const errorMsg = error?.error?.message || 'Failed to resend OTP.';
+              const errorMsg = this.getApiErrorMessage(error, 'Failed to resend OTP.');
               this.coreService.triggerToasrt(errorMsg);
-              console.error('[EditProfile] Resend email OTP error:', error);
+              console.error('[EditProfile] Resend email change OTP error:', error);
             }
           })
       );

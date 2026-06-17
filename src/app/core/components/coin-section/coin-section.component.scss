@@ -1,13 +1,13 @@
+// ── Header card ─────────────────────────────────────────────────────────────
 .coin-card {
     width: 100%;
-    border-radius: 0px 0px 48px 48px;
+    border-radius: 0 0 48px 48px;
     background: linear-gradient(109deg, #BE6F03 1.38%, #EBA235 50.47%, #CB7D0C 98.62%);
     padding: 16px 16px 24px;
     position: relative;
     color: white;
 }
 
-/* When viewing as a parent (no panda message), pin coins and redeem button to bottom */
 .coin-card.parent-view {
     display: flex;
     flex-direction: column;
@@ -52,22 +52,30 @@
     }
 }
 
-
-
+// ── List section ─────────────────────────────────────────────────────────────
 .coin-list-section {
-    padding: 16px 16px 100px 16px;
+    padding: 20px 16px 100px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 0;
+
+    h2 {
+        font-family: Fredoka;
+        font-size: 18px;
+        font-weight: 600;
+        color: #282527;
+        margin: 0 0 16px;
+    }
 }
 
+// ── Loading / blank ──────────────────────────────────────────────────────────
 .loading-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 40px 16px;
-    gap: 16px;
+    gap: 12px;
 
     ion-spinner {
         width: 40px;
@@ -80,6 +88,7 @@
         font-family: Nunito;
         font-size: 14px;
         font-weight: 500;
+        margin: 0;
     }
 }
 
@@ -88,102 +97,212 @@
     flex-direction: column;
     align-items: center;
     gap: 8px;
+    padding-top: 16px;
 
     .home-blank {
-        width: 256px;
-        height: 158px;
-        aspect-ratio: 128/79;
+        width: 200px;
+        height: auto;
     }
 
     .blank-text {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
+        text-align: center;
 
         h1 {
-            width: 339px;
             color: #282527;
-            text-align: center;
             font-family: Fredoka;
             font-size: 16px;
             font-weight: 500;
-            line-height: 140%;
+            margin: 0;
         }
 
         p {
-            width: 269px;
-            color: #282527;
-            text-align: center;
+            color: #6B656A;
             font-family: Nunito;
             font-size: 13px;
             font-weight: 500;
-            line-height: 140%;
-            opacity: 0.7;
+            margin: 0;
+            max-width: 260px;
+            opacity: 0.8;
         }
     }
 }
 
+// ── Day group ────────────────────────────────────────────────────────────────
+.day-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 4px;
+}
+
+// ── Date separator ───────────────────────────────────────────────────────────
+.date-separator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 0 10px;
+
+    &__line {
+        flex: 1;
+        height: 1px;
+        background: rgba(107, 101, 106, 0.15);
+        border-radius: 1px;
+    }
+
+    &__pill {
+        flex-shrink: 0;
+        font-family: Nunito;
+        font-size: 12px;
+        font-weight: 700;
+        color: #6B656A;
+        background: #F5F0EE;
+        border-radius: 20px;
+        padding: 4px 12px;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
+    }
+
+    &__pill--today {
+        color: #BE6F03;
+        background: #FFF3CD;
+    }
+}
+
+// ── History items ─────────────────────────────────────────────────────────────
 .coin-list-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 16px;
+    margin-bottom: 6px;
+    background: #FFFFFF;
+    box-shadow: 0 1px 4px rgba(107, 101, 106, 0.10);
+    transition: background 0.15s;
+
+    &--bonus {
+        background: linear-gradient(90deg, #FFFBF0 0%, #FFF8E1 100%);
+        box-shadow: 0 1px 6px rgba(190, 111, 3, 0.12);
+        border: 1px solid rgba(235, 162, 53, 0.25);
+    }
 }
 
-.coin-detail {
+// ── Icon ──────────────────────────────────────────────────────────────────────
+.item-icon-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.item-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    flex-shrink: 0;
 
-    .item-icon {
-        width: 24px;
-        height: 24px;
+    &--thumb {
+        object-fit: cover;
     }
 
-    .coin-label {
-        display: flex;
-        width: 136px;
-        flex-direction: column;
-        gap: 2px;
-
-        .item-title {
-            color: #282527;
-            font-family: Nunito;
-            font-size: 13px;
-            font-weight: 600;
-            line-height: 140%;
-        }
-
-        .item-date {
-            color: #6B656A;
-            font-family: Nunito;
-            font-size: 10px;
-            font-weight: 600;
-            line-height: 140%;
+    &--type {
+        .type-img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
         }
     }
 }
 
+.bonus-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 18px;
+    height: 18px;
+    background: #EBA235;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #fff;
+    font-weight: 700;
+    border: 1.5px solid #fff;
+}
+
+// ── Label ─────────────────────────────────────────────────────────────────────
+.coin-label {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+
+    .item-title {
+        color: #282527;
+        font-family: Nunito;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.35;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .item-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .type-chip {
+        font-family: Nunito;
+        font-size: 10px;
+        font-weight: 700;
+        color: #BE6F03;
+        background: rgba(235, 162, 53, 0.12);
+        border-radius: 8px;
+        padding: 1px 7px;
+        white-space: nowrap;
+    }
+
+    .item-time {
+        color: #6B656A;
+        font-family: Nunito;
+        font-size: 10px;
+        font-weight: 500;
+        opacity: 0.8;
+    }
+}
+
+// ── Amount ────────────────────────────────────────────────────────────────────
 .coin-count {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
+    flex-shrink: 0;
 
     .count-icon {
-        width: 24px;
+        width: 18px;
         height: auto;
-        aspect-ratio: 6/7;
         object-fit: contain;
     }
 
     .count-value {
         color: #28A745;
         font-family: Nunito;
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 700;
-        line-height: 140%;
-    }
-    .count-value.negative {
-        color: #BB2124;
+        line-height: 1;
+
+        &.negative {
+            color: #BB2124;
+        }
     }
 }

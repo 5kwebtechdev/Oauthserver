@@ -2,7 +2,7 @@
 
   <!-- Header -->
   <div class="header" *ngIf="lesson">
-    <mindful-navigator backIcon="arrowSvg" (back)="close()"></mindful-navigator>
+    <superme-navigator backIcon="arrowSvg" (back)="close()"></superme-navigator>
     <img [src]="convertGoogleDriveUrl(lesson.thumbnailUrl)" alt="Lesson" class="lesson-img"
       (error)="onImageError($event)">
     <h1>{{ lesson.order }}. {{ lesson.title }}</h1>
@@ -36,11 +36,11 @@
 
   <!-- Footer Buttons -->
   <div class="footer-cta d-flex w-100 gap-2" *ngIf="lesson && !wasCompletedOnLoad && (!doneClicked || !isLastLesson)">
-    <mindful-button *ngIf="!doneClicked"
-      [type]="'green'" [text]="'Done'" (click)="onDoneClick()"></mindful-button>
-    <mindful-button *ngIf="doneClicked && !isLastLesson"
+    <superme-button *ngIf="!doneClicked"
+      [type]="'green'" [text]="'Done'" (click)="onDoneClick()"></superme-button>
+    <superme-button *ngIf="doneClicked && !isLastLesson"
       [type]="'magenta'" [text]="'Go to Lesson ' + nextLessonOrder" (click)="goToNext()">
-    </mindful-button>
+    </superme-button>
   </div>
 
 </div>

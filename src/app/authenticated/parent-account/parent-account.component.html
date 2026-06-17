@@ -58,37 +58,45 @@
                     </a>
                 </nav>
             </header>
-            <div class="child-progress">
+            <div class="child-progress" *ngIf="hasLinkedChildren">
                 <div class="timeline-score-card container w-full p-0">
                     <div class="d-flex justify-content-between w-100 m-0 p-3">
                         <div class="col-3 p-0">
-                            <mindful-completion [completionPercentage]="completionRate" [borderColor]="'#4CAF50'"
+                            <superme-completion [completionPercentage]="completionRate" [borderColor]="'#4CAF50'"
                                 [innerText]="completionRate + '%'" [belowText]="'Completion Rate'">
-                            </mindful-completion>
+                            </superme-completion>
                         </div>
                         <div class="col-3 p-0">
-                            <mindful-completion [completionPercentage]="consistencyRate" [borderColor]="'#F0AD4E'"
+                            <superme-completion [completionPercentage]="consistencyRate" [borderColor]="'#F0AD4E'"
                                 [innerText]="consistencyRate + '%'" [belowText]="'Consistency Rate'">
-                            </mindful-completion>
+                            </superme-completion>
                         </div>
                         <div class="col-3 p-0">
-                            <mindful-completion [completionPercentage]="Math.abs(improvementRate)"
+                            <superme-completion [completionPercentage]="Math.abs(improvementRate)"
                                 [borderColor]="'#BB2124'" [innerText]="improvementRate + '%'"
                                 [belowText]="'Improvement Rate'">
-                            </mindful-completion>
+                            </superme-completion>
                         </div>
                         <div class="col-3 p-0">
-                            <mindful-completion [completionPercentage]="appScore" [borderColor]="'#F0AD4E'"
+                            <superme-completion [completionPercentage]="appScore" [borderColor]="'#F0AD4E'"
                                 [innerText]="appScore + ''" [belowText]="'App\'s Score'">
-                            </mindful-completion>
+                            </superme-completion>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <div class="dashboard-content">
-            <a class="school-shopping-link w-100" style="
+        <div class="dashboard-content" [class.dashboard-content--empty]="!hasLinkedChildren">
+            <section class="link-child-empty-state" *ngIf="!hasLinkedChildren" aria-labelledby="link-child-heading">
+                <img src="/assets/Images-Transparent/Image-Parents-Family.png" alt="" aria-hidden="true" />
+                <h1 id="link-child-heading">Link with your child to see their progress</h1>
+                <p>Share your Family Code with them, or show the QR. Takes 10 seconds.</p>
+                <superme-button type="magenta" full text="Link my child" (click)="openFamilyConnection()"></superme-button>
+            </section>
+
+            <a *ngIf="
+            hasLinkedChildren" class="school-shopping-link w-100" style="
     text-decoration: none;
 " [routerLink]="['/authed','school-store']" role="link">
                 <div class="school-shopping-banner d-flex">
@@ -102,21 +110,21 @@
                 </div>
             </a>
 
-            <div class="mood-selector w-full parent-mood-readonly" aria-label=" Mood (view
+            <div class="mood-selector w-full parent-mood-readonly" *ngIf="hasLinkedChildren" aria-label=" Mood (view
                 only)">
                 <mood-selector #moodSel [value]="selectedMood"></mood-selector>
             </div>
 
-            <div class="ad-banner w-full">
+            <div class="ad-banner w-full" *ngIf="hasLinkedChildren">
                 <ad-banner></ad-banner>
             </div>
 
-            <div class="habit-page w-full" #habitPage>
+            <div class="habit-page w-full" #habitPage *ngIf="hasLinkedChildren">
                 <activity-page-content></activity-page-content>
             </div>
 
         </div>
     </div>
-    <mindful-button *ngIf="isAddButtonVisible" type="add" class="fab-add-button" text="Add" (click)="openActivityInput()"></mindful-button>
+    <superme-button *ngIf="isAddButtonVisible && hasLinkedChildren" type="add" class="fab-add-button" text="Add" (click)="openActivityInput()"></superme-button>
     <app-footer></app-footer>
 </ion-content>

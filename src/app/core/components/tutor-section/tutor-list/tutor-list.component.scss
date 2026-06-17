@@ -14,7 +14,7 @@
   display: flex;
   padding: 8px;
   justify-content: center;
-  align-items: center;
+  align-items: stretch;
   gap: 8px;
   align-self: stretch;
   border-radius: 12px;
@@ -23,13 +23,13 @@
 
   .thumbnail {
     width: 91.667px;
-    height: 90px;
+    min-height: 112px;
     flex-shrink: 0;
-    aspect-ratio: 55/54;
+    align-self: stretch;
 
     .avatar {
-      width: 91.67px;
-      height: 90px;
+      width: 100%;
+      height: 100%;
       background-size: cover;
       background-position: center;
       border-radius: 8px;

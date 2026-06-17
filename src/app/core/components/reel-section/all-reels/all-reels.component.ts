@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { ReelFrameComponent } from '../reel-frame/reel-frame.component';
 import { Subscription } from 'rxjs';
 
@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
     templateUrl: './all-reels.component.html',
     styleUrls: ['./all-reels.component.scss'],
     standalone: true,
-    imports: [CommonModule, IonicModule, MindfulNavigatorComponent, ReelFrameComponent]
+    imports: [CommonModule, IonicModule, SupermeNavigatorComponent, ReelFrameComponent]
 })
 export class AllReelsComponent implements OnInit, OnDestroy {
     // Optional input when used as a child component

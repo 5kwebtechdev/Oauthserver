@@ -2,15 +2,15 @@ import { Component, Input, output, ViewChild, ElementRef, OnDestroy } from '@ang
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonModal, IonContent } from '@ionic/angular/standalone';
-import { MindfulNavigatorComponent } from '../../../mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from '../../../mindful-button/mindful-button.component';
+import { SupermeNavigatorComponent } from '../../../superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../../superme-button/superme-button.component';
 
 @Component({
   standalone: true,
   selector: 'size-guide',
   templateUrl: './size-guide.component.html',
   styleUrls: ['./size-guide.component.scss'],
-  imports: [CommonModule, IonModal, IonContent, MindfulNavigatorComponent, MindfulButtonComponent],
+  imports: [CommonModule, IonModal, IonContent, SupermeNavigatorComponent, SupermeButtonComponent],
 })
 export class SizeGuideComponent implements OnDestroy {
   @Input() sizeChart: Array<{ size: number; chest: number; length: number; sleeve: number; age: string }> = [];

@@ -1,7 +1,7 @@
 <ion-content>
     <main class="my-order-container">
-        <mindful-navigator heading="My Orders" backIcon="arrowSvg" (back)="goBack()">
-        </mindful-navigator>
+        <superme-navigator heading="My Orders" backIcon="arrowSvg" (back)="goBack()">
+        </superme-navigator>
        <div class="orders-container d-flex flex-column gap-3">
             <div class="search-n-filter d-flex align-center justify-content-between gap-3">
             <div class="search-bar">
@@ -54,8 +54,8 @@
     <!-- Filter Screen -->
     <div class="order-filter-screen" [class.visible]="isFilterScreenVisible">
         <div class="nav-head">
-            <mindful-navigator heading="All Filters" backIcon="arrowSvg" (back)="goBack()">
-        </mindful-navigator>
+            <superme-navigator heading="All Filters" backIcon="arrowSvg" (back)="goBack()">
+        </superme-navigator>
         </div>
         <div class="filter-content">
             <div class="status-filter d-flex flex-column gap-3">
@@ -104,16 +104,16 @@
             </div>            
         </div>
         <div class="filter-actions" style="padding:16px;">
-            <mindful-button type="magenta" size="large" [text]="'Apply (Showing ' + filteredOrders.length + ' results)'" (click)="applyFilters()"></mindful-button>
+            <superme-button type="magenta" size="large" [text]="'Apply (Showing ' + filteredOrders.length + ' results)'" (click)="applyFilters()"></superme-button>
         </div>
     </div>
 
       <!-- order-details -->
     <div class="order-detail-screen" [class.visible]="isOrderDetailVisible">
         <div class="nav-head">
-            <mindful-navigator heading="Order Details" backIcon="arrowSvg" (back)="goBack()">
-                <mindful-view-all slot="end" text="Help" [hideIcon]="true" (click)="onHelpClick()"></mindful-view-all>
-            </mindful-navigator>
+            <superme-navigator heading="Order Details" backIcon="arrowSvg" (back)="goBack()">
+                <superme-view-all slot="end" text="Help" [hideIcon]="true" (click)="onHelpClick()"></superme-view-all>
+            </superme-navigator>
         </div>
         <div class="order-content" [class.has-footer]="hasFooter">
             <div class="order-information d-flex flex-column">
@@ -246,23 +246,23 @@
         <!-- Footer Actions -->
         <div *ngIf="hasFooter" class="footer-actions">
             <div *ngIf="showCancelShareFooter" class="footer-buttons">
-                <mindful-button type="bronze" size="large" text="Cancel Order" [disabled]="isOutForDelivery" (click)="openCancelPopup()"></mindful-button>
-                <mindful-button type="bronze-transparent" size="large" text="Share Tracking" (click)="onShareTracking()"></mindful-button>
+                <superme-button type="bronze" size="large" text="Cancel Order" [disabled]="isOutForDelivery" (click)="openCancelPopup()"></superme-button>
+                <superme-button type="bronze-transparent" size="large" text="Share Tracking" (click)="onShareTracking()"></superme-button>
             </div>
             <div *ngIf="showCancelReturnFooter" class="footer-buttons">
-                <mindful-button type="bronze" size="large" text="Cancel Return" disabled (click)="onCancelReturn()"></mindful-button>
+                <superme-button type="bronze" size="large" text="Cancel Return" disabled (click)="onCancelReturn()"></superme-button>
             </div>
             <div *ngIf="showDownloadInvoiceFooter" class="footer-buttons">
-                <mindful-button type="magenta-transparent" size="large" text="Download Invoice" (click)="onDownloadInvoice()"></mindful-button>
-                <mindful-button *ngIf="showReturnExchangeFooter" type="magenta" size="large" text="Return/Exchange" (click)="onReturnExchange()"></mindful-button>
+                <superme-button type="magenta-transparent" size="large" text="Download Invoice" (click)="onDownloadInvoice()"></superme-button>
+                <superme-button *ngIf="showReturnExchangeFooter" type="magenta" size="large" text="Return/Exchange" (click)="onReturnExchange()"></superme-button>
             </div>
         </div>
     </div>
 
 </ion-content>
 
-<!-- Cancel Confirmation Popup (use shared mindful-popup) -->
-<app-mindful-popup
+<!-- Cancel Confirmation Popup (use shared superme-popup) -->
+<app-superme-popup
     [isVisible]="isCancelPopupVisible"
     [showCloseButton]="true"
     [heading]="'Are you sure you want to cancel?'"
@@ -272,10 +272,10 @@
         (secondaryAction)="confirmCancel()"
         (closeAction)="closeCancelPopup()"
     (backdropClick)="closeCancelPopup()">
-</app-mindful-popup>
+</app-superme-popup>
 
 <!-- Share Tracking Popup -->
-<app-mindful-popup
+<app-superme-popup
     class="share-tracking-popup"
     [isVisible]="sharePopupVisible"
     [config]="{
@@ -290,4 +290,4 @@
     (secondaryAction)="shareWhatsapp()"
     (closeAction)="closeSharePopup()"
     (backdropClick)="closeSharePopup()">
-</app-mindful-popup>
+</app-superme-popup>

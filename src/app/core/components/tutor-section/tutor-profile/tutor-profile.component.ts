@@ -3,11 +3,12 @@ import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ModalController } from '@ionic/angular';
 import { HttpClient, HttpHeaders, HttpClientModule } from '@angular/common/http';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { ProfileFactsComponent, FaqItem, PROFILE_FAQS } from '../../user-profile/profile-facts/profile-facts.component';
 import {
   Tutor,
+  TutorCategory,
   formatExperience,
   formatAvailability,
   formatTime,
@@ -15,6 +16,7 @@ import {
   formatContactModes,
   getExperienceYears
 } from '../../../models/tutor.model';
+import { TutorApi } from '../../../api/tutor.api';
 import { environment } from '../../../../../environments/environment';
 import { AuthService } from '../../../services/auth.service';
 import { TutorLikeService } from '../../../services/tutor-like.service';
@@ -24,12 +26,13 @@ import { Observable } from 'rxjs';
 @Component({
   selector: 'tutor-profile',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulButtonComponent, MindfulNavigatorComponent, ProfileFactsComponent, HttpClientModule],
+  imports: [CommonModule, IonicModule, SupermeButtonComponent, SupermeNavigatorComponent, ProfileFactsComponent, HttpClientModule],
   templateUrl: './tutor-profile.component.html',
   styleUrls: ['./tutor-profile.component.scss']
 })
 export class TutorProfileComponent implements OnInit, OnDestroy {
   @Input() tutor: Tutor | undefined;
+  categoryFieldRows: Array<{ label: string; value: string }> = [];
 
   // Like toggle state
   isLiked = false;
@@ -63,9 +66,13 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     private location: Location,
     private modalCtrl: ModalController
     , private toastService: CustomToastService
+    , private tutorApi: TutorApi
   ) { }
 
   ngOnInit(): void {
+    this.categoryFieldRows = this.buildCategoryFieldRows();
+    this.loadCategoryFieldLabels();
+
     // initialize nav actions first so subscription can update the icon
     this.initNavActions();
 
@@ -116,32 +123,20 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     try { this.location.back(); } catch (e) { window.history.back(); }
   }
 
-  /**
-   * Get likes count from tutor data
-   */
   getLikesCount(): number {
     return this.tutor?.champsLiked || this.tutor?.likes?.length || 0;
   }
 
-  /**
-   * Get experience years for display
-   */
   getExperienceYears(): number {
     if (!this.tutor?.experience) return 0;
     return getExperienceYears(this.tutor.experience);
   }
 
-  /**
-   * Get formatted experience string
-   */
   getExperienceString(): string {
     if (!this.tutor?.experience) return '0 years Exp';
     return formatExperience(this.tutor.experience);
   }
 
-  /**
-   * Get formatted subjects string
-   */
   getSubjectsString(): string {
     if (!this.tutor?.subjects || this.tutor.subjects.length === 0) {
       return this.tutor?.qualification || 'Various Subjects';
@@ -149,9 +144,113 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     return this.tutor.subjects.join(', ');
   }
 
-  /**
-   * Get formatted levels/classes string
-   */
+  private loadCategoryFieldLabels(): void {
+    this.tutorApi.getTutorCategories().subscribe({
+      next: categories => {
+        this.categoryFieldRows = this.buildCategoryFieldRows(categories);
+      },
+      error: () => {
+        this.categoryFieldRows = this.buildCategoryFieldRows();
+      }
+    });
+  }
+
+  private buildCategoryFieldRows(categories: TutorCategory[] = []): Array<{ label: string; value: string }> {
+    const mappings = this.tutor?.categoryMappings || [];
+    const mergedRows = new Map<string, { label: string; values: string[]; order: number }>();
+
+    mappings.forEach((mapping, mappingIndex) => {
+      const category = categories.find(cat => cat.id === mapping.categoryId);
+      const selectedOptions = this.parseSelectedFieldOptions(mapping.selectedFieldOptions);
+
+      Object.entries(selectedOptions).forEach(([fieldKey, rawValue], fieldIndex) => {
+        const values = this.normalizeFieldValue(rawValue);
+        if (values.length === 0) return;
+
+        const field = category?.fields?.find(item => item.fieldKey === fieldKey);
+        const label = field?.fieldLabel || this.formatFieldLabel(fieldKey);
+        const displayValues = values.map(value => this.getOptionDisplayValue(value, field)).filter(Boolean);
+        if (displayValues.length === 0) return;
+
+        const mapKey = label.toLowerCase();
+        const existing = mergedRows.get(mapKey);
+        const order = ((category?.displayOrder ?? mappingIndex) * 100) + (field?.displayOrder ?? fieldIndex);
+
+        if (existing) {
+          existing.values = [...new Set([...existing.values, ...displayValues])];
+          existing.order = Math.min(existing.order, order);
+        } else {
+          mergedRows.set(mapKey, {
+            label,
+            values: [...new Set(displayValues)],
+            order
+          });
+        }
+      });
+    });
+
+    const rows = Array.from(mergedRows.values())
+      .sort((a, b) => a.order - b.order)
+      .map(row => ({
+        label: row.label,
+        value: row.values.join(', ')
+      }));
+
+    if (rows.length > 0) {
+      return rows;
+    }
+
+    return [
+      { label: 'Subjects', value: this.getSubjectsString() },
+      { label: 'Class', value: this.getLevelsString() }
+    ].filter(row => !!row.value);
+  }
+
+  private parseSelectedFieldOptions(selectedFieldOptions: string | null | undefined): Record<string, unknown> {
+    if (!selectedFieldOptions) return {};
+    try {
+      const parsed = JSON.parse(selectedFieldOptions);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  private normalizeFieldValue(value: unknown): string[] {
+    if (Array.isArray(value)) {
+      return value.map(item => String(item).trim()).filter(Boolean);
+    }
+
+    if (value === null || value === undefined) {
+      return [];
+    }
+
+    const text = String(value).trim();
+    return text ? [text] : [];
+  }
+
+  private getOptionDisplayValue(value: string, field?: TutorCategory['fields'][number]): string {
+    const option = field?.options?.find(item => item.optionValue === value || item.optionLabel === value);
+    return option?.optionLabel || this.formatEnumValue(value);
+  }
+
+  private formatFieldLabel(fieldKey: string): string {
+    return fieldKey
+      .replace(/[_-]+/g, ' ')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/\b\w/g, char => char.toUpperCase());
+  }
+
+  private formatEnumValue(value: string): string {
+    return value
+      .replace(/[_-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/\b\w/g, char => char.toUpperCase());
+  }
+
   getLevelsString(): string {
     if (!this.tutor?.levels || this.tutor.levels.length === 0) {
       return 'All Levels';
@@ -159,9 +258,6 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     return formatLevels(this.tutor.levels);
   }
 
-  /**
-   * Get formatted contact modes string
-   */
   getContactModesString(): string {
     if (!this.tutor?.contactModes || this.tutor.contactModes.length === 0) {
       return 'Online, Offline';
@@ -169,9 +265,15 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     return formatContactModes(this.tutor.contactModes);
   }
 
-  /**
-   * Get formatted availability string
-   */
+  getLanguagesString(): string {
+    const languageRows = this.categoryFieldRows
+      .filter(row => row.label.toLowerCase().includes('language'))
+      .map(row => row.value)
+      .filter(Boolean);
+
+    return languageRows.length > 0 ? [...new Set(languageRows)].join(', ') : 'Not specified';
+  }
+
   getAvailabilityString(): string {
     if (!this.tutor) return 'Schedule not available';
 
@@ -188,16 +290,10 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     return days;
   }
 
-  /**
-   * Get hourly rate
-   */
   getHourlyRate(): number {
     return this.tutor?.hourlyRate || this.tutor?.fees || 0;
   }
 
-  /**
-   * Get fee type string
-   */
   getFeeTypeString(): string {
     if (!this.tutor?.feeType) return '/per hour';
     const feeTypeMap: Record<string, string> = {
@@ -209,9 +305,6 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     return feeTypeMap[this.tutor.feeType] || '/per hour';
   }
 
-  /**
-   * Get board information from category mappings
-   */
   getBoardString(): string {
     if (!this.tutor?.categoryMappings || this.tutor.categoryMappings.length === 0) {
       return 'CBSE, State Board';
@@ -232,14 +325,32 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     return boards.length > 0 ? [...new Set(boards)].join(', ') : 'CBSE, State Board';
   }
 
+  /**
+   * Build the full location string from all available address fields.
+   * Falls back to tutor.location (city only) if granular fields are absent.
+   * API returns: addressLine, city, state, pincode, country
+   */
+  getFullLocation(): string {
+    const t = this.tutor as any;
+    if (!t) return 'Location not specified';
+
+    const parts: string[] = [];
+
+    if (t.addressLine) parts.push(t.addressLine);
+    if (t.city)        parts.push(t.city);
+    if (t.state)       parts.push(t.state);
+    if (t.pincode)     parts.push(t.pincode);
+    if (t.country)     parts.push(t.country);
+
+    if (parts.length > 0) return parts.join(', ');
+
+    return t.location || 'Location not specified';
+  }
+
   onFavorite(): void {
     console.log('Favorite clicked for:', this.tutor?.name);
   }
 
-  /**
-   * Return true when the current user relationship is CHILD
-   * (used to disable actions not allowed for child users)
-   */
   isChildUser(): boolean {
     try {
       return this.authService.getUserRelationship() === 'CHILD';
@@ -251,28 +362,22 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   handleNavAction(event: any): void {
     const { index, action } = event;
     if (action.type === 'heart') {
-      // Delegate all like/unlike handling to the shared like service.
-      // The service performs optimistic updates, persistence and reconciliation.
       this.likeService.toggleLike(this.tutor);
-      // UI updates (count and icon) are handled by the service subscription.
       this.onFavorite();
     }
   }
 
   contactTutor(): void {
     if (this.isChildUser()) {
-      // show short-lived toast instructing child to ask parent
       this.showTransientContactToast();
       console.warn('Contact disabled for child users');
       return;
     }
 
-    // open inline bottom sheet
     this.openContactSheet();
   }
 
   private showTransientContactToast(durationMs = 3000): void {
-    // Use shared toast service for transient message
     this.toastService.error(this.contactToastMessage, durationMs);
   }
 
@@ -283,7 +388,6 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   openContactSheet(): void {
     this.selectedContactMethod = 'call';
     this.showContactSheet = true;
-    // prevent body scroll when sheet open (minimal)
     document.body.style.overflow = 'hidden';
   }
 
@@ -298,17 +402,13 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
 
   async confirmContact(): Promise<void> {
     const method = this.selectedContactMethod;
-    // close sheet immediately
     this.closeContactSheet();
 
     if (!method) return;
 
-    // Helper to open URL via Capacitor App when available, otherwise fallback to window.location
     const openUrl = async (url: string) => {
       try {
-        // dynamic import to avoid bundling issues on web
         const mod = await import('@capacitor/app');
-        // use any-cast to avoid TypeScript typing mismatch across Capacitor versions
         const appAny: any = (mod && (mod as any).App) || null;
         if (appAny && typeof appAny.openUrl === 'function') {
           await appAny.openUrl({ url });
@@ -317,14 +417,12 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
       } catch (e) {
         // ignore and fallback
       }
-      // fallback for web
       window.location.href = url;
     };
 
     if (method === 'call') {
       const raw = (this.tutor?.phone || '').toString().trim();
       if (!raw) return;
-      // normalize phone: keep leading + and digits only
       const normalized = raw.replace(/[^+\d]/g, '');
       const telUrl = `tel:${normalized}`;
       await openUrl(telUrl);

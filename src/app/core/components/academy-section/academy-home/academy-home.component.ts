@@ -4,9 +4,10 @@ import { IonicModule } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { NavigationService } from '../../../services/navigation.service';
 import { AcademyCategory, AcademyService } from '../../../services/academy.service';
-import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
-import { MindfulSpeechBubbleComponent } from '../../mindful-speech-bubble/mindful-speech-bubble.component';
-import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
+import { AuthService } from '../../../services/auth.service';
+import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
+import { SupermeSpeechBubbleComponent } from '../../superme-speech-bubble/superme-speech-bubble.component';
+import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
 
 interface CategoryCard {
   id: number;
@@ -22,7 +23,7 @@ interface CategoryCard {
 @Component({
   selector: 'app-academy-home',
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, MindfulCardHeaderComponent, MindfulSpeechBubbleComponent, MindfulPetComponent],
+  imports: [CommonModule, IonicModule, RouterModule, SupermeCardHeaderComponent, SupermeSpeechBubbleComponent, SupermePetComponent],
   templateUrl: './academy-home.component.html',
   styleUrls: ['./academy-home.component.scss']
 })
@@ -42,7 +43,12 @@ export class AcademyHomeComponent {
     '/assets/Images-Transparent/Image-Academy-Cat4.png',
   ];
 
-  constructor(private router: Router, private academyService: AcademyService, private navigation: NavigationService) { }
+  constructor(
+    private router: Router,
+    private academyService: AcademyService,
+    private navigation: NavigationService,
+    private authService: AuthService
+  ) { }
 
   ngOnInit(): void {
     this.loadCategories();
@@ -76,13 +82,20 @@ export class AcademyHomeComponent {
   }
 
   openSubject(card: CategoryCard): void {
+    const age = this.authService.getCurrentUserAge();
+    const queryParams: Record<string, string | number> = {
+      category: card.category,
+      categoryId: card.id,
+      title: card.title,
+      subtitle: card.description
+    };
+
+    if (age) {
+      queryParams['age'] = age;
+    }
+
     this.router.navigate(['/authed/academy/subject'], {
-      queryParams: {
-        category: card.category,
-        categoryId: card.id,
-        title: card.title,
-        subtitle: card.description
-      }
+      queryParams
     });
   }
 

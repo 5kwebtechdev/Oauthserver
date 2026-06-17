@@ -8,10 +8,10 @@ import { HomePage } from './home.page';
 import { HomePageRoutingModule } from './home-routing.module';
 import { LoginComponent } from "./login/login.component";
 import { SignupComponent } from "./signup/signup.component";
-import { MindfulSelectorsComponent } from "../core/components/mindful-selectors/mindful-selectors.component";
-import { MindfulNavigatorComponent } from "../core/components/mindful-navigator/mindful-navigator.component";
-import { MindfulInputsModule } from "../core/components/mindful-inputs/mindful-inputs.module";
-import { MindfulButtonComponent } from "../core/components/mindful-button/mindful-button.component";
+import { SupermeSelectorsComponent } from "../core/components/superme-selectors/superme-selectors.component";
+import { SupermeNavigatorComponent } from "../core/components/superme-navigator/superme-navigator.component";
+import { SupermeInputsModule } from "../core/components/superme-inputs/superme-inputs.module";
+import { SupermeButtonComponent } from "../core/components/superme-button/superme-button.component";
 import { SocialMediaComponent } from '../core/components/social-media/social-media.component';
 import { ProfileFactsComponent } from '../core/components/user-profile/profile-facts/profile-facts.component';
 import { FamilyOnboardComponent } from "./family-onboard/family-onboard.component";
@@ -26,10 +26,10 @@ import { ResetPasswordComponent } from "./reset-password/reset-password.componen
     HomePageRoutingModule,
     ReactiveFormsModule,
     FamilyOnboardComponent,
-    MindfulNavigatorComponent,
-    MindfulSelectorsComponent,
-    MindfulInputsModule,
-    MindfulButtonComponent,
+    SupermeNavigatorComponent,
+    SupermeSelectorsComponent,
+    SupermeInputsModule,
+    SupermeButtonComponent,
     ProfileFactsComponent,
     ScanQrComponent,
     ResetPasswordComponent,

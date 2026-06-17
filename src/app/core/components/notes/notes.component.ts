@@ -1,10 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController, ViewWillEnter } from '@ionic/angular';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
-import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigator.component';
+import { SupermeButtonComponent } from '../superme-button/superme-button.component';
+import { SupermeNavigatorComponent } from '../superme-navigator/superme-navigator.component';
 import { NotesService, NoteModel } from './notes.service';
 import { NotesSaveComponent } from './notes-save/notes-save.component';
 import { AuthService } from '../../services/auth.service';
@@ -13,7 +13,7 @@ import { RefreshService } from '../../services/refresh.service';
 @Component({
   selector: 'notes',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, RouterModule, MindfulButtonComponent, MindfulNavigatorComponent],
+  imports: [CommonModule, IonicModule, FormsModule, RouterModule, SupermeButtonComponent, SupermeNavigatorComponent],
   templateUrl: './notes.component.html',
   styleUrls: ['./notes.component.scss']
 })
@@ -27,18 +27,27 @@ export class NotesComponent implements OnInit, OnDestroy, ViewWillEnter {
   public tags: { key: any; value: string }[] = [];
   public titleCollapsed: boolean = false;
   public notes: NoteModel[] = [];
-  public drafts: Array<{ id: number; title: string; text: string; tags?: string[] }> = [];
+  public drafts: Array<{ id: number; title: string; text: string; tags?: string[]; tagId?: any }> = [];
   // tag action UI
   public activeTagIndex: number | null = null;
   public editIndex: number | null = null;
   public editName: string = '';
+
+  // ── Swipe-to-delete state ──────────────────────────────────────────────────
+  public swipedNoteId: any = null;
+  public removingIds = new Set<any>();
+  private swipeTouchStartX = 0;
+  private swipeTouchStartY = 0;
+  private swipeIsH = false;
+  private readonly SWIPE_REVEAL_PX = 80;
 
   constructor(
     private modalCtrl: ModalController,
     private router: Router,
     private notesService: NotesService,
     private authService: AuthService,
-    private refreshService: RefreshService
+    private refreshService: RefreshService,
+    private ngZone: NgZone
   ) {
     // restore session cache if present; otherwise fetch from server once
     this.notesService.initFromSession();
@@ -48,7 +57,7 @@ export class NotesComponent implements OnInit, OnDestroy, ViewWillEnter {
       const raw = sessionStorage.getItem('notes-drafts');
       if (raw) {
         const parsed = JSON.parse(raw) as any[];
-        this.drafts = Array.isArray(parsed) ? parsed.map(d => ({ id: d.id || Date.now(), title: d.title || '', text: d.text || '', tags: Array.isArray(d.tags) ? d.tags : [] })) : [];
+        this.drafts = Array.isArray(parsed) ? parsed.map(d => ({ id: d.id || Date.now(), title: d.title || '', text: d.text || '', tags: Array.isArray(d.tags) ? d.tags : [], tagId: d.tagId })) : [];
       }
     } catch (e) {
       // ignore storage errors
@@ -63,7 +72,7 @@ export class NotesComponent implements OnInit, OnDestroy, ViewWillEnter {
         const raw = sessionStorage.getItem('notes-drafts');
         if (raw) {
           const parsed = JSON.parse(raw) as any[];
-          this.drafts = Array.isArray(parsed) ? parsed.map(d => ({ id: d.id || Date.now(), title: d.title || '', text: d.text || '', tags: Array.isArray(d.tags) ? d.tags : [] })) : [];
+          this.drafts = Array.isArray(parsed) ? parsed.map(d => ({ id: d.id || Date.now(), title: d.title || '', text: d.text || '', tags: Array.isArray(d.tags) ? d.tags : [], tagId: d.tagId })) : [];
         } else {
           this.drafts = [];
         }
@@ -72,6 +81,9 @@ export class NotesComponent implements OnInit, OnDestroy, ViewWillEnter {
     // only fetch from server if we don't have any cached notes
     if (!this.notes || this.notes.length === 0) {
       this.loadFromServer();
+    } else {
+      // cached data is available; no initial fetch needed
+      this.loading = false;
     }
   }
 
@@ -87,6 +99,7 @@ export class NotesComponent implements OnInit, OnDestroy, ViewWillEnter {
         componentProps: {
           title: note.title,
           content: note.text,
+          tags: note.tags,
           showDelete: true,
           showShare: true,
           noteId: (note as any).id || null,
@@ -118,7 +131,7 @@ export class NotesComponent implements OnInit, OnDestroy, ViewWillEnter {
     { k: 'az', l: 'A - Z' },
     { k: 'za', l: 'Z - A' }
   ];
-  public loading: boolean = false;
+  public loading: boolean = true;
   public loadError: string | null = null;
 
   public loadFromServer() {
@@ -374,7 +387,7 @@ export class NotesComponent implements OnInit, OnDestroy, ViewWillEnter {
     }
   }
 
-  // Handlers for MindfulTagsComponent events
+  // Handlers for SupermeTagsComponent events
   onTagEdit(event: { key: any; value: string }) {
     const key = event && event.key;
     const idx = this.tags.findIndex(t => t.key === key);
@@ -404,7 +417,7 @@ export class NotesComponent implements OnInit, OnDestroy, ViewWillEnter {
     // e.g., this.selectedTagIndices = keys;
   }
 
-  // Provide options in the { key, value } shape expected by MindfulTagsComponent
+  // Provide options in the { key, value } shape expected by SupermeTagsComponent
   get tagOptions(): { key: any; value: string }[] {
     return this.tags.map(t => ({ key: t.key, value: t.value }));
   }
@@ -469,6 +482,108 @@ export class NotesComponent implements OnInit, OnDestroy, ViewWillEnter {
     this.router.navigate(['/authed/notes/new'], { queryParams: { fresh: '1' } });
   }
 
+
+  // ── Swipe gesture handlers ────────────────────────────────────────────────
+
+  onSwipeStart(event: TouchEvent, note: NoteModel): void {
+    this.swipeTouchStartX = event.touches[0].clientX;
+    this.swipeTouchStartY = event.touches[0].clientY;
+    this.swipeIsH = false;
+  }
+
+  onSwipeMove(event: TouchEvent, note: NoteModel): void {
+    const dx = event.touches[0].clientX - this.swipeTouchStartX;
+    const dy = Math.abs(event.touches[0].clientY - this.swipeTouchStartY);
+
+    if (!this.swipeIsH) {
+      if (Math.abs(dx) < 6) return;
+      if (dy > Math.abs(dx) * 0.9) return; // more vertical — let scroll happen
+      this.swipeIsH = true;
+      if (this.swipedNoteId !== null && this.swipedNoteId !== note.id) {
+        this.closeSwipeById(this.swipedNoteId);
+      }
+    }
+
+    // Right-to-left swipe: negative dx reveals delete on the right
+    const id = note.id;
+    const base = this.swipedNoteId === id ? this.SWIPE_REVEAL_PX : 0;
+    const clamped = Math.min(this.SWIPE_REVEAL_PX, Math.max(0, base - dx));
+
+    this.ngZone.runOutsideAngular(() => {
+      const el = this.getSwipeCardEl(id);
+      if (el) { el.style.transition = 'none'; el.style.transform = `translateX(-${clamped}px)`; }
+    });
+  }
+
+  onSwipeEnd(event: TouchEvent, note: NoteModel): void {
+    if (!this.swipeIsH) return;
+
+    const dx = event.changedTouches[0].clientX - this.swipeTouchStartX;
+    const id = note.id;
+    const wasOpen = this.swipedNoteId === id;
+    const finalOffset = (wasOpen ? this.SWIPE_REVEAL_PX : 0) - dx;
+    // snap open when swiped far enough to the left
+    const snapOpen = finalOffset > (wasOpen ? 20 : 40);
+
+    const el = this.getSwipeCardEl(id);
+    if (el) el.style.transition = 'transform 0.25s ease-out';
+
+    if (snapOpen) {
+      this.swipedNoteId = id;
+      if (el) el.style.transform = `translateX(-${this.SWIPE_REVEAL_PX}px)`;
+    } else {
+      this.swipedNoteId = null;
+      if (el) el.style.transform = 'translateX(0)';
+    }
+
+    this.swipeIsH = false;
+  }
+
+  private closeSwipeById(id: any): void {
+    if (!id || this.removingIds.has(id)) return;
+    const el = this.getSwipeCardEl(id);
+    if (el) { el.style.transition = 'transform 0.25s ease-out'; el.style.transform = 'translateX(0)'; }
+    this.swipedNoteId = null;
+  }
+
+  private getSwipeCardEl(id: any): HTMLElement | null {
+    return document.querySelector(`[data-swipe-id="${id}"]`) as HTMLElement | null;
+  }
+
+  onNoteCardClick(note: NoteModel, event?: Event): void {
+    if (this.swipedNoteId !== null) {
+      this.closeSwipeById(this.swipedNoteId);
+      return;
+    }
+    this.openNote(note);
+  }
+
+  deleteNoteItem(note: NoteModel, event: Event): void {
+    event.stopPropagation();
+    const id = note.id;
+    if (!id || this.removingIds.has(id)) return;
+
+    this.removingIds.add(id);
+    this.swipedNoteId = null;
+
+    // Reset card transform — collapse animation handles visual removal
+    const el = this.getSwipeCardEl(id);
+    if (el) { el.style.transition = 'transform 0.2s ease-out'; el.style.transform = 'translateX(0)'; }
+
+    // After collapse animation, call the service (which removes from the list)
+    setTimeout(() => {
+      this.ngZone.run(() => {
+        this.notesService.deleteNote(id).subscribe({
+          next: () => { this.removingIds.delete(id); },
+          error: () => { this.removingIds.delete(id); }
+        });
+      });
+    }, 360);
+  }
+
+  isNoteRemoving(note: NoteModel): boolean {
+    return this.removingIds.has(note.id);
+  }
 
   /**
    * Navigate to the new-note screen in edit mode for the given note.

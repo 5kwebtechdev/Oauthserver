@@ -206,7 +206,7 @@ export class AuthService {
      * Example: /v1/auth/family-details?forUserId=88
      */
     getFamilyDetailsForUser(forUserId?: number): Observable<FamilyDetailsResponse> {
-        let url = `${this.apiUrl}/v1/auth/family-details`;
+        let url = `${this.apiUrl}/auth/family-details`;
         if (typeof forUserId === 'number') {
             url += `?forUserId=${forUserId}`;
         }
@@ -323,6 +323,23 @@ export class AuthService {
     }
 
     /**
+     * Request OTP for changing the current user's email.
+     * Endpoint: POST /v1/auth/change-email/request-otp
+     * Payload: { newEmail: string }
+     */
+    requestEmailChangeOtp(newEmail: string): Observable<any> {
+        const url = `${this.apiUrl}/auth/change-email/request-otp`;
+        const userToken = this.getToken();
+
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`
+        });
+
+        return this.http.post<any>(url, { newEmail }, { headers });
+    }
+
+    /**
      * Verify phone OTP
      * Endpoint: POST {{host}}/v1/auth/verify-phone-otp
      * Payload: { phone: string, otp: string }
@@ -354,6 +371,23 @@ export class AuthService {
         });
 
         return this.http.post<any>(url, { email, otp }, { headers });
+    }
+
+    /**
+     * Verify OTP for the pending email change and update email in the backend.
+     * Endpoint: POST /v1/auth/change-email/verify-otp
+     * Payload: { otp: string }
+     */
+    verifyEmailChangeOtp(otp: string): Observable<any> {
+        const url = `${this.apiUrl}/auth/change-email/verify-otp`;
+        const userToken = this.getToken();
+
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`
+        });
+
+        return this.http.post<any>(url, { otp }, { headers });
     }
 }
 

@@ -1,7 +1,7 @@
 <ion-content>
   <main class="product-detail-main">
-    <mindful-navigator [heading]="heading" [rightActions]="[{ type: 'cart', count: cartCount, alt: 'My cart' }]" (back)="goBack()" (rightActionClick)="handleRightAction($event)">
-    </mindful-navigator>
+    <superme-navigator [heading]="heading" [rightActions]="[{ type: 'cart', count: cartCount, alt: 'My cart' }]" (back)="goBack()" (rightActionClick)="handleRightAction($event)">
+    </superme-navigator>
 
     <!-- Product detail content goes here -->
     <div class="product-detail-view">
@@ -117,8 +117,8 @@
             <div class="empty-right">
               <input class="pincode-input" type="text" inputmode="numeric" maxlength="6" placeholder="Enter Pincode"
                 #pincode />
-              <mindful-button class="pincode-check" type="magenta" text="Check"
-                (click)="checkPincode(pincode.value)"></mindful-button>
+              <superme-button class="pincode-check" type="magenta" text="Check"
+                (click)="checkPincode(pincode.value)"></superme-button>
             </div>
           </div>
           <div class="pincode-message" *ngIf="pincodeAvailable !== null">
@@ -173,7 +173,7 @@
       <span class="discounted-price">
         {{ product?.price ?? product?.discountedPrice ? ((product.price ?? product.discountedPrice)) : '₹799' }}
       </span>
-      <mindful-button class="page-cta" type="magenta" text="Add To Bag" large (click)="addToCart()"></mindful-button>
+      <superme-button class="page-cta" type="magenta" text="Add To Bag" large (click)="addToCart()"></superme-button>
     </div>
   </main>
 

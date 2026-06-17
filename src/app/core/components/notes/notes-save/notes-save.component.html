@@ -1,5 +1,5 @@
 <ion-content>
-<mindful-navigator 
+<superme-navigator 
   [heading]="title" 
   [rightActions]="[
     { type: 'icon', src: '/assets/icons/delete.svg', alt: 'Delete' },
@@ -7,7 +7,7 @@
   ]"
   (back)="onBack()"
   (rightActionClick)="onNavigatorAction($event)">
-</mindful-navigator>
+</superme-navigator>
 <div class="note-view">
   <!--note content-->
   <div class="note-content" [innerHTML]="contentHtml"></div>
@@ -15,8 +15,8 @@
     <!-- Debug: show raw payload for troubleshooting (remove in production) -->
     <pre class="note-raw">{{content}}</pre>
 
-  <!-- Use the shared MindfulPopup component for confirmation -->
-  <app-mindful-popup [isVisible]="showMindfulPopup" [config]="{
+  <!-- Use the shared SupermePopup component for confirmation -->
+  <app-superme-popup [isVisible]="showSupermePopup" [config]="{
       heading: 'Are you sure you want to delete this note?',
       subtitle: '',
       primaryCTA: { text: 'Delete', type: 'secondary', buttonStyle: 'bronze', buttonMedium: true },
@@ -24,6 +24,6 @@
       showCloseButton: false,
       backdrop: true
     }" (primaryAction)="confirmDelete()" (secondaryAction)="confirmCancel()"
-    (backdropClick)="confirmCancel()"></app-mindful-popup>
+    (backdropClick)="confirmCancel()"></app-superme-popup>
 </div>
 </ion-content>

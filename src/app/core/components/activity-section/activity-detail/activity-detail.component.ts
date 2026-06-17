@@ -11,15 +11,15 @@ import { HabitApi } from 'src/app/core/api/habit.api';
 import { TaskApi } from 'src/app/core/api/task.api';
 import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { AutoAbortService } from '../auto-abort.service';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulSpeechBubbleComponent } from '../../mindful-speech-bubble/mindful-speech-bubble.component';
-import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
-import { MindfulCoinsStatsComponent } from '../../mindful-coins-stats/mindful-coins-stats.component';
-import { MindfulCalendarComponent } from '../../mindful-inputs/mindful-calendar/mindful-calendar.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
-import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
-import { MindfulPopupComponent, MindfulPopupConfig, MindfulPopupCTA } from '../../mindful-popup/mindful-popup.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeSpeechBubbleComponent } from '../../superme-speech-bubble/superme-speech-bubble.component';
+import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
+import { SupermeCoinsStatsComponent } from '../../superme-coins-stats/superme-coins-stats.component';
+import { SupermeCalendarComponent } from '../../superme-inputs/superme-calendar/superme-calendar.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { SupermeInputsModule } from '../../superme-inputs/superme-inputs.module';
+import { SupermeBadgeComponent } from '../../superme-badge/superme-badge.component';
+import { SupermePopupComponent, SupermePopupConfig, SupermePopupCTA } from '../../superme-popup/superme-popup.component';
 
 type ActivityType = 'habits' | 'tasks' | 'timetable';
 
@@ -29,9 +29,9 @@ type ActivityType = 'habits' | 'tasks' | 'timetable';
   templateUrl: './activity-detail.component.html',
   styleUrls: ['./activity-detail.component.scss'],
   imports: [
-    CommonModule, IonicModule, MindfulNavigatorComponent, MindfulSpeechBubbleComponent,
-    MindfulPetComponent, MindfulCoinsStatsComponent, MindfulCalendarComponent,
-    MindfulButtonComponent, MindfulInputsModule, MindfulBadgeComponent, MindfulPopupComponent
+    CommonModule, IonicModule, SupermeNavigatorComponent, SupermeSpeechBubbleComponent,
+    SupermePetComponent, SupermeCoinsStatsComponent, SupermeCalendarComponent,
+    SupermeButtonComponent, SupermeInputsModule, SupermeBadgeComponent, SupermePopupComponent
   ]
 })
 export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
@@ -57,11 +57,11 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
 
   // Popup states
   public showStartPopup: boolean = false;
-  public startPopupConfig: MindfulPopupConfig = {};
+  public startPopupConfig: SupermePopupConfig = {};
   public showCompletePopup: boolean = false;
-  public completePopupConfig: MindfulPopupConfig = {};
+  public completePopupConfig: SupermePopupConfig = {};
   public showAbortPopup: boolean = false;
-  public abortPopupConfig: MindfulPopupConfig = {};
+  public abortPopupConfig: SupermePopupConfig = {};
 
   constructor(
     private router: Router,
@@ -532,14 +532,14 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
    */
   openStartPopup() {
     // Configure popup content (image, heading, subtitle, CTAs)
-    const primary: MindfulPopupCTA = {
+    const primary: SupermePopupCTA = {
       text: 'Start Now',
       buttonStyle: 'green',
       buttonMedium: true,
       // callback intentionally omitted; handled via (primaryAction) output
     };
 
-    const secondary: MindfulPopupCTA = {
+    const secondary: SupermePopupCTA = {
       text: 'Discard',
       buttonStyle: 'bronze-transparent',
       buttonMedium: true,
@@ -614,14 +614,14 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     // Build heading HTML to include coin and streak rows
     const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:16px;">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style=\"display:flex;flex-direction:column;align-items: center;gap:8px;margin-top:12px;text-align:left;\"><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/Icons-Neutral/Icons-Coins.png' style=\"width:20px;height:20px;\" alt=\"coins\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${coins}</div></div><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/Icons-Neutral/Icon-Streak.png' style=\"width:20px;height:20px;\" alt=\"streak\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${streak}</div></div></div>`;
 
-    const primary: MindfulPopupCTA = {
+    const primary: SupermePopupCTA = {
       text: 'Confirm',
       buttonStyle: 'green',
       buttonMedium: true,
       // callback intentionally omitted; handled via (primaryAction) output
     };
 
-    const secondary: MindfulPopupCTA = {
+    const secondary: SupermePopupCTA = {
       text: 'Discard',
       buttonStyle: 'bronze-transparent',
       buttonMedium: true,
@@ -688,14 +688,14 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
 
     const headingHtml = `You\u2019re halfway there! Want to stop now?<br/><span style="font-weight:400;font-size:16px;">You are about to lose:</span><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;align-items:center;justify-content:center;"><div style="display:flex;align-items:center;gap:12px;"><img src='assets/Icons-Neutral/Icons-Coins.png' style="width:20px;height:20px;" alt="coins"/><div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:12px;"><img src='assets/Icons-Neutral/Icon-Streak.png' style="width:20px;height:20px;" alt="streak"/><div style="font-weight:600;">${streak}</div></div></div>`;
 
-    const primary: MindfulPopupCTA = {
+    const primary: SupermePopupCTA = {
       text: 'Keep Going',
       buttonStyle: 'green',
       buttonMedium: true,
       // callback intentionally omitted; handled via (primaryAction) output
     };
 
-    const secondary: MindfulPopupCTA = {
+    const secondary: SupermePopupCTA = {
       text: 'Abort Anyways',
       buttonStyle: 'bronze-transparent',
       buttonMedium: true,

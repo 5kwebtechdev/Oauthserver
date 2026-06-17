@@ -42,7 +42,7 @@ $theme-colors: (
 /* coin selector removed: styles for .assign-coin and .coin-badge deleted */
 }
 
-.habit-input-header mindful-navigator {
+.habit-input-header superme-navigator {
   display: inline-flex;
   align-items: center;
   gap: 40px;
@@ -69,7 +69,7 @@ $theme-colors: (
   .toggle-right {
 
     ion-toggle,
-    mindful-toggle {
+    superme-toggle {
       --handle-background-checked: #90214D !important;
       --background-checked: rgba(144, 33, 77, 0.12) !important;
       --handle-background: #ffffff;
@@ -93,7 +93,7 @@ $theme-colors: (
       background: rgba(144, 33, 77, 0.12) !important;
     }
 
-    .mindful-toggle {
+    .superme-toggle {
       .track {
         background: #e6e6e6 !important;
       }
@@ -184,8 +184,8 @@ $theme-colors: (
   width: 100%;
 }
 
-.add-new-row mindful-selectors,
-.add-new-row>mindful-selectors {
+.add-new-row superme-selectors,
+.add-new-row>superme-selectors {
   display: block;
   width: 100%;
 }
@@ -231,7 +231,7 @@ $theme-colors: (
   align-items: center;
 }
 
-.date-align .mindful-input-group {
+.date-align .superme-input-group {
   margin-left: auto;
   max-width: 260px;
   width: 100%;
@@ -239,8 +239,8 @@ $theme-colors: (
   justify-content: flex-end;
 }
 
-.habit-input-root ::ng-deep .date-align .mindful-input-group mindful-datepicker input,
-.habit-input-root ::ng-deep .date-align .mindful-input-group mindful-datepicker input::placeholder {
+.habit-input-root ::ng-deep .date-align .superme-input-group superme-datepicker input,
+.habit-input-root ::ng-deep .date-align .superme-input-group superme-datepicker input::placeholder {
   text-align: left;
   padding-right: 0px;
 }
@@ -253,7 +253,7 @@ $theme-colors: (
 }
 
 .timetable-datepicker .date-text,
-.timetable-datepicker mindful-datepicker {
+.timetable-datepicker superme-datepicker {
   color: #282527;
   font-family: Nunito, sans-serif;
   font-size: 13px;
@@ -291,7 +291,7 @@ $theme-colors: (
   gap: 24px;
 }
 
-.timetable-activity .mindful-input-group input {
+.timetable-activity .superme-input-group input {
   width: 100%;
   border: none;
   border-bottom: 2px solid #89B3B6;
@@ -300,7 +300,7 @@ $theme-colors: (
   color: #bdbdbd;
 }
 
-.timetable-activity .mindful-input-group input::placeholder {
+.timetable-activity .superme-input-group input::placeholder {
   color: #bdbdbd;
 }
 
@@ -309,7 +309,7 @@ $theme-colors: (
   min-width: 140px;
 }
 
-.timetable-time mindful-timepicker {
+.timetable-time superme-timepicker {
   display: inline-block;
 }
 
@@ -377,7 +377,7 @@ $theme-colors: (
   align-items: center;
 }
 
-.everyday-toggle mindful-toggle {
+.everyday-toggle superme-toggle {
   display: inline-flex;
   align-items: center;
 }
@@ -430,7 +430,7 @@ $theme-colors: (
   line-height: 140%;
 }
 
-.habit-input-root .pick-time .mindful-input-group .mindful-timepicker-wrapper .time-display-input,
+.habit-input-root .pick-time .superme-input-group .superme-timepicker-wrapper .time-display-input,
 .pick-time input.time-display-input {
   width: 80px !important;
   min-width: 80px !important;
@@ -496,27 +496,27 @@ $notes-themes: (
   margin-top: 6px;
 }
 
-.mindful-input-group input {
+.superme-input-group input {
   background: none !important;
 }
 
-.form-card .mindful-input-group input,
-.form-card .mindful-input-group ion-input {
+.form-card .superme-input-group input,
+.form-card .superme-input-group ion-input {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
   padding: 12px 0 !important;
 }
 
-.form-card .mindful-input-group input:focus,
-.form-card .mindful-input-group input:active,
-.form-card .mindful-input-group ion-input:focus,
-.form-card .mindful-input-group ion-input:active {
+.form-card .superme-input-group input:focus,
+.form-card .superme-input-group input:active,
+.form-card .superme-input-group ion-input:focus,
+.form-card .superme-input-group ion-input:active {
   outline: none !important;
   box-shadow: none !important;
 }
 
-.title-input .mindful-input-group input {
+.title-input .superme-input-group input {
   color: #6B656A;
   font-family: 'Nunito', sans-serif;
   font-size: 20px;
@@ -526,7 +526,7 @@ $notes-themes: (
 }
 
 /* Full-width underline when input is empty (has placeholder) */
-.title-input .mindful-input-group input:placeholder-shown {
+.title-input .superme-input-group input:placeholder-shown {
   border-bottom: 1px solid #6B656A;
   padding-bottom: 2px !important;
 }
@@ -535,18 +535,18 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
 
 .habit-input-root {
   @each $theme, $color in $title-colors {
-    &.#{$theme} .title-input .mindful-input-group input { @include input-style($color); }
+    &.#{$theme} .title-input .superme-input-group input { @include input-style($color); }
   }
 }
 
-.title-input .mindful-input-group input:focus,
-.title-input .mindful-input-group input:active {
+.title-input .superme-input-group input:focus,
+.title-input .superme-input-group input:active {
   outline: none !important;
   box-shadow: none !important;
 }
 
-.title-input .mindful-input-group input::placeholder,
-.habit-input-root .title-input .mindful-input-group input::placeholder {
+.title-input .superme-input-group input::placeholder,
+.habit-input-root .title-input .superme-input-group input::placeholder {
   color: #6B656A !important;
   font-family: 'Nunito', sans-serif;
   font-size: 20px;
@@ -568,14 +568,14 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
 }
 
 .habit-input-root {
-  .mindful-input-group input::placeholder { @extend %input-placeholder; }
-  ::ng-deep .mindful-input-group ion-input input::placeholder,
-  ::ng-deep mindful-datepicker input::placeholder,
-  ::ng-deep mindful-timepicker input::placeholder { @extend %input-placeholder; }
+  .superme-input-group input::placeholder { @extend %input-placeholder; }
+  ::ng-deep .superme-input-group ion-input input::placeholder,
+  ::ng-deep superme-datepicker input::placeholder,
+  ::ng-deep superme-timepicker input::placeholder { @extend %input-placeholder; }
 }
 
 /* When title is invalid (missing), force placeholder to error color - HIGH SPECIFICITY */
-.habit-input-root .title-input .mindful-input-group.missing-placeholder input::placeholder {
+.habit-input-root .title-input .superme-input-group.missing-placeholder input::placeholder {
   color: #BB2124 !important;
   opacity: 1 !important;
   text-decoration: none !important;
@@ -599,7 +599,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
   width: 100%;
 }
 
-.mindful-input-group {
+.superme-input-group {
   margin-bottom: 0px !important;
 }
 
@@ -625,8 +625,8 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
   margin: 0 !important;
 }
 
-.datepicker-wrapper .mindful-input-group input,
-.mindful-input-group ion-input {
+.datepicker-wrapper .superme-input-group input,
+.superme-input-group ion-input {
   background: white !important;
 }
 
@@ -634,7 +634,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
   background-color: #ffffff;
 }
 
-::ng-deep .mindful-timepicker-wrapper input {
+::ng-deep .superme-timepicker-wrapper input {
   background-color: #ffffff;
 }
 
@@ -680,7 +680,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
 }
 
 /* Error visual states for missing inputs */
-.mindful-input-group.missing-placeholder {
+.superme-input-group.missing-placeholder {
 
   /* native inputs */
   input::placeholder,
@@ -699,10 +699,10 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
     opacity: 1 !important;
   }
 
-  /* custom mindful components */
-  ::ng-deep mindful-datepicker input::placeholder,
-  ::ng-deep mindful-timepicker input::placeholder,
-  ::ng-deep .mindful-timepicker-wrapper input {
+  /* custom superme components */
+  ::ng-deep superme-datepicker input::placeholder,
+  ::ng-deep superme-timepicker input::placeholder,
+  ::ng-deep .superme-timepicker-wrapper input {
     color: #BB2124 !important;
     opacity: 1 !important;
   }

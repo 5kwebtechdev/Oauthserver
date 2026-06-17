@@ -122,6 +122,11 @@ export interface Tutor {
     entityName: string;
     subjects: string[];
     location: string;
+    addressLine?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    country?: string;
     profilePicUrl: string;
     startTime: string;
     endTime: string;

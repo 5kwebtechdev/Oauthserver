@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
-import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
+import { SupermeButtonComponent } from '../superme-button/superme-button.component';
 import { NetworkIssueService } from './network-issue.service';
 
 @Component({
@@ -10,7 +10,7 @@ import { NetworkIssueService } from './network-issue.service';
   templateUrl: './network-issue.component.html',
   styleUrls: ['./network-issue.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, MindfulButtonComponent]
+  imports: [CommonModule, SupermeButtonComponent]
 })
 export class NetworkIssueComponent {
   /** Use async pipe in template for proper change detection */

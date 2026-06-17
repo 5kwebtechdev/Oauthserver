@@ -1,5 +1,5 @@
 <ion-content fullscreen>
-  <mindful-navigator heading="Password and security" backIcon="arrowSvg"></mindful-navigator>
+  <superme-navigator heading="Password and security" backIcon="arrowSvg"></superme-navigator>
 
   <div class="reset-password-root">
     <profile-edit-input title="Current Password" description="To verify you" type="password"
@@ -17,8 +17,8 @@
 
   </div>
   <div class="button-row">
-    <mindful-button type="green" [text]="loading ? 'Updating...' : 'Change password'" size="full"
-      [disabled]="loading || form.invalid" (click)="saveProfile()"></mindful-button>
+    <superme-button type="green" [text]="loading ? 'Updating...' : 'Change password'" size="full"
+      [disabled]="loading || form.invalid" (click)="saveProfile()"></superme-button>
   </div>
 
   <!-- Inline custom toast -->

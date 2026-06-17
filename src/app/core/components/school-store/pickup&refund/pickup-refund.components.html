@@ -1,8 +1,8 @@
 <ion-content class="pickup-refund">
     <div class="nav-head">
-        <mindful-navigator heading="Pickup Confirmation" backIcon="arrowSvg" (back)="goBack()">
-            <mindful-view-all slot="end" text="Help" [hideIcon]="true" (click)="onHelpClick()"></mindful-view-all>
-        </mindful-navigator>
+        <superme-navigator heading="Pickup Confirmation" backIcon="arrowSvg" (back)="goBack()">
+            <superme-view-all slot="end" text="Help" [hideIcon]="true" (click)="onHelpClick()"></superme-view-all>
+        </superme-navigator>
     </div>
 
     <main class="pickup-refund-container">
@@ -75,11 +75,11 @@
 
     <!-- CTA -->
     <div class="next-cta">
-        <mindful-button
+        <superme-button
             type="magenta"
             size="large"
             [text]="ctaText"
             (click)="onConfirm()">
-        </mindful-button>
+        </superme-button>
     </div>
 </ion-content>

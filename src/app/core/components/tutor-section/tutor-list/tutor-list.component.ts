@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import {
   TutorListItem,
   formatAvailability,
@@ -12,7 +12,7 @@ import { TutorLikeService } from '../../../services/tutor-like.service';
 @Component({
   selector: 'tutor-list',
   standalone: true,
-  imports: [CommonModule, MindfulButtonComponent],
+  imports: [CommonModule, SupermeButtonComponent],
   templateUrl: './tutor-list.component.html',
   styleUrls: ['./tutor-list.component.scss']
 })

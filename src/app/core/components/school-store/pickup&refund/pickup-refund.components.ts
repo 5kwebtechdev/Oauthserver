@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { ViewAllComponent } from '../../superme-navigator/view-all/view-all.component';
 import { Router } from '@angular/router';
 
 @Component({
@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
   selector: 'pickup-refund',
   templateUrl: './pickup-refund.components.html',
   styleUrls: ['./pickup-refund.components.scss'],
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent, ViewAllComponent],
+  imports: [CommonModule, IonicModule, SupermeNavigatorComponent, SupermeButtonComponent, ViewAllComponent],
 })
 export class PickupRefundComponent {
 

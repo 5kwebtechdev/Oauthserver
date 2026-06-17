@@ -1,0 +1,71 @@
+<div class="superme-selectors">
+  <h3 *ngIf="label" class="label">{{ label }}</h3>
+  <div class="badges-row">
+    <div class="badges-container" [style.overflow-x]="scrollable ? 'auto' : 'visible'">
+      <ng-container *ngIf="componentType === 'badge'">
+        <superme-badge *ngFor="let option of options" [text]="option.value" [type]="option.type"
+          [large]="size === 'large'" [medium]="size === 'medium'" [inactive]="!selectedKeys.includes(option.key)"
+          (click)="toggleSelection(option.key)" [circle]="circle">
+        </superme-badge>
+      </ng-container>
+      <ng-container *ngIf="componentType === 'tags'">
+        <div class="tags-container">
+          <div class="tag-wrapper" #tagEl *ngFor="let option of options">
+            <superme-badge class="tag" *ngIf="option" [text]="option.value" [type]="option.type"
+              [large]="size === 'large'" [medium]="size === 'medium'" [inactive]="!selectedKeys.includes(option.key)"
+              (click)="toggleSelection(option.key)" long-press [delay]="1500" (press)="openTagMenu(option.key, tagEl)"
+              (tap)="closeTagMenu()">
+            </superme-badge>
+          </div>
+        </div>
+      </ng-container>
+      <!-- Fixed popover rendered at computed coordinates -->
+      <div class="tag-popover-fixed" *ngIf="activeTagKey && popoverPosition"
+        [ngStyle]="{ left: popoverPosition.left + 'px', top: popoverPosition.top + 'px' }">
+        <div class="tag-popover-inner">
+          <button class="pop-btn edit" (click)="onEdit(activeTagKey)">
+            <img src="assets/app-assets/edit.svg" alt="Edit">
+          </button>
+          <button class="pop-btn delete" (click)="onDelete(activeTagKey)">
+            <img src="assets/app-assets/delete.svg" alt="Delete">
+          </button>
+        </div>
+      </div>
+      <!-- Edit popup (input + + button) rendered fixed near the tag -->
+      <div class="tag-edit-fixed" *ngIf="editingTagKey && editPosition" (click)="cancelEdit()">
+        <div class="tag-edit-inner" (click)="$event.stopPropagation()"
+          [ngStyle]="{ left: editPosition.left + 'px', top: editPosition.top + 'px' }">
+          <div class="superme-input-group">
+            <input type="text" [(ngModel)]="editingValue" placeholder="Edit tag" />
+          </div>
+          <superme-button type="plum" text="+" (click)="saveEdit()"></superme-button>
+        </div>
+      </div>
+      <!-- Add new tag popup rendered under the Add new badge -->
+      <div class="tag-add-fixed" *ngIf="addingTag && addPosition" (click)="cancelAdd()">
+        <div class="tag-add-inner" (click)="$event.stopPropagation()"
+          [ngStyle]="{ left: addPosition.left + 'px', top: addPosition.top + 'px' }">
+          <div class="superme-input-group">
+            <!-- Use the app's superme input styles; there is no exported standalone component, so use input styled with superme-input-group -->
+            <input type="text" [(ngModel)]="addingValue" placeholder="Type the name here" />
+          </div>
+          <superme-button type="plum" text="Add" (click)="saveAdd()"></superme-button>
+        </div>
+      </div>
+      <ng-container *ngIf="componentType === 'button'">
+        <superme-button *ngFor="let option of options" [text]="option.value"
+          [type]="selectedKeys.includes(option.key)
+            ? (buttonVariant === 'flat' ? option.type + '-flat' : option.type)
+            : (buttonVariant === 'flat' ? option.type + '-flat-transparent' : option.type + '-transparent')"
+          [large]="size === 'large'" [medium]="size === 'medium'" (click)="toggleSelection(option.key)">
+        </superme-button>
+      </ng-container>
+    </div>
+    <!-- Add new badge inline to the right of the slider (not part of scrollable area) -->
+    <div class="tags-add-inline" *ngIf="componentType === 'tags'">
+      <div class="add-wrapper" #addEl>
+        <superme-badge class="add-new" text="Add new +" type="habit-input" (click)="openAdd(addEl)"></superme-badge>
+      </div>
+    </div>
+  </div>
+</div>

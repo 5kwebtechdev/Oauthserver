@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
+import { SupermeButtonComponent } from '../superme-button/superme-button.component';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { AuthApi } from '../../api/auth.api';
@@ -15,7 +15,7 @@ export interface MoodOption { key: string; label: string; emoji?: string }
 @Component({
   selector: 'mood-selector',
   standalone: true,
-  imports: [CommonModule, MindfulButtonComponent],
+  imports: [CommonModule, SupermeButtonComponent],
   templateUrl: './mood-selector.component.html',
   styleUrls: ['./mood-selector.component.scss']
 })

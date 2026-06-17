@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { RefresherCustomEvent } from '@ionic/angular';
-import { buttonStyles } from "../core/components/mindful-button/button.types";
+import { buttonStyles } from "../core/components/superme-button/button.types";
 import { AuthService } from '../core/services/auth.service';
 import { RefreshService } from '../core/services/refresh.service';
 

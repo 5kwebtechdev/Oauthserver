@@ -2,9 +2,9 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeInputsModule } from '../../superme-inputs/superme-inputs.module';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { ActivityCardComponent } from '../activity-card/activity-card.component';
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { ModalController } from '@ionic/angular';
@@ -24,7 +24,7 @@ import { LongPressDirective } from '../../../directives/gestureControlDirective'
   selector: 'activity-calendar',
   templateUrl: './activity-calendar.component.html',
   styleUrls: ['./activity-calendar.component.scss'],
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulInputsModule, MindfulButtonComponent, ActivityCardComponent, LongPressDirective, EmptyStateComponent]
+  imports: [CommonModule, IonicModule, SupermeNavigatorComponent, SupermeInputsModule, SupermeButtonComponent, ActivityCardComponent, LongPressDirective, EmptyStateComponent]
 })
 export class ActivityCalendarComponent implements OnInit, OnDestroy, ViewWillEnter {
   dateActivities: { [key: string]: { timetable?: boolean, task?: boolean, habit?: boolean } } = {};
@@ -90,7 +90,7 @@ export class ActivityCalendarComponent implements OnInit, OnDestroy, ViewWillEnt
   // Flag used to indicate viewer is a parent (passed down to activity-card)
   public isParent: boolean = false;
 
-  // Handler called from template when mindful-calendar emits a dateSelected event
+  // Handler called from template when superme-calendar emits a dateSelected event
   onDateSelected(date: Date | { start: Date | null, end: Date | null }) {
     if (date && date instanceof Date) {
       this.selectedDate = date;
@@ -112,7 +112,7 @@ export class ActivityCalendarComponent implements OnInit, OnDestroy, ViewWillEnt
     }
   }
 
-  // Handler for mood toggle events coming from mindful-calendar
+  // Handler for mood toggle events coming from superme-calendar
   onMoodToggled(state: boolean) {
     this.moodOn = state;
     // If mood is turned off, hide the popup

@@ -10,11 +10,15 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
-  --footer-visual-height: 80px;
 
   padding-top: 8px;
+  /* Extend below content for iPhone home-indicator (safe area bottom inset).
+     The padding does NOT count toward --footer-visual-height — that var
+     represents only the icon/label area so that superme-page-container can
+     add sab separately. */
   padding-bottom: env(safe-area-inset-bottom);
   box-sizing: border-box;
+  min-height: var(--footer-visual-height, 80px);
 }
 
 .footer-item {

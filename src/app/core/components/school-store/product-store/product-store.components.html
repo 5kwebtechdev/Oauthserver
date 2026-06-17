@@ -2,14 +2,14 @@
     <main class="school-store-main">
 
         <div class="navigator-wrap">
-            <mindful-navigator #navigator
+            <superme-navigator #navigator
                 heading="Student-Store"
                 [subtext]="navigatorSubtext"
                 [showSubtext]="true"
                 (back)="goBack()"
                 [rightActions]="[{ type: 'cart', count: cartCount, alt: 'My cart' }, { type: 'package', count: packageCount, alt: 'Packages' }]"
                 (rightActionClick)="onNavigatorAction($event)">
-            </mindful-navigator>
+            </superme-navigator>
 
             <button class="subtext-trigger" aria-label="Open address popup" (click)="openAddressPopup()"></button>
         </div>
@@ -58,7 +58,7 @@
                                 <!-- Out of stock overlay -->
                                 <div class="oos-overlay" *ngIf="p.outOfStock">
                                     <div class="oos-text">Out of stock</div>
-                                    <mindful-button type="magenta" text="Notify" (click)="notifyMe(p)"></mindful-button>
+                                    <superme-button type="magenta" text="Notify" (click)="notifyMe(p)"></superme-button>
                                 </div>
                             </div>
 
@@ -75,10 +75,10 @@
                                         <div class="price-mrp">{{ p.mrp }}</div>
                                     </div>
 
-                                    <mindful-button
+                                    <superme-button
                                         *ngIf="selectedCategory === 'textbooks' || p.category === 'textbooks'"
                                         type="magenta" text="Add To Bag"
-                                        (click)="addToBag(p); $event.stopPropagation()"></mindful-button>
+                                        (click)="addToBag(p); $event.stopPropagation()"></superme-button>
                                 </div>
                             </div>
                         </div>

@@ -79,14 +79,18 @@ h1 {
 
 .teaching-row {
 	display: flex;
-	gap: 5px;
+	gap: 8px;
+	align-items: flex-start;
 
 	h3 {
-		width: 70px;
+		flex: 0 0 94px;
+		overflow-wrap: anywhere;
 	}
 
 	p {
-		width: 100%;
+		flex: 1 1 auto;
+		min-width: 0;
+		overflow-wrap: anywhere;
 	}
 }
 
@@ -348,7 +352,7 @@ height: 24px;
 
 
 /* Visual disabled state for Contact button when user is child - still clickable to show toast */
-.footer-actions mindful-button.disabled {
+.footer-actions superme-button.disabled {
 	opacity: 0.5;
 	pointer-events: auto; /* keep clickable */
 }

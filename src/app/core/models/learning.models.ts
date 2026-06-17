@@ -41,6 +41,9 @@ export interface ChallengeQuestion {
     timeLimit: number;
     attachmentUrl: string | null;
     attachmentType: string | null;
+    positiveFeedback: string | null;
+    negativeFeedback: string | null;
+    negativeFeedbackTryAgain: string | null;
     createdAt: string;
     updatedAt: string;
     options: QuestionOption[];
@@ -69,9 +72,9 @@ export interface Challenge {
     trophies: number;
     timeDuration: string; // e.g., "10 Minutes", "5 Minutes"
     sectionTitle: SectionTitle;
-    positiveFeedback: string;
-    negativeFeedback: string;
-    negativeFeedbackTryAgain: string;
+    positiveFeedback: string | null;
+    negativeFeedback: string | null;
+    negativeFeedbackTryAgain: string | null;
     thumbnailImageUrl: string;
     innerImageUrl: string;
     enabled: boolean;
@@ -105,6 +108,7 @@ export interface Article {
     createdAt: string;
     updatedAt: string;
     publishedAt: string | null;
+    alreadyRead?: boolean;
 }
 
 /**

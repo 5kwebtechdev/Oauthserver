@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 	selector: 'institute-detail-fill',
 	templateUrl: './institute-detail-fill.components.html',
 	styleUrls: ['./institute-detail-fill.components.scss'],
-	imports: [CommonModule, IonicModule, FormsModule, MindfulNavigatorComponent, MindfulButtonComponent]
+	imports: [CommonModule, IonicModule, FormsModule, SupermeNavigatorComponent, SupermeButtonComponent]
 })
 export class InstituteDetailFillComponent {
 	constructor(private router: Router) { }

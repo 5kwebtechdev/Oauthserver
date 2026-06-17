@@ -1,5 +1,5 @@
 <ion-content>
-  <mindful-navigator heading="Our Policies" backIcon="arrowSvg"></mindful-navigator>
+  <superme-navigator heading="Our Policies" backIcon="arrowSvg"></superme-navigator>
 
 <div class="policies-container">
   <div class="policies-header">
@@ -16,18 +16,18 @@
     
   </div>
   <div class="terms-and-conditions" *ngIf="selectedTab==='terms' || !selectedTab">
-    <h1>Your Privacy, Our Promise. Learn how we collect, use, and protect your personal information to keep you and your family safe.</h1>
+    <h1>Know the rules. These terms outline your rights, responsibilities, and what you can expect when using SuperMe.</h1>
     <p>Last Updated: January 15, 2026</p>
     <h2>
-      <mindful-view-all text="Read the complete Terms of Use" (clicked)="openFullPolicies('terms')"></mindful-view-all>
+      <superme-view-all text="Read the complete Terms of Use" (clicked)="openFullPolicies('terms')"></superme-view-all>
     </h2>
     </div>
 
     <div class="privacy-policy" *ngIf="selectedTab==='privacy'">
-         <h1>Know the rules. These terms outline your rights, responsibilities, and what you can expect when using SuperMe.</h1>
+         <h1>Your Privacy, Our Promise. Learn how we collect, use, and protect your personal information to keep you and your family safe.</h1>
     <p>Last Updated: January 15, 2026</p>
     <h2>
-      <mindful-view-all text="Read the complete Privacy Policy" (clicked)="openFullPolicies('privacy')"></mindful-view-all>
+      <superme-view-all text="Read the complete Privacy Policy" (clicked)="openFullPolicies('privacy')"></superme-view-all>
     </h2>
     </div>
   </div>

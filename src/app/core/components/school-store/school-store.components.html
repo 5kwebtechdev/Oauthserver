@@ -1,7 +1,7 @@
 <ion-content>
     <main class="school-store-main">
         <div class="navigator-wrap">
-            <mindful-navigator
+            <superme-navigator
                 #navigator
                 heading="Student-Store"
                 [subtext]="navigatorSubtext"
@@ -9,7 +9,7 @@
                 (back)="goBack()"
                 [rightActions]="[{ type: 'cart', count: cartCount, alt: 'My cart' }, { type: 'package', count: packageCount, alt: 'Packages' }]"
                 (rightActionClick)="onNavigatorAction($event)">
-            </mindful-navigator>
+            </superme-navigator>
 
         </div>
 

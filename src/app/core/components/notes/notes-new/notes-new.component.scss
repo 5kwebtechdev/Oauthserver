@@ -111,17 +111,6 @@
   background: transparent;
 }
 
-.title-limit-tooltip {
-  position: absolute;
-  top: 56px;
-  left: 56px;
-  background: rgba(0, 0, 0, 0.75);
-  color: #fff;
-  padding: 6px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  z-index: 20;
-}
 
 .tags-input {
   width: calc(100% - 8px);
@@ -168,4 +157,16 @@
 .delete-draft-icon .eclipse img {
   width: 18px;
   height: 18px;
+}
+
+.tag-state-message {
+  color: #6B656A;
+  font-family: Nunito;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 8px;
+}
+
+.tag-state-message--error {
+  color: #BB2124;
 }

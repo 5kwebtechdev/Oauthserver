@@ -1,5 +1,5 @@
 <ion-content class="activity-detail-page" fullscreen>
-    <mindful-navigator backIcon="arrowSvg" (rightIconClick)="onEdit()">
+    <superme-navigator backIcon="arrowSvg" (rightIconClick)="onEdit()">
         <div slot="end">
                 <div *ngIf="canEdit()" class="eclipse" aria-hidden="true">
                     <button class="right-custom-edit" aria-label="Edit" (click)="onEdit()" type="button"
@@ -13,7 +13,7 @@
                 </button>
             </div>
         </div>
-    </mindful-navigator>
+    </superme-navigator>
 
     <div class="detail-container" *ngIf="habit">
         <div class="activity-detail-header d-flex justify-content-between align-items-start align-self-stretch">
@@ -26,10 +26,10 @@
                   <div class="activity-detail-focus d-flex  align-items-center gap-2">
                 <img *ngIf="hasRoutine()" class="routine-icon" [src]="getRoutineIcon()" [alt]="getRoutineName() + ' Routine Icon'" width="24"
                     height="24" />
-                <mindful-badge *ngIf="habit"
+                <superme-badge *ngIf="habit"
                     [type]="habit.type === 'tasks' ? 'habit-detail-orange' : 'activity'"
                     [text]="tagText">
-                </mindful-badge>
+                </superme-badge>
             </div>
                 <span [style.color]="getTimeColor(habit)">
                     {{ habit.completionDate ? (habit.completionDate | date:'MMM d') : (habit.startDate | date:'MMM d') }}.
@@ -66,7 +66,7 @@
                       style="display:block;width:100%;"></app-speech-bubble>
               </div>
               <div class="detail-pet" style="flex:0 0 auto;margin-left:8px;">
-                  <mindful-pet></mindful-pet>
+                  <superme-pet></superme-pet>
               </div>
             </ng-container>
         </div>
@@ -80,31 +80,31 @@
             </div>
             <div class="detail-cta">
                 <!-- Let's Go Button - visible when pending (not ongoing, completed, or skipped) -->
-                <mindful-button *ngIf="isLetsGoVisible()" [ngClass]="habit.type === 'habits' ? 'w-100' : 'w-full'"
+                <superme-button *ngIf="isLetsGoVisible()" [ngClass]="habit.type === 'habits' ? 'w-100' : 'w-full'"
                     [type]="habit.type === 'habits' ? 'lavendar' : 'orange'"
                     [style.width]="habit.type === 'habits' ? '100%' : null" [disabled]="!isLetsGoEnabled()"
                     (click)="openStartPopup()" medium text="Let's Go">
-                </mindful-button>
+                </superme-button>
 
                 <!-- Abort Button - visible when ongoing -->
-                <mindful-button *ngIf="isAbortVisible()"
+                <superme-button *ngIf="isAbortVisible()"
                     [ngClass]="cameFromLongPress && navigationOriginType === 'habits' ? 'w-100' : 'w-full'"
                     [type]="cameFromLongPress && navigationOriginType === 'habits' ? 'lavendar-transparent' : 'orange-transparent'"
                     [style.width]="cameFromLongPress && navigationOriginType === 'habits' ? '100%' : null"
                     (click)="openAbortPopup()" medium text="Abort">
-                </mindful-button>
+                </superme-button>
 
                 <!-- Done Button - for pending/ongoing (disabled when pending, enabled when ongoing) -->
-                <mindful-button
+                <superme-button
                     *ngIf="isViewingToday() && habit.status.toLowerCase() !== 'completed' && habit.status.toLowerCase() !== 'skipped'"
                     class="w-full" type="green" [disabled]="!isDoneEnabled()" (click)="openCompletePopup()" medium
                     text="Done?">
-                </mindful-button>
+                </superme-button>
 
                 <!-- Done Button - for skipped status (always enabled) -->
-                <mindful-button *ngIf="isViewingToday() && habit.status.toLowerCase() === 'skipped'" class="w-full" type="green"
+                <superme-button *ngIf="isViewingToday() && habit.status.toLowerCase() === 'skipped'" class="w-full" type="green"
                     (click)="openCompletePopup()" medium text="Done?">
-                </mindful-button>
+                </superme-button>
             </div>
 
         </div>
@@ -125,10 +125,10 @@
         </svg>
 
 
-        <mindful-coins-stats [slot1]="'current-streak'" [slot2]="'coins'" [slot3]="'highest-streak'" [slot4]="'success'"
+        <superme-coins-stats [slot1]="'current-streak'" [slot2]="'coins'" [slot3]="'highest-streak'" [slot4]="'success'"
             [userDays]="coinStats.userDays" [userCoins]="coinStats.userCoins" [totalStreaks]="coinStats.totalStreaks"
             [successPercentage]="coinStats.successPercentage" [userStreaks]="coinStats.userStreaks"
-            [userBadges]="coinStats.userBadges"></mindful-coins-stats>
+            [userBadges]="coinStats.userBadges"></superme-coins-stats>
 
         <div class="detail-progress-header">
             <h2>Almost There! Your Milestone Awaits</h2>
@@ -139,9 +139,9 @@
                 <div class="progres-count">{{ b.currentProgress }}/{{ b.targetProgress }}</div>
                 <div class="progress-stat">
                     <div class="progress-circle-wrapper">
-                        <mindful-completion [completionPercentage]="b.completionPercent" [borderColor]="b.progressColor"
+                        <superme-completion [completionPercentage]="b.completionPercent" [borderColor]="b.progressColor"
                             [innerText]="''" [belowText]="''">
-                        </mindful-completion>
+                        </superme-completion>
                         <img [src]="b.iconUrl" [alt]="b.name" class="progress-badge-icon" />
                     </div>
                     <p class="progress-name">{{ b.name }}</p>
@@ -154,8 +154,8 @@
         </div>
 
         <div class="detail-calendar">
-            <mindful-calendar [useArrowNavigation]="true" [showMoodToggle]="false" [statusData]="calendarStatusData"
-                [currentMonth]="currentCalendarMonth" [allowDateSelection]="false" (monthChanged)="onCalendarMonthChange($event)"></mindful-calendar>
+            <superme-calendar [useArrowNavigation]="true" [showMoodToggle]="false" [statusData]="calendarStatusData"
+                [currentMonth]="currentCalendarMonth" [allowDateSelection]="false" (monthChanged)="onCalendarMonthChange($event)"></superme-calendar>
         </div>
 
         <div class="completion-days">
@@ -171,15 +171,15 @@
     </div>
 
     <!-- Popups -->
-    <app-mindful-popup [config]="startPopupConfig" [isVisible]="showStartPopup"
+    <app-superme-popup [config]="startPopupConfig" [isVisible]="showStartPopup"
       (primaryAction)="handlePopupPrimary()" (secondaryAction)="handlePopupSecondary()"
-      (closeAction)="closeStartPopup()" (backdropClick)="closeStartPopup()"></app-mindful-popup>
+      (closeAction)="closeStartPopup()" (backdropClick)="closeStartPopup()"></app-superme-popup>
 
-    <app-mindful-popup [config]="completePopupConfig" [isVisible]="showCompletePopup"
+    <app-superme-popup [config]="completePopupConfig" [isVisible]="showCompletePopup"
       (primaryAction)="handleCompletePrimary()" (secondaryAction)="handleCompleteSecondary()"
-      (closeAction)="closeCompletePopup()" (backdropClick)="closeCompletePopup()"></app-mindful-popup>
+      (closeAction)="closeCompletePopup()" (backdropClick)="closeCompletePopup()"></app-superme-popup>
 
-    <app-mindful-popup [config]="abortPopupConfig" [isVisible]="showAbortPopup"
+    <app-superme-popup [config]="abortPopupConfig" [isVisible]="showAbortPopup"
       (primaryAction)="handleAbortPrimary()" (secondaryAction)="handleAbortSecondary()"
-      (closeAction)="closeAbortPopup()" (backdropClick)="closeAbortPopup()"></app-mindful-popup>
+      (closeAction)="closeAbortPopup()" (backdropClick)="closeAbortPopup()"></app-superme-popup>
 </ion-content>

@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { ActivityCardComponent } from '../activity-card/activity-card.component';
-import { MindfulBadgeComponent } from '../../mindful-badge/mindful-badge.component';
-import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
+import { SupermeBadgeComponent } from '../../superme-badge/superme-badge.component';
+import { SupermeInputsModule } from '../../superme-inputs/superme-inputs.module';
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { HabitService } from '../habit.service';
 import { HabitButtonLogicService } from '../habit-button-logic.service';
@@ -20,7 +20,7 @@ import { Observable, Subscription, filter, take } from 'rxjs';
     selector: 'activity-page-content',
     templateUrl: './activity-page-content.component.html',
     styleUrls: ['./activity-page-content.component.scss'],
-    imports: [CommonModule, IonicModule, ActivityCardComponent, MindfulInputsModule, MindfulBadgeComponent, EmptyStateComponent]
+    imports: [CommonModule, IonicModule, ActivityCardComponent, SupermeInputsModule, SupermeBadgeComponent, EmptyStateComponent]
 })
 
 export class ActivityPageContentComponent implements OnInit, OnDestroy {

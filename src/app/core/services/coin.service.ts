@@ -10,6 +10,7 @@ export interface CoinHistoryItem {
     type: string;
     timestamp: string;
     description: string;
+    thumbnailUrl?: string | null;
 }
 
 export interface CoinHistory {

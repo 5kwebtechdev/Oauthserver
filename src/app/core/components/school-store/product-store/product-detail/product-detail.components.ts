@@ -8,8 +8,8 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../../mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from '../../../mindful-button/mindful-button.component';
+import { SupermeNavigatorComponent } from '../../../superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../../superme-button/superme-button.component';
 import { SizeGuideComponent } from '../size-guide/size-guide.component';
 import { Router } from '@angular/router';
 
@@ -21,8 +21,8 @@ import { Router } from '@angular/router';
   imports: [
     CommonModule,
     IonicModule,
-    MindfulNavigatorComponent,
-    MindfulButtonComponent,
+    SupermeNavigatorComponent,
+    SupermeButtonComponent,
     SizeGuideComponent,
   ],
 })

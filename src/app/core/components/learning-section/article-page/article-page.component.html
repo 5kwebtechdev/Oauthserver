@@ -1,7 +1,7 @@
 <ion-content>
   <div class="article-page d-flex flex-column gap-4" *ngIf="!isLoading && article">
     <div class="article-container">
-      <mindful-navigator backIcon="arrowSvg"></mindful-navigator>
+      <superme-navigator backIcon="arrowSvg"></superme-navigator>
       <h1 class="article-title">{{article.title}}</h1>
       <div class="article-header">
         <div class="article-description" style="margin: 12px 0; font-weight: 600;">
@@ -12,12 +12,38 @@
     <div class="article-content-section" style="padding:0px 16px 40px 16px;">
       <div class="article-content" style="margin-top: 16px; line-height: 1.6;" [innerHTML]="article.content">
       </div>
-      <mindful-button type="green" size="full" text="Mark as read" (click)="openMarkAsReadPopup()"
-        [disabled]="isMarking"></mindful-button>
-      <app-mindful-popup *ngIf="true" [config]="markPopupConfig" [isVisible]="showMarkPopup"
+
+      <!-- Reading time gate -->
+      <div class="read-timer-pill d-flex align-items-center gap-3"
+           *ngIf="!isArticleRead && !readTimerComplete">
+        <div class="read-timer-ring">
+          <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+            <circle class="ring-track" cx="20" cy="20" r="17" />
+            <circle class="ring-progress" cx="20" cy="20" r="17"
+                    [style.stroke-dasharray]="ringCircumference"
+                    [style.stroke-dashoffset]="ringCircumference - (ringCircumference * readTimerProgressPercent / 100)" />
+          </svg>
+          <span class="ring-icon" aria-hidden="true">⏱</span>
+        </div>
+        <div class="read-timer-copy d-flex flex-column">
+          <span class="read-timer-label">Take a moment to read</span>
+          <span class="read-timer-time">{{ readTimerDisplay }} left</span>
+        </div>
+      </div>
+
+      <!-- Friendly confirmation once unlocked -->
+      <div class="read-ready-banner d-flex align-items-center gap-2"
+           *ngIf="!isArticleRead && readTimerComplete && justUnlocked">
+        <span class="ready-icon" aria-hidden="true">✓</span>
+        <span>You're ready to mark this as read!</span>
+      </div>
+
+      <superme-button type="green" size="full" [text]="isArticleRead ? 'Already read' : 'Mark as read'"
+        (click)="openMarkAsReadPopup()" [disabled]="isMarkAsReadDisabled"></superme-button>
+      <app-superme-popup *ngIf="true" [config]="markPopupConfig" [isVisible]="showMarkPopup"
         (primaryAction)="confirmMarkAsRead()" (secondaryAction)="closeMarkPopup()"
         (backdropClick)="closeMarkPopup()" (closeAction)="closeMarkPopup()">
-      </app-mindful-popup>
+      </app-superme-popup>
     </div>
   </div>
 
@@ -28,7 +54,7 @@
   <div class="article-page d-flex flex-column gap-4" *ngIf="!isLoading && !article"
     style="text-align: center; padding: 48px 16px;">
     <p>Article not found</p>
-    <mindful-button type="green" text="Back to Learning"
-      (click)="router.navigate(['/authed/content'])"></mindful-button>
+    <superme-button type="green" text="Back to Learning"
+      (click)="router.navigate(['/authed/content'])"></superme-button>
   </div>
 </ion-content>

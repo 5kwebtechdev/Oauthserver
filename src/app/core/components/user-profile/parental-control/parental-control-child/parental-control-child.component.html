@@ -1,6 +1,6 @@
 <ion-content fullscreen>
     <div class="coming-soon-container">
-        <mindful-navigator heading="Parental Control" backIcon="arrowSvg"></mindful-navigator>
+        <superme-navigator heading="Parental Control" backIcon="arrowSvg"></superme-navigator>
     <div class="coming-soon-message">
         <img src="/assets/Images-Transparent/Parental Coming Soon.png" alt="Parental Coming Soon" />
         <h1>Advanced controls are on the way</h1>
@@ -8,18 +8,18 @@
     </div>
 </div>
     <!-- <section class="parental-instructions" *ngIf="!showParentalControlBlank">
-        <mindful-navigator heading="Get this done on your device" backIcon="arrowSvg"></mindful-navigator>
+        <superme-navigator heading="Get this done on your device" backIcon="arrowSvg"></superme-navigator>
 
         <div class="parental-control-content">
             <instructio-list [items]="instructions">
             </instructio-list>
-            <mindful-button type="green" large text="Done" style="width: 100%; display: block;"
-                (click)="onDone()"></mindful-button>
+            <superme-button type="green" large text="Done" style="width: 100%; display: block;"
+                (click)="onDone()"></superme-button>
         </div>
     </section>
 
     <section class="parental-control-blank" *ngIf="showParentalControlBlank">
-        <mindful-navigator heading="Parental Control" backIcon="arrowSvg"></mindful-navigator>
+        <superme-navigator heading="Parental Control" backIcon="arrowSvg"></superme-navigator>
 
         <h1 class="subtitle">View restrictions</h1>
         <main class="blank-content">
@@ -43,9 +43,9 @@
                     </div>
                     <div class="app-total-time">
                         <div class="total-time-progress-ring">
-                            <mindful-completion [completionPercentage]="70" [borderColor]="'#BB2124'"
+                            <superme-completion [completionPercentage]="70" [borderColor]="'#BB2124'"
                                 [innerText]="'4h 15m'" [belowText]="'Total'">
-                            </mindful-completion>
+                            </superme-completion>
                         </div>
                         <div class="app-time-list">
                             <div class="app-usage-data">
@@ -177,10 +177,10 @@
                     </div>
 
                     <div class="send-request-btn">
-                        <mindful-button type="bronze-transparent" small text="Cancel"
-                            style="width: 100%; display: block;" (click)="closeRequestPopup()"></mindful-button>
-                        <mindful-button type="green" small text="Send Request" style="width: 100%; display: block;"
-                            (click)="sendRequest()"></mindful-button>
+                        <superme-button type="bronze-transparent" small text="Cancel"
+                            style="width: 100%; display: block;" (click)="closeRequestPopup()"></superme-button>
+                        <superme-button type="green" small text="Send Request" style="width: 100%; display: block;"
+                            (click)="sendRequest()"></superme-button>
                     </div>
                 </div>
             </div>

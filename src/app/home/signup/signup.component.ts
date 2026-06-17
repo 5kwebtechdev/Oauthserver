@@ -11,7 +11,9 @@ import { ParentImageService } from '../../core/services/parent-image.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Subscription } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { CredentialSaverService } from '../../core/services/credential-saver.service';
 
+type SignupRole = 'child' | 'parent' | 'self';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
@@ -54,7 +56,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   private resendInterval: any;
   private isFromUserInput = false; // Track if input is from user typing vs auto-fill
 
-  public roleSelected !: 'child' | 'parent' | 'self';
+  public roleSelected !: SignupRole;
   public gender !: 'male' | 'female';
   public avatarSelected: any;
 
@@ -81,6 +83,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this._openBirthdayPicker = val;
   }
   public showAgeSuggestionModal = false;
+  public ageSuggestionTarget: SignupRole | null = null;
+  public ageSuggestionRoles: SignupRole[] = [];
   public computedAge: number | null = null;
   public showAccessRestrictedModal = false;
 
@@ -122,7 +126,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   ];
 
   pets: any[] = [{
-    displayName: 'Bao the mindful Panda',
+    displayName: 'Bao the superme Panda',
     name: 'Panda',
     apiName: 'Panda-Age1-Happy.png',
     image: 'assets/Images-Pet/Panda-Age1-Happy.png',
@@ -225,6 +229,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.roleSelected = savedRole;
     }
 
+    this.restoreSignupStateFromSession();
+
     // Pre-fill profile data if coming from Google sign-in
     if (sessionStorage.getItem('signup_via_google') === 'true') {
       const googleName = sessionStorage.getItem('google_signup_name');
@@ -255,7 +261,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     private authService: AuthService,
     private userService: UserService,
     private loadingService: LoadingService,
-    public parentImageService: ParentImageService
+    public parentImageService: ParentImageService,
+    private credentialSaverService: CredentialSaverService
   ) {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -265,12 +272,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     });
 
     this.profileForm = this.fb.group({
-      name: ['', [Validators.required]],
-      dob: [''],
+      name: ['', [
+        Validators.required,
+        Validators.minLength(2),
+        Validators.maxLength(40),
+        Validators.pattern(/^[A-Za-z][A-Za-z\s.'-]*$/)
+      ]],
+      dob: ['', [Validators.required]],
     })
 
     this.passwordForm = this.fb.group({
-      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(12)]],
+      password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(12)]],
     })
     this.route.queryParams.subscribe(params => {
       const stepParam = params['step'];
@@ -351,9 +363,42 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return this.profileForm.get('name');
   }
 
+  get isProfileStepInvalid(): boolean {
+    if (this.profileForm.invalid) return true;
+    if (!this.gender) return true;
+    if (this.currentRole !== 'parent' && !this.avatarSelected) return true;
+    return false;
+  }
+
+  getPasswordErrorMessage(): string {
+    const control = this.password;
+    if (!control) return '';
+    if (control.hasError('required')) return 'Please create a password.';
+    if (control.hasError('minlength')) return 'Password must be at least 8 characters.';
+    if (control.hasError('maxlength')) return 'Password cannot be more than 12 characters.';
+    return 'Please enter a valid password.';
+  }
+
+  getNameErrorMessage(): string {
+    const control = this.name;
+    if (!control) return '';
+    if (control.hasError('required')) return 'Please enter your full name.';
+    if (control.hasError('minlength')) return 'Name must be at least 2 characters.';
+    if (control.hasError('maxlength')) return 'Name cannot be more than 40 characters.';
+    if (control.hasError('pattern')) return 'Name can only include letters, spaces, apostrophes, hyphens, and periods.';
+    return 'Please enter a valid full name.';
+  }
+
+  selectGender(gender: 'male' | 'female'): void {
+    if (this.gender !== gender) {
+      this.avatarSelected = null;
+    }
+    this.gender = gender;
+  }
+
   // Determine current role from session or selection
-  get currentRole(): 'child' | 'parent' | 'self' | undefined {
-    const stored = sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self' | null;
+  get currentRole(): SignupRole | undefined {
+    const stored = sessionStorage.getItem('signup_role') as SignupRole | null;
     return stored || this.roleSelected;
   }
 
@@ -536,34 +581,20 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     if (age !== null) {
-      // Child role: age < 24 is valid, age >= 24 shows popup
-      if (this.roleSelected === 'child') {
-        if (age < 18) {
-          console.warn('Child age is below 18, which may not be allowed depending on regulations.');
-          // Valid age for child role - go to child instructions
-          this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
-          return;
-        } else {
-          console
-          // Age >= 24 - show suggestion popup
-          this.showAgeSuggestionModal = true;
-          return;
-        }
+      const suggestionRoles = this.getAgeSuggestionRoles(this.roleSelected, age);
+      if (suggestionRoles.length) {
+        this.openAgeSuggestionModal(suggestionRoles);
+        return;
       }
 
-      // Parent role: age >= 24 is valid, age < 24 shows popup
+      if (this.roleSelected === 'child') {
+        this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
+        return;
+      }
+
       if (this.roleSelected === 'parent') {
-        if (age >= 24) {
-          console
-          // Valid age for parent role - go to parent instructions
-          this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
-          return;
-        } else {
-          console.warn('Parent age is below 24, which may not be allowed depending on regulations.');
-          // Age < 24 - show suggestion popup repeatedly until correct age
-          this.showAgeSuggestionModal = true;
-          return;
-        }
+        this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
+        return;
       }
     }
 
@@ -592,6 +623,23 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
    * Called from profile Save & Continue when user should be registered immediately
    */
   registerOrProceed(): void {
+    this.profileForm.markAllAsTouched();
+
+    if (this.profileForm.get('name')?.invalid) {
+      this.core.triggerToasrt(this.getNameErrorMessage());
+      return;
+    }
+
+    if (this.profileForm.get('dob')?.invalid) {
+      this.core.triggerToasrt('Please enter your date of birth');
+      return;
+    }
+
+    if (!this.gender) {
+      this.core.triggerToasrt('Please select your gender');
+      return;
+    }
+
     // Skip avatar requirement for parent; require for others
     if (this.currentRole !== 'parent' && !this.avatarSelected) {
       this.core.triggerToasrt('Please select an avatar');
@@ -629,27 +677,21 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     } catch (e) { }
 
     // Get the role from session storage or current selection
-    const role = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;
+    const role = (sessionStorage.getItem('signup_role') as SignupRole) || this.roleSelected;
+
+    const suggestionRoles = this.getAgeSuggestionRoles(role, age);
+    if (suggestionRoles.length) {
+      this.openAgeSuggestionModal(suggestionRoles);
+      return;
+    }
 
     // Apply age-based routing rules
     if (role === 'child') {
-      // For child: if age >= 18, show suggestion modal, else go to instructions
-      if (age !== null && age >= 18) {
-        this.showAgeSuggestionModal = true;
-        return;
-      } else {
-        this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
-        return;
-      }
+      this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
+      return;
     } else if (role === 'parent') {
-      // For parent: if age < 24, show suggestion modal, else go to instructions
-      if (age !== null && age < 24) {
-        this.showAgeSuggestionModal = true;
-        return;
-      } else {
-        this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
-        return;
-      }
+      this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
+      return;
     } else if (role === 'self') {
       // For self users, go straight to pet selection (step 4)
       this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
@@ -777,29 +819,91 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
   }
 
+  private getAgeSuggestionRoles(role: SignupRole, age: number): SignupRole[] {
+    if (role === 'child') {
+      if (age >= 25) {
+        return ['self', 'parent'];
+      }
+
+      if (age >= 18 && age < 25) {
+        return ['self'];
+      }
+    }
+
+    if (role === 'parent') {
+      if (age >= 8 && age < 18) {
+        return ['child', 'self'];
+      }
+
+      if (age >= 18 && age < 25) {
+        return ['self'];
+      }
+    }
+
+    return [];
+  }
+
+  private openAgeSuggestionModal(roles: SignupRole[]): void {
+    this.ageSuggestionRoles = roles;
+    this.ageSuggestionTarget = roles.length === 1 ? roles[0] : null;
+    this.showAgeSuggestionModal = true;
+  }
+
   closeAgeSuggestionModal(): void {
     this.showAgeSuggestionModal = false;
+    this.ageSuggestionTarget = null;
+    this.ageSuggestionRoles = [];
   }
 
   closeAccessRestrictedModal(): void {
     this.showAccessRestrictedModal = false;
   }
 
+  get ageSuggestionSubtitle(): string {
+    if (this.ageSuggestionRoles.length === 0) {
+      return '';
+    }
+
+    if (this.ageSuggestionRoles.length === 1) {
+      return `Based on your profile, you might love our ${this.getRoleDisplayName(this.ageSuggestionRoles[0])} mode`;
+    }
+
+    const labels = this.ageSuggestionRoles.map((role) => this.getRoleDisplayName(role));
+    return `Based on your profile, you might love ${labels.join(' or ')} mode`;
+  }
+
+  getRoleDisplayName(role: SignupRole): string {
+    if (role === 'child') return 'Child';
+    if (role === 'parent') return 'Parent';
+    return 'Self';
+  }
+
+  isPrimaryAgeSuggestion(role: SignupRole): boolean {
+    return this.ageSuggestionRoles[this.ageSuggestionRoles.length - 1] === role;
+  }
+
+  selectSuggestedRole(role: SignupRole): void {
+    this.applySuggestedRole(role);
+  }
+
   selectSelfRole(): void {
-    this.roleSelected = 'self';
-    this.showAgeSuggestionModal = false;
-    // Update role in session storage
-    try { sessionStorage.setItem('signup_role', 'self'); } catch (e) { }
-    // Navigate back to step 1 (role selection)
-    this.router.navigate(['home/sign-up'], { queryParams: { step: 1 } });
+    this.applySuggestedRole('self');
+  }
+
+  selectChildRole(): void {
+    this.applySuggestedRole('child');
   }
 
   selectParentRole(): void {
-    this.roleSelected = 'parent';
+    this.applySuggestedRole('parent');
+  }
+
+  private applySuggestedRole(role: SignupRole): void {
+    this.roleSelected = role;
     this.showAgeSuggestionModal = false;
-    // Update role in session storage
-    try { sessionStorage.setItem('signup_role', 'parent'); } catch (e) { }
-    // Navigate back to step 1 (role selection)
+    this.ageSuggestionTarget = null;
+    this.ageSuggestionRoles = [];
+    try { sessionStorage.setItem('signup_role', role); } catch (e) { }
     this.router.navigate(['home/sign-up'], { queryParams: { step: 1 } });
   }
 
@@ -1282,7 +1386,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       // Navigate to step 1 (role selection) after password creation
       this.router.navigate(['home/sign-up'], { queryParams: { step: 1 } });
     } else {
-      this.core.triggerToasrt('Please enter a valid password (6-12 characters)');
+      this.passwordForm.markAllAsTouched();
+      this.core.triggerToasrt(this.getPasswordErrorMessage());
     }
   }
 
@@ -1447,6 +1552,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         if (credentials.password && (credentials.email || credentials.phone)) {
           this.authService.login(credentials).subscribe({
             next: (loginResp) => {
+              this.requestPasswordSavePrompt(credentials);
+              if (credentials.email) {
+                this.credentialSaverService.save({ identifier: credentials.email, password: credentials.password || '', mode: 'email' });
+              }
               // After login, user session is set by AuthService
               // Navigate to appropriate dashboard with loader hidden
               const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
@@ -1475,6 +1584,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       },
       error: (err) => {
         const serverMsg = err?.error?.message || err?.error || 'Registration failed';
+        const registrationMessage = typeof serverMsg === 'string' ? serverMsg : 'Registration failed. Please try again.';
+        if (this.isRecoverableFamilyCapacityError(registrationMessage)) {
+          this.errorMessage = registrationMessage;
+          this.handleRecoverableFamilyJoinError(this.errorMessage);
+          try { this.core.triggerToasrt(this.errorMessage); } catch (e) { }
+          return;
+        }
         // If registration failed because user already exists, try to login automatically
         const passwordForLogin = password || sessionStorage.getItem('signup_password') || this.password?.value || '';
         const credentials: any = { password: passwordForLogin };
@@ -1484,6 +1600,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         if (credentials.password && (credentials.email || credentials.phone)) {
           this.authService.login(credentials).subscribe({
             next: () => {
+              this.requestPasswordSavePrompt(credentials);
+              if (credentials.email) {
+                this.credentialSaverService.save({ identifier: credentials.email, password: credentials.password || '', mode: 'email' });
+              }
               const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
               setTimeout(() => {
                 this.loadingService.forceHide();
@@ -1492,12 +1612,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
             },
             error: (loginErr) => {
               // If auto-login fails, show original registration error
-              this.errorMessage = typeof serverMsg === 'string' ? serverMsg : 'Registration failed. Please try again.';
+              this.errorMessage = registrationMessage;
               try { this.core.triggerToasrt(this.errorMessage); } catch (e) { }
             }
           });
         } else {
-          this.errorMessage = typeof serverMsg === 'string' ? serverMsg : 'Registration failed. Please try again.';
+          this.errorMessage = registrationMessage;
           try { this.core.triggerToasrt(this.errorMessage); } catch (e) { }
         }
       }
@@ -1588,6 +1708,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       error: (err) => {
         const serverMsg = err?.error?.message || 'Sign-up failed. Please try again.';
         this.errorMessage = serverMsg;
+        this.handleRecoverableFamilyJoinError(serverMsg);
         try { this.core.triggerToasrt(this.errorMessage!); } catch (e) {}
       }
     });
@@ -1703,6 +1824,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       error: (err) => {
         const serverMsg = err?.error?.message || err?.error || 'Registration failed';
         this.errorMessage = typeof serverMsg === 'string' ? serverMsg : 'Registration failed. Please try again.';
+        this.handleRecoverableFamilyJoinError(this.errorMessage);
         try { this.core.triggerToasrt(this.errorMessage); } catch (e) { }
       }
     });
@@ -1726,6 +1848,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // Auto-login
     this.authService.login(credentials).subscribe({
       next: () => {
+        this.requestPasswordSavePrompt(credentials);
+        if (credentials.email) {
+          this.credentialSaverService.save({ identifier: credentials.email, password: credentials.password || '', mode: 'email' });
+        }
         this.loadingService.forceHide();
         this.router.navigate(['/authed/user-dashboard']);
       },
@@ -1756,6 +1882,111 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
    */
   navigateToTermsOfUse(): void {
     this.router.navigate(['/our-policies'], { queryParams: { tab: 'terms' } });
+  }
+
+  getSignupCredentialIdentifier(): string {
+    const savedMode = (sessionStorage.getItem('loginMode') as 'email' | 'phone' | null) || this.loginMode;
+    const savedIdentifier = sessionStorage.getItem('requestedIdentifier') || this.requestedIdentifier || '';
+
+    if (savedIdentifier) {
+      if (savedMode === 'phone' && !savedIdentifier.startsWith('+')) {
+        return `${sessionStorage.getItem('countryCode') || this.selectedCountry.code}${savedIdentifier}`;
+      }
+      return savedIdentifier;
+    }
+
+    if (savedMode === 'phone') {
+      const phoneValue = this.phone?.value || '';
+      return phoneValue ? `${this.selectedCountry.code}${phoneValue}` : '';
+    }
+
+    return this.email?.value || '';
+  }
+
+  private requestPasswordSavePrompt(credentials: { email?: string; phone?: string; password?: string }): void {
+    const credentialApi = (window.navigator as any)?.credentials;
+    const PasswordCredentialCtor = (window as any)?.PasswordCredential;
+    const username = credentials.email || credentials.phone;
+    const password = credentials.password;
+
+    if (!credentialApi?.store || !PasswordCredentialCtor || !username || !password) {
+      return;
+    }
+
+    try {
+      const credential = new PasswordCredentialCtor({
+        id: username,
+        name: username,
+        password,
+      });
+      credentialApi.store(credential).catch(() => {});
+    } catch (error) {
+      // Browser/password-manager support varies across WebView and desktop.
+    }
+  }
+
+  private restoreSignupStateFromSession(): void {
+    try {
+      const profileStr = sessionStorage.getItem('signup_profile');
+      if (profileStr) {
+        const profile = JSON.parse(profileStr);
+        if (profile?.name || profile?.dob) {
+          this.profileForm.patchValue({
+            name: profile.name || '',
+            dob: profile.dob ? new Date(profile.dob).toISOString().slice(0, 10) : ''
+          }, { emitEvent: false });
+        }
+        if (profile?.gender) {
+          this.gender = profile.gender;
+        }
+        if (profile?.avatar && profile.avatar !== this.getNameInitial()) {
+          this.avatarSelected = profile.avatar;
+        }
+      }
+
+      const savedPassword = sessionStorage.getItem('signup_password');
+      if (savedPassword) {
+        this.passwordForm.patchValue({ password: savedPassword }, { emitEvent: false });
+      }
+
+      const identifier = sessionStorage.getItem('requestedIdentifier');
+      const savedLoginMode = sessionStorage.getItem('loginMode') as 'email' | 'phone' | null;
+      if (savedLoginMode) {
+        this.loginMode = savedLoginMode;
+      }
+      if (identifier) {
+        if (this.loginMode === 'phone') {
+          this.signupForm.patchValue({ phone: identifier }, { emitEvent: false });
+        } else {
+          this.signupForm.patchValue({ email: identifier }, { emitEvent: false });
+        }
+      }
+    } catch (error) {
+      console.warn('[Signup] Unable to restore saved onboarding state', error);
+    }
+  }
+
+  private handleRecoverableFamilyJoinError(message?: string | null): void {
+    const isChildJoinFlow = (sessionStorage.getItem('signup_role') || this.roleSelected) === 'child'
+      && !!sessionStorage.getItem('familyCode');
+    const isFamilyCapacityError = this.isRecoverableFamilyCapacityError(message);
+
+    if (!isChildJoinFlow || !isFamilyCapacityError) {
+      return;
+    }
+
+    this.loadingService.forceHide();
+    try { sessionStorage.setItem('familyJoinBlocked', 'true'); } catch (e) {}
+  }
+
+  private isRecoverableFamilyCapacityError(message?: string | null): boolean {
+    const text = (message || '').toLowerCase();
+    return text.includes('two children')
+      || text.includes('2 children')
+      || text.includes('maximum number of children')
+      || text.includes('maximum children')
+      || text.includes('child limit')
+      || text.includes('family is full');
   }
 
   /**

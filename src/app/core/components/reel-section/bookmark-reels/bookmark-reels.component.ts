@@ -3,14 +3,14 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
-import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
+import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
 
 @Component({
   selector: 'bookmark-reels',
   templateUrl: './bookmark-reels.component.html',
   styleUrls: ['./bookmark-reels.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent]
+  imports: [CommonModule, IonicModule, SupermeCardHeaderComponent]
 })
 export class BookmarkReelsComponent implements OnInit {
   @Input() items: any[] = [];

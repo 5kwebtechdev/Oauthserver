@@ -1,15 +1,26 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.firebase.crashlytics'
+apply plugin: 'com.google.firebase.appdistribution'
+
+def envOrProp = { String name ->
+    return project.findProperty(name)?.toString() ?: System.getenv(name)
+}
 
 android {
     namespace "io.ionic.starter"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        // Match the package name in android/app/google-services.json
+        // Match the package name in android/app/gocogle-services.json
         applicationId "com.superme.app"
         minSdkVersion 26
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 19
+        versionCode 22
         versionName "0.0.2"
+        manifestPlaceholders = [
+            deeplinkHost: envOrProp('DEEPLINK_HOST') ?: 'supermeapp.com',
+            deeplinkAltHost: envOrProp('DEEPLINK_ALT_HOST') ?: 'www.supermeapp.com',
+            deeplinkScheme: envOrProp('DEEPLINK_SCHEME') ?: 'superme'
+        ]
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -39,6 +50,28 @@ android {
     }
 }
 
+firebaseAppDistributionDefault {
+    artifactType = envOrProp('FIREBASE_APP_DISTRIBUTION_ARTIFACT_TYPE') ?: 'APK'
+
+    def appIdValue = envOrProp('FIREBASE_APP_ID')
+    if (appIdValue) appId = appIdValue
+
+    def testersValue = envOrProp('FIREBASE_TESTERS')
+    if (testersValue) testers = testersValue
+
+    def groupsValue = envOrProp('FIREBASE_GROUPS')
+    if (groupsValue) groups = groupsValue
+
+    def releaseNotesValue = envOrProp('FIREBASE_RELEASE_NOTES')
+    if (releaseNotesValue) releaseNotes = releaseNotesValue
+
+    def releaseNotesFileValue = envOrProp('FIREBASE_RELEASE_NOTES_FILE')
+    if (releaseNotesFileValue) releaseNotesFile = releaseNotesFileValue
+
+    def credentialsValue = envOrProp('FIREBASE_SERVICE_CREDENTIALS_FILE')
+    if (credentialsValue) serviceCredentialsFile = credentialsValue
+}
+
 // Module-level repositories are intentionally omitted. Repositories are
 // declared in `settings.gradle` via dependencyResolutionManagement to comply
 // with Gradle 8's `FAIL_ON_PROJECT_REPOS` policy.
@@ -54,9 +87,14 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
     // Firebase (uses google-services.json for auto-config)
-    implementation platform('com.google.firebase:firebase-bom:33.1.0')
+    implementation platform('com.google.firebase:firebase-bom:34.14.1')
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-crashlytics'
+    implementation 'com.google.firebase:firebase-config'
+    implementation 'com.google.firebase:firebase-appcheck-playintegrity'
+    implementation 'com.google.firebase:firebase-messaging'
+    debugImplementation 'com.google.firebase:firebase-appcheck-debug'
     implementation 'com.google.android.gms:play-services-auth:21.2.0'
 }
 

@@ -4,14 +4,14 @@ import { IonicModule, ViewWillEnter } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
+import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { CoinService, CoinHistoryItem } from '../../../services/coin.service';
 
 @Component({
     selector: 'app-coin-purchase',
     standalone: true,
-    imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, EmptyStateComponent],
+    imports: [CommonModule, IonicModule, SupermeCardHeaderComponent, EmptyStateComponent],
     templateUrl: './coin-purchase.component.html',
     styleUrls: ['./coin-purchase.component.scss']
 })

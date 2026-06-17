@@ -1,8 +1,8 @@
 <ion-content [fullscreen]="true" class="ion-padding-top">
   <div class="safe-area-top"></div>
-  <mindful-card-header title="Made by Kids, for Kids!" subtitleLeft="Watch reels" subtitleMiddle="Create"
+  <superme-card-header title="Made by Kids, for Kids!" subtitleLeft="Watch reels" subtitleMiddle="Create"
     subtitleRight="Get Inspired" [showBackArrow]="true" (backClick)="goBack()">
-    <div mindful-header-actions>
+    <div superme-header-actions>
       <button class="bookmark-button" aria-label="Bookmarks" (click)="openBookmarks()">
         <!-- bookmark svg -->
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -17,21 +17,21 @@
         </svg>
       </button>
     </div>
-  </mindful-card-header>
+  </superme-card-header>
 
   <main class="category-page">
     <div class="reels-container">
       <div class="category-title">
-        <mindful-card-header [title]="'My Reels'" [showBackArrow]="false">
-          <div mindful-header-actions>
+        <superme-card-header [title]="'My Reels'" [showBackArrow]="false">
+          <div superme-header-actions>
             <!-- When View all is clicked for My Reels, go to the bookmarks page and mark source -->
-            <mindful-view-all [text]="'View all'" (clicked)="goToBookmarks()"></mindful-view-all>
+            <superme-view-all [text]="'View all'" (clicked)="goToBookmarks()"></superme-view-all>
           </div>
-        </mindful-card-header>
+        </superme-card-header>
 
       </div>
       <reels-card [hideCategory]="true"></reels-card>
-      <mindful-button type="peach" text="Play All" [large]="true"></mindful-button>
+      <superme-button type="peach" text="Play All" [large]="true"></superme-button>
     </div>
 
     <div class="reels-container">
@@ -47,7 +47,7 @@
         </div>
       </div>
       <reels-card [hideCategory]="true"></reels-card>
-      <mindful-button type="peach" text="Play All" [large]="true"></mindful-button>
+      <superme-button type="peach" text="Play All" [large]="true"></superme-button>
     </div>
 
     <div class="reels-container">
@@ -65,7 +65,7 @@
         </div>
       </div>
       <reels-card [hideCategory]="true"></reels-card>
-      <mindful-button type="peach" text="Play All" [large]="true"></mindful-button>
+      <superme-button type="peach" text="Play All" [large]="true"></superme-button>
 
 
     </div>
@@ -85,7 +85,7 @@
         </div>
       </div>
       <reels-card [hideCategory]="true"></reels-card>
-      <mindful-button type="peach" text="Play All" [large]="true"></mindful-button>
+      <superme-button type="peach" text="Play All" [large]="true"></superme-button>
 
     </div>
   </main>
@@ -93,6 +93,6 @@
   <!-- Add reel-expand component for full-screen video playback -->
   <reels-expand></reels-expand>
   <div class="floating-add-button" style="position: fixed; right: 16px; bottom: 16px; z-index: 1100;">
-    <mindful-button class="small" type="magenta" text="+" (click)="openUpload()"></mindful-button>
+    <superme-button class="small" type="magenta" text="+" (click)="openUpload()"></superme-button>
   </div>
 </ion-content>
