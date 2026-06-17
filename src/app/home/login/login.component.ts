@@ -6,6 +6,7 @@ import { ChildSelfImageService } from '../../core/services/child-self-image.serv
 import { UserService } from '../../core/services/user.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { CredentialSaverService, SavedCredentials } from '../../core/services/credential-saver.service';
 
 @Component({
   selector: 'app-login',
@@ -27,6 +28,12 @@ export class LoginComponent implements OnInit, OnDestroy {
   private subscription = new Subscription();
   private returnUrl: string = '';
 
+  public showSaveCredsPrompt = false;
+  public autoFilledFromSave = false;
+  private pendingNav = '';
+  private pendingNewCreds: SavedCredentials | null = null;
+  private pendingPhoneRestore: SavedCredentials | null = null;
+
 
   constructor(
     private fb: FormBuilder,
@@ -35,7 +42,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private childSelfImageService: ChildSelfImageService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private credentialSaverService: CredentialSaverService
   ) {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -108,6 +116,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       this.authService.login(credentials).subscribe({
         next: (response) => {
           this.loading = false;
+          this.requestPasswordSavePrompt(credentials);
           console.log('[LoginComponent] Login successful', response);
           console.log('[LoginComponent] Token received:', !!response.token);
           console.log('[LoginComponent] UserId:', response.user?.id);
@@ -119,12 +128,16 @@ export class LoginComponent implements OnInit, OnDestroy {
               // Resolve avatar via shared resolver (ignore server-provided avatar.url)
               const resolved = this.childSelfImageService.resolveAvatarFromUser(user);
 
+              const dob = user.dateOfBirth !== undefined && user.dateOfBirth !== null
+                ? String(user.dateOfBirth)
+                : undefined;
+
               this.userService.setUserProfile({
                 userId: user.id,
                 name: user.name || '',
                 email: user.email || undefined,
                 phone: user.phone || undefined,
-                dob: user.dateOfBirth || undefined,
+                dob,
                 gender: user.gender ? (user.gender.toLowerCase() as 'male' | 'female') : undefined,
                 avatarUrl: resolved.url || undefined,
                 avatarName: user.avatar?.avatarName || undefined,
@@ -139,8 +152,29 @@ export class LoginComponent implements OnInit, OnDestroy {
           const dashboardRoute = this.authService.getDashboardRoute();
           const navigationTarget = this.returnUrl || dashboardRoute;
 
-          console.log('[LoginComponent] Navigating to:', navigationTarget);
-          this.router.navigateByUrl(navigationTarget);
+          // Build credential object for saving
+          const saveMode = this.loginMode;
+          const rawIdentifier = saveMode === 'email'
+            ? (credentials.email || '')
+            : (this.signInForm.get('phone')?.value || '');
+          const credsToSave: SavedCredentials = {
+            identifier: rawIdentifier,
+            password: credentials.password || '',
+            mode: saveMode,
+            countryCode: saveMode === 'phone' ? this.selectedCountry.code : undefined
+          };
+
+          if (this.credentialSaverService.hasSaved()) {
+            // Already opted in — update silently and proceed
+            this.credentialSaverService.save(credsToSave);
+            console.log('[LoginComponent] Navigating to:', navigationTarget);
+            this.router.navigateByUrl(navigationTarget);
+          } else {
+            // First time — ask user whether to save
+            this.pendingNav = navigationTarget;
+            this.pendingNewCreds = credsToSave;
+            this.showSaveCredsPrompt = true;
+          }
         },
         error: (error) => {
           this.loading = false;
@@ -196,16 +230,39 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.switchMode('email');
     console.log('LoginComponent initialized');
 
+    // Auto-fill from saved credentials
+    const saved = this.credentialSaverService.load();
+    if (saved) {
+      if (saved.mode === 'email') {
+        this.switchMode('email');
+        this.signInForm.patchValue({ email: saved.identifier, password: saved.password });
+        this.signInForm.markAsDirty();
+        this.autoFilledFromSave = true;
+      } else {
+        this.switchMode('phone');
+        this.pendingPhoneRestore = saved;
+      }
+    }
+
     // Load countries from service
     this.subscription.add(
       this.countriesService.getCountries().subscribe({
         next: (countries) => {
           this.countries = countries;
           console.log('Countries loaded:', countries.length);
+          // Apply deferred phone restore once countries are available
+          if (this.pendingPhoneRestore) {
+            const restore = this.pendingPhoneRestore;
+            this.pendingPhoneRestore = null;
+            const matched = countries.find(c => c.code === restore.countryCode);
+            if (matched) this.selectedCountry = matched;
+            this.signInForm.patchValue({ phone: restore.identifier, password: restore.password });
+            this.signInForm.markAsDirty();
+            this.autoFilledFromSave = true;
+          }
         },
         error: (error) => {
           console.error('Error loading countries:', error);
-          // Fallback to default country if loading fails
           this.countries = [this.countriesService.getDefaultCountry()];
         }
       })
@@ -307,5 +364,47 @@ export class LoginComponent implements OnInit, OnDestroy {
       return emailValid && passwordValid;
     }
     return false;
+  }
+
+  onSaveCreds(): void {
+    if (this.pendingNewCreds) {
+      this.credentialSaverService.save(this.pendingNewCreds);
+    }
+    this.showSaveCredsPrompt = false;
+    this.router.navigateByUrl(this.pendingNav);
+  }
+
+  onSkipSaveCreds(): void {
+    this.showSaveCredsPrompt = false;
+    this.router.navigateByUrl(this.pendingNav);
+  }
+
+  clearSavedCreds(): void {
+    this.credentialSaverService.clear();
+    this.autoFilledFromSave = false;
+    this.signInForm.reset();
+    this.switchMode('email');
+  }
+
+  private requestPasswordSavePrompt(credentials: LoginCredentials): void {
+    const credentialApi = (window.navigator as any)?.credentials;
+    const PasswordCredentialCtor = (window as any)?.PasswordCredential;
+    const username = credentials.email || credentials.phone;
+    const password = credentials.password;
+
+    if (!credentialApi?.store || !PasswordCredentialCtor || !username || !password) {
+      return;
+    }
+
+    try {
+      const credential = new PasswordCredentialCtor({
+        id: username,
+        name: username,
+        password,
+      });
+      credentialApi.store(credential).catch(() => {});
+    } catch (error) {
+      // Browser/password-manager support varies across WebView and desktop.
+    }
   }
 }

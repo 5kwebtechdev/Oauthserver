@@ -97,7 +97,7 @@
 }
 
 // Selected state for True/False buttons
-.answers-list mindful-button.selected {
+.answers-list superme-button.selected {
     border-color: #4CAF50;
     background-color: #E8F5E9;
 }
@@ -114,12 +114,23 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    width: 100%;
+    min-height: 116px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    appearance: none;
+    -webkit-appearance: none;
+    text-align: center;
     cursor: pointer;
+    touch-action: manipulation;
 }
 
 .visual-option.selected .visual-option-image {
     border: 2px solid #4CAF50;
-    border-radius: 16px;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.18);
 }
 
 .visual-option-image {
@@ -127,10 +138,11 @@
     height: 96px;
     aspect-ratio: 1/1;
     border-radius: 16px;
+    border: 2px solid transparent;
     background: lightgray;
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    margin-bottom: 8px;
+    display: block;
+    object-fit: cover;
+    pointer-events: none;
 }
 
 .visual-option-label {
@@ -138,6 +150,7 @@
     font-family: Nunito;
     font-size: 16px;
     font-weight: 500;
+    pointer-events: none;
 }
 
 .hint-section {
@@ -224,12 +237,12 @@
     padding: 24px 16px;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    gap: 24px;
+    align-items: stretch;
+    gap: 16px;
     border-radius: 12px 12px 0 0;
     width: 100%;
     max-width: 100%;
-    text-align: center;
+    text-align: left;
     animation: slideUp 0.3s ease-out;
 }
 
@@ -275,15 +288,21 @@
     font-family: Nunito;
     font-size: 18px;
     font-weight: 700;
-    margin-bottom: 4px;
+    line-height: 1.35;
+    margin-bottom: 0;
+    text-align: left;
+    width: 100%;
 }
 
 .popup-text {
     color: #4CAF50;
     font-family: Nunito;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
-    margin-bottom: 12px;
+    line-height: 1.35;
+    margin-bottom: 8px;
+    text-align: left;
+    width: 100%;
 }
 
 .popup-content ::ng-deep .button {

@@ -92,12 +92,12 @@
   padding: 16px;
   box-sizing: border-box;
 
-  mindful-button {
+  superme-button {
     flex: 1;
     width: 100%;
   }
 
-  ::ng-deep mindful-button .button {
+  ::ng-deep superme-button .button {
     width: 100% !important;
   }
 }

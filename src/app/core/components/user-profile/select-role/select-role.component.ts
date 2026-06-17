@@ -2,8 +2,8 @@ import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ToastController } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { InstructioListComponent } from '../family-connection/instructio-list';
 import { ProfileFactsComponent, PROFILE_FAQS } from '../profile-facts/profile-facts.component';
 import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-input.component';
@@ -16,11 +16,11 @@ import { QRCodeComponent } from 'angularx-qrcode';
 @Component({
   standalone: true,
   selector: 'role-select',
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent, InstructioListComponent, ProfileFactsComponent, ProfileEditInputComponent, QRCodeComponent],
+  imports: [CommonModule, IonicModule, SupermeNavigatorComponent, SupermeButtonComponent, InstructioListComponent, ProfileFactsComponent, ProfileEditInputComponent, QRCodeComponent],
   template: `
 <ion-content>
 	<div class="step step-1" *ngIf="currentStep === 1">
-		<mindful-navigator heading="Select the role" backIcon="arrowSvg" (back)="goBack()"></mindful-navigator>
+		<superme-navigator heading="Select the role" backIcon="arrowSvg" (back)="goBack()"></superme-navigator>
 		<div class="d-flex flex-column gap-4">
 			<div class="role-selector container p-0" *ngIf="shouldShowChildRole()" data-role="child" role="button" tabindex="0"
 				(click)="selectRole('child')" (keydown)="onKeySelect($event, 'child')"
@@ -64,7 +64,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 					<h2>Self</h2>
 					<h4>Personal Journey</h4>
 					<h4>Daily Reflections</h4>
-					<h4>Mindful Growth</h4>
+					<h4>Superme Growth</h4>
 				</div>
 				<div class="col-6">
 					<img src="/assets/app-assets/Onboarding-role-selection-self.svg" alt="">
@@ -73,13 +73,13 @@ import { QRCodeComponent } from 'angularx-qrcode';
 		</div>
 		-->
 			<div>
-				<mindful-button type="green" size="full" text="Save & Continue" [disabled]="!selectedRole" (click)="save()"></mindful-button>
+				<superme-button type="green" size="full" text="Save & Continue" [disabled]="!selectedRole" (click)="save()"></superme-button>
 			</div>
 		</div>
 	</div>
 
 	<div class="step step-2" *ngIf="currentStep === 2">
-		<mindful-navigator heading="Instructions" backIcon="arrowSvg" (back)="prevStep()"></mindful-navigator>
+		<superme-navigator heading="Instructions" backIcon="arrowSvg" (back)="prevStep()"></superme-navigator>
 
 		<div class="container" style="max-width:420px; margin: 16px auto;">
 			<instructio-list [items]="selectedRole === 'child' ? childRoleInstructions : roleSelectionInstructions" type="role-selection-instruction"></instructio-list>
@@ -88,12 +88,12 @@ import { QRCodeComponent } from 'angularx-qrcode';
 		<profile-facts [faqs]="selectedRole === 'child' ? profileChildFaqs : profileParentFaqs"></profile-facts>
 
 		<div style="margin-top:20px; text-align:center;">
-			<mindful-button type="green" size="full" text="Next" (click)="save()"></mindful-button>
+			<superme-button type="green" size="full" text="Next" (click)="save()"></superme-button>
 		</div>
 	</div>
 
   <div class="step step-3" *ngIf="currentStep === 3">
-    <mindful-navigator *ngIf="!familyCreated" heading="Create your account" backIcon="arrowSvg" (back)="prevStep()"></mindful-navigator>
+    <superme-navigator *ngIf="!familyCreated" heading="Create your account" backIcon="arrowSvg" (back)="prevStep()"></superme-navigator>
 
 		<div class="container w-full p-0" style="display: flex; justify-content: center; align-items: center;">
 			<div class="container w-full p-0" style="padding: 20px 0px !important; max-width:420px; width:100%">
@@ -133,9 +133,9 @@ import { QRCodeComponent } from 'angularx-qrcode';
 				</div>
 
 				<div style="margin-top:20px; text-align:center;">
-					<mindful-button type="green" size="full"
+					<superme-button type="green" size="full"
 						[text]="(isSubmitting ? 'Processing...' : (selectedFamilyAction === 'create' ? 'Create Family' : 'Join Family'))"
-						[disabled]="!isFormValid() || isSubmitting" (click)="save()"></mindful-button>
+						[disabled]="!isFormValid() || isSubmitting" (click)="save()"></superme-button>
 
 					<div style="margin-top:18px; max-width:420px; margin-left:auto; margin-right:auto;">
 						<profile-facts [faqs]="faqsForStep3"></profile-facts>
@@ -181,24 +181,24 @@ import { QRCodeComponent } from 'angularx-qrcode';
 						</div>
 
             <!-- First button: Child has done the required -->
-            <mindful-button
+            <superme-button
               *ngIf="!childCompletedTask"
               type="green"
               size="full"
               text="My child has done the required"
               [disabled]="isSubmitting"
               (click)="onChildTaskCompleted()">
-            </mindful-button>
+            </superme-button>
 
             <!-- Second button: Go to Parent account (shows after confirming child done) -->
-            <mindful-button
+            <superme-button
               *ngIf="childCompletedTask"
               type="green"
               size="full"
               text="Login to Parent account"
               [disabled]="isSubmitting"
               (click)="goToParentAccount()">
-            </mindful-button>
+            </superme-button>
 					</div>
 				</ng-container>
 
@@ -625,19 +625,19 @@ export class RoleSelectComponent implements OnDestroy {
   userDob: string | null = null;
 
   roleSelectionInstructions: string[] = [
-    'Create your family in the next step to get started.',
-    'You\'ll receive a unique family code and QR code instantly.',
-    'Share the code with your child or let them scan the QR code on their device.',
-    'Once your child enters the code, you\'ll both be connected and can track progress together!'
+    'Create a new family or join an existing one to continue as a Parent.',
+    'If you create a family, you will receive a family code and QR code to share with your child.',
+    'If you join a family, enter the family code shared by the family creator.',
+    'Once connected, you can support your child with progress tracking, routines, approvals, and rewards.'
   ];
 
   // Instructions shown when a child selects the role
   childRoleInstructions: string[] = [
-    'Ask your parent to create their account on their device.',
-    'After signup, your parent creates a family in the app.',
-    'Your parent will see a family code and a QR code.',
-    'Enter the family code or scan the QR code in the next screen to join their family.',
-    'Once linked, you are good to proceed !'
+    'Choose Child when you want to connect your account with a parent or guardian.',
+    'Ask your parent for their family code or scan the QR code from their app.',
+    'Enter the code on the next screen to send your join request.',
+    'After joining, your parent can view family-linked progress and help you with routines and rewards.',
+    'Your personal account, notes, coins, pet, and learning progress stay safe.'
   ];
 
   faqsForSelectRole = [

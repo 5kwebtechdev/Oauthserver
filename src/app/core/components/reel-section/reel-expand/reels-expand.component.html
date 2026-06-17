@@ -12,8 +12,8 @@
     <div class="player-content">
       <!-- Top navigation with back arrow and bookmark -->
       <div class="top-navigation">
-        <mindful-card-header [showBackArrow]="true" (backClick)="close()" title="">
-          <div mindful-header-actions>
+        <superme-card-header [showBackArrow]="true" (backClick)="close()" title="">
+          <div superme-header-actions>
             <button class="bookmark-nav-btn" [class.saved]="current?.saved"
               (click)="toggleSave(); $event.stopPropagation()" aria-label="Save">
               <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
@@ -30,7 +30,7 @@
               </svg>
             </button>
           </div>
-        </mindful-card-header>
+        </superme-card-header>
       </div>
 
       <!-- Video container -->

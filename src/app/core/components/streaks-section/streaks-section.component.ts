@@ -3,16 +3,16 @@ import { CommonModule } from '@angular/common';
 import { IonicModule, ViewWillEnter } from '@ionic/angular';
 import { StreaksService, StreakLeaderboardUser, CurrentUserStreak, StreakLeaderboardResponse } from '../../services/streaks.service';
 import { ChildSelfImageService } from '../../services/child-self-image.service';
-import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigator.component';
-import { MindfulSpeechBubbleComponent } from '../mindful-speech-bubble/mindful-speech-bubble.component';
-import { MindfulPetComponent } from '../mindful-pet/mindful-pet.component';
+import { SupermeNavigatorComponent } from '../superme-navigator/superme-navigator.component';
+import { SupermeSpeechBubbleComponent } from '../superme-speech-bubble/superme-speech-bubble.component';
+import { SupermePetComponent } from '../superme-pet/superme-pet.component';
 
 @Component({
   selector: 'app-streaks-section',
   templateUrl: './streaks-section.component.html',
   styleUrls: ['./streaks-section.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulSpeechBubbleComponent, MindfulPetComponent]
+  imports: [CommonModule, IonicModule, SupermeNavigatorComponent, SupermeSpeechBubbleComponent, SupermePetComponent]
 })
 export class StreaksSectionComponent implements OnInit, ViewWillEnter {
   @Input() title = 'Top Streakers';

@@ -13,6 +13,12 @@ import { CustomToastService, Toast } from './core/services/custom-toast.service'
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { AnalyticsService } from './core/services/analytics.service';
 import { AuthSessionCleanupService } from './core/services/auth-session-cleanup.service';
+import { CrashlyticsService } from './core/services/crashlytics.service';
+import { RemoteConfigService } from './core/services/remote-config.service';
+import { DeepLinkService } from './core/services/deep-link.service';
+import { AppUpdateService } from './core/services/app-update.service';
+import { SupermePopupConfig } from './core/components/superme-popup/superme-popup.component';
+import { PushNotificationService } from './core/services/push-notification.service';
 
 @Component({
   selector: 'app-root',
@@ -31,6 +37,21 @@ export class AppComponent implements OnInit, OnDestroy {
   currentBadge?: BadgePopupData;
   private badgePopupQueue: BadgePopupData[] = [];
 
+  // Force update popup state (blocks the app until the user updates)
+  showForceUpdatePopup = false;
+  forceUpdateConfig: SupermePopupConfig = {
+    heading: 'Update Required',
+    subtitle: "A new version of SuperMe is available. Please update the app to continue.",
+    primaryCTA: {
+      text: 'Update Now',
+      buttonStyle: 'green',
+      buttonFull: true
+    },
+    showCloseButton: false,
+    backdrop: true,
+    ctaDirection: 'column'
+  };
+
   constructor(
     private platform: Platform,
     private router: Router,
@@ -44,20 +65,42 @@ export class AppComponent implements OnInit, OnDestroy {
     private toastService: CustomToastService,
     private analytics: AnalyticsService,
     private authSessionCleanup: AuthSessionCleanupService,
+    private crashlytics: CrashlyticsService,
+    private remoteConfig: RemoteConfigService,
+    private deepLinks: DeepLinkService,
+    private appUpdate: AppUpdateService,
+    private pushNotifications: PushNotificationService,
   ) {
     this.toast$ = this.toastService.toast$;
   }
 
   ngOnInit() {
+    this.remoteConfig.initialize().then(() => {
+      this.checkAppUpdate();
+    }).catch(error => {
+      console.warn('[AppComponent] Remote Config initialization failed:', error);
+      this.checkAppUpdate();
+    });
+    this.deepLinks.initialize();
+
     this.platform.ready().then(() => {
       if (this.platform.is('capacitor')) {
         StatusBar.setStyle({ style: Style.Light }).catch(() => {});
-        StatusBar.setBackgroundColor({ color: '#FFE9D6' }).catch(() => {});
         StatusBar.show().catch(() => {});
         if (this.platform.is('android')) {
+          // Android: set a background colour and stop the status bar overlaying the WebView.
+          StatusBar.setBackgroundColor({ color: '#FFE9D6' }).catch(() => {});
           StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {});
         }
+        // iOS: background colour is inherited from the page behind the status bar.
+        // setBackgroundColor has no effect on iOS — the peach background of ion-content
+        // already shows through because UIViewControllerBasedStatusBarAppearance = true.
         this.authSessionCleanup.initializeGoogleAuth();
+        // Initialize FCM: registers permission, gets token, attaches listeners.
+        // The service guards against duplicate listener setup internally.
+        this.pushNotifications.initialize().catch(err =>
+          console.warn('[AppComponent] Push notification init failed:', err)
+        );
       }
     });
 
@@ -83,6 +126,7 @@ export class AppComponent implements OnInit, OnDestroy {
         const screen = event.urlAfterRedirects.split('?')[0];
         this.analytics.setScreen(screen);
         this.analytics.logScreenView(screen);
+        this.crashlytics.log(`Screen viewed: ${screen}`);
       }
       if (event instanceof NavigationEnd || event instanceof NavigationCancel || event instanceof NavigationError) {
         // hide nav loader immediately
@@ -99,6 +143,10 @@ export class AppComponent implements OnInit, OnDestroy {
         // Extra safety: if navigation failed, ensure loader is reset
         if (event instanceof NavigationError) {
           console.warn('[AppComponent] Navigation error detected, ensuring loader is reset');
+          this.crashlytics.recordException(event.error ?? new Error(`Navigation failed: ${event.url}`), {
+            area: 'navigation',
+            url: event.url,
+          });
           setTimeout(() => this.loadingService.reset(), 300);
         }
       }
@@ -213,6 +261,7 @@ export class AppComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('[AppComponent] Failed to fetch pending badge popups:', error);
+        this.crashlytics.recordException(error, { area: 'badge_pending_popups' });
       }
     });
   }
@@ -261,5 +310,27 @@ export class AppComponent implements OnInit, OnDestroy {
    */
   onAwesomeClick(): void {
     this.onBadgePopupClose();
+  }
+
+  /**
+   * Check Firebase Remote Config to see if the installed app version
+   * is below the minimum supported version. If so, block the app
+   * behind a non-dismissible force-update popup.
+   */
+  private checkAppUpdate(): void {
+    this.appUpdate.checkForUpdate().then(result => {
+      if (result.updateRequired) {
+        this.showForceUpdatePopup = true;
+      }
+    }).catch(error => {
+      console.warn('[AppComponent] App update check failed:', error);
+    });
+  }
+
+  /**
+   * Handle "Update Now" click on the force-update popup
+   */
+  onUpdateNowClick(): void {
+    this.appUpdate.openStore();
   }
 }

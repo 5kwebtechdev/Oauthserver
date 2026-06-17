@@ -1,20 +1,19 @@
 <div class="d-flex">
-<mindful-navigator (back)="goBack()"></mindful-navigator>
+<superme-navigator (back)="goBack()"></superme-navigator>
 
     <div class="header">
-      <input class="title-input" placeholder="Title"
+      <input class="title-input" placeholder="Enter title"
         [value]="displayValue"
         (input)="handleTitleInput($event)"
         (focus)="onTitleFocus()"
         (blur)="onTitleBlur()"
-        [attr.title]="title || 'Title'"
+        [attr.title]="title || 'Enter title'"
         aria-label="Note title" />
       <button type="button" *ngIf="isDraft || editing" class="delete-draft-icon" (click)="onDelete()" aria-label="Delete draft">
         <div class="eclipse">
           <img src="/assets/icons/delete.svg" alt="Delete" />
         </div>
       </button>
-      <div class="title-limit-tooltip" *ngIf="showLimitTooltip">Maximum 24 characters allowed</div>
     </div>
 </div>
   <div class="note-new-container">
@@ -22,8 +21,20 @@
   <!-- Header -->
 
   <!-- Tag Section -->
-  <mindful-tags variant="gray" [singleSelection]="true" [maxTags]="10"
-    (selectedKeysChange)="onSelectedKeysChange($event)"></mindful-tags>
+  <superme-tags variant="gray" [singleSelection]="true" [maxTags]="50"
+    [options]="tagOptions"
+    [selectedKeys]="selectedTagKeys"
+    [useDefaultOptions]="false"
+    [persistCustomTags]="false"
+    [serverManaged]="true"
+    [allowEdit]="true"
+    [allowDelete]="true"
+    (selectedKeysChange)="onSelectedKeysChange($event)"
+    (add)="onTagAdd($event)"
+    (edit)="onTagEdit($event)"
+    (delete)="onTagDelete($event)"></superme-tags>
+  <div class="tag-state-message" *ngIf="tagsLoading">Loading tags...</div>
+  <div class="tag-state-message tag-state-message--error" *ngIf="!tagsLoading && tagError">{{ tagError }}</div>
 
   <!-- Notes Section -->
   <div class="notes-section">
@@ -31,17 +42,17 @@
   </div>
 
   <footer class="notes-new__footer">
-    <mindful-button type="magenta" text="Save" full [disabled]="!canSave" (click)="save()"></mindful-button>
+    <superme-button type="magenta" text="Save" full [disabled]="loading || tagsLoading" (click)="save()"></superme-button>
   </footer>
 
   <!-- Confirmation popup for deletion when editing an existing note -->
-  <app-mindful-popup [isVisible]="showMindfulPopup" [config]="{
+  <app-superme-popup [isVisible]="showSupermePopup" [config]="{
       heading: 'Are you sure you want to delete this note?',
       subtitle: '',
       primaryCTA: { text: 'Delete', type: 'secondary', buttonStyle: 'bronze', buttonMedium: true },
       secondaryCTA: { text: 'Cancel', type: 'secondary', buttonStyle: 'bronze-transparent', buttonMedium: true },
       showCloseButton: false,
       backdrop: true
-    }" (primaryAction)="confirmDelete()" (secondaryAction)="confirmCancel()" (backdropClick)="confirmCancel()"></app-mindful-popup>
+    }" (primaryAction)="confirmDelete()" (secondaryAction)="confirmCancel()" (backdropClick)="confirmCancel()"></app-superme-popup>
 
 </div>

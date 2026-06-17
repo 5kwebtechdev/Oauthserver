@@ -11,11 +11,11 @@ import { TutorCardComponent } from "../../core/components/tutor-section/tutor-ca
 import { JournalsComponent } from "../../core/components/journals/journals.component";
 import { AcademySectionComponent } from "../../core/components/academy-section/academy-section.component";
 import { IonicModule } from "@ionic/angular";
-import { MindfulInputsModule } from "../../core/components/mindful-inputs/mindful-inputs.module";
+import { SupermeInputsModule } from "../../core/components/superme-inputs/superme-inputs.module";
 import { MoodSelectorComponent } from "../../core/components/mood-selector/mood-selector.component";
-import { MindfulSpeechBubbleComponent } from '../../core/components/mindful-speech-bubble/mindful-speech-bubble.component';
-import { MindfulPetComponent } from '../../core/components/mindful-pet/mindful-pet.component';
-import { MindfulCoinsStatsComponent } from '../../core/components/mindful-coins-stats/mindful-coins-stats.component';
+import { SupermeSpeechBubbleComponent } from '../../core/components/superme-speech-bubble/superme-speech-bubble.component';
+import { SupermePetComponent } from '../../core/components/superme-pet/superme-pet.component';
+import { SupermeCoinsStatsComponent } from '../../core/components/superme-coins-stats/superme-coins-stats.component';
 
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { PetMessagesService, PetMessage, PetMood } from '../../core/services/pet-messages.service';
@@ -51,10 +51,10 @@ import { debounceTime, takeUntil } from 'rxjs/operators';
     AcademySectionComponent,
     IonicModule,
     MoodSelectorComponent,
-    MindfulInputsModule,
-    MindfulPetComponent,
-    MindfulSpeechBubbleComponent,
-    MindfulCoinsStatsComponent,
+    SupermeInputsModule,
+    SupermePetComponent,
+    SupermeSpeechBubbleComponent,
+    SupermeCoinsStatsComponent,
     FooterComponent,
   ]
 })

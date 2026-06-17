@@ -91,7 +91,7 @@ text-underline-position: from-font;
 	outline: none;
 }
 
-:host ::ng-deep mindful-button.pincode-check .button {
+:host ::ng-deep superme-button.pincode-check .button {
 	padding: 8px !important;
 	font-size: 13px !important;
 }
@@ -322,9 +322,9 @@ align-items: center;
 }
 
 /* Purchase bar styles copied from product-detail component */
-:host ::ng-deep mindful-button.page-cta .button,
-mindful-button.page-cta .button,
-.product-purchase-bar mindful-button.page-cta .button {
+:host ::ng-deep superme-button.page-cta .button,
+superme-button.page-cta .button,
+.product-purchase-bar superme-button.page-cta .button {
 	padding: 10px 40px !important;
 
 }

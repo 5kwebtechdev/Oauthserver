@@ -3,8 +3,8 @@ import { ViewWillEnter } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { JournalPostCardComponent } from '../journal-post-card/journal-post-card.component';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
@@ -22,7 +22,7 @@ export interface JournalOutputEntry {
 @Component({
   selector: 'app-journal-output',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, MindfulButtonComponent, JournalPostCardComponent],
+  imports: [CommonModule, IonicModule, SupermeCardHeaderComponent, SupermeButtonComponent, JournalPostCardComponent],
   templateUrl: './journal-output.component.html',
   styleUrls: ['./journal-output.component.scss']
 })

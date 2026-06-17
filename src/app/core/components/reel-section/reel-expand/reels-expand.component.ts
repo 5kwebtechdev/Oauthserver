@@ -1,14 +1,14 @@
 import { Component, OnDestroy, OnInit, ViewChild, ElementRef, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
+import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
 
 @Component({
   selector: 'reels-expand',
   templateUrl: './reels-expand.component.html',
   styleUrls: ['./reels-expand.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent],
+  imports: [CommonModule, IonicModule, SupermeCardHeaderComponent],
   encapsulation: ViewEncapsulation.None
 })
 export class ReelsExpandComponent implements OnInit, OnDestroy {

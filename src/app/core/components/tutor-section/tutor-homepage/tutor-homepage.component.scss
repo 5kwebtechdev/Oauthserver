@@ -396,8 +396,8 @@ display: flex;
     margin: 0;
   }
 
-  /* Ensure the mindful-button shows as a medium-sized columbian-blue CTA */
-  mindful-button {
+  /* Ensure the superme-button shows as a medium-sized columbian-blue CTA */
+  superme-button {
     margin-top: 8px;
 
     ::ng-deep .button p {
@@ -437,8 +437,8 @@ display: flex;
 }
 
 /* Ensure the shared popup's CTA buttons are stacked vertically for this page only */
-:host ::ng-deep app-mindful-popup .mindful-popup-actions .mindful-popup-dual-cta,
-:host ::ng-deep app-mindful-popup .mindful-popup-actions .mindful-popup-dual-cta.column {
+:host ::ng-deep app-superme-popup .superme-popup-actions .superme-popup-dual-cta,
+:host ::ng-deep app-superme-popup .superme-popup-actions .superme-popup-dual-cta.column {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -446,6 +446,6 @@ display: flex;
 }
 
 /* Make the inner buttons take full width when stacked */
-:host ::ng-deep app-mindful-popup .mindful-popup-actions .mindful-popup-dual-cta > * {
+:host ::ng-deep app-superme-popup .superme-popup-actions .superme-popup-dual-cta > * {
   width: 100%;
 }

@@ -1,0 +1,590 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border-radius: 1000px !important;
+  background: var(--background);
+  border: 1px solid var(--border-color);
+  position: relative;
+  --text_color: white;
+}
+
+.badge.has-delete {
+  gap: 4px;
+  padding-right: 8px;
+}
+
+.badge-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.20);
+  border: none;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  cursor: pointer;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+.badge-delete-btn:hover,
+.badge-delete-btn:active {
+  background: rgba(0, 0, 0, 0.40);
+}
+
+.badge:before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: calc(100% + 3px);
+  height: calc(100% + 3px);
+  top: -1.5px;
+  left: -1.5px;
+  border-radius: 1000px;
+  background: var(--stroke_gradient);
+}
+
+.badge p {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text_color);
+  margin: 0;
+  text-align: center;
+}
+
+.badge .badge-sub {
+  display: block;
+  font-family: 'Nunito', sans-serif;
+  font-size: 6px;
+  font-weight: 600;
+  color: var(--text_color);
+  margin: 0;
+  text-align: center;
+  margin-top: 0px;
+}
+
+:host-context(habit-page-content) .badge .badge-sub {
+  display: none;
+}
+
+/* When displayed inside the habit-page-content (routine selectors),
+   remove the gradient stroke and use a simple 1px solid border */
+:host-context(habit-page-content) .badge.morning,
+:host-context(habit-page-content) .badge.evening,
+:host-context(habit-page-content) .badge.night {
+  --stroke_gradient: transparent !important;
+  border: 1px solid #90214D !important;
+}
+
+:host-context(habit-page-content) .badge.morning:before,
+:host-context(habit-page-content) .badge.evening:before,
+:host-context(habit-page-content) .badge.night:before {
+  display: none !important; 
+}
+
+.badge {
+  &.medium {
+    /* keep medium font but ensure consistent height */
+    padding: 0 23.5px;
+    margin: 18px 3px;
+
+    &:before {
+      width: calc(100% + 4px);
+      height: calc(100% + 4px);
+      top: -2px;
+      left: -2px;
+    }
+
+    p {
+      font-size: 13px;
+    }
+  }
+}
+
+.habit {
+  --background: #E8ECF7;
+  --border-color: #524F84;
+  --text_color: #45456A;
+}
+
+.activity {
+  --background: #E8ECF7;
+  --border-color: #524F84;
+  --text_color: #45456A;
+}
+
+.task {
+  --background: #FDEAD7;
+  --border-color: #EE6621;
+  --text_color: #772817;
+}
+
+.morning {
+  --background: linear-gradient(97.59deg, #FDFEC9 5.22%, #EFF85E 94.78%);
+  --text_color: #4B5611;
+  --stroke_gradient: linear-gradient(-45deg, #C2D40E 0%, #E0EE2D 100%);
+}
+
+.evening {
+  --background: linear-gradient(180deg, #F9F6F9 0%, #ECDEE9 100%);
+  --text_color: #865473;
+  --stroke_gradient: linear-gradient(108.3deg, #B282A4 0%, #C6A0BC 100%);
+  ;
+}
+
+.night {
+  --background: linear-gradient(108.3deg, #F1F3FF 7.42%, #CFD5FF 92.58%);
+  --text_color: #040273;
+  --stroke_gradient: linear-gradient(-45deg, #7981FF 0%, #A9B2FF 100%);
+}
+
+/* Stack the main label and sublabel vertically for routine badges */
+.badge.morning,
+.badge.evening,
+.badge.night {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 8px 16px;
+}
+
+.puzzle,
+.quiz {
+  --background: #FCF3F6;
+  margin: 0 !important;
+  box-sizing: border-box;
+
+  padding: 5px 16px !important;
+  background: var(--background);
+  --text_color: #942038;
+  border: 1px solid #E1527C;
+
+}
+
+.habit-input {
+  --background: #46456A;
+  --stroke_gradient: #46456A;
+}
+
+.task-input {
+  --background: #B93915;
+  --stroke_gradient: #B93915;
+}
+
+.school {
+  --background: #3E5A60;
+  --stroke_gradient: #3E5A60;
+}
+
+.red {
+  --background: #BB2124;
+  --stroke_gradient: #BB2124;
+}
+
+.green {
+  --background: #4CAF50;
+  --stroke_gradient: #4CAF50;
+}
+
+.yellow {
+  --background: #F0AD4E;
+  --stroke_gradient: #F0AD4E;
+}
+
+.pending {
+  --background: #90214D;
+  --stroke_gradient: #90214D;
+}
+
+/* Orange badge variant (and alias used on habit detail) */
+.orange,
+.habit-detail-orange {
+  --background: #FDEAD7;
+  --border-color: #EE6621;
+  --text_color: #772817;
+  --stroke_gradient: transparent;
+}
+
+.badge.orange,
+.badge.habit-detail-orange {
+  display: inline-flex;
+  padding: 5px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 16px !important;
+  border: 1px solid var(--border-color);
+}
+
+.badge.orange p,
+.badge.habit-detail-orange p {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text_color);
+}
+
+.badge.orange:before,
+.badge.habit-detail-orange:before {
+  display: none;
+}
+
+.badge.pending,
+.badge.ongoing,
+.badge.completed {
+  display: inline-flex;
+  white-space: nowrap;
+  width: auto;
+  height: 34px;
+  padding: 10px 24px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.inactive {
+  --background: white;
+  --text_color: #6B656A;
+  --border-color: #90214D;
+  --stroke_gradient: transparent;
+}
+
+.badge.active {
+  --stroke_gradient: linear-gradient(90deg, rgba(144, 33, 77, 0.12), rgba(144, 33, 77, 0.12));
+  box-shadow: none;
+  border: 1px solid transparent;
+}
+
+.badge.active:before {
+  opacity: 1;
+}
+
+.badge.active p {
+  color: var(--text_color);
+}
+
+:host-context(.habit-journey-week) .badge:not(.active) {
+  background: white;
+  border: 1px solid #90214D;
+}
+
+:host-context(.habit-journey-week) .badge.active {
+  background: #90214D;
+  border: none;
+}
+
+:host-context(.habit-journey-week) .badge p {
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+
+}
+
+:host-context(.habit-journey-week) .badge.active p {
+  /* active journey badge text color */
+  color: #FDFDFD;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+
+}
+
+
+:host-context(.habit-journey-week) .badge {
+  display: inline-flex;
+  white-space: nowrap;
+  width: auto;
+
+  padding: 8px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 26px;
+}
+
+/* Priority selector visuals (used inside .priority-selectors) */
+:host-context(.priority-selectors) .badge.red {
+  /* unselected: border red */
+  background: white;
+  border: 1px solid #BB2124;
+}
+
+:host-context(.priority-selectors) .badge.red.active {
+  background: #BB2124;
+  border: none;
+}
+
+:host-context(.priority-selectors) .badge.yellow {
+  background: white;
+  border: 1px solid #F0AD4E;
+}
+
+:host-context(.priority-selectors) .badge.yellow.active {
+  background: #F0AD4E;
+  border: none;
+}
+
+:host-context(.priority-selectors) .badge.green {
+  background: white;
+  border: 1px solid #4CAF50;
+}
+
+:host-context(.priority-selectors) .badge.green.active {
+  background: #4CAF50;
+  border: none;
+}
+
+:host-context(.priority-selectors) .badge {
+  display: inline-flex;
+  white-space: nowrap;
+  width: auto;
+  padding: 8px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 26px;
+  margin: 0;
+}
+
+:host-context(.priority-selectors) .badge p {
+  border-radius: 26px;
+}
+
+:host-context(.priority-selectors) .badge:not(.active) p {
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+
+}
+
+:host-context(.priority-selectors) .badge.active p {
+  color: #FFFFFF;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+
+}
+
+:host-context(.routine-selectors) .badge.morning,
+:host-context(.routine-selectors) .badge.evening,
+:host-context(.routine-selectors) .badge.night {
+  display: inline-flex;
+  white-space: nowrap;
+  width: auto;
+    padding: 10px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 26px;
+}
+
+/* On this page: active = filled #90214D, inactive = white with #90214D border */
+:host-context(.routine-selectors) .badge.morning:not(.active),
+:host-context(.routine-selectors) .badge.evening:not(.active),
+:host-context(.routine-selectors) .badge.night:not(.active) {
+  background: white;
+  border: 1px solid #90214D;
+}
+
+:host-context(.routine-selectors) .badge.morning.active,
+:host-context(.routine-selectors) .badge.evening.active,
+:host-context(.routine-selectors) .badge.night.active {
+  background: #90214D;
+  border: none;
+}
+
+:host-context(.routine-selectors) .badge p {
+  /* non-active routine badge typography & color (page-scoped) */
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+
+}
+
+:host-context(.routine-selectors) .badge.active p {
+  /* active routine badge text color (page-scoped) */
+  color: #FDFDFD;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+
+}
+
+/* On activity-page: make routine badges use same visuals as the journey badges
+   and hide the small time sublabel only on this page. Targets the selectors
+   used in activity-page-content component. */
+:host-context(.activity-page-content) .badge .badge-sub {
+  display: none;
+}
+
+:host-context(.activity-page-content) .routine-selectors .badge:not(.active) {
+  background: white;
+  border: 1px solid #90214D;
+}
+
+:host-context(.activity-page-content) .routine-selectors .badge.active {
+  background: #90214D;
+  border: none;
+}
+
+:host-context(.activity-page-content) .routine-selectors .badge {
+  display: inline-flex;
+  white-space: nowrap;
+  width: auto;
+  padding: 8px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 26px;
+}
+
+:host-context(.activity-page-content) .routine-selectors .badge p {
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+:host-context(.activity-page-content) .routine-selectors .badge.active p {
+  color: #FDFDFD;
+}
+
+/* Ensure the stroke gradient is removed and the border matches the journey/pending
+   look for routine badges when shown on the activity page */
+:host-context(.activity-page-content) .routine-selectors .badge {
+  border: 1px solid #90214D !important;
+}
+
+:host-context(.activity-page-content) .routine-selectors .badge:before {
+  display: none !important;
+}
+
+/* Also target the routine badge classes directly (in case they are not wrapped
+   by .routine-selectors in the DOM) to ensure the gradient stroke is removed */
+:host-context(.activity-page-content) .badge.morning,
+:host-context(.activity-page-content) .badge.evening,
+:host-context(.activity-page-content) .badge.night {
+  --stroke_gradient: transparent !important;
+  border: 1px solid #90214D !important;
+}
+
+:host-context(.activity-page-content) .badge.morning:before,
+:host-context(.activity-page-content) .badge.evening:before,
+:host-context(.activity-page-content) .badge.night:before {
+  display: none !important;
+}
+
+.habit-input.inactive,
+.task-input.inactive,
+.school.inactive,
+.red.inactive,
+.yellow.inactive,
+.green.inactive,
+.pending.inactive {
+  --text_color: #6B656A;
+}
+
+.circle {
+  aspect-ratio: 1/1;
+  width: 34px;
+  padding: 0;
+  background: #DCDBDC;
+  border: none;
+  stroke: none;
+  --stroke_gradient: #DCDBDC;
+  margin-right: 0;
+
+  p {
+    font-size: 16px;
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  &:not(.inactive) {
+    background: #90214D;
+    --stroke_gradient: #90214D;
+
+    p {
+      color: var(--text_color);
+    }
+  }
+}
+
+/* Variant styles for superme-tags */
+.blue-selected {
+  border-radius: 26px;
+  border: 1px solid #46456A;
+  background: #46456A;
+  --text_color: white;
+  --stroke_gradient: #46456A;
+}
+
+.blue-unselected {
+  border-radius: 26px;
+  border: 1px solid #46456A;
+  background: transparent;
+  --text_color: #46456A;
+  --stroke_gradient: transparent;
+}
+
+.orange-selected {
+  border-radius: 26px;
+  border: 1px solid #B93915;
+  background: #B93915;
+  --text_color: white;
+  --stroke_gradient: #B93915;
+}
+
+.orange-unselected {
+  border-radius: 26px;
+  border: 1px solid #B93915;
+  background: transparent;
+  --text_color: #B93915;
+  --stroke_gradient: transparent;
+}
+
+.green-selected {
+  border-radius: 26px;
+  border: 1px solid #3E5A60;
+  background: #3E5A60;
+  --text_color: white;
+  --stroke_gradient: #3E5A60;
+}
+
+.green-unselected {
+  border-radius: 26px;
+  border: 1px solid #3E5A60;
+  background: transparent;
+  --text_color: #3E5A60;
+  --stroke_gradient: transparent;
+}
+
+.gray-selected {
+  border-radius: 26px;
+  border: 1px solid #6B656A;
+  background: #6B656A;
+  --text_color: white;
+  --stroke_gradient: #6B656A;
+}
+
+.gray-unselected {
+  border-radius: 26px;
+  border: 1px solid #6B656A;
+  background: transparent;
+  --text_color: #6B656A;
+  --stroke_gradient: transparent;
+}

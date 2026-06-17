@@ -1,9 +1,9 @@
 import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { ActivityPageContentComponent } from '../activity-page-content/activity-page-content.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { RefreshService } from '../../../services/refresh.service';
@@ -16,19 +16,19 @@ import { RefreshService } from '../../../services/refresh.service';
   standalone: true,
   selector: 'activity-page',
   template: `<ion-content>
-    <mindful-navigator heading="Your Universe" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
-        rightIconAlt="Calendar" (rightIconClick)="onOpenCalendar()" (back)="onBack()"></mindful-navigator>
+    <superme-navigator heading="Your Universe" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
+        rightIconAlt="Calendar" (rightIconClick)="onOpenCalendar()" (back)="onBack()"></superme-navigator>
 
     <activity-page-content #habitContent style="padding:0px 16px;"></activity-page-content>
 
     <div class="habit-add-btn">
-      <mindful-button
+      <superme-button
         type="add"
         [size]="'large'"
         text="Add"
         (click)="onAddHabit()"
         aria-label="Add habit">
-      </mindful-button>
+      </superme-button>
     </div>
 
 </ion-content>`,
@@ -43,9 +43,9 @@ import { RefreshService } from '../../../services/refresh.service';
   imports: [
     CommonModule,
     IonicModule,
-    MindfulNavigatorComponent,
+    SupermeNavigatorComponent,
     ActivityPageContentComponent,
-    MindfulButtonComponent
+    SupermeButtonComponent
   ]
 })
 export class ActivityPageComponent implements OnInit, OnDestroy {

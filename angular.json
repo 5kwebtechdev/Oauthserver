@@ -19,7 +19,11 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "allowedCommonJsDependencies": ["qrcode", "@stomp/stompjs", "sockjs-client"],
+            "allowedCommonJsDependencies": [
+              "qrcode",
+              "@stomp/stompjs",
+              "sockjs-client"
+            ],
             "assets": [
               {
                 "glob": "**/*",
@@ -30,10 +34,21 @@
                 "glob": "**/*.svg",
                 "input": "node_modules/ionicons/dist/ionicons/svg",
                 "output": "./svg"
+              },
+              {
+                "glob": "firebase-messaging-sw.js",
+                "input": "src",
+                "output": ""
               }
             ],
-            "styles": ["src/global.scss", "src/theme/variables.scss", "node_modules/swiper/swiper-bundle.min.css"],
-            "scripts": ["node_modules/swiper/swiper-bundle.min.js"]
+            "styles": [
+              "src/global.scss",
+              "src/theme/variables.scss",
+              "node_modules/swiper/swiper-bundle.min.css"
+            ],
+            "scripts": [
+              "node_modules/swiper/swiper-bundle.min.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -116,7 +131,10 @@
                 "output": "./svg"
               }
             ],
-            "styles": ["src/global.scss", "src/theme/variables.scss"],
+            "styles": [
+              "src/global.scss",
+              "src/theme/variables.scss"
+            ],
             "scripts": []
           },
           "configurations": {

@@ -1,6 +1,6 @@
 <ion-content>
-  <mindful-navigator heading="Tutor profile" backIcon="arrowSvg" (back)="close()" [rightActions]="navActions"
-    (rightActionClick)="handleNavAction($event)"></mindful-navigator>
+  <superme-navigator heading="Tutor profile" backIcon="arrowSvg" (back)="close()" [rightActions]="navActions"
+    (rightActionClick)="handleNavAction($event)"></superme-navigator>
   <div class="tutor-profile-root">
     <div class="hero">
       <div class="avatar"
@@ -30,19 +30,9 @@
     <div class="what-teach">
       <h1>What I teach</h1>
       <div class="teaching-details">
-        <div class="teaching-row">
-          <h3>Subjects</h3>
-          <p>{{ getSubjectsString() }}</p>
-        </div>
-
-        <div class="teaching-row">
-          <h3>Class</h3>
-          <p>{{ getLevelsString() }}</p>
-        </div>
-
-        <div class="teaching-row">
-          <h3>Board</h3>
-          <p>{{ getBoardString() }}</p>
+        <div class="teaching-row" *ngFor="let row of categoryFieldRows">
+          <h3>{{ row.label }}</h3>
+          <p>{{ row.value }}</p>
         </div>
       </div>
     </div>
@@ -54,7 +44,7 @@
         </div>
         <div class="teach-detail-list">
           <h3><img src="assets/Icons-Neutral/Tutor-LanguageSpoken.png" alt="">Languages Spoken</h3>
-          <p>English, Hindi</p>
+          <p>{{ getLanguagesString() }}</p>
         </div>
         <div class="teach-detail-list">
           <h3><img src="assets/Icons-Neutral/Tutor-Qualification.png" alt="">Qualification</h3>
@@ -66,7 +56,7 @@
         </div>
          <div class="teach-detail-list">
           <h3><img src="assets/Icons-Neutral/Tutor-Location.png" alt="">Location</h3>
-         <p class="location">{{ tutor?.location || 'Location not specified' }} <br>
+         <p class="location">{{ getFullLocation() }} <br>
           <a *ngIf="tutor?.location">See on map</a></p>
         </div>
     </div>
@@ -78,11 +68,11 @@
     <h3>{{ getFeeTypeString() }}</h3>
     </div>
     <!-- Make button visually disabled for child users but keep it clickable so toast can show -->
-    <mindful-button type="columbian-blue" size="medium" text="Contact Tutor"
+    <superme-button type="columbian-blue" size="medium" text="Contact Tutor"
       [attr.aria-disabled]="isChildUser()"
       [class.disabled]="isChildUser()"
       (click)="contactTutor()"
-      style="height: 42px !important; width: 170px;"></mindful-button>
+      style="height: 42px !important; width: 170px;"></superme-button>
   </div>
 
 
@@ -115,7 +105,7 @@
       </div>
 
       <div class="action">
-        <mindful-button type="columbian-blue" size="large" [disabled]="!selectedContactMethod" [text]="selectedContactMethod === 'call' ? 'Call Now' : 'Send Email'" (click)="confirmContact()"></mindful-button>
+        <superme-button type="columbian-blue" size="large" [disabled]="!selectedContactMethod" [text]="selectedContactMethod === 'call' ? 'Call Now' : 'Send Email'" (click)="confirmContact()"></superme-button>
       </div>
     </div>
   </div>

@@ -467,16 +467,16 @@ font-size: 10px;
 	}
 }
 
-/* Page-specific mindful-button sizing: remove outer padding; set inner button padding and p font-size */
-.product-store-content mindful-button {
+/* Page-specific superme-button sizing: remove outer padding; set inner button padding and p font-size */
+.product-store-content superme-button {
 	padding: 0;
 }
 
 /* Target inner .button padding and text size */
-.product-store-content ::ng-deep mindful-button .button {
+.product-store-content ::ng-deep superme-button .button {
 	padding: 8px !important;
 }
 
-.product-store-content ::ng-deep mindful-button .button p {
+.product-store-content ::ng-deep superme-button .button p {
 	font-size: 10px !important;
 }

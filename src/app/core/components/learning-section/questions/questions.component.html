@@ -1,5 +1,5 @@
 <ion-content>
-    <mindful-navigator [heading]="quizTitle" backIcon="cancel" (back)="onCancel()">
+    <superme-navigator [heading]="quizTitle" backIcon="cancel" (back)="onCancel()">
         <div slot="end" class="navigator-timer" (click)="onRightAction()">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="21" viewBox="0 0 18 21" fill="none"
                 aria-hidden="true">
@@ -9,7 +9,7 @@
             </svg>
             <span class="timer-text">{{ timerDisplay }}</span>
         </div>
-    </mindful-navigator>
+    </superme-navigator>
     <div class="quiz-puz-page d-flex flex-column gap-4">
         <div class="questions-count d-flex flex-column gap-2">
             <span>Question {{ currentQuestionIndex + 1 }} of {{ totalQuestions }}</span>
@@ -55,32 +55,34 @@
             <!-- MCQ Options -->
             <ng-container
                 *ngIf="!questions[currentQuestionIndex].type || questions[currentQuestionIndex].type === 'mcq'">
-                <mindful-button *ngFor="let option of questions[currentQuestionIndex].options" type="white-black"
+                <superme-button *ngFor="let option of questions[currentQuestionIndex].options" type="white-black"
                     [text]="option" (click)="selectAnswer(option)" [correct]="selectedOption === option">
-                </mindful-button>
+                </superme-button>
             </ng-container>
 
             <!-- True/False Options -->
             <ng-container *ngIf="questions[currentQuestionIndex].type === 'true-false'">
-                <mindful-button type="white-black" text="True" (click)="selectAnswer('True')"
+                <superme-button type="white-black" text="True" (click)="selectAnswer('True')"
                     [correct]="selectedOption === 'True'">
-                </mindful-button>
-                <mindful-button type="white-black" text="False" (click)="selectAnswer('False')"
+                </superme-button>
+                <superme-button type="white-black" text="False" (click)="selectAnswer('False')"
                     [correct]="selectedOption === 'False'">
-                </mindful-button>
+                </superme-button>
             </ng-container>
 
             <!-- Visual Options -->
             <ng-container *ngIf="questions[currentQuestionIndex].type === 'visual'">
                 <div class="visual-options-grid">
-                    <div class="visual-option"
-                        *ngFor="let option of questions[currentQuestionIndex].options; let i = index"
-                        (click)="selectAnswer(option)" [class.selected]="selectedOption === option">
-                        <div class="visual-option-image"
-                            [ngStyle]="{'background-image': 'url(' + questions[currentQuestionIndex].optionImages?.[i] + ')'}">
-                        </div>
-                        <span class="visual-option-label">{{ option }}</span>
-                    </div>
+                    <button type="button" class="visual-option"
+                        *ngFor="let option of questions[currentQuestionIndex].visualOptions; let i = index"
+                        (click)="selectAnswer(option.answerValue, option.id)"
+                        [class.selected]="selectedVisualOptionId === option.id"
+                        [attr.aria-pressed]="selectedVisualOptionId === option.id"
+                        [attr.aria-label]="option.altText">
+                        <img class="visual-option-image" [src]="option.imageUrl" [alt]="option.altText"
+                            loading="lazy" />
+                        <span class="visual-option-label" *ngIf="option.label">{{ option.label }}</span>
+                    </button>
                 </div>
             </ng-container>
         </div>
@@ -109,36 +111,36 @@
 
 
 
-        <mindful-button *ngIf="selectedAnswer && !answerChecked" type="green" size="full" text="Check"
+        <superme-button *ngIf="selectedAnswer && !answerChecked" type="green" size="full" text="Check"
             (click)="onCheck()">
-        </mindful-button>
+        </superme-button>
 
         <div *ngIf="showPopup" class="popup-overlay" (click)="onNext()">
             <div class="popup-content" (click)="$event.stopPropagation()"
                 [ngStyle]="{'background': popupBackgroundColor}">
                 <div class="popup-label" [ngStyle]="{'color': popupTextColor}">
-                  {{ isAnswerCorrect ? 'Correct!' : 'Incorrect!' }}
+                  {{ popupTitle }}
                 </div>
-                <div class="popup-text" [ngStyle]="{'color': popupTextColor}">{{ popupMessage }}</div>
-                <mindful-button style="width: 100%;" *ngIf="nextButtonType === 'green'" type="green" size="full"
+                <div class="popup-text" *ngIf="popupMessage" [ngStyle]="{'color': popupTextColor}">{{ popupMessage }}</div>
+                <superme-button style="width: 100%;" *ngIf="nextButtonType === 'green'" type="green" size="full"
                     [text]="nextButtonText" (click)="onNext()">
-                </mindful-button>
-                <mindful-button style="width: 100%;" *ngIf="nextButtonType === 'bronze'" type="bronze" size="full"
+                </superme-button>
+                <superme-button style="width: 100%;" *ngIf="nextButtonType === 'bronze'" type="bronze" size="full"
                     [text]="nextButtonText" (click)="onNext()">
-                </mindful-button>
+                </superme-button>
             </div>
         </div>
     </div>
 </ion-content>
 
 <!-- Leave Challenge Popup -->
-<app-mindful-popup *ngIf="showLeaveChallengePopup" [config]="leaveChallengePopupConfig"
+<app-superme-popup *ngIf="showLeaveChallengePopup" [config]="leaveChallengePopupConfig"
     [isVisible]="showLeaveChallengePopup" (closeAction)="showLeaveChallengePopup = false"
     (backdropClick)="showLeaveChallengePopup = false">
-</app-mindful-popup>
+</app-superme-popup>
 
 <!-- Content Time Exhaust Popup -->
-<app-mindful-popup *ngIf="showContentTimeExhaustPopup" [config]="contentTimeExhaustPopupConfig"
+<app-superme-popup *ngIf="showContentTimeExhaustPopup" [config]="contentTimeExhaustPopupConfig"
     [isVisible]="showContentTimeExhaustPopup" (closeAction)="showContentTimeExhaustPopup = false"
     (backdropClick)="showContentTimeExhaustPopup = false">
-</app-mindful-popup>
+</app-superme-popup>

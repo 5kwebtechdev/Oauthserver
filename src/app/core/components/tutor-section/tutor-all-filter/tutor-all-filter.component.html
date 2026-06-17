@@ -1,8 +1,8 @@
 <ion-content fullscreen>
 
   <!--navigator header-->
-  <mindful-navigator [heading]="'All Filters'" (back)="close()">
-  </mindful-navigator>
+  <superme-navigator [heading]="'All Filters'" (back)="close()">
+  </superme-navigator>
   <div class="filters-page">
 
 
@@ -56,16 +56,16 @@
     </div>
 
     <div class="footer-actions d-flex align-items-center" *ngIf="!isLoading && !errorMessage">
-      <mindful-button *ngIf="hasSelectedFilters()" type="columbian-blue-transparent" text="Clear all" (click)="clearAll()"></mindful-button>
+      <superme-button *ngIf="hasSelectedFilters()" type="columbian-blue-transparent" text="Clear all" (click)="clearAll()"></superme-button>
       <div style="flex: 1;"></div>
       <!-- small show-result button: shows count and enables when >= 1 -->
-      <mindful-button
+      <superme-button
         type="columbian-blue"
         small
         [text]="resultCount === null ? 'Show result' : ('Show ' + resultCount + (resultCount === 1 ? ' result' : ' results'))"
         [disabled]="(resultCount ?? 0) < 1"
         (click)="showResult()">
-      </mindful-button>
+      </superme-button>
       
     </div>
   </div>

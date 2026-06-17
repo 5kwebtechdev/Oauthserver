@@ -1,44 +1,11 @@
 <ion-content fullscreen>
-  <mindful-navigator heading="Notification" backIcon="arrowSvg"></mindful-navigator>
+  <superme-navigator heading="Notifications" backIcon="arrowSvg"></superme-navigator>
 
   <div class="notification-container">
-    <ng-container *ngFor="let n of displayedNotifications; trackBy: trackById">
-      <div class="notification-card">
-        <div class="n-card-content">
-          <div class="n-head">
-            <div class="n-title">
-              <h2>{{ n.title }}</h2>
-            </div>
-            <mindful-toggle [(ngModel)]="n.enabled"></mindful-toggle>
-          </div>
-
-          <p class="n-desc">{{ n.desc }}</p>
-        </div>
-      </div>
-    </ng-container>
-    <div class="notification-card quiet-hours">
-      <div class="n-card-content">
-        <div class="time-head">
-          <div class="n-title">
-            <h2>Quiet Hours</h2>
-          </div>
-          <div class="quiet-hours-picker">
-            <div class="time-main">
-              <div class="time-input">
-                <mindful-timepicker [(ngModel)]="quietStart" placeholder="Start"></mindful-timepicker>
-              </div>
-              <div class="sep">-</div>
-              <div class="time-input">
-                <mindful-timepicker [(ngModel)]="quietEnd" placeholder="End"></mindful-timepicker>
-              </div>
-            </div>
-          </div>
-        </div>
-        <p class="n-desc">No alerts between [{{ formatTo24(quietStart) || '—' }}] and [{{ formatTo24(quietEnd) || '—'
-          }}]</p>
-      </div>
-    </div>
-    <mindful-button type="green" text="Save changes" large (click)="saveProfile()"></mindful-button>
-
+    <section class="notification-empty" aria-label="Notifications coming soon">
+      <img src="assets/Images-Transparent/Notifications Coming Soon.svg" alt="" aria-hidden="true" />
+      <h1>Notifications are on the way!</h1>
+      <p>We&rsquo;re building notification controls for reminders and updates. For now, your app stays quiet no device notifications yet.</p>
+    </section>
   </div>
 </ion-content>

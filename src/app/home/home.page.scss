@@ -70,7 +70,7 @@
   .carousel-footer {
     position: fixed;
     left: 0;
-    bottom: 1rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom));
     width: 100%;
     z-index: 1200;
   }
@@ -105,7 +105,7 @@
 
 .carousel-footer {
   position: absolute;
-  bottom: 1rem;
+  bottom: calc(1rem + env(safe-area-inset-bottom));
   width: 100%;
   display: flex;
   justify-content: space-between;

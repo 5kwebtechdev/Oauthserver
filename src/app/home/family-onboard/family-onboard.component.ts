@@ -9,8 +9,8 @@ import { UserService } from '../../core/services/user.service';
 import { BarcodeScanner, BarcodesScannedEvent } from '@capacitor-mlkit/barcode-scanning';
 import { AlertController, IonicModule } from '@ionic/angular';
 import { FaqItem, PROFILE_FAQS } from '../../core/components/user-profile/profile-facts/profile-facts.component';
-import { MindfulNavigatorComponent } from '../../core/components/mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from '../../core/components/mindful-button/mindful-button.component';
+import { SupermeNavigatorComponent } from '../../core/components/superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../core/components/superme-button/superme-button.component';
 import { ProfileFactsComponent } from '../../core/components/user-profile/profile-facts/profile-facts.component';
 import { QRCodeComponent } from 'angularx-qrcode';
 
@@ -21,7 +21,7 @@ type UserRole = 'child' | 'parent' | 'self';
 @Component({
     selector: 'app-family-onboard',
     standalone: true,
-    imports: [CommonModule, IonicModule, ReactiveFormsModule, MindfulNavigatorComponent, MindfulButtonComponent, ProfileFactsComponent, QRCodeComponent],
+    imports: [CommonModule, IonicModule, ReactiveFormsModule, SupermeNavigatorComponent, SupermeButtonComponent, ProfileFactsComponent, QRCodeComponent],
     templateUrl: './family-onboard.component.html',
     styleUrls: ['./family-onboard.component.scss']
 })
@@ -114,6 +114,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         this.route.queryParams.subscribe(params => {
             const role = params['role'];
             const scannedCode = params['scannedCode'];
+            const savedFamilyCode = (sessionStorage.getItem('familyCode') || '').trim().toUpperCase();
 
             if (role && ['child', 'parent', 'self'].includes(role)) {
                 this.userRole = role as UserRole;
@@ -132,6 +133,19 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
                     queryParams: { role: this.userRole },
                     queryParamsHandling: 'replace'
                 });
+            } else if (savedFamilyCode) {
+                if (this.viewMode === 'join-family-child' && !this.codeForm.get('code')?.value) {
+                    this.codeForm.patchValue({ code: savedFamilyCode });
+                    if (this.isValidCode(savedFamilyCode)) {
+                        this.checkFamilyCodeValidity(savedFamilyCode, 'child');
+                    }
+                } else if (this.viewMode === 'join-family-parent' && !this.joinFamilyForm.get('familyCode')?.value) {
+                    this.selectedMode = 'join';
+                    this.joinFamilyForm.patchValue({ familyCode: savedFamilyCode });
+                    if (this.isValidCode(savedFamilyCode)) {
+                        this.checkFamilyCodeValidity(savedFamilyCode, 'parent');
+                    }
+                }
             }
         });
 
@@ -558,7 +572,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     copyFamilyCode(): void {
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(this.familyCode).then(() => {
-                this.core.triggerToasrt('Family code copied to clipboard!');
+                this.core.triggerToasrt('Family code copied to clipboard!', 'success');
             }).catch(() => {
                 this.fallbackCopyTextToClipboard(this.familyCode);
             });
@@ -578,7 +592,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         textArea.select();
         try {
             document.execCommand('copy');
-            this.core.triggerToasrt('Family code copied to clipboard!');
+            this.core.triggerToasrt('Family code copied to clipboard!', 'success');
         } catch (err) {
             this.core.triggerToasrt('Failed to copy family code');
         }

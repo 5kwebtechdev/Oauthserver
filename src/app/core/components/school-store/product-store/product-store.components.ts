@@ -1,8 +1,8 @@
 import { Component, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, IonContent } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { AddressInputComponent } from '../address-input/address-input.components';
@@ -28,7 +28,7 @@ type Product = {
   selector: 'product-store',
   templateUrl: './product-store.components.html',
   styleUrls: ['./product-store.components.scss'],
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent, EmptyStateComponent]
+  imports: [CommonModule, IonicModule, SupermeNavigatorComponent, SupermeButtonComponent, EmptyStateComponent]
   ,
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

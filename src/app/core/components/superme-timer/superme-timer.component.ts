@@ -1,7 +1,7 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
-import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigator.component';
+import { SupermeButtonComponent } from '../superme-button/superme-button.component';
+import { SupermeNavigatorComponent } from '../superme-navigator/superme-navigator.component';
 import { ModalController, IonicModule } from '@ionic/angular';
 
 @Component({
@@ -9,7 +9,7 @@ import { ModalController, IonicModule } from '@ionic/angular';
     templateUrl: './superme-timer.component.html',
     styleUrls: ['./superme-timer.component.scss'],
     standalone: true,
-    imports: [IonicModule, CommonModule, MindfulButtonComponent, MindfulNavigatorComponent]
+    imports: [IonicModule, CommonModule, SupermeButtonComponent, SupermeNavigatorComponent]
 })
 export class SupermeTimerComponent implements OnInit, OnDestroy {
     // Optional display title (habit / task title)

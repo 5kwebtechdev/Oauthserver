@@ -1,16 +1,17 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { ProfileFactsComponent, FaqItem, PROFILE_FAQS } from '../profile-facts/profile-facts.component';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { AuthService, ReferralCodeResponse } from '../../../services/auth.service';
 import { Subject, takeUntil } from 'rxjs';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   standalone: true,
   selector: 'refer-friend',
-  imports: [CommonModule, MindfulNavigatorComponent, MindfulButtonComponent, IonicModule, ProfileFactsComponent],
+  imports: [CommonModule, SupermeNavigatorComponent, SupermeButtonComponent, IonicModule, ProfileFactsComponent],
   templateUrl: './refer-friend.component.html',
   styleUrls: ['./refer-friend.component.scss']
 })
@@ -18,12 +19,21 @@ export class ReferFriendComponent implements OnInit, OnDestroy {
   referralCode: string = '';
   shareLink: string = '';
   faqs: FaqItem[] = [];
+  userDisplayName: string = '';
+  private readonly appName = 'Superme';
+  private readonly mobileAppLink = 'https://play.google.com/store/apps/details?id=com.superme.app';
   private destroy$ = new Subject<void>();
 
   constructor(private authService: AuthService, private toastCtrl: ToastController) { }
 
   ngOnInit(): void {
     this.initializeFaqs();
+    this.userDisplayName = this.getLoggedInUserName();
+    this.authService.userData$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.userDisplayName = this.getLoggedInUserName();
+      });
     this.loadReferralCode();
   }
 
@@ -49,7 +59,7 @@ export class ReferFriendComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((response: ReferralCodeResponse) => {
         this.referralCode = response.referralCode;
-        this.shareLink = `https://mindfulbuddy.app/referral?code=${this.referralCode}`;
+        this.shareLink = `${this.getReferralBaseUrl()}?code=${encodeURIComponent(this.referralCode)}`;
       });
   }
 
@@ -112,9 +122,30 @@ export class ReferFriendComponent implements OnInit, OnDestroy {
   shareNow(): void {
     if (!this.referralCode) return;
 
-    const message = `Join me on MindfulBuddy! Use my referral code ${this.referralCode} to sign up: ${this.shareLink}`;
+    const message = this.buildShareMessage();
     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
+  }
+
+  private buildShareMessage(): string {
+    const inviter = this.userDisplayName ? `${this.userDisplayName} invited you to ${this.appName}!` : `Join me on ${this.appName}!`;
+    return `${inviter}\nUse my referral code ${this.referralCode} to sign up: ${this.shareLink}\nDownload the mobile app: ${this.mobileAppLink}`;
+  }
+
+  private getLoggedInUserName(): string {
+    const userData = this.authService.getUserData?.();
+    const rawName = userData?.name || userData?.fullName || userData?.userName || '';
+    return this.cleanDisplayName(rawName);
+  }
+
+  private cleanDisplayName(value: unknown): string {
+    const name = String(value || '').trim().replace(/\s+/g, ' ');
+    return name && name.toLowerCase() !== 'user' ? name : '';
+  }
+
+  private getReferralBaseUrl(): string {
+    const host = environment.firebase?.deepLinks?.hosts?.[0] || 'supermeapp.com';
+    return `https://${host.replace(/^https?:\/\//, '').replace(/\/$/, '')}/referral`;
   }
 
 }

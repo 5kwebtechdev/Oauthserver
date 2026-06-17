@@ -2,9 +2,9 @@ import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { MindfulButtonComponent } from '../mindful-button/mindful-button.component';
-import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
-import { ViewAllComponent } from '../mindful-navigator/view-all/view-all.component';
+import { SupermeButtonComponent } from '../superme-button/superme-button.component';
+import { SupermeCardHeaderComponent } from '../superme-navigator/superme-card-header/superme-card-header.component';
+import { ViewAllComponent } from '../superme-navigator/view-all/view-all.component';
 import { AcademyService } from '../../services/academy.service';
 
 export interface CourseCard {
@@ -31,7 +31,7 @@ const FALLBACK_IMAGES = [
   templateUrl: './academy-section.component.html',
   styleUrls: ['./academy-section.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulButtonComponent, MindfulCardHeaderComponent, ViewAllComponent],
+  imports: [CommonModule, IonicModule, SupermeButtonComponent, SupermeCardHeaderComponent, ViewAllComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class AcademySectionComponent implements OnInit {

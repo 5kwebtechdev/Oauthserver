@@ -86,15 +86,26 @@ jobs:
           echo "ARTIFACT_PATH=$ARTIFACT" >> $GITHUB_ENV
 
       # 1️⃣1️⃣ Upload APK to Firebase App Distribution
+      - name: Write Firebase service account
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT_JSON" ]; then
+            echo "No FIREBASE_SERVICE_ACCOUNT_JSON secret configured; Firebase CLI/ADC auth must be available."
+            exit 0
+          fi
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
+          echo "FIREBASE_SERVICE_CREDENTIALS_FILE=$RUNNER_TEMP/firebase-service-account.json" >> "$GITHUB_ENV"
+
       - name: Upload to Firebase App Distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1
-        with:
-          appId: ${{ secrets.FIREBASE_APP_ID }}
-          token: ${{ secrets.FIREBASE_TOKEN }}
-          file: ${{ env.ARTIFACT_PATH }}
-          releaseNotes: "Release build from GitHub Actions"
-          # If you are not using service credentials file content, just omit the line entirely
-          # serviceCredentialsFileContent: ""
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_TESTERS: ${{ secrets.FIREBASE_TESTERS }}
+          FIREBASE_GROUPS: ${{ secrets.FIREBASE_GROUPS }}
+          FIREBASE_RELEASE_NOTES: Release build from ${{ github.sha }}
+        run: |
+          cd android
+          ./gradlew appDistributionUploadRelease
 
       # 1️⃣2️⃣ Upload APK as artifact
       - name: Upload APK as artifact

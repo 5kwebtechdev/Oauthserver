@@ -2,11 +2,11 @@ import { Component, Input, OnInit, ViewChild, ElementRef, booleanAttribute, Afte
 import { NgClass, NgIf, CommonModule, NgForOf } from "@angular/common";
 import { RouterModule } from '@angular/router';
 import { LongPressDirective } from "../../../directives/gestureControlDirective";
-import { MindfulButtonComponent } from "../../mindful-button/mindful-button.component";
-import { MindfulPopupComponent, MindfulPopupConfig, MindfulPopupCTA } from '../../mindful-popup/mindful-popup.component';
+import { SupermeButtonComponent } from "../../superme-button/superme-button.component";
+import { SupermePopupComponent, SupermePopupConfig, SupermePopupCTA } from '../../superme-popup/superme-popup.component';
 
-import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
-import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.component';
+import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
+import { ViewAllComponent } from '../../superme-navigator/view-all/view-all.component';
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
@@ -37,12 +37,12 @@ import { AuthApi } from '../../../api/auth.api';
     NgClass,
     NgForOf,
     LongPressDirective,
-    MindfulButtonComponent,
+    SupermeButtonComponent,
 
-    MindfulCardHeaderComponent,
+    SupermeCardHeaderComponent,
     ViewAllComponent,
     RouterModule,
-    MindfulPopupComponent,
+    SupermePopupComponent,
     EmptyStateComponent,
   ]
 })
@@ -187,11 +187,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
   // Popup state for start confirmation
   public showStartPopup: boolean = false;
-  public startPopupConfig: MindfulPopupConfig = {};
+  public startPopupConfig: SupermePopupConfig = {};
   
   // Complete popup state
   public showCompletePopup: boolean = false;
-  public completePopupConfig: MindfulPopupConfig = {};
+  public completePopupConfig: SupermePopupConfig = {};
   // Flag set when logged in user is a parent (can be overridden by `isParentOverride` input)
   public isParent: boolean = false;
 
@@ -356,14 +356,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    */
   openStartPopup() {
     // Configure popup content (image, heading, subtitle, CTAs)
-    const primary: MindfulPopupCTA = {
+    const primary: SupermePopupCTA = {
       text: 'Start Now',
       buttonStyle: 'green',
       buttonMedium: true,
       // callback intentionally omitted; handled via (primaryAction) output
     };
 
-    const secondary: MindfulPopupCTA = {
+    const secondary: SupermePopupCTA = {
       text: 'Discard',
       buttonStyle: 'bronze-transparent',
       buttonMedium: true,
@@ -421,14 +421,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     // Build heading HTML to include coin and streak rows
     const headingHtml = `Great Work!<br/><span style="font-weight:400;font-size:16px;">You're about to mark this activity as completed<br/>Confirm below to earn your coins and streak:</span><div style=\"display:flex;flex-direction:column;align-items: center;gap:8px;margin-top:12px;text-align:left;\"><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/Icons-Neutral/Icons-Coins.png' style=\"width:20px;height:20px;\" alt=\"coins\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${coins}</div></div><div style=\"display:flex;align-items:center;gap:8px;\"><img src='assets/Icons-Neutral/Icon-Streak.png' style=\"width:20px;height:20px;\" alt=\"streak\"/><div style=\"margin-left:8px;\"></div><div style=\"font-weight:600;\">${streak}</div></div></div>`;
 
-    const primary: MindfulPopupCTA = {
+    const primary: SupermePopupCTA = {
       text: 'Confirm',
       buttonStyle: 'green',
       buttonMedium: true,
       // callback intentionally omitted; handled via (primaryAction) output
     };
 
-    const secondary: MindfulPopupCTA = {
+    const secondary: SupermePopupCTA = {
       text: 'Discard',
       buttonStyle: 'bronze-transparent',
       buttonMedium: true,
@@ -463,9 +463,98 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     this.closeCompletePopup();
   }
 
+  // Coin cap confirmation popup (requiresConfirmation: true from API)
+  public showCoinCapPopup: boolean = false;
+  public coinCapPopupConfig: SupermePopupConfig = {};
+  private coinCapPendingId: string = '';
+  private coinCapPendingType: 'habits' | 'tasks' = 'habits';
+
+  openCoinCapConfirmPopup(message: string, id: string, type: 'habits' | 'tasks'): void {
+    this.coinCapPendingId = id;
+    this.coinCapPendingType = type;
+
+    this.coinCapPopupConfig = {
+      image: 'assets/Images-Transparent/Image-Home-GreatWork.png',
+      imageAlt: 'Daily Cap Reached',
+      heading: 'Daily Coin Limit Reached',
+      subtitle: message || "You've already earned the maximum coins for today. Mark as complete anyway?",
+      primaryCTA: { text: 'Yes, mark complete', buttonStyle: 'green', buttonMedium: true },
+      secondaryCTA: { text: 'Cancel', buttonStyle: 'bronze-transparent', buttonMedium: true },
+      showCloseButton: false,
+      backdrop: true,
+      ctaDirection: 'row'
+    };
+
+    this.showCoinCapPopup = true;
+  }
+
+  closeCoinCapPopup(): void {
+    this.showCoinCapPopup = false;
+  }
+
+  handleCoinCapConfirmPrimary(): void {
+    this.closeCoinCapPopup();
+    this.onCompleteHabitConfirmed(this.coinCapPendingId, this.coinCapPendingType);
+  }
+
+  handleCoinCapConfirmSecondary(): void {
+    this.closeCoinCapPopup();
+  }
+
+  private onCompleteHabitConfirmed(id: string, type: 'habits' | 'tasks'): void {
+    if (type === 'tasks') {
+      this.taskApi.completeTask(id, true).subscribe({
+        next: () => {
+          this.trackCompletion('tasks', this.habit?.title || '');
+          this.habit = { ...this.habit!, status: 'completed' } as any;
+          this.clearOngoingState();
+          this.autoAbortService.cancelAutoAbort(this.habit!.id, 'tasks');
+          this.percentageCompleted = 100;
+          this.showLocalTimer = false;
+          this.showStartBubble = false;
+          if (this.startBubbleTimer) { clearTimeout(this.startBubbleTimer); this.startBubbleTimer = null; }
+          try {
+            const today = new Date();
+            const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            this.calendarService.clearCache(formatted, 'day');
+          } catch (e) { /* ignore */ }
+          this.loadTodayTasks();
+          this.clearProgress();
+          this.habitService.notifyTaskCompleted();
+          this.cdr.detectChanges();
+        },
+        error: (err: any) => console.error('Failed to confirm-complete task', err)
+      });
+    } else {
+      this.habitApi.completeHabit(id, true).subscribe({
+        next: () => {
+          this.trackCompletion('habits', this.habit?.title || '');
+          const updated = { ...this.habit!, status: 'completed' } as Habit;
+          this.habitService.completeHabit(updated.id);
+          this.habit = updated;
+          this.clearOngoingState();
+          this.autoAbortService.cancelAutoAbort(this.habit!.id, 'habits');
+          this.percentageCompleted = 100;
+          this.showLocalTimer = false;
+          this.showStartBubble = false;
+          if (this.startBubbleTimer) { clearTimeout(this.startBubbleTimer); this.startBubbleTimer = null; }
+          try {
+            const today = new Date();
+            const formatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            this.calendarService.clearCache(formatted, 'day');
+          } catch (e) { /* ignore */ }
+          this.loadHabits();
+          this.clearProgress();
+          this.cdr.detectChanges();
+        },
+        error: (err: any) => console.error('Failed to confirm-complete habit', err)
+      });
+    }
+  }
+
   // Abort popup state and handlers
   public showAbortPopup: boolean = false;
-  public abortPopupConfig: MindfulPopupConfig = {};
+  public abortPopupConfig: SupermePopupConfig = {};
 
   openAbortPopup() {
     const coins = this.getCoinReward();
@@ -473,14 +562,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
     const headingHtml = `You\u2019re halfway there! Want to stop now?<br/><span style="font-weight:400;font-size:16px;">You are about to lose:</span><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px;align-items:center;justify-content:center;"><div style="display:flex;align-items:center;gap:12px;"><img src='assets/Icons-Neutral/Icons-Coins.png' style="width:20px;height:20px;" alt="coins"/><div style="font-weight:600;">${coins}</div></div><div style="display:flex;align-items:center;gap:12px;"><img src='assets/Icons-Neutral/Icon-Streak.png' style="width:20px;height:20px;" alt="streak"/><div style="font-weight:600;">${streak}</div></div></div>`;
 
-    const primary: MindfulPopupCTA = {
+    const primary: SupermePopupCTA = {
       text: 'Keep Going',
       buttonStyle: 'green',
       buttonMedium: true,
       // callback intentionally omitted; handled via (primaryAction) output
     };
 
-    const secondary: MindfulPopupCTA = {
+    const secondary: SupermePopupCTA = {
       text: 'Abort Anyways',
       buttonStyle: 'bronze-transparent',
       buttonMedium: true,
@@ -696,6 +785,10 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
       this.taskApi.completeTask(this.habit.id).subscribe({
         next: (res: any) => {
+          if (res && res.requiresConfirmation === true) {
+            this.openCoinCapConfirmPopup(res.message || '', this.habit!.id, 'tasks');
+            return;
+          }
           this.trackCompletion('tasks', this.habit?.title || '');
           const updated = { ...this.habit!, status: 'completed' } as any;
           this.habit = updated;
@@ -742,6 +835,10 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       // Call habit API for habits (existing code)
       this.habitApi.completeHabit(this.habit.id).subscribe({
         next: (res: any) => {
+          if (res && res.requiresConfirmation === true) {
+            this.openCoinCapConfirmPopup(res.message || '', this.habit!.id, 'habits');
+            return;
+          }
           this.trackCompletion('habits', this.habit?.title || '');
           const updated = { ...this.habit!, status: 'completed' } as Habit;
           this.habitService.completeHabit(updated.id);

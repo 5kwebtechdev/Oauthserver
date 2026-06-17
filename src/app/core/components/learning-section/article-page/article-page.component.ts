@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { IonicModule } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { MindfulPopupComponent, MindfulPopupConfig } from '../../mindful-popup/mindful-popup.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { SupermePopupComponent, SupermePopupConfig } from '../../superme-popup/superme-popup.component';
 import { LearningService } from 'src/app/core/services/learning.service';
 import { Article } from 'src/app/core/models/learning.models';
 
@@ -19,19 +19,31 @@ import { Article } from 'src/app/core/models/learning.models';
     RouterModule,
     IonicModule,
     HttpClientModule,
-    MindfulNavigatorComponent,
-    MindfulButtonComponent,
-    MindfulPopupComponent
+    SupermeNavigatorComponent,
+    SupermeButtonComponent,
+    SupermePopupComponent
   ],
   providers: [LearningService]
 })
-export class ArticlePageComponent implements OnInit {
+export class ArticlePageComponent implements OnInit, OnDestroy {
   article: Article | null = null;
   isLoading = true;
   isMarking = false;
+
+  // Minimum reading time gate
+  readonly minReadSeconds = 60;
+  readonly ringRadius = 17;
+  readonly ringCircumference = 2 * Math.PI * this.ringRadius;
+  remainingReadSeconds = this.minReadSeconds;
+  readTimerDisplay = '01:00';
+  readTimerInterval: any;
+  readTimerComplete = false;
+  justUnlocked = false;
+  private justUnlockedTimeout: any;
+
   // Popup state and config
   showMarkPopup = false;
-  markPopupConfig: MindfulPopupConfig = {
+  markPopupConfig: SupermePopupConfig = {
     image: 'assets/Images-Transparent/Image-Home-GreatWork.png',
     imageAlt: 'Great work',
     heading: 'Great job reading!',
@@ -57,6 +69,20 @@ export class ArticlePageComponent implements OnInit {
     public router: Router
   ) { }
 
+  get isArticleRead(): boolean {
+    return !!this.article?.alreadyRead;
+  }
+
+  get isMarkAsReadDisabled(): boolean {
+    return this.isMarking || this.isArticleRead || !this.readTimerComplete;
+  }
+
+  get readTimerProgressPercent(): number {
+    if (this.minReadSeconds <= 0) return 100;
+    const elapsed = this.minReadSeconds - this.remainingReadSeconds;
+    return Math.min(100, Math.max(0, (elapsed / this.minReadSeconds) * 100));
+  }
+
   /**
    * Mark the current article as read by calling the API
    */
@@ -66,7 +92,7 @@ export class ArticlePageComponent implements OnInit {
   }
 
   openMarkAsReadPopup(): void {
-    if (!this.article) return;
+    if (!this.article || this.isArticleRead || !this.readTimerComplete) return;
     this.showMarkPopup = true;
   }
 
@@ -75,7 +101,7 @@ export class ArticlePageComponent implements OnInit {
   }
 
   confirmMarkAsRead(): void {
-    if (!this.article || this.isMarking) return;
+    if (!this.article || this.isArticleRead || this.isMarking) return;
     this.isMarking = true;
     this.learningService.markArticleComplete(this.article.id).subscribe({
       next: (res) => {
@@ -103,6 +129,7 @@ export class ArticlePageComponent implements OnInit {
           console.log('Article loaded:', article);
           this.article = article;
           this.isLoading = false;
+          this.startReadingTimer();
         },
         error: (error) => {
           console.error('Error loading article:', error);
@@ -113,5 +140,58 @@ export class ArticlePageComponent implements OnInit {
       console.error('No article ID provided in route');
       this.isLoading = false;
     }
+  }
+
+  ngOnDestroy(): void {
+    this.stopReadingTimer();
+    if (this.justUnlockedTimeout) {
+      clearTimeout(this.justUnlockedTimeout);
+      this.justUnlockedTimeout = null;
+    }
+  }
+
+  /**
+   * Start the 60-second minimum reading time countdown.
+   * Skips entirely if the article is already marked as read.
+   */
+  private startReadingTimer(): void {
+    if (this.isArticleRead) {
+      this.readTimerComplete = true;
+      return;
+    }
+
+    this.remainingReadSeconds = this.minReadSeconds;
+    this.updateReadTimerDisplay();
+
+    this.readTimerInterval = setInterval(() => {
+      this.remainingReadSeconds--;
+      this.updateReadTimerDisplay();
+
+      if (this.remainingReadSeconds <= 0) {
+        this.stopReadingTimer();
+        this.onReadingTimerComplete();
+      }
+    }, 1000);
+  }
+
+  private stopReadingTimer(): void {
+    if (this.readTimerInterval) {
+      clearInterval(this.readTimerInterval);
+      this.readTimerInterval = null;
+    }
+  }
+
+  private updateReadTimerDisplay(): void {
+    const minutes = Math.floor(this.remainingReadSeconds / 60);
+    const seconds = this.remainingReadSeconds % 60;
+    this.readTimerDisplay = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  private onReadingTimerComplete(): void {
+    this.readTimerComplete = true;
+    this.justUnlocked = true;
+    this.justUnlockedTimeout = setTimeout(() => {
+      this.justUnlocked = false;
+    }, 4000);
   }
 }

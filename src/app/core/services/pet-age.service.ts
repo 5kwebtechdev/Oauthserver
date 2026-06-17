@@ -30,7 +30,7 @@ export interface UserPetData {
  */
 @Injectable({ providedIn: 'root' })
 export class PetAgeService {
-    private readonly STORAGE_KEY = 'mindful_buddy_pet_data';
+    private readonly STORAGE_KEY = 'superme_buddy_pet_data';
 
     // Age progression milestones based on consecutive days
     private readonly AGE_MILESTONES: PetAgeConfig[] = [

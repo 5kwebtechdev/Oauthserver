@@ -109,7 +109,7 @@ opacity: 0.7;
 .journal-floating-post {
   position: fixed;
   right: 16px;
-  bottom: 24px;
+  bottom: calc(var(--footer-visual-height, 80px) + var(--sab, 0px) + 16px);
   z-index: 9999;
   width: 48px;
   height: 48px;
@@ -120,7 +120,7 @@ opacity: 0.7;
   justify-content: center;
 }
 
-/* Since mindful-button adds its own .button and size styles, make the inner content fit */
+/* Since superme-button adds its own .button and size styles, make the inner content fit */
 .journal-floating-post .button,
 .journal-floating-post .btn-icon,
 .journal-floating-post p {
@@ -130,7 +130,7 @@ opacity: 0.7;
 
 .add-button-fixed {
     position: fixed;
-    bottom: 24px;
+    bottom: calc(var(--footer-visual-height, 80px) + var(--sab, 0px) + 16px);
     right: 24px;
     z-index: 1000;
     cursor: pointer;

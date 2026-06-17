@@ -1,7 +1,7 @@
 <ion-content>
     <main class="my-cart-main d-flex flex-column gap-3">
 
-                <mindful-navigator #navigator
+                <superme-navigator #navigator
                         heading="My Cart"
                         [subtext]="cartSubtext"
                         [showSubtext]="true"
@@ -9,7 +9,7 @@
                         (back)="goBack()"
                         [rightActions]="[{ type: 'package', alt: 'Packages' }]"
                         (rightActionClick)="onNavigatorAction($event)">
-                </mindful-navigator>
+                </superme-navigator>
 
 
                 <div class="my-cart-container">
@@ -86,7 +86,7 @@
                 <!--purchase-bar-->
                 <div class="product-purchase-bar">
                   <span class="to-pay">{{ toPayDisplay }}</span>
-                  <mindful-button class="page-cta" type="magenta" text="Proceed to Pay" large (click)="addToCart()"></mindful-button>
+                  <superme-button class="page-cta" type="magenta" text="Proceed to Pay" large (click)="addToCart()"></superme-button>
                 </div>
     </main>
           <!-- Bottom fixed address popup -->

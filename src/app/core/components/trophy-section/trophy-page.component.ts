@@ -3,21 +3,21 @@ import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
-import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
+import { SupermeCardHeaderComponent } from '../superme-navigator/superme-card-header/superme-card-header.component';
 import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.service';
 
 @Component({
   selector: 'app-trophy-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, RouterModule],
+  imports: [CommonModule, IonicModule, SupermeCardHeaderComponent, RouterModule],
   template: `
-        <mindful-card-header [title]="pageTitle" [subtitleMiddle]="'See wins • Know dates • Keep going'"
+        <superme-card-header [title]="pageTitle" [subtitleMiddle]="'See wins • Know dates • Keep going'"
           [showBackArrow]="true" (backClick)="onBack()">
-          <div mindful-header-actions class="trophy-section d-flex flex-column gap-0 ">
+          <div superme-header-actions class="trophy-section d-flex flex-column gap-0 ">
             <img class="trophy-icon" src="/assets/Icons-Neutral/Icon-Trophy.png" alt="trophy" />
             <span class="trophy-count">{{ trophyCount }}</span>
           </div>
-        </mindful-card-header>
+        </superme-card-header>
     <ion-content class="trophy-content">
       <div class="trophy-page-container">
         <!-- Loading State -->

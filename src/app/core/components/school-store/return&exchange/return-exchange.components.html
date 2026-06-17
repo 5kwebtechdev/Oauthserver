@@ -1,8 +1,8 @@
 <ion-content class="ret-exch">
     <div class="nav-head" *ngIf="!showUploadProof">
-            <mindful-navigator heading="Return/ Exchange Item" backIcon="arrowSvg" (back)="goBack()">
-                <mindful-view-all slot="end" text="Help" [hideIcon]="true" (click)="onHelpClick()"></mindful-view-all>
-            </mindful-navigator>
+            <superme-navigator heading="Return/ Exchange Item" backIcon="arrowSvg" (back)="goBack()">
+                <superme-view-all slot="end" text="Help" [hideIcon]="true" (click)="onHelpClick()"></superme-view-all>
+            </superme-navigator>
         </div>
     
   <main class="return-exchange-container" *ngIf="!showUploadProof">
@@ -84,9 +84,9 @@
 <!-- Upload Photo Proof (only show if reason is damaged or wrong item) -->
 <div class="upload-proof-form" *ngIf="showUploadProof">
   <div class="nav-head">
-    <mindful-navigator heading="Upload Proof" backIcon="arrowSvg" (back)="onUploadProofBack()">
-      <mindful-view-all slot="end" text="Help" [hideIcon]="true" (click)="onHelpClick()"></mindful-view-all>
-    </mindful-navigator>
+    <superme-navigator heading="Upload Proof" backIcon="arrowSvg" (back)="onUploadProofBack()">
+      <superme-view-all slot="end" text="Help" [hideIcon]="true" (click)="onHelpClick()"></superme-view-all>
+    </superme-navigator>
   </div>
 
   <div class="upload-proof-content">
@@ -120,24 +120,24 @@
 
   <!-- Request Refund Button -->
   <div class="next-cta">
-    <mindful-button
+    <superme-button
       type="magenta"
       size="large"
       text="Request Refund"
       [disabled]="disableRequest"
       (click)="onRequestRefund()">
-    </mindful-button>
+    </superme-button>
   </div>
 </div>
 
 <!-- Next Button -->
 <div class="next-cta" *ngIf="!showUploadProof">
-  <mindful-button
+  <superme-button
     type="magenta"
     size="large"
     text="Next"
     (click)="onNext()">
-  </mindful-button>
+  </superme-button>
 </div>
   <size-guide [sizeChart]="sizeChart" [selectedSize]="selectedSize" [unit]="unit" [outOfStockSizes]="outOfStockSizes" [isOpen]="showSizeGuide" [isFromReturnExchange]="true" [originalSize]="16" (sizeSelected)="selectSize($event)" (unitSelected)="selectUnit($event)" (closeModal)="showSizeGuide = false" (returnSelected)="onReturnSelected()" (exchangeSelected)="onExchangeSelected()"></size-guide>
 </ion-content>

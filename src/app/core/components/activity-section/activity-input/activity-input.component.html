@@ -18,7 +18,7 @@
       <div class="everyday-toggle">
         <div class="everyday-label"><label>Everyday</label></div>
         <div class="toggle-right">
-          <mindful-toggle [(checked)]="everyday" (checkedChange)="onEverydayChange($event)"></mindful-toggle>
+          <superme-toggle [(checked)]="everyday" (checkedChange)="onEverydayChange($event)"></superme-toggle>
         </div>
       </div>
     </div>
@@ -35,16 +35,16 @@
     <div class="time-row" [class.invalid]="showRoutineError">
       <div class="pick-time">
         <label>Start Time</label>
-        <div class="mindful-input-group" [class.missing-placeholder]="showTimeError && attemptedSubmit">
-          <mindful-timepicker placeholder="Start" [(ngModel)]="startTime"
-            (ngModelChange)="clearTimeError()"></mindful-timepicker>
+        <div class="superme-input-group" [class.missing-placeholder]="showTimeError && attemptedSubmit">
+          <superme-timepicker placeholder="Start" [(ngModel)]="startTime"
+            (ngModelChange)="clearTimeError()"></superme-timepicker>
         </div>
       </div>
       <div class="pick-time">
         <label>End Time</label>
-        <div class="mindful-input-group" [class.missing-placeholder]="showTimeError && attemptedSubmit">
-          <mindful-timepicker placeholder="End" [(ngModel)]="endTime"
-            (ngModelChange)="clearTimeError()"></mindful-timepicker>
+        <div class="superme-input-group" [class.missing-placeholder]="showTimeError && attemptedSubmit">
+          <superme-timepicker placeholder="End" [(ngModel)]="endTime"
+            (ngModelChange)="clearTimeError()"></superme-timepicker>
         </div>
       </div>
     </div>
@@ -60,17 +60,17 @@
   <div class="start-end-row">
     <div class="date-align">
       <label>Start Date</label>
-      <div class="mindful-input-group" [class.missing-placeholder]="showDateError && attemptedSubmit">
-        <mindful-datepicker type="date" [(ngModel)]="startDate" (ngModelChange)="clearDateError()" [minDate]="today"
-          [rangeStart]="rangeStartShown" [rangeEnd]="rangeEndShown" placeholder="Add Start Date"></mindful-datepicker>
+      <div class="superme-input-group" [class.missing-placeholder]="showDateError && attemptedSubmit">
+        <superme-datepicker type="date" [(ngModel)]="startDate" (ngModelChange)="clearDateError()" [minDate]="today"
+          [rangeStart]="rangeStartShown" [rangeEnd]="rangeEndShown" placeholder="Add Start Date"></superme-datepicker>
       </div>
     </div>
     <div class="date-align">
       <label>End Date</label>
-      <div class="mindful-input-group" [class.missing-placeholder]="showDateError && attemptedSubmit">
-        <mindful-datepicker type="date" [(ngModel)]="endDate" (ngModelChange)="clearDateError()"
+      <div class="superme-input-group" [class.missing-placeholder]="showDateError && attemptedSubmit">
+        <superme-datepicker type="date" [(ngModel)]="endDate" (ngModelChange)="clearDateError()"
           [minDate]="today" [rangeStart]="rangeStartShown" [rangeEnd]="rangeEndShown"
-          placeholder="Add End Date"></mindful-datepicker>
+          placeholder="Add End Date"></superme-datepicker>
       </div>
     </div>
     <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Please pick both dates.
@@ -87,8 +87,8 @@
     <div class="d-flex align-items-center gap-2" style="padding-bottom: 16px;">
       <label>Priority</label>
       <div class="priority-row">
-        <mindful-badge *ngFor="let p of priorities" [text]="p.text" [type]="p.type" [disabled]="priority !== p.key"
-          [active]="priority === p.key" (click)="selectPriority(p.key)"></mindful-badge>
+        <superme-badge *ngFor="let p of priorities" [text]="p.text" [type]="p.type" [disabled]="priority !== p.key"
+          [active]="priority === p.key" (click)="selectPriority(p.key)"></superme-badge>
       </div>
     </div>
     <div *ngIf="attemptedSubmit && showPriorityError" class="field-error" role="alert">How important is this? Pick a
@@ -98,15 +98,15 @@
 
 <ng-template #titleInputSection let-placeholder="placeholder" let-errorMsg="errorMsg" let-showError="showError">
   <div class="title-input">
-    <div class="mindful-input-group w-100" [class.missing-placeholder]="showTitleError && attemptedSubmit">
+    <div class="superme-input-group w-100" [class.missing-placeholder]="showTitleError && attemptedSubmit">
       <input class="w-100" [(ngModel)]="title" (ngModelChange)="clearTitleError()" [placeholder]="placeholder"
         maxlength="20" />
       <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">{{errorMsg}}</div>
     </div>
     <div class="add-new-row">
-      <mindful-tags [singleSelection]="true" [size]="'small'" [variant]="tagVariants[currentActive]"
+      <superme-tags [singleSelection]="true" [size]="'small'" [variant]="tagVariants[currentActive]"
         (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)"
-        (delete)="onTagDelete($event)"></mindful-tags>
+        (delete)="onTagDelete($event)"></superme-tags>
       <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Pick a tag for this activity.</div>
     </div>
   </div>
@@ -116,8 +116,8 @@
   <div class="d-flex flex-column" [style.border-bottom]="'1px solid ' + borderColor">
     <div class="routine-section">
       <label>Routine</label>
-      <mindful-selectors class="w-100" [options]="routineOptions" componentType="badge" [singleSelection]="true"
-        (selectedKeysChange)="onRoutineSelected($event)" [scrollable]="false"></mindful-selectors>
+      <superme-selectors class="w-100" [options]="routineOptions" componentType="badge" [singleSelection]="true"
+        (selectedKeysChange)="onRoutineSelected($event)" [scrollable]="false"></superme-selectors>
     </div>
     <!-- routine error shown under time section -->
   </div>
@@ -140,22 +140,22 @@
   <div class="submit-row" (click)="onSubmitRowClick($event)">
     <div *ngIf="serverErrorMessage && (currentActive === 'habits' || currentActive === 'tasks')" class="field-error"
       style="margin-top: -24px;" role="alert">{{serverErrorMessage}}</div>
-    <mindful-button [type]="isFormComplete ? btnType : btnTypeFaded"
+    <superme-button [type]="isFormComplete ? btnType : btnTypeFaded"
       [text]="isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update ' + itemType : 'Create ' + itemType)"
-      large [disabled]="isSubmitting || !isFormComplete" (click)="submit()"></mindful-button>
+      large [disabled]="isSubmitting || !isFormComplete" (click)="submit()"></superme-button>
   </div>
 </ng-template>
 
 <ion-content fullscreen>
-  <mindful-navigator [heading]="editingId ? 'Update Activity' : 'Create. Commit. Grow.'" backIcon="cancel"
+  <superme-navigator [heading]="editingId ? 'Update Activity' : 'Create. Commit. Grow.'" backIcon="cancel"
     [rightActions]="navigatorActions" (rightActionClick)="onNavigatorAction($event)" (back)="onNavigatorBack()">
     <div *ngIf="isChild" slot="end" class="header-toggle d-flex flex-column " aria-label="Private toggle">
       <label class="header-toggle-label">Private</label>
       <div class="toggle-right">
-        <mindful-toggle [(checked)]="isPrivate" (checkedChange)="onPrivateChange($event)"></mindful-toggle>
+        <superme-toggle [(checked)]="isPrivate" (checkedChange)="onPrivateChange($event)"></superme-toggle>
       </div>
     </div>
-  </mindful-navigator>
+  </superme-navigator>
   <div class="habit-input-root" [ngClass]="currentActive">
     <div *ngIf="!editingId" class="container w-full">
       <div class="row toggler">
@@ -213,16 +213,16 @@
           <div class="start-end-row">
             <div class="date-align">
               <label>Start Date</label>
-              <div class="mindful-input-group" [class.missing-placeholder]="attemptedSubmit && showDateError">
-                <mindful-datepicker type="date" [(ngModel)]="startDate" [minDate]="today" [rangeStart]="startDate"
-                  [rangeEnd]="endDate" placeholder="Add Start Date"></mindful-datepicker>
+              <div class="superme-input-group" [class.missing-placeholder]="attemptedSubmit && showDateError">
+                <superme-datepicker type="date" [(ngModel)]="startDate" [minDate]="today" [rangeStart]="startDate"
+                  [rangeEnd]="endDate" placeholder="Add Start Date"></superme-datepicker>
               </div>
             </div>
             <div class="date-align">
               <label>End Date</label>
-              <div class="mindful-input-group" [class.missing-placeholder]="attemptedSubmit && showDateError">
-                <mindful-datepicker type="date" [(ngModel)]="endDate" [minDate]="today"
-                  [rangeStart]="startDate" [rangeEnd]="endDate" placeholder="Add End Date"></mindful-datepicker>
+              <div class="superme-input-group" [class.missing-placeholder]="attemptedSubmit && showDateError">
+                <superme-datepicker type="date" [(ngModel)]="endDate" [minDate]="today"
+                  [rangeStart]="startDate" [rangeEnd]="endDate" placeholder="Add End Date"></superme-datepicker>
               </div>
             </div>
           </div>
@@ -244,6 +244,6 @@
   </div>
 </ion-content>
 
-<app-mindful-popup [isVisible]="deletePopupVisible" [config]="deletePopupConfig" (primaryAction)="confirmDelete()"
+<app-superme-popup [isVisible]="deletePopupVisible" [config]="deletePopupConfig" (primaryAction)="confirmDelete()"
   (secondaryAction)="cancelDelete()" (backdropClick)="cancelDelete()"
-  (closeAction)="cancelDelete()"></app-mindful-popup>
+  (closeAction)="cancelDelete()"></app-superme-popup>

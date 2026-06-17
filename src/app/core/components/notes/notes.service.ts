@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { NotesApi } from '../../api/notes.api';
+import { NoteTagDto, NotesApi } from '../../api/notes.api';
 
 export interface NoteModel {
   title: string;
   /** note text can be a string or an array of strings (checklist) */
   text: string | string[];
   tags: string[];
+  tagId?: any;
   createdAt: string;
   /** optional last-updated timestamp from backend */
   updatedAt?: string;
@@ -19,9 +20,48 @@ export interface NoteModel {
 export class NotesService {
   private notes: NoteModel[] = [];
   private notesChanged = new Subject<NoteModel[]>();
+  private tagsChanged = new Subject<NoteTagDto[]>();
   public notes$ = this.notesChanged.asObservable();
+  public tags$ = this.tagsChanged.asObservable();
 
   constructor(private notesApi: NotesApi) { }
+
+  private rawList(res: any): any[] {
+    const raw = res && (res.data || res) ? (res.data || res) : [];
+    return Array.isArray(raw) ? raw : [];
+  }
+
+  private noteTags(source: any, fallback: any = {}): string[] {
+    if (Array.isArray(source?.tags) && source.tags.length) {
+      return source.tags.map((tag: any) => typeof tag === 'string' ? tag : (tag?.name || tag?.tagName || '')).filter(Boolean);
+    }
+    if (Array.isArray(fallback?.tags) && fallback.tags.length) return fallback.tags;
+    const name = source?.tagName || source?.tag?.name || fallback?.tagName;
+    return name ? [String(name)] : [];
+  }
+
+  private noteTagId(source: any, fallback: any = {}): any {
+    return source?.tagId ?? source?.tag?.id ?? fallback?.tagId ?? undefined;
+  }
+
+  private mapNote(source: any, fallback: any = {}): NoteModel {
+    const createdAt = source?.createdDate
+      ? (source.createdTime ? `${source.createdDate}T${source.createdTime}` : source.createdDate)
+      : (source?.createdAt || fallback?.createdAt || new Date().toISOString());
+    const updatedAt = source?.updatedDate
+      ? (source.updatedTime ? `${source.updatedDate}T${source.updatedTime}` : source.updatedDate)
+      : (source?.updatedAt || fallback?.updatedAt || undefined);
+
+    return {
+      title: source?.title || fallback?.title || 'Untitled',
+      text: source?.content || source?.text || fallback?.content || fallback?.text || '',
+      tags: this.noteTags(source, fallback),
+      tagId: this.noteTagId(source, fallback),
+      createdAt,
+      updatedAt,
+      id: source?.id || source?.noteId || source?._id || fallback?.id || undefined
+    };
+  }
 
   /**
    * Initialize service state from sessionStorage if present.
@@ -67,17 +107,7 @@ export class NotesService {
       tap((res: any) => {
         // If server returns the created note object, use it; otherwise use payload
         const created = res && (res.data || res) ? (res.data || res) : payload;
-        const createdAtVal = created.createdDate ? (created.createdTime ? `${created.createdDate}T${created.createdTime}` : created.createdDate) : (payload.createdAt || new Date().toISOString());
-        const updatedAtVal = created.updatedDate ? (created.updatedTime ? `${created.updatedDate}T${created.updatedTime}` : created.updatedDate) : (created.updatedAt || payload.updatedAt || undefined);
-        const note: NoteModel = {
-          title: created.title || payload.title || 'Untitled',
-          text: created.content || created.text || payload.text || '',
-          tags: created.tags || payload.tags || [],
-          createdAt: createdAtVal,
-          updatedAt: updatedAtVal
-          ,
-          id: created.id || created.noteId || created._id || payload.id || undefined
-        };
+        const note = this.mapNote(created, payload);
         this.addLocal(note);
       })
     );
@@ -93,7 +123,8 @@ export class NotesService {
     const tempNote: NoteModel = {
       title: payload.title || 'Untitled',
       text: payload.content || payload.text || '',
-      tags: payload.tags || [],
+      tags: payload.tags || (payload.tagName ? [payload.tagName] : []),
+      tagId: payload.tagId,
       createdAt: new Date().toISOString(),
       id: tempId
     };
@@ -107,16 +138,7 @@ export class NotesService {
       this.notesApi.addNote(payload).subscribe({
         next: (res: any) => {
           const created = res && (res.data || res) ? (res.data || res) : payload;
-          const createdAtVal = created.createdDate ? (created.createdTime ? `${created.createdDate}T${created.createdTime}` : created.createdDate) : (payload.createdAt || new Date().toISOString());
-          const updatedAtVal = created.updatedDate ? (created.updatedTime ? `${created.updatedDate}T${created.updatedTime}` : created.updatedDate) : (created.updatedAt || payload.updatedAt || undefined);
-          const serverNote: NoteModel = {
-            title: created.title || payload.title || 'Untitled',
-            text: created.content || created.text || payload.text || '',
-            tags: created.tags || payload.tags || [],
-            createdAt: createdAtVal,
-            updatedAt: updatedAtVal,
-            id: created.id || created.noteId || created._id || undefined
-          };
+          const serverNote = this.mapNote(created, payload);
           // replace temp note if present
           const idx = this.notes.findIndex(n => (n as any).id === tempId);
           if (idx > -1) {
@@ -160,21 +182,9 @@ export class NotesService {
       this.notesApi.getAll().subscribe({
         next: (res: any) => {
           // API may return { data: [...] } or [...] directly
-          const raw = res && (res.data || res) ? (res.data || res) : [];
+          const raw = this.rawList(res);
           // map to NoteModel shape
-          this.notes = (raw || []).map((item: any) => {
-            const createdAt = item.createdDate ? (item.createdTime ? `${item.createdDate}T${item.createdTime}` : item.createdDate) : (item.createdAt || new Date().toISOString());
-            const updatedAt = item.updatedDate ? (item.updatedTime ? `${item.updatedDate}T${item.updatedTime}` : item.updatedDate) : (item.updatedAt || undefined);
-            return {
-              title: item.title || item.name || 'Untitled',
-              text: item.content || item.text || '',
-              tags: item.tags || [],
-              createdAt,
-              updatedAt
-              ,
-              id: item.id || item.noteId || item._id || undefined
-            } as NoteModel;
-          });
+          this.notes = raw.map((item: any) => this.mapNote(item));
           // notify subscribers and emit
           this.notesChanged.next(this.notes.slice());
           // persist fetched notes so subsequent opens can use session cache
@@ -235,15 +245,7 @@ export class NotesService {
         next: (res: any) => {
           const updated = res && (res.data || res) ? (res.data || res) : payload;
           // map server response to NoteModel shape
-          const updatedAtVal = updated.updatedDate ? (updated.updatedTime ? `${updated.updatedDate}T${updated.updatedTime}` : updated.updatedDate) : (updated.updatedAt || new Date().toISOString());
-          const note: NoteModel = {
-            title: updated.title || payload.title || 'Untitled',
-            text: updated.content || updated.text || payload.text || '',
-            tags: updated.tags || payload.tags || [],
-            createdAt: updated.createdAt || payload.createdAt || new Date().toISOString(),
-            updatedAt: updatedAtVal,
-            id: updated.id || updated.noteId || updated._id || id
-          };
+          const note = this.mapNote(updated, { ...payload, id });
 
           // replace existing note in local cache if present
           const idx = this.notes.findIndex(n => (n as any).id === id);
@@ -280,7 +282,8 @@ export class NotesService {
       const optimisticNote: NoteModel = {
         title: payload.title || 'Untitled',
         text: payload.content || payload.text || '',
-        tags: payload.tags || [],
+        tags: payload.tags || (payload.tagName ? [payload.tagName] : []),
+        tagId: payload.tagId,
         createdAt: prev ? prev.createdAt : now,
         updatedAt: now,
         id: id
@@ -299,15 +302,7 @@ export class NotesService {
         next: (res: any) => {
           // map server response and replace note with authoritative data
           const updated = res && (res.data || res) ? (res.data || res) : payload;
-          const updatedAtVal = updated.updatedDate ? (updated.updatedTime ? `${updated.updatedDate}T${updated.updatedTime}` : updated.updatedDate) : (updated.updatedAt || new Date().toISOString());
-          const serverNote: NoteModel = {
-            title: updated.title || payload.title || optimisticNote.title,
-            text: updated.content || updated.text || optimisticNote.text,
-            tags: updated.tags || payload.tags || optimisticNote.tags,
-            createdAt: updated.createdAt || optimisticNote.createdAt,
-            updatedAt: updatedAtVal,
-            id: updated.id || updated.noteId || updated._id || id
-          };
+          const serverNote = this.mapNote(updated, { ...payload, ...optimisticNote, id });
           const replaceIdx = this.notes.findIndex(n => (n as any).id === id);
           if (replaceIdx > -1) this.notes[replaceIdx] = serverNote;
           else this.notes.unshift(serverNote);
@@ -336,6 +331,88 @@ export class NotesService {
       // Immediately resolve so callers can navigate without waiting
       subscriber.next(optimisticNote);
       subscriber.complete();
+    });
+  }
+
+  fetchByTag(tagName: string): Observable<NoteModel[]> {
+    return new Observable<NoteModel[]>((subscriber) => {
+      this.notesApi.getByTag(tagName).subscribe({
+        next: (res: any) => {
+          this.notes = this.rawList(res).map((item: any) => this.mapNote(item));
+          this.notesChanged.next(this.notes.slice());
+          this.persistToSession();
+          subscriber.next(this.notes.slice());
+          subscriber.complete();
+        },
+        error: (err) => subscriber.error(err)
+      });
+    });
+  }
+
+  searchNotes(query: string): Observable<NoteModel[]> {
+    return new Observable<NoteModel[]>((subscriber) => {
+      this.notesApi.searchNotes(query).subscribe({
+        next: (res: any) => {
+          this.notes = this.rawList(res).map((item: any) => this.mapNote(item));
+          this.notesChanged.next(this.notes.slice());
+          subscriber.next(this.notes.slice());
+          subscriber.complete();
+        },
+        error: (err) => subscriber.error(err)
+      });
+    });
+  }
+
+  fetchTags(): Observable<NoteTagDto[]> {
+    return new Observable<NoteTagDto[]>((subscriber) => {
+      this.notesApi.getTags().subscribe({
+        next: (tags) => {
+          const normalized = Array.isArray(tags) ? tags : [];
+          this.tagsChanged.next(normalized.slice());
+          subscriber.next(normalized);
+          subscriber.complete();
+        },
+        error: (err) => subscriber.error(err)
+      });
+    });
+  }
+
+  createTag(name: string): Observable<NoteTagDto> {
+    return new Observable<NoteTagDto>((subscriber) => {
+      this.notesApi.createTag(name).subscribe({
+        next: (tag) => {
+          this.fetchTags().subscribe({ next: () => undefined, error: () => undefined });
+          subscriber.next(tag);
+          subscriber.complete();
+        },
+        error: (err) => subscriber.error(err)
+      });
+    });
+  }
+
+  updateTag(tagId: any, name: string): Observable<NoteTagDto> {
+    return new Observable<NoteTagDto>((subscriber) => {
+      this.notesApi.updateTag(tagId, name).subscribe({
+        next: (tag) => {
+          this.fetchTags().subscribe({ next: () => undefined, error: () => undefined });
+          subscriber.next(tag);
+          subscriber.complete();
+        },
+        error: (err) => subscriber.error(err)
+      });
+    });
+  }
+
+  deleteTag(tagId: any): Observable<{ message?: string }> {
+    return new Observable<{ message?: string }>((subscriber) => {
+      this.notesApi.deleteTag(tagId).subscribe({
+        next: (res) => {
+          this.fetchTags().subscribe({ next: () => undefined, error: () => undefined });
+          subscriber.next(res);
+          subscriber.complete();
+        },
+        error: (err) => subscriber.error(err)
+      });
     });
   }
 

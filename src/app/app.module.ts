@@ -14,18 +14,21 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { LoadingInterceptor } from './core/interceptors/loading.interceptor';
 import {ProfileSelectorInterceptor} from "./core/interceptors/profile-selector.interceptor";
 import { NetworkInterceptor } from './core/interceptors/network.interceptor';
+import { AppCheckInterceptor } from './core/interceptors/app-check.interceptor';
 import { NetworkIssueComponent } from './core/components/network-issue/network-issue.component';
-import { MindfulButtonComponent } from './core/components/mindful-button/mindful-button.component';
+import { SupermeButtonComponent } from './core/components/superme-button/superme-button.component';
+import { SupermePopupComponent } from './core/components/superme-popup/superme-popup.component';
 
 @NgModule({
   declarations: [
     AppComponent,
   ],
 
-  imports: [BrowserModule, CommonModule, IonicModule.forRoot(), AppRoutingModule, BrowserAnimationsModule, HttpClientModule, SupermeLoadingComponent, NetworkIssueComponent, MindfulButtonComponent],
+  imports: [BrowserModule, CommonModule, IonicModule.forRoot(), AppRoutingModule, BrowserAnimationsModule, HttpClientModule, SupermeLoadingComponent, NetworkIssueComponent, SupermeButtonComponent, SupermePopupComponent],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: AppCheckInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: LoadingInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ProfileSelectorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: NetworkInterceptor, multi: true },

@@ -168,8 +168,8 @@ export class TaskApi {
         return this.http.post(url, {}, { headers: this.headers() });
     }
 
-    completeTask(id: string): Observable<any> {
-        const url = `${this.base}/tasks/complete/${id}`;
+    completeTask(id: string, confirmed?: boolean): Observable<any> {
+        const url = `${this.base}/tasks/complete/${id}${confirmed ? '?confirmed=true' : ''}`;
         return this.http.post(url, {}, { headers: this.headers() });
     }
 

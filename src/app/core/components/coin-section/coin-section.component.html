@@ -1,10 +1,12 @@
 <ion-content>
     <div class="coin-page">
+
+        <!-- ── Header Card ── -->
         <div [ngClass]="{ 'coin-card': true, 'parent-view': isParent }">
             <div class="header">
-                 <p>Ready to Treat Yourself?</p>
+                <p>Ready to Treat Yourself?</p>
                 <a [routerLink]="['/authed','bot-helpline']" class="robot-link" aria-label="Helpline">
-                  <img src="assets/Icons-Neutral/Icon-Chatbot.png" alt="Robot" class="robot-icon">
+                    <img src="assets/Icons-Neutral/Icon-Chatbot.png" alt="Robot" class="robot-icon">
                 </a>
             </div>
 
@@ -16,16 +18,18 @@
             <div *ngIf="!isParent" class="panda-message d-flex space-between w-100">
                 <app-speech-bubble [message]="message" type="talking" arrowSide="right">
                 </app-speech-bubble>
-                <mindful-pet></mindful-pet>
+                <superme-pet></superme-pet>
             </div>
 
-            <mindful-button *ngIf="!isParent" (click)="onRedeem()" text="Redeem" type="gold" size="large"></mindful-button>
-            <mindful-button *ngIf="isParent" text="Add" type="gold" size="large"></mindful-button>
+            <superme-button *ngIf="!isParent" (click)="onRedeem()" text="Redeem" type="gold" size="large"></superme-button>
+            <superme-button *ngIf="isParent" text="Add" type="gold" size="large"></superme-button>
         </div>
 
+        <!-- ── History Section ── -->
         <div class="coin-list-section">
-                <h2>{{ isParent ? 'Your Spending & Top-Up History' : 'Spent Smart, Spent Fun!' }}</h2>
+            <h2>{{ isParent ? 'Spending & Top-Up History' : 'Spent Smart, Spent Fun!' }}</h2>
 
+            <!-- Loading -->
             <ng-container *ngIf="isLoading">
                 <div class="loading-container">
                     <ion-spinner name="crescent"></ion-spinner>
@@ -33,9 +37,10 @@
                 </div>
             </ng-container>
 
+            <!-- Empty state -->
             <ng-container *ngIf="!isLoading && coinItems.length === 0">
                 <div class="blank-container">
-                    <img src="/assets/Images-Transparent/Image-Home-Blank.png" alt="Home-blank" class="home-blank">
+                    <img src="/assets/Images-Transparent/Image-Home-Blank.png" alt="" class="home-blank">
                     <div class="blank-text">
                         <h1>No transactions yet!</h1>
                         <p>Your coins are ready to treat your pet with cool outfits and accessories.</p>
@@ -43,21 +48,60 @@
                 </div>
             </ng-container>
 
-            <div *ngFor="let item of sortedCoinItems" class="coin-list-item">
-                <div class="coin-detail">
-                    <img [src]="item.icon" alt="{{ item.label }} icon" class="item-icon"
-                         (error)="$any($event.target).src='/assets/Icons-Neutral/Icons-Coins.png'">
-                    <div class="coin-label">
-                        <div class="item-title">{{ item.label }}</div>
-                        <div class="item-date">{{ item.date | date:'mediumDate' }}</div>
+            <!-- Grouped history -->
+            <ng-container *ngIf="!isLoading && coinItems.length > 0">
+                <div *ngFor="let group of groupedCoinItems" class="day-group">
+
+                    <!-- Date separator -->
+                    <div class="date-separator">
+                        <span class="date-separator__line"></span>
+                        <span class="date-separator__pill" [class.date-separator__pill--today]="group.isToday">
+                            {{ group.dateLabel }}
+                        </span>
+                        <span class="date-separator__line"></span>
+                    </div>
+
+                    <!-- Items for this day -->
+                    <div *ngFor="let item of group.items" class="coin-list-item"
+                         [class.coin-list-item--bonus]="item.type === 'DAILY_LOGIN_BONUS'">
+
+                        <!-- Icon -->
+                        <div class="item-icon-wrap">
+                            <ng-container *ngIf="item.thumbnailUrl; else typeIcon">
+                                <img [src]="item.thumbnailUrl" [alt]="item.label"
+                                     class="item-icon item-icon--thumb"
+                                     (error)="onThumbError(item)">
+                            </ng-container>
+                            <ng-template #typeIcon>
+                                <div class="item-icon item-icon--type"
+                                     [style.background]="getTypeBg(item.type)">
+                                    <img [src]="getTypeIcon(item.type)" [alt]="item.typeLabel"
+                                         class="type-img">
+                                </div>
+                            </ng-template>
+                            <!-- Bonus star badge -->
+                            <span *ngIf="item.type === 'DAILY_LOGIN_BONUS'" class="bonus-badge">★</span>
+                        </div>
+
+                        <!-- Label + meta -->
+                        <div class="coin-label">
+                            <div class="item-title">{{ item.label }}</div>
+                            <div class="item-meta">
+                                <span class="type-chip">{{ item.typeLabel }}</span>
+                                <span class="item-time">{{ formatTime(item.date) }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Amount -->
+                        <div class="coin-count">
+                            <img src="/assets/Icons-Neutral/Icons-Coins.png" alt="Coin" class="count-icon">
+                            <span class="count-value" [class.negative]="item.count < 0">
+                                {{ item.count < 0 ? item.count : ('+' + item.count) }}
+                            </span>
+                        </div>
                     </div>
                 </div>
-
-                <div class="coin-count">
-                    <img src="/assets/Icons-Neutral/Icons-Coins.png" alt="Coin" class="count-icon">
-                    <div class="count-value" [ngClass]="{ 'negative': item.count < 0 }">{{ item.count < 0 ? item.count : ('+' + item.count) }}</div>
-                </div>
-            </div>
+            </ng-container>
         </div>
     </div>
 </ion-content>

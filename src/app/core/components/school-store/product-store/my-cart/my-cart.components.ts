@@ -1,8 +1,8 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../../mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from '../../../mindful-button/mindful-button.component';
+import { SupermeNavigatorComponent } from '../../../superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../../superme-button/superme-button.component';
 import { Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { AddressInputComponent } from '../../address-input/address-input.components';
@@ -10,7 +10,7 @@ import { AddressInputComponent } from '../../address-input/address-input.compone
 @Component({
     selector: 'my-cart',
     standalone: true,
-    imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent],
+    imports: [CommonModule, IonicModule, SupermeNavigatorComponent, SupermeButtonComponent],
     templateUrl: './my-cart.components.html',
     styleUrls: ['./my-cart.components.scss']
 })

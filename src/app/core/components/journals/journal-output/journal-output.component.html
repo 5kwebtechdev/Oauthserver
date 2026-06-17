@@ -1,8 +1,8 @@
 <ion-content fullscreen>
-  <mindful-card-header class="output-back-navigator" [title]="'Your Journal, Your Journey'"
+  <superme-card-header class="output-back-navigator" [title]="'Your Journal, Your Journey'"
     [subtitleLeft]="'Track moods'" [subtitleMiddle]="'Save'" [subtitleRight]="'Feel Better'" [showBackArrow]="true"
     (backClick)="goBack()">
-  </mindful-card-header>
+  </superme-card-header>
   <div class="journal-output-container d-flex flex-column align-items-center">
     <div class="month-navigator" role="group" aria-label="Month navigator">
       <button class="month-prev" type="button" aria-label="Previous month" (click)="prevMonth()">‹</button>
@@ -28,8 +28,8 @@
           </ng-template>
         </div>
 
-        <mindful-button *ngIf="isAtLatestMonth && !hasEntryForToday" class="journal-empty__post" type="magenta" large text="Post now"
-          style="display:block; width:100%" (click)="openJournalInput()" aria-label="Post now"></mindful-button>
+        <superme-button *ngIf="isAtLatestMonth && !hasEntryForToday" class="journal-empty__post" type="magenta" large text="Post now"
+          style="display:block; width:100%" (click)="openJournalInput()" aria-label="Post now"></superme-button>
       </div>
     </div>
     <!-- Use reusable post card component for each entry -->
@@ -42,7 +42,7 @@
 
   <!-- Fixed Add Button -->
   <div *ngIf="isAtLatestMonth && filteredEntries && filteredEntries.length && !hasEntryForToday" class="add-button-fixed" (click)="onAddClick()">
-    <mindful-button type="add"></mindful-button>
+    <superme-button type="add"></superme-button>
   </div>
   
   <!-- Image viewer overlay -->

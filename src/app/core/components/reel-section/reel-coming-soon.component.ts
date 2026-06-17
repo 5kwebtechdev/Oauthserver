@@ -1,17 +1,17 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigator.component';
+import { SupermeNavigatorComponent } from '../superme-navigator/superme-navigator.component';
 import { EmptyStateComponent } from '../empty-state/empty-state.component';
 import { Location } from '@angular/common';
 
 @Component({
 	selector: 'reel-coming-soon',
 	standalone: true,
-	imports: [CommonModule, IonicModule, MindfulNavigatorComponent, EmptyStateComponent],
+	imports: [CommonModule, IonicModule, SupermeNavigatorComponent, EmptyStateComponent],
 	template: `
 		<ion-content class="reel-content">
-			<mindful-navigator heading="Reels Created" backIcon="arrowSvg" (back)="onBack()"></mindful-navigator>
+			<superme-navigator heading="Reels Created" backIcon="arrowSvg" (back)="onBack()"></superme-navigator>
 
 			<div class="reel-center">
 				<empty-state

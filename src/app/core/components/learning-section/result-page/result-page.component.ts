@@ -2,12 +2,14 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { Platform } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 import { LoadingService } from 'src/app/core/services/loading.service';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
-import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
+import { SupermeInputsModule } from '../../superme-inputs/superme-inputs.module';
 import { ChallengeSubmissionResponse, Challenge } from 'src/app/core/models/learning.models';
-import { PetMood } from '../../mindful-pet/mindful-pet.component';
+import { PetMood } from '../../superme-pet/superme-pet.component';
 
 @Component({
   selector: 'app-result-page',
@@ -15,9 +17,9 @@ import { PetMood } from '../../mindful-pet/mindful-pet.component';
   imports: [
     CommonModule,
     IonicModule,
-    MindfulNavigatorComponent,
-    MindfulPetComponent,
-    MindfulInputsModule
+    SupermeNavigatorComponent,
+    SupermePetComponent,
+    SupermeInputsModule
   ],
   templateUrl: './result-page.component.html',
   styleUrls: ['./result-page.component.scss']
@@ -55,7 +57,13 @@ export class ResultPageComponent implements OnInit, OnDestroy {
   newlyEarnedBadges: any[] = [];
   badgeCelebrationMessage = '';
 
-  constructor(private router: Router, private loadingService: LoadingService) {
+  private backButtonSub?: Subscription;
+
+  constructor(
+    private router: Router,
+    private loadingService: LoadingService,
+    private platform: Platform
+  ) {
     // Get data from router state
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras?.state as {
@@ -94,20 +102,29 @@ export class ResultPageComponent implements OnInit, OnDestroy {
       console.warn('No submission result found in router state');
     }
 
-    // Intercept browser/gesture back (popstate) while on this page and
-    // redirect to content so swipe-back / back-gesture behaves like cancel.
+    // Intercept Android/Capacitor hardware back button with higher priority
+    // than the global AppComponent handler (which uses priority 10).
+    this.backButtonSub = this.platform.backButton.subscribeWithPriority(20, () => {
+      this.goToContent();
+    });
+
+    // Also intercept browser/iOS swipe-back (popstate) on web and PWA.
+    // Push a sentinel state first so the first popstate is ours to intercept.
+    history.pushState({ resultPageSentinel: true }, '');
     window.addEventListener('popstate', this.handlePopState);
   }
 
   ngOnDestroy(): void {
+    this.backButtonSub?.unsubscribe();
     window.removeEventListener('popstate', this.handlePopState);
   }
 
-  private handlePopState = (event: PopStateEvent) => {
-    // Ensure we don't try to navigate if already heading to content
-    if (this.router.url !== '/authed/content') {
-      this.router.navigateByUrl('/authed/content', { replaceUrl: true });
-    }
+  private handlePopState = (_event: PopStateEvent) => {
+    this.goToContent();
+  }
+
+  private goToContent(): void {
+    this.router.navigateByUrl('/authed/content', { replaceUrl: true });
   }
 
 

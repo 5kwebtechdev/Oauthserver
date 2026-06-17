@@ -8,8 +8,8 @@ import { takeUntil } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import { AuthApi } from '../../api/auth.api';
 import { RefreshService } from '../../services/refresh.service';
-import { MindfulCardHeaderComponent } from '../mindful-navigator/mindful-card-header/mindful-card-header.component';
-import { ViewAllComponent } from '../mindful-navigator/view-all/view-all.component';
+import { SupermeCardHeaderComponent } from '../superme-navigator/superme-card-header/superme-card-header.component';
+import { ViewAllComponent } from '../superme-navigator/view-all/view-all.component';
 
 import { JournalPostCardComponent } from './journal-post-card/journal-post-card.component';
 import { EmptyStateComponent } from '../empty-state/empty-state.component';
@@ -31,12 +31,12 @@ export interface JournalEntry {
   selector: 'journals',
   template: `
     <section class="journal-empty">
-      <mindful-card-header [title]="'Your Journal, Your Journey'" [subtitleLeft]="'Track moods'" [subtitleMiddle]="'Save'"
+      <superme-card-header [title]="'Your Journal, Your Journey'" [subtitleLeft]="'Track moods'" [subtitleMiddle]="'Save'"
         [subtitleRight]="'Feel Better'">
-        <mindful-view-all mindful-header-actions [routerLink]="['/authed/journal-output']"
+        <superme-view-all superme-header-actions [routerLink]="['/authed/journal-output']"
           class="journal-empty__view-all">
-        </mindful-view-all>
-      </mindful-card-header>
+        </superme-view-all>
+      </superme-card-header>
 
       <div *ngIf="latestEntry as entry; else emptyBody" class="entries-container">
         <journal-post-card [entry]="entry"></journal-post-card>
@@ -180,7 +180,7 @@ export interface JournalEntry {
       object-fit: cover;
     }
   `],
-  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent, ViewAllComponent, JournalPostCardComponent, EmptyStateComponent],
+  imports: [CommonModule, IonicModule, SupermeCardHeaderComponent, ViewAllComponent, JournalPostCardComponent, EmptyStateComponent],
   standalone: true
 })
 export class JournalsComponent implements OnInit, OnDestroy {

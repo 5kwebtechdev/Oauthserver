@@ -4,7 +4,7 @@ import { NavigationService } from '../../../services/navigation.service';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { AcademyService, Course } from '../../../services/academy.service';
-import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
+import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
 
 interface AcademyLessonCard {
   title: string;
@@ -21,7 +21,7 @@ interface AcademyLessonCard {
 @Component({
   selector: 'app-academy-subject',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulCardHeaderComponent],
+  imports: [CommonModule, IonicModule, SupermeCardHeaderComponent],
   templateUrl: './academy-subject.component.html',
   styleUrls: ['./academy-subject.component.scss']
 })
@@ -32,6 +32,7 @@ export class AcademySubjectComponent implements OnInit {
   category: string = '';
   categoryTitle: string = '';
   categorySubtitle: string = '';
+  age: number | null = null;
   isLoading: boolean = false;
 
   private readonly defaultCourseThumbnail = '/assets/Images-Transparent/Academy-Course-Thubmnail1.png';
@@ -68,6 +69,7 @@ export class AcademySubjectComponent implements OnInit {
       const categoryInfo = this.categoryTitles[this.normalizeCategoryKey(this.category)];
       this.categoryTitle = params['title'] || categoryInfo?.title || this.formatCategoryTitle(this.category);
       this.categorySubtitle = params['subtitle'] || categoryInfo?.subtitle || '';
+      this.age = this.parseAge(params['age']);
       this.loadCourses();
     });
   }
@@ -75,9 +77,13 @@ export class AcademySubjectComponent implements OnInit {
   loadCourses() {
     this.isLoading = true;
 
-    this.academyService.getCourses().subscribe({
+    const courses$ = this.age
+      ? this.academyService.getCoursesByAge(this.age)
+      : this.academyService.getCourses();
+
+    courses$.subscribe({
       next: (courses: Course[]) => {
-        console.log('All courses from API:', courses);
+        console.log(this.age ? `Courses from by-age API for age ${this.age}:` : 'All courses from API:', courses);
         console.log('Current category:', this.category);
 
         // Filter courses by category only (removed enabled filter for testing)
@@ -209,6 +215,11 @@ export class AcademySubjectComponent implements OnInit {
     return title
       .toLowerCase()
       .replace(/\b\w/g, (letter) => letter.toUpperCase()) || 'Academy';
+  }
+
+  private parseAge(value: unknown): number | null {
+    const age = Number(value);
+    return Number.isFinite(age) && age > 0 ? Math.floor(age) : null;
   }
 
   goBack() {

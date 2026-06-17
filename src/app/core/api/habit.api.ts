@@ -148,8 +148,8 @@ export class HabitApi {
      * Toggle habit completion status
      * @param id Habit id
      */
-    completeHabit(id: string): Observable<any> {
-        const url = `${this.base}/habits/complete/${id}`;
+    completeHabit(id: string, confirmed?: boolean): Observable<any> {
+        const url = `${this.base}/habits/complete/${id}${confirmed ? '?confirmed=true' : ''}`;
         return this.http.post(url, {}, { headers: this.headers() });
     }
 

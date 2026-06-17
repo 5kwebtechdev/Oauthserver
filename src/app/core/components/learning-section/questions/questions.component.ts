@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { IonicModule, IonContent } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { MindfulPopupComponent, MindfulPopupConfig } from '../../mindful-popup/mindful-popup.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { SupermePopupComponent, SupermePopupConfig } from '../../superme-popup/superme-popup.component';
 import { Challenge, ChallengeQuestion, QuestionOption } from 'src/app/core/models/learning.models';
 import { LearningService } from 'src/app/core/services/learning.service';
 
@@ -14,17 +14,30 @@ interface Question {
     text: string;
     options: string[];
     correctAnswer: string;
+    correctOptionId?: number | null;
     image: string;
     hint: string;
     type?: 'mcq' | 'true-false' | 'visual'; // Added type field to differentiate question types
     optionImages?: string[]; // Added for visual options
+    visualOptions?: VisualOption[];
     contentType?: 'text-only' | 'image-only' | 'text-and-image'; // Added to differentiate question content types
+    positiveFeedback?: string | null;
+    negativeFeedback?: string | null;
+    negativeFeedbackTryAgain?: string | null;
+}
+
+interface VisualOption {
+    id: number;
+    label: string;
+    imageUrl: string;
+    answerValue: string;
+    altText: string;
 }
 
 @Component({
     selector: 'app-questions',
     standalone: true,
-    imports: [CommonModule, IonicModule, HttpClientModule, MindfulNavigatorComponent, MindfulButtonComponent, MindfulPopupComponent],
+    imports: [CommonModule, IonicModule, HttpClientModule, SupermeNavigatorComponent, SupermeButtonComponent, SupermePopupComponent],
     providers: [LearningService],
     templateUrl: './questions.component.html',
     styleUrls: ['./questions.component.scss']
@@ -40,7 +53,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     totalQuestions = 5;
 
     // Store references to all answer buttons
-    @ViewChildren(MindfulButtonComponent) answerButtons!: QueryList<MindfulButtonComponent>;
+    @ViewChildren(SupermeButtonComponent) answerButtons!: QueryList<SupermeButtonComponent>;
 
     // Reference to ion-content for scrolling
     @ViewChild(IonContent) content!: IonContent;
@@ -54,6 +67,9 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     // Track the currently selected option for styling
     selectedOption: string | null = null;
 
+    // Track selected visual option by backend ID so image-only options are selectable
+    selectedVisualOptionId: number | null = null;
+
     // Track if answer has been checked
     answerChecked = false;
 
@@ -65,6 +81,9 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
     // Popup message
     popupMessage = '';
+
+    // Popup title
+    popupTitle = '';
 
     // Popup background color
     popupBackgroundColor = '';
@@ -93,7 +112,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     questionHints: { [questionId: number]: string } = {}; // cached hint per question
 
     // Leave challenge popup configuration
-    leaveChallengePopupConfig: MindfulPopupConfig = {
+    leaveChallengePopupConfig: SupermePopupConfig = {
         image: 'assets/Images-Transparent/Image-Leaving-Learning.png',
         imageAlt: 'Leaving Learning',
         heading: 'You\'re Making Great Progress!',
@@ -115,7 +134,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     };
 
     // New timer expiration popup configuration for content time exhaust
-    contentTimeExhaustPopupConfig: MindfulPopupConfig = {
+    contentTimeExhaustPopupConfig: SupermePopupConfig = {
         image: 'assets/Images-Transparent/Image-Content-TimeExhaust.png',
         imageAlt: 'Time\'s Up',
         heading: 'Time\'s Up!',
@@ -252,25 +271,53 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             else if (q.questionImageUrl) contentType = 'image-only';
 
             // Extract options and find correct answer
-            const options = q.options.map(opt => opt.optionText);
+            const options = q.options.map((opt, index) => this.getOptionDisplayText(opt, index));
             const correctOption = q.options.find(opt => opt.isCorrect);
-            const correctAnswer = correctOption?.optionText || options[0];
+            const correctOptionIndex = correctOption ? q.options.indexOf(correctOption) : 0;
+            const correctAnswer = correctOption
+                ? this.getOptionAnswerValue(correctOption, correctOptionIndex)
+                : this.getOptionAnswerValue(q.options[0], 0);
 
             // Extract option images for visual questions
             const optionImages = q.options.map(opt => opt.optionImageUrl || '');
+            const visualOptions = q.options.map((opt, index) => {
+                const label = (opt.optionText || '').trim();
+                const fallbackLabel = `Option ${index + 1}`;
+                return {
+                    id: opt.optionId,
+                    label,
+                    imageUrl: opt.optionImageUrl || '',
+                    answerValue: this.getOptionAnswerValue(opt, index),
+                    altText: label || fallbackLabel
+                };
+            });
 
             return {
                 id: q.questionId,
                 text: q.questionText,
                 options: options,
                 correctAnswer: correctAnswer,
+                correctOptionId: correctOption?.optionId ?? null,
                 image: q.questionImageUrl || '',
                 hint: q.hint || '',
                 type: type,
                 optionImages: optionImages,
-                contentType: contentType
+                visualOptions,
+                contentType: contentType,
+                positiveFeedback: q.positiveFeedback,
+                negativeFeedback: q.negativeFeedback,
+                negativeFeedbackTryAgain: q.negativeFeedbackTryAgain
             };
         });
+    }
+
+    private getOptionDisplayText(option: QuestionOption, index: number): string {
+        return (option?.optionText || '').trim() || `Option ${index + 1}`;
+    }
+
+    private getOptionAnswerValue(option: QuestionOption | undefined, index: number): string {
+        if (!option) return `Option ${index + 1}`;
+        return (option.optionText || '').trim() || String(option.optionId);
     }
 
     parseTimeDuration(duration: string) {
@@ -316,6 +363,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         const currentQuestion = this.questions[this.currentQuestionIndex];
         this.correctAnswer = currentQuestion.correctAnswer;
         this.selectedAnswer = this.questionAnswers[currentQuestion.id].selected;
+        this.selectedVisualOptionId = this.questionAnswers[currentQuestion.id].selectedOptionId;
         // Reset answer checked state for new question
         this.answerChecked = false;
         this.selectedOption = null;
@@ -357,15 +405,22 @@ export class QuestionsComponent implements OnInit, OnDestroy {
      * Handle answer selection
      * @param selectedAnswer The text of the selected answer
      */
-    selectAnswer(selectedAnswer: string) {
+    selectAnswer(selectedAnswer: string, selectedOptionId?: number) {
         // Only allow selection if answer hasn't been checked yet
         if (!this.answerChecked) {
+            const normalizedAnswer = (selectedAnswer || '').trim()
+                || (selectedOptionId !== undefined && selectedOptionId !== null ? String(selectedOptionId) : '');
+
+            if (!normalizedAnswer) return;
+
             // Deselect any previously selected option
             this.selectedOption = null;
+            this.selectedVisualOptionId = null;
 
             // Set the selected answer and option
-            this.selectedAnswer = selectedAnswer;
-            this.selectedOption = selectedAnswer;
+            this.selectedAnswer = normalizedAnswer;
+            this.selectedOption = normalizedAnswer;
+            this.selectedVisualOptionId = selectedOptionId ?? null;
 
             // Get the current question from backend data to find option ID
             const currentQuestion = this.questions[this.currentQuestionIndex];
@@ -375,7 +430,9 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             if (this.challenge?.questions) {
                 const backendQuestion = this.challenge.questions.find(q => q.questionId === currentQuestionId);
                 if (backendQuestion) {
-                    const selectedOption = backendQuestion.options.find(opt => opt.optionText === selectedAnswer);
+                    const selectedOption = selectedOptionId !== undefined && selectedOptionId !== null
+                        ? backendQuestion.options.find(opt => opt.optionId === selectedOptionId)
+                        : backendQuestion.options.find((opt, index) => this.getOptionAnswerValue(opt, index) === normalizedAnswer);
                     if (selectedOption) {
                         this.questionAnswers[currentQuestionId].selectedOptionId = selectedOption.optionId;
                     }
@@ -383,17 +440,19 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             }
 
             // Save the selected answer for this question
-            this.questionAnswers[currentQuestionId].selected = selectedAnswer;
+            this.questionAnswers[currentQuestionId].selected = normalizedAnswer;
 
             // For True/False questions, we need to visually update the buttons
             if (this.questions[this.currentQuestionIndex].type === 'true-false') {
                 // The visual update is handled by the [class.selected] binding in the template
+                this.scrollToBottom();
                 return;
             }
 
             // For Visual questions, we need to visually update the options
             if (this.questions[this.currentQuestionIndex].type === 'visual') {
                 // The visual update is handled by the [class.selected] binding in the template
+                this.scrollToBottom();
                 return;
             }
 
@@ -431,8 +490,12 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         if (this.selectedAnswer !== null) {
             this.answerChecked = true;
 
-            this.isAnswerCorrect = this.selectedAnswer === this.correctAnswer;
             const currentQuestionId = this.questions[this.currentQuestionIndex].id;
+            const currentQuestion = this.questions[this.currentQuestionIndex];
+            const currentAnswer = this.questionAnswers[currentQuestionId];
+            this.isAnswerCorrect = currentQuestion.type === 'visual' && currentQuestion.correctOptionId !== null && currentQuestion.correctOptionId !== undefined
+                ? currentAnswer.selectedOptionId === currentQuestion.correctOptionId
+                : this.selectedAnswer === this.correctAnswer;
             this.questionAnswers[currentQuestionId].correct = this.isAnswerCorrect;
 
             this.answerButtons.forEach(button => {
@@ -443,15 +506,18 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             this.showPopup = true;
 
             if (this.isAnswerCorrect) {
-                // Correct answer - use positiveFeedback from backend or fallback
-                this.popupMessage = this.challenge?.positiveFeedback || 'Correct!';
+                // Correct answer - use current question positiveFeedback from backend or fallback
+                this.setFeedbackPopupContent(
+                    this.getQuestionFeedback(currentQuestion, true),
+                    'Correct!'
+                );
                 this.popupBackgroundColor = '#DBEFDC';
                 this.popupTextColor = '#4CAF50';
                 // Check if this is the last question
                 if (this.currentQuestionIndex >= this.totalQuestions - 1) {
                     this.nextButtonText = 'See Result';
                 } else {
-                    this.nextButtonText = 'Next';
+                    this.nextButtonText = 'Next Question';
                 }
                 this.nextButtonType = 'green';
 
@@ -473,8 +539,11 @@ export class QuestionsComponent implements OnInit, OnDestroy {
                     selectedButton.correct = true;
                 }
             } else {
-                // Incorrect answer - use negativeFeedback from backend or fallback
-                this.popupMessage = this.challenge?.negativeFeedback || 'Incorrect!';
+                // Incorrect answer - use current question negativeFeedback from backend or fallback
+                this.setFeedbackPopupContent(
+                    this.getQuestionFeedback(currentQuestion, false),
+                    'Incorrect!'
+                );
                 this.popupBackgroundColor = '#FDCBCC';
                 this.popupTextColor = '#BB2124';
                 // Check if this is the last question
@@ -486,6 +555,45 @@ export class QuestionsComponent implements OnInit, OnDestroy {
                 this.nextButtonType = 'bronze';
             }
         }
+    }
+
+    private getQuestionFeedback(question: Question, isCorrect: boolean): string {
+        if (isCorrect) {
+            return (
+                question.positiveFeedback ||
+                this.challenge?.positiveFeedback ||
+                'Correct!'
+            );
+        }
+
+        return (
+            question.negativeFeedback ||
+            question.negativeFeedbackTryAgain ||
+            this.challenge?.negativeFeedback ||
+            this.challenge?.negativeFeedbackTryAgain ||
+            'Incorrect!'
+        );
+    }
+
+    private setFeedbackPopupContent(feedback: string, fallbackTitle: string): void {
+        const cleanFeedback = (feedback || '').trim();
+
+        if (!cleanFeedback) {
+            this.popupTitle = fallbackTitle;
+            this.popupMessage = '';
+            return;
+        }
+
+        const feedbackParts = cleanFeedback.match(/^(.+?[.!?])\s+(.+)$/);
+
+        if (feedbackParts) {
+            this.popupTitle = feedbackParts[1].trim();
+            this.popupMessage = feedbackParts[2].trim();
+            return;
+        }
+
+        this.popupTitle = cleanFeedback;
+        this.popupMessage = '';
     }
 
     /**
@@ -509,6 +617,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         // Reset for next question (in a real app, you would load the next question)
         this.selectedAnswer = null;
         this.selectedOption = null;
+        this.selectedVisualOptionId = null;
         this.answerChecked = false;
         this.isAnswerCorrect = false;
 
@@ -571,6 +680,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
                 console.log('Submission successful:', response);
                 // Navigate to result page with response data
                 this.router.navigate(['/authed/content/result'], {
+                    replaceUrl: true,
                     state: {
                         submissionResult: response,
                         challenge: this.challenge,
@@ -595,6 +705,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
                             // This looks like a successful response despite the 400 status
                             // Navigate to result page with the error response data
                             this.router.navigate(['/authed/content/result'], {
+                                replaceUrl: true,
                                 state: {
                                     submissionResult: error.error,
                                     challenge: this.challenge,
@@ -611,6 +722,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
                     if (error.error && error.error.celebrationText) {
                         // Navigate to result page with the error response data
                         this.router.navigate(['/authed/content/result'], {
+                            replaceUrl: true,
                             state: {
                                 submissionResult: error.error,
                                 challenge: this.challenge,
@@ -732,6 +844,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         this.currentQuestionIndex = 0;
         this.selectedAnswer = null;
         this.selectedOption = null;
+        this.selectedVisualOptionId = null;
         this.answerChecked = false;
         this.showHint = false;
         this.hintsUsed = 0;

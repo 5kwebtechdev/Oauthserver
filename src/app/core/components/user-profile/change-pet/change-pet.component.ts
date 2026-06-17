@@ -1,13 +1,13 @@
 import { Component, AfterViewInit, ViewChild, ElementRef, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 
 @Component({
   selector: 'app-change-pet',
   standalone: true,
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent],
+  imports: [CommonModule, IonicModule, SupermeNavigatorComponent, SupermeButtonComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './change-pet.component.html',
   styleUrls: ['./change-pet.component.scss'],
@@ -24,7 +24,7 @@ export class ChangePetComponent implements AfterViewInit, OnInit, OnDestroy {
   ngOnInit() {
     this.pets = [
       {
-        displayName: 'Bao the mindful Panda',
+        displayName: 'Bao the superme Panda',
         name: 'Panda',
         image: 'assets/Images-Pet/Panda-Age3-Happy.png',
         text: ['Your gentle guide to inner peace', 'Celebrates small acts of kindness']

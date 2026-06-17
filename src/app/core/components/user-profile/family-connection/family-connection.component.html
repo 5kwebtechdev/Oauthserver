@@ -1,6 +1,6 @@
 <ion-content>
-    <mindful-navigator *ngIf="!showInstructions" heading="My Family" backIcon="arrowSvg"
-        (back)="onBackFromFamily()"></mindful-navigator>
+    <superme-navigator *ngIf="!showInstructions" heading="My Family" backIcon="arrowSvg"
+        (back)="onBackFromFamily()"></superme-navigator>
 
     <main *ngIf="!showInstructions" class="family-connection" role="main" aria-labelledby="family-heading">
 
@@ -164,18 +164,18 @@
             </section>
 
             <!-- <div class="delete-family" *ngIf="isParentUser()">
-                <mindful-button type="bronze" large text="Delete Family" (click)="onDeleteFamily()"></mindful-button>
+                <superme-button type="bronze" large text="Delete Family" (click)="onDeleteFamily()"></superme-button>
             </div> -->
         </div>
 
         <!-- Independent Growth Blank State (Self User, Age 18-24) -->
         <aside class="family-removed-container" aria-live="polite" *ngIf="isSelfUserWithIndependentGrowth()">
             <div class="family-removed-message">
-                <mindful-pet pet="panda" [age]="3" mood="happy" (petClick)="onRemovedPetClick()"></mindful-pet>
+                <superme-pet pet="panda" [age]="3" mood="happy" (petClick)="onRemovedPetClick()"></superme-pet>
 
                 <div class="removed-message-text">
                     <h2>You've unlocked independent growth!</h2>
-                    <p>Since you age between 18-24, you get exclusive access to Self Mode- A space designed just for you. No family linking required.</p>
+                    <p>Since your age is between 18 and 24, you get exclusive access to Self Mode - a space designed just for you. No family linking is required.</p>
                 </div>
             </div>
         </aside>
@@ -183,16 +183,15 @@
         <!-- removed / self mode message -->
         <aside class="family-removed-container" aria-live="polite" *ngIf="isSelfUser() && !isSelfUserWithIndependentGrowth()">
             <div class="family-removed-message">
-                <mindful-pet pet="panda" [age]="3" mood="tired" (petClick)="onRemovedPetClick()"></mindful-pet>
+                <superme-pet pet="panda" [age]="3" mood="tired" (petClick)="onRemovedPetClick()"></superme-pet>
 
                 <div class="removed-message-text">
-                    <h1>You’re now in Self mode !</h1>
-                    <p>The family connection has been removed by the creator. Your account is still safe and all data is
-                        saved.</p>
+                    <h1>You are now in Self mode</h1>
+                    <p>Your account is safe and your personal progress is saved. You can keep using Self mode, or switch to Child or Parent when you are ready.</p>
                 </div>
                 <div class="continue-button w-100">
-                <mindful-button type="green" size="full" text="Continue with a new role?" (click)="continueWithNewRole()">
-                </mindful-button>
+                <superme-button type="green" size="full" text="Switch role" (click)="continueWithNewRole()">
+                </superme-button>
                 </div>
             </div>
         </aside>
@@ -205,7 +204,7 @@
     </main>
     <!--intructions-->
     <main *ngIf="showInstructions">
-        <mindful-navigator heading="Instructions" backIcon="arrowSvg" (back)="onInstructionsBack()"></mindful-navigator>
+        <superme-navigator heading="Instructions" backIcon="arrowSvg" (back)="onInstructionsBack()"></superme-navigator>
         <div class="instructions-container">
             <div class="instruction-list" style="margin-top:16px;">
                 <instructio-list [heading]="'When You Switch to Child Role'"
@@ -216,12 +215,11 @@
 
             <div class="consent">
                 <ion-checkbox slot="start" [(ngModel)]="consentChecked"></ion-checkbox>
-                <p class="check-text"> I have read and understood that switching roles affects account linkage and data
-                    as described above.
+                <p class="check-text"> I have read and understood how switching roles changes family access and what information may be shared.
                 </p>
             </div>
-            <mindful-button type="green" size="full" text="Next" [disabled]="!consentChecked" (click)="goToRoleSelect()">
-            </mindful-button>
+            <superme-button type="green" size="full" text="Next" [disabled]="!consentChecked" (click)="goToRoleSelect()">
+            </superme-button>
 
 
         </div>
@@ -308,7 +306,7 @@
     </div>
 
     <!-- Remove Member Confirmation Popup -->
-    <app-mindful-popup 
+    <app-superme-popup 
         *ngIf="showRemovePopup && memberToRemove"
         [isVisible]="showRemovePopup"
         [image]="'assets/Images-Transparent/Image-Parents-Family.png'"
@@ -319,6 +317,6 @@
         [backdrop]="true"
         (primaryAction)="confirmRemoveMember()"
         (secondaryAction)="cancelRemoveMember()">
-    </app-mindful-popup>
+    </app-superme-popup>
 
 </ion-content>

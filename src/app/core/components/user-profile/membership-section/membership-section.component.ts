@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeInputsModule } from '../../superme-inputs/superme-inputs.module';
 
 @Component({
     selector: 'membership-section',
     standalone: true,
-    imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulInputsModule],
+    imports: [CommonModule, IonicModule, SupermeNavigatorComponent, SupermeInputsModule],
     templateUrl: './membership-section.component.html',
     styleUrls: ['./membership-section.component.scss']
 })

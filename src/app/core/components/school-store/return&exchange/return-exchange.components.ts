@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { ViewAllComponent } from '../../superme-navigator/view-all/view-all.component';
 import { Router } from '@angular/router';
 import { SizeGuideComponent } from '../product-store/size-guide/size-guide.component';
 
@@ -12,7 +12,7 @@ import { SizeGuideComponent } from '../product-store/size-guide/size-guide.compo
   selector: 'return-exchange',
   templateUrl: './return-exchange.components.html',
   styleUrls: ['./return-exchange.components.scss'],
-  imports: [CommonModule, IonicModule, MindfulNavigatorComponent, MindfulButtonComponent, ViewAllComponent, SizeGuideComponent],
+  imports: [CommonModule, IonicModule, SupermeNavigatorComponent, SupermeButtonComponent, ViewAllComponent, SizeGuideComponent],
 })
 export class ReturnExchangeComponent {
 

@@ -41,8 +41,12 @@
       <p class="level-info" *ngIf="currentBadge.levelText">{{ currentBadge.levelText }}</p>
     </div>
     <div class="awesome-cta">
-      <mindful-button type="magenta-transparent" text="View all Badges" large (click)="onViewAllBadges()"></mindful-button>
-      <mindful-button type="magenta" text="Awesome" large (click)="onAwesomeClick()"></mindful-button>
+      <superme-button type="magenta-transparent" text="View all Badges" large (click)="onViewAllBadges()"></superme-button>
+      <superme-button type="magenta" text="Awesome" large (click)="onAwesomeClick()"></superme-button>
     </div>
   </div>
+
+  <!-- Force Update Popup - blocks the app until the user updates -->
+  <app-superme-popup [config]="forceUpdateConfig" [isVisible]="showForceUpdatePopup"
+    (primaryAction)="onUpdateNowClick()"></app-superme-popup>
 </ion-app>

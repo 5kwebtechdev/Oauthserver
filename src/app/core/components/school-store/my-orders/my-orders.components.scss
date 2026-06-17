@@ -529,13 +529,13 @@ box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
     display: flex;
     gap: 12px;
     width: 100%;
-    mindful-button {
+    superme-button {
         flex: 1;
     }
 }
 
 /* Share tracking popup close icon sizing */
-:host ::ng-deep app-mindful-popup.share-tracking-popup .mindful-popup-close img {
+:host ::ng-deep app-superme-popup.share-tracking-popup .superme-popup-close img {
     width: 14px !important;
     height: 14px !important;
     aspect-ratio: 1/1 !important;

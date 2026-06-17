@@ -116,6 +116,55 @@
     padding: 0px 16px 90px 16px;
 }
 
+.dashboard-content--empty {
+    gap: 0;
+    padding-top: 4px;
+}
+
+.link-child-empty-state {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    padding: 12px 0 4px;
+
+    img {
+        width: min(186px, 52vw);
+        height: auto;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    h1 {
+        margin: 0;
+        color: #282527;
+        text-align: center;
+        font-family: Nunito, sans-serif;
+        font-size: 18px;
+        font-weight: 800;
+        line-height: 1.28;
+    }
+
+    p {
+        width: min(318px, 88vw);
+        margin: 0 0 10px;
+        color: rgba(40, 37, 39, 0.68);
+        text-align: center;
+        font-family: Nunito, sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.45;
+    }
+
+    superme-button {
+        display: block;
+        width: 100%;
+        max-width: 360px;
+    }
+}
+
 /* Make mood-selector on parent-account non-interactive and show a small overlay */
 .parent-mood-readonly {
     position: relative;
@@ -260,7 +309,7 @@ height: 100%;
 
 .fab-add-button {
     position: fixed;
-    bottom: 80px; /* Above the footer */
+    bottom: calc(var(--footer-visual-height, 80px) + var(--sab, 0px) + 8px);
     right: 20px;
     z-index: 1000;
 }

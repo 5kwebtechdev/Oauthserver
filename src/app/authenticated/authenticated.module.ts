@@ -6,15 +6,15 @@ import { AuthenticatedRoutingModule } from "./authenticated.routing.module";
 import { FooterComponent } from "../core/components/footer/footer.component";
 import { ActivityCardComponent } from "../core/components/activity-section/activity-card/activity-card.component";
 import { LongPressDirective } from "../core/directives/gestureControlDirective";
-import { MindfulButtonComponent } from "../core/components/mindful-button/mindful-button.component";
+import { SupermeButtonComponent } from "../core/components/superme-button/superme-button.component";
 import { IonicModule } from "@ionic/angular";
-import { MindfulBadgeComponent } from "../core/components/mindful-badge/mindful-badge.component";
+import { SupermeBadgeComponent } from "../core/components/superme-badge/superme-badge.component";
 import { UserDashboardComponent } from "./user-dashboard/user-dashboard.component";
-import { MindfulInputsModule } from "../core/components/mindful-inputs/mindful-inputs.module";
-import { MindfulTimelineComponent } from "../core/components/mindful-timeline/mindful-timeline.component";
+import { SupermeInputsModule } from "../core/components/superme-inputs/superme-inputs.module";
+import { SupermeTimelineComponent } from "../core/components/superme-timeline/superme-timeline.component";
 import { ActivityTimelineComponent } from "../core/components/activity-section/activity-timeline/activity-timeline.component";
-import { MindfulSelectorsComponent } from "../core/components/mindful-selectors/mindful-selectors.component";
-import { MindfulNavigatorComponent } from "../core/components/mindful-navigator/mindful-navigator.component";
+import { SupermeSelectorsComponent } from "../core/components/superme-selectors/superme-selectors.component";
+import { SupermeNavigatorComponent } from "../core/components/superme-navigator/superme-navigator.component";
 import { UserProfileComponent } from "../core/components/user-profile/user-profile.component";
 import { SupermeTimerComponent } from '../core/components/superme-timer/superme-timer.component';
 import { StreaksSectionComponent } from '../core/components/streaks-section/streaks-section.component';
@@ -23,11 +23,11 @@ import { CoinPurchaseComponent } from '../core/components/coin-section/coin-purc
 @NgModule({
   declarations: [
     AuthenticatedComponent,
-    MindfulTimelineComponent,
+    SupermeTimelineComponent,
     ActivityTimelineComponent
   ],
   exports: [
-    MindfulTimelineComponent
+    SupermeTimelineComponent
   ],
   imports: [
     CommonModule,
@@ -35,15 +35,15 @@ import { CoinPurchaseComponent } from '../core/components/coin-section/coin-purc
     AuthenticatedRoutingModule,
     LongPressDirective,
     ActivityCardComponent,
-    MindfulButtonComponent,
-    MindfulBadgeComponent,
+    SupermeButtonComponent,
+    SupermeBadgeComponent,
     UserDashboardComponent,
     IonicModule,
-    MindfulInputsModule,
-    MindfulSelectorsComponent,
+    SupermeInputsModule,
+    SupermeSelectorsComponent,
     SupermeTimerComponent,
     StreaksSectionComponent,
-    MindfulNavigatorComponent,
+    SupermeNavigatorComponent,
     CoinPurchaseComponent,
     FooterComponent
   ]

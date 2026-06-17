@@ -11,8 +11,8 @@ import { Router } from '@angular/router';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { MindfulCardHeaderComponent } from '../../mindful-navigator/mindful-card-header/mindful-card-header.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
+import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 import { AuthApi } from '../../../api/auth.api';
@@ -37,8 +37,8 @@ interface JournalSection {
     CommonModule,
     FormsModule,
     IonicModule,
-    MindfulCardHeaderComponent,
-    MindfulButtonComponent,
+    SupermeCardHeaderComponent,
+    SupermeButtonComponent,
   ],
   templateUrl: './journal-input.component.html',
   styleUrls: ['./journal-input.component.scss'],

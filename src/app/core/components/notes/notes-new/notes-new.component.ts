@@ -4,15 +4,17 @@ import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NotesService, NoteModel } from '../notes.service';
-import { MindfulTagsComponent } from '../../mindful-selectors/mindful-tags/mindful-tags.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
-import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
+import { NoteTagDto } from '../../../api/notes.api';
+import { CustomToastService } from '../../../services/custom-toast.service';
+import { SupermeTagsComponent } from '../../superme-selectors/superme-tags/superme-tags.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { SupermePopupComponent } from '../../superme-popup/superme-popup.component';
 
 @Component({
   selector: 'notes-new',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, MindfulTagsComponent, MindfulButtonComponent, MindfulNavigatorComponent, MindfulPopupComponent],
+  imports: [CommonModule, IonicModule, FormsModule, SupermeTagsComponent, SupermeButtonComponent, SupermeNavigatorComponent, SupermePopupComponent],
   templateUrl: './notes-new.component.html',
   styleUrls: ['./notes-new.component.scss']
 })
@@ -22,14 +24,16 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
   readonly MAX_TITLE = 24; // hard maximum allowed
   readonly DISPLAY_LEN = 24; // number of chars to show before ellipsis
   inputFocused = false;
-  showLimitTooltip = false;
   text = '';
   tagsInput = '';
   selectedTagKeys: any[] = [];
+  tagOptions: { key: any; value: string; type?: string; system?: boolean; editable?: boolean; deletable?: boolean }[] = [];
+  tagsLoading = false;
+  tagError: string | null = null;
   loading = false;
   error: string | null = null;
-  // Use MindfulTags defaults; resolve labels via ViewChild at save time
-  @ViewChild(MindfulTagsComponent) tagsComponent?: MindfulTagsComponent;
+  // Use SupermeTags defaults; resolve labels via ViewChild at save time
+  @ViewChild(SupermeTagsComponent) tagsComponent?: SupermeTagsComponent;
   private _draftTags: string[] = [];
   public isDraft: boolean = false;
   private currentDraftId: number | null = null;
@@ -39,11 +43,19 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
   // Snapshot of the original note when editing; used to avoid marking as draft if nothing changed
   private originalSnapshot: { title: string; text: string; tags: string[] } | null = null;
   // Confirmation popup state for delete action when editing a saved note
-  public showMindfulPopup: boolean = false;
+  public showSupermePopup: boolean = false;
+  private viewReady = false;
 
-  constructor(private notesService: NotesService, private router: Router, private route: ActivatedRoute) { }
+  constructor(
+    private notesService: NotesService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private toast: CustomToastService
+  ) { }
 
   ngOnInit(): void {
+    this.loadTags();
+
     // load draft if present and populate title/text; tag keys mapped after view init
     try {
       // If route includes ?fresh=1 we intentionally ignore any stored draft
@@ -62,6 +74,7 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
               this.title = found.title || '';
               this.text = found.text || '';
               this._draftTags = Array.isArray(found.tags) ? found.tags : [];
+              if (found.tagId != null) this.selectedTagKeys = [found.tagId];
               this.isDraft = true;
             }
           }
@@ -82,6 +95,8 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
         this.title = parsed.title || this.title || '';
         this.text = parsed.text || this.text || '';
         this._draftTags = Array.isArray(parsed.tags) ? parsed.tags : this._draftTags;
+        const parsedTagId = parsed.tagId ?? parsed.tag?.id;
+        if (parsedTagId != null) this.selectedTagKeys = [parsedTagId];
         this.editing = true;
         this.editId = parsed.id || parsed.noteId || parsed._id || null;
         // Capture original content so we can detect real edits later. Do not treat the original note as a draft.
@@ -94,11 +109,62 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    this.viewReady = true;
+    this.applySelectedTagsToChild();
+  }
+
+  private loadTags(selectTagId?: any): void {
+    this.tagsLoading = true;
+    this.tagError = null;
+    this.notesService.fetchTags().subscribe({
+      next: (tags) => {
+        this.tagOptions = this.toTagOptions(tags);
+        if (selectTagId != null) {
+          this.selectedTagKeys = [selectTagId];
+        }
+        this.tagsLoading = false;
+        this.applySelectedTagsToChild();
+      },
+      error: (err) => {
+        console.error('Failed to load note tags', err);
+        this.tagError = 'Failed to load tags';
+        this.tagsLoading = false;
+        this.toast.error(this.errorMessage(err, 'Failed to load note tags'));
+      }
+    });
+  }
+
+  private readonly PROTECTED_TAG_NAMES = new Set(['study', 'health', 'skill', 'routine', 'personal']);
+
+  private toTagOptions(tags: NoteTagDto[]) {
+    return (Array.isArray(tags) ? tags : []).map(tag => {
+      const isProtected = tag.system === true || this.PROTECTED_TAG_NAMES.has(String(tag.name || '').toLowerCase().trim());
+      return {
+        key: tag.id,
+        value: tag.name,
+        type: isProtected ? 'system' : 'custom',
+        system: isProtected,
+        editable: !isProtected,
+        deletable: !isProtected
+      };
+    });
+  }
+
+  private applySelectedTagsToChild(): void {
+    if (!this.viewReady || !this.tagsComponent) return;
+
+    if (this.selectedTagKeys && this.selectedTagKeys.length) {
+      this.tagsComponent.selectedKeys = [...this.selectedTagKeys];
+      return;
+    }
+
     // Map draft tag labels back to tag keys so the child component shows selected tags
     try {
-      if (this._draftTags && this._draftTags.length && this.tagsComponent) {
-        // Ensure the tags exist in the child component (adds missing custom tags if required)
-        const keys = this.tagsComponent.ensureOptionsForLabels(this._draftTags.map(t => String(t)));
+      if (this._draftTags && this._draftTags.length && this.tagOptions.length) {
+        const labels = this._draftTags.map(t => String(t || '').trim().toLowerCase()).filter(Boolean);
+        const keys = labels
+          .map(label => this.tagOptions.find(option => String(option.value || '').trim().toLowerCase() === label)?.key)
+          .filter(key => key != null);
         if (keys && keys.length) {
           this.selectedTagKeys = keys;
           this.tagsComponent.selectedKeys = keys;
@@ -136,12 +202,12 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
   get canSave(): boolean {
     const hasTitle = Boolean((this.title || '').trim());
     const hasText = Boolean((this.text || '').trim());
-    const hasTag = Array.isArray(this.selectedTagKeys) && this.selectedTagKeys.length > 0;
+    const hasTag = Array.isArray(this.selectedTagKeys) && this.selectedTagKeys.length > 0 && !!this.findTagOption(this.selectedTagKeys[0]);
     // When editing, require that the user actually made changes before allowing save
     if (this.editing) {
-      return hasTitle && hasText && hasTag && !this.loading && this.hasChanges();
+      return hasTitle && hasText && hasTag && !this.loading && !this.tagsLoading && this.hasChanges();
     }
-    return hasTitle && hasText && hasTag && !this.loading;
+    return hasTitle && hasText && hasTag && !this.loading && !this.tagsLoading;
   }
 
   /**
@@ -154,7 +220,7 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
 
     // Resolve current selected tag labels using the child component options
     const options = this.tagsComponent?.options || [];
-    const curTags = Array.isArray(this.selectedTagKeys) ? this.selectedTagKeys.map(key => options.find(o => String(o.key) === String(key))?.value).filter(Boolean) as string[] : [];
+    const curTags = Array.isArray(this.selectedTagKeys) ? this.selectedTagKeys.map(key => this.findTagOption(key, options)?.value).filter(Boolean) as string[] : [];
 
     const origTitle = String((this.originalSnapshot.title || '').trim());
     const origText = String((this.originalSnapshot.text || '').trim());
@@ -170,6 +236,65 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
   onSelectedKeysChange(keys: any[]) {
     this.selectedTagKeys = keys;
     this.saveDraft();
+  }
+
+  onTagAdd(event: { value?: string }) {
+    const name = String(event?.value || '').trim();
+    if (!name) return;
+
+    this.tagsLoading = true;
+    this.notesService.createTag(name).subscribe({
+      next: (tag) => {
+        this.toast.success('Tag added');
+        this.loadTags(tag.id);
+      },
+      error: (err) => {
+        this.tagsLoading = false;
+        this.toast.error(this.errorMessage(err, 'Failed to add tag'));
+      }
+    });
+  }
+
+  onTagEdit(event: { key?: any; value?: string }) {
+    const tagId = event?.key;
+    const newName = String(event?.value || '').trim();
+    if (tagId == null || !newName) return;
+
+    this.tagsLoading = true;
+    this.notesService.updateTag(tagId, newName).subscribe({
+      next: (tag) => {
+        const idx = this.tagOptions.findIndex(o => String(o.key) === String(tagId));
+        if (idx > -1) this.tagOptions[idx] = { ...this.tagOptions[idx], value: tag.name };
+        this.tagsLoading = false;
+        this.toast.success('Tag updated');
+      },
+      error: (err) => {
+        this.tagsLoading = false;
+        this.toast.error(this.errorMessage(err, 'Failed to update tag'));
+      }
+    });
+  }
+
+  onTagDelete(event: { key?: any; value?: string; option?: any }) {
+    const tagId = event?.key;
+    if (tagId == null) return;
+
+    this.tagsLoading = true;
+    this.notesService.deleteTag(tagId).subscribe({
+      next: (res) => {
+        this.tagOptions = this.tagOptions.filter(option => String(option.key) !== String(tagId));
+        if (this.selectedTagKeys.some(key => String(key) === String(tagId))) {
+          this.selectedTagKeys = [];
+          if (this.tagsComponent) this.tagsComponent.selectedKeys = [];
+        }
+        this.tagsLoading = false;
+        this.toast.success(res?.message || 'Tag deleted');
+      },
+      error: (err) => {
+        this.tagsLoading = false;
+        this.toast.error(this.errorMessage(err, 'Failed to delete tag'));
+      }
+    });
   }
 
   // Called by RTE when HTML content changes
@@ -189,7 +314,7 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
   onDelete() {
     // If editing an existing saved note, show confirmation popup and delete via API.
     if (this.editing && this.editId) {
-      this.showMindfulPopup = true;
+      this.showSupermePopup = true;
       return;
     }
     // Otherwise treat as draft deletion
@@ -197,11 +322,11 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
   }
 
   confirmCancel() {
-    this.showMindfulPopup = false;
+    this.showSupermePopup = false;
   }
 
   confirmDelete() {
-    this.showMindfulPopup = false;
+    this.showSupermePopup = false;
     const id = this.editId;
     if (id && this.notesService && this.notesService.deleteNote) {
       this.notesService.deleteNote(id).subscribe({
@@ -236,7 +361,7 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
     if (value.length > this.MAX_TITLE) {
       this.title = value.slice(0, this.MAX_TITLE);
       input.value = this.title;
-      this.showLimitTooltip = true;
+      this.toast.error('Maximum 24 characters allowed for title.');
     } else {
       this.title = value;
     }
@@ -265,7 +390,7 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
 
       // resolve selected tag labels if possible
       const options = this.tagsComponent?.options || [];
-      const tags = Array.isArray(this.selectedTagKeys) ? this.selectedTagKeys.map(key => options.find(o => String(o.key) === String(key))?.value).filter(Boolean) as string[] : [];
+      const tags = Array.isArray(this.selectedTagKeys) ? this.selectedTagKeys.map(key => this.findTagOption(key, options)?.value).filter(Boolean) as string[] : [];
 
       // If we're editing and nothing has changed compared to the original snapshot, don't save a draft.
       if (this.editing && this.originalSnapshot) {
@@ -292,13 +417,13 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
         if (this.currentDraftId) {
           const idx = arr.findIndex(a => Number(a.id) === Number(this.currentDraftId));
           if (idx > -1) {
-            arr[idx] = { id: this.currentDraftId, title: this.title || '', text: this.text || '', tags };
+            arr[idx] = { id: this.currentDraftId, title: this.title || '', text: this.text || '', tags, tagId: this.selectedTagKeys[0] ?? null };
           } else {
-            arr.push({ id: this.currentDraftId, title: this.title || '', text: this.text || '', tags });
+            arr.push({ id: this.currentDraftId, title: this.title || '', text: this.text || '', tags, tagId: this.selectedTagKeys[0] ?? null });
           }
         } else {
           const id = Date.now();
-          arr.push({ id, title: this.title || '', text: this.text || '', tags });
+          arr.push({ id, title: this.title || '', text: this.text || '', tags, tagId: this.selectedTagKeys[0] ?? null });
           this.currentDraftId = id;
           try { sessionStorage.setItem('notes-draft-id', String(id)); } catch (e) { /* ignore */ }
         }
@@ -306,7 +431,7 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
         this.isDraft = true;
       } catch (e) {
         // fallback: keep behavior if storage fails
-        const draft = { title: this.title || '', text: this.text || '', tags };
+        const draft = { title: this.title || '', text: this.text || '', tags, tagId: this.selectedTagKeys[0] ?? null };
         try { sessionStorage.setItem('notes-draft', JSON.stringify(draft)); } catch (er) { /* ignore */ }
         this.isDraft = true;
       }
@@ -363,14 +488,36 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
   }
 
   save() {
-    // Prevent save when UI indicates disabled
-    if (!this.canSave) return;
-    const options = this.tagsComponent?.options || [];
-    const tags = this.selectedTagKeys.map(key => options.find(o => String(o.key) === String(key))?.value).filter(Boolean) as string[];
+    if (this.loading || this.tagsLoading) return;
+
+    const hasTitle = Boolean((this.title || '').trim());
+    const hasText = Boolean((this.text || '').trim());
+    const hasTag = Array.isArray(this.selectedTagKeys) && this.selectedTagKeys.length > 0 && !!this.findTagOption(this.selectedTagKeys[0]);
+
+    if (!hasTitle) {
+      this.toast.error('Please enter a title.');
+      return;
+    }
+    if (!hasText) {
+      this.toast.error('Please add some notes.');
+      return;
+    }
+    if (!hasTag) {
+      this.toast.error('Please select a tag.');
+      return;
+    }
+    if (this.editing && !this.hasChanges()) {
+      this.toast.error('No changes to save.');
+      return;
+    }
+
+    const selectedTag = this.findTagOption(this.selectedTagKeys[0]);
     const payload = {
       title: this.title || 'Untitled',
       content: this.text || '',
-      tags
+      tagId: selectedTag?.key,
+      tagName: selectedTag?.value,
+      tags: selectedTag?.value ? [selectedTag.value] : []
     };
     this.loading = true;
     this.error = null;
@@ -467,5 +614,13 @@ export class NotesNewComponent implements OnInit, AfterViewInit {
     this.isDraft = false;
     // navigate back to notes list after deletion
     this.router.navigate(['/authed/notes']);
+  }
+
+  private findTagOption(key: any, options = this.tagOptions): any {
+    return (options || []).find(option => String(option.key) === String(key));
+  }
+
+  private errorMessage(error: any, fallback: string): string {
+    return error?.error?.message || error?.message || fallback;
   }
 }

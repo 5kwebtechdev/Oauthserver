@@ -4,11 +4,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { QRCodeComponent } from 'angularx-qrcode';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { ProfileFactsComponent, FaqItem, PROFILE_FAQS } from '../profile-facts/profile-facts.component';
-import { MindfulPetComponent } from '../../mindful-pet/mindful-pet.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { MindfulPopupComponent } from '../../mindful-popup/mindful-popup.component';
+import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { SupermePopupComponent } from '../../superme-popup/superme-popup.component';
 import { InstructioListComponent } from './instructio-list';
 import { AuthService, FamilyInfo, FamilyMember } from '../../../../../package/api/auth.service';
 import { ParentImageService } from '../../../services/parent-image.service';
@@ -22,7 +22,7 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 @Component({
   standalone: true,
   selector: 'family-connection',
-  imports: [CommonModule, FormsModule, IonicModule, QRCodeComponent, MindfulNavigatorComponent, ProfileFactsComponent, MindfulPetComponent, MindfulButtonComponent, MindfulPopupComponent, InstructioListComponent],
+  imports: [CommonModule, FormsModule, IonicModule, QRCodeComponent, SupermeNavigatorComponent, ProfileFactsComponent, SupermePetComponent, SupermeButtonComponent, SupermePopupComponent, InstructioListComponent],
   templateUrl: './family-connection.component.html',
   styleUrls: ['./family-connection.component.scss']
 })
@@ -135,7 +135,7 @@ export class FamilyConnectionComponent implements OnInit {
         return;
       }
 
-      const shareText = `Join my family on MindfulBuddy!\n\nFamily Code: ${this.familyCode}\n\nScan the QR code or enter the code above to connect.`;
+      const shareText = `Join my family on SupermeBuddy!\n\nFamily Code: ${this.familyCode}\n\nScan the QR code or enter the code above to connect.`;
 
       if (Capacitor.isNativePlatform()) {
         await this.nativeShare(base64Data, shareText);
@@ -167,7 +167,7 @@ export class FamilyConnectionComponent implements OnInit {
 
     // Capacitor Share accepts a file URI
     await Share.share({
-      title: 'MindfulBuddy Family Code',
+      title: 'SupermeBuddy Family Code',
       text,
       url: savedFile.uri,
       dialogTitle: 'Share Family QR Code'
@@ -192,7 +192,7 @@ export class FamilyConnectionComponent implements OnInit {
 
     if (navigator.share && navigator.canShare?.({ files: [file] })) {
       await navigator.share({
-        title: 'MindfulBuddy Family Code',
+        title: 'SupermeBuddy Family Code',
         text,
         files: [file]
       });
@@ -237,18 +237,19 @@ export class FamilyConnectionComponent implements OnInit {
   }
 
   instructionItems: string[] = [
-    'You will link your account to your family and get benefits like learning together and earning rewards.',
-    'Your Parents can view your progress (habits, tasks etc) and give you rewards.',
-    'If later you are removed from the family or the family gets deleted, your account returns to normal with all your data safe and no family connection.',
-    '<span style="color:#282527; opacity: 1;font-family:Nunito; font-size:16px; font-weight:500; text-decoration:underline;">Note:</span> <span style="color:#282527; font-family:Nunito; font-size:16px; font-weight:500;">Any data related to family will not be there</span>',
-    'You can always use the app on your own that\'s your regular account experience.'
+    'Choose Child if you want to join a parent or guardian family account.',
+    'You will need a family code or QR code from your parent to complete the switch.',
+    'After joining, your parent can see family-linked progress like habits, tasks, routines, streaks, and rewards.',
+    'Your personal account, coins, notes, pet, and completed learning progress stay safe.',
+    '<span style="color:#282527; opacity: 1;font-family:Nunito; font-size:16px; font-weight:500; text-decoration:underline;">Note:</span> <span style="color:#282527; font-family:Nunito; font-size:16px; font-weight:500;">If you leave or are removed from the family later, family-linked access stops, but your own account remains available.</span>'
   ];
 
   instructionItemsParent: string[] = [
-    'You can connect with your child\'s progress and celebrate achievements together.',
-    'You must create or join a family (step-by-step instructions will guide you through this).',
-    'If you are removed from the family or if you delete your family, your account returns to self role and all parent features and data will be permanently lost.',
-    'Keep your current account and create a separate parent account with different login details - this way you never lose any data and can switch between accounts.'
+    'Choose Parent if you want to create or join a family and support a child account.',
+    'You can create a new family, or join an existing family with a code shared by another parent.',
+    'After switching, your dashboard will focus on family tools like child progress, approvals, routines, and rewards.',
+    'Your login remains the same. Parent-only family data is available only while your account is connected to a family.',
+    '<span style="color:#282527; opacity: 1;font-family:Nunito; font-size:16px; font-weight:500; text-decoration:underline;">Note:</span> <span style="color:#282527; font-family:Nunito; font-size:16px; font-weight:500;">If the family is deleted or you are removed from it, your account returns to Self mode and family management access stops.</span>'
   ];
 
   consentChecked: boolean = false;
@@ -283,6 +284,7 @@ export class FamilyConnectionComponent implements OnInit {
         }
 
         localStorage.setItem('user_data', JSON.stringify(userData));
+        try { this.coreAuthService.setUserData(userData); } catch (e) { /* noop */ }
         console.log('[FamilyConnection] Refreshed user relationship:', userData.relationship);
         this.setFamilyFaqs();
         try { this.cdr.detectChanges(); } catch (e) { /* noop */ }
@@ -346,53 +348,7 @@ export class FamilyConnectionComponent implements OnInit {
     this.isLoading = true;
     this.authService.getFamilyDetails().pipe(take(1)).subscribe({
       next: (response) => {
-        // If server indicates the user has been moved to SELF mode, update stored user data
-        if (response && (response as any).mode === 'SELF') {
-          try {
-            const userData = this.coreAuthService.getUserData() || {};
-            userData.relationship = 'SELF';
-            localStorage.setItem('user_data', JSON.stringify(userData));
-          } catch (e) {
-            console.error('Failed to update local user_data for SELF mode', e);
-          }
-
-          // Clear family-related UI state and refresh faqs for SELF
-          this.familyName = 'Your Family';
-          this.familyStatus = '';
-          this.createdOn = '';
-          this.creator = null;
-          this.members = [];
-          this.familyCode = '';
-          this.qrCodeData = '';
-          this.setFamilyFaqs();
-          this.isLoading = false;
-          // Ensure change detection so template updates immediately
-          try { this.cdr.detectChanges(); } catch (e) { /* noop */ }
-          return;
-        }
-
-        if (response && response.family) {
-          const f = response.family as any;
-          this.familyName = f.familyName || this.familyName;
-          this.familyStatus = f.status || this.familyStatus;
-          this.createdOn = f.createdOn || this.createdOn;
-          this.creator = f.creator || this.creator;
-          this.members = f.members || this.members;
-          // Defensive set for familyCode: support both nested and top-level shapes
-          this.familyCode = f.familyCode || (response as any).familyCode || this.familyCode;
-        } else if (response && (response as any).familyCode) {
-          // In some API variants familyCode might be at the root
-          this.familyCode = (response as any).familyCode;
-        }
-
-        // Use the same response to refresh user relationship to avoid a second API call
-        try { this.refreshUserRelationship(response); } catch (e) { /* noop */ }
-
-        // Set QR code data with GROUP: prefix for consistent scanning validation
-        if (this.familyCode) {
-          this.qrCodeData = 'GROUP:' + this.familyCode;
-        }
-
+        this.applyFamilyDetailsResponse(response);
         this.isLoading = false;
       },
       error: (error) => {
@@ -400,6 +356,56 @@ export class FamilyConnectionComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  private applyFamilyDetailsResponse(response: any): void {
+    if (response && ((response as any).mode === 'SELF' || (response as any).family === null)) {
+      this.clearFamilyStateForSelfMode();
+      return;
+    }
+
+    if (response && response.family) {
+      const f = response.family as any;
+      this.familyName = f.familyName || this.familyName;
+      this.familyStatus = f.status || this.familyStatus;
+      this.createdOn = f.createdOn || this.createdOn;
+      this.creator = f.creator || null;
+      this.members = Array.isArray(f.members) ? f.members : [];
+      this.familyCode = f.familyCode || (response as any).familyCode || this.familyCode;
+    } else if (response && (response as any).familyCode) {
+      this.familyCode = (response as any).familyCode;
+    }
+
+    try { this.refreshUserRelationship(response); } catch (e) { /* noop */ }
+    this.qrCodeData = this.familyCode ? 'GROUP:' + this.familyCode : '';
+    this.setFamilyFaqs();
+    try { this.cdr.detectChanges(); } catch (e) { /* noop */ }
+  }
+
+  private clearFamilyStateForSelfMode(): void {
+    try {
+      const userData = this.coreAuthService.getUserData() || {};
+      userData.relationship = 'SELF';
+      delete userData.family;
+      delete userData.familyMembers;
+      delete userData.familyCode;
+      delete userData.familyName;
+      this.coreAuthService.setUserData(userData);
+    } catch (e) {
+      console.error('Failed to update local user_data for SELF mode', e);
+    }
+
+    this.familyName = 'Your Family';
+    this.familyStatus = '';
+    this.createdOn = '';
+    this.creator = null;
+    this.members = [];
+    this.familyCode = '';
+    this.qrCodeData = '';
+    this.showRemovePopup = false;
+    this.memberToRemove = null;
+    this.setFamilyFaqs();
+    try { this.cdr.detectChanges(); } catch (e) { /* noop */ }
   }
 
   onMemberActiveChange(userId: number, active: boolean): void {
@@ -428,7 +434,7 @@ export class FamilyConnectionComponent implements OnInit {
   }
 
   /**
-   * Handle back action from mindful-navigator — return to the user profile page
+   * Handle back action from superme-navigator — return to the user profile page
    */
   onBackFromFamily() {
     // Prefer explicit navigation to the authenticated user-profile route
@@ -484,24 +490,17 @@ export class FamilyConnectionComponent implements OnInit {
         console.log('[FamilyConnection] Member removed successfully:', member);
         this.memberToRemove = null;
 
-        // Refresh family details by requesting the server endpoint with forUserId
-        // (matches: http://.../v1/auth/family-details?forUserId=88)
-        this.authService.getFamilyDetailsForUser(member.userId).pipe(take(1)).subscribe({
+        this.applyFamilyDetailsResponse(response);
+
+        // Refresh the logged-in user's family details so the current screen
+        // immediately reflects the server state after the mutation.
+        this.authService.getFamilyDetails().pipe(take(1)).subscribe({
           next: (resp) => {
-            if (resp && resp.family) {
-              const f = resp.family as any;
-              this.familyName = f.familyName || this.familyName;
-              this.familyStatus = f.status || this.familyStatus;
-              this.createdOn = f.createdOn || this.createdOn;
-              this.creator = f.creator || this.creator;
-              this.members = f.members || this.members;
-              this.familyCode = f.familyCode || this.familyCode;
-            }
+            this.applyFamilyDetailsResponse(resp);
           },
           error: (err) => {
             console.error('[FamilyConnection] Failed to refresh family details after removal', err);
-            // fallback to local reload
-            try { window.location.reload(); } catch (e) { this.loadFamilyDetails(); }
+            this.loadFamilyDetails();
           }
         });
       },

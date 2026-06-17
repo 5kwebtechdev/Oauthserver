@@ -1,12 +1,12 @@
 import { Component, Input, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MindfulCardHeaderComponent } from 'src/app/core/components/mindful-navigator/mindful-card-header/mindful-card-header.component';
-import { MindfulNavigatorComponent } from 'src/app/core/components/mindful-navigator/mindful-navigator.component';
-import { MindfulButtonComponent } from 'src/app/core/components/mindful-button/mindful-button.component';
-import { MindfulToggleComponent } from '../../mindful-selectors/mindful-toggle/mindful-toggle.component';
-import { MindfulPopupComponent, MindfulPopupConfig } from '../../mindful-popup/mindful-popup.component';
+import { SupermeCardHeaderComponent } from 'src/app/core/components/superme-navigator/superme-card-header/superme-card-header.component';
+import { SupermeNavigatorComponent } from 'src/app/core/components/superme-navigator/superme-navigator.component';
+import { SupermeButtonComponent } from 'src/app/core/components/superme-button/superme-button.component';
+import { SupermeToggleComponent } from '../../superme-selectors/superme-toggle/superme-toggle.component';
+import { SupermePopupComponent, SupermePopupConfig } from '../../superme-popup/superme-popup.component';
 import { FormsModule } from '@angular/forms';
-import { MindfulInputsModule } from '../../mindful-inputs/mindful-inputs.module';
+import { SupermeInputsModule } from '../../superme-inputs/superme-inputs.module';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { VideoCompressionService, CompressionProgress } from 'src/app/core/services/video/video-compression.service';
@@ -19,7 +19,7 @@ import { ActiveConfig } from 'src/app/core/config/video.config';
     templateUrl: './upload-reel.component.html',
     styleUrls: ['./upload-reel.component.scss'],
     standalone: true,
-    imports: [CommonModule, IonicModule, FormsModule, MindfulCardHeaderComponent, MindfulButtonComponent, MindfulNavigatorComponent, MindfulInputsModule, MindfulToggleComponent, MindfulPopupComponent]
+    imports: [CommonModule, IonicModule, FormsModule, SupermeCardHeaderComponent, SupermeButtonComponent, SupermeNavigatorComponent, SupermeInputsModule, SupermeToggleComponent, SupermePopupComponent]
 })
 export class UploadReelComponent implements OnDestroy {
     @Input() items: any[] = [];
@@ -434,7 +434,7 @@ export class UploadReelComponent implements OnDestroy {
     // popup state for successful upload
     showUploadSuccess: boolean = false;
 
-    uploadSuccessConfig: MindfulPopupConfig = {
+    uploadSuccessConfig: SupermePopupConfig = {
         image: '/assets/Images-Transparent/Image-Reel-Success.png',
         imageAlt: 'Reel uploaded',
         heading: 'Reel Uploaded Successfully!'

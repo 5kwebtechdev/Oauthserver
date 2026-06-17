@@ -1,11 +1,11 @@
-<ion-content #content [scrollY]="step !== 0.1 && step !== 0.3 && step !== 5" [ngClass]="step === 5 ? 'bg-white' : 'bg-mindful-secondary'">
-  <mindful-navigator *ngIf="step !== 5"
+<ion-content #content [scrollY]="step !== 0.1 && step !== 0.3 && step !== 5" [ngClass]="step === 5 ? 'bg-white' : 'bg-superme-secondary'">
+  <superme-navigator *ngIf="step !== 5"
     [heading]="headerText"
     [subtext]="headerSubtext"
     [showSubtext]="showHeaderSubtext"
     [variant]="'warm'"
     (back)="goBack()">
-  </mindful-navigator>
+  </superme-navigator>
   <div class="signup-container" [ngClass]="{'step-5-container': step === 5}">
     <h4 class="step-text" *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 5">
       Step {{step}} of 4
@@ -24,10 +24,11 @@
         <div class="container w-full p-0" style="padding: 10px 0px !important;">
           <!-- Helper text -->
           <small class="helper-text">Only for login and safety</small>
-          <form [formGroup]="signupForm">
+          <form [formGroup]="signupForm" autocomplete="on">
               <ng-container *ngIf="loginMode === 'email'">
                 <div class="input-group">
                   <input [ngClass]="{'error' : email?.invalid && (email?.dirty)}" formControlName="email" type="email"
+                    name="username" autocomplete="username" inputmode="email"
                     placeholder="Email" />
                   <div class="error" *ngIf="email?.invalid && (email?.dirty)">
                     Oops! That email looks off. Please check it again.
@@ -43,7 +44,8 @@
                       <span class="country-code">{{selectedCountry.code}}</span>
                       <i class="fa-solid fa-chevron-down"></i>
                     </div>
-                    <input formControlName="phone" type="tel" [maxlength]="currentPhoneLength" pattern="[0-9]*"
+                    <input formControlName="phone" type="tel" name="username" autocomplete="username tel"
+                      [maxlength]="currentPhoneLength" pattern="[0-9]*"
                       inputmode="numeric" (input)="onPhoneInput($event)" (keypress)="onKeyPress($event)"
                       placeholder="Enter {{currentPhoneLength}} digit number" />
                   </div>
@@ -53,9 +55,9 @@
                 </div>
               </ng-container>
 
-              <mindful-button type="orange-onboard" full [text]="'Next'"
-                [disabled]="!signupForm.dirty || !(phone?.value || email?.value)" (click)="signupFromLogin()">
-              </mindful-button>
+              <superme-button type="orange-onboard" full [text]="'Next'"
+                [disabled]="loginMode === 'email' ? email?.invalid : !isPhoneValid(phone?.value)" (click)="signupFromLogin()">
+              </superme-button>
 
               <div class="error-message" *ngIf="errorMessage">
                 {{ errorMessage }}
@@ -98,8 +100,8 @@
           </div>
         </div>
 
-        <mindful-button type="orange-onboard" full [text]="'Next'" [disabled]="!isOtpComplete()" (click)="verifyOtp()">
-        </mindful-button>
+        <superme-button type="orange-onboard" full [text]="'Next'" [disabled]="!isOtpComplete()" (click)="verifyOtp()">
+        </superme-button>
         <div class="error-message" *ngIf="errorMessage">
           {{ errorMessage }}
         </div>
@@ -112,24 +114,26 @@
 
     <div *ngIf="step === 0.3" [@slideIn]>
       <div class="password-container">
-        <form [formGroup]="passwordForm">
+        <form [formGroup]="passwordForm" (ngSubmit)="proceedWithPassword()" autocomplete="on">
+          <input class="credential-username-field" type="text" name="username" autocomplete="username"
+            [value]="getSignupCredentialIdentifier()" tabindex="-1" aria-hidden="true" />
           <div class="input-group">
-            <input formControlName="password"
-              [ngClass]="{'error' : (password?.invalid || password?.value.length < 8) && password?.dirty }"
+            <input formControlName="password" name="new-password" autocomplete="new-password"
+              [ngClass]="{'error' : password?.invalid && (password?.dirty || password?.touched) }"
               [type]="hidePassword ? 'password' : 'text'" placeholder="Password" />
             <span class="toggle-eye" (click)="hidePassword = !hidePassword">
               <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
             </span>
 
-            <div class="error" *ngIf="(password?.invalid || password?.value.length < 8) && password?.dirty">
-              Password should be atleast 8 characters long
+            <div class="error" *ngIf="password?.invalid && (password?.dirty || password?.touched)">
+              {{ getPasswordErrorMessage() }}
             </div>
           </div>
         </form>
 
-        <mindful-button type="orange-onboard" full [text]="'Next'" [disabled]="!passwordForm.dirty || !passwordForm.valid"
+        <superme-button type="orange-onboard" full [text]="'Next'" [disabled]="!passwordForm.dirty || !passwordForm.valid"
           (click)="proceedWithPassword()">
-        </mindful-button>
+        </superme-button>
       </div>
     </div>
 
@@ -174,19 +178,19 @@
         </div>
       </div>
 
-      <mindful-button type="orange-onboard" full [text]="'Save & Continue'" [disabled]="!roleSelected"
+      <superme-button type="orange-onboard" full [text]="'Save & Continue'" [disabled]="!roleSelected"
         (click)="proceedWithRole()">
-      </mindful-button>
+      </superme-button>
     </div>
     <div *ngIf="step === 2" [@slideIn]>
       <div class="profile">
         <form [formGroup]="profileForm">
           <h4>Full Name <span>Just for setup. Never shown</span></h4>
           <div class="input-group">
-            <input [ngClass]="{'error' : name?.invalid && (email?.dirty)}" formControlName="name" type="text"
+            <input [ngClass]="{'error' : name?.invalid && (name?.dirty || name?.touched)}" formControlName="name" type="text"
               placeholder="Full Name" />
-            <div class="error" *ngIf="name?.invalid && (name?.dirty)">
-              Oops! That email looks off. Please check it again.
+            <div class="error" *ngIf="name?.invalid && (name?.dirty || name?.touched)">
+              {{ getNameErrorMessage() }}
             </div>
           </div>
          <h4>
@@ -201,21 +205,25 @@
 </h4>
           <div class="input-group">
             <!--            <input  formControlName="dob" type="text" placeholder="Date of Birth" />-->
-            <mindful-birthdaypicker (dateSelected)="birthdayChanged($event)" (closed)="openBirthdayPicker = false" [showTrigger]="openBirthdayPicker"
+            <superme-birthdaypicker (dateSelected)="birthdayChanged($event)" (closed)="openBirthdayPicker = false" [showTrigger]="openBirthdayPicker"
               style="width: 100%">
-              <input type="text" formControlName="dob" readonly (click)="openBirthdayPickerNow()" placeholder="Date of Birth" />
-            </mindful-birthdaypicker>
+              <input type="text" formControlName="dob" readonly (click)="openBirthdayPickerNow()"
+                [ngClass]="{'error' : dob()?.invalid && (dob()?.dirty || dob()?.touched)}" placeholder="Date of Birth" />
+            </superme-birthdaypicker>
+            <div class="error" *ngIf="dob()?.invalid && (dob()?.dirty || dob()?.touched)">
+              Please enter your date of birth.
+            </div>
           </div>
           <h4>Gender <span>Used for small personalization touches</span></h4>
           <div class="row">
             <div class="col-6">
-              <div class="gender-select-button" (click)="gender = 'male'"
+              <div class="gender-select-button" (click)="selectGender('male')"
                 [ngClass]="gender === 'male' ? 'active' : null">
                 Male
               </div>
             </div>
             <div class="col-6">
-              <div class="gender-select-button" (click)="gender = 'female'"
+              <div class="gender-select-button" (click)="selectGender('female')"
                 [ngClass]="gender === 'female' ? 'active' : null">
                 Female
               </div>
@@ -290,8 +298,8 @@
 
       <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
       <div class="profile-button-wrapper">
-        <mindful-button type="orange-onboard" full [text]="'Save & Continue'" [disabled]="!profileForm.dirty || !profileForm.valid" (click)="registerOrProceed()">
-        </mindful-button>
+        <superme-button type="orange-onboard" full [text]="'Save & Continue'" [disabled]="isProfileStepInvalid" (click)="registerOrProceed()">
+        </superme-button>
       </div>
 
     </div>
@@ -326,9 +334,9 @@
             </ng-container>
           </form>
 
-          <mindful-button type="orange-onboard" full [text]="'Next'" (click)="signup()"
-            [disabled]="!signupForm.dirty || (loginMode === 'email' ? email?.invalid : !isPhoneValid(phone?.value))">
-          </mindful-button>
+          <superme-button type="orange-onboard" full [text]="'Next'" (click)="signup()"
+            [disabled]="loginMode === 'email' ? email?.invalid : !isPhoneValid(phone?.value)">
+          </superme-button>
 
         </div>
       </div>
@@ -365,9 +373,9 @@
 
         </swiper-slide>
       </swiper-container>
-      <mindful-button type="orange-onboard" full [text]="'Let\'s get started'" (click)="proceedWithAvatar()"
+      <superme-button type="orange-onboard" full [text]="'Let\'s get started'" (click)="proceedWithAvatar()"
         [disabled]="!isFirstSlideActive">
-      </mindful-button>
+      </superme-button>
 
     </div>
 
@@ -392,7 +400,7 @@
       <!-- new message ends-->
 
       <div class="begin-action w-100">
-        <mindful-button type="magenta" full text="Begin My Journey" (click)="onBegin()"></mindful-button>
+        <superme-button type="magenta" full text="Begin My Journey" (click)="onBegin()"></superme-button>
       </div>
     </div>
 
@@ -400,20 +408,14 @@
     <div class="age-modal" *ngIf="showAgeSuggestionModal" role="dialog" aria-modal="true">
       <div class="age-modal__content">
         <h3 class="age-modal__title">Personalized Experience Available</h3>
-        <p class="age-modal__subtitle" *ngIf="roleSelected === 'parent'">Based on your profile, you might love<br>our
-          Self mode</p>
-        <p class="age-modal__subtitle" *ngIf="roleSelected === 'child'">Based on your profile, you might love<br>these
-        </p>
+        <p class="age-modal__subtitle">{{ ageSuggestionSubtitle }}</p>
       </div>
       <div class="age-modal__actions">
-        <button class="age-modal__btn age-modal__btn--secondary" *ngIf="roleSelected === 'parent'"
+        <button class="age-modal__btn age-modal__btn--secondary" *ngIf="ageSuggestionRoles.length === 1"
           (click)="closeAgeSuggestionModal()">Cancel</button>
-        <button class="age-modal__btn age-modal__btn--secondary" *ngIf="roleSelected === 'child'"
-          (click)="selectSelfRole()">Try Self Role</button>
-        <button class="age-modal__btn age-modal__btn--primary" *ngIf="roleSelected === 'parent'"
-          (click)="selectSelfRole()">Try Self Role</button>
-        <button class="age-modal__btn age-modal__btn--primary" *ngIf="roleSelected === 'child'"
-          (click)="selectParentRole()">Try Parent Role</button>
+        <button class="age-modal__btn" *ngFor="let role of ageSuggestionRoles"
+          [ngClass]="isPrimaryAgeSuggestion(role) ? 'age-modal__btn--primary' : 'age-modal__btn--secondary'"
+          (click)="selectSuggestedRole(role)">Try {{ getRoleDisplayName(role) }} Role</button>
       </div>
       <p class="age-modal__footer">You can always switch role in<br>settings if you prefer</p>
     </div>
@@ -425,7 +427,7 @@
         <h3 class="access-popup__title">Access Restricted</h3>
         <p class="access-popup__subtitle">Based on the date of birth entered, you are not eligible to create an account</p>
         <div class="access-popup__actions">
-          <mindful-button type="orange-onboard" size="small" (click)="closeAccessRestrictedModal()" [text]="'Okay'"></mindful-button>
+          <superme-button type="orange-onboard" size="small" (click)="closeAccessRestrictedModal()" [text]="'Okay'"></superme-button>
         </div>
       </div>
     </div>

@@ -2,11 +2,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { MindfulNavigatorComponent } from '../../mindful-navigator/mindful-navigator.component';
+import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
-import { MindfulButtonComponent } from '../../mindful-button/mindful-button.component';
-import { MindfulPopupComponent, MindfulPopupCTA } from '../../mindful-popup/mindful-popup.component';
-import { ViewAllComponent } from '../../mindful-navigator/view-all/view-all.component';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { SupermePopupComponent, SupermePopupCTA } from '../../superme-popup/superme-popup.component';
+import { ViewAllComponent } from '../../superme-navigator/view-all/view-all.component';
 import { Router } from '@angular/router';
 
 interface TransitStep {
@@ -57,7 +57,7 @@ const TIME_LABELS: Record<string, string> = {
 @Component({
     selector: 'my-orders',
     standalone: true,
-    imports: [CommonModule, IonicModule, MindfulNavigatorComponent, EmptyStateComponent, MindfulButtonComponent, ViewAllComponent, MindfulPopupComponent],
+    imports: [CommonModule, IonicModule, SupermeNavigatorComponent, EmptyStateComponent, SupermeButtonComponent, ViewAllComponent, SupermePopupComponent],
     templateUrl: './my-orders.components.html',
     styleUrls: ['./my-orders.components.scss']
 })
@@ -78,7 +78,7 @@ export class MyOrdersComponent {
             id: 1,
             status: 'on-the-way',
             statusHeading: 'Arriving Mon, 2nd Jan',
-            productName: 'The Mindful Teen',
+            productName: 'The Superme Teen',
             subtitle: 'NCERT',
             schoolName: 'Springfield High School',
             imageSrc: 'assets/School-assets/temp/Maths Book.jpg',
@@ -97,7 +97,7 @@ export class MyOrdersComponent {
             status: 'delivered',
             statusHeading: 'Delivered on Monday, 2nd Jan',
             statusSubtitle: 'Return / Exchange eligible till 9th Jan 2025',
-            productName: 'Mindful Workbook',
+            productName: 'Superme Workbook',
             subtitle: 'CBSE',
             schoolName: 'Green Valley School',
             imageSrc: 'assets/School-assets/temp/English.jpg',
@@ -134,7 +134,7 @@ export class MyOrdersComponent {
             status: 'delayed',
             statusHeading: 'Delayed, Arriving Mon, 2nd Jan',
             statusSubtitle: 'Due to operational issues',
-            productName: 'Mindful Journal',
+            productName: 'Superme Journal',
             subtitle: 'State Board',
             schoolName: 'Sunnydale High',
             imageSrc: 'assets/School-assets/temp/Notebook.jpg',
@@ -170,7 +170,7 @@ export class MyOrdersComponent {
             status: 'returned-exchanged',
             statusHeading: 'Return Completed',
             statusSubtitle: 'Refund Initiated',
-            productName: 'Mindful Coloring Book',
+            productName: 'Superme Coloring Book',
             subtitle: 'CBSE',
             schoolName: 'Hilltop Academy',
             imageSrc: 'assets/School-assets/temp/Shirt.jpg',
@@ -401,11 +401,11 @@ export class MyOrdersComponent {
 
     // Share Tracking popup state & CTAs
     sharePopupVisible = false;
-    sharePrimaryCTA: MindfulPopupCTA = { text: 'Copy Link', icon: 'assets/icons/attachment-small.svg', iconPosition: 'start', buttonStyle: 'white', buttonLarge: true };
-    shareSecondaryCTA: MindfulPopupCTA = { text: 'Share through Whatsapp', icon: 'assets/icons/whatsapp-small.svg', iconPosition: 'start', buttonStyle: 'white', buttonLarge: true };
+    sharePrimaryCTA: SupermePopupCTA = { text: 'Copy Link', icon: 'assets/icons/attachment-small.svg', iconPosition: 'start', buttonStyle: 'white', buttonLarge: true };
+    shareSecondaryCTA: SupermePopupCTA = { text: 'Share through Whatsapp', icon: 'assets/icons/whatsapp-small.svg', iconPosition: 'start', buttonStyle: 'white', buttonLarge: true };
   
-    cancelPrimaryCTA: MindfulPopupCTA = { text: "Don't Cancel", buttonStyle: 'green', buttonLarge: true };
-    cancelSecondaryCTA: MindfulPopupCTA = { text: 'Cancel', buttonStyle: 'bronze', buttonLarge: true };
+    cancelPrimaryCTA: SupermePopupCTA = { text: "Don't Cancel", buttonStyle: 'green', buttonLarge: true };
+    cancelSecondaryCTA: SupermePopupCTA = { text: 'Cancel', buttonStyle: 'bronze', buttonLarge: true };
 
     togglePaymentInfo(): void { this.showPaymentInfo = !this.showPaymentInfo; }
 
@@ -449,7 +449,7 @@ export class MyOrdersComponent {
 
     // Actions for share popup
     copyLink(): void {
-        const link = this.selectedOrder ? `https://mindful.app/track/${this.selectedOrder.orderNumber || this.selectedOrder.id}` : window.location.href;
+        const link = this.selectedOrder ? `https://superme.app/track/${this.selectedOrder.orderNumber || this.selectedOrder.id}` : window.location.href;
         try {
             navigator.clipboard.writeText(link);
             console.log('Copied link:', link);
@@ -460,7 +460,7 @@ export class MyOrdersComponent {
     }
 
     shareWhatsapp(): void {
-        const link = this.selectedOrder ? `https://mindful.app/track/${this.selectedOrder.orderNumber || this.selectedOrder.id}` : window.location.href;
+        const link = this.selectedOrder ? `https://superme.app/track/${this.selectedOrder.orderNumber || this.selectedOrder.id}` : window.location.href;
         const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(link)}`;
         window.open(url, '_blank');
         this.sharePopupVisible = false;

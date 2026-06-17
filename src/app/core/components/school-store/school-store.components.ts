@@ -2,7 +2,7 @@ import { Component, AfterViewInit, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
-import { MindfulNavigatorComponent } from '../mindful-navigator/mindful-navigator.component';
+import { SupermeNavigatorComponent } from '../superme-navigator/superme-navigator.component';
 import { Router } from '@angular/router';
 
 @Component({
@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 	selector: 'school-store',
 	templateUrl: './school-store.components.html',
 	styleUrls: ['./school-store.components.scss'],
-	imports: [CommonModule, IonicModule, RouterModule, MindfulNavigatorComponent],
+	imports: [CommonModule, IonicModule, RouterModule, SupermeNavigatorComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class SchoolStoreComponent implements AfterViewInit {
@@ -55,7 +55,7 @@ export class SchoolStoreComponent implements AfterViewInit {
 		this.cdr.detectChanges();
 	}
 
-	// handle right action clicks from mindful-navigator
+	// handle right action clicks from superme-navigator
 	onNavigatorAction(ev: { index: number; action: any }): void {
 		try {
 			const action = ev && (ev as any).action;
@@ -119,7 +119,7 @@ export class SchoolStoreComponent implements AfterViewInit {
 		swiperEl.addEventListener('slidechange', updateIdx);
 		swiperEl.addEventListener('swiperslidechange', updateIdx);
 
-		// Attach delegated click listener on the mindful-navigator so clicks on
+		// Attach delegated click listener on the superme-navigator so clicks on
 		// the navigator heading or subtext open the address popup.
 		try {
 			const navNative = this.navigatorEl?.nativeElement;

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { MindfulButtonComponent } from 'src/app/core/components/mindful-button/mindful-button.component';
+import { SupermeButtonComponent } from 'src/app/core/components/superme-button/superme-button.component';
 import { LearningCardData } from 'src/app/core/models/learning.models';
 
 @Component({
@@ -9,7 +9,7 @@ import { LearningCardData } from 'src/app/core/models/learning.models';
     templateUrl: './learning-article-card.component.html',
     styleUrls: ['./learning-article-card.component.scss'],
     standalone: true,
-    imports: [CommonModule, MindfulButtonComponent]
+    imports: [CommonModule, SupermeButtonComponent]
 })
 export class LearningArticleCardComponent implements OnChanges {
     @Input() item!: LearningCardData;

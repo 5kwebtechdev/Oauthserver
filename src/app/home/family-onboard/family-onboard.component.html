@@ -1,95 +1,95 @@
-<ion-content class="bg-mindful-secondary">
-    <mindful-navigator 
+<ion-content class="bg-superme-secondary">
+    <superme-navigator 
       [heading]="getNavigationTitle()" 
       variant="warm"
       (back)="goBack()">
-    </mindful-navigator>
-  <div class="mindful-page-container">
+    </superme-navigator>
+  <div class="superme-page-container">
 
     <!-- ===== INSTRUCTIONS FOR CHILD ===== -->
     <ng-container *ngIf="viewMode === 'instructions-child'">
 
-      <div class="mindful-instructions">
-        <div class="mindful-instructions__item">
-          <div class="mindful-instructions__number">1</div>
-          <p class="mindful-instructions__text">Ask your parent to create their account on their device.</p>
+      <div class="superme-instructions">
+        <div class="superme-instructions__item">
+          <div class="superme-instructions__number">1</div>
+          <p class="superme-instructions__text">Ask your parent to create their account on their device.</p>
         </div>
-        <div class="mindful-instructions__item">
-          <div class="mindful-instructions__number">2</div>
-          <p class="mindful-instructions__text">After signup, your parent creates a family in the app.</p>
+        <div class="superme-instructions__item">
+          <div class="superme-instructions__number">2</div>
+          <p class="superme-instructions__text">After signup, your parent creates a family in the app.</p>
         </div>
-        <div class="mindful-instructions__item">
-          <div class="mindful-instructions__number">3</div>
-          <p class="mindful-instructions__text">Your parent will see a family code and a QR code.</p>
+        <div class="superme-instructions__item">
+          <div class="superme-instructions__number">3</div>
+          <p class="superme-instructions__text">Your parent will see a family code and a QR code.</p>
         </div>
-        <div class="mindful-instructions__item">
-          <div class="mindful-instructions__number">4</div>
-          <p class="mindful-instructions__text">Enter the family code or scan the QR code in the next screen to join their family.</p>
+        <div class="superme-instructions__item">
+          <div class="superme-instructions__number">4</div>
+          <p class="superme-instructions__text">Enter the family code or scan the QR code in the next screen to join their family.</p>
         </div>
-        <div class="mindful-instructions__item">
-          <div class="mindful-instructions__number">5</div>
-          <p class="mindful-instructions__text">Once linked, you are good to proceed!</p>
+        <div class="superme-instructions__item">
+          <div class="superme-instructions__number">5</div>
+          <p class="superme-instructions__text">Once linked, you are good to proceed!</p>
         </div>
       </div>
 
       <profile-facts [faqs]="faqs"></profile-facts>
 
       <div style="margin-top: 24px !important;">
-      <mindful-button 
+      <superme-button 
         type="orange-onboard" 
         full 
         text="Next" 
         [disabled]="false"
         (click)="router.navigate(['/home/join-family'], {queryParams: {role: userRole}})">
-      </mindful-button>
+      </superme-button>
       </div>
     </ng-container>
 
     <!-- ===== INSTRUCTIONS FOR PARENT ===== -->
     <ng-container *ngIf="viewMode === 'instructions-parent'">
 
-      <div class="mindful-instructions">
-        <div class="mindful-instructions__item">
-          <div class="mindful-instructions__number">1</div>
-          <p class="mindful-instructions__text">Create your family in the next step to get started.</p>
+      <div class="superme-instructions">
+        <div class="superme-instructions__item">
+          <div class="superme-instructions__number">1</div>
+          <p class="superme-instructions__text">Create your family in the next step to get started.</p>
         </div>
-        <div class="mindful-instructions__item">
-          <div class="mindful-instructions__number">2</div>
-          <p class="mindful-instructions__text">You'll receive a unique family code and QR code instantly.</p>
+        <div class="superme-instructions__item">
+          <div class="superme-instructions__number">2</div>
+          <p class="superme-instructions__text">You'll receive a unique family code and QR code instantly.</p>
         </div>
-        <div class="mindful-instructions__item">
-          <div class="mindful-instructions__number">3</div>
-          <p class="mindful-instructions__text">Share the code with your child or let them scan the QR code on their device.</p>
+        <div class="superme-instructions__item">
+          <div class="superme-instructions__number">3</div>
+          <p class="superme-instructions__text">Share the code with your child or let them scan the QR code on their device.</p>
         </div>
-        <div class="mindful-instructions__item">
-          <div class="mindful-instructions__number">4</div>
-          <p class="mindful-instructions__text">Once your child enters the code, you'll both be connected and can track progress together!</p>
+        <div class="superme-instructions__item">
+          <div class="superme-instructions__number">4</div>
+          <p class="superme-instructions__text">Once your child enters the code, you'll both be connected and can track progress together!</p>
         </div>
       </div>
 
       <profile-facts [faqs]="faqs"></profile-facts>
 
-      <mindful-button 
+      <superme-button 
         type="orange-onboard" 
         full 
         text="Next" 
         [disabled]="false"
         (click)="router.navigate(['/home/join-family2'], {queryParams: {role: userRole}})">
-      </mindful-button>
+      </superme-button>
     </ng-container>
 
     <!-- ===== JOIN FAMILY (CHILD ROLE) ===== -->
     <ng-container *ngIf="viewMode === 'join-family-child'">
-      <div class="mindful-step-indicator">
-        <p class="mindful-step-indicator__step">Step 3 of 4</p>
-        <h3 class="mindful-step-indicator__title">Enter your family code or scan the QR</h3>
-        <div class="mindful-step-indicator__progress">
-          <div class="mindful-step-indicator__progress-fill" style="width: 75%;"></div>
+      <div class="superme-step-indicator">
+        <p class="superme-step-indicator__step">Step 3 of 4</p>
+        <h3 class="superme-step-indicator__title">Enter your family code or scan the QR</h3>
+        <div class="superme-step-indicator__progress">
+          <div class="superme-step-indicator__progress-fill" style="width: 75%;"></div>
         </div>
       </div>
 
       <form [formGroup]="codeForm" (ngSubmit)="submitJoinFamily()" style="margin-bottom: 24px !important;"class="family-form">
-        <div class="mindful-input-group">
+        <div class="superme-input-group">
           <div class="code-input-container">
             <input 
               type="text" 
@@ -126,13 +126,13 @@
           </div>
         </div>
 
-        <mindful-button 
+        <superme-button 
           type="orange-onboard" 
           full 
           [text]="isLoading ? 'Joining...' : 'Join Family'"
           [disabled]="codeForm.invalid || isLoading || codeValidationStatus !== 'valid'" 
           (click)="submitJoinFamily()">
-        </mindful-button>
+        </superme-button>
       </form>
 
       <profile-facts [faqs]="faqs"></profile-facts>
@@ -140,11 +140,11 @@
 
     <!-- ===== JOIN FAMILY (PARENT ROLE) ===== -->
     <ng-container *ngIf="viewMode === 'join-family-parent'">
-      <div class="mindful-step-indicator">
-        <p class="mindful-step-indicator__step">Step 3 of 3</p>
-        <h3 class="mindful-step-indicator__title">Manage your family's progress</h3>
-        <div class="mindful-step-indicator__progress">
-          <div class="mindful-step-indicator__progress-fill" style="width: 100%;"></div>
+      <div class="superme-step-indicator">
+        <p class="superme-step-indicator__step">Step 3 of 3</p>
+        <h3 class="superme-step-indicator__title">Manage your family's progress</h3>
+        <div class="superme-step-indicator__progress">
+          <div class="superme-step-indicator__progress-fill" style="width: 100%;"></div>
         </div>
       </div>
 
@@ -167,7 +167,7 @@
         </div>
 
         <form [formGroup]="familyForm" (ngSubmit)="createFamily()" class="family-form">
-          <div class="mindful-input-group">
+          <div class="superme-input-group">
             <input 
               type="text" 
               formControlName="familyName" 
@@ -181,20 +181,20 @@
             </div>
           </div>
 
-          <mindful-button 
+          <superme-button 
             type="orange-onboard" 
             full 
             [text]="isLoading ? 'Creating...' : 'Create Family'"
             [disabled]="familyForm.invalid || isLoading" 
             (click)="createFamily()">
-          </mindful-button>
+          </superme-button>
         </form>
       </div>
 
       <!-- JOIN FAMILY SECTION -->
       <div class="family-join-section" *ngIf="selectedMode === 'join'">
         <form [formGroup]="joinFamilyForm" class="family-form">
-          <div class="mindful-input-group">
+          <div class="superme-input-group">
             <div class="code-input-container">
               <input 
                 type="text" 
@@ -234,13 +234,13 @@
             </div>
           </div>
 
-          <mindful-button 
+          <superme-button 
             type="orange-onboard" 
             full 
             [text]="isLoading ? 'Joining...' : 'Join Family'"
             [disabled]="joinFamilyForm.invalid || isLoading || joinFamilyCodeValidationStatus !== 'valid'" 
             (click)="joinFamily()">
-          </mindful-button>
+          </superme-button>
         </form>
       </div>
 
@@ -279,23 +279,23 @@
           </button>
         </div>
 
-        <mindful-button 
+        <superme-button 
           *ngIf="showRegisterButton && !isParentRegistered" 
           type="orange-onboard" 
           full 
           text="Register Your Account" 
           [disabled]="isLoading"
           (click)="registerAccount()">
-        </mindful-button>
+        </superme-button>
         
-        <mindful-button 
+        <superme-button 
           *ngIf="familyCreated && (!showRegisterButton || isParentRegistered)" 
           type="orange-onboard" 
           full 
           text="My child has done the required" 
           [disabled]="isLoading"
           (click)="childCompleted()">
-        </mindful-button>
+        </superme-button>
       </div>
 
       <!-- Conditional FAQs for each mode -->

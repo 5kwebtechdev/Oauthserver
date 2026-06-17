@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { MindfulButtonComponent } from 'src/app/core/components/mindful-button/mindful-button.component';
-import { MindfulBadgeComponent } from 'src/app/core/components/mindful-badge/mindful-badge.component';
+import { SupermeButtonComponent } from 'src/app/core/components/superme-button/superme-button.component';
+import { SupermeBadgeComponent } from 'src/app/core/components/superme-badge/superme-badge.component';
 import { LearningCardData } from 'src/app/core/models/learning.models';
 
 @Component({
@@ -10,7 +10,7 @@ import { LearningCardData } from 'src/app/core/models/learning.models';
     templateUrl: './learning-challenge-card.component.html',
     styleUrls: ['./learning-challenge-card.component.scss'],
     standalone: true,
-    imports: [CommonModule, MindfulButtonComponent, MindfulBadgeComponent]
+    imports: [CommonModule, SupermeButtonComponent, SupermeBadgeComponent]
 })
 export class LearningChallengeCardComponent {
     @Input() item!: LearningCardData;

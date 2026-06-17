@@ -1,0 +1,16 @@
+<div class="superme-pet" (click)="onClick()" role="button" tabindex="0" aria-label="Superme pet">
+  <img
+    class="pet-image"
+    [src]="currentImage || ''"
+    (error)="onImageError()"
+    [alt]="displayName"
+  [style.width.px]="sizePx"
+  [style.height.px]="sizePx"
+  />
+
+  <!-- <div class="pet-info">
+    <div class="pet-name">{{ displayName }}</div>
+    <div class="pet-mood">{{ mood }}</div>
+    <div class="pet-age">Age: {{ age }}</div>
+  </div> -->
+</div>
