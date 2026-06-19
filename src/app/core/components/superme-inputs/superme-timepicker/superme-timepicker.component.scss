@@ -1,7 +1,8 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(40, 37, 39, 0.45);
+  backdrop-filter: blur(2px);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -9,59 +10,83 @@
 }
 
 .popup {
-  background: white;
-  width: calc(100vw - 24px);
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, #FFF9FB 0%, #FEF2F7 100%);
+  border: 1px solid rgba(144, 33, 77, 0.12);
+  box-shadow: 0 8px 32px rgba(144, 33, 77, 0.14), 0 2px 8px rgba(107, 101, 106, 0.08);
+  width: calc(100vw - 32px);
+  max-width: 400px;
+  padding: 20px 20px 16px;
+  border-radius: 24px;
+
+  .mode-label {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    color: #90214D;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    margin: 0 0 12px;
+  }
 
   .popup-header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1.5px solid rgba(144, 33, 77, 0.10);
 
     .time-select {
-      width: 70%;
       display: flex;
-      justify-content: space-around;
       align-items: center;
+      gap: 4px;
 
       .time-button {
-        background: white;
-        color: #90214D;
-        padding: 8px 12px;
-        cursor: pointer;
-        border: 1px solid gray;
-        border-radius: 7px;
-        width: 80%;
-        height: 100%;
-        font-size: 44px;
-
-        /* center the numeric digits horizontally */
+        background: rgba(144, 33, 77, 0.06);
+        color: #282527;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        width: 88px;
+        height: 72px;
+        font-size: 40px;
+        font-family: var(--font-heading);
+        font-weight: 500;
         text-align: center;
-        padding-left: 6px;
-        padding-right: 6px;
+        padding: 0;
         box-sizing: border-box;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+        -webkit-appearance: none;
+        appearance: none;
 
-        /* keep identical look when used on input element */
+        &:focus { outline: none; }
+
         &.active {
           background: #90214D;
-          color: white;
-          border: none;
-          outline: none;
+          color: #FDFDFD;
+          border-color: #90214D;
         }
       }
     }
 
+    .time-colon {
+      font-size: 40px;
+      font-family: var(--font-heading);
+      font-weight: 600;
+      color: #282527;
+      margin: 0 4px;
+      line-height: 1;
+    }
+
     .ampm-box {
-      width: 30%;
       display: flex;
       flex-direction: column;
       align-items: center;
+      margin-left: 12px;
 
       .container {
-        border: 1px solid #cecece;
-        border-radius: 5px;
+        border: 1.5px solid rgba(144, 33, 77, 0.20);
+        border-radius: 10px;
         overflow: hidden;
       }
 
@@ -71,27 +96,33 @@
         cursor: pointer;
         width: 100%;
         border-radius: 0;
-        font-size: 16px;
-        padding: 15px 5px;
+        font-family: var(--font-sans);
+        font-size: 15px;
+        font-weight: 600;
+        color: #282527;
+        padding: 12px 14px;
+        transition: background 0.15s, color 0.15s;
 
         &.selected {
-          background-color: #90214D;
-          color: white;
+          background: #90214D;
+          color: #FDFDFD;
         }
       }
 
       hr {
-        width: 80%;
+        width: 100%;
         margin: 0;
+        border: none;
+        border-top: 1.5px solid rgba(144, 33, 77, 0.15);
       }
     }
   }
 
   .clock-face {
-    width: 90%;
-    max-width: 350px;
+    width: 88%;
+    max-width: 320px;
     aspect-ratio: 1;
-    margin: 50px auto;
+    margin: 16px auto 8px;
 
     .clock-svg {
       width: 100%;
@@ -110,16 +141,42 @@
 
   .popup-footer {
     display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1.5px solid rgba(144, 33, 77, 0.08);
 
-    .cancel,
-    .ok {
-      padding: 8px 14px;
-      margin-left: 10px;
-      font-family: 'Nunito', sans-serif;
-      font-size: 20px;
+    .cancel {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
       background: transparent;
+      color: #6B656A;
+      transition: background 0.15s;
+
+      &:active { background: rgba(107, 101, 106, 0.08); }
+    }
+
+    .ok {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #90214D;
+      color: #FDFDFD;
+      box-shadow: 0 2px 8px rgba(144, 33, 77, 0.25);
+      transition: background 0.15s;
+
+      &:active { background: #6e1939; }
     }
   }
 }
@@ -127,7 +184,7 @@
 .superme-timepicker-wrapper {
   .time-display-input {
     color: #6B656A;
-    font-family: 'Nunito', sans-serif;
+    font-family: var(--font-sans);
     font-size: 16px;
     font-style: normal;
     font-weight: 600;
@@ -137,5 +194,11 @@
     padding: 8px 0;
     text-align: center;
     width: 80px;
+    cursor: pointer;
+
+    &::placeholder {
+      color: #6B656A;
+      opacity: 0.6;
+    }
   }
 }

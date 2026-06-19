@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from "@angular/common";
 import { Router, RouterModule } from '@angular/router';
@@ -42,7 +42,7 @@ import { SupermeButtonComponent } from '../../core/components/superme-button/sup
     ],
     providers: [RefreshService]
 })
-export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit, ViewWillEnter {
+export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter {
     private readonly destroy$ = new Subject<void>();
     
     public userName: string = 'User';
@@ -63,6 +63,35 @@ export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit,
     public improvementRate: number = 0;
     public appScore: number = 0;
     public Math = Math;
+
+    /** Passed directly to mood-selector so it shows the correct child's vibe without ID matching */
+    public selectedChildVibe: VibesDisplayResponse | null = null;
+
+    /** PRD color logic: Red 0-59, Yellow 60-79, Green 80-100 */
+    getMetricColor(value: number): string {
+        if (value >= 80) return '#4CAF50';   // green
+        if (value >= 60) return '#F0AD4E';   // yellow
+        return '#E74C3C';                     // red
+    }
+
+    /** App Score: 0-59 red, 60-79 yellow, 80-100 green */
+    get completionRateColor(): string { return this.getMetricColor(this.completionRate); }
+    get consistencyRateColor(): string { return this.getMetricColor(this.consistencyRate); }
+    get appScoreColor(): string { return this.getMetricColor(this.appScore); }
+
+    /** Improvement Rate: use absolute value for color scale (negative is always red) */
+    get improvementRateColor(): string {
+        if (this.improvementRate < 0) return '#E74C3C';
+        return this.getMetricColor(this.improvementRate);
+    }
+
+    /** Badge label for metric value */
+    getMetricBadge(value: number): string {
+        if (value >= 80) return 'Excellent!';
+        if (value >= 60) return 'Doing okay';
+        return 'Needs attention';
+    }
+    get appScoreBadge(): string { return this.getMetricBadge(this.appScore); }
     
     // Vibe fields
     public vibeTitle: string = '';
@@ -100,11 +129,6 @@ export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit,
 
     @ViewChild('moodSel') moodSelector?: MoodSelectorComponent;
     @ViewChild(ActivityPageContentComponent) habitPageContent?: ActivityPageContentComponent;
-    @ViewChild('habitPage', { static: false }) habitPageElement?: ElementRef;
-
-    // Button visibility
-    public isAddButtonVisible: boolean = false;
-
     constructor(
         private router: Router,
         private userService: UserService,
@@ -184,30 +208,9 @@ export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit,
 
     ionViewWillEnter(): void {
         // Fires on initial load AND every time this screen becomes active (return from navigation).
-        // Always clear stale in-memory cache so a fresh HTTP call is made to /mood/vibes/display.
-        this.moodService.clearVibesDisplayCache();
         this.loadChildren();
-        this.loadUserStats();
         // Refresh habits/tasks in the child component (Ionic hooks don't propagate to child components)
         this.habitPageContent?.refresh();
-    }
-
-    ngAfterViewInit(): void {
-        // Set up intersection observer for the habit page
-        if (this.habitPageElement) {
-            const observer = new IntersectionObserver(
-                (entries) => {
-                    entries.forEach((entry) => {
-                        this.isAddButtonVisible = entry.isIntersecting;
-                    });
-                },
-                {
-                    root: null, // viewport
-                    threshold: 0.3 // trigger when 30% of the element is visible
-                }
-            );
-            observer.observe(this.habitPageElement.nativeElement);
-        }
     }
 
     /** Load children from API and set into store */
@@ -284,6 +287,12 @@ export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit,
         this.consistencyRate = c.consistencyRate ?? this.consistencyRate;
         this.improvementRate = c.improvementRate ?? this.improvementRate;
         this.appScore = c.appScore ?? this.appScore;
+        this.userService.saveUserStats({
+            coins: this.userCoins,
+            streaks: this.userStreaks,
+            days: this.userDays,
+            badges: this.userBadges
+        });
         // Progress
         this.totalHabits = c.totalHabits ?? this.totalHabits;
         this.completedHabits = c.completedHabits ?? this.completedHabits;
@@ -295,8 +304,9 @@ export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit,
         this.vibeDescription = c.vibeDescription ?? '';
         this.emptyStateDescription = c.emptyStateDescription ?? '';
         this.completedStateDescription = c.completedStateDescription ?? '';
-        // Push child's vibe data directly into the mood selector cache so text updates instantly
-        const vibeOverride: VibesDisplayResponse = {
+        // Build a complete vibe object from child data and pass directly to
+        // mood-selector so it never has to guess which child to pick from the array
+        this.selectedChildVibe = {
             userId: Number(c.id) || 0,
             userName: c.name || '',
             relationship: c.relationship || 'Child',
@@ -320,8 +330,6 @@ export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit,
             improvementRate: c.improvementRate ?? 0,
             appScore: c.appScore ?? 0,
         };
-        this.moodService.setVibesDisplayOverride([vibeOverride]);
-        this.moodSelector?.getTodayVibe?.();
     }
 
     /** Load user stats from API */
@@ -363,7 +371,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, AfterViewInit,
         this.router.navigateByUrl('/authed/activity-calendar');
     }
 
-    openActivityInput() {
+    openActivityInput(): void {
         this.router.navigate(['/authed/activity-input']);
     }
 

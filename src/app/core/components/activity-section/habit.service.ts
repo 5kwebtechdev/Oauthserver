@@ -114,7 +114,9 @@ export class HabitService {
         priority: item.priority,
         routine: item.routine,
         status: item.status,
-        tags: item.tags || [],
+        tags: Array.isArray(item.tags) && item.tags.length
+            ? item.tags
+            : (item.tag ? [item.tag] : []),
         coinReward: item.coinReward || 0,
         coinsEarned: item.coinsEarned || item.coins || 0,
         streak: item.streak || item.streakCount || 0,

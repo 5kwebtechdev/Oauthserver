@@ -1924,13 +1924,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    * Safely get the first tag or routine name
    */
   getTagOrRoutine(): string {
-    if (this.habit && this.habit.tags && Array.isArray(this.habit.tags) && this.habit.tags.length > 0) {
-      return this.habit.tags[0];
-    } else if (this.habit && this.habit.selectedRoutine) {
-      return this.habit.selectedRoutine;
-    } else {
-      return 'Routine';
+    const h = this.habit as any;
+    if (h?.tags && Array.isArray(h.tags) && h.tags.length > 0) {
+      const first = h.tags[0];
+      if (typeof first === 'string') return first;
+      if (typeof first === 'object') return (first.value || first.name || first.text || String(first.key ?? '')).toString().trim();
     }
+    if (h?.tag?.name) return h.tag.name;
+    return h?.selectedRoutine || '';
   }
 
   getRoutine(): string {

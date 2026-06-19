@@ -62,26 +62,42 @@
                 <div class="timeline-score-card container w-full p-0">
                     <div class="d-flex justify-content-between w-100 m-0 p-3">
                         <div class="col-3 p-0">
-                            <superme-completion [completionPercentage]="completionRate" [borderColor]="'#4CAF50'"
-                                [innerText]="completionRate + '%'" [belowText]="'Completion Rate'">
+                            <superme-completion
+                                [completionPercentage]="completionRate"
+                                [borderColor]="completionRateColor"
+                                [innerText]="completionRate + '%'"
+                                [belowText]="'Completion Rate'">
                             </superme-completion>
                         </div>
                         <div class="col-3 p-0">
-                            <superme-completion [completionPercentage]="consistencyRate" [borderColor]="'#F0AD4E'"
-                                [innerText]="consistencyRate + '%'" [belowText]="'Consistency Rate'">
+                            <superme-completion
+                                [completionPercentage]="consistencyRate"
+                                [borderColor]="consistencyRateColor"
+                                [innerText]="consistencyRate + '%'"
+                                [belowText]="'Consistency Rate'">
                             </superme-completion>
                         </div>
                         <div class="col-3 p-0">
-                            <superme-completion [completionPercentage]="Math.abs(improvementRate)"
-                                [borderColor]="'#BB2124'" [innerText]="improvementRate + '%'"
+                            <superme-completion
+                                [completionPercentage]="Math.abs(improvementRate)"
+                                [borderColor]="improvementRateColor"
+                                [innerText]="(improvementRate > 0 ? '+' : '') + improvementRate + '%'"
                                 [belowText]="'Improvement Rate'">
                             </superme-completion>
                         </div>
                         <div class="col-3 p-0">
-                            <superme-completion [completionPercentage]="appScore" [borderColor]="'#F0AD4E'"
-                                [innerText]="appScore + ''" [belowText]="'App\'s Score'">
+                            <superme-completion
+                                [completionPercentage]="appScore"
+                                [borderColor]="appScoreColor"
+                                [innerText]="appScore + ''"
+                                [belowText]="'App\'s Score'">
                             </superme-completion>
                         </div>
+                    </div>
+                    <!-- App Score badge -->
+                    <div class="app-score-badge-row">
+                        <span class="app-score-badge" [style.background]="appScoreColor">{{ appScoreBadge }}</span>
+                        <span class="app-score-hint">Your child is growing with <strong>{{ appScoreBadge === 'Excellent!' ? 'EXCELLENCE' : appScoreBadge === 'Doing okay' ? 'CONSISTENCY' : 'YOUR SUPPORT' }}</strong> 🌟</span>
                     </div>
                 </div>
             </div>
@@ -112,7 +128,7 @@
 
             <div class="mood-selector w-full parent-mood-readonly" *ngIf="hasLinkedChildren" aria-label=" Mood (view
                 only)">
-                <mood-selector #moodSel [value]="selectedMood"></mood-selector>
+                <mood-selector #moodSel [value]="selectedMood" [vibeOverride]="selectedChildVibe"></mood-selector>
             </div>
 
             <div class="ad-banner w-full" *ngIf="hasLinkedChildren">
@@ -125,6 +141,8 @@
 
         </div>
     </div>
-    <superme-button *ngIf="isAddButtonVisible && hasLinkedChildren" type="add" class="fab-add-button" text="Add" (click)="openActivityInput()"></superme-button>
+    <div *ngIf="hasLinkedChildren" class="fab-add-button" (click)="openActivityInput()">
+        <superme-button type="add"></superme-button>
+    </div>
     <app-footer></app-footer>
 </ion-content>

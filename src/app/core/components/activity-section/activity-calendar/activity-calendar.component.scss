@@ -6,7 +6,7 @@ h2, p {
 .activity-calendar-container {
     display: flex;
     flex-direction: column;
-    padding: 16px 16px 80px 16px;
+    padding: 16px 16px calc(80px + env(safe-area-inset-bottom, 0px)) 16px;
     gap: 24px;
 }
 .calendar-mood-satus-popup {
@@ -145,14 +145,14 @@ h2, p {
   h2{
 color: #282527;
 text-align: center;
-font-family: Fredoka;
+font-family: var(--font-heading);
 font-size: 16px;
 font-weight: 500;
   }
   p{
     color: #282527;
 text-align: center;
-font-family: Nunito;
+font-family: var(--font-sans);
 font-size: 13px;
 font-weight: 500;
 opacity: 0.7;
@@ -278,7 +278,7 @@ opacity: 0.7;
 
 .timetable-card__title {
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 700;
   margin: 0;
@@ -286,7 +286,7 @@ opacity: 0.7;
 
 .timetable-card__time {
   color: #6B656A;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
   margin: 0;
@@ -304,7 +304,7 @@ opacity: 0.7;
   align-items: center;
   padding: 5px 16px;
   height: 24px;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: bold;
   font-size: 10px;
   color: #3D6466;
@@ -316,10 +316,8 @@ opacity: 0.7;
 /* Floating add button container */
 .calendar-add-btn {
   position: fixed;
-  right: 16px;
-  bottom: calc(var(--footer-visual-height, 80px) + var(--sab, 0px) + 16px);
+  right: 20px;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px) + 16px);
   z-index: 1300;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  cursor: pointer;
 }

@@ -209,7 +209,8 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
 
   private normalizeResponse(res: any, type: ActivityType): Habit {
     const timestamps = this.buttonLogic.calculateTimestamps(res);
-    const tags = (res.tags || []).map((t: any) => this.normalizeTag(t));
+    const rawTags = Array.isArray(res.tags) && res.tags.length ? res.tags : (res.tag ? [res.tag] : []);
+    const tags = rawTags.map((t: any) => this.normalizeTag(t));
 
     return {
       ...res, type,
@@ -405,10 +406,10 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   get tagText(): string {
     const tags = this.habit?.tags || [];
     const first: any = tags[0];
-    if (!first) return 'Focus';
-    if (typeof first === 'string') return first.trim() || 'Focus';
-    if (typeof first === 'object') return (first.value || first.text || first.name || first.key || 'Focus').toString();
-    return String(first).trim() || 'Focus';
+    if (!first) return '';
+    if (typeof first === 'string') return first.trim();
+    if (typeof first === 'object') return (first.value || first.text || first.name || String(first.key ?? '')).toString().trim();
+    return String(first).trim();
   }
 
   get speechMessage(): string {
