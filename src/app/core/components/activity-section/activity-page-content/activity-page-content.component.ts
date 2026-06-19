@@ -200,7 +200,11 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
 
     private loadInitialData(): void {
         this.loadHabits();
-        this.loadTasksForSelectedDate(new Date());
+        // Only fetch tasks if Tasks tab is already active (e.g. pre-selected via route param).
+        // Otherwise tasks are fetched lazily on first tap of the Tasks tab.
+        if (this.currentMainTab === 'tasks') {
+            this.loadTasksForSelectedDate(new Date());
+        }
     }
 
     private startTimestampInterval(): void {
@@ -216,7 +220,11 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     onDateSelected(date: Date): void {
         this.selectedDate = date;
         this.loadHabits();
-        this.loadTasksForSelectedDate(date);
+        // Only reload tasks when the Tasks tab is visible — avoids a redundant
+        // API call when the user is on the Habits tab and picks a different date.
+        if (this.currentMainTab === 'tasks') {
+            this.loadTasksForSelectedDate(date);
+        }
     }
 
     /**
@@ -317,6 +325,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                             status: this.buttonLogic.normalizeStatus(t.status),
                             priority: t.priority?.trim().toLowerCase(),
                             routine: t.routine?.trim().toLowerCase(),
+                            tags: Array.isArray(t.tags) && t.tags.length ? t.tags : (t.tag ? [t.tag] : []),
                             // Normalize reward/streak fields so ActivityCardComponent can read them
                             coinReward: Number(t.coinReward ?? t.rewardCoins ?? t.reward_coins ?? t.rewardsCoins ?? t.rewards?.coins ?? t.rewards?.rewardCoins ?? 0),
                             coinsEarned: Number(t.coinsEarned ?? t.coins ?? t.coins_earned ?? 0),
@@ -346,6 +355,11 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
 
     selectMainTab(tab: 'habits' | 'tasks'): void {
         this.currentMainTab = tab;
+        if (tab === 'tasks') {
+            // Always fetch fresh tasks when the user taps the Tasks tab.
+            // forceReload=true bypasses the TaskApi cache so stale data is never shown.
+            this.loadTasksForSelectedDate(this.selectedDate, true);
+        }
         this.applyFilters();
     }
 

@@ -141,7 +141,7 @@
         margin: 0;
         color: #282527;
         text-align: center;
-        font-family: Nunito, sans-serif;
+        font-family: var(--font-sans);
         font-size: 18px;
         font-weight: 800;
         line-height: 1.28;
@@ -152,7 +152,7 @@
         margin: 0 0 10px;
         color: rgba(40, 37, 39, 0.68);
         text-align: center;
-        font-family: Nunito, sans-serif;
+        font-family: var(--font-sans);
         font-size: 14px;
         font-weight: 600;
         line-height: 1.45;
@@ -282,14 +282,14 @@ box-shadow: 0 4px 4px 0 rgba(249, 210, 220, 0.25) inset;
 
 h1{
     color: #FFF;
-font-family: Fredoka;
+font-family: var(--font-heading);
 font-size: 16px;
 font-weight: 500;
 }
 
 p{
     color: #FFF;
-font-family: Nunito;
+font-family: var(--font-sans);
 font-size: 13px;
 font-weight: 500;
 }
@@ -309,7 +309,70 @@ height: 100%;
 
 .fab-add-button {
     position: fixed;
-    bottom: calc(var(--footer-visual-height, 80px) + var(--sab, 0px) + 8px);
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px) + 16px);
     right: 20px;
     z-index: 1000;
+    cursor: pointer;
+}
+
+// ── Responsive metrics row ────────────────────────────────────────────────────
+.timeline-score-card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    overflow: hidden;
+    box-sizing: border-box;
+    width: 100%;
+
+    .d-flex {
+        flex-wrap: nowrap;
+        flex: 1 0 auto;
+    }
+
+    superme-completion {
+        --completion-size: clamp(44px, 14vw, 64px);
+        --completion-font-size: clamp(10px, 3vw, 15px);
+        --completion-label-size: clamp(7px, 2vw, 10px);
+    }
+}
+
+// ── App Score badge row ───────────────────────────────────────────────────────
+.app-score-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px 12px;
+    flex-wrap: wrap;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.app-score-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.app-score-hint {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    color: #6B656A;
+    line-height: 1.4;
+    min-width: 0;
+    overflow: hidden;
+
+    strong {
+        color: #282527;
+        font-weight: 700;
+    }
 }

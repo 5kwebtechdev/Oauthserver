@@ -1,8 +1,8 @@
 <ion-content style="height: 100vh; overflow-y: scroll">
-  <superme-navigator *ngIf="!isParentUser()" heading="Timeline" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
-    [rightIcon2]="'/assets/Icons-Neutral/Icon-Notes.png'" (rightIconClick)="onCalendarClick()"
+  <superme-navigator *ngIf="!isParentUser()" heading="Timeline" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar-3D.png'"
+    [rightIcon2]="'/assets/Icons-Neutral/Icon-Notes-3D.png'" (rightIconClick)="onCalendarClick()"
     (rightIcon2Click)="onNotesClick()"></superme-navigator>
-  <superme-navigator *ngIf="isParentUser()" heading="Timeline" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
+  <superme-navigator *ngIf="isParentUser()" heading="Timeline" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar-3D.png'"
     (rightIconClick)="onCalendarClick()"></superme-navigator>
 
   <div class="timeline-page-container">
@@ -10,25 +10,35 @@
     <div class="card timeline-score-card container w-full">
       <div class="row justify-content-between">
         <div class="col-3 p-0">
-          <superme-completion [completionPercentage]="totalHabits > 0 ? (totalHabitsCompleted / totalHabits * 100) : 0"
-            [borderColor]="'#4CAF50'" [innerText]="totalHabitsCompleted + '/' + totalHabits"
-            [belowText]="'Total habits completed'">
+          <superme-completion
+            [completionPercentage]="totalHabits > 0 ? (totalHabitsCompleted / totalHabits * 100) : 0"
+            [borderColor]="habitsColor"
+            [innerText]="totalHabitsCompleted + '/' + totalHabits"
+            [belowText]="'Total habits'">
           </superme-completion>
         </div>
         <div class="col-3 p-0">
-          <superme-completion [completionPercentage]="totalTasks > 0 ? (totalTasksCompleted / totalTasks * 100) : 0"
-            [borderColor]="'#F0AD4E'" [innerText]="totalTasksCompleted + '/' + totalTasks"
-            [belowText]="'Total tasks completed'">
+          <superme-completion
+            [completionPercentage]="totalTasks > 0 ? (totalTasksCompleted / totalTasks * 100) : 0"
+            [borderColor]="tasksColor"
+            [innerText]="totalTasksCompleted + '/' + totalTasks"
+            [belowText]="'Total tasks'">
           </superme-completion>
         </div>
         <div class="col-3 p-0">
-          <superme-completion [completionPercentage]="habitCompletionRate" [borderColor]="'#BB2124'"
-            [innerText]="habitCompletionRate + '%'" [belowText]="'Habit completion rate'">
+          <superme-completion
+            [completionPercentage]="habitCompletionRate"
+            [borderColor]="habitRateColor"
+            [innerText]="habitCompletionRate + '%'"
+            [belowText]="'Habit rate'">
           </superme-completion>
         </div>
         <div class="col-3 p-0">
-          <superme-completion [completionPercentage]="taskCompletionRate" [borderColor]="'#F0AD4E'"
-            [innerText]="taskCompletionRate + '%'" [belowText]="'Task completion rate'">
+          <superme-completion
+            [completionPercentage]="taskCompletionRate"
+            [borderColor]="taskRateColor"
+            [innerText]="taskCompletionRate + '%'"
+            [belowText]="'Task rate'">
           </superme-completion>
         </div>
       </div>
@@ -47,7 +57,7 @@
       <superme-timeline [events]="filteredEvents" [isCurrentDateView]="isCurrentDateView" [selectedDate]="selectedDate" (eventLongPressed)="onTimetableLongPress($event)"></superme-timeline>
     </div>
     <!-- Fixed Add Button -->
-    <div class="add-button-fixed" (click)="onAddClick()">
+    <div class="add-button-fixed" *ngIf="!isParentUser()" (click)="onAddClick()">
       <superme-button type="add"></superme-button>
     </div>
 
