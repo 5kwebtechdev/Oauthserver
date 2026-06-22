@@ -23,6 +23,7 @@
     "@angular/platform-browser": "^19.0.0",
     "@angular/platform-browser-dynamic": "^19.0.0",
     "@angular/router": "^19.0.0",
+    "@capacitor-community/apple-sign-in": "^7.1.0",
     "@capacitor-firebase/analytics": "^8.2.0",
     "@capacitor-firebase/messaging": "^8.3.0",
     "@capacitor-mlkit/barcode-scanning": "^7.5.0",

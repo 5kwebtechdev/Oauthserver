@@ -79,10 +79,31 @@
   }
 }
 
-/* smaller cancel icon size per design */
+/* Cancel / close button — circular pill with icon centred */
+.back-button.cancel {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(220, 220, 220, 0.70) 0%, rgba(240, 240, 240, 0.40) 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: none;
+  transition: background 0.15s ease, transform 0.12s ease;
+
+  &:active {
+    transform: scale(0.92);
+    background: rgba(200, 200, 200, 0.75);
+  }
+}
+
 .back-button.cancel img {
-  width: 48px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 /* right-side action button (optional) */
