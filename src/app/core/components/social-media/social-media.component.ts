@@ -1,10 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { IonicModule, Platform, LoadingController, ToastController } from '@ionic/angular';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { getApps, getApp } from 'firebase/app';
-import { getAuth, signInWithCredential, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, signInWithCredential, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
 import { AuthService } from '../../services/auth.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { AuthSessionCleanupService } from '../../services/auth-session-cleanup.service';
@@ -16,8 +16,10 @@ import { AuthSessionCleanupService } from '../../services/auth-session-cleanup.s
   templateUrl: './social-media.component.html',
   styleUrls: ['./social-media.component.scss']
 })
-export class SocialMediaComponent {
+export class SocialMediaComponent implements OnInit {
   @Input() variant?: string;
+  isIos = false;
+
   links = [
     { name: 'facebook', label: 'Facebook', icon: 'facebook', url: 'https://www.facebook.com/SuperMeAppOfficial' },
     { name: 'instagram', label: 'Instagram', icon: 'instagram', url: 'https://www.instagram.com/supermeappofficial' },
@@ -35,9 +37,17 @@ export class SocialMediaComponent {
     private authSessionCleanup: AuthSessionCleanupService
   ) {}
 
+  ngOnInit() {
+    this.isIos = this.platform.is('ios');
+  }
+
   open(link: { name: string; url?: string }) {
     if (link.name === 'google' && this.variant === 'login-with') {
       this.signInWithGoogle();
+      return;
+    }
+    if (link.name === 'apple' && this.variant === 'login-with') {
+      this.signInWithApple();
       return;
     }
     if (link.url) {
@@ -160,6 +170,110 @@ export class SocialMediaComponent {
           message: err?.message || 'Google sign-in failed. Please try again.',
           duration: 3000,
           position: 'bottom'
+        });
+        await toast.present();
+      }
+    }
+  }
+
+  private async signInWithApple(): Promise<void> {
+    if (!this.platform.is('ios')) return;
+
+    const loading = await this.loadingCtrl.create({ message: 'Signing in with Apple…' });
+    await loading.present();
+
+    try {
+      const { SignInWithApple } = await import('@capacitor-community/apple-sign-in') as any;
+      const result = await SignInWithApple.authorize({
+        clientId: 'com.supermeapp.app',
+        redirectURI: '',
+        scopes: 'email name',
+        state: '',
+        nonce: ''
+      });
+
+      const appleUser = result?.response;
+      if (!appleUser?.identityToken) {
+        throw new Error('Apple sign-in did not return an identity token.');
+      }
+
+      const providerId = appleUser.user;
+      const email = appleUser.email || '';
+      const givenName = appleUser.givenName || '';
+      const familyName = appleUser.familyName || '';
+      const name = [givenName, familyName].filter(Boolean).join(' ') || email;
+
+      // Register in Firebase Auth (non-fatal)
+      try {
+        if (getApps().length) {
+          const provider = new OAuthProvider('apple.com');
+          const credential = provider.credential({ idToken: appleUser.identityToken });
+          await signInWithCredential(getAuth(getApp()), credential);
+        }
+      } catch (fbErr) {
+        console.warn('[SocialMedia] Firebase Apple sign-in (non-fatal):', fbErr);
+      }
+
+      if (!providerId && !email) {
+        throw new Error('Apple sign-in did not return user ID or email.');
+      }
+
+      this.authService.checkEmailExists(email).subscribe({
+        next: (res) => {
+          if (res.exists) {
+            this.authService.googleOAuthLogin({ provider: 'apple', providerId, email, name, avatarUrl: '' }).subscribe({
+              next: (response) => {
+                loading.dismiss();
+                const userId = response.user?.id;
+                if (response.token && userId) {
+                  this.authService.setSession(
+                    { token: response.token, userId, expiresIn: response.expiresIn, user: response.user },
+                    false
+                  );
+                  this.analytics.logLogin('apple');
+                  this.analytics.setUserId(String(userId));
+                  this.router.navigate([this.authService.getDashboardRoute()], { replaceUrl: true });
+                }
+              },
+              error: async (err) => {
+                loading.dismiss();
+                const toast = await this.toastCtrl.create({
+                  message: err?.error?.message || 'Apple sign-in failed. Please try again.',
+                  duration: 3000, position: 'bottom'
+                });
+                await toast.present();
+              }
+            });
+          } else {
+            loading.dismiss();
+            try {
+              sessionStorage.setItem('signup_via_google', 'true');
+              sessionStorage.setItem('google_signup_email', email);
+              sessionStorage.setItem('google_signup_name', name);
+              sessionStorage.setItem('google_signup_avatar', '');
+              sessionStorage.setItem('google_signup_provider_id', providerId);
+              sessionStorage.setItem('requestedIdentifier', email);
+            } catch (e) {}
+            this.analytics.logSignUp('apple');
+            this.router.navigate(['home/sign-up'], { queryParams: { step: 1 }, replaceUrl: true });
+          }
+        },
+        error: async () => {
+          loading.dismiss();
+          const toast = await this.toastCtrl.create({
+            message: 'Unable to verify account. Please try again.',
+            duration: 3000, position: 'bottom'
+          });
+          await toast.present();
+        }
+      });
+    } catch (err: any) {
+      await loading.dismiss();
+      const cancelled = err?.message?.includes('cancel') || err?.message?.includes('dismiss');
+      if (!cancelled) {
+        const toast = await this.toastCtrl.create({
+          message: err?.message || 'Apple sign-in failed. Please try again.',
+          duration: 3000, position: 'bottom'
         });
         await toast.present();
       }

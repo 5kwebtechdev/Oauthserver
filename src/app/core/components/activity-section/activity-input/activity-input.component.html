@@ -157,7 +157,7 @@
 </ng-template>
 
 <ion-content fullscreen>
-  <superme-navigator [heading]="editingId ? 'Update Activity' : 'Create. Commit. Grow.'" backIcon="cancel"
+  <superme-navigator [heading]="editingId ? 'Update Activity' : 'Create. Commit. Grow.'"
     [rightActions]="navigatorActions" (rightActionClick)="onNavigatorAction($event)" (back)="onNavigatorBack()">
     <div *ngIf="isChild" slot="end" class="header-toggle d-flex flex-column " aria-label="Private toggle">
       <label class="header-toggle-label">Private</label>
@@ -168,12 +168,10 @@
   </superme-navigator>
   <div class="habit-input-root" [ngClass]="currentActive">
     <div *ngIf="!editingId" class="container w-full">
-      <div class="row toggler">
-        <div class="col-4" (click)="currentActive = 'habits'" [ngClass]="{active: currentActive === 'habits'}">Habits
-        </div>
-        <div class="col-4" (click)="currentActive = 'tasks'" [ngClass]="{active: currentActive === 'tasks'}">Tasks</div>
-        <div class="col-4" (click)="currentActive = 'timetable'" [ngClass]="{active: currentActive === 'timetable'}">
-          Time Table</div>
+      <div class="activity-tabs">
+        <button class="activity-tab tab-habits" (click)="currentActive = 'habits'" [class.active]="currentActive === 'habits'">Habits</button>
+        <button class="activity-tab tab-tasks" (click)="currentActive = 'tasks'" [class.active]="currentActive === 'tasks'">Tasks</button>
+        <button class="activity-tab tab-timetable" (click)="currentActive = 'timetable'" [class.active]="currentActive === 'timetable'">Time Table</button>
       </div>
     </div>
 
