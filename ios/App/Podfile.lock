@@ -1,0 +1,305 @@
+PODS:
+  - AppAuth (1.7.6):
+    - AppAuth/Core (= 1.7.6)
+    - AppAuth/ExternalUserAgent (= 1.7.6)
+  - AppAuth/Core (1.7.6)
+  - AppAuth/ExternalUserAgent (1.7.6):
+    - AppAuth/Core
+  - Capacitor (7.2.0):
+    - CapacitorCordova
+  - CapacitorApp (7.0.1):
+    - Capacitor
+  - CapacitorBarcodeScanner (2.1.0):
+    - Capacitor
+    - OSBarcodeLib (= 2.0.1)
+  - CapacitorCamera (7.0.2):
+    - Capacitor
+  - CapacitorClipboard (7.0.3):
+    - Capacitor
+  - CapacitorCordova (7.2.0)
+  - CapacitorFilesystem (7.1.4):
+    - Capacitor
+    - IONFilesystemLib (~> 1.0.1)
+  - CapacitorFirebaseAnalytics/Analytics (8.2.0):
+    - Capacitor
+    - FirebaseAnalytics/Core (~> 12.7.0)
+    - FirebaseAnalytics/IdentitySupport (~> 12.7.0)
+  - CapacitorFirebaseMessaging (8.3.0):
+    - Capacitor
+    - FirebaseMessaging (~> 12.7.0)
+  - CapacitorGeolocation (7.1.7):
+    - Capacitor
+    - IONGeolocationLib (= 1.0.1)
+  - CapacitorHaptics (7.0.1):
+    - Capacitor
+  - CapacitorKeyboard (7.0.1):
+    - Capacitor
+  - CapacitorMlkitBarcodeScanning (7.5.0):
+    - Capacitor
+    - GoogleMLKit/BarcodeScanning (= 7.0.0)
+  - CapacitorShare (7.0.3):
+    - Capacitor
+  - CapacitorStatusBar (7.0.1):
+    - Capacitor
+  - CodetrixStudioCapacitorGoogleAuth (0.0.1):
+    - Capacitor
+    - GoogleSignIn (~> 7.0)
+  - CordovaPlugins (7.2.0):
+    - CapacitorCordova
+  - CordovaPluginsResources (0.0.105)
+  - FirebaseAnalytics/Core (12.7.0):
+    - FirebaseCore (~> 12.7.0)
+    - FirebaseInstallations (~> 12.7.0)
+    - GoogleAppMeasurement/Core (= 12.7.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/MethodSwizzler (~> 8.1)
+    - GoogleUtilities/Network (~> 8.1)
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+    - nanopb (~> 3.30910.0)
+  - FirebaseAnalytics/IdentitySupport (12.7.0):
+    - FirebaseCore (~> 12.7.0)
+    - FirebaseInstallations (~> 12.7.0)
+    - GoogleAppMeasurement/IdentitySupport (= 12.7.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/MethodSwizzler (~> 8.1)
+    - GoogleUtilities/Network (~> 8.1)
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+    - nanopb (~> 3.30910.0)
+  - FirebaseCore (12.7.0):
+    - FirebaseCoreInternal (~> 12.7.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/Logger (~> 8.1)
+  - FirebaseCoreInternal (12.7.0):
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+  - FirebaseInstallations (12.7.0):
+    - FirebaseCore (~> 12.7.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
+    - PromisesObjC (~> 2.4)
+  - FirebaseMessaging (12.7.0):
+    - FirebaseCore (~> 12.7.0)
+    - FirebaseInstallations (~> 12.7.0)
+    - GoogleDataTransport (~> 10.1)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/Reachability (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
+    - nanopb (~> 3.30910.0)
+  - GoogleAppMeasurement/Core (12.7.0):
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/MethodSwizzler (~> 8.1)
+    - GoogleUtilities/Network (~> 8.1)
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+    - nanopb (~> 3.30910.0)
+  - GoogleAppMeasurement/IdentitySupport (12.7.0):
+    - GoogleAppMeasurement/Core (= 12.7.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/MethodSwizzler (~> 8.1)
+    - GoogleUtilities/Network (~> 8.1)
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+    - nanopb (~> 3.30910.0)
+  - GoogleDataTransport (10.1.0):
+    - nanopb (~> 3.30910.0)
+    - PromisesObjC (~> 2.4)
+  - GoogleMLKit/BarcodeScanning (7.0.0):
+    - GoogleMLKit/MLKitCore
+    - MLKitBarcodeScanning (~> 6.0.0)
+  - GoogleMLKit/MLKitCore (7.0.0):
+    - MLKitCommon (~> 12.0.0)
+  - GoogleSignIn (7.1.0):
+    - AppAuth (< 2.0, >= 1.7.3)
+    - GTMAppAuth (< 5.0, >= 4.1.1)
+    - GTMSessionFetcher/Core (~> 3.3)
+  - GoogleToolboxForMac/Defines (4.2.1)
+  - GoogleToolboxForMac/Logger (4.2.1):
+    - GoogleToolboxForMac/Defines (= 4.2.1)
+  - "GoogleToolboxForMac/NSData+zlib (4.2.1)":
+    - GoogleToolboxForMac/Defines (= 4.2.1)
+  - GoogleUtilities/AppDelegateSwizzler (8.1.1):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Network
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Environment (8.1.1):
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Logger (8.1.1):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/MethodSwizzler (8.1.1):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Network (8.1.1):
+    - GoogleUtilities/Logger
+    - "GoogleUtilities/NSData+zlib"
+    - GoogleUtilities/Privacy
+    - GoogleUtilities/Reachability
+  - "GoogleUtilities/NSData+zlib (8.1.1)":
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Privacy (8.1.1)
+  - GoogleUtilities/Reachability (8.1.1):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/UserDefaults (8.1.1):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GTMAppAuth (4.1.1):
+    - AppAuth/Core (~> 1.7)
+    - GTMSessionFetcher/Core (< 4.0, >= 3.3)
+  - GTMSessionFetcher/Core (3.5.0)
+  - IONFilesystemLib (1.0.1)
+  - IONGeolocationLib (1.0.1)
+  - MLImage (1.0.0-beta6)
+  - MLKitBarcodeScanning (6.0.0):
+    - MLKitCommon (~> 12.0)
+    - MLKitVision (~> 8.0)
+  - MLKitCommon (12.0.0):
+    - GoogleDataTransport (~> 10.0)
+    - GoogleToolboxForMac/Logger (< 5.0, >= 4.2.1)
+    - "GoogleToolboxForMac/NSData+zlib (< 5.0, >= 4.2.1)"
+    - GoogleUtilities/Logger (~> 8.0)
+    - GoogleUtilities/UserDefaults (~> 8.0)
+    - GTMSessionFetcher/Core (< 4.0, >= 3.3.2)
+  - MLKitVision (8.0.0):
+    - GoogleToolboxForMac/Logger (< 5.0, >= 4.2.1)
+    - "GoogleToolboxForMac/NSData+zlib (< 5.0, >= 4.2.1)"
+    - GTMSessionFetcher/Core (< 4.0, >= 3.3.2)
+    - MLImage (= 1.0.0-beta6)
+    - MLKitCommon (~> 12.0)
+  - nanopb (3.30910.0):
+    - nanopb/decode (= 3.30910.0)
+    - nanopb/encode (= 3.30910.0)
+  - nanopb/decode (3.30910.0)
+  - nanopb/encode (3.30910.0)
+  - OSBarcodeLib (2.0.1)
+  - PromisesObjC (2.4.1)
+
+DEPENDENCIES:
+  - "Capacitor (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
+  - "CapacitorBarcodeScanner (from `../../node_modules/@capacitor/barcode-scanner`)"
+  - "CapacitorCamera (from `../../node_modules/@capacitor/camera`)"
+  - "CapacitorClipboard (from `../../node_modules/@capacitor/clipboard`)"
+  - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorFilesystem (from `../../node_modules/@capacitor/filesystem`)"
+  - "CapacitorFirebaseAnalytics/Analytics (from `../../node_modules/@capacitor-firebase/analytics`)"
+  - "CapacitorFirebaseMessaging (from `../../node_modules/@capacitor-firebase/messaging`)"
+  - "CapacitorGeolocation (from `../../node_modules/@capacitor/geolocation`)"
+  - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
+  - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
+  - "CapacitorMlkitBarcodeScanning (from `../../node_modules/@capacitor-mlkit/barcode-scanning`)"
+  - "CapacitorShare (from `../../node_modules/@capacitor/share`)"
+  - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
+  - "CodetrixStudioCapacitorGoogleAuth (from `../../node_modules/@codetrix-studio/capacitor-google-auth`)"
+  - CordovaPlugins (from `../capacitor-cordova-ios-plugins`)
+  - CordovaPluginsResources (from `../capacitor-cordova-ios-plugins`)
+
+SPEC REPOS:
+  trunk:
+    - AppAuth
+    - FirebaseAnalytics
+    - FirebaseCore
+    - FirebaseCoreInternal
+    - FirebaseInstallations
+    - FirebaseMessaging
+    - GoogleAppMeasurement
+    - GoogleDataTransport
+    - GoogleMLKit
+    - GoogleSignIn
+    - GoogleToolboxForMac
+    - GoogleUtilities
+    - GTMAppAuth
+    - GTMSessionFetcher
+    - IONFilesystemLib
+    - IONGeolocationLib
+    - MLImage
+    - MLKitBarcodeScanning
+    - MLKitCommon
+    - MLKitVision
+    - nanopb
+    - OSBarcodeLib
+    - PromisesObjC
+
+EXTERNAL SOURCES:
+  Capacitor:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorApp:
+    :path: "../../node_modules/@capacitor/app"
+  CapacitorBarcodeScanner:
+    :path: "../../node_modules/@capacitor/barcode-scanner"
+  CapacitorCamera:
+    :path: "../../node_modules/@capacitor/camera"
+  CapacitorClipboard:
+    :path: "../../node_modules/@capacitor/clipboard"
+  CapacitorCordova:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorFilesystem:
+    :path: "../../node_modules/@capacitor/filesystem"
+  CapacitorFirebaseAnalytics:
+    :path: "../../node_modules/@capacitor-firebase/analytics"
+  CapacitorFirebaseMessaging:
+    :path: "../../node_modules/@capacitor-firebase/messaging"
+  CapacitorGeolocation:
+    :path: "../../node_modules/@capacitor/geolocation"
+  CapacitorHaptics:
+    :path: "../../node_modules/@capacitor/haptics"
+  CapacitorKeyboard:
+    :path: "../../node_modules/@capacitor/keyboard"
+  CapacitorMlkitBarcodeScanning:
+    :path: "../../node_modules/@capacitor-mlkit/barcode-scanning"
+  CapacitorShare:
+    :path: "../../node_modules/@capacitor/share"
+  CapacitorStatusBar:
+    :path: "../../node_modules/@capacitor/status-bar"
+  CodetrixStudioCapacitorGoogleAuth:
+    :path: "../../node_modules/@codetrix-studio/capacitor-google-auth"
+  CordovaPlugins:
+    :path: "../capacitor-cordova-ios-plugins"
+  CordovaPluginsResources:
+    :path: "../capacitor-cordova-ios-plugins"
+
+SPEC CHECKSUMS:
+  AppAuth: d4f13a8fe0baf391b2108511793e4b479691fb73
+  Capacitor: 106e7a4205f4618d582b886a975657c61179138d
+  CapacitorApp: d63334c052278caf5d81585d80b21905c6f93f39
+  CapacitorBarcodeScanner: e30ed55789ff5f3e35a0d50c182f8623993da938
+  CapacitorCamera: 6e18d54c8ab30d7dc7b8cd93d96f9b4f57e9202a
+  CapacitorClipboard: 2b2346e139eb00c74b2b4e7a0e922cb1e1cd94ee
+  CapacitorCordova: 5967b9ba03915ef1d585469d6e31f31dc49be96f
+  CapacitorFilesystem: ac0a386949ed6c295a3dffa129ecd26b881ae5be
+  CapacitorFirebaseAnalytics: 995c7d9e6bd6831777ddcf81da8924b89ca1f495
+  CapacitorFirebaseMessaging: c6f8e2ff93d3de832e5ad5ca301dbcfc63b8a732
+  CapacitorGeolocation: bcd9412a99fd542b585561238b210bd2b162b8f6
+  CapacitorHaptics: 70e47470fa1a6bd6338cd102552e3846b7f9a1b3
+  CapacitorKeyboard: 969647d0ca2e5c737d7300088e2517aa832434e2
+  CapacitorMlkitBarcodeScanning: ef67c921ac0d3943157a20c72744ab3d5b8a92fb
+  CapacitorShare: eac8c1e192dbbb0737a84a50552ffe12398cb11f
+  CapacitorStatusBar: 275cbf2f4dfc00388f519ef80c7ec22edda342c9
+  CodetrixStudioCapacitorGoogleAuth: 6518de0fefc0d05ab6854ab596fe6cf3cb5a74a3
+  CordovaPlugins: b7e950a67b0c414459d92f485d1e1859dbc76233
+  CordovaPluginsResources: da93847212bf7b16ba770e4d6c3e7dba820174c7
+  FirebaseAnalytics: e423129866107aeacf6010a280b9c9829f9ea50d
+  FirebaseCore: c7b57863ce0859281a66d16ca36d665c45d332b5
+  FirebaseCoreInternal: 571a2dd8c975410966199623351db3a3265c874d
+  FirebaseInstallations: 6d05424a046b68ca146b4de4376f05b4e9262fc3
+  FirebaseMessaging: b5f7bdc62b91b6102015991fb7bc6fa75f643908
+  GoogleAppMeasurement: 8f59e08efecfa1bcd57f0a56fab07d079366268c
+  GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
+  GoogleMLKit: eff9e23ec1d90ea4157a1ee2e32a4f610c5b3318
+  GoogleSignIn: d4281ab6cf21542b1cfaff85c191f230b399d2db
+  GoogleToolboxForMac: d1a2cbf009c453f4d6ded37c105e2f67a32206d8
+  GoogleUtilities: 4f2618a4a1e762a1ee134a1e2323bba9843e06da
+  GTMAppAuth: f69bd07d68cd3b766125f7e072c45d7340dea0de
+  GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
+  IONFilesystemLib: 89258b8e3e85465da93127d25d7ce37f977e8a6f
+  IONGeolocationLib: 20f9d0248a0b5264511fb57a37e25dd2badf797a
+  MLImage: 0ad1c5f50edd027672d8b26b0fee78a8b4a0fc56
+  MLKitBarcodeScanning: 0a3064da0a7f49ac24ceb3cb46a5bc67496facd2
+  MLKitCommon: 07c2c33ae5640e5380beaaa6e4b9c249a205542d
+  MLKitVision: 45e79d68845a2de77e2dd4d7f07947f0ed157b0e
+  nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
+  OSBarcodeLib: 57987d2eb1f916f701f4554e20e349b3cb83f023
+  PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
+
+PODFILE CHECKSUM: 8833df34fd32691d89aa469b1ffb91207f7a6dc9
+
+COCOAPODS: 1.16.2
