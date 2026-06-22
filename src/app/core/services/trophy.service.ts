@@ -13,6 +13,7 @@ export interface Trophy {
     image: string;
     contentType: string;
     challengeId: string;
+    categoryIconUrl?: string;
 }
 
 export interface TrophyApiResponse {
@@ -24,6 +25,7 @@ export interface TrophyApiResponse {
         contentType: string;
         difficultyLevel: 'Easy' | 'Medium' | 'Hard';
         challengeId: string;
+        categoryIconUrl?: string;
     }[];
     totalTrophies: number;
 }
@@ -61,16 +63,28 @@ export class TrophyService {
      * Transform backend API response to internal Trophy model
      */
     private transformTrophyData(response: TrophyApiResponse): { trophies: Trophy[], totalCount: number } {
-        const trophies: Trophy[] = response.trophies.map((trophy, index) => ({
-            id: trophy.challengeId || `trophy_${index}`,
-            title: trophy.title,
-            earnedOn: this.parseEarnedDate(trophy.earnedDate),
-            difficulty: trophy.difficultyLevel,
-            points: trophy.trophyCount,
-            image: this.getTrophyImage(trophy.difficultyLevel),
-            contentType: trophy.contentType,
-            challengeId: trophy.challengeId
-        }));
+        const trophies: Trophy[] = response.trophies.map((trophy, index) => {
+            const raw = trophy as any;
+            const iconUrl: string | undefined =
+                raw.categoryIconUrl ||
+                raw.categoryIconURL ||
+                raw.CategoryIconUrl ||
+                raw.iconUrl ||
+                raw.categoryUrl ||
+                undefined;
+            console.log(`[Trophy] "${raw.title}" contentType="${raw.contentType}" iconUrl="${iconUrl}"`);
+            return {
+                id: raw.challengeId || `trophy_${index}`,
+                title: raw.title,
+                earnedOn: this.parseEarnedDate(raw.earnedDate),
+                difficulty: raw.difficultyLevel,
+                points: raw.trophyCount,
+                image: this.getTrophyImage(raw.difficultyLevel),
+                contentType: raw.contentType,
+                challengeId: raw.challengeId,
+                categoryIconUrl: iconUrl
+            };
+        });
 
         return {
             trophies,

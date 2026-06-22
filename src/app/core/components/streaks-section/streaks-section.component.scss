@@ -4,175 +4,223 @@
 
 ion-content.streaks-page {
     --padding-top: var(--sat);
+    --background: #FFFBEF;
 }
 
-.leaderboard-card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+// ── Page layout ────────────────────────────────────────────────────────────────
+.page-body {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
+    padding: 16px 16px 100px;
 }
 
-.title {
-    font-weight: 700;
-    font-size: 20px;
-    margin: 0 0 12px 0;
-    color: #282527;
-    font-family: Nunito;
-    line-height: 140%;
-}
-
-.streaks-status {
+// ── Stat cards row ─────────────────────────────────────────────────────────────
+.stats-row {
     display: flex;
-    gap: 16px;
+    gap: 10px;
     align-items: stretch;
-    flex-wrap: wrap;
 }
 
-.streaks-status-item {
-    display: flex;
+.stat-card {
     flex: 1 1 0;
-    min-width: 0;
-    padding: 12px 10px;
+    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
-    background: #FFF;
-    box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
-    min-height: 120px;
-    height: auto;
+    gap: 6px;
+    padding: 14px 8px 12px;
+    background: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+    min-width: 0;
+    text-align: center;
 }
 
-.status-label {
-    color: #6B656A;
-    text-align: center;
-    font-family: Nunito;
-    font-size: 16px;
+.stat-label {
+    font-family: var(--font-sans);
+    font-size: clamp(10px, 2.8vw, 13px);
     font-weight: 600;
-    line-height: 140%;
-}
-
-.status-value {
-    align-self: stretch;
-    color: #282527;
+    color: #6B656A;
+    line-height: 1.3;
     text-align: center;
-    font-family: Nunito;
-    font-size: 20px;
+}
+
+.stat-icon {
+    width: clamp(44px, 14vw, 60px);
+    height: clamp(44px, 14vw, 60px);
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.stat-value {
+    font-family: var(--font-sans);
+    font-size: clamp(14px, 4vw, 18px);
     font-weight: 700;
-    line-height: 140%;
+    color: #282527;
+    line-height: 1.2;
 }
 
-.icon {
-    width: 40px;
-    height: 40px;
-    align-items: center;
-    aspect-ratio: 1/1;
+// ── Leaderboard section ────────────────────────────────────────────────────────
+.leaderboard-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-
-.top-strickers-header {
+.section-header {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: space-between;
+    gap: 8px;
 }
 
-.streaks-card {
-    border-radius: 8px;
-    background: #FDFDFD;
-    box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+.section-title {
+    font-family: var(--font-sans);
+    font-size: 18px;
+    font-weight: 700;
+    color: #282527;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.pet-banner {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+// ── Leaderboard card ──────────────────────────────────────────────────────────
+.leaderboard-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+    overflow: hidden;
 }
 
 .streaks-list {
     list-style: none;
     margin: 0;
-    padding: 8px 0;
+    padding: 0;
 }
 
 .streak-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 14px 12px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: background 0.2s ease;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &.is-current-user {
+        background: rgba(255, 200, 60, 0.18);
+        border-bottom: none;
+        border-radius: 0;
+    }
 }
 
-.streak-item.current-user {
-    background: rgba(76, 175, 80, 0.20);
-    border-radius: 8px;
-    /* remove bottom border so highlight looks clean */
-    border-bottom: none;
-}
-
-.left {
+// ── Rank ──────────────────────────────────────────────────────────────────────
+.rank-wrap {
+    width: 28px;
     display: flex;
     align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
-.rank {
-    width: 28px;
-    text-align: center;
+.rank-num {
+    font-family: var(--font-sans);
+    font-size: 16px;
     font-weight: 700;
-    color: #4a4a4a;
-    font-size: 18px;
+    color: #4A4A4A;
+    text-align: center;
+    line-height: 1;
 }
 
-/* trend arrow styles removed */
+.rank-trophy {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
 
+// ── Avatar ────────────────────────────────────────────────────────────────────
 .avatar-wrap {
-    width: 44px;
-    height: 44px;
-    margin-right: 8px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    padding: 3px;
-    box-shadow: 0 0 0 4px rgba(255, 200, 80, 0.12);
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 2px solid rgba(0, 0, 0, 0.06);
+
+    &.avatar-highlight {
+        border: 2.5px solid #F0AD4E;
+        box-shadow: 0 0 0 3px rgba(240, 173, 78, 0.25);
+    }
 }
 
 .avatar {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 50%;
     display: block;
 }
 
+// ── Name & days ───────────────────────────────────────────────────────────────
 .name {
-    font-size: 18px;
-    color: #333333;
+    flex: 1 1 0;
+    font-family: var(--font-sans);
+    font-size: 15px;
     font-weight: 600;
-}
-
-.right {
-    display: flex;
-    align-items: center;
+    color: #282527;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
 }
 
 .days {
-    color: #777777;
-    font-size: 18px;
-    font-weight: 500;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    color: #6B656A;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
-@media (max-width: 420px) {
-    .streaks-card {
-        padding: 6px;
-    }
+.is-current-user .name,
+.is-current-user .days {
+    color: #282527;
+}
 
-    .streak-item {
-        padding: 10px 8px;
-    }
+// ── Ellipsis separator ────────────────────────────────────────────────────────
+.ellipsis-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #BCBCBC;
+    letter-spacing: 4px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
 
-    .name,
-    .days,
-    .rank {
-        font-size: 16px;
-    }
-
-    .avatar-wrap {
-        width: 40px;
-        height: 40px;
-    }
+// ── "You" badge inline next to name ──────────────────────────────────────────
+.you-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 8px;
+    background: #F0AD4E;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 20px;
+    vertical-align: middle;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
 }

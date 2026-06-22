@@ -6,6 +6,7 @@ import { PetAgeService } from './core/services/pet-age.service';
 import { LoadingService } from './core/services/loading.service';
 import { NavigationService } from './core/services/navigation.service';
 import { BadgeSocketService, BadgePopupData } from './core/services/badge-socket.service';
+import { BadgePopupService } from './core/services/badge-popup.service';
 import { BadgeApi } from './core/api/badge.api';
 import { AuthApi } from './core/api/auth.api';
 import { UserService } from './core/services/user.service';
@@ -60,6 +61,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private navigation: NavigationService,
     private badgeSocketService: BadgeSocketService,
     private badgeApi: BadgeApi,
+    private badgePopupService: BadgePopupService,
     private authApi: AuthApi,
     private userService: UserService,
     private toastService: CustomToastService,
@@ -109,6 +111,21 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // Initialize WebSocket connection for real-time badge notifications
     this.initializeBadgeWebSocket();
+
+    // Subscribe to HTTP-polled badge popups (triggered after badge-earning actions)
+    this.badgeSubscription?.add(
+      this.badgePopupService.onShowPopup().subscribe((badge: BadgePopupData) => {
+        this.showBadgeNotification(badge);
+      })
+    );
+
+    // Block hardware back button while force-update popup is visible
+    this.platform.backButton.subscribeWithPriority(9999, () => {
+      if (this.showForceUpdatePopup) {
+        console.log('[AppUpdate] Hardware back button blocked — app update required');
+        return;
+      }
+    });
 
     // Handle hardware back button on mobile devices
     this.platform.backButton.subscribeWithPriority(10, () => {
@@ -272,44 +289,49 @@ export class AppComponent implements OnInit, OnDestroy {
   private showBadgeNotification(badge: BadgePopupData): void {
     this.currentBadge = badge;
     this.showBadgePopup = true;
+    this.badgePopupService.setPopupVisible(true);
   }
 
   /**
-   * Handle badge popup close
+   * Handle badge popup close — acks and chains next popup if pendingCount > 1.
    */
-  onBadgePopupClose(): void {
-    if (this.currentBadge) {
-      // Acknowledge the badge popup to backend
-      this.badgeApi.acknowledgeBadgePopup(this.currentBadge.badgeId).subscribe({
-        next: () => {
-          console.log('[AppComponent] Badge popup acknowledged:', this.currentBadge?.badgeId);
-        },
-        error: (error) => {
-          console.error('[AppComponent] Failed to acknowledge badge popup:', error);
-        }
-      });
-    }
+  onBadgePopupClose(navigateToBadges = false): void {
+    const badge = this.currentBadge;
 
     this.showBadgePopup = false;
     this.currentBadge = undefined;
 
-    // Notify socket service to show next badge in queue
-    this.badgeSocketService.popupClosed();
+    if (badge) {
+      const pendingCount = badge.pendingCount ?? 1;
+      // badgePopupService handles ack + pending chain; badgeSocketService handles WebSocket queue
+      if (badge.pendingCount !== undefined) {
+        this.badgePopupService.ack(badge.badgeId, pendingCount);
+      } else {
+        this.badgeApi.acknowledgeBadgePopup(badge.badgeId).subscribe({
+          next: () => console.log('[AppComponent] Badge acked:', badge.badgeId),
+          error: (err) => console.warn('[AppComponent] Badge ack failed:', err)
+        });
+        this.badgeSocketService.popupClosed();
+      }
+    }
+
+    if (navigateToBadges) {
+      this.router.navigate(['/authed/badges']);
+    }
   }
 
   /**
    * Handle "View all Badges" click
    */
   onViewAllBadges(): void {
-    this.onBadgePopupClose();
-    this.router.navigate(['/authenticated/badges']);
+    this.onBadgePopupClose(true);
   }
 
   /**
-   * Handle "Awesome" click
+   * Handle "Awesome" / close click
    */
   onAwesomeClick(): void {
-    this.onBadgePopupClose();
+    this.onBadgePopupClose(false);
   }
 
   /**

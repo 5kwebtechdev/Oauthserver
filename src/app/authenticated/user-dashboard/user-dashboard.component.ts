@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { ModalController, RefresherCustomEvent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
+import { StreakRestoreApi, StreakStatus } from '../../core/api/streak-restore.api';
+import { StreakRestoreModalComponent } from '../../core/components/streak-restore/streak-restore-modal.component';
 import { NotesComponent } from '../../core/components/notes/notes.component';
 import { ActivityCardComponent } from "../../core/components/activity-section/activity-card/activity-card.component";
 import { LearningSectionComponent } from "../../core/components/learning-section/learning-section.component";
@@ -18,6 +20,7 @@ import { SupermePetComponent } from '../../core/components/superme-pet/superme-p
 import { SupermeCoinsStatsComponent } from '../../core/components/superme-coins-stats/superme-coins-stats.component';
 
 import { FooterComponent } from '../../core/components/footer/footer.component';
+import { SkeletonImageComponent } from '../../core/components/skeleton-image/skeleton-image.component';
 import { PetMessagesService, PetMessage, PetMood } from '../../core/services/pet-messages.service';
 import { UserService } from '../../core/services/user.service';
 import { MoodService } from '../../core/services/mood.service';
@@ -56,6 +59,8 @@ import { debounceTime, takeUntil } from 'rxjs/operators';
     SupermeSpeechBubbleComponent,
     SupermeCoinsStatsComponent,
     FooterComponent,
+    StreakRestoreModalComponent,
+    SkeletonImageComponent,
   ]
 })
 export class UserDashboardComponent implements OnInit, OnDestroy {
@@ -85,6 +90,12 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   public totalHabitsCompleted: number = 0;
   public habitCompletionRate: number = 0;
 
+  // Streak restore banner
+  canRestoreStreak = false;
+  restoreToStreak: number | null = null;
+  restoreCost = 5;
+  private streakPopupShown = false;
+
   // Observable for shared toast service
   toast$: Observable<Toast | null>;
 
@@ -106,7 +117,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private childSelfImageService: ChildSelfImageService,
     private toastService: CustomToastService,
-    private refreshService: RefreshService
+    private refreshService: RefreshService,
+    private streakRestoreApi: StreakRestoreApi
   ) {
     this.toast$ = this.toastService.toast$;
   }
@@ -152,6 +164,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
     // Fetch user stats (coins, streaks, badges, etc.) from backend
     this.loadUserStats();
+
+    // Check if streak restore is available
+    this.checkStreakRestore();
 
     // Load recent habits and tasks
     this.loadRecentHabitsAndTasks();
@@ -458,6 +473,46 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       streakDays: this.userStreaks
     });
     this.petMood = this.currentPetMessage.mood;
+  }
+
+  private checkStreakRestore(): void {
+    this.streakRestoreApi.getStreakStatus().subscribe({
+      next: (status: StreakStatus) => {
+        this.canRestoreStreak = status.canRestoreStreak;
+        this.restoreToStreak = status.restoreToStreak;
+        this.restoreCost = status.restoreCost ?? 5;
+        if (status.canRestoreStreak && !this.streakPopupShown) {
+          this.streakPopupShown = true;
+          setTimeout(() => this.openStreakRestoreModal(), 800);
+        }
+      },
+      error: () => {
+        this.canRestoreStreak = false;
+      }
+    });
+  }
+
+  async openStreakRestoreModal(): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: StreakRestoreModalComponent,
+      componentProps: {
+        restoreToStreak: this.restoreToStreak ?? 0,
+        restoreCost: this.restoreCost,
+        userCoins: this.userCoins
+      },
+      cssClass: 'streak-restore-modal'
+    });
+    await modal.present();
+
+    const { data } = await modal.onDidDismiss();
+    if (data?.success) {
+      this.userCoins = data.userCoins ?? this.userCoins;
+      this.canRestoreStreak = false;
+      this.toastService.success('Streak restored! 🔥');
+      // Refresh streak count
+      this.checkStreakRestore();
+      this.loadUserStats();
+    }
   }
 
   ngOnDestroy(): void {

@@ -1,51 +1,105 @@
 <ion-content class="streaks-page" fullscreen>
     <superme-navigator heading="Your Streak Journey" backIcon="arrowSvg"></superme-navigator>
-    <div class="leaderboard-card">
-        <div class="streaks-status">
-            <div class="streaks-status-item">
-                <span class="status-label">Current Streak</span>
-                <img src="assets/Icons-Neutral/Icon-Streak.png" alt="fire icon" class="icon" />
-                <span class="status-value">{{ currentUser?.currentStreak || 0 }} days</span>
+
+    <div class="page-body">
+
+        <!-- ── Stat cards ───────────────────────────────────────────── -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <span class="stat-label">Current Streak</span>
+                <img src="assets/Icons-Neutral/Icon-BestStreak-3D.png"
+                     onerror="this.src='assets/Icons-Neutral/Icon-Streak.png'"
+                     alt="Current streak" class="stat-icon" />
+                <span class="stat-value">{{ currentUser?.currentStreak || 0 }} days</span>
             </div>
-            <div class="streaks-status-item">
-                <span class="status-label">Best <br>Streak</span>
-                <img src="assets/Icons-Neutral/Icon-BestStreak.png" alt="trophy icon" class="icon" />
-                <span class="status-value">{{ currentUser?.highestStreak || 0 }} days</span>
+            
+            <div class="stat-card">
+                <span class="stat-label">Best Streak</span>
+                <img src="assets/Icons-Neutral/Icon-Streak-3D.png"
+                     onerror="this.src='assets/Icons-Neutral/Icon-BestStreak.png'"
+                     alt="Best streak" class="stat-icon" />
+                <span class="stat-value">{{ currentUser?.highestStreak || 0 }} days</span>
             </div>
-            <div class="streaks-status-item">
-                <span class="status-label">Total days Active</span>
-                <img src="assets/Icons-Neutral/Icon-TotalActiveDays.png" alt="total active days icon" class="icon" />
-                <span class="status-value">{{ currentUser?.totalActiveDays || 0 }} days</span>
+            <div class="stat-card">
+                <span class="stat-label">Total Days Active</span>
+                <img src="assets/Icons-Neutral/TotalActiveDays-3D.png"
+                     onerror="this.src='assets/Icons-Neutral/Icon-TotalActiveDays.png'"
+                     alt="Total active days" class="stat-icon" />
+                <span class="stat-value">{{ currentUser?.totalActiveDays || 0 }} days</span>
             </div>
         </div>
-        <div class="streak-container">
-            <h2 class="title mb-0">Top Streakers</h2>
-        </div>
-        <div class="top-strickers-header d-flex align-items-center justify-content-end">
-            <div class="d-flex align-items-center gap-2">
-                <app-speech-bubble [message]="currentUser?.petMessage || 'Keep going champ!'" type="talking"
-                    arrowSide="right" color="#F0AD4E"></app-speech-bubble>
-                <superme-pet pet="panda" mood="tired" [size]="44"></superme-pet>
+
+        <!-- ── Leaderboard section ──────────────────────────────────── -->
+        <div class="leaderboard-section">
+
+            <!-- Header row: title + pet banner -->
+            <div class="section-header">
+                <h2 class="section-title">Top Streakers</h2>
+                <div class="pet-banner" *ngIf="currentUser?.rank">
+                    <app-speech-bubble
+                        [message]="currentUser?.petMessage || ('You\'re ranked #' + currentUser!.rank + ', Keep going champ!')"
+                        type="talking" arrowSide="right" color="#F0AD4E">
+                    </app-speech-bubble>
+                    <superme-pet pet="panda" mood="happy" [size]="44"></superme-pet>
+                </div>
             </div>
-        </div>
-        <div class="streaks-card">
-            <ul class="streaks-list">
-                <li *ngFor="let item of rankedStreaks; let i = index" class="streak-item">
-                    <div class="left">
-                        <div class="d-flex flex-column" style="align-items: center; margin-right: 16px;">
-                            <div class="rank">{{ item.rank }}</div>
+
+            <!-- Leaderboard list -->
+            <div class="leaderboard-card">
+                <ul class="streaks-list">
+                    <li *ngFor="let item of rankedStreaks"
+                        class="streak-item"
+                        [class.is-current-user]="currentUser && item.rank === currentUser.rank">
+
+                        <!-- Rank -->
+                        <div class="rank-wrap">
+                            <ng-container [ngSwitch]="item.rank">
+                                <img *ngSwitchCase="1" src="assets/Icons-Neutral/Icon-Trophy.png" alt="1st" class="rank-trophy" />
+                                <span *ngSwitchDefault class="rank-num">{{ item.rank }}</span>
+                            </ng-container>
                         </div>
-                        <div class="avatar-wrap">
-                            <img class="avatar" [src]="item.avatar || 'assets/avatar/ChildAvatar.png'"
-                                [alt]="item.avatarAlt || (item.avatarName + ' avatar')">
+
+                        <!-- Avatar -->
+                        <div class="avatar-wrap" [class.avatar-highlight]="currentUser && item.rank === currentUser.rank">
+                            <img class="avatar"
+                                 [src]="item.avatar || 'assets/avatar/ChildAvatar.png'"
+                                 [alt]="item.avatarAlt || item.avatarName + ' avatar'" />
                         </div>
-                        <div class="name">{{ item.avatarName }}</div>
-                    </div>
-                    <div class="right">
-                        <div class="days">{{ item.highestStreak }} days</div>
-                    </div>
-                </li>
-            </ul>
+
+                        <!-- Name -->
+                        <span class="name">{{ item.avatarName }}</span>
+
+                        <!-- Days -->
+                        <span class="days">{{ item.highestStreak }} days</span>
+                    </li>
+
+                    <!-- ── Current user row (shown when not in top list) ── -->
+                    <ng-container *ngIf="currentUser && currentUser.rank && !currentUserInList">
+                        <!-- Ellipsis separator -->
+                        <li class="ellipsis-row">
+                            <span>•••</span>
+                        </li>
+                        <!-- You row -->
+                        <li class="streak-item is-current-user">
+                            <div class="rank-wrap">
+                                <span class="rank-num">{{ currentUser.rank }}</span>
+                            </div>
+                            <div class="avatar-wrap avatar-highlight">
+                                <img class="avatar"
+                                     [src]="currentUserAvatarUrl || 'assets/avatar/ChildAvatar.png'"
+                                     alt="Your avatar" />
+                            </div>
+                            <span class="name">
+                                {{ currentUser.avatarName || 'You' }}
+                                <span class="you-badge">You</span>
+                            </span>
+                            <span class="days">{{ currentUser.highestStreak || currentUser.currentStreak || 0 }} days</span>
+                        </li>
+                    </ng-container>
+                </ul>
+            </div>
         </div>
     </div>
+
+    <app-footer></app-footer>
 </ion-content>

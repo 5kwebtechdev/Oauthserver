@@ -16,8 +16,8 @@ export const environment = {
         academy_enabled: true,
         tutors_enabled: true,
         school_store_enabled: true,
-        force_update_required: false,
-        minimum_supported_version: '0.0.2'
+        force_update_required: true,
+        minimum_supported_version: '0.0.0'
       }
     },
     appCheck: {

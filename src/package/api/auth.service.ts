@@ -463,6 +463,7 @@ export interface FamilyMember {
 export interface FamilyInfo {
     familyId: number;
     familyName: string;
+    familyCode?: string;
     status: string;
     createdOn: string;
     creator: FamilyMember;

@@ -65,7 +65,7 @@
   font-weight: 600;
   line-height: 140%;
   align-self: stretch;
-  font-family: Nunito;
+  font-family: var(--font-sans);
 
 }
 
@@ -77,7 +77,7 @@
   font-weight: 500;
   line-height: 140%;
   margin: 0 !important;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   opacity: 0.7;
 }
 

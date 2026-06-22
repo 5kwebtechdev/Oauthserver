@@ -25,12 +25,12 @@ p{
   color: #282527;
   cursor: pointer;
  font-size: 34px;
-    font-family: math;
+    font-family: var(--font-sans);
 }
 
 .month-label {
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 500;
 }
@@ -50,7 +50,7 @@ p{
 .lead{
   color: #282527;
 text-align: center;
-font-family: Fredoka;
+font-family: var(--font-heading);
 font-size: 16px;
 font-weight: 500;
 }
@@ -58,7 +58,7 @@ font-weight: 500;
 .sub{
   color: #282527;
 text-align: center;
-font-family: Nunito;
+font-family: var(--font-sans);
 font-size: 13px;
 font-weight: 500;
 opacity: 0.7;

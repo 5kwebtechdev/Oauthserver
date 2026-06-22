@@ -62,7 +62,7 @@
 
 .category-name {
     color: #282527;
-    font-family: Nunito, sans-serif;
+    font-family: var(--font-sans);
     font-size: 16px;
     font-style: normal;
     font-weight: 600;
@@ -87,7 +87,7 @@
 
 .empty-state h2 {
     color: #282527;
-    font-family: Fredoka, sans-serif;
+    font-family: var(--font-heading);
     font-size: 20px;
     font-weight: 600;
     margin: 0 0 12px 0;
@@ -95,7 +95,7 @@
 
 .empty-state p {
     color: #6B656A;
-    font-family: Nunito, sans-serif;
+    font-family: var(--font-sans);
     font-size: 14px;
     line-height: 1.5;
     margin: 0;

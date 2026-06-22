@@ -1,9 +1,8 @@
 <!-- List Mode -->
 <!-- Shared header used by both list and recent modes -->
 <ng-template #dayHeader>
-  <superme-card-header title="Today At a Glance" subtitleMiddle="Check tasks • Finish habits • Crush it">
-    <img src="/assets/Icons-Neutral/Icon-Time Management.png" alt="View All" class="day-at-glance__view-all"
-      (click)="openTimeline()" style="cursor:pointer;" />
+  <superme-card-header title="Today at a Glance" subtitleMiddle="Check tasks • Finish habits • Crush it">
+    <img src="assets/Icon-Calendar-Clock.jpg" alt="Today at a Glance" class="calendar-icon" (click)="openTimeline()" role="button" aria-label="Open timeline" />
   </superme-card-header>
 </ng-template>
 <div *ngIf="mode === 'list'" class="d-flex flex-column gap-2">
@@ -142,8 +141,18 @@
       (click)="openHabitInput()"></superme-button>
   </div>
   <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
-    <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">View All</button>
-    <superme-view-all [text]="'Add New +'" (clicked)="openHabitInput()" [hideIcon]="true"></superme-view-all>
+    <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">
+      View All
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path d="M8.94097 6.39773L4.38604 10.9526C4.16636 11.1723 3.8102 11.1723 3.59054 10.9526L3.05929 10.4214C2.83998 10.2021 2.83956 9.84666 3.05835 9.62684L6.66822 5.99998L3.05835 2.37314C2.83956 2.15332 2.83998 1.79789 3.05929 1.57859L3.59054 1.04733C3.81022 0.827648 4.16638 0.827648 4.38604 1.04733L8.94095 5.60224C9.16063 5.8219 9.16063 6.17805 8.94097 6.39773Z" fill="currentColor" />
+      </svg>
+    </button>
+    <button class="add-new-pill" (click)="openHabitInput()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path d="M6 1V11M1 6H11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Add New
+    </button>
   </div>
 </div>
 
@@ -266,8 +275,18 @@
       (click)="openHabitInput()"></superme-button>
   </div>
   <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
-    <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">View All</button>
-    <superme-view-all [text]="'Add New +'" (clicked)="openHabitInput()" [hideIcon]="true"></superme-view-all>
+    <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">
+      View All
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path d="M8.94097 6.39773L4.38604 10.9526C4.16636 11.1723 3.8102 11.1723 3.59054 10.9526L3.05929 10.4214C2.83998 10.2021 2.83956 9.84666 3.05835 9.62684L6.66822 5.99998L3.05835 2.37314C2.83956 2.15332 2.83998 1.79789 3.05929 1.57859L3.59054 1.04733C3.81022 0.827648 4.16638 0.827648 4.38604 1.04733L8.94095 5.60224C9.16063 5.8219 9.16063 6.17805 8.94097 6.39773Z" fill="currentColor" />
+      </svg>
+    </button>
+    <button class="add-new-pill" (click)="openHabitInput()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path d="M6 1V11M1 6H11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Add New
+    </button>
   </div>
 </div>
 

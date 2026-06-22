@@ -1,54 +1,85 @@
 <div class="superme-timepicker-wrapper">
   <input type="text" [attr.placeholder]="placeholder" [value]="hasValue ? timeString : ''"
-    (click)="showPopup = true; clicked()" class="time-display-input" />
+    (click)="openPopup()" class="time-display-input" readonly />
 
   <div class="overlay" *ngIf="showPopup">
     <div class="popup" #popup>
+
+      <!-- Mode label -->
+      <p class="mode-label">{{ selecting === 'hour' ? 'Select hour' : 'Select minute' }}</p>
+
       <div class="popup-header">
         <div class="time-select">
-          <input #hourInput type="tel" inputmode="numeric" maxlength="2" class="time-button"
-            [class.active]="selecting === 'hour'" (focus)="startEdit('hour')" (click)="startEdit('hour')" (blur)="finishEdit('hour')"
+          <!-- Hour input: type="text" + inputmode="numeric" works reliably inside fixed overlays on Android/iOS -->
+          <input #hourInput
+            type="text"
+            inputmode="numeric"
+            maxlength="2"
+            autocomplete="off"
+            class="time-button"
+            [class.active]="selecting === 'hour'"
             [value]="editingField === 'hour' ? hourBuffer : selectedHour.toString().padStart(2, '0')"
+            (focus)="startEdit('hour')"
+            (click)="startEdit('hour')"
+            (blur)="finishEdit('hour')"
             (input)="onHourInput($event)" />
-          <p style="font-size: 50px;width: 20px;display: inline-block;margin: 0 15px;font-weight: bold">:</p>
-          <input #minuteInput type="tel" inputmode="numeric" maxlength="2" class="time-button"
-            [class.active]="selecting === 'minute'" (focus)="startEdit('minute')" (click)="startEdit('minute')" (blur)="finishEdit('minute')"
+
+          <p class="time-colon">:</p>
+
+          <!-- Minute input -->
+          <input #minuteInput
+            type="text"
+            inputmode="numeric"
+            maxlength="2"
+            autocomplete="off"
+            class="time-button"
+            [class.active]="selecting === 'minute'"
             [value]="editingField === 'minute' ? minuteBuffer : selectedMinute.toString().padStart(2, '0')"
+            (focus)="startEdit('minute')"
+            (click)="startEdit('minute')"
+            (blur)="finishEdit('minute')"
             (input)="onMinuteInput($event)" />
         </div>
+
         <div class="ampm-box">
           <div class="container p-0" style="max-width: 75px">
-            <button class="ampm-button" [class.selected]="ampm === 'AM'" (click)="setAMPM('AM')">
-              AM
-            </button>
+            <button class="ampm-button" [class.selected]="ampm === 'AM'" (click)="setAMPM('AM')">AM</button>
             <hr />
-            <button class="ampm-button" [class.selected]="ampm === 'PM'" (click)="setAMPM('PM')">
-              PM
-            </button>
+            <button class="ampm-button" [class.selected]="ampm === 'PM'" (click)="setAMPM('PM')">PM</button>
           </div>
         </div>
       </div>
 
       <div class="clock-face">
-        <svg class="clock-svg" #clockSvg viewBox="0 0 200 200" (pointerdown)="onClockPointerDown($event)"
-          (pointermove)="onClockPointerMove($event)" (pointerup)="onClockPointerUp($event)"
-          (pointercancel)="onClockPointerUp($event)" (pointerleave)="onClockPointerUp($event)">
-          <!-- Clock Circle -->
-          <circle cx="100" cy="100" r="97" fill="#DCDBDC" stroke="none" stroke-width="2"></circle>
-          <circle cx="100" cy="100" r="3" fill="#90214D" stroke="none"></circle>
-          <!-- Clock Hand -->
-          <line x1="100" y1="100" [attr.x2]="getHandX()" [attr.y2]="getHandY()" stroke="#90214D" stroke-width="2">
-          </line>
+        <!--
+          pointerleave is intentionally omitted — with setPointerCapture on the SVG, the browser
+          delivers pointermove/pointerup to this element even when the pointer exits its bounds,
+          so removing pointerleave fixes counter-clockwise dragging.
+        -->
+        <svg class="clock-svg" #clockSvg viewBox="0 0 200 200"
+          (pointerdown)="onClockPointerDown($event)"
+          (pointermove)="onClockPointerMove($event)"
+          (pointerup)="onClockPointerUp($event)"
+          (pointercancel)="onClockPointerUp($event)">
 
-          <!-- have the for loop in a group -->
+          <!-- Clock face -->
+          <circle cx="100" cy="100" r="97" fill="#DCDBDC" stroke="none"></circle>
+          <!-- Center dot -->
+          <circle cx="100" cy="100" r="3" fill="#90214D" stroke="none"></circle>
+          <!-- Clock hand -->
+          <line x1="100" y1="100" [attr.x2]="getHandX()" [attr.y2]="getHandY()"
+            stroke="#90214D" stroke-width="2" stroke-linecap="round"></line>
+          <!-- Hand tip dot -->
+          <circle [attr.cx]="getHandX()" [attr.cy]="getHandY()" r="5" fill="#90214D"></circle>
+
+          <!-- Numbers -->
           <g transform="translate(100, 100)">
-            <!-- Numbers -->
             <ng-container *ngFor="let i of [].constructor(12); let idx = index">
               <g [attr.transform]="getTransform(idx)" class="clock-number">
-                <circle cx="0" cy="0" r="18" [attr.fill]="isSelected(idx) ? '#90214D' : 'transparent'">
-                </circle>
+                <circle cx="0" cy="0" r="18"
+                  [attr.fill]="isSelected(idx) ? '#90214D' : 'transparent'"></circle>
                 <text x="0" y="1" text-anchor="middle" dominant-baseline="middle"
-                  [attr.fill]="isSelected(idx) ? 'white' : 'black'" font-size="10">
+                  [attr.fill]="isSelected(idx) ? 'white' : '#282527'" font-size="10" font-weight="500">
                   {{ selecting === 'hour' ? (idx === 0 ? 12 : idx) : (idx * 5).toString().padStart(2, '0') }}
                 </text>
               </g>

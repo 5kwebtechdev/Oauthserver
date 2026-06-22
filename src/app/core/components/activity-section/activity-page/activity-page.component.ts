@@ -36,7 +36,7 @@ import { RefreshService } from '../../../services/refresh.service';
     .habit-add-btn {
       position: fixed;
       right: 16px;
-      bottom: 24px;
+      bottom: calc(24px + env(safe-area-inset-bottom, 0px));
       z-index: 1000;
     }
   `],

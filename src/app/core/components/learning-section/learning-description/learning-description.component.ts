@@ -101,7 +101,7 @@ import { Challenge } from 'src/app/core/models/learning.models';
     .content-description-screen .meta-cards .meta-icon { width: 18px; height: 18px; object-fit: contain; display: inline-block; }
     .content-description-screen .meta-cards .meta-label { color: #282527; font-family: Nunito; font-size: 13px; font-weight: 600; line-height: 140%; opacity: 0.7; }
     .content-description-screen .description { color: #282527; font-family: Nunito; font-size: 16px; font-style: normal; font-weight: 600; line-height: 140%; opacity: 0.7; }
-    .content-description-screen .start-journey { display: flex; height: 56px; color: #FFF; padding: 10px; justify-content: center; align-items: center; gap: 8px; flex-shrink: 0; border-radius: 8px; border: 1px solid #CF3359; background: linear-gradient(99deg, #E1527C 0.65%, #AC2456 99.35%); box-shadow: 0 -2px 2px 0 #F4ADC6 inset, 0 0 1px 0.5px rgba(225, 82, 124, 0.20); font-family: Nunito; font-size: 16px; font-style: normal; font-weight: 700; line-height: 140%; }
+    .content-description-screen .start-journey { display: flex; height: 56px; color: #FFF; padding: 10px; justify-content: center; align-items: center; gap: 8px; flex-shrink: 0; border-radius: 8px; border: 1px solid #CF3359; background: linear-gradient(99deg, #E1527C 0.65%, #AC2456 99.35%); box-shadow: 0 -2px 2px 0 #F4ADC6 inset, 0 0 1px 0.5px rgba(225, 82, 124, 0.20); font-family: Nunito; font-size: 16px; font-style: normal; font-weight: 700; line-height: 140%; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; cursor: pointer; }
     .w-100 { width: 100%; }
     `
   ]
@@ -110,6 +110,7 @@ export class LearningDescriptionComponent implements OnInit {
   heading: string = 'Apple Orchard Math Challenge';
   challenge: Challenge | null = null;
   isLoading = true;
+  private isNavigating = false;
 
   constructor(
     public router: Router,
@@ -144,6 +145,8 @@ export class LearningDescriptionComponent implements OnInit {
   }
 
   startJourney() {
+    if (this.isNavigating) return;
+    this.isNavigating = true;
     if (this.challenge) {
       this.router.navigate(['/authed/content/questions', this.challenge.challengeId], {
         state: { challenge: this.challenge }

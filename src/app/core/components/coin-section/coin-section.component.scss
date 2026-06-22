@@ -21,7 +21,7 @@
 
     p {
         color: #FDFDFD;
-        font-family: Fredoka;
+        font-family: var(--font-heading);
         font-size: 16px;
         font-weight: 500;
         margin: 0;
@@ -45,7 +45,7 @@
 
     .coin-value {
         color: #FDFDFD;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 32px;
         font-weight: 700;
         line-height: 140%;
@@ -60,7 +60,7 @@
     gap: 0;
 
     h2 {
-        font-family: Fredoka;
+        font-family: var(--font-heading);
         font-size: 18px;
         font-weight: 600;
         color: #282527;
@@ -85,7 +85,7 @@
 
     p {
         color: #6B656A;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 14px;
         font-weight: 500;
         margin: 0;
@@ -113,7 +113,7 @@
 
         h1 {
             color: #282527;
-            font-family: Fredoka;
+            font-family: var(--font-heading);
             font-size: 16px;
             font-weight: 500;
             margin: 0;
@@ -121,7 +121,7 @@
 
         p {
             color: #6B656A;
-            font-family: Nunito;
+            font-family: var(--font-sans);
             font-size: 13px;
             font-weight: 500;
             margin: 0;
@@ -155,7 +155,7 @@
 
     &__pill {
         flex-shrink: 0;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 12px;
         font-weight: 700;
         color: #6B656A;
@@ -246,7 +246,7 @@
 
     .item-title {
         color: #282527;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 13px;
         font-weight: 700;
         line-height: 1.35;
@@ -262,7 +262,7 @@
     }
 
     .type-chip {
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 10px;
         font-weight: 700;
         color: #BE6F03;
@@ -274,7 +274,7 @@
 
     .item-time {
         color: #6B656A;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 10px;
         font-weight: 500;
         opacity: 0.8;
@@ -296,7 +296,7 @@
 
     .count-value {
         color: #28A745;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 14px;
         font-weight: 700;
         line-height: 1;

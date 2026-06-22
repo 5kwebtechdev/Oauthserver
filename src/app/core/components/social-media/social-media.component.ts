@@ -19,10 +19,10 @@ import { AuthSessionCleanupService } from '../../services/auth-session-cleanup.s
 export class SocialMediaComponent {
   @Input() variant?: string;
   links = [
-    { name: 'facebook', label: 'Facebook', icon: 'facebook', url: 'https://www.facebook.com' },
-    { name: 'instagram', label: 'Instagram', icon: 'instagram', url: 'https://www.instagram.com/supermeappofficial/' },
-    { name: 'youtube', label: 'YouTube', icon: 'youtube', url: 'https://www.youtube.com' },
-    { name: 'x', label: 'X', icon: 'x', url: 'https://twitter.com' }
+    { name: 'facebook', label: 'Facebook', icon: 'facebook', url: 'https://www.facebook.com/SuperMeAppOfficial' },
+    { name: 'instagram', label: 'Instagram', icon: 'instagram', url: 'https://www.instagram.com/supermeappofficial' },
+    { name: 'youtube', label: 'YouTube', icon: 'youtube', url: 'https://www.youtube.com/@SuperMeApp' },
+    { name: 'x', label: 'X', icon: 'x', url: 'https://x.com/GetSuperMeApp' }
   ];
 
   constructor(

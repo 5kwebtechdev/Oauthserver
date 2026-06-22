@@ -62,7 +62,7 @@
 
 .name {
   color: #282527;
-font-family: Nunito;
+font-family: var(--font-sans);
 font-size: 13px;
 font-weight: 600;
   margin: 0px !important;
@@ -70,7 +70,7 @@ font-weight: 600;
 
 .role {
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 10px;
   font-weight: 600;
   margin-bottom: 0px !important;
@@ -92,7 +92,7 @@ font-weight: 600;
 .meta {
   color: var(--Neutral-Grey, rgba(40, 37, 39, 0.70));
 text-align: center;
-font-family: Nunito;
+font-family: var(--font-sans);
 font-size: 10px;
 font-weight: 600;
 }
@@ -122,7 +122,7 @@ display: flex;
 
 .tutor-role-detail{ 
 p, label, .time span {
-font-family: Nunito;
+font-family: var(--font-sans);
 font-size: 10px;
 font-weight: 600;
 }
@@ -143,14 +143,14 @@ color: #505D83;
 
   p{
     color: var(--Neutral-Black, #282527);
-font-family: Nunito;
+font-family: var(--font-sans);
 font-size: 13px;
 font-weight: 600;
 margin: 0;
   }
  span{
   color: #6B656A;
-font-family: Nunito;
+font-family: var(--font-sans);
 font-size: 8px;
 font-weight: 600;
  }
@@ -167,7 +167,7 @@ font-weight: 600;
 
   p {
     color: #6B656A;
-    font-family: Nunito, sans-serif;
+    font-family: var(--font-sans);
     font-size: 14px;
     font-weight: 500;
   }

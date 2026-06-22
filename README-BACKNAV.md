@@ -1,4 +1,4 @@
-# Back-navigation analysis and recommended standard for MindfulBuddy
+# Back-navigation analysis and recommended standard for Super Me
 
 Summary
 - The project uses two header components: `mindful-navigator` and `mindful-card-header`.

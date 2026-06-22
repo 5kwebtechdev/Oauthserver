@@ -17,7 +17,7 @@
 
 .mood-text {
   color: #282527;
-  font-family: Fredoka;
+  font-family: var(--font-heading);
   font-size: 16px;
   font-style: normal;
   font-weight: 400;
@@ -31,7 +31,7 @@
 }
 
 .mood-title {
-  font-family: 'Fredoka';
+  font-family: var(--font-heading);
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
@@ -41,7 +41,7 @@
 
 /* Apply gradient styles to server-provided <h1> injected via innerHTML */
 :host ::ng-deep .mood-title h1 {
-  font-family: Fredoka;
+  font-family: var(--font-heading);
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
@@ -126,7 +126,7 @@
     box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.1);
     color: #282527;
     text-align: center;
-    font-family: Nunito, sans-serif;
+    font-family: var(--font-sans);
     font-size: 10px;
     font-weight: 600;
     width: 137px;

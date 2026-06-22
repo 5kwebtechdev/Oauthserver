@@ -123,7 +123,16 @@
 
 .habit-filters-container,
 .task-filters-container {
-    padding: 0px 0px 80px 0px;
+    // 120px = FAB height (56px) + FAB bottom (24px) + 40px clearance
+    padding: 0px 0px calc(120px + env(safe-area-inset-bottom, 0px)) 0px;
+}
+
+// Prevent the rightmost badge from sliding under the fixed FAB (+) button.
+// FAB is 56px wide at right: 16px → occupies rightmost 80px. Add 8px gap = 88px total.
+.habit-journey-week,
+.priority-selectors,
+.routine-selectors {
+    padding-right: 88px;
 }
 
 .habit-list-content {

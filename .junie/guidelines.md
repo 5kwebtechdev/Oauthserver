@@ -1,4 +1,4 @@
-# Mindful-Buddy Development Guidelines
+# Super Me Development Guidelines
 
 ## Build/Configuration Instructions
 

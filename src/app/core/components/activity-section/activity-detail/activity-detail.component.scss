@@ -11,7 +11,7 @@ p { margin: 0; }
 
 h2 {
   color: #282527;
-  font-family: Fredoka;
+  font-family: var(--font-heading);
   font-size: 16px;
   font-weight: 500;
   line-height: 140%;
@@ -25,7 +25,7 @@ h2 {
   gap: 12px;
 
   h2 {
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 20px;
     font-weight: 700;
     line-height: 140%;
@@ -85,7 +85,7 @@ h2 {
 
   p {
     color: #282527;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 16px;
     font-weight: 600;
     line-height: 140%;
@@ -109,25 +109,30 @@ h2 {
 .completion-days {
   display: inline-flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   gap: 40px;
   width: 360.5px;
   max-width: 100%;
   margin: 16px auto;
 }
 
+.completion-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
 .completedays-header,
 .skipped-days {
   display: flex;
-  width: 81px;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;
   align-items: center;
-  gap: 2px;
+  gap: 6px;
 
   p {
     color: #6B656A;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 600;
     line-height: 120%;
@@ -138,11 +143,22 @@ h2 {
     width: 8px;
     height: 8px;
     border-radius: 50%;
+    flex-shrink: 0;
   }
 }
 
 .completedays-header > span { background: #4CAF50; }
 .skipped-days > span { background: #BB2124; }
+
+.completion-count,
+.skipped-count {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #282527;
+  text-align: center;
+}
 
 // === Divider ===
 .divider-svg {
@@ -174,7 +190,7 @@ h2 {
 .progres-count {
   color: #282527;
   text-align: center;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
   line-height: 140%;
@@ -225,7 +241,7 @@ h2 {
 .progress-name {
   color: #282527;
   text-align: center;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 10px;
   font-weight: 700;
   line-height: 140%;
@@ -285,7 +301,7 @@ h2 {
   border-radius: 6px;
   background: #BB2124;
   color: #FDFDFD;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 10px;
 
   &.priority-high { background: #BB2124; }
@@ -297,7 +313,7 @@ h2 {
 .habit-title {
   h1 {
     color: #282527;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 20px;
     font-weight: 700;
     margin: 0;
@@ -305,7 +321,7 @@ h2 {
 
   > span:first-of-type {
     color: #282527;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 16px;
     font-weight: 500;
   }

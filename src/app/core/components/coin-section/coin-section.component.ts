@@ -146,6 +146,7 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
             case 'ARTICLE_READ':            return '/assets/Icons-Neutral/Icon-Content-Articles.png';
             case 'CHALLENGE_BATCH_REWARD':  return '/assets/Icons-Neutral/Icons-Coins.png';
             case 'STREAK_7DAY_BONUS':       return '/assets/Icons-Neutral/Icon-Streak.png';
+            case 'STREAK_RESTORE':          return '/assets/Icons-Neutral/Icon-Streak.png';
             default:                        return '/assets/Icons-Neutral/Icons-Coins.png';
         }
     }
@@ -161,6 +162,7 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
             case 'CHALLENGE_BATCH_REWARD':  return '#FCE4EC';
             case 'REFERRAL_BONUS':          return '#E0F7FA';
             case 'STREAK_7DAY_BONUS':       return '#FFF3E0';
+            case 'STREAK_RESTORE':          return '#EDE7F6';
             default:                        return '#F5F5F5';
         }
     }
@@ -176,6 +178,7 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
             case 'CHALLENGE_BATCH_REWARD':  return 'Challenge';
             case 'REFERRAL_BONUS':          return 'Referral';
             case 'STREAK_7DAY_BONUS':       return 'Streak Bonus';
+            case 'STREAK_RESTORE':          return 'Streak Restore';
             default:                        return 'Reward';
         }
     }
@@ -185,6 +188,10 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
             case 'DAILY_LOGIN_BONUS':      return 'Daily Login Bonus';
             case 'STREAK_7DAY_BONUS':      return '7 Day Streak Bonus';
             case 'REFERRAL_BONUS':         return 'Referral Bonus';
+            case 'STREAK_RESTORE': {
+                if ((item as any).restoredItemName) return `Restored: ${(item as any).restoredItemName}`;
+                return 'Streak Restored';
+            }
             case 'HABIT_COMPLETION': {
                 if ((item as any).habit?.title) return (item as any).habit.title;
                 return 'Habit Completed';

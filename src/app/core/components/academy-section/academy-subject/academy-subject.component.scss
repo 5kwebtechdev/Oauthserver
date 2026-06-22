@@ -47,7 +47,7 @@
 
 .course-title {
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
@@ -57,7 +57,7 @@
 
 .course-meta {
   color: rgba(40, 37, 39, 0.70);
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-style: normal;
   font-weight: 500;
@@ -80,7 +80,7 @@
 }
 
 .coins-value {
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-style: normal;
   font-weight: 600;
@@ -95,7 +95,7 @@
   border-radius: 12px;
   border: 1px solid;
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 10px;
   font-style: normal;
   font-weight: 600;

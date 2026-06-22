@@ -12,10 +12,10 @@
     width: 100%;
     height: 180px;
     background-image: url('/assets/Images-Thumbnails/educational-banner.jpg');
-    // background-size: cover;
-    background-position: center;
+    background-size: cover;
+    background-position: left center;
     background-repeat: no-repeat;
-    border-radius: 8px;
+    border-radius: 16px;
 }
 
 .edu-swiper {
@@ -24,8 +24,8 @@
     flex-direction: column;
     align-items: center;
     position: relative;
-    overflow: visible;
-    /* allow space below the slide for the pager */
+    overflow: hidden;
+    border-radius: 16px;
 }
 
 /* External pagination placed below the swiper (matches LearningSection placement) */
@@ -68,21 +68,22 @@
     color: inherit;
 
     span {
-        display: flex;
-        padding: 4px 8px;
-
+        display: inline-flex;
+        padding: 4px 10px;
         border-radius: 4px;
         border: 1px solid #45506A;
         background: linear-gradient(90deg, #D6E3EF 0%, #FFF 100%);
-        color: #282527;
-        font-family: Nunito;
-        font-size: 8px;
-        font-weight: 600;
+        color: #45506A;
+        font-family: var(--font-sans);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
     }
 
     h1 {
         color: #282527;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 16px;
         font-weight: 600;
         margin: 0;
@@ -95,7 +96,7 @@
     gap: 16px;
     width: 100%;
     align-items: stretch;
-    padding: 0 0 90px;
+    padding: 0 0 calc(90px + env(safe-area-inset-bottom, 0px));
 }
 
 @media (min-width: 480px) {
@@ -104,8 +105,10 @@
     }
 }
 
-.edu-item-cards img {
+.edu-item-cards img,
+.edu-item-cards app-img {
     width: 100%;
+    height: 120px;
     max-height: 140px;
     object-fit: contain;
     display: block;
@@ -113,10 +116,6 @@
 }
 
 
-.edu-item-cards span {
-    color: #6b6b6b;
-    font-size: 13px;
-}
 
 @media (min-width: 1024px) {
     .edu-item-list {

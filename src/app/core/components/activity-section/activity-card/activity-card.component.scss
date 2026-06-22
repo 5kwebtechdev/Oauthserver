@@ -209,7 +209,7 @@ p {
 }
 
 h3 {
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: bold;
   font-size: 16px;
   color: var(--primary_text);
@@ -222,7 +222,7 @@ h3 {
 }
 
 h4 {
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: bold;
   font-size: 13px;
   margin-bottom: 0;
@@ -249,7 +249,7 @@ h4 {
   align-items: center;
   padding: 5px 16px;
   height: 24px;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: bold;
   font-size: 10px;
   color: #45456A;
@@ -387,7 +387,7 @@ h4 {
 
 // List mode styles
 .glance-in-day {
-  font-family: 'Fredoka', sans-serif;
+  font-family: var(--font-heading);
   font-weight: 500;
   font-size: 20px;
   margin-top: 30px;
@@ -400,7 +400,7 @@ h4 {
 .toggler div {
   text-align: center;
   font-size: 18px;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 500;
   color: black;
   position: relative;
@@ -475,6 +475,18 @@ h4 {
   flex-shrink: 0;
 }
 
+.calendar-icon {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  flex-shrink: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  display: block;
+}
+
 /* Size the header "view all" icon in the Day At A Glance card */
 .day-at-glance__view-all {
 
@@ -483,7 +495,7 @@ h4 {
     position: relative;
     background: #a1a7d8;
     color: #FFFFFF;
-    font-family: Arial;
+    font-family: var(--font-sans);
     font-size: 10px;
     line-height: 21px;
     text-align: center;
@@ -512,39 +524,68 @@ h4 {
       margin-bottom: -14px;
 }
 
-/* Text 'View All' button replaced from superme-button */
 .text-view-all {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: transparent;
-  border: none;
-  padding: 0;
-  text-align: left;
-  /* keep same alignment as other CTAs */
-  color: #282527;
-  font-family: 'Fredoka', sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 140%;
-  /* 22.4px */
+  border: 1.5px solid #E1527C;
+  border-radius: 20px;
+  padding: 7px 14px 7px 16px;
+  color: #E1527C;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 0.15s ease;
 
-  /* subtle hover effect */
-  transition: color 0.15s ease, transform 0.06s ease;
-
-
-  &:active {
-    transform: translateY(0);
+  svg path {
+    fill: #E1527C;
   }
 
+  &:active {
+    background: rgba(225, 82, 124, 0.1);
+  }
+}
 
+.add-new-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(99deg, #E1527C 0.65%, #AC2456 99.35%);
+  border: 1px solid #CF3359;
+  border-radius: 20px;
+  padding: 8px 16px 8px 12px;
+  color: #FFF;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  box-shadow: 0 -2px 2px 0 #F4ADC6 inset, 0 0 1px 0.5px rgba(225, 82, 124, 0.20);
+  transition: opacity 0.15s ease;
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  &:active {
+    opacity: 0.85;
+  }
 }
 
 .bubble {
     position: relative;
     background: #A1A7ED;
     color: #FFFFFF;
-    font-family: "Nunito", sans-serif;
+    font-family: var(--font-sans);
     font-size: 10px;
     font-weight: 600;
     border: #A1A7D8 solid 1px;

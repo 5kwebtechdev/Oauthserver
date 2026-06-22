@@ -412,7 +412,7 @@ body.reel-expanded {
 
 .share-title {
   color: #282527;
-  font-family: Fredoka;
+  font-family: var(--font-heading);
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
@@ -435,7 +435,7 @@ body.reel-expanded {
 .share-subtitle {
   align-self: stretch;
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-style: normal;
   font-weight: 500;
@@ -464,7 +464,7 @@ body.reel-expanded {
     background: #FFF;
     border: 1px solid #E5E5E5;
     cursor: pointer;
-    font-family: 'Nunito', sans-serif;
+    font-family: var(--font-sans);
     font-size: 16px;
     font-weight: bold;
     color: #282527;
@@ -578,7 +578,7 @@ body.reel-expanded {
   text-align: left;
   cursor: pointer;
   color: #282527;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 600;
 

@@ -43,75 +43,27 @@
     </div> -->
 
     <!-- Badges Section -->
-    <div class="badges-section">
-      <!-- Newly Earned Badges -->
-      <div *ngIf="earnedNewBadge && newlyEarnedBadges && newlyEarnedBadges.length > 0">
-        <h3 class="badge-celebration-title">{{ badgeCelebrationMessage || 'New Badges Unlocked!' }}</h3>
-        <div class="badge-grid w-100 d-flex">
-          <div *ngFor="let badge of newlyEarnedBadges" class="badge-card w-100">
-            <div class="badge-content">
-              <div class="badge-info">
-                <p class="progress-text">{{ badge.progress || '1/1' }}</p>
-                <div class="badge-visual">
-                  <div class="badge-icon-container">
-                    <img [src]="badge.iconUrl || 'assets/Icons-Neutral/Icon-Trophy.png'" [alt]="badge.name"
-                      class="badge-icon" />
-                  </div>
-                  <superme-completion [completionPercentage]="100" [borderColor]="getScoreColor()" [innerText]="''"
-                    [belowText]="''">
-                  </superme-completion>
-                </div>
-              </div>
-              <p class="badge-name">{{ badge.name }}</p>
-              <p class="badge-level-text">{{ badge.level || 'Expert Level' }}</p>
-              <p class="badge-description">{{ badge.description }}</p>
-              <p class="badge-achievement">Achievement Unlocked!</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Achievement Badges Based on Performance -->
+    <div class="badges-section" *ngIf="badges.length > 0">
       <div class="badge-grid w-100 d-flex">
-        <!-- Quiz Ace Badge -->
-        <div class="badge-card w-100">
+        <div *ngFor="let badge of badges" class="badge-card w-100">
           <div class="badge-content">
             <div class="badge-info">
-              <p class="progress-text">1/1</p>
+              <p class="progress-text">{{ badge.progress }}/{{ badge.target }}</p>
               <div class="badge-visual">
                 <div class="badge-icon-container">
-                  <img [src]="quizAceBadge.iconUrl" [alt]="quizAceBadge.name" class="badge-icon" />
+                  <img [src]="getBadgeIconUrl(badge.icon)" [alt]="badge.title" class="badge-icon"
+                       (error)="onBadgeImageError($event, badge)" />
                 </div>
-                <superme-completion [completionPercentage]="100" [borderColor]="getScoreColor()" [innerText]="''"
-                  [belowText]="''">
+                <superme-completion [completionPercentage]="getBadgeCompletionPercent(badge)"
+                  [borderColor]="getScoreColor()" [innerText]="''" [belowText]="''">
                 </superme-completion>
               </div>
             </div>
-            <p class="badge-name">{{ quizAceBadge.name }}</p>
-            <p class="badge-level-text">Expert Level</p>
-            <p class="badge-description">{{ quizAceBadge.description }}</p>
-            <p class="badge-achievement">Achievement Unlocked!</p>
-          </div>
-        </div>
-
-        <!-- Puzzle Master Badge -->
-        <div class="badge-card w-100">
-          <div class="badge-content">
-            <div class="badge-info">
-              <p class="progress-text">1/1</p>
-              <div class="badge-visual">
-                <div class="badge-icon-container">
-                  <img [src]="puzzleMasterBadge.iconUrl" [alt]="puzzleMasterBadge.name" class="badge-icon" />
-                </div>
-                <superme-completion [completionPercentage]="100" [borderColor]="getScoreColor()" [innerText]="''"
-                  [belowText]="''">
-                </superme-completion>
-              </div>
-            </div>
-            <p class="badge-name">{{ puzzleMasterBadge.name }}</p>
-            <p class="badge-level-text">Master Level</p>
-            <p class="badge-description">{{ puzzleMasterBadge.description }}</p>
-            <p class="badge-achievement">Achievement Unlocked!</p>
+            <p class="badge-name">{{ badge.title }}</p>
+            <p class="badge-level-text">{{ badge.levelText }}</p>
+            <p class="badge-description">{{ badge.isEarned ? badge.achievementScreenText : badge.description }}</p>
+            <p class="badge-achievement" *ngIf="badge.isEarned">Achievement Unlocked!</p>
+            <p class="badge-achievement" *ngIf="!badge.isEarned">{{ badge.celebrationMessage }}</p>
           </div>
         </div>
       </div>

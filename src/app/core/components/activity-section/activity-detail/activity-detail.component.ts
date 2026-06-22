@@ -11,6 +11,7 @@ import { HabitApi } from 'src/app/core/api/habit.api';
 import { TaskApi } from 'src/app/core/api/task.api';
 import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { AutoAbortService } from '../auto-abort.service';
+import { BadgePopupService } from '../../../services/badge-popup.service';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { SupermeSpeechBubbleComponent } from '../../superme-speech-bubble/superme-speech-bubble.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
@@ -54,6 +55,8 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   // Calendar
   calendarStatusData: Record<string, 'COMPLETED' | 'SKIPPED' | 'PENDING'> = {};
   currentCalendarMonth = new Date();
+  completedDays = 0;
+  skippedDays = 0;
 
   // Popup states
   public showStartPopup: boolean = false;
@@ -72,7 +75,8 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     private cdr: ChangeDetectorRef,
     private authService: AuthService,
     private habitService: HabitService,
-    private autoAbortService: AutoAbortService
+    private autoAbortService: AutoAbortService,
+    private badgePopupService: BadgePopupService
   ) {}
 
   ngOnInit() {
@@ -387,11 +391,15 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
         (res.monthlyCompletion || []).forEach((item: any) => {
           if (item.date && item.status) this.calendarStatusData[item.date] = item.status;
         });
+        this.completedDays = res.completedDays ?? 0;
+        this.skippedDays = res.skippedDays ?? 0;
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading monthly completion:', err);
         this.calendarStatusData = {};
+        this.completedDays = 0;
+        this.skippedDays = 0;
       }
     });
   }
@@ -752,6 +760,8 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
           this.habitService.notifyHabitCompleted();
         }
         this.cdr.detectChanges();
+        // Check for newly earned badges
+        this.badgePopupService.check();
       },
       error: (err) => console.error('Failed to complete', err)
     });

@@ -1,0 +1,315 @@
+.restore-card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 28px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.restore-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.flame-wrap {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+.sparkle-ring {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2.5px dashed #F0B429;
+  animation: spin-ring 10s linear infinite;
+  opacity: 0.85;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 1.5px dotted rgba(240, 180, 41, 0.35);
+  }
+}
+
+@keyframes spin-ring {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.flame-img {
+  width: 68px;
+  height: 68px;
+  object-fit: contain;
+  position: relative;
+  z-index: 1;
+}
+
+.restore-title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  color: #282527;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.restore-subtitle {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: #6B656A;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.restore-streak-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(109deg, #FFF3DC 0%, #FFF8EC 100%);
+  border: 1px solid #F0B429;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: #B06A00;
+
+  strong { color: #BE6F03; }
+}
+
+// ── Loading ───────────────────────────────────────────────────────────────────
+.restore-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0;
+  width: 100%;
+
+  p {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: #6B656A;
+    margin: 0;
+  }
+}
+
+// ── Coin balance ──────────────────────────────────────────────────────────────
+.coin-balance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: #FFF8E1;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: #BE6F03;
+
+  &--low {
+    background: #FEECEC;
+    color: #BB2124;
+  }
+}
+
+.coin-bal-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+// ── Not enough coins ──────────────────────────────────────────────────────────
+.no-coins-notice {
+  width: 100%;
+  background: #FFF5F5;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: #BB2124;
+  text-align: center;
+  line-height: 1.5;
+}
+
+// ── Pick label ────────────────────────────────────────────────────────────────
+.pick-label {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  color: #6B656A;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+// ── Items list ────────────────────────────────────────────────────────────────
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1.5px solid #DCDBDC;
+  background: #FAFAFA;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  width: 100%;
+  text-align: left;
+
+  &--selected {
+    border-color: #EBA235;
+    background: #FFFBF2;
+  }
+
+  &:active { opacity: 0.85; }
+}
+
+.item-radio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #DCDBDC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.15s;
+
+  .item-row--selected & { border-color: #EBA235; }
+}
+
+.item-radio-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #EBA235;
+}
+
+.item-name {
+  flex: 1;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: #282527;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-badge {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 2px 8px;
+  flex-shrink: 0;
+
+  &--habit { background: #E8F5E9; color: #2D6830; }
+  &--task  { background: #E3F2FD; color: #1565C0; }
+}
+
+// ── Error ─────────────────────────────────────────────────────────────────────
+.restore-error {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: #BB2124;
+  background: #FEECEC;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 0;
+  text-align: center;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+.restore-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.btn-cancel {
+  flex: 0 0 96px;
+  height: 50px;
+  border-radius: 14px;
+  background: #fff;
+  border: 2px solid #E74C3C;
+  color: #E74C3C;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+
+  &:active { background: #FFF5F5; }
+}
+
+.btn-restore {
+  flex: 1;
+  height: 50px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #27AE60 0%, #1E8449 100%);
+  border: none;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: opacity 0.15s;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &:active:not(:disabled) { opacity: 0.85; }
+}
+
+.restore-coin-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.restore-spinner {
+  width: 20px;
+  height: 20px;
+  --color: #fff;
+}

@@ -36,7 +36,7 @@ ion-content {
 .notification-empty h1 {
   margin: 0 0 14px;
   color: #282527;
-  font-family: Fredoka, Nunito, sans-serif;
+  font-family: var(--font-heading);
   font-size: 26px;
   font-weight: 600;
   line-height: 1.2;
@@ -46,7 +46,7 @@ ion-content {
   width: min(348px, 100%);
   margin: 0;
   color: #3d383c;
-  font-family: Nunito, sans-serif;
+  font-family: var(--font-sans);
   font-size: 21px;
   font-weight: 400;
   line-height: 1.42;

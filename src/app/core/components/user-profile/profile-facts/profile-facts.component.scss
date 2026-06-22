@@ -13,13 +13,13 @@
   text-align: center;
   font-size: 10px;
   font-weight: 500;
-  font-family: Nunito;
+  font-family: var(--font-sans);
 
 }
 
 .facts-heading {
  color: #282527;
-font-family: Fredoka;
+font-family: var(--font-heading);
 font-size: 20px;
 font-weight: 500;
 
@@ -61,7 +61,7 @@ font-weight: 500;
 
 .fact-question {
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
   text-align: left;
@@ -69,7 +69,7 @@ font-weight: 500;
 
 .fact-desc {
   font-weight: 400;
-    font-family: Nunito;
+    font-family: var(--font-sans);
 
   font-size: 12px;
   color: #666;

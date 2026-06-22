@@ -71,10 +71,17 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       .subscribe({
         next: (items) => {
           const all = items || [];
-          this.forYouItems = all;
-          this.puzzleItems  = all.filter(c => c.type === 'puzzle');
-          this.quizItems    = all.filter(c => c.type === 'quiz');
-          this.articleItems = all.filter(c => c.type === 'article');
+          // Client-side age-group guard: the API uses ?age= when available,
+          // but filter again here so any items outside the user's group are
+          // excluded even if the server returns them (e.g. when age is unknown)
+          const userAgeGroup = this.getUserAgeGroup();
+          const ageFiltered = userAgeGroup
+            ? all.filter(item => this.itemMatchesAgeGroup(item, userAgeGroup))
+            : all;
+          this.forYouItems  = ageFiltered;
+          this.puzzleItems  = ageFiltered.filter(c => c.type === 'puzzle');
+          this.quizItems    = ageFiltered.filter(c => c.type === 'quiz');
+          this.articleItems = ageFiltered.filter(c => c.type === 'article');
           if (this.searchKeyword.trim()) {
             this.updateSearchResults();
           }
@@ -293,6 +300,10 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       const raw = localStorage.getItem('user_data');
       if (!raw) return null;
       const profile = JSON.parse(raw);
+      // Prefer the ageGroup field the login response stores directly — avoids
+      // any off-by-one errors from client-side DOB timezone arithmetic
+      if (profile?.ageGroup) return profile.ageGroup as string;
+      // Fall back to calculating from DOB
       const dob = profile?.dateOfBirth || profile?.dob;
       if (!dob) return null;
       const birth = new Date(dob);

@@ -3,7 +3,9 @@
     <ng-container *ngIf="tutors && tutors.length > 0">
       <article class="tutors-section__card" role="listitem" *ngFor="let t of tutors">
         <div class="thumbnail">
-          <div class="avatar" [ngStyle]="{'background-image': 'url(' + (t.avatar || '/assets/images/Avatar.png') + ')'}"
+          <div class="avatar"
+            [appBgSkeleton]="t.avatar || '/assets/images/Avatar.png'"
+            [ngStyle]="{'background-image': 'url(' + (t.avatar || '/assets/images/Avatar.png') + ')'}"
             aria-hidden="true"></div>
         </div>
 

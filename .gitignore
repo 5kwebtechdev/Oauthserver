@@ -92,3 +92,15 @@ android/app/build/
 local.properties
 .env
 .env.*
+
+# Local asset files (not part of source commits)
+src/assets/Icon-Calendar-Clock.jpg
+src/assets/Icons-Neutral/Icon-BestStreak-3D.png
+src/assets/Icons-Neutral/Icon-Calendar-3D.png
+src/assets/Icons-Neutral/Icon-Notes-3D.png
+src/assets/Icons-Neutral/Icon-Streak-3D.png
+src/assets/Icons-Neutral/TotalActiveDays-3D.png
+
+# Local scripts
+monitor-logs.ps1
+rebuild-apk.ps1

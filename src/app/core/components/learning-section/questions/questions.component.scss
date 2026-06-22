@@ -39,7 +39,7 @@
 
 .questions-count span {
     color: #282527;
-    font-family: 'Nunito', sans-serif;
+    font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 600;
 }
@@ -82,7 +82,7 @@
 
 .content-quest {
     color: #282527;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 16px;
     font-weight: 500;
 }
@@ -90,7 +90,7 @@
 .answers-list {
     h1 {
         color: #282527;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 20px;
         font-weight: 600;
     }
@@ -119,17 +119,26 @@
     width: 100%;
     min-height: 116px;
     padding: 0;
-    border: none;
-    background: transparent;
-    appearance: none;
-    -webkit-appearance: none;
+    border: 2px solid transparent;
+    border-radius: 16px;
+    /* rgba(0,0,0,0.001) instead of 'transparent' — iOS WebView skips hit-testing on
+       elements with a purely transparent background; this is visually identical but
+       keeps the element in the touch-dispatch path */
+    background: rgba(0, 0, 0, 0.001);
     text-align: center;
     cursor: pointer;
     touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    user-select: none;
+    -webkit-user-select: none;
+    position: relative;
+    outline: none;
+    pointer-events: auto;
+    transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.visual-option.selected .visual-option-image {
-    border: 2px solid #4CAF50;
+.visual-option.selected {
+    border-color: #4CAF50;
     box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.18);
 }
 
@@ -147,7 +156,7 @@
 
 .visual-option-label {
     color: #282527;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 16px;
     font-weight: 500;
     pointer-events: none;
@@ -175,7 +184,7 @@
         background: rgba(40, 37, 39, 0.10);
         color: #282527;
         text-align: center;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 13px;
         font-style: normal;
         font-weight: 700;
@@ -204,7 +213,7 @@
 
 .hint-counter {
     color: #4CAF50;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 600;
     text-align: left;
@@ -215,7 +224,7 @@
 
 .hint-text {
     color: #4CAF50;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 16px;
     font-weight: 500;
 }
@@ -248,7 +257,7 @@
 
 .popup-text {
     color: #4CAF50;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 16px;
     font-weight: 500;
 }
@@ -285,7 +294,7 @@
 
 // Popup styles
 .popup-label {
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 18px;
     font-weight: 700;
     line-height: 1.35;
@@ -296,7 +305,7 @@
 
 .popup-text {
     color: #4CAF50;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 14px;
     font-weight: 500;
     line-height: 1.35;

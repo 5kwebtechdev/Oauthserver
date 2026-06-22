@@ -128,12 +128,19 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   getExperienceYears(): number {
+    // Prefer the direct numeric value the admin entered per category mapping
+    const fromMappings = (this.tutor?.categoryMappings || [])
+      .reduce((max, m) => Math.max(max, m.yearsOfExperience || 0), 0);
+    if (fromMappings > 0) return fromMappings;
+    // Fall back to the top-level experience enum
     if (!this.tutor?.experience) return 0;
     return getExperienceYears(this.tutor.experience);
   }
 
   getExperienceString(): string {
-    if (!this.tutor?.experience) return '0 years Exp';
+    const years = this.getExperienceYears();
+    if (years > 0) return `${years}+ years Exp`;
+    if (!this.tutor?.experience || this.tutor.experience === 'FRESHER') return 'Fresher';
     return formatExperience(this.tutor.experience);
   }
 

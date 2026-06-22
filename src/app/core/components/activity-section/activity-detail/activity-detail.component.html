@@ -159,13 +159,19 @@
         </div>
 
         <div class="completion-days">
-            <div class="completedays-header d-flex flex-row align-items-center">
-                <span></span>
-                <p>Completed</p>
+            <div class="completion-stat">
+                <div class="completedays-header d-flex flex-row align-items-center">
+                    <span></span>
+                    <p>Completed</p>
+                </div>
+                <div class="completion-count">{{ completedDays }} days</div>
             </div>
-            <div class="skipped-days d-flex flex-row align-items-center">
-                <span></span>
-                <p>Skipped</p>
+            <div class="completion-stat">
+                <div class="skipped-days d-flex flex-row align-items-center">
+                    <span></span>
+                    <p>Skipped</p>
+                </div>
+                <div class="skipped-count">{{ skippedDays }} days</div>
             </div>
         </div>
     </div>

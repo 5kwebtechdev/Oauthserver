@@ -12,7 +12,7 @@ $card-bg: #FFFFFF;
 .academy__empty {
   text-align: center;
   color: #6B656A;
-  font-family: Nunito, sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   padding: 24px 0;
 }
@@ -85,7 +85,7 @@ $card-bg: #FFFFFF;
 
       .desc {
         color: #282527;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 13px;
         font-style: normal;
         font-weight: 500;

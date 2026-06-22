@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { BgSkeletonDirective } from '../../skeleton-image/bg-skeleton.directive';
 import {
   TutorListItem,
   formatAvailability,
@@ -12,7 +13,7 @@ import { TutorLikeService } from '../../../services/tutor-like.service';
 @Component({
   selector: 'tutor-list',
   standalone: true,
-  imports: [CommonModule, SupermeButtonComponent],
+  imports: [CommonModule, SupermeButtonComponent, BgSkeletonDirective],
   templateUrl: './tutor-list.component.html',
   styleUrls: ['./tutor-list.component.scss']
 })

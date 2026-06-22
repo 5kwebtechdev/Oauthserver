@@ -189,11 +189,13 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit() {
-        const navigation = this.router.getCurrentNavigation();
-        const state = navigation?.extras?.state as { challenge?: Challenge };
+        // getCurrentNavigation() is null by the time ngOnInit runs (navigation already complete).
+        // Read the passed challenge from history.state, which persists after navigation.
+        const nav = this.router.getCurrentNavigation();
+        const stateChallenge: Challenge | undefined =
+            nav?.extras?.state?.['challenge'] ?? (history as any)?.state?.['challenge'];
 
-        // Determine challenge ID — prefer from router state, fallback to route param
-        const challengeId = state?.challenge?.challengeId
+        const challengeId: number = stateChallenge?.challengeId
             ?? Number(this.route.snapshot.paramMap.get('id'));
 
         if (!challengeId) {
@@ -202,7 +204,16 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             return;
         }
 
-        // Always fetch full challenge by ID so positiveFeedback/negativeFeedback are included
+        // If the description page already fetched the challenge and passed it via
+        // router state, use it immediately so the quiz renders on the first tap
+        // without waiting for another network round-trip.
+        if (stateChallenge?.questions?.length) {
+            this.challenge = stateChallenge;
+            this.initializeQuiz();
+            return;
+        }
+
+        // Fallback: fetch from API (e.g. direct URL navigation or missing state)
         this.learningService.fetchChallengeById(challengeId).subscribe({
             next: (challenge) => {
                 if (!challenge) {
@@ -214,9 +225,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             },
             error: (error) => {
                 console.error('Error loading challenge:', error);
-                // Fallback: use router state challenge if API fails
-                if (state?.challenge) {
-                    this.challenge = state.challenge;
+                if (stateChallenge) {
+                    this.challenge = stateChallenge;
                     this.initializeQuiz();
                 } else {
                     this.router.navigate(['/authed/content']);
@@ -260,10 +270,10 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
     transformQuestions(backendQuestions: ChallengeQuestion[]): Question[] {
         return backendQuestions.map(q => {
-            // Determine question type
+            // Determine question type — check both boolean flags and answerType string
             let type: 'mcq' | 'true-false' | 'visual' = 'mcq';
-            if (q.trueFalse) type = 'true-false';
-            else if (q.visual) type = 'visual';
+            if (q.trueFalse || q.answerType === 'TRUE_FALSE') type = 'true-false';
+            else if (q.visual || q.answerType === 'VISUALS') type = 'visual';
 
             // Determine content type based on what's available
             let contentType: 'text-only' | 'image-only' | 'text-and-image' = 'text-only';
@@ -641,16 +651,32 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
         // Prepare answers payload in the format expected by the backend
         const questionAnswers: { [key: string]: string } = {};
-        const skippedQuestions: string[] = [];
+        const skippedQuestions: number[] = [];
 
         // Convert our internal tracking to the expected format
         this.questions.forEach(question => {
             const answer = this.questionAnswers[question.id];
-            if (answer.selected) {
-                questionAnswers[question.id.toString()] = answer.selected;
+            if (answer.selected !== null && answer.selected !== undefined && answer.selected !== '') {
+                let answerValue = answer.selected;
+
+                if (question.type === 'true-false') {
+                    // API requires lowercase "true" / "false"
+                    answerValue = answerValue.toLowerCase();
+                } else if (question.type === 'visual') {
+                    // Decision rule: optionText != null → send optionText, else → send optionId as string
+                    const backendQ = this.challenge?.questions.find(q => q.questionId === question.id);
+                    if (backendQ && answer.selectedOptionId !== null && answer.selectedOptionId !== undefined) {
+                        const selectedOpt = backendQ.options.find(o => o.optionId === answer.selectedOptionId);
+                        if (selectedOpt) {
+                            answerValue = (selectedOpt.optionText || '').trim() || String(selectedOpt.optionId);
+                        }
+                    }
+                }
+
+                questionAnswers[String(question.id)] = answerValue;
             } else {
-                // Track unanswered questions as skipped
-                skippedQuestions.push(question.id.toString());
+                // API expects number[] for skippedQuestions
+                skippedQuestions.push(question.id);
             }
         });
 

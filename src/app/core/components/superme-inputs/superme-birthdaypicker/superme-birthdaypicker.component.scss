@@ -117,7 +117,7 @@
 .popover.variant-white-green .footer button {
   color: #4CAF50;
   text-align: center;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
@@ -131,7 +131,7 @@
 /* Day / Month / Year typography & layout for white-green variant */
 .popover.variant-white-green .column .item {
   color: #282527;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-style: normal;
   font-weight: 400;
@@ -160,7 +160,7 @@
 
 .popover.variant-white-green .column .item.selected {
   color: #FFFFFF;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 24px;
   font-weight: 400;
   width: 100%;

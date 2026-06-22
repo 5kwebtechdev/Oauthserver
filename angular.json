@@ -38,7 +38,7 @@
               {
                 "glob": "firebase-messaging-sw.js",
                 "input": "src",
-                "output": ""
+                "output": "/"
               }
             ],
             "styles": [

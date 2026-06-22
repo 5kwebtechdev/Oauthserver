@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { Router } from '@angular/router';
 import { SupermeNavigatorComponent } from '../superme-navigator/superme-navigator.component';
 import { EmptyStateComponent } from '../empty-state/empty-state.component';
-import { Location } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
 	selector: 'reel-coming-soon',
@@ -33,15 +34,11 @@ import { Location } from '@angular/common';
 	]
 })
 export class ReelComingSoonComponent {
-	constructor(private location: Location) {}
+	constructor(private router: Router, private authService: AuthService) {}
 
 	onBack(): void {
-		try {
-			this.location.back();
-		} catch (e) {
-			// Fallback to history
-			try { history.back(); } catch (err) { /* noop */ }
-		}
+		const dashboard = this.authService.getDashboardRoute();
+		this.router.navigate([dashboard], { replaceUrl: true });
 	}
 }
 

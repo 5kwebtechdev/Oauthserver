@@ -76,7 +76,7 @@
 
 .note-content {
  color: #282527;
-font-family: Nunito;
+font-family: var(--font-sans);
 font-size: 16px;
 font-weight: 600;
   margin: 0;
@@ -94,7 +94,7 @@ font-weight: 600;
   border-radius: 8px;
   white-space: pre-wrap;
   color: #282527;
-font-family: Nunito;
+font-family: var(--font-sans);
 font-size: 16px;
 font-weight: 600;
 }

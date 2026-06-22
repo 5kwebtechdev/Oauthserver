@@ -16,11 +16,12 @@ import { VibesDisplayResponse } from '../../models/mood.model';
 import { AuthService, FamilyMember, FamilyDetailsResponse } from '../../../../package/api/auth.service';
 import { ParentImageService } from '../../services/parent-image.service';
 import { ChildSelfImageService } from '../../services/child-self-image.service';
+import { SkeletonImageComponent } from '../skeleton-image/skeleton-image.component';
 
 @Component({
   selector: 'user-profile',
   standalone: true,
-  imports: [CommonModule, SupermeNavigatorComponent, IonicModule, SupermeCoinsStatsComponent, ProfileContentCardComponent, SocialMediaComponent, SupermePopupComponent],
+  imports: [CommonModule, SupermeNavigatorComponent, IonicModule, SupermeCoinsStatsComponent, ProfileContentCardComponent, SocialMediaComponent, SupermePopupComponent, SkeletonImageComponent],
   templateUrl: './user-profile.component.html',
   styleUrls: ['./user-profile.component.scss']
 })

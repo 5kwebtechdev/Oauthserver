@@ -77,6 +77,12 @@ export class PushNotificationService {
    * the device token so the user no longer receives notifications.
    */
   async clearToken(): Promise<void> {
+    if (!Capacitor.isNativePlatform()) {
+      this.currentToken = null;
+      localStorage.removeItem(STORED_TOKEN_KEY);
+      return;
+    }
+
     try {
       const token = this.currentToken ?? localStorage.getItem(STORED_TOKEN_KEY);
       if (token) {
@@ -159,11 +165,31 @@ export class PushNotificationService {
   private setupForegroundListener(): void {
     FirebaseMessaging.addListener('notificationReceived', (event) => {
       this.zone.run(() => {
-        const { title, body } = event.notification ?? {};
-        const message = [title, body].filter(Boolean).join(': ') || 'New notification';
-        // Show as an in-app toast since the OS suppresses system banners when
-        // the app is in the foreground.
-        this.toastService.show(message, 'info', 5000);
+        const notification = event.notification ?? {};
+        const { title, body } = notification as any;
+        const data: Record<string, any> = (notification as any)?.data ?? {};
+
+        console.group('%c[FCM] Foreground Notification Received', 'color: #4CAF50; font-weight: bold;');
+        console.log('📬 Title       :', title);
+        console.log('📝 Body        :', body);
+        console.log('🎯 actionScreen:', data['actionScreen'] ?? '—');
+        console.log('🔗 referenceId :', data['referenceId'] ?? '—');
+        console.log('📦 Full data   :', data);
+        console.groupEnd();
+
+        // Show tappable in-app banner with the notification message.
+        // The toast acts as a navigation shortcut — tapping it navigates to
+        // the resolved screen just as a background tap would.
+        const message = [title, body].filter(Boolean).join('\n') || 'New notification';
+        this.toastService.show(message, 'info', 6000);
+
+        // Also navigate immediately for high-priority foreground actions
+        // (only if the app is open and the user is already authenticated).
+        const authToken = localStorage.getItem('auth_token');
+        if (authToken && data['actionScreen']) {
+          // Slight delay so the toast is visible first
+          setTimeout(() => this.zone.run(() => this.handleNavigation(data)), 300);
+        }
       });
     }).catch(err => console.warn('[FCM] foreground listener error:', err));
   }
@@ -182,8 +208,17 @@ export class PushNotificationService {
   private setupNotificationTapListener(): void {
     FirebaseMessaging.addListener('notificationActionPerformed', (event) => {
       this.zone.run(() => {
-        const data: Record<string, any> = (event.notification as any)?.data ?? {};
+        const notification = (event.notification as any) ?? {};
+        const data: Record<string, any> = notification?.data ?? {};
+
+        console.group('%c[FCM] Notification Tapped', 'color: #2196F3; font-weight: bold;');
+        console.log('📬 Title       :', notification?.title);
+        console.log('📝 Body        :', notification?.body);
+        console.log('🎯 actionScreen:', data['actionScreen'] ?? '—');
+        console.log('🔗 referenceId :', data['referenceId'] ?? '—');
+        console.log('📦 Full data   :', data);
         this.handleNavigation(data);
+        console.groupEnd();
       });
     }).catch(err => console.warn('[FCM] tap listener error:', err));
   }
@@ -192,65 +227,76 @@ export class PushNotificationService {
   // Navigation from notification data
   // ---------------------------------------------------------------------------
 
-  /**
-   * Resolves a navigation target from the notification's custom data payload.
-   *
-   * Supported payload keys (in priority order):
-   *   route   — explicit Angular route, e.g. "/authed/user-dashboard"
-   *   screen  — shorthand screen name, e.g. "academy", "badges", "lessons"
-   *   type    — notification category used when neither route nor screen is set
-   */
   private handleNavigation(data: Record<string, any>): void {
-    const target = this.resolveRoute(data);
-    if (!target) return;
+    const actionScreen: string = (data['actionScreen'] ?? '').toString().toUpperCase();
+    const referenceId: string | null = data['referenceId'] ? String(data['referenceId']) : null;
 
-    this.router.navigateByUrl(target).catch(() => {
+    const target = this.actionScreenToRoute(actionScreen, referenceId);
+
+    console.log(`%c[FCM] Navigating → ${target}  (actionScreen: ${actionScreen})`,
+      'color: #FF9800; font-weight: bold;');
+
+    this.router.navigateByUrl(target, { replaceUrl: false }).catch(err => {
+      console.warn('[FCM] Navigation failed, falling back to dashboard:', err);
       this.router.navigate(['/authed/user-dashboard']);
     });
   }
 
-  private resolveRoute(data: Record<string, any>): string | null {
-    // 1. Explicit route wins.
-    if (data['route']) {
-      const r = String(data['route']);
-      return r.startsWith('/') ? r : `/${r}`;
-    }
+  /**
+   * Maps every `actionScreen` value from the backend FCM spec to an Angular route.
+   *
+   * actionScreen → route
+   * ─────────────────────────────────────────────────────────
+   * HOME                  → /authed/user-dashboard
+   * ADD_HABIT_TASK        → /authed/activity-input
+   * VIEW_ALL_HABITS_TASKS → /authed/activity-page
+   * VIEW_ALL_HABITS       → /authed/activity-page?tab=habits
+   * VIEW_ALL_TASKS        → /authed/activity-page?tab=tasks
+   * JOURNAL               → /authed/journal-input
+   * NOTES                 → /authed/notes
+   * QUIZ_HOME             → /authed/content
+   * LEARNINGS_HOME        → /authed/content
+   * COURSE_LESSON         → /authed/academy/course/:referenceId
+   * ACADEMY_HOME          → /authed/academy
+   */
+  private actionScreenToRoute(actionScreen: string, referenceId: string | null): string {
+    switch (actionScreen) {
+      case 'HOME':
+        return '/authed/user-dashboard';
 
-    // 2. Screen shorthand.
-    const screen = data['screen'] ? String(data['screen']).toLowerCase() : null;
-    if (screen) return this.screenToRoute(screen, data);
+      case 'ADD_HABIT_TASK':
+        return '/authed/activity-input';
 
-    // 3. Type-based fallback.
-    const type = data['type'] ? String(data['type']).toLowerCase() : null;
-    if (type) return this.typeToRoute(type, data);
+      case 'VIEW_ALL_HABITS_TASKS':
+        return '/authed/activity-page';
 
-    return null;
-  }
+      case 'VIEW_ALL_HABITS':
+        return '/authed/activity-page?tab=habits';
 
-  private screenToRoute(screen: string, data: Record<string, any>): string {
-    const id = data['id'] ? String(data['id']) : null;
-    switch (screen) {
-      case 'dashboard':     return '/authed/user-dashboard';
-      case 'academy':       return '/authed/academy';
-      case 'course':        return id ? `/authed/academy/course/${id}` : '/authed/academy';
-      case 'badges':        return '/authed/badges';
-      case 'notes':         return '/authed/notes';
-      case 'learning':      return '/authed/content';
-      case 'tasks':         return '/authed/tasks';
-      case 'profile':       return '/authed/profile';
-      case 'family':        return '/authed/family';
-      default:              return '/authed/user-dashboard';
-    }
-  }
+      case 'VIEW_ALL_TASKS':
+        return '/authed/activity-page?tab=tasks';
 
-  private typeToRoute(type: string, data: Record<string, any>): string {
-    const id = data['id'] ? String(data['id']) : null;
-    switch (type) {
-      case 'badge':         return '/authed/badges';
-      case 'lesson':        return id ? `/authed/academy/course/${id}` : '/authed/academy';
-      case 'challenge':     return '/authed/content';
-      case 'task':          return '/authed/tasks';
-      default:              return '/authed/user-dashboard';
+      case 'JOURNAL':
+        return '/authed/journal-input';
+
+      case 'NOTES':
+        return '/authed/notes';
+
+      case 'QUIZ_HOME':
+      case 'LEARNINGS_HOME':
+        return '/authed/content';
+
+      case 'COURSE_LESSON':
+        return referenceId
+          ? `/authed/academy/course/${referenceId}`
+          : '/authed/academy';
+
+      case 'ACADEMY_HOME':
+        return '/authed/academy';
+
+      default:
+        console.warn(`[FCM] Unknown actionScreen "${actionScreen}" — falling back to dashboard.`);
+        return '/authed/user-dashboard';
     }
   }
 }

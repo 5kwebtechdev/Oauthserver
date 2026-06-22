@@ -22,6 +22,9 @@ export interface BadgePopupData {
     currentLevel: number;
     totalLevels: number;
     isMaxLevel: boolean;
+    pendingCount?: number;
+    primaryButton?: string;
+    secondaryButton?: string;
 }
 
 /**

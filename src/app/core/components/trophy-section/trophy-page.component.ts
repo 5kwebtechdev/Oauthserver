@@ -13,7 +13,7 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
   template: `
         <superme-card-header [title]="pageTitle" [subtitleMiddle]="'See wins • Know dates • Keep going'"
           [showBackArrow]="true" (backClick)="onBack()">
-          <div superme-header-actions class="trophy-section d-flex flex-column gap-0 ">
+          <div superme-header-actions class="trophy-section">
             <img class="trophy-icon" src="/assets/Icons-Neutral/Icon-Trophy.png" alt="trophy" />
             <span class="trophy-count">{{ trophyCount }}</span>
           </div>
@@ -52,8 +52,13 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
               <ng-container *ngFor="let trophy of g.items">
                 <div class="trophy-row">
                   <div class="trophy-main">
-                    <div class="thumb-circle" [ngClass]="getCategoryClass(trophy.contentType)" role="img" [attr.aria-label]="trophy.contentType || 'trophy'">
-                      {{ getCategoryLetter(trophy.contentType) }}
+                    <div class="thumb-circle" [ngClass]="trophy.categoryIconUrl ? 'cat-img' : getCategoryClass(trophy.contentType)" role="img" [attr.aria-label]="trophy.contentType || 'trophy'">
+                      <img *ngIf="trophy.categoryIconUrl"
+                           class="thumb-img"
+                           [src]="trophy.categoryIconUrl"
+                           [alt]="trophy.contentType || 'trophy'"
+                           (error)="onThumbError($event, trophy)" />
+                      <ng-container *ngIf="!trophy.categoryIconUrl">{{ getCategoryLetter(trophy.contentType) }}</ng-container>
                     </div>
                     <div class="meta">
                       <div class="title">
@@ -64,8 +69,11 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
                     </div>
                   </div>
 
-                  <div class="trophy-side" aria-hidden="false">
-                    <div class="points"><img class="points-icon" src="/assets/Icons-Neutral/Icon-Trophy.png" alt="trophy" /> {{ trophy.points }}</div>
+                  <div class="trophy-side">
+                    <div class="points">
+                      <img class="points-icon" src="/assets/Icons-Neutral/Icon-Trophy.png" alt="trophy" />
+                      {{ trophy.points }}
+                    </div>
                   </div>
                 </div>
               </ng-container>
@@ -76,23 +84,29 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
     </ion-content>
   `,
   styles: [`
+    :host {
+      display: block;
+    }
+
     .trophy-content {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      --padding-top: 8px;
+      --padding-bottom: 0;
+      --padding-start: 0;
+      --padding-end: 0;
     }
 
     .trophy-page-container {
-      padding: 16px;
-      gap: 16px;
+      padding: 0 16px max(24px, env(safe-area-inset-bottom, 24px));
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      align-items: stretch;
       width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+      box-sizing: border-box;
     }
-    
-    /* Loading State */
+
+    /* ── Loading ── */
     .loading-state {
       display: flex;
       flex-direction: column;
@@ -106,35 +120,30 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
       --color: #d45aa3;
       transform: scale(1.5);
     }
-    .loading-state p {
-      color: #6b6b6b;
-      font-size: 16px;
-      margin: 0;
-    }
-    
-    /* Error State */
+
+    /* ── Error ── */
     .error-state {
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
       gap: 12px;
-      padding: 24px 12px;
+      padding: 24px 16px;
     }
     .error-art {
-      width: 200px;
-      max-width: 100%;
+      width: min(200px, 60vw);
       height: auto;
     }
     .error-title {
       font-family: 'Nunito', sans-serif;
       font-weight: 800;
-      font-size: 20px;
+      font-size: clamp(17px, 4vw, 20px);
       margin: 6px 0 0;
       color: #e74c3c;
     }
     .error-sub {
       color: #6b6b6b;
+      font-size: clamp(13px, 3.5vw, 15px);
       max-width: 320px;
       margin: 6px 0 12px;
     }
@@ -142,206 +151,205 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
       --background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
       --color: #fff;
       border-radius: 20px;
-      height: 56px;
-      font-size: 18px;
-      font-weight: 800;
-      box-shadow: 0 8px 18px rgba(231, 76, 60, 0.25);
-    }
-    
-    .section {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 16px;
-      width: 100%;
-      max-width: 720px;
-      align-items: center;
-    }
-    .section h3 {
-      line-height: 140%;
-    }
-
-    .group-title {
-      color: #282527;
-      font-family: Nunito, sans-serif;
+      height: 52px;
       font-size: 16px;
-      font-weight: 700;
-      margin: 0;
-      width: 100%;
-      text-align: left;
-      align-self: flex-start;
+      font-weight: 800;
     }
 
-    .group-divider {
-      opacity: 0.2;
-      background: #282527;
-      width: 100%;
-      height: 1px;
-      margin: 0;
-      align-self: stretch;
-    }
-    
-    /* Empty State */
+    /* ── Empty ── */
     .empty-state {
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
       gap: 12px;
-      padding: 24px 12px;
+      padding: 24px 16px;
     }
     .empty-art {
-      width: 300px;
-      max-width: 100%;
+      width: min(280px, 70vw);
       height: auto;
     }
     .empty-title {
       font-family: 'Nunito', sans-serif;
       font-weight: 800;
-      font-size: 20px;
+      font-size: clamp(17px, 4vw, 20px);
       margin: 6px 0 0;
     }
     .empty-sub {
       color: #6b6b6b;
-      max-width: 320px;
+      font-size: clamp(13px, 3.5vw, 15px);
+      max-width: 300px;
       margin: 6px 0 12px;
+      line-height: 1.5;
     }
     .earn-btn {
       --background: linear-gradient(90deg, #d45aa3 0%, #b85aa6 50%, #8f3aa0 100%);
       --color: #fff;
       border-radius: 20px;
-      height: 56px;
-      font-size: 18px;
+      height: 52px;
+      font-size: 16px;
       font-weight: 800;
-      box-shadow: 0 8px 18px rgba(160, 50, 120, 0.25);
     }
-    
+
+    /* ── Header trophy icon ── */
     .trophy-section {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
-      margin-left: 0;
+      gap: 2px;
     }
     .trophy-icon {
       width: auto;
-      height: 26.5px;
-      max-height: 26.5px;
+      height: 26px;
       object-fit: contain;
-      display: inline-block;
     }
     .trophy-count {
-      font-weight: bold;
-      font-size: 16px;
+      font-weight: 700;
+      font-size: 15px;
+      line-height: 1;
     }
-    .points-icon {
-      width: 18px;
-      height: 18px;
-      object-fit: contain;
-      display: inline-block;
-      margin-right: 6px;
-      vertical-align: middle;
+
+    /* ── Section ── */
+    .section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+      width: 100%;
     }
-    
-    /* Trophy List */
+
+    .group-title {
+      color: #282527;
+      font-family: Nunito, sans-serif;
+      font-size: clamp(14px, 3.5vw, 16px);
+      font-weight: 700;
+      margin: 4px 0 0;
+    }
+
+    .group-divider {
+      background: #282527;
+      opacity: 0.15;
+      width: 100%;
+      height: 1px;
+      margin: 0;
+    }
+
+    /* ── Trophy list ── */
     .trophy-list {
       display: flex;
       flex-direction: column;
-      gap: 18px;
-      padding: 8px 0;
+      gap: 16px;
+      padding: 6px 0 4px;
       width: 100%;
     }
+
     .trophy-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
       width: 100%;
+      min-width: 0;
     }
-    .trophy-row:hover {
-      background: #f0f0f0;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    .thumb {
-      width: 56px;
-      height: 56px;
-      object-fit: cover;
-      margin-right: 12px;
-      border-radius: 8px;
-    }
+
     .thumb-circle {
-      width: 56px;
-      height: 56px;
+      width: clamp(44px, 12vw, 56px);
+      height: clamp(44px, 12vw, 56px);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      color: #ffffff;
-      font-size: 18px;
-      margin-right: 12px;
-      flex: 0 0 56px;
+      color: #fff;
+      font-size: clamp(15px, 4vw, 18px);
+      flex: 0 0 clamp(44px, 12vw, 56px);
+      margin-right: 10px;
+      overflow: hidden;
     }
-    .thumb-circle.cat-quiz { background: linear-gradient(90deg,#6c5ce7,#8e7bff); }
-    .thumb-circle.cat-challenge { background: linear-gradient(90deg,#ff7a7a,#ffb199); }
-    .thumb-circle.cat-habit { background: linear-gradient(90deg,#2ecc71,#5ce3a6); }
-    .thumb-circle.cat-task { background: linear-gradient(90deg,#3498db,#6bb9ff); }
-    .thumb-circle.cat-default { background: #bdbdbd; }
-    .trophy-main { flex: 1; display: flex; }
-    .meta { 
-      flex: 1; 
+    .thumb-circle.cat-quiz      { background: linear-gradient(135deg, #6c5ce7, #8e7bff); }
+    .thumb-circle.cat-challenge { background: linear-gradient(135deg, #ff7a7a, #ffb199); }
+    .thumb-circle.cat-habit     { background: linear-gradient(135deg, #2ecc71, #5ce3a6); }
+    .thumb-circle.cat-task      { background: linear-gradient(135deg, #3498db, #6bb9ff); }
+    .thumb-circle.cat-default   { background: #bdbdbd; }
+    .thumb-circle.cat-img       { background: #f0f0f0; }
+    .thumb-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      display: block;
+    }
+
+    .trophy-main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .meta {
+      flex: 1;
+      min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
       align-items: flex-start;
-      justify-content: center;
-      text-align: left;
+    }
+
+    .title {
+      color: #282527;
+      font-family: Nunito, sans-serif;
+      font-size: clamp(13px, 3.5vw, 15px);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      width: 100%;
+      word-break: break-word;
+      line-height: 1.3;
+    }
+
+    .difficulty {
+      font-size: clamp(9px, 2.5vw, 11px);
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .difficulty.Easy { color: #2ecc71; }
+    .difficulty.Hard { color: #e74c3c; }
+
+    .earned {
+      color: #6B656A;
+      font-family: Nunito, sans-serif;
+      font-size: clamp(11px, 3vw, 13px);
+      font-weight: 600;
+      white-space: nowrap;
     }
 
     .trophy-side {
       display: flex;
       align-items: center;
-      gap: 12px;
       flex: 0 0 auto;
-    }
-    .title {
-      color: #282527;
-      font-family: Nunito, sans-serif;
-      font-size: 16px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .earned { 
-      color: #6B656A; 
-      font-family: Nunito, sans-serif;
-      font-size: 13px;
-      font-weight: 600;
-    }
-    .difficulty { 
-      font-size: 10px;
-      font-weight: 600;
-      display: inline-block;
-      margin: 0;
-    }
-    .difficulty.Easy { 
-      color: #2ecc71; 
+      padding-left: 6px;
     }
 
-    .difficulty.Hard { 
-      color: #e74c3c; 
-    }
-    .points { 
-      font-weight: 700; 
-      margin-left: 12px;
-      font-size: 16px;
+    .points {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 700;
+      font-size: clamp(13px, 3.5vw, 16px);
       white-space: nowrap;
+      color: #282527;
+    }
+
+    .points-icon {
+      width: clamp(15px, 4vw, 18px);
+      height: clamp(15px, 4vw, 18px);
+      object-fit: contain;
+      flex-shrink: 0;
     }
   `]
 })
@@ -376,6 +384,11 @@ export class TrophyPageComponent implements OnInit, ViewWillEnter {
         this.grouped = [];
       }
     });
+  }
+
+  onThumbError(event: Event, trophy: Trophy): void {
+    console.warn('[TrophyPage] image failed to load:', trophy.categoryIconUrl);
+    trophy.categoryIconUrl = undefined;
   }
 
   getCategoryLetter(contentType?: string): string {

@@ -1,1 +1,1 @@
-# MindfulBuddy App
+# Super Me App

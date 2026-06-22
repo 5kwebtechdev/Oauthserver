@@ -1,47 +1,163 @@
-.network-issue-root {
+// ── Full-screen overlay ───────────────────────────────────────────────────────
+.offline-overlay {
   position: fixed;
   inset: 0;
-  background: #ffffff;
+  background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+
+  &--visible {
+    opacity: 1;
+    pointer-events: all;
+  }
 }
 
-.network-card {
-  text-align: center;
-  padding: 24px 16px;
+// ── Card ──────────────────────────────────────────────────────────────────────
+.offline-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.network-card img {
-  width: 160px;
-  height: auto;
-  margin-bottom: 16px;
-}
-
-.network-card h2 {
-  color: #282527;
-  text-align: center;
-  font-family: Fredoka, sans-serif;
-  font-size: 16px;
-  font-weight: 500;
-  margin: 6px 0 10px;
-}
-
-.network-card p {
-  color: #282527;
-  text-align: center;
-  font-family: Nunito, sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  width: 304px;
-  margin: 0 0 18px;
-}
-
-.retry-wrap {
+  padding: 32px 24px 40px;
+  max-width: 340px;
   width: 100%;
-  max-width: 304px;
+  text-align: center;
+}
+
+// ── Wifi-off icon ─────────────────────────────────────────────────────────────
+.wifi-icon-wrap {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: #FBE8EF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  animation: pulse-ring 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(225, 82, 124, 0.20); }
+  50%       { box-shadow: 0 0 0 12px rgba(225, 82, 124, 0); }
+}
+
+// ── Illustration ──────────────────────────────────────────────────────────────
+.offline-img {
+  width: 140px;
+  height: auto;
+  margin-bottom: 20px;
+  opacity: 0.9;
+}
+
+// ── Copy ──────────────────────────────────────────────────────────────────────
+.offline-title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 600;
+  color: #282527;
+  margin: 0 0 10px;
+}
+
+.offline-body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: #6B656A;
+  line-height: 1.55;
+  margin: 0 0 28px;
+}
+
+// ── Retry button ─────────────────────────────────────────────────────────────
+.retry-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 280px;
+  height: 52px;
+  border-radius: 12px;
+  border: 1px solid #CF3359;
+  background: linear-gradient(99deg, #E1527C 0.65%, #AC2456 99.35%);
+  box-shadow: 0 -2px 2px 0 #F4ADC6 inset, 0 0 1px 0.5px rgba(225, 82, 124, 0.20);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s ease;
+
+  &:active:not(:disabled) { opacity: 0.85; }
+
+  &:disabled,
+  &--checking {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+// ── Dot-pulse animation for "Checking..." ─────────────────────────────────────
+.checking-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.dot-pulse {
+  position: relative;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+
+  &::after {
+    content: '';
+    display: inline-block;
+    animation: ellipsis 1.4s infinite;
+    width: 1em;
+    text-align: left;
+  }
+}
+
+@keyframes ellipsis {
+  0%   { content: ''; }
+  25%  { content: '.'; }
+  50%  { content: '..'; }
+  75%  { content: '...'; }
+  100% { content: ''; }
+}
+
+// ── Reconnected banner ────────────────────────────────────────────────────────
+.reconnected-banner {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(24px);
+  z-index: 10000;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 28px;
+  background: linear-gradient(99deg, #4CAF50 0%, #358438 100%);
+  box-shadow: 0 4px 16px rgba(53, 132, 56, 0.30);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+
+  &--visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }

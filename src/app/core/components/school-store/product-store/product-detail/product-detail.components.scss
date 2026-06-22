@@ -17,14 +17,14 @@ strong,
 li,
 th {
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 600;
 }
 
 h1 {
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 600;
 }
@@ -36,7 +36,7 @@ li {
 .product-size-section a,
 .address-text a {
   color: #90214d;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 600;
   text-decoration-line: underline;
@@ -155,7 +155,7 @@ li {
     border-radius: 4px;
     background: linear-gradient(90deg, #f9d2dc 0%, #fff 100%);
     color: #282527;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 600;
     width: 100px;
@@ -199,7 +199,7 @@ li {
 .quantity-count,
 .shipping-date {
   color: #90214d;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 600;
 }
@@ -335,7 +335,7 @@ li {
 
 .pincode-input {
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 500;
   border: none;
@@ -411,7 +411,7 @@ li {
   margin: 0;
   padding-left: 18px;
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 600;
   line-height: 1.6;

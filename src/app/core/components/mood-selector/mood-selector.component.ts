@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { SupermeButtonComponent } from '../superme-button/superme-button.component';
@@ -19,9 +19,13 @@ export interface MoodOption { key: string; label: string; emoji?: string }
   templateUrl: './mood-selector.component.html',
   styleUrls: ['./mood-selector.component.scss']
 })
-export class MoodSelectorComponent implements ViewWillEnter {
+export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
   @Input() options: MoodOption[] = [];
   @Input() value: string | null = null;
+  /** When set (parent view), the mood-selector shows data for this specific child id */
+  @Input() selectedChildId: string | number | null = null;
+  /** Direct vibe data override — takes priority over API vibes array (used by parent view) */
+  @Input() vibeOverride: VibesDisplayResponse | null = null;
   @Output() valueChange = new EventEmitter<string>();
 
   vibes: VibesDisplayResponse[] = [];
@@ -64,6 +68,35 @@ export class MoodSelectorComponent implements ViewWillEnter {
     this.getTodayVibe();
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['vibeOverride'] && this.vibeOverride) {
+      // Parent supplied data directly — update mood image immediately, no API call needed
+      const moodUpper = (this.vibeOverride.mood || 'NEUTRAL').toUpperCase();
+      const assetPath = this.moodAssetMap[moodUpper] || this.moodAssetMap['NEUTRAL'];
+      this.value = 'asset:' + assetPath;
+      this.valueChange.emit(this.value);
+      return;
+    }
+    if (changes['selectedChildId'] && !changes['selectedChildId'].firstChange) {
+      this.getTodayVibe();
+    }
+  }
+
+  /** Returns the vibe for the currently selected child (or first if no id set) */
+  private get activeVibe(): VibesDisplayResponse | null {
+    // Direct override wins — no API lookup needed
+    if (this.vibeOverride) return this.vibeOverride;
+    if (!this.vibes.length) return null;
+    if (this.selectedChildId != null) {
+      const sid = String(this.selectedChildId);
+      const match = this.vibes.find(v =>
+        String((v as any).userId ?? (v as any).assignedTo) === sid
+      );
+      if (match) return match;
+    }
+    return this.vibes[0];
+  }
+
   // Fetch today's vibe via service
   getTodayVibe() {
     this.moodService.getVibesDisplay().subscribe({
@@ -71,29 +104,21 @@ export class MoodSelectorComponent implements ViewWillEnter {
         console.debug('[MoodSelector] Vibes display:', res);
         this.vibes = Array.isArray(res) ? res : [];
 
-        // Map backend mood to asset
-        const first = this.vibes[0];
-        if (first && first.mood) {
-          const moodUpper = first.mood.toUpperCase();
+        const vibe = this.activeVibe;
+        if (vibe && vibe.mood) {
+          const moodUpper = vibe.mood.toUpperCase();
           const assetPath = this.moodAssetMap[moodUpper];
-
-          if (assetPath) {
-            // Use asset
-            this.value = 'asset:' + assetPath;
-          } else {
-            // Fallback neutral
-            this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
-          }
+          this.value = assetPath
+            ? 'asset:' + assetPath
+            : 'asset:' + this.moodAssetMap['NEUTRAL'];
         } else {
-          // No mood set -> neutral
-            this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
+          this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
         }
         this.valueChange.emit(this.value);
       },
       error: (err) => {
         console.error('Failed to fetch vibes display', err);
         this.vibes = [];
-        // On error -> neutral
         this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
       }
     });
@@ -238,7 +263,7 @@ export class MoodSelectorComponent implements ViewWillEnter {
     return m?.emoji || '';
   }
   get activeLabel() {
-    const vibe = this.vibes[0];
+    const vibe = this.activeVibe;
     if (vibe && vibe.mood) {
       return vibe.mood;
     }
@@ -246,14 +271,12 @@ export class MoodSelectorComponent implements ViewWillEnter {
     return m?.label || '';
   }
   get activeSubtitle() {
-    const vibe = this.vibes[0];
+    const vibe = this.activeVibe;
     if (!vibe) return '';
-
-    // Prefer the backend-provided description field and display it as-is.
     return vibe.description || '';
   }
   get progressPercent() {
-    const vibe = this.vibes[0];
+    const vibe = this.activeVibe;
     if (vibe) {
       const total = Number(vibe.totalHabits || 0) + Number(vibe.totalTasks || 0);
       const done = Number(vibe.completedHabits || 0) + Number(vibe.completedTasks || 0);
@@ -274,7 +297,7 @@ export class MoodSelectorComponent implements ViewWillEnter {
   }
 
   get currentVibe(): VibesDisplayResponse | null {
-    return this.vibes[0] || null;
+    return this.activeVibe;
   }
 
   get currentVibeTitleSafe(): SafeHtml | null {
