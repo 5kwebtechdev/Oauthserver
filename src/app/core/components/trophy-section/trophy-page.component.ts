@@ -20,27 +20,33 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
         </superme-card-header>
     <ion-content class="trophy-content">
       <div class="trophy-page-container">
+
         <!-- Loading State -->
         <div class="loading-state" *ngIf="isLoading">
           <ion-spinner name="crescent"></ion-spinner>
+          <p class="loading-label">Loading your trophies…</p>
         </div>
 
         <!-- Error State -->
         <div class="error-state" *ngIf="errorMessage && !isLoading">
-          <img class="error-art" src="/assets/app-assets/error-icon.png" alt="Error illustration" />
+          <img class="error-art" src="/assets/app-assets/error-icon.png" alt="Error" />
           <h2 class="error-title">Oops!</h2>
           <p class="error-sub">{{ errorMessage }}</p>
-          <ion-button expand="block" class="retry-btn" (click)="loadTrophies()" aria-label="Retry">
-            Try Again
-          </ion-button>
+          <button class="action-btn error-btn" (click)="loadTrophies()">Try Again</button>
         </div>
 
         <!-- Empty State -->
         <div class="empty-state" *ngIf="!isLoading && !errorMessage && !grouped.length">
-          <img class="empty-art" src="/assets/Images-Transparent/Image-Trophies-Blank.png" alt="No trophies illustration" />
-          <h2 class="empty-title">No Trophies Yet!</h2>
-          <p class="empty-sub">Your journey is just beginning. Earn some cool trophies and show them off here!</p>
-          <ion-button expand="block" class="earn-btn" aria-label="Earn Trophies" routerLink="/content">Earn Trophies</ion-button>
+          <div class="empty-art-wrap">
+            <img class="empty-art" src="/assets/Images-Transparent/Image-Trophies-Blank.png" alt="No trophies yet" />
+          </div>
+          <div class="empty-copy">
+            <h2 class="empty-title">No Trophies Yet!</h2>
+            <p class="empty-sub">Your journey is just beginning. Earn some cool trophies and show them off here!</p>
+          </div>
+          <button class="action-btn earn-btn" routerLink="/content" aria-label="Earn Trophies">
+            Earn Trophies
+          </button>
         </div>
 
         <!-- Trophy List -->
@@ -80,6 +86,7 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
             </div>
           </ng-container>
         </div>
+
       </div>
     </ion-content>
   `,
@@ -88,107 +95,160 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
       display: block;
     }
 
+    /* Make inner scroll div a flex column so children can fill height */
+    .trophy-content::part(scroll) {
+      display: flex;
+      flex-direction: column;
+    }
+
     .trophy-content {
-      --padding-top: 8px;
+      --padding-top: 0;
       --padding-bottom: 0;
       --padding-start: 0;
       --padding-end: 0;
     }
 
     .trophy-page-container {
-      padding: 0 16px max(24px, env(safe-area-inset-bottom, 24px));
+      flex: 1;
       display: flex;
       flex-direction: column;
-      align-items: stretch;
+      padding: 12px 20px max(32px, env(safe-area-inset-bottom, 32px));
       width: 100%;
-      max-width: 720px;
+      max-width: 560px;
       margin: 0 auto;
       box-sizing: border-box;
     }
 
     /* ── Loading ── */
     .loading-state {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 48px 24px;
       gap: 16px;
       text-align: center;
+      padding: 40px 24px;
     }
     .loading-state ion-spinner {
       --color: #d45aa3;
-      transform: scale(1.5);
+      width: 40px;
+      height: 40px;
+    }
+    .loading-label {
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px;
+      color: #6b6b6b;
+      margin: 0;
     }
 
     /* ── Error ── */
     .error-state {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       text-align: center;
-      gap: 12px;
-      padding: 24px 16px;
+      gap: 10px;
+      padding: 32px 24px;
     }
     .error-art {
-      width: min(200px, 60vw);
+      width: min(180px, 55vw);
       height: auto;
+      margin-bottom: 8px;
     }
     .error-title {
       font-family: 'Nunito', sans-serif;
       font-weight: 800;
-      font-size: clamp(17px, 4vw, 20px);
-      margin: 6px 0 0;
+      font-size: 20px;
+      margin: 0;
       color: #e74c3c;
     }
     .error-sub {
       color: #6b6b6b;
-      font-size: clamp(13px, 3.5vw, 15px);
-      max-width: 320px;
-      margin: 6px 0 12px;
-    }
-    .retry-btn {
-      --background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
-      --color: #fff;
-      border-radius: 20px;
-      height: 52px;
-      font-size: 16px;
-      font-weight: 800;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 280px;
+      margin: 4px 0 16px;
     }
 
-    /* ── Empty ── */
+    /* ── Shared action button ── */
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: 50px;
+      height: 54px;
+      min-width: 200px;
+      max-width: 280px;
+      width: 100%;
+      font-family: 'Nunito', sans-serif;
+      font-size: 17px;
+      font-weight: 800;
+      color: #fff;
+      cursor: pointer;
+      letter-spacing: 0.2px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+      text-decoration: none;
+    }
+    .action-btn:active {
+      transform: scale(0.96);
+    }
+    .earn-btn {
+      background: linear-gradient(135deg, #d45aa3 0%, #b85aa6 50%, #8f3aa0 100%);
+      box-shadow: 0 6px 20px rgba(180, 60, 170, 0.32);
+    }
+    .earn-btn:active {
+      box-shadow: 0 3px 10px rgba(180, 60, 170, 0.2);
+    }
+    .error-btn {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+      box-shadow: 0 6px 20px rgba(231, 76, 60, 0.28);
+    }
+
+    /* ── Empty State ── */
     .empty-state {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       text-align: center;
-      gap: 12px;
-      padding: 24px 16px;
+      padding: 16px 8px 40px;
+    }
+
+    .empty-art-wrap {
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto 28px;
     }
     .empty-art {
-      width: min(280px, 70vw);
+      width: 100%;
       height: auto;
+      display: block;
+    }
+
+    .empty-copy {
+      margin-bottom: 36px;
     }
     .empty-title {
       font-family: 'Nunito', sans-serif;
       font-weight: 800;
-      font-size: clamp(17px, 4vw, 20px);
-      margin: 6px 0 0;
+      font-size: clamp(20px, 5vw, 24px);
+      color: #282527;
+      margin: 0 0 10px;
     }
     .empty-sub {
+      font-family: 'Nunito', sans-serif;
+      font-size: clamp(14px, 3.8vw, 16px);
       color: #6b6b6b;
-      font-size: clamp(13px, 3.5vw, 15px);
-      max-width: 300px;
-      margin: 6px 0 12px;
-      line-height: 1.5;
-    }
-    .earn-btn {
-      --background: linear-gradient(90deg, #d45aa3 0%, #b85aa6 50%, #8f3aa0 100%);
-      --color: #fff;
-      border-radius: 20px;
-      height: 52px;
-      font-size: 16px;
-      font-weight: 800;
+      line-height: 1.65;
+      max-width: 280px;
+      margin: 0 auto;
     }
 
     /* ── Header trophy icon ── */
@@ -210,12 +270,12 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
       line-height: 1;
     }
 
-    /* ── Section ── */
+    /* ── Section (trophy list) ── */
     .section {
       display: flex;
       flex-direction: column;
       gap: 10px;
-      margin-top: 12px;
+      margin-top: 8px;
       width: 100%;
     }
 
@@ -229,7 +289,7 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
 
     .group-divider {
       background: #282527;
-      opacity: 0.15;
+      opacity: 0.12;
       width: 100%;
       height: 1px;
       margin: 0;
