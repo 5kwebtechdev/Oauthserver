@@ -1,6 +1,6 @@
 p, h2, h3 {
     color: #282527;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-style: normal;
     font-weight: 600;
     margin: 0;
@@ -87,7 +87,7 @@ p {
 }
 
 .radio-label {
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 16px;
     font-weight: 600;
     color: #282527;

@@ -2,7 +2,7 @@
 # Use this to monitor app logs after installing the APK
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "MindfulBuddy APK Log Monitor" -ForegroundColor Cyan
+Write-Host "Super Me APK Log Monitor" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 

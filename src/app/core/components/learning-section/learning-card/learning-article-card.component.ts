@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SupermeButtonComponent } from 'src/app/core/components/superme-button/superme-button.component';
 import { LearningCardData } from 'src/app/core/models/learning.models';
+import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
 
 @Component({
     selector: 'learning-article-card',
     templateUrl: './learning-article-card.component.html',
     styleUrls: ['./learning-article-card.component.scss'],
     standalone: true,
-    imports: [CommonModule, SupermeButtonComponent]
+    imports: [CommonModule, SupermeButtonComponent, SkeletonImageComponent]
 })
 export class LearningArticleCardComponent implements OnChanges {
     @Input() item!: LearningCardData;

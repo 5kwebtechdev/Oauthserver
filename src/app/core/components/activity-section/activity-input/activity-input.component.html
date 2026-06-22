@@ -104,9 +104,19 @@
       <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">{{errorMsg}}</div>
     </div>
     <div class="add-new-row">
-      <superme-tags [singleSelection]="true" [size]="'small'" [variant]="tagVariants[currentActive]"
-        (selectedKeysChange)="onTagsChange($event)" (add)="onTagAdd($event)" (edit)="onTagEdit($event)"
-        (delete)="onTagDelete($event)"></superme-tags>
+      <superme-tags
+        [options]="tagOptions"
+        [useDefaultOptions]="false"
+        [persistCustomTags]="false"
+        [serverManaged]="true"
+        [allowEdit]="false"
+        [singleSelection]="true"
+        [size]="'small'"
+        [variant]="tagVariants[currentActive]"
+        (selectedKeysChange)="onTagsChange($event)"
+        (add)="onTagAdd($event)"
+        (delete)="onTagDelete($event)">
+      </superme-tags>
       <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Pick a tag for this activity.</div>
     </div>
   </div>

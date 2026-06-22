@@ -34,7 +34,17 @@ export class BadgeApi {
     }
 
     /**
-     * Get pending badge popups that were missed while offline.
+     * Get the next pending badge popup (polling after badge-earning actions).
+     * Endpoint: GET {base}/badges/popup/pending
+     * Returns { showPopup, badgeId, level, title, badgeName, message, icon, pendingCount, primaryButton, secondaryButton }
+     */
+    getPendingBadgePopup(): Observable<any> {
+        const url = `${this.base}/badges/popup/pending`;
+        return this.http.get(url, { headers: this.headers() });
+    }
+
+    /**
+     * Get pending badge popups that were missed while offline (legacy endpoint).
      * Endpoint: GET {base}/badges/pending-popup
      */
     getPendingPopups(): Observable<any> {

@@ -6,25 +6,22 @@ import { NetworkIssueService } from '../components/network-issue/network-issue.s
 
 @Injectable()
 export class NetworkInterceptor implements HttpInterceptor {
-  constructor(private network: NetworkIssueService) { }
+  constructor(private network: NetworkIssueService) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(req).pipe(
       catchError((error) => {
-        // Detect network errors: status 0, ProgressEvent, or browser offline
-        const isNetworkError =
+        // Only show the offline screen when the device is truly offline.
+        // HTTP 0 can also occur for CORS or cancelled requests so we combine
+        // it with navigator.onLine to avoid false positives.
+        const isReallyOffline =
           !navigator.onLine ||
-          error?.status === 0 ||
-          (error instanceof HttpErrorResponse && error.status === 0) ||
-          error instanceof ProgressEvent ||
-          (error?.error instanceof ProgressEvent);
+          (error instanceof HttpErrorResponse && error.status === 0 && !navigator.onLine);
 
-        console.warn('[NetworkInterceptor] caught error', { url: req.url, status: error?.status, isNetworkError, error });
-
-        if (isNetworkError) {
-          console.warn('[NetworkInterceptor] showing network issue screen');
+        if (isReallyOffline) {
           this.network.show();
         }
+
         return throwError(() => error);
       })
     );

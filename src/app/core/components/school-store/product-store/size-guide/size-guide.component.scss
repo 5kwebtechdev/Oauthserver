@@ -7,7 +7,7 @@
 }
 p,h1,h2,h3, th, .body-type,span{
   margin: 0;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-weight: 600;}
  h2 ,th, .body-type{
   font-size: 16px;
@@ -88,7 +88,7 @@ p,h1,h2,h3, th, .body-type,span{
   border: 0;
   background: transparent;
   color: #90214D;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-weight: 600;
   padding: 4px 0px;
   border-radius: 8px;
@@ -269,7 +269,7 @@ opacity: 0.7;}
 
 .price .discounted-price {
   color: #90214d;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 600;
 }
@@ -278,7 +278,7 @@ opacity: 0.7;}
   text-decoration: line-through;
   opacity: 0.7;
   color: #90214d;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 600;
 }
@@ -313,7 +313,7 @@ opacity: 0.7;}
 
 .selected-size {
   color: #90214d;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 600;
 }

@@ -20,7 +20,7 @@
  h2, p, span ,h3{
 	margin: 0;
 	color: #282527;
-font-family: Nunito;
+font-family: var(--font-sans);
 font-weight: 600;
 font-size: 16px;
 }
@@ -47,7 +47,7 @@ span{
 
 .underline-link {
 	color: #90214D;
-font-family: Nunito;
+font-family: var(--font-sans);
 font-size: 16px;
 font-weight: 600;
 text-decoration-skip-ink: none;
@@ -83,7 +83,7 @@ text-underline-position: from-font;
 
 .pincode-input {
 	color: #282527;
-	font-family: Nunito;
+	font-family: var(--font-sans);
 	font-size: 13px;
 	font-weight: 500;
 	border: none;
@@ -151,7 +151,7 @@ text-underline-position: from-font;
 
 .address-text {
 	color: #282527;
-	font-family: Nunito, sans-serif;
+	font-family: var(--font-sans);
 	font-size: 16px;
 	font-weight: 600;
 }
@@ -170,7 +170,7 @@ text-underline-position: from-font;
 	background: transparent;
 	border: 0;
 	color: #90214D;
-	font-family: Nunito, sans-serif;
+	font-family: var(--font-sans);
 	font-size: 14px;
 	font-weight: 600;
 	cursor: pointer;
@@ -306,7 +306,7 @@ align-self: stretch;
 
 .quantity-count {
 	color: #90214d;
-	font-family: Nunito;
+	font-family: var(--font-sans);
 	font-size: 20px;
 	font-weight: 600;
 }

@@ -1,40 +1,23 @@
 <div class="lesson-container">
 
-  <!-- Header -->
-  <div class="header" *ngIf="lesson">
-    <superme-navigator backIcon="arrowSvg" (back)="close()"></superme-navigator>
-    <img [src]="convertGoogleDriveUrl(lesson.thumbnailUrl)" alt="Lesson" class="lesson-img"
-      (error)="onImageError($event)">
-    <h1>{{ lesson.order }}. {{ lesson.title }}</h1>
-    <p class="time">{{ lesson.videoUrl ? 'Video' : 'Text-based' }} • {{ lesson.duration }} min</p>
-    <p class="desc">{{ lesson.description }}</p>
+  <!-- Scrollable area: header + body content -->
+  <div class="lesson-scroll">
+
+    <!-- Header -->
+    <div class="header" *ngIf="lesson">
+      <superme-navigator backIcon="arrowSvg" (back)="close()"></superme-navigator>
+      <img [src]="convertGoogleDriveUrl(lesson.thumbnailUrl)" alt="Lesson" class="lesson-img"
+        (error)="onImageError($event)">
+      <h1>{{ lesson.order }}. {{ lesson.title }}</h1>
+      <p class="time">{{ lesson.videoUrl ? 'Video' : 'Text-based' }} • {{ lesson.duration }} min</p>
+      <p class="desc">{{ lesson.description }}</p>
+    </div>
+
+    <div class="content" [innerHTML]="lesson?.content"></div>
+
   </div>
 
-  <!-- Lesson Outcomes -->
-  <!-- <div class="outcomes" *ngIf="learningOutcomes.length > 0">
-    <h2>In this lesson you will learn</h2>
-    <p class="sub">By the end, you'll be able to:</p>
-    <ul>
-      <li *ngFor="let outcome of learningOutcomes">✔ {{ stripNumbering(outcome) }}</li>
-    </ul>
-  </div> -->
-
-  <!-- Content Sections -->
-  <!-- <div class="content">
-    <div *ngFor="let section of contentSections">
-      <h2>{{ section.heading }}</h2>
-      <div *ngIf="section.isFunFact" class="fun-fact">
-        <strong>{{ section.heading }}</strong> {{ section.body }}
-      </div>
-      <p *ngIf="!section.isFunFact">{{ section.body }}</p>
-    </div>
-  </div> -->
-
-
-  <div class="content" [innerHTML]="lesson?.content"></div>
-
-
-  <!-- Footer Buttons -->
+  <!-- Sticky footer — always visible above the system navigation bar -->
   <div class="footer-cta d-flex w-100 gap-2" *ngIf="lesson && !wasCompletedOnLoad && (!doneClicked || !isLastLesson)">
     <superme-button *ngIf="!doneClicked"
       [type]="'green'" [text]="'Done'" (click)="onDoneClick()"></superme-button>

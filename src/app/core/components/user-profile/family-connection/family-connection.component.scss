@@ -58,7 +58,7 @@
 
     h2 {
         color: #282527;
-        font-family: Fredoka, sans-serif;
+        font-family: var(--font-heading);
         font-size: 24px;
         font-weight: 600;
         margin: 0;
@@ -67,7 +67,7 @@
 
     .qr-subtitle {
         color: rgba(40, 37, 39, 0.70);
-        font-family: Nunito, sans-serif;
+        font-family: var(--font-sans);
         font-size: 14px;
         font-weight: 500;
         margin: -12px 0 0 0;
@@ -176,7 +176,7 @@ h2 {
     justify-content: center;
     align-items: center;
     gap: 8px;
-    font-family: Nunito, sans-serif;
+    font-family: var(--font-sans);
     font-size: 10px;
     font-weight: 600;
     color: #282527;
@@ -223,7 +223,7 @@ h2 {
 
     p {
         color: rgba(40, 37, 39, 0.70);
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 16px;
         font-weight: 600;
         flex: 0 0 98px;
@@ -232,7 +232,7 @@ h2 {
 
     h1 {
         color: #282527;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 16px;
         font-weight: 600;
         min-width: 0;
@@ -250,7 +250,7 @@ h2 {
 
     p {
         color: #4CAF50;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 13px;
         font-weight: 600;
     }
@@ -265,7 +265,7 @@ h2 {
 
     p {
         color: rgba(40, 37, 39, 0.70);
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 16px;
         font-weight: 600;
         flex: 0 0 98px;
@@ -274,7 +274,7 @@ h2 {
 
     h1 {
         color: #282527;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 16px;
         font-weight: 600;
         min-width: 0;
@@ -319,7 +319,7 @@ h2 {
     p {
         color: #282527;
         text-align: center;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 13px;
         font-weight: 600;
         opacity: 0.7;
@@ -328,7 +328,7 @@ h2 {
     h1 {
         color: #282527;
         text-align: center;
-        font-family: Fredoka;
+        font-family: var(--font-heading);
         font-size: 16px;
         font-weight: 500;
 
@@ -351,7 +351,7 @@ h2 {
 
     a {
         color: #BB2124;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 13px;
         font-weight: 600;
         text-decoration-line: underline;
@@ -378,14 +378,14 @@ h2 {
 
     p {
         color: rgba(40, 37, 39, 0.70);
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 16px;
         font-weight: 600;
     }
 
     h1 {
         color: #282527;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 16px;
         font-weight: 600;
     }
@@ -427,7 +427,7 @@ h2 {
     font-size: 13px;
     font-weight: 500;
     margin-bottom: 0px;
-    font-family: 'Nunito';
+    font-family: var(--font-sans);
         margin-bottom: 0px;
     }
 }
@@ -447,7 +447,7 @@ h2 {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 
     h1 {
-        font-family: nunito;
+        font-family: var(--font-sans);
         font-size: 18px;
         margin: 0 0 8px 0;
     }
@@ -488,7 +488,7 @@ h2 {
     font-size: 16px;
     font-style: normal;
     font-weight: 600;
-    font-family: Nunito;
+    font-family: var(--font-sans);
 
 }
 
@@ -580,7 +580,7 @@ ion-checkbox::part(container) {
 
     p {
         color: rgba(40, 37, 39, 0.70);
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 10px;
         font-weight: 500;
         align-items: stretch;
@@ -589,7 +589,7 @@ ion-checkbox::part(container) {
     h1 {
         color: #282527;
         text-align: center;
-        font-family: Fredoka;
+        font-family: var(--font-heading);
         font-size: 13px;
         font-weight: 500;
     }
@@ -617,7 +617,7 @@ ion-checkbox::part(container) {
     P {
         color: #282527;
         text-align: center;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 16px;
         font-weight: 500;
     }
@@ -625,7 +625,7 @@ ion-checkbox::part(container) {
     h1 {
         color: #282527;
         text-align: center;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 20px;
         font-weight: 700;
         display: flex;
@@ -647,7 +647,7 @@ ion-checkbox::part(container) {
 
     p {
         color: #282527;
-        font-family: Nunito;
+        font-family: var(--font-sans);
         font-size: 13px;
         font-weight: 500;
     }

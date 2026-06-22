@@ -130,7 +130,7 @@ $theme-colors: (
     font-weight: 500;
     cursor: pointer;
     background: transparent;
-    font-family: Fredoka;
+    font-family: var(--font-heading);
 
     &.active {
       padding-right: 16px;
@@ -209,7 +209,7 @@ $theme-colors: (
 
 .timetable-header h3 {
   color: #6B656A;
-  font-family: Nunito, sans-serif;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
@@ -255,7 +255,7 @@ $theme-colors: (
 .timetable-datepicker .date-text,
 .timetable-datepicker superme-datepicker {
   color: #282527;
-  font-family: Nunito, sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-style: normal;
   font-weight: 600;
@@ -343,7 +343,7 @@ $theme-colors: (
 
   label {
     color: #6B656A;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 16px;
     font-weight: 600;
   }
@@ -355,7 +355,7 @@ $theme-colors: (
 .assign-coin label,
 .everyday-label label {
   color: #6B656A;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 600;
 }
@@ -423,7 +423,7 @@ $theme-colors: (
 
 .pick-time label {
   color: #6B656A;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-style: normal;
   font-weight: 500;
@@ -518,7 +518,7 @@ $notes-themes: (
 
 .title-input .superme-input-group input {
   color: #6B656A;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 600;
   opacity: 0.5;
@@ -548,7 +548,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
 .title-input .superme-input-group input::placeholder,
 .habit-input-root .title-input .superme-input-group input::placeholder {
   color: #6B656A !important;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 600;
   line-height: 140%;
@@ -560,7 +560,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
 
 %input-placeholder {
   color: #6B656A;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 600;
   line-height: 140%;
@@ -592,7 +592,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
 .start-end-row>div>label {
   display: block;
   color: #6B656A;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-style: normal;
   font-weight: 500;
@@ -662,7 +662,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
 .field-error {
     width: 100%;
     color: #BB2124;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 500;
     padding: 4px 12px;

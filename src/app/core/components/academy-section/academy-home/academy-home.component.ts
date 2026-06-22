@@ -8,6 +8,7 @@ import { AuthService } from '../../../services/auth.service';
 import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
 import { SupermeSpeechBubbleComponent } from '../../superme-speech-bubble/superme-speech-bubble.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
+import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
 
 interface CategoryCard {
   id: number;
@@ -23,7 +24,7 @@ interface CategoryCard {
 @Component({
   selector: 'app-academy-home',
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, SupermeCardHeaderComponent, SupermeSpeechBubbleComponent, SupermePetComponent],
+  imports: [CommonModule, IonicModule, RouterModule, SupermeCardHeaderComponent, SupermeSpeechBubbleComponent, SupermePetComponent, SkeletonImageComponent],
   templateUrl: './academy-home.component.html',
   styleUrls: ['./academy-home.component.scss']
 })

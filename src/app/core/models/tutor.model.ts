@@ -206,6 +206,20 @@ export type TutorSortOption = 'alphabets' | 'mostLiked' | 'experience' | 'recent
  * Helper function to convert API Tutor to TutorListItem
  */
 export function toTutorListItem(tutor: Tutor): TutorListItem {
+    // Prefer the direct numeric yearsOfExperience the admin entered per mapping;
+    // fall back to the top-level experience enum only when none is set.
+    const maxYearsFromMappings = (tutor.categoryMappings || [])
+        .reduce((max, m) => Math.max(max, m.yearsOfExperience || 0), 0);
+
+    let experienceStr: string;
+    if (maxYearsFromMappings > 0) {
+        experienceStr = `${maxYearsFromMappings}+ years Exp`;
+    } else if (tutor.experience && tutor.experience !== 'FRESHER') {
+        experienceStr = formatExperience(tutor.experience);
+    } else {
+        experienceStr = 'Fresher';
+    }
+
     return {
         id: tutor.id,
         name: tutor.name,
@@ -216,7 +230,7 @@ export function toTutorListItem(tutor: Tutor): TutorListItem {
         champsLiked: tutor.champsLiked || 0,
         likedByUser: !!tutor.likedByUser,
         rating: tutor.champsLiked || tutor.likes?.length || 0,
-        experience: formatExperience(tutor.experience),
+        experience: experienceStr,
         qualification: tutor.qualification,
         hourlyRate: tutor.hourlyRate || tutor.fees || 0,
         location: tutor.location,

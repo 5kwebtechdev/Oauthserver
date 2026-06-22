@@ -19,14 +19,14 @@
 
 .title-head {
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 600;
 }
 
 .title-desc {
   color: #4CAF50;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 500;
 }
@@ -56,7 +56,7 @@
 
 .error {
   color: #BB2124; /* Figma error color */
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-style: normal;
   font-weight: 500;
@@ -65,7 +65,7 @@
 /* Page-specific override when the host sets .has-error: keep same typography and color */
 :host(.has-error) .error {
   color: #BB2124;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-style: normal;
   font-weight: 500;
@@ -99,7 +99,7 @@
 
 .suggestion-item {
   color: #4CAF50;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 500;
   display: inline-flex;
@@ -121,7 +121,7 @@
 
 .suggestion-error {
   color: #BB2124;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 500;
   padding: 6px 8px;

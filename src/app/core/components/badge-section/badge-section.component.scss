@@ -7,9 +7,9 @@ $text: #282527;
 $muted: rgba(40, 37, 39, 0.7);
 $shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
 $radius: 24px;
-$font-nunito: 'Nunito', sans-serif;
-$font-fredoka: 'Fredoka', sans-serif;
-$font-general: 'General Sans', sans-serif;
+$font-nunito: var(--font-sans);
+$font-fredoka: var(--font-heading);
+$font-general: var(--font-sans);
 
 :host {
     display: block;
@@ -353,6 +353,7 @@ ion-content {
     margin: 4px 0 0;
     width: 100%;
 }
+
 
 .congrats-popup {
     position: fixed;

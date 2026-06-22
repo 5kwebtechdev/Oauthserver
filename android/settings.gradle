@@ -20,7 +20,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MindfulBuddy-App"
+rootProject.name = "SuperMe-App"
 
 apply from: "capacitor.settings.gradle"
 

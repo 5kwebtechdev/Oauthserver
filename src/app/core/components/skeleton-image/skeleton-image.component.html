@@ -1,0 +1,13 @@
+<div class="sk-root" [class.sk-circle]="circle">
+  <div class="sk-shimmer" [class.sk-shimmer--out]="loaded" aria-hidden="true"></div>
+  <img
+    [src]="currentSrc"
+    [alt]="alt"
+    class="sk-img"
+    [class.sk-img--in]="loaded"
+    [style.object-fit]="objectFit"
+    loading="lazy"
+    (load)="onLoad()"
+    (error)="onError($event)"
+  />
+</div>

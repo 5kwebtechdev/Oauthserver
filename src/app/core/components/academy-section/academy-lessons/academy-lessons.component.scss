@@ -1,11 +1,26 @@
-.lesson-container {
+// ── Modal host fills the Ionic modal viewport ─────────────────────────────
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
 
+.lesson-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  overflow-y: auto;
   box-sizing: border-box;
-  position: relative;
+  overflow: hidden;
+}
+
+// ── Scrollable area (header + content) ────────────────────────────────────
+.lesson-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 /* Header */
@@ -14,9 +29,8 @@
   text-align: center;
   padding: 20px 16px;
   position: relative;
-  border-radius: 24px;
+  border-radius: 0 0 24px 24px;
 }
-
 
 .header h1 {
   font-size: 18px;
@@ -69,6 +83,7 @@
 /* Content */
 .content {
   padding: 16px;
+  padding-bottom: 8px;
 }
 
 .content h2 {
@@ -84,13 +99,16 @@
   line-height: 1.5;
 }
 
-/* Footer CTA */
+// ── Sticky footer CTA — always visible above the system nav bar ───────────
 .footer-cta {
   display: flex;
+  flex-shrink: 0;
   width: 100%;
   gap: 8px;
-  padding: 16px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)) 16px;
   box-sizing: border-box;
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
 
   superme-button {
     flex: 1;

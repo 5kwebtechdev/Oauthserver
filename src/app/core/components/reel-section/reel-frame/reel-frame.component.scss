@@ -44,7 +44,7 @@
   border-radius: 4px;
   background: #FFA9A1;
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 8px;
   font-style: normal;
   font-weight: 600;
@@ -172,7 +172,7 @@
 
 .author { 
   color: #FFF;
-  font-family: Fredoka;
+  font-family: var(--font-heading);
   font-size: 8px;
   font-style: normal;
   font-weight: 500;
@@ -182,7 +182,7 @@
 .title { 
   margin: 0;
   color: #FFF;
-  font-family: Fredoka;
+  font-family: var(--font-heading);
   font-size: 10px;
   font-style: normal;
   font-weight: 500;
@@ -192,7 +192,7 @@
 
 .tags {
   color: #E6E6E6;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 7px;
   font-style: normal;
   font-weight: 500;
@@ -224,7 +224,7 @@
 .duration,
 .likes {
   color: #E6E6E6;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 7px;
   font-style: normal;
   font-weight: 500;

@@ -5,14 +5,12 @@ const config: CapacitorConfig = {
   appId: 'com.superme.app',
   appName: 'Superme',
   webDir: 'www',
-  // server: {
-  //   cleartext: true,
-  //   androidScheme: 'http',
-  //   allowNavigation: [
-  //     'api.supermeapp.com:3000',
-  //     'localhost'
-  //   ]
-  // },
+  server: {
+    allowNavigation: [
+      'api.supermeapp.com',
+      '*.supermeapp.com'
+    ]
+  },
   android: {
     allowMixedContent: true
   },

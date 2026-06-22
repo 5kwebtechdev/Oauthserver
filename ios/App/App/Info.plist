@@ -18,10 +18,18 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>com.superme.app</string>
+			<string>com.supermeapp.app</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>superme</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>Google Sign-In</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.124581866222-gsff4sl4ff07rr4btsah7u91gtkh30n0</string>
 			</array>
 		</dict>
 	</array>

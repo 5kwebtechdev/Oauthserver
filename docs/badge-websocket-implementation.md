@@ -135,5 +135,5 @@ If you want me to also create a small script to automatically rollback these cha
 
 ---
 Generated on: 2026-01-29
-Repository: MindfulBuddy-App
+Repository: SuperMe-App
 Author: Changes applied by GitHub Copilot agent

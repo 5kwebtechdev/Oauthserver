@@ -6,8 +6,12 @@
       <div class="user-profile" *ngIf="user?.relationship !== 'PARENT'">
         <div class="avatar w-100 d-flex justify-content-center gap-2 flex-column align-items-center">
           <div class="avatar-wrapper">
-            <img [src]="userAvatarUrl || user?.avatarUrl || '/assets/app-assets/Default-avatar-home.svg'"
-              [alt]="avatarImageName ? avatarImageName : (user?.name || 'User') + ' avatar'" />
+            <app-img
+              [src]="userAvatarUrl || user?.avatarUrl || '/assets/app-assets/Default-avatar-home.svg'"
+              [alt]="avatarImageName ? avatarImageName : (user?.name || 'User') + ' avatar'"
+              [circle]="true"
+              objectFit="cover">
+            </app-img>
           </div>
           <div class="user-info w-100 d-flex justify-content-center gap-2 flex-column align-items-center">
             <div class="user-name">{{ user?.name || 'You' }}</div>
@@ -147,7 +151,7 @@
       imageAlt: 'Logout image',
       heading: 'Leaving already?',
       subtitle: 'You can come back anytime to continue your adventure.',
-      primaryCTA: { text: 'Logout', callback: confirmLogout.bind(this), buttonStyle: 'bronze', buttonMedium: true },
+      primaryCTA: { text: 'Logout', buttonStyle: 'bronze', buttonMedium: true },
       secondaryCTA: { text: 'Stay Here', callback: closeLogoutPopup.bind(this), buttonStyle: 'bronze-transparent', buttonMedium: true },
       backdrop: true,
       showCloseButton: true

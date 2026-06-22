@@ -14,6 +14,7 @@ import { HabitService } from '../habit.service';
 import { HabitApi } from '../../../api/habit.api';
 import { TaskApi } from '../../../api/task.api';
 import { CalendarApi } from '../../../api/calendar.api';
+import { TagsApi } from '../../../api/tags.api';
 import { Habit } from '../habit.types';
 import { Router } from '@angular/router';
 import { NavigationService } from '../../../services/navigation.service';
@@ -64,19 +65,12 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
         this.modalCtrl.dismiss({ cancelled: true }).catch(() => {});
         return;
       }
-      // Not in a modal - use origin or navigation service
-      if (this.originUrl) {
-        this.router.navigateByUrl(this.originUrl).catch(() => { this.navigation.back(); });
-      } else {
-        this.navigation.back();
-      }
+      // Always pop the stack — never push a new route.
+      // Using navigateByUrl(originUrl) was pushing Detail back on top of Input,
+      // causing a back-button loop: Detail → Input → Detail → Input …
+      this.navigation.back();
     }).catch(() => {
-      // Fallback if modal check fails
-      if (this.originUrl) {
-        this.router.navigateByUrl(this.originUrl).catch(() => { this.navigation.back(); });
-      } else {
-        this.navigation.back();
-      }
+      this.navigation.back();
     });
   }
 
@@ -126,6 +120,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
 
   // Use centralized tags from SupermeTags; keep local container for dynamic additions
   routineTags: Array<{ key: string, value: string, type: string }> = [];
+  // API-loaded tag options passed to superme-tags component
+  tagOptions: Array<{ key: number; value: string; system?: boolean; editable?: boolean; deletable?: boolean; type?: string }> = [];
 
   everyday = false;
   weekdays = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'];
@@ -251,7 +247,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
     private authService: AuthService,
     private profileSelector: ProfileSelectorService,
     private cd: ChangeDetectorRef,
-    private toastService: CustomToastService
+    private toastService: CustomToastService,
+    private tagsApi: TagsApi
   ) { }
 
   get navigatorActions(): Array<{ type: 'edit' | 'icon', src?: string, alt?: string }> {
@@ -263,7 +260,55 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
     if (alt.includes('delete')) this.onDelete();
   }
 
+  private loadTagsFromApi(): void {
+    this.tagsApi.getTags().subscribe({
+      next: (tags) => {
+        this.tagOptions = tags.map(t => ({
+          key: t.id,
+          value: t.name,
+          system: t.system,
+          editable: false,
+          deletable: !t.system,
+          type: t.system ? undefined : 'custom'
+        }));
+        // Re-sync pre-selected tags now that options are available
+        this.syncSelectedTagsToComponent();
+        try { this.cd.detectChanges(); } catch (e) {}
+      },
+      error: () => {
+        // Fallback to local defaults if API fails
+        this.tagOptions = [
+          { key: 1, value: 'Study', system: true, editable: false, deletable: false },
+          { key: 2, value: 'Health', system: true, editable: false, deletable: false },
+          { key: 3, value: 'Skill', system: true, editable: false, deletable: false },
+          { key: 4, value: 'Routine', system: true, editable: false, deletable: false },
+          { key: 5, value: 'Personal', system: true, editable: false, deletable: false },
+        ];
+        this.syncSelectedTagsToComponent();
+      }
+    });
+  }
+
+  private syncSelectedTagsToComponent(): void {
+    if (!this.tagsComponent || !Array.isArray(this.selectedTags) || !this.selectedTags.length) return;
+    const keys = this.selectedTags.map(st => {
+      // Match by numeric key first (most reliable)
+      const byKey = this.tagOptions.find(o => String(o.key) === String(st.key));
+      if (byKey) return byKey.key;
+      // Fall back to matching by display value
+      const stVal = String((st as any).value || (st as any).name || '').trim().toLowerCase();
+      const byVal = this.tagOptions.find(o => String(o.value || '').trim().toLowerCase() === stVal);
+      return byVal ? byVal.key : null;
+    }).filter(k => k != null);
+    if (keys.length) {
+      this.tagsComponent.selectedKeys = keys as any[];
+      this.tagsComponent.selectedKeysChange.emit(this.tagsComponent.selectedKeys);
+      try { this.cd.detectChanges(); } catch (e) {}
+    }
+  }
+
   ngOnInit() {
+    this.loadTagsFromApi();
     // Determine whether current user is a child (only children should see Private toggle)
     try {
       const ud = localStorage.getItem('user_data');
@@ -348,54 +393,28 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
 
       this.activities = Array.isArray(h.activities) && h.activities.length ? h.activities : this.activities;
 
-      if (Array.isArray(h.tags) && h.tags.length) {
+      // Handle new API format: h.tag = { id, name, system, userId }
+      // Also handle legacy format: h.tags = ["Study"] (string array) for backward compat
+      if (h.tag && typeof h.tag === 'object' && h.tag.id) {
+        this.selectedTags = [{ key: String(h.tag.id), value: h.tag.name }];
+      } else if (Array.isArray(h.tags) && h.tags.length) {
         const first = h.tags[0];
         if (typeof first === 'string') {
           this.selectedTags = h.tags.map((t: string, idx: number) => ({ key: String(idx), value: t }));
-          h.tags.forEach((tagValue: string) => {
-            const exists = this.routineTags.some(rt => rt.value.toLowerCase() === tagValue.toLowerCase());
-            if (!exists) {
-              this.routineTags.push({ key: String(Date.now() + Math.random()), value: tagValue, type: 'habit-input' });
-            }
-          });
         } else if (typeof first === 'object') {
           this.selectedTags = h.tags.map((t: any, idx: number) => (t.key && (t.value || t.name || t.title)) ? { key: String(t.key), value: t.value || t.name || t.title, type: t.type } : { key: String(idx), value: t.value || t.name || t.title || JSON.stringify(t) });
-          h.tags.forEach((tag: any) => {
-            const tagValue = tag.value || tag.name || tag.title;
-            if (tagValue) {
-              const exists = this.routineTags.some(rt => rt.value.toLowerCase() === tagValue.toLowerCase());
-              if (!exists) {
-                this.routineTags.push({ key: String(tag.key || Date.now() + Math.random()), value: tagValue, type: tag.type || 'habit-input' });
-              }
-            }
-          });
         }
       }
-      // Ensure the SupermeTags component contains these tags and select them.
+      // Pre-select the tag in the child component by ID once tagOptions are loaded
       try {
-        if (this.tagsComponent) {
-          const labels: string[] = [];
-          if (Array.isArray(this.routineTags)) labels.push(...this.routineTags.map(rt => String(rt.value || '').trim()));
-          if (Array.isArray(this.selectedTags)) labels.push(...this.selectedTags.map(st => String((st as any).value || (st as any).name || (st as any).title || '').trim()));
-          const uniq = Array.from(new Set(labels.map(l => l).filter(Boolean)));
-          if (uniq.length) {
-            this.tagsComponent.ensureOptionsForLabels(uniq);
-          }
-
-          // Map selectedTags into child component selectedKeys
-          if (Array.isArray(this.selectedTags) && this.selectedTags.length) {
-            const selectedKeys = (this.selectedTags || []).map(st => {
-              const val = String((st as any).value || (st as any).name || (st as any).title || '').trim().toLowerCase();
-              const opt = (this.tagsComponent!.options || []).find(o => String(o.value || '').trim().toLowerCase() === val);
-              return opt ? opt.key : null;
-            }).filter(k => k != null);
-            if (selectedKeys.length) {
-              this.tagsComponent.selectedKeys = selectedKeys as any[];
-              this.tagsComponent.selectedKeysChange.emit(this.tagsComponent.selectedKeys);
-            }
+        if (this.tagsComponent && Array.isArray(this.selectedTags) && this.selectedTags.length) {
+          const tagKey = Number(this.selectedTags[0].key);
+          if (!isNaN(tagKey)) {
+            this.tagsComponent.selectedKeys = [tagKey];
+            this.tagsComponent.selectedKeysChange.emit(this.tagsComponent.selectedKeys);
           }
         }
-      } catch (e: any) { console.warn('Failed to sync routine tags with SupermeTags component', e); }
+      } catch (e: any) { console.warn('Failed to sync tag selection with SupermeTags component', e); }
     } catch (e: any) {
       console.warn('Failed to read navigation state for habit-input', e);
     }
@@ -485,9 +504,48 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
     return endMinutes <= startMinutes;
   }
 
-  onTagAdd(event: any) { if (event?.key && event?.value) this.routineTags.push({ key: event.key.toString(), value: event.value, type: 'habit-input' }); }
-  onTagEdit(event: any) { if (!event?.key) return; const idx = this.routineTags.findIndex(t => t.key === event.key.toString()); if (idx > -1) this.routineTags[idx].value = event.value; }
-  onTagDelete(key: any) { if (key == null) return; this.routineTags = this.routineTags.filter(t => t.key !== key.toString()); }
+  onTagAdd(event: any) {
+    if (!event?.value) return;
+    this.tagsApi.createTag(event.value).subscribe({
+      next: (created) => {
+        const newOpt = { key: created.id, value: created.name, system: false, editable: false, deletable: true, type: 'custom' };
+        this.tagOptions = [newOpt, ...this.tagOptions];
+        if (this.tagsComponent) {
+          this.tagsComponent.options = [...this.tagOptions];
+          this.tagsComponent.toggleSelection(created.id);
+        }
+        try { this.cd.detectChanges(); } catch (e) {}
+      },
+      error: (err) => {
+        const msg = err?.error?.error || err?.error?.message || 'Failed to create tag';
+        this.toastService.error(msg);
+      }
+    });
+  }
+
+  onTagEdit(event: any) { /* editing tags is not supported via API */ }
+
+  onTagDelete(event: any) {
+    const id = event?.key ?? event;
+    if (id == null) return;
+    this.tagsApi.deleteTag(Number(id)).subscribe({
+      next: () => {
+        this.tagOptions = this.tagOptions.filter(t => t.key !== Number(id));
+        if (this.tagsComponent) {
+          this.tagsComponent.options = [...this.tagOptions];
+          if (this.tagsComponent.selectedKeys.includes(id)) {
+            this.tagsComponent.selectedKeys = [];
+            this.selectedTags = [];
+          }
+        }
+        try { this.cd.detectChanges(); } catch (e) {}
+      },
+      error: (err) => {
+        const msg = err?.error?.error || err?.error?.message || 'Cannot delete tag';
+        this.toastService.error(msg);
+      }
+    });
+  }
 
   private to24Hour(t: string): string {
     if (!t) return '';
@@ -569,8 +627,11 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
     return Array.from(this.selectedDays).map(d => ActivityInputComponent.DAY_MAP[d] || d.toString().toUpperCase());
   }
 
-  private getTagValues(): string[] {
-    return Array.isArray(this.selectedTags) && this.selectedTags.length ? this.selectedTags.map(t => t.value || t.key) : [];
+  private getTagId(): number | null {
+    if (!Array.isArray(this.selectedTags) || this.selectedTags.length === 0) return null;
+    const first = this.selectedTags[0] as any;
+    const id = Number(first?.key);
+    return isNaN(id) ? null : id;
   }
 
   private showSuccessToast(activityName: string, category: string, isUpdate: boolean = false): void {
@@ -634,7 +695,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
     };
 
     const daysOfWeek = this.getSelectedDaysOfWeek();
-    const tags = this.getTagValues();
+    const tagId = this.getTagId();
     const priority = (habit.priority || 'medium').toString().toUpperCase();
     const rawRoutine = (habit.selectedRoutine || this.selectedRoutine);
     const routine = rawRoutine ? String(rawRoutine).toUpperCase() : null;
@@ -650,7 +711,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
         description: habit.notes || '',
         status: 'PENDING',
         priority: priority,
-        tags: tags,
+        tagId: tagId,
         startDate: this.formatDateStr(this.startDate) || '',
         startTime: formattedStartTime || '',
         endDate: this.formatDateStr(this.endDate) || '',
@@ -671,7 +732,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
       payload = {
         title: habit.title,
         notes: habit.notes || '',
-        tags,
+        tagId,
         everyday: !!(this.everyday && coversAllDays),
         startTime: formattedStartTime || '',
         endTime: formattedEndTime || '',
@@ -692,7 +753,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
         description: habit.notes || '',
         status: 'PENDING',
         priority: priority,
-        tags: tags,
+        tagId: tagId,
         startDate: this.formatDateStr(this.startDate) || '',
         startTime: formattedStartTime || '',
         endDate: this.formatDateStr(this.endDate) || '',
@@ -841,29 +902,14 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
         return;
       }
 
-      // Not in a modal - handle navigation
-      // If an explicit origin URL was provided in navigation state, use it
-      // But if the origin is activity-detail, skip it since the item may be deleted
-      if (this.originUrl) {
-        if (String(this.originUrl).includes('/authed/activity-detail')) {
-          // Origin is activity-detail - skip it and go back one extra step
-          try {
-            this.navigation.backN(2);
-          } catch (e) {
-            this.navigation.back();
-          }
-        } else {
-          this.router.navigateByUrl(this.originUrl).catch(() => { this.navigation.back(); });
-        }
-        return;
-      }
-
-      // Use NavigationService to go back to the origin page. If previous page
-      // was an activity-detail, skip it and go back one extra step so the
-      // user returns to the entry/list page that opened this input.
+      // Not in a modal - always pop the stack, never push.
+      // If we came from activity-detail (editing), go back 2 levels to skip
+      // the stale detail page and land directly on the list.
+      const fromDetail = this.originUrl && String(this.originUrl).includes('/authed/activity-detail');
       try {
         const prev = this.navigation.getPreviousUrl && this.navigation.getPreviousUrl();
-        if (prev && String(prev).includes('/authed/activity-detail')) {
+        const prevIsDetail = prev && String(prev).includes('/authed/activity-detail');
+        if (fromDetail || prevIsDetail) {
           this.navigation.backN(2);
         } else {
           this.navigation.back();
@@ -1314,8 +1360,10 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
     const sourceOptions = [...(this.routineTags || []), ...((this.tagsComponent && this.tagsComponent.options) || [])];
 
     if (typeof first === 'number') {
-      // numeric indices -> map to sourceOptions
-      this.selectedTags = (values as number[]).map(i => sourceOptions[i]).filter(Boolean);
+      // numeric keys -> find matching option by key (NOT by array index)
+      this.selectedTags = (values as number[]).map(i =>
+        sourceOptions.find(o => Number(o.key) === i || String(o.key) === String(i))
+      ).filter(Boolean) as any[];
     } else if (typeof first === 'string' || typeof first === 'number') {
       // keys -> find matching options by key
       const keys = (values as any[]).map(v => String(v));
@@ -1519,8 +1567,11 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
             }
           });
         }
-        this.tagsComponent.selectedKeys = keysToSelect;
-        this.tagsComponent.selectedKeysChange.emit(this.tagsComponent.selectedKeys);
+        // Only update if we actually resolved keys — never wipe with empty array
+        if (keysToSelect.length) {
+          this.tagsComponent.selectedKeys = keysToSelect;
+          this.tagsComponent.selectedKeysChange.emit(this.tagsComponent.selectedKeys);
+        }
       }
     } catch (e: any) { console.warn('Failed to set tagsComponent selected keys', e); }
 

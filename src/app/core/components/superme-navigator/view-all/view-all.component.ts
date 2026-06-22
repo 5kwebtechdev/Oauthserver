@@ -7,13 +7,11 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [CommonModule],
   template: `
-  <button type="button" class="view-all-btn see-all" (click)="onClick()" [attr.aria-label]="ariaLabel">
-    <span class="btn-content">
-      <span class="btn-text">{{ text }}</span>
-      <svg *ngIf="!hideIcon" class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-        <path d="M8.94097 6.39773L4.38604 10.9526C4.16636 11.1723 3.8102 11.1723 3.59054 10.9526L3.05929 10.4214C2.83998 10.2021 2.83956 9.84666 3.05835 9.62684L6.66822 5.99998L3.05835 2.37314C2.83956 2.15332 2.83998 1.79789 3.05929 1.57859L3.59054 1.04733C3.81022 0.827648 4.16638 0.827648 4.38604 1.04733L8.94095 5.60224C9.16063 5.8219 9.16063 6.17805 8.94097 6.39773Z" fill="#90214D" />
-      </svg>
-    </span>
+  <button type="button" class="view-all-btn" (click)="onClick()" [attr.aria-label]="ariaLabel">
+    {{ text }}
+    <svg *ngIf="!hideIcon" xmlns="http://www.w3.org/2000/svg" width="7" height="11" viewBox="0 0 7 11" fill="none" aria-hidden="true">
+      <path d="M1.5 1.5L5.5 5.5L1.5 9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
   </button>
   `,
   styles: [
@@ -21,44 +19,26 @@ import { Router } from '@angular/router';
     .view-all-btn {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      position: relative;
+      gap: 5px;
       background: transparent;
-      border: none;
-      padding: 0;
+      border: 1.5px solid #E1527C;
+      border-radius: 20px;
+      padding: 7px 12px 7px 16px;
+      color: #E1527C;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1;
       cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      transition: background 0.15s ease;
+      white-space: nowrap;
     }
 
-    .btn-content {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .btn-text {
-      color: #90214D;
-      font-family: 'Nunito';
-      font-size: 16px;
-      font-weight: 600;
-      text-decoration-line: underline;
-          text-decoration-style: solid;
-    -webkit-text-decoration-skip-ink: none;
-    text-decoration-skip-ink: none;
-    text-decoration-thickness: from-font;
-    text-underline-offset: auto;
-    text-underline-position: from-font;
-    }
-
-    .btn-icon {
-      width: 12px;
-      height: 12px;
-      aspect-ratio: 1/1;
-      flex-shrink: 0;
-      object-fit: contain;
-    }
-
-    .btn-icon path {
-      fill: #90214D;
+    .view-all-btn:active {
+      background: rgba(225, 82, 124, 0.1);
     }
     `
   ]

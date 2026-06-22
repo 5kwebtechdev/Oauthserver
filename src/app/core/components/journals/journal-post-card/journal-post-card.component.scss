@@ -25,7 +25,7 @@
 .post-time {
   color: #6B656A;
   text-align: center;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 700;
 }
@@ -64,7 +64,7 @@
 
 .post-mood {
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-style: normal;
   font-weight: 700;
@@ -82,7 +82,7 @@
 .tag {
   color: #282527;
   text-align: center;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-style: normal;
   font-weight: 600;
@@ -92,7 +92,7 @@
 
 .tag-title {
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
   line-height: 140%;
@@ -103,7 +103,7 @@
 
 .tag-text {
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
   text-transform: capitalize;
@@ -125,7 +125,7 @@
 
 .post-text {
   color: #282527;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 600;
   white-space: normal;

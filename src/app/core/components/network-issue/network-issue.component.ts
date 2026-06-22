@@ -1,7 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs';
-import { SupermeButtonComponent } from '../superme-button/superme-button.component';
+import { Subscription } from 'rxjs';
 import { NetworkIssueService } from './network-issue.service';
 
 @Component({
@@ -10,23 +9,60 @@ import { NetworkIssueService } from './network-issue.service';
   templateUrl: './network-issue.component.html',
   styleUrls: ['./network-issue.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, SupermeButtonComponent]
+  imports: [CommonModule]
 })
-export class NetworkIssueComponent {
-  /** Use async pipe in template for proper change detection */
-  visible$: Observable<boolean>;
+export class NetworkIssueComponent implements OnInit, OnDestroy {
+  isOffline = false;
+  showReconnectedBanner = false;
+  isRetrying = false;
 
-  constructor(private network: NetworkIssueService) {
-    this.visible$ = this.network.offline$;
+  private subs: Subscription[] = [];
+  private reconnectedTimer?: any;
+
+  constructor(
+    private network: NetworkIssueService,
+    private cd: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this.subs.push(
+      this.network.offline$.subscribe(offline => {
+        this.isOffline = offline;
+        if (!offline) this.isRetrying = false;
+        this.cd.markForCheck();
+      }),
+      this.network.backOnline$.subscribe(() => {
+        this.showReconnectedBanner = true;
+        this.cd.markForCheck();
+        clearTimeout(this.reconnectedTimer);
+        this.reconnectedTimer = setTimeout(() => {
+          this.showReconnectedBanner = false;
+          this.cd.markForCheck();
+        }, 3000);
+        this.network.triggerDataRefresh();
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subs.forEach(s => s.unsubscribe());
+    clearTimeout(this.reconnectedTimer);
   }
 
   retry(): void {
-    // user pressed retry -> emit and attempt to reload if online
+    if (this.isRetrying) return;
+    this.isRetrying = true;
+    this.cd.markForCheck();
     this.network.triggerRetry();
+
     if (navigator.onLine) {
       this.network.hide();
-      // reload current page to re-run pending API calls where applicable
-      try { window.location.reload(); } catch (e) { /* no-op */ }
+      this.network.triggerDataRefresh();
+    } else {
+      setTimeout(() => {
+        this.isRetrying = false;
+        this.cd.markForCheck();
+      }, 1500);
     }
   }
 }

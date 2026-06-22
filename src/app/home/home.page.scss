@@ -85,7 +85,7 @@
   color: #512100;
   font-size: clamp(24px, 8vw, 40px);
   margin-bottom: clamp(0.5rem, 2vw, 1rem);
-  font-family: 'Fredoka', sans-serif;
+  font-family: var(--font-heading);
   line-height: 1.2;
 }
 
@@ -99,7 +99,7 @@
 .text-content li {
   margin-bottom: clamp(0.25rem, 1.5vw, 0.5rem);
   font-size: clamp(15px, 5vw, 25px);
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.4;
 }
 

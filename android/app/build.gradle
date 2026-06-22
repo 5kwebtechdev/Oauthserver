@@ -13,9 +13,9 @@ android {
         // Match the package name in android/app/gocogle-services.json
         applicationId "com.superme.app"
         minSdkVersion 26
-        targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 22
-        versionName "0.0.2"
+        targetSdkVersion rootProject.ext.targetSdkVersion   
+        versionCode 24
+        versionName "0.0.4"
         manifestPlaceholders = [
             deeplinkHost: envOrProp('DEEPLINK_HOST') ?: 'supermeapp.com',
             deeplinkAltHost: envOrProp('DEEPLINK_ALT_HOST') ?: 'www.supermeapp.com',

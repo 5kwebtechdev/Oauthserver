@@ -14,7 +14,7 @@ ion-content{
 p {
 	margin: 0;
 	color: #282527;
-	font-family: Nunito;
+	font-family: var(--font-sans);
 	font-size: 13px;
 	font-weight: 500;
 }
@@ -22,7 +22,7 @@ p {
 h3 {
 	margin: 0;
 	color: var(--Neutral-Grey, rgba(40, 37, 39, 0.70));
-	font-family: Nunito;
+	font-family: var(--font-sans);
 	font-size: 13px;
 	font-weight: 600;
 
@@ -30,7 +30,7 @@ h3 {
 
 h1 {
 	color: #282527;
-	font-family: Nunito;
+	font-family: var(--font-sans);
 	font-size: 16px;
 	font-weight: 600;
 }
@@ -40,7 +40,7 @@ h1 {
 
 	h1 {
 		color: #282527;
-		font-family: Nunito;
+		font-family: var(--font-sans);
 		font-size: 20px;
 		font-weight: 700;
 	}
@@ -166,7 +166,7 @@ h1 {
 .card-intro h3 {
 	align-self: stretch;
 	color: #282527;
-	font-family: Nunito;
+	font-family: var(--font-sans);
 	font-size: 16px;
 	font-style: normal;
 	font-weight: 600;
@@ -177,7 +177,7 @@ h1 {
 .card-intro p {
 	align-self: stretch;
 	color: #282527;
-	font-family: Nunito;
+	font-family: var(--font-sans);
 	font-size: 13px;
 	font-style: normal;
 	font-weight: 600;
@@ -187,7 +187,7 @@ h1 {
 
 .name {
 	color: #282527;
-	font-family: Nunito;
+	font-family: var(--font-sans);
 	font-size: 20px;
 	font-style: normal;
 	font-weight: 700;
@@ -222,7 +222,7 @@ h1 {
 	a{
 		    color: #505D83;
     text-align: center;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 600;
     text-decoration-line: underline;
@@ -284,7 +284,7 @@ height: 24px;
 
 .title {
 	color: #282527;
-	font-family: 'Fredoka';
+	font-family: var(--font-heading);
 	font-size: clamp(14px, 2.2vw, 16px);
 	font-weight: 500;
 	margin: 0;
@@ -344,7 +344,7 @@ height: 24px;
 	transform: scale(1);
 }
 
-.option .label-text { color: #282527; font-family: 'Nunito'; font-size: clamp(14px, 2.2vw, 16px); font-weight: 600; margin-left: 8px; }
+.option .label-text { color: #282527; font-family: var(--font-sans); font-size: clamp(14px, 2.2vw, 16px); font-weight: 600; margin-left: 8px; }
 
 .action { width: 100%; }
 

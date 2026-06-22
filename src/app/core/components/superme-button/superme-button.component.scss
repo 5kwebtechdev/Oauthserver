@@ -1,5 +1,5 @@
 :host {
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
 }
 
 // ===========================================
@@ -495,7 +495,7 @@ p {
   .orange-flat-transparent p,
   .aqua-flat-transparent p {
     color: #282527;
-    font-family: 'Nunito', sans-serif;
+    font-family: var(--font-sans);
     font-size: 13px;
     font-weight: 600;
     margin: 0;

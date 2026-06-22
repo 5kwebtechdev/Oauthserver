@@ -2,7 +2,6 @@ import { Component, Input, TemplateRef, ContentChild, EventEmitter, Output, OnIn
 import { NgIf, NgForOf } from "@angular/common";
 import { forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ViewAllComponent } from 'src/app/core/components/superme-navigator/view-all/view-all.component';
 import { IonicModule } from "@ionic/angular";
 import { RouterModule } from '@angular/router';
 import { LearningCardComponent } from './learning-card/learning-card.component';
@@ -29,8 +28,12 @@ import { LearningService } from 'src/app/core/services/learning.service';
       </header>
 
       <nav class="content-actions">
-        <superme-view-all class="see-all content-section__view-all" [ariaLabel]="'View all content'"
-          [routerLink]="['/authed','content']"></superme-view-all>
+        <button class="view-all-pill" [routerLink]="['/authed','content']" aria-label="View all content">
+          View All
+          <svg xmlns="http://www.w3.org/2000/svg" width="7" height="11" viewBox="0 0 7 11" fill="none" aria-hidden="true">
+            <path d="M1.5 1.5L5.5 5.5L1.5 9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </nav>
 
       <div class="slides" #slides>
@@ -150,42 +153,29 @@ import { LearningService } from 'src/app/core/services/learning.service';
         box-sizing: border-box;
       }
 
-      .see-all {
-        background: none;
-        border: 0;
-        color: #90214D;
+      .view-all-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: transparent;
+        border: 1.5px solid #E1527C;
+        border-radius: 20px;
+        padding: 7px 12px 7px 16px;
+        color: #E1527C;
         font-family: 'Nunito', sans-serif;
-        font-weight: 600;
-        font-size: 16px;
-        line-height: 140%;
-        position: relative;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1;
+        cursor: pointer;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        transition: background 0.15s ease;
+        text-decoration: none;
 
-        &::after {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 18px;
-          width: 77px;
-          height: 0;
-          border-top: 1px solid currentColor;
-          opacity: 0.9;
-          z-index: 2;
+        &:active {
+          background: rgba(225, 82, 124, 0.1);
         }
-      }
-
-      .see-all .fa-chevron-right,
-      .see-all .fa-solid.fa-chevron-right {
-        display: inline-block;
-        width: 6px;
-        height: 10px;
-        font-size: 10px;
-        line-height: 10px;
-        vertical-align: middle;
-        text-align: center;
-      }
-
-      .content-section__view-all {
-        @extend .see-all;
       }
 
       .slides {
@@ -232,7 +222,7 @@ import { LearningService } from 'src/app/core/services/learning.service';
       }
     }
   `],
-  imports: [NgIf, NgForOf, IonicModule, RouterModule, ViewAllComponent, LearningCardComponent],
+  imports: [NgIf, NgForOf, IonicModule, RouterModule, LearningCardComponent],
   standalone: true
 })
 export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestroy {

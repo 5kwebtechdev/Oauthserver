@@ -45,7 +45,7 @@
 
   h1 {
     color: #282527;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 16px;
     font-style: normal;
     font-weight: 600;
@@ -69,7 +69,7 @@
 
   p {
     color: #282527;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 13px;
     font-style: normal;
     font-weight: 600;

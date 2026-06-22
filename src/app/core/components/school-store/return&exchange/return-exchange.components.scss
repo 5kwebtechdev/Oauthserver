@@ -1,6 +1,6 @@
 p,h2 {
     color: #282527;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-style: normal;
     font-weight: 600;
     margin:0;
@@ -184,7 +184,7 @@ opacity: 0.7;
 }
 
 .upload-text {
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 600;
   color: #282527;
@@ -198,7 +198,7 @@ opacity: 0.7;
 }
 
 .upload-hint {
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
   color: #282527;
@@ -219,7 +219,7 @@ opacity: 0.7;
 
 .refund-radio {
   .radio-label {
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 14px;
     font-weight: 600;
     color: #282527;

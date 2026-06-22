@@ -46,7 +46,7 @@ p,h1,h2,h3,h4,h5,h6, ul {
 
   .step-text {
         color: #772817;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 16px;
     font-weight: 500;
 
@@ -482,7 +482,7 @@ p,h1,h2,h3,h4,h5,h6, ul {
     padding: 20px 12px 20px 20px;
 
     h2 {
-      font-family: Nunito, sans-serif;
+      font-family: var(--font-sans);
       font-size: clamp(26px, 7vw, 32px);
       font-weight: 800;
       color: #772817;
@@ -491,7 +491,7 @@ p,h1,h2,h3,h4,h5,h6, ul {
     }
 
     p {
-      font-family: Nunito, sans-serif;
+      font-family: var(--font-sans);
       font-size: clamp(12px, 3.4vw, 15px);
       font-weight: 500;
       color: rgba(40, 37, 39, 0.65);
@@ -548,7 +548,7 @@ p,h1,h2,h3,h4,h5,h6, ul {
     h4 {
       position: relative;
     color: #772817;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 20px;
     font-weight: 600;
 
@@ -722,7 +722,7 @@ swiper-slide {
   background: #FAD2AE;
   z-index: 30; /* above the card overlay */
   color: #EE6621;
-  font-family: Nunito, sans-serif;
+  font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 600;
   align-self: flex-start;
@@ -792,7 +792,7 @@ swiper-slide {
 .age-modal__title {
   text-align: center;
   color: #282527;
-  font-family: Fredoka;
+  font-family: var(--font-heading);
   font-size: 16px;
   font-weight: 500;
   margin: 0 !important
@@ -801,7 +801,7 @@ swiper-slide {
 .age-modal__subtitle {
   color: #282527;
   text-align: center;
-  font-family: Nunito;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 400;
   margin: 0 !important
@@ -929,7 +929,7 @@ swiper-slide {
 }
 
 .country-modal__title {
-  font-family: 'Fredoka', sans-serif;
+  font-family: var(--font-heading);
   font-weight: 600;
   font-size: 20px;
   color: #772817;
@@ -1299,7 +1299,7 @@ swiper-slide {
 }
 
 .password-title {
-  font-family: 'Fredoka', sans-serif;
+  font-family: var(--font-heading);
   font-weight: 600;
   font-size: clamp(20px, 5.5vw, 28px);
   color: #772817;
@@ -1485,7 +1485,7 @@ ion-content.bg-white {
 
       h4 {
         color: #772817;
-        font-family: 'Nunito', sans-serif;
+        font-family: var(--font-sans);
         font-size: 20px;
         font-style: normal;
         font-weight: 600;
@@ -1494,7 +1494,7 @@ ion-content.bg-white {
 
       span {
         color: #EE6621;
-        font-family: 'Nunito', sans-serif;
+        font-family: var(--font-sans);
         font-size: 13px;
         font-style: normal;
         font-weight: 500;

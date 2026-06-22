@@ -28,6 +28,24 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy, ViewWillEnt
   habitCompletionRate: number = 0;
   totalTasks: number = 0;
   totalTasksCompleted: number = 0;
+
+  /** PRD Timeline color: Red 0-49, Yellow 50-79, Green 80-100 */
+  timelineColor(pct: number): string {
+    if (pct >= 80) return '#4CAF50';
+    if (pct >= 50) return '#F0AD4E';
+    return '#E74C3C';
+  }
+
+  get habitsColor(): string {
+    const pct = this.totalHabits > 0 ? (this.totalHabitsCompleted / this.totalHabits * 100) : 0;
+    return this.timelineColor(pct);
+  }
+  get tasksColor(): string {
+    const pct = this.totalTasks > 0 ? (this.totalTasksCompleted / this.totalTasks * 100) : 0;
+    return this.timelineColor(pct);
+  }
+  get habitRateColor(): string { return this.timelineColor(this.habitCompletionRate); }
+  get taskRateColor(): string  { return this.timelineColor(this.taskCompletionRate); }
   taskCompletionRate: number = 0;
 
   private subscriptions = new Subscription();

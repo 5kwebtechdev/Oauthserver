@@ -68,9 +68,11 @@
                         <!-- Icon -->
                         <div class="item-icon-wrap">
                             <ng-container *ngIf="item.thumbnailUrl; else typeIcon">
-                                <img [src]="item.thumbnailUrl" [alt]="item.label"
-                                     class="item-icon item-icon--thumb"
-                                     (error)="onThumbError(item)">
+                                <img
+                                    [src]="item.thumbnailUrl"
+                                    [alt]="item.label"
+                                    class="item-icon item-icon--thumb"
+                                    (error)="onThumbError(item)">
                             </ng-container>
                             <ng-template #typeIcon>
                                 <div class="item-icon item-icon--type"

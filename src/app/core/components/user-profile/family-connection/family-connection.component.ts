@@ -255,6 +255,16 @@ export class FamilyConnectionComponent implements OnInit {
   consentChecked: boolean = false;
 
   ngOnInit(): void {
+    // Pre-populate from locally stored user data so the UI isn't blank during the API call
+    try {
+      const userData = this.coreAuthService.getUserData();
+      if (userData?.family?.familyCode) {
+        this.familyCode = userData.family.familyCode;
+        this.familyName = userData.family.familyName || this.familyName;
+        this.qrCodeData = 'GROUP:' + this.familyCode;
+      }
+    } catch (e) { /* noop */ }
+
     // Load family details (this will also refresh user relationship using the same response)
     this.loadFamilyDetails();
     this.setFamilyFaqs();
@@ -368,7 +378,7 @@ export class FamilyConnectionComponent implements OnInit {
       const f = response.family as any;
       this.familyName = f.familyName || this.familyName;
       this.familyStatus = f.status || this.familyStatus;
-      this.createdOn = f.createdOn || this.createdOn;
+      this.createdOn = this.formatCreatedOn(f.createdOn) || this.createdOn;
       this.creator = f.creator || null;
       this.members = Array.isArray(f.members) ? f.members : [];
       this.familyCode = f.familyCode || (response as any).familyCode || this.familyCode;
@@ -376,10 +386,34 @@ export class FamilyConnectionComponent implements OnInit {
       this.familyCode = (response as any).familyCode;
     }
 
+    // Fallback: use family code stored in local user data when the API doesn't return it
+    if (!this.familyCode) {
+      try {
+        const userData = this.coreAuthService.getUserData();
+        if (userData?.family?.familyCode) {
+          this.familyCode = userData.family.familyCode;
+          if (!this.familyName || this.familyName === 'Your Family') {
+            this.familyName = userData.family.familyName || this.familyName;
+          }
+        }
+      } catch (e) { /* noop */ }
+    }
+
     try { this.refreshUserRelationship(response); } catch (e) { /* noop */ }
     this.qrCodeData = this.familyCode ? 'GROUP:' + this.familyCode : '';
     this.setFamilyFaqs();
     try { this.cdr.detectChanges(); } catch (e) { /* noop */ }
+  }
+
+  private formatCreatedOn(raw: string | null | undefined): string {
+    if (!raw) return '';
+    try {
+      const d = new Date(raw);
+      if (isNaN(d.getTime())) return raw;
+      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    } catch {
+      return raw || '';
+    }
   }
 
   private clearFamilyStateForSelfMode(): void {

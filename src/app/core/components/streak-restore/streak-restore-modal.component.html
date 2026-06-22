@@ -1,0 +1,80 @@
+<div class="restore-card">
+
+  <!-- ── Header (always visible) ── -->
+  <div class="restore-header">
+    <div class="flame-wrap">
+      <div class="sparkle-ring"></div>
+      <img src="/assets/Icons-Neutral/Icon-Streak.png" alt="Streak" class="flame-img" />
+    </div>
+    <h2 class="restore-title">Oops! Your Streak Took a Break</h2>
+    <p class="restore-subtitle">You missed yesterday! Restore your streak and keep the momentum going.</p>
+    <div class="restore-streak-pill" *ngIf="restoreToStreak">
+      🔥 Restore to <strong>{{ restoreToStreak }}</strong> day streak &nbsp;·&nbsp; <strong>{{ restoreCost }}</strong> coins
+    </div>
+  </div>
+
+  <!-- ── Loading ── -->
+  <div class="restore-loading" *ngIf="isLoading">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Loading eligible items…</p>
+  </div>
+
+  <!-- ── Content ── -->
+  <ng-container *ngIf="!isLoading && eligibility">
+
+    <!-- Coin balance -->
+    <div class="coin-balance" [class.coin-balance--low]="notEnoughCoins">
+      <img src="/assets/Icons-Neutral/Icons-Coins.png" alt="coins" class="coin-bal-icon" />
+      <span>{{ eligibility.userCoins }} coins available</span>
+    </div>
+
+    <!-- Not enough coins -->
+    <div class="no-coins-notice" *ngIf="notEnoughCoins">
+      😔 You don't have enough coins to restore your streak right now.
+    </div>
+
+    <!-- Eligible items list -->
+    <ng-container *ngIf="!notEnoughCoins">
+      <p class="pick-label">Pick one activity from yesterday:</p>
+      <div class="items-list">
+        <button
+          *ngFor="let item of eligibility.eligibleItems"
+          class="item-row"
+          [class.item-row--selected]="selectedItem?.id === item.id"
+          (click)="selectItem(item)"
+          type="button">
+          <span class="item-radio">
+            <span class="item-radio-dot" *ngIf="selectedItem?.id === item.id"></span>
+          </span>
+          <span class="item-name">{{ item.name }}</span>
+          <span class="item-badge" [class.item-badge--habit]="item.type === 'HABIT'" [class.item-badge--task]="item.type === 'TASK'">
+            {{ item.type === 'HABIT' ? 'H' : 'T' }}
+          </span>
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- Error message -->
+    <p class="restore-error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  </ng-container>
+
+  <!-- ── Actions ── -->
+  <div class="restore-actions" *ngIf="!isLoading">
+    <button class="btn-cancel" (click)="dismiss(null)" type="button">Cancel</button>
+    <button
+      *ngIf="!notEnoughCoins"
+      class="btn-restore"
+      [disabled]="!canRestore"
+      (click)="restore()"
+      type="button">
+      <ion-spinner *ngIf="isRestoring" name="crescent" class="restore-spinner"></ion-spinner>
+      <ng-container *ngIf="!isRestoring">
+        Restore
+        <img src="/assets/Icons-Neutral/Icons-Coins.png" alt="coins" class="restore-coin-img" />
+        {{ eligibility?.restoreCost ?? restoreCost }}
+      </ng-container>
+    </button>
+  </div>
+
+</div>

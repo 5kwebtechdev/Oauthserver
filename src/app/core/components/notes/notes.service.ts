@@ -64,12 +64,12 @@ export class NotesService {
   }
 
   /**
-   * Initialize service state from sessionStorage if present.
+   * Initialize service state from localStorage if present.
    * Call this once on app/login load to avoid refetching repeatedly.
    */
   initFromSession() {
     try {
-      const raw = sessionStorage.getItem('notes');
+      const raw = localStorage.getItem('notes_cache');
       if (raw) {
         const parsed = JSON.parse(raw) || [];
         this.notes = parsed;
@@ -163,31 +163,47 @@ export class NotesService {
   }
 
   /**
-   * Persist current notes array to sessionStorage.
+   * Persist current notes array to localStorage so they survive across
+   * app restarts and month boundaries.
    */
   private persistToSession() {
     try {
-      sessionStorage.setItem('notes', JSON.stringify(this.notes));
+      localStorage.setItem('notes_cache', JSON.stringify(this.notes));
     } catch (e) {
       // ignore storage errors (quota etc.)
     }
   }
 
   /**
-   * Fetch all notes from backend and update local cache.
-   * Returns observable so callers can react to loading/error if desired.
+   * Fetch all notes from backend and merge with local cache.
+   * Server notes are updated/added; locally-cached notes the server does not
+   * return (e.g. from a previous month the backend filters) are preserved so
+   * they are never silently wiped. Returns observable so callers can react.
    */
   fetchAll(): Observable<NoteModel[]> {
     return new Observable<NoteModel[]>((subscriber) => {
       this.notesApi.getAll().subscribe({
         next: (res: any) => {
-          // API may return { data: [...] } or [...] directly
           const raw = this.rawList(res);
-          // map to NoteModel shape
-          this.notes = raw.map((item: any) => this.mapNote(item));
-          // notify subscribers and emit
+          const serverNotes = raw.map((item: any) => this.mapNote(item));
+
+          // Build a set of real server IDs (skip temp IDs created optimistically)
+          const serverIds = new Set(
+            serverNotes.map(n => String(n.id || '')).filter(id => id && !id.startsWith('temp-'))
+          );
+
+          // Keep locally-cached notes that have a real server ID but were not
+          // included in this response (the backend may filter by current month).
+          // Notes explicitly deleted via deleteNote() are already removed from
+          // this.notes before fetchAll is called, so they won't reappear here.
+          const localOnlyNotes = this.notes.filter(n => {
+            const id = String(n.id || '');
+            return id && !id.startsWith('temp-') && !serverIds.has(id);
+          });
+
+          // Server notes first (most recent / authoritative), then any local-only ones
+          this.notes = [...serverNotes, ...localOnlyNotes];
           this.notesChanged.next(this.notes.slice());
-          // persist fetched notes so subsequent opens can use session cache
           this.persistToSession();
           subscriber.next(this.notes.slice());
           subscriber.complete();
@@ -338,10 +354,18 @@ export class NotesService {
     return new Observable<NoteModel[]>((subscriber) => {
       this.notesApi.getByTag(tagName).subscribe({
         next: (res: any) => {
-          this.notes = this.rawList(res).map((item: any) => this.mapNote(item));
+          // Tag-filtered results: merge into cache rather than replace,
+          // so notes outside the tag are not wiped from the local store.
+          const tagged = this.rawList(res).map((item: any) => this.mapNote(item));
+          const taggedIds = new Set(tagged.map(n => String(n.id || '')).filter(Boolean));
+          const rest = this.notes.filter(n => {
+            const id = String(n.id || '');
+            return id && !taggedIds.has(id);
+          });
+          this.notes = [...tagged, ...rest];
           this.notesChanged.next(this.notes.slice());
           this.persistToSession();
-          subscriber.next(this.notes.slice());
+          subscriber.next(tagged);
           subscriber.complete();
         },
         error: (err) => subscriber.error(err)
@@ -353,9 +377,10 @@ export class NotesService {
     return new Observable<NoteModel[]>((subscriber) => {
       this.notesApi.searchNotes(query).subscribe({
         next: (res: any) => {
-          this.notes = this.rawList(res).map((item: any) => this.mapNote(item));
-          this.notesChanged.next(this.notes.slice());
-          subscriber.next(this.notes.slice());
+          // Return search results to the caller without overwriting the full notes cache,
+          // since search results are a subset and would wipe notes not matching the query.
+          const results = this.rawList(res).map((item: any) => this.mapNote(item));
+          subscriber.next(results);
           subscriber.complete();
         },
         error: (err) => subscriber.error(err)
@@ -420,7 +445,7 @@ export class NotesService {
     this.notes = [];
     this.notesChanged.next(this.notes.slice());
     try {
-      sessionStorage.removeItem('notes');
+      localStorage.removeItem('notes_cache');
     } catch (e) { /* ignore */ }
   }
 }

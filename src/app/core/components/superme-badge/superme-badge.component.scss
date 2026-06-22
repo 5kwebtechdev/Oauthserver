@@ -53,7 +53,7 @@
 }
 
 .badge p {
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
   color: var(--text_color);
@@ -63,7 +63,7 @@
 
 .badge .badge-sub {
   display: block;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 6px;
   font-weight: 600;
   color: var(--text_color);
@@ -228,7 +228,7 @@
 
 .badge.orange p,
 .badge.habit-detail-orange p {
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
   color: var(--text_color);
@@ -285,7 +285,7 @@
 
 :host-context(.habit-journey-week) .badge p {
   color: #282527;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
 
@@ -294,7 +294,7 @@
 :host-context(.habit-journey-week) .badge.active p {
   /* active journey badge text color */
   color: #FDFDFD;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
 
@@ -363,7 +363,7 @@
 
 :host-context(.priority-selectors) .badge:not(.active) p {
   color: #282527;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-style: normal;
   font-weight: 600;
@@ -372,7 +372,7 @@
 
 :host-context(.priority-selectors) .badge.active p {
   color: #FFFFFF;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
 
@@ -409,7 +409,7 @@
 :host-context(.routine-selectors) .badge p {
   /* non-active routine badge typography & color (page-scoped) */
   color: #282527;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
 
@@ -418,7 +418,7 @@
 :host-context(.routine-selectors) .badge.active p {
   /* active routine badge text color (page-scoped) */
   color: #FDFDFD;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
 
@@ -454,7 +454,7 @@
 
 :host-context(.activity-page-content) .routine-selectors .badge p {
   color: #282527;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
 }

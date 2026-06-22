@@ -82,7 +82,7 @@
 
 .superme-popup-heading {
   color: #282527;
-  font-family: Fredoka, sans-serif;
+  font-family: var(--font-heading);
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
@@ -93,7 +93,7 @@
 .superme-popup-subtitle {
   color: #282527;
   text-align: center;
-  font-family: Nunito, sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-style: normal;
   font-weight: 400;
@@ -161,7 +161,7 @@
   gap: 6px;
   align-self: stretch;
   color: #282527;
-  font-family: Nunito, sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
 }
@@ -175,7 +175,7 @@
   padding: 12px 24px;
   border-radius: 12px;
   border: none;
-  font-family: Nunito, sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;

@@ -48,6 +48,9 @@ export class LearningService {
             const raw = localStorage.getItem('user_data');
             if (!raw) return null;
             const profile = JSON.parse(raw);
+            // Prefer the `age` field the login response stores directly
+            if (typeof profile?.age === 'number' && profile.age > 0) return profile.age;
+            // Fall back to calculating from DOB
             const dob = profile?.dateOfBirth || profile?.dob;
             if (!dob) return null;
             const birth = new Date(dob);
@@ -101,7 +104,7 @@ export class LearningService {
     submitChallengeNewFormat(challengeId: number, payload: {
         questionAnswers: { [key: string]: string },
         timeTaken: number,
-        skippedQuestions: string[]
+        skippedQuestions: number[]
     }): Observable<any> {
         const url = `${this.apiUrl}/challenges/${challengeId}/submit-all`;
 

@@ -4,12 +4,13 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { FooterComponent } from '../../footer/footer.component';
+import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
 
 @Component({
     selector: 'app-education-main-page',
     standalone: true,
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    imports: [CommonModule, IonicModule, SupermeNavigatorComponent, RouterModule, FooterComponent],
+    imports: [CommonModule, IonicModule, SupermeNavigatorComponent, RouterModule, FooterComponent, SkeletonImageComponent],
     templateUrl: './education-main-page.component.html',
     styleUrls: ['./education-main-page.component.scss']
 })

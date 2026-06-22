@@ -4,12 +4,12 @@
       <superme-navigator backIcon="arrowSvg"></superme-navigator>
       <h1 class="article-title">{{article.title}}</h1>
       <div class="article-header">
-        <div class="article-description" style="margin: 12px 0; font-weight: 600;">
+        <div class="article-description">
           <p>{{article.description}}</p>
         </div>
       </div>
     </div>
-    <div class="article-content-section" style="padding:0px 16px 40px 16px;">
+    <div class="article-content-section" style="padding:0px 16px calc(90px + env(safe-area-inset-bottom, 0px)) 16px;">
       <div class="article-content" style="margin-top: 16px; line-height: 1.6;" [innerHTML]="article.content">
       </div>
 

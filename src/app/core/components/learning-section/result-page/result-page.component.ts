@@ -10,6 +10,8 @@ import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
 import { SupermeInputsModule } from '../../superme-inputs/superme-inputs.module';
 import { ChallengeSubmissionResponse, Challenge } from 'src/app/core/models/learning.models';
 import { PetMood } from '../../superme-pet/superme-pet.component';
+import { environment } from 'src/environments/environment';
+import { BadgePopupService } from 'src/app/core/services/badge-popup.service';
 
 @Component({
   selector: 'app-result-page',
@@ -25,20 +27,9 @@ import { PetMood } from '../../superme-pet/superme-pet.component';
   styleUrls: ['./result-page.component.scss']
 })
 export class ResultPageComponent implements OnInit, OnDestroy {
-  quizAceBadge: any = {
-    name: 'Quiz Ace',
-    description: 'You answered 5 quizzes correctly in a row!',
-    iconUrl: 'assets/Icons-Neutral/Icon-Badge-QuizAce.png'
-  };
-
-  puzzleMasterBadge: any = {
-    name: 'Puzzle Master',
-    description: 'You solved 10 puzzles correctly!',
-    iconUrl: 'assets/Icons-Neutral/Icon-Badge-PuzzleMaster.png'
-  };
-
   // Results from submission
   submissionResult: ChallengeSubmissionResponse | null = null;
+  badges: any[] = [];
   challenge: Challenge | null = null;
   timeTaken = 0;
 
@@ -62,7 +53,8 @@ export class ResultPageComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private loadingService: LoadingService,
-    private platform: Platform
+    private platform: Platform,
+    private badgePopupService: BadgePopupService
   ) {
     // Get data from router state
     const navigation = this.router.getCurrentNavigation();
@@ -98,9 +90,12 @@ export class ResultPageComponent implements OnInit, OnDestroy {
       this.earnedNewBadge = this.submissionResult.earnedNewBadge;
       this.newlyEarnedBadges = this.submissionResult.newlyEarnedBadges || [];
       this.badgeCelebrationMessage = this.submissionResult.badgeCelebrationMessage || '';
+      this.badges = Array.isArray(this.submissionResult.badges) ? this.submissionResult.badges : [];
     } else {
       console.warn('No submission result found in router state');
     }
+
+    this.badgePopupService.check();
 
     // Intercept Android/Capacitor hardware back button with higher priority
     // than the global AppComponent handler (which uses priority 10).
@@ -127,6 +122,31 @@ export class ResultPageComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl('/authed/content', { replaceUrl: true });
   }
 
+
+  getBadgeIconUrl(icon: string): string {
+    if (!icon) return 'assets/Icons-Neutral/Icon-Trophy.png';
+    if (icon.startsWith('http')) return icon;
+    // Strip /v1 to build domain-root URL: https://api.supermeapp.com/badges/quiz_ace.png
+    const base = environment.apiUrl.replace(/\/v1\/?$/, '');
+    return base + icon;
+  }
+
+  onBadgeImageError(event: Event, badge: any): void {
+    const img = event.target as HTMLImageElement;
+    // Try the /v1 variant before falling back to local asset
+    const v1Url = environment.apiUrl.replace(/\/?$/, '') + badge.icon;
+    if (img.src !== v1Url) {
+      img.src = v1Url;
+    } else {
+      img.src = 'assets/Icons-Neutral/Icon-Trophy.png';
+    }
+  }
+
+  getBadgeCompletionPercent(badge: any): number {
+    if (badge.isEarned) return 100;
+    if (!badge.target || badge.target <= 0) return 0;
+    return Math.min(100, Math.round((badge.progress / badge.target) * 100));
+  }
 
   getScoreColor(): string {
     if (this.scorePercentage >= 80) {

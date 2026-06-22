@@ -98,7 +98,7 @@
 }
 h2{
     color: #282527;
-font-family: Nunito;
+font-family: var(--font-sans);
 font-size: 16px;
 font-weight: 600;
 margin: 0;
@@ -114,7 +114,7 @@ border-radius: 12px;
 border: 1px solid rgba(40, 37, 39, 0.50);
 width: 100%;
 color: #282527;
-font-family: Nunito;
+font-family: var(--font-sans);
 font-size: 13px;
 font-weight: 600;
 outline: #28252780;
@@ -136,7 +136,7 @@ outline: #28252780;
     height: calc(100% - 0px);
     color: #282527;
     font-weight: 600;
-    font-family: Nunito;
+    font-family: var(--font-sans);
 
     font-size: 14px;
     padding: 0 8px 0 8px;
@@ -181,7 +181,7 @@ border: 1px solid #282527;
 
 .error{
     color: #BB2124;
-    font-family: Nunito;
+    font-family: var(--font-sans);
     font-size: 13px;
     margin-top: 8px;
     display: block;

@@ -128,8 +128,7 @@ export class ReferFriendComponent implements OnInit, OnDestroy {
   }
 
   private buildShareMessage(): string {
-    const inviter = this.userDisplayName ? `${this.userDisplayName} invited you to ${this.appName}!` : `Join me on ${this.appName}!`;
-    return `${inviter}\nUse my referral code ${this.referralCode} to sign up: ${this.shareLink}\nDownload the mobile app: ${this.mobileAppLink}`;
+    return `🎁 I am gifting you 100 bonus coins on SuperMe App.\n\nManage your time, build habits that last and learn skills and achieve your goals - all while earning rewards!!!\n\nSuper App for Super You: ${this.referralCode}\n\n📲 Hurry up and download now to claim free coins before they expire\n${this.mobileAppLink}`;
   }
 
   private getLoggedInUserName(): string {

@@ -1,0 +1,67 @@
+/* ─── Host: match the replaced <img> element's layout role ──────────────── */
+:host.sk-host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+/* ─── Root wrapper ───────────────────────────────────────────────────────── */
+.sk-root {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+
+  &.sk-circle {
+    border-radius: 50%;
+  }
+}
+
+/* ─── Shimmer placeholder ────────────────────────────────────────────────── */
+.sk-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    #EDEBE9 0%,
+    #EDEBE9 25%,
+    #F8F5F4 50%,
+    #EDEBE9 75%,
+    #EDEBE9 100%
+  );
+  background-size: 400px 100%;
+  animation: sk-shimmer-anim 1.5s ease-in-out infinite;
+  z-index: 1;
+  border-radius: inherit;
+  transition: opacity 0.25s ease;
+
+  &.sk-shimmer--out {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+/* ─── Image (hidden until loaded) ────────────────────────────────────────── */
+.sk-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: inherit;
+
+  &.sk-img--in {
+    opacity: 1;
+  }
+}
+
+/* ─── Keyframe (Angular hoists @keyframes to global scope) ──────────────── */
+@keyframes sk-shimmer-anim {
+  0%   { background-position: -400px 0; }
+  100% { background-position: calc(400px + 100%) 0; }
+}

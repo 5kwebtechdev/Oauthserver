@@ -73,16 +73,20 @@
             <!-- Visual Options -->
             <ng-container *ngIf="questions[currentQuestionIndex].type === 'visual'">
                 <div class="visual-options-grid">
-                    <button type="button" class="visual-option"
+                    <div class="visual-option"
+                        role="button"
+                        tabindex="0"
                         *ngFor="let option of questions[currentQuestionIndex].visualOptions; let i = index"
                         (click)="selectAnswer(option.answerValue, option.id)"
+                        (keydown.enter)="selectAnswer(option.answerValue, option.id)"
+                        (keydown.space)="selectAnswer(option.answerValue, option.id)"
                         [class.selected]="selectedVisualOptionId === option.id"
                         [attr.aria-pressed]="selectedVisualOptionId === option.id"
                         [attr.aria-label]="option.altText">
                         <img class="visual-option-image" [src]="option.imageUrl" [alt]="option.altText"
-                            loading="lazy" />
+                            loading="eager" />
                         <span class="visual-option-label" *ngIf="option.label">{{ option.label }}</span>
-                    </button>
+                    </div>
                 </div>
             </ng-container>
         </div>

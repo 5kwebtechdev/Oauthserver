@@ -1,4 +1,4 @@
-<ion-content [fullscreen]="true" style="--padding-top: var(--sat)">
+<ion-content [fullscreen]="true" style="--padding-top: var(--sat); --padding-bottom: env(safe-area-inset-bottom, 0px)">
   <div class="main-container">
     <!-- Header -->
     <superme-card-header [title]="'Welcome to Your Life Skills Quest!'" [subtitleLeft]="'Real lessons'"
@@ -23,7 +23,7 @@
     <div class="subject-cards" *ngIf="!isLoadingCategories && categoryCards.length">
       <div *ngFor="let card of categoryCards" class="card" [ngClass]="card.color" role="button" tabindex="0"
         (click)="openSubject(card)" (keyup.enter)="openSubject(card)" (keyup.space)="openSubject(card)">
-        <img [src]="card.thumbnail" [alt]="card.title" (error)="onCategoryImageError($event, card)">
+        <app-img [src]="card.thumbnail" [fallback]="card.image" [alt]="card.title" objectFit="contain"></app-img>
         <p>{{ card.title }}</p>
       </div>
     </div>

@@ -1,5 +1,5 @@
 Write-Host "========================================"
-Write-Host "MindfulBuddy APK Rebuild Script"
+Write-Host "Super Me APK Rebuild Script"
 Write-Host "========================================"
 
 # Ensure JDK 21 is used (required by Capacitor 7)

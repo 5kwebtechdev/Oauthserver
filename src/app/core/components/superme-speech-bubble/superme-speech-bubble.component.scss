@@ -112,8 +112,7 @@
   word-wrap: break-word;
   text-align: center;
   animation: textFadeIn 0.4s ease 0.15s both;
-  font-family: Nunito, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-    Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: var(--font-sans);
 }
 
 // Host class override for left-aligned text

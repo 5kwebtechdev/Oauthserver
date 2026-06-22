@@ -112,6 +112,14 @@
   </div>
   </div>
 
+  <!-- Loading overlay -->
+  <div class="login-loading-overlay" *ngIf="loading" aria-live="polite" aria-label="Logging in">
+    <div class="login-loading-card">
+      <div class="login-spinner"></div>
+      <span>Logging in...</span>
+    </div>
+  </div>
+
   <!-- Save credentials prompt -->
   <div class="save-creds-backdrop" *ngIf="showSaveCredsPrompt"></div>
   <div class="save-creds-sheet" *ngIf="showSaveCredsPrompt" role="dialog" aria-modal="true" aria-label="Save login details">
