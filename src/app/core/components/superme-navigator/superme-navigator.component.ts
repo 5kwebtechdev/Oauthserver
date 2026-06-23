@@ -45,6 +45,9 @@ export class SupermeNavigatorComponent implements OnInit {
   // Accept flexible action types to keep navigator generic and avoid hard-coding specific actions
   @Input() rightActions?: Array<{ type?: string, src?: string, alt?: string, count?: number }>;
   @Output() rightActionClick = new EventEmitter<{ index: number, action: any }>();
+  // When true the back button is completely hidden (e.g. login page after onboarding).
+  @Input() hideBack: boolean = false;
+
   // Emit when the back button is clicked so parents can intercept navigation.
   @Output() back = new EventEmitter<void>();
 

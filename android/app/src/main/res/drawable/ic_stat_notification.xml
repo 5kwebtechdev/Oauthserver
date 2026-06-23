@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Notification small icon — must be monochrome (white on transparent).
+  Android ignores all color data for notification icons on API 21+; only the
+  alpha channel is used. A colored launcher icon renders as a white blob.
+  This vector is the Superme "S" star mark sized for the 24dp notification slot.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- 5-point star (superhero / Superme brand mark) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,2L14.84,8.29L21.85,9.27L16.92,14.07L18.18,21.02L12,17.77L5.82,21.02L7.08,14.07L2.15,9.27L9.16,8.29Z" />
+</vector>

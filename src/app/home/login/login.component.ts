@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
 import { CountriesService, Country } from "../../core/services/countries.service";
 import { AuthService, LoginCredentials } from "../../core/services/auth.service";
 import { ChildSelfImageService } from '../../core/services/child-self-image.service';
 import { UserService } from '../../core/services/user.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
+import { NavController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { CredentialSaverService, SavedCredentials } from '../../core/services/credential-saver.service';
 
@@ -29,10 +30,13 @@ export class LoginComponent implements OnInit, OnDestroy {
   private returnUrl: string = '';
 
   public showSaveCredsPrompt = false;
+  public closingSheet = false;
   public autoFilledFromSave = false;
   private pendingNav = '';
   private pendingNewCreds: SavedCredentials | null = null;
   private pendingPhoneRestore: SavedCredentials | null = null;
+
+  @ViewChild('passwordInput') passwordInputRef!: ElementRef<HTMLInputElement>;
 
 
   constructor(
@@ -41,9 +45,9 @@ export class LoginComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private userService: UserService,
     private childSelfImageService: ChildSelfImageService,
-    private router: Router,
     private route: ActivatedRoute,
-    private credentialSaverService: CredentialSaverService
+    private credentialSaverService: CredentialSaverService,
+    private navCtrl: NavController
   ) {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -115,7 +119,6 @@ export class LoginComponent implements OnInit, OnDestroy {
 
       this.authService.login(credentials).subscribe({
         next: (response) => {
-          this.loading = false;
           this.requestPasswordSavePrompt(credentials);
           console.log('[LoginComponent] Login successful', response);
           console.log('[LoginComponent] Token received:', !!response.token);
@@ -165,12 +168,15 @@ export class LoginComponent implements OnInit, OnDestroy {
           };
 
           if (this.credentialSaverService.hasSaved()) {
-            // Already opted in — update silently and proceed
+            // Already opted in — update silently and navigate; keep overlay visible during transition
             this.credentialSaverService.save(credsToSave);
             console.log('[LoginComponent] Navigating to:', navigationTarget);
-            this.router.navigateByUrl(navigationTarget);
+            this.navCtrl.navigateRoot(navigationTarget).catch(() => {
+              this.loading = false;
+            });
           } else {
-            // First time — ask user whether to save
+            // First time — hide overlay and ask user whether to save
+            this.loading = false;
             this.pendingNav = navigationTarget;
             this.pendingNewCreds = credsToSave;
             this.showSaveCredsPrompt = true;
@@ -334,11 +340,28 @@ export class LoginComponent implements OnInit, OnDestroy {
     }, 0);
   }
 
-  goBack() {
-    // Navigate to home page
-    window.location.href = '/home';
-    // Or, if you use Angular Router:
-    // this.router.navigate(['/home']);
+  focusPassword(): void {
+    this.passwordInputRef?.nativeElement?.focus();
+  }
+
+  onEmailAutofill(event: Event): void {
+    const val = (event.target as HTMLInputElement).value;
+    this.signInForm.get('email')?.setValue(val, { emitEvent: true });
+    this.signInForm.get('email')?.markAsDirty();
+  }
+
+  onPasswordAutofill(event: Event): void {
+    const val = (event.target as HTMLInputElement).value;
+    this.signInForm.get('password')?.setValue(val, { emitEvent: true });
+    this.signInForm.get('password')?.markAsDirty();
+  }
+
+  navigateToSignup(): void {
+    this.navCtrl.navigateForward(['/home/sign-up'], { queryParams: { step: '0.1' } });
+  }
+
+  navigateToForgotPassword(): void {
+    this.navCtrl.navigateForward(['/home/reset-password'], { queryParams: { mode: this.loginMode } });
   }
 
   isLoginFormValid(): boolean {
@@ -360,13 +383,23 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (this.pendingNewCreds) {
       this.credentialSaverService.save(this.pendingNewCreds);
     }
-    this.showSaveCredsPrompt = false;
-    this.router.navigateByUrl(this.pendingNav);
+    this.dismissSheetThenNavigate();
   }
 
   onSkipSaveCreds(): void {
-    this.showSaveCredsPrompt = false;
-    this.router.navigateByUrl(this.pendingNav);
+    this.dismissSheetThenNavigate();
+  }
+
+  private dismissSheetThenNavigate(): void {
+    this.closingSheet = true;
+    setTimeout(() => {
+      this.showSaveCredsPrompt = false;
+      this.closingSheet = false;
+      this.loading = true;
+      this.navCtrl.navigateRoot(this.pendingNav).catch(() => {
+        this.loading = false;
+      });
+    }, 260);
   }
 
   clearSavedCreds(): void {

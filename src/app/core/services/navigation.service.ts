@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { Location } from '@angular/common';
+import { NavController } from '@ionic/angular';
 
 /**
  * Simple navigation service that tracks page history using sessionStorage.
@@ -12,7 +13,7 @@ export class NavigationService {
   private readonly STORAGE_KEY = 'nav_history';
   private readonly MAX_HISTORY = 50;
 
-  constructor(private router: Router, private location: Location) {
+  constructor(private router: Router, private location: Location, private navCtrl: NavController) {
     this.initHistory();
     this.router.events
       .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
@@ -68,15 +69,13 @@ export class NavigationService {
       this.saveHistory(history);
       
       if (previous) {
-        this.router.navigateByUrl(previous, { replaceUrl: false }).catch(() => {
-          this.location.back();
-        });
+        this.navCtrl.navigateBack(previous).catch(() => this.location.back());
         return;
       }
     }
-    
-    // Fallback to browser history
-    this.location.back();
+
+    // Fallback: use NavController.back() which plays the Ionic back animation
+    this.navCtrl.back();
   }
 
   /**
@@ -87,26 +86,22 @@ export class NavigationService {
     if (!steps || steps <= 0) return;
 
     const history = this.getStoredHistory();
-    // Remove current page first
     if (history.length > 0) history.pop();
 
-    // Then remove (steps-1) more entries to reach the target
     for (let i = 1; i < steps; i++) {
       if (history.length > 0) history.pop();
       else break;
     }
 
-    // The target to navigate to is now the last entry in history
     const target = history.length ? history.pop() : undefined;
     this.saveHistory(history);
 
     if (target) {
-      this.router.navigateByUrl(target, { replaceUrl: false }).catch(() => this.location.back());
+      this.navCtrl.navigateBack(target).catch(() => this.location.back());
       return;
     }
 
-    // Fallback
-    this.location.back();
+    this.navCtrl.back();
   }
 
   /**
