@@ -38,11 +38,12 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
-      # Any pod that declares static_framework = true sets MACH_O_TYPE = staticlib,
-      # which prevents it from seeing Firebase's dynamic XCFrameworks at compile
-      # time ("Unable to find module dependency"). Revert those overrides so every
-      # pod builds as a proper dynamic framework under use_frameworks!.
-      if config.build_settings['MACH_O_TYPE'] == 'staticlib'
+      # CapacitorFirebaseAnalytics declares static_framework = true which sets
+      # MACH_O_TYPE = staticlib. This prevents it from finding Firebase's dynamic
+      # XCFrameworks ("Unable to find module dependency"). Revert ONLY Firebase
+      # Capacitor pods to dynamic — MLKit and other static pods must stay static
+      # or their ObjC symbols become undefined at link time.
+      if target.name.include?('Firebase') && config.build_settings['MACH_O_TYPE'] == 'staticlib'
         config.build_settings['MACH_O_TYPE'] = 'mh_dylib'
       end
     end
