@@ -16,35 +16,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // ─────────────────────────────────────────────────────────────────────────
     // APNs token forwarding
     //
-    // Firebase swizzling is disabled (FirebaseAppDelegateProxyEnabled = NO in
-    // Info.plist) to avoid conflicts with Capacitor's ApplicationDelegateProxy.
-    // We manually forward the APNs device token to both Firebase Messaging and
-    // the Capacitor proxy so all plugins receive the callback.
+    // Firebase swizzling is disabled (FirebaseAppDelegateProxyEnabled = NO).
+    // We manually set the APNs token on Messaging so Firebase can exchange it
+    // for an FCM token. ApplicationDelegateProxy does NOT expose these APNs
+    // methods — only URL/Universal Link methods are forwarded through it.
     // ─────────────────────────────────────────────────────────────────────────
 
     func application(_ application: UIApplication,
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        // Give Firebase the raw APNs token so it can exchange it for an FCM token.
         Messaging.messaging().apnsToken = deviceToken
-        // Forward to Capacitor so @capacitor-firebase/messaging (and other plugins)
-        // receive the callback via ApplicationDelegateProxy.
-        ApplicationDelegateProxy.shared.application(application,
-            didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
     }
 
     func application(_ application: UIApplication,
                      didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        ApplicationDelegateProxy.shared.application(application,
-            didFailToRegisterForRemoteNotificationsWithError: error)
+        print("[APNs] Registration failed: \(error.localizedDescription)")
     }
 
-    // Required for background push delivery on iOS.
+    // Delivers background remote notifications to the app.
     func application(_ application: UIApplication,
                      didReceiveRemoteNotification userInfo: [AnyHashable: Any],
                      fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        ApplicationDelegateProxy.shared.application(application,
-            didReceiveRemoteNotification: userInfo,
-            fetchCompletionHandler: completionHandler)
+        completionHandler(.newData)
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -66,7 +58,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Standard lifecycle stubs (required by UIApplicationDelegate)
+    // Standard lifecycle stubs
     // ─────────────────────────────────────────────────────────────────────────
 
     func applicationWillResignActive(_ application: UIApplication) {}
