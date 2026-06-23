@@ -16,7 +16,7 @@ import { AuthService } from '../../services/auth.service';
 
 			<div class="reel-center">
 				<empty-state
-					[imageSrc]="'/assets/Images-Transparent/Reels Coming Soon.png'"
+					[imageSrc]="'assets/Images-Transparent/Reels Coming Soon.png'"
 					imageAlt="Reels are coming soon"
 					leadText="Reels are coming soon"
 					subText="This space will show the reels your child creates once the feature is available on their account."

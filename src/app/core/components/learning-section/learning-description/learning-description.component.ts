@@ -18,7 +18,7 @@ import { Challenge } from 'src/app/core/models/learning.models';
         <superme-navigator [heading]="challenge.name" backIcon="arrowSvg" (back)="onBack()"></superme-navigator>
       </div>
       <div class="desc-image">
-        <img [src]="challenge.innerImageUrl || challenge.thumbnailImageUrl || '/assets/images/Quiz_Description_screen-Thumbnail.png'" [alt]="challenge.name" class="hero-image" />
+        <img [src]="challenge.innerImageUrl || challenge.thumbnailImageUrl || 'assets/images/Quiz_Description_screen-Thumbnail.png'" [alt]="challenge.name" class="hero-image" />
       </div>
 
       <div class="meta-cards">

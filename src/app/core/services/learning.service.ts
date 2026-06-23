@@ -242,7 +242,7 @@ export class LearningService {
             id: challenge.challengeId,
             title: challenge.name,
             description: challenge.description,
-            image: challenge.thumbnailImageUrl || '/assets/icons/Flux_Dev_a_surreal_and_vibrant_cinematic_photo_of_A_minimal_ye_3%201.jpg',
+            image: challenge.thumbnailImageUrl || 'assets/icons/Flux_Dev_a_surreal_and_vibrant_cinematic_photo_of_A_minimal_ye_3%201.jpg',
             coins: challenge.coins,
             trophy: challenge.trophies,
             difficulty: challenge.difficultyDisplay || challenge.difficulty,
@@ -274,7 +274,7 @@ export class LearningService {
             id: article.id,
             title: article.title,
             description: article.description,
-            image: article.thumbnailUrl || '/assets/icons/Flux_Dev_a_surreal_and_vibrant_cinematic_photo_of_A_minimal_ye_3%201.jpg',
+            image: article.thumbnailUrl || 'assets/icons/Flux_Dev_a_surreal_and_vibrant_cinematic_photo_of_A_minimal_ye_3%201.jpg',
             // Prefer coins from backend article if provided, otherwise fall back to 0
             coins: (article as any)?.coins ?? 0,
             buttonText: `Read in ${readTime}`,
@@ -477,7 +477,7 @@ export class LearningService {
                     id: item.id ?? 0,
                     title: item.title ?? item.name ?? 'Untitled',
                     description: item.description ?? '',
-                    image: item.thumbnailUrl ?? item.image ?? '/assets/icons/placeholder.png',
+                    image: item.thumbnailUrl ?? item.image ?? 'assets/icons/placeholder.png',
                     coins: (item.coins as number) ?? 0,
                     buttonText: `Read in ${item.timeDuration ?? '5 min'}`,
                     type: 'article',
@@ -493,7 +493,7 @@ export class LearningService {
         const id = item.challengeId ?? item.id ?? 0;
         const title = item.name ?? item.title ?? item.name ?? 'Untitled Challenge';
         const description = item.description ?? '';
-        const image = item.thumbnailImageUrl ?? item.thumbnailUrl ?? item.image ?? '/assets/icons/placeholder.png';
+        const image = item.thumbnailImageUrl ?? item.thumbnailUrl ?? item.image ?? 'assets/icons/placeholder.png';
         const coins = (item.coins as number) ?? 0;
         const trophy = (item.trophies as number) ?? undefined;
         const difficulty = item.difficultyDisplay ?? item.difficulty ?? undefined;

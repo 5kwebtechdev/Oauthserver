@@ -28,7 +28,7 @@ export class ReelCategoryComponent implements AfterViewInit {
       duration: '20 sec',
       likes: '10K',
       tags: '#FunScience #DIYExperiment',
-      image: '/assets/images/reel-1-placeholder.png',
+      image: 'assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -41,7 +41,7 @@ export class ReelCategoryComponent implements AfterViewInit {
       duration: '30 sec',
       likes: '8.2K',
       tags: '#ScienceAtHome #Crystals',
-      image: '/assets/images/reel-1-placeholder.png',
+      image: 'assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -54,7 +54,7 @@ export class ReelCategoryComponent implements AfterViewInit {
       duration: '25 sec',
       likes: '6K',
       tags: '#Magnets #FunFacts',
-      image: '/assets/images/reel-1-placeholder.png',
+      image: 'assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -69,7 +69,7 @@ export class ReelCategoryComponent implements AfterViewInit {
       duration: '60 sec',
       likes: '1K',
       tags: '#LittleArtist #MessyFun',
-      image: '/assets/images/reel-1-placeholder.png',
+      image: 'assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -82,7 +82,7 @@ export class ReelCategoryComponent implements AfterViewInit {
       duration: '40 sec',
       likes: '4.5K',
       tags: '#Drawing #KidsArt',
-      image: '/assets/images/reel-1-placeholder.png',
+      image: 'assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -95,7 +95,7 @@ export class ReelCategoryComponent implements AfterViewInit {
       duration: '35 sec',
       likes: '3.2K',
       tags: '#Crafts #DIY',
-      image: '/assets/images/reel-1-placeholder.png',
+      image: 'assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -110,7 +110,7 @@ export class ReelCategoryComponent implements AfterViewInit {
       duration: '15 sec',
       likes: '12K',
       tags: '#Dance #Silly',
-      image: '/assets/images/reel-1-placeholder.png',
+      image: 'assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -123,7 +123,7 @@ export class ReelCategoryComponent implements AfterViewInit {
       duration: '22 sec',
       likes: '5K',
       tags: '#Pranks #GoodVibes',
-      image: '/assets/images/reel-1-placeholder.png',
+      image: 'assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false
@@ -136,7 +136,7 @@ export class ReelCategoryComponent implements AfterViewInit {
       duration: '18 sec',
       likes: '9K',
       tags: '#Faces #Challenge',
-      image: '/assets/images/reel-1-placeholder.png',
+      image: 'assets/images/reel-1-placeholder.png',
       video: '',
       isPlaying: false,
       saved: false

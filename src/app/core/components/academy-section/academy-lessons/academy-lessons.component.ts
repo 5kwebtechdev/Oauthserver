@@ -27,7 +27,7 @@ export class AcademyLessonsComponent {
   loadError: string | null = null;
   doneClicked = false;
   wasCompletedOnLoad = false;
-  readonly fallbackLessonImage = '/assets/Images-Transparent/Academy-Course-Thubmnail2.png';
+  readonly fallbackLessonImage = 'assets/Images-Transparent/Academy-Course-Thubmnail2.png';
 
   // Parsed content sections
   // learningOutcomes: string[] = [];

@@ -66,7 +66,7 @@ import { debounceTime, takeUntil } from 'rxjs/operators';
 export class UserDashboardComponent implements OnInit, OnDestroy {
   // Minimal properties used by the template
   public userName: string = 'User';
-  public userAvatarUrl: string = '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
+  public userAvatarUrl: string = 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
   public avatarImageName: string | null = null;
   public userCoins: number = 0;
   public userStreaks: number = 0;

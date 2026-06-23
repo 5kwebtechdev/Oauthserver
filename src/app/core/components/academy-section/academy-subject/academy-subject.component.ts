@@ -35,13 +35,13 @@ export class AcademySubjectComponent implements OnInit {
   age: number | null = null;
   isLoading: boolean = false;
 
-  private readonly defaultCourseThumbnail = '/assets/Images-Transparent/Academy-Course-Thubmnail1.png';
+  private readonly defaultCourseThumbnail = 'assets/Images-Transparent/Academy-Course-Thubmnail1.png';
   private readonly fallbackCourseThumbnails = [
-    '/assets/Images-Transparent/Academy-Course-Thubmnail1.png',
-    '/assets/Images-Transparent/Academy-Course-Thubmnail2.png',
-    '/assets/Images-Transparent/Academy-Course-Thubmnail3.png',
-    '/assets/Images-Transparent/Academy-Course-Thubmnail4.png',
-    '/assets/Images-Transparent/Academy-Course-Thubmnail5.png',
+    'assets/Images-Transparent/Academy-Course-Thubmnail1.png',
+    'assets/Images-Transparent/Academy-Course-Thubmnail2.png',
+    'assets/Images-Transparent/Academy-Course-Thubmnail3.png',
+    'assets/Images-Transparent/Academy-Course-Thubmnail4.png',
+    'assets/Images-Transparent/Academy-Course-Thubmnail5.png',
   ];
 
   // Course model from API

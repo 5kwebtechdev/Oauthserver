@@ -19,11 +19,11 @@ export interface CourseCard {
 }
 
 const FALLBACK_IMAGES = [
-  '/assets/Images-Transparent/Academy-Course-Thubmnail1.png',
-  '/assets/Images-Transparent/Academy-Course-Thubmnail2.png',
-  '/assets/Images-Transparent/Academy-Course-Thubmnail3.png',
-  '/assets/Images-Transparent/Academy-Course-Thubmnail4.png',
-  '/assets/Images-Transparent/Academy-Course-Thubmnail5.png',
+  'assets/Images-Transparent/Academy-Course-Thubmnail1.png',
+  'assets/Images-Transparent/Academy-Course-Thubmnail2.png',
+  'assets/Images-Transparent/Academy-Course-Thubmnail3.png',
+  'assets/Images-Transparent/Academy-Course-Thubmnail4.png',
+  'assets/Images-Transparent/Academy-Course-Thubmnail5.png',
 ];
 
 @Component({

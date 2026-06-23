@@ -1,8 +1,8 @@
 <ion-content style="height: 100vh; overflow-y: scroll">
-  <superme-navigator *ngIf="!isParentUser()" heading="Timeline" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar-3D.png'"
-    [rightIcon2]="'/assets/Icons-Neutral/Icon-Notes-3D.png'" (rightIconClick)="onCalendarClick()"
+  <superme-navigator *ngIf="!isParentUser()" heading="Timeline" [rightIcon]="'assets/Icons-Neutral/Icon-Calendar-3D.png'"
+    [rightIcon2]="'assets/Icons-Neutral/Icon-Notes-3D.png'" (rightIconClick)="onCalendarClick()"
     (rightIcon2Click)="onNotesClick()"></superme-navigator>
-  <superme-navigator *ngIf="isParentUser()" heading="Timeline" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar-3D.png'"
+  <superme-navigator *ngIf="isParentUser()" heading="Timeline" [rightIcon]="'assets/Icons-Neutral/Icon-Calendar-3D.png'"
     (rightIconClick)="onCalendarClick()"></superme-navigator>
 
   <div class="timeline-page-container">

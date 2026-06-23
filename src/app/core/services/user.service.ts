@@ -101,11 +101,11 @@ export class UserService {
     }
     // Return default avatar based on gender or a generic default
     if (profile?.gender === 'male') {
-      return '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
+      return 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
     } else if (profile?.gender === 'female') {
-      return '/assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png';
+      return 'assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png';
     }
-    return '/assets/app-assets/Default-avatar-home.svg';
+    return 'assets/app-assets/Default-avatar-home.svg';
   }
 
   /**

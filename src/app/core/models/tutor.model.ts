@@ -223,7 +223,7 @@ export function toTutorListItem(tutor: Tutor): TutorListItem {
     return {
         id: tutor.id,
         name: tutor.name,
-        avatar: tutor.profilePicUrl || '/assets/images/Avatar.png',
+        avatar: tutor.profilePicUrl || 'assets/images/Avatar.png',
         description: tutor.subjects?.length > 0
             ? tutor.subjects.join(', ')
             : `${tutor.qualification} Specialist`,

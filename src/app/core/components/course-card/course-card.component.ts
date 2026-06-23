@@ -15,7 +15,7 @@ export class CourseCardComponent {
   @Input() progress: number = 0;
   @Input() duration: string = '';
   @Input() isNew: boolean = false;
-  readonly fallbackImage = '/assets/Images-Transparent/Academy-Course-Thubmnail1.png';
+  readonly fallbackImage = 'assets/Images-Transparent/Academy-Course-Thubmnail1.png';
 
   onImageError(event: Event): void {
     const image = event.target as HTMLImageElement | null;

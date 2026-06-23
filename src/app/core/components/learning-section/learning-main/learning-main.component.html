@@ -50,7 +50,7 @@
         <button class="category for-you" type="button" (click)="selectCategory('for-you'); openForYou()"
           [class.selected]="selectedCategory === 'for-you'" aria-label="Open For You">
           <div class="icon" aria-hidden="true">
-            <img src="/assets/Icons-Neutral/Icon-Content-ForYou.png" alt="For You" />
+            <img src="assets/Icons-Neutral/Icon-Content-ForYou.png" alt="For You" />
           </div>
           <div class="label">For You</div>
         </button>
@@ -60,7 +60,7 @@
       <button class="category puzzles" type="button" (click)="selectCategory('puzzles'); openPuzzles()"
         [class.selected]="selectedCategory === 'puzzles'" aria-label="Open Puzzles">
         <div class="icon" aria-hidden="true">
-          <img src="/assets/Icons-Neutral/Icon-Content-Puzzle.png" alt="Puzzles" />
+          <img src="assets/Icons-Neutral/Icon-Content-Puzzle.png" alt="Puzzles" />
         </div>
         <div class="label">Puzzles</div>
       </button>
@@ -69,7 +69,7 @@
       <button class="category quizzes" type="button" (click)="selectCategory('quizzes'); openQuizzes()"
         [class.selected]="selectedCategory === 'quizzes'" aria-label="Open Quizzes">
         <div class="icon" aria-hidden="true">
-          <img src="/assets/Icons-Neutral/Icon-Content-Quiz.png" alt="Quizzes" />
+          <img src="assets/Icons-Neutral/Icon-Content-Quiz.png" alt="Quizzes" />
         </div>
         <div class="label">Quizzes</div>
       </button>
@@ -77,7 +77,7 @@
       <button class="category articles" type="button" (click)="selectCategory('articles'); openArticles()"
         [class.selected]="selectedCategory === 'articles'" aria-label="Open Articles">
         <div class="icon" aria-hidden="true">
-          <img src="/assets/Icons-Neutral/Icon-Content-Articles.png" alt="Articles" />
+          <img src="assets/Icons-Neutral/Icon-Content-Articles.png" alt="Articles" />
         </div>
         <div class="label">Articles</div>
       </button>
@@ -104,7 +104,7 @@
           </div>
           <ng-template #emptySearch>
             <empty-state
-              [imageSrc]="'/assets/Images-Pet/Panda-Age1-Curious.png'"
+              [imageSrc]="'assets/Images-Pet/Panda-Age1-Curious.png'"
               imageAlt="Curious Panda"
               leadText="No Results Found"
               subText="Try a different search term or browse by category."
@@ -166,7 +166,7 @@
       <!-- Empty State Template -->
       <ng-template #emptyState>
         <empty-state
-          [imageSrc]="'/assets/Images-Pet/Panda-Age1-Curious.png'"
+          [imageSrc]="'assets/Images-Pet/Panda-Age1-Curious.png'"
           imageAlt="Curious Panda"
           leadText="Fresh Content Coming Soon!"
           subText="Nothing recently added yet, but check back soon — new things will start appearing here once they're live!"

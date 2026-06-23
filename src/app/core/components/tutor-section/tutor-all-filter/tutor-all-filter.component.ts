@@ -53,13 +53,13 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
 
   /** Mapping of category icons (fallback if API doesn't provide iconUrl) */
   private categoryIconMap: Record<string, string> = {
-    SCHOOL: '/assets/Icons-Neutral/Tutors-School.png',
-    COLLEGE: '/assets/Icons-Neutral/Tutors-College.png',
-    HOBBIES: '/assets/Icons-Neutral/Tutors-Hobbies.png',
-    SPORTS: '/assets/Icons-Neutral/Tutors-Sports.png',
-    EXAMS: '/assets/Icons-Neutral/Tutors-Exams.png',
-    LANGUAGES: '/assets/Icons-Neutral/Tutors-Language.png',
-    OTHERS: '/assets/Icons-Neutral/Tutors-Others.png'
+    SCHOOL: 'assets/Icons-Neutral/Tutors-School.png',
+    COLLEGE: 'assets/Icons-Neutral/Tutors-College.png',
+    HOBBIES: 'assets/Icons-Neutral/Tutors-Hobbies.png',
+    SPORTS: 'assets/Icons-Neutral/Tutors-Sports.png',
+    EXAMS: 'assets/Icons-Neutral/Tutors-Exams.png',
+    LANGUAGES: 'assets/Icons-Neutral/Tutors-Language.png',
+    OTHERS: 'assets/Icons-Neutral/Tutors-Others.png'
   };
 
   ngOnInit(): void {
@@ -116,7 +116,7 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
     this.categories = categories.map(cat => ({
       key: cat.categoryKey,
       label: cat.categoryName,
-      icon: cat.iconUrl || this.categoryIconMap[cat.categoryKey] || '/assets/Icons-Neutral/Tutors-Others.png'
+      icon: cat.iconUrl || this.categoryIconMap[cat.categoryKey] || 'assets/Icons-Neutral/Tutors-Others.png'
     }));
   }
 

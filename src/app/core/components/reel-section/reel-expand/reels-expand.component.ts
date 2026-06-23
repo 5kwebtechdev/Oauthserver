@@ -111,7 +111,7 @@ export class ReelsExpandComponent implements OnInit, OnDestroy {
       id: 999,
       title: 'Test Video',
       video: 'https://sample-videos.com/zip/10/mp4/480/mp4/SampleVideo_480x270_1mb.mp4',
-      image: '/assets/app-assets/reel-1-placeholder.jpg'
+      image: 'assets/app-assets/reel-1-placeholder.jpg'
     };
     
     this.playlist = [testSlide];

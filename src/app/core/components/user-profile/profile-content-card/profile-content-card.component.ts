@@ -13,7 +13,7 @@ import { ICONS, IconName } from './icons';
 export class ProfileContentCardComponent {
   @Input() title: string = '';
   @Input() subtitle: string = '';
-  @Input() iconSrc: string = '/assets/icons/user-circle.svg';
+  @Input() iconSrc: string = 'assets/icons/user-circle.svg';
   @Input() iconName?: IconName;
 
   constructor(private sanitizer: DomSanitizer) {}

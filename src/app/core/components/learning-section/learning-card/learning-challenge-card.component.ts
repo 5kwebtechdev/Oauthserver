@@ -35,7 +35,7 @@ export class LearningChallengeCardComponent {
     onImageError(event: Event) {
         const img = event.target as HTMLImageElement | null;
         if (img) {
-            img.src = '/assets/icons/Flux_Dev_a_surreal_and_vibrant_cinematic_photo_of_A_minimal_ye_3%201.jpg';
+            img.src = 'assets/icons/Flux_Dev_a_surreal_and_vibrant_cinematic_photo_of_A_minimal_ye_3%201.jpg';
         }
     }
 
@@ -48,11 +48,11 @@ export class LearningChallengeCardComponent {
         }
 
         if (diff === 'easy') {
-            return '/assets/Images-Transparent/Image-Content-Easy.png';
+            return 'assets/Images-Transparent/Image-Content-Easy.png';
         }
 
         if (diff === 'hard') {
-            return '/assets/Images-Transparent/Image-Content-Hard.png';
+            return 'assets/Images-Transparent/Image-Content-Hard.png';
         }
 
         return this.item?.difficultyImage ?? null;

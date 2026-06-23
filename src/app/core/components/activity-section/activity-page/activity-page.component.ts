@@ -16,7 +16,7 @@ import { RefreshService } from '../../../services/refresh.service';
   standalone: true,
   selector: 'activity-page',
   template: `<ion-content>
-    <superme-navigator heading="Your Universe" [rightIcon]="'/assets/Icons-Neutral/Icon-Calendar.png'"
+    <superme-navigator heading="Your Universe" [rightIcon]="'assets/Icons-Neutral/Icon-Calendar.png'"
         rightIconAlt="Calendar" (rightIconClick)="onOpenCalendar()" (back)="onBack()"></superme-navigator>
 
     <activity-page-content #habitContent style="padding:0px 16px;"></activity-page-content>
