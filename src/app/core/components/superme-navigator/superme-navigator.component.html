@@ -1,7 +1,7 @@
 <div class="navigator-root" [class.warm]="variant === 'warm'">
   <div class="navigator-inner">
     <div class="left-group">
-      <button class="back-button" (click)="goBack()" aria-label="Go back" [class.cancel]="backIcon === 'cancel'">
+      <button *ngIf="!hideBack" class="back-button" (click)="goBack()" aria-label="Go back" [class.cancel]="backIcon === 'cancel'">
         <ng-container *ngIf="backIcon !== 'cancel'; else imgIcon">
           <img [src]="variant === 'warm' ? '/assets/icons/back-arrow-warm.svg' : '/assets/icons/back-arrow.svg'" alt="Back" class="back-svg" aria-hidden="true">
         </ng-container>

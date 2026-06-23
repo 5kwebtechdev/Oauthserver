@@ -1,5 +1,6 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from "@angular/router";
+import { NavController } from '@ionic/angular';
 import { AuthService } from '../core/services/auth.service';
 
 @Component({
@@ -14,7 +15,6 @@ export class HomePage implements OnInit {
   touchStartX = 0;
   touchEndX = 0;
   isAuthenticated = false;
-  isTablet = false;
 
   slides = [
     {
@@ -57,6 +57,7 @@ export class HomePage implements OnInit {
 
   constructor(
     private router: Router,
+    private navCtrl: NavController,
     private authService: AuthService
   ) {
     // Initialize the first slide
@@ -67,23 +68,11 @@ export class HomePage implements OnInit {
     // Check if user is already logged in
     this.isAuthenticated = this.authService.isLoggedIn();
 
-    // initial detection for tablet widths (>=768px)
-    try {
-      this.isTablet = window.innerWidth >= 768;
-    } catch (e) {
-      this.isTablet = false;
-    }
-
     if (this.isAuthenticated) {
       console.log('User is already logged in, redirecting to appropriate dashboard...');
       const dashboardRoute = this.authService.getDashboardRoute();
       this.router.navigate([dashboardRoute], { replaceUrl: true });
     }
-  }
-
-  @HostListener('window:resize', ['$event'])
-  onResize(event: any) {
-    this.isTablet = event.target.innerWidth >= 768;
   }
 
   onTouchStart(event: TouchEvent) {
@@ -112,7 +101,7 @@ export class HomePage implements OnInit {
     if (this.currentSlide < this.slides.length - 1) {
       this.currentSlide++;
     } else {
-      this.router.navigateByUrl('home/login');
+      this.navCtrl.navigateRoot(['/home/login']);
     }
   }
 

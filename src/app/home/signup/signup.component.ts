@@ -1,5 +1,5 @@
 import { Component, OnInit, Renderer2, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
-import { IonContent } from '@ionic/angular';
+import { IonContent, NavController } from '@ionic/angular';
 import { Router, ActivatedRoute } from "@angular/router";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { CoreService } from "../../core/services/core.service";
@@ -262,7 +262,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     private userService: UserService,
     private loadingService: LoadingService,
     public parentImageService: ParentImageService,
-    private credentialSaverService: CredentialSaverService
+    private credentialSaverService: CredentialSaverService,
+    private navCtrl: NavController
   ) {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -701,37 +702,30 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   goBack() {
     if (this.step === 0.1) {
-      // From step 0.1, go back to login
-      this.router.navigate(['home/login']);
+      this.navCtrl.navigateBack(['/home/login']);
     } else if (this.step === 0.2) {
-      // From step 0.2, go back to step 0.1
       this.clearOtpTimer();
-      this.router.navigate(['home/sign-up'], { queryParams: { step: 0.1 } });
+      this.navCtrl.navigateBack(['/home/sign-up'], { queryParams: { step: 0.1 } });
     } else if (this.step === 0.3) {
-      // From step 0.3 (password creation), go back to step 0.1 (email entry)
-      this.router.navigate(['home/sign-up'], { queryParams: { step: 0.1 } });
+      this.navCtrl.navigateBack(['/home/sign-up'], { queryParams: { step: 0.1 } });
     } else if (this.step === 1) {
-      // From step 1 (role selection), go back to login if Google flow, else step 0.3
       if (sessionStorage.getItem('signup_via_google') === 'true') {
-        this.router.navigate(['home/login']);
+        this.navCtrl.navigateBack(['/home/login']);
       } else {
-        this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
+        this.navCtrl.navigateBack(['/home/sign-up'], { queryParams: { step: 0.3 } });
       }
     } else if (this.step > 1) {
-      // Special-case: if user is in "self" flow and on pet-selection (step 4),
-      // back should return to profile/details entry (step 2) rather than step 3.
       const savedRole = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;
       if (this.step === 4 && savedRole === 'self') {
-        this.router.navigate(['home/sign-up'], { queryParams: { step: 2 } });
+        this.navCtrl.navigateBack(['/home/sign-up'], { queryParams: { step: 2 } });
         return;
       }
-
-      this.router.navigate(['home/sign-up'], { queryParams: { step: this.step - 1 } });
+      this.navCtrl.navigateBack(['/home/sign-up'], { queryParams: { step: this.step - 1 } });
     }
   }
 
   onCancel() {
-    this.router.navigate(['home']);
+    this.navCtrl.navigateRoot(['/home']);
   }
 
   returnSameNumber(num: any) {
