@@ -4,8 +4,8 @@
       <article class="tutors-section__card" role="listitem" *ngFor="let t of tutors">
         <div class="thumbnail">
           <div class="avatar"
-            [appBgSkeleton]="t.avatar || '/assets/images/Avatar.png'"
-            [ngStyle]="{'background-image': 'url(' + (t.avatar || '/assets/images/Avatar.png') + ')'}"
+            [appBgSkeleton]="t.avatar || 'assets/images/Avatar.png'"
+            [ngStyle]="{'background-image': 'url(' + (t.avatar || 'assets/images/Avatar.png') + ')'}"
             aria-hidden="true"></div>
         </div>
 
@@ -16,7 +16,7 @@
             </div>
             
             <div class="stats" aria-hidden="true">
-              <img class="icon heart-icon" src="/assets/Icons-Neutral/Icon-Tutor-Like.png" alt="Likes"
+              <img class="icon heart-icon" src="assets/Icons-Neutral/Icon-Tutor-Like.png" alt="Likes"
               aria-hidden="true" />
               <span class="meta">{{ (t.champsLiked !== undefined && t.champsLiked !== null) ? t.champsLiked : (t.rating || 0) }} likes | {{ t.experience || 'Fresher' }}</span>
             </div>
@@ -27,7 +27,7 @@
             <p class="role">{{ t.description || t.qualification || 'Subject Expert' }}</p>
             <label>{{ formatLevelsDisplay(t.levels) || 'All Levels' }}</label>
             <div class="time">
-              <img class="icon time-icon" src="/assets/Icons-Neutral/Icon-Tutor-Timings.png" alt="Timings"
+              <img class="icon time-icon" src="assets/Icons-Neutral/Icon-Tutor-Timings.png" alt="Timings"
                 aria-hidden="true" />
               <span>{{ getTimingString(t) }}</span>
             </div>

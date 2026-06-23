@@ -40,7 +40,7 @@
             <!-- Empty state -->
             <ng-container *ngIf="!isLoading && coinItems.length === 0">
                 <div class="blank-container">
-                    <img src="/assets/Images-Transparent/Image-Home-Blank.png" alt="" class="home-blank">
+                    <img src="assets/Images-Transparent/Image-Home-Blank.png" alt="" class="home-blank">
                     <div class="blank-text">
                         <h1>No transactions yet!</h1>
                         <p>Your coins are ready to treat your pet with cool outfits and accessories.</p>
@@ -96,7 +96,7 @@
 
                         <!-- Amount -->
                         <div class="coin-count">
-                            <img src="/assets/Icons-Neutral/Icons-Coins.png" alt="Coin" class="count-icon">
+                            <img src="assets/Icons-Neutral/Icons-Coins.png" alt="Coin" class="count-icon">
                             <span class="count-value" [class.negative]="item.count < 0">
                                 {{ item.count < 0 ? item.count : ('+' + item.count) }}
                             </span>

@@ -52,7 +52,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     public userBadges: number = 0;
     public selectedMood: string | null = 'happy';
 
-    public userAvatarUrl: string = '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
+    public userAvatarUrl: string = 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
     public parentAvatarStyle: { [k: string]: string } = {};
     public parentInitial: string = 'U';
     public currentProfile: any = null;
@@ -106,14 +106,14 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     
     // Mood assets
     private readonly moodAssetMap: Record<string, string> = {
-        'HAPPY': '/assets/Images-Transparent/Image-Mood-Happy.png',
-        'VERY HAPPY': '/assets/Images-Transparent/Image-Mood-Very happy.png',
-        'EXCITED': '/assets/Images-Transparent/Image-Mood-Excited.png',
-        'SAD': '/assets/Images-Transparent/Image-Mood-Sad.png',
-        'VERY SAD': '/assets/Images-Transparent/Image-Mood-Upset.png',
-        'UPSET': '/assets/Images-Transparent/Image-Mood-Upset.png',
-        'NERVOUS': '/assets/Images-Transparent/Image-Mood-Nervous.png',
-        'NEUTRAL': '/assets/Images-Transparent/Mood-emoji-neutral-home.png'
+        'HAPPY': 'assets/Images-Transparent/Image-Mood-Happy.png',
+        'VERY HAPPY': 'assets/Images-Transparent/Image-Mood-Very happy.png',
+        'EXCITED': 'assets/Images-Transparent/Image-Mood-Excited.png',
+        'SAD': 'assets/Images-Transparent/Image-Mood-Sad.png',
+        'VERY SAD': 'assets/Images-Transparent/Image-Mood-Upset.png',
+        'UPSET': 'assets/Images-Transparent/Image-Mood-Upset.png',
+        'NERVOUS': 'assets/Images-Transparent/Image-Mood-Nervous.png',
+        'NEUTRAL': 'assets/Images-Transparent/Mood-emoji-neutral-home.png'
     };
     
     // Popup state

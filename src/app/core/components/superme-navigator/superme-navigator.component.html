@@ -3,12 +3,12 @@
     <div class="left-group">
       <button *ngIf="!hideBack" class="back-button" (click)="goBack()" aria-label="Go back" [class.cancel]="backIcon === 'cancel'">
         <ng-container *ngIf="backIcon !== 'cancel'; else imgIcon">
-          <img [src]="variant === 'warm' ? '/assets/icons/back-arrow-warm.svg' : '/assets/icons/back-arrow.svg'" alt="Back" class="back-svg" aria-hidden="true">
+          <img [src]="variant === 'warm' ? 'assets/icons/back-arrow-warm.svg' : 'assets/icons/back-arrow.svg'" alt="Back" class="back-svg" aria-hidden="true">
         </ng-container>
         <ng-template #imgIcon>
           <!-- Render inline 'cancel' SVG when backIcon is 'cancel', otherwise use the provided image src -->
           <ng-container *ngIf="backIcon === 'cancel'; else imageFallback">
-            <img src="/assets/icons/cancel-cross.svg" [alt]="backIconAlt || 'Close'">
+            <img src="assets/icons/cancel-cross.svg" [alt]="backIconAlt || 'Close'">
             <span class="visually-hidden">{{ backIconAlt }}</span>
           </ng-container>
           <ng-template #imageFallback>
@@ -142,7 +142,7 @@
           <div *ngIf="rightType === 'edit'" class="right-edit-layout" (click)="onRightClick()" role="button"
             aria-label="Edit">
             <div class="eclipse">
-              <img src="/assets/app-assets/edit-icon.svg" alt="Edit" />
+              <img src="assets/app-assets/edit-icon.svg" alt="Edit" />
             </div>
           </div>
 

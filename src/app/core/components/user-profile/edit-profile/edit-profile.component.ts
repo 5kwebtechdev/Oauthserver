@@ -93,18 +93,18 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   // Avatar selection
   avatarSelected: any = null;
   public avatars = [
-    { key: 1, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png', imageName: 'Avatar 1' },
-    { key: 2, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female2.png', imageName: 'Avatar 2' },
-    { key: 3, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female3.png', imageName: 'Avatar 3' },
-    { key: 4, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female4.png', imageName: 'Avatar 4' },
-    { key: 5, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female5.png', imageName: 'Avatar 5' },
-    { key: 6, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female6.png', imageName: 'Avatar 6' },
-    { key: 7, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png', imageName: 'Avatar 7' },
-    { key: 8, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male2.png', imageName: 'Avatar 8' },
-    { key: 9, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male3.png', imageName: 'Avatar 9' },
-    { key: 10, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male4.png', imageName: 'Avatar 10' },
-    { key: 11, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male5.png', imageName: 'Avatar 11' },
-    { key: 12, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male6.png', imageName: 'Avatar 12' },
+    { key: 1, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png', imageName: 'Avatar 1' },
+    { key: 2, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female2.png', imageName: 'Avatar 2' },
+    { key: 3, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female3.png', imageName: 'Avatar 3' },
+    { key: 4, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female4.png', imageName: 'Avatar 4' },
+    { key: 5, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female5.png', imageName: 'Avatar 5' },
+    { key: 6, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female6.png', imageName: 'Avatar 6' },
+    { key: 7, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png', imageName: 'Avatar 7' },
+    { key: 8, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male2.png', imageName: 'Avatar 8' },
+    { key: 9, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male3.png', imageName: 'Avatar 9' },
+    { key: 10, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male4.png', imageName: 'Avatar 10' },
+    { key: 11, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male5.png', imageName: 'Avatar 11' },
+    { key: 12, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male6.png', imageName: 'Avatar 12' },
   ];
 
   // Birthday picker control

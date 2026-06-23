@@ -58,7 +58,7 @@ export class CountriesService {
       dial_code: string; // Phone code
     }
 
-    return this.http.get<JsonCountry[]>('/assets/data/countries.json').pipe(
+    return this.http.get<JsonCountry[]>('assets/data/countries.json').pipe(
       map((jsonCountries: JsonCountry[]) => {
         // Transform JSON data to Country interface and add phoneLength
         return jsonCountries.map(jsonCountry => ({

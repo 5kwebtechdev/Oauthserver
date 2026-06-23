@@ -29,7 +29,7 @@ export class UserProfileComponent implements OnInit, OnChanges {
   @Input() user: any = {};
 
   // Local user avatar URL
-  userAvatarUrl: string = '/assets/app-assets/Default-avatar-home.svg';
+  userAvatarUrl: string = 'assets/app-assets/Default-avatar-home.svg';
   // Avatar image name (e.g., "Avatar 3") coming from login response
   avatarImageName: string | null = null;
 
@@ -300,8 +300,8 @@ export class UserProfileComponent implements OnInit, OnChanges {
 
   async onChangePet() {
     const slides = [
-      { image: '/assets/app-assets/pet1.png', title: 'Pet 1', subtitle: ['Friendly', 'Playful'], color: '#fff', next_color: '#512100', background: 'linear-gradient(to top right,#ffb974,#ffe3c8)' },
-      { image: '/assets/app-assets/pet2.png', title: 'Pet 2', subtitle: ['Calm', 'Loyal'], color: '#fff', next_color: '#512100', background: 'linear-gradient(to top right,#a1c4fd,#c2e9fb)' }
+      { image: 'assets/app-assets/pet1.png', title: 'Pet 1', subtitle: ['Friendly', 'Playful'], color: '#fff', next_color: '#512100', background: 'linear-gradient(to top right,#ffb974,#ffe3c8)' },
+      { image: 'assets/app-assets/pet2.png', title: 'Pet 2', subtitle: ['Calm', 'Loyal'], color: '#fff', next_color: '#512100', background: 'linear-gradient(to top right,#a1c4fd,#c2e9fb)' }
     ];
 
     const modal = await this.modalCtrl.create({

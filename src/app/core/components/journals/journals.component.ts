@@ -44,7 +44,7 @@ export interface JournalEntry {
 
       <ng-template #emptyBody>
         <empty-state
-          [imageSrc]="'/assets/Images-Transparent/Image-Journal-Blank.png'"
+          [imageSrc]="'assets/Images-Transparent/Image-Journal-Blank.png'"
           [imageAlt]="'Panda with kids illustration'"
           [leadText]="'We are waiting to hear about your day!'"
           [subText]="'Post your journal to keep your story alive'"
@@ -348,10 +348,10 @@ export class JournalsComponent implements OnInit, OnDestroy {
     if (!mood) return null;
 
     const emotionMap: { [k: string]: { label: string; image: string } } = {
-      happy: { label: 'Happy', image: '/assets/Images-Thumbnails/Image-Journal-Emotions1.jpg' },
-      excited: { label: 'Excited', image: '/assets/Images-Thumbnails/Image-Journal-Emotions2.jpg' },
-      angry: { label: 'Angry', image: '/assets/Images-Thumbnails/Image-Journal-Emotions3.jpg' },
-      sad: { label: 'Sad', image: '/assets/Images-Thumbnails/Image-Journal-Emotions4.jpg' }
+      happy: { label: 'Happy', image: 'assets/Images-Thumbnails/Image-Journal-Emotions1.jpg' },
+      excited: { label: 'Excited', image: 'assets/Images-Thumbnails/Image-Journal-Emotions2.jpg' },
+      angry: { label: 'Angry', image: 'assets/Images-Thumbnails/Image-Journal-Emotions3.jpg' },
+      sad: { label: 'Sad', image: 'assets/Images-Thumbnails/Image-Journal-Emotions4.jpg' }
     };
 
     return emotionMap[mood] || null;

@@ -138,16 +138,16 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
 
     getTypeIcon(type: string): string {
         switch (type) {
-            case 'DAILY_LOGIN_BONUS':       return '/assets/Icons-Neutral/Icons-Coins.png';
-            case 'HABIT_COMPLETION':        return '/assets/Icons-Neutral/Icon-Streak.png';
-            case 'TASK_COMPLETION':         return '/assets/Icons-Neutral/Icon-Calendar.png';
-            case 'LESSON_COMPLETED':        return '/assets/Icons-Neutral/Icon-Content-Articles.png';
-            case 'COURSE_COMPLETED':        return '/assets/Icons-Neutral/Icons-Coins.png';
-            case 'ARTICLE_READ':            return '/assets/Icons-Neutral/Icon-Content-Articles.png';
-            case 'CHALLENGE_BATCH_REWARD':  return '/assets/Icons-Neutral/Icons-Coins.png';
-            case 'STREAK_7DAY_BONUS':       return '/assets/Icons-Neutral/Icon-Streak.png';
-            case 'STREAK_RESTORE':          return '/assets/Icons-Neutral/Icon-Streak.png';
-            default:                        return '/assets/Icons-Neutral/Icons-Coins.png';
+            case 'DAILY_LOGIN_BONUS':       return 'assets/Icons-Neutral/Icons-Coins.png';
+            case 'HABIT_COMPLETION':        return 'assets/Icons-Neutral/Icon-Streak.png';
+            case 'TASK_COMPLETION':         return 'assets/Icons-Neutral/Icon-Calendar.png';
+            case 'LESSON_COMPLETED':        return 'assets/Icons-Neutral/Icon-Content-Articles.png';
+            case 'COURSE_COMPLETED':        return 'assets/Icons-Neutral/Icons-Coins.png';
+            case 'ARTICLE_READ':            return 'assets/Icons-Neutral/Icon-Content-Articles.png';
+            case 'CHALLENGE_BATCH_REWARD':  return 'assets/Icons-Neutral/Icons-Coins.png';
+            case 'STREAK_7DAY_BONUS':       return 'assets/Icons-Neutral/Icon-Streak.png';
+            case 'STREAK_RESTORE':          return 'assets/Icons-Neutral/Icon-Streak.png';
+            default:                        return 'assets/Icons-Neutral/Icons-Coins.png';
         }
     }
 

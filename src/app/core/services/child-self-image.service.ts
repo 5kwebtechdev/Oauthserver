@@ -5,18 +5,18 @@ import { Injectable } from '@angular/core';
 })
 export class ChildSelfImageService {
     private avatars = [
-        { key: 1, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png', alt: 'Avatar 1' },
-        { key: 2, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female2.png', alt: 'Avatar 2' },
-        { key: 3, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female3.png', alt: 'Avatar 3' },
-        { key: 4, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female4.png', alt: 'Avatar 4' },
-        { key: 5, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female5.png', alt: 'Avatar 5' },
-        { key: 6, gender: 'Female', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Female6.png', alt: 'Avatar 6' },
-        { key: 7, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png', alt: 'Avatar 7' },
-        { key: 8, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male2.png', alt: 'Avatar 8' },
-        { key: 9, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male3.png', alt: 'Avatar 9' },
-        { key: 10, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male4.png', alt: 'Avatar 10' },
-        { key: 11, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male5.png', alt: 'Avatar 11' },
-        { key: 12, gender: 'Male', value: '/assets/Images-Transparent/Image-Onboarding-Avatar-Male6.png', alt: 'Avatar 12' },
+        { key: 1, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png', alt: 'Avatar 1' },
+        { key: 2, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female2.png', alt: 'Avatar 2' },
+        { key: 3, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female3.png', alt: 'Avatar 3' },
+        { key: 4, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female4.png', alt: 'Avatar 4' },
+        { key: 5, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female5.png', alt: 'Avatar 5' },
+        { key: 6, gender: 'Female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female6.png', alt: 'Avatar 6' },
+        { key: 7, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png', alt: 'Avatar 7' },
+        { key: 8, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male2.png', alt: 'Avatar 8' },
+        { key: 9, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male3.png', alt: 'Avatar 9' },
+        { key: 10, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male4.png', alt: 'Avatar 10' },
+        { key: 11, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male5.png', alt: 'Avatar 11' },
+        { key: 12, gender: 'Male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male6.png', alt: 'Avatar 12' },
     ];
 
     constructor() { }

@@ -22,37 +22,37 @@ export class BookmarkReelsComponent implements OnInit {
     {
       category: 'Science Wonders',
       reels: [
-        { id: 1, image: '/assets/images/reel-1-placeholder.png', title: 'Epic Volcano Eruption' },
-        { id: 2, image: '/assets/images/reel-1-placeholder.png', title: 'Crystal Growing' },
-        { id: 3, image: '/assets/images/reel-1-placeholder.png', title: 'Magnet Tricks' },
-        { id: 4, image: '/assets/images/reel-1-placeholder.png', title: 'Physics Fun' }
+        { id: 1, image: 'assets/images/reel-1-placeholder.png', title: 'Epic Volcano Eruption' },
+        { id: 2, image: 'assets/images/reel-1-placeholder.png', title: 'Crystal Growing' },
+        { id: 3, image: 'assets/images/reel-1-placeholder.png', title: 'Magnet Tricks' },
+        { id: 4, image: 'assets/images/reel-1-placeholder.png', title: 'Physics Fun' }
       ]
     },
     {
       category: 'Creative Arts',
       reels: [
-        { id: 5, image: '/assets/images/reel-1-placeholder.png', title: 'Sunset Painting' },
-        { id: 6, image: '/assets/images/reel-1-placeholder.png', title: 'Finger Art' },
-        { id: 7, image: '/assets/images/reel-1-placeholder.png', title: 'Paper Crafts' },
-        { id: 8, image: '/assets/images/reel-1-placeholder.png', title: 'Drawing Tips' }
+        { id: 5, image: 'assets/images/reel-1-placeholder.png', title: 'Sunset Painting' },
+        { id: 6, image: 'assets/images/reel-1-placeholder.png', title: 'Finger Art' },
+        { id: 7, image: 'assets/images/reel-1-placeholder.png', title: 'Paper Crafts' },
+        { id: 8, image: 'assets/images/reel-1-placeholder.png', title: 'Drawing Tips' }
       ]
     },
     {
       category: 'Comedy & Fun',
       reels: [
-        { id: 9, image: '/assets/images/reel-1-placeholder.png', title: 'Funny Faces' },
-        { id: 10, image: '/assets/images/reel-1-placeholder.png', title: 'Pet Tricks' },
-        { id: 11, image: '/assets/images/reel-1-placeholder.png', title: 'Dance Moves' },
-        { id: 12, image: '/assets/images/reel-1-placeholder.png', title: 'Jokes Time' }
+        { id: 9, image: 'assets/images/reel-1-placeholder.png', title: 'Funny Faces' },
+        { id: 10, image: 'assets/images/reel-1-placeholder.png', title: 'Pet Tricks' },
+        { id: 11, image: 'assets/images/reel-1-placeholder.png', title: 'Dance Moves' },
+        { id: 12, image: 'assets/images/reel-1-placeholder.png', title: 'Jokes Time' }
       ]
     },
     {
       category: 'Science Wonders',
       reels: [
-        { id: 13, image: '/assets/images/reel-1-placeholder.png', title: 'Space Facts' },
-        { id: 14, image: '/assets/images/reel-1-placeholder.png', title: 'Robot Building' },
-        { id: 15, image: '/assets/images/reel-1-placeholder.png', title: 'Chemistry Fun' },
-        { id: 16, image: '/assets/images/reel-1-placeholder.png', title: 'Cool Experiments' }
+        { id: 13, image: 'assets/images/reel-1-placeholder.png', title: 'Space Facts' },
+        { id: 14, image: 'assets/images/reel-1-placeholder.png', title: 'Robot Building' },
+        { id: 15, image: 'assets/images/reel-1-placeholder.png', title: 'Chemistry Fun' },
+        { id: 16, image: 'assets/images/reel-1-placeholder.png', title: 'Cool Experiments' }
       ]
     }
   ];

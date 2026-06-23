@@ -52,7 +52,7 @@ export function mapVibeToChildInfo(d: any, avatarUrl: string): ChildInfo {
   return {
     id,
     name: d.userName || 'Child',
-    avatarUrl: avatarUrl || '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png',
+    avatarUrl: avatarUrl || 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png',
     relationship: d.relationship || 'Child',
     mood: d.mood || null,
     coins: d.coins ?? 0,

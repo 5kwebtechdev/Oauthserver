@@ -26,7 +26,7 @@ export class ReelsCardComponent {
       likes: '10K',
       views: '25K',
       tags: '#FunScience #DIYExperiment....',
-      image: '/assets/app-assets/reel-1-placeholder.jpg',
+      image: 'assets/app-assets/reel-1-placeholder.jpg',
       video: 'https://sample-videos.com/zip/10/mp4/480/mp4/SampleVideo_480x270_1mb.mp4',
       saved: false,
       liked: false
@@ -40,7 +40,7 @@ export class ReelsCardComponent {
       likes: '1K',
       views: '5.2K',
       tags: '#LittleArtist #MessyFun....',
-      image: '/assets/app-assets/reel-2-placeholder.jpg',
+      image: 'assets/app-assets/reel-2-placeholder.jpg',
       video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
       saved: true,
       liked: false
@@ -54,7 +54,7 @@ export class ReelsCardComponent {
       likes: '2.5K',
       views: '8.1K',
       tags: '#PetLove #DanceFun....',
-      image: '/assets/app-assets/reel-2-placeholder.jpg',
+      image: 'assets/app-assets/reel-2-placeholder.jpg',
       video: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
       saved: false,
       liked: true

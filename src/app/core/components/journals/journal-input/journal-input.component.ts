@@ -81,19 +81,19 @@ export class JournalInputComponent implements OnInit {
       options: [
         {
           label: 'Happy',
-          image: '/assets/Images-Thumbnails/Image-Journal-Emotions1.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Emotions1.jpg',
         },
         {
           label: 'Excited',
-          image: '/assets/Images-Thumbnails/Image-Journal-Emotions2.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Emotions2.jpg',
         },
         {
           label: 'Angry',
-          image: '/assets/Images-Thumbnails/Image-Journal-Emotions3.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Emotions3.jpg',
         },
         {
           label: 'Sad',
-          image: '/assets/Images-Thumbnails/Image-Journal-Emotions4.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Emotions4.jpg',
         },
       ],
     },
@@ -103,19 +103,19 @@ export class JournalInputComponent implements OnInit {
       options: [
         {
           label: 'Good',
-          image: '/assets/Images-Thumbnails/Image-Journal-Sleep1.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Sleep1.jpg',
         },
         {
           label: 'Bad',
-          image: '/assets/Images-Thumbnails/Image-Journal-Sleep2.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Sleep2.jpg',
         },
         {
           label: 'Medium',
-          image: '/assets/Images-Thumbnails/Image-Journal-Sleep3.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Sleep3.jpg',
         },
         {
           label: 'Early',
-          image: '/assets/Images-Thumbnails/Image-Journal-Sleep4.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Sleep4.jpg',
         },
       ],
     },
@@ -125,19 +125,19 @@ export class JournalInputComponent implements OnInit {
       options: [
         {
           label: 'Good',
-          image: '/assets/Images-Thumbnails/Image-Journal-Health1.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Health1.jpg',
         },
         {
           label: 'Bad',
-          image: '/assets/Images-Thumbnails/Image-Journal-Health2.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Health2.jpg',
         },
         {
           label: 'Sick',
-          image: '/assets/Images-Thumbnails/Image-Journal-Health3.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Health3.jpg',
         },
         {
           label: 'Healthy',
-          image: '/assets/Images-Thumbnails/Image-Journal-Health4.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Health4.jpg',
         },
       ],
     },
@@ -147,19 +147,19 @@ export class JournalInputComponent implements OnInit {
       options: [
         {
           label: 'Reading',
-          image: '/assets/Images-Thumbnails/Image-Journal-Hobbies1.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Hobbies1.jpg',
         },
         {
           label: 'Sports',
-          image: '/assets/Images-Thumbnails/Image-Journal-Hobbies2.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Hobbies2.jpg',
         },
         {
           label: 'Music',
-          image: '/assets/Images-Thumbnails/Image-Journal-Hobbies3.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Hobbies3.jpg',
         },
         {
           label: 'Travel',
-          image: '/assets/Images-Thumbnails/Image-Journal-Hobbies4.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Hobbies4.jpg',
         },
       ],
     },
@@ -169,19 +169,19 @@ export class JournalInputComponent implements OnInit {
       options: [
         {
           label: 'Healthy',
-          image: '/assets/Images-Thumbnails/Image-Journal-Food1.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Food1.jpg',
         },
         {
           label: 'Unhealthy',
-          image: '/assets/Images-Thumbnails/Image-Journal-Food2.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Food2.jpg',
         },
         {
           label: 'Home cooked',
-          image: '/assets/Images-Thumbnails/Image-Journal-Food3.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Food3.jpg',
         },
         {
           label: 'Fast Food',
-          image: '/assets/Images-Thumbnails/Image-Journal-Food4.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Food4.jpg',
         },
       ],
     },
@@ -191,19 +191,19 @@ export class JournalInputComponent implements OnInit {
       options: [
         {
           label: 'Friends',
-          image: '/assets/Images-Thumbnails/Image-Journal-Social1.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Social1.jpg',
         },
         {
           label: 'Family',
-          image: '/assets/Images-Thumbnails/Image-Journal-Social2.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Social2.jpg',
         },
         {
           label: 'Alone',
-          image: '/assets/Images-Thumbnails/Image-Journal-Social3.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Social3.jpg',
         },
         {
           label: 'Party',
-          image: '/assets/Images-Thumbnails/Image-Journal-Social4.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-Social4.jpg',
         },
       ],
     },
@@ -213,19 +213,19 @@ export class JournalInputComponent implements OnInit {
       options: [
         {
           label: 'Good',
-          image: '/assets/Images-Thumbnails/Image-Journal-School1.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-School1.jpg',
         },
         {
           label: 'Bad',
-          image: '/assets/Images-Thumbnails/Image-Journal-School2.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-School2.jpg',
         },
         {
           label: 'Study',
-          image: '/assets/Images-Thumbnails/Image-Journal-School3.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-School3.jpg',
         },
         {
           label: 'Exam',
-          image: '/assets/Images-Thumbnails/Image-Journal-School4.jpg',
+          image: 'assets/Images-Thumbnails/Image-Journal-School4.jpg',
         },
       ],
     },

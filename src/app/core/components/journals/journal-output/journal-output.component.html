@@ -14,7 +14,7 @@
     <div *ngIf="!filteredEntries || filteredEntries.length === 0" class="empty">
       <!-- <p>No journal entries yet. Try adding one!</p> -->
       <div class="journal-empty__body">
-        <img class="journal-empty__illustration" src="/assets/Images-Transparent/Image-Journal-Blank.png"
+        <img class="journal-empty__illustration" src="assets/Images-Transparent/Image-Journal-Blank.png"
           alt="Panda with kids illustration">
 
         <div class="journal-empty__texts">
@@ -48,7 +48,7 @@
   <!-- Image viewer overlay -->
     <div class="image-viewer-backdrop" *ngIf="viewerOpen" (click)="closeImageViewer()">
     <button class="image-viewer-close" (click)="closeImageViewer()" aria-label="Close image viewer">
-      <img src="/assets/app-assets/cancel-cross.svg" alt="Close image viewer">
+      <img src="assets/app-assets/cancel-cross.svg" alt="Close image viewer">
     </button>
     <div class="image-viewer-content" (click)="$event.stopPropagation()">
       <img [src]="viewerSrc" alt="attachment preview" />

@@ -7,7 +7,7 @@
         <div class="avatar w-100 d-flex justify-content-center gap-2 flex-column align-items-center">
           <div class="avatar-wrapper">
             <app-img
-              [src]="userAvatarUrl || user?.avatarUrl || '/assets/app-assets/Default-avatar-home.svg'"
+              [src]="userAvatarUrl || user?.avatarUrl || 'assets/app-assets/Default-avatar-home.svg'"
               [alt]="avatarImageName ? avatarImageName : (user?.name || 'User') + ' avatar'"
               [circle]="true"
               objectFit="cover">
@@ -147,7 +147,7 @@
 
     <!--superme-popup-->
     <app-superme-popup [isVisible]="showLogoutPopup" [config]="{
-      image: '/assets/Images-Transparent/Image-Log Out.png',
+      image: 'assets/Images-Transparent/Image-Log Out.png',
       imageAlt: 'Logout image',
       heading: 'Leaving already?',
       subtitle: 'You can come back anytime to continue your adventure.',

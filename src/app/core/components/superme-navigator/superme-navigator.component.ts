@@ -105,7 +105,7 @@ export class SupermeNavigatorComponent implements OnInit {
 
   get backIconSrc(): string {
     const icon = this.backIcon === 'cancel' ? 'cancel' : (this.backIcon === 'arrow' ? 'arrowSvg' : this.backIcon);
-    return icon === 'cancel' ? '/assets/app-assets/Cancel.svg' : '/assets/app-assets/Back-common-icon.svg';
+    return icon === 'cancel' ? 'assets/app-assets/Cancel.svg' : 'assets/app-assets/Back-common-icon.svg';
   }
 
   get backIconAlt(): string {

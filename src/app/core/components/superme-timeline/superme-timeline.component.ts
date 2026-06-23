@@ -427,9 +427,9 @@ export class SupermeTimelineComponent implements OnInit, OnChanges {
   getNoteIcon(event: any): string {
     const createdBy = event?.createdBy ?? event?.created_by ?? null;
     if (createdBy !== null && this.currentUserId !== null && Number(createdBy) !== this.currentUserId) {
-      return '/assets/icons/notes-parent.svg';
+      return 'assets/icons/notes-parent.svg';
     }
-    return '/assets/icons/note-child.svg';
+    return 'assets/icons/note-child.svg';
   }
 
   /**

@@ -32,14 +32,14 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
   courseDetail: CourseDetailResponse | null = null;
   isLoadingCourse = false;
   loadError: string | null = null;
-  readonly fallbackCourseImage = '/assets/Images-Transparent/Academy-Course-Thubmnail1.png';
-  readonly fallbackLessonImage = '/assets/Images-Transparent/Academy-Course-Thubmnail2.png';
+  readonly fallbackCourseImage = 'assets/Images-Transparent/Academy-Course-Thubmnail1.png';
+  readonly fallbackLessonImage = 'assets/Images-Transparent/Academy-Course-Thubmnail2.png';
   private readonly fallbackLessonImages = [
-    '/assets/Images-Transparent/Academy-Course-Thubmnail1.png',
-    '/assets/Images-Transparent/Academy-Course-Thubmnail2.png',
-    '/assets/Images-Transparent/Academy-Course-Thubmnail3.png',
-    '/assets/Images-Transparent/Academy-Course-Thubmnail4.png',
-    '/assets/Images-Transparent/Academy-Course-Thubmnail5.png',
+    'assets/Images-Transparent/Academy-Course-Thubmnail1.png',
+    'assets/Images-Transparent/Academy-Course-Thubmnail2.png',
+    'assets/Images-Transparent/Academy-Course-Thubmnail3.png',
+    'assets/Images-Transparent/Academy-Course-Thubmnail4.png',
+    'assets/Images-Transparent/Academy-Course-Thubmnail5.png',
   ];
 
   // route-driven mode: if component is loaded via route we populate `course` from the id
