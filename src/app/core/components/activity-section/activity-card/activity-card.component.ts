@@ -1927,11 +1927,24 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     const h = this.habit as any;
     if (h?.tags && Array.isArray(h.tags) && h.tags.length > 0) {
       const first = h.tags[0];
-      if (typeof first === 'string') return first;
-      if (typeof first === 'object') return (first.value || first.name || first.text || String(first.key ?? '')).toString().trim();
+      if (typeof first === 'string' && first.trim()) return first.trim();
+      if (typeof first === 'object' && first !== null) {
+        const name = (first.value || first.name || first.text || first.title || first.label || '').toString().trim();
+        if (name) return name;
+        if (first.tag && typeof first.tag === 'object') {
+          const n = (first.tag.value || first.tag.name || first.tag.text || first.tag.title || '').toString().trim();
+          if (n) return n;
+        }
+      }
     }
-    if (h?.tag?.name) return h.tag.name;
-    return h?.selectedRoutine || '';
+    if (h?.tag) {
+      if (typeof h.tag === 'string' && h.tag.trim()) return h.tag.trim();
+      if (typeof h.tag === 'object') {
+        const n = (h.tag.value || h.tag.name || h.tag.text || h.tag.title || '').toString().trim();
+        if (n) return n;
+      }
+    }
+    return h?.selectedRoutine || h?.routine || '';
   }
 
   getRoutine(): string {

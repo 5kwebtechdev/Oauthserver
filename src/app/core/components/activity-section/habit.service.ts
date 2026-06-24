@@ -114,9 +114,19 @@ export class HabitService {
         priority: item.priority,
         routine: item.routine,
         status: item.status,
-        tags: Array.isArray(item.tags) && item.tags.length
-            ? item.tags
-            : (item.tag ? [item.tag] : []),
+        tags: (() => {
+            const raw = Array.isArray(item.tags) && item.tags.length ? item.tags : (item.tag ? [item.tag] : []);
+            return raw.map((t: any) => {
+                if (!t) return '';
+                if (typeof t === 'string') return t;
+                if (typeof t === 'object') {
+                    const name = (t.value || t.name || t.text || t.title || t.label || '').toString().trim();
+                    if (name) return name;
+                    if (t.tag && typeof t.tag === 'object') return (t.tag.value || t.tag.name || t.tag.title || '').toString().trim();
+                }
+                return String(t);
+            }).filter(Boolean);
+        })(),
         coinReward: item.coinReward || 0,
         coinsEarned: item.coinsEarned || item.coins || 0,
         streak: item.streak || item.streakCount || 0,
