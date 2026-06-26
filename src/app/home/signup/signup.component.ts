@@ -294,14 +294,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       name: ['', [
         Validators.required,
         Validators.minLength(2),
-        Validators.maxLength(40),
-        Validators.pattern(/^[A-Za-z][A-Za-z\s.'-]*$/)
+        Validators.maxLength(50),
+        Validators.pattern(/^[A-Za-z][A-Za-z\s'-]*$/),
+        this.noRepeatedLetterValidator()
       ]],
       dob: ['', [Validators.required]],
     })
 
     this.passwordForm = this.fb.group({
-      password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(12)]],
+      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(12), this.noCommonPasswordValidator()]],
     })
     this.route.queryParams.subscribe(params => {
       const stepParam = params['step'];
@@ -389,12 +390,34 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return false;
   }
 
+  private noCommonPasswordValidator(): import('@angular/forms').ValidatorFn {
+    const common = ['123456', '1234567', '12345678', '123456789', '1234567890', 'password', 'abcdef', 'qwerty', '111111', '000000', 'abc123'];
+    return (control: import('@angular/forms').AbstractControl) => {
+      const v = (control.value || '').toLowerCase();
+      return common.includes(v) ? { commonPassword: true } : null;
+    };
+  }
+
+  private noRepeatedLetterValidator(): import('@angular/forms').ValidatorFn {
+    return (control: import('@angular/forms').AbstractControl) => {
+      const v: string = (control.value || '').toLowerCase().replace(/[^a-z]/g, '');
+      const seen: Record<string, number> = {};
+      for (let i = 0; i < v.length; i++) {
+        const ch = v[i];
+        seen[ch] = (seen[ch] || 0) + 1;
+        if (seen[ch] > 3) return { repeatedLetter: true };
+      }
+      return null;
+    };
+  }
+
   getPasswordErrorMessage(): string {
     const control = this.password;
     if (!control) return '';
     if (control.hasError('required')) return 'Please create a password.';
-    if (control.hasError('minlength')) return 'Password must be at least 8 characters.';
+    if (control.hasError('minlength')) return 'Password should be 6 characters or more.';
     if (control.hasError('maxlength')) return 'Password cannot be more than 12 characters.';
+    if (control.hasError('commonPassword')) return 'This password is too common. Please choose a stronger one.';
     return 'Please enter a valid password.';
   }
 
@@ -403,8 +426,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (!control) return '';
     if (control.hasError('required')) return 'Please enter your full name.';
     if (control.hasError('minlength')) return 'Name must be at least 2 characters.';
-    if (control.hasError('maxlength')) return 'Name cannot be more than 40 characters.';
-    if (control.hasError('pattern')) return 'Name can only include letters, spaces, apostrophes, hyphens, and periods.';
+    if (control.hasError('maxlength')) return 'Name cannot exceed 50 characters.';
+    if (control.hasError('pattern')) return 'Name can only include letters, spaces, apostrophes and hyphens.';
+    if (control.hasError('repeatedLetter')) return 'A single letter cannot appear more than 3 times.';
     return 'Please enter a valid full name.';
   }
 

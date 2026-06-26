@@ -21,6 +21,13 @@
            (error)="onImageError($event, fallbackCourseImage)">
       <h2 class="hero-title">{{ course.title }}</h2>
       <p class="hero-meta">{{ course.lessons }} {{ course.lessons === 1 ? 'lesson' : 'lessons' }} • {{ course.duration }}</p>
+
+      <!-- Continue / Start button -->
+      <button class="hero-cta" *ngIf="!isLoadingCourse && lessons.length > 0 && !courseDetail?.isCourseCompleted"
+              (click)="onHeroCta()">
+        {{ resumeLessonIndex != null ? 'Continue with lesson ' + (resumeLessonIndex + 1) : 'Start with lesson 1' }}
+      </button>
+
       <p class="hero-desc">{{ course.description }}</p>
     </div>
 

@@ -136,21 +136,27 @@ export class TrophyService {
     private parseEarnedDate(dateStr: string): Date {
         if (!dateStr) return new Date();
 
-        // Try direct parsing first (handles ISO 8601, "March 2, 2025", RFC 2822, etc.)
-        const direct = new Date(dateStr);
-        if (!isNaN(direct.getTime())) return direct;
-
-        // Handle "9 Dec" format (no year — assume current year)
         const currentYear = new Date().getFullYear();
-        const parts = dateStr.trim().split(/\s+/);
-        if (parts.length === 2) {
-            const day = parseInt(parts[0], 10);
-            const month = parts[1];
-            const parsed = new Date(`${month} ${day}, ${currentYear}`);
+        const trimmed = dateStr.trim();
+
+        // Handle short format "9 Dec" or "20th Jun" (no year)
+        const shortMatch = trimmed.match(/^(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)$/);
+        if (shortMatch) {
+            const parsed = new Date(`${shortMatch[2]} ${shortMatch[1]}, ${currentYear}`);
             if (!isNaN(parsed.getTime())) return parsed;
         }
 
-        console.warn(`[TrophyService] Could not parse date: "${dateStr}", using current date`);
+        // Try direct parsing (ISO 8601, "March 2, 2025", etc.)
+        const direct = new Date(trimmed);
+        if (!isNaN(direct.getTime()) && direct.getFullYear() >= 2020) return direct;
+
+        // If direct parse gave an old year, re-parse with current year
+        if (!isNaN(direct.getTime())) {
+            const withYear = new Date(direct);
+            withYear.setFullYear(currentYear);
+            return withYear;
+        }
+
         return new Date();
     }
 

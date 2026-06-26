@@ -85,6 +85,7 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
                     this.coinTotal = response.history.reduce((s: number, i: CoinHistoryItem) => s + i.amount, 0);
                 }
                 this.coinItems = response?.history ? this.mapHistoryToCoinItems(response.history) : [];
+                this.groupedCoinItems = this.buildGroupedItems();
                 this.isLoading = false;
                 this.startRollerAnimation();
             },
@@ -123,7 +124,9 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
 
     // ── Grouping ──────────────────────────────────────────────────────────────
 
-    get groupedCoinItems(): DayGroup[] {
+    groupedCoinItems: DayGroup[] = [];
+
+    private buildGroupedItems(): DayGroup[] {
         const sorted = [...this.coinItems].sort((a, b) => b.date.getTime() - a.date.getTime());
         const groups = new Map<string, CoinItem[]>();
 
@@ -164,18 +167,19 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
 
     // ── Type helpers ──────────────────────────────────────────────────────────
 
-    getTypeIcon(type: string): string {
+    getTypeLetter(type: string): string {
         switch (type) {
-            case 'DAILY_LOGIN_BONUS':       return 'assets/Icons-Neutral/Icons-Coins.png';
-            case 'HABIT_COMPLETION':        return 'assets/Icons-Neutral/Icon-Streak.png';
-            case 'TASK_COMPLETION':         return 'assets/Icons-Neutral/Icon-Calendar.png';
-            case 'LESSON_COMPLETED':        return 'assets/Icons-Neutral/Icon-Content-Articles.png';
-            case 'COURSE_COMPLETED':        return 'assets/Icons-Neutral/Icons-Coins.png';
-            case 'ARTICLE_READ':            return 'assets/Icons-Neutral/Icon-Content-Articles.png';
-            case 'CHALLENGE_BATCH_REWARD':  return 'assets/Icons-Neutral/Icons-Coins.png';
-            case 'STREAK_7DAY_BONUS':       return 'assets/Icons-Neutral/Icon-Streak.png';
-            case 'STREAK_RESTORE':          return 'assets/Icons-Neutral/Icon-Streak.png';
-            default:                        return 'assets/Icons-Neutral/Icons-Coins.png';
+            case 'DAILY_LOGIN_BONUS':       return 'D';
+            case 'HABIT_COMPLETION':        return 'H';
+            case 'TASK_COMPLETION':         return 'T';
+            case 'LESSON_COMPLETED':        return 'L';
+            case 'COURSE_COMPLETED':        return 'C';
+            case 'ARTICLE_READ':            return 'A';
+            case 'CHALLENGE_BATCH_REWARD':  return 'C';
+            case 'REFERRAL_BONUS':          return 'R';
+            case 'STREAK_7DAY_BONUS':       return 'S';
+            case 'STREAK_RESTORE':          return 'B';
+            default:                        return 'B';
         }
     }
 
@@ -253,6 +257,14 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
         return value
             .replace(/^coins\s+earned\s+for\s+reading\s*:?\s*/i, '')
             .trim();
+    }
+
+    trackByGroup(_: number, group: DayGroup): string {
+        return group.dateLabel;
+    }
+
+    trackByItem(_: number, item: CoinItem): number {
+        return item.id;
     }
 
     onThumbError(item: CoinItem): void {

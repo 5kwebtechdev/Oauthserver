@@ -96,10 +96,11 @@
     }
 }
 
-// Selected state for True/False buttons
-.answers-list superme-button.selected {
-    border-color: #4CAF50;
-    background-color: #E8F5E9;
+// Selected state (accent color before checking)
+:host ::ng-deep .button.white-black.selected:not(.correct):not(.incorrect) {
+    border: 2px solid #90214D !important;
+    background: linear-gradient(135deg, rgba(144, 33, 77, 0.12) 0%, rgba(205, 53, 120, 0.10) 100%) !important;
+    background-color: rgba(144, 33, 77, 0.10) !important;
 }
 
 // Visual options grid
@@ -138,8 +139,8 @@
 }
 
 .visual-option.selected {
-    border-color: #4CAF50;
-    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.18);
+    border-color: #90214D;
+    box-shadow: 0 0 0 3px rgba(144, 33, 77, 0.15);
 }
 
 .visual-option-image {
@@ -267,8 +268,8 @@
 }
 
 .selected-option {
-    border: 1px solid #4CAF50 !important;
-    background: rgba(76, 175, 80, 0.20) !important;
+    border: 2px solid #90214D !important;
+    background: rgba(144, 33, 77, 0.10) !important;
 }
 
 @keyframes slideUp {
@@ -319,8 +320,8 @@
 }
 
 .selected-option {
-    border: 1px solid #4CAF50 !important;
-    background: rgba(76, 175, 80, 0.20) !important;
+    border: 2px solid #90214D !important;
+    background: rgba(144, 33, 77, 0.10) !important;
 }
 
 @keyframes slideUp {

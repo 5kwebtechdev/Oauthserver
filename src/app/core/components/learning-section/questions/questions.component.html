@@ -56,17 +56,24 @@
             <ng-container
                 *ngIf="!questions[currentQuestionIndex].type || questions[currentQuestionIndex].type === 'mcq'">
                 <superme-button *ngFor="let option of questions[currentQuestionIndex].options" type="white-black"
-                    [text]="option" (click)="selectAnswer(option)" [correct]="selectedOption === option">
+                    [text]="option" (click)="selectAnswer(option)"
+                    [selected]="selectedOption === option && !answerChecked"
+                    [correct]="answerChecked && option === correctAnswer"
+                    [incorrect]="answerChecked && selectedOption === option && option !== correctAnswer">
                 </superme-button>
             </ng-container>
 
             <!-- True/False Options -->
             <ng-container *ngIf="questions[currentQuestionIndex].type === 'true-false'">
                 <superme-button type="white-black" text="True" (click)="selectAnswer('True')"
-                    [correct]="selectedOption === 'True'">
+                    [selected]="selectedOption === 'True' && !answerChecked"
+                    [correct]="answerChecked && 'True' === correctAnswer"
+                    [incorrect]="answerChecked && selectedOption === 'True' && 'True' !== correctAnswer">
                 </superme-button>
                 <superme-button type="white-black" text="False" (click)="selectAnswer('False')"
-                    [correct]="selectedOption === 'False'">
+                    [selected]="selectedOption === 'False' && !answerChecked"
+                    [correct]="answerChecked && 'False' === correctAnswer"
+                    [incorrect]="answerChecked && selectedOption === 'False' && 'False' !== correctAnswer">
                 </superme-button>
             </ng-container>
 

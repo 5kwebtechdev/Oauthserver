@@ -69,6 +69,10 @@ export class SupermeButtonComponent {
 
   @Input({ transform: booleanAttribute })
   @CoerceBoolean()
+  selected = false;
+
+  @Input({ transform: booleanAttribute })
+  @CoerceBoolean()
   correct = false;
 
   @Input({ transform: booleanAttribute })
@@ -88,6 +92,7 @@ export class SupermeButtonComponent {
       ...(this.type ? { [this.type]: true } : {}),
       [this.size]: true,
       disabled: this.disabled,
+      selected: this.selected,
       correct: this.correct,
       incorrect: this.incorrect
     };
