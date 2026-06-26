@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
@@ -18,7 +18,7 @@ import { of } from 'rxjs';
   templateUrl: './academy-course.component.html',
   styleUrls: ['./academy-course.component.scss'],
 })
-export class AcademyCourseComponent implements OnChanges, OnInit {
+export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
   @Input() course: CourseCard | null = null;
 
   @Output() courseOpen = new EventEmitter<CourseCard>();
@@ -28,6 +28,13 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
 
   // If the user has an in-progress lesson, index of that lesson in `lessons`; null when none
   resumeLessonIndex: number | null = null;
+  // Accordion: which lesson row is currently expanded (shows CTA button)
+  expandedLessonIndex: number | null = null;
+  // Which locked lesson is currently showing the "complete previous" banner
+  lockedBannerIndex: number | null = null;
+  private lockedBannerTimeout: any;
+  // Tracks lessons the user explicitly started in this session (guards against backend ONGOING side-effect on GET)
+  private sessionStartedIds = new Set<number>();
   // API response data
   courseDetail: CourseDetailResponse | null = null;
   isLoadingCourse = false;
@@ -109,8 +116,9 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
         { title: '3. Set Spending Limits', desc: 'Find out how to set and stick to spending limits.', time: 'Text-based • 3 mins', image: this.fallbackLessonImages[2], isCompleted: false, isLocked: true },
         { title: '4. Save for Your Goals', desc: 'See how to save money toward your goals.', time: 'Text-based • 4 mins', image: this.fallbackLessonImages[3], isCompleted: false, isLocked: true },
       ];
-      // demo/static content: no resume index by default
+      // demo/static content: auto-expand first lesson
       this.resumeLessonIndex = null;
+      this.expandedLessonIndex = 0;
       return;
     }
 
@@ -125,6 +133,7 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
       lessonId: undefined
     }));
     this.resumeLessonIndex = null;
+    this.expandedLessonIndex = 0;
   }
 
   /**
@@ -188,23 +197,28 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
       image: this.convertGoogleDriveUrl(lesson.thumbnailUrl, this.getFallbackLessonImage(index)),
       coins: typeof lesson.coins === 'number' ? lesson.coins : fallbackPerLesson,
       lessonId: lesson.id,
-      isCompleted: !!lesson.isCompleted,
+      // Derive completion from lessonStatus ('COMPLETED') or the isCompleted boolean — whichever is set
+      isCompleted: !!lesson.isCompleted || lesson.lessonStatus === 'COMPLETED' || lesson.status === 'COMPLETED',
       isLocked: !!lesson.isLocked,
-      // API recently moved the status field to `lessonStatus` — preserve either
       lessonStatus: lesson.lessonStatus ?? lesson.status ?? null,
       status: lesson.status ?? lesson.lessonStatus ?? null
     }));
-    // Use continueLessonId from API for accurate resume position
+    // Use continueLessonId from API for accurate resume position.
+    // "Continue" banner only shows when the course has been actively started.
     if (this.courseDetail?.isCourseCompleted) {
+      this.resumeLessonIndex = null;
+    } else if (this.courseDetail?.progressStatus === 'NOT_STARTED') {
+      // Fresh course — all lessonStatus values are 'NOT_STARTED', no banner needed
       this.resumeLessonIndex = null;
     } else if (this.courseDetail?.continueLessonId != null) {
       const idx = this.lessons.findIndex(l => l.lessonId === this.courseDetail!.continueLessonId);
       this.resumeLessonIndex = idx >= 0 ? idx : null;
     } else {
-      // Fallback: first accessible non-completed lesson
-      const firstIdx = apiLessons.findIndex(l => !l.isCompleted && !l.isLocked);
-      this.resumeLessonIndex = firstIdx >= 0 ? firstIdx : null;
+      this.resumeLessonIndex = null;
     }
+
+    // Auto-expand: resume lesson if set, otherwise first lesson
+    this.expandedLessonIndex = this.resumeLessonIndex ?? 0;
   }
 
   /**
@@ -276,15 +290,45 @@ export class AcademyCourseComponent implements OnChanges, OnInit {
     return difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase();
   }
 
-  isLessonInProgress(lesson: { lessonStatus?: string | null; status?: string | null }): boolean {
+  isLessonInProgress(lesson: { lessonId?: number; lessonStatus?: string | null; status?: string | null }): boolean {
+    // User explicitly started this lesson in the current session → show "Continue" immediately
+    // (covers the window before the API reflects the new status)
+    if (lesson.lessonId != null && this.sessionStartedIds.has(lesson.lessonId)) {
+      return true;
+    }
     const s = lesson.lessonStatus ?? lesson.status ?? null;
-    return s === 'ONGOING' || s === 'PENDING';
+    // Backend statuses: 'NOT_STARTED' → Start Lesson, 'ONGOING' → Continue, 'COMPLETED' → Read Again
+    return s === 'ONGOING';
+  }
+
+  toggleLesson(index: number): void {
+    const lesson = this.lessons[index];
+    if (!lesson) return;
+
+    if (lesson.isLocked) {
+      // Show the locked notice banner; auto-dismiss after 3 s
+      clearTimeout(this.lockedBannerTimeout);
+      this.lockedBannerIndex = index;
+      this.lockedBannerTimeout = setTimeout(() => { this.lockedBannerIndex = null; }, 3000);
+      return;
+    }
+
+    this.lockedBannerIndex = null;
+    clearTimeout(this.lockedBannerTimeout);
+    // Toggle — collapse if already open, otherwise expand
+    this.expandedLessonIndex = this.expandedLessonIndex === index ? null : index;
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.lockedBannerTimeout);
   }
 
   onStartLesson(index: number): void {
     if (!this.course) return;
     const lesson = this.lessons[index];
     if (!lesson?.lessonId) return;
+    // Record that the user explicitly started this lesson so we can show "Continue" on return
+    this.sessionStartedIds.add(lesson.lessonId);
     this.openChaptersModal(index).catch(err => console.error('Failed opening lessons modal', err));
   }
 

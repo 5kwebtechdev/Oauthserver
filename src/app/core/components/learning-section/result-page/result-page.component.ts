@@ -91,6 +91,7 @@ export class ResultPageComponent implements OnInit, OnDestroy {
       this.newlyEarnedBadges = this.submissionResult.newlyEarnedBadges || [];
       this.badgeCelebrationMessage = this.submissionResult.badgeCelebrationMessage || '';
       this.badges = Array.isArray(this.submissionResult.badges) ? this.submissionResult.badges : [];
+      console.log('[ResultPage] badges from API:', JSON.stringify(this.badges, null, 2));
     } else {
       console.warn('No submission result found in router state');
     }
@@ -123,27 +124,59 @@ export class ResultPageComponent implements OnInit, OnDestroy {
   }
 
 
-  getBadgeIconUrl(icon: string): string {
-    if (!icon) return 'assets/Icons-Neutral/Icon-Trophy.png';
-    if (icon.startsWith('http')) return icon;
-    // Strip /v1 to build domain-root URL: https://api.supermeapp.com/badges/quiz_ace.png
-    const base = environment.apiUrl.replace(/\/v1\/?$/, '');
-    return base + icon;
+  private readonly BADGE_ICON_MAP: Readonly<Record<string, string>> = {
+    'Coin Collector':       'assets/Icons-Neutral/Icon-Badge-CoinCollector.png',
+    'Quiz Ace':             'assets/Icons-Neutral/Icon-Badge-QuizAce.png',
+    'Pet Collector':        'assets/Icons-Neutral/Icon-Badge-PetCollector.png',
+    'Content Creator':      'assets/Icons-Neutral/Icon-Badge-ContentCreator.png',
+    'Knowledge Seeker':     'assets/Icons-Neutral/Icon-Badge-KnowledgeSeeker.png',
+    'Habit Master':         'assets/Icons-Neutral/Icon-Badge-HabitMaster.png',
+    'Daily Champion':       'assets/Icons-Neutral/Icon-Badge-DailyChampion.png',
+    'Feature Explorer':     'assets/Icons-Neutral/Icon-Badge-FeatureExploerer.png',
+    'Puzzle Master':        'assets/Icons-Neutral/Icon-Badge-PuzzleMaster.png',
+    'Pet Stylist':          'assets/Icons-Neutral/Icon-Badge-PetStylist.png',
+    'Task Terminator':      'assets/Icons-Neutral/Icon-Badges-TaskTerminator.png',
+    'Learning Enthusiast':  'assets/Icons-Neutral/Icon-Badge-LearningEnthusiast.png',
+    'Social Star':          'assets/Icons-Neutral/Icon-Badge-SocialStar.png',
+    'Streak Keeper':        'assets/Icons-Neutral/Icon-Badge-StreakKeeper.png'
+  };
+
+  getBadgeIconUrl(badge: any): string {
+    const title = badge?.title || badge?.name || '';
+    return this.BADGE_ICON_MAP[title] || 'assets/Icons-Neutral/Icon-Trophy.png';
   }
 
-  onBadgeImageError(event: Event, badge: any): void {
-    const img = event.target as HTMLImageElement;
-    // Try the /v1 variant before falling back to local asset
-    const v1Url = environment.apiUrl.replace(/\/?$/, '') + badge.icon;
-    if (img.src !== v1Url) {
-      img.src = v1Url;
-    } else {
-      img.src = 'assets/Icons-Neutral/Icon-Trophy.png';
-    }
+  onBadgeImageError(event: Event, _badge: any): void {
+    (event.target as HTMLImageElement).src = 'assets/Icons-Neutral/Icon-Trophy.png';
+  }
+
+  // Returns true if the badge was earned — tries multiple boolean field names
+  isBadgeEarned(badge: any): boolean {
+    return !!(badge?.isEarned ?? badge?.earned ?? badge?.isUnlocked ?? badge?.unlocked ?? false);
+  }
+
+  // Returns the green celebration/motivation text shown below the description
+  getBadgeCelebrationText(badge: any): string {
+    return badge?.celebrationMessage
+      || badge?.celebrationText
+      || badge?.motivationalText
+      || badge?.motivationMessage
+      || badge?.encouragementText
+      || badge?.startMessage
+      || badge?.progressMessage
+      || '';
+  }
+
+  // Returns the text shown when a badge is earned ("Achievement Unlocked!" line)
+  getBadgeAchievementText(badge: any): string {
+    return badge?.achievementText
+      || badge?.achievementMessage
+      || badge?.unlockedText
+      || 'Achievement Unlocked!';
   }
 
   getBadgeCompletionPercent(badge: any): number {
-    if (badge.isEarned) return 100;
+    if (this.isBadgeEarned(badge)) return 100;
     if (!badge.target || badge.target <= 0) return 0;
     return Math.min(100, Math.round((badge.progress / badge.target) * 100));
   }

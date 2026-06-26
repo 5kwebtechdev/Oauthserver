@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChildren, QueryList, ElementRef, AfterViewInit } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
@@ -18,7 +18,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'edit-profile',
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, SupermeNavigatorComponent, SupermeInputsModule, SupermeButtonComponent, ProfileEditInputComponent],
+  imports: [CommonModule, IonicModule, FormsModule, ReactiveFormsModule, SupermeNavigatorComponent, SupermeInputsModule, SupermeButtonComponent, ProfileEditInputComponent],
   templateUrl: './edit-profile.component.html',
   styleUrls: ['./edit-profile.component.scss']
 })
@@ -29,7 +29,16 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   showCountryCodeModal = false;
   selectedCountry!: Country;
   countries: Country[] = [];
+  countrySearch: string = '';
   private subscription = new Subscription();
+
+  get filteredCountries(): Country[] {
+    const q = this.countrySearch.trim().toLowerCase();
+    if (!q) return this.countries;
+    return this.countries.filter(c =>
+      c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
+    );
+  }
 
   // Loading state
   isSubmitting = false;
@@ -724,7 +733,13 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     }
   }
 
+  openCountryCodeModal(): void {
+    this.countrySearch = '';
+    this.showCountryCodeModal = true;
+  }
+
   closeCountryCodeModal(): void {
+    this.countrySearch = '';
     this.showCountryCodeModal = false;
   }
 

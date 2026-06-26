@@ -292,7 +292,27 @@
 
 <!-- activity-task-card -->
 <div *ngIf="mode === 'single'" class="container w-full h-full p-0">
+  <!-- Swipe backdrop: tapping it closes the reveal -->
+  <div *ngIf="isSwipedOpen" class="swipe-backdrop" (click)="closeSwipe()"></div>
+  <div class="swipe-container"
+    (touchstart)="onSwipeStart($event)"
+    (touchmove)="onSwipeMove($event)"
+    (touchend)="onSwipeEnd()">
+    <!-- Delete action revealed on swipe-left -->
+    <div class="swipe-delete-action" [style.width.px]="DELETE_REVEAL_WIDTH">
+      <button class="swipe-delete-btn" (click)="openDeletePopup()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+          <path d="M10 11v6M14 11v6"></path>
+          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+        </svg>
+        <span>Delete</span>
+      </button>
+    </div>
   <div class="habit-wrapper"
+    [style.transform]="'translateX(-' + swipeOffset + 'px)'"
+    [style.transition]="swipeTracking ? 'none' : 'transform 0.25s ease'"
     [ngClass]="{'expanded': expanded, 'isRunningLate': isRunningLate,'missedTime': missedTime, 'task': habit?.type === 'tasks'}">
     <div class="habit-header-container clickable" (tap)="toggle()" long-press [delay]="1500" (press)="onLongPress()">
       <div class="container w-full p-0">
@@ -341,7 +361,7 @@
               <img class="score p-r-0" src="assets/Icons-Neutral/Icon-Streak.png" alt="">
               <p class="score p-l-0">{{getStreak()}}</p>
             </div>
-            <div class="single-point-container">
+            <div class="single-point-container" *ngIf="getCoinReward() > 0">
               <img class="score" src="assets/Icons-Neutral/Icons-Coins.png" alt="" style="width:24px;height:auto;">
               <p class="score p-l-0">{{getCoinReward()}}</p>
             </div>
@@ -375,6 +395,7 @@
       </div>
     </div>
   </div>
+  </div><!-- end swipe-container -->
 </div>
 
 <!-- <app-superme-popup-alert #longPressAlert title="DReady to Start?" message="You're about to begin this habit! "
@@ -396,3 +417,7 @@
 <app-superme-popup [config]="coinCapPopupConfig" [isVisible]="showCoinCapPopup"
   (primaryAction)="handleCoinCapConfirmPrimary()" (secondaryAction)="handleCoinCapConfirmSecondary()"
   (closeAction)="closeCoinCapPopup()" (backdropClick)="closeCoinCapPopup()"></app-superme-popup>
+
+<app-superme-popup [config]="deletePopupConfig" [isVisible]="showDeletePopup"
+  (primaryAction)="handleDeleteCancel()" (secondaryAction)="handleDeleteConfirm()"
+  (closeAction)="closeDeletePopup()" (backdropClick)="closeDeletePopup()"></app-superme-popup>

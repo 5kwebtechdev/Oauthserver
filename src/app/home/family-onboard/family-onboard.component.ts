@@ -85,7 +85,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             familyName: ['', [
                 Validators.required,
                 Validators.minLength(2),
-                Validators.maxLength(30)
+                Validators.maxLength(10)
             ]]
         });
 

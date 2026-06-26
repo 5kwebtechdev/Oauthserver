@@ -128,7 +128,8 @@ export class ReferFriendComponent implements OnInit, OnDestroy {
   }
 
   private buildShareMessage(): string {
-    return `🎁 I am gifting you 100 bonus coins on SuperMe App.\n\nManage your time, build habits that last and learn skills and achieve your goals - all while earning rewards!!!\n\nSuper App for Super You: ${this.referralCode}\n\n📲 Hurry up and download now to claim free coins before they expire\n${this.mobileAppLink}`;
+    const deepLink = `${this.getReferralBaseUrl()}?code=${encodeURIComponent(this.referralCode)}`;
+    return `🎁 I am gifting you 100 bonus coins on SuperMe App.\n\nManage your time, build habits that last and learn skills and achieve your goals - all while earning rewards!!!\n\n📲 Click below to join & your bonus coins will be added automatically!\n${deepLink}\n\n(Already have the app? Use code: ${this.referralCode})`;
   }
 
   private getLoggedInUserName(): string {

@@ -47,7 +47,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   public showCountryCodeModal = false;
   public selectedCountry: Country;
   public countries: Country[] = [];
+  public countrySearch: string = '';
   private subscription = new Subscription();
+
+  get filteredCountries(): Country[] {
+    const q = this.countrySearch.trim().toLowerCase();
+    if (!q) return this.countries;
+    return this.countries.filter(c =>
+      c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
+    );
+  }
 
   // OTP related properties
   public otpDigits: string[] = ['', '', '', ''];
@@ -186,6 +195,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   ngOnInit(): void {
     // Safety: ensure any stuck loaders from navigation are cleared immediately
     this.loadingService.forceHide();
+
+    // Auto-fill referral code if came via deep link
+    try {
+      const deepLinkCode = sessionStorage.getItem('referralCode');
+      if (deepLinkCode && deepLinkCode.length > 0) {
+        this.referralCode = deepLinkCode.toUpperCase();
+        this.showReferral = true;
+      }
+    } catch (e) {}
 
     // Defensive: ensure picker does not open automatically on init
     this.openBirthdayPicker = false;
@@ -903,11 +921,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   openCountryCodeModal(): void {
     if (this.loginMode === 'phone') {
+      this.countrySearch = '';
       this.showCountryCodeModal = true;
     }
   }
 
   closeCountryCodeModal(): void {
+    this.countrySearch = '';
     this.showCountryCodeModal = false;
   }
 

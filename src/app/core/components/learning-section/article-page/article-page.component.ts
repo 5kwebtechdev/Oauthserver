@@ -8,6 +8,7 @@ import { SupermeButtonComponent } from '../../superme-button/superme-button.comp
 import { SupermePopupComponent, SupermePopupConfig } from '../../superme-popup/superme-popup.component';
 import { LearningService } from 'src/app/core/services/learning.service';
 import { BadgePopupService } from 'src/app/core/services/badge-popup.service';
+import { PetAgeService } from 'src/app/core/services/pet-age.service';
 import { Article } from 'src/app/core/models/learning.models';
 
 @Component({
@@ -68,7 +69,8 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private learningService: LearningService,
     public router: Router,
-    private badgePopupService: BadgePopupService
+    private badgePopupService: BadgePopupService,
+    private petAgeService: PetAgeService
   ) { }
 
   get isArticleRead(): boolean {
@@ -110,6 +112,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
         console.log('Article marked as read response:', res);
         this.isMarking = false;
         this.showMarkPopup = false;
+        this.petAgeService.recordActivity('articles');
         this.badgePopupService.check();
         this.router.navigate(['/authed/content']);
       },

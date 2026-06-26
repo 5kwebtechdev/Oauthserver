@@ -1,20 +1,49 @@
 import { Injectable } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd, NavigationStart } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { Location } from '@angular/common';
 import { NavController } from '@ionic/angular';
 
 /**
- * Simple navigation service that tracks page history using sessionStorage.
- * This ensures the back button always follows the exact navigation flow.
+ * Tracks page history in sessionStorage and provides consistent back navigation.
+ *
+ * Key design:
+ * - Every forward NavigationEnd pushes the destination URL.
+ * - Every back navigation (ours or a component's location.back() / window.history.back())
+ *   must NOT re-push the destination, or the history grows incorrectly and the next
+ *   back press goes forward.
+ * - We detect external back navigation via NavigationStart.navigationTrigger === 'popstate'.
  */
 @Injectable({ providedIn: 'root' })
 export class NavigationService {
   private readonly STORAGE_KEY = 'nav_history';
   private readonly MAX_HISTORY = 50;
 
-  constructor(private router: Router, private location: Location, private navCtrl: NavController) {
+  // True while we are in the middle of a back navigation so pushUrl is a no-op.
+  private isGoingBack = false;
+
+  constructor(
+    private router: Router,
+    private location: Location,
+    private navCtrl: NavController
+  ) {
     this.initHistory();
+
+    // Detect external back navigation (location.back(), window.history.back(), navCtrl.back()).
+    // When a popstate fires, the current page is leaving — pop it from our history so that the
+    // subsequent NavigationEnd lands on the already-correct top entry.
+    this.router.events
+      .pipe(filter((e): e is NavigationStart => e instanceof NavigationStart))
+      .subscribe((event: NavigationStart) => {
+        if (event.navigationTrigger === 'popstate') {
+          const history = this.getStoredHistory();
+          if (history.length > 0) history.pop();
+          this.saveHistory(history);
+          this.isGoingBack = true;
+        }
+      });
+
+    // Track every forward navigation.
     this.router.events
       .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
@@ -22,6 +51,8 @@ export class NavigationService {
         this.pushUrl(url);
       });
   }
+
+  // ─── Private helpers ────────────────────────────────────────────────────────
 
   private initHistory(): void {
     if (!sessionStorage.getItem(this.STORAGE_KEY)) {
@@ -42,86 +73,86 @@ export class NavigationService {
   }
 
   private pushUrl(url: string): void {
-    const history = this.getStoredHistory();
-    // Don't add duplicate consecutive entries
-    if (history.length === 0 || history[history.length - 1] !== url) {
-      history.push(url);
-      // Keep history size limited
-      if (history.length > this.MAX_HISTORY) {
-        history.shift();
-      }
-      this.saveHistory(history);
+    if (this.isGoingBack) {
+      // Back navigation already adjusted the history — don't add the destination again.
+      this.isGoingBack = false;
+      return;
     }
+    const history = this.getStoredHistory();
+    // Deduplicate consecutive identical entries (e.g. guard redirects to same page).
+    if (history.length > 0 && history[history.length - 1] === url) return;
+    history.push(url);
+    if (history.length > this.MAX_HISTORY) history.shift();
+    this.saveHistory(history);
   }
 
+  private doNavigateBack(url: string): void {
+    this.isGoingBack = true;
+    this.navCtrl.navigateBack(url).catch(() => {
+      // navCtrl failed — try plain router as fallback.
+      this.router.navigateByUrl(url).catch(() => {
+        // Nothing worked — reset flag so future pushes work normally.
+        this.isGoingBack = false;
+      });
+    });
+  }
+
+  // ─── Public API ─────────────────────────────────────────────────────────────
+
   /**
-   * Navigate back to the previous page in history.
-   * Uses the exact navigation flow recorded in sessionStorage.
+   * Navigate back one page.
+   * Pops the current entry and navigates to what is now the top of the stack.
    */
   back(): void {
     const history = this.getStoredHistory();
-    
+
     if (history.length > 1) {
-      // Remove current page
-      history.pop();
-      // Get and remove previous page
-      const previous = history.pop();
+      history.pop(); // remove current page
+      const previous = history[history.length - 1]; // peek — stays in history
       this.saveHistory(history);
-      
-      if (previous) {
-        this.navCtrl.navigateBack(previous).catch(() => this.location.back());
-        return;
-      }
+      this.doNavigateBack(previous);
+      return;
     }
 
-    // Fallback: use NavController.back() which plays the Ionic back animation
-    this.navCtrl.back();
+    // No recorded history — fall back to browser/Angular Location.
+    this.isGoingBack = true;
+    this.location.back();
   }
 
   /**
-   * Navigate back by N steps (including current). For example, backN(1) behaves like back(),
-   * backN(2) skips the previous entry and navigates to the one before that.
+   * Navigate back N pages.
+   * backN(1) is identical to back(). backN(2) skips one intermediate page.
    */
   backN(steps: number): void {
     if (!steps || steps <= 0) return;
 
     const history = this.getStoredHistory();
-    if (history.length > 0) history.pop();
-
-    for (let i = 1; i < steps; i++) {
-      if (history.length > 0) history.pop();
-      else break;
+    for (let i = 0; i < steps && history.length > 0; i++) {
+      history.pop();
     }
-
-    const target = history.length ? history.pop() : undefined;
+    const target = history.length > 0 ? history[history.length - 1] : null;
     this.saveHistory(history);
 
     if (target) {
-      this.navCtrl.navigateBack(target).catch(() => this.location.back());
-      return;
+      this.doNavigateBack(target);
+    } else {
+      this.isGoingBack = true;
+      this.location.back();
     }
-
-    this.navCtrl.back();
   }
 
-  /**
-   * Get a copy of the navigation history
-   */
+  /** Return a shallow copy of the recorded history. */
   getHistory(): string[] {
     return [...this.getStoredHistory()];
   }
 
-  /**
-   * Get the previous URL without navigating
-   */
+  /** Return the URL one step before the current page without navigating. */
   getPreviousUrl(): string | null {
     const history = this.getStoredHistory();
     return history.length > 1 ? history[history.length - 2] : null;
   }
 
-  /**
-   * Clear the navigation history (useful on logout)
-   */
+  /** Clear history — call on logout. */
   clearHistory(): void {
     sessionStorage.removeItem(this.STORAGE_KEY);
     this.initHistory();

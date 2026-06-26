@@ -78,6 +78,13 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   public currentPetMessage: PetMessage | undefined = undefined;
   public petMood: PetMood | 'anger' = 'happy';
 
+  // ── Home-screen overlays (PRD: bonus coins, daily login, mood prompt, streak milestone) ──
+  activeOverlay: 'bonus-coins' | 'mood-prompt' | 'daily-login' | 'streak-milestone' | null = null;
+  overlayMessage = '';
+  overlayPetMood: PetMood = 'happy';
+  private overlayQueue: Array<'bonus-coins' | 'mood-prompt' | 'daily-login' | 'streak-milestone'> = [];
+  private overlayQueueBuilt = false;
+
   // Recent habits and tasks
   public recentHabits: Habit[] = [];
   public recentTasks: any[] = [];
@@ -165,6 +172,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     // Fetch user stats (coins, streaks, badges, etc.) from backend
     this.loadUserStats();
 
+    // Fallback: show overlays even if stats API is slow (buildOverlayQueue guards against double-run)
+    setTimeout(() => this.buildOverlayQueue(), 2000);
+
     // Check if streak restore is available
     this.checkStreakRestore();
 
@@ -242,8 +252,16 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
               endTimeStamp: start.endTimeStamp,
               type: 'habits',
               status: item.status,
-              tags: item.tags || [],
-              coinReward: item.rewardCoins || item.coinReward || 0,
+              tags: (() => {
+                const raw = Array.isArray(item.tags) && item.tags.length ? item.tags : (item.tag ? [item.tag] : []);
+                return raw.map((t: any) => {
+                  if (!t) return '';
+                  if (typeof t === 'string') return t;
+                  if (typeof t === 'object') return (t.value || t.name || t.text || t.title || '').toString().trim();
+                  return '';
+                }).filter(Boolean);
+              })(),
+              coinReward: Number(item.coinReward ?? item.rewardCoins ?? item.reward_coins ?? item.rewardsCoins ?? (item.rewards?.coins ?? item.rewards?.rewardCoins) ?? item.coins ?? 0),
               // keep routine info so activity-card can render routine icon
               routine: item.routine ?? item.selectedRoutine ?? item.selected_routine ?? null,
               createdAt: item.createdAt ? new Date(item.createdAt) : new Date()
@@ -289,8 +307,16 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
               endTimeStamp: timestamps.endTimeStamp,
               type: 'tasks',
               status: item.status,
-              tags: item.tags || [],
-              coinReward: item.rewardCoins || item.coinReward || 0,
+              tags: (() => {
+                const raw = Array.isArray(item.tags) && item.tags.length ? item.tags : (item.tag ? [item.tag] : []);
+                return raw.map((t: any) => {
+                  if (!t) return '';
+                  if (typeof t === 'string') return t;
+                  if (typeof t === 'object') return (t.value || t.name || t.text || t.title || '').toString().trim();
+                  return '';
+                }).filter(Boolean);
+              })(),
+              coinReward: Number(item.coinReward ?? item.rewardCoins ?? item.reward_coins ?? item.rewardsCoins ?? (item.rewards?.coins ?? item.rewards?.rewardCoins) ?? item.coins ?? 0),
               // preserve routine info when present
               routine: item.routine ?? item.selectedRoutine ?? item.selected_routine ?? null,
               createdAt: item.createdAt ? new Date(item.createdAt) : new Date()
@@ -388,6 +414,9 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
             days: this.userDays,
             badges: this.userBadges
           });
+
+          // Build overlay queue now that we have real streak/coins data
+          this.buildOverlayQueue();
         }
       },
       error: (error) => {
@@ -514,6 +543,99 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       this.loadUserStats();
     }
   }
+
+  // ── Overlay logic ────────────────────────────────────────────────────────────
+
+  private getTodayStr(): string {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  buildOverlayQueue(): void {
+    if (this.overlayQueueBuilt) return;
+    this.overlayQueueBuilt = true;
+
+    const queue: Array<'bonus-coins' | 'mood-prompt' | 'daily-login' | 'streak-milestone'> = [];
+    const today = this.getTodayStr();
+    const bonusShown = !!localStorage.getItem('sm_overlay_bonus_shown');
+    const moodShown  = !!localStorage.getItem('sm_overlay_mood_shown');
+
+    if (!bonusShown) {
+      // First-ever app open (signup day) — show welcome bonus
+      queue.push('bonus-coins');
+    } else {
+      // From Day 2 onwards — daily login coins once per calendar day
+      const lastDate = localStorage.getItem('sm_overlay_daily_date');
+      if (lastDate !== today) {
+        queue.push('daily-login');
+        localStorage.setItem('sm_overlay_daily_date', today);
+      }
+    }
+
+    // Mood prompt shows exactly once (blocking until mood selected)
+    if (!moodShown) {
+      queue.push('mood-prompt');
+    }
+
+    // Streak milestone (every multiple of 7), once per milestone per streak run
+    const streak = this.userStreaks;
+    const lastKnown = parseInt(localStorage.getItem('sm_overlay_last_streak') || '0', 10);
+    if (streak < lastKnown - 1) {
+      // Streak broke — clear milestone history so user can earn them again
+      localStorage.removeItem('sm_overlay_milestones');
+    }
+    localStorage.setItem('sm_overlay_last_streak', String(streak));
+
+    if (streak > 0 && streak % 7 === 0) {
+      const raw = localStorage.getItem('sm_overlay_milestones') || '';
+      const shown = raw ? raw.split(',').map(Number) : [];
+      if (!shown.includes(streak)) {
+        shown.push(streak);
+        localStorage.setItem('sm_overlay_milestones', shown.join(','));
+        queue.push('streak-milestone');
+      }
+    }
+
+    this.overlayQueue = queue;
+    this.showNextOverlay();
+  }
+
+  private showNextOverlay(): void {
+    if (!this.overlayQueue.length) { this.activeOverlay = null; return; }
+    const type = this.overlayQueue.shift()!;
+    this.activeOverlay = type;
+
+    const locMap: Record<string, any> = {
+      'bonus-coins':    'bonus-coins-first-time',
+      'mood-prompt':    'set-mood-prompt',
+      'daily-login':    'daily-login-coins',
+      'streak-milestone': 'streak-coins'
+    };
+    const msg = this.petMessagesService.getMessage(locMap[type], { userName: this.userName });
+    this.overlayMessage = msg.message;
+    this.overlayPetMood = msg.mood;
+  }
+
+  onOverlayTap(): void {
+    // Mood-prompt is blocking — only dismiss via mood selection
+    if (this.activeOverlay === 'mood-prompt') return;
+    this.dismissCurrentOverlay();
+  }
+
+  dismissCurrentOverlay(): void {
+    if (this.activeOverlay === 'bonus-coins') {
+      localStorage.setItem('sm_overlay_bonus_shown', '1');
+    }
+    this.showNextOverlay();
+  }
+
+  onOverlayMoodSelected(mood: string): void {
+    this.selectedMood = mood;
+    localStorage.setItem('sm_overlay_mood_shown', '1');
+    this.showNextOverlay();
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
 
   ngOnDestroy(): void {
     // Unregister from global refresh

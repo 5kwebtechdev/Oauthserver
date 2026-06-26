@@ -22,12 +22,12 @@ export class DeepLinkService {
     this.initialized = true;
 
     App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
-      this.handleUrl(event.url);
+      this.handleUrl(event.url, false);
     }).catch(error => console.warn('[DeepLink] Failed to register appUrlOpen listener:', error));
 
     App.getLaunchUrl()
       .then(result => {
-        if (result?.url) this.handleUrl(result.url);
+        if (result?.url) this.handleUrl(result.url, true);
       })
       .catch(() => {});
   }
@@ -55,13 +55,21 @@ export class DeepLinkService {
     return url.toString();
   }
 
-  private handleUrl(rawUrl: string): void {
+  private handleUrl(rawUrl: string, coldStart = false): void {
     const route = this.toInternalRoute(rawUrl);
     if (!route) return;
 
-    this.router.navigateByUrl(route).catch(error => {
-      console.warn('[DeepLink] Navigation failed:', error);
-    });
+    const navigate = () =>
+      this.router.navigateByUrl(route).catch(error => {
+        console.warn('[DeepLink] Navigation failed:', error);
+      });
+
+    if (coldStart) {
+      // Router may not be ready on cold start — wait for Angular to bootstrap
+      setTimeout(navigate, 600);
+    } else {
+      navigate();
+    }
   }
 
   private toInternalRoute(rawUrl: string): string | null {
@@ -82,6 +90,14 @@ export class DeepLinkService {
 
     const path = this.normalizePath(isAllowedSchemeLink ? this.getSchemePath(url) : url.pathname);
     const query = url.search || '';
+
+    if (path === '/referral') {
+      const code = url.searchParams.get('code');
+      if (code) {
+        try { sessionStorage.setItem('referralCode', code.toUpperCase()); } catch (e) {}
+      }
+      return '/home/sign-up?step=0.1';
+    }
 
     if (path.startsWith('/authed/')) {
       return `${path}${query}`;

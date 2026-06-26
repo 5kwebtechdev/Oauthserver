@@ -58,20 +58,21 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
               <ng-container *ngFor="let trophy of g.items">
                 <div class="trophy-row">
                   <div class="trophy-main">
-                    <div class="thumb-circle" [ngClass]="trophy.categoryIconUrl ? 'cat-img' : getCategoryClass(trophy.contentType)" role="img" [attr.aria-label]="trophy.contentType || 'trophy'">
-                      <img *ngIf="trophy.categoryIconUrl"
+                    <div class="thumb-circle" [ngClass]="getThumbClass(trophy)" role="img" [attr.aria-label]="trophy.contentTitle || trophy.contentType || 'trophy'">
+                      <img *ngIf="getThumbSrc(trophy)"
                            class="thumb-img"
-                           [src]="trophy.categoryIconUrl"
-                           [alt]="trophy.contentType || 'trophy'"
+                           [src]="getThumbSrc(trophy)"
+                           [alt]="trophy.contentTitle || trophy.title"
                            (error)="onThumbError($event, trophy)" />
-                      <ng-container *ngIf="!trophy.categoryIconUrl">{{ getCategoryLetter(trophy.contentType) }}</ng-container>
+                      <ng-container *ngIf="!getThumbSrc(trophy)">{{ getCategoryLetter(trophy.contentType) }}</ng-container>
                     </div>
                     <div class="meta">
                       <div class="title">
-                        {{ trophy.title }}
+                        {{ trophy.contentTitle || trophy.title }}
                         <span class="difficulty" [ngClass]="trophy.difficulty">• {{ trophy.difficulty }}</span>
                       </div>
-                      <div class="earned">Earned on {{ formatEarnedOn(trophy.earnedOn) }}</div>
+                      <div class="badge-name" *ngIf="trophy.contentTitle">{{ trophy.title }}</div>
+                      <div class="earned">Earned on {{ formatEarnedOn(trophy.earnedOn, trophy.earnedOnDisplay) }}</div>
                     </div>
                   </div>
 
@@ -380,6 +381,17 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
     .difficulty.Easy { color: #2ecc71; }
     .difficulty.Hard { color: #e74c3c; }
 
+    .badge-name {
+      color: #8B6FA8;
+      font-family: Nunito, sans-serif;
+      font-size: clamp(10px, 2.5vw, 12px);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
     .earned {
       color: #6B656A;
       font-family: Nunito, sans-serif;
@@ -446,9 +458,23 @@ export class TrophyPageComponent implements OnInit, ViewWillEnter {
     });
   }
 
+  getThumbSrc(trophy: Trophy): string | undefined {
+    return trophy.contentThumbnailUrl || trophy.categoryIconUrl || undefined;
+  }
+
+  getThumbClass(trophy: Trophy): string {
+    if (trophy.contentThumbnailUrl || trophy.categoryIconUrl) return 'cat-img';
+    return this.getCategoryClass(trophy.contentType);
+  }
+
   onThumbError(event: Event, trophy: Trophy): void {
-    console.warn('[TrophyPage] image failed to load:', trophy.categoryIconUrl);
-    trophy.categoryIconUrl = undefined;
+    if (trophy.contentThumbnailUrl) {
+      console.warn('[TrophyPage] content thumbnail failed, falling back to category icon:', trophy.contentThumbnailUrl);
+      trophy.contentThumbnailUrl = undefined;
+    } else {
+      console.warn('[TrophyPage] category icon failed to load:', trophy.categoryIconUrl);
+      trophy.categoryIconUrl = undefined;
+    }
   }
 
   getCategoryLetter(contentType?: string): string {
@@ -471,24 +497,12 @@ export class TrophyPageComponent implements OnInit, ViewWillEnter {
     return 'cat-default';
   }
 
-  private getOrdinalSuffix(day: number): string {
-    if (day > 3 && day < 21) return 'th';
-    switch (day % 10) {
-      case 1: return 'st';
-      case 2: return 'nd';
-      case 3: return 'rd';
-      default: return 'th';
-    }
-  }
-
-  formatEarnedOn(date: Date | string | undefined | null): string {
+  formatEarnedOn(date: Date | string | undefined | null, preFormatted?: string): string {
+    if (preFormatted) return preFormatted;
     if (!date) return '';
     const d = (date instanceof Date) ? date : new Date(date);
     if (isNaN(d.getTime())) return '';
-    const day = d.getDate();
-    const suffix = this.getOrdinalSuffix(day);
-    const month = d.toLocaleString('en-US', { month: 'short' });
-    return `${month} ${day}${suffix}`;
+    return d.toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   }
 
   onBack() {

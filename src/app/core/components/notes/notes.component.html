@@ -59,14 +59,15 @@
     </ng-container>
 
     <!-- Draft Cards (if any) - allow multiple drafts stored locally -->
-    <div class="note-card" *ngFor="let d of drafts" (click)="openDraft(d.id)" role="button" tabindex="0">
-      <p class="note-text">{{ d.text }}</p>
-      <div class="note-footer" style="position:relative;">
-        <div>
-          <h3>{{ d.title || 'Untitled' }}</h3>
-          <span class="date">Draft</span>
-        </div>
-        <span class="tag" [ngClass]="primaryTagClassFromTags(d.tags)">{{ (d.tags && d.tags.length) ? d.tags[0] : 'No Tag' }}</span>
+    <div class="note-card note-card--draft" *ngFor="let d of drafts" (click)="openDraft(d.id)" role="button" tabindex="0">
+      <div class="note-card__header">
+        <h3 class="note-card__title">{{ d.title || 'Untitled' }}</h3>
+        <span class="note-card__draft-badge">Draft</span>
+      </div>
+      <p class="note-card__preview">{{ d.text }}</p>
+      <div class="note-card__footer">
+        <span class="note-card__date">Unsaved draft</span>
+        <span class="note-card__tag" [ngClass]="primaryTagClassFromTags(d.tags)" [class.note-card__tag--no-tag]="!(d.tags && d.tags.length)">{{ (d.tags && d.tags.length) ? d.tags[0] : 'No Tag' }}</span>
       </div>
     </div>
 
@@ -87,27 +88,33 @@
           <span>Delete</span>
         </div>
 
-        <!-- Note card (slides left to reveal delete action) -->
+        <!-- Note card -->
         <div class="note-card" [attr.data-swipe-id]="note.id"
              (click)="onNoteCardClick(note)" role="button" tabindex="0">
+
+          <!-- Top row: title + edit button -->
+          <div class="note-card__header">
+            <h3 class="note-card__title">{{ note.title }}</h3>
+            <button class="note-card__edit-btn" type="button" aria-label="Edit note"
+              (click)="editNote(note); $event.stopPropagation()">
+              <img src="assets/icons/edit-icon.svg" alt="" aria-hidden="true">
+            </button>
+          </div>
+
+          <!-- Preview text -->
           <ng-container *ngIf="isList(note.text); else plainText">
-            <ul class="note-text">
+            <ul class="note-card__preview note-card__preview--list">
               <li *ngFor="let item of getList(note)">{{ item }}</li>
             </ul>
           </ng-container>
           <ng-template #plainText>
-            <p class="note-text">{{ note.text }}</p>
+            <p class="note-card__preview">{{ note.text }}</p>
           </ng-template>
 
-          <div class="note-footer" style="position:relative;">
-            <div>
-              <h3>{{ note.title }}</h3>
-              <span class="date">{{ formatDate(note.createdAt) }}</span>
-            </div>
-            <span class="tag" [ngClass]="primaryTagClass(note)">{{ primaryTag(note) }}</span>
-            <div class="edit-back"><img src="assets/icons/edit-icon.svg" alt="Edit" class="note-edit-icon"
-              style="width:16px;height:16px;" aria-hidden="true"
-              (click)="editNote(note); $event.stopPropagation();" /></div>
+          <!-- Bottom row: date + tag -->
+          <div class="note-card__footer">
+            <span class="note-card__date">{{ formatDate(note.createdAt) }}</span>
+            <span class="note-card__tag" [ngClass]="primaryTagClass(note)" [class.note-card__tag--no-tag]="primaryTag(note) === 'No Tag'">{{ primaryTag(note) }}</span>
           </div>
         </div>
       </div>

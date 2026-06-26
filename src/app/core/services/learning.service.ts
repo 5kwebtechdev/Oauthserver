@@ -200,6 +200,61 @@ export class LearningService {
     }
 
     /**
+     * Fetch quizzes from dedicated endpoint
+     */
+    fetchQuizCards(): Observable<LearningCardData[]> {
+        const age = this.getUserAge();
+        const url = age ? `${this.apiUrl}/challenges/quizzes?age=${age}` : `${this.apiUrl}/challenges/quizzes`;
+        return this.http.get<Challenge[]>(url, { headers: this.getHeaders() }).pipe(
+            map(challenges => (challenges || []).map(c => this.transformChallengeToCard(c))),
+            catchError(() => of([]))
+        );
+    }
+
+    /**
+     * Fetch puzzles from dedicated endpoint
+     */
+    fetchPuzzleCards(): Observable<LearningCardData[]> {
+        const age = this.getUserAge();
+        const url = age ? `${this.apiUrl}/challenges/puzzles?age=${age}` : `${this.apiUrl}/challenges/puzzles`;
+        return this.http.get<Challenge[]>(url, { headers: this.getHeaders() }).pipe(
+            map(challenges => (challenges || []).map(c => this.transformChallengeToCard(c))),
+            catchError(() => of([]))
+        );
+    }
+
+    /**
+     * Fetch articles as cards from dedicated endpoint
+     */
+    fetchArticleCards(): Observable<LearningCardData[]> {
+        return this.fetchArticles().pipe(
+            map(articles => articles.map(a => this.transformArticleToCard(a)))
+        );
+    }
+
+    /**
+     * Fetch "For You" feed (all challenges + articles combined) from dedicated endpoints
+     */
+    fetchForYouCards(): Observable<LearningCardData[]> {
+        const age = this.getUserAge();
+        const challengeUrl = age ? `${this.apiUrl}/challenges?age=${age}` : `${this.apiUrl}/challenges`;
+        const articleUrl  = age ? `${this.apiUrl}/articles?age=${age}`   : `${this.apiUrl}/articles`;
+        return new Observable(observer => {
+            Promise.all([
+                this.http.get<Challenge[]>(challengeUrl, { headers: this.getHeaders() }).toPromise(),
+                this.http.get<Article[]>(articleUrl,    { headers: this.getHeaders() }).toPromise()
+            ]).then(([challenges, articles]) => {
+                const cards = [
+                    ...(challenges || []).map(c => this.transformChallengeToCard(c)),
+                    ...(articles   || []).map(a => this.transformArticleToCard(a))
+                ];
+                observer.next(cards);
+                observer.complete();
+            }).catch(() => { observer.next([]); observer.complete(); });
+        });
+    }
+
+    /**
      * Get challenges filtered by category (QUIZ or PUZZLE)
      */
     getChallengesByCategory(category: 'QUIZ' | 'PUZZLE'): Observable<Challenge[]> {

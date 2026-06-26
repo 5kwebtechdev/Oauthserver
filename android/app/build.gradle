@@ -14,7 +14,7 @@ android {
         applicationId "com.superme.app"
         minSdkVersion 26
         targetSdkVersion rootProject.ext.targetSdkVersion   
-        versionCode 25
+        versionCode 26
         versionName "0.0.5"
         manifestPlaceholders = [
             deeplinkHost: envOrProp('DEEPLINK_HOST') ?: 'supermeapp.com',
@@ -96,6 +96,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging'
     debugImplementation 'com.google.firebase:firebase-appcheck-debug'
     implementation 'com.google.android.gms:play-services-auth:21.2.0'
+    implementation 'com.android.installreferrer:installreferrer:2.2'
 }
 
 apply from: 'capacitor.build.gradle'

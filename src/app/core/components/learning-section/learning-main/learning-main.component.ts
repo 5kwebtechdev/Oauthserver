@@ -31,20 +31,41 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
 
   selectedCategory: 'for-you' | 'puzzles' | 'quizzes' | 'articles' | null = 'for-you';
 
-  // Plain arrays — bound directly in the template
-  forYouItems: LearningCardData[] = [];
-  puzzleItems: LearningCardData[] = [];
-  quizItems: LearningCardData[] = [];
+  forYouItems:  LearningCardData[] = [];
+  puzzleItems:  LearningCardData[] = [];
+  quizItems:    LearningCardData[] = [];
   articleItems: LearningCardData[] = [];
-  searchItems: LearningCardData[] = [];
+  searchItems:  LearningCardData[] = [];
 
-  isLoading = false;
+  // Per-tab loading flags
+  loadingForYou   = false;
+  loadingPuzzles  = false;
+  loadingQuizzes  = false;
+  loadingArticles = false;
+
+  // Track which tabs have been fetched at least once
+  private loadedTabs = new Set<string>();
+
   searchKeyword = '';
-  isSearching = false;
-  isListening = false;
+  isSearching   = false;
+  isListening   = false;
 
   private destroy$ = new Subject<void>();
   private recognition: any = null;
+
+  get isLoading(): boolean {
+    return this.loadingForYou || this.loadingPuzzles || this.loadingQuizzes || this.loadingArticles;
+  }
+
+  get activeTabLoading(): boolean {
+    switch (this.selectedCategory) {
+      case 'for-you':  return this.loadingForYou;
+      case 'puzzles':  return this.loadingPuzzles;
+      case 'quizzes':  return this.loadingQuizzes;
+      case 'articles': return this.loadingArticles;
+      default:         return false;
+    }
+  }
 
   constructor(
     private learningService: LearningService,
@@ -53,42 +74,78 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   ) { }
 
   ngOnInit(): void {
-    this.loadData();
+    this.loadTab('for-you');
   }
 
-  ionViewWillEnter(): void { this.loadData(); }
+  ionViewWillEnter(): void {
+    // Refresh current tab when returning to the page
+    this.loadTab(this.selectedCategory ?? 'for-you', true);
+  }
 
-  private loadData(): void {
-    this.isLoading = true;
-    this.forYouItems = [];
-    this.puzzleItems = [];
-    this.quizItems = [];
-    this.articleItems = [];
+  private loadTab(tab: 'for-you' | 'puzzles' | 'quizzes' | 'articles', forceRefresh = false): void {
+    if (!forceRefresh && this.loadedTabs.has(tab)) return;
 
-    // Single call fetches GET /challenges + GET /articles, then filter per tab
-    this.learningService.getAllContent()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (items) => {
-          const all = items || [];
-          // Client-side age-group guard: the API uses ?age= when available,
-          // but filter again here so any items outside the user's group are
-          // excluded even if the server returns them (e.g. when age is unknown)
-          const userAgeGroup = this.getUserAgeGroup();
-          const ageFiltered = userAgeGroup
-            ? all.filter(item => this.itemMatchesAgeGroup(item, userAgeGroup))
-            : all;
-          this.forYouItems  = ageFiltered;
-          this.puzzleItems  = ageFiltered.filter(c => c.type === 'puzzle');
-          this.quizItems    = ageFiltered.filter(c => c.type === 'quiz');
-          this.articleItems = ageFiltered.filter(c => c.type === 'article');
-          if (this.searchKeyword.trim()) {
-            this.updateSearchResults();
-          }
-          this.isLoading = false;
-        },
-        error: () => { this.isLoading = false; }
-      });
+    switch (tab) {
+      case 'for-you':
+        this.loadingForYou = true;
+        this.learningService.fetchForYouCards()
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: items => {
+              this.forYouItems = items;
+              this.loadingForYou = false;
+              this.loadedTabs.add('for-you');
+              if (this.searchKeyword.trim()) this.updateSearchResults();
+            },
+            error: () => { this.loadingForYou = false; }
+          });
+        break;
+
+      case 'puzzles':
+        this.loadingPuzzles = true;
+        this.learningService.fetchPuzzleCards()
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: items => {
+              this.puzzleItems = items;
+              this.loadingPuzzles = false;
+              this.loadedTabs.add('puzzles');
+              if (this.searchKeyword.trim()) this.updateSearchResults();
+            },
+            error: () => { this.loadingPuzzles = false; }
+          });
+        break;
+
+      case 'quizzes':
+        this.loadingQuizzes = true;
+        this.learningService.fetchQuizCards()
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: items => {
+              this.quizItems = items;
+              this.loadingQuizzes = false;
+              this.loadedTabs.add('quizzes');
+              if (this.searchKeyword.trim()) this.updateSearchResults();
+            },
+            error: () => { this.loadingQuizzes = false; }
+          });
+        break;
+
+      case 'articles':
+        this.loadingArticles = true;
+        this.learningService.fetchArticleCards()
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: items => {
+              this.articleItems = items;
+              this.loadingArticles = false;
+              this.loadedTabs.add('articles');
+              if (this.searchKeyword.trim()) this.updateSearchResults();
+            },
+            error: () => { this.loadingArticles = false; }
+          });
+        break;
+    }
   }
 
   ngOnDestroy(): void {
@@ -99,9 +156,8 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
 
   selectCategory(cat: 'for-you' | 'puzzles' | 'quizzes' | 'articles') {
     this.selectedCategory = cat;
-    if (this.isSearching && this.searchKeyword.trim()) {
-      this.updateSearchResults();
-    }
+    this.loadTab(cat, true);
+    if (this.searchKeyword.trim()) this.updateSearchResults();
   }
 
   openForYou() { this.selectCategory('for-you'); }
@@ -255,80 +311,23 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       this.searchItems = [];
       return;
     }
-
-    const userAgeGroup = this.getUserAgeGroup();
     this.isSearching = true;
-    this.searchItems = this.getCurrentCategoryItems().filter(item => {
-      if (userAgeGroup && !this.itemMatchesAgeGroup(item, userAgeGroup)) return false;
-      return this.matchesSearch(item, keyword);
-    });
+    this.searchItems = this.getCurrentCategoryItems().filter(item => this.matchesSearch(item, keyword));
   }
 
   private getCurrentCategoryItems(): LearningCardData[] {
     switch (this.selectedCategory) {
-      case 'puzzles':
-        return this.puzzleItems;
-      case 'quizzes':
-        return this.quizItems;
-      case 'articles':
-        return this.articleItems;
+      case 'puzzles':  return this.puzzleItems;
+      case 'quizzes':  return this.quizItems;
+      case 'articles': return this.articleItems;
       case 'for-you':
-      default:
-        return this.forYouItems;
+      default:         return this.forYouItems;
     }
   }
 
   private matchesSearch(item: LearningCardData, keyword: string): boolean {
-    const searchableText = [
-      item.title,
-      item.description,
-      item.type,
-      item.category,
-      item.subType,
-      item.buttonText,
-      ...(item.tags || [])
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase();
-
-    return searchableText.includes(keyword);
-  }
-
-  private getUserAgeGroup(): string | null {
-    try {
-      const raw = localStorage.getItem('user_data');
-      if (!raw) return null;
-      const profile = JSON.parse(raw);
-      // Prefer the ageGroup field the login response stores directly — avoids
-      // any off-by-one errors from client-side DOB timezone arithmetic
-      if (profile?.ageGroup) return profile.ageGroup as string;
-      // Fall back to calculating from DOB
-      const dob = profile?.dateOfBirth || profile?.dob;
-      if (!dob) return null;
-      const birth = new Date(dob);
-      const today = new Date();
-      let age = today.getFullYear() - birth.getFullYear();
-      const m = today.getMonth() - birth.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-      if (age < 11) return 'BELOW_11';
-      if (age <= 13) return 'AGE_11_TO_13';
-      if (age <= 15) return 'AGE_14_TO_15';
-      if (age <= 17) return 'AGE_16_TO_17';
-      return 'AGE_18_PLUS';
-    } catch {
-      return null;
-    }
-  }
-
-  private itemMatchesAgeGroup(item: LearningCardData, userAgeGroup: string): boolean {
-    const raw = item.rawData as any;
-    if (!raw) return true;
-    // Challenge: ageGroups is an array
-    if (Array.isArray(raw.ageGroups)) return raw.ageGroups.includes(userAgeGroup);
-    // Article: ageGroup is a single string
-    if (raw.ageGroup) return raw.ageGroup === userAgeGroup;
-    return true;
+    return [item.title, item.description, item.type, item.category, item.subType, item.buttonText, ...(item.tags || [])]
+      .filter(Boolean).join(' ').toLowerCase().includes(keyword);
   }
 
   clearSearch(): void {

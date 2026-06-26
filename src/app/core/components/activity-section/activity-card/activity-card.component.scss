@@ -1,4 +1,56 @@
 @use 'sass:color';
+
+// Swipe-to-delete
+.swipe-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+.swipe-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.swipe-delete-action {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: stretch;
+  border-radius: 0 16px 16px 0;
+  overflow: hidden;
+}
+
+.swipe-delete-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  background: #E53935;
+  border: none;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  padding: 0 12px;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  &:active {
+    background: #C62828;
+  }
+}
+
 .day-at-glance-container {
   display: flex;
   flex-direction: column;

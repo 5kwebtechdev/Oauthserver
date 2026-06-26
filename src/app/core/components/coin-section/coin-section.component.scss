@@ -1,3 +1,47 @@
+// ── Keyframe animations ──────────────────────────────────────────────────────
+
+@keyframes coinIconPop {
+    0%   { transform: scale(1) rotate(0deg); }
+    30%  { transform: scale(1.35) rotate(-12deg); }
+    55%  { transform: scale(0.9) rotate(8deg); }
+    75%  { transform: scale(1.12) rotate(-4deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes coinBob {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50%      { transform: translateY(-3px) scale(1.06); }
+}
+
+@keyframes rollerGlow {
+    0%   { filter: drop-shadow(0 0 0 transparent); }
+    35%  { filter: drop-shadow(0 0 14px rgba(255, 220, 80, 0.85)) drop-shadow(0 0 30px rgba(255, 180, 0, 0.4)); }
+    100% { filter: drop-shadow(0 0 0 transparent); }
+}
+
+@keyframes ringBurst {
+    0%   { transform: translateY(-50%) scale(0.5); opacity: 0.7; border-width: 3px; }
+    100% { transform: translateY(-50%) scale(2.8); opacity: 0; border-width: 1px; }
+}
+
+@keyframes itemSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(28px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes countBounceIn {
+    0%   { opacity: 0; transform: scale(0.4); }
+    60%  { opacity: 1; transform: scale(1.2); }
+    80%  { transform: scale(0.92); }
+    100% { transform: scale(1); }
+}
+
 // ── Header card ─────────────────────────────────────────────────────────────
 .coin-card {
     width: 100%;
@@ -36,6 +80,7 @@
 .coins {
     display: flex;
     align-items: center;
+    position: relative;
 
     .coin-icon {
         width: 40px;
@@ -50,6 +95,68 @@
         font-weight: 700;
         line-height: 140%;
     }
+
+    // While digits are rolling, bob the coin icon
+    &--rolling .coin-icon {
+        animation: coinBob 0.35s ease-in-out infinite;
+    }
+
+    // When rolling finishes: pop the coin icon + glow the digits + ring burst
+    &--done .coin-icon {
+        animation: coinIconPop 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    &--done .coin-value-roller {
+        animation: rollerGlow 1.4s ease-out 0.15s both;
+    }
+
+    &--done::after {
+        content: '';
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 215, 0, 0.55);
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%) scale(0.5);
+        animation: ringBurst 0.65s ease-out both;
+        pointer-events: none;
+    }
+}
+
+// ── Digit roller (slot-machine counter) ─────────────────────────────────────
+.coin-value-roller {
+    display: inline-flex;
+    overflow: hidden;
+}
+
+.digit-col {
+    height: 1.15em;
+    overflow: hidden;
+    display: inline-block;
+    font-family: var(--font-sans);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: #FDFDFD;
+}
+
+.digit-strip {
+    display: flex;
+    flex-direction: column;
+    transform: translateY(calc(-1.15em * var(--target, 0)));
+    transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--stagger, 0ms);
+    will-change: transform;
+}
+
+.digit {
+    height: 1.15em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 // ── List section ─────────────────────────────────────────────────────────────
@@ -184,6 +291,9 @@
     box-shadow: 0 1px 4px rgba(107, 101, 106, 0.10);
     transition: background 0.15s;
 
+    // Staggered slide-in using --anim-delay CSS custom property set in template
+    animation: itemSlideIn 0.42s ease-out var(--anim-delay, 0ms) both;
+
     &--bonus {
         background: linear-gradient(90deg, #FFFBF0 0%, #FFF8E1 100%);
         box-shadow: 0 1px 6px rgba(190, 111, 3, 0.12);
@@ -287,6 +397,8 @@
     align-items: center;
     gap: 3px;
     flex-shrink: 0;
+    // Pop in slightly after the row slides in (row delay + 120ms offset)
+    animation: countBounceIn 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.275) calc(var(--anim-delay, 0ms) + 120ms) both;
 
     .count-icon {
         width: 18px;

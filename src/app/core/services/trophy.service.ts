@@ -7,7 +7,10 @@ import { environment } from '../../../environments/environment';
 export interface Trophy {
     id: string;
     title: string;
+    contentTitle?: string;
+    contentThumbnailUrl?: string;
     earnedOn: Date;
+    earnedOnDisplay?: string;
     difficulty: 'Easy' | 'Medium' | 'Hard';
     points: number;
     image: string;
@@ -26,6 +29,9 @@ export interface TrophyApiResponse {
         difficultyLevel: 'Easy' | 'Medium' | 'Hard';
         challengeId: string;
         categoryIconUrl?: string;
+        contentTitle?: string;
+        contentThumbnailUrl?: string;
+        thumbnailUrl?: string;
     }[];
     totalTrophies: number;
 }
@@ -65,6 +71,7 @@ export class TrophyService {
     private transformTrophyData(response: TrophyApiResponse): { trophies: Trophy[], totalCount: number } {
         const trophies: Trophy[] = response.trophies.map((trophy, index) => {
             const raw = trophy as any;
+
             const iconUrl: string | undefined =
                 raw.categoryIconUrl ||
                 raw.categoryIconURL ||
@@ -72,11 +79,41 @@ export class TrophyService {
                 raw.iconUrl ||
                 raw.categoryUrl ||
                 undefined;
-            console.log(`[Trophy] "${raw.title}" contentType="${raw.contentType}" iconUrl="${iconUrl}"`);
+
+            // Content-level thumbnail (the actual article/quiz image)
+            const contentThumbnailUrl: string | undefined =
+                raw.contentThumbnailUrl ||
+                raw.thumbnailUrl ||
+                raw.contentImageUrl ||
+                raw.contentImage ||
+                raw.articleImageUrl ||
+                raw.quizImageUrl ||
+                raw.articleThumbnail ||
+                raw.quizThumbnail ||
+                raw.contentThumb ||
+                raw.imageUrl ||
+                undefined;
+
+            // Title of the learning content (article/quiz) that earned this trophy
+            const contentTitle: string | undefined =
+                raw.contentTitle ||
+                raw.articleTitle ||
+                raw.quizTitle ||
+                raw.challengeTitle ||
+                raw.learningContentTitle ||
+                raw.contentName ||
+                raw.lessonTitle ||
+                undefined;
+
+            console.log(`[Trophy] "${raw.title}" contentTitle="${contentTitle}" thumbnail="${contentThumbnailUrl}" iconUrl="${iconUrl}"`);
+
             return {
                 id: raw.challengeId || `trophy_${index}`,
                 title: raw.title,
-                earnedOn: this.parseEarnedDate(raw.earnedDate),
+                contentTitle,
+                contentThumbnailUrl,
+                earnedOn: this.parseEarnedDate(raw.earnedDate || raw.formattedEarnedDate),
+                earnedOnDisplay: raw.formattedEarnedDate || undefined,
                 difficulty: raw.difficultyLevel,
                 points: raw.trophyCount,
                 image: this.getTrophyImage(raw.difficultyLevel),
@@ -97,23 +134,23 @@ export class TrophyService {
      * Handles format like "9 Dec"
      */
     private parseEarnedDate(dateStr: string): Date {
-        const currentYear = new Date().getFullYear();
-        // Parse "9 Dec" format
-        const dateParts = dateStr.split(' ');
-        if (dateParts.length === 2) {
-            const day = parseInt(dateParts[0], 10);
-            const month = dateParts[1];
-            const dateString = `${month} ${day}, ${currentYear}`;
-            const parsedDate = new Date(dateString);
+        if (!dateStr) return new Date();
 
-            // If parsed date is valid, return it
-            if (!isNaN(parsedDate.getTime())) {
-                return parsedDate;
-            }
+        // Try direct parsing first (handles ISO 8601, "March 2, 2025", RFC 2822, etc.)
+        const direct = new Date(dateStr);
+        if (!isNaN(direct.getTime())) return direct;
+
+        // Handle "9 Dec" format (no year — assume current year)
+        const currentYear = new Date().getFullYear();
+        const parts = dateStr.trim().split(/\s+/);
+        if (parts.length === 2) {
+            const day = parseInt(parts[0], 10);
+            const month = parts[1];
+            const parsed = new Date(`${month} ${day}, ${currentYear}`);
+            if (!isNaN(parsed.getTime())) return parsed;
         }
 
-        // Fallback to current date if parsing fails
-        console.warn(`Could not parse date: ${dateStr}, using current date`);
+        console.warn(`[TrophyService] Could not parse date: "${dateStr}", using current date`);
         return new Date();
     }
 

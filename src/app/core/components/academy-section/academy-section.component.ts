@@ -5,8 +5,10 @@ import { Router } from '@angular/router';
 import { SupermeButtonComponent } from '../superme-button/superme-button.component';
 import { SupermeCardHeaderComponent } from '../superme-navigator/superme-card-header/superme-card-header.component';
 import { ViewAllComponent } from '../superme-navigator/view-all/view-all.component';
-import { AcademyService } from '../../services/academy.service';
+import { AcademyService, AcademyFeedCourse, AcademyFeedLesson } from '../../services/academy.service';
+import { AuthService } from '../../services/auth.service';
 
+// Kept for backward compatibility — academy-course.component imports this
 export interface CourseCard {
   id: string;
   title: string;
@@ -35,28 +37,30 @@ const FALLBACK_IMAGES = [
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class AcademySectionComponent implements OnInit {
-  courses: CourseCard[] = [];
   loading = true;
+  state: 1 | 2 | 3 = 1;
+  headerTitle = 'Begin Your Life Skills Quest!';
 
-  constructor(private router: Router, private academyService: AcademyService) {}
+  // State 1 — courses
+  courses: AcademyFeedCourse[] = [];
+
+  // State 2 — lessons
+  lessons: AcademyFeedLesson[] = [];
+
+  constructor(
+    private router: Router,
+    private academyService: AcademyService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
-    this.academyService.getCourses().subscribe({
+    const age = this.authService.getCurrentUserAge() ?? undefined;
+    this.academyService.getAcademyFeed(age).subscribe({
       next: (res) => {
-        this.courses = res.map((c, i) => {
-          const fallbackImage = this.getFallbackImage(c.courseName, i);
-
-          return {
-            id: String(c.id),
-            title: c.courseName,
-            lessons: c.noOfLessons ?? 0,
-            duration: c.duration ? `${c.duration} min` : '',
-            level: c.difficulty ?? '',
-            description: c.description ?? '',
-            image: this.normalizeImageUrl(c.thumbnailUrl || '', fallbackImage),
-            fallbackImage,
-          };
-        });
+        this.state = (Number(res.state) as 1 | 2 | 3) || 1;
+        this.headerTitle = res.headerTitle || this.headerTitle;
+        this.courses = res.courses ?? [];
+        this.lessons = res.lessons ?? [];
         this.loading = false;
       },
       error: () => { this.loading = false; }
@@ -67,70 +71,39 @@ export class AcademySectionComponent implements OnInit {
     this.router.navigate(['/authed/academy']);
   }
 
-  onStart(course: CourseCard): void {
-    this.router.navigate(['/authed/academy/course', course.id], { state: { course } });
+  onStartCourse(course: AcademyFeedCourse): void {
+    this.router.navigate(['/authed/academy/course', course.id]);
   }
 
-  onCourseImageError(event: Event, course: CourseCard): void {
-    const fallbackImage = course.fallbackImage || FALLBACK_IMAGES[0];
-    course.image = fallbackImage;
-
-    const image = event.target as HTMLImageElement | null;
-    if (image && image.getAttribute('src') !== fallbackImage) {
-      image.src = fallbackImage;
+  onLessonCta(lesson: AcademyFeedLesson): void {
+    if (lesson.courseId) {
+      this.router.navigate(['/authed/academy/course', lesson.courseId]);
     }
   }
 
-  private getFallbackImage(title: string | undefined, index: number): string {
-    const normalizedTitle = (title || '').toLowerCase();
+  getCourseImage(course: AcademyFeedCourse, index: number): string {
+    return this.normalizeImageUrl(course.thumbnailUrl || '', FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]);
+  }
 
-    if (normalizedTitle.includes('money') || normalizedTitle.includes('budget')) {
-      return FALLBACK_IMAGES[0];
-    }
+  getLessonImage(lesson: AcademyFeedLesson, index: number): string {
+    const url = lesson.thumbnailUrl || lesson.courseThumbnailUrl || '';
+    return this.normalizeImageUrl(url, FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]);
+  }
 
-    return FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
+  onCourseImageError(event: Event, index: number): void {
+    (event.target as HTMLImageElement).src = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
+  }
+
+  onLessonImageError(event: Event, index: number): void {
+    (event.target as HTMLImageElement).src = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
   }
 
   private normalizeImageUrl(url: string, fallback: string): string {
     const trimmedUrl = (url || '').trim();
     if (!trimmedUrl) return fallback;
-
-    const driveFileId = this.getGoogleDriveFileId(trimmedUrl);
-    if (driveFileId) {
-      return `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveFileId)}&sz=w512`;
-    }
-
-    if (/^data:image\//i.test(trimmedUrl) || /^https?:\/\//i.test(trimmedUrl)) {
-      return trimmedUrl;
-    }
-
-    if (trimmedUrl.startsWith('//')) {
-      return `https:${trimmedUrl}`;
-    }
-
-    if (/^\/?assets\//i.test(trimmedUrl)) {
-      return trimmedUrl.startsWith('/') ? trimmedUrl : `/${trimmedUrl}`;
-    }
-
-    if (/^Academy-Course-Thubmnail/i.test(trimmedUrl)) {
-      return `/assets/Images-Transparent/${trimmedUrl}`;
-    }
-
-    if (/^Images-/i.test(trimmedUrl)) {
-      return `/assets/${trimmedUrl}`;
-    }
-
+    if (/^data:image\//i.test(trimmedUrl) || /^https?:\/\//i.test(trimmedUrl)) return trimmedUrl;
+    if (trimmedUrl.startsWith('//')) return `https:${trimmedUrl}`;
+    if (/^\/?assets\//i.test(trimmedUrl)) return trimmedUrl.startsWith('/') ? trimmedUrl : `/${trimmedUrl}`;
     return `/${trimmedUrl.replace(/^\/+/, '')}`;
-  }
-
-  private getGoogleDriveFileId(url: string): string | null {
-    const viewMatch = url.match(/\/file\/d\/([^\/?]+)/);
-    if (viewMatch?.[1]) return viewMatch[1];
-
-    const openMatch = url.match(/[?&]id=([^&]+)/);
-    if (openMatch?.[1]) return openMatch[1];
-
-    const lh3Match = url.match(/googleusercontent\.com\/d\/([^\/?]+)/);
-    return lh3Match?.[1] || null;
   }
 }
