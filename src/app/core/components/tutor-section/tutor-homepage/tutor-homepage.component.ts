@@ -44,7 +44,7 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   @Output() viewProfile = new EventEmitter<TutorListItem>();
 
   isReferModalOpen = false;
-  referLink = 'https://supermeapp.com/find-a-tutor';
+  referLink = 'https://supermeapp.com/become-a-tutor';
 
   // Sort dropdown state
   isSortOpen = false;

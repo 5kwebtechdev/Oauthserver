@@ -44,7 +44,7 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
             <h2 class="empty-title">No Trophies Yet!</h2>
             <p class="empty-sub">Your journey is just beginning. Earn some cool trophies and show them off here!</p>
           </div>
-          <button class="action-btn earn-btn" routerLink="/content" aria-label="Earn Trophies">
+          <button class="action-btn earn-btn" routerLink="/authed/content" aria-label="Earn Trophies">
             Earn Trophies
           </button>
         </div>
@@ -68,11 +68,10 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
                     </div>
                     <div class="meta">
                       <div class="title">
-                        {{ trophy.contentTitle || trophy.title }}
+                        {{ getTrophyDisplayTitle(trophy) }}
                         <span class="difficulty" [ngClass]="trophy.difficulty">• {{ trophy.difficulty }}</span>
                       </div>
-                      <div class="badge-name" *ngIf="trophy.contentTitle">{{ trophy.title }}</div>
-                      <div class="earned">Earned on {{ formatEarnedOn(trophy.earnedOn, trophy.earnedOnDisplay) }}</div>
+                      <div class="earned">{{ formatEarnedOn(trophy.earnedOn, trophy.earnedOnDisplay) }}</div>
                     </div>
                   </div>
 
@@ -93,7 +92,11 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
   `,
   styles: [`
     :host {
-      display: block;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding-top: constant(safe-area-inset-top);
+      padding-top: env(safe-area-inset-top, 0px);
     }
 
     /* Make inner scroll div a flex column so children can fill height */
@@ -103,6 +106,7 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
     }
 
     .trophy-content {
+      flex: 1;
       --padding-top: 0;
       --padding-bottom: 0;
       --padding-start: 0;
@@ -118,6 +122,7 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
       max-width: 560px;
       margin: 0 auto;
       box-sizing: border-box;
+      min-height: calc(100vh - 80px);
     }
 
     /* ── Loading ── */
@@ -177,17 +182,16 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
 
     /* ── Shared action button ── */
     .action-btn {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: center;
       border: none;
-      border-radius: 50px;
-      height: 54px;
-      min-width: 200px;
-      max-width: 280px;
+      border-radius: 16px;
+      height: clamp(48px, 7vh, 56px);
       width: 100%;
+      max-width: 400px;
       font-family: 'Nunito', sans-serif;
-      font-size: 17px;
+      font-size: clamp(15px, 4vw, 17px);
       font-weight: 800;
       color: #fff;
       cursor: pointer;
@@ -200,11 +204,11 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
       transform: scale(0.96);
     }
     .earn-btn {
-      background: linear-gradient(135deg, #d45aa3 0%, #b85aa6 50%, #8f3aa0 100%);
-      box-shadow: 0 6px 20px rgba(180, 60, 170, 0.32);
+      background: linear-gradient(135deg, #C2185B 0%, #90214D 50%, #7B1542 100%);
+      box-shadow: 0 6px 20px rgba(144, 33, 77, 0.32);
     }
     .earn-btn:active {
-      box-shadow: 0 3px 10px rgba(180, 60, 170, 0.2);
+      box-shadow: 0 3px 10px rgba(144, 33, 77, 0.2);
     }
     .error-btn {
       background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
@@ -219,13 +223,12 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 16px 8px 40px;
+      padding: 16px 24px;
     }
 
     .empty-art-wrap {
-      width: 100%;
-      max-width: 300px;
-      margin: 0 auto 28px;
+      width: clamp(180px, 50vw, 260px);
+      margin: 0 auto clamp(16px, 3vh, 28px);
     }
     .empty-art {
       width: 100%;
@@ -234,18 +237,18 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
     }
 
     .empty-copy {
-      margin-bottom: 36px;
+      margin-bottom: clamp(20px, 4vh, 36px);
     }
     .empty-title {
       font-family: 'Nunito', sans-serif;
       font-weight: 800;
-      font-size: clamp(20px, 5vw, 24px);
+      font-size: clamp(18px, 4.5vw, 22px);
       color: #282527;
-      margin: 0 0 10px;
+      margin: 0 0 8px;
     }
     .empty-sub {
       font-family: 'Nunito', sans-serif;
-      font-size: clamp(14px, 3.8vw, 16px);
+      font-size: clamp(13px, 3.5vw, 15px);
       color: #6b6b6b;
       line-height: 1.65;
       max-width: 280px;
@@ -315,16 +318,16 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
     }
 
     .thumb-circle {
-      width: clamp(44px, 12vw, 56px);
-      height: clamp(44px, 12vw, 56px);
+      width: clamp(44px, 11vw, 52px);
+      height: clamp(44px, 11vw, 52px);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
       color: #fff;
-      font-size: clamp(15px, 4vw, 18px);
-      flex: 0 0 clamp(44px, 12vw, 56px);
+      font-size: clamp(14px, 3.5vw, 17px);
+      flex: 0 0 clamp(44px, 11vw, 52px);
       margin-right: 10px;
       overflow: hidden;
     }
@@ -362,14 +365,14 @@ import { TrophyService, Trophy, GroupedTrophies } from '../../services/trophy.se
       color: #282527;
       font-family: Nunito, sans-serif;
       font-size: clamp(13px, 3.5vw, 15px);
-      font-weight: 600;
+      font-weight: 700;
       display: flex;
-      align-items: center;
+      align-items: baseline;
       flex-wrap: wrap;
-      gap: 5px;
+      gap: 4px;
       width: 100%;
       word-break: break-word;
-      line-height: 1.3;
+      line-height: 1.35;
     }
 
     .difficulty {
@@ -497,12 +500,22 @@ export class TrophyPageComponent implements OnInit, ViewWillEnter {
     return 'cat-default';
   }
 
+  getTrophyDisplayTitle(trophy: Trophy): string {
+    if (trophy.contentTitle) return trophy.contentTitle;
+    const t = (trophy.title || '').trim();
+    if (t && t.toLowerCase() !== 'challenge completed') return t;
+    return trophy.contentType || 'Trophy Earned';
+  }
+
   formatEarnedOn(date: Date | string | undefined | null, preFormatted?: string): string {
-    if (preFormatted) return preFormatted;
+    if (preFormatted) {
+      const cleaned = preFormatted.replace(/^earned\s+on\s*/i, '').trim();
+      return `Earned on ${cleaned}`;
+    }
     if (!date) return '';
     const d = (date instanceof Date) ? date : new Date(date);
     if (isNaN(d.getTime())) return '';
-    return d.toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    return `Earned on ${d.toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
   }
 
   onBack() {

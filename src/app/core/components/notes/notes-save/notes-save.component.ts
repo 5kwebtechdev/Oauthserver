@@ -34,6 +34,13 @@ export class NotesSaveComponent implements OnChanges {
   @Input() noteId?: any;
 
   contentHtml: SafeHtml = '' as any;
+
+  get displayTags(): string[] {
+    if (!this.tags) return [];
+    if (Array.isArray(this.tags)) return this.tags.filter(t => !!t);
+    const t = String(this.tags).trim();
+    return t ? [t] : [];
+  }
   // legacy flag removed in favor of SupermePopup
   // showConfirmDelete: boolean = false;
   // Use SupermePopup for confirmation UI

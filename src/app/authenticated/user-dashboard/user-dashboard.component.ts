@@ -96,6 +96,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   public totalHabits: number = 0;
   public totalHabitsCompleted: number = 0;
   public habitCompletionRate: number = 0;
+  public awaitingTasks: number = 0;
+  public awaitingHabits: number = 0;
 
   // Streak restore banner
   canRestoreStreak = false;
@@ -207,15 +209,13 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     // Register with global pull-to-refresh service
     this.refreshService.registerRefreshHandler('UserDashboard', () => this.onGlobalRefresh());
 
-    // Initialize pet message for home page
+    // Initialize pet message (will update with real counts after API loads)
     this.currentPetMessage = this.petMessagesService.getMessage('home', {
       userName: this.userName,
-      tasksCount: 5, // This should come from your data service
-      habitsCount: 2, // This should come from your data service
+      tasksCount: this.awaitingTasks,
+      habitsCount: this.awaitingHabits,
       streakDays: this.userStreaks
     });
-
-    // Set pet mood based on the message
     this.petMood = this.currentPetMessage.mood;
   }
 
@@ -348,11 +348,25 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         this.totalHabits = resp.totalHabits || 0;
         this.totalHabitsCompleted = resp.totalHabitsCompleted || 0;
         this.habitCompletionRate = resp.habitCompletionRate || 0;
+        this.awaitingTasks = resp.awaitingTasks ?? (this.totalTasks - this.totalTasksCompleted);
+        this.awaitingHabits = resp.awaitingHabits ?? (this.totalHabits - this.totalHabitsCompleted);
+
+        this.updatePetMessageWithCounts();
       },
       error: (err) => {
         console.error('Failed to load calendar data:', err);
       }
     });
+  }
+
+  private updatePetMessageWithCounts(): void {
+    this.currentPetMessage = this.petMessagesService.getMessage('home', {
+      userName: this.userName,
+      tasksCount: this.awaitingTasks,
+      habitsCount: this.awaitingHabits,
+      streakDays: this.userStreaks
+    });
+    this.petMood = this.currentPetMessage.mood;
   }
 
   // Sort comparator to order items by upcoming time relative to now.

@@ -74,13 +74,41 @@
   font-size: 1.05rem;
 }
 
+.note-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 16px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(40, 37, 39, 0.08);
+  flex-wrap: wrap;
+}
+
+.note-tag-label {
+  color: rgba(40, 37, 39, 0.55);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.note-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  border-radius: 20px;
+  background: #282527;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .note-content {
- color: #282527;
-font-family: var(--font-sans);
-font-size: 16px;
-font-weight: 600;
+  color: #282527;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 600;
   margin: 0;
-  /* Preserve newlines and allow long words to wrap */
   white-space: pre-wrap;
   word-wrap: break-word;
 }

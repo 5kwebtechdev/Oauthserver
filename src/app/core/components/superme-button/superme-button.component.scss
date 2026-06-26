@@ -524,14 +524,23 @@ p {
     font-weight: 500;
   }
 
+  &.selected:not(.correct):not(.incorrect) {
+    border: 2px solid #90214D !important;
+    background: linear-gradient(135deg, rgba(144, 33, 77, 0.12) 0%, rgba(205, 53, 120, 0.10) 100%) !important;
+    background-color: rgba(144, 33, 77, 0.10) !important;
+    --text_color: #90214D;
+  }
+
   &.correct {
-    border: 1px solid #4CAF50;
-    background: rgba(76, 175, 80, 0.20);
+    border: 2px solid #4CAF50;
+    background: rgba(76, 175, 80, 0.15);
+    --text_color: #2E7D32;
   }
 
   &.incorrect {
-    border: 1px solid #BB2124;
-    background: rgba(187, 33, 36, 0.20);
+    border: 2px solid #BB2124;
+    background: rgba(187, 33, 36, 0.15);
+    --text_color: #BB2124;
   }
 }
 

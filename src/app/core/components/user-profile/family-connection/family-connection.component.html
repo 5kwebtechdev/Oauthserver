@@ -48,26 +48,20 @@
                 <div class="family-container">
 
                     <header class="family-info" id="family-heading">
-                        <div class="familyinformation">
-                            <div class="family-name">
-                                <p>Family name:</p>
-                                <h1>{{ familyName }}</h1>
-                            </div>
-
-                            <div class="family-status" aria-hidden="true">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="4" height="5" viewBox="0 0 4 5"
-                                    fill="none" role="img" aria-label="active">
-                                    <circle cx="2" cy="2.5" r="2"
-                                        [attr.fill]="familyStatus === 'ACTIVE' ? '#4CAF50' : '#999'" />
+                        <p class="family-name-line">
+                            <span class="info-label">Family name:</span>
+                            <span class="info-value">{{ familyName }}</span>
+                            <span class="family-status-badge" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="6" height="6" viewBox="0 0 6 6" fill="none">
+                                    <circle cx="3" cy="3" r="3" [attr.fill]="familyStatus === 'ACTIVE' ? '#4CAF50' : '#999'" />
                                 </svg>
-                                <p>{{ (familyStatus || 'active').toLowerCase() }}</p>
-                            </div>
-                        </div>
-
-                        <div class="family-date">
-                            <p>Created on:</p>
-                            <h1>{{ createdOn }}</h1>
-                        </div>
+                                {{ (familyStatus || 'active') === 'ACTIVE' ? 'Active' : (familyStatus || 'active').toLowerCase() }}
+                            </span>
+                        </p>
+                        <p class="family-date-line">
+                            <span class="info-label">Created on:</span>
+                            <span class="info-value">{{ createdOn }}</span>
+                        </p>
                     </header>
 
                     <section class="family-con-detail" aria-label="Family details" *ngIf="creator">
@@ -186,11 +180,11 @@
                 <superme-pet pet="panda" [age]="3" mood="tired" (petClick)="onRemovedPetClick()"></superme-pet>
 
                 <div class="removed-message-text">
-                    <h1>You are now in Self mode</h1>
-                    <p>Your account is safe and your personal progress is saved. You can keep using Self mode, or switch to Child or Parent when you are ready.</p>
+                    <h2>Using Self mode</h2>
+                    <p>No family is linked to this account right now. Everything here is private to this profile.</p>
                 </div>
                 <div class="continue-button w-100">
-                <superme-button type="green" size="full" text="Switch role" (click)="continueWithNewRole()">
+                <superme-button type="green" size="full" text="Continue with a new role?" (click)="continueWithNewRole()">
                 </superme-button>
                 </div>
             </div>

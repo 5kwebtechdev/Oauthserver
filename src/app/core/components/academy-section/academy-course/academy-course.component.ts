@@ -384,6 +384,11 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
     await modal.present();
   }
 
+  onHeroCta(): void {
+    const targetIndex = this.resumeLessonIndex ?? 0;
+    this.onStartLesson(targetIndex);
+  }
+
   onOpenCourse(): void {
     if (!this.course) return;
     this.courseOpen.emit(this.course);

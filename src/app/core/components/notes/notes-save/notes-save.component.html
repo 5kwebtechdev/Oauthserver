@@ -9,11 +9,15 @@
   (rightActionClick)="onNavigatorAction($event)">
 </superme-navigator>
 <div class="note-view">
+  <!-- Tag display -->
+  <div class="note-tag-row" *ngIf="displayTags.length > 0">
+    <span class="note-tag-label">Tag</span>
+    <span class="note-tag-pill" *ngFor="let t of displayTags">{{ t }}</span>
+  </div>
+
   <!--note content-->
   <div class="note-content" [innerHTML]="contentHtml"></div>
-
-    <!-- Debug: show raw payload for troubleshooting (remove in production) -->
-    <pre class="note-raw">{{content}}</pre>
+  <pre class="note-raw">{{ content }}</pre>
 
   <!-- Use the shared SupermePopup component for confirmation -->
   <app-superme-popup [isVisible]="showSupermePopup" [config]="{
