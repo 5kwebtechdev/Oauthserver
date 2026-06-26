@@ -4,6 +4,7 @@ import { IonicModule, ModalController } from '@ionic/angular';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { AcademyService, CourseLesson, LessonDetailResponse } from '../../../services/academy.service';
+import { PetAgeService } from '../../../services/pet-age.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -46,7 +47,8 @@ export class AcademyLessonsComponent {
 
   constructor(
     private modalCtrl: ModalController,
-    private academyService: AcademyService
+    private academyService: AcademyService,
+    private petAgeService: PetAgeService
   ) { }
 
   ngOnInit(): void {
@@ -224,6 +226,7 @@ export class AcademyLessonsComponent {
       .subscribe(response => {
         if (response) {
           console.log('Lesson marked as complete:', response);
+          this.petAgeService.recordActivity('lessons');
         }
       });
   }

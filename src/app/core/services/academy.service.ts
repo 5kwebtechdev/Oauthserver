@@ -44,6 +44,48 @@ export interface AcademyCategory {
   courseCount?: number;
 }
 
+// Academy Feed API — /courses/academy-feed
+export interface AcademyFeedCourse {
+  id: number;
+  courseName: string;
+  description?: string;
+  category?: string;
+  difficulty?: string;
+  noOfLessons?: number;
+  duration?: number;
+  thumbnailUrl?: string;
+  completedLessons?: number;
+  completionPercentage?: number;
+  isCourseCompleted?: boolean;
+  progressStatus?: string;
+  continueLessonId?: number | null;
+}
+
+export interface AcademyFeedLesson {
+  lessonId: number;
+  lessonTitle: string;
+  lessonDescription?: string;
+  duration?: number;
+  order?: number;
+  thumbnailUrl?: string | null;
+  courseId?: number;
+  courseName?: string;
+  courseThumbnailUrl?: string;
+  slotType?: 'ACTIVE' | 'NEXT_UP' | 'NEW';
+  ctaLabel?: string;
+  isCompleted?: boolean;
+  isLocked?: boolean;
+  lessonStatus?: string;
+  timeSpentMinutes?: number;
+}
+
+export interface AcademyFeedResponse {
+  state: 1 | 2 | 3;
+  headerTitle: string;
+  courses?: AcademyFeedCourse[] | null;
+  lessons?: AcademyFeedLesson[] | null;
+}
+
 // Course detail response with progress tracking
 export interface CourseLesson {
   id: number;
@@ -187,5 +229,14 @@ export class AcademyService {
       {},
       { headers: this.getHeaders() },
     );
+  }
+
+  getAcademyFeed(age?: number): Observable<AcademyFeedResponse> {
+    let params = new HttpParams();
+    if (age != null) params = params.set('age', String(age));
+    return this.http.get<AcademyFeedResponse>(`${this.base}/courses/academy-feed`, {
+      headers: this.getHeaders(),
+      params,
+    });
   }
 }

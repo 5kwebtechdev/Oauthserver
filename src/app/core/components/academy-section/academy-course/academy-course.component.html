@@ -11,58 +11,64 @@
   </div>
 
   <div *ngIf="!isLoadingCourse && !loadError && course">
-    <div class="container">
+
+    <!-- ── Hero ── -->
+    <div class="hero">
       <superme-navigator backIcon="arrowSvg" (back)="goBack()"></superme-navigator>
-
-      <img [src]="course.image || fallbackCourseImage" alt="{{ course.title }} Illustration"
-        (error)="onImageError($event, fallbackCourseImage)">
-      <h3>{{ course.title }}</h3>
-      <p class="subtitle">{{ course.lessons }} {{ course.lessons === 1 ? 'lesson' : 'lessons' }} • {{ course.duration }}</p>
-
-      <!-- Progress section -->
-      <div class="progress-section" *ngIf="courseDetail">
-        <div class="progress-header">
-          <span class="progress-label">{{ courseDetail.completedLessons }} / {{ courseDetail.noOfLessons }} lessons completed</span>
-          <span class="progress-chip" [ngClass]="getProgressStatusClass()">{{ getProgressStatusLabel() }}</span>
-        </div>
-        <div class="progress-bar-track">
-          <div class="progress-bar-fill" [style.width.%]="courseDetail.completionPercentage"></div>
-        </div>
-        <span class="progress-percent">{{ courseDetail.completionPercentage }}% complete</span>
-      </div>
-
-      <superme-button *ngIf="resumeLessonIndex !== null" [type]="'magenta'" full
-        [text]="'Continue with lesson ' + (resumeLessonIndex + 1)"
-        (click)="onStartLesson(resumeLessonIndex)"></superme-button>
-
-      <p class="desc">{{ course.description }}</p>
+      <img class="hero-img"
+           [src]="course.image || fallbackCourseImage"
+           [alt]="course.title"
+           (error)="onImageError($event, fallbackCourseImage)">
+      <h2 class="hero-title">{{ course.title }}</h2>
+      <p class="hero-meta">{{ course.lessons }} {{ course.lessons === 1 ? 'lesson' : 'lessons' }} • {{ course.duration }}</p>
+      <p class="hero-desc">{{ course.description }}</p>
     </div>
 
-    <div class="lesson" *ngFor="let lesson of lessons; let i = index"
-      [class.locked]="lesson.isLocked"
-      [class.completed]="lesson.isCompleted">
-      <div class="lesson-thumb">
-        <img [src]="lesson.image || fallbackLessonImage" [alt]="lesson.title"
-          (error)="onImageError($event, fallbackLessonImage)" />
-        <div class="lesson-status-badge completed-badge" *ngIf="lesson.isCompleted">&#10003;</div>
-        <div class="lesson-status-badge lock-badge" *ngIf="lesson.isLocked && !lesson.isCompleted">&#128274;</div>
-      </div>
-      <div class="lesson-info">
-        <h3>{{ lesson.title }}</h3>
-        <p>{{ lesson.desc }}</p>
-        <span class="time">{{ lesson.time }}
-          <span class="dot">•</span>
-          <img class="coin-icon" src="assets/Icons-Neutral/Icons-Coins.png" alt="coins" />
-          <span class="coin-value">{{ lesson.coins || 0 }}</span>
-        </span>
+    <!-- ── Lesson List ── -->
+    <div class="lessons-list">
+      <div class="lesson-item"
+           *ngFor="let lesson of lessons; let i = index"
+           [class.expanded]="expandedLessonIndex === i"
+           [class.locked]="lesson.isLocked"
+           [class.completed]="lesson.isCompleted">
 
-        <superme-button [type]="'magenta'" small (click)="onStartLesson(i)"
-          [text]="lesson.isCompleted ? 'Read Again' : (isLessonInProgress(lesson) ? 'Continue' : 'Start Lesson')"
-          [disabled]="lesson.isLocked"></superme-button>
-      </div>
+        <!-- Tappable header row -->
+        <div class="lesson-row" (click)="toggleLesson(i)">
+          <div class="lesson-thumb">
+            <img [src]="lesson.image || fallbackLessonImage"
+                 [alt]="lesson.title"
+                 (error)="onImageError($event, fallbackLessonImage)">
+          </div>
 
-      <div class="overlay" *ngIf="lesson.isLocked"></div>
+          <div class="lesson-body">
+            <h3 class="lesson-title">{{ lesson.title }}</h3>
+            <p class="lesson-desc">{{ lesson.desc }}</p>
+            <div class="lesson-meta">
+              <span class="lesson-time">{{ lesson.time }}</span>
+              <span class="meta-dot">•</span>
+              <img class="coin-icon" src="assets/Icons-Neutral/Icons-Coins.png" alt="coins">
+              <span class="lesson-coins">{{ lesson.coins ?? 0 }}</span>
+            </div>
+          </div>
+
+          <div class="lesson-chevron" [class.open]="expandedLessonIndex === i"></div>
+        </div>
+
+        <!-- CTA button — only when expanded and not locked -->
+        <div class="lesson-cta" *ngIf="expandedLessonIndex === i && !lesson.isLocked">
+          <superme-button [type]="'magenta'" small
+            [text]="lesson.isCompleted ? 'Read Again' : (isLessonInProgress(lesson) ? 'Continue' : 'Start Lesson')"
+            (click)="onStartLesson(i)">
+          </superme-button>
+        </div>
+
+        <!-- Locked banner — shown when a locked lesson is tapped -->
+        <div class="locked-notice" *ngIf="lockedBannerIndex === i">
+          Complete Previous Lesson first to unlock this!
+        </div>
+
+      </div>
     </div>
+
   </div>
-
 </ion-content>

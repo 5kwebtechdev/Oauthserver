@@ -51,7 +51,7 @@
               <p class="progress-text">{{ badge.progress }}/{{ badge.target }}</p>
               <div class="badge-visual">
                 <div class="badge-icon-container">
-                  <img [src]="getBadgeIconUrl(badge.icon)" [alt]="badge.title" class="badge-icon"
+                  <img [src]="getBadgeIconUrl(badge)" [alt]="badge.title || badge.name" class="badge-icon"
                        (error)="onBadgeImageError($event, badge)" />
                 </div>
                 <superme-completion [completionPercentage]="getBadgeCompletionPercent(badge)"
@@ -59,11 +59,9 @@
                 </superme-completion>
               </div>
             </div>
-            <p class="badge-name">{{ badge.title }}</p>
-            <p class="badge-level-text">{{ badge.levelText }}</p>
-            <p class="badge-description">{{ badge.isEarned ? badge.achievementScreenText : badge.description }}</p>
-            <p class="badge-achievement" *ngIf="badge.isEarned">Achievement Unlocked!</p>
-            <p class="badge-achievement" *ngIf="!badge.isEarned">{{ badge.celebrationMessage }}</p>
+            <p class="badge-name">{{ badge.title || badge.name }}</p>
+            <p class="badge-level-text">{{ badge.levelText || badge.level }}</p>
+            <p class="badge-description">{{ badge.description }}</p>
           </div>
         </div>
       </div>

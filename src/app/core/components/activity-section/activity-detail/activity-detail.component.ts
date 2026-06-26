@@ -12,6 +12,7 @@ import { TaskApi } from 'src/app/core/api/task.api';
 import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { AutoAbortService } from '../auto-abort.service';
 import { BadgePopupService } from '../../../services/badge-popup.service';
+import { PetAgeService } from '../../../services/pet-age.service';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { SupermeSpeechBubbleComponent } from '../../superme-speech-bubble/superme-speech-bubble.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
@@ -76,7 +77,8 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
     private authService: AuthService,
     private habitService: HabitService,
     private autoAbortService: AutoAbortService,
-    private badgePopupService: BadgePopupService
+    private badgePopupService: BadgePopupService,
+    private petAgeService: PetAgeService
   ) {}
 
   ngOnInit() {
@@ -421,8 +423,19 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   get speechMessage(): string {
-    const desc = (this.habit as any)?.description ?? (this.habit as any)?.notes ?? '';
-    return desc ? String(desc).trim() : '';
+    const h = this.habit as any;
+    const raw = h?.description ?? h?.notes ?? '';
+    const note = raw ? String(raw).trim() : '';
+    if (!note) return '';
+
+    const currentUserId = this.authService?.getUserId?.();
+    const createdById = h?.createdById ?? h?.createdBy;
+    const isParentNote = createdById != null && currentUserId != null
+      && String(createdById) !== String(currentUserId);
+
+    return isParentNote
+      ? `Your parent left you a message: ${note}`
+      : `I see there's a special note created by you: ${note}`;
   }
 
   get shortDaysOfWeek(): string {
@@ -759,6 +772,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
         } else {
           this.habitService.notifyHabitCompleted();
         }
+        this.petAgeService.recordActivity(isTask ? 'tasks' : 'habits');
         this.cdr.detectChanges();
         // Check for newly earned badges
         this.badgePopupService.check();

@@ -37,10 +37,19 @@ interface DayGroup {
 })
 export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
     coinTotal: number = 0;
+    coinAnimDone: boolean = false;
+    showTargetDigits: boolean = false;
     message = "Whoa! That's a lot of coins! Let's go dress me up or grab something shiny!";
     coinItems: CoinItem[] = [];
     isLoading = false;
     isParent: boolean = false;
+
+    readonly digitRange = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    private animTimers: any[] = [];
+
+    get coinDigits(): number[] {
+        return String(this.coinTotal || 0).split('').map(Number);
+    }
 
     constructor(
         private router: Router,
@@ -60,10 +69,14 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
 
     ngOnDestroy() {
         this.refreshService.unregisterRefreshHandler('CoinSectionComponent');
+        this.clearAnimTimers();
     }
 
     fetchHistory() {
         this.isLoading = true;
+        this.showTargetDigits = false;
+        this.coinAnimDone = false;
+        this.clearAnimTimers();
         this.coinService.loadCoinHistory().subscribe({
             next: (response) => {
                 if (response?.totalCoins != null) {
@@ -73,11 +86,26 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
                 }
                 this.coinItems = response?.history ? this.mapHistoryToCoinItems(response.history) : [];
                 this.isLoading = false;
+                this.startRollerAnimation();
             },
             error: () => {
                 this.isLoading = false;
             }
         });
+    }
+
+    private startRollerAnimation(): void {
+        this.showTargetDigits = false;
+        this.coinAnimDone = false;
+        this.clearAnimTimers();
+        this.animTimers.push(setTimeout(() => this.showTargetDigits = true, 100));
+        const staggerTotal = this.coinDigits.length * 80;
+        this.animTimers.push(setTimeout(() => this.coinAnimDone = true, 100 + 1000 + staggerTotal));
+    }
+
+    private clearAnimTimers(): void {
+        this.animTimers.forEach(t => clearTimeout(t));
+        this.animTimers = [];
     }
 
     private mapHistoryToCoinItems(history: CoinHistoryItem[]): CoinItem[] {

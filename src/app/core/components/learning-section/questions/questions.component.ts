@@ -8,6 +8,7 @@ import { SupermeButtonComponent } from '../../superme-button/superme-button.comp
 import { SupermePopupComponent, SupermePopupConfig } from '../../superme-popup/superme-popup.component';
 import { Challenge, ChallengeQuestion, QuestionOption } from 'src/app/core/models/learning.models';
 import { LearningService } from 'src/app/core/services/learning.service';
+import { PetAgeService } from 'src/app/core/services/pet-age.service';
 
 interface Question {
     id: number;
@@ -185,7 +186,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     constructor(
         private router: Router,
         private route: ActivatedRoute,
-        private learningService: LearningService
+        private learningService: LearningService,
+        private petAgeService: PetAgeService
     ) { }
 
     ngOnInit() {
@@ -704,6 +706,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         this.learningService.submitChallengeNewFormat(this.challenge.challengeId, payload).subscribe({
             next: (response) => {
                 console.log('Submission successful:', response);
+                this.petAgeService.recordActivity(this.challenge?.category === 'QUIZ' ? 'quizzes' : 'puzzles');
                 // Navigate to result page with response data
                 this.router.navigate(['/authed/content/result'], {
                     replaceUrl: true,

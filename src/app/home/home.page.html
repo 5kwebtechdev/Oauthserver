@@ -6,22 +6,23 @@
         <img [src]="slide.image" alt="Slide Image" class="slide-image" />
       </div>
       <div class="text-content">
-        <h2 [style.color]="slide.color">{{ slide.title }}</h2>
-        <ul>
-          <li *ngFor="let line of slide.subtitle">{{ line }}</li>
-        </ul>
+        <div class="text-body">
+          <h2 [style.color]="slide.color">{{ slide.title }}</h2>
+          <ul>
+            <li *ngFor="let line of slide.subtitle">{{ line }}</li>
+          </ul>
+        </div>
+        <div class="carousel-footer">
+          <div class="dots">
+            <span *ngFor="let s of slides; let i = index" [class.active]="i === currentSlide"
+              (click)="setSlide(i)"></span>
+          </div>
+          <button class="next-btn" [style.background-color]="slide.next_color"
+            [style.color]="slide.color" (click)="nextSlide()" aria-label="Next slide">
+            <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-
-  <div class="carousel-footer">
-    <div class="dots">
-      <span *ngFor="let slide of slides; let i = index" [class.active]="i === currentSlide"
-        (click)="setSlide(i)"></span>
-    </div>
-    <button class="next-btn" [style.background-color]="slides[currentSlide].next_color"
-      [style.color]="slides[currentSlide].color" (click)="nextSlide()" aria-label="Next slide">
-      <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
-    </button>
   </div>
 </div>

@@ -12,6 +12,13 @@ import { AuthApi } from './core/api/auth.api';
 import { UserService } from './core/services/user.service';
 import { CustomToastService, Toast } from './core/services/custom-toast.service';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { Capacitor, registerPlugin } from '@capacitor/core';
+
+interface InstallReferrerPlugin {
+  getReferralCode(): Promise<{ code: string }>;
+  clearReferralCode(): Promise<void>;
+}
+const InstallReferrer = registerPlugin<InstallReferrerPlugin>('InstallReferrer');
 import { AnalyticsService } from './core/services/analytics.service';
 import { AuthSessionCleanupService } from './core/services/auth-session-cleanup.service';
 import { CrashlyticsService } from './core/services/crashlytics.service';
@@ -83,6 +90,16 @@ export class AppComponent implements OnInit, OnDestroy {
       console.warn('[AppComponent] Remote Config initialization failed:', error);
       this.checkAppUpdate();
     });
+
+    // On Android, check if app was installed via a referral link (Play Install Referrer)
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+      InstallReferrer.getReferralCode().then(({ code }) => {
+        if (code && code.length > 0) {
+          try { sessionStorage.setItem('referralCode', code); } catch (e) {}
+        }
+      }).catch(() => {});
+    }
+
     this.deepLinks.initialize();
 
     this.platform.ready().then(() => {
@@ -177,12 +194,7 @@ export class AppComponent implements OnInit, OnDestroy {
     const result = this.petAgeService.recordAppOpen();
     const petData = this.petAgeService.getCurrentPetData();
 
-    // Check if pet aged up today
-    if (result.ageIncreased && result.newAge) {
-      console.log(`🎉 Your pet grew to Age ${result.newAge}! You earned ${result.coinsEarned} coins!`);
-      // TODO: Show age-up notification/animation to user
-      // You can emit an event or show a toast/modal here
-    } else if (result.coinsEarned > 0) {
+    if (result.coinsEarned > 0) {
       console.log(`🔥 Day ${petData.currentStreak} streak! Earned ${result.coinsEarned} coins!`);
     }
   }

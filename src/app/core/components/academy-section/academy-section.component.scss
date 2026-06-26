@@ -106,6 +106,10 @@ $card-bg: #FFFFFF;
         color: #282527;
         font-weight: 600;
         font-size: 10px;
+
+        &.slot-active   { border-color: #F0AD4E; color: #F0AD4E; }
+        &.slot-next_up  { border-color: #4CAF50; color: #4CAF50; }
+        &.slot-new      { border-color: #90214D; color: #90214D; }
       }
     }
   }

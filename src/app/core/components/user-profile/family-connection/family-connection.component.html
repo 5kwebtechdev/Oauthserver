@@ -215,8 +215,7 @@
 
             <div class="consent">
                 <ion-checkbox slot="start" [(ngModel)]="consentChecked"></ion-checkbox>
-                <p class="check-text"> I have read and understood how switching roles changes family access and what information may be shared.
-                </p>
+                <p class="check-text">I have read and understood that switching roles affects account linkage and data as described above.</p>
             </div>
             <superme-button type="green" size="full" text="Next" [disabled]="!consentChecked" (click)="goToRoleSelect()">
             </superme-button>

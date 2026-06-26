@@ -76,7 +76,7 @@
         <div class="input-container">
           <div class="phone-input-container"
             [ngClass]="{'error' : !isPhoneValid(profileForm.get('phone')?.value) && profileForm.get('phone')?.dirty }">
-            <div class="country-code-selector" (click)="showCountryCodeModal = true">
+            <div class="country-code-selector" (click)="openCountryCodeModal()">
               <span class="flag-emoji">{{selectedCountry.flag}}</span>
               <span class="country-code">{{selectedCountry.code}}</span>
               <i class="fa-solid fa-chevron-down"></i>
@@ -98,9 +98,18 @@
                 <i class="fa-solid fa-times"></i>
               </button>
             </div>
+            <div class="country-modal__search-wrap">
+              <div class="country-search-box">
+                <svg class="country-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input class="country-search-input" type="text" placeholder="Search by name or code…" [(ngModel)]="countrySearch" autocomplete="off" />
+                <button *ngIf="countrySearch" class="country-search-clear" (click)="countrySearch = ''" aria-label="Clear search">
+                  <i class="fa-solid fa-times"></i>
+                </button>
+              </div>
+            </div>
             <div class="country-modal__content">
               <div class="country-list">
-                <div class="country-item" *ngFor="let country of countries" (click)="selectCountry(country)"
+                <div class="country-item" *ngFor="let country of filteredCountries" (click)="selectCountry(country)"
                   [class.selected]="selectedCountry.code === country.code">
                   <span class="country-flag">{{country.flag}}</span>
                   <span class="country-name">{{country.name}}</span>

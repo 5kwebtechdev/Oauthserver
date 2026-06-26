@@ -261,6 +261,19 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                         status: this.normalizeStatus(h.status),
                         priority: h.priority?.trim().toLowerCase(),
                         routine: h.routine?.trim().toLowerCase(),
+                        tags: (() => {
+                            const raw = Array.isArray(h.tags) && h.tags.length ? h.tags : (h.tag ? [h.tag] : []);
+                            const resolved = raw.map((t: any) => {
+                                if (!t) return '';
+                                if (typeof t === 'string') return t;
+                                if (typeof t === 'object') return (t.value || t.name || t.text || t.title || '').toString().trim();
+                                return '';
+                            }).filter(Boolean);
+                            if (resolved.length) return resolved;
+                            const tid = h.tagId ?? h.tag_id;
+                            if (tid) { const name = this.habitService.resolveTagId(Number(tid)); if (name) return [name]; }
+                            return [];
+                        })(),
                         // Preserve streak fields from API response
                         currentHabitStreak: Number(h.currentHabitStreak ?? h.streak ?? 0),
                         highestHabitStreak: Number(h.highestHabitStreak ?? h.highestStreak ?? 0),

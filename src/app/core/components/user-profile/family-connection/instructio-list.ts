@@ -26,10 +26,12 @@ import { CommonModule } from '@angular/common';
     font-size: 16px;
     font-weight: 600;}   
     .explanation{ display:flex; flex-direction:column; gap:10px }
-    .explanation-list{ display:flex; align-items:center; gap:10px }
+    .explanation-list{ display:flex; align-items:flex-start; gap:10px }
     .list-count{ display: inline-flex;
     min-width: 28px;
+    width: 28px;
     height: 28px;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
     background: #F0F0F0;
@@ -38,6 +40,7 @@ import { CommonModule } from '@angular/common';
     font-family: Nunito;
     font-size: 16px;
     font-weight: 600;
+    margin-top: 1px;
   }
     .explanation-list p{ margin: 0;
     opacity: 0.7;

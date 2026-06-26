@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, tap, catchError, of, ReplaySubject } from 'rxjs';
 import { Habit } from './habit.types';
 import { HabitApi } from '../../api/habit.api';
+import { TagsApi } from '../../api/tags.api';
 
 @Injectable({
   providedIn: 'root'
@@ -17,14 +18,21 @@ export class HabitService {
   public dataChanged$ = this.dataChangedSubject.asObservable();
 
   private currentLoadedDate: string = '';
+  private tagsMap = new Map<number, string>();
 
   createHabit(payload: any): Observable<any> {
     return this.habitApi.createHabit(payload);
   }
 
-  constructor(private habitApi: HabitApi) {
-    // Don't auto-load - let components decide when to load based on context
-    // (e.g., parent account needs to wait for child selection first)
+  resolveTagId(id: number): string {
+    return this.tagsMap.get(id) || '';
+  }
+
+  constructor(private habitApi: HabitApi, private tagsApi: TagsApi) {
+    this.tagsApi.getTags().subscribe({
+      next: (tags) => tags.forEach(t => this.tagsMap.set(t.id, t.name)),
+      error: () => {}
+    });
   }
 
     loadHabitsForDate(dateStr: string, forceReload: boolean = false): Observable<any> {
@@ -116,7 +124,7 @@ export class HabitService {
         status: item.status,
         tags: (() => {
             const raw = Array.isArray(item.tags) && item.tags.length ? item.tags : (item.tag ? [item.tag] : []);
-            return raw.map((t: any) => {
+            const resolved = raw.map((t: any) => {
                 if (!t) return '';
                 if (typeof t === 'string') return t;
                 if (typeof t === 'object') {
@@ -126,8 +134,13 @@ export class HabitService {
                 }
                 return String(t);
             }).filter(Boolean);
+            if (resolved.length) return resolved;
+            // calendar API only returns tagId — resolve from cached tags list
+            const tid = item.tagId ?? item.tag_id;
+            if (tid && this.tagsMap.has(Number(tid))) return [this.tagsMap.get(Number(tid))!];
+            return [];
         })(),
-        coinReward: item.coinReward || 0,
+        coinReward: Number(item.coinReward ?? item.rewardCoins ?? item.reward_coins ?? item.rewardsCoins ?? (item.rewards?.coins ?? item.rewards?.rewardCoins) ?? item.coins ?? 0),
         coinsEarned: item.coinsEarned || item.coins || 0,
         streak: item.streak || item.streakCount || 0,
         highestStreak: item.highestStreak || item.topStreak || 0,

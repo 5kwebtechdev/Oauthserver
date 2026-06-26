@@ -1,3 +1,35 @@
+<!-- ══ Home-screen overlays (PRD: bonus coins, daily login, mood prompt, streak milestone) ══ -->
+<div *ngIf="activeOverlay"
+     class="home-overlay"
+     role="dialog"
+     aria-modal="true"
+     (click)="onOverlayTap()">
+
+  <div class="home-overlay__card" (click)="$event.stopPropagation()">
+
+    <!-- Pet -->
+    <div class="home-overlay__pet">
+      <superme-pet pet="panda" [age]="1" [mood]="overlayPetMood"></superme-pet>
+    </div>
+
+    <!-- Message bubble -->
+    <div class="home-overlay__bubble">
+      <p class="home-overlay__msg" style="white-space: pre-line">{{ overlayMessage }}</p>
+    </div>
+
+    <!-- Mood picker — only for mood-prompt (blocking until mood selected) -->
+    <div *ngIf="activeOverlay === 'mood-prompt'" class="home-overlay__mood-picker">
+      <mood-selector [value]="selectedMood" (valueChange)="onOverlayMoodSelected($event)"></mood-selector>
+    </div>
+
+    <!-- Tap hint for non-blocking overlays -->
+    <p *ngIf="activeOverlay !== 'mood-prompt'" class="home-overlay__hint" (click)="dismissCurrentOverlay()">
+      Tap anywhere to continue
+    </p>
+
+  </div>
+</div>
+
 <ion-content>
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content

@@ -10,9 +10,18 @@
                 </a>
             </div>
 
-            <div class="coins">
+            <div class="coins" [class.coins--rolling]="showTargetDigits && !coinAnimDone" [class.coins--done]="coinAnimDone">
                 <img src="\assets\Icons-Neutral\Icons-Coins.png" alt="Coin" class="coin-icon">
-                <span class="coin-value">{{ coinTotal || '0' }}</span>
+                <span class="coin-value" *ngIf="isLoading || coinTotal <= 0">0</span>
+                <div class="coin-value-roller" *ngIf="!isLoading && coinTotal > 0">
+                    <span class="digit-col" *ngFor="let d of coinDigits; let i = index"
+                          [style.--target]="showTargetDigits ? (10 + d) : 0"
+                          [style.--stagger]="((coinDigits.length - 1 - i) * 80) + 'ms'">
+                        <span class="digit-strip">
+                            <span class="digit" *ngFor="let n of digitRange">{{ n }}</span>
+                        </span>
+                    </span>
+                </div>
             </div>
 
             <div *ngIf="!isParent" class="panda-message d-flex space-between w-100">
@@ -62,8 +71,9 @@
                     </div>
 
                     <!-- Items for this day -->
-                    <div *ngFor="let item of group.items" class="coin-list-item"
-                         [class.coin-list-item--bonus]="item.type === 'DAILY_LOGIN_BONUS'">
+                    <div *ngFor="let item of group.items; let i = index" class="coin-list-item"
+                         [class.coin-list-item--bonus]="item.type === 'DAILY_LOGIN_BONUS'"
+                         [style.--anim-delay]="(i * 70) + 'ms'">
 
                         <!-- Icon -->
                         <div class="item-icon-wrap">

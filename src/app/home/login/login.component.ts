@@ -26,7 +26,16 @@ export class LoginComponent implements OnInit, OnDestroy {
   public showCountryCodeModal = false;
   public selectedCountry: Country;
   public countries: Country[] = [];
+  public countrySearch: string = '';
   private subscription = new Subscription();
+
+  get filteredCountries(): Country[] {
+    const q = this.countrySearch.trim().toLowerCase();
+    if (!q) return this.countries;
+    return this.countries.filter(c =>
+      c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
+    );
+  }
   private returnUrl: string = '';
 
   public showSaveCredsPrompt = false;
@@ -275,11 +284,13 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   openCountryCodeModal(): void {
     if (this.loginMode === 'phone') {
+      this.countrySearch = '';
       this.showCountryCodeModal = true;
     }
   }
 
   closeCountryCodeModal(): void {
+    this.countrySearch = '';
     this.showCountryCodeModal = false;
   }
 

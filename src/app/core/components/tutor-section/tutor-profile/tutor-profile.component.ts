@@ -207,10 +207,41 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
       return rows;
     }
 
+    // Category-aware fallback: use the loaded category's field definitions with tutor data
+    if (categories.length > 0 && mappings.length > 0) {
+      const category = categories.find(c => c.id === mappings[0].categoryId);
+      if (category?.fields?.length) {
+        const fallbackRows = category.fields
+          .slice()
+          .sort((a, b) => a.displayOrder - b.displayOrder)
+          .map(f => ({ label: f.fieldLabel, value: this.guessValueForField(f.fieldKey) }))
+          .filter(r => !!r.value);
+        if (fallbackRows.length > 0) return fallbackRows;
+      }
+    }
+
+    // Generic last-resort fallback (School-style)
     return [
       { label: 'Subjects', value: this.getSubjectsString() },
       { label: 'Class', value: this.getLevelsString() }
     ].filter(row => !!row.value);
+  }
+
+  private guessValueForField(fieldKey: string): string {
+    const k = fieldKey.toLowerCase();
+    if (k.includes('subject') || k.includes('stream') || k.includes('course') || k.includes('degree') || k.includes('topic')) {
+      return this.getSubjectsString();
+    }
+    if (k.includes('class') || k.includes('grade') || k.includes('year') || k.includes('level')) {
+      return this.getLevelsString();
+    }
+    if (k.includes('board')) {
+      return this.getBoardString();
+    }
+    if (k.includes('language')) {
+      return this.tutor?.subjects?.join(', ') || this.getSubjectsString();
+    }
+    return '';
   }
 
   private parseSelectedFieldOptions(selectedFieldOptions: string | null | undefined): Record<string, unknown> {

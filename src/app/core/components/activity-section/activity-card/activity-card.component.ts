@@ -195,6 +195,19 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   // Flag set when logged in user is a parent (can be overridden by `isParentOverride` input)
   public isParent: boolean = false;
 
+  // Swipe-to-delete state
+  public swipeOffset: number = 0;
+  public isSwipedOpen: boolean = false;
+  private swipeStartX: number = 0;
+  private swipeStartY: number = 0;
+  public swipeTracking: boolean = false;
+  private readonly SWIPE_THRESHOLD = 50;
+  readonly DELETE_REVEAL_WIDTH = 80;
+
+  // Delete popup state
+  public showDeletePopup: boolean = false;
+  public deletePopupConfig: SupermePopupConfig = {};
+
   // Auto-reload timers
   private letsGoWindowTimer: any;
   private endTimeTimer: any;
@@ -1211,6 +1224,89 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     }
   }
 
+  // ─── Swipe-to-delete ───────────────────────────────────────────────────────
+
+  onSwipeStart(event: TouchEvent): void {
+    this.swipeStartX = event.touches[0].clientX;
+    this.swipeStartY = event.touches[0].clientY;
+    this.swipeTracking = true;
+  }
+
+  onSwipeMove(event: TouchEvent): void {
+    if (!this.swipeTracking) return;
+    const dx = event.touches[0].clientX - this.swipeStartX;
+    const dy = event.touches[0].clientY - this.swipeStartY;
+    if (Math.abs(dy) > Math.abs(dx) + 5) { this.swipeTracking = false; return; }
+    if (dx > 0 && !this.isSwipedOpen) return;
+    const base = this.isSwipedOpen ? this.DELETE_REVEAL_WIDTH : 0;
+    const raw = base + (-dx);
+    this.swipeOffset = Math.max(0, Math.min(raw, this.DELETE_REVEAL_WIDTH));
+    if (dx < 0) event.preventDefault();
+  }
+
+  onSwipeEnd(): void {
+    if (!this.swipeTracking) return;
+    this.swipeTracking = false;
+    if (this.swipeOffset >= this.SWIPE_THRESHOLD) {
+      this.isSwipedOpen = true;
+      this.swipeOffset = this.DELETE_REVEAL_WIDTH;
+    } else {
+      this.isSwipedOpen = false;
+      this.swipeOffset = 0;
+    }
+  }
+
+  closeSwipe(): void {
+    this.isSwipedOpen = false;
+    this.swipeOffset = 0;
+  }
+
+  openDeletePopup(): void {
+    this.closeSwipe();
+    const coins = this.getCoinReward();
+    const streak = this.getStreak();
+    const headingHtml = `Delete this activity?<br/><span style="font-weight:400;font-size:14px;">This will remove every instance of this activity in the date range you selected.</span><div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;align-items:center;justify-content:center;"><span style="font-weight:400;font-size:13px;opacity:0.7;">You are about to lose:</span><div style="display:flex;align-items:center;gap:8px;"><img src='assets/Icons-Neutral/Icons-Coins.png' style="width:20px;height:20px;" alt="coins"/><span style="font-weight:600;">${coins}</span></div></div>`;
+    this.deletePopupConfig = {
+      image: 'assets/Images-Transparent/Image-Input-Delete.png',
+      imageAlt: 'Delete',
+      heading: headingHtml,
+      subtitle: '',
+      primaryCTA: { text: 'Cancel', buttonStyle: 'white-black', buttonMedium: true },
+      secondaryCTA: { text: 'Delete', buttonStyle: 'red', buttonMedium: true },
+      showCloseButton: false,
+      backdrop: true,
+      ctaDirection: 'row'
+    };
+    this.showDeletePopup = true;
+  }
+
+  closeDeletePopup(): void {
+    this.showDeletePopup = false;
+  }
+
+  handleDeleteCancel(): void {
+    this.closeDeletePopup();
+  }
+
+  handleDeleteConfirm(): void {
+    this.closeDeletePopup();
+    if (!this.habit) return;
+    const id = this.habit.id;
+    if (this.habit.type === 'tasks') {
+      this.taskApi.deleteTask(id).subscribe({
+        next: () => { this.habitService.notifyTaskDeleted(); },
+        error: (err: any) => console.error('Failed to delete task', err)
+      });
+    } else {
+      this.habitApi.deleteHabit(id).subscribe({
+        next: () => { this.habitService.deleteHabit(id); },
+        error: (err: any) => console.error('Failed to delete habit', err)
+      });
+    }
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+
   ngOnDestroy(): void {
     if (this._intervalId) {
       clearInterval(this._intervalId);
@@ -1944,7 +2040,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         if (n) return n;
       }
     }
-    return h?.selectedRoutine || h?.routine || '';
+    return '';
   }
 
   getRoutine(): string {

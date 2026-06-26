@@ -1,5 +1,6 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 import { PetAgeService } from '../../services/pet-age.service';
 
 export type PetType = 'panda' | 'dragon' | 'llama' | 'owl';
@@ -12,7 +13,7 @@ export type PetMood = 'happy' | 'playful' | 'curious' | 'base' | 'tired' | 'ange
   templateUrl: './superme-pet.component.html',
   styleUrls: ['./superme-pet.component.scss']
 })
-export class SupermePetComponent implements OnInit, OnChanges {
+export class SupermePetComponent implements OnInit, OnChanges, OnDestroy {
   @Input() name: string = 'Buddy';
 
   @Input() mood: PetMood = 'base';
@@ -36,6 +37,7 @@ export class SupermePetComponent implements OnInit, OnChanges {
   static readonly PETS = ['panda', 'dragon', 'llama', 'owl'] as const;
 
   currentImage = '';
+  private petSub?: Subscription;
 
   constructor(private petAgeService: PetAgeService) { }
 
@@ -52,7 +54,7 @@ export class SupermePetComponent implements OnInit, OnChanges {
     // Normalize inputs
     const petCapitalized = this.capitalizePetName(this.pet);
     const moodCapitalized = this.capitalizeMood(this.mood);
-    const ageValue = Math.max(1, Math.min(4, this.age)); // Clamp age between 1-4
+    const ageValue = Math.max(1, Math.min(3, this.age)); // Clamp age between 1-3 (PRD max is 3)
 
     // Build image filename based on structure
     const prefix = this.animated ? `${petCapitalized}-Move` : petCapitalized;
@@ -90,14 +92,26 @@ export class SupermePetComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
+    // Initial render (handles cases where age/pet were set via @Input before init)
     this.updateImage();
 
-    // If no age is provided, use the current pet age from service
-    if (!this.age || this.age === 1) {
-      const petData = this.petAgeService.getCurrentPetData();
-      this.age = petData.currentAge;
-      this.pet = petData.petType;
-    }
+    // Subscribe to real-time age updates from the service.
+    // Only overrides this.age when it is at the default (1) — i.e. not explicitly
+    // set to 2 or 3 by a parent for a decorative/fixed display.
+    this.petSub = this.petAgeService.petData$.subscribe(data => {
+      if (this.age <= 1) {
+        const newAge = Math.min(3, Math.max(1, data.currentAge));
+        if (this.age !== newAge || this.pet !== data.petType) {
+          this.age = newAge;
+          this.pet = data.petType;
+          this.updateImage();
+        }
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.petSub?.unsubscribe();
   }
 
   ngOnChanges(changes: SimpleChanges): void {

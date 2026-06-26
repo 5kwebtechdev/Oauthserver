@@ -173,11 +173,11 @@
               formControlName="familyName" 
               placeholder="Set family name"
               [class.error]="familyNameControl?.invalid && familyNameControl?.touched" 
-              maxlength="30">
+              maxlength="10">
             <div class="error-message" *ngIf="familyNameControl?.invalid && familyNameControl?.touched">
               <span *ngIf="familyNameControl?.errors?.['required']">Family name is required</span>
               <span *ngIf="familyNameControl?.errors?.['minlength']">Family name must be at least 2 characters</span>
-              <span *ngIf="familyNameControl?.errors?.['maxlength']">Family name must be less than 30 characters</span>
+              <span *ngIf="familyNameControl?.errors?.['maxlength']">Family name must be less than 10 characters</span>
             </div>
           </div>
 
