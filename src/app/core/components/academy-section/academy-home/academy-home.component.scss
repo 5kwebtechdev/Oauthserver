@@ -1,174 +1,188 @@
 .main-container {
   background: #FFF;
-  padding: 16px 16px calc(32px + env(safe-area-inset-bottom, 0px)) 16px;
+  padding: 12px 16px calc(32px + env(safe-area-inset-bottom, 0px));
   font-family: var(--font-sans), sans-serif;
   box-sizing: border-box;
+  min-height: 100dvh;
 }
 
-/* Header */
-.header {
+// ── Header ──
+.ah-header {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
-.back-arrow {
-  width: 48px;
-  height: 48px;
-  padding-left: 16px;
+.ah-back {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #F5F5F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+
+  &:active {
+    background: #E8E8E8;
+    transform: scale(0.94);
+  }
 }
 
-.header-texts {
+.ah-header__text {
   flex: 1;
 }
 
-.title {
-  color: #282527;
+.ah-title {
   font-family: var(--font-heading);
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 140%;
-  /* 28px */
-}
-
-.subtitle {
+  font-size: 22px;
+  font-weight: 600;
   color: #282527;
-  font-family: var(--font-sans);
-  font-size: 13px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 140%;
-  /* 18.2px */
-  margin: 4px 0 0;
+  margin: 0;
+  line-height: 1.25;
 }
 
-/* Panda Section */
-.panda-section {
+.ah-subtitle {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: #6B656A;
+  margin: 3px 0 0;
+}
+
+// ── Panda + Speech Bubble ──
+.ah-panda {
   display: flex;
   align-items: center;
-  margin: 20px 0;
   gap: 12px;
+  margin-bottom: 24px;
+  padding: 14px 16px;
+  background: #FBF4F7;
+  border-radius: 20px;
 }
 
-.panda-img {
-  width: 116px;
-  height: 116px;
-  flex-shrink: 0;
-}
-
-.speech-bubble {
+.ah-bubble {
+  flex: 1;
   background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 10px;
-  font-size: 12px;
-  width: 188px;
-  color: #282527;
-  font-family: var(--font-sans);
-  font-size: 13px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 140%;
-  /* 18.2px */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  position: relative;
+
+  p {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: #282527;
+    line-height: 1.45;
+    margin: 0;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid #fff;
+  }
 }
 
-/* Question */
-.question {
-  color: #282527;
+// ── Question ──
+.ah-question {
   font-family: var(--font-heading);
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 140%;
-  /* 22.4px */
-  margin: 10px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #282527;
+  margin: 0 0 16px;
+  line-height: 1.3;
 }
 
-/* Subject cards */
-.subject-cards {
+// ── Grid ──
+.ah-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-top: 10px;
 }
 
-.card {
-  border-radius: 10px;
-  padding: 16px;
-  text-align: center;
-  color: #333;
+.ah-card {
+  border: none;
+  border-radius: 18px;
+  padding: 18px 12px 14px;
   display: flex;
-  min-height: 164px;
-  box-sizing: border-box;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  border: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  min-height: 160px;
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  app-img,
+  img {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    display: block;
+  }
+
+  &__title {
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 700;
+    color: #282527;
+    text-align: center;
+    line-height: 1.25;
+  }
+
+  &__count {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(40, 37, 39, 0.55);
+    text-align: center;
+  }
+
+  // Card colors — soft pastels
+  &.yellow  { background: #FFF4CC; }
+  &.purple  { background: #EDE4F7; }
+  &.pink    { background: #FCE0E0; }
+  &.green   { background: #DDF4D5; }
 }
 
-.card p {
-  color: #282527;
-  text-align: center;
+// ── State (loading / empty) ──
+.ah-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
   font-family: var(--font-sans);
-  font-size: 18px;
-  font-style: normal;
+  font-size: 14px;
   font-weight: 600;
-  line-height: 140%;
-  /* 28px */
-  width: 100%;
-  margin: 0;
-}
-
-.card img,
-.card app-img {
-  width: 104px;
-  height: 104px;
-  flex-shrink: 0;
-  aspect-ratio: 1/1;
-  display: block;
-  object-fit: contain;
-  margin: 0 auto;
-}
-
-.academy-home-state {
-  color: #282527;
-  font-family: var(--font-sans);
-  font-size: 15px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 140%;
-  margin-top: 14px;
+  color: #6B656A;
   text-align: center;
 }
 
-.card.yellow {
-  background: #F9E56E;
-}
-
-.card.purple {
-  background: #E8D9F6;
-}
-
-.card.pink {
-  background: #F6C6C6;
-}
-
-.card.green {
-  background: #D1F0C8;
-}
-
-/* Footer */
-.footer-note {
+// ── Footer ──
+.ah-footer {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
   color: #90214D;
-  font-family: var(--font-sans);
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 140%;
-  /* 22.4px */
-  margin-top: 20px;
+  text-align: center;
+  margin: 20px 0 0;
 }

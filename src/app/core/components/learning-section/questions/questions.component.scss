@@ -96,11 +96,21 @@
     }
 }
 
-// Selected state (accent color before checking)
-:host ::ng-deep .button.white-black.selected:not(.correct):not(.incorrect) {
-    border: 2px solid #90214D !important;
-    background: linear-gradient(135deg, rgba(144, 33, 77, 0.12) 0%, rgba(205, 53, 120, 0.10) 100%) !important;
-    background-color: rgba(144, 33, 77, 0.10) !important;
+// Selected state — magenta accent applied via host class on <superme-button>
+:host ::ng-deep superme-button.quiz-selected .button {
+    border: 2px solid #CD3578 !important;
+    background: linear-gradient(135deg, rgba(144, 33, 77, 0.15) 0%, rgba(205, 53, 120, 0.15) 100%) !important;
+    color: #90214D !important;
+}
+
+:host ::ng-deep superme-button.quiz-correct .button {
+    border: 2px solid #4CAF50 !important;
+    background: rgba(76, 175, 80, 0.15) !important;
+}
+
+:host ::ng-deep superme-button.quiz-incorrect .button {
+    border: 2px solid #BB2124 !important;
+    background: rgba(187, 33, 36, 0.15) !important;
 }
 
 // Visual options grid

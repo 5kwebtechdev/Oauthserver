@@ -1,3 +1,51 @@
+// ── Family connected acknowledgment popup ────────────────────────────────────
+.family-ack-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 24px;
+}
+
+.family-ack-popup {
+  background: #fff;
+  border-radius: 24px;
+  padding: 32px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  max-width: 320px;
+  width: 100%;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+
+  &__img { width: 120px; height: auto; margin-bottom: 4px; }
+
+  &__title {
+    font-family: var(--font-sans); font-size: 20px; font-weight: 800;
+    color: #282527; margin: 0; line-height: 1.3;
+  }
+
+  &__desc {
+    font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+    color: rgba(40, 37, 39, 0.65); margin: 0; line-height: 1.5;
+  }
+
+  &__btn {
+    width: 100%; padding: 15px; border: none; border-radius: 14px;
+    background: #4CAF50; color: #fff; font-family: var(--font-sans);
+    font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 8px;
+    -webkit-tap-highlight-color: transparent;
+    &:active { background: #388E3C; transform: scale(0.98); }
+  }
+}
+
 .user-profile-section {
     position: relative;
     height: 340px;
@@ -119,6 +167,23 @@
 .dashboard-content--empty {
     gap: 0;
     padding-top: 4px;
+    position: relative;
+}
+
+// Blur the profile header when no child linked
+.user-profile-section.no-child {
+    .profile-header {
+        filter: blur(6px);
+        opacity: 0.45;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .child-progress {
+        filter: blur(8px);
+        opacity: 0.3;
+        pointer-events: none;
+    }
 }
 
 .link-child-empty-state {
@@ -127,14 +192,34 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 10px;
-    padding: 12px 0 4px;
+    position: relative;
+    padding: 0;
+    min-height: calc(100dvh - 400px);
+}
+
+.link-empty__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.link-empty__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    padding: 20px 16px 24px;
+    width: 100%;
 
     img {
-        width: min(186px, 52vw);
+        width: min(200px, 55vw);
         height: auto;
         display: block;
-        margin-bottom: 4px;
+        margin-bottom: 8px;
+        animation: linkFloat 3s ease-in-out infinite;
     }
 
     h1 {
@@ -142,20 +227,20 @@
         color: #282527;
         text-align: center;
         font-family: var(--font-sans);
-        font-size: 18px;
+        font-size: 20px;
         font-weight: 800;
-        line-height: 1.28;
+        line-height: 1.3;
     }
 
     p {
-        width: min(318px, 88vw);
-        margin: 0 0 10px;
-        color: rgba(40, 37, 39, 0.68);
+        width: min(320px, 88vw);
+        margin: 0 0 8px;
+        color: rgba(40, 37, 39, 0.6);
         text-align: center;
         font-family: var(--font-sans);
         font-size: 14px;
-        font-weight: 600;
-        line-height: 1.45;
+        font-weight: 500;
+        line-height: 1.5;
     }
 
     superme-button {
@@ -163,6 +248,19 @@
         width: 100%;
         max-width: 360px;
     }
+}
+
+// Blur bottom tab bar when no child linked
+::ng-deep app-footer.footer-blur {
+    filter: blur(6px);
+    opacity: 0.45;
+    pointer-events: none;
+    user-select: none;
+}
+
+@keyframes linkFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
 }
 
 /* Make mood-selector on parent-account non-interactive and show a small overlay */

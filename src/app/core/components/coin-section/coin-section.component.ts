@@ -138,16 +138,11 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
 
         const today = this.getDayKey(new Date());
 
-        return Array.from(groups.entries()).map(([key, items]) => {
-            // DAILY_LOGIN_BONUS always first within a day
-            const bonus = items.filter(i => i.type === 'DAILY_LOGIN_BONUS');
-            const rest = items.filter(i => i.type !== 'DAILY_LOGIN_BONUS');
-            return {
-                dateLabel: this.formatDateLabel(items[0].date),
-                isToday: key === today,
-                items: [...bonus, ...rest]
-            };
-        });
+        return Array.from(groups.entries()).map(([key, items]) => ({
+            dateLabel: this.formatDateLabel(items[0].date),
+            isToday: key === today,
+            items
+        }));
     }
 
     private getDayKey(date: Date): string {

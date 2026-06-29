@@ -99,6 +99,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   public awaitingTasks: number = 0;
   public awaitingHabits: number = 0;
 
+  // Family connected acknowledgment popup
+  showFamilyAck = false;
+  familyAckRole = '';
+
   // Streak restore banner
   canRestoreStreak = false;
   restoreToStreak: number | null = null;
@@ -132,6 +136,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.toast$ = this.toastService.toast$;
   }
 
+  dismissFamilyAck(): void {
+    this.showFamilyAck = false;
+  }
+
   async openNotes() {
     // Navigate to the notes home page instead of opening the Notes modal
     this.router.navigate(['/authed/notes']);
@@ -143,6 +151,16 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       this.router.navigate(['/authed/parent-account'], { replaceUrl: true });
       return;
     }
+
+    // Check for family connected acknowledgment
+    try {
+      const ack = sessionStorage.getItem('family_connected_ack');
+      if (ack) {
+        sessionStorage.removeItem('family_connected_ack');
+        this.familyAckRole = ack;
+        this.showFamilyAck = true;
+      }
+    } catch {}
 
     // Subscribe to user data changes from AuthService (primary source of truth)
     // This will update the UI whenever user data is modified (e.g., from edit-profile)

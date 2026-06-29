@@ -1,6 +1,6 @@
 <ion-content style="--padding-top: var(--sat)">
-    <div class="education-main-page-container ">
-        <superme-navigator heading="Education & Essentials" backIcon="arrowSvg" (back)="goBack()"></superme-navigator>
+    <div class="education-main-page-container">
+        <h1 class="edu-heading">Education & Essentials</h1>
         <div>
             <swiper-container #swiperEl class="edu-swiper" [slides-per-view]="1" [loop]="true"
                 [autoplay]="{ delay: 3000, disableOnInteraction: false }">
@@ -20,8 +20,9 @@
                 <h1>Find Tutors</h1>
                 <app-img src="assets/Images-Transparent/Find-Tutors.png" alt="Find Tutors" objectFit="contain"></app-img>
             </a>
-            <a class="edu-item-cards" routerLink="/authed/academy" aria-label="Open Academies">
+            <a class="edu-item-cards" aria-label="Academies">
                 <h1>Academies</h1>
+                <span>COMING SOON</span>
                 <app-img src="assets/Images-Transparent/Academies.png" alt="Academies" objectFit="contain"></app-img>
             </a>
             <a class="edu-item-cards">

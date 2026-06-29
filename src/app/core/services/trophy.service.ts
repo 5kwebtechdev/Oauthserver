@@ -28,6 +28,7 @@ export interface TrophyApiResponse {
         contentType: string;
         difficultyLevel: 'Easy' | 'Medium' | 'Hard';
         challengeId: string;
+        challengeName?: string;
         categoryIconUrl?: string;
         contentTitle?: string;
         contentThumbnailUrl?: string;
@@ -97,6 +98,7 @@ export class TrophyService {
             // Title of the learning content (article/quiz) that earned this trophy
             const contentTitle: string | undefined =
                 raw.contentTitle ||
+                raw.challengeName ||
                 raw.articleTitle ||
                 raw.quizTitle ||
                 raw.challengeTitle ||

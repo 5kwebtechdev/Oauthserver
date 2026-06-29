@@ -63,18 +63,21 @@ export class BadgePopupService {
     }
 
     private mapResponse(res: any): BadgePopupData {
+        const currentLevel = Number(res.level || res.currentLevel || 1);
+        const title = res.title || `Level ${currentLevel} - Badge Unlocked!`;
+
         return {
             badgeId: res.badgeId,
-            title: res.title || 'Badge Unlocked!',
+            title,
             name: res.badgeName || '',
             levelText: res.level ? `Level ${res.level}` : '',
             description: res.message || '',
             achievementText: res.message || '',
             iconUrl: res.icon ? this.resolveIcon(res.icon) : DEFAULT_ICON,
-            celebrationTitle: res.title || 'Badge Unlocked!',
+            celebrationTitle: title,
             celebrationMessage: res.message || '',
             shareMessage: '',
-            currentLevel: res.level || 1,
+            currentLevel,
             totalLevels: 5,
             isMaxLevel: false,
             pendingCount: res.pendingCount ?? 1,

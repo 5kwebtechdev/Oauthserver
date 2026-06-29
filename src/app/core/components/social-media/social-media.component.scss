@@ -20,42 +20,58 @@
     justify-content: center;
 }
 
-/* login-with variant styles */
-.login-with {
+/* login-with variant: full-width labeled buttons */
+.login-with-buttons {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 40px;
-    /* requested spacing */
+    flex-direction: column;
+    gap: 10px;
 }
 
-.login-icon {
-    background: transparent;
-    border: none;
-    padding: 8px;
-    border-radius: 50%;
-    display: inline-flex;
+.social-login-btn {
+    display: flex;
     align-items: center;
     justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: 14px;
+    border: 1.5px solid #E8D8CC;
+    background: #FFF7F2;
     cursor: pointer;
-    transition: background 0.15s ease, transform 0.12s ease;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
     -webkit-tap-highlight-color: transparent;
 
     &:active {
-        transform: scale(0.92);
-        background: rgba(0, 0, 0, 0.06);
+        transform: scale(0.98);
+        background: #FDEAD7;
+        border-color: #d6c3b4;
     }
-}
 
-.login-icon svg {
-    width: auto;
-    height: 36px;
-    display: block;
-}
+    &__icon {
+        flex-shrink: 0;
+        display: block;
+    }
 
-.apple-btn svg {
-    height: 36px;
-    width: auto;
+    &__label {
+        font-family: var(--font-sans, 'Nunito', sans-serif);
+        font-size: 15px;
+        font-weight: 600;
+        color: #532b19;
+    }
+
+    &--apple {
+        background: #000;
+        border-color: #000;
+
+        .social-login-btn__label {
+            color: #fff;
+        }
+
+        &:active {
+            background: #222;
+            border-color: #222;
+        }
+    }
 }
 
 .icon-btn {

@@ -51,6 +51,8 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     public userDays: number = 0;
     public userBadges: number = 0;
     public selectedMood: string | null = 'happy';
+    public showFamilyAck = false;
+    public familyAckRole = '';
 
     public userAvatarUrl: string = 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
     public parentAvatarStyle: { [k: string]: string } = {};
@@ -66,6 +68,10 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
     /** Passed directly to mood-selector so it shows the correct child's vibe without ID matching */
     public selectedChildVibe: VibesDisplayResponse | null = null;
+
+    dismissFamilyAck(): void {
+        this.showFamilyAck = false;
+    }
 
     /** PRD color logic: Red 0-59, Yellow 60-79, Green 80-100 */
     getMetricColor(value: number): string {
@@ -159,6 +165,16 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             this.router.navigate(['/authed/user-dashboard'], { replaceUrl: true });
             return;
         }
+
+        // Check for family connected acknowledgment
+        try {
+            const ack = sessionStorage.getItem('family_connected_ack');
+            if (ack) {
+                sessionStorage.removeItem('family_connected_ack');
+                this.familyAckRole = ack;
+                this.showFamilyAck = true;
+            }
+        } catch {}
 
         // Subscribe to parent profile
         this.userService.getUserProfile$().pipe(takeUntil(this.destroy$)).subscribe(profile => {

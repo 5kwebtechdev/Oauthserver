@@ -57,7 +57,7 @@
                 *ngIf="!questions[currentQuestionIndex].type || questions[currentQuestionIndex].type === 'mcq'">
                 <superme-button *ngFor="let option of questions[currentQuestionIndex].options" type="white-black"
                     [text]="option" (click)="selectAnswer(option)"
-                    [selected]="selectedOption === option && !answerChecked"
+                    [ngClass]="{'quiz-selected': selectedOption === option && !answerChecked, 'quiz-correct': answerChecked && option === correctAnswer, 'quiz-incorrect': answerChecked && selectedOption === option && option !== correctAnswer}"
                     [correct]="answerChecked && option === correctAnswer"
                     [incorrect]="answerChecked && selectedOption === option && option !== correctAnswer">
                 </superme-button>
@@ -66,12 +66,12 @@
             <!-- True/False Options -->
             <ng-container *ngIf="questions[currentQuestionIndex].type === 'true-false'">
                 <superme-button type="white-black" text="True" (click)="selectAnswer('True')"
-                    [selected]="selectedOption === 'True' && !answerChecked"
+                    [ngClass]="{'quiz-selected': selectedOption === 'True' && !answerChecked, 'quiz-correct': answerChecked && 'True' === correctAnswer, 'quiz-incorrect': answerChecked && selectedOption === 'True' && 'True' !== correctAnswer}"
                     [correct]="answerChecked && 'True' === correctAnswer"
                     [incorrect]="answerChecked && selectedOption === 'True' && 'True' !== correctAnswer">
                 </superme-button>
                 <superme-button type="white-black" text="False" (click)="selectAnswer('False')"
-                    [selected]="selectedOption === 'False' && !answerChecked"
+                    [ngClass]="{'quiz-selected': selectedOption === 'False' && !answerChecked, 'quiz-correct': answerChecked && 'False' === correctAnswer, 'quiz-incorrect': answerChecked && selectedOption === 'False' && 'False' !== correctAnswer}"
                     [correct]="answerChecked && 'False' === correctAnswer"
                     [incorrect]="answerChecked && selectedOption === 'False' && 'False' !== correctAnswer">
                 </superme-button>

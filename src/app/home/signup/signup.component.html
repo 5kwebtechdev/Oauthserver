@@ -1,5 +1,5 @@
 <ion-content #content [scrollY]="step !== 0.1 && step !== 0.3 && step !== 5" [ngClass]="step === 5 ? 'bg-white' : 'bg-superme-secondary'">
-  <superme-navigator *ngIf="step !== 5"
+  <superme-navigator *ngIf="step !== 5 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1"
     [heading]="headerText"
     [subtext]="headerSubtext"
     [showSubtext]="showHeaderSubtext"
@@ -7,178 +7,234 @@
     [hideBack]="true">
   </superme-navigator>
   <div class="signup-container" [ngClass]="{'step-5-container': step === 5}">
-    <h4 class="step-text" *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 5">
+    <h4 class="step-text" *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 5">
       Step {{step}} of 4
       <span>{{stepDesciption[step-1]}}</span>
       <div class="step-completion-slider {{returnSameNumber(step)}}"
-        *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 5">
-  
+        *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 5">
+
       </div>
     </h4>
 
-    <div *ngIf="step === 0.1" [@slideIn] style="
- width: 100%;
-  align-self: center;
-">
-      <div class="container w-full p-0" style="display: flex; justify-content: flex-start; align-items: flex-start;">
-        <div class="container w-full p-0" style="padding: 10px 0px !important;">
-          <!-- Helper text -->
-          <small class="helper-text">Only for login and safety</small>
-          <form [formGroup]="signupForm" autocomplete="on">
-              <ng-container *ngIf="loginMode === 'email'">
-                <div class="input-group">
-                  <input [ngClass]="{'error' : email?.invalid && (email?.dirty)}" formControlName="email" type="email"
-                    name="username" autocomplete="username" inputmode="email"
-                    placeholder="Email" />
-                  <div class="error" *ngIf="email?.invalid && (email?.dirty)">
-                    Oops! That email looks off. Please check it again.
-                  </div>
-                </div>
-              </ng-container>
-              <ng-container *ngIf="loginMode === 'phone'">
-                <div class="input-group">
-                  <div class="phone-input-container"
-                    [ngClass]="{'error' : !isPhoneValid(phone?.value) && phone?.dirty }">
-                    <div class="country-code-selector" (click)="openCountryCodeModal()">
-                      <span class="flag-emoji">{{selectedCountry.flag}}</span>
-                      <span class="country-code">{{selectedCountry.code}}</span>
-                      <i class="fa-solid fa-chevron-down"></i>
-                    </div>
-                    <input formControlName="phone" type="tel" name="username" autocomplete="username tel"
-                      [maxlength]="currentPhoneLength" pattern="[0-9]*"
-                      inputmode="numeric" (input)="onPhoneInput($event)" (keypress)="onKeyPress($event)"
-                      placeholder="Enter {{currentPhoneLength}} digit number" />
-                  </div>
-                  <div class="error" *ngIf="!isPhoneValid(phone?.value) && phone?.dirty ">
-                    {{getPhoneErrorMessage()}}
-                  </div>
-                </div>
-              </ng-container>
-
-              <superme-button type="orange-onboard" full [text]="'Next'"
-                [disabled]="loginMode === 'email' ? email?.invalid : !isPhoneValid(phone?.value)" (click)="signupFromLogin()">
-              </superme-button>
-
-              <div class="error-message" *ngIf="errorMessage">
-                {{ errorMessage }}
+    <div *ngIf="step === 0.1" [@slideIn] class="signup-step-initial">
+      <div class="signup-card">
+        <form [formGroup]="signupForm" autocomplete="on" class="signup-form">
+          <ng-container *ngIf="loginMode === 'email'">
+            <div class="su-field">
+              <label class="su-field__label">Email</label>
+              <input class="su-field__input" formControlName="email" type="email"
+                name="username" autocomplete="username" inputmode="email"
+                placeholder="Enter your email"
+                [class.su-field__input--error]="email?.invalid && email?.dirty" />
+              <div class="su-field__error" *ngIf="email?.invalid && (email?.dirty)">
+                Oops! That email looks off. Please check it again.
               </div>
-            </form>
+            </div>
+          </ng-container>
 
-          <div class="container w-full p-0" style="align-self: center;">
-            <div class="or-divider"><span>OR</span></div>
-            <social-media [variant]="'login-with'"></social-media>
+          <ng-container *ngIf="loginMode === 'phone'">
+            <div class="input-group">
+              <label class="input-label">Phone Number</label>
+              <div class="phone-input-container-v2" [class.error]="!isPhoneValid(phone?.value) && phone?.dirty">
+                <div class="country-code-selector-v2" (click)="openCountryCodeModal()">
+                  <span class="flag-emoji">{{selectedCountry.flag}}</span>
+                  <span class="country-code">{{selectedCountry.code}}</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M7 10l5 5 5-5z" fill="currentColor"/>
+                  </svg>
+                </div>
+                <input formControlName="phone" type="tel" name="username" autocomplete="username tel"
+                  [maxlength]="currentPhoneLength" pattern="[0-9]*"
+                  inputmode="numeric" (input)="onPhoneInput($event)" (keypress)="onKeyPress($event)"
+                  placeholder="Enter {{currentPhoneLength}} digit number" />
+              </div>
+              <div class="field-error" *ngIf="!isPhoneValid(phone?.value) && phone?.dirty">
+                {{getPhoneErrorMessage()}}
+              </div>
+            </div>
+          </ng-container>
+
+          <superme-button type="orange-onboard" full [text]="'Next'"
+            [disabled]="loginMode === 'email' ? email?.invalid : !isPhoneValid(phone?.value)" (click)="signupFromLogin()">
+          </superme-button>
+
+          <div class="error-message" *ngIf="errorMessage">
+            {{ errorMessage }}
           </div>
+        </form>
 
-          <p class="login-text">Already have an Account ? <a [routerLink]="['/home/login']">Login Now</a></p>
+        <div class="social-divider">
+          <div class="divider-line"></div>
+          <span class="divider-text">or continue with</span>
+          <div class="divider-line"></div>
         </div>
-      </div>
-      <!-- <div class="terms-consent-fixed">
-        <label class="whatsapp-checkbox">
-          <input type="checkbox" [(ngModel)]="whatsappConsent" />
-          Receive offers, updates and reminders on <b><i class="fa-brands fa-whatsapp"></i> WhatsApp</b>.
-        </label>
 
-        <p class="terms">By continuing you accept our <a href="#"
-            (click)="navigateToPrivacyPolicy(); $event.preventDefault()">Privacy Policy</a> and <a href="#"
-            (click)="navigateToTermsOfUse(); $event.preventDefault()">Terms of Use</a>.
-        </p>
-      </div> -->
+        <social-media [variant]="'login-with'"></social-media>
+      </div>
+
+      <div class="login-link">
+        <p>Already have an account? <a [routerLink]="['/home/login']">Login</a></p>
+      </div>
     </div>
 
-    <div *ngIf="step === 0.2" [@slideIn]>
-      <div class="otp-container">
+    <div *ngIf="step === 0.2" [@slideIn] class="otp-step">
+      <div class="otp-hero">
+        <div class="otp-hero__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#EE6621"/>
+          </svg>
+        </div>
+        <p class="otp-hero__text">We sent a 4-digit code to</p>
+        <p class="otp-hero__email">{{ loginMode === 'phone' ? (selectedCountry.code + ' ' + phone?.value) : email?.value }} <a class="otp-hero__change" (click)="goBackToEmail()">Change</a></p>
+      </div>
 
-        <div class="otp-inputs-container">
-          <div class="otp-inputs">
-            <input *ngFor="let digit of otpDigits; let i = index" type="tel" class="otp-digit" [value]="otpDigits[i]"
-              (input)="onOtpInput($event, i)" (keydown)="onOtpKeydown($event, i)" (keyup)="onOtpKeyup($event, i)"
-              (paste)="onOtpPaste($event)" (focus)="onOtpFocus($event, i)" maxlength="1" inputmode="numeric"
-              pattern="[0-9]*" autocomplete="one-time-code" [id]="'otp-input-' + i" [attr.data-index]="i" />
-          </div>
-          <div class="otp-timer" *ngIf="!canResendOtp">
-            {{formatTime(otpResendTimer)}}
-          </div>
+      <div class="otp-card">
+        <div class="otp-inputs">
+          <input *ngFor="let digit of otpDigits; let i = index" type="tel" class="otp-cell" [value]="otpDigits[i]"
+            [class.otp-cell--filled]="otpDigits[i]"
+            (input)="onOtpInput($event, i)" (keydown)="onOtpKeydown($event, i)" (keyup)="onOtpKeyup($event, i)"
+            (paste)="onOtpPaste($event)" (focus)="onOtpFocus($event, i)" maxlength="1" inputmode="numeric"
+            pattern="[0-9]*" autocomplete="one-time-code" [id]="'otp-input-' + i" [attr.data-index]="i" />
         </div>
 
-        <superme-button type="orange-onboard" full [text]="'Next'" [disabled]="!isOtpComplete()" (click)="verifyOtp()">
+        <div class="otp-footer">
+          <span class="otp-timer" *ngIf="!canResendOtp">Resend in {{ formatTime(otpResendTimer) }}</span>
+          <button type="button" class="otp-resend-btn" *ngIf="canResendOtp" (click)="resendOtp()">Resend code</button>
+        </div>
+
+        <superme-button type="orange-onboard" full [text]="'Verify'" [disabled]="!isOtpComplete()" (click)="verifyOtp()">
         </superme-button>
-        <div class="error-message" *ngIf="errorMessage">
-          {{ errorMessage }}
-        </div>
 
-        <div class="otp-resend" *ngIf="canResendOtp">
-          <p>Didn't receive the code? <span class="resend-link" (click)="resendOtp()">Resend</span></p>
-        </div>
+        <div class="otp-error" *ngIf="errorMessage">{{ errorMessage }}</div>
       </div>
     </div>
 
-    <div *ngIf="step === 0.3" [@slideIn]>
-      <div class="password-container">
+    <div *ngIf="step === 0.3" [@slideIn] class="pwd-step">
+      <div class="pwd-hero">
+        <div class="pwd-hero__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" fill="#EE6621"/>
+          </svg>
+        </div>
+        <h2 class="pwd-hero__title">Create a password</h2>
+        <p class="pwd-hero__subtitle">Must be at least 6 characters</p>
+      </div>
+
+      <div class="pwd-card">
         <form [formGroup]="passwordForm" (ngSubmit)="proceedWithPassword()" autocomplete="on">
           <input class="credential-username-field" type="text" name="username" autocomplete="username"
             [value]="getSignupCredentialIdentifier()" tabindex="-1" aria-hidden="true" />
-          <div class="input-group">
-            <input formControlName="password" name="new-password" autocomplete="new-password"
-              [ngClass]="{'error' : password?.invalid && (password?.dirty || password?.touched) }"
-              [type]="hidePassword ? 'password' : 'text'" placeholder="Password" />
-            <span class="toggle-eye" (click)="hidePassword = !hidePassword">
-              <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-            </span>
 
-            <div class="error" *ngIf="password?.invalid && (password?.dirty || password?.touched)">
+          <div class="pwd-field">
+            <label class="pwd-field__label">Password</label>
+            <div class="pwd-field__row">
+              <input class="pwd-field__input" formControlName="password" name="new-password" autocomplete="new-password"
+                [type]="hidePassword ? 'password' : 'text'" placeholder="Enter your password"
+                [class.pwd-field__input--error]="password?.invalid && (password?.dirty || password?.touched)" />
+              <button type="button" class="pwd-field__eye" (click)="hidePassword = !hidePassword" aria-label="Toggle password">
+                <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+              </button>
+            </div>
+            <div class="pwd-field__error" *ngIf="password?.invalid && (password?.dirty || password?.touched)">
               {{ getPasswordErrorMessage() }}
+            </div>
+          </div>
+
+          <!-- Password strength hints -->
+          <div class="pwd-hints" *ngIf="password?.value">
+            <div class="pwd-hint" [class.pwd-hint--pass]="password?.value?.length >= 6">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path *ngIf="password?.value?.length >= 6" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="#4CAF50"/>
+                <circle *ngIf="password?.value?.length < 6" cx="12" cy="12" r="5" fill="#D0C8CC"/>
+              </svg>
+              <span>At least 6 characters</span>
+            </div>
+            <div class="pwd-hint" [class.pwd-hint--pass]="hasUpperCase(password?.value)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path *ngIf="hasUpperCase(password?.value)" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="#4CAF50"/>
+                <circle *ngIf="!hasUpperCase(password?.value)" cx="12" cy="12" r="5" fill="#D0C8CC"/>
+              </svg>
+              <span>One uppercase letter</span>
+            </div>
+            <div class="pwd-hint" [class.pwd-hint--pass]="hasNumber(password?.value)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path *ngIf="hasNumber(password?.value)" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="#4CAF50"/>
+                <circle *ngIf="!hasNumber(password?.value)" cx="12" cy="12" r="5" fill="#D0C8CC"/>
+              </svg>
+              <span>One number</span>
             </div>
           </div>
         </form>
 
-        <superme-button type="orange-onboard" full [text]="'Next'" [disabled]="!passwordForm.dirty || !passwordForm.valid"
+        <superme-button type="orange-onboard" full [text]="'Continue'" [disabled]="!passwordForm.dirty || !passwordForm.valid"
           (click)="proceedWithPassword()">
         </superme-button>
       </div>
     </div>
 
-    <div class="role-selection" *ngIf="step === 1" [@slideIn]>
+    <div *ngIf="step === 1" [@slideIn] class="role-step">
+      <div class="role-hero">
+        <h2 class="role-hero__title">Who's using the app?</h2>
+        <p class="role-hero__subtitle">Pick a role to get started</p>
+      </div>
 
-      <!-- Child -->
-      <div class="role-card" [class.active]="roleSelected === 'child'" (click)="roleSelected = 'child'">
-        <div class="role-info">
-          <h2>Child</h2>
-          <p>Learn and grow</p>
-          <p>Link with your parents</p>
-          <p>Earn rewards together</p>
+      <div class="role-grid">
+        <!-- Child -->
+        <div class="role-card-v2" [class.role-card-v2--active]="roleSelected === 'child'" (click)="roleSelected = 'child'">
+          <div class="role-card-v2__check" *ngIf="roleSelected === 'child'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="#fff"/></svg>
+          </div>
+          <div class="role-card-v2__img">
+            <img src="assets/Images-Transparent/Image-Role-Child.png" alt="Child">
+          </div>
+          <div class="role-card-v2__body">
+            <h3 class="role-card-v2__name">Child</h3>
+            <div class="role-card-v2__perks">
+              <span>Learn and grow</span>
+              <span>Link with parents</span>
+              <span>Earn rewards together</span>
+            </div>
+          </div>
         </div>
-        <div class="role-artwork">
-          <img src="assets/Images-Transparent/Image-Role-Child.png" alt="Child">
+
+        <!-- Parent -->
+        <div class="role-card-v2" [class.role-card-v2--active]="roleSelected === 'parent'" (click)="roleSelected = 'parent'">
+          <div class="role-card-v2__check" *ngIf="roleSelected === 'parent'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="#fff"/></svg>
+          </div>
+          <div class="role-card-v2__img">
+            <img src="assets/Images-Transparent/Image-Role-Parent.png" alt="Parent">
+          </div>
+          <div class="role-card-v2__body">
+            <h3 class="role-card-v2__name">Parent</h3>
+            <div class="role-card-v2__perks">
+              <span>Grow together</span>
+              <span>Link with child</span>
+              <span>Track progress</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Self -->
+        <div class="role-card-v2" [class.role-card-v2--active]="roleSelected === 'self'" (click)="roleSelected = 'self'">
+          <div class="role-card-v2__check" *ngIf="roleSelected === 'self'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="#fff"/></svg>
+          </div>
+          <div class="role-card-v2__img">
+            <img src="assets/Images-Transparent/Image-Role-Self.png" alt="Self">
+          </div>
+          <div class="role-card-v2__body">
+            <h3 class="role-card-v2__name">Self</h3>
+            <div class="role-card-v2__perks">
+              <span>Learn and grow</span>
+              <span>No linking needed</span>
+              <span>Enjoy for yourself</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Parent -->
-      <div class="role-card role-card--reverse" [class.active]="roleSelected === 'parent'" (click)="roleSelected = 'parent'">
-        <div class="role-artwork">
-          <img src="assets/Images-Transparent/Image-Role-Parent.png" alt="Parent">
-        </div>
-        <div class="role-info role-info--end">
-          <h2>Parent</h2>
-          <p>Grow together</p>
-          <p>Link with child</p>
-          <p>Track progress</p>
-        </div>
-      </div>
-
-      <!-- Self -->
-      <div class="role-card" [class.active]="roleSelected === 'self'" (click)="roleSelected = 'self'">
-        <div class="role-info">
-          <h2>Self</h2>
-          <p>Learn and grow</p>
-          <p>No linking required</p>
-          <p>Enjoy for yourself</p>
-        </div>
-        <div class="role-artwork">
-          <img src="assets/Images-Transparent/Image-Role-Self.png" alt="Self">
-        </div>
-      </div>
-
-      <superme-button type="orange-onboard" full [text]="'Save & Continue'" [disabled]="!roleSelected"
+      <superme-button type="orange-onboard" full [text]="'Continue'" [disabled]="!roleSelected"
         (click)="proceedWithRole()">
       </superme-button>
     </div>

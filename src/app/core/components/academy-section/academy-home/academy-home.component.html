@@ -1,41 +1,51 @@
 <ion-content [fullscreen]="true" style="--padding-top: var(--sat); --padding-bottom: env(safe-area-inset-bottom, 0px)">
   <div class="main-container">
     <!-- Header -->
-    <superme-card-header [title]="'Welcome to Your Life Skills Quest!'" [subtitleLeft]="'Real lessons'"
-      [subtitleMiddle]="'Life ready'" [subtitleRight]="'Future strong'" [showBackArrow]="true"
-      (backClick)="onBackClick()">
-    </superme-card-header>
-
-    <!-- Panda Section -->
-    <div class="panda-section">
-      <superme-pet pet="panda"></superme-pet>
-      <app-speech-bubble message="These lessons are like superpowers for your real world!"></app-speech-bubble>
-    </div>
-
-    <div class="question">
-      Where do you want to grow today?
-    </div>
-
-    <div class="academy-home-state" *ngIf="isLoadingCategories">
-      Loading categories...
-    </div>
-
-    <div class="subject-cards" *ngIf="!isLoadingCategories && categoryCards.length">
-      <div *ngFor="let card of categoryCards" class="card" [ngClass]="card.color" role="button" tabindex="0"
-        (click)="openSubject(card)" (keyup.enter)="openSubject(card)" (keyup.space)="openSubject(card)">
-        <app-img [src]="card.thumbnail" [fallback]="card.image" [alt]="card.title" objectFit="contain"></app-img>
-        <p>{{ card.title }}</p>
+    <div class="ah-header">
+      <button class="ah-back" (click)="onBackClick()" aria-label="Go back">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="#282527"/>
+        </svg>
+      </button>
+      <div class="ah-header__text">
+        <h1 class="ah-title">Life Skills Quest</h1>
+        <p class="ah-subtitle">Real lessons &bull; Life ready &bull; Future strong</p>
       </div>
     </div>
 
-    <div class="academy-home-state" *ngIf="!isLoadingCategories && !categoryCards.length">
+    <!-- Panda Section -->
+    <div class="ah-panda">
+      <superme-pet pet="panda"></superme-pet>
+      <div class="ah-bubble">
+        <p>These lessons are like superpowers for your real world!</p>
+      </div>
+    </div>
+
+    <!-- Question -->
+    <h2 class="ah-question">Where do you want to grow today?</h2>
+
+    <!-- Loading -->
+    <div class="ah-state" *ngIf="isLoadingCategories">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+
+    <!-- Category Cards -->
+    <div class="ah-grid" *ngIf="!isLoadingCategories && categoryCards.length">
+      <button *ngFor="let card of categoryCards" class="ah-card" [ngClass]="card.color"
+        (click)="openSubject(card)">
+        <app-img [src]="card.thumbnail" [fallback]="card.image" [alt]="card.title" objectFit="contain"></app-img>
+        <span class="ah-card__title">{{ card.title }}</span>
+        <span class="ah-card__count" *ngIf="card.courseCount">{{ card.courseCount }} {{ card.courseCount === 1 ? 'course' : 'courses' }}</span>
+      </button>
+    </div>
+
+    <!-- Empty -->
+    <div class="ah-state" *ngIf="!isLoadingCategories && !categoryCards.length">
       {{ categoryError || 'No active categories available right now.' }}
     </div>
 
     <!-- Footer -->
-    <div class="footer-note">
-      Tap a card to learn real-life stuff!
-    </div>
+    <p class="ah-footer">Tap a card to learn real-life stuff!</p>
   </div>
 </ion-content>
 <footer></footer>

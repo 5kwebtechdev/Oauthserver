@@ -232,7 +232,7 @@ export class JournalsComponent implements OnInit, OnDestroy {
   }
 
   public loadEntriesFromApi(): void {
-    const url = `${environment.apiUrl}/journal/entries`;
+    const url = `${environment.apiUrl}/journal/entries?type=TODAY`;
     const token = this.authApi.getToken();
     let headers = new HttpHeaders();
     if (token) {
@@ -240,10 +240,16 @@ export class JournalsComponent implements OnInit, OnDestroy {
     }
 
     this.loading = true;
-    this.http.get<any[]>(url, { headers }).subscribe({
-      next: (res) => {
+    this.http.get<any[]>(url, { headers, observe: 'response' }).subscribe({
+      next: (resp) => {
         this.ngZone.run(() => {
         this.loading = false;
+        if (resp.status === 204 || !resp.body) {
+          this.entries = [];
+          this.cdr.detectChanges();
+          return;
+        }
+        const res = resp.body;
         if (!Array.isArray(res)) {
           console.warn('Unexpected journal entries response, expected array', res);
           return;

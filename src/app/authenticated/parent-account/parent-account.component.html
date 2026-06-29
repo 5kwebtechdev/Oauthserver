@@ -1,6 +1,16 @@
+<!-- ══ Family connected acknowledgment popup ══ -->
+<div class="family-ack-backdrop" *ngIf="showFamilyAck" (click)="dismissFamilyAck()">
+  <div class="family-ack-popup" (click)="$event.stopPropagation()">
+    <img class="family-ack-popup__img" src="assets/Images-Transparent/Image-Parents-Family.png" alt="" aria-hidden="true" />
+    <h2 class="family-ack-popup__title">You're connected to your family</h2>
+    <p class="family-ack-popup__desc">This account is now set to {{ familyAckRole }} and linked to your family.</p>
+    <button class="family-ack-popup__btn" (click)="dismissFamilyAck()">Let's Begin</button>
+  </div>
+</div>
+
 <ion-content>
     <div class="container w-100 p-0">
-        <section class="user-profile-section profile" aria-labelledby="profile-heading">
+        <section class="user-profile-section profile" [class.no-child]="!hasLinkedChildren" aria-labelledby="profile-heading">
             <header class="profile-header" role="banner">
                 <div class="user-info" role="group" aria-label="User info">
                     <div class="user-avatar" aria-hidden="false">
@@ -105,10 +115,13 @@
 
         <div class="dashboard-content" [class.dashboard-content--empty]="!hasLinkedChildren">
             <section class="link-child-empty-state" *ngIf="!hasLinkedChildren" aria-labelledby="link-child-heading">
-                <img src="assets/Images-Transparent/Image-Parents-Family.png" alt="" aria-hidden="true" />
-                <h1 id="link-child-heading">Link with your child to see their progress</h1>
-                <p>Share your Family Code with them, or show the QR. Takes 10 seconds.</p>
-                <superme-button type="magenta" full text="Link my child" (click)="openFamilyConnection()"></superme-button>
+                <div class="link-empty__overlay"></div>
+                <div class="link-empty__content">
+                    <img src="assets/Images-Transparent/Image-Parents-Family.png" alt="" aria-hidden="true" />
+                    <h1 id="link-child-heading">Link with your child to see their progress</h1>
+                    <p>Share your Family Code with them, or show the QR. Takes 10 seconds.</p>
+                    <superme-button type="magenta" full text="Link my child" (click)="openFamilyConnection()"></superme-button>
+                </div>
             </section>
 
             <a *ngIf="
@@ -144,5 +157,5 @@
     <div *ngIf="hasLinkedChildren" class="fab-add-button" (click)="openActivityInput()">
         <superme-button type="add"></superme-button>
     </div>
-    <app-footer></app-footer>
+    <app-footer [class.footer-blur]="!hasLinkedChildren"></app-footer>
 </ion-content>
