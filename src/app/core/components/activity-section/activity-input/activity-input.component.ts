@@ -106,6 +106,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
   isPrivate = false;
   isChild = false;
   isParent = false;
+  isParentCreated = false;
   selectedTags: Array<{ key: string, value: string, type?: string }> = [];
   // today's date (date-only) used to prevent past date selection
   today: Date = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
@@ -354,6 +355,11 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
       // Reuse `stateCurrentActive` declared above and fall back to habit type when editing.
       this.currentActive = (stateCurrentActive as any) || (h.type as any) || this.currentActive;
       this.isPrivate = !!h.isPrivate;
+      const createdById = h.createdById ?? h.createdBy;
+      const assignedToId = h.assignedToId ?? h.assignedTo;
+      if (createdById != null && assignedToId != null && String(createdById) !== String(assignedToId)) {
+        this.isParentCreated = true;
+      }
       this.selectedRoutine = h.selectedRoutine || h.routine || (h.getRoutine as any) || this.selectedRoutine;
 
       // Merge incoming routineTags with default tags instead of replacing
@@ -517,8 +523,20 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
         try { this.cd.detectChanges(); } catch (e) {}
       },
       error: (err) => {
-        const msg = err?.error?.error || err?.error?.message || 'Failed to create tag';
-        this.toastService.error(msg);
+        const serverMsg = (err?.error?.message || '').toLowerCase();
+        if (serverMsg.includes('already have a tag') || serverMsg.includes('duplicate') || err?.status === 400) {
+          const existing = this.tagOptions.find(t =>
+            (t.value || '').toLowerCase().trim() === (event.value || '').toLowerCase().trim()
+          );
+          if (existing && this.tagsComponent) {
+            this.tagsComponent.toggleSelection(existing.key);
+            this.toastService.success(`"${event.value}" already exists — selected it for you.`);
+          } else {
+            this.toastService.success(`A tag named "${event.value}" already exists.`);
+          }
+        } else {
+          this.toastService.error('Could not create tag. Please try again.');
+        }
       }
     });
   }
@@ -541,8 +559,13 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
         try { this.cd.detectChanges(); } catch (e) {}
       },
       error: (err) => {
-        const msg = err?.error?.error || err?.error?.message || 'Cannot delete tag';
-        this.toastService.error(msg);
+        const serverMsg = (err?.error?.message || '').toLowerCase();
+        if (serverMsg.includes('still attached') || serverMsg.includes('in use')) {
+          const tagName = this.tagOptions.find(t => t.key === Number(id))?.value || 'This tag';
+          this.toastService.error(`"${tagName}" is in use by a task or habit. Remove it from there first.`);
+        } else {
+          this.toastService.error('Could not delete tag. Please try again.');
+        }
       }
     });
   }

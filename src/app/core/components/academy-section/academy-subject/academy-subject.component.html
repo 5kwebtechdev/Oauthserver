@@ -1,40 +1,50 @@
 <ion-content>
-  <superme-card-header [title]="categoryTitle" [subtitleMiddle]="categorySubtitle" [showBackArrow]="true"
-    (backClick)="goBack()">
-  </superme-card-header>
-  <div class="main-container">
+  <div class="as-page">
     <!-- Header -->
+    <div class="as-header">
+      <button class="as-back" (click)="goBack()" aria-label="Go back">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="#282527"/>
+        </svg>
+      </button>
+      <div class="as-header__text">
+        <h1 class="as-title">{{ categoryTitle }}</h1>
+        <p class="as-subtitle" *ngIf="categorySubtitle">{{ categorySubtitle }}</p>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="as-state" *ngIf="isLoading">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+
+    <!-- Empty -->
+    <div class="as-state" *ngIf="!isLoading && lessons.length === 0">
+      <p>No courses available in this category.</p>
+    </div>
 
     <!-- Course List -->
-    <div class="course-list">
-      <!-- Loading State -->
-      <div *ngIf="isLoading" style="text-align: center; padding: 20px;">
-        <ion-spinner></ion-spinner>
-        <p>Loading courses...</p>
-      </div>
-
-      <!-- Empty State -->
-      <div *ngIf="!isLoading && lessons.length === 0" style="text-align: center; padding: 40px 20px;">
-        <p style="color: rgba(40, 37, 39, 0.70);">No courses available in this category.</p>
-      </div>
-
-      <!-- Course Items -->
-      <div class="course" *ngFor="let l of lessons" (click)="openCourseByTitle(l.title)">
-        <img [src]="l.thumb" [alt]="l.title" class="course-img" (error)="onCourseImageError($event, l)">
-        <div class="course-info">
-          <h3 class="course-title">{{ l.title }}</h3>
-          <p class="course-meta">{{ l.meta }}</p>
-          <div class="course-coins">
-            <img class="coin-icon-img" [src]="l.coinIcon" alt="coins" />
-            <span class="coins-value">{{ l.coins }}</span>
+    <div class="as-list" *ngIf="!isLoading && lessons.length">
+      <div class="as-course" *ngFor="let l of lessons; let i = index"
+           (click)="openCourseByTitle(l.title)"
+           [style.animation-delay]="(i * 60) + 'ms'">
+        <div class="as-course__thumb">
+          <img [src]="l.thumb" [alt]="l.title" (error)="onCourseImageError($event, l)">
+        </div>
+        <div class="as-course__body">
+          <h3 class="as-course__title">{{ l.title }}</h3>
+          <p class="as-course__meta">{{ l.meta }}</p>
+          <div class="as-course__bottom">
+            <div class="as-course__coins">
+              <img [src]="l.coinIcon" alt="coins">
+              <span>{{ l.coins }}</span>
+            </div>
+            <span class="as-badge" [ngClass]="l.badge?.toLowerCase()">{{ l.badge }}</span>
           </div>
         </div>
-        <span class="badge" [ngClass]="{ 
-        'beginner': l.badge === 'Beginner', 
-        'intermediate': l.badge === 'Intermediate',
-        'advanced': l.badge === 'Advanced',
-        'pro': l.badge === 'Pro' 
-      }">{{ l.badge }}</span>
+        <svg class="as-course__chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="#C0B8BC"/>
+        </svg>
       </div>
     </div>
   </div>

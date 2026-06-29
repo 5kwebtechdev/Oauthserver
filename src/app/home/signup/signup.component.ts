@@ -421,6 +421,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return 'Please enter a valid password.';
   }
 
+  hasUpperCase(value: string | null | undefined): boolean {
+    return !!value && /[A-Z]/.test(value);
+  }
+
+  hasNumber(value: string | null | undefined): boolean {
+    return !!value && /[0-9]/.test(value);
+  }
+
   getNameErrorMessage(): string {
     const control = this.name;
     if (!control) return '';
@@ -459,7 +467,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   // Header helpers for template bindings to avoid complex inline expressions
   get headerText(): string {
     if (this.step === 1) return "Who's using the app?";
-    if (this.step === 0.1) return 'Add email address';
+    if (this.step === 0.1) return 'Create your account';
     if (this.step === 0.2) return this.loginMode === 'phone' ? 'Check your phone' : 'Check your email';
     if (this.step === 0.3) return 'Create Password';
     return "Let's set you up!";
@@ -740,6 +748,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
       return;
     }
+  }
+
+  goBackToEmail() {
+    this.clearOtpTimer();
+    this.otpDigits = ['', '', '', ''];
+    this.errorMessage = null;
+    this.navCtrl.navigateBack(['/home/sign-up'], { queryParams: { step: 0.1 } });
   }
 
   goBack() {
@@ -1591,9 +1606,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           this.authService.login(credentials).subscribe({
             next: (loginResp) => {
               this.requestPasswordSavePrompt(credentials);
-              if (credentials.email) {
-                this.credentialSaverService.save({ identifier: credentials.email, password: credentials.password || '', mode: 'email' });
-              }
+              // Set family acknowledgment flag if user linked to a family
+              try {
+                const role = sessionStorage.getItem('signup_role') || this.roleSelected || '';
+                const hasFamilyCode = !!sessionStorage.getItem('familyCode');
+                const isCreator = sessionStorage.getItem('familyCreator') === 'true';
+                if (role && role !== 'self' && (hasFamilyCode || isCreator)) {
+                  const displayRole = role.charAt(0).toUpperCase() + role.slice(1);
+                  sessionStorage.setItem('family_connected_ack', displayRole);
+                }
+              } catch {}
               // After login, user session is set by AuthService
               // Navigate to appropriate dashboard with loader hidden
               const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
@@ -1639,9 +1661,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           this.authService.login(credentials).subscribe({
             next: () => {
               this.requestPasswordSavePrompt(credentials);
-              if (credentials.email) {
-                this.credentialSaverService.save({ identifier: credentials.email, password: credentials.password || '', mode: 'email' });
-              }
               const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
               setTimeout(() => {
                 this.loadingService.forceHide();
@@ -1887,9 +1906,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.authService.login(credentials).subscribe({
       next: () => {
         this.requestPasswordSavePrompt(credentials);
-        if (credentials.email) {
-          this.credentialSaverService.save({ identifier: credentials.email, password: credentials.password || '', mode: 'email' });
-        }
         this.loadingService.forceHide();
         this.router.navigate(['/authed/user-dashboard']);
       },
@@ -1942,25 +1958,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   private requestPasswordSavePrompt(credentials: { email?: string; phone?: string; password?: string }): void {
-    const credentialApi = (window.navigator as any)?.credentials;
-    const PasswordCredentialCtor = (window as any)?.PasswordCredential;
-    const username = credentials.email || credentials.phone;
     const password = credentials.password;
+    const identifier = credentials.email || credentials.phone;
 
-    if (!credentialApi?.store || !PasswordCredentialCtor || !username || !password) {
+    if (!identifier || !password || !this.credentialSaverService.shouldAskToSave()) {
       return;
     }
 
-    try {
-      const credential = new PasswordCredentialCtor({
-        id: username,
-        name: username,
-        password,
-      });
-      credentialApi.store(credential).catch(() => {});
-    } catch (error) {
-      // Browser/password-manager support varies across WebView and desktop.
-    }
+    void this.credentialSaverService.save({
+      identifier,
+      password,
+      mode: credentials.email ? 'email' : 'phone'
+    });
   }
 
   private restoreSignupStateFromSession(): void {

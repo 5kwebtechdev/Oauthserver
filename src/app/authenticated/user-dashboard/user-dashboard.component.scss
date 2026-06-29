@@ -1,5 +1,90 @@
 // USER DASHBOARD STYLES
 
+// ── Family connected acknowledgment popup ────────────────────────────────────
+.family-ack-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease-out;
+  padding: 24px;
+}
+
+.family-ack-popup {
+  background: #fff;
+  border-radius: 24px;
+  padding: 32px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  max-width: 320px;
+  width: 100%;
+  animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+
+  &__img {
+    width: 120px;
+    height: auto;
+    margin-bottom: 4px;
+  }
+
+  &__title {
+    font-family: var(--font-sans);
+    font-size: 20px;
+    font-weight: 800;
+    color: #282527;
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  &__desc {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(40, 37, 39, 0.65);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  &__btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 14px;
+    background: #4CAF50;
+    color: #fff;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+
+    &:active {
+      background: #388E3C;
+      transform: scale(0.98);
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 // ── Home-screen overlays ─────────────────────────────────────────────────────
 .home-overlay {
   position: fixed;

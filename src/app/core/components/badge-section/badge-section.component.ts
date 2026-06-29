@@ -57,8 +57,6 @@ export class BadgeSectionComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.loadBadges();
-        this.subscribeToBadgeNotifications();
-        this.badgePopupService.check();
     }
 
     ngOnDestroy(): void {

@@ -329,6 +329,8 @@ export class BadgeSocketService implements OnDestroy {
 
         const badgeId = data.badgeId || data.id;
         const title = data.title || data.name || 'Badge Earned';
+        const currentLevel = Number(data.currentLevel || data.level || 1);
+        const celebrationTitle = data.celebrationTitle || `Level ${currentLevel} - Badge Unlocked!`;
 
         return {
             badgeId: badgeId,
@@ -338,10 +340,10 @@ export class BadgeSocketService implements OnDestroy {
             description: data.description || '',
             achievementText: data.achievementText || '',
             iconUrl: data.iconUrl || data.icon || this.getBadgeIcon(title),
-            celebrationTitle: data.celebrationTitle || 'Badge Unlocked!',
+            celebrationTitle,
             celebrationMessage: data.celebrationMessage || `You earned the ${title} badge!`,
             shareMessage: data.shareMessage || `I earned the ${title} badge on SuperMe! 🚀`,
-            currentLevel: data.currentLevel || 1,
+            currentLevel,
             totalLevels: data.totalLevels || 1,
             isMaxLevel: data.isMaxLevel || false
         };

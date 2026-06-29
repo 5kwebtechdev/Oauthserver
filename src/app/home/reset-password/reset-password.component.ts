@@ -222,8 +222,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
         this.otpIncorrect = true;
         this.canResendOtp = true;
         this.clearOtpTimer();
-        const serverMsg = err?.error;
-        this.otpError = typeof serverMsg === 'string' ? serverMsg : 'Incorrect code. Please try again.';
+        this.otpError = this.getFriendlyOtpErrorMessage(err);
       }
     });
   }
@@ -454,11 +453,50 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.loading = false;
-        let body = err?.error;
-        if (typeof body === 'string') { try { body = JSON.parse(body); } catch { } }
-        this.otpError = body?.message || body?.error || 'Failed to resend code. Please try again.';
+        this.otpError = this.getFriendlyResendOtpErrorMessage(err);
       }
     });
+  }
+
+  private getFriendlyOtpErrorMessage(error: any): string {
+    const message = this.extractErrorText(error).toLowerCase();
+
+    if (message.includes('expired')) {
+      return 'This code has expired. Please resend the code and try again.';
+    }
+
+    if (message.includes('invalid') || message.includes('incorrect') || message.includes('wrong')) {
+      return 'Invalid code. Please check the 4-digit code and try again.';
+    }
+
+    return 'We could not verify this code. Please try again.';
+  }
+
+  private getFriendlyResendOtpErrorMessage(error: any): string {
+    const message = this.extractErrorText(error).toLowerCase();
+
+    if (message.includes('too many') || message.includes('limit')) {
+      return 'Too many attempts. Please wait a little before requesting a new code.';
+    }
+
+    return 'We could not resend the code. Please try again.';
+  }
+
+  private extractErrorText(error: any): string {
+    let body = error?.error;
+
+    if (typeof body === 'string') {
+      try {
+        body = JSON.parse(body);
+      } catch {
+        return body;
+      }
+    }
+
+    if (body?.message) return String(body.message);
+    if (body?.error) return String(body.error);
+    if (error?.message) return String(error.message);
+    return '';
   }
 
   // ── Password validation ──────────────────────────────────────────────────────

@@ -22,6 +22,9 @@ export class LoginComponent implements OnInit, OnDestroy {
   public whatsappConsent = true;
   public loading = false;
   public loginError: string | null = null;
+  public emailFocused = false;
+  public passwordFocused = false;
+  public phoneFocused = false;
 
   public showCountryCodeModal = false;
   public selectedCountry: Country;
@@ -40,10 +43,8 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   public showSaveCredsPrompt = false;
   public closingSheet = false;
-  public autoFilledFromSave = false;
   private pendingNav = '';
   private pendingNewCreds: SavedCredentials | null = null;
-  private pendingPhoneRestore: SavedCredentials | null = null;
 
   @ViewChild('passwordInput') passwordInputRef!: ElementRef<HTMLInputElement>;
 
@@ -128,7 +129,6 @@ export class LoginComponent implements OnInit, OnDestroy {
 
       this.authService.login(credentials).subscribe({
         next: (response) => {
-          this.requestPasswordSavePrompt(credentials);
           console.log('[LoginComponent] Login successful', response);
           console.log('[LoginComponent] Token received:', !!response.token);
           console.log('[LoginComponent] UserId:', response.user?.id);
@@ -176,15 +176,18 @@ export class LoginComponent implements OnInit, OnDestroy {
             countryCode: saveMode === 'phone' ? this.selectedCountry.code : undefined
           };
 
-          if (this.credentialSaverService.hasSaved()) {
-            // Already opted in — update silently and navigate; keep overlay visible during transition
-            this.credentialSaverService.save(credsToSave);
-            console.log('[LoginComponent] Navigating to:', navigationTarget);
+          if (!this.credentialSaverService.shouldAskToSave()) {
+            // Already opted in — update silently and navigate
+            this.navCtrl.navigateRoot(navigationTarget).catch(() => {
+              this.loading = false;
+            });
+          } else if (this.credentialSaverService.wasDismissed()) {
+            // User previously said "Not now" — don't ask again, just navigate
             this.navCtrl.navigateRoot(navigationTarget).catch(() => {
               this.loading = false;
             });
           } else {
-            // First time — hide overlay and ask user whether to save
+            // First time — ask user whether to save
             this.loading = false;
             this.pendingNav = navigationTarget;
             this.pendingNewCreds = credsToSave;
@@ -235,19 +238,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.switchMode('email');
     console.log('LoginComponent initialized');
 
-    // Auto-fill from saved credentials
-    const saved = this.credentialSaverService.load();
-    if (saved) {
-      if (saved.mode === 'email') {
-        this.switchMode('email');
-        this.signInForm.patchValue({ email: saved.identifier, password: saved.password });
-        this.signInForm.markAsDirty();
-        this.autoFilledFromSave = true;
-      } else {
-        this.switchMode('phone');
-        this.pendingPhoneRestore = saved;
-      }
-    }
+    this.credentialSaverService.clearLegacySavedCredentials();
 
     // Load countries from service
     this.subscription.add(
@@ -255,16 +246,6 @@ export class LoginComponent implements OnInit, OnDestroy {
         next: (countries) => {
           this.countries = countries;
           console.log('Countries loaded:', countries.length);
-          // Apply deferred phone restore once countries are available
-          if (this.pendingPhoneRestore) {
-            const restore = this.pendingPhoneRestore;
-            this.pendingPhoneRestore = null;
-            const matched = countries.find(c => c.code === restore.countryCode);
-            if (matched) this.selectedCountry = matched;
-            this.signInForm.patchValue({ phone: restore.identifier, password: restore.password });
-            this.signInForm.markAsDirty();
-            this.autoFilledFromSave = true;
-          }
         },
         error: (error) => {
           console.error('Error loading countries:', error);
@@ -390,14 +371,15 @@ export class LoginComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  onSaveCreds(): void {
+  async onSaveCreds(): Promise<void> {
     if (this.pendingNewCreds) {
-      this.credentialSaverService.save(this.pendingNewCreds);
+      await this.credentialSaverService.save(this.pendingNewCreds);
     }
     this.dismissSheetThenNavigate();
   }
 
   onSkipSaveCreds(): void {
+    this.credentialSaverService.dismissPrompt();
     this.dismissSheetThenNavigate();
   }
 
@@ -413,32 +395,4 @@ export class LoginComponent implements OnInit, OnDestroy {
     }, 260);
   }
 
-  clearSavedCreds(): void {
-    this.credentialSaverService.clear();
-    this.autoFilledFromSave = false;
-    this.signInForm.reset();
-    this.switchMode('email');
-  }
-
-  private requestPasswordSavePrompt(credentials: LoginCredentials): void {
-    const credentialApi = (window.navigator as any)?.credentials;
-    const PasswordCredentialCtor = (window as any)?.PasswordCredential;
-    const username = credentials.email || credentials.phone;
-    const password = credentials.password;
-
-    if (!credentialApi?.store || !PasswordCredentialCtor || !username || !password) {
-      return;
-    }
-
-    try {
-      const credential = new PasswordCredentialCtor({
-        id: username,
-        name: username,
-        password,
-      });
-      credentialApi.store(credential).catch(() => {});
-    } catch (error) {
-      // Browser/password-manager support varies across WebView and desktop.
-    }
-  }
 }

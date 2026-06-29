@@ -1,52 +1,40 @@
 <div class="tutor-list-root">
   <div class="tutor-list" role="list">
     <ng-container *ngIf="tutors && tutors.length > 0">
-      <article class="tutors-section__card" role="listitem" *ngFor="let t of tutors">
-        <div class="thumbnail">
-          <div class="avatar"
+      <article class="tc" role="listitem" *ngFor="let t of tutors">
+        <div class="tc__top">
+          <div class="tc__avatar"
             [appBgSkeleton]="t.avatar || 'assets/images/Avatar.png'"
             [ngStyle]="{'background-image': 'url(' + (t.avatar || 'assets/images/Avatar.png') + ')'}"
             aria-hidden="true"></div>
+          <div class="tc__info">
+            <h3 class="tc__name">{{ t.name || 'Unknown Tutor' }}</h3>
+            <p class="tc__role">{{ t.description || t.qualification || 'Subject Expert' }}</p>
+            <p class="tc__levels">{{ formatLevelsDisplay(t.levels) || 'All Levels' }}</p>
+          </div>
+          <div class="tc__likes">
+            <img src="assets/Icons-Neutral/Icon-Tutor-Like.png" alt="Likes" aria-hidden="true" />
+            <span>{{ (t.champsLiked !== undefined && t.champsLiked !== null) ? t.champsLiked : (t.rating || 0) }}</span>
+          </div>
         </div>
 
-        <div class="content">
-          <div class="head">
-            <div class="name-block">
-              <p class="name">{{ t.name || 'Unknown Tutor' }}</p>
-            </div>
-            
-            <div class="stats" aria-hidden="true">
-              <img class="icon heart-icon" src="assets/Icons-Neutral/Icon-Tutor-Like.png" alt="Likes"
-              aria-hidden="true" />
-              <span class="meta">{{ (t.champsLiked !== undefined && t.champsLiked !== null) ? t.champsLiked : (t.rating || 0) }} likes | {{ t.experience || 'Fresher' }}</span>
-            </div>
+        <div class="tc__details">
+          <div class="tc__timing">
+            <img src="assets/Icons-Neutral/Icon-Tutor-Timings.png" alt="Timings" aria-hidden="true" />
+            <span>{{ getTimingString(t) }}</span>
           </div>
-          
-          <div class="cta-row">
-            <div class="tutor-role-detail d-grid">
-            <p class="role">{{ t.description || t.qualification || 'Subject Expert' }}</p>
-            <label>{{ formatLevelsDisplay(t.levels) || 'All Levels' }}</label>
-            <div class="time">
-              <img class="icon time-icon" src="assets/Icons-Neutral/Icon-Tutor-Timings.png" alt="Timings"
-                aria-hidden="true" />
-              <span>{{ getTimingString(t) }}</span>
-            </div>
+          <span class="tc__exp" *ngIf="t.experience">{{ t.experience }}</span>
+        </div>
 
-            </div>
-            <div class="info d-flex justify-content-between align-items-end">
-                <div class="fees d-flex align-items-baseline gap-1">
-                 <p>₹ {{ t.hourlyRate || 0 }}</p>
-                <span>/per hour</span>
-    </div>
-                
-                <superme-button type="columbian-blue" small [text]="'View Profile'" (click)="onViewProfile(t)"
-                [attr.aria-label]="'View profile of ' + (t.name || 'Tutor')"></superme-button>
-            </div>
+        <div class="tc__bottom">
+          <div class="tc__fees">
+            <span class="tc__price">₹ {{ t.hourlyRate || 0 }}</span>
+            <span class="tc__per">/hr</span>
           </div>
+          <superme-button type="columbian-blue" small [text]="'View Profile'" (click)="onViewProfile(t)"
+            [attr.aria-label]="'View profile of ' + (t.name || 'Tutor')"></superme-button>
         </div>
       </article>
     </ng-container>
-
-    <!-- Empty state removed — homepage shows primary message to avoid duplication -->
   </div>
 </div>

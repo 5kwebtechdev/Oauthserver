@@ -229,12 +229,16 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
             id: 201, fieldType: 'MULTI_SELECT', fieldKey: 'degreeStream', fieldLabel: 'Degree/Stream',
             isRequired: false, isFilterable: true, displayOrder: 1, validationRules: null, createdAt: '',
             options: [
-              opt(2011, 'ENGINEERING', 'Engineering', 1), opt(2012, 'MEDICAL', 'Medical', 2),
-              opt(2013, 'COMMERCE', 'Commerce', 3), opt(2014, 'MANAGEMENT', 'Management', 4),
-              opt(2015, 'SCIENCE', 'Science', 5), opt(2016, 'ARTS_HUMANITIES', 'Arts & Humanities', 6),
-              opt(2017, 'LAW', 'Law', 7), opt(2018, 'CHARTERED_COURSES', 'Chartered Courses', 8),
-              opt(2019, 'COMPUTER_APPLICATIONS', 'Computer Applications', 9),
-              opt(2020, 'PHARMACY_NURSING', 'Pharmacy & Nursing', 10)
+              opt(2011, 'ENGINEERING', 'Engineering (B.E / B.Tech / M.Tech)', 1),
+              opt(2012, 'MEDICAL', 'Medical (MBBS / BDS / BAMS / BHMS)', 2),
+              opt(2013, 'COMMERCE', 'Commerce (B.Com / M.Com)', 3),
+              opt(2014, 'MANAGEMENT', 'Management (BBA / MBA)', 4),
+              opt(2015, 'SCIENCE', 'Science (B.Sc / M.Sc)', 5),
+              opt(2016, 'ARTS_HUMANITIES', 'Arts & Humanities (BA / MA)', 6),
+              opt(2017, 'LAW', 'Law (LLB / LLM)', 7),
+              opt(2018, 'CHARTERED_COURSES', 'Chartered Courses (CA / CS / CMA)', 8),
+              opt(2019, 'COMPUTER_APPLICATIONS', 'Computer Applications (BCA / MCA)', 9),
+              opt(2020, 'PHARMACY_NURSING', 'Pharmacy & Nursing (B.Pharm / B.Sc Nursing)', 10)
             ]
           },
           {
@@ -259,7 +263,7 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
               opt(3011, 'ENGLISH', 'English', 1), opt(3012, 'FRENCH', 'French', 2),
               opt(3013, 'GERMAN', 'German', 3), opt(3014, 'SPANISH', 'Spanish', 4),
               opt(3015, 'HINDI', 'Hindi', 5), opt(3016, 'SANSKRIT', 'Sanskrit', 6),
-              opt(3017, 'JAPANESE', 'Japanese', 7), opt(3018, 'MANDARIN', 'Mandarin', 8),
+              opt(3017, 'JAPANESE', 'Japanese', 7), opt(3018, 'MANDARIN', 'Mandarin (Chinese)', 8),
               opt(3019, 'KOREAN', 'Korean', 9), opt(3020, 'TAMIL', 'Tamil', 10),
               opt(3021, 'TELUGU', 'Telugu', 11), opt(3022, 'MARATHI', 'Marathi', 12),
               opt(3023, 'BENGALI', 'Bengali', 13), opt(3024, 'KANNADA', 'Kannada', 14),
@@ -269,12 +273,12 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
             ]
           },
           {
-            id: 302, fieldType: 'MULTI_SELECT', fieldKey: 'level', fieldLabel: 'Level',
+            id: 302, fieldType: 'MULTI_SELECT', fieldKey: 'level', fieldLabel: 'Level / Proficiency',
             isRequired: false, isFilterable: true, displayOrder: 2, validationRules: null, createdAt: '',
             options: [
               opt(3031, 'BEGINNER', 'Beginner', 1), opt(3032, 'INTERMEDIATE', 'Intermediate', 2),
               opt(3033, 'ADVANCED', 'Advanced', 3),
-              opt(3034, 'PROFESSIONAL_BUSINESS', 'Professional/Business', 4)
+              opt(3034, 'PROFESSIONAL_BUSINESS', 'Professional / Business', 4)
             ]
           },
           ...commonFields(3)
@@ -287,15 +291,15 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
             id: 401, fieldType: 'MULTI_SELECT', fieldKey: 'skill', fieldLabel: 'Skill',
             isRequired: false, isFilterable: true, displayOrder: 1, validationRules: null, createdAt: '',
             options: [
-              opt(4011, 'GUITAR_ACOUSTIC', 'Guitar (Acoustic)', 1),
-              opt(4012, 'GUITAR_ELECTRIC', 'Guitar (Electric)', 2),
-              opt(4013, 'PIANO', 'Piano', 3), opt(4014, 'VIOLIN', 'Violin', 4),
-              opt(4015, 'DRUMS', 'Drums', 5), opt(4016, 'FLUTE', 'Flute', 6),
-              opt(4017, 'INDIAN_CLASSICAL_VOCAL', 'Indian Classical Vocal', 7),
-              opt(4018, 'WESTERN_VOCALS', 'Western Vocals', 8),
-              opt(4019, 'BOLLYWOOD_VOCAL', 'Bollywood Vocal', 9),
+              opt(4011, 'GUITAR', 'Guitar (Acoustic / Electric)', 1),
+              opt(4013, 'PIANO', 'Piano', 2), opt(4014, 'VIOLIN', 'Violin', 3),
+              opt(4015, 'DRUMS', 'Drums', 4), opt(4016, 'FLUTE', 'Flute', 5),
+              opt(4017, 'VOCAL_MUSIC', 'Vocal Music', 6),
+              opt(4018, 'INDIAN_CLASSICAL', 'Indian Classical', 7),
+              opt(4019, 'WESTERN_VOCALS', 'Western Vocals', 8),
+              opt(4021, 'BOLLYWOOD', 'Bollywood', 9),
               opt(4020, 'BHARATANATYAM', 'Bharatanatyam', 10),
-              opt(4021, 'BOLLYWOOD_DANCE', 'Bollywood Dance', 11),
+              opt(4032, 'BOLLYWOOD_DANCE', 'Bollywood', 11),
               opt(4022, 'HIP_HOP', 'Hip Hop', 12), opt(4023, 'SALSA', 'Salsa', 13),
               opt(4024, 'DRAWING_SKETCHING', 'Drawing & Sketching', 14),
               opt(4025, 'PAINTING', 'Painting', 15), opt(4026, 'CALLIGRAPHY', 'Calligraphy', 16),
@@ -305,18 +309,18 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
             ]
           },
           {
-            id: 402, fieldType: 'MULTI_SELECT', fieldKey: 'level', fieldLabel: 'Level',
+            id: 402, fieldType: 'MULTI_SELECT', fieldKey: 'level', fieldLabel: 'Level / Proficiency',
             isRequired: false, isFilterable: true, displayOrder: 2, validationRules: null, createdAt: '',
             options: [
               opt(4041, 'BEGINNER', 'Beginner', 1), opt(4042, 'INTERMEDIATE', 'Intermediate', 2),
-              opt(4043, 'ADVANCED', 'Advanced', 3), opt(4044, 'CERTIFICATION', 'Certification', 4)
+              opt(4043, 'ADVANCED', 'Advanced', 3), opt(4044, 'CERTIFICATION', 'Certification / Grade Exams', 4)
             ]
           },
           {
             id: 403, fieldType: 'MULTI_SELECT', fieldKey: 'ageGroup', fieldLabel: 'Age Group',
             isRequired: false, isFilterable: true, displayOrder: 3, validationRules: null, createdAt: '',
             options: [
-              opt(4051, 'KIDS', 'Kids (<13)', 1), opt(4052, 'TEENS', 'Teens (13–18)', 2),
+              opt(4051, 'KIDS', 'Kids (Below 13)', 1), opt(4052, 'TEENS', 'Teens (13-18)', 2),
               opt(4053, 'ADULTS', 'Adults', 3)
             ]
           },
@@ -330,16 +334,25 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
             id: 501, fieldType: 'MULTI_SELECT', fieldKey: 'targetExam', fieldLabel: 'Target Exam',
             isRequired: false, isFilterable: true, displayOrder: 1, validationRules: null, createdAt: '',
             options: [
-              opt(5011, 'JEE', 'JEE', 1), opt(5012, 'NEET', 'NEET', 2),
-              opt(5013, 'GATE', 'GATE', 3), opt(5014, 'CET', 'CET', 4),
-              opt(5015, 'UPSC', 'UPSC', 5), opt(5016, 'SSC', 'SSC', 6),
-              opt(5017, 'BANKING', 'Banking', 7), opt(5018, 'RAILWAYS', 'Railways', 8),
-              opt(5019, 'DEFENCE', 'Defence', 9), opt(5020, 'TEACHING', 'Teaching', 10),
-              opt(5021, 'CAT', 'CAT', 11), opt(5022, 'GMAT', 'GMAT', 12),
-              opt(5023, 'XAT', 'XAT', 13), opt(5024, 'IPMAT', 'IPMAT', 14),
-              opt(5025, 'IELTS_TOEFL', 'IELTS/TOEFL', 15), opt(5026, 'GRE', 'GRE', 16),
-              opt(5027, 'SAT', 'SAT', 17), opt(5028, 'CLAT', 'CLAT', 18),
-              opt(5029, 'CA_CS_CMA', 'CA/CS/CMA', 19)
+              opt(5011, 'JEE', 'JEE Mains / Advanced (IIT)', 1),
+              opt(5012, 'NEET', 'NEET (Medical)', 2),
+              opt(5013, 'GATE', 'GATE (Graduate Engineering)', 3),
+              opt(5014, 'CET', 'CET / State Entrances', 4),
+              opt(5015, 'UPSC', 'UPSC (Civil Services / IAS)', 5),
+              opt(5016, 'SSC', 'SSC (CGL / CHSL / MTS)', 6),
+              opt(5017, 'BANKING', 'Banking (IBPS / SBI / RBI)', 7),
+              opt(5018, 'RAILWAYS', 'Railways (RRB)', 8),
+              opt(5019, 'DEFENCE', 'Defence (NDA / CDS / AFCAT)', 9),
+              opt(5020, 'TEACHING', 'Teaching (CTET / NET)', 10),
+              opt(5021, 'CAT', 'CAT (IIMs)', 11),
+              opt(5022, 'GMAT', 'GMAT (Study Abroad MBA)', 12),
+              opt(5023, 'XAT', 'XAT / SNAP / NMAT', 13),
+              opt(5024, 'IPMAT', 'IPMAT (Integrated BBA+MBA)', 14),
+              opt(5025, 'IELTS_TOEFL', 'IELTS / TOEFL / PTE (English)', 15),
+              opt(5026, 'GRE', 'GRE (MS in US/Europe)', 16),
+              opt(5027, 'SAT', 'SAT (Undergrad Abroad)', 17),
+              opt(5028, 'CLAT', 'CLAT (Law)', 18),
+              opt(5029, 'CA_CS_CMA', 'CA / CS / CMA (Foundation & Inter)', 19)
             ]
           },
           ...commonFields(2)
@@ -360,14 +373,14 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
               opt(6019, 'MARTIAL_ARTS', 'Martial Arts', 9),
               opt(6020, 'SKATING', 'Skating', 10), opt(6021, 'ATHLETICS', 'Athletics', 11),
               opt(6022, 'VOLLEYBALL', 'Volleyball', 12),
-              opt(6023, 'PERSONAL_TRAINING', 'Personal Training', 13)
+              opt(6023, 'PERSONAL_TRAINING', 'Personal Training / Fitness', 13)
             ]
           },
           {
             id: 602, fieldType: 'MULTI_SELECT', fieldKey: 'ageGroup', fieldLabel: 'Age Group',
             isRequired: false, isFilterable: true, displayOrder: 2, validationRules: null, createdAt: '',
             options: [
-              opt(6031, 'KIDS', 'Kids (<13)', 1), opt(6032, 'TEENS', 'Teens (13–18)', 2),
+              opt(6031, 'KIDS', 'Kids (Below 13)', 1), opt(6032, 'TEENS', 'Teens (13-18)', 2),
               opt(6033, 'ADULTS', 'Adults', 3)
             ]
           },
@@ -381,14 +394,16 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
             id: 701, fieldType: 'MULTI_SELECT', fieldKey: 'skill', fieldLabel: 'Skill',
             isRequired: false, isFilterable: true, displayOrder: 1, validationRules: null, createdAt: '',
             options: [
-              opt(7011, 'AI_ML', 'AI & ML', 1), opt(7012, 'GEN_AI', 'Gen AI', 2),
-              opt(7013, 'DATA_SCIENCE', 'Data Science', 3),
+              opt(7011, 'AI_ML', 'Artificial Intelligence (AI) & Machine Learning', 1),
+              opt(7012, 'GEN_AI', 'Generative AI Tools', 2),
+              opt(7013, 'DATA_SCIENCE', 'Data Science & Analytics', 3),
               opt(7014, 'DIGITAL_MARKETING', 'Digital Marketing', 4),
-              opt(7015, 'STOCK_MARKET', 'Stock Market', 5),
-              opt(7016, 'WEB_APP_DEV', 'Web/App Dev', 6),
+              opt(7015, 'STOCK_MARKET', 'Stock Market & Trading', 5),
+              opt(7016, 'WEB_APP_DEV', 'Web & App Development', 6),
               opt(7017, 'GRAPHIC_DESIGN', 'Graphic Design', 7),
               opt(7018, 'VIDEO_EDITING', 'Video Editing', 8),
-              opt(7019, 'FASHION', 'Fashion', 9), opt(7020, 'MAKEUP', 'Makeup', 10),
+              opt(7019, 'FASHION', 'Fashion Designing & Tailoring', 9),
+              opt(7020, 'MAKEUP', 'Makeup & Hairstyling', 10),
               opt(7021, 'INTERIOR_DESIGN', 'Interior Design', 11),
               opt(7022, 'PHOTOGRAPHY', 'Photography', 12)
             ]

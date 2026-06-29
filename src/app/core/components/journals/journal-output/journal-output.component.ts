@@ -155,8 +155,13 @@ export class JournalOutputComponent implements OnInit, ViewWillEnter {
       headers = headers.set('Authorization', token.startsWith('Bearer ') ? token : `Bearer ${token}`);
     }
 
-    this.http.get<any[]>(url, { headers }).subscribe({
-      next: (res) => {
+    this.http.get<any[]>(url, { headers, observe: 'response' }).subscribe({
+      next: (resp) => {
+        if (resp.status === 204 || !resp.body) {
+          this.entries = [];
+          return;
+        }
+        const res = resp.body;
         if (!Array.isArray(res)) {
           console.warn('Unexpected journal entries response, expected array', res);
           return;

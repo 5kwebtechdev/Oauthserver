@@ -1,3 +1,13 @@
+<!-- ══ Family connected acknowledgment popup ══ -->
+<div class="family-ack-backdrop" *ngIf="showFamilyAck" (click)="dismissFamilyAck()">
+  <div class="family-ack-popup" (click)="$event.stopPropagation()">
+    <img class="family-ack-popup__img" src="assets/Images-Transparent/Image-Parents-Family.png" alt="" aria-hidden="true" />
+    <h2 class="family-ack-popup__title">You're connected to your family</h2>
+    <p class="family-ack-popup__desc">This account is now set to {{ familyAckRole }} and linked to your family.</p>
+    <button class="family-ack-popup__btn" (click)="dismissFamilyAck()">Let's Begin</button>
+  </div>
+</div>
+
 <!-- ══ Home-screen overlays (PRD: bonus coins, daily login, mood prompt, streak milestone) ══ -->
 <div *ngIf="activeOverlay"
      class="home-overlay"

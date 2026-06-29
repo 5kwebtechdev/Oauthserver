@@ -38,7 +38,11 @@ export class AppComponent implements OnInit, OnDestroy {
   loading = false;
   toast$: Observable<Toast | null>;
   private _navToken?: string;
-  private badgeSubscription?: Subscription;
+  private badgeSubscription = new Subscription();
+  private badgeSocketSubscribed = false;
+  private activeBadgeToken: string | null = null;
+  private lastBadgePopupPollAt = 0;
+  private readonly badgePopupPollCooldownMs = 15000;
 
   // Badge popup state (global popup shown from any screen)
   showBadgePopup = false;
@@ -126,15 +130,15 @@ export class AppComponent implements OnInit, OnDestroy {
     // Track app open for pet age progression
     this.recordDailyAppOpen();
 
-    // Initialize WebSocket connection for real-time badge notifications
-    this.initializeBadgeWebSocket();
-
     // Subscribe to HTTP-polled badge popups (triggered after badge-earning actions)
-    this.badgeSubscription?.add(
+    this.badgeSubscription.add(
       this.badgePopupService.onShowPopup().subscribe((badge: BadgePopupData) => {
         this.showBadgeNotification(badge);
       })
     );
+
+    // Initialize badge notifications when a user session already exists.
+    this.ensureBadgeNotificationsActive();
 
     // Block hardware back button while force-update popup is visible
     this.platform.backButton.subscribeWithPriority(9999, () => {
@@ -161,6 +165,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.analytics.setScreen(screen);
         this.analytics.logScreenView(screen);
         this.crashlytics.log(`Screen viewed: ${screen}`);
+        this.ensureBadgeNotificationsActive(event.urlAfterRedirects);
       }
       if (event instanceof NavigationEnd || event instanceof NavigationCancel || event instanceof NavigationError) {
         // hide nav loader immediately
@@ -200,8 +205,83 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.badgeSubscription?.unsubscribe();
+    this.badgeSubscription.unsubscribe();
     this.badgeSocketService.disconnect();
+  }
+
+  /**
+   * Keeps global badge popups active after login and while moving across
+   * authenticated screens. This covers both real-time WebSocket unlocks and
+   * any pending popup that was missed while the user was on another screen.
+   */
+  private ensureBadgeNotificationsActive(url: string = this.router.url): void {
+    const userToken = localStorage.getItem('auth_token');
+    if (!userToken) {
+      const hadBadgeSession = !!this.activeBadgeToken || this.badgeSocketService.isConnected() || this.showBadgePopup;
+      this.activeBadgeToken = null;
+      if (hadBadgeSession) {
+        this.badgeSocketService.disconnect();
+        this.badgeSocketService.clearQueue();
+        this.badgePopupService.setPopupVisible(false);
+        this.showBadgePopup = false;
+        this.currentBadge = undefined;
+      }
+      return;
+    }
+
+    if (!this.isBadgePopupEligibleRoute(url)) {
+      return;
+    }
+
+    const isNewSession = this.activeBadgeToken !== userToken;
+    if (isNewSession) {
+      this.activeBadgeToken = userToken;
+      this.initializeBadgeWebSocket();
+      this.checkPendingBadgePopups();
+      this.pollNextPendingBadgePopup(true);
+      return;
+    }
+
+    this.pollNextPendingBadgePopup();
+  }
+
+  private pollNextPendingBadgePopup(force = false): void {
+    const now = Date.now();
+    if (!force && now - this.lastBadgePopupPollAt < this.badgePopupPollCooldownMs) {
+      return;
+    }
+
+    this.lastBadgePopupPollAt = now;
+    this.badgePopupService.check();
+  }
+
+  private isBadgePopupEligibleRoute(url: string): boolean {
+    if (!url.includes('/authed')) {
+      return false;
+    }
+
+    const relationship = this.getStoredRelationship();
+    return !relationship || relationship === 'CHILD' || relationship === 'SELF';
+  }
+
+  private getStoredRelationship(): string | null {
+    const profileRelationship = this.userService.getUserProfile()?.relationship;
+    if (profileRelationship) {
+      return profileRelationship.toString().toUpperCase();
+    }
+
+    try {
+      const rawUserData = localStorage.getItem('user_data');
+      if (rawUserData) {
+        const userData = JSON.parse(rawUserData);
+        const relationship = userData?.relationship || userData?.role || userData?.relationshipType;
+        return relationship ? relationship.toString().toUpperCase() : null;
+      }
+    } catch (error) {
+      console.warn('[AppComponent] Failed to read user relationship for badge popup eligibility:', error);
+    }
+
+    return null;
   }
 
   /**
@@ -215,41 +295,25 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Safely initialize WebSocket with timeout and error boundary
-    // Prevents WebSocket connection issues from blocking System UI
+    // Safely initialize WebSocket with an error boundary.
+    // Prevents badge notification issues from blocking System UI.
     try {
-      // Connect to WebSocket with a safety timeout
-      const connectionTimeout = setTimeout(() => {
-        console.warn('[AppComponent] Badge WebSocket connection timeout - disconnecting to prevent ANR');
-        this.badgeSocketService.disconnect();
-      }, 8000); // 8 second timeout for WebSocket to establish
-
-      // Connect to WebSocket
       this.badgeSocketService.connect();
 
-      // Subscribe to badge notifications for global popup
-      this.badgeSubscription = this.badgeSocketService.onBadgeReceived().subscribe(
-        (badge: BadgePopupData) => {
-          clearTimeout(connectionTimeout);
-          console.log('[AppComponent] Received badge notification:', badge);
-          this.showBadgeNotification(badge);
-        },
-        (error) => {
-          console.error('[AppComponent] Badge WebSocket error:', error);
-          clearTimeout(connectionTimeout);
-          // Silently fail - don't crash the app for badge notifications
-        }
-      );
-
-      // Clear timeout if connection succeeds
-      setTimeout(() => clearTimeout(connectionTimeout), 8000);
-
-      // Check for any pending badge popups that were missed while offline
-      const profile = this.userService.getUserProfile();
-      if (userToken && profile && (profile.relationship === 'CHILD' || profile.relationship === 'SELF')) {
-        this.checkPendingBadgePopups();
-      } else {
-        console.log('[AppComponent] Skipping pending badge popups for non-child/self account or missing user token');
+      if (!this.badgeSocketSubscribed) {
+        this.badgeSocketSubscribed = true;
+        this.badgeSubscription.add(
+          this.badgeSocketService.onBadgeReceived().subscribe(
+            (badge: BadgePopupData) => {
+              console.log('[AppComponent] Received badge notification:', badge);
+              this.showBadgeNotification(badge);
+            },
+            (error) => {
+              console.error('[AppComponent] Badge WebSocket error:', error);
+              // Silently fail - don't crash the app for badge notifications
+            }
+          )
+        );
       }
     } catch (error) {
       console.error('[AppComponent] Failed to initialize badge WebSocket:', error);
@@ -266,9 +330,14 @@ export class AppComponent implements OnInit, OnDestroy {
         console.log('[AppComponent] Pending popups response:', response);
         // Handle array of pending badges or single badge
         const pendingBadges = Array.isArray(response) ? response : (response?.badges || []);
-        
-        pendingBadges.forEach((badge: any) => {
+
+        const sortedPendingBadges = [...pendingBadges].sort((a: any, b: any) =>
+          this.getBadgeDisplayName(a).localeCompare(this.getBadgeDisplayName(b))
+        );
+
+        sortedPendingBadges.forEach((badge: any) => {
           if (badge && (badge.badgeId || badge.id)) {
+            const currentLevel = Number(badge.currentLevel || badge.level || 1);
             const badgeData: BadgePopupData = {
               badgeId: badge.badgeId || badge.id,
               title: badge.title || badge.name || 'Badge Earned',
@@ -277,10 +346,10 @@ export class AppComponent implements OnInit, OnDestroy {
               description: badge.description || '',
               achievementText: badge.achievementText || '',
               iconUrl: badge.iconUrl || badge.icon || 'assets/Icons-Neutral/Icon-Badge-CoinCollector.png',
-              celebrationTitle: badge.celebrationTitle || 'Badge Unlocked!',
+              celebrationTitle: badge.celebrationTitle || `Level ${currentLevel} - Badge Unlocked!`,
               celebrationMessage: badge.celebrationMessage || `You earned a badge!`,
               shareMessage: badge.shareMessage || 'I earned a badge on SuperMe! 🚀',
-              currentLevel: badge.currentLevel || 1,
+              currentLevel,
               totalLevels: badge.totalLevels || 1,
               isMaxLevel: badge.isMaxLevel || false
             };
@@ -293,6 +362,10 @@ export class AppComponent implements OnInit, OnDestroy {
         this.crashlytics.recordException(error, { area: 'badge_pending_popups' });
       }
     });
+  }
+
+  private getBadgeDisplayName(badge: any): string {
+    return (badge?.badgeName || badge?.name || badge?.title || '').toString().toLowerCase();
   }
 
   /**

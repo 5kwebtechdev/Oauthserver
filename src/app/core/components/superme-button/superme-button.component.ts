@@ -68,15 +68,12 @@ export class SupermeButtonComponent {
   disabled = false;
 
   @Input({ transform: booleanAttribute })
-  @CoerceBoolean()
   selected = false;
 
   @Input({ transform: booleanAttribute })
-  @CoerceBoolean()
   correct = false;
 
   @Input({ transform: booleanAttribute })
-  @CoerceBoolean()
   incorrect = false;
 
   readonly buttonRole = 'button';

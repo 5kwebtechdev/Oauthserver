@@ -1,5 +1,3 @@
-/* Styles scoped for tutor-list component. Many classes mirror the }tutors-section__card rules so visuals remain consistent. */
-
 .tutor-list-root {
   width: 100%;
 }
@@ -7,156 +5,163 @@
 .tutor-list {
   display: flex;
   flex-direction: column;
+  gap: 14px;
+}
+
+// ── Tutor Card ──
+.tc {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: #EDF2F8;
+  box-shadow: 0 1px 4px rgba(80, 93, 131, 0.08);
+}
+
+// ── Top row: avatar + info + likes ──
+.tc__top {
+  display: flex;
+  align-items: flex-start;
   gap: 12px;
 }
 
-.tutors-section__card {
+.tc__avatar {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-color: #D6E3EF;
+}
+
+.tc__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.tc__name {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  color: #282527;
+  margin: 0 0 2px;
+  line-height: 1.3;
+}
+
+.tc__role {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  color: #282527;
+  margin: 0 0 1px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tc__levels {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(40, 37, 39, 0.6);
+  margin: 0;
+}
+
+.tc__likes {
   display: flex;
-  padding: 8px;
-  justify-content: center;
-  align-items: stretch;
-  gap: 8px;
-  align-self: stretch;
-  border-radius: 12px;
-  background: #D6E3EF;
-  box-shadow: 0 0 2px 1px rgba(107, 101, 106, 0.10);
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  padding-top: 2px;
 
-  .thumbnail {
-    width: 91.667px;
-    min-height: 112px;
-    flex-shrink: 0;
-    align-self: stretch;
-
-    .avatar {
-      width: 100%;
-      height: 100%;
-      background-size: cover;
-      background-position: center;
-      border-radius: 8px;
-    }
+  img {
+    width: 16px;
+    height: 16px;
   }
 
- 
+  span {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 700;
+    color: #282527;
+  }
 }
 
-.content {
+// ── Details row: timing + experience ──
+.tc__details {
   display: flex;
-  width: 100%;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.head {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  align-self: stretch;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 2px;
 }
 
-.name-block {
+.tc__timing {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+  align-items: center;
+  gap: 5px;
+
+  img {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  span {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    color: #505D83;
+    line-height: 1.3;
+  }
 }
 
-.name {
-  color: #282527;
-font-family: var(--font-sans);
-font-size: 13px;
-font-weight: 600;
-  margin: 0px !important;
-}
-
-.role {
-  color: #282527;
+.tc__exp {
   font-family: var(--font-sans);
   font-size: 10px;
-  font-weight: 600;
-  margin-bottom: 0px !important;
+  font-weight: 700;
+  color: #505D83;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(114, 132, 185, 0.12);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.stats {
+// ── Bottom row: fees + CTA ──
+.tc__bottom {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: space-between;
+  padding-top: 4px;
+  border-top: 1px solid rgba(80, 93, 131, 0.1);
+}
+
+.tc__fees {
+  display: flex;
+  align-items: baseline;
   gap: 2px;
 }
 
-.icon.heart-icon,
-.icon.time-icon{
-  width: 16px;
-  height: auto;
+.tc__price {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  color: #282527;
 }
 
-.meta {
-  color: var(--Neutral-Grey, rgba(40, 37, 39, 0.70));
-text-align: center;
-font-family: var(--font-sans);
-font-size: 10px;
-font-weight: 600;
-}
-
-.cta-row {
-display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
-
-}
-
-.info {
-  
-  gap: 8px;
-  width: 100%;
-
-  .time {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-  }
-
-
-}
-
-
-.tutor-role-detail{ 
-p, label, .time span {
-font-family: var(--font-sans);
-font-size: 10px;
-font-weight: 600;
-}
-
-  p{
-color: var(--Neutral-Black, #282527);
-  }
-  
-  label{
-    color: var(--Neutral-Grey, rgba(40, 37, 39, 0.70));
-  }
-  .time span{
-color: #505D83;
-}
-}
-
-.fees {
-
-  p{
-    color: var(--Neutral-Black, #282527);
-font-family: var(--font-sans);
-font-size: 13px;
-font-weight: 600;
-margin: 0;
-  }
- span{
+.tc__per {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
   color: #6B656A;
-font-family: var(--font-sans);
-font-size: 8px;
-font-weight: 600;
- }
 }
 
-/* Empty state styles */
+// ── Empty state ──
 .empty-state {
   display: flex;
   flex-direction: column;

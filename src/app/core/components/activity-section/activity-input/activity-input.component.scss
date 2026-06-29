@@ -52,12 +52,8 @@ $theme-colors: (
 /* ── "Create. Commit. Grow." heading ── */
 :host ::ng-deep ion-content superme-navigator .navigator-heading {
   font-size: clamp(18px, 5vw, 22px);
-  font-weight: 800;
-  letter-spacing: -0.4px;
-  background: linear-gradient(110deg, #7471BA 0%, #d45aa3 48%, #89B3B6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-weight: 500;
+  color: #282527;
   line-height: 1.2;
 }
 

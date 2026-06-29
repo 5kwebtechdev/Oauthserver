@@ -3,41 +3,38 @@
   height: 100dvh;
   overflow: hidden;
   position: relative;
-  box-sizing: border-box;
-}
-
-.carousel-track {
-  white-space: nowrap;
-  transition: transform 0.5s ease-in-out;
-  height: 100%;
-}
-
-/* Each slide: flex column — image fills top, white card sits compactly at bottom */
-.carousel-slide {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
-  width: 100vw;
-  height: 100dvh;
-  vertical-align: top;
-  overflow: hidden;
+  box-sizing: border-box;
+  transition: background 0.6s ease-in-out;
 }
 
-/* Image-container expands to fill ALL space above the text card — no fixed height */
+/* ── Image area: all images stacked, crossfade via opacity ── */
 .image-container {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
+  position: relative;
 }
 
 .slide-image {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center top;
   display: block;
+  opacity: 0;
+  transition: opacity 0.6s ease-in-out;
+
+  &.active {
+    opacity: 1;
+  }
 }
 
-/* White card: sizes to content — no stretching, no empty void */
+/* ── White card: static shell, text crossfades inside ── */
 .text-content {
   flex: 0 0 auto;
   background: #ffffff;
@@ -51,11 +48,32 @@
   gap: 20px;
 }
 
+.text-body-wrapper {
+  position: relative;
+}
+
+.text-body {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transition: opacity 0.5s ease-in-out;
+  pointer-events: none;
+
+  &.active {
+    opacity: 1;
+    position: relative;
+    pointer-events: auto;
+  }
+}
+
 .text-content h2 {
   font-size: clamp(22px, 6.5vw, 34px);
   margin: 0 0 12px;
   font-family: var(--font-heading);
   line-height: 1.2;
+  transition: color 0.5s ease-in-out;
 }
 
 .text-content ul {
@@ -72,7 +90,7 @@
   line-height: 1.55;
 }
 
-/* Footer: inline inside the white card — no absolute positioning */
+/* ── Footer: stays completely static ── */
 .carousel-footer {
   display: flex;
   justify-content: space-between;
@@ -111,7 +129,8 @@
   padding: 0;
   flex-shrink: 0;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition: background-color 0.5s ease, color 0.5s ease,
+              transform 0.18s ease, box-shadow 0.18s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -166,10 +185,6 @@
 
 /* ── Tablet (≥ 768px) ── */
 @media (min-width: 768px) {
-  .carousel-slide {
-    align-items: center;
-  }
-
   .image-container {
     width: 100%;
   }
