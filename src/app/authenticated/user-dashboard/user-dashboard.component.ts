@@ -84,6 +84,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   overlayPetMood: PetMood = 'happy';
   private overlayQueue: Array<'bonus-coins' | 'mood-prompt' | 'daily-login' | 'streak-milestone'> = [];
   private overlayQueueBuilt = false;
+  private readonly overlayStoragePrefix = 'sm_overlay_v2';
 
   // Recent habits and tasks
   public recentHabits: Habit[] = [];
@@ -589,18 +590,18 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
     const queue: Array<'bonus-coins' | 'mood-prompt' | 'daily-login' | 'streak-milestone'> = [];
     const today = this.getTodayStr();
-    const bonusShown = !!localStorage.getItem('sm_overlay_bonus_shown');
-    const moodShown  = !!localStorage.getItem('sm_overlay_mood_shown');
+    const bonusShown = this.getOverlayItem('bonus_shown') === '1';
+    const moodShown = this.getOverlayItem('mood_shown') === '1';
+    const isFirstSignupHomeOpen = this.isFirstSignupHomeOpen();
 
-    if (!bonusShown) {
+    if (!bonusShown && isFirstSignupHomeOpen) {
       // First-ever app open (signup day) — show welcome bonus
       queue.push('bonus-coins');
-    } else {
+    } else if (!isFirstSignupHomeOpen) {
       // From Day 2 onwards — daily login coins once per calendar day
-      const lastDate = localStorage.getItem('sm_overlay_daily_date');
+      const lastDate = this.getOverlayItem('daily_date');
       if (lastDate !== today) {
         queue.push('daily-login');
-        localStorage.setItem('sm_overlay_daily_date', today);
       }
     }
 
@@ -611,19 +612,17 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
     // Streak milestone (every multiple of 7), once per milestone per streak run
     const streak = this.userStreaks;
-    const lastKnown = parseInt(localStorage.getItem('sm_overlay_last_streak') || '0', 10);
+    const lastKnown = parseInt(this.getOverlayItem('last_streak') || '0', 10);
     if (streak < lastKnown - 1) {
       // Streak broke — clear milestone history so user can earn them again
-      localStorage.removeItem('sm_overlay_milestones');
+      this.removeOverlayItem('milestones');
     }
-    localStorage.setItem('sm_overlay_last_streak', String(streak));
+    this.setOverlayItem('last_streak', String(streak));
 
     if (streak > 0 && streak % 7 === 0) {
-      const raw = localStorage.getItem('sm_overlay_milestones') || '';
+      const raw = this.getOverlayItem('milestones') || '';
       const shown = raw ? raw.split(',').map(Number) : [];
       if (!shown.includes(streak)) {
-        shown.push(streak);
-        localStorage.setItem('sm_overlay_milestones', shown.join(','));
         queue.push('streak-milestone');
       }
     }
@@ -656,15 +655,103 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   dismissCurrentOverlay(): void {
     if (this.activeOverlay === 'bonus-coins') {
-      localStorage.setItem('sm_overlay_bonus_shown', '1');
+      this.setOverlayItem('bonus_shown', '1');
+      this.clearFirstSignupOverlayPending();
     }
+
+    if (this.activeOverlay === 'daily-login') {
+      this.setOverlayItem('daily_date', this.getTodayStr());
+    }
+
+    if (this.activeOverlay === 'streak-milestone') {
+      const raw = this.getOverlayItem('milestones') || '';
+      const shown = raw ? raw.split(',').map(Number).filter(Number.isFinite) : [];
+      if (!shown.includes(this.userStreaks)) {
+        shown.push(this.userStreaks);
+        this.setOverlayItem('milestones', shown.join(','));
+      }
+    }
+
     this.showNextOverlay();
   }
 
   onOverlayMoodSelected(mood: string): void {
     this.selectedMood = mood;
-    localStorage.setItem('sm_overlay_mood_shown', '1');
+    this.setOverlayItem('mood_shown', '1');
     this.showNextOverlay();
+  }
+
+  private getOverlayUserId(): string {
+    const authUserData = this.authService.getUserData?.();
+    const profile = this.userService.getUserProfile();
+    const id = authUserData?.id ?? authUserData?.userId ?? profile?.userId ?? this.authService.getUserId();
+    return id ? String(id) : 'guest';
+  }
+
+  private getOverlayKey(name: string): string {
+    return `${this.overlayStoragePrefix}_${this.getOverlayUserId()}_${name}`;
+  }
+
+  private getOverlayItem(name: string): string | null {
+    try {
+      return localStorage.getItem(this.getOverlayKey(name));
+    } catch {
+      return null;
+    }
+  }
+
+  private setOverlayItem(name: string, value: string): void {
+    try {
+      localStorage.setItem(this.getOverlayKey(name), value);
+    } catch {}
+  }
+
+  private removeOverlayItem(name: string): void {
+    try {
+      localStorage.removeItem(this.getOverlayKey(name));
+    } catch {}
+  }
+
+  private isFirstSignupHomeOpen(): boolean {
+    if (this.getFirstSignupPendingFlag()) {
+      return true;
+    }
+
+    const userData = this.authService.getUserData?.();
+    const createdAt = userData?.createdAt
+      ?? userData?.created_at
+      ?? userData?.createdDate
+      ?? userData?.registeredAt
+      ?? userData?.registrationDate;
+
+    return createdAt ? this.toLocalDateString(createdAt) === this.getTodayStr() : false;
+  }
+
+  private getFirstSignupPendingFlag(): string | null {
+    const userId = this.getOverlayUserId();
+    try {
+      return sessionStorage.getItem('sm_first_signup_overlay_pending')
+        || localStorage.getItem(`sm_first_signup_overlay_pending_${userId}`);
+    } catch {
+      return null;
+    }
+  }
+
+  private clearFirstSignupOverlayPending(): void {
+    const userId = this.getOverlayUserId();
+    try {
+      sessionStorage.removeItem('sm_first_signup_overlay_pending');
+      localStorage.removeItem(`sm_first_signup_overlay_pending_${userId}`);
+    } catch {}
+  }
+
+  private toLocalDateString(value: unknown): string | null {
+    if (!value) return null;
+
+    const date = new Date(String(value));
+    if (Number.isNaN(date.getTime())) return null;
+
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   }
 
   // ─────────────────────────────────────────────────────────────────────────────

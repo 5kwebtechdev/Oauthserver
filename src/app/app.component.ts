@@ -99,7 +99,10 @@ export class AppComponent implements OnInit, OnDestroy {
     if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
       InstallReferrer.getReferralCode().then(({ code }) => {
         if (code && code.length > 0) {
-          try { sessionStorage.setItem('referralCode', code); } catch (e) {}
+          try {
+            sessionStorage.setItem('referralCode', code.toUpperCase());
+            sessionStorage.setItem('referralCodeLocked', 'true');
+          } catch (e) {}
         }
       }).catch(() => {});
     }
@@ -141,17 +144,19 @@ export class AppComponent implements OnInit, OnDestroy {
     this.ensureBadgeNotificationsActive();
 
     // Block hardware back button while force-update popup is visible
-    this.platform.backButton.subscribeWithPriority(9999, () => {
+    this.platform.backButton.subscribeWithPriority(9999, (processNextHandler) => {
       if (this.showForceUpdatePopup) {
         console.log('[AppUpdate] Hardware back button blocked — app update required');
         return;
       }
+
+      processNextHandler();
     });
 
     // Handle hardware back button on mobile devices
     this.platform.backButton.subscribeWithPriority(10, () => {
       this.navigation.back();
-    })
+    });
 
     // show loading on navigation using LoadingService to centralize behaviour
     this.router.events.subscribe((event: Event) => {

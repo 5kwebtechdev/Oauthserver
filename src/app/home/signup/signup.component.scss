@@ -1816,6 +1816,11 @@ ion-content.bg-white {
           border: 2px solid #ff823b;
           outline: none;
         }
+
+        &:read-only {
+          color: #772817;
+          cursor: default;
+        }
       }
 
       .error {

@@ -3,7 +3,7 @@ import { GOOGLE_AUTH_CAPACITOR_CONFIG } from './src/app/core/config/google-auth.
 
 const config: CapacitorConfig = {
   appId: 'com.superme.app',
-  appName: 'Superme',
+  appName: 'SuperMeApp',
   webDir: 'www',
   server: {
     allowNavigation: [

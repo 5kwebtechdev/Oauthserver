@@ -27,6 +27,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   public step = 1;
   public mode: 'email' | 'phone' = 'email';
   public loading = false;
+  public resendOtpInProgress = false;
 
   // Country / phone
   public showCountryCodeModal = false;
@@ -154,7 +155,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   // ── Form flow ───────────────────────────────────────────────────────────────
 
   proceedToNextStep(): void {
-    if (this.loading) return;
+    if (this.loading || this.resendOtpInProgress) return;
 
     if (this.step === 1) {
       this.sendOtpRequest();
@@ -428,6 +429,10 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   }
 
   resendOtp(): void {
+    if (this.loading || this.resendOtpInProgress) {
+      return;
+    }
+
     const identifier = this.requestedIdentifier
       ?? this.resetPasswordForm.get('email')?.value
       ?? this.resetPasswordForm.get('phone')?.value
@@ -436,11 +441,11 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
 
     this.otpError = null;
     this.otpIncorrect = false;
-    this.loading = true;
+    this.resendOtpInProgress = true;
 
     this.authService.requestOtp(identifier).subscribe({
       next: () => {
-        this.loading = false;
+        this.resendOtpInProgress = false;
         this.otpDigits = ['', '', '', ''];
         for (let i = 0; i < 4; i++) {
           const el = document.getElementById(`otp-input-${i}`) as HTMLInputElement;
@@ -452,7 +457,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
         this.startOtpTimer();
       },
       error: (err) => {
-        this.loading = false;
+        this.resendOtpInProgress = false;
         this.otpError = this.getFriendlyResendOtpErrorMessage(err);
       }
     });

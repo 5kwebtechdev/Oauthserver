@@ -73,8 +73,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   // Referral code UI and value
   public showReferral: boolean = false;
   public referralCode: string = '';
+  public referralCodeReadonly: boolean = false;
   public referralValidationStatus: 'pending' | 'valid' | 'invalid' | null = null;
   public referralErrorMessage: string = '';
+  public otpRequestInProgress: boolean = false;
+  public otpVerifyInProgress: boolean = false;
+  public otpResendInProgress: boolean = false;
   private referralCheckInProgress: boolean = false;
 
   // Use an accessor so we can defensively guard and log unexpected changes
@@ -201,6 +205,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       const deepLinkCode = sessionStorage.getItem('referralCode');
       if (deepLinkCode && deepLinkCode.length > 0) {
         this.referralCode = deepLinkCode.toUpperCase();
+        this.referralCodeReadonly = sessionStorage.getItem('referralCodeLocked') === 'true';
         this.showReferral = true;
       }
     } catch (e) {}
@@ -508,23 +513,30 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   signupFromLogin() {
+    if (this.otpRequestInProgress) {
+      return;
+    }
+
     if (this.email?.invalid) {
       this.errorMessage = 'Please enter a valid email address';
       return;
     }
     const identifier = this.email?.value;
     this.errorMessage = null;
+    this.otpRequestInProgress = true;
 
     // Step 1: check if email already exists
     this.authService.checkEmailExists(identifier).subscribe({
       next: (res) => {
         if (res.exists) {
+          this.otpRequestInProgress = false;
           this.errorMessage = 'This email is already registered. Please login instead.';
           return;
         }
         // Step 2: email is new — send OTP
         this.authService.sendLoginOtp(identifier).subscribe({
           next: () => {
+            this.otpRequestInProgress = false;
             this.requestedIdentifier = identifier;
             try {
               if (identifier) {
@@ -536,11 +548,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
             this.router.navigate(['home/sign-up'], { queryParams: { step: 0.2 } });
           },
           error: (err) => {
+            this.otpRequestInProgress = false;
             this.errorMessage = err?.error?.message || 'Failed to send OTP. Please try again.';
           }
         });
       },
       error: () => {
+        this.otpRequestInProgress = false;
         this.errorMessage = 'Unable to verify email. Please try again.';
       }
     });
@@ -1011,11 +1025,20 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   // Toggle the referral code input visibility
   toggleReferral(): void {
+    if (this.referralCodeReadonly) {
+      this.showReferral = true;
+      return;
+    }
+
     this.showReferral = !this.showReferral;
     // If hiding the input, clear stored code
     if (!this.showReferral) {
       this.referralCode = '';
-      try { sessionStorage.removeItem('referralCode'); } catch (e) { }
+      this.referralCodeReadonly = false;
+      try {
+        sessionStorage.removeItem('referralCode');
+        sessionStorage.removeItem('referralCodeLocked');
+      } catch (e) { }
     }
     // If showing, focus the input after a short delay
     if (this.showReferral) {
@@ -1028,13 +1051,21 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   // Handle referral input: allow only alphanumeric and max length 8
   onReferralInput(event: any): void {
+    if (this.referralCodeReadonly) {
+      try { event.target.value = this.referralCode; } catch (e) { }
+      return;
+    }
+
     const raw = (event.target.value || '') as string;
     // Allow only alphanumeric, up to 8 chars, and normalize to UPPERCASE
     const cleaned = raw.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase();
     this.referralCode = cleaned;
     // Update input value to cleaned value (prevents caret jump)
     try { event.target.value = cleaned; } catch (e) { }
-    try { sessionStorage.setItem('referralCode', this.referralCode); } catch (e) { }
+    try {
+      sessionStorage.setItem('referralCode', this.referralCode);
+      sessionStorage.removeItem('referralCodeLocked');
+    } catch (e) { }
 
     // Check referral code validity when exactly 8 characters are entered
     if (cleaned.length === 8) {
@@ -1300,6 +1331,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   verifyOtp(): void {
+    if (this.otpVerifyInProgress) {
+      return;
+    }
+
     if (!this.isOtpComplete()) {
       this.core.triggerToasrt('Please enter the complete OTP');
       return;
@@ -1311,14 +1346,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const savedLoginMode = sessionStorage.getItem('loginMode') as 'email' | 'phone' || this.loginMode;
     const identifier = this.requestedIdentifier || (savedLoginMode === 'phone' ? this.phone?.value : this.email?.value);
 
+    this.otpVerifyInProgress = true;
     this.authService.verifyLoginOtp(identifier || '', otp).subscribe({
       next: () => {
+        this.otpVerifyInProgress = false;
         this.errorMessage = null;
         this.clearOtpTimer();
         // Proceed to password creation
         this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
       },
       error: (err) => {
+        this.otpVerifyInProgress = false;
         console.error('OTP verification failed:', err);
         if (err instanceof ProgressEvent || (err && err.type === 'error' && err.target)) {
           this.errorMessage = 'Network error. Please check your internet connection and try again.';
@@ -1341,6 +1379,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   resendOtp(): void {
+    if (this.otpResendInProgress) {
+      return;
+    }
+
     const savedLoginMode = sessionStorage.getItem('loginMode') as 'email' | 'phone' || this.loginMode;
     const identifier = this.requestedIdentifier || (savedLoginMode === 'phone' ? this.phone?.value : this.email?.value);
     const isEmail = savedLoginMode === 'email';
@@ -1351,8 +1393,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
+    this.otpResendInProgress = true;
     this.authService.registerRequestOtp(identifier, isEmail, countryCode).subscribe({
       next: () => {
+        this.otpResendInProgress = false;
         this.errorMessage = null;
         this.otpDigits = ['', '', '', ''];
         for (let i = 0; i < 4; i++) {
@@ -1367,6 +1411,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.core.triggerToasrt('OTP resent successfully');
       },
       error: (err) => {
+        this.otpResendInProgress = false;
         let body = err?.error;
         if (typeof body === 'string') { try { body = JSON.parse(body); } catch { } }
         const msg = body?.message || body?.error || 'Failed to resend OTP. Please try again.';
@@ -1591,6 +1636,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           sessionStorage.removeItem('familyName');
           sessionStorage.removeItem('familyCreator');
           sessionStorage.removeItem('referralCode');
+          sessionStorage.removeItem('referralCodeLocked');
         } catch (e) { }
 
         // Mark onboarding completed so onboarding routes are blocked later
@@ -1619,6 +1665,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
               // After login, user session is set by AuthService
               // Navigate to appropriate dashboard with loader hidden
               const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+              if (route.includes('user-dashboard')) {
+                this.markFirstSignupHomeOverlaysPending();
+              }
               setTimeout(() => {
                 this.loadingService.forceHide();
                 this.router.navigate([route]);
@@ -1757,6 +1806,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) {}
         this.clearGoogleSignupSession();
         const route = role === 'parent' ? '/authed/parent-account' : '/authed/user-dashboard';
+        if (route.includes('user-dashboard')) {
+          this.markFirstSignupHomeOverlaysPending();
+        }
         setTimeout(() => {
           this.loadingService.forceHide();
           this.router.navigate([route], { replaceUrl: true });
@@ -1776,7 +1828,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       ['signup_via_google', 'google_signup_email', 'google_signup_name',
         'google_signup_avatar', 'google_signup_provider_id', 'signup_profile',
         'signup_role', 'signup_avatar', 'signup_pet', 'requestedIdentifier',
-        'familyCode', 'familyName', 'familyCreator', 'referralCode'].forEach(k => {
+        'familyCode', 'familyName', 'familyCreator', 'referralCode', 'referralCodeLocked'].forEach(k => {
         sessionStorage.removeItem(k);
       });
     } catch (e) {}
@@ -1870,6 +1922,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           sessionStorage.removeItem('familyName');
           sessionStorage.removeItem('familyCreator');
           sessionStorage.removeItem('referralCode');
+          sessionStorage.removeItem('referralCodeLocked');
         } catch (e) { }
 
         // Navigate to welcome step with a small delay to ensure loader state is properly updated
@@ -1905,6 +1958,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // Auto-login
     this.authService.login(credentials).subscribe({
       next: () => {
+        this.markFirstSignupHomeOverlaysPending();
         this.requestPasswordSavePrompt(credentials);
         this.loadingService.forceHide();
         this.router.navigate(['/authed/user-dashboard']);
@@ -1955,6 +2009,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     return this.email?.value || '';
+  }
+
+  private markFirstSignupHomeOverlaysPending(): void {
+    const userId = this.authService.getUserId();
+    try {
+      sessionStorage.setItem('sm_first_signup_overlay_pending', '1');
+      if (userId) {
+        localStorage.setItem(`sm_first_signup_overlay_pending_${userId}`, '1');
+      }
+    } catch (e) {}
   }
 
   private requestPasswordSavePrompt(credentials: { email?: string; phone?: string; password?: string }): void {
