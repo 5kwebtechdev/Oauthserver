@@ -94,7 +94,10 @@ export class DeepLinkService {
     if (path === '/referral') {
       const code = url.searchParams.get('code');
       if (code) {
-        try { sessionStorage.setItem('referralCode', code.toUpperCase()); } catch (e) {}
+        try {
+          sessionStorage.setItem('referralCode', code.toUpperCase());
+          sessionStorage.setItem('referralCodeLocked', 'true');
+        } catch (e) {}
       }
       return '/home/sign-up?step=0.1';
     }

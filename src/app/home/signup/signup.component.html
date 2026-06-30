@@ -54,8 +54,8 @@
             </div>
           </ng-container>
 
-          <superme-button type="orange-onboard" full [text]="'Next'"
-            [disabled]="loginMode === 'email' ? email?.invalid : !isPhoneValid(phone?.value)" (click)="signupFromLogin()">
+          <superme-button type="orange-onboard" full [text]="otpRequestInProgress ? 'Sending code...' : 'Next'"
+            [disabled]="otpRequestInProgress || (loginMode === 'email' ? email?.invalid : !isPhoneValid(phone?.value))" (click)="signupFromLogin()">
           </superme-button>
 
           <div class="error-message" *ngIf="errorMessage">
@@ -99,10 +99,13 @@
 
         <div class="otp-footer">
           <span class="otp-timer" *ngIf="!canResendOtp">Resend in {{ formatTime(otpResendTimer) }}</span>
-          <button type="button" class="otp-resend-btn" *ngIf="canResendOtp" (click)="resendOtp()">Resend code</button>
+          <button type="button" class="otp-resend-btn" *ngIf="canResendOtp" [disabled]="otpResendInProgress" (click)="resendOtp()">
+            {{ otpResendInProgress ? 'Resending...' : 'Resend code' }}
+          </button>
         </div>
 
-        <superme-button type="orange-onboard" full [text]="'Verify'" [disabled]="!isOtpComplete()" (click)="verifyOtp()">
+        <superme-button type="orange-onboard" full [text]="otpVerifyInProgress ? 'Verifying...' : 'Verify'"
+          [disabled]="otpVerifyInProgress || !isOtpComplete()" (click)="verifyOtp()">
         </superme-button>
 
         <div class="otp-error" *ngIf="errorMessage">{{ errorMessage }}</div>
@@ -331,7 +334,7 @@
         <div class="referral-input-wrapper" *ngIf="showReferral">
           <div class="input-group">
             <input type="text" [value]="referralCode" (input)="onReferralInput($event)" placeholder="Type 8 character code"
-              maxlength="8" />
+              maxlength="8" [readonly]="referralCodeReadonly" [attr.aria-readonly]="referralCodeReadonly" />
             <div class="error" *ngIf="referralCode && referralCode.length > 8">Referral code must be up to 8 characters
             </div>
             <!-- Validation status indicators -->

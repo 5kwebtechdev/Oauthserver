@@ -1,6 +1,6 @@
 // Firebase Cloud Messaging Service Worker
 // Handles background push notifications when the app is running in a browser
-// (PWA / web mode). Not used by native iOS/Android builds — the native
+// (PWA / web mode). Not used by native iOS/Android builds - the native
 // Firebase SDK handles those via @capacitor-firebase/messaging.
 
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
@@ -17,14 +17,15 @@ self.addEventListener('message', (event) => {
       messagingInstance = firebase.messaging(app);
 
       messagingInstance.onBackgroundMessage((payload) => {
-        const title = payload.notification?.title || 'Superme';
+        const title = payload.notification?.title || 'SuperMeApp';
         const body  = payload.notification?.body  || '';
-        const icon  = payload.notification?.icon  || '/assets/icons/icon-192x192.png';
+        const icon  = payload.notification?.icon  || '/assets/Icons-Neutral/home-logo.png';
+        const badge = payload.notification?.badge || '/assets/Icons-Neutral/home-logo.png';
 
         return self.registration.showNotification(title, {
           body,
           icon,
-          badge: '/assets/icons/icon-72x72.png',
+          badge,
           data: payload.data || {},
           vibrate: [200, 100, 200],
           requireInteraction: false
@@ -54,7 +55,7 @@ self.addEventListener('notificationclick', (event) => {
           return;
         }
       }
-      // No open window — open one.
+      // No open window - open one.
       return clients.openWindow(route || '/');
     })
   );

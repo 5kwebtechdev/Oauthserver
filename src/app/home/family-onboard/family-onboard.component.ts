@@ -862,7 +862,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
                 ['signup_via_google', 'google_signup_email', 'google_signup_name',
                  'google_signup_avatar', 'google_signup_provider_id', 'signup_profile',
                  'signup_role', 'signup_avatar', 'requestedIdentifier',
-                 'familyCode', 'familyName', 'familyCreator', 'referralCode'].forEach(k => {
+                 'familyCode', 'familyName', 'familyCreator', 'referralCode', 'referralCodeLocked'].forEach(k => {
                     try { sessionStorage.removeItem(k); } catch (e) {}
                 });
                 this.router.navigate(['/authed/parent-account'], { replaceUrl: true });

@@ -210,8 +210,8 @@ export class PetMessagesService {
             ],
             'daily-login-coins': [
                 {
-                    msg: "Look at you go! Another day, another step forward. You've just earned 5 coins for being here with me!",
-                    mood: 'happy',
+                    msg: "Another day, another step forward. You've earned 5 coins for showing up today!",
+                    mood: 'playful',
                     type: 'overlay',
                     timing: 'Shown till the user clicks on the screen'
                 }
@@ -226,7 +226,7 @@ export class PetMessagesService {
             ],
             'streak-coins': [
                 {
-                    msg: "Look what your streak earned you - 10 special coins! Every single day you chose to stay consistent, you were building something incredible.",
+                    msg: "Look what your streak earned you - 10 special coins! Every single day you choose to stay consistent, you are building something incredible.",
                     mood: 'happy',
                     type: 'overlay',
                     timing: 'Shown till the user clicks on the screen'

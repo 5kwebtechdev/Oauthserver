@@ -102,6 +102,10 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   onSubmit() {
+    if (this.loading) {
+      return;
+    }
+
     // Only proceed when fields required for the active mode are valid
     if (this.isLoginFormValid()) {
       this.loading = true;
