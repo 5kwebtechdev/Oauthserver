@@ -45,11 +45,11 @@
         </div>
         <div class="sub-filters-section w-full">
           <div class="sub-filter-list">
-            <div class="sub-filter-item" *ngFor="let s of selectedSubFilters">
+            <label class="sub-filter-item" *ngFor="let s of selectedSubFilters">
               <span class="sub-filter-label">{{ s.label }}</span>
               <input type="checkbox" class="sub-filter-checkbox" [checked]="isSubFilterSelected(s)"
                 (change)="onToggleSubFilter(s, ($any($event.target)).checked)" />
-            </div>
+            </label>
           </div>
         </div>
       </div>

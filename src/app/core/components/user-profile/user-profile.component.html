@@ -95,50 +95,85 @@
     </section>
 
     <section class="profile-content">
-      <profile-content-card iconName="profile" title="Edit Profile Info" subtitle="Avatar name, age, email, number ...."
-        (select)="onEdit()"></profile-content-card>
 
-      <profile-content-card iconName="key" title="Password and security" subtitle="Change your password"
-        (select)="onPassword()"></profile-content-card>
+      <!-- Group 1: Account -->
+      <div class="menu-group">
+        <p class="menu-group__label">Account</p>
+        <div class="menu-group__card">
+          <profile-content-card iconName="profile" title="Edit Profile Info" subtitle="Avatar name, age, email, number ...."
+            (select)="onEdit()"></profile-content-card>
+          <div class="menu-divider"></div>
+          <profile-content-card iconName="key" title="Password & Security" subtitle="Change your password"
+            (select)="onPassword()"></profile-content-card>
+          <ng-container *ngIf="user?.relationship !== 'PARENT'">
+            <div class="menu-divider"></div>
+            <profile-content-card iconName="owl" title="Change your pet" subtitle="Switch your buddy anytime!"
+              (select)="onChangePet()"></profile-content-card>
+          </ng-container>
+        </div>
+      </div>
 
-      <profile-content-card iconName="owl" title="Change your pet" subtitle="Switch your buddy anytime you like!"
-        (select)="onChangePet()" *ngIf="user?.relationship !== 'PARENT'"></profile-content-card>
+      <!-- Group 2: Preferences -->
+      <div class="menu-group">
+        <p class="menu-group__label">Preferences</p>
+        <div class="menu-group__card">
+          <profile-content-card iconName="creditCard" title="Manage Membership"
+            subtitle="Perks, upgrade, or cancel anytime" (select)="onManageMembership()"></profile-content-card>
+          <div class="menu-divider"></div>
+          <profile-content-card iconName="notification" title="Notifications" subtitle="Manage your notifications"
+            (select)="onNotifications()"></profile-content-card>
+        </div>
+      </div>
 
-      <profile-content-card iconName="creditCard" title="Manage Your Membership"
-        subtitle="See your perks, upgrade, or cancel anytime" (select)="onManageMembership()"></profile-content-card>
+      <!-- Group 3: Family & Social -->
+      <div class="menu-group">
+        <p class="menu-group__label">Family & Social</p>
+        <div class="menu-group__card">
+          <profile-content-card iconName="gift" title="Refer a Friend" subtitle="Refer friends for exciting rewards"
+            (select)="onRefer()"></profile-content-card>
+          <div class="menu-divider"></div>
+          <profile-content-card iconName="link" title="My Family" subtitle="View your family details"
+            (select)="onMyFamily()"></profile-content-card>
+          <div class="menu-divider"></div>
+          <profile-content-card iconName="lock" title="Parental Control" subtitle="View app restrictions & permissions"
+            (select)="onParentalControl()"></profile-content-card>
+        </div>
+      </div>
 
-      <profile-content-card iconName="notification" title="Notifications" subtitle="Manage your notifications"
-        (select)="onNotifications()"></profile-content-card>
+      <!-- Group 4: Support -->
+      <div class="menu-group">
+        <p class="menu-group__label">Support</p>
+        <div class="menu-group__card">
+          <profile-content-card iconName="feedback" title="Feedback & Suggestions"
+            subtitle="Share your thoughts with us!" (select)="onFeedback()"></profile-content-card>
+          <div class="menu-divider"></div>
+          <profile-content-card iconName="support" title="Help & Support" subtitle="FAQ's and chat support"
+            (select)="onHelpSupport()"></profile-content-card>
+          <div class="menu-divider"></div>
+          <profile-content-card iconName="policies" title="Our Policies" subtitle="How we follow the guidelines"
+            (select)="onOurPolicies()"></profile-content-card>
+        </div>
+      </div>
 
-      <profile-content-card iconName="gift" title="Refer a friend" subtitle="Refer this to friends for exciting rewards"
-        (select)="onRefer()"></profile-content-card>
+      <!-- Group 5: Danger zone -->
+      <div class="menu-group">
+        <div class="menu-group__card">
+          <profile-content-card iconName="danger" title="Delete My Data"
+            subtitle="Erase all your info safely and permanently" (select)="onDeleteMyData()"></profile-content-card>
+        </div>
+      </div>
 
-      <profile-content-card iconName="link" title="My Family" subtitle="View your family details"
-        (select)="onMyFamily()"></profile-content-card>
-
-      <profile-content-card iconName="lock" title="Parental Control" subtitle="View app restrictions and permissions"
-        (select)="onParentalControl()"></profile-content-card>
-
-      <profile-content-card iconName="feedback" title="Feedback & Suggestions"
-        subtitle="Share your thoughts to help us improve!" (select)="onFeedback()"></profile-content-card>
-
-      <profile-content-card iconName="support" title="Help & Support" subtitle="FAQ's and chat support"
-        (select)="onHelpSupport()"></profile-content-card>
-
-      <profile-content-card iconName="policies" title="Our policies" subtitle="Learn how we follow the guidelines"
-        (select)="onOurPolicies()"></profile-content-card>
-
-      <profile-content-card iconName="danger" title="Delete My Data"
-        subtitle="Erase all your info safely and permanently" (select)="onDeleteMyData()"></profile-content-card>
-
+      <!-- Logout -->
       <div class="logout-section" (click)="openLogoutPopup()">
-        <ion-icon name="log-out-outline"></ion-icon>
+        <div class="logout-section__icon">
+          <ion-icon name="log-out-outline"></ion-icon>
+        </div>
         <div class="log-out-outline-text">
           <span>Logout</span>
           <p>See you next time!</p>
         </div>
+        <ion-icon name="chevron-forward-outline" class="logout-section__chev"></ion-icon>
       </div>
-
 
     </section>
 

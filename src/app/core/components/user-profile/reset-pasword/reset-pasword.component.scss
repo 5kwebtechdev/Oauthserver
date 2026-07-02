@@ -1,16 +1,199 @@
-.reset-password-root {
-  padding: 16px;
+ion-content {
+  --background: #F5F7FA;
+}
+
+.rp-page {
+  padding: 16px 16px calc(40px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 33px;
+  gap: 20px;
+}
 
-  .content {
-    margin-top: 12px;
-    color: var(--ion-color-medium);
+// ── Hero ──────────────────────────────────────────────────────────────────────
+.rp-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 1px 6px rgba(40, 37, 39, 0.07);
+
+  &__icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    background: rgba(76, 175, 80, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__text {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(40, 37, 39, 0.65);
+    line-height: 1.5;
+    margin: 0;
   }
 }
 
-.button-row {
-  padding: 16px;
+// ── Card ──────────────────────────────────────────────────────────────────────
+.rp-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 6px 16px 16px;
+  box-shadow: 0 1px 6px rgba(40, 37, 39, 0.07);
+  display: flex;
+  flex-direction: column;
+}
+
+.rp-divider {
+  height: 1px;
+  background: rgba(40, 37, 39, 0.06);
+  margin: 4px 0;
+}
+
+// ── Field ─────────────────────────────────────────────────────────────────────
+.rp-field {
+  padding: 14px 0 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__label {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 700;
+    color: #282527;
+  }
+
+  &__hint {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    color: #4CAF50;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    background: #F7F8FA;
+    border: 1.5px solid #E8E8EA;
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus-within {
+      border-color: #4CAF50;
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+    }
+
+    &--error {
+      border-color: #BB2124;
+      box-shadow: 0 0 0 3px rgba(187, 33, 36, 0.08);
+    }
+  }
+
+  &__input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 14px 4px 14px 14px;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 500;
+    color: #282527;
+    outline: none;
+    min-width: 0;
+
+    &::placeholder {
+      color: rgba(40, 37, 39, 0.35);
+    }
+  }
+
+  &__eye {
+    background: none;
+    border: none;
+    padding: 0 14px;
+    color: rgba(40, 37, 39, 0.4);
+    font-size: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.15s;
+
+    &:active { color: #4CAF50; }
+  }
+
+  &__error {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    color: #BB2124;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__match {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    color: #4CAF50;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    i { font-size: 11px; }
+  }
+}
+
+// ── Password strength ─────────────────────────────────────────────────────────
+.rp-strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &__bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(40, 37, 39, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  &__fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease, background 0.3s ease;
+
+    &.weak   { background: #BB2124; }
+    &.fair   { background: #F0AD4E; }
+    &.good   { background: #4CAF50; }
+    &.strong { background: #2E7D32; }
+  }
+
+  &__label {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 40px;
+    text-align: right;
+
+    &.weak   { color: #BB2124; }
+    &.fair   { color: #F0AD4E; }
+    &.good   { color: #4CAF50; }
+    &.strong { color: #2E7D32; }
+  }
 }

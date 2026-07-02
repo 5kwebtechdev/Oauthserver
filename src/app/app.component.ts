@@ -27,6 +27,7 @@ import { DeepLinkService } from './core/services/deep-link.service';
 import { AppUpdateService } from './core/services/app-update.service';
 import { SupermePopupConfig } from './core/components/superme-popup/superme-popup.component';
 import { PushNotificationService } from './core/services/push-notification.service';
+import { AuthService as CoreAuthService } from './core/services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -48,6 +49,9 @@ export class AppComponent implements OnInit, OnDestroy {
   showBadgePopup = false;
   currentBadge?: BadgePopupData;
   private badgePopupQueue: BadgePopupData[] = [];
+  isMonitoringChild = false;
+  monitoringChildName = '';
+  private monitoringStateListener = () => this.loadMonitoringState();
 
   // Force update popup state (blocks the app until the user updates)
   showForceUpdatePopup = false;
@@ -83,11 +87,15 @@ export class AppComponent implements OnInit, OnDestroy {
     private deepLinks: DeepLinkService,
     private appUpdate: AppUpdateService,
     private pushNotifications: PushNotificationService,
+    private coreAuthService: CoreAuthService,
   ) {
     this.toast$ = this.toastService.toast$;
   }
 
   ngOnInit() {
+    this.loadMonitoringState();
+    window.addEventListener('family-monitoring-changed', this.monitoringStateListener);
+
     this.remoteConfig.initialize().then(() => {
       this.checkAppUpdate();
     }).catch(error => {
@@ -212,6 +220,45 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.badgeSubscription.unsubscribe();
     this.badgeSocketService.disconnect();
+    window.removeEventListener('family-monitoring-changed', this.monitoringStateListener);
+  }
+
+  switchBackFromChildView(): void {
+    const parentToken = localStorage.getItem('family_parent_token');
+    const parentUserDataRaw = localStorage.getItem('family_parent_user_data');
+
+    if (parentToken) {
+      this.coreAuthService.replaceAuthToken(parentToken);
+    }
+
+    if (parentUserDataRaw) {
+      try {
+        this.coreAuthService.setUserData(JSON.parse(parentUserDataRaw));
+      } catch (error) {
+        console.warn('[AppComponent] Failed to restore parent user data:', error);
+        this.coreAuthService.updateUserData({ relationship: 'PARENT' });
+      }
+    } else {
+      this.coreAuthService.updateUserData({ relationship: 'PARENT' });
+    }
+
+    localStorage.removeItem('family_parent_token');
+    localStorage.removeItem('family_parent_user_data');
+    localStorage.removeItem('family_monitoring_state');
+    this.loadMonitoringState();
+    this.router.navigate(['/authed/parent-account'], { replaceUrl: true });
+  }
+
+  private loadMonitoringState(): void {
+    try {
+      const raw = localStorage.getItem('family_monitoring_state');
+      const state = raw ? JSON.parse(raw) : null;
+      this.isMonitoringChild = state?.isMonitoring === true;
+      this.monitoringChildName = state?.monitoringChildName || 'Child';
+    } catch {
+      this.isMonitoringChild = false;
+      this.monitoringChildName = '';
+    }
   }
 
   /**

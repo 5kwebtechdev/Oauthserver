@@ -1,4 +1,9 @@
 <ion-app>
+  <div class="monitoring-banner" *ngIf="isMonitoringChild">
+    <span>Viewing as: <strong>{{ monitoringChildName }}</strong></span>
+    <button type="button" (click)="switchBackFromChildView()">Switch Back</button>
+  </div>
+
   <div class="app-router-container w-full p-0">
     <ion-router-outlet></ion-router-outlet>
   </div>

@@ -87,5 +87,5 @@
     }" (primaryAction)="onSubmit()" (backdropClick)="showThankYouPopup = false"
     (closeAction)="showThankYouPopup = false"></app-superme-popup>
 
-  <span class="privacy">PRIVACY POLICY</span>
+  <span class="privacy" (click)="navigateToPrivacyPolicy()" role="button" tabindex="0" (keydown.enter)="navigateToPrivacyPolicy()">PRIVACY POLICY</span>
 </ion-content>

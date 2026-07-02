@@ -31,7 +31,8 @@ export class TagsApi {
     }
 
     getTags(): Observable<TagOption[]> {
-        return this.http.get<TagOption[]>(`${this.base}/habits-tasks/tags`, { headers: this.headers() });
+        const headers = this.headers().set('x-skip-loading', '1');
+        return this.http.get<TagOption[]>(`${this.base}/habits-tasks/tags`, { headers });
     }
 
     createTag(name: string): Observable<TagOption> {

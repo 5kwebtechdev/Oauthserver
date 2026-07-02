@@ -31,34 +31,55 @@ export class FamilyService {
         return headers;
     }
 
-    createFamily(familyName: string): Observable<any> {
+    getMyStatus(): Observable<any> {
         const headers = this.getHeaders();
-        return this.http.post(`${this.baseUrl}/family/create?familyName=${familyName}`, {}, { headers });
+        return this.http.get(`${this.baseUrl}/family/my-status`, { headers });
+    }
+
+    createFamily(familyName: string): Observable<any> {
+        return this.convertToParent({ createFamily: true, familyName });
     }
 
     joinFamily(token: string): Observable<any> {
-        const headers = this.getHeaders();
-        return this.http.post(`${this.baseUrl}/family/join`, {
-            token,
-        }, { headers });
+        return this.joinFamilyWithCode(token, 'child');
     }
 
     joinFamilyWithCode(familyCode: string, relationship: string): Observable<any> {
+        const normalizedRelationship = (relationship || '').toString().toUpperCase();
+
+        if (normalizedRelationship === 'PARENT') {
+            return this.convertToParent({ createFamily: false, familyCode });
+        }
+
+        return this.convertToChild(familyCode);
+    }
+
+    convertToParent(payload: { createFamily: boolean; familyName?: string; familyCode?: string }): Observable<any> {
         const headers = this.getHeaders();
-        return this.http.post(`${this.baseUrl}/family/join`, {
-            familyCode,
-            relationship
-        }, { headers });
+        return this.http.post(`${this.baseUrl}/family/convert-to-parent`, payload, { headers });
+    }
+
+    convertToChild(familyCode: string): Observable<any> {
+        const headers = this.getHeaders();
+        return this.http.post(`${this.baseUrl}/family/convert-to-child`, { familyCode }, { headers });
     }
 
     /**
-     * Convert self account to parent account
-     * POST /v1/auth/self-to-parent?familyName=...&familyCode=...
+     * Convert self account to parent account.
+     * Kept for older callers; the backend now generates/returns the family code.
      */
-    convertSelfToParent(familyCode: string, familyName: string): Observable<any> {
+    convertSelfToParent(_familyCode: string, familyName: string): Observable<any> {
+        return this.convertToParent({ createFamily: true, familyName });
+    }
+
+    switchToFamilyMember(memberId: number): Observable<any> {
         const headers = this.getHeaders();
-        const params = `familyName=${encodeURIComponent(familyName)}&familyCode=${encodeURIComponent(familyCode)}`;
-        return this.http.post(`${this.baseUrl}/auth/self-to-parent?${params}`, {}, { headers });
+        return this.http.get(`${this.baseUrl}/family/switch/${memberId}`, { headers });
+    }
+
+    leaveFamily(): Observable<any> {
+        const headers = this.getHeaders();
+        return this.http.post(`${this.baseUrl}/family/leave`, {}, { headers, responseType: 'text' as 'json' });
     }
 
     /**

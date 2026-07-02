@@ -166,7 +166,7 @@ export class AuthService {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${userToken}`
         });
-        return this.http.put<any>(url, payload, { headers });
+        return this.http.put<any>(url, payload, { headers, responseType: 'text' as 'json' });
     }
 
     logout(): void {
@@ -182,6 +182,14 @@ export class AuthService {
         return localStorage.getItem('auth_token');
     }
 
+    private getAuthHeaders(): HttpHeaders {
+        const userToken = this.getToken();
+        return new HttpHeaders({
+            'Content-Type': 'application/json',
+            Authorization: userToken?.startsWith('Bearer ') ? userToken : `Bearer ${userToken || ''}`
+        });
+    }
+
     getUserId(): string | null {
         return localStorage.getItem('user_id');
     }
@@ -191,14 +199,34 @@ export class AuthService {
      */
     getFamilyDetails(): Observable<FamilyDetailsResponse> {
         const url = `${this.apiUrl}/auth/family-details`;
-        const userToken = this.getToken();
+        return this.http.get<FamilyDetailsResponse>(url, { headers: this.getAuthHeaders() });
+    }
 
-        const headers = new HttpHeaders({
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${userToken}`
-        });
+    /**
+     * Load the current role/family status for the "My Family" screen.
+     * Endpoint: GET /v1/family/my-status
+     */
+    getFamilyStatus(): Observable<any> {
+        const url = `${this.apiUrl}/family/my-status`;
+        return this.http.get<any>(url, { headers: this.getAuthHeaders() });
+    }
 
-        return this.http.get<FamilyDetailsResponse>(url, { headers });
+    /**
+     * Parent temporarily switches into a child view.
+     * Endpoint: GET /v1/family/switch/{memberId}
+     */
+    switchFamilyMember(memberId: number): Observable<any> {
+        const url = `${this.apiUrl}/family/switch/${memberId}`;
+        return this.http.get<any>(url, { headers: this.getAuthHeaders() });
+    }
+
+    /**
+     * Leave the current family and return to Self mode.
+     * Endpoint: POST /v1/family/leave
+     */
+    leaveFamily(): Observable<any> {
+        const url = `${this.apiUrl}/family/leave`;
+        return this.http.post<any>(url, {}, { headers: this.getAuthHeaders(), responseType: 'text' as 'json' });
     }
 
     /**
@@ -448,6 +476,8 @@ export interface EditProfileResponse {
 }
 
 export interface FamilyMember {
+    id?: number;
+    memberId?: number;
     userId: number;
     name: string;
     avatarName: string;
@@ -457,6 +487,7 @@ export interface FamilyMember {
     avatarImageName?: string;
     relationship: string;
     age: number;
+    dateOfBirth?: string;
     you: boolean;
 }
 

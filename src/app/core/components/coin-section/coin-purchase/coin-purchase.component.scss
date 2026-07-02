@@ -1,34 +1,44 @@
 .coin-purchases-page {
-    padding: 0  16px;
-}
-.coin-balance{
-    h1{
-        color: #282527;
-        font-family: var(--font-heading);
-        font-size: 16px;
-        opacity: 0.7;
-        font-weight: 500;
-    }
-    img{
-        width: 40px;
-        height: auto;
-    }
-    span{
-       color: #282527;
-        font-family: var(--font-sans);
-        font-size: 32px;
-        font-weight: 700;
-    }
-}
-.coin-purchases-page {
     display: flex;
     flex-direction: column;
-    min-height: 100dvh;
+    padding: 12px 16px calc(24px + env(safe-area-inset-bottom));
+    box-sizing: border-box;
 }
 
-.coming-soon{
-    flex: 1 1 auto;
+.coin-balance {
+    h1 {
+        color: #282527;
+        font-family: var(--font-heading);
+        font-size: 14px;
+        opacity: 0.6;
+        font-weight: 600;
+        margin: 0 0 8px;
+    }
+
+    .balance-display {
+        background: linear-gradient(135deg, #FFF7E8 0%, #FFEFCE 100%);
+        border-radius: 16px;
+        padding: 12px 16px;
+        width: fit-content;
+        border: 1px solid rgba(238, 102, 33, 0.15);
+    }
+
+    img {
+        width: 32px;
+        height: auto;
+    }
+
+    span {
+        color: #282527;
+        font-family: var(--font-sans);
+        font-size: 26px;
+        font-weight: 800;
+    }
+}
+
+.coming-soon {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: clamp(32px, 12dvh, 80px) 0 24px;
 }

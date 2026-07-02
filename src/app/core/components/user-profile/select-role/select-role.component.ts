@@ -195,9 +195,9 @@ import { QRCodeComponent } from 'angularx-qrcode';
               *ngIf="childCompletedTask"
               type="green"
               size="full"
-              text="Login to Parent account"
+              text="Let's Begin"
               [disabled]="isSubmitting"
-              (click)="goToParentAccount()">
+              (click)="beginParentAccount()">
             </superme-button>
 					</div>
 				</ng-container>
@@ -687,18 +687,22 @@ export class RoleSelectComponent implements OnDestroy {
    */
   onFamilyInputChange(value: string | null) {
     const raw = (value || '').toString();
-    // Normalize to uppercase and enforce max 8 characters
-    const normalized = raw.trim().toUpperCase().slice(0, 8);
-    this.familyInput = normalized;
 
-    // Auto-validate when joining family and 8 characters are entered
     if (this.selectedFamilyAction === 'join') {
+      const normalized = raw.trim().toUpperCase().slice(0, 8);
+      this.familyInput = normalized;
+
       if (this.familyInput.length === 8) {
         this.onJoinFamilyCodeInputChange(this.familyInput);
       } else {
         this.familyCodeValidationStatus = null;
       }
+
+      return;
     }
+
+    this.familyInput = raw;
+    this.familyCodeValidationStatus = null;
   }
 
   /**
@@ -867,6 +871,142 @@ export class RoleSelectComponent implements OnDestroy {
       });
   }
 
+  private async joinFamilyViaApiV2(): Promise<void> {
+    if (!this.isFormValid()) {
+      await this.showToast('Please enter a family code', 'warning');
+      return;
+    }
+
+    if (!this.selectedRole) {
+      await this.showToast('Role not selected', 'danger');
+      return;
+    }
+
+    this.isSubmitting = true;
+    const familyCode = this.familyInput.trim().toUpperCase();
+    const relationship = this.selectedRole.toUpperCase() as 'CHILD' | 'PARENT';
+
+    this.familyService
+      .joinFamilyWithCode(familyCode, relationship)
+      .pipe(take(1))
+      .subscribe({
+        next: async (response) => {
+          this.isSubmitting = false;
+          this.applyRoleConversionResponse(response, relationship, familyCode);
+          await this.showToast("You're connected to your family", 'success');
+
+          const target = relationship === 'PARENT' ? '/authed/parent-account' : '/authed/user-dashboard';
+          this.router.navigate([target], { replaceUrl: true });
+        },
+        error: (error) => {
+          this.isSubmitting = false;
+
+          if (error.status === 200) {
+            this.applyRoleConversionResponse({}, relationship, familyCode);
+            const target = relationship === 'PARENT' ? '/authed/parent-account' : '/authed/user-dashboard';
+            this.router.navigate([target], { replaceUrl: true });
+            return;
+          }
+
+          this.showToast(this.getRoleSwitchErrorMessage(error), 'danger');
+        }
+      });
+  }
+
+  private async createFamilyViaApiV2(): Promise<void> {
+    if (!this.isFormValid()) {
+      await this.showToast('Please enter a family name', 'warning');
+      return;
+    }
+
+    this.isSubmitting = true;
+    const familyName = this.familyInput.trim();
+
+    this.familyService
+      .createFamily(familyName)
+      .pipe(take(1))
+      .subscribe({
+        next: (response) => {
+          this.isSubmitting = false;
+          this.applyRoleConversionResponse(response, 'PARENT', response?.familyCode, response?.familyName || familyName);
+          this.familyCreated = true;
+          this.familyCode = response?.familyCode || this.familyCode;
+          this.createdFamilyName = response?.familyName || familyName;
+          this.qrCodeData = this.familyCode ? 'GROUP:' + this.familyCode : '';
+        },
+        error: (error) => {
+          this.isSubmitting = false;
+
+          if (error.status === 200) {
+            this.applyRoleConversionResponse({}, 'PARENT', this.familyCode, familyName);
+            this.familyCreated = true;
+            this.createdFamilyName = familyName;
+            this.qrCodeData = this.familyCode ? 'GROUP:' + this.familyCode : '';
+            return;
+          }
+
+          this.showToast(this.getRoleSwitchErrorMessage(error), 'danger');
+        }
+      });
+  }
+
+  private applyRoleConversionResponse(
+    response: any,
+    relationship: 'CHILD' | 'PARENT',
+    fallbackFamilyCode?: string,
+    fallbackFamilyName?: string
+  ): void {
+    if (response?.token) {
+      this.authService.replaceAuthToken(response.token);
+    }
+
+    const currentUser = this.authService.getUserData() || this.readStoredUserData();
+    const familyCode = response?.familyCode || fallbackFamilyCode || currentUser?.family?.familyCode || currentUser?.familyCode || '';
+    const familyName = response?.familyName || fallbackFamilyName || currentUser?.family?.familyName || currentUser?.familyName || '';
+    const updatedUser = {
+      ...currentUser,
+      relationship,
+      familyCode,
+      familyName,
+      family: familyCode || familyName
+        ? {
+            ...(currentUser?.family || {}),
+            familyCode,
+            familyName
+          }
+        : currentUser?.family
+    };
+
+    this.authService.setUserData(updatedUser);
+  }
+
+  private readStoredUserData(): any {
+    try {
+      return JSON.parse(localStorage.getItem('user_data') || '{}');
+    } catch {
+      return {};
+    }
+  }
+
+  private getRoleSwitchErrorMessage(error: any): string {
+    const normalized = this.extractBackendMessage(error).toLowerCase();
+    if (normalized.includes('family not found')) return 'Invalid code. Double-check the code before entering.';
+    if (normalized.includes('only two parents')) return 'This family already has 2 parents. You cannot join as parent.';
+    if (normalized.includes('only two children')) return 'This family already has 2 children. Contact your parent.';
+    if (normalized.includes('only self users can convert')) return 'You have already switched roles.';
+    if (normalized.includes('already belongs to a family')) return 'You are already part of a family.';
+    if (normalized.includes('family name is required')) return 'Family name is required.';
+    if (normalized.includes('family code is required')) return 'Family code is required.';
+    return this.extractErrorMessage(error);
+  }
+
+  private extractBackendMessage(error: any): string {
+    if (error?.error?.message) return String(error.error.message);
+    if (typeof error?.error === 'string') return error.error;
+    if (error?.message) return String(error.message);
+    return '';
+  }
+
   /**
    * Extract user-friendly error message from HTTP error response
    */
@@ -986,7 +1126,7 @@ export class RoleSelectComponent implements OnDestroy {
     if (this.userAge === null) {
       return true; // Show if age not available
     }
-    return this.userAge >= 24;
+    return this.userAge >= 25;
   }
 
   selectRole(role: string) {
@@ -1047,11 +1187,14 @@ export class RoleSelectComponent implements OnDestroy {
 
     // For child role, always join family
     if (this.selectedRole === 'child' || this.selectedFamilyAction === 'join') {
-      this.joinFamilyViaApi();
+      this.joinFamilyViaApiV2();
     } else if (this.selectedFamilyAction === 'create') {
-      // For parent creating family - show QR code screen
-      this.createFamilyLocally();
+      this.createFamilyViaApiV2();
     }
+  }
+
+  async beginParentAccount(): Promise<void> {
+    await this.router.navigate(['/authed/parent-account'], { replaceUrl: true });
   }
 
   /**
@@ -1262,5 +1405,3 @@ export class RoleSelectComponent implements OnDestroy {
     }
   }
 }
-
-

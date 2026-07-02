@@ -2,22 +2,34 @@
   <div class="tutor-list" role="list">
     <ng-container *ngIf="tutors && tutors.length > 0">
       <article class="tc" role="listitem" *ngFor="let t of tutors">
+
+        <!-- Top row: avatar + info + likes -->
         <div class="tc__top">
-          <div class="tc__avatar"
-            [appBgSkeleton]="t.avatar || 'assets/images/Avatar.png'"
-            [ngStyle]="{'background-image': 'url(' + (t.avatar || 'assets/images/Avatar.png') + ')'}"
-            aria-hidden="true"></div>
+          <div class="tc__avatar-wrap" (click)="openAvatarViewer(t)" role="button" aria-label="View photo">
+            <img class="tc__avatar"
+              [src]="t.avatar || 'assets/images/Avatar.png'"
+              [alt]="(t.name || 'Tutor') + ' photo'"
+              (error)="onAvatarError($event)" />
+            <div class="tc__avatar-zoom">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="white"/>
+              </svg>
+            </div>
+          </div>
+
           <div class="tc__info">
             <h3 class="tc__name">{{ t.name || 'Unknown Tutor' }}</h3>
             <p class="tc__role">{{ t.description || t.qualification || 'Subject Expert' }}</p>
             <p class="tc__levels">{{ formatLevelsDisplay(t.levels) || 'All Levels' }}</p>
           </div>
-          <div class="tc__likes">
+
+          <div class="tc__likes" [class.tc__likes--liked]="t.likedByUser">
             <img src="assets/Icons-Neutral/Icon-Tutor-Like.png" alt="Likes" aria-hidden="true" />
             <span>{{ (t.champsLiked !== undefined && t.champsLiked !== null) ? t.champsLiked : (t.rating || 0) }}</span>
           </div>
         </div>
 
+        <!-- Details row -->
         <div class="tc__details">
           <div class="tc__timing">
             <img src="assets/Icons-Neutral/Icon-Tutor-Timings.png" alt="Timings" aria-hidden="true" />
@@ -26,6 +38,7 @@
           <span class="tc__exp" *ngIf="t.experience">{{ t.experience }}</span>
         </div>
 
+        <!-- Bottom row: fees + CTA -->
         <div class="tc__bottom">
           <div class="tc__fees">
             <span class="tc__price">₹ {{ t.hourlyRate || 0 }}</span>
@@ -36,5 +49,21 @@
         </div>
       </article>
     </ng-container>
+  </div>
+
+  <!-- Full-screen avatar viewer -->
+  <div class="avatar-viewer" *ngIf="viewerOpen" (click)="closeAvatarViewer()" role="dialog" aria-modal="true">
+    <button class="avatar-viewer__close" (click)="closeAvatarViewer()" aria-label="Close">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="white"/>
+      </svg>
+    </button>
+    <div class="avatar-viewer__content" (click)="$event.stopPropagation()">
+      <img class="avatar-viewer__img"
+        [src]="viewerSrc"
+        [alt]="viewerName + ' photo'"
+        (error)="onViewerError($event)" />
+      <p class="avatar-viewer__name">{{ viewerName }}</p>
+    </div>
   </div>
 </div>

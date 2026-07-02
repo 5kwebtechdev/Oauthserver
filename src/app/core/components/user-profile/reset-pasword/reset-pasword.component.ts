@@ -33,6 +33,39 @@ export class ResetPaswordComponent implements OnDestroy {
   newPasswordError = '';
   retypePasswordError = '';
 
+  // Eye toggle state
+  showCurrent = false;
+  showNew = false;
+  showRetype = false;
+
+  // Password strength
+  get passwordStrength(): number {
+    const pw = this.newPassword;
+    if (!pw) return 0;
+    let score = 0;
+    if (pw.length >= 8)  score += 25;
+    if (pw.length >= 12) score += 25;
+    if (/[A-Z]/.test(pw)) score += 25;
+    if (/[^A-Za-z0-9]/.test(pw)) score += 25;
+    return score;
+  }
+
+  get strengthLabel(): string {
+    const s = this.passwordStrength;
+    if (s <= 25) return 'Weak';
+    if (s <= 50) return 'Fair';
+    if (s <= 75) return 'Good';
+    return 'Strong';
+  }
+
+  get strengthClass(): string {
+    const s = this.passwordStrength;
+    if (s <= 25) return 'weak';
+    if (s <= 50) return 'fair';
+    if (s <= 75) return 'good';
+    return 'strong';
+  }
+
   // Toast state from service
   toast$: Observable<Toast | null> = this.toastService.toast$;
   private destroy$ = new Subject<void>();

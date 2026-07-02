@@ -40,6 +40,11 @@ export class FamilyConnectionComponent implements OnInit {
   familyFaqs: FaqItem[] = [];
   showRemovePopup: boolean = false;
   memberToRemove: FamilyMember | null = null;
+  familyRelationship: 'SELF' | 'PARENT' | 'CHILD' | null = null;
+  familyCanSwitchRoles = false;
+  familyAgeLocked = false;
+  familyHasFamily = false;
+  isSwitchingMember = false;
 
   constructor(
     private router: Router,
@@ -254,6 +259,11 @@ export class FamilyConnectionComponent implements OnInit {
 
   consentChecked: boolean = false;
 
+  // Retry guard for stale "no family" responses right after a self->parent/child role switch
+  // (backend can briefly lag behind a just-completed conversion within the same session)
+  private familyStatusRetryCount = 0;
+  private readonly maxFamilyStatusRetries = 2;
+
   ngOnInit(): void {
     // Pre-populate from locally stored user data so the UI isn't blank during the API call
     try {
@@ -265,7 +275,7 @@ export class FamilyConnectionComponent implements OnInit {
       }
     } catch (e) { /* noop */ }
 
-    // Load family details (this will also refresh user relationship using the same response)
+    // Load family status (this will also refresh user relationship using the same response)
     this.loadFamilyDetails();
     this.setFamilyFaqs();
   }
@@ -356,19 +366,68 @@ export class FamilyConnectionComponent implements OnInit {
 
   loadFamilyDetails(): void {
     this.isLoading = true;
-    this.authService.getFamilyDetails().pipe(take(1)).subscribe({
+    this.familyStatusRetryCount = 0;
+    this.fetchFamilyStatus();
+  }
+
+  private fetchFamilyStatus(): void {
+    this.authService.getFamilyStatus().pipe(take(1)).subscribe({
       next: (response) => {
+        if (this.shouldRetryStaleFamilyStatus(response)) {
+          this.familyStatusRetryCount++;
+          const delay = 800 * this.familyStatusRetryCount; // 800ms, then 1600ms
+          console.warn(`[FamilyConnection] Family status looks stale (attempt ${this.familyStatusRetryCount}/${this.maxFamilyStatusRetries}), retrying in ${delay}ms…`);
+          setTimeout(() => this.fetchFamilyStatus(), delay);
+          return;
+        }
         this.applyFamilyDetailsResponse(response);
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading family details:', error);
-        this.isLoading = false;
+        console.error('Error loading family status:', error);
+
+        this.authService.getFamilyDetails().pipe(take(1)).subscribe({
+          next: (response) => {
+            this.applyFamilyDetailsResponse(response);
+            this.isLoading = false;
+          },
+          error: (fallbackError) => {
+            console.error('Error loading fallback family details:', fallbackError);
+            this.isLoading = false;
+          }
+        });
       }
     });
   }
 
+  /**
+   * A freshly-fetched "no family / self mode" response can be stale for a few seconds right
+   * after the user completes a self->parent (or self->child) conversion in this same session —
+   * the backend hasn't propagated the new role yet. We trust the locally-stored relationship
+   * (set synchronously when the conversion succeeded) over a contradicting API response and
+   * retry briefly instead of flashing the wrong "Self mode" screen.
+   */
+  private shouldRetryStaleFamilyStatus(response: any): boolean {
+    if (this.familyStatusRetryCount >= this.maxFamilyStatusRetries) return false;
+
+    const apiSaysNoFamily = !!response && (
+      response.hasFamily === false ||
+      response.mode === 'SELF' ||
+      response.family === null ||
+      this.normalizeRelationshipValue(response?.relationship) === 'SELF'
+    );
+    if (!apiSaysNoFamily) return false;
+
+    const localRelationship = (this.coreAuthService.getUserData()?.relationship || '').toString().toUpperCase();
+    return localRelationship === 'PARENT' || localRelationship === 'CHILD';
+  }
+
   private applyFamilyDetailsResponse(response: any): void {
+    if (this.isFamilyStatusResponse(response)) {
+      this.applyFamilyStatusResponse(response);
+      return;
+    }
+
     if (response && ((response as any).mode === 'SELF' || (response as any).family === null)) {
       this.clearFamilyStateForSelfMode();
       return;
@@ -403,6 +462,140 @@ export class FamilyConnectionComponent implements OnInit {
     this.qrCodeData = this.familyCode ? 'GROUP:' + this.familyCode : '';
     this.setFamilyFaqs();
     try { this.cdr.detectChanges(); } catch (e) { /* noop */ }
+  }
+
+  private isFamilyStatusResponse(response: any): boolean {
+    return !!response && (
+      Object.prototype.hasOwnProperty.call(response, 'relationship') ||
+      Object.prototype.hasOwnProperty.call(response, 'hasFamily') ||
+      Object.prototype.hasOwnProperty.call(response, 'canSwitchRoles') ||
+      Object.prototype.hasOwnProperty.call(response, 'ageLocked')
+    );
+  }
+
+  private applyFamilyStatusResponse(response: any): void {
+    const relationship = this.normalizeRelationshipValue(response?.relationship);
+    this.familyRelationship = relationship;
+    this.familyCanSwitchRoles = response?.canSwitchRoles === true;
+    this.familyAgeLocked = response?.ageLocked === true;
+    this.familyHasFamily = response?.hasFamily === true;
+
+    this.updateStoredUserFromFamilyStatus(response, relationship);
+
+    if (!this.familyHasFamily) {
+      this.clearFamilyStateForSelfMode();
+      this.familyRelationship = relationship;
+      this.familyCanSwitchRoles = response?.canSwitchRoles === true;
+      this.familyAgeLocked = response?.ageLocked === true;
+      this.familyHasFamily = false;
+      return;
+    }
+
+    const currentUserId = Number(response?.userId || this.coreAuthService.getUserData()?.id || localStorage.getItem('user_id') || 0);
+    const normalizedMembers = Array.isArray(response?.members)
+      ? response.members.map((member: any) => this.normalizeFamilyStatusMember(member, currentUserId))
+      : [];
+    const creator =
+      normalizedMembers.find((member: FamilyMember) => this.isParentRelationship(member.relationship) && member.you) ||
+      normalizedMembers.find((member: FamilyMember) => this.isParentRelationship(member.relationship)) ||
+      null;
+    const creatorKey = creator ? this.memberIdentity(creator) : null;
+
+    this.familyName = response?.familyName || this.familyName;
+    this.familyStatus = response?.status || 'ACTIVE';
+    this.createdOn = this.formatCreatedOn(response?.createdOn || response?.createdAt);
+    this.creator = creator;
+    this.members = creatorKey
+      ? normalizedMembers.filter((member: FamilyMember) => this.memberIdentity(member) !== creatorKey)
+      : normalizedMembers;
+    this.familyCode = response?.familyCode || '';
+    this.qrCodeData = this.familyCode ? 'GROUP:' + this.familyCode : '';
+    this.setFamilyFaqs();
+    try { this.cdr.detectChanges(); } catch (e) { /* noop */ }
+  }
+
+  private normalizeRelationshipValue(value: any): 'SELF' | 'PARENT' | 'CHILD' {
+    const normalized = (value || 'SELF').toString().toUpperCase();
+    if (normalized === 'PARENT' || normalized === 'CHILD') return normalized;
+    return 'SELF';
+  }
+
+  private normalizeFamilyStatusMember(member: any, currentUserId: number): FamilyMember {
+    const rawRelationship = (member?.relationship || '').toString().toUpperCase();
+    const relationship = rawRelationship === 'PARENT' || rawRelationship === 'CO_PARENT' || rawRelationship === 'CO-PARENT'
+      ? 'Parent'
+      : rawRelationship === 'CHILD'
+        ? 'Child'
+        : this.titleCase(member?.relationship || 'Child');
+    const userId = Number(member?.id ?? member?.userId ?? member?.memberId ?? 0);
+    const memberId = Number(member?.memberId ?? member?.id ?? member?.userId ?? 0);
+
+    return {
+      ...member,
+      id: userId || member?.id,
+      memberId: memberId || member?.memberId,
+      userId: userId || member?.userId,
+      relationship,
+      age: Number(member?.age) || this.calculateAgeFromDob(member?.dateOfBirth),
+      you: member?.you === true || (!!currentUserId && userId === currentUserId)
+    };
+  }
+
+  private titleCase(value: string): string {
+    const normalized = value.toString().toLowerCase().replace(/_/g, ' ');
+    return normalized.replace(/\b\w/g, char => char.toUpperCase());
+  }
+
+  private calculateAgeFromDob(rawDob: any): number {
+    if (!rawDob) return 0;
+    const dob = new Date(rawDob);
+    if (Number.isNaN(dob.getTime())) return 0;
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    return age > 0 ? age : 0;
+  }
+
+  private updateStoredUserFromFamilyStatus(response: any, relationship: 'SELF' | 'PARENT' | 'CHILD'): void {
+    try {
+      const userData = this.coreAuthService.getUserData() || {};
+      const updatedUser: any = {
+        ...userData,
+        id: response?.userId || userData.id,
+        name: response?.name || userData.name,
+        relationship
+      };
+
+      if (response?.hasFamily && (response?.familyCode || response?.familyName)) {
+        updatedUser.familyCode = response.familyCode || userData.familyCode || '';
+        updatedUser.familyName = response.familyName || userData.familyName || '';
+        updatedUser.family = {
+          ...(userData.family || {}),
+          familyCode: updatedUser.familyCode,
+          familyName: updatedUser.familyName
+        };
+      } else {
+        delete updatedUser.family;
+        delete updatedUser.familyMembers;
+        delete updatedUser.familyCode;
+        delete updatedUser.familyName;
+      }
+
+      this.coreAuthService.setUserData(updatedUser);
+    } catch (error) {
+      console.error('[FamilyConnection] Failed to sync my-status user data:', error);
+    }
+  }
+
+  private memberIdentity(member: FamilyMember): string {
+    return String((member as any).id || member.userId || member.memberId || member.name || '');
+  }
+
+  private isParentRelationship(relationship: string | undefined): boolean {
+    return relationship === 'Parent' || relationship === 'Co-Parent';
   }
 
   private formatCreatedOn(raw: string | null | undefined): string {
@@ -512,38 +705,27 @@ export class FamilyConnectionComponent implements OnInit {
     if (!this.memberToRemove) return;
 
     const member = this.memberToRemove;
+    const userId = String(member.userId || member.id || '');
     this.showRemovePopup = false;
+    this.memberToRemove = null;
 
-    // Show loading state while removing
-    const originalMembers = this.members;
-    this.members = this.members.filter(m => m.userId !== member.userId);
+    // Optimistic update — remove from UI immediately
+    this.members = this.members.filter(m =>
+      String(m.userId || '') !== userId && String(m.id || '') !== userId
+    );
+    try { this.cdr.detectChanges(); } catch (e) { /* noop */ }
 
     // Call backend API to remove the member from the family
     this.authService.removeMemberFromFamily(member.userId).pipe(take(1)).subscribe({
-      next: (response) => {
-        console.log('[FamilyConnection] Member removed successfully:', member);
-        this.memberToRemove = null;
-
-        this.applyFamilyDetailsResponse(response);
-
-        // Refresh the logged-in user's family details so the current screen
-        // immediately reflects the server state after the mutation.
-        this.authService.getFamilyDetails().pipe(take(1)).subscribe({
-          next: (resp) => {
-            this.applyFamilyDetailsResponse(resp);
-          },
-          error: (err) => {
-            console.error('[FamilyConnection] Failed to refresh family details after removal', err);
-            this.loadFamilyDetails();
-          }
-        });
+      next: () => {
+        console.log('[FamilyConnection] Member removed successfully:', member.userId);
+        // Reload fresh from server so screen reflects confirmed server state
+        this.loadFamilyDetails();
       },
       error: (error) => {
         console.error('[FamilyConnection] Error removing member:', error);
-        // Restore the member to the list if the API call fails
-        this.members = originalMembers;
-        this.memberToRemove = null;
-        // Do not show blocking window.alert; keep console error and UI restore.
+        // Reload to restore correct state from server on failure
+        this.loadFamilyDetails();
       }
     });
   }
@@ -567,13 +749,17 @@ export class FamilyConnectionComponent implements OnInit {
 
   continueWithNewRole() {
     console.log('Continue with a new role clicked');
-    this.showInstructions = true;
+    this.goToRoleSelect();
   }
 
   /**
    * Helper to determine if current user is a parent (used by template)
    */
   isParentUser(): boolean {
+    if (this.familyRelationship) {
+      return this.familyRelationship === 'PARENT';
+    }
+
     try {
       return this.coreAuthService.isParentUser();
     } catch (e) {
@@ -586,6 +772,10 @@ export class FamilyConnectionComponent implements OnInit {
    * Helper to determine if current user is in SELF role
    */
   isSelfUser(): boolean {
+    if (this.familyRelationship) {
+      return this.familyRelationship === 'SELF';
+    }
+
     try {
       return this.coreAuthService.getUserRelationship() === 'SELF';
     } catch (e) {
@@ -598,6 +788,10 @@ export class FamilyConnectionComponent implements OnInit {
    * Helper to check if user is self and age is between 18-24
    */
   isSelfUserWithIndependentGrowth(): boolean {
+    if (this.familyAgeLocked && this.familyRelationship === 'SELF') {
+      return true;
+    }
+
     try {
       const userData = this.coreAuthService.getUserData();
       if (!userData) return false;
@@ -637,10 +831,66 @@ export class FamilyConnectionComponent implements OnInit {
   goToRoleSelect() {
     // navigate to the select-role page (global route)
     console.log('Navigating to role selector');
-    this.router.navigate(['/select-role']).catch(err => {
+    this.router.navigate(['/authed/select-role']).catch(err => {
       console.error('Navigation to select-role failed', err);
-      // fallback to authed path if global path doesn't work
-      this.router.navigate(['/authed/select-role']).catch(() => { });
+      this.router.navigate(['/select-role']).catch(() => { });
+    });
+  }
+
+  canViewMember(member: FamilyMember): boolean {
+    return this.isParentUser() && this.isChildMember(member) && !member.you;
+  }
+
+  isChildMember(member: FamilyMember): boolean {
+    return (member?.relationship || '').toString().toLowerCase() === 'child';
+  }
+
+  viewChildMember(member: FamilyMember): void {
+    if (!this.canViewMember(member) || this.isSwitchingMember) return;
+
+    const memberId = Number((member as any).id || member.userId || member.memberId);
+    if (!memberId) return;
+
+    const parentToken = localStorage.getItem('auth_token');
+    const parentUserData = this.coreAuthService.getUserData() || {};
+    this.isSwitchingMember = true;
+
+    this.authService.switchFamilyMember(memberId).pipe(take(1)).subscribe({
+      next: (response) => {
+        this.isSwitchingMember = false;
+
+        if (parentToken) {
+          localStorage.setItem('family_parent_token', parentToken);
+        }
+
+        localStorage.setItem('family_parent_user_data', JSON.stringify(parentUserData));
+
+        if (response?.token) {
+          this.coreAuthService.replaceAuthToken(response.token);
+        }
+
+        const childName = response?.name || member.name || 'Child';
+        const childId = response?.memberId || memberId;
+        const childUserData = {
+          ...parentUserData,
+          id: childId,
+          name: childName,
+          relationship: 'CHILD'
+        };
+
+        this.coreAuthService.setUserData(childUserData);
+        localStorage.setItem('family_monitoring_state', JSON.stringify({
+          isMonitoring: true,
+          monitoringChildName: childName,
+          monitoringChildId: childId
+        }));
+        window.dispatchEvent(new CustomEvent('family-monitoring-changed'));
+        this.router.navigate(['/authed/user-dashboard'], { replaceUrl: true });
+      },
+      error: (error) => {
+        this.isSwitchingMember = false;
+        console.error('[FamilyConnection] Failed to switch to child view:', error);
+      }
     });
   }
 }
