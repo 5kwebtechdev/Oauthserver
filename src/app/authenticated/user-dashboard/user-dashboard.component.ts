@@ -22,6 +22,7 @@ import { SupermeCoinsStatsComponent } from '../../core/components/superme-coins-
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { SkeletonImageComponent } from '../../core/components/skeleton-image/skeleton-image.component';
 import { PetMessagesService, PetMessage, PetMood } from '../../core/services/pet-messages.service';
+import { PetMessageApiService, ApiOverlayType } from '../../core/services/pet-message-api.service';
 import { UserService } from '../../core/services/user.service';
 import { MoodService } from '../../core/services/mood.service';
 import { VibesDisplayResponse } from '../../core/models/mood.model';
@@ -132,7 +133,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     private childSelfImageService: ChildSelfImageService,
     private toastService: CustomToastService,
     private refreshService: RefreshService,
-    private streakRestoreApi: StreakRestoreApi
+    private streakRestoreApi: StreakRestoreApi,
+    private petMessageApi: PetMessageApiService
   ) {
     this.toast$ = this.toastService.toast$;
   }
@@ -379,13 +381,35 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   }
 
   private updatePetMessageWithCounts(): void {
-    this.currentPetMessage = this.petMessagesService.getMessage('home', {
-      userName: this.userName,
-      tasksCount: this.awaitingTasks,
-      habitsCount: this.awaitingHabits,
-      streakDays: this.userStreaks
+    // Prefer API response; fall back to local computed message
+    this.petMessageApi.getHomeHeader().subscribe({
+      next: (resp) => {
+        if (resp.message) {
+          this.currentPetMessage = {
+            message: resp.message,
+            mood: resp.petMood ? this.petMessageApi.normaliseMood(resp.petMood) : 'happy',
+            displayType: 'header',
+          };
+        } else {
+          this.currentPetMessage = this.petMessagesService.getMessage('home', {
+            userName: this.userName,
+            tasksCount: this.awaitingTasks,
+            habitsCount: this.awaitingHabits,
+            streakDays: this.userStreaks
+          });
+        }
+        this.petMood = this.currentPetMessage?.mood ?? 'happy';
+      },
+      error: () => {
+        this.currentPetMessage = this.petMessagesService.getMessage('home', {
+          userName: this.userName,
+          tasksCount: this.awaitingTasks,
+          habitsCount: this.awaitingHabits,
+          streakDays: this.userStreaks
+        });
+        this.petMood = this.currentPetMessage.mood;
+      }
     });
-    this.petMood = this.currentPetMessage.mood;
   }
 
   // Sort comparator to order items by upcoming time relative to now.
@@ -584,101 +608,110 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
+  /** API-driven overlay flow — replaces the old localStorage-queue approach */
   buildOverlayQueue(): void {
     if (this.overlayQueueBuilt) return;
     this.overlayQueueBuilt = true;
-
-    const queue: Array<'bonus-coins' | 'mood-prompt' | 'daily-login' | 'streak-milestone'> = [];
-    const today = this.getTodayStr();
-    const bonusShown = this.getOverlayItem('bonus_shown') === '1';
-    const moodShown = this.getOverlayItem('mood_shown') === '1';
-    const isFirstSignupHomeOpen = this.isFirstSignupHomeOpen();
-
-    if (!bonusShown && isFirstSignupHomeOpen) {
-      // First-ever app open (signup day) — show welcome bonus
-      queue.push('bonus-coins');
-    } else if (!isFirstSignupHomeOpen) {
-      // From Day 2 onwards — daily login coins once per calendar day
-      const lastDate = this.getOverlayItem('daily_date');
-      if (lastDate !== today) {
-        queue.push('daily-login');
-      }
-    }
-
-    // Mood prompt shows exactly once (blocking until mood selected)
-    if (!moodShown) {
-      queue.push('mood-prompt');
-    }
-
-    // Streak milestone (every multiple of 7), once per milestone per streak run
-    const streak = this.userStreaks;
-    const lastKnown = parseInt(this.getOverlayItem('last_streak') || '0', 10);
-    if (streak < lastKnown - 1) {
-      // Streak broke — clear milestone history so user can earn them again
-      this.removeOverlayItem('milestones');
-    }
-    this.setOverlayItem('last_streak', String(streak));
-
-    if (streak > 0 && streak % 7 === 0) {
-      const raw = this.getOverlayItem('milestones') || '';
-      const shown = raw ? raw.split(',').map(Number) : [];
-      if (!shown.includes(streak)) {
-        queue.push('streak-milestone');
-      }
-    }
-
-    this.overlayQueue = queue;
-    this.showNextOverlay();
+    this.pollHomeOverlay();
   }
 
-  private showNextOverlay(): void {
-    if (!this.overlayQueue.length) { this.activeOverlay = null; return; }
-    const type = this.overlayQueue.shift()!;
-    this.activeOverlay = type;
+  /** Call GET /overlay, apply result. Re-called after every dismiss/mood-save. */
+  private pollHomeOverlay(): void {
+    this.petMessageApi.getHomeOverlay().subscribe({
+      next: (resp) => {
+        if (resp.hasOverlay && resp.overlayType && resp.overlayType !== 'NONE') {
+          // Map API overlay type → internal activeOverlay key
+          const typeMap: Record<ApiOverlayType, typeof this.activeOverlay> = {
+            BONUS_COINS:      'bonus-coins',
+            MOOD_PROMPT:      'mood-prompt',
+            DAILY_LOGIN:      'daily-login',
+            STREAK_MILESTONE: 'streak-milestone',
+            NONE:             null,
+          };
+          this.activeOverlay = typeMap[resp.overlayType] ?? null;
 
-    const locMap: Record<string, any> = {
-      'bonus-coins':    'bonus-coins-first-time',
-      'mood-prompt':    'set-mood-prompt',
-      'daily-login':    'daily-login-coins',
-      'streak-milestone': 'streak-coins'
-    };
-    const msg = this.petMessagesService.getMessage(locMap[type], { userName: this.userName });
-    this.overlayMessage = msg.message;
-    this.overlayPetMood = msg.mood;
+          if (resp.message) {
+            this.overlayMessage = resp.message;
+          } else {
+            // Fallback to local message if API returns empty text
+            const locMap: Record<string, any> = {
+              'bonus-coins':     'bonus-coins-first-time',
+              'mood-prompt':     'set-mood-prompt',
+              'daily-login':     'daily-login-coins',
+              'streak-milestone':'streak-coins',
+            };
+            const fallback = this.petMessagesService.getMessage(locMap[this.activeOverlay!] || 'home', { userName: this.userName });
+            this.overlayMessage = fallback.message;
+          }
+
+          this.overlayPetMood = resp.petMood
+            ? this.petMessageApi.normaliseMood(resp.petMood)
+            : 'happy';
+        } else {
+          // No more overlays — show normal home screen
+          this.activeOverlay = null;
+          this.loadHomeHeader();
+        }
+      },
+      error: () => {
+        // If API fails entirely, skip overlays and show home
+        this.activeOverlay = null;
+        this.loadHomeHeader();
+      }
+    });
   }
 
+  /** Fetch pet message for home header from API */
+  private loadHomeHeader(): void {
+    this.petMessageApi.getHomeHeader().subscribe({
+      next: (resp) => {
+        if (resp.message) {
+          this.currentPetMessage = {
+            message: resp.message,
+            mood: resp.petMood ? this.petMessageApi.normaliseMood(resp.petMood) : 'happy',
+            displayType: 'header',
+          };
+          this.petMood = this.currentPetMessage.mood;
+        }
+      },
+      error: () => { /* keep existing local pet message on failure */ }
+    });
+  }
+
+  /** User tapped overlay — MOOD_PROMPT is blocking, all others dismiss */
   onOverlayTap(): void {
-    // Mood-prompt is blocking — only dismiss via mood selection
     if (this.activeOverlay === 'mood-prompt') return;
     this.dismissCurrentOverlay();
   }
 
   dismissCurrentOverlay(): void {
-    if (this.activeOverlay === 'bonus-coins') {
-      this.setOverlayItem('bonus_shown', '1');
-      this.clearFirstSignupOverlayPending();
-    }
+    if (!this.activeOverlay) return;
 
-    if (this.activeOverlay === 'daily-login') {
-      this.setOverlayItem('daily_date', this.getTodayStr());
-    }
+    const apiTypeMap: Record<string, ApiOverlayType> = {
+      'bonus-coins':     'BONUS_COINS',
+      'daily-login':     'DAILY_LOGIN',
+      'streak-milestone':'STREAK_MILESTONE',
+    };
+    const apiType = apiTypeMap[this.activeOverlay];
 
-    if (this.activeOverlay === 'streak-milestone') {
-      const raw = this.getOverlayItem('milestones') || '';
-      const shown = raw ? raw.split(',').map(Number).filter(Number.isFinite) : [];
-      if (!shown.includes(this.userStreaks)) {
-        shown.push(this.userStreaks);
-        this.setOverlayItem('milestones', shown.join(','));
-      }
+    if (apiType) {
+      // POST dismiss, then re-poll for next pending overlay
+      this.petMessageApi.dismissHomeOverlay(apiType).subscribe({
+        next:  () => this.pollHomeOverlay(),
+        error: () => this.pollHomeOverlay(), // always re-poll
+      });
+      // Also clear local flags to prevent legacy code re-triggering them
+      if (this.activeOverlay === 'bonus-coins') this.clearFirstSignupOverlayPending();
+    } else {
+      this.pollHomeOverlay();
     }
-
-    this.showNextOverlay();
   }
 
   onOverlayMoodSelected(mood: string): void {
     this.selectedMood = mood;
-    this.setOverlayItem('mood_shown', '1');
-    this.showNextOverlay();
+    // Mood saved via existing MoodService — MOOD_PROMPT overlay clears on backend
+    // after the mood is saved; re-poll for next overlay
+    this.pollHomeOverlay();
   }
 
   private getOverlayUserId(): string {

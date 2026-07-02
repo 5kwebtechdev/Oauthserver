@@ -158,29 +158,28 @@
           line-height: 1;
         }
 
-        // ── Today ─────────────────────────────────────────────────────────────
-        &.today {
+        // ── Today — subtle ring only (NOT filled, so it differs from selected) ──
+        &.today:not(.selected) {
           position: relative;
-          z-index: 3;
 
-          &::before {
+          &::after {
             position: absolute;
             content: '';
             top: 50%;
             left: 50%;
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             transform: translate(-50%, -50%);
             border-radius: 8px;
-            background: #90214D;
+            border: 2px solid #90214D;
             z-index: 1;
             pointer-events: none;
           }
 
-          p { color: #FDFDFD; font-weight: 700; }
+          p { color: #90214D; font-weight: 700; }
         }
 
-        // ── Selected ──────────────────────────────────────────────────────────
+        // ── Selected — filled brand circle ─────────────────────────────────────
         &.selected {
           &::before {
             position: absolute;
@@ -197,6 +196,13 @@
           }
 
           p { color: #FDFDFD; font-weight: 700; z-index: 3; }
+        }
+
+        // ── Today + Selected (today IS the selected date) ─────────────────────
+        &.today.selected {
+          &::before { background: #90214D; }
+
+          p { color: #FDFDFD; font-weight: 700; }
         }
 
         // ── In-range ──────────────────────────────────────────────────────────
@@ -218,11 +224,24 @@
           p { color: #90214D; font-weight: 600; }
         }
 
-        &.in-range.today::before {
-          transform: translate(-50%, -50%) scaleX(1) !important;
-          border-radius: 8px !important;
-          background: #90214D !important;
-          z-index: 1 !important;
+        // Today in range: keep the filled selected look for clarity
+        &.in-range.today:not(.selected) {
+          &::after { display: none; }
+
+          &::before {
+            content: '' !important;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) !important;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px !important;
+            background: rgba(144, 33, 77, 0.2) !important;
+            z-index: 1 !important;
+          }
+
+          p { color: #90214D; font-weight: 700; }
         }
 
         &.isStartDate::before { border-radius: 8px 0 0 8px; }

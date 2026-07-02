@@ -26,14 +26,104 @@
   gap: 12px;
 }
 
+// ── Avatar wrap (clickable) ──
+.tc__avatar-wrap {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active .tc__avatar {
+    opacity: 0.85;
+  }
+}
+
 .tc__avatar {
-  width: 52px;
-  height: 52px;
-  flex: 0 0 52px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background-size: cover;
-  background-position: center;
-  background-color: #D6E3EF;
+  object-fit: cover;
+  display: block;
+  border: 2px solid rgba(80, 93, 131, 0.15);
+}
+
+.tc__avatar-zoom {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(80, 93, 131, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// ── Full-screen avatar viewer ──
+.avatar-viewer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: avFadeIn 0.2s ease-out;
+}
+
+.avatar-viewer__close {
+  position: absolute;
+  top: env(safe-area-inset-top, 16px);
+  right: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.avatar-viewer__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+.avatar-viewer__img {
+  width: min(280px, 80vw);
+  height: min(280px, 80vw);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  animation: avPopIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.avatar-viewer__name {
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+}
+
+@keyframes avFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes avPopIn {
+  from { transform: scale(0.7); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
 }
 
 .tc__info {

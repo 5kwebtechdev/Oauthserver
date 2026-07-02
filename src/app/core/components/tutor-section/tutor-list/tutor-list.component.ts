@@ -28,8 +28,31 @@ export class TutorListComponent implements OnChanges {
   /** Emitted when user clicks View Profile. Payload: tutor object. */
   @Output() viewProfile = new EventEmitter<TutorListItem>();
 
+  // Avatar viewer state
+  viewerOpen = false;
+  viewerSrc = '';
+  viewerName = '';
+
   onViewProfile(tutor: TutorListItem) {
     this.viewProfile.emit(tutor);
+  }
+
+  openAvatarViewer(tutor: TutorListItem): void {
+    this.viewerSrc = tutor.avatar || 'assets/images/Avatar.png';
+    this.viewerName = tutor.name || 'Tutor';
+    this.viewerOpen = true;
+  }
+
+  closeAvatarViewer(): void {
+    this.viewerOpen = false;
+  }
+
+  onAvatarError(event: Event): void {
+    (event.target as HTMLImageElement).src = 'assets/images/Avatar.png';
+  }
+
+  onViewerError(event: Event): void {
+    (event.target as HTMLImageElement).src = 'assets/images/Avatar.png';
   }
 
   ngOnChanges(changes: SimpleChanges) {

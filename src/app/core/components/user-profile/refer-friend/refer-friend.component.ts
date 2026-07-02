@@ -20,6 +20,8 @@ export class ReferFriendComponent implements OnInit, OnDestroy {
   shareLink: string = '';
   faqs: FaqItem[] = [];
   userDisplayName: string = '';
+  copied = false;
+  private copiedTimer: any;
   private readonly appName = 'Superme';
   private readonly mobileAppLink = 'https://play.google.com/store/apps/details?id=com.superme.app';
   private destroy$ = new Subject<void>();
@@ -34,12 +36,19 @@ export class ReferFriendComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.userDisplayName = this.getLoggedInUserName();
       });
+    // Show cached code immediately if available — removes the delay
+    const cached = this.authService.getUserData?.()?.referralCode;
+    if (cached) {
+      this.referralCode = cached;
+      this.shareLink = `${this.getReferralBaseUrl()}?code=${encodeURIComponent(cached)}`;
+    }
     this.loadReferralCode();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    clearTimeout(this.copiedTimer);
   }
 
   private initializeFaqs(): void {
@@ -73,50 +82,13 @@ export class ReferFriendComponent implements OnInit, OnDestroy {
   async copyCode(event: Event): Promise<void> {
     event.stopPropagation();
     if (!this.referralCode) return;
-
     try {
       await navigator.clipboard?.writeText(this.referralCode);
-      const toast = await this.toastCtrl.create({
-        message: 'Code copied',
-        duration: 1000,
-        position: 'bottom',
-        cssClass: 'copied-toast'
-      });
-      try {
-        (toast as any).style?.setProperty('--background', '#FFF');
-        (toast as any).style?.setProperty('--color', '#282527');
-        (toast as any).style && ((toast as any).style.borderRadius = '4px');
-        (toast as any).style && ((toast as any).style.boxShadow = '0 0 2px 1px rgba(107, 101, 106, 0.10)');
-        (toast as any).style && ((toast as any).style.fontFamily = 'Nunito, sans-serif');
-        (toast as any).style && ((toast as any).style.fontSize = '13px');
-        (toast as any).style && ((toast as any).style.fontWeight = '600');
-        (toast as any).style && ((toast as any).style.color = '#282527');
-      } catch (e) {
-        // ignore style injection errors
-      }
-      await toast.present();
-    } catch (err) {
-      // fallback: still try to show feedback even if clipboard fails
-      const toast = await this.toastCtrl.create({
-        message: 'Unable to copy code',
-        duration: 1500,
-        position: 'bottom',
-        cssClass: 'copied-toast'
-      });
-      try {
-        (toast as any).style?.setProperty('--background', '#FFF');
-        (toast as any).style?.setProperty('--color', '#282527');
-        (toast as any).style && ((toast as any).style.borderRadius = '4px');
-        (toast as any).style && ((toast as any).style.boxShadow = '0 0 2px 1px rgba(107, 101, 106, 0.10)');
-        (toast as any).style && ((toast as any).style.fontFamily = 'Nunito, sans-serif');
-        (toast as any).style && ((toast as any).style.fontSize = '13px');
-        (toast as any).style && ((toast as any).style.fontWeight = '600');
-        (toast as any).style && ((toast as any).style.color = '#282527');
-      } catch (e) {
-        // ignore style injection errors
-      }
-      await toast.present();
-    }
+    } catch { /* fallback ok */ }
+    // Show inline "Copied!" hint for 2s
+    this.copied = true;
+    clearTimeout(this.copiedTimer);
+    this.copiedTimer = setTimeout(() => { this.copied = false; }, 2000);
   }
 
   shareNow(): void {

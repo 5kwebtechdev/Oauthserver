@@ -561,12 +561,17 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       this.authService.updateProfileOnAPI(payload)
         .pipe(finalize(() => { this.isSubmitting = false; }))
         .subscribe({
-          next: (response) => {
+          next: (rawResponse) => {
             this.coreService.triggerToasrt('Profile updated successfully!', 'success');
-            console.log('[EditProfile] Profile update response:', response);
 
-            if (response) {
-              // Response is flat: avatarId, avatarImageName at top level
+            // Backend may return plain text instead of JSON — parse safely
+            let response: any = rawResponse;
+            if (typeof rawResponse === 'string') {
+              try { response = JSON.parse(rawResponse); } catch { response = null; }
+            }
+
+            if (response && typeof response === 'object') {
+              // Response is a JSON object — sync profile from it
               const avatarImgName = response.avatarImageName || response.avatar?.avatarImageName;
               this.userService.updateUserProfile({
                 name: response.name,
@@ -584,8 +589,9 @@ export class EditProfileComponent implements OnInit, OnDestroy {
               this.currentUserData = response;
               this.syncUserDataStorage(response);
               this.storeInitialValues();
-              this.router.navigate(['/authed/user-profile']);
             }
+            // Always navigate back on success regardless of response shape
+            this.router.navigate(['/authed/user-profile']);
           },
           error: (error) => {
             console.error('Profile update error:', error);
@@ -741,6 +747,10 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   closeCountryCodeModal(): void {
     this.countrySearch = '';
     this.showCountryCodeModal = false;
+  }
+
+  onCountrySearch(event: Event): void {
+    this.countrySearch = (event.target as HTMLInputElement).value;
   }
 
   // Only allow numeric input

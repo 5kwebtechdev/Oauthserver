@@ -316,6 +316,37 @@ h2 {
     }
 }
 
+.member-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.member-action {
+    border: 0;
+    background: transparent;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration-line: underline;
+    cursor: pointer;
+    padding: 0;
+
+    &.view {
+        color: #2D6830;
+    }
+
+    &.remove {
+        color: #BB2124;
+    }
+
+    &:disabled {
+        color: rgba(40, 37, 39, 0.35);
+        cursor: progress;
+    }
+}
+
 .member-info {
     display: flex;
     flex-direction: column;

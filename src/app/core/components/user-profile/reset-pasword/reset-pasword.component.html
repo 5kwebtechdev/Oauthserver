@@ -1,28 +1,101 @@
 <ion-content fullscreen>
-  <superme-navigator heading="Password and security" backIcon="arrowSvg"></superme-navigator>
+  <superme-navigator heading="Password & Security" backIcon="arrowSvg"></superme-navigator>
 
-  <div class="reset-password-root">
-    <profile-edit-input title="Current Password" description="To verify you" type="password"
-      placeholder="Enter password" [value]="currentPassword" (valueChange)="onCurrentPasswordChange($event)"
-      [errorMessage]="currentPasswordError" [showError]="currentPasswordError !== ''"></profile-edit-input>
+  <div class="rp-page">
+    <!-- Hero icon -->
+    <div class="rp-hero">
+      <div class="rp-hero__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" fill="#4CAF50"/>
+        </svg>
+      </div>
+      <p class="rp-hero__text">Choose a strong password to keep your account safe.</p>
+    </div>
 
-    <profile-edit-input title="New Password" description="To change your password" type="password"
-      placeholder="Enter password" [value]="newPassword" (valueChange)="onNewPasswordChange($event)"
-      [errorMessage]="newPasswordError" [showError]="newPasswordError !== ''"></profile-edit-input>
+    <!-- Password fields card -->
+    <div class="rp-card">
+      <!-- Current password -->
+      <div class="rp-field">
+        <div class="rp-field__header">
+          <label class="rp-field__label">Current Password</label>
+          <span class="rp-field__hint">To verify you</span>
+        </div>
+        <div class="rp-field__row" [class.rp-field__row--error]="currentPasswordError">
+          <input class="rp-field__input"
+            [type]="showCurrent ? 'text' : 'password'"
+            placeholder="Enter current password"
+            [value]="currentPassword"
+            (input)="onCurrentPasswordChange($any($event.target).value)" />
+          <button type="button" class="rp-field__eye" (click)="showCurrent = !showCurrent" aria-label="Toggle visibility">
+            <i class="fa-solid" [ngClass]="showCurrent ? 'fa-eye' : 'fa-eye-slash'"></i>
+          </button>
+        </div>
+        <p class="rp-field__error" *ngIf="currentPasswordError">{{ currentPasswordError }}</p>
+      </div>
 
-    <profile-edit-input title="Retype New Password" description="Confirm your new password" type="password"
-      placeholder="Enter password" [value]="retypeNewPassword" (valueChange)="onRetypePasswordChange($event)"
-      [errorMessage]="retypePasswordError" [showError]="retypePasswordError !== ''"></profile-edit-input>
+      <div class="rp-divider"></div>
 
+      <!-- New password -->
+      <div class="rp-field">
+        <div class="rp-field__header">
+          <label class="rp-field__label">New Password</label>
+          <span class="rp-field__hint">Min. 8 characters</span>
+        </div>
+        <div class="rp-field__row" [class.rp-field__row--error]="newPasswordError">
+          <input class="rp-field__input"
+            [type]="showNew ? 'text' : 'password'"
+            placeholder="Enter new password"
+            [value]="newPassword"
+            (input)="onNewPasswordChange($any($event.target).value)" />
+          <button type="button" class="rp-field__eye" (click)="showNew = !showNew" aria-label="Toggle visibility">
+            <i class="fa-solid" [ngClass]="showNew ? 'fa-eye' : 'fa-eye-slash'"></i>
+          </button>
+        </div>
+        <!-- Strength bar -->
+        <div class="rp-strength" *ngIf="newPassword">
+          <div class="rp-strength__bar">
+            <div class="rp-strength__fill" [style.width.%]="passwordStrength" [ngClass]="strengthClass"></div>
+          </div>
+          <span class="rp-strength__label" [ngClass]="strengthClass">{{ strengthLabel }}</span>
+        </div>
+        <p class="rp-field__error" *ngIf="newPasswordError">{{ newPasswordError }}</p>
+      </div>
 
-  </div>
-  <div class="button-row">
-    <superme-button type="green" [text]="loading ? 'Updating...' : 'Change password'" size="full"
+      <div class="rp-divider"></div>
+
+      <!-- Retype new password -->
+      <div class="rp-field">
+        <div class="rp-field__header">
+          <label class="rp-field__label">Confirm Password</label>
+          <span class="rp-field__hint">Repeat new password</span>
+        </div>
+        <div class="rp-field__row" [class.rp-field__row--error]="retypePasswordError">
+          <input class="rp-field__input"
+            [type]="showRetype ? 'text' : 'password'"
+            placeholder="Retype new password"
+            [value]="retypeNewPassword"
+            (input)="onRetypePasswordChange($any($event.target).value)" />
+          <button type="button" class="rp-field__eye" (click)="showRetype = !showRetype" aria-label="Toggle visibility">
+            <i class="fa-solid" [ngClass]="showRetype ? 'fa-eye' : 'fa-eye-slash'"></i>
+          </button>
+        </div>
+        <!-- Match indicator -->
+        <p class="rp-field__match" *ngIf="!retypePasswordError && retypeNewPassword && retypeNewPassword === newPassword">
+          <i class="fa-solid fa-check"></i> Passwords match
+        </p>
+        <p class="rp-field__error" *ngIf="retypePasswordError">{{ retypePasswordError }}</p>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <superme-button type="green" [text]="loading ? 'Updating...' : 'Change Password'" size="full"
       [disabled]="loading || form.invalid" (click)="saveProfile()"></superme-button>
   </div>
 
-  <!-- Inline custom toast -->
-  <div class="mb-toast" *ngIf="(toast$ | async) as toast" [ngClass]="{'mb-toast--error': toast.type === 'error', 'mb-toast--success': toast.type === 'success'}" [style.display]="toast.visible ? 'flex' : 'none'">
+  <!-- Toast -->
+  <div class="mb-toast" *ngIf="(toast$ | async) as toast"
+    [ngClass]="{'mb-toast--error': toast.type === 'error', 'mb-toast--success': toast.type === 'success'}"
+    [style.display]="toast.visible ? 'flex' : 'none'">
     <div class="mb-toast__text">{{ toast.message }}</div>
   </div>
 </ion-content>

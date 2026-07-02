@@ -1,43 +1,178 @@
-.help-support-page{
-    padding: 16px;
-    flex-direction: column;
-    gap:24px;
-    display: flex;
+ion-content {
+    --background: #F5F7FA;
 }
 
-.help-support-tems{
+.hs-page {
+    padding: 14px 16px 32px;
     display: flex;
     flex-direction: column;
-    gap:2px;
+    gap: 22px;
+}
 
-    h1{
-        color: #282527;
-font-family: var(--font-sans);
-font-size: 16px;
-font-weight: 600;
+// ── Hero ───────────────────────────────────────────────────────────────────────
+.hs-hero {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #fff;
+    border-radius: 20px;
+    padding: 18px 16px;
+    box-shadow: 0 1px 6px rgba(40, 37, 39, 0.07);
+
+    &__icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        background: rgba(76, 175, 80, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    &__text {
+        h2 {
+            font-family: var(--font-sans);
+            font-size: 17px;
+            font-weight: 800;
+            color: #282527;
+            margin: 0 0 3px;
+        }
+
+        p {
+            font-family: var(--font-sans);
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(40, 37, 39, 0.55);
+            margin: 0;
+        }
     }
 }
 
-/* Floating chat button */
-.chat-fab{
+// ── FAQ Section ────────────────────────────────────────────────────────────────
+.hs-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-left: 2px;
+    }
+
+    &__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+
+        &--blue    { background: #7284B9; }
+        &--green   { background: #4CAF50; }
+        &--orange  { background: #EE6621; }
+        &--magenta { background: #90214D; }
+    }
+
+    h3 {
+        font-family: var(--font-sans);
+        font-size: 13px;
+        font-weight: 800;
+        color: rgba(40, 37, 39, 0.55);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
+}
+
+// ── Contact card ──────────────────────────────────────────────────────────────
+.hs-contact {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, rgba(76,175,80,0.08) 0%, rgba(76,175,80,0.04) 100%);
+    border: 1.5px solid rgba(76, 175, 80, 0.2);
+    border-radius: 18px;
+    padding: 16px;
+
+    &__icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: rgba(76, 175, 80, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    &__text {
+        flex: 1;
+    }
+
+    &__title {
+        font-family: var(--font-sans);
+        font-size: 14px;
+        font-weight: 700;
+        color: #282527;
+        margin: 0 0 2px;
+    }
+
+    &__sub {
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 500;
+        color: rgba(40, 37, 39, 0.55);
+        margin: 0;
+    }
+
+    &__btn {
+        background: #4CAF50;
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: 9px 20px;
+        font-family: var(--font-sans);
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+        transition: background 0.15s;
+
+        &:active { background: #388E3C; }
+    }
+}
+
+.hs-bottom-space {
+    height: 60px;
+}
+
+// ── Floating chat FAB ─────────────────────────────────────────────────────────
+.chat-fab {
     position: fixed;
     right: 16px;
-    bottom: 16px;
-    width: 56px;
-    height: 56px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    width: 58px;
+    height: 58px;
     border-radius: 50%;
-    background: #ffffff;
+    background: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
     z-index: 9999;
     border: none;
     padding: 0;
-}
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s;
 
-.chat-fab img{
-    width: 95%;
-    height: 95%;
-    object-fit: contain;
+    &:active { transform: scale(0.93); }
+
+    img {
+        width: 90%;
+        height: 90%;
+        object-fit: contain;
+    }
 }

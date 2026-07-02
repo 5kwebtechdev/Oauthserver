@@ -8,6 +8,7 @@ import { LoadingService } from 'src/app/core/services/loading.service';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
 import { SupermeInputsModule } from '../../superme-inputs/superme-inputs.module';
+import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { ChallengeSubmissionResponse, Challenge } from 'src/app/core/models/learning.models';
 import { PetMood } from '../../superme-pet/superme-pet.component';
 import { environment } from 'src/environments/environment';
@@ -21,7 +22,8 @@ import { BadgePopupService } from 'src/app/core/services/badge-popup.service';
     IonicModule,
     SupermeNavigatorComponent,
     SupermePetComponent,
-    SupermeInputsModule
+    SupermeInputsModule,
+    SupermeButtonComponent
   ],
   templateUrl: './result-page.component.html',
   styleUrls: ['./result-page.component.scss']

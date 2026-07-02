@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Router, RouterModule } from '@angular/router';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-input.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
@@ -13,7 +14,7 @@ import { AuthService } from '../../../services/auth.service';
 @Component({
   standalone: true,
   selector: 'feedback-suggestion',
-  imports: [CommonModule, IonicModule, SupermeNavigatorComponent, ProfileEditInputComponent, SupermeButtonComponent, SupermePopupComponent],
+  imports: [CommonModule, IonicModule, RouterModule, SupermeNavigatorComponent, ProfileEditInputComponent, SupermeButtonComponent, SupermePopupComponent],
   templateUrl: './feedback-suggestion.component.html',
   styleUrls: ['./feedback-suggestion.component.scss']
 })
@@ -40,8 +41,13 @@ export class FeedbackSuggestionComponent {
 
   constructor(
     private httpClient: HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) { }
+
+  navigateToPrivacyPolicy(): void {
+    this.router.navigate(['/authed/our-policies'], { queryParams: { tab: 'privacy' } });
+  }
 
   get canSubmit(): boolean {
     const hasMood = !!this.selectedMood;

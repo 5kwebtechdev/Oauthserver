@@ -101,8 +101,8 @@
             <div class="country-modal__search-wrap">
               <div class="country-search-box">
                 <svg class="country-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input class="country-search-input" type="text" placeholder="Search by name or code…" [(ngModel)]="countrySearch" autocomplete="off" />
-                <button *ngIf="countrySearch" class="country-search-clear" (click)="countrySearch = ''" aria-label="Clear search">
+                <input class="country-search-input" type="text" placeholder="Search by name or code…" [value]="countrySearch" (input)="onCountrySearch($event)" autocomplete="off" />
+                <button *ngIf="countrySearch" class="country-search-clear" (click)="countrySearch = ''; $event.preventDefault()" aria-label="Clear search">
                   <i class="fa-solid fa-times"></i>
                 </button>
               </div>

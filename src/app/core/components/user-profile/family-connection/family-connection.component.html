@@ -4,7 +4,7 @@
 
     <main *ngIf="!showInstructions" class="family-connection" role="main" aria-labelledby="family-heading">
 
-        <div class="family-mode d-flex flex-column gap-3" *ngIf="!isSelfUser() && !isSelfUserWithIndependentGrowth()">
+        <div class="family-mode d-flex flex-column gap-3" *ngIf="(familyHasFamily || isLoading) && !isSelfUser() && !isSelfUserWithIndependentGrowth()">
             <section class="family-container-main" *ngIf="!isLoading">
                 <div class="family-code-container" *ngIf="isParentUser()">
                     <div class="family-code-label">
@@ -141,11 +141,19 @@
                                 [class.parent]="m.relationship === 'Parent' || m.relationship === 'Co-Parent'">
                                 {{ getBadgeText(m) }}
                             </div>
-                            <a *ngIf="isParentUser()" (click)="removeMember(m)" role="button" tabindex="0"
-                                (keydown.enter)="removeMember(m)" (keydown.space)="removeMember(m)"
-                                [attr.aria-label]="'Remove ' + m.name + ' from family'" style="cursor: pointer;">
-                                Remove
-                            </a>
+                            <div class="member-actions" *ngIf="isParentUser()">
+                                <button *ngIf="canViewMember(m)" type="button" class="member-action view"
+                                    [disabled]="isSwitchingMember"
+                                    (click)="viewChildMember(m)"
+                                    [attr.aria-label]="'View as ' + m.name">
+                                    View
+                                </button>
+                                <button type="button" class="member-action remove"
+                                    (click)="removeMember(m)"
+                                    [attr.aria-label]="'Remove ' + m.name + ' from family'">
+                                    Remove
+                                </button>
+                            </div>
                         </div>
                     </section>
 

@@ -1,51 +1,104 @@
 <ion-content fullscreen>
 	<superme-navigator heading="Help & Support" backIcon="arrowSvg"></superme-navigator>
 
-	<div class="help-support-page">
-        <div class="help-support-tems">
-            <h1 class="help-heading">Account & Access</h1>
-                <profile-facts [faqs]="accountFaqs" heading=""></profile-facts>
-        </div>
+	<div class="hs-page">
+		<!-- Hero search-style banner -->
+		<div class="hs-hero">
+			<div class="hs-hero__icon">
+				<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+					<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" fill="#4CAF50"/>
+				</svg>
+			</div>
+			<div class="hs-hero__text">
+				<h2>How can we help?</h2>
+				<p>Find answers to common questions below</p>
+			</div>
+		</div>
 
-        <div class="help-support-tems" *ngIf="!isParentUser()">
-            <h1 class="help-heading">Pets & Rewards</h1>
-                <profile-facts [faqs]="petsFaqs" heading=""></profile-facts>
-        </div>
+		<!-- FAQ sections -->
+		<div class="hs-section">
+			<div class="hs-section__header">
+				<div class="hs-section__dot hs-section__dot--blue"></div>
+				<h3>Account & Access</h3>
+			</div>
+			<profile-facts [faqs]="accountFaqs" heading=""></profile-facts>
+		</div>
 
-        <div class="help-support-tems" *ngIf="isParentUser()">
-            <h1 class="help-heading">Coins & Rewards</h1>
-                <profile-facts [faqs]="coinsFaqs" heading=""></profile-facts>
-        </div>
+		<div class="hs-section" *ngIf="!isParentUser()">
+			<div class="hs-section__header">
+				<div class="hs-section__dot hs-section__dot--orange"></div>
+				<h3>Pets & Rewards</h3>
+			</div>
+			<profile-facts [faqs]="petsFaqs" heading=""></profile-facts>
+		</div>
 
-        <div class="help-support-tems" *ngIf="!isParentUser()">
-            <h1 class="help-heading">Habits & Tasks</h1>
-                <profile-facts [faqs]="habitsChildFaqs" heading=""></profile-facts>
-        </div>
+		<div class="hs-section" *ngIf="isParentUser()">
+			<div class="hs-section__header">
+				<div class="hs-section__dot hs-section__dot--orange"></div>
+				<h3>Coins & Rewards</h3>
+			</div>
+			<profile-facts [faqs]="coinsFaqs" heading=""></profile-facts>
+		</div>
 
-        <div class="help-support-tems" *ngIf="isParentUser()">
-            <h1 class="help-heading">Habits & Tasks Management</h1>
-                <profile-facts [faqs]="habitsParentFaqs" heading=""></profile-facts>
-        </div>
+		<div class="hs-section" *ngIf="!isParentUser()">
+			<div class="hs-section__header">
+				<div class="hs-section__dot hs-section__dot--green"></div>
+				<h3>Habits & Tasks</h3>
+			</div>
+			<profile-facts [faqs]="habitsChildFaqs" heading=""></profile-facts>
+		</div>
 
+		<div class="hs-section" *ngIf="isParentUser()">
+			<div class="hs-section__header">
+				<div class="hs-section__dot hs-section__dot--green"></div>
+				<h3>Habits & Tasks Management</h3>
+			</div>
+			<profile-facts [faqs]="habitsParentFaqs" heading=""></profile-facts>
+		</div>
 
-        <div class="help-support-tems">
-            <h1 class="help-heading">Parent Controls</h1>
-                <profile-facts [faqs]="parentControlsFaqs" heading=""></profile-facts>
-        </div>
+		<div class="hs-section">
+			<div class="hs-section__header">
+				<div class="hs-section__dot hs-section__dot--magenta"></div>
+				<h3>Parent Controls</h3>
+			</div>
+			<profile-facts [faqs]="parentControlsFaqs" heading=""></profile-facts>
+		</div>
 
-         <div class="help-support-tems" *ngIf="isParentUser()">
-            <h1 class="help-heading">Security</h1>
-                <profile-facts [faqs]="securityFaqs" heading=""></profile-facts>
-        </div>
+		<div class="hs-section" *ngIf="isParentUser()">
+			<div class="hs-section__header">
+				<div class="hs-section__dot hs-section__dot--blue"></div>
+				<h3>Security</h3>
+			</div>
+			<profile-facts [faqs]="securityFaqs" heading=""></profile-facts>
+		</div>
 
-        <div class="help-support-tems">
-            <h1 class="help-heading">Troubleshooting</h1>
-                <profile-facts [faqs]="troubleshootingFaqs" heading=""></profile-facts>
-        </div>
-    </div>
-    
-    <button aria-label="Open chat" class="chat-fab" (click)="openChat()">
-        <img src="assets/Icons-Neutral/Icon-Chatbot.png" alt="Chatbot">
-    </button>
+		<div class="hs-section">
+			<div class="hs-section__header">
+				<div class="hs-section__dot hs-section__dot--orange"></div>
+				<h3>Troubleshooting</h3>
+			</div>
+			<profile-facts [faqs]="troubleshootingFaqs" heading=""></profile-facts>
+		</div>
 
+		<!-- Contact card -->
+		<div class="hs-contact">
+			<div class="hs-contact__icon">
+				<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+					<path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill="#4CAF50"/>
+				</svg>
+			</div>
+			<div class="hs-contact__text">
+				<p class="hs-contact__title">Still need help?</p>
+				<p class="hs-contact__sub">Chat with us — we're here for you!</p>
+			</div>
+			<button class="hs-contact__btn" (click)="openChat()">Chat</button>
+		</div>
+
+		<div class="hs-bottom-space"></div>
+	</div>
+
+	<!-- Floating chat button -->
+	<button aria-label="Open chat" class="chat-fab" (click)="openChat()">
+		<img src="assets/Icons-Neutral/Icon-Chatbot.png" alt="Chatbot">
+	</button>
 </ion-content>

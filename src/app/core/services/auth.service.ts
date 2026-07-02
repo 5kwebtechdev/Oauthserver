@@ -324,6 +324,26 @@ export class AuthService {
     );
   }
 
+  /**
+   * Replace only the active JWT after a role conversion or parent-child view switch.
+   * User profile data is updated separately by the calling screen.
+   */
+  replaceAuthToken(token: string): void {
+    if (!token) return;
+
+    localStorage.setItem(this.TOKEN_KEY, token);
+    this.updateLastActivity();
+
+    const currentSession = this.currentUserSubject.value;
+    if (currentSession) {
+      this.currentUserSubject.next({
+        ...currentSession,
+        token,
+        lastActivity: Date.now()
+      });
+    }
+  }
+
   checkEmailExists(email: string) {
     const url = `${this.apiUrl}/api/public/check-mail-already-exists`;
     return this.http.get<{ exists: boolean }>(url, { params: { email } });
