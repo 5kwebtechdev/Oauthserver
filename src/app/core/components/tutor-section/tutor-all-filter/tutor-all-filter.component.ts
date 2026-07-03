@@ -309,21 +309,36 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
             id: 401, fieldType: 'MULTI_SELECT', fieldKey: 'skill', fieldLabel: 'Skill',
             isRequired: false, isFilterable: true, displayOrder: 1, validationRules: null, createdAt: '',
             options: [
-              opt(4011, 'GUITAR', 'Guitar (Acoustic / Electric)', 1),
-              opt(4013, 'PIANO', 'Piano', 2), opt(4014, 'VIOLIN', 'Violin', 3),
-              opt(4015, 'DRUMS', 'Drums', 4), opt(4016, 'FLUTE', 'Flute', 5),
-              opt(4017, 'VOCAL_MUSIC', 'Vocal Music', 6),
-              opt(4018, 'INDIAN_CLASSICAL', 'Indian Classical', 7),
-              opt(4019, 'WESTERN_VOCALS', 'Western Vocals', 8),
-              opt(4021, 'BOLLYWOOD', 'Bollywood', 9),
-              opt(4020, 'BHARATANATYAM', 'Bharatanatyam', 10),
-              opt(4032, 'BOLLYWOOD_DANCE', 'Bollywood', 11),
-              opt(4022, 'HIP_HOP', 'Hip Hop', 12), opt(4023, 'SALSA', 'Salsa', 13),
-              opt(4024, 'DRAWING_SKETCHING', 'Drawing & Sketching', 14),
-              opt(4025, 'PAINTING', 'Painting', 15), opt(4026, 'CALLIGRAPHY', 'Calligraphy', 16),
-              opt(4027, 'YOGA_MEDITATION', 'Yoga & Meditation', 17),
-              opt(4028, 'CHESS', 'Chess', 18), opt(4029, 'COOKING', 'Cooking', 19),
-              opt(4030, 'BAKING', 'Baking', 20), opt(4031, 'PHOTOGRAPHY', 'Photography', 21)
+              // ── Musical Instruments ──
+              { id: -1, optionValue: 'HEADER_MUSICAL', optionLabel: 'Musical Instruments', displayOrder: 1, isActive: true, createdAt: '', isHeader: true } as any,
+              opt(4011, 'GUITAR', 'Guitar (Acoustic / Electric)', 2),
+              opt(4013, 'PIANO', 'Piano', 3),
+              opt(4014, 'VIOLIN', 'Violin', 4),
+              opt(4015, 'DRUMS', 'Drums', 5),
+              opt(4016, 'FLUTE', 'Flute', 6),
+              // ── Vocal Music ──
+              { id: -2, optionValue: 'HEADER_VOCAL', optionLabel: 'Vocal Music', displayOrder: 7, isActive: true, createdAt: '', isHeader: true } as any,
+              opt(4018, 'INDIAN_CLASSICAL', 'Indian Classical', 8),
+              opt(4019, 'WESTERN_VOCALS', 'Western Vocals', 9),
+              opt(4021, 'BOLLYWOOD_VOCAL', 'Bollywood', 10),
+              // ── Dance ──
+              { id: -3, optionValue: 'HEADER_DANCE', optionLabel: 'Dance', displayOrder: 11, isActive: true, createdAt: '', isHeader: true } as any,
+              opt(4020, 'BHARATANATYAM', 'Bharatanatyam', 12),
+              opt(4032, 'BOLLYWOOD_DANCE', 'Bollywood', 13),
+              opt(4022, 'HIP_HOP', 'Hip Hop', 14),
+              opt(4023, 'SALSA', 'Salsa', 15),
+              // ── Art & Craft ──
+              { id: -4, optionValue: 'HEADER_ART', optionLabel: 'Art & Craft', displayOrder: 16, isActive: true, createdAt: '', isHeader: true } as any,
+              opt(4024, 'DRAWING_SKETCHING', 'Drawing & Sketching', 17),
+              opt(4025, 'PAINTING', 'Painting', 18),
+              opt(4026, 'CALLIGRAPHY', 'Calligraphy', 19),
+              // ── Lifestyle & Others ──
+              { id: -5, optionValue: 'HEADER_LIFESTYLE', optionLabel: 'Lifestyle & Others', displayOrder: 20, isActive: true, createdAt: '', isHeader: true } as any,
+              opt(4027, 'YOGA_MEDITATION', 'Yoga & Meditation', 21),
+              opt(4028, 'CHESS', 'Chess', 22),
+              opt(4029, 'COOKING', 'Cooking', 23),
+              opt(4030, 'BAKING', 'Baking', 24),
+              opt(4031, 'PHOTOGRAPHY', 'Photography', 25)
             ]
           },
           {
@@ -463,7 +478,8 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
               id: opt.id,
               value: opt.optionValue,
               label: opt.optionLabel,
-              displayOrder: opt.displayOrder
+              displayOrder: opt.displayOrder,
+              isHeader: !!(opt as any).isHeader
             }))
         }));
 
@@ -505,6 +521,7 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
    * Toggle a sub-filter option
    */
   onToggleSubFilter(item: FilterOption, checked: boolean): void {
+    if (item.isHeader) return; // section headers are not selectable
     const group = this.sidebarGroups.find(g => g.label === this.selectedSidebar);
     if (!group) return;
 
@@ -534,6 +551,7 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
    * Check if a sub-filter is selected
    */
   isSubFilterSelected(item: FilterOption): boolean {
+    if (item.isHeader) return false;
     const group = this.sidebarGroups.find(g => g.label === this.selectedSidebar);
     if (!group) return false;
 

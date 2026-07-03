@@ -56,6 +56,7 @@ export interface FilterOption {
     value: string;
     label: string;
     displayOrder: number;
+    isHeader?: boolean;
 }
 
 /**
