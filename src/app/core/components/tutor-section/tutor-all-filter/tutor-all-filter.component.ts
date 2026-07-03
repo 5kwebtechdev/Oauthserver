@@ -80,16 +80,12 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
         setTimeout(() => this.initSwiper(), 100);
       }))
       .subscribe({
-        next: (categories) => {
-          this.apiCategories = categories;
-          this.mapCategoriesToUI(categories);
-
-          // Restore previously applied category, or default to first
-          const restoreCategory = this.initialFilters?.categoryKey ?? (this.categories.length > 0 ? this.categories[0].key : null);
-          if (restoreCategory) {
-            this.selectedCategory = restoreCategory;
-            this.setSidebarForCategory(restoreCategory);
-          }
+        next: (_categories) => {
+          // Use predefined fallback data for display labels — API returns
+          // granular short options (e.g. "B.Tech") that don't match the
+          // Figma-specified combined labels (e.g. "Engineering (B.E / B.Tech / M.Tech)").
+          // Fallback data is always authoritative for display.
+          this.useFallbackData();
 
           // Pre-populate selected filters from initialFilters
           if (this.initialFilters?.filters) {
@@ -102,8 +98,6 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
         },
         error: (error) => {
           console.error('[TutorAllFilter] Error loading categories:', error);
-          this.errorMessage = 'Failed to load filter categories. Please try again.';
-          // Use fallback data if API fails
           this.useFallbackData();
         }
       });
@@ -210,16 +204,40 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
               opt(1050, 'SPOKEN_ENGLISH', 'Spoken English', 20)
             ]
           },
+          // Sidebar order from Figma: Class → Subjects → Tutor Type → Board → Mode → Location
+          // commonFields(3) injects TutorType(3), Mode(4), Location(5) — then Board at 6
+          {
+            id: 900, fieldType: 'MULTI_SELECT', fieldKey: 'tutorType', fieldLabel: 'Tutor Type',
+            isRequired: false, isFilterable: true, displayOrder: 3, validationRules: null, createdAt: '',
+            options: [opt(9001, 'INDIVIDUAL', 'Individual Tutor', 1), opt(9002, 'ACADEMY', 'Academy', 2)]
+          },
           {
             id: 103, fieldType: 'MULTI_SELECT', fieldKey: 'board', fieldLabel: 'Board',
-            isRequired: false, isFilterable: true, displayOrder: 3, validationRules: null, createdAt: '',
+            isRequired: false, isFilterable: true, displayOrder: 4, validationRules: null, createdAt: '',
             options: [
               opt(1061, 'CBSE', 'CBSE', 1), opt(1062, 'ICSE', 'ICSE', 2),
               opt(1063, 'IB', 'IB', 3), opt(1064, 'STATE_BOARD', 'State Board', 4),
               opt(1065, 'IGCSE', 'IGCSE', 5), opt(1066, 'NIOS', 'NIOS', 6)
             ]
           },
-          ...commonFields(4)
+          {
+            id: 901, fieldType: 'MULTI_SELECT', fieldKey: 'mode', fieldLabel: 'Mode',
+            isRequired: false, isFilterable: true, displayOrder: 5, validationRules: null, createdAt: '',
+            options: [opt(9011, 'ONLINE', 'Online', 1), opt(9012, 'OFFLINE', 'Offline', 2)]
+          },
+          {
+            id: 902, fieldType: 'MULTI_SELECT', fieldKey: 'location', fieldLabel: 'Location',
+            isRequired: false, isFilterable: true, displayOrder: 6, validationRules: null, createdAt: '',
+            options: [
+              opt(9021, 'NEARBY', 'Nearby (5 km radius)', 1),
+              opt(9022, 'CHENNAI', 'Chennai', 2),
+              opt(9023, 'BANGALORE', 'Bangalore', 3),
+              opt(9024, 'MUMBAI', 'Mumbai', 4),
+              opt(9025, 'HYDERABAD', 'Hyderabad', 5),
+              opt(9026, 'DELHI', 'Delhi', 6),
+              opt(9027, 'KOLKATA', 'Kolkata', 7)
+            ]
+          }
         ]
       },
       {
