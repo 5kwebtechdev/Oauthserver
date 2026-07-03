@@ -1,49 +1,34 @@
-<div class="adb" role="region" aria-label="Featured offers">
+<ng-container *ngIf="isVisible && ads.length > 0">
+  <div class="adb" role="region" aria-label="Featured offers">
 
-  <!-- Slide track -->
-  <div class="adb__viewport"
-    (touchstart)="onTouchStart($event)"
-    (touchend)="onTouchEnd($event)">
+    <!-- Slide track -->
+    <div class="adb__viewport"
+      (touchstart)="onTouchStart($event)"
+      (touchend)="onTouchEnd($event)">
 
-    <div class="adb__track" [style.transform]="'translateX(' + (-currentIndex * 100) + '%)'">
-      <div class="adb__slide" *ngFor="let slide of slides; let i = index"
-        [style.background]="slide.bg">
-
-        <!-- Decorative blob behind image -->
-        <div class="adb__blob" [style.background]="slide.blob" aria-hidden="true"></div>
-
-        <!-- Text content -->
-        <div class="adb__content">
-          <span class="adb__badge" [style.color]="slide.accent" [style.background]="slide.badgeBg">
-            {{ slide.badge }}
-          </span>
-          <h3 class="adb__head">{{ slide.head }}</h3>
-          <p class="adb__desc">{{ slide.desc }}</p>
-          <button class="adb__cta" [style.color]="slide.accent" (click)="onCtaClick(slide)">
-            {{ slide.cta }}
-          </button>
+      <div class="adb__track" [style.transform]="'translateX(' + (-currentIndex * 100) + '%)'">
+        <div class="adb__slide" *ngFor="let ad of ads; let i = index">
+          <img
+            class="adb__img"
+            [src]="ad.image"
+            [alt]="ad.title"
+            loading="lazy"
+            (error)="onAdImageError(i)" />
         </div>
-
-        <!-- Image -->
-        <div class="adb__img-wrap" aria-hidden="true">
-          <img *ngIf="slide.image" [src]="slide.image" [alt]="slide.head"
-            loading="lazy" class="adb__img" />
-        </div>
-
       </div>
     </div>
-  </div>
 
-  <!-- Pill indicators -->
-  <div class="adb__dots" role="tablist" aria-label="Slides">
-    <button *ngFor="let s of slides; let i = index"
-      class="adb__dot"
-      [class.adb__dot--active]="i === currentIndex"
-      (click)="goTo(i)"
-      role="tab"
-      [attr.aria-selected]="i === currentIndex"
-      [attr.aria-label]="'Go to slide ' + (i + 1)">
-    </button>
-  </div>
+    <!-- Dot indicators — only show if more than 1 ad -->
+    <div class="adb__dots" role="tablist" aria-label="Slides" *ngIf="ads.length > 1">
+      <button *ngFor="let ad of ads; let i = index"
+        class="adb__dot"
+        [class.adb__dot--active]="i === currentIndex"
+        (click)="goTo(i)"
+        role="tab"
+        [attr.aria-selected]="i === currentIndex"
+        [attr.aria-label]="'Go to slide ' + (i + 1)">
+      </button>
+    </div>
 
-</div>
+  </div>
+</ng-container>

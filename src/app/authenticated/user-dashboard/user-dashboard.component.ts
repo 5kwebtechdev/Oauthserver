@@ -603,11 +603,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   // ── Overlay logic ────────────────────────────────────────────────────────────
 
-  private getTodayStr(): string {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }
-
   /** API-driven overlay flow — replaces the old localStorage-queue approach */
   buildOverlayQueue(): void {
     if (this.overlayQueueBuilt) return;
@@ -628,7 +623,15 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
             STREAK_MILESTONE: 'streak-milestone',
             NONE:             null,
           };
-          this.activeOverlay = typeMap[resp.overlayType] ?? null;
+          const nextOverlay = typeMap[resp.overlayType] ?? null;
+
+          if (nextOverlay === 'mood-prompt' && !this.isFirstSignupHomeOpen()) {
+            this.activeOverlay = null;
+            this.loadHomeHeader();
+            return;
+          }
+
+          this.activeOverlay = nextOverlay;
 
           if (resp.message) {
             this.overlayMessage = resp.message;
@@ -650,6 +653,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         } else {
           // No more overlays — show normal home screen
           this.activeOverlay = null;
+          this.clearFirstSignupOverlayPending();
           this.loadHomeHeader();
         }
       },
@@ -700,8 +704,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         next:  () => this.pollHomeOverlay(),
         error: () => this.pollHomeOverlay(), // always re-poll
       });
-      // Also clear local flags to prevent legacy code re-triggering them
-      if (this.activeOverlay === 'bonus-coins') this.clearFirstSignupOverlayPending();
     } else {
       this.pollHomeOverlay();
     }
@@ -709,6 +711,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   onOverlayMoodSelected(mood: string): void {
     this.selectedMood = mood;
+    this.clearFirstSignupOverlayPending();
     // Mood saved via existing MoodService — MOOD_PROMPT overlay clears on backend
     // after the mood is saved; re-poll for next overlay
     this.pollHomeOverlay();
@@ -746,18 +749,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   }
 
   private isFirstSignupHomeOpen(): boolean {
-    if (this.getFirstSignupPendingFlag()) {
-      return true;
-    }
-
-    const userData = this.authService.getUserData?.();
-    const createdAt = userData?.createdAt
-      ?? userData?.created_at
-      ?? userData?.createdDate
-      ?? userData?.registeredAt
-      ?? userData?.registrationDate;
-
-    return createdAt ? this.toLocalDateString(createdAt) === this.getTodayStr() : false;
+    return !!this.getFirstSignupPendingFlag();
   }
 
   private getFirstSignupPendingFlag(): string | null {
@@ -776,15 +768,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       sessionStorage.removeItem('sm_first_signup_overlay_pending');
       localStorage.removeItem(`sm_first_signup_overlay_pending_${userId}`);
     } catch {}
-  }
-
-  private toLocalDateString(value: unknown): string | null {
-    if (!value) return null;
-
-    const date = new Date(String(value));
-    if (Number.isNaN(date.getTime())) return null;
-
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   }
 
   // ─────────────────────────────────────────────────────────────────────────────

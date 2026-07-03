@@ -802,7 +802,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Complete Google signup for parent: calls oauth2-login with all collected profile + family data.
+     * Complete OAuth signup for parent: calls oauth2-login with all collected profile + family data.
      *
      * Case A (creator):  sends familyName only  → backend creates the family in the same call
      * Case B (joiner):   sends familyCode only  → backend links to existing family
@@ -812,6 +812,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         let profile: any = {};
         try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) {}
 
+        const provider   = (sessionStorage.getItem('oauth_signup_provider') || 'google') as 'google' | 'apple';
         const email      = sessionStorage.getItem('google_signup_email') || '';
         const providerId = sessionStorage.getItem('google_signup_provider_id') || '';
         const avatarUrl  = sessionStorage.getItem('google_signup_avatar') || '';
@@ -820,7 +821,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         const familyName = sessionStorage.getItem('familyName') || this.createdFamilyName || '';
 
         const googlePayload: any = {
-            provider:     'google',
+            provider,
             providerId,
             email,
             name:         profile.name || sessionStorage.getItem('google_signup_name') || '',
@@ -845,7 +846,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             }
         }
 
-        console.log('[Google parent signup] payload:', JSON.stringify(googlePayload));
+        console.log('[OAuth parent signup] payload:', JSON.stringify(googlePayload));
 
         this.isLoading = true;
         this.authService.googleOAuthLogin(googlePayload).subscribe({
@@ -859,7 +860,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
                     );
                 }
                 try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) {}
-                ['signup_via_google', 'google_signup_email', 'google_signup_name',
+                ['signup_via_google', 'signup_via_oauth', 'oauth_signup_provider',
+                 'google_signup_email', 'google_signup_name',
                  'google_signup_avatar', 'google_signup_provider_id', 'signup_profile',
                  'signup_role', 'signup_avatar', 'requestedIdentifier',
                  'familyCode', 'familyName', 'familyCreator', 'referralCode', 'referralCodeLocked'].forEach(k => {

@@ -254,7 +254,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     this.restoreSignupStateFromSession();
 
-    // Pre-fill profile data if coming from Google sign-in
+    // Pre-fill profile data if coming from an OAuth sign-in
     if (sessionStorage.getItem('signup_via_google') === 'true') {
       const googleName = sessionStorage.getItem('google_signup_name');
       const googleEmail = sessionStorage.getItem('google_signup_email');
@@ -1495,7 +1495,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   registerFromSession(): void {
     this.errorMessage = null;
 
-    // Google OAuth flow: user already has an account, just complete their profile
+    // OAuth flow: user already has an account, just complete their profile
     if (sessionStorage.getItem('signup_via_google') === 'true') {
       const role = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;
       this.completeGoogleOnboardingFlow(role);
@@ -1743,6 +1743,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     let profile: any = {};
     try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) {}
 
+    const provider  = (sessionStorage.getItem('oauth_signup_provider') || 'google') as 'google' | 'apple';
     const email     = sessionStorage.getItem('google_signup_email') || this.email?.value;
     const providerId = sessionStorage.getItem('google_signup_provider_id') || '';
     const avatarUrl  = sessionStorage.getItem('google_signup_avatar') || '';
@@ -1755,7 +1756,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       : (avatarKey ? `Avatar ${Number(avatarKey)}` : undefined);
 
     const googlePayload: any = {
-      provider:        'google',
+      provider,
       providerId,
       email,
       name:            profile.name || this.profileForm.get('name')?.value || sessionStorage.getItem('google_signup_name'),
@@ -1791,7 +1792,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       } catch (e) {}
     }
 
-    console.log('[Google signup] payload:', JSON.stringify(googlePayload));
+    console.log('[OAuth signup] payload:', JSON.stringify(googlePayload));
 
     // Use oauth2-login — it creates the user if new, returns a valid token
     this.authService.googleOAuthLogin(googlePayload).subscribe({
@@ -1825,7 +1826,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   private clearGoogleSignupSession(): void {
     try {
-      ['signup_via_google', 'google_signup_email', 'google_signup_name',
+      ['signup_via_google', 'signup_via_oauth', 'oauth_signup_provider',
+        'google_signup_email', 'google_signup_name',
         'google_signup_avatar', 'google_signup_provider_id', 'signup_profile',
         'signup_role', 'signup_avatar', 'signup_pet', 'requestedIdentifier',
         'familyCode', 'familyName', 'familyCreator', 'referralCode', 'referralCodeLocked'].forEach(k => {
@@ -1837,7 +1839,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   private registerChildOrSelfFromSession(role: 'child' | 'self') {
     this.errorMessage = null;
 
-    // Google OAuth flow: user already has an account, just complete their profile
+    // OAuth flow: user already has an account, just complete their profile
     if (sessionStorage.getItem('signup_via_google') === 'true') {
       this.completeGoogleOnboardingFlow(role);
       return;

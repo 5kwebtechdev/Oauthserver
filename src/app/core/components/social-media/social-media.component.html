@@ -75,7 +75,7 @@
   <ng-template #loginWith>
     <div class="login-with-buttons">
       <!-- Google -->
-      <button class="social-login-btn" (click)="open({ name: 'google', url: '' })" aria-label="Continue with Google">
+      <button class="social-login-btn" (click)="open({ name: 'google', url: '' })" [disabled]="isSocialLoginInProgress" aria-label="Continue with Google">
         <svg class="social-login-btn__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22" height="22" aria-hidden="true">
           <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
           <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
@@ -86,7 +86,7 @@
       </button>
 
       <!-- Apple — iOS only -->
-      <button *ngIf="isIos" class="social-login-btn social-login-btn--apple" (click)="open({ name: 'apple', url: '' })" aria-label="Continue with Apple">
+      <button *ngIf="isIos" class="social-login-btn social-login-btn--apple" (click)="open({ name: 'apple', url: '' })" [disabled]="isSocialLoginInProgress" aria-label="Continue with Apple">
         <svg class="social-login-btn__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 814 1000" width="20" height="22" aria-hidden="true">
           <path fill="#000000" d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-42.4-148.2-103.7C46.8 761 0 665 0 575.5 0 417.4 106.5 312.1 212 312.1c61.3 0 112.3 41.8 149.1 41.8 35.5 0 91.5-44.1 162.2-44.1 25.8 0 131 2.6 197.1 98.7zm-234.7-167.7C561.8 69.5 571.5 0 571.5 0c-64.3 4.5-140.2 47.9-185.7 109.2-41.8 56.2-78.3 142.9-78.3 230.2 0 11.6 2 23.2 2.6 27.1 5.2.6 13.6 1.3 22 1.3 57.5 0 127.7-37.7 168.2-95.5z"/>
         </svg>
