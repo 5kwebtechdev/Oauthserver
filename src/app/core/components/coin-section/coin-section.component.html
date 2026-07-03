@@ -11,7 +11,7 @@
             </div>
 
             <div class="coins" [class.coins--rolling]="showTargetDigits && !coinAnimDone" [class.coins--done]="coinAnimDone">
-                <img src="\assets\Icons-Neutral\Icons-Coins.png" alt="Coin" class="coin-icon">
+                <img src="assets/Icons-Neutral/Icons-Coins.png" alt="Coin" class="coin-icon">
                 <span class="coin-value" *ngIf="isLoading || coinTotal <= 0">0</span>
                 <div class="coin-value-roller" *ngIf="!isLoading && coinTotal > 0">
                     <span class="digit-col" *ngFor="let d of coinDigits; let i = index"

@@ -35,8 +35,9 @@
       <div class="ring">
         <div class="badge-wrap">
           <img class="badge-icon"
-            [src]="currentBadge.iconUrl || 'assets/Images-Transparent/Image-Badge-Reward.png'"
-            [alt]="currentBadge.name || 'Badge reward'" />
+            [src]="currentBadge.iconUrl || getLocalBadgeIcon(currentBadge.name)"
+            [alt]="currentBadge.name || 'Badge reward'"
+            (error)="onBadgeImgError($event, currentBadge.name)" />
         </div>
       </div>
       <img class="confetti right" src="assets/Images-Transparent/congrats.png" alt="" aria-hidden="true" />
