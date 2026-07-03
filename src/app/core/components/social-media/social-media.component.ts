@@ -9,6 +9,8 @@ import { AuthService } from '../../services/auth.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { AuthSessionCleanupService } from '../../services/auth-session-cleanup.service';
 
+type OAuthProviderName = 'google' | 'apple';
+
 @Component({
   selector: 'social-media',
   standalone: true,
@@ -19,6 +21,7 @@ import { AuthSessionCleanupService } from '../../services/auth-session-cleanup.s
 export class SocialMediaComponent implements OnInit {
   @Input() variant?: string;
   isIos = false;
+  isSocialLoginInProgress = false;
 
   links = [
     { name: 'facebook', label: 'Facebook', icon: 'facebook', url: 'https://www.facebook.com/SuperMeAppOfficial' },
@@ -42,6 +45,10 @@ export class SocialMediaComponent implements OnInit {
   }
 
   open(link: { name: string; url?: string }) {
+    if (this.isSocialLoginInProgress && (link.name === 'google' || link.name === 'apple')) {
+      return;
+    }
+
     if (link.name === 'google' && this.variant === 'login-with') {
       this.signInWithGoogle();
       return;
@@ -68,6 +75,9 @@ export class SocialMediaComponent implements OnInit {
       await toast.present();
       return;
     }
+
+    if (this.isSocialLoginInProgress) return;
+    this.isSocialLoginInProgress = true;
 
     const loading = await this.loadingCtrl.create({ message: 'Signing in with Google…' });
     await loading.present();
@@ -97,56 +107,17 @@ export class SocialMediaComponent implements OnInit {
         next: (res) => {
           if (res.exists) {
             // Existing user — login via oauth2-login and go to dashboard
-            this.authService.googleOAuthLogin({ provider: 'google', providerId, email, name, avatarUrl }).subscribe({
-              next: (response) => {
-                loading.dismiss();
-                const userId = response.user?.id;
-                if (response.token && userId) {
-                  this.authService.setSession(
-                    { token: response.token, userId, expiresIn: response.expiresIn, user: response.user },
-                    false
-                  );
-                  this.analytics.logLogin('google');
-                  this.analytics.setUserId(String(userId));
-                  const route = this.authService.getDashboardRoute();
-                  this.router.navigate([route], { replaceUrl: true });
-                } else {
-                  console.error('[SocialMedia] Login response missing token or userId:', response);
-                  this.toastCtrl.create({
-                    message: 'Sign-in failed: invalid server response. Please try again.',
-                    duration: 3000,
-                    position: 'bottom'
-                  }).then(t => t.present());
-                }
-              },
-              error: async (err) => {
-                loading.dismiss();
-                console.error('[SocialMedia] Login error:', err);
-                const toast = await this.toastCtrl.create({
-                  message: err?.error?.message || 'Google sign-in failed. Please try again.',
-                  duration: 3000,
-                  position: 'bottom'
-                });
-                await toast.present();
-              }
-            });
+            this.loginWithOAuthProfile({ provider: 'google', providerId, email, name, avatarUrl }, loading, 'google');
           } else {
             // New user — store Google data, do NOT log in yet, go to step 1
-            loading.dismiss();
-            try {
-              sessionStorage.setItem('signup_via_google', 'true');
-              sessionStorage.setItem('google_signup_email', email);
-              sessionStorage.setItem('google_signup_name', name);
-              sessionStorage.setItem('google_signup_avatar', avatarUrl);
-              sessionStorage.setItem('google_signup_provider_id', providerId);
-              sessionStorage.setItem('requestedIdentifier', email);
-            } catch (e) {}
+            void this.finishSocialLogin(loading);
+            this.storeOAuthSignupSession('google', { email, name, avatarUrl, providerId });
             this.analytics.logSignUp('google');
             this.router.navigate(['home/sign-up'], { queryParams: { step: 1 }, replaceUrl: true });
           }
         },
         error: async (err) => {
-          loading.dismiss();
+          await this.finishSocialLogin(loading);
           console.error('[SocialMedia] Email check error:', err);
           const toast = await this.toastCtrl.create({
             message: 'Unable to verify account. Please try again.',
@@ -157,7 +128,7 @@ export class SocialMediaComponent implements OnInit {
         }
       });
     } catch (err: any) {
-      await loading.dismiss();
+      await this.finishSocialLogin(loading);
       console.error('[SocialMedia] Google signIn error:', err?.message, err?.code, err?.error);
       // Android error code 12501 = user cancelled; also check string messages
       const cancelled = err?.code === 12501
@@ -178,6 +149,8 @@ export class SocialMediaComponent implements OnInit {
 
   private async signInWithApple(): Promise<void> {
     if (!this.platform.is('ios')) return;
+    if (this.isSocialLoginInProgress) return;
+    this.isSocialLoginInProgress = true;
 
     const loading = await this.loadingCtrl.create({ message: 'Signing in with Apple…' });
     await loading.present();
@@ -197,11 +170,11 @@ export class SocialMediaComponent implements OnInit {
         throw new Error('Apple sign-in did not return an identity token.');
       }
 
-      const providerId = appleUser.user;
-      const email = appleUser.email || '';
+      const providerId = appleUser.user || '';
+      const email = (appleUser.email || '').trim();
       const givenName = appleUser.givenName || '';
       const familyName = appleUser.familyName || '';
-      const name = [givenName, familyName].filter(Boolean).join(' ') || email;
+      const name = [givenName, familyName].filter(Boolean).join(' ') || email || 'Apple User';
 
       // Register in Firebase Auth (non-fatal)
       try {
@@ -214,52 +187,35 @@ export class SocialMediaComponent implements OnInit {
         console.warn('[SocialMedia] Firebase Apple sign-in (non-fatal):', fbErr);
       }
 
-      if (!providerId && !email) {
-        throw new Error('Apple sign-in did not return user ID or email.');
+      if (!providerId) {
+        throw new Error('Apple sign-in did not return a user ID.');
+      }
+
+      const appleProfile = { provider: 'apple', providerId, email, name, avatarUrl: '' };
+
+      if (!email) {
+        this.loginWithOAuthProfile(
+          appleProfile,
+          loading,
+          'apple',
+          'We could not find your Apple account in SuperMeApp. Please try again or contact support.'
+        );
+        return;
       }
 
       this.authService.checkEmailExists(email).subscribe({
         next: (res) => {
           if (res.exists) {
-            this.authService.googleOAuthLogin({ provider: 'apple', providerId, email, name, avatarUrl: '' }).subscribe({
-              next: (response) => {
-                loading.dismiss();
-                const userId = response.user?.id;
-                if (response.token && userId) {
-                  this.authService.setSession(
-                    { token: response.token, userId, expiresIn: response.expiresIn, user: response.user },
-                    false
-                  );
-                  this.analytics.logLogin('apple');
-                  this.analytics.setUserId(String(userId));
-                  this.router.navigate([this.authService.getDashboardRoute()], { replaceUrl: true });
-                }
-              },
-              error: async (err) => {
-                loading.dismiss();
-                const toast = await this.toastCtrl.create({
-                  message: err?.error?.message || 'Apple sign-in failed. Please try again.',
-                  duration: 3000, position: 'bottom'
-                });
-                await toast.present();
-              }
-            });
+            this.loginWithOAuthProfile(appleProfile, loading, 'apple');
           } else {
-            loading.dismiss();
-            try {
-              sessionStorage.setItem('signup_via_google', 'true');
-              sessionStorage.setItem('google_signup_email', email);
-              sessionStorage.setItem('google_signup_name', name);
-              sessionStorage.setItem('google_signup_avatar', '');
-              sessionStorage.setItem('google_signup_provider_id', providerId);
-              sessionStorage.setItem('requestedIdentifier', email);
-            } catch (e) {}
+            void this.finishSocialLogin(loading);
+            this.storeOAuthSignupSession('apple', { email, name, avatarUrl: '', providerId });
             this.analytics.logSignUp('apple');
             this.router.navigate(['home/sign-up'], { queryParams: { step: 1 }, replaceUrl: true });
           }
         },
         error: async () => {
-          loading.dismiss();
+          await this.finishSocialLogin(loading);
           const toast = await this.toastCtrl.create({
             message: 'Unable to verify account. Please try again.',
             duration: 3000, position: 'bottom'
@@ -268,7 +224,7 @@ export class SocialMediaComponent implements OnInit {
         }
       });
     } catch (err: any) {
-      await loading.dismiss();
+      await this.finishSocialLogin(loading);
       const cancelled = err?.message?.includes('cancel') || err?.message?.includes('dismiss');
       if (!cancelled) {
         const toast = await this.toastCtrl.create({
@@ -278,6 +234,74 @@ export class SocialMediaComponent implements OnInit {
         await toast.present();
       }
     }
+  }
+
+  private loginWithOAuthProfile(
+    profile: any,
+    loading: any,
+    provider: OAuthProviderName,
+    fallbackMessage?: string
+  ): void {
+    this.authService.googleOAuthLogin(profile).subscribe({
+      next: async (response) => {
+        await this.finishSocialLogin(loading);
+        const userId = response.user?.id;
+        if (response.token && userId) {
+          this.authService.setSession(
+            { token: response.token, userId, expiresIn: response.expiresIn, user: response.user },
+            false
+          );
+          this.analytics.logLogin(provider);
+          this.analytics.setUserId(String(userId));
+          this.router.navigate([this.authService.getDashboardRoute()], { replaceUrl: true });
+          return;
+        }
+
+        console.error('[SocialMedia] OAuth login response missing token or userId:', response);
+        await this.presentToast('Sign-in failed: invalid server response. Please try again.');
+      },
+      error: async (err) => {
+        await this.finishSocialLogin(loading);
+        console.error('[SocialMedia] OAuth login error:', err);
+        await this.presentToast(err?.error?.message || fallbackMessage || `${this.getProviderLabel(provider)} sign-in failed. Please try again.`);
+      }
+    });
+  }
+
+  private storeOAuthSignupSession(
+    provider: OAuthProviderName,
+    data: { email: string; name: string; avatarUrl: string; providerId: string }
+  ): void {
+    try {
+      sessionStorage.setItem('signup_via_google', 'true');
+      sessionStorage.setItem('signup_via_oauth', 'true');
+      sessionStorage.setItem('oauth_signup_provider', provider);
+      sessionStorage.setItem('google_signup_email', data.email);
+      sessionStorage.setItem('google_signup_name', data.name);
+      sessionStorage.setItem('google_signup_avatar', data.avatarUrl);
+      sessionStorage.setItem('google_signup_provider_id', data.providerId);
+      sessionStorage.setItem('requestedIdentifier', data.email);
+    } catch (e) {}
+  }
+
+  private async finishSocialLogin(loading: any): Promise<void> {
+    this.isSocialLoginInProgress = false;
+    try {
+      await loading?.dismiss();
+    } catch (e) {}
+  }
+
+  private async presentToast(message: string): Promise<void> {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 3000,
+      position: 'bottom'
+    });
+    await toast.present();
+  }
+
+  private getProviderLabel(provider: OAuthProviderName): string {
+    return provider === 'apple' ? 'Apple' : 'Google';
   }
 
   /**

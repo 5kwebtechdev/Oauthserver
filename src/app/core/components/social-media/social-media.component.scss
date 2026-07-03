@@ -47,6 +47,12 @@
         border-color: #d6c3b4;
     }
 
+    &:disabled {
+        cursor: wait;
+        opacity: 0.62;
+        transform: none;
+    }
+
     &__icon {
         flex-shrink: 0;
         display: block;

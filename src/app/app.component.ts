@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Platform } from '@ionic/angular';
-import { Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError, Event } from '@angular/router';
+import { Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError, Event as RouterEvent } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 import { PetAgeService } from './core/services/pet-age.service';
 import { LoadingService } from './core/services/loading.service';
@@ -167,7 +167,7 @@ export class AppComponent implements OnInit, OnDestroy {
     });
 
     // show loading on navigation using LoadingService to centralize behaviour
-    this.router.events.subscribe((event: Event) => {
+    this.router.events.subscribe((event: RouterEvent) => {
       if (event instanceof NavigationStart) {
         // start nav loader (returns token)
         this._navToken = this.loadingService.show(undefined, { delayMs: 80, minVisibleMs: 120 });
@@ -477,12 +477,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   getLocalBadgeIcon(name?: string): string {
     return this.LOCAL_BADGE_ICONS[name || ''] || 'assets/Images-Transparent/Image-Badge-Reward.png';
-  }
-
-  onBadgeImgError(event: Event, name?: string): void {
-    const img = event.target as HTMLImageElement;
-    const local = this.getLocalBadgeIcon(name);
-    if (img.src !== local) img.src = local;
   }
 
   /**

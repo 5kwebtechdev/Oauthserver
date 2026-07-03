@@ -2,7 +2,7 @@ import { Injectable, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
-import { FirebaseMessaging } from '@capacitor-firebase/messaging';
+import { FirebaseMessaging, Importance, Visibility } from '@capacitor-firebase/messaging';
 import { PushNotificationApi } from '../api/push-notification.api';
 import { CustomToastService } from './custom-toast.service';
 import { CrashlyticsService } from './crashlytics.service';
@@ -52,6 +52,7 @@ export class PushNotificationService {
         return;
       }
 
+      await this.ensureDefaultAndroidChannel();
       await this.fetchAndRegisterToken();
     } catch (error) {
       console.warn('[FCM] Initialization error:', error);
@@ -66,6 +67,7 @@ export class PushNotificationService {
   async onAuthenticated(): Promise<void> {
     const stored = localStorage.getItem(STORED_TOKEN_KEY);
     if (stored) {
+      await this.ensureDefaultAndroidChannel();
       await this.sendTokenToBackend(stored);
     } else {
       await this.initialize();
@@ -132,6 +134,25 @@ export class PushNotificationService {
       await this.sendTokenToBackend(token);
     } catch (error) {
       console.warn('[FCM] Failed to fetch token:', error);
+    }
+  }
+
+  private async ensureDefaultAndroidChannel(): Promise<void> {
+    if (Capacitor.getPlatform() !== 'android') return;
+
+    try {
+      await FirebaseMessaging.createChannel({
+        id: 'superme_default',
+        name: 'SuperMeApp',
+        description: 'SuperMeApp notifications',
+        importance: Importance.Default,
+        visibility: Visibility.Public,
+        vibration: true,
+        lights: true,
+        lightColor: '#EE6621'
+      });
+    } catch (error) {
+      console.warn('[FCM] Default notification channel setup failed:', error);
     }
   }
 
