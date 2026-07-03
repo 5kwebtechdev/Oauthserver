@@ -457,6 +457,34 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Local badge icon map — used as fallback when remote iconUrl fails to load on iOS */
+  private readonly LOCAL_BADGE_ICONS: Record<string, string> = {
+    'Coin Collector':       'assets/Icons-Neutral/Icon-Badge-CoinCollector.png',
+    'Quiz Ace':             'assets/Icons-Neutral/Icon-Badge-QuizAce.png',
+    'Pet Collector':        'assets/Icons-Neutral/Icon-Badge-PetCollector.png',
+    'Content Creator':      'assets/Icons-Neutral/Icon-Badge-ContentCreator.png',
+    'Knowledge Seeker':     'assets/Icons-Neutral/Icon-Badge-KnowledgeSeeker.png',
+    'Habit Master':         'assets/Icons-Neutral/Icon-Badge-HabitMaster.png',
+    'Daily Champion':       'assets/Icons-Neutral/Icon-Badge-DailyChampion.png',
+    'Feature Explorer':     'assets/Icons-Neutral/Icon-Badge-FeatureExploerer.png',
+    'Puzzle Master':        'assets/Icons-Neutral/Icon-Badge-PuzzleMaster.png',
+    'Pet Stylist':          'assets/Icons-Neutral/Icon-Badge-PetStylist.png',
+    'Task Terminator':      'assets/Icons-Neutral/Icon-Badges-TaskTerminator.png',
+    'Learning Enthusiast':  'assets/Icons-Neutral/Icon-Badge-LearningEnthusiast.png',
+    'Social Star':          'assets/Icons-Neutral/Icon-Badge-SocialStar.png',
+    'Streak Keeper':        'assets/Icons-Neutral/Icon-Badge-StreakKeeper.png',
+  };
+
+  getLocalBadgeIcon(name?: string): string {
+    return this.LOCAL_BADGE_ICONS[name || ''] || 'assets/Images-Transparent/Image-Badge-Reward.png';
+  }
+
+  onBadgeImgError(event: Event, name?: string): void {
+    const img = event.target as HTMLImageElement;
+    const local = this.getLocalBadgeIcon(name);
+    if (img.src !== local) img.src = local;
+  }
+
   /**
    * Handle "View all Badges" click
    */
