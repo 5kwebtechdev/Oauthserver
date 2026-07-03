@@ -2,13 +2,15 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 24px;
+  width: 100%;
 }
 
 .stats-inner {
   display: flex;
   align-items: center;
-  gap: 20px;
+  justify-content: space-evenly;
+  width: 100%;
+  gap: clamp(4px, 2vw, 20px);
 }
 
 .stat-col {
@@ -16,19 +18,21 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  flex: 1;
+  min-width: 0;
 }
 
 .stat-icon {
-  width: 40px;
-  height: 40px;
+  width: clamp(28px, 8vw, 40px);
+  height: clamp(28px, 8vw, 40px);
   flex-shrink: 0;
-  aspect-ratio: 20/23;
+  object-fit: contain;
 }
 
 .stat-value {
   color: #282527;
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: clamp(11px, 3vw, 13px);
   font-weight: 600;
 }
 
@@ -37,8 +41,8 @@
   height: 36px;
   background: #6B656A;
   display: inline-block;
-  stroke-width: 1px;
-  stroke: #6B656A;
+  flex-shrink: 0;
+  opacity: 0.4;
 }
 
 .visually-hidden {

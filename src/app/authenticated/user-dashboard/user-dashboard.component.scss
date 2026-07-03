@@ -186,9 +186,7 @@ ion-content {
   &.w-full.p-0 {
     width: 100%;
     padding: 0;
-    height: 140%;
-    overflow-y: scroll;
-    padding-bottom: calc(107px + env(safe-area-inset-bottom, 0px)); // Footer + margin + extra + nav bar
+    box-sizing: border-box;
   }
 }
 
@@ -266,38 +264,39 @@ ion-content {
 
 // USER PROFILE SECTION
 .user-profile-section {
-     position: relative;
-    height: 300px;
+    position: relative;
+    height: clamp(240px, 38dvh, 340px);
     background-image: url(/assets/Images-Thumbnails/Background-Home.png);
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
     border-radius: 0 0 48px 48px;
-    /* margin-bottom: 24px; */
     flex-shrink: 0;
     display: flex;
-    /* align-items: center; */
     background-color: #fee581;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .dasboard-wrapper {
   display: flex;
-  /* padding-bottom: 8px; */
   flex-direction: column;
-  /* align-items: center; */
   gap: 24px;
   width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 
 .profile-content {
   display: flex;
-  /* width: 92vw; */
-  /* max-width: 376px; */
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  padding: 0px 16px;
+  padding: 0 16px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 // PROFILE HEADER
@@ -446,11 +445,10 @@ ion-content {
   position: relative;
   background: #fff;
   border-radius: 12px;
-  padding: 18px 20px;
+  padding: 14px 16px;
   box-shadow: 0 10px 30px rgba(20, 20, 20, 0.06);
   margin-top: 6px;
   max-width: 80vw;
-  max-height: 96px;
 
   .bubble-inner {
     padding-right: 24px;
