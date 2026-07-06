@@ -34,10 +34,9 @@
   }
 }
 
-/* ── White card: static shell, text crossfades inside ── */
+/* ── Text section: matches slide background color ── */
 .text-content {
   flex: 0 0 auto;
-  background: #ffffff;
   border-radius: 28px 28px 0 0;
   margin-top: -28px;
   position: relative;
@@ -46,6 +45,9 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  transition: background 0.6s ease-in-out;
+  box-shadow: 0 -6px 0 0 rgba(255, 255, 255, 0.25),
+              0 -12px 20px rgba(0, 0, 0, 0.12);
 }
 
 .text-body-wrapper {
@@ -80,7 +82,7 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  color: rgba(50, 50, 80, 0.65);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .text-content li {
@@ -107,13 +109,13 @@
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background-color: rgba(80, 80, 120, 0.2);
+  background-color: rgba(255, 255, 255, 0.35);
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .dots span.active {
-  background-color: rgba(80, 80, 120, 0.75);
+  background-color: rgba(255, 255, 255, 0.9);
   transform: scale(1.35);
 }
 

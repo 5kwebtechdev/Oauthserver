@@ -405,13 +405,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   private noRepeatedLetterValidator(): import('@angular/forms').ValidatorFn {
     return (control: import('@angular/forms').AbstractControl) => {
-      const v: string = (control.value || '').toLowerCase().replace(/[^a-z]/g, '');
-      const seen: Record<string, number> = {};
-      for (let i = 0; i < v.length; i++) {
-        const ch = v[i];
-        seen[ch] = (seen[ch] || 0) + 1;
-        if (seen[ch] > 3) return { repeatedLetter: true };
-      }
+      const v: string = (control.value || '').toLowerCase();
+      // Fail if any letter appears 3+ times IN A ROW (e.g. "aaa", "bbb")
+      if (/(.)\1{2}/.test(v)) return { repeatedLetter: true };
       return null;
     };
   }
@@ -441,7 +437,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (control.hasError('minlength')) return 'Name must be at least 2 characters.';
     if (control.hasError('maxlength')) return 'Name cannot exceed 50 characters.';
     if (control.hasError('pattern')) return 'Name can only include letters, spaces, apostrophes and hyphens.';
-    if (control.hasError('repeatedLetter')) return 'A single letter cannot appear more than 3 times.';
+    if (control.hasError('repeatedLetter')) return 'Name cannot have the same letter three times in a row (e.g. "aaa").';
     return 'Please enter a valid full name.';
   }
 
@@ -1944,12 +1940,21 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   // Auto-login and redirect to dashboard
   onBegin() {
-    // Get login credentials stored during registration
     const email = sessionStorage.getItem('login_email');
     const phone = sessionStorage.getItem('login_phone');
     const password = sessionStorage.getItem('login_password');
+    const isOAuth = sessionStorage.getItem('signup_via_google') === 'true';
 
-    // Build login credentials
+    // OAuth users (Apple / Google) are already authenticated — skip re-login
+    if (isOAuth || !password) {
+      this.markFirstSignupHomeOverlaysPending();
+      this.loadingService.forceHide();
+      const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+      this.router.navigate([route]);
+      return;
+    }
+
+    // Standard email/phone users — auto-login with stored credentials
     const credentials: any = { password };
     if (email) {
       credentials.email = email;
@@ -1957,13 +1962,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       credentials.phone = phone;
     }
 
-    // Auto-login
     this.authService.login(credentials).subscribe({
       next: () => {
         this.markFirstSignupHomeOverlaysPending();
         this.requestPasswordSavePrompt(credentials);
         this.loadingService.forceHide();
-        this.router.navigate(['/authed/user-dashboard']);
+        const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+        this.router.navigate([route]);
       },
       error: () => {
         this.loadingService.forceHide();
