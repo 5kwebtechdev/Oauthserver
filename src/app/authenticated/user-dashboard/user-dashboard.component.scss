@@ -198,6 +198,12 @@ ion-content {
   padding: 16px;
 }
 
+// Ad banner breaks out of the 16px side padding to go full width
+.ad-full-bleed {
+  width: calc(100% + 32px);
+  margin: 0 -16px;
+}
+
 // ── Streak Restore Banner ────────────────────────────────────────────────────
 .streak-restore-banner {
   width: 100%;

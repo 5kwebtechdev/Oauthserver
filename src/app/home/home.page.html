@@ -12,8 +12,8 @@
          alt="Slide Image" />
   </div>
 
-  <!-- White card: text crossfades, footer stays static -->
-  <div class="text-content">
+  <!-- Text section: same gradient as slide -->
+  <div class="text-content" [style.background]="slides[currentSlide].background">
     <div class="text-body-wrapper">
       <div *ngFor="let slide of slides; let i = index"
            class="text-body"

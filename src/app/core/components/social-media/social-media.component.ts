@@ -41,7 +41,8 @@ export class SocialMediaComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.isIos = this.platform.is('ios');
+    // Include iPad — platform.is('ios') may not catch iPadOS in some Capacitor versions
+    this.isIos = this.platform.is('ios') || this.platform.is('ipad');
   }
 
   open(link: { name: string; url?: string }) {
