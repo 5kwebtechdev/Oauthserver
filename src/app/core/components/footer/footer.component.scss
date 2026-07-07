@@ -25,17 +25,16 @@
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   opacity: 0.7;
   cursor: pointer;
-  /* Ensure anchors don't show default blue underline */
   text-decoration: none;
   color: inherit;
-  width: clamp(48px, 14vw, 70px);
+  width: clamp(44px, 14vw, 70px);
 
   svg {
-    width: 24px;
-    height: 24px;
+    width: var(--icon-nav, 24px);
+    height: var(--icon-nav, 24px);
   }
 }
 
@@ -54,7 +53,7 @@
 .footer-text {
   color: #6B656A;
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: clamp(10px, 2.8vw, 13px);
   font-style: normal;
   font-weight: 600;
   line-height: 140%;
@@ -63,8 +62,8 @@
 }
 
 .home-button {
-  width: 56px;
-  height: 56px;
+  width: clamp(50px, 13vw, 60px);
+  height: clamp(50px, 13vw, 60px);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -72,11 +71,11 @@
   cursor: pointer;
   position: relative;
   z-index: 100;
-  bottom:16px;
+  bottom: 14px;
 
   svg {
-    width: 88px;
-    height: 88px;
+    width: clamp(76px, 19vw, 92px);
+    height: clamp(76px, 19vw, 92px);
     position: absolute;
     z-index: 1;
   }
@@ -84,8 +83,8 @@
   &::before {
     content: '';
     position: absolute;
-    width: 56px;
-    height: 56px;
+    width: clamp(50px, 13vw, 60px);
+    height: clamp(50px, 13vw, 60px);
     background: #ffffff;
     border-radius: 50%;
     z-index: 2;
@@ -106,8 +105,8 @@
 }
 
 .home-logo {
-  width: 56px;
-  height: 56px;
+  width: clamp(50px, 13vw, 60px);
+  height: clamp(50px, 13vw, 60px);
   flex-shrink: 0;
   aspect-ratio: 1/1;
   background: url('/assets/Icons-Neutral/home-logo.png') 50% / cover no-repeat;

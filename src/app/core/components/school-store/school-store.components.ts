@@ -1,9 +1,21 @@
-import { Component, AfterViewInit, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SupermeNavigatorComponent } from '../superme-navigator/superme-navigator.component';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { environment } from '../../../../environments/environment';
+
+interface StoreCategory {
+	id: number;
+	name: string;
+	displayName: string;
+	iconUrl: string | null;
+	imageUrl: string;
+	requiresSchoolClass: boolean;
+}
 
 @Component({
 	standalone: true,
@@ -13,7 +25,7 @@ import { Router } from '@angular/router';
 	imports: [CommonModule, IonicModule, RouterModule, SupermeNavigatorComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class SchoolStoreComponent implements AfterViewInit {
+export class SchoolStoreComponent implements AfterViewInit, OnInit {
 	@ViewChild('swiperEl', { static: false }) swiperRef?: ElementRef;
 	@ViewChild('navigator', { static: false, read: ElementRef }) navigatorEl?: ElementRef;
 	currentSlide = 0;
@@ -48,7 +60,47 @@ export class SchoolStoreComponent implements AfterViewInit {
 	cartCount: number = 0;
 	packageCount: number = 0;
 
-	constructor(private router: Router, private cdr: ChangeDetectorRef) { }
+	// API-loaded categories state
+	storeCategories: StoreCategory[] = [];
+	categoriesLoading = false;
+	categoriesError = false;
+
+	constructor(private router: Router, private cdr: ChangeDetectorRef, private http: HttpClient, private authService: AuthService) { }
+
+	ngOnInit(): void {
+		this.loadCategories();
+	}
+
+	loadCategories(): void {
+		this.categoriesLoading = true;
+		this.categoriesError = false;
+		const token = this.authService.getToken();
+		const headers = new HttpHeaders({
+			'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
+			'Accept': 'application/json',
+			'x-skip-loading': '1'
+		});
+		this.http.get<StoreCategory[]>(`${environment.apiUrl}/store/categories/all`, { headers }).subscribe({
+			next: (res) => {
+				this.storeCategories = Array.isArray(res) ? res : [];
+				this.categoriesLoading = false;
+				this.cdr.detectChanges();
+			},
+			error: () => {
+				this.categoriesLoading = false;
+				this.categoriesError = true;
+				this.cdr.detectChanges();
+			}
+		});
+	}
+
+	openCategory(cat: StoreCategory): void {
+		if (cat.requiresSchoolClass) {
+			this.router.navigateByUrl(`/authed/school-store/institute-detail?categoryId=${cat.id}`).catch(() => {});
+		} else {
+			this.router.navigateByUrl(`/authed/school-store/product?category=${cat.id}`).catch(() => {});
+		}
+	}
 
 	openAddressPopup(): void {
 		this.showAddressPopup = true;

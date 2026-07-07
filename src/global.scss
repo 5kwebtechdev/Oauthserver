@@ -846,6 +846,158 @@ body.barcode-scanner-active {
       width: 46% !important;
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// RESPONSIVE UTILITY CLASSES
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Responsive text utilities ─────────────────────────────────────────────────
+.text-2xs  { font-size: var(--text-2xs)  !important; }
+.text-xs   { font-size: var(--text-xs)   !important; }
+.text-sm   { font-size: var(--text-sm)   !important; }
+.text-base { font-size: var(--text-base) !important; }
+.text-md   { font-size: var(--text-md)   !important; }
+.text-lg   { font-size: var(--text-lg)   !important; }
+.text-xl   { font-size: var(--text-xl)   !important; }
+.text-2xl  { font-size: var(--text-2xl)  !important; }
+.text-3xl  { font-size: var(--text-3xl)  !important; }
+
+// ── Responsive flex / grid helpers ───────────────────────────────────────────
+.flex-wrap   { display: flex; flex-wrap: wrap; }
+.flex-col    { display: flex; flex-direction: column; }
+.flex-row    { display: flex; flex-direction: row; }
+.flex-1      { flex: 1; }
+.flex-shrink-0 { flex-shrink: 0; }
+.items-center  { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center  { justify-content: center; }
+.gap-1  { gap: var(--space-1); }
+.gap-2  { gap: var(--space-2); }
+.gap-3  { gap: var(--space-3); }
+.gap-4  { gap: var(--space-4); }
+.gap-5  { gap: var(--space-5); }
+.gap-6  { gap: var(--space-6); }
+
+// ── Responsive images ─────────────────────────────────────────────────────────
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+// ── Responsive container ──────────────────────────────────────────────────────
+.sm-container {
+  width: 100%;
+  max-width: var(--container-sm);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+  box-sizing: border-box;
+}
+
+.md-container {
+  width: 100%;
+  max-width: var(--container-md);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+  box-sizing: border-box;
+}
+
+.lg-container {
+  width: 100%;
+  max-width: var(--container-lg);
+  margin-inline: auto;
+  padding-inline: var(--space-5);
+  box-sizing: border-box;
+}
+
+// ── Visibility helpers ────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .hide-mobile  { display: none !important; }
+}
+@media (min-width: 769px) {
+  .hide-tablet  { display: none !important; }
+}
+@media (min-width: 1025px) {
+  .hide-desktop { display: none !important; }
+}
+
+// ── Tablet & desktop layout improvements ─────────────────────────────────────
+@media (min-width: 769px) {
+
+  // Center the whole app on wide screens with a max-width constraint
+  ion-router-outlet,
+  .ion-page {
+    max-width: var(--container-md);
+    margin-inline: auto;
+  }
+
+  // Wider page padding
+  .superme-page-container {
+    padding: 24px 32px;
+  }
+
+  .superme-header {
+    font-size: var(--text-2xl);
+  }
+
+  .dashboard-content {
+    padding: 20px 24px;
+    gap: 28px;
+  }
+
+  .typical-header h3 {
+    font-size: var(--text-xl);
+  }
+}
+
+@media (min-width: 1025px) {
+  ion-router-outlet,
+  .ion-page {
+    max-width: var(--container-lg);
+  }
+
+  .superme-page-container {
+    padding: 32px 48px;
+  }
+}
+
+// ── Global heading fluid sizing ───────────────────────────────────────────────
+h1 { font-size: var(--text-3xl); }
+h2 { font-size: var(--text-2xl); }
+h3 { font-size: var(--text-xl); }
+h4 { font-size: var(--text-lg); }
+h5 { font-size: var(--text-md); }
+h6 { font-size: var(--text-base); }
+
+// Apply heading sizes only to non-Ionic headings inside .superme-page-container
+// (Ionic sets its own type scale via CSS vars)
+.superme-page-container {
+  h1 { font-size: var(--text-3xl); }
+  h2 { font-size: var(--text-2xl); }
+  h3 { font-size: var(--text-xl);  }
+  h4 { font-size: var(--text-lg);  }
+  h5 { font-size: var(--text-md);  }
+  h6 { font-size: var(--text-base);}
+  p  { font-size: var(--text-base); line-height: 1.55; }
+}
+
+// ── Touch-friendly interactive elements ───────────────────────────────────────
+button, a, [role="button"], [role="tab"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+// ── Input responsiveness ──────────────────────────────────────────────────────
+input, textarea, select {
+  font-size: max(16px, 1em); // prevents iOS auto-zoom on focus
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+// ── Table overflow guard ──────────────────────────────────────────────────────
+table {
+  width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
 // Slide-in animation for toast
 @keyframes slideInUp {
   from {

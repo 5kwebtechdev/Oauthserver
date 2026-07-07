@@ -1,2 +1,75 @@
 // For information on how to create your own theme, please see:
 // http://ionicframework.com/docs/theming/
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RESPONSIVE DESIGN TOKENS — included globally via angular.json styles array
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── SCSS Breakpoint variables (used in this file + _breakpoints.scss) ─────────
+// Components should @use 'src/theme/breakpoints' to access the mixins.
+$bp-xs:   380px;
+$bp-sm:   480px;
+$bp-md:   768px;
+$bp-lg:  1024px;
+$bp-xl:  1280px;
+$bp-2xl: 1536px;
+
+// ── CSS Custom Properties ─────────────────────────────────────────────────────
+:root {
+  // ── Typography (fluid — clamp(min, preferred-vw, max)) ────────────────────
+  --text-2xs:  clamp(9px,  2vw,   11px);   // labels, captions
+  --text-xs:   clamp(10px, 2.5vw, 12px);   // tags, meta
+  --text-sm:   clamp(12px, 3vw,   14px);   // secondary / helper
+  --text-base: clamp(13px, 3.5vw, 16px);   // body copy
+  --text-md:   clamp(15px, 4vw,   18px);   // sub-headings
+  --text-lg:   clamp(16px, 4.5vw, 20px);   // section headings
+  --text-xl:   clamp(18px, 5vw,   24px);   // page headings
+  --text-2xl:  clamp(20px, 5.5vw, 28px);   // large headings
+  --text-3xl:  clamp(22px, 6vw,   32px);   // hero / display
+
+  // ── Spacing ────────────────────────────────────────────────────────────────
+  --space-1:  clamp(4px,  1vw,   6px);
+  --space-2:  clamp(8px,  2vw,   10px);
+  --space-3:  clamp(10px, 2.5vw, 14px);
+  --space-4:  clamp(14px, 3.5vw, 18px);
+  --space-5:  clamp(18px, 4.5vw, 24px);
+  --space-6:  clamp(22px, 5.5vw, 30px);
+  --space-8:  clamp(28px, 7vw,   40px);
+
+  // ── Icon sizes ─────────────────────────────────────────────────────────────
+  --icon-xs:   clamp(14px, 3.5vw, 18px);
+  --icon-sm:   clamp(18px, 4.5vw, 22px);
+  --icon-md:   clamp(22px, 5.5vw, 26px);
+  --icon-nav:  clamp(20px, 5vw,   26px);    // footer / nav icons
+  --icon-lg:   clamp(32px, 8vw,   48px);
+  --icon-xl:   clamp(48px, 12vw,  64px);
+
+  // ── Touch targets ──────────────────────────────────────────────────────────
+  --touch-sm:  clamp(36px, 9vw,   42px);
+  --touch-md:  clamp(42px, 10.5vw, 52px);
+  --touch-lg:  clamp(50px, 12.5vw, 64px);
+
+  // ── Border radius ──────────────────────────────────────────────────────────
+  --radius-sm:   8px;
+  --radius-md:   14px;
+  --radius-lg:   20px;
+  --radius-xl:   24px;
+  --radius-2xl:  32px;
+  --radius-pill: 9999px;
+
+  // ── Component tokens ───────────────────────────────────────────────────────
+  --avatar-size:  clamp(40px, 10vw,  52px);
+  --avatar-sm:    clamp(32px, 8vw,   42px);
+  --pet-size-sm:  clamp(56px, 14vw,  72px);
+  --pet-size-md:  clamp(90px, 22vw, 130px);
+  --footer-icon:  clamp(22px, 5.5vw, 28px);
+  --nav-heading:  clamp(17px, 4.5vw, 22px);
+  --card-padding: clamp(14px, 3.5vw, 20px);
+  --card-radius:  clamp(16px, 4vw,   24px);
+
+  // ── Container widths ───────────────────────────────────────────────────────
+  --container-sm:   540px;
+  --container-md:   768px;
+  --container-lg:   960px;
+  --container-xl:  1200px;
+}

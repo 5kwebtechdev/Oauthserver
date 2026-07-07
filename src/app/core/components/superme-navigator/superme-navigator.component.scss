@@ -29,8 +29,8 @@
 
 .back-button .back-svg,
 .back-button img {
-  width: 48px;
-  height: 48px;
+  width: var(--touch-md, 48px);
+  height: var(--touch-md, 48px);
   flex-shrink: 0;
 }
 
@@ -38,7 +38,7 @@
 .navigator-heading {
   color: #282527;
   font-family: var(--font-heading);
-  font-size: 20px;
+  font-size: var(--nav-heading, 20px);
   font-style: normal;
   font-weight: 500;
   line-height: 140%;
@@ -50,24 +50,24 @@
 .navigator-root.warm {
   .back-button {
     color: #772817;
-    width: 36px;
+    width: clamp(28px, 7vw, 36px);
     margin-right: 8px;
   }
 
   .back-button .back-svg {
-    width: 24px;
+    width: clamp(20px, 5vw, 26px);
     height: auto;
   }
 
   .navigator-heading {
     color: #772817;
-    font-size: 25px;
+    font-size: clamp(20px, 5.5vw, 26px);
   }
 
   .navigator-subtext-text {
     color: #772817;
     font-family: var(--font-sans);
-    font-size: 16px;
+    font-size: var(--text-base);
     font-weight: 600;
     opacity: 1;
     line-height: 1;
@@ -108,8 +108,8 @@
 
 /* right-side action button (optional) */
 .right-button {
-  width: 48px;
-  height: 48px;
+  width: var(--touch-md, 48px);
+  height: var(--touch-md, 48px);
   padding: 0;
   border: none;
   background: transparent;
@@ -119,8 +119,8 @@
 }
 
 .right-button img {
-  width: 40px;
-  height: 40px;
+  width: clamp(34px, 8.5vw, 42px);
+  height: clamp(34px, 8.5vw, 42px);
   aspect-ratio: 1/1;
 }
 
