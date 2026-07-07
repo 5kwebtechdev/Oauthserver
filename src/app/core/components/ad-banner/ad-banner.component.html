@@ -1,32 +1,31 @@
 <ng-container *ngIf="isVisible && ads.length > 0">
-  <div class="adb" role="region" aria-label="Featured offers">
+  <div class="adb"
+    (touchstart)="onTouchStart($event)"
+    (touchend)="onTouchEnd($event)"
+    role="region"
+    aria-label="Featured offers">
 
-    <!-- Slide track -->
-    <div class="adb__viewport"
-      (touchstart)="onTouchStart($event)"
-      (touchend)="onTouchEnd($event)">
-
-      <div class="adb__track" [style.transform]="'translateX(' + (-currentIndex * 100) + '%)'">
-        <div class="adb__slide" *ngFor="let ad of ads; let i = index">
-          <img
-            class="adb__img"
-            [src]="ad.image"
-            [alt]="ad.title"
-            loading="lazy"
-            (error)="onAdImageError(i)" />
-        </div>
+    <div class="adb__scroll-track">
+      <div class="adb__card" *ngFor="let ad of ads; let i = index"
+           [class.adb__card--active]="i === currentIndex">
+        <img
+          class="adb__img"
+          [src]="ad.image"
+          [alt]="ad.title"
+          loading="lazy"
+          (error)="onAdImageError(i)" />
       </div>
     </div>
 
-    <!-- Dot indicators — only show if more than 1 ad -->
-    <div class="adb__dots" role="tablist" aria-label="Slides" *ngIf="ads.length > 1">
+    <!-- Dot indicators -->
+    <div class="adb__dots" *ngIf="ads.length > 1" role="tablist">
       <button *ngFor="let ad of ads; let i = index"
         class="adb__dot"
         [class.adb__dot--active]="i === currentIndex"
         (click)="goTo(i)"
         role="tab"
         [attr.aria-selected]="i === currentIndex"
-        [attr.aria-label]="'Go to slide ' + (i + 1)">
+        [attr.aria-label]="'Slide ' + (i + 1)">
       </button>
     </div>
 

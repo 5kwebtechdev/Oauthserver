@@ -18,15 +18,15 @@
 .mood-text {
   color: #282527;
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: var(--text-base);
   font-style: normal;
   font-weight: 400;
 
 }
 
 .mood-right {
-  width: 56px;
-  height: 56px;
+  width: var(--touch-md, 52px);
+  height: var(--touch-md, 52px);
   flex-shrink: 0;
 }
 
@@ -64,12 +64,12 @@
 
 .mood-options {
   display: flex;
-  gap: 8px;
+  gap: clamp(4px, 1.5vw, 10px);
 
   button {
-    width: 48px;
-    height: 48px;
-    border-radius: 24px;
+    width: var(--touch-sm, 42px);
+    height: var(--touch-sm, 42px);
+    border-radius: var(--radius-pill);
     border: 1px solid rgba(0, 0, 0, 0.06);
     background: #fff;
     display: flex;
@@ -86,7 +86,7 @@
 }
 
 .mood-progress {
-  width: 234px;
+  width: min(234px, 55vw);
   height: 3px;
   background: rgb(196 104 104 / 26%);
   border-radius: 8px;
@@ -104,9 +104,9 @@
 }
 
 .mood-emoji {
-  font-size: 36px;
-  width: 56px;
-  height: 56px;
+  font-size: clamp(28px, 7vw, 36px);
+  width: var(--touch-md, 52px);
+  height: var(--touch-md, 52px);
   display: flex;
   align-items: center;
   justify-content: center;

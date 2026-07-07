@@ -41,4 +41,3 @@ export class ReelComingSoonComponent {
 		this.router.navigate([dashboard], { replaceUrl: true });
 	}
 }
-

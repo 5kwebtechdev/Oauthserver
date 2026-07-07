@@ -17,12 +17,23 @@
             </ng-template>
 
             <ng-container *ngFor="let f of fields">
-                <div class="institute-field" [style.opacity]="selectedValues[f.key] ? '1' : '0.5'">
+                <div class="institute-field"
+                    [class.field--selected]="selectedValues[f.key]"
+                    [class.field--locked]="(f.key === 'city' && !selectedValues['state']) || (f.key === 'school' && !selectedValues['city'])">
+
                     <div class="field-label">{{ f.label }}</div>
                     <div class="input-select" role="button" tabindex="0" [attr.aria-label]="f.aria" (click)="openFieldPopup(f.key)">
-                        <span class="placehold">{{ f.placeholder }}</span>
+                        <span class="placehold" [class.placehold--chosen]="selectedValues[f.key]">{{ f.placeholder }}</span>
                         <span class="input-icon"><ng-container *ngTemplateOutlet="chev"></ng-container></span>
                     </div>
+
+                    <!-- lock hint -->
+                    <span *ngIf="f.key === 'city' && !selectedValues['state']" class="field-lock-hint">
+                        Select state first
+                    </span>
+                    <span *ngIf="f.key === 'school' && !selectedValues['city']" class="field-lock-hint">
+                        Select city first
+                    </span>
 
                     <div *ngIf="f.key === 'school'" class="helper-text">We need this to show the correct catalog.<br>
                         <span class="request-link">Can't find your school? <a role="button" tabindex="0" (click)="openRequestPopup()">Request to Add</a></span>
@@ -35,7 +46,49 @@
                 <div class="field-popup" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
                     <div class="popup-handle"></div>
                     <div class="popup-title">{{ getActiveLabel() }}</div>
-                    <div class="popup-list">
+
+                    <!-- ── School popup (API driven) ── -->
+                    <ng-container *ngIf="activeField === 'school'">
+
+                        <!-- Loading -->
+                        <div *ngIf="schoolsLoading" class="popup-state-wrap">
+                            <div class="popup-spinner"></div>
+                            <span class="popup-state-text">Loading schools…</span>
+                        </div>
+
+                        <!-- Error -->
+                        <div *ngIf="!schoolsLoading && schoolsError" class="popup-state-wrap">
+                            <span class="popup-state-text popup-state-text--error">Failed to load schools</span>
+                            <button class="popup-retry" (click)="loadSchools()">Retry</button>
+                        </div>
+
+                        <!-- Empty -->
+                        <div *ngIf="!schoolsLoading && !schoolsError && schools.length === 0" class="popup-state-wrap">
+                            <span class="popup-state-text">No schools found</span>
+                            <button class="popup-option popup-option--link" (click)="closeFieldPopup(); openRequestPopup()">
+                                + Request to Add Your School
+                            </button>
+                        </div>
+
+                        <!-- School list -->
+                        <div *ngIf="!schoolsLoading && !schoolsError && schools.length > 0" class="popup-list">
+                            <button *ngFor="let s of schools"
+                                class="popup-option popup-option--school"
+                                [class.popup-option--selected]="selectedSchool?.id === s.id"
+                                (click)="selectSchoolItem(s)">
+                                <div class="school-opt-info">
+                                    <span class="school-opt-name">{{ s.name }}</span>
+                                    <span class="school-opt-branch" *ngIf="s.branch">{{ s.branch }}</span>
+                                </div>
+                                <svg *ngIf="selectedSchool?.id === s.id" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                    <path d="M3 9l4 4 8-8" stroke="#90214D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </ng-container>
+
+                    <!-- ── State / City / Class popup (static list) ── -->
+                    <div *ngIf="activeField !== 'school'" class="popup-list">
                         <button *ngFor="let o of getActiveOptions()" class="popup-option" (click)="selectOption(o)">{{ o }}</button>
                     </div>
                 </div>

@@ -4,6 +4,31 @@
     align-items: flex-start;
     gap: 12px;
     align-self: stretch;
+    transition: opacity 0.2s ease;
+
+    &.field--locked {
+        opacity: 0.45;
+        pointer-events: none; // prevents tap on locked field
+    }
+
+    &.field--selected .input-select {
+        border-color: #90214D;
+        background: rgba(144, 33, 77, 0.04);
+    }
+}
+
+.placehold--chosen {
+    color: #282527 !important;
+    opacity: 1 !important;
+    font-weight: 600 !important;
+}
+
+.field-lock-hint {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(144, 33, 77, 0.6);
+    margin-top: -6px;
 }
 
 p,h1{
@@ -152,20 +177,23 @@ box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
 }
 
 .field-popup{
-width: 100%;
-     padding: 16px;
+    width: 100%;
+    padding: 16px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 24px;
+    gap: 16px;
     border-radius: 32px 32px 0px 0px;
     background: #FFF;
     box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
-    /* show immediately and above other layers */
     transform: translateY(0);
     animation: none;
     z-index: 20001;
     outline: 1px solid rgba(144,33,77,0.04);
+    /* constrain height so list scrolls */
+    max-height: 65dvh;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .popup-handle{
@@ -183,23 +211,141 @@ width: 100%;
     font-weight: 600;
 }
 
-.popup-list{ width: 100%; display: flex; flex-direction: column; gap: 16px; }
+.popup-list{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    flex: 1;
+    /* hide scrollbar visually but keep scroll functional */
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+}
 
 .popup-option{
     background: transparent;
     border: none;
+    border-bottom: 1px solid rgba(40, 37, 39, 0.06);
     text-align: left;
-    padding: 8px 4px;
+    padding: 14px 4px;
+    width: 100%;
     color: #282527;
     font-family: var(--font-sans);
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    &:last-child { border-bottom: none; }
+    &:active { opacity: 0.6; }
 }
 
 @keyframes popupSlideUp{
     from { transform: translateY(100%); }
     to { transform: translateY(0); }
+}
+
+/* ── Loading / error / empty states ─────────────────────────────────── */
+.popup-state-wrap {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 0;
+}
+
+.popup-state-text {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(40, 37, 39, 0.55);
+    text-align: center;
+
+    &--error { color: #bb2124; }
+}
+
+.popup-retry {
+    background: transparent;
+    border: 1px solid #90214D;
+    border-radius: 8px;
+    color: #90214D;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 20px;
+    cursor: pointer;
+}
+
+/* Spinner */
+.popup-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(144, 33, 77, 0.15);
+    border-top-color: #90214D;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── School option ───────────────────────────────────────────────────── */
+.popup-option--school {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 4px;
+    width: 100%;
+
+    .school-opt-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .school-opt-name {
+        font-family: var(--font-sans);
+        font-size: 15px;
+        font-weight: 700;
+        color: #282527;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    .school-opt-branch {
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 500;
+        color: rgba(40, 37, 39, 0.55);
+    }
+
+    &.popup-option--selected {
+        .school-opt-name { color: #90214D; }
+    }
+
+    &:not(:last-child) {
+        border-bottom: 1px solid rgba(40, 37, 39, 0.06);
+    }
+}
+
+/* Request link option */
+.popup-option--link {
+    color: #90214D;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 12px 4px;
+    text-align: center;
+    width: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-sans);
 }
 
 /* Request new school modal styles */

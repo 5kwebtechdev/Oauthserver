@@ -109,8 +109,8 @@
   }
 
   &__pet {
-    width: 130px;
-    height: 130px;
+    width: var(--pet-size-md, 130px);
+    height: var(--pet-size-md, 130px);
     flex-shrink: 0;
   }
 
@@ -126,7 +126,7 @@
   &__msg {
     color: #fff;
     font-family: var(--font-sans, 'Nunito', sans-serif);
-    font-size: 18px;
+    font-size: var(--text-md);
     font-weight: 600;
     line-height: 1.6;
     margin: 0;
@@ -319,8 +319,8 @@ ion-content {
     gap: 12px;
 
     .user-avatar {
-      width: 48px;
-      height: 48px;
+      width: var(--avatar-size, 48px);
+      height: var(--avatar-size, 48px);
       flex-shrink: 0;
       aspect-ratio: 1/1;
 
@@ -332,8 +332,8 @@ ion-content {
 
       img,
       app-img {
-        width: 48px;
-        height: 48px;
+        width: var(--avatar-size, 48px);
+        height: var(--avatar-size, 48px);
         object-fit: cover;
         display: block;
         border-radius: 50%;
@@ -369,8 +369,8 @@ ion-content {
       cursor: pointer;
 
       .tool-icon {
-        width: 40px;
-        height: 40px;
+        width: clamp(34px, 8.5vw, 42px);
+        height: clamp(34px, 8.5vw, 42px);
         aspect-ratio: 1/1;
       }
 
@@ -489,10 +489,10 @@ ion-content {
 
 // DIGITAL PET
 .digital-pet {
-  margin-top: 20px;
+  margin-top: 16px;
 
   img {
-    width: 68px;
+    width: clamp(56px, 14vw, 72px);
     height: auto;
   }
 }

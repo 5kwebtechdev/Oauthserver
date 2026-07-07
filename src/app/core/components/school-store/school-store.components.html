@@ -30,45 +30,28 @@
                 </div>
             </div>
 
-            <div class="store-cards">
-                <a class="store-card" role="link" [routerLink]="['/authed','school-store','institute-detail']" aria-label="Open Boys Uniforms details">
-                    <h3>Boys Uniforms</h3>
-                    <img src="assets/School-assets/Boys Uniform.png" alt="Boys Uniforms">
-                </a>
+            <!-- Categories loading state -->
+            <div *ngIf="categoriesLoading" class="cat-loading">
+                <div class="cat-spinner"></div>
+                <span class="cat-loading-text">Loading categories…</span>
+            </div>
 
-                <div class="store-card">
-                    <h3>Girls Uniforms</h3>
-                    <img src="assets/School-assets/Girls Uniform.png" alt="Girls Uniforms">
-                </div>
+            <!-- Categories error state -->
+            <div *ngIf="!categoriesLoading && categoriesError" class="cat-error">
+                <span class="cat-error-text">Failed to load categories</span>
+                <button class="cat-retry" (click)="loadCategories()">Retry</button>
+            </div>
 
-                <a class="store-card" role="link" [routerLink]="['/authed','school-store','product']" [queryParams]="{ category: 'textbooks' }" aria-label="Open Textbooks">
-                    <h3>Textbooks</h3>
-                    <img src="assets/School-assets/text-books.png" alt="Textbooks">
-                </a>
-
-                <div class="store-card-2">
-                <div class="store-card-in-2  w-100">
-                    <h3>Footwears</h3>
-                    <div class="store-img">
-                    <img src="assets/School-assets/Footwear.png" alt="Footwears">
-                    </div>
-                  </div>
-                    <div class="store-card-in-2  w-100">
-                    <h3>Accessories</h3>
-                    <div class="store-img">
-                    <img src="assets/School-assets/Accessories.png" alt="Accessories">
-                         </div>
-                </div>
-                </div>
-
-                <div class="store-card">
-                    <h3>Entrance Exam Books</h3>
-                    <img src="assets/School-assets/Entrance Exam.png" alt="Entrance Exam Books">
-                </div>
-
-                <div class="store-card">
-                    <h3>General Books</h3>
-                    <img src="assets/School-assets/gernal-books.png" alt="General Books">
+            <!-- Dynamic category grid from API -->
+            <div *ngIf="!categoriesLoading && !categoriesError && storeCategories.length" class="store-cards">
+                <div class="store-card" role="button" tabindex="0"
+                    *ngFor="let cat of storeCategories"
+                    (click)="openCategory(cat)"
+                    (keyup.enter)="openCategory(cat)"
+                    [attr.aria-label]="cat.displayName">
+                    <h3>{{ cat.displayName }}</h3>
+                    <img [src]="cat.imageUrl" [alt]="cat.displayName"
+                         onerror="this.style.display='none'">
                 </div>
             </div>
             <div class="footer-exchange" role="contentinfo" aria-label="Store footer features">

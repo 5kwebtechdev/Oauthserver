@@ -91,6 +91,7 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
         this.isVisible = true;
         this.currentIndex = 0;
         this.startAutoPlay();
+        setTimeout(() => this.updateTrackPosition(), 50);
       },
       error: () => {
         // Hide silently on error; no placeholder.
@@ -104,6 +105,7 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
     if (this.ads.length > 1) {
       this.timer = setInterval(() => {
         this.currentIndex = (this.currentIndex + 1) % this.ads.length;
+        this.updateTrackPosition();
       }, this.intervalMs);
     }
   }
@@ -119,6 +121,7 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
     if (index < 0 || index >= this.ads.length || index === this.currentIndex) return;
     this.currentIndex = index;
     this.startAutoPlay();
+    this.updateTrackPosition();
   }
 
   onTouchStart(event: TouchEvent): void {
@@ -136,6 +139,19 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
       this.currentIndex = (this.currentIndex - 1 + this.ads.length) % this.ads.length;
     }
     this.startAutoPlay();
+    this.updateTrackPosition();
+  }
+
+  updateTrackPosition(): void {
+    const el = document.querySelector('.adb__scroll-track') as HTMLElement;
+    if (!el) return;
+    const containerWidth = (el.parentElement?.clientWidth ?? el.clientWidth);
+    // card = 82% of container, gap = 10px
+    const cardWidth = containerWidth * 0.82;
+    const gap = 10;
+    const peekOffset = (containerWidth - cardWidth) / 2; // centres active card
+    const translateX = peekOffset - this.currentIndex * (cardWidth + gap);
+    el.style.transform = `translateX(${translateX}px)`;
   }
 
   onAdImageError(index: number): void {
