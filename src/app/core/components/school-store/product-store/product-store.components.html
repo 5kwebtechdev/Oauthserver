@@ -64,7 +64,7 @@
 
                             <div class="product-info">
                                 <h3 class="product-tag"
-                                    *ngIf="p.tag && selectedCategory !== 'textbooks' && p.category !== 'textbooks'">{{
+                                    *ngIf="p.tag && !isTextbooksSelected">{{
                                     p.tag }}</h3>
 
                                 <h3 class="product-title">{{ p.title }}</h3>
@@ -76,7 +76,7 @@
                                     </div>
 
                                     <superme-button
-                                        *ngIf="selectedCategory === 'textbooks' || p.category === 'textbooks'"
+                                        *ngIf="isTextbooksSelected"
                                         type="magenta" text="Add To Bag"
                                         (click)="addToBag(p); $event.stopPropagation()"></superme-button>
                                 </div>

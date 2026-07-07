@@ -19,7 +19,7 @@
             <ng-container *ngFor="let f of fields">
                 <div class="institute-field"
                     [class.field--selected]="selectedValues[f.key]"
-                    [class.field--locked]="(f.key === 'city' && !selectedValues['state']) || (f.key === 'school' && !selectedValues['city'])">
+                    [class.field--locked]="(f.key === 'city' && !selectedValues['state']) || (f.key === 'school' && !selectedValues['city']) || (f.key === 'class' && !selectedSchool)">
 
                     <div class="field-label">{{ f.label }}</div>
                     <div class="input-select" role="button" tabindex="0" [attr.aria-label]="f.aria" (click)="openFieldPopup(f.key)">
@@ -33,6 +33,9 @@
                     </span>
                     <span *ngIf="f.key === 'school' && !selectedValues['city']" class="field-lock-hint">
                         Select city first
+                    </span>
+                    <span *ngIf="f.key === 'class' && !selectedSchool" class="field-lock-hint">
+                        Select school first
                     </span>
 
                     <div *ngIf="f.key === 'school'" class="helper-text">We need this to show the correct catalog.<br>
@@ -87,8 +90,23 @@
                         </div>
                     </ng-container>
 
-                    <!-- ── State / City / Class popup (static list) ── -->
-                    <div *ngIf="activeField !== 'school'" class="popup-list">
+                    <!-- ── Class popup (API driven) ── -->
+                    <ng-container *ngIf="activeField === 'class'">
+                        <div *ngIf="classesLoading" class="popup-state-wrap">
+                            <div class="popup-spinner"></div>
+                            <span class="popup-state-text">Loading classes…</span>
+                        </div>
+                        <div *ngIf="!classesLoading && classesError" class="popup-state-wrap">
+                            <span class="popup-state-text popup-state-text--error">Failed to load classes</span>
+                            <button class="popup-retry" (click)="selectedSchool && loadClasses(selectedSchool.id)">Retry</button>
+                        </div>
+                        <div *ngIf="!classesLoading && !classesError" class="popup-list">
+                            <button *ngFor="let o of classOptions" class="popup-option" (click)="selectOption(o)">{{ o }}</button>
+                        </div>
+                    </ng-container>
+
+                    <!-- ── State / City popup (static list) ── -->
+                    <div *ngIf="activeField !== 'school' && activeField !== 'class'" class="popup-list">
                         <button *ngFor="let o of getActiveOptions()" class="popup-option" (click)="selectOption(o)">{{ o }}</button>
                     </div>
                 </div>

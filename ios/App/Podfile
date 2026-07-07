@@ -29,7 +29,7 @@ end
 def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
-  pod 'FirebaseAnalytics'
+  pod 'CapacitorCommunityAppleSignIn', :path => '../../node_modules/@capacitor-community/apple-sign-in'
   pod 'CapacitorFirebaseAnalytics/Analytics', :path => '../../node_modules/@capacitor-firebase/analytics'
   pod 'CapacitorFirebaseMessaging', :path => '../../node_modules/@capacitor-firebase/messaging'
   pod 'CapacitorMlkitBarcodeScanning', :path => '../../node_modules/@capacitor-mlkit/barcode-scanning'
@@ -44,7 +44,6 @@ def capacitor_pods
   pod 'CapacitorShare', :path => '../../node_modules/@capacitor/share'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
   pod 'CodetrixStudioCapacitorGoogleAuth', :path => '../../node_modules/@codetrix-studio/capacitor-google-auth'
-  pod 'CapacitorCommunityAppleSignIn', :path => '../../node_modules/@capacitor-community/apple-sign-in'
   pod 'CordovaPlugins', :path => '../capacitor-cordova-ios-plugins'
   pod 'CordovaPluginsResources', :path => '../capacitor-cordova-ios-plugins'
 end
