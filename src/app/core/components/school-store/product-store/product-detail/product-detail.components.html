@@ -3,6 +3,17 @@
     <superme-navigator [heading]="heading" [rightActions]="[{ type: 'cart', count: cartCount, alt: 'My cart' }]" (back)="goBack()" (rightActionClick)="handleRightAction($event)">
     </superme-navigator>
 
+    <!-- Loading / error states -->
+    <div *ngIf="productLoading" class="cat-loading">
+      <div class="cat-spinner"></div>
+      <span class="cat-loading-text">Loading product…</span>
+    </div>
+    <div *ngIf="!productLoading && productError" class="cat-error">
+      <span class="cat-error-text">Failed to load product</span>
+      <button class="cat-retry" (click)="retryLoadProduct()">Retry</button>
+    </div>
+
+    <ng-container *ngIf="!productLoading && !productError && product">
     <!-- Product detail content goes here -->
     <div class="product-detail-view">
       <div #swiper class="product-swiper" (pointerdown)="onPointerDown($event)" (pointermove)="onPointerMove($event)"
@@ -24,19 +35,18 @@
     <div class="product-info-section">
       <div class="product-name-price d-flex flex-column gap-1">
         <div class="title-n-name d-flex flex-column gap-1 align-start">
-          <h1 class="product-title">{{ product?.title || heading }}</h1>
-          <p class="product-subtitle">
-            {{ isBook ? (product?.subtitle || '') : (product?.tag || '') }}
+          <h1 class="product-title">{{ product?.name || heading }}</h1>
+          <p class="product-subtitle" *ngIf="product?.tag">
+            {{ product?.tag }}
           </p>
         </div>
         <div class="price-n-quantity d-flex justify-content-between">
           <div class="price d-flex gap-2">
             <span class="discounted-price">
-              {{ product?.price ?? product?.discountedPrice ? ( (product.price ?? product.discountedPrice)) :
-              '₹799' }}
+              {{ formatCurrency(product?.sellingPrice) }}
             </span>
-            <span *ngIf="product?.originalPrice || product?.mrp" class="original-price">
-              {{ (product?.originalPrice ?? product?.mrp) }}
+            <span *ngIf="product && product.mrp > product.sellingPrice" class="original-price">
+              {{ formatCurrency(product?.mrp) }}
             </span>
           </div>
           <div class="quantity-selector d-flex align-center gap-2">
@@ -52,46 +62,48 @@
       </div>
 
       <!--product size-->
-      <div *ngIf="!isBook" class="product-size-section d-flex flex-column gap-3">
+      <div *ngIf="sizes.length" class="product-size-section d-flex flex-column gap-3">
         <div class="size-descrip d-flex flex-column">
           <div class="d-flex justify-content-between">
-            <h2>Size: {{ selectedSize }}</h2>
+            <h2>Size: {{ selectedSizeLabel?.toUpperCase() }}</h2>
             <div class="d-flex gap-1">
               <p>Not sure?</p>
               <a role="button" tabindex="0" (click)="openSizeGuide()">Check size guide</a>
             </div>
           </div>
-          <p>Recommended for <br />Age 3-4</p>
+          <p *ngIf="product?.ageGroup">Recommended for <br />{{ product?.ageGroup }}</p>
         </div>
         <div class="size-selector">
-          <button *ngFor="let s of sizes" class="size-tag" [class.selected]="selectedSize === s"
-            [class.out-of-stock]="isOutOfStock(s)" (click)="selectSize(s)" [attr.aria-pressed]="selectedSize === s"
-            [disabled]="isOutOfStock(s)" [attr.aria-disabled]="isOutOfStock(s)">
-            <h2>{{ s }}</h2>
+          <button *ngFor="let s of sizes" class="size-tag" [class.selected]="selectedSizeLabel === s.sizeLabel"
+            [class.out-of-stock]="isOutOfStock(s.sizeLabel)" (click)="selectSize(s.sizeLabel)"
+            [attr.aria-pressed]="selectedSizeLabel === s.sizeLabel"
+            [disabled]="isOutOfStock(s.sizeLabel)" [attr.aria-disabled]="isOutOfStock(s.sizeLabel)">
+            <h2>{{ s.sizeLabel.toUpperCase() }}</h2>
           </button>
         </div>
-        <h2 style="color: #bb2124">Hurry up! Only 3 left in Size 2.</h2>
+        <h2 *ngIf="selectedSizeEntry && selectedSizeEntry.stock > 0 && selectedSizeEntry.stock <= 5" style="color: #bb2124">
+          Hurry up! Only {{ selectedSizeEntry.stock }} left in Size {{ selectedSizeEntry.sizeLabel.toUpperCase() }}.
+        </h2>
       </div>
 
       <!--book-detail-->
-      <div class="book-info d-flex align-items-center justify-content-between">
-        <div class="book-detail">
-          <p>Subject</p>
-          <h2>Math</h2>
-        </div>
-        <div class="book-detail">
-          <p>Language</p>
-          <h2>English</h2>
-        </div>
-        <div class="book-detail">
+      <div *ngIf="isBook" class="book-info d-flex align-items-center justify-content-between">
+        <div class="book-detail" *ngIf="product?.pageCount">
           <p>Pages</p>
-          <h2>140</h2>
+          <h2>{{ product?.pageCount }}</h2>
         </div>
-        <div class="book-detail">
+        <div class="book-detail" *ngIf="product?.coverType">
           <p>Binding</p>
-          <h2>Soft Cover</h2>
+          <h2>{{ product?.coverType }}</h2>
         </div>
-
+        <div class="book-detail" *ngIf="product?.type">
+          <p>Type</p>
+          <h2>{{ product?.type }}</h2>
+        </div>
+        <div class="book-detail" *ngIf="product?.material">
+          <p>Material</p>
+          <h2>{{ product?.material }}</h2>
+        </div>
       </div>
       <!-- address-detail: show filled address or an empty-state prompting for pincode -->
       <ng-container *ngIf="selectedAddress; else emptyAddress">
@@ -103,7 +115,7 @@
               <h2>{{ selectedAddress }}</h2>
               <a role="button" tabindex="0" (click)="openAddressPopup()">Change</a>
             </div>
-            <span class="shipping-date" style="font-size: 16px">Get it by Mon, 2nd Jan</span>
+            <span class="shipping-date" style="font-size: 16px" *ngIf="deliveryDateText">Get it by {{ deliveryDateText }}</span>
           </div>
         </div>
       </ng-container>
@@ -122,7 +134,7 @@
             </div>
           </div>
           <div class="pincode-message" *ngIf="pincodeAvailable !== null">
-            <h2 style="color:#90214D" *ngIf="pincodeAvailable">Get it by Mon, 2nd Jan</h2>
+            <h2 style="color:#90214D" *ngIf="pincodeAvailable">Get it by {{ deliveryDateText || 'the estimated date' }}</h2>
             <h2 style="color: #BB2124;" *ngIf="pincodeAvailable === false">Not available for {{ lastCheckedPincode }}
               pincode</h2>
           </div>
@@ -137,7 +149,7 @@
           <h2 class="footer-text">Official School Partner</h2>
         </div>
 
-        <div class="footer-item">
+        <div class="footer-item" *ngIf="product?.exchangeAvailable !== false">
           <img src="assets/School-assets/Easy Exchange.png" alt="Easy Exchange" />
           <h2 class="footer-text">Easy 7 day Return & Exchange</h2>
         </div>
@@ -157,12 +169,13 @@
           <ion-icon name="caret-down" [class.open]="detailsExpanded"></ion-icon>
         </div>
         <div class="product-detail-body">
+          <p *ngIf="product?.details || product?.description">{{ product?.details || product?.description }}</p>
           <ul>
-            <li>
-              <strong>Material:</strong> 65% Polyester, 35% Cotton (Durable).
-            </li>
-            <li><strong>Fit:</strong> Regular School Fit.</li>
-            <li><strong>Care:</strong> Machine Wash.</li>
+            <li *ngIf="product?.material"><strong>Material:</strong> {{ product?.material }}</li>
+            <li *ngIf="product?.brandName"><strong>Brand:</strong> {{ product?.brandName }}</li>
+            <li *ngIf="product?.manufacturer"><strong>Manufacturer:</strong> {{ product?.manufacturer }}</li>
+            <li *ngIf="product?.sellerName"><strong>Seller:</strong> {{ product?.sellerName }}</li>
+            <li *ngIf="product?.countryOfOrigin"><strong>Country of Origin:</strong> {{ product?.countryOfOrigin }}</li>
           </ul>
         </div>
       </div>
@@ -171,11 +184,12 @@
     <!--purchase-bar-->
     <div class="product-purchase-bar">
       <span class="discounted-price">
-        {{ product?.price ?? product?.discountedPrice ? ((product.price ?? product.discountedPrice)) : '₹799' }}
+        {{ formatCurrency(product?.sellingPrice) }}
       </span>
       <superme-button class="page-cta" type="magenta" text="Add To Bag" large (click)="addToCart()"></superme-button>
     </div>
+    </ng-container>
   </main>
 
-  <size-guide [sizeChart]="sizeChart" [selectedSize]="selectedSize" [unit]="unit" [outOfStockSizes]="outOfStockSizes" [isOpen]="showSizeGuide" [heading]="heading" [productTitle]="product?.title || 'Classic White Half-Sleeve Shirt'" [productSubtitle]="product?.tag || 'St. Xavier’s High School'" [discountedPrice]="product?.price ?? product?.discountedPrice ? (product.price ?? product.discountedPrice) : '₹799'" [originalPrice]="product?.originalPrice ?? product?.mrp ?? '₹999'" [productImage]="images[0] || 'assets/School-assets/temp/Shirt-l.jpg'" (sizeSelected)="selectSize($event)" (unitSelected)="selectUnit($event)" (closeModal)="closeSizeGuide()"></size-guide>
+  <size-guide [sizeChart]="sizeChart" [selectedSize]="sizeGuideSelectedSize" [unit]="unit" [isOpen]="showSizeGuide" [heading]="heading" [productTitle]="product?.name || 'Classic White Half-Sleeve Shirt'" [productSubtitle]="product?.tag || 'St. Xavier’s High School'" [discountedPrice]="formatCurrency(product?.sellingPrice) || '₹799'" [originalPrice]="formatCurrency(product?.mrp) || '₹999'" [productImage]="images[0] || 'assets/School-assets/temp/Shirt-l.jpg'" (sizeSelected)="onSizeGuideSizeSelected($event)" (unitSelected)="selectUnit($event)" (closeModal)="closeSizeGuide()"></size-guide>
 </ion-content>

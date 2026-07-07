@@ -1,12 +1,54 @@
 import { Component, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, IonContent } from '@ionic/angular';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { AddressInputComponent } from '../address-input/address-input.components';
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
+import { AuthService } from '../../../services/auth.service';
+import { environment } from '../../../../../environments/environment';
+
+interface StoreCategory {
+  id: number;
+  name: string;
+  displayName: string;
+  iconUrl: string | null;
+  imageUrl: string;
+  requiresSchoolClass: boolean;
+}
+
+interface StoreSubCategory {
+  name: string;
+  imageUrl: string | null;
+}
+
+interface ApiProduct {
+  id: number;
+  name: string;
+  thumbnailUrl: string;
+  categoryName: string;
+  schoolName: string | null;
+  tag: string;
+  mrp: number;
+  sellingPrice: number;
+  discountText: string;
+  mandatory: boolean;
+  inStock: boolean;
+  brandName: string | null;
+  pageCount: string;
+}
+
+interface ProductPage {
+  content: ApiProduct[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  last: boolean;
+}
 
 // top-level Product type used in component and template
 type Product = {
@@ -17,9 +59,7 @@ type Product = {
   price: string;
   mrp: string;
   img: string;
-  subcategory?: string;
   outOfStock?: boolean;
-  category?: string;
   badge?: string;
 };
 
@@ -69,248 +109,200 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
     return s.length > 20 ? s.slice(0, 20) + '...' : s;
   }
 
-  constructor(private router: Router, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private modalCtrl: ModalController) { }
+  constructor(private router: Router, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private modalCtrl: ModalController, private http: HttpClient, private authService: AuthService) { }
 
-  // product categories
-  categories = [
-    { id: 'boys', label: 'Boys Uniforms' },
-    { id: 'girls', label: 'Girls Uniforms' },
-    { id: 'textbooks', label: 'Textbooks' },
-    { id: 'footwear', label: 'Footwears' },
-    { id: 'accessories', label: 'Accessories' }
-  ];
+  // product categories, loaded from the store categories API
+  categories: { id: number; label: string; requiresSchoolClass: boolean }[] = [];
+  categoriesLoading = false;
+  categoriesError = false;
 
-  selectedCategory = this.categories[1].id; // default to 'Girls Uniforms' as in figma
+  selectedCategory: number | null = null;
 
-  // sub-categories for the second slider (simple defaults)
-  subCategories = [
-    { id: 'all', label: 'All' },
-    { id: 'summer', label: 'Summer' },
-    { id: 'winter', label: 'Winter' },
-    { id: 'sport', label: 'Sport' }
-  ];
+  // school + class the user picked on the "find your school" page, forwarded here via query params
+  schoolId: number | null = null;
+  className: string | null = null;
 
-  selectedSubCategory = this.subCategories[0].id;
-
-  // simple product list for cards (keeps existing uniform/cloth dummy data and adds textbooks)
-  products: Product[] = [
-    {
-      id: 'shirt-1',
-      tag: 'Official School Wear',
-      title: 'Classic White Half-Sleeve Shirt',
-      price: '₹449',
-      mrp: '₹600',
-      img: 'assets/School-assets/temp/Shirt.jpg',
-      subcategory: 'summer'
-    },
-    {
-      id: 'shorts-1',
-      tag: 'Official School Wear',
-      title: 'Navy Blue Formal Shorts',
-      price: '₹399',
-      mrp: '₹500',
-      img: 'assets/School-assets/temp/Shorts.jpg',
-      subcategory: 'summer'
-    },
-    {
-      id: 'tshirt-1',
-      tag: 'Official School Wear',
-      title: 'House T-Shirt (White/Red)',
-      price: '₹349',
-      mrp: '₹500',
-      img: 'assets/School-assets/temp/T-Shirt.jpg',
-      subcategory: 'summer'
-    },
-    {
-      id: 'trouser-1',
-      tag: 'Official School Wear',
-      title: 'Classic Formal Trousers',
-      price: '₹699',
-      mrp: '₹850',
-      img: 'assets/School-assets/temp/Trousers.jpg',
-      subcategory: 'all'
-    },
-    {
-      id: 'blazer-1',
-      tag: 'Official School Wear',
-      title: 'Classic Blazer',
-      price: '₹699',
-      mrp: '₹850',
-      img: 'assets/School-assets/temp/Blazer.jpg',
-      outOfStock: true,
-      subcategory: 'all'
-    },
-    {
-      id: 'track-1',
-      category: 'girls',
-      tag: 'Official School Wear',
-      title: 'Comfort Sports Track Pants',
-      price: '₹449',
-      mrp: '₹600',
-      img: 'assets/School-assets/temp/Gemini_Generated_Image_pi8q46pi8q46pi8q 1.jpg',
-      outOfStock: true,
-      subcategory: 'sport'
-    },
-    // --- Boys uniform samples to avoid empty state when selecting Boys > All ---
-    {
-      id: 'boys-shirt-1',
-      category: 'boys',
-      tag: 'Official School Wear',
-      title: 'Classic White Half-Sleeve Shirt',
-      price: '₹449',
-      mrp: '₹600',
-      img: 'assets/School-assets/temp/Shirt.jpg',
-      subcategory: 'summer'
-    },
-    {
-      id: 'boys-trouser-1',
-      category: 'boys',
-      tag: 'Official School Wear',
-      title: 'Classic Formal Trousers',
-      price: '₹699',
-      mrp: '₹850',
-      img: 'assets/School-assets/temp/Trousers.jpg',
-      subcategory: 'all'
-    },
-    {
-      id: 'boys-tshirt-1',
-      category: 'boys',
-      tag: 'Official School Wear',
-      title: 'House T-Shirt (White/Red)',
-      price: '₹349',
-      mrp: '₹500',
-      img: 'assets/School-assets/temp/T-Shirt.jpg',
-      subcategory: 'summer'
-    },
-    {
-      id: 'boys-shorts-1',
-      category: 'boys',
-      tag: 'Official School Wear',
-      title: 'Navy Blue Formal Shorts',
-      price: '₹399',
-      mrp: '₹500',
-      img: 'assets/School-assets/temp/Shorts.jpg',
-      subcategory: 'summer'
-    },
-    {
-      id: 'boys-shirt-l',
-      category: 'boys',
-      tag: 'Official School Wear',
-      title: 'Classic White Shirt (Large)',
-      price: '₹499',
-      mrp: '₹650',
-      img: 'assets/School-assets/temp/Shirt-l.jpg',
-      subcategory: 'all'
-    },
-    {
-      id: 'boys-blazer-1',
-      category: 'boys',
-      tag: 'Official School Wear',
-      title: 'Classic Blazer',
-      price: '₹699',
-      mrp: '₹850',
-      img: 'assets/School-assets/temp/Blazer.jpg',
-      outOfStock: true,
-      subcategory: 'all'
-    },
-    // --- Textbooks (new dummy data) ---
-    {
-      id: 'maths-class7',
-      category: 'textbooks',
-      tag: 'Mandatory',
-      title: 'Mathematics -\nClass 7',
-      subtitle: 'NCERT - 2025 Edition',
-      price: '₹65',
-      mrp: '₹80',
-      img: 'assets/School-assets/temp/Maths Book.jpg',
-      subcategory: 'textbooks'
-    },
-    {
-      id: 'science-class7',
-      category: 'textbooks',
-      tag: 'Mandatory',
-      title: 'Science -\nClass 7',
-      subtitle: 'NCERT - 2025 Edition',
-      price: '₹65',
-      mrp: '₹80',
-      img: 'assets/School-assets/temp/Maths Book.jpg',
-      subcategory: 'textbooks'
-    },
-    {
-      id: 'english-honeycomb',
-      category: 'textbooks',
-      tag: '',
-      title: 'Honeycomb -\nEnglish',
-      subtitle: 'NCERT - 2024 Edition',
-      price: '₹65',
-      mrp: '₹80',
-      img: 'assets/School-assets/temp/English.jpg',
-      subcategory: 'textbooks'
-    },
-    {
-      id: 'single-line-notebook',
-      category: 'textbooks',
-      tag: 'Mandatory',
-      title: 'Single Line Notebooks (A4) - Pack of 6',
-      subtitle: 'Classmate - 172 Pages',
-      price: '₹249',
-      mrp: '₹350',
-      img: 'assets/School-assets/temp/Notebook.jpg',
-      subcategory: 'notesbook'
-    }
-  ];
-
-  // Return products filtered by selected subcategory. 'all' returns all products.
-  get visibleProducts() {
-    if (!this.products) return [];
-    let filtered = this.products.slice();
-    // filter by selected category if present
-    if (this.selectedCategory) {
-      filtered = filtered.filter(p => (p.category || '') === this.selectedCategory);
-    }
-    // then filter by subcategory
-    if (this.selectedSubCategory && this.selectedSubCategory !== 'all') {
-      filtered = filtered.filter(p => (p.subcategory || '') === this.selectedSubCategory);
-    }
-    return filtered;
+  // true when the currently selected top-level category is "Textbooks"
+  get isTextbooksSelected(): boolean {
+    const label = this.categories.find(c => c.id === this.selectedCategory)?.label;
+    return (label || '').trim().toLowerCase() === 'textbooks';
   }
 
-  selectCategory(c: { id: string; label: string }): void {
+  // true when the currently selected category is scoped to a specific school + class
+  get selectedCategoryRequiresSchoolClass(): boolean {
+    return !!this.categories.find(c => c.id === this.selectedCategory)?.requiresSchoolClass;
+  }
+
+  loadCategories(initialCategoryId?: number): void {
+    this.categoriesLoading = true;
+    this.categoriesError = false;
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({
+      'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
+      'Accept': 'application/json',
+      'x-skip-loading': '1'
+    });
+    this.http.get<StoreCategory[]>(`${environment.apiUrl}/store/categories/all`, { headers }).subscribe({
+      next: (res) => {
+        const apiCategories = Array.isArray(res) ? res : [];
+        this.categories = apiCategories.map(c => ({ id: c.id, label: c.displayName, requiresSchoolClass: c.requiresSchoolClass }));
+        this.categoriesLoading = false;
+        const matched = initialCategoryId != null && this.categories.some(c => c.id === initialCategoryId);
+        this.selectedCategory = matched ? initialCategoryId! : (this.categories[0]?.id ?? null);
+        if (this.selectedCategory != null) {
+          this.loadSubCategories(this.selectedCategory);
+          this.loadProducts();
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.categoriesLoading = false;
+        this.categoriesError = true;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // sub-categories for the second slider, loaded from the store sub-categories API
+  subCategories: { id: string; label: string }[] = [
+    { id: 'all', label: 'All' }
+  ];
+  subCategoriesLoading = false;
+  subCategoriesError = false;
+
+  selectedSubCategory: string = this.subCategories[0].id;
+
+  loadSubCategories(categoryId: number): void {
+    this.subCategoriesLoading = true;
+    this.subCategoriesError = false;
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({
+      'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
+      'Accept': 'application/json',
+      'x-skip-loading': '1'
+    });
+    this.http.get<StoreSubCategory[]>(`${environment.apiUrl}/store/categories/${categoryId}/sub-categories`, { headers }).subscribe({
+      next: (res) => {
+        const apiSubCategories = Array.isArray(res) ? res : [];
+        this.subCategories = [
+          { id: 'all', label: 'All' },
+          ...apiSubCategories.map(s => ({ id: s.name, label: s.name }))
+        ];
+        this.subCategoriesLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.subCategoriesLoading = false;
+        this.subCategoriesError = true;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // product list for cards, loaded from the store products API
+  products: Product[] = [];
+  productsLoading = false;
+  productsError = false;
+  productsPage = 0;
+  productsTotalPages = 0;
+  private readonly productsPageSize = 20;
+
+  // Kept so the template's existing `visibleProducts` binding keeps working;
+  // filtering now happens server-side via categoryId/subCategory query params.
+  get visibleProducts(): Product[] {
+    return this.products;
+  }
+
+  private formatCurrency(value: number): string {
+    if (value == null || isNaN(value)) return '';
+    return `₹${Number.isInteger(value) ? value : value.toFixed(2)}`;
+  }
+
+  loadProducts(page: number = 0): void {
+    if (this.selectedCategory == null) {
+      this.products = [];
+      return;
+    }
+    this.productsLoading = true;
+    this.productsError = false;
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({
+      'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
+      'Accept': 'application/json',
+      'x-skip-loading': '1'
+    });
+    let params = new HttpParams()
+      .set('categoryId', String(this.selectedCategory))
+      .set('page', String(page))
+      .set('size', String(this.productsPageSize));
+    if (this.selectedSubCategory && this.selectedSubCategory !== 'all') {
+      params = params.set('subCategory', this.selectedSubCategory);
+    }
+    // school + class only apply to categories scoped to a specific school (e.g. School Uniform, Textbooks)
+    if (this.selectedCategoryRequiresSchoolClass && this.schoolId != null && this.className) {
+      params = params.set('schoolId', String(this.schoolId)).set('className', this.className);
+    }
+    this.http.get<ProductPage>(`${environment.apiUrl}/store/products`, { headers, params }).subscribe({
+      next: (res) => {
+        const content = Array.isArray(res?.content) ? res.content : [];
+        const mapped: Product[] = content.map(p => ({
+          id: String(p.id),
+          tag: p.tag || undefined,
+          title: p.name,
+          subtitle: p.brandName || p.schoolName || undefined,
+          price: this.formatCurrency(p.sellingPrice),
+          mrp: this.formatCurrency(p.mrp),
+          img: p.thumbnailUrl,
+          outOfStock: !p.inStock,
+          badge: p.mandatory ? 'Mandatory' : undefined
+        }));
+        this.products = page === 0 ? mapped : [...this.products, ...mapped];
+        this.productsPage = res?.number ?? page;
+        this.productsTotalPages = res?.totalPages ?? 0;
+        this.productsLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.productsLoading = false;
+        this.productsError = true;
+        if (page === 0) this.products = [];
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  selectCategory(c: { id: number; label: string }): void {
     // ignore click if user was dragging to scroll
     if ((this as any)._isDragging) return;
-    this.selectedCategory = c.id;
-    // when switching to textbooks, adjust subcategories
-    if (c.id === 'textbooks') {
-      this.subCategories = [
-        { id: 'all', label: 'All' },
-        { id: 'textbooks', label: 'Textbooks' },
-        { id: 'notesbook', label: 'Notesbook' }
-      ];
-      this.selectedSubCategory = 'all';
-    } else {
-      // restore defaults for other categories
-      this.subCategories = [
-        { id: 'all', label: 'All' },
-        { id: 'summer', label: 'Summer' },
-        { id: 'winter', label: 'Winter' },
-        { id: 'sport', label: 'Sport' }
-      ];
-      this.selectedSubCategory = 'all';
+    if (this.selectedCategory === c.id) return;
+
+    // categories scoped to a school (e.g. School Uniform) need a school + class first;
+    // if we don't have one yet, send the user to pick it rather than showing an unfiltered list
+    const requiresSchoolClass = !!this.categories.find(cat => cat.id === c.id)?.requiresSchoolClass;
+    if (requiresSchoolClass && (this.schoolId == null || !this.className)) {
+      this.router.navigateByUrl(`/authed/school-store/institute-detail?categoryId=${c.id}`).catch(() => {});
+      return;
     }
+
+    this.selectedCategory = c.id;
+    this.selectedSubCategory = 'all';
+    this.loadSubCategories(c.id);
+    this.loadProducts();
     this.cdr.detectChanges();
   }
 
   selectSubCategory(s: { id: string; label: string }): void {
     if ((this as any)._isDragging) return;
+    if (this.selectedSubCategory === s.id) return;
     this.selectedSubCategory = s.id;
+    this.loadProducts();
     this.cdr.detectChanges();
   }
 
   openProduct(p: any): void {
     if (!p || p.outOfStock) return;
-    // navigate to product detail and pass title in history state for heading
-    const url = `/authed/school-store/product/${encodeURIComponent(p.id)}`;
-    try { this.router.navigateByUrl(url, { state: { product: p } }); } catch (e) { this.router.navigateByUrl(url); }
+    // product detail page fetches full product data by id from the API
+    this.router.navigateByUrl(`/authed/school-store/product/${encodeURIComponent(p.id)}`);
   }
 
   addToBag(p: any): void {
@@ -356,20 +348,19 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
 
   ngOnInit(): void {
     try {
-      const cat = this.route.snapshot.queryParamMap.get('category');
-      if (cat) {
-        // set selected category and adjust subcategories if textbooks
-        this.selectedCategory = cat;
-        if (cat === 'textbooks') {
-          this.subCategories = [
-            { id: 'all', label: 'All' },
-            { id: 'textbooks', label: 'Textbooks' },
-            { id: 'notesbook', label: 'Notesbook' }
-          ];
-          this.selectedSubCategory = 'all';
-        }
-      }
-    } catch (e) { }
+      const params = this.route.snapshot.queryParamMap;
+      const cat = params.get('category');
+      const categoryId = cat ? Number(cat) : NaN;
+
+      const school = params.get('schoolId');
+      const schoolIdNum = school ? Number(school) : NaN;
+      this.schoolId = isNaN(schoolIdNum) ? null : schoolIdNum;
+      this.className = params.get('className');
+
+      this.loadCategories(isNaN(categoryId) ? undefined : categoryId);
+    } catch (e) {
+      this.loadCategories();
+    }
   }
   // Drag flag used to suppress clicks while user is scrolling
   private _isDragging = false;

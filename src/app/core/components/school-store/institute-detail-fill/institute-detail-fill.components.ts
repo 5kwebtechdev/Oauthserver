@@ -5,7 +5,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { environment } from '../../../../../environments/environment';
 
@@ -69,11 +69,19 @@ export interface SchoolItem {
 })
 export class InstituteDetailFillComponent {
 
+  // categoryId this page was opened for (from Student-Store), forwarded to the product page on submit
+  categoryId: number | null = null;
+
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private http: HttpClient,
     private authService: AuthService
-  ) { }
+  ) {
+    const cat = this.route.snapshot.queryParamMap.get('categoryId');
+    const parsed = cat ? Number(cat) : NaN;
+    this.categoryId = isNaN(parsed) ? null : parsed;
+  }
 
   goBack(): void {
     this.router.navigate(['/authed/user-dashboard']).catch(() => this.router.navigateByUrl('/authed'));
@@ -100,19 +108,24 @@ export class InstituteDetailFillComponent {
   schoolsError = false;
   selectedSchool: SchoolItem | null = null;
 
-  // ── Dynamic options (state / city / class) ───────────────────────────────
+  // ── Dynamic options (state / city) ────────────────────────────────────────
   get options(): Record<string, string[]> {
     const selectedState = this.selectedValues['state'];
     return {
       state: ALL_STATES,
-      city:  selectedState ? (INDIA_STATES[selectedState] ?? []) : [],
-      class: ['Nursery', 'KG', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']
+      city:  selectedState ? (INDIA_STATES[selectedState] ?? []) : []
     };
   }
+
+  // ── Classes for the selected school (API driven) ──────────────────────────
+  classOptions: string[] = [];
+  classesLoading = false;
+  classesError = false;
 
   openFieldPopup(key: string): void {
     if (key === 'city'   && !this.selectedValues['state']) return;
     if (key === 'school' && !this.selectedValues['city'])  return;
+    if (key === 'class'  && !this.selectedSchool)          return;
 
     this.activeField     = key;
     this.showFieldPopup  = true;
@@ -155,12 +168,46 @@ export class InstituteDetailFillComponent {
   }
 
   selectSchoolItem(school: SchoolItem): void {
+    const prevSchoolId = this.selectedSchool?.id;
     this.selectedSchool = school;
     const label = school.branch ? `${school.name} — ${school.branch}` : school.name;
     this.selectedValues['school'] = label;
     const f = this.fields.find(x => x.key === 'school');
     if (f) f.placeholder = label;
+    if (prevSchoolId !== school.id) {
+      this.resetField('class');
+      this.loadClasses(school.id);
+    }
     this.closeFieldPopup();
+  }
+
+  // ── Classes API (per selected school) ─────────────────────────────────────
+  loadClasses(schoolId: number): void {
+    this.classesLoading = true;
+    this.classesError = false;
+    this.classOptions = [];
+
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({
+      'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token}`,
+      'Accept': 'application/json',
+      'x-skip-loading': '1'
+    });
+
+    this.http
+      .get<{ name: string[] }[]>(`${environment.apiUrl}/user/schools/${schoolId}/classes`, { headers })
+      .subscribe({
+        next: (res) => {
+          this.classOptions = Array.isArray(res)
+            ? res.map(c => c?.name?.[0]).filter((n): n is string => !!n)
+            : [];
+          this.classesLoading = false;
+        },
+        error: () => {
+          this.classesLoading = false;
+          this.classesError = true;
+        }
+      });
   }
 
   // ── Generic option select (state / city / class) ─────────────────────────
@@ -200,6 +247,7 @@ export class InstituteDetailFillComponent {
 
   getActiveOptions(): string[] {
     if (!this.activeField || this.activeField === 'school') return [];
+    if (this.activeField === 'class') return this.classOptions;
     return this.options[this.activeField] ?? [];
   }
 
@@ -217,10 +265,19 @@ export class InstituteDetailFillComponent {
 
   sendRequest(): void {
     this.closeRequestPopup();
-    this.router.navigate(['/authed', 'school-store', 'product']).catch(() => {});
+    this.goToProductStore();
   }
 
   enterStore(): void {
-    this.router.navigate(['/authed', 'school-store', 'product']).catch(() => {});
+    this.goToProductStore();
+  }
+
+  private goToProductStore(): void {
+    const queryParams: Record<string, string> = {};
+    if (this.categoryId != null) queryParams['category'] = String(this.categoryId);
+    if (this.selectedSchool) queryParams['schoolId'] = String(this.selectedSchool.id);
+    if (this.selectedValues['class']) queryParams['className'] = this.selectedValues['class'];
+
+    this.router.navigate(['/authed', 'school-store', 'product'], { queryParams }).catch(() => {});
   }
 }

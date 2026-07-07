@@ -5,13 +5,66 @@ import {
   ViewChild,
   ElementRef,
   HostListener,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SupermeNavigatorComponent } from '../../../superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../../superme-button/superme-button.component';
 import { SizeGuideComponent } from '../size-guide/size-guide.component';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { AuthService } from '../../../../services/auth.service';
+import { environment } from '../../../../../../environments/environment';
+
+interface ApiProductSize {
+  sizeLabel: string;
+  mrp: number;
+  sellingPrice: number;
+  stock: number;
+  available: boolean;
+}
+
+interface ApiProductDetail {
+  id: number;
+  name: string;
+  description: string;
+  details: string;
+  categoryName: string;
+  schoolName: string | null;
+  tag: string;
+  ageGroup: string | null;
+  mandatory: boolean;
+  images: string[];
+  mrp: number;
+  sellingPrice: number;
+  discountText: string;
+  gstClass: string;
+  stock: number;
+  sizeChartTemplate: string;
+  sizeChartInImageUrl: string | null;
+  sizeChartCmImageUrl: string | null;
+  sizes: ApiProductSize[];
+  brandName: string | null;
+  pageCount: string;
+  rulingType: string;
+  size: string;
+  coverType: string;
+  packOf: number | null;
+  type: string;
+  material: string;
+  productColor: string;
+  colorName: string;
+  inkColor: string;
+  materialType: string;
+  sellerName: string;
+  sellerLicenseNo: string;
+  sellerAddress: string;
+  manufacturer: string;
+  countryOfOrigin: string;
+  deliveryDays: number;
+  exchangeAvailable: boolean;
+}
 
 @Component({
   standalone: true,
@@ -28,7 +81,9 @@ import { Router } from '@angular/router';
 })
 export class ProductDetailComponent implements OnInit, AfterViewInit {
   heading = 'Product';
-  product: any = null;
+  product: ApiProductDetail | null = null;
+  productLoading = false;
+  productError = false;
   isBook = false;
   // local cart count displayed on navigator; replace with shared cart service integration as needed
   cartCount = 0;
@@ -38,15 +93,16 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
   images: string[] = [];
   currentIndex = 0;
   quantity = 1;
-  // Available sizes for this product
-  sizes: number[] = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26];
-  selectedSize = 2;
-  outOfStockSizes: number[] = [6, 8, 16];
+  // Purchasable sizes for this product, from the product detail API
+  sizes: ApiProductSize[] = [];
+  selectedSizeLabel: string | null = null;
   isDragging = false;
   private startX = 0;
   private containerWidth = 0;
   // product details dropdown state
   detailsExpanded = false;
+  // estimated delivery date, computed from product.deliveryDays
+  deliveryDateText: string | null = null;
 
   @ViewChild('swiper', { static: true }) swiperRef!: ElementRef<HTMLElement>;
   @ViewChild('slides', { static: true }) slidesRef!: ElementRef<HTMLElement>;
@@ -57,10 +113,27 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
   // pincode check state for empty address UI
   lastCheckedPincode: string | null = null;
   pincodeAvailable: boolean | null = null;
-  // Size chart data (will be loaded from backend in future)
-  sizeChart: Array<{ size: number; chest: number; length: number; sleeve: number; age: string }> = [];
+  // Size chart data for the "Check size guide" measurement modal.
+  // The product detail API doesn't provide a chest/length/sleeve breakdown, so this
+  // reference table stays static until a dedicated size-chart endpoint exists.
+  sizeChart: Array<{ size: number; chest: number; length: number; sleeve: number; age: string }> = [
+    { size: 1, chest: 28, length: 30, sleeve: 12, age: '3-4 yrs' },
+    { size: 2, chest: 30, length: 32, sleeve: 13, age: '5-6 yrs' },
+    { size: 3, chest: 32, length: 34, sleeve: 14, age: '7-8 yrs' },
+    { size: 4, chest: 34, length: 36, sleeve: 15, age: '9-10 yrs' },
+    { size: 5, chest: 36, length: 38, sleeve: 16, age: '11-12 yrs' },
+    { size: 6, chest: 38, length: 40, sleeve: 17, age: '13-14 yrs' },
+  ];
+  // selected size for the size-guide measurement modal (independent of the real purchasable sizes below)
+  sizeGuideSelectedSize = 2;
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private http: HttpClient,
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
 
   openSizeGuide(): void {
@@ -84,69 +157,94 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
     this.quantity = this.quantity - 1;
   }
 
-  selectSize(size: number): void {
-    if (this.isOutOfStock(size)) return;
-    this.selectedSize = size;
+  selectSize(sizeLabel: string): void {
+    if (this.isOutOfStock(sizeLabel)) return;
+    this.selectedSizeLabel = sizeLabel;
   }
 
   selectUnit(u: 'in' | 'cm'): void {
     this.unit = u;
   }
 
-  isOutOfStock(size: number): boolean {
-    return this.outOfStockSizes.includes(size);
+  onSizeGuideSizeSelected(size: number): void {
+    this.sizeGuideSelectedSize = size;
+  }
+
+  isOutOfStock(sizeLabel: string): boolean {
+    const entry = this.sizes.find(s => s.sizeLabel === sizeLabel);
+    return !entry || !entry.available || entry.stock <= 0;
+  }
+
+  get selectedSizeEntry(): ApiProductSize | null {
+    return this.sizes.find(s => s.sizeLabel === this.selectedSizeLabel) || null;
   }
 
   ngOnInit(): void {
-    try {
-      const s: any = history && (history as any).state;
-      if (s && s.product) {
-        this.product = s.product;
-        this.heading = this.product.title || this.heading;
-        // detect book-like categories and set flag
-        try {
-          const cat = (this.product?.category || this.product?.type || '').toString().toLowerCase();
-          this.isBook = ['textbook', 'textbooks', 'notebook', 'notebooks', 'book', 'books'].includes(cat);
-        } catch (e) { this.isBook = false; }
-        // use product images if provided
-        if (this.product?.images && Array.isArray(this.product.images) && this.product.images.length) {
-          this.images = this.product.images;
-        } else if (this.product?.image) {
-          this.images = [this.product.image];
-        }
-      } else if (s && s.title) {
-        this.heading = s.title;
-      }
-    } catch (e) { }
-
-    // fallback images when product has none
-    if (!this.images || !this.images.length) {
-      const src = 'assets/School-assets/temp/Shirt-l.jpg';
-      this.images = [src, src, src];
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.loadProduct(id);
     }
-
-    this.loadSizeChartFromBackend();
   }
 
+  retryLoadProduct(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.loadProduct(id);
+    }
+  }
 
-  private loadSizeChartFromBackend(): void {
-    // Dummy data — will be replaced by backend response
-    this.sizeChart = [
-      { size: 1, chest: 28, length: 30, sleeve: 12, age: '3-4 yrs' },
-      { size: 2, chest: 30, length: 32, sleeve: 13, age: '5-6 yrs' },
-      { size: 3, chest: 32, length: 34, sleeve: 14, age: '7-8 yrs' },
-      { size: 4, chest: 34, length: 36, sleeve: 15, age: '9-10 yrs' },
-      { size: 5, chest: 36, length: 38, sleeve: 16, age: '11-12 yrs' },
-      { size: 6, chest: 38, length: 40, sleeve: 17, age: '13-14 yrs' },
-    ];
+  loadProduct(id: string): void {
+    this.productLoading = true;
+    this.productError = false;
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({
+      'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
+      'Accept': 'application/json',
+      'x-skip-loading': '1'
+    });
+    this.http.get<ApiProductDetail>(`${environment.apiUrl}/store/products/${id}`, { headers }).subscribe({
+      next: (res) => {
+        this.product = res;
+        this.heading = res.name || this.heading;
+        this.isBook = (res.categoryName || '').trim().toLowerCase() === 'textbooks' || !!res.pageCount;
 
-    // keep `sizes` in sync (used by size-tag buttons elsewhere)
-    try {
-      this.sizes = this.sizeChart.map((r) => r.size);
-      if (!this.sizes.includes(this.selectedSize)) {
-        this.selectedSize = this.sizes[0] || this.selectedSize;
+        this.images = Array.isArray(res.images) && res.images.length
+          ? res.images
+          : ['assets/School-assets/temp/Shirt-l.jpg'];
+
+        this.sizes = Array.isArray(res.sizes) ? res.sizes : [];
+        const firstAvailable = this.sizes.find(s => s.available && s.stock > 0) || this.sizes[0];
+        this.selectedSizeLabel = firstAvailable ? firstAvailable.sizeLabel : null;
+
+        this.deliveryDateText = this.computeDeliveryDate(res.deliveryDays);
+
+        this.productLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.productLoading = false;
+        this.productError = true;
+        this.cdr.detectChanges();
       }
-    } catch (e) { }
+    });
+  }
+
+  private computeDeliveryDate(deliveryDays: number | null | undefined): string | null {
+    if (deliveryDays == null || isNaN(deliveryDays)) return null;
+    const d = new Date();
+    d.setDate(d.getDate() + deliveryDays);
+    const weekday = d.toLocaleDateString('en-US', { weekday: 'short' });
+    const day = d.getDate();
+    const suffix = (day % 10 === 1 && day !== 11) ? 'st'
+      : (day % 10 === 2 && day !== 12) ? 'nd'
+      : (day % 10 === 3 && day !== 13) ? 'rd' : 'th';
+    const month = d.toLocaleDateString('en-US', { month: 'short' });
+    return `${weekday}, ${day}${suffix} ${month}`;
+  }
+
+  formatCurrency(value: number | null | undefined): string {
+    if (value == null || isNaN(value)) return '';
+    return `₹${Number.isInteger(value) ? value : value.toFixed(2)}`;
   }
 
   // UI-only pincode check placeholder used by the template
@@ -233,7 +331,7 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
       const added = Number(this.quantity) || 1;
       this.cartCount = (this.cartCount || 0) + added;
     } catch (e) { }
-    console.log('Add to bag:', { size: this.selectedSize, quantity: this.quantity, cartCount: this.cartCount });
+    console.log('Add to bag:', { size: this.selectedSizeLabel, quantity: this.quantity, cartCount: this.cartCount });
   }
 
   private setTranslate(px: number, noTransition = false): void {
