@@ -15,6 +15,7 @@ import { SupermeButtonComponent } from '../../../superme-button/superme-button.c
 import { SizeGuideComponent } from '../size-guide/size-guide.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../../services/auth.service';
+import { CartService } from '../../../../services/cart.service';
 import { environment } from '../../../../../../environments/environment';
 
 interface ApiProductSize {
@@ -85,11 +86,14 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
   productLoading = false;
   productError = false;
   isBook = false;
-  // local cart count displayed on navigator; replace with shared cart service integration as needed
   cartCount = 0;
-  // selectedAddress: holds short address string or null when user has no address
-  // Set to null to show the empty-state UI by default for now
   selectedAddress: string | null = null;
+  // schoolId passed as query param from product-store
+  schoolId: number | null = null;
+  // Add to cart UI state
+  addingToCart = false;
+  addToCartSuccess = false;
+  addToCartError = '';
   images: string[] = [];
   currentIndex = 0;
   quantity = 1;
@@ -132,7 +136,8 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
     private route: ActivatedRoute,
     private http: HttpClient,
     private authService: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private cartService: CartService
   ) { }
 
 
@@ -180,6 +185,13 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+    // Sync cart badge with shared CartService
+    this.cartService.count$.subscribe(n => { this.cartCount = n; this.cdr.detectChanges(); });
+    this.cartService.refresh();
+
+    const schoolParam = this.route.snapshot.queryParamMap.get('schoolId');
+    this.schoolId = schoolParam ? Number(schoolParam) || null : null;
+
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadProduct(id);
@@ -326,12 +338,56 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
   }
 
   addToCart(): void {
-    // placeholder - integrate real cart logic here
-    try {
-      const added = Number(this.quantity) || 1;
-      this.cartCount = (this.cartCount || 0) + added;
-    } catch (e) { }
-    console.log('Add to bag:', { size: this.selectedSizeLabel, quantity: this.quantity, cartCount: this.cartCount });
+    if (!this.product) return;
+    if (this.addingToCart) return;
+
+    // If product has sizes, a size must be selected
+    if (this.sizes.length > 0 && !this.selectedSizeLabel) {
+      this.addToCartError = 'Please select a size first.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.addingToCart = true;
+    this.addToCartError = '';
+    this.addToCartSuccess = false;
+    this.cdr.detectChanges();
+
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({
+      'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'x-skip-loading': '1'
+    });
+
+    const body: Record<string, any> = {
+      productId: this.product.id,
+      quantity: this.quantity || 1,
+    };
+    if (this.selectedSizeLabel) body['sizeLabel'] = this.selectedSizeLabel;
+    if (this.schoolId != null) body['schoolId'] = this.schoolId;
+
+    this.http.post(`${environment.apiUrl}/cart/items`, body, { headers }).subscribe({
+      next: () => {
+        this.addingToCart = false;
+        this.addToCartSuccess = true;
+        this.cartService.increment(this.quantity || 1);
+        this.cartCount = this.cartService.count;
+        this.cdr.detectChanges();
+        // Reset success state after 3 seconds
+        setTimeout(() => {
+          this.addToCartSuccess = false;
+          this.cdr.detectChanges();
+        }, 3000);
+      },
+      error: (err) => {
+        this.addingToCart = false;
+        const msg = err?.error?.message || err?.error?.error || null;
+        this.addToCartError = msg || 'Failed to add to bag. Please try again.';
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   private setTranslate(px: number, noTransition = false): void {

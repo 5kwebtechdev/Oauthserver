@@ -1661,9 +1661,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
               // After login, user session is set by AuthService
               // Navigate to appropriate dashboard with loader hidden
               const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
-              if (route.includes('user-dashboard')) {
-                this.markFirstSignupHomeOverlaysPending();
-              }
               setTimeout(() => {
                 this.loadingService.forceHide();
                 this.router.navigate([route]);
@@ -1803,9 +1800,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) {}
         this.clearGoogleSignupSession();
         const route = role === 'parent' ? '/authed/parent-account' : '/authed/user-dashboard';
-        if (route.includes('user-dashboard')) {
-          this.markFirstSignupHomeOverlaysPending();
-        }
         setTimeout(() => {
           this.loadingService.forceHide();
           this.router.navigate([route], { replaceUrl: true });
@@ -1947,7 +1941,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // OAuth users (Apple / Google) are already authenticated — skip re-login
     if (isOAuth || !password) {
-      this.markFirstSignupHomeOverlaysPending();
       this.loadingService.forceHide();
       const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
       this.router.navigate([route]);
@@ -1964,7 +1957,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     this.authService.login(credentials).subscribe({
       next: () => {
-        this.markFirstSignupHomeOverlaysPending();
         this.requestPasswordSavePrompt(credentials);
         this.loadingService.forceHide();
         const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
@@ -2016,16 +2008,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     return this.email?.value || '';
-  }
-
-  private markFirstSignupHomeOverlaysPending(): void {
-    const userId = this.authService.getUserId();
-    try {
-      sessionStorage.setItem('sm_first_signup_overlay_pending', '1');
-      if (userId) {
-        localStorage.setItem(`sm_first_signup_overlay_pending_${userId}`, '1');
-      }
-    } catch (e) {}
   }
 
   private requestPasswordSavePrompt(credentials: { email?: string; phone?: string; password?: string }): void {

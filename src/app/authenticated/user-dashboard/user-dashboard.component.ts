@@ -85,7 +85,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   overlayPetMood: PetMood = 'happy';
   private overlayQueue: Array<'bonus-coins' | 'mood-prompt' | 'daily-login' | 'streak-milestone'> = [];
   private overlayQueueBuilt = false;
-  private readonly overlayStoragePrefix = 'sm_overlay_v2';
 
   // Recent habits and tasks
   public recentHabits: Habit[] = [];
@@ -625,19 +624,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
           };
           const nextOverlay = typeMap[resp.overlayType] ?? null;
 
-          if (nextOverlay === 'mood-prompt' && !this.isFirstSignupHomeOpen()) {
-            this.activeOverlay = null;
-            this.loadHomeHeader();
-            return;
-          }
-
-          // Client-side guard: skip if already shown today / already dismissed
-          if (resp.overlayType && this.wasOverlayShownLocally(resp.overlayType)) {
-            this.petMessageApi.dismissHomeOverlay(resp.overlayType).subscribe();
-            this.pollHomeOverlay();
-            return;
-          }
-
           this.activeOverlay = nextOverlay;
 
           if (resp.message) {
@@ -660,7 +646,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         } else {
           // No more overlays — show normal home screen
           this.activeOverlay = null;
-          this.clearFirstSignupOverlayPending();
           this.loadHomeHeader();
         }
       },
@@ -706,9 +691,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     const apiType = apiTypeMap[this.activeOverlay];
 
     if (apiType) {
-      // Record locally so it never re-shows after logout+login same day
-      this.markOverlayShownLocally(apiType);
-      // POST dismiss, then re-poll for next pending overlay
       this.petMessageApi.dismissHomeOverlay(apiType).subscribe({
         next:  () => this.pollHomeOverlay(),
         error: () => this.pollHomeOverlay(),
@@ -718,104 +700,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Store overlay-shown flag in localStorage (survives logout) */
-  private markOverlayShownLocally(type: ApiOverlayType): void {
-    const userId = this.getOverlayUserId();
-    try {
-      if (type === 'DAILY_LOGIN') {
-        // Key includes today's date — auto-expires tomorrow
-        localStorage.setItem(`sm_daily_login_${userId}`, this.getTodayStr());
-      } else if (type === 'BONUS_COINS') {
-        // One-time ever flag
-        localStorage.setItem(`sm_bonus_coins_${userId}`, '1');
-      } else if (type === 'STREAK_MILESTONE') {
-        // Store the streak value so same milestone doesn't repeat
-        localStorage.setItem(`sm_streak_ms_${userId}_${this.userStreaks}`, '1');
-      }
-    } catch { /* ignore storage errors */ }
-  }
-
-  /** Returns true if this overlay was already shown and should be skipped */
-  private wasOverlayShownLocally(type: ApiOverlayType): boolean {
-    const userId = this.getOverlayUserId();
-    try {
-      if (type === 'DAILY_LOGIN') {
-        return localStorage.getItem(`sm_daily_login_${userId}`) === this.getTodayStr();
-      }
-      if (type === 'BONUS_COINS') {
-        return !!localStorage.getItem(`sm_bonus_coins_${userId}`);
-      }
-      if (type === 'STREAK_MILESTONE') {
-        return !!localStorage.getItem(`sm_streak_ms_${userId}_${this.userStreaks}`);
-      }
-    } catch { /* ignore */ }
-    return false;
-  }
 
   onOverlayMoodSelected(mood: string): void {
     this.selectedMood = mood;
-    this.clearFirstSignupOverlayPending();
-    // Mood saved via existing MoodService — MOOD_PROMPT overlay clears on backend
-    // after the mood is saved; re-poll for next overlay
     this.pollHomeOverlay();
-  }
-
-  private getOverlayUserId(): string {
-    const authUserData = this.authService.getUserData?.();
-    const profile = this.userService.getUserProfile();
-    const id = authUserData?.id ?? authUserData?.userId ?? profile?.userId ?? this.authService.getUserId();
-    return id ? String(id) : 'guest';
-  }
-
-  private getTodayStr(): string {
-    const d = new Date();
-    return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-  }
-
-  private getOverlayKey(name: string): string {
-    return `${this.overlayStoragePrefix}_${this.getOverlayUserId()}_${name}`;
-  }
-
-  private getOverlayItem(name: string): string | null {
-    try {
-      return localStorage.getItem(this.getOverlayKey(name));
-    } catch {
-      return null;
-    }
-  }
-
-  private setOverlayItem(name: string, value: string): void {
-    try {
-      localStorage.setItem(this.getOverlayKey(name), value);
-    } catch {}
-  }
-
-  private removeOverlayItem(name: string): void {
-    try {
-      localStorage.removeItem(this.getOverlayKey(name));
-    } catch {}
-  }
-
-  private isFirstSignupHomeOpen(): boolean {
-    return !!this.getFirstSignupPendingFlag();
-  }
-
-  private getFirstSignupPendingFlag(): string | null {
-    const userId = this.getOverlayUserId();
-    try {
-      return sessionStorage.getItem('sm_first_signup_overlay_pending')
-        || localStorage.getItem(`sm_first_signup_overlay_pending_${userId}`);
-    } catch {
-      return null;
-    }
-  }
-
-  private clearFirstSignupOverlayPending(): void {
-    const userId = this.getOverlayUserId();
-    try {
-      sessionStorage.removeItem('sm_first_signup_overlay_pending');
-      localStorage.removeItem(`sm_first_signup_overlay_pending_${userId}`);
-    } catch {}
   }
 
   // ─────────────────────────────────────────────────────────────────────────────

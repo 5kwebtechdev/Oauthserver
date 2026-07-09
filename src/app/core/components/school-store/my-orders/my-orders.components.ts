@@ -1,57 +1,93 @@
-
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { SupermePopupComponent, SupermePopupCTA } from '../../superme-popup/superme-popup.component';
 import { ViewAllComponent } from '../../superme-navigator/view-all/view-all.component';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../services/auth.service';
+import { CustomToastService } from '../../../services/custom-toast.service';
+import { environment } from '../../../../../environments/environment';
 
-interface TransitStep {
+// ── Backend types ─────────────────────────────────────────────────────────────
+type BackendStatus =
+    | 'NEW' | 'PACKED' | 'SHIPPED' | 'DELIVERED'
+    | 'CANCELLED' | 'PENDING_PAYMENT'
+    | 'EXCHANGE_REQUESTED' | 'RETURN_INITIATED';
+
+interface ApiOrderItem {
+    id: number;
+    productId: number;
+    productName: string;
+    sizeLabel?: string | null;
+    quantity: number;
+    unitPrice?: number;
+    lineTotal: number;
+    thumbnailUrl?: string | null;
+    imageUrl?: string | null;
+}
+
+interface ApiAddress {
+    receiverName?: string;
+    mobile?: string;
+    line1?: string;
+    line2?: string | null;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+}
+
+interface ApiOrder {
+    id: number;
+    orderNumber?: string;
+    status: BackendStatus;
+    paymentMethod: 'COD' | 'ONLINE';
+    paymentStatus?: string;
+    canCancel?: boolean;
+    canReturnOrExchange?: boolean;
+    items: ApiOrderItem[];
+    itemCount?: number;
+    itemsTotal?: number;
+    gstTotal?: number;
+    discountTotal?: number;
+    payableTotal?: number;
+    placedAt?: string;
+    packedAt?: string | null;
+    shippedAt?: string | null;
+    deliveredAt?: string | null;
+    address?: ApiAddress;
+    schoolName?: string | null;
+}
+
+interface TrackStep {
     label: string;
-    date?: string;
+    timestamp?: string | null;
     subtitle?: string;
     completed: boolean;
 }
 
-interface Order {
-    id: number;
-    status: 'on-the-way' | 'delivered' | 'delayed' | 'cancelled' | 'returned-exchanged';
-    statusHeading: string;
-    statusSubtitle?: string;
-    productName: string;
-    subtitle: string;
-    schoolName: string;
-    imageSrc: string;
-    price: string;
-    orderDate?: string;
-    orderNumber?: string;
-    refundStatus?: string;
-    transitSteps: TransitStep[];
-}
+// ── UI display type ───────────────────────────────────────────────────────────
+type DisplayStatus = 'processing' | 'on-the-way' | 'delivered' | 'cancelled' | 'pending-payment' | 'returned-exchanged';
 
-const STATUS_COLORS: Record<string, string> = {
-    'on-the-way': '#90214D',
-    'delivered': '#4CAF50',
-    'delayed': '#F0AD4E',
-    'cancelled': '#BB2124',
-    'returned-exchanged': '#4CAF50',
-};
-
-const STATUS_LABELS: Record<string, string> = {
-    'on-the-way': 'On the way',
-    'delivered': 'Delivered',
-    'cancelled': 'Cancelled',
-    'returned-exchanged': 'Returned / Exchanged',
+const STATUS_META: Record<BackendStatus, { display: DisplayStatus; label: string; color: string }> = {
+    NEW:                { display: 'processing',        label: 'Order Placed',       color: '#90214D' },
+    PACKED:             { display: 'processing',        label: 'Being Packed',        color: '#90214D' },
+    SHIPPED:            { display: 'on-the-way',        label: 'On the Way',          color: '#90214D' },
+    DELIVERED:          { display: 'delivered',         label: 'Delivered',           color: '#4CAF50' },
+    CANCELLED:          { display: 'cancelled',         label: 'Cancelled',           color: '#BB2124' },
+    PENDING_PAYMENT:    { display: 'pending-payment',   label: 'Awaiting Payment',    color: '#F0AD4E' },
+    EXCHANGE_REQUESTED: { display: 'returned-exchanged', label: 'Exchange Requested', color: '#4CAF50' },
+    RETURN_INITIATED:   { display: 'returned-exchanged', label: 'Return Initiated',   color: '#4CAF50' },
 };
 
 const TIME_LABELS: Record<string, string> = {
-    'last-30-days': 'Last 30 days',
+    'last-30-days':  'Last 30 days',
     'last-3-months': 'Last 3 months',
     'last-6-months': 'Last 6 months',
-    'older': 'Older',
+    'older':         'Older',
 };
 
 @Component({
@@ -61,173 +97,170 @@ const TIME_LABELS: Record<string, string> = {
     templateUrl: './my-orders.components.html',
     styleUrls: ['./my-orders.components.scss']
 })
-export class MyOrdersComponent {
+export class MyOrdersComponent implements OnInit {
+
+    // ── List state ────────────────────────────────────────────────────────────
+    orders: ApiOrder[] = [];
+    ordersLoading = false;
+    ordersError = false;
+
+    // ── Detail state ──────────────────────────────────────────────────────────
+    selectedOrder: ApiOrder | null = null;
+    detailLoading = false;
+    trackSteps: TrackStep[] = [];
+    trackLoading = false;
+
+    // ── UI panels ─────────────────────────────────────────────────────────────
     isFilterScreenVisible = false;
     isOrderDetailVisible = false;
-    selectedOrder: Order | null = null;
+    showPaymentInfo = false;
+
+    // ── Filters ───────────────────────────────────────────────────────────────
     selectedStatus: string[] = [];
     selectedTime = '';
     appliedStatus: string[] = [];
     appliedTime = '';
-    showPaymentInfo = false;
 
-    constructor(private router: Router) {}
+    // ── Cancel popup ──────────────────────────────────────────────────────────
+    isCancelPopupVisible = false;
+    cancellingOrder = false;
 
-    orders: Order[] = [
-        {
-            id: 1,
-            status: 'on-the-way',
-            statusHeading: 'Arriving Mon, 2nd Jan',
-            productName: 'The Superme Teen',
-            subtitle: 'NCERT',
-            schoolName: 'Springfield High School',
-            imageSrc: 'assets/School-assets/temp/Maths Book.jpg',
-            price: '₹499',
-            orderDate: '28th December 2025',
-            orderNumber: '408-11145239687',
-            transitSteps: [
-                { label: 'Ordered', date: 'Thu, 28 Dec', completed: true },
-                { label: 'Shipped', date: 'Sun, 31 Dec', subtitle: 'Shipped via Delhivery (Tracking ID: 8822)', completed: true },
-                { label: 'Out for delivery', subtitle: 'Agent number: +91 7896321456', completed: true },
-                { label: 'Delivery by 6 PM', completed: false },
-            ]
-        },
-        {
-            id: 2,
-            status: 'delivered',
-            statusHeading: 'Delivered on Monday, 2nd Jan',
-            statusSubtitle: 'Return / Exchange eligible till 9th Jan 2025',
-            productName: 'Superme Workbook',
-            subtitle: 'CBSE',
-            schoolName: 'Green Valley School',
-            imageSrc: 'assets/School-assets/temp/English.jpg',
-            price: '₹499',
-            orderDate: '31st December 2025',
-            orderNumber: '408-11145239687',
-            transitSteps: [
-                { label: 'Ordered', date: 'Thu, 28 Dec', completed: true },
-                { label: 'Shipped', date: 'Sun, 31 Dec', subtitle: 'Shipped via Delhivery (Tracking ID: 8822)', completed: true },
-                { label: 'Out for delivery', completed: true },
-                { label: 'Delivered', date: 'Mon, 2 Jan', completed: true },
-            ]
-        },
-        {
-            id: 3,
-            status: 'returned-exchanged',
-            statusHeading: 'Return Pickup Scheduled',
-            productName: 'Teen Wellness Kit',
-            subtitle: 'ICSE',
-            schoolName: 'Blue Ridge Academy',
-            imageSrc: 'assets/School-assets/temp/Blazer.jpg',
-            price: '₹499',
-            orderDate: '28th December 2025',
-            orderNumber: '408-89511266222',
-            transitSteps: [
-                { label: 'Return Requested', date: 'Thu, 28 Dec', completed: true },
-                { label: 'Pickup Scheduled', date: 'Sun, 31 Dec', subtitle: 'Shipped via Delhivery (Tracking ID: 8822)', completed: true },
-                { label: 'Pickup Complete', completed: false },
-                { label: 'Refund Initiated / Exchange Shipped', completed: false },
-            ]
-        },
-        {
-            id: 4,
-            status: 'delayed',
-            statusHeading: 'Delayed, Arriving Mon, 2nd Jan',
-            statusSubtitle: 'Due to operational issues',
-            productName: 'Superme Journal',
-            subtitle: 'State Board',
-            schoolName: 'Sunnydale High',
-            imageSrc: 'assets/School-assets/temp/Notebook.jpg',
-            price: '₹499',
-            orderDate: '28th December 2025',
-            orderNumber: '408-56778901234',
-            transitSteps: [
-                { label: 'Ordered', date: 'Thu, 28 Dec', completed: true },
-                { label: 'Shipped', date: 'Sun, 31 Dec', subtitle: 'Shipped via Delhivery (Tracking ID: 8822)', completed: true },
-                { label: 'Out for delivery', completed: false },
-                { label: 'Arriving Mon, 2nd Jan', completed: false },
-            ]
-        },
-        {
-            id: 5,
-            status: 'cancelled',
-            statusHeading: 'Order Cancelled',
-            productName: 'Stress Relief Cards',
-            subtitle: 'NCERT',
-            schoolName: 'Riverside School',
-            imageSrc: 'assets/School-assets/temp/Shirt-l.jpg',
-            price: '₹499',
-            orderDate: '28th December 2025',
-            orderNumber: '408-89511266222',
-            refundStatus: 'Initiated',
-            transitSteps: [
-                { label: 'Ordered', date: 'Thu, 28 Dec', completed: true },
-                { label: 'Cancelled', date: 'Thu, 28 Dec', completed: true },
-            ]
-        },
-        {
-            id: 6,
-            status: 'returned-exchanged',
-            statusHeading: 'Return Completed',
-            statusSubtitle: 'Refund Initiated',
-            productName: 'Superme Coloring Book',
-            subtitle: 'CBSE',
-            schoolName: 'Hilltop Academy',
-            imageSrc: 'assets/School-assets/temp/Shirt.jpg',
-            price: '₹499',
-            orderDate: '31st December 2025',
-            orderNumber: '408-11145239687',
-            transitSteps: [
-                { label: 'Return Requested', date: 'Thu, 28 Dec', completed: true },
-                { label: 'Pickup Scheduled', date: 'Sun, 31 Dec', completed: true },
-                { label: 'Pickup Complete', date: 'Mon, 1 Jan', completed: true },
-                { label: 'Refund Initiated', date: 'Tue, 2 Jan', completed: true },
-            ]
-        },
-        {
-            id: 7,
-            status: 'delivered',
-            statusHeading: 'Delivered on Sun, 31 Dec',
-            statusSubtitle: 'Return / Exchange eligible till 7th Jan 2025',
-            productName: 'Relaxation Audio',
-            subtitle: 'ICSE',
-            schoolName: 'Valley View School',
-            imageSrc: 'assets/School-assets/temp/Shorts.jpg',
-            price: '₹349',
-            orderDate: '28th December 2025',
-            orderNumber: '408-22334556677',
-            transitSteps: [
-                { label: 'Ordered', date: 'Thu, 28 Dec', completed: true },
-                { label: 'Shipped', date: 'Fri, 29 Dec', subtitle: 'Shipped via BlueDart (Tracking ID: 4401)', completed: true },
-                { label: 'Out for delivery', completed: true },
-                { label: 'Delivered', date: 'Sun, 31 Dec', completed: true },
-            ]
-        },
-        {
-            id: 8,
-            status: 'cancelled',
-            statusHeading: 'Order Cancelled',
-            productName: 'Breathing Exercises Guide',
-            subtitle: 'State Board',
-            schoolName: 'Mountain High',
-            imageSrc: 'assets/School-assets/temp/T-Shirt.jpg',
-            price: '₹599',
-            orderDate: '28th December 2025',
-            orderNumber: '408-99887766554',
-            refundStatus: 'Initiated',
-            transitSteps: [
-                { label: 'Ordered', date: 'Thu, 28 Dec', completed: true },
-                { label: 'Cancelled', date: 'Fri, 29 Dec', completed: true },
-            ]
+    // ── Share popup ───────────────────────────────────────────────────────────
+    sharePopupVisible = false;
+
+    // ── Popup CTAs ────────────────────────────────────────────────────────────
+    sharePrimaryCTA:   SupermePopupCTA = { text: 'Copy Link',              icon: 'assets/icons/attachment-small.svg', iconPosition: 'start', buttonStyle: 'white', buttonLarge: true };
+    shareSecondaryCTA: SupermePopupCTA = { text: 'Share through Whatsapp', icon: 'assets/icons/whatsapp-small.svg',   iconPosition: 'start', buttonStyle: 'white', buttonLarge: true };
+    cancelPrimaryCTA:  SupermePopupCTA = { text: "Don't Cancel", buttonStyle: 'green',  buttonLarge: true };
+    cancelSecondaryCTA:SupermePopupCTA = { text: 'Cancel Order', buttonStyle: 'bronze', buttonLarge: true };
+
+    constructor(
+        private router: Router,
+        private http: HttpClient,
+        private authService: AuthService,
+        private toastService: CustomToastService,
+        private cdr: ChangeDetectorRef
+    ) {}
+
+    ngOnInit(): void {
+        this.loadOrders();
+    }
+
+    // ── API helpers ───────────────────────────────────────────────────────────
+
+    private headers(): HttpHeaders {
+        const token = this.authService.getToken();
+        return new HttpHeaders({
+            'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
+            'Accept': 'application/json',
+            'x-skip-loading': '1'
+        });
+    }
+
+    // ── Data loading ──────────────────────────────────────────────────────────
+
+    loadOrders(): void {
+        this.ordersLoading = true;
+        this.ordersError = false;
+        this.http.get<ApiOrder[]>(`${environment.apiUrl}/user/orders`, { headers: this.headers() }).subscribe({
+            next: (res) => {
+                this.orders = Array.isArray(res) ? res : [];
+                this.ordersLoading = false;
+                this.cdr.detectChanges();
+            },
+            error: () => {
+                this.ordersError = true;
+                this.ordersLoading = false;
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    private loadOrderDetail(orderId: number): void {
+        this.detailLoading = true;
+        this.http.get<ApiOrder>(`${environment.apiUrl}/user/orders/${orderId}`, { headers: this.headers() }).subscribe({
+            next: (res) => {
+                this.selectedOrder = res;
+                this.detailLoading = false;
+                this.cdr.detectChanges();
+                this.loadTrack(orderId);
+            },
+            error: () => {
+                this.detailLoading = false;
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    private loadTrack(orderId: number): void {
+        this.trackLoading = true;
+        this.trackSteps = [];
+        this.http.get<any>(`${environment.apiUrl}/user/orders/${orderId}/track`, { headers: this.headers() }).subscribe({
+            next: (res) => {
+                this.trackSteps = this.buildTimeline(res);
+                this.trackLoading = false;
+                this.cdr.detectChanges();
+            },
+            error: () => {
+                // Fallback: build timeline from order timestamps
+                if (this.selectedOrder) {
+                    this.trackSteps = this.buildTimeline(this.selectedOrder);
+                }
+                this.trackLoading = false;
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    private buildTimeline(data: any): TrackStep[] {
+        // Backend may return pre-built steps array or raw timestamps
+        if (Array.isArray(data?.steps)) {
+            return data.steps as TrackStep[];
         }
-    ];
+        const placedAt   = data?.placedAt   ?? null;
+        const packedAt   = data?.packedAt   ?? null;
+        const shippedAt  = data?.shippedAt  ?? null;
+        const deliveredAt= data?.deliveredAt?? null;
 
-    // --- Navigation ---
+        const steps: TrackStep[] = [
+            { label: 'Order Placed', timestamp: placedAt,    completed: !!placedAt },
+            { label: 'Packed',       timestamp: packedAt,    completed: !!packedAt },
+            { label: 'Shipped',      timestamp: shippedAt,   completed: !!shippedAt },
+            { label: 'Delivered',    timestamp: deliveredAt, completed: !!deliveredAt },
+        ];
+
+        if (this.selectedOrder?.status === 'CANCELLED') {
+            return [
+                { label: 'Order Placed', timestamp: placedAt, completed: !!placedAt },
+                { label: 'Cancelled',    completed: true },
+            ];
+        }
+        if (this.selectedOrder?.status === 'RETURN_INITIATED') {
+            return [
+                { label: 'Delivered',        completed: true },
+                { label: 'Return Requested', completed: true },
+                { label: 'Pickup Scheduled', completed: false },
+                { label: 'Refund Initiated', completed: false },
+            ];
+        }
+        if (this.selectedOrder?.status === 'EXCHANGE_REQUESTED') {
+            return [
+                { label: 'Delivered',         completed: true },
+                { label: 'Exchange Requested',completed: true },
+                { label: 'Pickup Scheduled',  completed: false },
+                { label: 'Exchange Shipped',  completed: false },
+            ];
+        }
+        return steps;
+    }
+
+    // ── Navigation ────────────────────────────────────────────────────────────
 
     goBack(): void {
         if (this.isOrderDetailVisible) {
             this.isOrderDetailVisible = false;
             this.selectedOrder = null;
+            this.trackSteps = [];
         } else if (this.isFilterScreenVisible) {
             this.isFilterScreenVisible = false;
         } else {
@@ -235,18 +268,19 @@ export class MyOrdersComponent {
         }
     }
 
-    openOrderDetail(order: Order): void {
+    openOrderDetail(order: ApiOrder): void {
         this.selectedOrder = order;
         this.isOrderDetailVisible = true;
         this.showPaymentInfo = false;
+        this.trackSteps = [];
+        this.loadOrderDetail(order.id);
     }
 
     openFilterScreen(): void { this.isFilterScreenVisible = true; }
-    onHelpClick(): void {
-        this.router.navigate(['/authed', 'bot-helpline']);
-    }
 
-    // --- Filters ---
+    onHelpClick(): void { this.router.navigate(['/authed', 'bot-helpline']); }
+
+    // ── Filters ───────────────────────────────────────────────────────────────
 
     onStatusChange(event: Event, value: string): void {
         const checked = (event.target as HTMLInputElement).checked;
@@ -259,215 +293,181 @@ export class MyOrdersComponent {
 
     applyFilters(): void {
         this.appliedStatus = [...this.selectedStatus];
-        this.appliedTime = this.selectedTime;
+        this.appliedTime   = this.selectedTime;
         this.isFilterScreenVisible = false;
     }
 
-    get filteredOrders(): Order[] {
-        return this.appliedStatus.length === 0
-            ? this.orders
-            : this.orders.filter(o => this.appliedStatus.includes(o.status));
+    get filteredOrders(): ApiOrder[] {
+        if (!this.appliedStatus.length) return this.orders;
+        return this.orders.filter(o => this.appliedStatus.includes(this.displayStatus(o.status)));
     }
 
     get resultsText(): string {
-        if (this.appliedTime) return `Results from ${TIME_LABELS[this.appliedTime] || this.appliedTime}`;
-        if (this.appliedStatus.length) return `Results from ${this.appliedStatus.map(s => STATUS_LABELS[s] || s).join(', ')}`;
+        if (this.appliedTime)          return `Results from ${TIME_LABELS[this.appliedTime] || this.appliedTime}`;
+        if (this.appliedStatus.length) return `Results from ${this.appliedStatus.join(', ')}`;
         return 'Results from All Orders';
     }
 
-    // --- Helpers ---
+    // ── Status helpers ────────────────────────────────────────────────────────
 
-    getStatusColor(status: string): string {
-        return STATUS_COLORS[status] || '#282527';
+    displayStatus(status: BackendStatus): DisplayStatus {
+        return STATUS_META[status]?.display ?? 'processing';
     }
 
-    getStepColor(order: Order): string {
-        return order.status === 'cancelled' ? '#BB2124' : '#4CAF50';
+    statusLabel(status: BackendStatus): string {
+        return STATUS_META[status]?.label ?? status;
     }
 
-    truncateText(text: string, max: number): string {
-        return text.length > max ? text.substring(0, max) + '...' : text;
+    statusColor(status: BackendStatus): string {
+        return STATUS_META[status]?.color ?? '#282527';
     }
 
-    // --- Status-based display logic ---
+    // ── Order detail display logic ────────────────────────────────────────────
 
-    get isOrderCompleted(): boolean {
-        return !!this.selectedOrder && this.selectedOrder.transitSteps.every(s => s.completed);
+    get canCancel(): boolean {
+        return !!this.selectedOrder?.canCancel;
     }
 
-    get isOutForDelivery(): boolean {
-        return !!this.selectedOrder && this.selectedOrder.transitSteps.some(
-            s => s.label.toLowerCase().includes('out for delivery') && s.completed
-        );
+    get canReturn(): boolean {
+        return !!this.selectedOrder?.canReturnOrExchange;
     }
 
-    get showPrice(): boolean {
-        if (!this.selectedOrder) return false;
-        if (this.selectedOrder.status === 'delivered') return false;
-        return !(this.selectedOrder.status === 'returned-exchanged' && this.isOrderCompleted);
+    get isDelivered(): boolean {
+        return this.selectedOrder?.status === 'DELIVERED';
     }
 
-    get showTimeline(): boolean { return this.showPrice; }
+    get isCancelled(): boolean {
+        return this.selectedOrder?.status === 'CANCELLED';
+    }
 
-    get addressLabel(): string {
-        if (!this.selectedOrder) return 'Delivery to:';
-        if (this.selectedOrder.status === 'delivered') return 'Delivered to:';
-        if (this.selectedOrder.status === 'returned-exchanged') {
-            return this.isOrderCompleted ? 'Address:' : 'Pickup Address:';
-        }
-        return 'Delivery to:';
+    get isReturnExchange(): boolean {
+        const s = this.selectedOrder?.status;
+        return s === 'RETURN_INITIATED' || s === 'EXCHANGE_REQUESTED';
+    }
+
+    get isPendingPayment(): boolean {
+        return this.selectedOrder?.status === 'PENDING_PAYMENT';
+    }
+
+    get showTimeline(): boolean {
+        return !this.isCancelled && !this.isDelivered && !this.isPendingPayment;
     }
 
     get showBillSummary(): boolean {
-        if (!this.selectedOrder) return false;
-        return this.selectedOrder.status === 'on-the-way' || this.selectedOrder.status === 'delayed';
+        return !this.isCancelled && !this.isReturnExchange;
     }
 
-    get showRefundCard(): boolean {
-        return !!this.selectedOrder && this.selectedOrder.status === 'cancelled';
-    }
+    get showRefundCard(): boolean { return this.isCancelled; }
 
-    get showOrderInfo(): boolean {
-        if (!this.selectedOrder) return false;
-        if (this.selectedOrder.status === 'delivered') return true;
-        return this.selectedOrder.status === 'returned-exchanged' && this.isOrderCompleted;
-    }
-
-    get showPaymentAccordion(): boolean { return this.showOrderInfo; }
-
-    get showCancelShareFooter(): boolean {
-        if (!this.selectedOrder) return false;
-        return this.selectedOrder.status === 'on-the-way' || this.selectedOrder.status === 'delayed';
-    }
-
-    get showCancelReturnFooter(): boolean {
-        return !!this.selectedOrder && this.selectedOrder.status === 'returned-exchanged' && !this.isOrderCompleted;
-    }
-
-    get showDownloadInvoiceFooter(): boolean { return this.showOrderInfo; }
-
-    get showReturnExchangeFooter(): boolean {
-        return !!this.selectedOrder && this.selectedOrder.status === 'delivered';
-    }
+    get showPaymentAccordion(): boolean { return this.isDelivered; }
 
     get hasFooter(): boolean {
-        return this.showCancelShareFooter || this.showCancelReturnFooter || this.showDownloadInvoiceFooter || this.showReturnExchangeFooter;
+        return this.canCancel || this.canReturn || this.isDelivered;
     }
 
-    // --- Price Calculations ---
-
-    get totalPrice(): number {
-        if (!this.selectedOrder) return 0;
-        // Extract numeric price from the price string (e.g., "₹499" -> 499)
-        const priceMatch = this.selectedOrder.price.match(/₹(\d+)/);
-        return priceMatch ? parseInt(priceMatch[1], 10) : 0;
+    get addressLabel(): string {
+        if (!this.selectedOrder) return 'Delivery to:';
+        if (this.isDelivered)     return 'Delivered to:';
+        if (this.isReturnExchange) return 'Pickup Address:';
+        return 'Delivery to:';
     }
 
-    get totalPriceDisplay(): string {
-        return '₹' + this.totalPrice;
+    formatAddress(a?: ApiAddress | null): string {
+        if (!a) return '';
+        return [a.line1, a.line2, a.city, a.state, a.postalCode].filter(Boolean).join(', ');
     }
 
-    // GST at 18% of total price
-    get gstAmount(): number {
-        return Math.round(this.totalPrice * 0.18);
-    }
-
-    get gstDisplay(): string {
-        return '₹' + this.gstAmount;
-    }
-
-    // Delivery: free if totalPrice > 500 else ₹99
-    get deliveryFee(): number {
-        return this.totalPrice > 500 ? 0 : 99;
-    }
-
-    get deliveryDisplay(): string {
-        return this.deliveryFee === 0 ? 'Free' : '₹' + this.deliveryFee;
-    }
-
-    get toPay(): number {
-        return this.totalPrice + this.gstAmount + this.deliveryFee;
-    }
-
-    get toPayDisplay(): string {
-        return '₹' + this.toPay;
-    }
-
-    // --- Actions ---
-    // --- Actions ---
-
-    // Cancel confirmation popup state
-    isCancelPopupVisible = false;
-
-    // Share Tracking popup state & CTAs
-    sharePopupVisible = false;
-    sharePrimaryCTA: SupermePopupCTA = { text: 'Copy Link', icon: 'assets/icons/attachment-small.svg', iconPosition: 'start', buttonStyle: 'white', buttonLarge: true };
-    shareSecondaryCTA: SupermePopupCTA = { text: 'Share through Whatsapp', icon: 'assets/icons/whatsapp-small.svg', iconPosition: 'start', buttonStyle: 'white', buttonLarge: true };
-  
-    cancelPrimaryCTA: SupermePopupCTA = { text: "Don't Cancel", buttonStyle: 'green', buttonLarge: true };
-    cancelSecondaryCTA: SupermePopupCTA = { text: 'Cancel', buttonStyle: 'bronze', buttonLarge: true };
-
-    togglePaymentInfo(): void { this.showPaymentInfo = !this.showPaymentInfo; }
-
-    // Close popup without action
-    closeCancelPopup(): void {
-        this.isCancelPopupVisible = false;
-    }
-
-    // Open the cancel confirmation popup
-    openCancelPopup(): void {
-        this.isCancelPopupVisible = true;
-    }
-
-    // Confirm cancellation: update order state and close popup
-    confirmCancel(): void {
-        if (!this.selectedOrder) {
-            this.isCancelPopupVisible = false;
-            return;
-        }
-
-        this.selectedOrder.status = 'cancelled';
-        this.selectedOrder.statusHeading = 'Order Cancelled';
-        this.selectedOrder.refundStatus = this.selectedOrder.refundStatus || 'Initiated';
-        // ensure transitSteps include a cancelled step
-        this.selectedOrder.transitSteps = [
-            ...(this.selectedOrder.transitSteps || []),
-        ];
-        // push cancelled step if last step isn't cancelled
-        const last = this.selectedOrder.transitSteps[this.selectedOrder.transitSteps.length - 1];
-        if (!last || last.label.toLowerCase() !== 'cancelled') {
-            this.selectedOrder.transitSteps.push({ label: 'Cancelled', date: new Date().toLocaleDateString(), completed: true });
-        }
-
-        this.isCancelPopupVisible = false;
-        console.log('Order cancelled:', this.selectedOrder.orderNumber || this.selectedOrder.id);
-    }
-
-    onCancelOrder(): void { console.log('Cancel order'); }
-    onShareTracking(): void { this.sharePopupVisible = true; }
-    closeSharePopup(): void { this.sharePopupVisible = false; }
-
-    // Actions for share popup
-    copyLink(): void {
-        const link = this.selectedOrder ? `https://superme.app/track/${this.selectedOrder.orderNumber || this.selectedOrder.id}` : window.location.href;
+    formatDate(iso?: string | null): string {
+        if (!iso) return '';
         try {
-            navigator.clipboard.writeText(link);
-            console.log('Copied link:', link);
-        } catch (e) {
-            console.log('Copy failed, link:', link);
-        }
+            return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        } catch { return iso; }
+    }
+
+    // ── Price helpers ─────────────────────────────────────────────────────────
+
+    get itemsTotal(): number  { return this.selectedOrder?.itemsTotal  ?? 0; }
+    get gstTotal(): number    { return this.selectedOrder?.gstTotal    ?? 0; }
+    get payableTotal(): number{ return this.selectedOrder?.payableTotal ?? 0; }
+
+    fmt(v: number | null | undefined): string {
+        return '₹' + (v ?? 0).toFixed(2);
+    }
+
+    itemImage(item: ApiOrderItem): string {
+        return item.thumbnailUrl ?? item.imageUrl ?? 'assets/School-assets/empty-product-list.png';
+    }
+
+    // ── Cancel ────────────────────────────────────────────────────────────────
+
+    openCancelPopup(): void  { this.isCancelPopupVisible = true; }
+    closeCancelPopup(): void { this.isCancelPopupVisible = false; }
+
+    confirmCancel(): void {
+        if (!this.selectedOrder || this.cancellingOrder) return;
+        this.cancellingOrder = true;
+        this.isCancelPopupVisible = false;
+        this.cdr.detectChanges();
+
+        this.http.post<any>(
+            `${environment.apiUrl}/user/orders/${this.selectedOrder.id}/cancel`,
+            {},
+            { headers: this.headers() }
+        ).subscribe({
+            next: () => {
+                this.cancellingOrder = false;
+                this.toastService.success('Order cancelled successfully.');
+                // Refresh detail and list
+                const id = this.selectedOrder!.id;
+                this.loadOrderDetail(id);
+                this.loadOrders();
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                this.cancellingOrder = false;
+                const msg = err?.error?.message || 'Could not cancel order. Please try again.';
+                this.toastService.error(msg);
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    // ── Return / Exchange ─────────────────────────────────────────────────────
+
+    onReturnExchange(): void {
+        if (!this.selectedOrder) return;
+        this.router.navigate(['/authed/school-store/return-exchange'], {
+            state: { orderId: this.selectedOrder.id, orderNumber: this.selectedOrder.orderNumber }
+        });
+    }
+
+    // ── Share ─────────────────────────────────────────────────────────────────
+
+    onShareTracking(): void  { this.sharePopupVisible = true; }
+    closeSharePopup(): void  { this.sharePopupVisible = false; }
+
+    copyLink(): void {
+        const ref = this.selectedOrder?.orderNumber ?? String(this.selectedOrder?.id ?? '');
+        const link = `https://superme.app/track/${ref}`;
+        try { navigator.clipboard.writeText(link); } catch (_) {}
         this.sharePopupVisible = false;
+        this.toastService.success('Link copied!');
     }
 
     shareWhatsapp(): void {
-        const link = this.selectedOrder ? `https://superme.app/track/${this.selectedOrder.orderNumber || this.selectedOrder.id}` : window.location.href;
-        const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(link)}`;
-        window.open(url, '_blank');
+        const ref = this.selectedOrder?.orderNumber ?? String(this.selectedOrder?.id ?? '');
+        const link = `https://superme.app/track/${ref}`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(link)}`, '_blank');
         this.sharePopupVisible = false;
     }
-    onCancelReturn(): void { console.log('Cancel return'); }
-    onDownloadInvoice(): void { console.log('Download invoice'); }
-    onReturnExchange(): void {
-        this.router.navigateByUrl('/authed/school-store/return-exchange');
+
+    togglePaymentInfo(): void { this.showPaymentInfo = !this.showPaymentInfo; }
+
+    getStepColor(completed: boolean): string {
+        return completed ? '#4CAF50' : '#DCDBDC';
+    }
+
+    truncateText(text: string, max: number): string {
+        return text && text.length > max ? text.substring(0, max) + '...' : text;
     }
 }

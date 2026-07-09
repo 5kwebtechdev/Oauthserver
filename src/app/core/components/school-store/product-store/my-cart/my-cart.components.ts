@@ -2,8 +2,8 @@
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { forkJoin, of, Subscription } from 'rxjs';
-import { switchMap, catchError } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
+import { CartService } from '../../../../services/cart.service';
 import { SupermeNavigatorComponent } from '../../../superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../../superme-button/superme-button.component';
 import { Router } from '@angular/router';
@@ -76,7 +76,8 @@ export class MyCartComponent implements OnInit, OnDestroy {
         private http: HttpClient,
         private authService: AuthService,
         private toastService: CustomToastService,
-        private addressService: AddressService
+        private addressService: AddressService,
+        private cartService: CartService
     ) { }
 
     ngOnInit(): void {
@@ -118,11 +119,7 @@ export class MyCartComponent implements OnInit, OnDestroy {
             'Accept': 'application/json',
             'x-skip-loading': '1'
         });
-        const userId = this.authService.getUserId();
-        const cartUrl = userId
-            ? `${environment.apiUrl}/cart?forUserId=${userId}`
-            : `${environment.apiUrl}/cart`;
-        this.http.get<any>(cartUrl, { headers }).subscribe({
+        this.http.get<any>(`${environment.apiUrl}/cart`, { headers }).subscribe({
             next: (res) => {
                 console.log('[Cart] GET /cart response:', JSON.stringify(res));
                 const raw = Array.isArray(res) ? res : (res?.items ?? res?.data ?? []);
@@ -130,6 +127,9 @@ export class MyCartComponent implements OnInit, OnDestroy {
                 this.apiItemsTotal = res?.itemsTotal ?? null;
                 this.apiGstTotal = res?.gstTotal ?? null;
                 this.apiPayableTotal = res?.payableTotal ?? null;
+                // keep shared CartService in sync
+                const liveCount = res?.itemCount ?? res?.totalQuantity ?? this.items.length;
+                this.cartService.set(Number(liveCount) || 0);
                 this.cartLoading = false;
                 this.cdr.detectChanges();
             },
@@ -186,13 +186,13 @@ export class MyCartComponent implements OnInit, OnDestroy {
     }
 
     formatAddressShort(a: Address): string {
-        return [a.flat, a.area].filter(Boolean).join(', ');
+        return [a.line1, a.line2].filter(Boolean).join(', ');
     }
 
     formatAddressHtml(a: Address): string {
-        const line2 = [a.flat, a.area].filter(Boolean).join(', ');
-        const line3 = [a.cityState, a.pincode].filter(Boolean).join(' - ');
-        return [a.fullName, line2, line3].filter(Boolean).join('<br/>');
+        const cityState = [a.city, a.state].filter(Boolean).join(', ');
+        const line3 = [cityState, a.postalCode].filter(Boolean).join(' - ');
+        return [a.receiverName, a.line1, a.line2, line3].filter(Boolean).join('<br/>');
     }
 
     selectAddress(a: Address): void {
@@ -258,6 +258,8 @@ export class MyCartComponent implements OnInit, OnDestroy {
             const item = this.items[index];
             const newQty = (item.quantity || 0) + 1;
             item.quantity = newQty;
+            item.lineTotal = Number(item.sellingPrice ?? item.price ?? 0) * newQty;
+            this.clearApiTotals();
             this.cdr.detectChanges();
             this.updateCartItemQty(item, newQty);
         } else {
@@ -272,6 +274,8 @@ export class MyCartComponent implements OnInit, OnDestroy {
             if (!item.quantity || item.quantity <= 1) return;
             const newQty = item.quantity - 1;
             item.quantity = newQty;
+            item.lineTotal = Number(item.sellingPrice ?? item.price ?? 0) * newQty;
+            this.clearApiTotals();
             this.cdr.detectChanges();
             this.updateCartItemQty(item, newQty);
         } else {
@@ -279,6 +283,12 @@ export class MyCartComponent implements OnInit, OnDestroy {
             this.quantity = this.quantity - 1;
             this.cdr.detectChanges();
         }
+    }
+
+    private clearApiTotals(): void {
+        this.apiItemsTotal = null;
+        this.apiGstTotal = null;
+        this.apiPayableTotal = null;
     }
 
     private updateCartItemQty(item: CartItem, quantity: number): void {
@@ -289,20 +299,16 @@ export class MyCartComponent implements OnInit, OnDestroy {
             'Accept': 'application/json',
             'x-skip-loading': '1'
         });
-        const body: Record<string, any> = {
-            productId: item.productId,
-            quantity,
-        };
-        if (item.schoolId != null) body['schoolId'] = item.schoolId;
-        if (item.classId != null) body['classId'] = item.classId;
+        const body: Record<string, any> = { quantity };
         if (item.sizeLabel) body['sizeLabel'] = item.sizeLabel;
-        this.http.post(`${environment.apiUrl}/cart/items`, body, { headers }).subscribe({
-            next: () => { /* quantity already updated optimistically */ },
+        this.http.put(`${environment.apiUrl}/cart/items/${item.id}`, body, { headers }).subscribe({
+            next: () => { /* totals already updated optimistically — no reload needed */ },
             error: () => {
-                // revert on failure
-                item.quantity = quantity === (item.quantity || 0) + 1
-                    ? (item.quantity || 1) - 1
-                    : (item.quantity || 0) + 1;
+                // Revert quantity and price on failure
+                const revertQty = quantity > (item.quantity || 0) ? quantity - 1 : quantity + 1;
+                item.quantity = revertQty;
+                item.lineTotal = Number(item.sellingPrice ?? item.price ?? 0) * revertQty;
+                this.clearApiTotals();
                 this.cdr.detectChanges();
             }
         });
@@ -354,43 +360,24 @@ export class MyCartComponent implements OnInit, OnDestroy {
             'Accept': 'application/json',
             'x-skip-loading': '1'
         });
-        const userId = this.authService.getUserId();
-        const cartUrl = userId
-            ? `${environment.apiUrl}/cart?forUserId=${userId}`
-            : `${environment.apiUrl}/cart`;
 
-        this.http.get<any>(cartUrl, { headers }).pipe(
-            switchMap((res) => {
-                const raw = Array.isArray(res) ? res : (res?.items ?? res?.data ?? []);
-                const cartItems: CartItem[] = Array.isArray(raw) ? raw : [];
-                if (!cartItems.length) {
-                    return of('empty');
-                }
-                const deletes = cartItems.map(item =>
-                    this.http.delete(`${environment.apiUrl}/cart/items/${item.id}`, { headers }).pipe(
-                        catchError(() => of(null))
-                    )
-                );
-                return forkJoin(deletes);
-            }),
-            catchError((err) => {
-                console.error('[Cart] clearCart GET error:', err);
-                return of('error');
-            })
-        ).subscribe({
-            next: (result) => {
+        // Build DELETE /cart?schoolId=&classId= using context from first item
+        const first = this.items[0];
+        const params: string[] = [];
+        if (first?.schoolId != null) params.push(`schoolId=${first.schoolId}`);
+        if (first?.classId  != null) params.push(`classId=${first.classId}`);
+        const clearUrl = `${environment.apiUrl}/cart` + (params.length ? '?' + params.join('&') : '');
+
+        this.http.delete(clearUrl, { headers }).subscribe({
+            next: () => {
                 this.clearingCart = false;
-                if (result === 'error') {
-                    this.toastService.error('Failed to clear cart. Please try again.');
-                    this.loadCart();
-                } else {
-                    this.items = [];
-                    this.apiItemsTotal = null;
-                    this.apiGstTotal = null;
-                    this.apiPayableTotal = null;
-                    this.cdr.detectChanges();
-                    this.toastService.success('Cart cleared successfully.');
-                }
+                this.items = [];
+                this.apiItemsTotal = null;
+                this.apiGstTotal = null;
+                this.apiPayableTotal = null;
+                this.cartService.reset();
+                this.cdr.detectChanges();
+                this.toastService.success('Cart cleared successfully.');
             },
             error: () => {
                 this.clearingCart = false;
@@ -429,13 +416,34 @@ export class MyCartComponent implements OnInit, OnDestroy {
     }
 
     addToCart(): void {
-        console.log('Proceed to pay clicked');
+        if (!this.selectedAddress) {
+            this.toastService.error('Please select a delivery address first.');
+            this.openAddressPopup();
+            return;
+        }
+
+        // Pick schoolId / classId from the first cart item that has them
+        const firstWithSchool = this.items.find(it => it.schoolId != null);
+
+        const addressLabel = this.formatAddressShort(this.selectedAddress)
+            + (this.selectedAddress.city ? ', ' + this.selectedAddress.city : '');
+
+        this.router.navigate(['/authed/school-store/checkout'], {
+            state: {
+                addressId:    this.selectedAddress.id,
+                addressLabel,
+                schoolId:     firstWithSchool?.schoolId ?? null,
+                classId:      firstWithSchool?.classId  ?? null
+            }
+        });
     }
 
     get totalPrice(): number {
         if (this.apiItemsTotal != null) return this.apiItemsTotal;
         if (!this.items || !this.items.length) return 0;
         return this.items.reduce((sum, it) => {
+            // prefer lineTotal (already accounts for quantity) when present
+            if (it?.lineTotal != null) return sum + Number(it.lineTotal);
             const p = Number(it?.sellingPrice ?? it?.price ?? 0);
             const q = Number(it?.quantity || 1);
             return sum + p * q;

@@ -1,24 +1,28 @@
 .adb {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  overflow: hidden; // clips peeking cards at screen edges
 }
 
-// ── Scroll track — overflow visible so adjacent cards peek through ──
+// ── Clip wrapper — only the card track gets overflow:hidden, not the dots row ─
+.adb__track-clip {
+  width: 100%;
+  overflow: hidden;
+}
+
+// ── Scroll track ─────────────────────────────────────────────────────────────
 .adb__scroll-track {
   display: flex;
   gap: 10px;
-  // Initial position set via JS (updateTrackPosition)
   will-change: transform;
   transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-// ── Each card — 82% wide leaves ~9% peeking on each side ──
+// ── Each card — 82% wide, adjacent cards peek at edges ───────────────────────
 .adb__card {
-  flex: 0 0 calc(82%);
-  min-width: calc(82%);
+  flex: 0 0 82%;
+  min-width: 82%;
   border-radius: 16px;
   overflow: hidden;
   height: clamp(140px, 40vw, 210px);
@@ -26,36 +30,64 @@
   transform: scale(0.95);
   opacity: 0.65;
   transition: transform 0.35s ease, opacity 0.35s ease;
+  position: relative; // needed for counter badge
 
   &--active {
     transform: scale(1);
     opacity: 1;
   }
+
+  &--clickable {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
-// ── Image fills card ──────────────────────────────────────────────────
+// ── Image fills card ──────────────────────────────────────────────────────────
 .adb__img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
   display: block;
+  color: transparent;        // hides alt text when image fails to load
+  background: #EDEDF0;       // neutral gray placeholder while loading
 }
 
-// ── Dot indicators ───────────────────────────────────────────────────
+// ── Dot indicators + counter row ─────────────────────────────────────────────
 .adb__dots {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin-top: 2px;
+  margin-top: 4px;
+  position: relative;
+  padding: 0 32px;   // reserve space so counter doesn't overlap dots
+}
+
+// ── Slide counter badge — right side of dots row (Instamart style) ────────────
+.adb__counter {
+  position: absolute;
+  right: 0;
+  background: rgba(0, 0, 0, 0.50);
+  color: #fff;
+  font-family: var(--font-sans, 'Nunito', sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 3px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
 }
 
 .adb__dot {
   height: 6px;
   border-radius: 3px;
   width: 6px;
-  background: rgba(82, 34, 61, 0.18);
+  background: rgba(144, 33, 77, 0.18);
   border: none;
   padding: 0;
   cursor: pointer;

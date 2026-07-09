@@ -31,6 +31,20 @@
                     </swiper-container>
                 </div>
             </div>
+            <!-- School / Class info chip — shown only when selected category requires school -->
+            <div class="school-info-bar" *ngIf="selectedCategoryRequiresSchoolClass && (schoolName || className)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                <span class="school-info-text">
+                    <span *ngIf="schoolName">{{ schoolName }}</span>
+                    <span class="school-info-sep" *ngIf="schoolName && className"> · </span>
+                    <span *ngIf="className">Class {{ className }}</span>
+                </span>
+                <button class="school-info-change" (click)="changeSchool()">Change</button>
+            </div>
+
             <!-- Subcategory Slider -->
             <div class="sub-category">
                 <div class="category-slider-wrap w-100">
@@ -48,53 +62,70 @@
             </div>
             <!-- Product List -->
             <div class="product-list-wrap">
-                <ng-container *ngIf="visibleProducts && visibleProducts.length; else emptyState">
-                    <div class="product-list-card">
-                        <div class="product-card" *ngFor="let p of visibleProducts"
-                            (click)="!p.outOfStock && openProduct(p)">
-                            <div class="product-image-wrap">
-                                <img [src]="p.img" [alt]="p.title">
-                                <h3 class="product-badge" *ngIf="getBadge(p) as badge">{{ badge }}</h3>
-                                <!-- Out of stock overlay -->
-                                <div class="oos-overlay" *ngIf="p.outOfStock">
-                                    <div class="oos-text">Out of stock</div>
-                                    <superme-button type="magenta" text="Notify" (click)="notifyMe(p)"></superme-button>
-                                </div>
-                            </div>
 
-                            <div class="product-info">
-                                <h3 class="product-tag"
-                                    *ngIf="p.tag && !isTextbooksSelected">{{
-                                    p.tag }}</h3>
+                <!-- Skeleton while loading -->
+                <div *ngIf="productsLoading" class="product-list-card">
+                    <div class="product-card product-card--skel" *ngFor="let s of [1,2,3,4]">
+                        <div class="skel-img"></div>
+                        <div class="product-info">
+                            <div class="skel-line skel-line--title"></div>
+                            <div class="skel-line skel-line--sub"></div>
+                            <div class="skel-line skel-line--price"></div>
+                        </div>
+                    </div>
+                </div>
 
-                                <h3 class="product-title">{{ p.title }}</h3>
-                                <h3 class="product-subtitle" *ngIf="p.subtitle">{{ p.subtitle }}</h3>
-                                <div class="d-flex align-items-center justify-content-between w-100">
-                                    <div class="product-prices">
-                                        <div class="price-discount">{{ p.price }}</div>
-                                        <div class="price-mrp">{{ p.mrp }}</div>
+                <!-- Product list once loaded -->
+                <ng-container *ngIf="!productsLoading">
+                    <ng-container *ngIf="visibleProducts && visibleProducts.length; else emptyState">
+                        <div class="product-list-card">
+                            <div class="product-card" *ngFor="let p of visibleProducts"
+                                (click)="!p.outOfStock && openProduct(p)">
+                                <div class="product-image-wrap">
+                                    <img [src]="p.img" [alt]="p.title">
+                                    <h3 class="product-badge" *ngIf="getBadge(p) as badge">{{ badge }}</h3>
+                                    <!-- Out of stock overlay -->
+                                    <div class="oos-overlay" *ngIf="p.outOfStock">
+                                        <div class="oos-text">Out of stock</div>
+                                        <superme-button type="magenta" text="Notify" (click)="notifyMe(p)"></superme-button>
                                     </div>
+                                </div>
 
-                                    <superme-button
-                                        *ngIf="isTextbooksSelected"
-                                        type="magenta" text="Add To Bag"
-                                        (click)="addToBag(p); $event.stopPropagation()"></superme-button>
+                                <div class="product-info">
+                                    <h3 class="product-tag"
+                                        *ngIf="p.tag && !isTextbooksSelected">{{
+                                        p.tag }}</h3>
+
+                                    <h3 class="product-title">{{ p.title }}</h3>
+                                    <h3 class="product-subtitle" *ngIf="p.subtitle">{{ p.subtitle }}</h3>
+                                    <div class="d-flex align-items-center justify-content-between w-100">
+                                        <div class="product-prices">
+                                            <div class="price-discount">{{ p.price }}</div>
+                                            <div class="price-mrp">{{ p.mrp }}</div>
+                                        </div>
+
+                                        <superme-button
+                                            *ngIf="isTextbooksSelected"
+                                            type="magenta" text="Add To Bag"
+                                            (click)="addToBag(p); $event.stopPropagation()"></superme-button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </ng-container>
+
+                    <ng-template #emptyState>
+                        <empty-state
+                            [imageSrc]="'assets/School-assets/empty-product-list.png'"
+                            [imageAlt]="'No products'"
+                            [leadText]="'Nothing Here... Yet!'"
+                            [buttonText]="'View all Products'"
+                            [buttonType]="'magenta'"
+                            (buttonClick)="selectSubCategory({ id: 'all', label: 'All' })">
+                        </empty-state>
+                    </ng-template>
                 </ng-container>
 
-                <ng-template #emptyState>
-                    <empty-state
-                        [imageSrc]="'assets/School-assets/empty-product-list.png'"
-                        [imageAlt]="'No products'"
-                        [leadText]="'Nothing Here... Yet!'"
-                        [buttonText]="'View all Products'"
-                        [buttonType]="'magenta'"
-                        (buttonClick)="selectSubCategory({ id: 'all', label: 'All' })">
-                    </empty-state>
-                </ng-template>
             </div>
         </div>
 

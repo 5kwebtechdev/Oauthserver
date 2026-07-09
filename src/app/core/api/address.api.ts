@@ -6,25 +6,28 @@ import { AuthApi } from './auth.api';
 
 export interface Address {
     id: number;
-    fullName: string;
-    phone: string;
-    flat: string;
-    area: string;
-    landmark?: string | null;
-    pincode: string;
-    cityState?: string | null;
+    receiverName: string;
+    mobile: string;
+    line1: string;
+    line2?: string | null;
+    city: string;
+    state: string;
+    postalCode: string;
+    latitude?: number | null;
+    longitude?: number | null;
     isDefault: boolean;
 }
 
 export interface AddressPayload {
-    fullName: string;
-    phone: string;
-    flat: string;
-    area: string;
-    landmark?: string | null;
-    pincode: string;
-    cityState?: string | null;
-    isDefault: boolean;
+    receiverName: string;
+    mobile: string;
+    line1: string;
+    line2?: string | null;
+    city: string;
+    state: string;
+    postalCode: string;
+    latitude?: number | null;
+    longitude?: number | null;
 }
 
 @Injectable({ providedIn: 'root' })

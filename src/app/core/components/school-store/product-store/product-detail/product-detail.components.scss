@@ -444,6 +444,31 @@ superme-button.page-cta .button,
   box-sizing: border-box;
 }
 
+/* Cart error / size-missing message */
+.cart-error-msg {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 80px;
+  z-index: 61;
+  background: #fff0f0;
+  border: 1px solid #f5c6cb;
+  color: #BB2124;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  animation: fadeInUp 0.2s ease-out;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* Size guide styles moved to size-guide component */
 
 .book-detail {

@@ -16,7 +16,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion   
         versionCode 30
         versionName "0.0.9"
-        manifestPlaceholders = [
+        manifestPlaceholders = [    
             deeplinkHost: envOrProp('DEEPLINK_HOST') ?: 'supermeapp.com',
             deeplinkAltHost: envOrProp('DEEPLINK_ALT_HOST') ?: 'www.supermeapp.com',
             deeplinkScheme: envOrProp('DEEPLINK_SCHEME') ?: 'superme'

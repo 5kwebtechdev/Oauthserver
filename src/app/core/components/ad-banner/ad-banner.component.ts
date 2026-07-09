@@ -1,21 +1,59 @@
-import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../services/auth.service';
 
 export type AdScreen =
-  | 'HOME' | 'COLINS' | 'LEARNING' | 'ROCKS' | 'TUTOR'
-  | 'ACCELERARY' | 'ARTICLES' | 'EDUHUB' | 'STUDENT_STORE'
-  | 'HOME_PARENTS' | 'PARENT_TUTOR' | 'EDUHUB_PARENTS'
-  | 'COLINS_PARENTS' | 'TUTOR_PARENTS' | 'ROCKS_PARENTS';
+  // Student screens
+  | 'HOME'
+  | 'COLINS'
+  | 'LEARNING'
+  | 'ROCKS'
+  | 'TUTOR'
+  | 'ACCELERARY'
+  | 'ARTICLES'
+  | 'EDUHUB'
+  | 'TUTOR_HOME'
+  | 'STUDENT_STORE'
+  // Parent screens
+  | 'HOME_PARENTS'
+  | 'PARENT_TUTOR'
+  | 'EDUHUB_PARENTS'
+  | 'COLINS_PARENTS'
+  | 'TUTOR_PARENTS'
+  | 'ROCKS_PARENTS';
+
+type AdClickActionType = 'IN_APP_SCREEN' | 'EXTERNAL_URL';
 
 interface AdItem {
   id: number;
   title: string;
   order: number;
   image: string;
+  clickActionType?: AdClickActionType;
+  externalUrl?: string | null;
+  inAppScreen?: AdScreen | null;
 }
+
+const IN_APP_ROUTE_MAP: Record<string, string> = {
+  HOME:           '/authed/user-dashboard',
+  HOME_PARENTS:   '/authed/parent-account',
+  LEARNING:       '/authed/content',
+  COLINS:         '/authed/content',
+  COLINS_PARENTS: '/authed/content',
+  ARTICLES:       '/authed/content',
+  ROCKS:          '/authed/reel-section',
+  ROCKS_PARENTS:  '/authed/reel-section',
+  TUTOR:          '/authed/tutors',
+  TUTOR_PARENTS:  '/authed/tutors',
+  PARENT_TUTOR:   '/authed/tutors',
+  ACCELERARY:     '/authed/academy',
+  EDUHUB:         '/authed/education',
+  EDUHUB_PARENTS: '/authed/education',
+  STUDENT_STORE:  '/authed/school-store',
+};
 
 @Component({
   selector: 'ad-banner',
@@ -28,6 +66,8 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
   /** Which screen this banner is on - determines which ads the API returns */
   @Input() screen: AdScreen = 'HOME';
 
+  @ViewChild('scrollTrack') scrollTrackRef?: ElementRef<HTMLElement>;
+
   ads: AdItem[] = [];
   currentIndex = 0;
   isVisible = false;
@@ -39,7 +79,9 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
     private http: HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -79,25 +121,33 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
 
     this.http.get<AdItem[]>(`${environment.apiUrl}/ads/age`, { headers, params }).subscribe({
       next: (ads) => {
-        if (!Array.isArray(ads)) {
-          this.isVisible = false;
-          return;
-        }
-        // API already returns in correct order; do not re-sort.
-        this.ads = ads.filter(ad => !!ad?.image);
-        if (this.ads.length === 0) {
-          return;
-        }
-        this.isVisible = true;
-        this.currentIndex = 0;
-        this.startAutoPlay();
-        setTimeout(() => this.updateTrackPosition(), 50);
+        if (!Array.isArray(ads)) { this.isVisible = false; return; }
+        const candidates = ads.filter(ad => !!ad?.image);
+        if (candidates.length === 0) { this.isVisible = false; return; }
+        // Preload all images — only keep ones that actually load
+        this.preloadImages(candidates).then(valid => {
+          if (valid.length === 0) { this.isVisible = false; return; }
+          this.ads = valid;
+          this.isVisible = true;
+          this.currentIndex = 0;
+          this.cdr.detectChanges();
+          this.startAutoPlay();
+          setTimeout(() => this.updateTrackPosition(), 50);
+        });
       },
-      error: () => {
-        // Hide silently on error; no placeholder.
-        this.isVisible = false;
-      }
+      error: () => { this.isVisible = false; }
     });
+  }
+
+  private preloadImages(ads: AdItem[]): Promise<AdItem[]> {
+    return Promise.all(
+      ads.map(ad => new Promise<AdItem | null>(resolve => {
+        const img = new Image();
+        img.onload = () => resolve(ad);
+        img.onerror = () => resolve(null);
+        img.src = ad.image;
+      }))
+    ).then(results => results.filter((ad): ad is AdItem => ad !== null));
   }
 
   private startAutoPlay(): void {
@@ -143,7 +193,7 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   updateTrackPosition(): void {
-    const el = document.querySelector('.adb__scroll-track') as HTMLElement;
+    const el = this.scrollTrackRef?.nativeElement;
     if (!el) return;
     const containerWidth = (el.parentElement?.clientWidth ?? el.clientWidth);
     // card = 82% of container, gap = 10px
@@ -154,6 +204,21 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
     el.style.transform = `translateX(${translateX}px)`;
   }
 
+  onAdClick(ad: AdItem): void {
+    try {
+      if (ad.clickActionType === 'EXTERNAL_URL' && ad.externalUrl) {
+        window.open(ad.externalUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      if (ad.clickActionType === 'IN_APP_SCREEN' && ad.inAppScreen) {
+        const route = IN_APP_ROUTE_MAP[ad.inAppScreen];
+        if (route) {
+          this.router.navigateByUrl(route).catch(() => {});
+        }
+      }
+    } catch (e) {}
+  }
+
   onAdImageError(index: number): void {
     if (index < 0 || index >= this.ads.length) return;
 
@@ -162,6 +227,7 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
       this.clearTimer();
       this.currentIndex = 0;
       this.isVisible = false;
+      this.cdr.detectChanges();
       return;
     }
 
@@ -169,5 +235,7 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
       this.currentIndex = this.ads.length - 1;
     }
     this.startAutoPlay();
+    this.cdr.detectChanges();
+    setTimeout(() => this.updateTrackPosition(), 0);
   }
 }

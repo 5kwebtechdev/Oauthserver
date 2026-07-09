@@ -15,19 +15,9 @@
 
         <div class="school-store-content">
 
-            <div class="slider-wrap">
-                <swiper-container #swiperEl class="edu-swiper" [slides-per-view]="1" [loop]="true"
-                    [autoplay]="{ delay: 3000, disableOnInteraction: false }">
-                    <swiper-slide *ngFor="let i of [0,1,2,3]">
-                        <div class="edu-banner-image"></div>
-                    </swiper-slide>
-                </swiper-container>
-
-                <!-- custom pager: match LearningSection pager style and placement -->
-                <div class="edu-pagination" aria-hidden="true">
-                    <button type="button" class="edu-dot" *ngFor="let n of [0,1,2,3]; let idx = index"
-                        [class.active]="currentSlide === idx" (click)="goToSlide(idx)"></button>
-                </div>
+            <!-- Ad banner — loads STUDENT_STORE screen ads from API -->
+            <div class="store-ad-wrap">
+                <ad-banner screen="STUDENT_STORE"></ad-banner>
             </div>
 
             <!-- Categories loading state -->

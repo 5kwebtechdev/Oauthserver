@@ -1,0 +1,417 @@
+.checkout-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    background: #F8F7F9;
+    padding-bottom: 90px;
+}
+
+/* ── Loading / Error ── */
+.co-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 60px 16px;
+    color: rgba(40,37,39,0.5);
+    font-family: var(--font-sans);
+    font-size: 14px;
+}
+
+.co-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(144,33,77,0.15);
+    border-top-color: #90214D;
+    border-radius: 50%;
+    animation: coSpin 0.8s linear infinite;
+}
+
+.co-error {
+    text-align: center;
+    padding: 40px 16px;
+
+    p {
+        font-family: var(--font-sans);
+        font-size: 14px;
+        color: rgba(40,37,39,0.6);
+        margin-bottom: 16px;
+    }
+}
+
+.co-retry {
+    background: none;
+    border: 1.5px solid #90214D;
+    color: #90214D;
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* ── Content ── */
+.co-content {
+    padding: 12px 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ── Card ── */
+.co-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 1px 4px rgba(40,37,39,0.06);
+}
+
+.co-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    span {
+        font-family: var(--font-sans);
+        font-size: 13px;
+        font-weight: 700;
+        color: rgba(40,37,39,0.55);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+}
+
+/* ── Address ── */
+.co-address-text {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    color: #282527;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ── Items ── */
+.co-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(40,37,39,0.06);
+
+    &:last-child { border-bottom: none; }
+}
+
+.co-item-name {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    color: #282527;
+    flex: 1;
+    line-height: 1.4;
+}
+
+.co-item-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.co-item-qty {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: rgba(40,37,39,0.45);
+}
+
+.co-item-price {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 700;
+    color: #282527;
+}
+
+/* ── Bill rows ── */
+.co-bill-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    span:first-child {
+        font-family: var(--font-sans);
+        font-size: 13px;
+        color: rgba(40,37,39,0.6);
+    }
+
+    span:last-child {
+        font-family: var(--font-sans);
+        font-size: 13px;
+        font-weight: 600;
+        color: #282527;
+    }
+}
+
+.co-green { color: #4CAF50 !important; }
+
+.co-bill-divider {
+    height: 1px;
+    background: rgba(40,37,39,0.08);
+    margin: 4px 0;
+}
+
+.co-bill-total {
+    span:first-child {
+        font-size: 14px;
+        font-weight: 700;
+        color: #282527;
+    }
+    span:last-child {
+        font-size: 15px;
+        font-weight: 800;
+        color: #90214D;
+    }
+}
+
+/* ── Payment options ── */
+.co-pay-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.co-pay-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(40,37,39,0.12);
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+
+    &--active {
+        border-color: #90214D;
+        background: rgba(144,33,77,0.04);
+    }
+}
+
+.co-pay-radio {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid rgba(40,37,39,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: border-color 0.2s;
+
+    .co-pay-option--active & { border-color: #90214D; }
+}
+
+.co-pay-radio-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #90214D;
+}
+
+.co-pay-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.co-pay-title {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 700;
+    color: #282527;
+}
+
+.co-pay-sub {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: rgba(40,37,39,0.5);
+}
+
+.co-pay-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+/* ── Sticky footer ── */
+.co-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: rgba(248,247,249,0.97);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-top: 1px solid rgba(40,37,39,0.08);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.co-footer-total {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.co-footer-label {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    color: rgba(40,37,39,0.5);
+    font-weight: 600;
+}
+
+.co-footer-amount {
+    font-family: var(--font-sans);
+    font-size: 18px;
+    font-weight: 800;
+    color: #282527;
+}
+
+.co-place-btn {
+    flex: 1;
+    height: 50px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, #90214D 0%, #c03068 100%);
+    color: #fff;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity 0.2s, transform 0.1s;
+
+    &:active { transform: scale(0.98); }
+
+    &:disabled {
+        opacity: 0.45;
+        pointer-events: none;
+    }
+
+    &--loading { opacity: 0.75; }
+}
+
+.co-placing {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ── Success sheet ── */
+.co-success-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0);
+    display: flex;
+    align-items: flex-end;
+    pointer-events: none;
+    z-index: 200;
+    transition: background 0.3s;
+
+    &--visible {
+        background: rgba(0,0,0,0.45);
+        pointer-events: all;
+    }
+}
+
+.co-success-sheet {
+    width: 100%;
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    padding: 32px 24px calc(32px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+
+    .co-success-overlay--visible & {
+        transform: translateY(0);
+    }
+}
+
+.co-success-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4CAF50, #2e7d32);
+    color: #fff;
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+    box-shadow: 0 4px 16px rgba(76,175,80,0.35);
+}
+
+.co-success-title {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 700;
+    color: #282527;
+    margin: 0;
+}
+
+.co-success-sub {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    color: rgba(40,37,39,0.55);
+    text-align: center;
+    line-height: 1.6;
+    margin: 0 0 8px;
+}
+
+.co-success-orders-btn {
+    width: 100%;
+    height: 50px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, #90214D 0%, #c03068 100%);
+    color: #fff;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.co-success-store-btn {
+    width: 100%;
+    height: 46px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(40,37,39,0.15);
+    background: transparent;
+    color: rgba(40,37,39,0.7);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+@keyframes coSpin {
+    to { transform: rotate(360deg); }
+}
+
+.co-spin {
+    animation: coSpin 0.8s linear infinite;
+}

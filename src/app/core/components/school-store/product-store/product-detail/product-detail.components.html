@@ -186,7 +186,18 @@
       <span class="discounted-price">
         {{ formatCurrency(product?.sellingPrice) }}
       </span>
-      <superme-button class="page-cta" type="magenta" text="Add To Bag" large (click)="addToCart()"></superme-button>
+      <superme-button
+        class="page-cta"
+        [type]="addToCartSuccess ? 'green' : 'magenta'"
+        [text]="addingToCart ? 'Adding…' : addToCartSuccess ? '✓ Added to Bag' : 'Add To Bag'"
+        large
+        [disabled]="addingToCart"
+        (click)="addToCart()">
+      </superme-button>
+    </div>
+    <!-- error / size-missing feedback -->
+    <div *ngIf="addToCartError" class="cart-error-msg" role="alert">
+      {{ addToCartError }}
     </div>
     </ng-container>
   </main>

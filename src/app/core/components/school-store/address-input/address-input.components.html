@@ -1,64 +1,136 @@
 <ion-content>
-    <main class="address-input-container">
+    <main class="addr-page">
         <superme-navigator [heading]="editMode ? 'Edit Address' : 'Add Delivery Address'" backIcon="arrowSvg" (back)="goBack()">
         </superme-navigator>
-        <div class="map-picker">
 
-        </div>
-            <form class="address-input-wrap" [formGroup]="addressForm" (ngSubmit)="saveAddress()">
-            <div>
-            <div class="d-flex align-items-center gap-3">
-                <div class="input-fields" style="width: 30%;">
-                <h2>Pincode</h2>
-                <input class="address-input" formControlName="pincode" type="text" placeholder="600071" inputmode="numeric" pattern="[0-9]*" maxlength="6" [class.invalid]="pincodeControl.invalid && (pincodeControl.touched || pincodeControl.dirty)" (input)="onPincodeInput($event)">
-            </div>
-            <div class="input-fields" style="width: 70%;">
-                <h2>City & State</h2>
-                <input class="address-input" formControlName="cityState" type="text" placeholder="Chennai, Tamil Nadu">
-            </div>
-            </div>
-            <div class="error" *ngIf="pincodeError">{{ pincodeError }}</div>
-            </div>
-            <div class="input-fields">
-                <h2>Flat, House No, Building, Company, Apartment *</h2>
-                <input class="address-input" formControlName="flat" type="text" placeholder="502, Galaxy Apartments" [class.invalid]="flatControl.invalid && (flatControl.touched || flatControl.dirty)">
-                <div class="error" *ngIf="flatError">{{ flatError }}</div>
-            </div>
-            <div class="input-fields">
-                <h2>Area, Street, Sector, Village *</h2>
-                <input class="address-input" formControlName="area" type="text" placeholder="Association Road" [class.invalid]="areaControl.invalid && (areaControl.touched || areaControl.dirty)">
-                <div class="error" *ngIf="areaError">{{ areaError }}</div>
-            </div>
+        <form class="addr-form" [formGroup]="addressForm" (ngSubmit)="saveAddress()">
 
-            <div class="input-fields">
-                <h2>Landmark (Optional)</h2>
-                <input class="address-input" formControlName="landmark" type="text" placeholder="Eg. Near Hospital">
-            </div>
-
-            <div class="input-fields">
-                <h2>Full Name</h2>
-                <input class="address-input" formControlName="fullName" type="text" placeholder="Enter Name" [class.invalid]="fullNameControl.invalid && (fullNameControl.touched || fullNameControl.dirty)">
-                <div class="error" *ngIf="fullNameError">{{ fullNameError }}</div>
-            </div>
-
-            <div class="input-fields">
-                <h2>Phone Number</h2>
-                <div class="phone-input">
-                    <span class="phone-prefix">+91</span>
-                    <input class="address-input phone-number" formControlName="phone" type="tel" placeholder="Enter Number" inputmode="numeric" pattern="[0-9]*" maxlength="10" [class.invalid]="phoneControl.invalid && (phoneControl.touched || phoneControl.dirty)" (input)="onPhoneInput($event)">
+            <!-- Section: Location -->
+            <div class="addr-section">
+                <p class="addr-section-label">Location</p>
+                <div class="addr-row">
+                    <div class="addr-field addr-field--sm">
+                        <label class="addr-label" for="pincode">Pincode <span class="addr-required">*</span></label>
+                        <input id="pincode" class="addr-input" formControlName="postalCode" type="text"
+                            placeholder="600071" inputmode="numeric" pattern="[0-9]*" maxlength="6"
+                            [class.addr-input--invalid]="pincodeControl.invalid && (pincodeControl.touched || pincodeControl.dirty)"
+                            (input)="onPincodeInput($event)">
+                        <span class="addr-error" *ngIf="pincodeError">{{ pincodeError }}</span>
+                    </div>
+                    <div class="addr-field addr-field--lg">
+                        <label class="addr-label" for="city">City <span class="addr-required">*</span></label>
+                        <input id="city" class="addr-input" formControlName="city" type="text"
+                            placeholder="Mumbai"
+                            [class.addr-input--invalid]="cityCtrl.invalid && (cityCtrl.touched || cityCtrl.dirty)">
+                        <span class="addr-error" *ngIf="cityError">{{ cityError }}</span>
+                    </div>
                 </div>
-                <div class="error" *ngIf="phoneError">{{ phoneError }}</div>
+                <div class="addr-field">
+                    <label class="addr-label" for="state">State <span class="addr-required">*</span></label>
+                    <input id="state" class="addr-input" formControlName="state" type="text"
+                        placeholder="Maharashtra"
+                        [class.addr-input--invalid]="stateCtrl.invalid && (stateCtrl.touched || stateCtrl.dirty)">
+                    <span class="addr-error" *ngIf="stateError">{{ stateError }}</span>
+                </div>
             </div>
 
-            <div class="input-fields d-flex align-items-center gap-2">
-                <h2 class="set-default">
-                    <input type="checkbox" formControlName="isDefault" /> Set address as default
-                </h2>
+            <!-- Section: Address Details -->
+            <div class="addr-section">
+                <p class="addr-section-label">Address Details</p>
+
+                <div class="addr-field">
+                    <label class="addr-label" for="line1">
+                        Flat / House No / Building
+                        <span class="addr-required">*</span>
+                    </label>
+                    <input id="line1" class="addr-input" formControlName="line1" type="text"
+                        placeholder="502, Galaxy Apartments"
+                        [class.addr-input--invalid]="flatControl.invalid && (flatControl.touched || flatControl.dirty)">
+                    <span class="addr-error" *ngIf="flatError">{{ flatError }}</span>
+                </div>
+
+                <div class="addr-field">
+                    <label class="addr-label" for="line2">
+                        Area / Street / Sector
+                        <span class="addr-optional">(Optional)</span>
+                    </label>
+                    <input id="line2" class="addr-input" formControlName="line2" type="text"
+                        placeholder="Association Road">
+                </div>
+
+                <div class="addr-field">
+                    <label class="addr-label" for="landmark">
+                        Landmark
+                        <span class="addr-optional">(Optional)</span>
+                    </label>
+                    <input id="landmark" class="addr-input" formControlName="landmark" type="text"
+                        placeholder="Eg. Near Hospital">
+                </div>
             </div>
 
-            <div class="input-fields">
-                <superme-button type="magenta" class="page-cta" [text]="saving ? 'Saving...' : (editMode ? 'Update Address' : 'Add Address')" large [class.disabled]="addressForm.invalid || saving" (click)="saveAddress()"></superme-button>
+            <!-- Section: Contact -->
+            <div class="addr-section">
+                <p class="addr-section-label">Contact Info</p>
+
+                <div class="addr-field">
+                    <label class="addr-label" for="receiverName">
+                        Full Name
+                        <span class="addr-required">*</span>
+                    </label>
+                    <input id="receiverName" class="addr-input" formControlName="receiverName" type="text"
+                        placeholder="Enter your full name"
+                        [class.addr-input--invalid]="fullNameControl.invalid && (fullNameControl.touched || fullNameControl.dirty)">
+                    <span class="addr-error" *ngIf="fullNameError">{{ fullNameError }}</span>
+                </div>
+
+                <div class="addr-field">
+                    <label class="addr-label" for="mobile">
+                        Phone Number
+                        <span class="addr-required">*</span>
+                    </label>
+                    <div class="addr-phone-wrap"
+                        [class.addr-input--invalid]="phoneControl.invalid && (phoneControl.touched || phoneControl.dirty)">
+                        <span class="addr-phone-prefix">+91</span>
+                        <input id="mobile" class="addr-input addr-input--phone" formControlName="mobile" type="tel"
+                            placeholder="10-digit number" inputmode="numeric" pattern="[0-9]*" maxlength="10"
+                            (input)="onPhoneInput($event)">
+                    </div>
+                    <span class="addr-error" *ngIf="phoneError">{{ phoneError }}</span>
+                </div>
             </div>
+
+            <!-- Default toggle -->
+            <label class="addr-default-row">
+                <div class="addr-default-text">
+                    <span class="addr-default-title">Set as default address</span>
+                    <span class="addr-default-sub">This address will be pre-selected at checkout</span>
+                </div>
+                <div class="addr-toggle-wrap">
+                    <input type="checkbox" class="addr-toggle-input" formControlName="isDefault" id="isDefault">
+                    <span class="addr-toggle-track">
+                        <span class="addr-toggle-thumb"></span>
+                    </span>
+                </div>
+            </label>
+
         </form>
     </main>
+
+    <!-- Sticky save button -->
+    <div class="addr-footer">
+        <button class="addr-save-btn"
+            [class.addr-save-btn--disabled]="addressForm.invalid || saving"
+            [disabled]="addressForm.invalid || saving"
+            (click)="saveAddress()">
+            <span *ngIf="!saving">{{ editMode ? 'Update Address' : 'Save Address' }}</span>
+            <span *ngIf="saving" class="addr-saving">
+                <svg class="addr-spin" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                Saving…
+            </span>
+        </button>
+    </div>
+
 </ion-content>

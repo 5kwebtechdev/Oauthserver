@@ -125,6 +125,10 @@
               <learning-article-card *ngIf="card.type === 'article'" [item]="card" [index]="i"
                 (cardClick)="onCardClick($event)">
               </learning-article-card>
+              <!-- Ad banner injected after the 2nd card — For You tab → ROCKS -->
+              <div *ngIf="i === 1" class="learning-ad-wrap">
+                <ad-banner screen="ROCKS"></ad-banner>
+              </div>
             </ng-container>
           </div>
         </div>
@@ -134,9 +138,13 @@
       <ng-container *ngIf="!isSearching && !loadingPuzzles && selectedCategory === 'puzzles'">
         <div class="cards-section">
           <div *ngIf="puzzleItems.length > 0; else emptyState" class="cards-grid">
-            <learning-challenge-card *ngFor="let card of puzzleItems; let i = index" [item]="card" [index]="i"
-              (cardClick)="onCardClick($event)">
-            </learning-challenge-card>
+            <ng-container *ngFor="let card of puzzleItems; let i = index">
+              <learning-challenge-card [item]="card" [index]="i" (cardClick)="onCardClick($event)">
+              </learning-challenge-card>
+              <div *ngIf="i === 1" class="learning-ad-wrap">
+                <ad-banner screen="ACCELERARY"></ad-banner>
+              </div>
+            </ng-container>
           </div>
         </div>
       </ng-container>
@@ -145,9 +153,13 @@
       <ng-container *ngIf="!isSearching && !loadingQuizzes && selectedCategory === 'quizzes'">
         <div class="cards-section">
           <div *ngIf="quizItems.length > 0; else emptyState" class="cards-grid">
-            <learning-challenge-card *ngFor="let card of quizItems; let i = index" [item]="card" [index]="i"
-              (cardClick)="onCardClick($event)">
-            </learning-challenge-card>
+            <ng-container *ngFor="let card of quizItems; let i = index">
+              <learning-challenge-card [item]="card" [index]="i" (cardClick)="onCardClick($event)">
+              </learning-challenge-card>
+              <div *ngIf="i === 1" class="learning-ad-wrap">
+                <ad-banner screen="TUTOR"></ad-banner>
+              </div>
+            </ng-container>
           </div>
         </div>
       </ng-container>
@@ -156,9 +168,14 @@
       <ng-container *ngIf="!isSearching && !loadingArticles && selectedCategory === 'articles'">
         <div class="cards-section">
           <div *ngIf="articleItems.length > 0; else emptyState" class="cards-grid">
-            <learning-article-card *ngFor="let card of articleItems; let i = index" [item]="card" [index]="i"
-              (cardClick)="onCardClick($event)">
-            </learning-article-card>
+            <ng-container *ngFor="let card of articleItems; let i = index">
+              <learning-article-card [item]="card" [index]="i" (cardClick)="onCardClick($event)">
+              </learning-article-card>
+              <!-- Articles are tall cards — show banner after the 1st card -->
+              <div *ngIf="i === 0" class="learning-ad-wrap">
+                <ad-banner screen="ARTICLES"></ad-banner>
+              </div>
+            </ng-container>
           </div>
         </div>
       </ng-container>

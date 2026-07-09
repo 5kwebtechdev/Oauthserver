@@ -4,6 +4,11 @@ flex-direction: column;
 gap: 24px;
 padding: 0px 16px;
 }
+
+.store-ad-wrap {
+    margin-left: -16px;
+    width: calc(100% + 32px);
+}
 /* Removed legacy navigator slot button styles: icons are now inlined via superme-navigator rightActions */
 
 .school-store-main{

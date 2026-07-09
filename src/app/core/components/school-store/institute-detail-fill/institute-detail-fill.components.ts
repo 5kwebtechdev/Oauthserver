@@ -275,7 +275,10 @@ export class InstituteDetailFillComponent {
   private goToProductStore(): void {
     const queryParams: Record<string, string> = {};
     if (this.categoryId != null) queryParams['category'] = String(this.categoryId);
-    if (this.selectedSchool) queryParams['schoolId'] = String(this.selectedSchool.id);
+    if (this.selectedSchool) {
+      queryParams['schoolId'] = String(this.selectedSchool.id);
+      queryParams['schoolName'] = this.selectedValues['school'] ?? this.selectedSchool.name;
+    }
     if (this.selectedValues['class']) queryParams['className'] = this.selectedValues['class'];
 
     this.router.navigate(['/authed', 'school-store', 'product'], { queryParams }).catch(() => {});
