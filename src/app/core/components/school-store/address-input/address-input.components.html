@@ -1,6 +1,6 @@
 <ion-content>
     <main class="address-input-container">
-        <superme-navigator heading="Add Delivery Address" backIcon="arrowSvg" (back)="goBack()">
+        <superme-navigator [heading]="editMode ? 'Edit Address' : 'Add Delivery Address'" backIcon="arrowSvg" (back)="goBack()">
         </superme-navigator>
         <div class="map-picker">
 
@@ -32,7 +32,7 @@
 
             <div class="input-fields">
                 <h2>Landmark (Optional)</h2>
-                <input class="address-input" type="text" placeholder="Eg. Near Hospital">
+                <input class="address-input" formControlName="landmark" type="text" placeholder="Eg. Near Hospital">
             </div>
 
             <div class="input-fields">
@@ -52,12 +52,12 @@
 
             <div class="input-fields d-flex align-items-center gap-2">
                 <h2 class="set-default">
-                    <input type="checkbox" /> Set address as default
+                    <input type="checkbox" formControlName="isDefault" /> Set address as default
                 </h2>
             </div>
 
             <div class="input-fields">
-                <superme-button type="magenta" class="page-cta" text="Add Address" large [class.disabled]="addressForm.invalid"></superme-button>
+                <superme-button type="magenta" class="page-cta" [text]="saving ? 'Saving...' : (editMode ? 'Update Address' : 'Add Address')" large [class.disabled]="addressForm.invalid || saving" (click)="saveAddress()"></superme-button>
             </div>
         </form>
     </main>

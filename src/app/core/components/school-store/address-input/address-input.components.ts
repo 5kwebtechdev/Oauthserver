@@ -1,10 +1,13 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { AddressService } from '../../../services/address.service';
+import { Address, AddressPayload } from '../../../api/address.api';
+import { CustomToastService } from '../../../services/custom-toast.service';
 
 @Component({
     selector: 'address-input',
@@ -13,10 +16,20 @@ import { Router } from '@angular/router';
     templateUrl: './address-input.components.html',
     styleUrls: ['./address-input.components.scss']
 })
-export class AddressInputComponent {
+export class AddressInputComponent implements OnInit {
     addressForm: FormGroup;
+    editMode = false;
+    addressId: number | null = null;
+    saving = false;
 
-    constructor(private cdr: ChangeDetectorRef, private fb: FormBuilder) {
+    constructor(
+        private cdr: ChangeDetectorRef,
+        private fb: FormBuilder,
+        private router: Router,
+        private route: ActivatedRoute,
+        private addressService: AddressService,
+        private toastService: CustomToastService
+    ) {
         this.addressForm = this.fb.group({
             pincode: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
             cityState: [''],
@@ -29,24 +42,39 @@ export class AddressInputComponent {
         });
     }
 
-    get pincodeControl() {
-        return this.addressForm.get('pincode')!;
+    ngOnInit(): void {
+        const idParam = this.route.snapshot.queryParamMap.get('addressId');
+        if (idParam) {
+            this.editMode = true;
+            this.addressId = Number(idParam);
+            const state = (history.state || {}) as { address?: Address };
+            if (state.address) {
+                this.addressForm.patchValue({
+                    pincode: state.address.pincode ?? '',
+                    cityState: state.address.cityState ?? '',
+                    flat: state.address.flat ?? '',
+                    area: state.address.area ?? '',
+                    landmark: state.address.landmark ?? '',
+                    fullName: state.address.fullName ?? '',
+                    phone: state.address.phone ?? '',
+                    isDefault: state.address.isDefault ?? false
+                });
+            }
+        }
     }
+
+    get pincodeControl() { return this.addressForm.get('pincode')!; }
+    get flatControl() { return this.addressForm.get('flat')!; }
+    get areaControl() { return this.addressForm.get('area')!; }
+    get fullNameControl() { return this.addressForm.get('fullName')!; }
+    get phoneControl() { return this.addressForm.get('phone')!; }
 
     get pincodeError(): string | null {
         const ctrl = this.pincodeControl;
         if (!ctrl) return null;
         if ((ctrl.touched || ctrl.dirty) && ctrl.hasError('required')) return 'Pincode is required.';
         if ((ctrl.touched || ctrl.dirty) && ctrl.hasError('pattern')) return 'Pincode must be 6 digits.';
-        if ((ctrl.touched || ctrl.dirty) && ctrl.valid) {
-            const val = (ctrl.value || '').toString();
-            if (!this.isServiceable(val)) return 'Sorry, we are still expanding!';
-        }
         return null;
-    }
-
-    get flatControl() {
-        return this.addressForm.get('flat')!;
     }
 
     get flatError(): string | null {
@@ -57,20 +85,12 @@ export class AddressInputComponent {
         return null;
     }
 
-    get areaControl() {
-        return this.addressForm.get('area')!;
-    }
-
     get areaError(): string | null {
         const ctrl = this.areaControl;
         if (!ctrl) return null;
         if ((ctrl.touched || ctrl.dirty) && ctrl.hasError('required')) return 'Details are required for delivery.';
         if ((ctrl.touched || ctrl.dirty) && ctrl.hasError('minlength')) return 'Please enter a valid address.';
         return null;
-    }
-
-    get fullNameControl() {
-        return this.addressForm.get('fullName')!;
     }
 
     get fullNameError(): string | null {
@@ -80,14 +100,9 @@ export class AddressInputComponent {
         if ((ctrl.touched || ctrl.dirty) && ctrl.hasError('pattern')) return 'Name should only contain letters.';
         const val = (ctrl.value || '').toString().trim();
         if ((ctrl.touched || ctrl.dirty) && val.length > 0) {
-            // require at least two words for a full name
             if (!val.includes(' ') || val.split(' ').filter(Boolean).length < 2) return 'Please enter your full name';
         }
         return null;
-    }
-
-    get phoneControl() {
-        return this.addressForm.get('phone')!;
     }
 
     get phoneError(): string | null {
@@ -98,25 +113,16 @@ export class AddressInputComponent {
         return null;
     }
 
-    private isServiceable(pincode: string): boolean {
-        if (!pincode) return false;
-        // Example rule: serviceable pincodes begin with '60' or '11' (adjust later)
-        return pincode.startsWith('60') || pincode.startsWith('11');
-    }
-
     onPincodeInput(event: Event): void {
         const input = event.target as HTMLInputElement;
         if (!input) return;
-        // remove non-digit characters and limit to 6
         const cleaned = (input.value || '').replace(/\D/g, '').slice(0, 6);
-        // update the form control (this will update the input value)
         this.pincodeControl.setValue(cleaned, { emitEvent: false });
     }
 
     onPhoneInput(event: Event): void {
         const input = event.target as HTMLInputElement;
         if (!input) return;
-        // remove non-digit characters and limit to 10
         const cleaned = (input.value || '').replace(/\D/g, '').slice(0, 10);
         this.phoneControl.setValue(cleaned, { emitEvent: false });
     }
@@ -131,9 +137,38 @@ export class AddressInputComponent {
             this.cdr.markForCheck();
             return;
         }
+        if (this.saving) return;
+        this.saving = true;
+        this.cdr.detectChanges();
 
-        const address = this.addressForm.value;
-        console.log('Address saved (placeholder):', address);
-        try { window.history.back(); } catch (e) { }
+        const v = this.addressForm.value;
+        const payload: AddressPayload = {
+            fullName: v.fullName,
+            phone: v.phone,
+            flat: v.flat,
+            area: v.area,
+            landmark: v.landmark || null,
+            pincode: v.pincode,
+            cityState: v.cityState || null,
+            isDefault: v.isDefault ?? false
+        };
+
+        const action$ = this.editMode && this.addressId != null
+            ? this.addressService.updateAddress(this.addressId, payload)
+            : this.addressService.addAddress(payload);
+
+        action$.subscribe({
+            next: () => {
+                this.saving = false;
+                const msg = this.editMode ? 'Address updated successfully.' : 'Address added successfully.';
+                this.toastService.success(msg);
+                try { window.history.back(); } catch (e) { }
+            },
+            error: () => {
+                this.saving = false;
+                this.toastService.error('Failed to save address. Please try again.');
+                this.cdr.detectChanges();
+            }
+        });
     }
 }

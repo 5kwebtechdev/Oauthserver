@@ -9,40 +9,74 @@
                         (back)="goBack()"
                         [rightActions]="[{ type: 'package', alt: 'Packages' }]"
                         (rightActionClick)="onNavigatorAction($event)">
+                  <button slot="end" class="clear-cart-btn"
+                          [disabled]="clearingCart || !items.length"
+                          (click)="clearCart()">
+                    <svg *ngIf="!clearingCart" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      <path d="M10 11v6"/><path d="M14 11v6"/>
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                    <svg *ngIf="clearingCart" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="spin-icon">
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                    </svg>
+                    <span>Clear</span>
+                  </button>
                 </superme-navigator>
 
 
                 <div class="my-cart-container">
                   <!--address detail-->
-                <div class="address-detail">
+                <div class="address-detail" *ngIf="!cartLoading && items.length > 0">
                     <img src="assets/icons/location-icon.svg" alt="Location" width="24" height="24" style="opacity: 0.7;" />
                     <div class="address-text-detail d-flex flex-column w-100">
                       <h2 style="font-size: 13px;">Deliver to:</h2>
                       <div class="address-text d-flex justify-content-between">
-                        <h2>{{ selectedAddress }}</h2>
+                        <h2>{{ selectedAddress ? formatAddressShort(selectedAddress) : '' }}</h2>
                         <a class="underline-link" role="button" tabindex="0" (click)="openAddressPopup()" (keyup.enter)="openAddressPopup()">Change</a>
                       </div>
                         
                     </div>
                 </div>
+                <!-- Loading state -->
+                <div *ngIf="cartLoading" class="cart-loading">
+                  <div class="cart-spinner"></div>
+                  <span class="cart-loading-text">Loading your cart…</span>
+                </div>
+
+                <!-- Error state -->
+                <div *ngIf="!cartLoading && cartError" class="cart-error">
+                  <span class="cart-error-text">Could not load cart. Please try again.</span>
+                  <button class="cart-retry" (click)="loadCart()">Retry</button>
+                </div>
+
+                <!-- Empty state -->
+                <div *ngIf="!cartLoading && !cartError && items.length === 0" class="cart-empty">
+                  <img class="cart-empty-img" src="assets/Images-Transparent/Cart-Blank.png" alt="Empty cart" />
+                  <p class="cart-empty-title">Your cart is feeling lonely</p>
+                  <superme-button type="magenta" text="Explore Products" (click)="goToStore()"></superme-button>
+                </div>
+
                 <!--cart products list-->
-                <div class="cart-products-list">
+                <div class="cart-products-list" *ngIf="!cartLoading && !cartError && items.length > 0">
                   <div class="cart-product-item" *ngFor="let item of items; let i = index">
                     <div class="product-item-img">
-                      <img [src]="item.image" [alt]="item.title" />
+                      <img [src]="item.thumbnailUrl || item.imageUrl || item.image"
+                           [alt]="item.productName"
+                           (error)="onCartImgError($event)" />
                     </div>
                     <div class="product-item-text d-flex flex-column gap-2 w-100">
-                      <h2>{{ item.title }}</h2>
-                      <p>{{ item.subtitle }}</p>
+                      <h2>{{ item.productName }}</h2>
+                      <p *ngIf="item.schoolName">{{ item.schoolName }}</p>
                       <div class="price d-flex gap-2">
-                        <span class="discounted-price">₹{{ item.price }}</span>
-                        <span class="original-price">₹{{ item.originalPrice }}</span>
+                        <span class="discounted-price">₹{{ item.sellingPrice ?? item.price }}</span>
+                        <span *ngIf="(item.mrp ?? item.originalPrice ?? 0) > (item.sellingPrice ?? item.price ?? 0)" class="original-price">₹{{ item.mrp ?? item.originalPrice }}</span>
                       </div>
-                      <h2 style="color:#90214D; font-size: 13px;">Get it by Mon, 2nd Jan</h2>
-                      <div class="size-quantity d-flex align-center justify-content-between">
-                        <div class="size-picker" role="button" tabindex="0" (click)="openSizePopup()" (keyup.enter)="openSizePopup()">
-                          <h2 style="font-size: 10px;">size: {{ item.size }}</h2>
-                          <ion-icon style="font-size: 10px;" name="caret-down"></ion-icon>
+                      <h2 *ngIf="item.deliveryDays" style="color:#90214D; font-size: 13px;">{{ item.deliveryDays }}-day delivery</h2>
+                      <div class="item-bottom-row">
+                        <div *ngIf="item.sizeLabel" class="size-picker">
+                          <h2 style="font-size: 10px;">Size: {{ item.sizeLabel }}</h2>
                         </div>
                         <div class="quantity-selector d-flex align-center gap-2">
                           <button class="qty-btn decrease" aria-label="Decrease quantity" (click)="decreaseQuantity(i)">
@@ -53,13 +87,27 @@
                             <span>+</span>
                           </button>
                         </div>
+                        <button class="delete-btn"
+                                aria-label="Remove item"
+                                [disabled]="deletingIndex === i"
+                                (click)="deleteCartItem(item, i)">
+                          <svg *ngIf="deletingIndex !== i" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#bb2124" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                            <path d="M10 11v6"/><path d="M14 11v6"/>
+                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                          </svg>
+                          <svg *ngIf="deletingIndex === i" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#bb2124" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="spin-icon">
+                            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                          </svg>
+                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <!--price breakdown-->
-                  <div class="bill-summary">
+                  <div class="bill-summary" *ngIf="!cartLoading && !cartError && items.length > 0">
                     <h2>Bill Summary ({{ items.length }} Items)</h2>
                     <div class="d-flex flex-column gap-2 w-100">
                     <div class="txt-amount">
@@ -84,7 +132,7 @@
 
                 
                 <!--purchase-bar-->
-                <div class="product-purchase-bar">
+                <div class="product-purchase-bar" *ngIf="!cartLoading && !cartError && items.length > 0">
                   <span class="to-pay">{{ toPayDisplay }}</span>
                   <superme-button class="page-cta" type="magenta" text="Proceed to Pay" large (click)="addToCart()"></superme-button>
                 </div>
@@ -94,9 +142,54 @@
             aria-label="Address options" (click)="closeAddressPopup()">
             <div class="address-popup-inner" (click)="$event.stopPropagation()">
               <button class="popup-close" aria-label="Close" (click)="closeAddressPopup()">✕</button>
-              <div class="address-item" *ngFor="let a of addresses" (click)="selectAddress(a)"
-                [class.selected]="selectedId === a.id" role="button" tabindex="0" (keyup.enter)="selectAddress(a)">
-                <div class="address-text" [innerHTML]="a.html"></div>
+
+              <!-- Loading state -->
+              <div *ngIf="addressesLoading" class="addr-popup-loading">
+                <div class="addr-popup-spinner"></div>
+                <span>Loading addresses…</span>
+              </div>
+
+              <!-- Empty state -->
+              <div *ngIf="!addressesLoading && addresses.length === 0" class="addr-popup-empty">
+                <p>No addresses saved.</p>
+              </div>
+
+              <!-- Address list -->
+              <div *ngFor="let a of addresses" class="address-item" [class.selected]="selectedAddress?.id === a.id">
+                <div class="addr-main" role="button" tabindex="0"
+                     (click)="selectAddress(a)" (keyup.enter)="selectAddress(a)">
+                  <div class="addr-radio" [class.addr-radio--active]="a.isDefault">
+                    <div class="addr-radio-dot"></div>
+                  </div>
+                  <div class="address-text" [innerHTML]="formatAddressHtml(a)"></div>
+                </div>
+                <div class="address-item-actions">
+                  <button class="addr-action-btn addr-edit-btn" aria-label="Edit address"
+                          (click)="editAddress(a)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+                  <button class="addr-action-btn addr-delete-btn" aria-label="Delete address"
+                          [disabled]="deletingAddressId === a.id"
+                          (click)="deleteAddress(a)">
+                    <svg *ngIf="deletingAddressId !== a.id" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      <path d="M10 11v6"/><path d="M14 11v6"/>
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                    <svg *ngIf="deletingAddressId === a.id" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                         stroke-linecap="round" stroke-linejoin="round" class="addr-spin">
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
 
               <button class="add-address" (click)="openAddressInput()">+ Add Address</button>

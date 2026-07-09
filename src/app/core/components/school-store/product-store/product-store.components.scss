@@ -133,6 +133,110 @@
 	text-decoration: underline;
 }
 
+/* Address popup — loading / empty / item actions */
+.addr-popup-loading {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 0;
+	color: rgba(40, 37, 39, 0.55);
+	font-family: var(--font-sans);
+	font-size: 13px;
+}
+
+.addr-popup-spinner {
+	width: 18px;
+	height: 18px;
+	border: 2px solid rgba(144, 33, 77, 0.2);
+	border-top-color: #90214D;
+	border-radius: 50%;
+	animation: addrSpin 0.7s linear infinite;
+	flex-shrink: 0;
+}
+
+@keyframes addrSpin { to { transform: rotate(360deg); } }
+
+.addr-spin { animation: addrSpin 0.7s linear infinite; }
+
+.addr-popup-empty {
+	padding: 8px 0;
+	font-family: var(--font-sans);
+	font-size: 14px;
+	color: rgba(40, 37, 39, 0.55);
+}
+
+/* Row layout: radio + text on the left, action buttons on the right */
+.address-item {
+	display: flex !important;
+	align-items: flex-start;
+	gap: 8px;
+}
+
+.addr-main {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	flex: 1;
+	cursor: pointer;
+}
+
+.addr-radio {
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	border: 2px solid rgba(40, 37, 39, 0.3);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	margin-top: 3px;
+	transition: border-color 0.15s ease;
+}
+
+.addr-radio--active {
+	border-color: #90214D;
+}
+
+.addr-radio-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: transparent;
+	transition: background 0.15s ease;
+}
+
+.addr-radio--active .addr-radio-dot {
+	background: #90214D;
+}
+
+.address-item-actions {
+	display: flex;
+	gap: 4px;
+	flex-shrink: 0;
+	align-items: center;
+	padding-top: 2px;
+}
+
+.addr-action-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 6px;
+	border: 1px solid rgba(40, 37, 39, 0.15);
+	background: #f9f9f9;
+	cursor: pointer;
+	padding: 0;
+	transition: background 0.15s ease;
+
+	&:active { background: #f0f0f0; }
+	&:disabled { opacity: 0.35; cursor: not-allowed; }
+}
+
+.addr-edit-btn { color: #282527; }
+.addr-delete-btn { color: #bb2124; border-color: rgba(187, 33, 36, 0.2); background: #fff5f5; }
+
 @media (min-width: 740px) {
 	.subtext-trigger {
 		left: 24px;
