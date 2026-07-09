@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from
 import { CommonModule } from '@angular/common';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { BgSkeletonDirective } from '../../skeleton-image/bg-skeleton.directive';
+import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
 import {
   TutorListItem,
   formatAvailability,
@@ -9,11 +10,12 @@ import {
   formatLevels
 } from '../../../models/tutor.model';
 import { TutorLikeService } from '../../../services/tutor-like.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'tutor-list',
   standalone: true,
-  imports: [CommonModule, SupermeButtonComponent, BgSkeletonDirective],
+  imports: [CommonModule, SupermeButtonComponent, BgSkeletonDirective, AdBannerComponent],
   templateUrl: './tutor-list.component.html',
   styleUrls: ['./tutor-list.component.scss']
 })
@@ -23,7 +25,11 @@ export class TutorListComponent implements OnChanges {
   // track subscriptions / live states
   private _watching = new Set<string | number>();
 
-  constructor(private likeService: TutorLikeService) {}
+  constructor(private likeService: TutorLikeService, private authService: AuthService) {}
+
+  get tutorAdScreen(): AdScreen {
+    return this.authService.isParentUser() ? 'PARENT_TUTOR' : 'TUTOR_HOME';
+  }
 
   /** Emitted when user clicks View Profile. Payload: tutor object. */
   @Output() viewProfile = new EventEmitter<TutorListItem>();

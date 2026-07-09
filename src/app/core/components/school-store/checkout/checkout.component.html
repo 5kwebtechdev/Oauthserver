@@ -1,0 +1,173 @@
+<ion-content>
+    <main class="checkout-page">
+
+        <superme-navigator heading="Checkout" backIcon="arrowSvg" (back)="goBack()"></superme-navigator>
+
+        <!-- Loading -->
+        <div *ngIf="summaryLoading" class="co-loading">
+            <div class="co-spinner"></div>
+            <span>Fetching order summary…</span>
+        </div>
+
+        <!-- Error -->
+        <div *ngIf="!summaryLoading && summaryError" class="co-error">
+            <p>Could not load order summary.</p>
+            <button class="co-retry" (click)="fetchSummary()">Try Again</button>
+        </div>
+
+        <!-- Content -->
+        <div *ngIf="!summaryLoading && !summaryError && summary" class="co-content">
+
+            <!-- Delivery Address -->
+            <div class="co-card">
+                <div class="co-card-header">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="#90214D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <span>Delivery Address</span>
+                </div>
+                <p class="co-address-text">{{ addressLabel || 'No address selected' }}</p>
+            </div>
+
+            <!-- Order Items -->
+            <div class="co-card">
+                <div class="co-card-header">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="#90214D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
+                    <span>Order Items ({{ summary.itemCount }})</span>
+                </div>
+                <div class="co-item" *ngFor="let item of summary.items">
+                    <span class="co-item-name">{{ item.productName ?? item.name }}</span>
+                    <div class="co-item-right">
+                        <span class="co-item-qty">×{{ item.quantity }}</span>
+                        <span class="co-item-price">{{ fmt(item.lineTotal ?? item.sellingPrice) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bill Summary -->
+            <div class="co-card">
+                <div class="co-card-header">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="#90214D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                        <line x1="1" y1="10" x2="23" y2="10"/>
+                    </svg>
+                    <span>Bill Summary</span>
+                </div>
+                <div class="co-bill-row">
+                    <span>Item Total</span>
+                    <span>{{ fmt(summary.itemsTotal) }}</span>
+                </div>
+                <div class="co-bill-row" *ngIf="summary.discountTotal">
+                    <span>Discount</span>
+                    <span class="co-green">− {{ fmt(summary.discountTotal) }}</span>
+                </div>
+                <div class="co-bill-row">
+                    <span>GST & Charges</span>
+                    <span>{{ fmt(summary.gstTotal) }}</span>
+                </div>
+                <div class="co-bill-row">
+                    <span>Delivery</span>
+                    <span [class.co-green]="!summary.deliveryCharge">
+                        {{ summary.deliveryCharge ? fmt(summary.deliveryCharge) : 'Free' }}
+                    </span>
+                </div>
+                <div class="co-bill-divider"></div>
+                <div class="co-bill-row co-bill-total">
+                    <span>Total Payable</span>
+                    <span>{{ fmt(summary.payableTotal) }}</span>
+                </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="co-card">
+                <div class="co-card-header">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="#90214D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                        <line x1="1" y1="10" x2="23" y2="10"/>
+                    </svg>
+                    <span>Payment Method</span>
+                </div>
+
+                <div class="co-pay-options">
+                    <!-- COD -->
+                    <div class="co-pay-option" [class.co-pay-option--active]="paymentMethod === 'COD'"
+                        (click)="selectPayment('COD')">
+                        <div class="co-pay-radio">
+                            <div class="co-pay-radio-dot" *ngIf="paymentMethod === 'COD'"></div>
+                        </div>
+                        <div class="co-pay-info">
+                            <span class="co-pay-title">Cash on Delivery</span>
+                            <span class="co-pay-sub">Pay when your order arrives</span>
+                        </div>
+                        <div class="co-pay-icon co-pay-icon--cod">💵</div>
+                    </div>
+
+                    <!-- Online -->
+                    <div class="co-pay-option" [class.co-pay-option--active]="paymentMethod === 'ONLINE'"
+                        (click)="selectPayment('ONLINE')">
+                        <div class="co-pay-radio">
+                            <div class="co-pay-radio-dot" *ngIf="paymentMethod === 'ONLINE'"></div>
+                        </div>
+                        <div class="co-pay-info">
+                            <span class="co-pay-title">Pay Online</span>
+                            <span class="co-pay-sub">UPI · Cards · Net Banking via Razorpay</span>
+                        </div>
+                        <div class="co-pay-icon co-pay-icon--online">💳</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Spacer for footer -->
+        <div style="height: 90px;"></div>
+
+    </main>
+
+    <!-- Sticky Place Order footer -->
+    <div class="co-footer" *ngIf="!summaryLoading && !summaryError && summary">
+        <div class="co-footer-total">
+            <span class="co-footer-label">Total</span>
+            <span class="co-footer-amount">{{ fmt(summary.payableTotal) }}</span>
+        </div>
+        <button class="co-place-btn"
+            [class.co-place-btn--loading]="placing"
+            [disabled]="!canPlace"
+            (click)="placeOrder()">
+            <span *ngIf="!placing">
+                {{ paymentMethod === 'COD' ? 'Place Order' : 'Pay Now' }}
+            </span>
+            <span *ngIf="placing" class="co-placing">
+                <svg class="co-spin" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                Processing…
+            </span>
+        </button>
+    </div>
+
+    <!-- Order Success Bottom Sheet -->
+    <div class="co-success-overlay" [class.co-success-overlay--visible]="showSuccessSheet">
+        <div class="co-success-sheet">
+            <div class="co-success-icon">✓</div>
+            <h2 class="co-success-title">Order Placed!</h2>
+            <p class="co-success-sub">
+                Your order{{ orderId ? ' #' + orderId : '' }} has been placed successfully.
+                We'll notify you when it's on the way.
+            </p>
+            <button class="co-success-orders-btn" (click)="goToOrders()">Track My Order</button>
+            <button class="co-success-store-btn" (click)="goToStore()">Continue Shopping</button>
+        </div>
+    </div>
+
+</ion-content>

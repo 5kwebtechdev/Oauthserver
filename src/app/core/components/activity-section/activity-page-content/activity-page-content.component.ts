@@ -6,6 +6,7 @@ import { ActivityCardComponent } from '../activity-card/activity-card.component'
 import { SupermeBadgeComponent } from '../../superme-badge/superme-badge.component';
 import { SupermeInputsModule } from '../../superme-inputs/superme-inputs.module';
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
+import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
 import { HabitService } from '../habit.service';
 import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { TaskApi } from '../../../api/task.api';
@@ -20,7 +21,7 @@ import { Observable, Subscription, filter, take } from 'rxjs';
     selector: 'activity-page-content',
     templateUrl: './activity-page-content.component.html',
     styleUrls: ['./activity-page-content.component.scss'],
-    imports: [CommonModule, IonicModule, ActivityCardComponent, SupermeInputsModule, SupermeBadgeComponent, EmptyStateComponent]
+    imports: [CommonModule, IonicModule, ActivityCardComponent, SupermeInputsModule, SupermeBadgeComponent, EmptyStateComponent, AdBannerComponent]
 })
 
 export class ActivityPageContentComponent implements OnInit, OnDestroy {
@@ -85,6 +86,14 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
             return !this.authService || !this.authService.isParentUser ? true : !this.authService.isParentUser();
         } catch (e) {
             return true;
+        }
+    }
+
+    get adScreen(): AdScreen {
+        try {
+            return this.authService.isParentUser() ? 'HOME_PARENTS' : 'HOME';
+        } catch (e) {
+            return 'HOME';
         }
     }
 

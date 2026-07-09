@@ -1,19 +1,9 @@
 <ion-content style="--padding-top: var(--sat)">
     <div class="education-main-page-container">
         <h1 class="edu-heading">Education & Essentials</h1>
-        <div>
-            <swiper-container #swiperEl class="edu-swiper" [slides-per-view]="1" [loop]="true"
-                [autoplay]="{ delay: 3000, disableOnInteraction: false }">
-                <swiper-slide *ngFor="let i of [0,1,2,3]">
-                    <div class="edu-banner-image"></div>
-                </swiper-slide>
-            </swiper-container>
-
-            <!-- custom pager: match LearningSection pager style and placement -->
-            <div class="edu-pagination" aria-hidden="true">
-                <button type="button" class="edu-dot" *ngFor="let n of [0,1,2,3]; let idx = index"
-                    [class.active]="currentSlide === idx" (click)="goToSlide(idx)"></button>
-            </div>
+        <!-- Ad banner — loads EDUHUB screen ads from API -->
+        <div class="edu-ad-wrap">
+            <ad-banner [screen]="eduAdScreen"></ad-banner>
         </div>
         <div class="edu-item-list">
             <a class="edu-item-cards" routerLink="/authed/tutors">
@@ -35,7 +25,7 @@
                 <span>COMING SOON</span>
                 <app-img src="assets/Images-Transparent/Stationery.png" alt="Stationery Store" objectFit="contain"></app-img>
             </a>
-        </div>
+</div>
     </div>
     <app-footer></app-footer>
 </ion-content>

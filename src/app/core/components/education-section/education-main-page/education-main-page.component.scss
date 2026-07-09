@@ -6,6 +6,13 @@
     padding: 16px 16px 0;
 }
 
+.edu-ad-wrap {
+    width: 100%;
+    /* negative side margin so banner peek reaches screen edge */
+    margin-left: -16px;
+    width: calc(100% + 32px);
+}
+
 .edu-heading {
     font-family: var(--font-heading);
     font-size: 22px;

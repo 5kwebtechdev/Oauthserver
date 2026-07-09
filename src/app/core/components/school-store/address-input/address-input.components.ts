@@ -31,14 +31,15 @@ export class AddressInputComponent implements OnInit {
         private toastService: CustomToastService
     ) {
         this.addressForm = this.fb.group({
-            pincode: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
-            cityState: [''],
-            flat: ['', [Validators.required, Validators.minLength(5)]],
-            area: ['', [Validators.required, Validators.minLength(5)]],
-            landmark: [''],
-            fullName: ['', [Validators.required, Validators.pattern(/^[A-Za-z\s]+$/), Validators.minLength(3)]],
-            phone: ['', [Validators.required, Validators.pattern(/^[6-9]\d{9}$/)]],
-            isDefault: [false]
+            postalCode: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
+            city:       ['', Validators.required],
+            state:      ['', Validators.required],
+            line1:      ['', [Validators.required, Validators.minLength(5)]],
+            line2:      [''],
+            landmark:   [''],
+            receiverName: ['', [Validators.required, Validators.pattern(/^[A-Za-z\s]+$/), Validators.minLength(3)]],
+            mobile:     ['', [Validators.required, Validators.pattern(/^[6-9]\d{9}$/)]],
+            isDefault:  [false]
         });
     }
 
@@ -49,67 +50,93 @@ export class AddressInputComponent implements OnInit {
             this.addressId = Number(idParam);
             const state = (history.state || {}) as { address?: Address };
             if (state.address) {
+                const a = state.address;
+                // Support both new field names and old field names for backward compat
                 this.addressForm.patchValue({
-                    pincode: state.address.pincode ?? '',
-                    cityState: state.address.cityState ?? '',
-                    flat: state.address.flat ?? '',
-                    area: state.address.area ?? '',
-                    landmark: state.address.landmark ?? '',
-                    fullName: state.address.fullName ?? '',
-                    phone: state.address.phone ?? '',
-                    isDefault: state.address.isDefault ?? false
+                    postalCode:   (a as any).postalCode ?? (a as any).pincode ?? '',
+                    city:         a.city ?? '',
+                    state:        a.state ?? '',
+                    line1:        a.line1 ?? (a as any).flat ?? '',
+                    line2:        a.line2 ?? (a as any).area ?? '',
+                    landmark:     (a as any).landmark ?? '',
+                    receiverName: a.receiverName ?? (a as any).fullName ?? '',
+                    mobile:       a.mobile ?? (a as any).phone ?? '',
+                    isDefault:    a.isDefault ?? false
                 });
             }
         }
     }
 
-    get pincodeControl() { return this.addressForm.get('pincode')!; }
-    get flatControl() { return this.addressForm.get('flat')!; }
-    get areaControl() { return this.addressForm.get('area')!; }
-    get fullNameControl() { return this.addressForm.get('fullName')!; }
-    get phoneControl() { return this.addressForm.get('phone')!; }
+    get postalCodeCtrl()    { return this.addressForm.get('postalCode')!; }
+    get cityCtrl()          { return this.addressForm.get('city')!; }
+    get stateCtrl()         { return this.addressForm.get('state')!; }
+    get line1Ctrl()         { return this.addressForm.get('line1')!; }
+    get line2Ctrl()         { return this.addressForm.get('line2')!; }
+    get receiverNameCtrl()  { return this.addressForm.get('receiverName')!; }
+    get mobileCtrl()        { return this.addressForm.get('mobile')!; }
+
+    // Aliases used in HTML (keep old names pointing to new controls)
+    get pincodeControl()    { return this.postalCodeCtrl; }
+    get flatControl()       { return this.line1Ctrl; }
+    get areaControl()       { return this.line2Ctrl; }
+    get fullNameControl()   { return this.receiverNameCtrl; }
+    get phoneControl()      { return this.mobileCtrl; }
 
     get pincodeError(): string | null {
-        const ctrl = this.pincodeControl;
-        if (!ctrl) return null;
-        if ((ctrl.touched || ctrl.dirty) && ctrl.hasError('required')) return 'Pincode is required.';
-        if ((ctrl.touched || ctrl.dirty) && ctrl.hasError('pattern')) return 'Pincode must be 6 digits.';
+        const c = this.postalCodeCtrl;
+        if (!c.touched && !c.dirty) return null;
+        if (c.hasError('required')) return 'Pincode is required.';
+        if (c.hasError('pattern'))  return 'Pincode must be 6 digits.';
         return null;
     }
 
     get flatError(): string | null {
-        const ctrl = this.flatControl;
-        if (!ctrl) return null;
-        if ((ctrl.touched || ctrl.dirty) && ctrl.hasError('required')) return 'Details are required for delivery.';
-        if ((ctrl.touched || ctrl.dirty) && ctrl.hasError('minlength')) return 'Please enter a valid address.';
+        const c = this.line1Ctrl;
+        if (!c.touched && !c.dirty) return null;
+        if (c.hasError('required'))   return 'Flat / House No is required.';
+        if (c.hasError('minlength'))  return 'Please enter a valid address.';
         return null;
     }
 
     get areaError(): string | null {
-        const ctrl = this.areaControl;
-        if (!ctrl) return null;
-        if ((ctrl.touched || ctrl.dirty) && ctrl.hasError('required')) return 'Details are required for delivery.';
-        if ((ctrl.touched || ctrl.dirty) && ctrl.hasError('minlength')) return 'Please enter a valid address.';
+        const c = this.line2Ctrl;
+        if (!c.touched && !c.dirty) return null;
+        if (c.hasError('required'))   return 'Area / Street is required.';
+        if (c.hasError('minlength'))  return 'Please enter a valid address.';
         return null;
     }
 
     get fullNameError(): string | null {
-        const ctrl = this.fullNameControl;
-        if (!ctrl) return null;
-        if ((ctrl.touched || ctrl.dirty) && ctrl.hasError('required')) return 'Name is required.';
-        if ((ctrl.touched || ctrl.dirty) && ctrl.hasError('pattern')) return 'Name should only contain letters.';
-        const val = (ctrl.value || '').toString().trim();
-        if ((ctrl.touched || ctrl.dirty) && val.length > 0) {
-            if (!val.includes(' ') || val.split(' ').filter(Boolean).length < 2) return 'Please enter your full name';
+        const c = this.receiverNameCtrl;
+        if (!c.touched && !c.dirty) return null;
+        if (c.hasError('required')) return 'Name is required.';
+        if (c.hasError('pattern'))  return 'Name should only contain letters.';
+        const val = (c.value || '').toString().trim();
+        if (val && (!val.includes(' ') || val.split(' ').filter(Boolean).length < 2)) {
+            return 'Please enter your full name.';
         }
         return null;
     }
 
     get phoneError(): string | null {
-        const ctrl = this.phoneControl;
-        if (!ctrl) return null;
-        if ((ctrl.touched || ctrl.dirty) && ctrl.hasError('required')) return 'Phone number is required.';
-        if ((ctrl.touched || ctrl.dirty) && ctrl.hasError('pattern')) return 'Please enter a valid 10-digit mobile number.';
+        const c = this.mobileCtrl;
+        if (!c.touched && !c.dirty) return null;
+        if (c.hasError('required')) return 'Phone number is required.';
+        if (c.hasError('pattern'))  return 'Please enter a valid 10-digit mobile number.';
+        return null;
+    }
+
+    get cityError(): string | null {
+        const c = this.cityCtrl;
+        if (!c.touched && !c.dirty) return null;
+        if (c.hasError('required')) return 'City is required.';
+        return null;
+    }
+
+    get stateError(): string | null {
+        const c = this.stateCtrl;
+        if (!c.touched && !c.dirty) return null;
+        if (c.hasError('required')) return 'State is required.';
         return null;
     }
 
@@ -117,14 +144,14 @@ export class AddressInputComponent implements OnInit {
         const input = event.target as HTMLInputElement;
         if (!input) return;
         const cleaned = (input.value || '').replace(/\D/g, '').slice(0, 6);
-        this.pincodeControl.setValue(cleaned, { emitEvent: false });
+        this.postalCodeCtrl.setValue(cleaned, { emitEvent: false });
     }
 
     onPhoneInput(event: Event): void {
         const input = event.target as HTMLInputElement;
         if (!input) return;
         const cleaned = (input.value || '').replace(/\D/g, '').slice(0, 10);
-        this.phoneControl.setValue(cleaned, { emitEvent: false });
+        this.mobileCtrl.setValue(cleaned, { emitEvent: false });
     }
 
     goBack(): void {
@@ -143,14 +170,15 @@ export class AddressInputComponent implements OnInit {
 
         const v = this.addressForm.value;
         const payload: AddressPayload = {
-            fullName: v.fullName,
-            phone: v.phone,
-            flat: v.flat,
-            area: v.area,
-            landmark: v.landmark || null,
-            pincode: v.pincode,
-            cityState: v.cityState || null,
-            isDefault: v.isDefault ?? false
+            receiverName: v.receiverName,
+            mobile:       v.mobile,
+            line1:        v.line1,
+            line2:        v.line2 || null,
+            city:         v.city,
+            state:        v.state,
+            postalCode:   v.postalCode,
+            latitude:     null,
+            longitude:    null
         };
 
         const action$ = this.editMode && this.addressId != null

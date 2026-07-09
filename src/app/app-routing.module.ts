@@ -14,7 +14,7 @@ const routes: Routes = [
     loadChildren: () => import('./authenticated/authenticated.module').then(m => m.AuthenticatedModule),
     canActivate: [authGuard]
   },
-  {
+  { 
     path: 'our-policies',
     component: OurPoliciesComponent
   },

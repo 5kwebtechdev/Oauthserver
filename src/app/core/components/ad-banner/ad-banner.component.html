@@ -5,19 +5,27 @@
     role="region"
     aria-label="Featured offers">
 
-    <div class="adb__scroll-track">
+    <div class="adb__track-clip">
+    <div class="adb__scroll-track" #scrollTrack>
       <div class="adb__card" *ngFor="let ad of ads; let i = index"
-           [class.adb__card--active]="i === currentIndex">
+           [class.adb__card--active]="i === currentIndex"
+           [class.adb__card--clickable]="ad.clickActionType === 'IN_APP_SCREEN' || ad.clickActionType === 'EXTERNAL_URL'"
+           (click)="onAdClick(ad)"
+           role="button"
+           [attr.aria-label]="ad.title">
+
         <img
           class="adb__img"
           [src]="ad.image"
           [alt]="ad.title"
           loading="lazy"
           (error)="onAdImageError(i)" />
+
       </div>
     </div>
+    </div>
 
-    <!-- Dot indicators -->
+    <!-- Dots row with counter on the right -->
     <div class="adb__dots" *ngIf="ads.length > 1" role="tablist">
       <button *ngFor="let ad of ads; let i = index"
         class="adb__dot"
@@ -27,6 +35,9 @@
         [attr.aria-selected]="i === currentIndex"
         [attr.aria-label]="'Slide ' + (i + 1)">
       </button>
+      <span class="adb__counter" aria-hidden="true">
+        {{ currentIndex + 1 }}/{{ ads.length }}
+      </span>
     </div>
 
   </div>

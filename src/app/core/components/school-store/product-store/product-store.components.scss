@@ -308,6 +308,46 @@
 	border-bottom: 2px solid rgba(107, 101, 106, 0.10);
 }
 
+/* School / Class info bar */
+.school-info-bar {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 16px;
+	background: rgba(144, 33, 77, 0.06);
+	border-bottom: 1px solid rgba(144, 33, 77, 0.12);
+
+	svg { flex-shrink: 0; color: #90214D; }
+}
+
+.school-info-text {
+	flex: 1;
+	font-family: var(--font-sans, 'Nunito', sans-serif);
+	font-size: 13px;
+	font-weight: 600;
+	color: #282527;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.school-info-sep {
+	color: rgba(40, 37, 39, 0.4);
+}
+
+.school-info-change {
+	flex-shrink: 0;
+	background: none;
+	border: 1.5px solid #90214D;
+	border-radius: 20px;
+	padding: 3px 10px;
+	font-family: var(--font-sans, 'Nunito', sans-serif);
+	font-size: 12px;
+	font-weight: 700;
+	color: #90214D;
+	cursor: pointer;
+}
+
 /* Swiper-based category layout */
 .category-swiper {
 	padding: 0 16px;
@@ -395,6 +435,38 @@ $accent: #90214D;
 
 .subcategory-slide:last-child {
 	margin-right: 0;
+}
+
+/* Product skeleton */
+@keyframes prodSkelShimmer {
+	0%   { background-position: 200% 0; }
+	100% { background-position: -200% 0; }
+}
+
+.product-card--skel {
+	pointer-events: none;
+}
+
+.skel-img {
+	width: 100%;
+	aspect-ratio: 1;
+	border-radius: 12px;
+	background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+	background-size: 200% 100%;
+	animation: prodSkelShimmer 1.3s infinite;
+	flex-shrink: 0;
+}
+
+.skel-line {
+	border-radius: 6px;
+	background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+	background-size: 200% 100%;
+	animation: prodSkelShimmer 1.3s infinite;
+	margin-bottom: 6px;
+
+	&--title  { height: 13px; width: 85%; }
+	&--sub    { height: 11px; width: 60%; }
+	&--price  { height: 13px; width: 40%; margin-top: 4px; }
 }
 
 /* Product list and card styles */

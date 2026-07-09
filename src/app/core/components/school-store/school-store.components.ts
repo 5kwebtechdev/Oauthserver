@@ -1,11 +1,14 @@
-import { Component, AfterViewInit, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Subscription } from 'rxjs';
 import { SupermeNavigatorComponent } from '../superme-navigator/superme-navigator.component';
+import { AdBannerComponent } from '../ad-banner/ad-banner.component';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { CartService } from '../../services/cart.service';
 import { environment } from '../../../../environments/environment';
 
 interface StoreCategory {
@@ -22,10 +25,10 @@ interface StoreCategory {
 	selector: 'school-store',
 	templateUrl: './school-store.components.html',
 	styleUrls: ['./school-store.components.scss'],
-	imports: [CommonModule, IonicModule, RouterModule, SupermeNavigatorComponent],
+	imports: [CommonModule, IonicModule, RouterModule, SupermeNavigatorComponent, AdBannerComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class SchoolStoreComponent implements AfterViewInit, OnInit {
+export class SchoolStoreComponent implements AfterViewInit, OnInit, OnDestroy {
 	@ViewChild('swiperEl', { static: false }) swiperRef?: ElementRef;
 	@ViewChild('navigator', { static: false, read: ElementRef }) navigatorEl?: ElementRef;
 	currentSlide = 0;
@@ -56,8 +59,9 @@ export class SchoolStoreComponent implements AfterViewInit, OnInit {
 		return s.length > 20 ? s.slice(0, 20) + '...' : s;
 	}
 
-	// local navigator action counts
+	// cart count driven by shared CartService
 	cartCount: number = 0;
+	private _cartSub?: Subscription;
 	packageCount: number = 0;
 
 	// API-loaded categories state
@@ -65,10 +69,19 @@ export class SchoolStoreComponent implements AfterViewInit, OnInit {
 	categoriesLoading = false;
 	categoriesError = false;
 
-	constructor(private router: Router, private cdr: ChangeDetectorRef, private http: HttpClient, private authService: AuthService) { }
+	constructor(private router: Router, private cdr: ChangeDetectorRef, private http: HttpClient, private authService: AuthService, private cartService: CartService) { }
 
 	ngOnInit(): void {
+		this._cartSub = this.cartService.count$.subscribe(n => {
+			this.cartCount = n;
+			this.cdr.detectChanges();
+		});
+		this.cartService.refresh();
 		this.loadCategories();
+	}
+
+	ngOnDestroy(): void {
+		try { this._cartSub?.unsubscribe(); } catch (e) { }
 	}
 
 	loadCategories(): void {

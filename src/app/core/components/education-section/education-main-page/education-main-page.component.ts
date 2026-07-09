@@ -5,12 +5,14 @@ import { IonicModule } from '@ionic/angular';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
+import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
     selector: 'app-education-main-page',
     standalone: true,
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    imports: [CommonModule, IonicModule, SupermeNavigatorComponent, RouterModule, FooterComponent, SkeletonImageComponent],
+    imports: [CommonModule, IonicModule, SupermeNavigatorComponent, RouterModule, FooterComponent, SkeletonImageComponent, AdBannerComponent],
     templateUrl: './education-main-page.component.html',
     styleUrls: ['./education-main-page.component.scss']
 })
@@ -19,7 +21,11 @@ export class EducationMainPageComponent implements OnInit {
     @ViewChild('swiperEl', { static: false }) swiperRef?: ElementRef;
     currentSlide = 0;
 
-    constructor(private router: Router) { }
+    constructor(private router: Router, private authService: AuthService) { }
+
+    get eduAdScreen(): AdScreen {
+        return this.authService.isParentUser() ? 'EDUHUB_PARENTS' : 'EDUHUB';
+    }
 
     ngOnInit(): void {
     }

@@ -1,7 +1,12 @@
 <div class="tutor-list-root">
   <div class="tutor-list" role="list">
     <ng-container *ngIf="tutors && tutors.length > 0">
-      <article class="tc" role="listitem" *ngFor="let t of tutors">
+      <ng-container *ngFor="let t of tutors; let i = index">
+      <!-- Ad banner after the 3rd tutor card -->
+      <div *ngIf="i === 3" class="tutor-ad-wrap">
+        <ad-banner [screen]="tutorAdScreen"></ad-banner>
+      </div>
+      <article class="tc" role="listitem">
 
         <!-- Top row: avatar + info + likes -->
         <div class="tc__top">
@@ -48,6 +53,7 @@
             [attr.aria-label]="'View profile of ' + (t.name || 'Tutor')"></superme-button>
         </div>
       </article>
+      </ng-container>
     </ng-container>
   </div>
 

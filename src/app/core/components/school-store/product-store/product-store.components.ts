@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule, IonContent } from '@ionic/angular';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Subscription } from 'rxjs';
+import { CartService } from '../../../services/cart.service';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -85,8 +86,9 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   // popup state for address/subtext
   showAddressPopup = false;
 
-  // local cart count shown in navigator right action
+  // cart count driven by shared CartService
   cartCount: number = 0;
+  private _cartCountSub?: Subscription;
   // local package count shown in navigator right action
   packageCount: number = 0;
 
@@ -105,13 +107,13 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   formatAddressShort(a: Address): string {
-    return [a.flat, a.area].filter(Boolean).join(', ');
+    return [a.line1, a.line2].filter(Boolean).join(', ');
   }
 
   formatAddressHtml(a: Address): string {
-    const line2 = [a.flat, a.area].filter(Boolean).join(', ');
-    const line3 = [a.cityState, a.pincode].filter(Boolean).join(' - ');
-    return [a.fullName, line2, line3].filter(Boolean).join('<br/>');
+    const cityState = [a.city, a.state].filter(Boolean).join(', ');
+    const line3 = [cityState, a.postalCode].filter(Boolean).join(' - ');
+    return [a.receiverName, a.line1, a.line2, line3].filter(Boolean).join('<br/>');
   }
 
   constructor(
@@ -122,7 +124,8 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
     private http: HttpClient,
     private authService: AuthService,
     private addressService: AddressService,
-    private toastService: CustomToastService
+    private toastService: CustomToastService,
+    private cartService: CartService
   ) { }
 
   // product categories, loaded from the store categories API
@@ -134,6 +137,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
 
   // school + class the user picked on the "find your school" page, forwarded here via query params
   schoolId: number | null = null;
+  schoolName: string | null = null;
   className: string | null = null;
 
   // true when the currently selected top-level category is "Textbooks"
@@ -323,10 +327,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   addToBag(p: any): void {
-    // placeholder for Add To Bag action
     try { console.log('Add to bag', p && p.id); } catch (e) { }
-    // update local cart count so navigator badge reflects additions
-    try { this.cartCount = (this.cartCount || 0) + 1; } catch (e) { }
   }
 
   // handle right action clicks from the navigator (e.g., cart)
@@ -364,6 +365,13 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   ngOnInit(): void {
+    // Subscribe to live cart count
+    this._cartCountSub = this.cartService.count$.subscribe(n => {
+      this.cartCount = n;
+      this.cdr.detectChanges();
+    });
+    this.cartService.refresh();
+
     // Subscribe to address list reactively
     this._addrSub = this.addressService.addresses$.subscribe(list => {
       this.addresses = list;
@@ -393,6 +401,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
       const school = params.get('schoolId');
       const schoolIdNum = school ? Number(school) : NaN;
       this.schoolId = isNaN(schoolIdNum) ? null : schoolIdNum;
+      this.schoolName = params.get('schoolName');
       this.className = params.get('className');
 
       this.loadCategories(isNaN(categoryId) ? undefined : categoryId);
@@ -405,6 +414,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   private _cleanupSlider?: () => void;
 
   ngOnDestroy(): void {
+    try { this._cartCountSub?.unsubscribe(); } catch (e) { }
     try { this._addrSub?.unsubscribe(); } catch (e) { }
     try {
       if (this._cleanupSlider) this._cleanupSlider();
@@ -522,6 +532,11 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
         };
       }
     } catch (e: any) { }
+  }
+
+  changeSchool(): void {
+    const catId = this.selectedCategory ?? '';
+    this.router.navigateByUrl(`/authed/school-store/institute-detail?categoryId=${catId}`).catch(() => {});
   }
 
   goBack(): void {

@@ -15,6 +15,7 @@ import { LearningArticleCardComponent } from '../learning-card/learning-article-
 import { LearningService } from 'src/app/core/services/learning.service';
 import { LearningCardData } from 'src/app/core/models/learning.models';
 import { EmptyStateComponent } from 'src/app/core/components/empty-state/empty-state.component';
+import { AdBannerComponent } from 'src/app/core/components/ad-banner/ad-banner.component';
 import { CustomToastService } from 'src/app/core/services/custom-toast.service';
 
 @Component({
@@ -22,7 +23,7 @@ import { CustomToastService } from 'src/app/core/services/custom-toast.service';
   templateUrl: './learning-main.component.html',
   styleUrls: ['./learning-main.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, FormsModule, HttpClientModule, FooterComponent, SupermeSpeechBubbleComponent, SupermePetComponent, LearningChallengeCardComponent, LearningArticleCardComponent, EmptyStateComponent],
+  imports: [CommonModule, IonicModule, RouterModule, FormsModule, HttpClientModule, FooterComponent, SupermeSpeechBubbleComponent, SupermePetComponent, LearningChallengeCardComponent, LearningArticleCardComponent, EmptyStateComponent, AdBannerComponent],
   providers: [LearningService]
 })
 export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
