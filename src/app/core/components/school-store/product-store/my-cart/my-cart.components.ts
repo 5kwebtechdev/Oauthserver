@@ -1,11 +1,40 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { forkJoin, of, Subscription } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
 import { SupermeNavigatorComponent } from '../../../superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../../superme-button/superme-button.component';
 import { Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
-import { AddressInputComponent } from '../../address-input/address-input.components';
+import { AuthService } from '../../../../services/auth.service';
+import { CustomToastService } from '../../../../services/custom-toast.service';
+import { AddressService } from '../../../../services/address.service';
+import { Address } from '../../../../api/address.api';
+import { environment } from '../../../../../../environments/environment';
+
+interface CartItem {
+    id: number;
+    productId: number;
+    productName: string;
+    schoolName?: string | null;
+    schoolId?: number | null;
+    classId?: number | null;
+    thumbnailUrl?: string | null;
+    image?: string | null;
+    imageUrl?: string | null;
+    sizeLabel?: string | null;
+    quantity: number;
+    sellingPrice?: number | null;
+    price?: number | null;
+    mrp?: number | null;
+    originalPrice?: number | null;
+    lineTotal?: number | null;
+    gstAmount?: number | null;
+    inStock?: boolean;
+    deliveryDays?: number | null;
+}
 
 @Component({
     selector: 'my-cart',
@@ -14,46 +43,104 @@ import { AddressInputComponent } from '../../address-input/address-input.compone
     templateUrl: './my-cart.components.html',
     styleUrls: ['./my-cart.components.scss']
 })
-export class MyCartComponent {
-    // Popup state and address data (copied from product-store behavior)
-    showAddressPopup: boolean = false;
-    addresses: Array<{ id: string | number; html: string }> = [
-        { id: 'home', html: '502, Galaxy Apartment Association Road, Pune - 411001' },
-        { id: 'school', html: 'St. Xavier\'s High School Near Central Plaza, Pune - 411002' }
-    ];
-    // Selected address shown in header — default to the first address and mark it selected
-    selectedId: string | number | null = this.addresses && this.addresses.length ? this.addresses[0].id : null;
-    selectedAddress: string = this.addresses && this.addresses.length ? (this.addresses[0].html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '';
-    // Sizes popup state
-    showSizePopup: boolean = false;
-    sizes: Array<{ size: number; age: string }> = [
-        { size: 2, age: '3-4 yrs' },
-        { size: 4, age: '4-5 yrs' },
-        { size: 6, age: '5-6 yrs' },
-        { size: 8, age: '6-7 yrs' },
-        { size: 10, age: '7-8 yrs' },
-        { size: 12, age: '8-9 yrs' },
-        { size: 14, age: '9-10 yrs' },
-        { size: 16, age: '10-11 yrs' },
-        { size: 18, age: '11-12 yrs' },
-        { size: 20, age: '12-13 yrs' },
-        { size: 22, age: '13-14 yrs' },
-        { size: 24, age: '14-15 yrs' },
-        { size: 26, age: '15-16 yrs' }
-    ];
-    selectedSize: number = 16; // default shown in picker
+export class MyCartComponent implements OnInit, OnDestroy {
+    showAddressPopup = false;
+    addresses: Address[] = [];
+    selectedAddress: Address | null = null;
+    addressesLoading = false;
+    deletingAddressId: number | null = null;
 
-    constructor(private router: Router, private cdr: ChangeDetectorRef, private modalCtrl: ModalController) { }
-    // Simple cart items list; replace with real store/service integration as needed
-    items: any[] = [
-        { id: '1', title: 'Classic White Half-Sleeve Shirt', subtitle: 'St. Xavier’s High School', image: 'assets/School-assets/temp/Shirt-l.jpg', price: 799, originalPrice: 999, size: 16, quantity: 1 },
-        { id: '2', title: 'Classic White Half-Sleeve Shirt', subtitle: 'St. Xavier’s High School', image: 'assets/School-assets/temp/Shirt-l.jpg', price: 799, originalPrice: 999, size: 16, quantity: 1 },
-        { id: '3', title: 'Classic White Half-Sleeve Shirt', subtitle: 'St. Xavier’s High School', image: 'assets/School-assets/temp/Shirt-l.jpg', price: 799, originalPrice: 999, size: 16, quantity: 1 },
-        { id: '4', title: 'Classic White Half-Sleeve Shirt', subtitle: 'St. Xavier’s High School', image: 'assets/School-assets/temp/Shirt-l.jpg', price: 799, originalPrice: 999, size: 16, quantity: 1 }
-    ];
+    private _addrSub?: Subscription;
 
-    // Backwards-compatible single-quantity for legacy UI usage (not used for the list)
-    quantity: number = 1;
+    showSizePopup = false;
+    activeSizeItemIndex: number | null = null;
+    selectedSize: number = 16;
+    sizes: Array<{ size: number; age: string }> = [];
+
+    // Cart state
+    items: CartItem[] = [];
+    cartLoading = false;
+    cartError = false;
+    deletingIndex: number | null = null;
+    clearingCart = false;
+    quantity = 1;
+    // API-provided totals
+    apiItemsTotal: number | null = null;
+    apiGstTotal: number | null = null;
+    apiPayableTotal: number | null = null;
+
+    constructor(
+        private router: Router,
+        private cdr: ChangeDetectorRef,
+        private modalCtrl: ModalController,
+        private http: HttpClient,
+        private authService: AuthService,
+        private toastService: CustomToastService,
+        private addressService: AddressService
+    ) { }
+
+    ngOnInit(): void {
+        // Subscribe to address list reactively
+        this._addrSub = this.addressService.addresses$.subscribe(list => {
+            this.addresses = list;
+            const def = list.find(a => a.isDefault) ?? list[0] ?? null;
+            if (!this.selectedAddress) {
+                this.selectedAddress = def;
+            } else {
+                const stillExists = list.find(a => a.id === this.selectedAddress!.id);
+                this.selectedAddress = stillExists ?? def ?? null;
+            }
+            this.cdr.detectChanges();
+        });
+
+        this.addressesLoading = true;
+        this.addressService.load().subscribe({
+            next: () => { this.addressesLoading = false; this.cdr.detectChanges(); },
+            error: () => { this.addressesLoading = false; this.cdr.detectChanges(); }
+        });
+
+        this.loadCart();
+    }
+
+    ngOnDestroy(): void {
+        try { this._addrSub?.unsubscribe(); } catch (e) { }
+    }
+
+    loadCart(): void {
+        this.cartLoading = true;
+        this.cartError = false;
+        this.apiItemsTotal = null;
+        this.apiGstTotal = null;
+        this.apiPayableTotal = null;
+        const token = this.authService.getToken();
+        const headers = new HttpHeaders({
+            'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
+            'Accept': 'application/json',
+            'x-skip-loading': '1'
+        });
+        const userId = this.authService.getUserId();
+        const cartUrl = userId
+            ? `${environment.apiUrl}/cart?forUserId=${userId}`
+            : `${environment.apiUrl}/cart`;
+        this.http.get<any>(cartUrl, { headers }).subscribe({
+            next: (res) => {
+                console.log('[Cart] GET /cart response:', JSON.stringify(res));
+                const raw = Array.isArray(res) ? res : (res?.items ?? res?.data ?? []);
+                this.items = Array.isArray(raw) ? raw : [];
+                this.apiItemsTotal = res?.itemsTotal ?? null;
+                this.apiGstTotal = res?.gstTotal ?? null;
+                this.apiPayableTotal = res?.payableTotal ?? null;
+                this.cartLoading = false;
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                console.error('[Cart] GET /cart error:', err?.status, JSON.stringify(err?.error));
+                this.cartLoading = false;
+                this.cartError = true;
+                this.cdr.detectChanges();
+            }
+        });
+    }
 
     get cartItemCount(): number {
         return this.items ? this.items.length : 0;
@@ -98,12 +185,55 @@ export class MyCartComponent {
         try { this.cdr.detectChanges(); } catch (e) { }
     }
 
-    selectAddress(a: { id: string | number; html: string }): void {
+    formatAddressShort(a: Address): string {
+        return [a.flat, a.area].filter(Boolean).join(', ');
+    }
+
+    formatAddressHtml(a: Address): string {
+        const line2 = [a.flat, a.area].filter(Boolean).join(', ');
+        const line3 = [a.cityState, a.pincode].filter(Boolean).join(' - ');
+        return [a.fullName, line2, line3].filter(Boolean).join('<br/>');
+    }
+
+    selectAddress(a: Address): void {
         if (!a) return;
-        this.selectedId = a.id;
-        // Strip simple HTML tags for display in the header
-        this.selectedAddress = (a.html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+        if (a.isDefault) { this.closeAddressPopup(); return; }
+        const prev = this.selectedAddress;
+        this.selectedAddress = a;
         this.closeAddressPopup();
+        this.addressService.setDefault(a.id).subscribe({
+            error: () => {
+                this.selectedAddress = prev;
+                this.toastService.error('Failed to update default address.');
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    editAddress(a: Address): void {
+        this.closeAddressPopup();
+        this.router.navigate(['/authed/school-store/address-input'], {
+            queryParams: { addressId: a.id },
+            state: { address: a }
+        });
+    }
+
+    deleteAddress(a: Address): void {
+        if (this.deletingAddressId != null) return;
+        this.deletingAddressId = a.id;
+        this.cdr.detectChanges();
+        this.addressService.deleteAddress(a.id).subscribe({
+            next: () => {
+                this.deletingAddressId = null;
+                this.toastService.success('Address deleted successfully.');
+                this.cdr.detectChanges();
+            },
+            error: () => {
+                this.deletingAddressId = null;
+                this.toastService.error('Failed to delete address. Please try again.');
+                this.cdr.detectChanges();
+            }
+        });
     }
 
     // Size popup handlers
@@ -124,35 +254,189 @@ export class MyCartComponent {
     }
 
     increaseQuantity(index?: number): void {
-        if (typeof index === 'number' && this.items && this.items[index]) {
-            this.items[index].quantity = (this.items[index].quantity || 0) + 1;
+        if (typeof index === 'number' && this.items[index]) {
+            const item = this.items[index];
+            const newQty = (item.quantity || 0) + 1;
+            item.quantity = newQty;
+            this.cdr.detectChanges();
+            this.updateCartItemQty(item, newQty);
         } else {
             this.quantity = (this.quantity || 0) + 1;
+            this.cdr.detectChanges();
         }
-        try { this.cdr.detectChanges(); } catch (e) { }
     }
 
     decreaseQuantity(index?: number): void {
-        if (typeof index === 'number' && this.items && this.items[index]) {
-            if (!this.items[index].quantity || this.items[index].quantity <= 1) return;
-            this.items[index].quantity = this.items[index].quantity - 1;
+        if (typeof index === 'number' && this.items[index]) {
+            const item = this.items[index];
+            if (!item.quantity || item.quantity <= 1) return;
+            const newQty = item.quantity - 1;
+            item.quantity = newQty;
+            this.cdr.detectChanges();
+            this.updateCartItemQty(item, newQty);
         } else {
             if (!this.quantity || this.quantity <= 1) return;
             this.quantity = this.quantity - 1;
+            this.cdr.detectChanges();
         }
-        try { this.cdr.detectChanges(); } catch (e) { }
+    }
+
+    private updateCartItemQty(item: CartItem, quantity: number): void {
+        const token = this.authService.getToken();
+        const headers = new HttpHeaders({
+            'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'x-skip-loading': '1'
+        });
+        const body: Record<string, any> = {
+            productId: item.productId,
+            quantity,
+        };
+        if (item.schoolId != null) body['schoolId'] = item.schoolId;
+        if (item.classId != null) body['classId'] = item.classId;
+        if (item.sizeLabel) body['sizeLabel'] = item.sizeLabel;
+        this.http.post(`${environment.apiUrl}/cart/items`, body, { headers }).subscribe({
+            next: () => { /* quantity already updated optimistically */ },
+            error: () => {
+                // revert on failure
+                item.quantity = quantity === (item.quantity || 0) + 1
+                    ? (item.quantity || 1) - 1
+                    : (item.quantity || 0) + 1;
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    goToStore(): void {
+        this.router.navigateByUrl('/authed/school-store');
+    }
+
+    deleteCartItem(item: CartItem, index: number): void {
+        if (this.deletingIndex !== null) return;
+        this.deletingIndex = index;
+        this.cdr.detectChanges();
+
+        const token = this.authService.getToken();
+        const headers = new HttpHeaders({
+            'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
+            'Accept': 'application/json',
+            'x-skip-loading': '1'
+        });
+
+        this.http.delete(`${environment.apiUrl}/cart/items/${item.id}`, { headers }).subscribe({
+            next: () => {
+                this.items.splice(index, 1);
+                // refresh API totals after removal
+                this.apiItemsTotal = null;
+                this.apiGstTotal = null;
+                this.apiPayableTotal = null;
+                this.deletingIndex = null;
+                this.cdr.detectChanges();
+                // re-fetch to get updated totals from server
+                this.loadCart();
+            },
+            error: () => {
+                this.deletingIndex = null;
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    clearCart(): void {
+        if (this.clearingCart || !this.items.length) return;
+        this.clearingCart = true;
+        this.cdr.detectChanges();
+
+        const token = this.authService.getToken();
+        const headers = new HttpHeaders({
+            'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
+            'Accept': 'application/json',
+            'x-skip-loading': '1'
+        });
+        const userId = this.authService.getUserId();
+        const cartUrl = userId
+            ? `${environment.apiUrl}/cart?forUserId=${userId}`
+            : `${environment.apiUrl}/cart`;
+
+        this.http.get<any>(cartUrl, { headers }).pipe(
+            switchMap((res) => {
+                const raw = Array.isArray(res) ? res : (res?.items ?? res?.data ?? []);
+                const cartItems: CartItem[] = Array.isArray(raw) ? raw : [];
+                if (!cartItems.length) {
+                    return of('empty');
+                }
+                const deletes = cartItems.map(item =>
+                    this.http.delete(`${environment.apiUrl}/cart/items/${item.id}`, { headers }).pipe(
+                        catchError(() => of(null))
+                    )
+                );
+                return forkJoin(deletes);
+            }),
+            catchError((err) => {
+                console.error('[Cart] clearCart GET error:', err);
+                return of('error');
+            })
+        ).subscribe({
+            next: (result) => {
+                this.clearingCart = false;
+                if (result === 'error') {
+                    this.toastService.error('Failed to clear cart. Please try again.');
+                    this.loadCart();
+                } else {
+                    this.items = [];
+                    this.apiItemsTotal = null;
+                    this.apiGstTotal = null;
+                    this.apiPayableTotal = null;
+                    this.cdr.detectChanges();
+                    this.toastService.success('Cart cleared successfully.');
+                }
+            },
+            error: () => {
+                this.clearingCart = false;
+                this.toastService.error('Failed to clear cart. Please try again.');
+                this.loadCart();
+            }
+        });
+    }
+
+    onCartImgError(event: Event): void {
+        const img = event.target as HTMLImageElement;
+        if (!img) return;
+        const originalSrc = img.src;
+        // Avoid infinite loop if placeholder also fails
+        img.onerror = null;
+        // Try fetching with auth header and convert to blob URL
+        const token = this.authService.getToken();
+        if (token && originalSrc && originalSrc.startsWith('http')) {
+            fetch(originalSrc, {
+                headers: { 'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}` }
+            })
+            .then(r => r.ok ? r.blob() : Promise.reject())
+            .then(blob => {
+                img.src = URL.createObjectURL(blob);
+            })
+            .catch(() => {
+                img.src = 'assets/School-assets/empty-product-list.png';
+                img.style.objectFit = 'contain';
+                img.style.padding = '8px';
+            });
+        } else {
+            img.src = 'assets/School-assets/empty-product-list.png';
+            img.style.objectFit = 'contain';
+            img.style.padding = '8px';
+        }
     }
 
     addToCart(): void {
-        // Placeholder: wire this up to cart service or navigation as needed
-        console.log('Add to cart clicked');
+        console.log('Proceed to pay clicked');
     }
 
-    // Compute total price shown in purchase bar by summing all items' (price * quantity)
     get totalPrice(): number {
-        if (!this.items || !this.items.length) return (this.quantity || 1) * 799;
+        if (this.apiItemsTotal != null) return this.apiItemsTotal;
+        if (!this.items || !this.items.length) return 0;
         return this.items.reduce((sum, it) => {
-            const p = Number(it?.price || 799);
+            const p = Number(it?.sellingPrice ?? it?.price ?? 0);
             const q = Number(it?.quantity || 1);
             return sum + p * q;
         }, 0);
@@ -162,16 +446,14 @@ export class MyCartComponent {
         return '₹' + this.totalPrice;
     }
 
-    // GST at 18% of total price
     get gstAmount(): number {
-        return Math.round(this.totalPrice * 0.18);
+        return this.apiGstTotal != null ? this.apiGstTotal : Math.round(this.totalPrice * 0.18);
     }
 
     get gstDisplay(): string {
         return '₹' + this.gstAmount;
     }
 
-    // Delivery: free if totalPrice > 500 else ₹99
     get deliveryFee(): number {
         return this.totalPrice > 500 ? 0 : 99;
     }
@@ -181,6 +463,7 @@ export class MyCartComponent {
     }
 
     get toPay(): number {
+        if (this.apiPayableTotal != null) return this.apiPayableTotal + this.deliveryFee;
         return this.totalPrice + this.gstAmount + this.deliveryFee;
     }
 

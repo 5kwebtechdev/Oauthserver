@@ -2,6 +2,7 @@ import { Component, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef, OnD
 import { CommonModule } from '@angular/common';
 import { IonicModule, IonContent } from '@ionic/angular';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Subscription } from 'rxjs';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -9,6 +10,9 @@ import { ModalController } from '@ionic/angular';
 import { AddressInputComponent } from '../address-input/address-input.components';
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { AuthService } from '../../../services/auth.service';
+import { AddressService } from '../../../services/address.service';
+import { Address } from '../../../api/address.api';
+import { CustomToastService } from '../../../services/custom-toast.service';
 import { environment } from '../../../../../environments/environment';
 
 interface StoreCategory {
@@ -86,30 +90,40 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   // local package count shown in navigator right action
   packageCount: number = 0;
 
-  // address list and selection
-  addresses = [
-    {
-      id: 'rahul',
-      short: '502, Galaxy Apartment, Association Road',
-      html: 'Rahul- 502, Galaxy Apartment, Association Road<br/>Chennai- 600071'
-    },
-    {
-      id: 'megha',
-      short: '502, Royal Apartment, Altmount Road',
-      html: 'Megha- 502, Royal Apartment, Altmount Road<br/>Chennai- 600071'
-    }
-  ];
+  // address state (loaded from API via AddressService)
+  addresses: Address[] = [];
+  selectedAddress: Address | null = null;
+  addressesLoading = false;
+  deletingAddressId: number | null = null;
 
-  selectedId: string | null = this.addresses[0].id;
-  selectedAddress: string = this.addresses[0].short;
+  private _addrSub?: Subscription;
 
   // navigator subtext truncated to 20 chars + ellipsis
   get navigatorSubtext(): string {
-    const s = this.selectedAddress || '';
+    const s = this.selectedAddress ? this.formatAddressShort(this.selectedAddress) : '';
     return s.length > 20 ? s.slice(0, 20) + '...' : s;
   }
 
-  constructor(private router: Router, private cdr: ChangeDetectorRef, private route: ActivatedRoute, private modalCtrl: ModalController, private http: HttpClient, private authService: AuthService) { }
+  formatAddressShort(a: Address): string {
+    return [a.flat, a.area].filter(Boolean).join(', ');
+  }
+
+  formatAddressHtml(a: Address): string {
+    const line2 = [a.flat, a.area].filter(Boolean).join(', ');
+    const line3 = [a.cityState, a.pincode].filter(Boolean).join(' - ');
+    return [a.fullName, line2, line3].filter(Boolean).join('<br/>');
+  }
+
+  constructor(
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private modalCtrl: ModalController,
+    private http: HttpClient,
+    private authService: AuthService,
+    private addressService: AddressService,
+    private toastService: CustomToastService
+  ) { }
 
   // product categories, loaded from the store categories API
   categories: { id: number; label: string; requiresSchoolClass: boolean }[] = [];
@@ -301,8 +315,11 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
 
   openProduct(p: any): void {
     if (!p || p.outOfStock) return;
-    // product detail page fetches full product data by id from the API
-    this.router.navigateByUrl(`/authed/school-store/product/${encodeURIComponent(p.id)}`);
+    let url = `/authed/school-store/product/${encodeURIComponent(p.id)}`;
+    const qs: string[] = [];
+    if (this.schoolId != null) qs.push(`schoolId=${this.schoolId}`);
+    if (qs.length) url += '?' + qs.join('&');
+    this.router.navigateByUrl(url);
   }
 
   addToBag(p: any): void {
@@ -347,6 +364,27 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   ngOnInit(): void {
+    // Subscribe to address list reactively
+    this._addrSub = this.addressService.addresses$.subscribe(list => {
+      this.addresses = list;
+      const def = list.find(a => a.isDefault) ?? list[0] ?? null;
+      // Only auto-select default; preserve explicit selection if it still exists in the list
+      if (!this.selectedAddress) {
+        this.selectedAddress = def;
+      } else {
+        const stillExists = list.find(a => a.id === this.selectedAddress!.id);
+        this.selectedAddress = stillExists ?? def ?? null;
+      }
+      this.cdr.detectChanges();
+    });
+
+    // Trigger initial address fetch
+    this.addressesLoading = true;
+    this.addressService.load().subscribe({
+      next: () => { this.addressesLoading = false; this.cdr.detectChanges(); },
+      error: () => { this.addressesLoading = false; this.cdr.detectChanges(); }
+    });
+
     try {
       const params = this.route.snapshot.queryParamMap;
       const cat = params.get('category');
@@ -367,6 +405,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   private _cleanupSlider?: () => void;
 
   ngOnDestroy(): void {
+    try { this._addrSub?.unsubscribe(); } catch (e) { }
     try {
       if (this._cleanupSlider) this._cleanupSlider();
     } catch (e: any) { }
@@ -388,11 +427,44 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
     } catch (e) { console.error('Failed to open address input page', e); }
   }
 
-  selectAddress(a: { id: string; short: string; html: string }): void {
-    this.selectedId = a.id;
-    this.selectedAddress = a.short;
-    this.showAddressPopup = false;
+  selectAddress(a: Address): void {
+    if (a.isDefault) { this.closeAddressPopup(); return; }
+    const prev = this.selectedAddress;
+    this.selectedAddress = a;
+    this.closeAddressPopup();
+    this.addressService.setDefault(a.id).subscribe({
+      error: () => {
+        this.selectedAddress = prev;
+        this.toastService.error('Failed to update default address.');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  editAddress(a: Address): void {
+    this.closeAddressPopup();
+    this.router.navigate(['/authed/school-store/address-input'], {
+      queryParams: { addressId: a.id },
+      state: { address: a }
+    });
+  }
+
+  deleteAddress(a: Address): void {
+    if (this.deletingAddressId != null) return;
+    this.deletingAddressId = a.id;
     this.cdr.detectChanges();
+    this.addressService.deleteAddress(a.id).subscribe({
+      next: () => {
+        this.deletingAddressId = null;
+        this.toastService.success('Address deleted successfully.');
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.deletingAddressId = null;
+        this.toastService.error('Failed to delete address. Please try again.');
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   ngAfterViewInit(): void {
