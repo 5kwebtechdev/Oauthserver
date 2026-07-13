@@ -3,7 +3,7 @@
 
         <div class="navigator-wrap">
             <superme-navigator #navigator
-                heading="Student-Store"
+                [heading]="selectedCategoryLabel"
                 [subtext]="navigatorSubtext"
                 [showSubtext]="true"
                 (back)="goBack()"
@@ -15,22 +15,6 @@
         </div>
 
         <div class="product-store-content">
-            <!-- Category and Subcategory sliders-->
-            <div class="main-category">
-                <div class="category-slider-wrap w-100">
-                    <swiper-container #categorySlider class="category-swiper" slides-per-view="auto" space-between="24"
-                        free-mode="true" free-mode-momentum="true" grab-cursor="true">
-                        <swiper-slide class="category-slide" *ngFor="let c of categories; let i = index">
-                            <div role="tab" class="category-item" [class.selected]="selectedCategory === c.id"
-                                (click)="selectCategory(c)" tabindex="0"
-                                [attr.aria-selected]="selectedCategory === c.id">
-                                <span class="category-text" [class.selected-text]="selectedCategory === c.id">{{ c.label
-                                    }}</span>
-                            </div>
-                        </swiper-slide>
-                    </swiper-container>
-                </div>
-            </div>
             <!-- School / Class info chip — shown only when selected category requires school -->
             <div class="school-info-bar" *ngIf="selectedCategoryRequiresSchoolClass && (schoolName || className)">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -45,15 +29,15 @@
                 <button class="school-info-change" (click)="changeSchool()">Change</button>
             </div>
 
-            <!-- Subcategory Slider -->
-            <div class="sub-category">
+            <!-- Subcategory Sliders — one row per drill-down level (e.g. Notebooks -> Spiral Notebooks -> A4 Spiral) -->
+            <div class="sub-category" *ngFor="let level of subCategoryLevels; let levelIndex = index">
                 <div class="category-slider-wrap w-100">
-                    <swiper-container #subCategorySlider class="subcategory-swiper" slides-per-view="auto"
+                    <swiper-container class="subcategory-swiper" slides-per-view="auto"
                         space-between="12" free-mode="true" free-mode-momentum="true" grab-cursor="true">
-                        <swiper-slide class="subcategory-slide" *ngFor="let s of subCategories; let j = index">
-                            <div role="tab" class="tab" [class.tab--selected]="selectedSubCategory === s.id"
-                                (click)="selectSubCategory(s)" tabindex="0"
-                                [attr.aria-selected]="selectedSubCategory === s.id">
+                        <swiper-slide class="subcategory-slide" *ngFor="let s of level.options">
+                            <div role="tab" class="tab" [class.tab--selected]="level.selected === s.id"
+                                (click)="selectSubCategoryAt(levelIndex, s)" tabindex="0"
+                                [attr.aria-selected]="level.selected === s.id">
                                 <span class="tab-text">{{ s.label }}</span>
                             </div>
                         </swiper-slide>
@@ -121,7 +105,7 @@
                             [leadText]="'Nothing Here... Yet!'"
                             [buttonText]="'View all Products'"
                             [buttonType]="'magenta'"
-                            (buttonClick)="selectSubCategory({ id: 'all', label: 'All' })">
+                            (buttonClick)="resetSubCategories()">
                         </empty-state>
                     </ng-template>
                 </ng-container>

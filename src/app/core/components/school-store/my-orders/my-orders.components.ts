@@ -18,54 +18,76 @@ type BackendStatus =
     | 'CANCELLED' | 'PENDING_PAYMENT'
     | 'EXCHANGE_REQUESTED' | 'RETURN_INITIATED';
 
-interface ApiOrderItem {
+export interface ApiOrderItem {
     id: number;
     productId: number;
     productName: string;
+    thumbnailUrl?: string | null;
+    categoryName?: string | null;
     sizeLabel?: string | null;
     quantity: number;
     unitPrice?: number;
     lineTotal: number;
-    thumbnailUrl?: string | null;
-    imageUrl?: string | null;
 }
 
-interface ApiAddress {
-    receiverName?: string;
-    mobile?: string;
-    line1?: string;
+export interface ApiAddress {
+    id?: number | null;
+    receiverName?: string | null;
+    mobile?: string | null;
+    line1?: string | null;
     line2?: string | null;
-    city?: string;
-    state?: string;
-    postalCode?: string;
+    city?: string | null;
+    state?: string | null;
+    postalCode?: string | null;
 }
 
-interface ApiOrder {
+export interface ApiOrder {
     id: number;
     orderNumber?: string;
-    status: BackendStatus;
+    placedAt?: string;
+    schoolName?: string | null;
+    shippingAddress?: ApiAddress | null;
+    items: ApiOrderItem[];
+    totalAmount: number;
     paymentMethod: 'COD' | 'ONLINE';
     paymentStatus?: string;
+    status: BackendStatus;
+    statusNote?: string | null;
+    trackingId?: string | null;
+    trackingLink?: string | null;
     canCancel?: boolean;
     canReturnOrExchange?: boolean;
-    items: ApiOrderItem[];
-    itemCount?: number;
-    itemsTotal?: number;
-    gstTotal?: number;
-    discountTotal?: number;
-    payableTotal?: number;
-    placedAt?: string;
-    packedAt?: string | null;
-    shippedAt?: string | null;
-    deliveredAt?: string | null;
-    address?: ApiAddress;
-    schoolName?: string | null;
+}
+
+interface OrdersPage {
+    content: ApiOrder[];
+    totalElements: number;
+    totalPages: number;
+    number: number;
+    size: number;
+    last: boolean;
+}
+
+interface ApiTrackStep {
+    status: string;
+    note?: string | null;
+    time?: string | null;
+    completed: boolean;
+}
+
+interface ApiTrackResponse {
+    orderId: number;
+    orderNumber: string;
+    currentStatus: string;
+    trackingId?: string | null;
+    trackingLink?: string | null;
+    timeline: ApiTrackStep[];
 }
 
 interface TrackStep {
     label: string;
     timestamp?: string | null;
-    subtitle?: string;
+    subtitle?: string | null;
     completed: boolean;
 }
 
@@ -90,6 +112,16 @@ const TIME_LABELS: Record<string, string> = {
     'older':         'Older',
 };
 
+const CANCEL_REASONS = [
+    'Ordered by mistake',
+    'Found a better price elsewhere',
+    'Delivery is taking too long',
+    'Want to change the delivery address',
+    'Other',
+];
+
+const PAGE_SIZE = 20;
+
 @Component({
     selector: 'my-orders',
     standalone: true,
@@ -103,10 +135,16 @@ export class MyOrdersComponent implements OnInit {
     orders: ApiOrder[] = [];
     ordersLoading = false;
     ordersError = false;
+    loadingMore = false;
+    private page = 0;
+    isLastPage = true;
+    searchQuery = '';
 
     // ── Detail state ──────────────────────────────────────────────────────────
     selectedOrder: ApiOrder | null = null;
     detailLoading = false;
+    detailError = false;
+    private selectedOrderId: number | null = null;
     trackSteps: TrackStep[] = [];
     trackLoading = false;
 
@@ -121,8 +159,12 @@ export class MyOrdersComponent implements OnInit {
     appliedStatus: string[] = [];
     appliedTime = '';
 
-    // ── Cancel popup ──────────────────────────────────────────────────────────
+    // ── Cancel flow ───────────────────────────────────────────────────────────
     isCancelPopupVisible = false;
+    isCancelReasonVisible = false;
+    cancelReasons = CANCEL_REASONS;
+    selectedCancelReason = '';
+    customCancelReason = '';
     cancellingOrder = false;
 
     // ── Share popup ───────────────────────────────────────────────────────────
@@ -160,17 +202,39 @@ export class MyOrdersComponent implements OnInit {
     // ── Data loading ──────────────────────────────────────────────────────────
 
     loadOrders(): void {
+        this.page = 0;
         this.ordersLoading = true;
         this.ordersError = false;
-        this.http.get<ApiOrder[]>(`${environment.apiUrl}/user/orders`, { headers: this.headers() }).subscribe({
+        this.fetchOrdersPage(true);
+    }
+
+    loadMoreOrders(): void {
+        if (this.isLastPage || this.loadingMore || this.ordersLoading) return;
+        this.page += 1;
+        this.loadingMore = true;
+        this.fetchOrdersPage(false);
+    }
+
+    private fetchOrdersPage(reset: boolean): void {
+        this.http.get<OrdersPage>(`${environment.apiUrl}/user/orders`, {
+            headers: this.headers(),
+            params: { page: String(this.page), size: String(PAGE_SIZE) }
+        }).subscribe({
             next: (res) => {
-                this.orders = Array.isArray(res) ? res : [];
+                const content = Array.isArray(res?.content) ? res.content : [];
+                this.orders = reset ? content : [...this.orders, ...content];
+                this.isLastPage = res?.last ?? true;
                 this.ordersLoading = false;
+                this.loadingMore = false;
                 this.cdr.detectChanges();
             },
             error: () => {
-                this.ordersError = true;
+                if (reset) {
+                    this.ordersError = true;
+                    this.orders = [];
+                }
                 this.ordersLoading = false;
+                this.loadingMore = false;
                 this.cdr.detectChanges();
             }
         });
@@ -178,6 +242,7 @@ export class MyOrdersComponent implements OnInit {
 
     private loadOrderDetail(orderId: number): void {
         this.detailLoading = true;
+        this.detailError = false;
         this.http.get<ApiOrder>(`${environment.apiUrl}/user/orders/${orderId}`, { headers: this.headers() }).subscribe({
             next: (res) => {
                 this.selectedOrder = res;
@@ -185,79 +250,77 @@ export class MyOrdersComponent implements OnInit {
                 this.cdr.detectChanges();
                 this.loadTrack(orderId);
             },
-            error: () => {
+            error: (err) => {
+                console.error('[MyOrders] GET /user/orders/' + orderId + ' failed:', err?.status, JSON.stringify(err?.error));
+                // Don't leave the sparse list-item data on screen — it's missing
+                // fields (items, shippingAddress, etc.) the detail view needs,
+                // so it renders as broken/empty content. Show a clear error instead.
+                this.selectedOrder = null;
                 this.detailLoading = false;
+                this.detailError = true;
                 this.cdr.detectChanges();
             }
         });
     }
 
+    retryOrderDetail(): void {
+        if (this.selectedOrderId != null) this.loadOrderDetail(this.selectedOrderId);
+    }
+
     private loadTrack(orderId: number): void {
         this.trackLoading = true;
         this.trackSteps = [];
-        this.http.get<any>(`${environment.apiUrl}/user/orders/${orderId}/track`, { headers: this.headers() }).subscribe({
+        this.http.get<ApiTrackResponse>(`${environment.apiUrl}/user/orders/${orderId}/track`, { headers: this.headers() }).subscribe({
             next: (res) => {
                 this.trackSteps = this.buildTimeline(res);
                 this.trackLoading = false;
                 this.cdr.detectChanges();
             },
             error: () => {
-                // Fallback: build timeline from order timestamps
-                if (this.selectedOrder) {
-                    this.trackSteps = this.buildTimeline(this.selectedOrder);
-                }
+                this.trackSteps = [];
                 this.trackLoading = false;
                 this.cdr.detectChanges();
             }
         });
     }
 
-    private buildTimeline(data: any): TrackStep[] {
-        // Backend may return pre-built steps array or raw timestamps
-        if (Array.isArray(data?.steps)) {
-            return data.steps as TrackStep[];
-        }
-        const placedAt   = data?.placedAt   ?? null;
-        const packedAt   = data?.packedAt   ?? null;
-        const shippedAt  = data?.shippedAt  ?? null;
-        const deliveredAt= data?.deliveredAt?? null;
-
-        const steps: TrackStep[] = [
-            { label: 'Order Placed', timestamp: placedAt,    completed: !!placedAt },
-            { label: 'Packed',       timestamp: packedAt,    completed: !!packedAt },
-            { label: 'Shipped',      timestamp: shippedAt,   completed: !!shippedAt },
-            { label: 'Delivered',    timestamp: deliveredAt, completed: !!deliveredAt },
-        ];
-
-        if (this.selectedOrder?.status === 'CANCELLED') {
-            return [
-                { label: 'Order Placed', timestamp: placedAt, completed: !!placedAt },
-                { label: 'Cancelled',    completed: true },
-            ];
-        }
-        if (this.selectedOrder?.status === 'RETURN_INITIATED') {
-            return [
-                { label: 'Delivered',        completed: true },
-                { label: 'Return Requested', completed: true },
-                { label: 'Pickup Scheduled', completed: false },
-                { label: 'Refund Initiated', completed: false },
-            ];
-        }
-        if (this.selectedOrder?.status === 'EXCHANGE_REQUESTED') {
-            return [
-                { label: 'Delivered',         completed: true },
-                { label: 'Exchange Requested',completed: true },
-                { label: 'Pickup Scheduled',  completed: false },
-                { label: 'Exchange Shipped',  completed: false },
-            ];
+    private buildTimeline(data: ApiTrackResponse): TrackStep[] {
+        if (!Array.isArray(data?.timeline)) return [];
+        // A step with a timestamp has clearly happened — trust that over a
+        // possibly-stale `completed` flag (e.g. Delivered=true but the step
+        // right before it still flagged false would otherwise show a broken,
+        // out-of-order progression).
+        const steps = data.timeline.map(step => ({
+            label: this.humanizeStatus(step.status),
+            timestamp: step.time,
+            subtitle: step.time ? null : step.note,
+            completed: !!step.completed || !!step.time
+        }));
+        // Progress only moves forward: once any step is complete, every step
+        // before it must be too, so the checkmarks always read as a clean
+        // left-to-right progression rather than a gapped/broken one.
+        let seenCompleted = false;
+        for (let i = steps.length - 1; i >= 0; i--) {
+            if (steps[i].completed) seenCompleted = true;
+            else if (seenCompleted) steps[i].completed = true;
         }
         return steps;
+    }
+
+    private humanizeStatus(status: string): string {
+        return (status || '')
+            .split('_')
+            .filter(Boolean)
+            .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+            .join(' ');
     }
 
     // ── Navigation ────────────────────────────────────────────────────────────
 
     goBack(): void {
-        if (this.isOrderDetailVisible) {
+        if (this.isCancelReasonVisible) {
+            this.isCancelReasonVisible = false;
+        } else if (this.isOrderDetailVisible) {
             this.isOrderDetailVisible = false;
             this.selectedOrder = null;
             this.trackSteps = [];
@@ -270,8 +333,10 @@ export class MyOrdersComponent implements OnInit {
 
     openOrderDetail(order: ApiOrder): void {
         this.selectedOrder = order;
+        this.selectedOrderId = order.id;
         this.isOrderDetailVisible = true;
         this.showPaymentInfo = false;
+        this.detailError = false;
         this.trackSteps = [];
         this.loadOrderDetail(order.id);
     }
@@ -279,6 +344,14 @@ export class MyOrdersComponent implements OnInit {
     openFilterScreen(): void { this.isFilterScreenVisible = true; }
 
     onHelpClick(): void { this.router.navigate(['/authed', 'bot-helpline']); }
+
+    goToStore(): void { this.router.navigateByUrl('/authed/school-store'); }
+
+    // ── Search ────────────────────────────────────────────────────────────────
+
+    onSearchInput(event: Event): void {
+        this.searchQuery = (event.target as HTMLInputElement).value;
+    }
 
     // ── Filters ───────────────────────────────────────────────────────────────
 
@@ -297,9 +370,29 @@ export class MyOrdersComponent implements OnInit {
         this.isFilterScreenVisible = false;
     }
 
+    private isWithinTimeRange(order: ApiOrder, time: string): boolean {
+        if (!time || !order.placedAt) return true;
+        const days = (Date.now() - new Date(order.placedAt).getTime()) / (1000 * 60 * 60 * 24);
+        switch (time) {
+            case 'last-30-days':  return days <= 30;
+            case 'last-3-months': return days <= 90;
+            case 'last-6-months': return days <= 180;
+            case 'older':         return days > 180;
+            default:              return true;
+        }
+    }
+
     get filteredOrders(): ApiOrder[] {
-        if (!this.appliedStatus.length) return this.orders;
-        return this.orders.filter(o => this.appliedStatus.includes(this.displayStatus(o.status)));
+        const q = this.searchQuery.trim().toLowerCase();
+        return this.orders.filter(o => {
+            const statusOk = !this.appliedStatus.length || this.appliedStatus.includes(this.displayStatus(o.status));
+            const timeOk = this.isWithinTimeRange(o, this.appliedTime);
+            const searchOk = !q
+                || (o.orderNumber ?? '').toLowerCase().includes(q)
+                || (o.schoolName ?? '').toLowerCase().includes(q)
+                || o.items.some(it => (it.productName ?? '').toLowerCase().includes(q));
+            return statusOk && timeOk && searchOk;
+        });
     }
 
     get resultsText(): string {
@@ -386,16 +479,18 @@ export class MyOrdersComponent implements OnInit {
 
     // ── Price helpers ─────────────────────────────────────────────────────────
 
-    get itemsTotal(): number  { return this.selectedOrder?.itemsTotal  ?? 0; }
-    get gstTotal(): number    { return this.selectedOrder?.gstTotal    ?? 0; }
-    get payableTotal(): number{ return this.selectedOrder?.payableTotal ?? 0; }
+    get itemsTotal(): number {
+        return (this.selectedOrder?.items ?? []).reduce((sum, it) => sum + (it.lineTotal ?? 0), 0);
+    }
+
+    get orderTotal(): number { return this.selectedOrder?.totalAmount ?? 0; }
 
     fmt(v: number | null | undefined): string {
         return '₹' + (v ?? 0).toFixed(2);
     }
 
-    itemImage(item: ApiOrderItem): string {
-        return item.thumbnailUrl ?? item.imageUrl ?? 'assets/School-assets/empty-product-list.png';
+    itemImage(item?: ApiOrderItem): string {
+        return item?.thumbnailUrl ?? 'assets/School-assets/empty-product-list.png';
     }
 
     // ── Cancel ────────────────────────────────────────────────────────────────
@@ -403,21 +498,39 @@ export class MyOrdersComponent implements OnInit {
     openCancelPopup(): void  { this.isCancelPopupVisible = true; }
     closeCancelPopup(): void { this.isCancelPopupVisible = false; }
 
-    confirmCancel(): void {
-        if (!this.selectedOrder || this.cancellingOrder) return;
-        this.cancellingOrder = true;
+    proceedToCancelReason(): void {
         this.isCancelPopupVisible = false;
+        this.selectedCancelReason = '';
+        this.customCancelReason = '';
+        this.isCancelReasonVisible = true;
+    }
+
+    onCancelReasonChange(value: string): void { this.selectedCancelReason = value; }
+
+    get cancelReasonText(): string {
+        return this.selectedCancelReason === 'Other'
+            ? this.customCancelReason.trim()
+            : this.selectedCancelReason;
+    }
+
+    get canConfirmCancel(): boolean {
+        return !!this.cancelReasonText && !this.cancellingOrder;
+    }
+
+    confirmCancel(): void {
+        if (!this.selectedOrder || !this.canConfirmCancel) return;
+        this.cancellingOrder = true;
         this.cdr.detectChanges();
 
         this.http.post<any>(
             `${environment.apiUrl}/user/orders/${this.selectedOrder.id}/cancel`,
-            {},
+            { reason: this.cancelReasonText },
             { headers: this.headers() }
         ).subscribe({
             next: () => {
                 this.cancellingOrder = false;
+                this.isCancelReasonVisible = false;
                 this.toastService.success('Order cancelled successfully.');
-                // Refresh detail and list
                 const id = this.selectedOrder!.id;
                 this.loadOrderDetail(id);
                 this.loadOrders();
@@ -437,7 +550,7 @@ export class MyOrdersComponent implements OnInit {
     onReturnExchange(): void {
         if (!this.selectedOrder) return;
         this.router.navigate(['/authed/school-store/return-exchange'], {
-            state: { orderId: this.selectedOrder.id, orderNumber: this.selectedOrder.orderNumber }
+            state: { order: this.selectedOrder }
         });
     }
 
@@ -446,18 +559,20 @@ export class MyOrdersComponent implements OnInit {
     onShareTracking(): void  { this.sharePopupVisible = true; }
     closeSharePopup(): void  { this.sharePopupVisible = false; }
 
-    copyLink(): void {
+    private get trackingLink(): string {
+        if (this.selectedOrder?.trackingLink) return this.selectedOrder.trackingLink;
         const ref = this.selectedOrder?.orderNumber ?? String(this.selectedOrder?.id ?? '');
-        const link = `https://superme.app/track/${ref}`;
-        try { navigator.clipboard.writeText(link); } catch (_) {}
+        return `https://superme.app/track/${ref}`;
+    }
+
+    copyLink(): void {
+        try { navigator.clipboard.writeText(this.trackingLink); } catch (_) {}
         this.sharePopupVisible = false;
         this.toastService.success('Link copied!');
     }
 
     shareWhatsapp(): void {
-        const ref = this.selectedOrder?.orderNumber ?? String(this.selectedOrder?.id ?? '');
-        const link = `https://superme.app/track/${ref}`;
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(link)}`, '_blank');
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(this.trackingLink)}`, '_blank');
         this.sharePopupVisible = false;
     }
 

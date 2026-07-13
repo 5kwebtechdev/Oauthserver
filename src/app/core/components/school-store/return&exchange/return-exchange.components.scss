@@ -45,6 +45,12 @@ h2{
     border-radius: 16px;
     background: #FFF;
     box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+    border: 2px solid transparent;
+    transition: border-color 0.15s ease-in-out;
+
+    &.selected {
+        border-color: #90214D;
+    }
 }
 
 .order-item {

@@ -1,34 +1,52 @@
 <ion-content>
   <superme-navigator heading="Our Policies" backIcon="arrowSvg"></superme-navigator>
 
-<div class="policies-container">
-  <div class="policies-header">
+  <div class="policies-container">
     <div class="policies-tabs" role="tablist" aria-label="Policies">
       <button type="button" role="tab" class="policies-tab" [class.active]="selectedTab==='terms'" (click)="selectTab('terms')">
-        <span>Terms of Use</span>
+        Terms of Use
       </button>
-
       <button type="button" role="tab" class="policies-tab" [class.active]="selectedTab==='privacy'" (click)="selectTab('privacy')">
-        <span>Privacy Policy</span>
+        Privacy Policy
       </button>
     </div>
 
-    
-  </div>
-  <div class="terms-and-conditions" *ngIf="selectedTab==='terms' || !selectedTab">
-    <h1>Know the rules. These terms outline your rights, responsibilities, and what you can expect when using SuperMe.</h1>
-    <p>Last Updated: January 15, 2026</p>
-    <h2>
+    <div class="policy-card" *ngIf="selectedTab==='terms'">
+      <div class="policy-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L4 5V11C4 16.55 7.84 21.74 12 23C16.16 21.74 20 16.55 20 11V5L12 2Z" stroke="#90214D" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M9 12L11 14L15.5 9.5" stroke="#90214D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h1>Know the rules</h1>
+      <p class="policy-desc">These terms outline your rights, responsibilities, and what you can expect when using SuperMe.</p>
+      <p class="policy-updated">Last Updated: January 15, 2026</p>
       <superme-view-all text="Read the complete Terms of Use" (clicked)="openFullPolicies('terms')"></superme-view-all>
-    </h2>
     </div>
 
-    <div class="privacy-policy" *ngIf="selectedTab==='privacy'">
-         <h1>Your Privacy, Our Promise. Learn how we collect, use, and protect your personal information to keep you and your family safe.</h1>
-    <p>Last Updated: January 15, 2026</p>
-    <h2>
+    <div class="policy-card" *ngIf="selectedTab==='privacy'">
+      <div class="policy-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="10" width="14" height="11" rx="2" stroke="#90214D" stroke-width="1.8"/>
+          <path d="M8 10V7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7V10" stroke="#90214D" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="12" cy="15" r="1.5" fill="#90214D"/>
+        </svg>
+      </div>
+      <h1>Your privacy, our promise</h1>
+      <p class="policy-desc">Learn how we collect, use, and protect your personal information to keep you and your family safe.</p>
+      <p class="policy-updated">Last Updated: January 15, 2026</p>
       <superme-view-all text="Read the complete Privacy Policy" (clicked)="openFullPolicies('privacy')"></superme-view-all>
-    </h2>
+    </div>
+
+    <div class="policy-support-card" role="button" tabindex="0" (click)="onContactSupport()" (keyup.enter)="onContactSupport()">
+      <div class="policy-support-icon" aria-hidden="true">💬</div>
+      <div class="policy-support-text">
+        <h3>Have questions about this policy?</h3>
+        <p>Our support team is happy to walk you through it.</p>
+      </div>
+      <svg class="policy-support-chev" width="8" height="14" viewBox="0 0 8 14" fill="none" aria-hidden="true">
+        <path d="M1.5 1.5L6.5 7L1.5 12.5" stroke="#90214D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
     </div>
   </div>
 </ion-content>

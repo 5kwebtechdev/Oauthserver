@@ -6,7 +6,9 @@ import {
   ElementRef,
   HostListener,
   ChangeDetectorRef,
+  DestroyRef,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -16,6 +18,9 @@ import { SizeGuideComponent } from '../size-guide/size-guide.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../../services/auth.service';
 import { CartService } from '../../../../services/cart.service';
+import { SchoolContextService } from '../../../../services/school-context.service';
+import { AddressService } from '../../../../services/address.service';
+import { Address } from '../../../../api/address.api';
 import { environment } from '../../../../../../environments/environment';
 
 interface ApiProductSize {
@@ -88,8 +93,10 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
   isBook = false;
   cartCount = 0;
   selectedAddress: string | null = null;
-  // schoolId passed as query param from product-store
+  private defaultAddress: Address | null = null;
+  // schoolId/classId passed as query params from product-store
   schoolId: number | null = null;
+  classId: number | null = null;
   // Add to cart UI state
   addingToCart = false;
   addToCartSuccess = false;
@@ -137,7 +144,10 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
     private http: HttpClient,
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
-    private cartService: CartService
+    private cartService: CartService,
+    private destroyRef: DestroyRef,
+    private schoolContext: SchoolContextService,
+    private addressService: AddressService
   ) { }
 
 
@@ -146,7 +156,19 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
   }
 
   openAddressPopup(): void {
-    console.log('openAddressPopup called');
+    this.router.navigateByUrl('/authed/school-store/address-input');
+  }
+
+  private loadDefaultAddress(): void {
+    this.addressService.addresses$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(list => {
+      const def = list.find(a => a.isDefault) ?? list[0] ?? null;
+      this.defaultAddress = def;
+      this.selectedAddress = def
+        ? [def.line1, def.line2].filter(Boolean).join(', ') + (def.city ? ', ' + def.city : '')
+        : null;
+      this.cdr.detectChanges();
+    });
+    this.addressService.load().subscribe();
   }
 
   closeSizeGuide(): void {
@@ -189,13 +211,43 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
     this.cartService.count$.subscribe(n => { this.cartCount = n; this.cdr.detectChanges(); });
     this.cartService.refresh();
 
-    const schoolParam = this.route.snapshot.queryParamMap.get('schoolId');
-    this.schoolId = schoolParam ? Number(schoolParam) || null : null;
+    // Auto-detect a saved delivery address so the delivery estimate shows
+    // immediately (Flipkart-style), instead of always asking for a pincode.
+    this.loadDefaultAddress();
 
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.loadProduct(id);
-    }
+    // Angular reuses this component instance when navigating between two
+    // /product/:id routes, so react to param changes instead of reading
+    // route.snapshot once — otherwise stale state (incl. Add to Cart) sticks
+    // to whichever product was first loaded.
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+      const id = params.get('id');
+      const schoolParam = this.route.snapshot.queryParamMap.get('schoolId');
+      this.schoolId = schoolParam ? Number(schoolParam) || null : null;
+      const classParam = this.route.snapshot.queryParamMap.get('classId');
+      this.classId = classParam ? Number(classParam) || null : null;
+      if (this.schoolId != null || this.classId != null) {
+        this.schoolContext.set(this.schoolId, this.classId);
+      }
+      if (id) {
+        this.resetProductState();
+        this.loadProduct(id);
+      }
+    });
+  }
+
+  private resetProductState(): void {
+    this.product = null;
+    this.images = ['assets/School-assets/empty-product-list.png'];
+    this.currentIndex = 0;
+    this.quantity = 1;
+    this.sizes = [];
+    this.selectedSizeLabel = null;
+    this.addingToCart = false;
+    this.addToCartError = '';
+    this.addToCartSuccess = false;
+    this.detailsExpanded = false;
+    this.deliveryDateText = null;
+    this.setTranslate(0, true);
   }
 
   retryLoadProduct(): void {
@@ -222,7 +274,7 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
 
         this.images = Array.isArray(res.images) && res.images.length
           ? res.images
-          : ['assets/School-assets/temp/Shirt-l.jpg'];
+          : ['assets/School-assets/empty-product-list.png'];
 
         this.sizes = Array.isArray(res.sizes) ? res.sizes : [];
         const firstAvailable = this.sizes.find(s => s.available && s.stock > 0) || this.sizes[0];
@@ -333,7 +385,10 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
 
   handleRightAction(event: { index: number, action: any }): void {
     if (event.action?.type === 'cart') {
-      this.router.navigate(['/authed/cart']);
+      const queryParams: Record<string, string> = {};
+      if (this.schoolId != null) queryParams['schoolId'] = String(this.schoolId);
+      if (this.classId != null) queryParams['classId'] = String(this.classId);
+      this.router.navigate(['/authed/cart'], { queryParams });
     }
   }
 
@@ -367,6 +422,7 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
     };
     if (this.selectedSizeLabel) body['sizeLabel'] = this.selectedSizeLabel;
     if (this.schoolId != null) body['schoolId'] = this.schoolId;
+    if (this.classId != null) body['classId'] = this.classId;
 
     this.http.post(`${environment.apiUrl}/cart/items`, body, { headers }).subscribe({
       next: () => {

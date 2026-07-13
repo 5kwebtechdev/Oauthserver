@@ -113,7 +113,7 @@
             </div>
 
             <div class="enter-btn-container">
-                <superme-button type="magenta" text="Enter Store" large (click)="enterStore()"></superme-button>
+                <superme-button type="magenta" text="Enter Store" large [disabled]="!canEnterStore" (click)="enterStore()"></superme-button>
             </div>
         </div>
         </section>
