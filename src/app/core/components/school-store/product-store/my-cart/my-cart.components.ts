@@ -1,17 +1,18 @@
 ﻿import { Component, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ViewWillEnter } from '@ionic/angular';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { CartService } from '../../../../services/cart.service';
 import { SupermeNavigatorComponent } from '../../../superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../../superme-button/superme-button.component';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { AuthService } from '../../../../services/auth.service';
 import { CustomToastService } from '../../../../services/custom-toast.service';
 import { AddressService } from '../../../../services/address.service';
 import { Address } from '../../../../api/address.api';
+import { SchoolContextService } from '../../../../services/school-context.service';
 import { environment } from '../../../../../../environments/environment';
 
 interface CartItem {
@@ -43,7 +44,7 @@ interface CartItem {
     templateUrl: './my-cart.components.html',
     styleUrls: ['./my-cart.components.scss']
 })
-export class MyCartComponent implements OnInit, OnDestroy {
+export class MyCartComponent implements OnInit, OnDestroy, ViewWillEnter {
     showAddressPopup = false;
     addresses: Address[] = [];
     selectedAddress: Address | null = null;
@@ -69,15 +70,22 @@ export class MyCartComponent implements OnInit, OnDestroy {
     apiGstTotal: number | null = null;
     apiPayableTotal: number | null = null;
 
+    // schoolId/classId passed as query params when opening the cart from a
+    // school-scoped page (product store / product detail)
+    schoolId: number | null = null;
+    classId: number | null = null;
+
     constructor(
         private router: Router,
+        private route: ActivatedRoute,
         private cdr: ChangeDetectorRef,
         private modalCtrl: ModalController,
         private http: HttpClient,
         private authService: AuthService,
         private toastService: CustomToastService,
         private addressService: AddressService,
-        private cartService: CartService
+        private cartService: CartService,
+        private schoolContext: SchoolContextService
     ) { }
 
     ngOnInit(): void {
@@ -99,6 +107,25 @@ export class MyCartComponent implements OnInit, OnDestroy {
             next: () => { this.addressesLoading = false; this.cdr.detectChanges(); },
             error: () => { this.addressesLoading = false; this.cdr.detectChanges(); }
         });
+    }
+
+    // Ionic caches pages in <ion-router-outlet> for back/forward navigation,
+    // so ngOnInit only runs once per page instance. ionViewWillEnter fires on
+    // every visit (including the first), so the cart re-syncs with the server
+    // whenever this page becomes active again — e.g. after adding another item.
+    ionViewWillEnter(): void {
+        const schoolParam = this.route.snapshot.queryParamMap.get('schoolId');
+        const classParam = this.route.snapshot.queryParamMap.get('classId');
+        this.schoolId = schoolParam ? Number(schoolParam) || null : null;
+        this.classId = classParam ? Number(classParam) || null : null;
+
+        // A hard refresh on this page has no query params of its own — fall
+        // back to the last school/class context remembered from browsing.
+        if (this.schoolId == null && this.classId == null) {
+            const remembered = this.schoolContext.get();
+            this.schoolId = remembered.schoolId;
+            this.classId = remembered.classId;
+        }
 
         this.loadCart();
     }
@@ -119,7 +146,11 @@ export class MyCartComponent implements OnInit, OnDestroy {
             'Accept': 'application/json',
             'x-skip-loading': '1'
         });
-        this.http.get<any>(`${environment.apiUrl}/cart`, { headers }).subscribe({
+        const qs: string[] = [];
+        if (this.schoolId != null) qs.push(`schoolId=${this.schoolId}`);
+        if (this.classId != null) qs.push(`classId=${this.classId}`);
+        const cartUrl = `${environment.apiUrl}/cart` + (qs.length ? '?' + qs.join('&') : '');
+        this.http.get<any>(cartUrl, { headers }).subscribe({
             next: (res) => {
                 console.log('[Cart] GET /cart response:', JSON.stringify(res));
                 const raw = Array.isArray(res) ? res : (res?.items ?? res?.data ?? []);
@@ -361,11 +392,11 @@ export class MyCartComponent implements OnInit, OnDestroy {
             'x-skip-loading': '1'
         });
 
-        // Build DELETE /cart?schoolId=&classId= using context from first item
-        const first = this.items[0];
+        // Build DELETE /cart?schoolId=&classId= using this page's own school/class context
+        // (cart items themselves carry schoolName only, not a numeric schoolId/classId)
         const params: string[] = [];
-        if (first?.schoolId != null) params.push(`schoolId=${first.schoolId}`);
-        if (first?.classId  != null) params.push(`classId=${first.classId}`);
+        if (this.schoolId != null) params.push(`schoolId=${this.schoolId}`);
+        if (this.classId  != null) params.push(`classId=${this.classId}`);
         const clearUrl = `${environment.apiUrl}/cart` + (params.length ? '?' + params.join('&') : '');
 
         this.http.delete(clearUrl, { headers }).subscribe({
@@ -422,9 +453,6 @@ export class MyCartComponent implements OnInit, OnDestroy {
             return;
         }
 
-        // Pick schoolId / classId from the first cart item that has them
-        const firstWithSchool = this.items.find(it => it.schoolId != null);
-
         const addressLabel = this.formatAddressShort(this.selectedAddress)
             + (this.selectedAddress.city ? ', ' + this.selectedAddress.city : '');
 
@@ -432,8 +460,8 @@ export class MyCartComponent implements OnInit, OnDestroy {
             state: {
                 addressId:    this.selectedAddress.id,
                 addressLabel,
-                schoolId:     firstWithSchool?.schoolId ?? null,
-                classId:      firstWithSchool?.classId  ?? null
+                schoolId:     this.schoolId,
+                classId:      this.classId
             }
         });
     }

@@ -5,21 +5,24 @@
             </superme-navigator>
         </div>
     
-  <main class="return-exchange-container" *ngIf="!showUploadProof">
+  <main class="return-exchange-container" *ngIf="!showUploadProof && hasValidContext">
       <div class="return-exchange-form">
         <!-- Order Details Section -->
         <div class="form-section">
-          <div class="order-info-card">
+          <h2 *ngIf="items.length > 1">Select an item</h2>
+          <div class="order-info-card" *ngFor="let item of items"
+               [class.selected]="selectedItem?.id === item.id"
+               (click)="selectItem(item)" role="button" tabindex="0">
             <div class="order-item">
-              <img src="assets/School-assets/temp/Shirt-l.jpg" alt="Product Image" class="product-image">
+              <img [src]="itemImage(item)" alt="Product Image" class="product-image">
               <div class="item-details">
-                <h2>Classic White Half-Sleeve Shirt</h2>
+                <h2>{{ item.productName }}</h2>
                 <div class="d-flex gap-2">
-                    <p>Size: 16</p>
-                    <p>Qty: 1</p>
+                    <p *ngIf="item.sizeLabel">Size: {{ item.sizeLabel }}</p>
+                    <p>Qty: {{ item.quantity }}</p>
                 </div>
-                <p>St. Xavier's High School</p>
-                <h2 class="price">₹799</h2>
+                <p *ngIf="order?.schoolName">{{ order?.schoolName }}</p>
+                <h2 class="price">{{ fmt(item.lineTotal) }}</h2>
               </div>
             </div>
           </div>
@@ -74,13 +77,21 @@
           <textarea
             class="comments-textarea"
             placeholder="Please provide any additional details about your return/exchange request..."
-            rows="4">
+            rows="4"
+            [value]="additionalComments"
+            (input)="additionalComments = $any($event.target).value">
           </textarea>
         </div>
 
     </div>
 
 </main>
+
+<!-- No order context (e.g. deep link / page refresh) -->
+<div class="no-context" *ngIf="!showUploadProof && !hasValidContext" style="padding: 60px 16px; text-align: center;">
+  <p style="margin-bottom: 16px;">We couldn't find the order details for this return.</p>
+  <superme-button type="magenta" size="large" text="Go to My Orders" (click)="goBack()"></superme-button>
+</div>
 <!-- Upload Photo Proof (only show if reason is damaged or wrong item) -->
 <div class="upload-proof-form" *ngIf="showUploadProof">
   <div class="nav-head">
@@ -131,11 +142,12 @@
 </div>
 
 <!-- Next Button -->
-<div class="next-cta" *ngIf="!showUploadProof">
+<div class="next-cta" *ngIf="!showUploadProof && hasValidContext">
   <superme-button
     type="magenta"
     size="large"
     text="Next"
+    [disabled]="!canProceed"
     (click)="onNext()">
   </superme-button>
 </div>

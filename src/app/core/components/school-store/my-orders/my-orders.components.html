@@ -8,7 +8,7 @@
                 <span class="search-icon" aria-hidden="true">
                     <img src="assets/icons/search-icon.svg" alt="" aria-hidden="true">
                 </span>
-                <input type="text" placeholder="Search your orders" />
+                <input type="text" placeholder="Search your orders" [value]="searchQuery" (input)="onSearchInput($event)" />
             </div>
 
             <button class="orders-filter-button" aria-label="Filter orders" role="button" (click)="openFilterScreen()">
@@ -20,7 +20,29 @@
             <div class="orders-section">
                 <h2>{{ resultsText }}</h2>
 
-                <div *ngIf="filteredOrders.length === 0" class="no-order-empty-state">
+                <!-- Loading -->
+                <div *ngIf="ordersLoading" style="padding: 40px 0; text-align: center; opacity: 0.5;">
+                    <ion-spinner name="crescent"></ion-spinner>
+                </div>
+
+                <!-- Error -->
+                <div *ngIf="!ordersLoading && ordersError" style="padding: 24px 16px; text-align: center;">
+                    <p style="margin-bottom: 16px; color: #BB2124;">Failed to load orders.</p>
+                    <superme-button type="magenta" size="large" text="Retry" (click)="loadOrders()"></superme-button>
+                </div>
+
+                <div *ngIf="!ordersLoading && !ordersError && filteredOrders.length === 0 && orders.length === 0" class="no-order-empty-state">
+                    <empty-state
+                        [imageSrc]="'assets/Images-Transparent/Cart-Blank.png'"
+                        [imageAlt]="'No orders yet'"
+                        [leadText]="'No orders yet'"
+                        [subText]="'Items you order from the school store will show up here.'"
+                        [buttonText]="'Browse Store'"
+                        (buttonClicked)="goToStore()">
+                    </empty-state>
+                </div>
+
+                <div *ngIf="!ordersLoading && !ordersError && filteredOrders.length === 0 && orders.length > 0" class="no-order-empty-state">
                     <empty-state
                         [imageSrc]="'assets/Images-Transparent/Cart-Blank.png'"
                         [imageAlt]="'No orders found'"
@@ -30,21 +52,24 @@
                     </empty-state>
                 </div>
 
-                <div *ngIf="filteredOrders.length > 0" class="order-card-list d-flex flex-column gap-4 mt-3">
+                <div *ngIf="!ordersLoading && !ordersError && filteredOrders.length > 0" class="order-card-list d-flex flex-column gap-4 mt-3">
                     <div *ngFor="let order of filteredOrders" class="order-card" (click)="openOrderDetail(order)">
                         <div class="order-delivery-date w-100">
-                            <h2 [style.color]="getStatusColor(order.status)">{{ order.statusHeading }}</h2>
+                            <h2 [style.color]="statusColor(order.status)">{{ statusLabel(order.status) }}</h2>
                         </div>
                         <div class="order-item d-flex align-center gap-2 w-100">
                             <div class="product-image">
-                            <img [src]="order.imageSrc" alt="Order Item Image">
+                            <img [src]="itemImage(order.items[0])" alt="Order Item Image">
                             </div>
                             <div class="item-info w-100">
-                                <h2>{{ truncateText(order.productName, 48) }}</h2>
-                                <p class="product-subtitle">{{ order.subtitle }}</p>
+                                <h2>{{ order.items?.length ? truncateText(order.items[0]?.productName ?? '', 48) : ('Order #' + (order.orderNumber ?? order.id)) }}</h2>
+                                <p class="product-subtitle" *ngIf="order.items && order.items.length > 1">+{{ order.items.length - 1 }} more item(s)</p>
                                 <p class="school-name">{{ order.schoolName }}</p>
                             </div>
                         </div>
+                    </div>
+                    <div *ngIf="!isLastPage" class="load-more-wrap" style="padding: 8px 0 16px;">
+                        <superme-button type="bronze-transparent" size="large" [text]="loadingMore ? 'Loading...' : 'Load More'" [disabled]="loadingMore" (click)="loadMoreOrders()"></superme-button>
                     </div>
                 </div>
             </div>
@@ -98,72 +123,87 @@
                      <label>
                         <input type="radio" name="time" value="older" [checked]="selectedTime === 'older'" (change)="onTimeChange('older')" />
                         Older
-                    </label>     
-                
-                </div>  
-            </div>            
+                    </label>
+
+                </div>
+            </div>
         </div>
         <div class="filter-actions" style="padding:16px;">
             <superme-button type="magenta" size="large" [text]="'Apply (Showing ' + filteredOrders.length + ' results)'" (click)="applyFilters()"></superme-button>
         </div>
     </div>
 
-      <!-- order-details -->
+    <!-- Order Detail Screen -->
     <div class="order-detail-screen" [class.visible]="isOrderDetailVisible">
         <div class="nav-head">
             <superme-navigator heading="Order Details" backIcon="arrowSvg" (back)="goBack()">
                 <superme-view-all slot="end" text="Help" [hideIcon]="true" (click)="onHelpClick()"></superme-view-all>
             </superme-navigator>
         </div>
+
+        <!-- Detail loading -->
+        <div *ngIf="detailLoading" style="padding: 40px 0; text-align: center; opacity: 0.5;">
+            <ion-spinner name="crescent"></ion-spinner>
+        </div>
+
+        <!-- Detail error -->
+        <div *ngIf="!detailLoading && detailError" style="padding: 40px 16px; text-align: center;">
+            <p style="margin-bottom: 16px; color: #BB2124;">Failed to load order details.</p>
+            <superme-button type="magenta" size="large" text="Retry" (click)="retryOrderDetail()"></superme-button>
+        </div>
+
+        <ng-container *ngIf="!detailLoading && !detailError && selectedOrder">
         <div class="order-content" [class.has-footer]="hasFooter">
             <div class="order-information d-flex flex-column">
-                <div *ngIf="selectedOrder" class="order-card-2">
-                        <div class="order-item d-flex align-center gap-2 w-100">
+                <div class="order-card-2">
+
+                    <!-- Items list -->
+                    <ng-container *ngFor="let item of selectedOrder.items; let last = last">
+                        <div class="order-item d-flex align-center gap-2 w-100" [style.margin-bottom]="!last ? '12px' : '0'">
                             <div class="product-image">
-                                <img [src]="selectedOrder.imageSrc" alt="Order Item Image">
+                                <img [src]="itemImage(item)" alt="Product Image">
                             </div>
                             <div class="item-info w-100">
-                                <h2>{{ truncateText(selectedOrder.productName, 48) }}</h2>
-                                <p class="product-subtitle">{{ selectedOrder.subtitle }}</p>
+                                <h2>{{ truncateText(item.productName, 48) }}</h2>
+                                <p class="product-subtitle">
+                                    {{ item.sizeLabel ? 'Size: ' + item.sizeLabel : '' }}{{ (item.sizeLabel && item.quantity > 1) ? ' · ' : '' }}{{ item.quantity > 1 ? 'Qty: ' + item.quantity : '' }}
+                                </p>
                                 <p class="school-name">{{ selectedOrder.schoolName }}</p>
-                                <h2 *ngIf="showPrice" class="product-price">{{ selectedOrder.price }}</h2>
                             </div>
                         </div>
+                    </ng-container>
 
-                        <!-- Status Heading -->
-                        <h2 [style.color]="getStatusColor(selectedOrder.status)" class="order-status">
-                            {{ selectedOrder.statusHeading }}
-                        </h2>
-                        <p *ngIf="selectedOrder.statusSubtitle" class="order-status-subtitle"
-                           [style.color]="getStatusColor(selectedOrder.status)">
-                            {{ selectedOrder.statusSubtitle }}
-                        </p>
+                    <!-- Status Heading -->
+                    <h2 [style.color]="statusColor(selectedOrder.status)" class="order-status">
+                        {{ statusLabel(selectedOrder.status) }}
+                    </h2>
+                    <p *ngIf="selectedOrder.statusNote" class="order-status-subtitle">{{ selectedOrder.statusNote }}</p>
 
-                        <!-- Transit Timeline -->
-                        <div *ngIf="showTimeline" class="order-transit-info">
-                            <div class="transit-timeline">
-                                <div *ngFor="let step of selectedOrder.transitSteps; let i = index; let last = last"
-                                     class="transit-step" [class.completed]="step.completed" [class.last-step]="last">
-                                    <div *ngIf="!last" class="connector-line"
-                                         [style.background]="step.completed ? getStepColor(selectedOrder) : '#E0E0E0'">
-                                    </div>
-                                    <div class="step-dot" [class.checked]="step.completed"
-                                         [style.background]="step.completed ? getStepColor(selectedOrder) : '#E0E0E0'"
-                                         [style.borderColor]="step.completed ? getStepColor(selectedOrder) : '#E0E0E0'">
-                                        <svg *ngIf="step.completed" width="10" height="8" viewBox="0 0 10 8" fill="none">
-                                            <path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                    </div>
-                                    <div class="step-content">
-                                        <span class="step-label" [class.active]="step.completed">
-                                            {{ step.label }}
-                                            <span *ngIf="step.date" class="step-date">({{ step.date }})</span>
-                                        </span>
-                                        <span *ngIf="step.subtitle" class="step-subtitle">{{ step.subtitle }}</span>
-                                    </div>
+                    <!-- Transit Timeline -->
+                    <div *ngIf="showTimeline && trackSteps.length > 0" class="order-transit-info">
+                        <div class="transit-timeline">
+                            <div *ngFor="let step of trackSteps; let last = last"
+                                 class="transit-step" [class.completed]="step.completed" [class.last-step]="last">
+                                <div *ngIf="!last" class="connector-line"
+                                     [style.background]="getStepColor(step.completed)">
+                                </div>
+                                <div class="step-dot" [class.checked]="step.completed"
+                                     [style.background]="getStepColor(step.completed)"
+                                     [style.borderColor]="getStepColor(step.completed)">
+                                    <svg *ngIf="step.completed" width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                        <path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <div class="step-content">
+                                    <span class="step-label" [class.active]="step.completed">
+                                        {{ step.label }}
+                                        <span *ngIf="step.timestamp" class="step-date">({{ formatDate(step.timestamp) }})</span>
+                                    </span>
+                                    <span *ngIf="step.subtitle" class="step-subtitle">{{ step.subtitle }}</span>
                                 </div>
                             </div>
                         </div>
+                    </div>
                 </div>
             </div>
 
@@ -171,11 +211,11 @@
             <div *ngIf="showRefundCard" class="info-card">
                 <div class="info-row">
                     <p>Refund Status</p>
-                    <h3 style="color: #4CAF50;">{{ selectedOrder?.refundStatus || 'Initiated' }}</h3>
+                    <h3 style="color: #4CAF50;">Initiated</h3>
                 </div>
                 <div class="info-row">
                     <p>Order number</p>
-                    <h3>{{ selectedOrder?.orderNumber }}</h3>
+                    <h3>{{ selectedOrder.orderNumber }}</h3>
                 </div>
             </div>
 
@@ -185,47 +225,40 @@
                 <div class="address-text-detail d-flex flex-column w-100">
                     <h2 style="font-size: 13px;">{{ addressLabel }}</h2>
                     <div class="address-text">
-                        <h2>Rahul- 502, Galaxy Apartments, Mumbai</h2>
+                        <h2 *ngIf="selectedOrder.shippingAddress?.receiverName">{{ selectedOrder.shippingAddress?.receiverName }}</h2>
+                        <p>{{ formatAddress(selectedOrder.shippingAddress) }}</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Order Info (delivered / return-completed) -->
-            <div *ngIf="showOrderInfo" class="info-card">
+            <!-- Order Info (delivered / return-exchange) -->
+            <div *ngIf="isDelivered || isReturnExchange" class="info-card">
                 <div class="info-row-inline">
                     <p>Order Placed:</p>
-                    <h3>{{ selectedOrder?.orderDate }}</h3>
+                    <h3>{{ formatDate(selectedOrder.placedAt) }}</h3>
                 </div>
                 <div class="info-row-inline">
                     <p>Order number:</p>
-                    <h3>{{ selectedOrder?.orderNumber }}</h3>
+                    <h3>{{ selectedOrder.orderNumber }}</h3>
                 </div>
             </div>
 
-            <!-- Item Summary (on-the-way / delayed) -->
+            <!-- Item Summary -->
             <div *ngIf="showBillSummary" class="bill-summary">
                 <h2>Item Summary</h2>
                 <div class="d-flex flex-column gap-2 w-100">
                     <div class="txt-amount">
                         <p>Item Total</p>
-                        <h3>{{ totalPriceDisplay }}</h3>
-                    </div>
-                    <div class="txt-amount">
-                        <p>GST & Other Charges</p>
-                        <h3>{{ gstDisplay }}</h3>
-                    </div>
-                    <div class="txt-amount">
-                        <p>Delivery</p>
-                        <h3 [ngStyle]="{ color: deliveryFee === 0 ? '#4CAF50' : 'inherit' }">{{ deliveryDisplay }}</h3>
+                        <h3>{{ fmt(itemsTotal) }}</h3>
                     </div>
                     <div class="txt-amount">
                         <p>TO PAY</p>
-                        <h3>{{ toPayDisplay }}</h3>
+                        <h3>{{ fmt(orderTotal) }}</h3>
                     </div>
                 </div>
             </div>
 
-            <!-- Payment Information (delivered / return-completed) -->
+            <!-- Payment Information (delivered) -->
             <div *ngIf="showPaymentAccordion" class="payment-accordion" role="button" tabindex="0"
                  (click)="togglePaymentInfo()" (keyup.enter)="togglePaymentInfo()">
                 <h2>Payment Information</h2>
@@ -234,34 +267,61 @@
             <div *ngIf="showPaymentAccordion && showPaymentInfo" class="info-card">
                 <div class="info-row">
                     <p>Payment Method</p>
-                    <h3>UPI</h3>
+                    <h3>{{ selectedOrder.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online Payment' }}</h3>
                 </div>
                 <div class="info-row">
                     <p>Amount Paid</p>
-                    <h3>{{ toPayDisplay }}</h3>
+                    <h3>{{ fmt(orderTotal) }}</h3>
                 </div>
             </div>
         </div>
 
         <!-- Footer Actions -->
         <div *ngIf="hasFooter" class="footer-actions">
-            <div *ngIf="showCancelShareFooter" class="footer-buttons">
-                <superme-button type="bronze" size="large" text="Cancel Order" [disabled]="isOutForDelivery" (click)="openCancelPopup()"></superme-button>
+            <!-- Active order: cancel + share tracking -->
+            <div *ngIf="canCancel" class="footer-buttons">
+                <superme-button type="bronze" size="large" text="Cancel Order" [disabled]="cancellingOrder" (click)="openCancelPopup()"></superme-button>
                 <superme-button type="bronze-transparent" size="large" text="Share Tracking" (click)="onShareTracking()"></superme-button>
             </div>
-            <div *ngIf="showCancelReturnFooter" class="footer-buttons">
-                <superme-button type="bronze" size="large" text="Cancel Return" disabled (click)="onCancelReturn()"></superme-button>
+            <!-- Delivered with return allowed -->
+            <div *ngIf="isDelivered && canReturn" class="footer-buttons">
+                <superme-button type="magenta" size="large" text="Return/Exchange" (click)="onReturnExchange()"></superme-button>
             </div>
-            <div *ngIf="showDownloadInvoiceFooter" class="footer-buttons">
-                <superme-button type="magenta-transparent" size="large" text="Download Invoice" (click)="onDownloadInvoice()"></superme-button>
-                <superme-button *ngIf="showReturnExchangeFooter" type="magenta" size="large" text="Return/Exchange" (click)="onReturnExchange()"></superme-button>
+        </div>
+        </ng-container>
+    </div>
+
+    <!-- Cancel Reason Screen -->
+    <div class="order-cancel-reason-screen" [class.visible]="isCancelReasonVisible">
+        <div class="nav-head">
+            <superme-navigator heading="Cancel Order" backIcon="arrowSvg" (back)="goBack()"></superme-navigator>
+        </div>
+        <div class="filter-content">
+            <div class="status-filter d-flex flex-column gap-3">
+                <h2>Why are you cancelling this order?</h2>
+                <div class="status-options d-flex flex-column gap-4">
+                    <label *ngFor="let reason of cancelReasons">
+                        <input type="radio" name="cancelReason" [value]="reason" [checked]="selectedCancelReason === reason" (change)="onCancelReasonChange(reason)" />
+                        {{ reason }}
+                    </label>
+                </div>
+                <textarea
+                    *ngIf="selectedCancelReason === 'Other'"
+                    class="comments-textarea"
+                    style="width:100%; padding:12px 16px; border:1px solid rgba(40,37,39,0.3); border-radius:8px; font-size:14px; resize:vertical; min-height:80px;"
+                    placeholder="Please tell us more..."
+                    [value]="customCancelReason"
+                    (input)="customCancelReason = $any($event.target).value"></textarea>
             </div>
+        </div>
+        <div class="filter-actions" style="padding:16px;">
+            <superme-button type="magenta" size="large" [text]="cancellingOrder ? 'Cancelling...' : 'Confirm Cancellation'" [disabled]="!canConfirmCancel" (click)="confirmCancel()"></superme-button>
         </div>
     </div>
 
 </ion-content>
 
-<!-- Cancel Confirmation Popup (use shared superme-popup) -->
+<!-- Cancel Confirmation Popup -->
 <app-superme-popup
     [isVisible]="isCancelPopupVisible"
     [showCloseButton]="true"
@@ -269,7 +329,7 @@
         [primaryCTA]="cancelPrimaryCTA"
         [secondaryCTA]="cancelSecondaryCTA"
         (primaryAction)="closeCancelPopup()"
-        (secondaryAction)="confirmCancel()"
+        (secondaryAction)="proceedToCancelReason()"
         (closeAction)="closeCancelPopup()"
     (backdropClick)="closeCancelPopup()">
 </app-superme-popup>

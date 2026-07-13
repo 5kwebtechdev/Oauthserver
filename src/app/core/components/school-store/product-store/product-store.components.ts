@@ -14,6 +14,7 @@ import { AuthService } from '../../../services/auth.service';
 import { AddressService } from '../../../services/address.service';
 import { Address } from '../../../api/address.api';
 import { CustomToastService } from '../../../services/custom-toast.service';
+import { SchoolContextService } from '../../../services/school-context.service';
 import { environment } from '../../../../../environments/environment';
 
 interface StoreCategory {
@@ -79,8 +80,6 @@ type Product = {
 })
 export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   @ViewChild('navigator', { static: false, read: ElementRef }) navigatorEl?: ElementRef;
-  @ViewChild('categorySlider', { static: false, read: ElementRef }) categorySlider?: ElementRef;
-  @ViewChild('subCategorySlider', { static: false, read: ElementRef }) subCategorySlider?: ElementRef;
   @ViewChild(IonContent, { static: false }) ionContent?: IonContent;
 
   // popup state for address/subtext
@@ -125,7 +124,8 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
     private authService: AuthService,
     private addressService: AddressService,
     private toastService: CustomToastService,
-    private cartService: CartService
+    private cartService: CartService,
+    private schoolContext: SchoolContextService
   ) { }
 
   // product categories, loaded from the store categories API
@@ -139,6 +139,14 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   schoolId: number | null = null;
   schoolName: string | null = null;
   className: string | null = null;
+  classId: number | null = null;
+
+  // Category is chosen once on the Student-Store home screen — this page just
+  // shows which one is active as the page heading, instead of repeating the
+  // same category tabs again here.
+  get selectedCategoryLabel(): string {
+    return this.categories.find(c => c.id === this.selectedCategory)?.label ?? 'Student-Store';
+  }
 
   // true when the currently selected top-level category is "Textbooks"
   get isTextbooksSelected(): boolean {
@@ -168,7 +176,8 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
         const matched = initialCategoryId != null && this.categories.some(c => c.id === initialCategoryId);
         this.selectedCategory = matched ? initialCategoryId! : (this.categories[0]?.id ?? null);
         if (this.selectedCategory != null) {
-          this.loadSubCategories(this.selectedCategory);
+          this.subCategoryLevels = [];
+          this.loadSubCategoryLevel(0, []);
           this.loadProducts();
         }
         this.cdr.detectChanges();
@@ -181,16 +190,25 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
     });
   }
 
-  // sub-categories for the second slider, loaded from the store sub-categories API
-  subCategories: { id: string; label: string }[] = [
-    { id: 'all', label: 'All' }
-  ];
+  // Sub-categories drill down through nested levels (e.g. Notebooks -> Spiral
+  // Notebooks -> A4 Spiral), each fetched from the API as the previous level's
+  // selection narrows: /sub-categories, then /sub-categories/{level0}, then
+  // /sub-categories/{level0}/{level1}, etc. Each level renders its own chip row;
+  // picking "All" (or a different option) at a level drops any deeper levels.
+  subCategoryLevels: { options: { id: string; label: string }[]; selected: string }[] = [];
   subCategoriesLoading = false;
   subCategoriesError = false;
 
-  selectedSubCategory: string = this.subCategories[0].id;
+  get selectedSubCategoryPath(): string[] {
+    return this.subCategoryLevels.map(l => l.selected).filter(s => s !== 'all');
+  }
 
-  loadSubCategories(categoryId: number): void {
+  private buildSubCategoryUrl(categoryId: number, path: string[]): string {
+    const base = `${environment.apiUrl}/store/categories/${categoryId}/sub-categories`;
+    return path.length ? base + '/' + path.map(p => encodeURIComponent(p)).join('/') : base;
+  }
+
+  private loadSubCategoryLevel(levelIndex: number, path: string[]): void {
     this.subCategoriesLoading = true;
     this.subCategoriesError = false;
     const token = this.authService.getToken();
@@ -199,13 +217,16 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
       'Accept': 'application/json',
       'x-skip-loading': '1'
     });
-    this.http.get<StoreSubCategory[]>(`${environment.apiUrl}/store/categories/${categoryId}/sub-categories`, { headers }).subscribe({
+    this.http.get<StoreSubCategory[]>(this.buildSubCategoryUrl(this.selectedCategory!, path), { headers }).subscribe({
       next: (res) => {
         const apiSubCategories = Array.isArray(res) ? res : [];
-        this.subCategories = [
-          { id: 'all', label: 'All' },
-          ...apiSubCategories.map(s => ({ id: s.name, label: s.name }))
-        ];
+        this.subCategoryLevels = this.subCategoryLevels.slice(0, levelIndex);
+        if (apiSubCategories.length) {
+          this.subCategoryLevels.push({
+            options: [{ id: 'all', label: 'All' }, ...apiSubCategories.map(s => ({ id: s.name, label: s.name }))],
+            selected: 'all'
+          });
+        }
         this.subCategoriesLoading = false;
         this.cdr.detectChanges();
       },
@@ -215,6 +236,33 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  selectSubCategoryAt(levelIndex: number, option: { id: string; label: string }): void {
+    const level = this.subCategoryLevels[levelIndex];
+    if (!level || level.selected === option.id) return;
+
+    level.selected = option.id;
+    // Drop deeper levels — they no longer apply to the new selection
+    this.subCategoryLevels = this.subCategoryLevels.slice(0, levelIndex + 1);
+
+    if (option.id !== 'all' && this.selectedCategory != null) {
+      const path = this.subCategoryLevels.map(l => l.selected);
+      this.loadSubCategoryLevel(levelIndex + 1, path);
+    }
+
+    this.loadProducts();
+    this.cdr.detectChanges();
+  }
+
+  /** Reset all subcategory drill-down levels back to "All" (e.g. from the empty-state CTA). */
+  resetSubCategories(): void {
+    if (this.subCategoryLevels.length) {
+      this.subCategoryLevels = this.subCategoryLevels.slice(0, 1);
+      this.subCategoryLevels[0].selected = 'all';
+    }
+    this.loadProducts();
+    this.cdr.detectChanges();
   }
 
   // product list for cards, loaded from the store products API
@@ -253,8 +301,9 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
       .set('categoryId', String(this.selectedCategory))
       .set('page', String(page))
       .set('size', String(this.productsPageSize));
-    if (this.selectedSubCategory && this.selectedSubCategory !== 'all') {
-      params = params.set('subCategory', this.selectedSubCategory);
+    const subCategoryPath = this.selectedSubCategoryPath;
+    if (subCategoryPath.length) {
+      params = params.set('subCategory', subCategoryPath[subCategoryPath.length - 1]);
     }
     // school + class only apply to categories scoped to a specific school (e.g. School Uniform, Textbooks)
     if (this.selectedCategoryRequiresSchoolClass && this.schoolId != null && this.className) {
@@ -270,7 +319,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
           subtitle: p.brandName || p.schoolName || undefined,
           price: this.formatCurrency(p.sellingPrice),
           mrp: this.formatCurrency(p.mrp),
-          img: p.thumbnailUrl,
+          img: p.thumbnailUrl || 'assets/School-assets/empty-product-list.png',
           outOfStock: !p.inStock,
           badge: p.mandatory ? 'Mandatory' : undefined
         }));
@@ -289,39 +338,12 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
     });
   }
 
-  selectCategory(c: { id: number; label: string }): void {
-    // ignore click if user was dragging to scroll
-    if ((this as any)._isDragging) return;
-    if (this.selectedCategory === c.id) return;
-
-    // categories scoped to a school (e.g. School Uniform) need a school + class first;
-    // if we don't have one yet, send the user to pick it rather than showing an unfiltered list
-    const requiresSchoolClass = !!this.categories.find(cat => cat.id === c.id)?.requiresSchoolClass;
-    if (requiresSchoolClass && (this.schoolId == null || !this.className)) {
-      this.router.navigateByUrl(`/authed/school-store/institute-detail?categoryId=${c.id}`).catch(() => {});
-      return;
-    }
-
-    this.selectedCategory = c.id;
-    this.selectedSubCategory = 'all';
-    this.loadSubCategories(c.id);
-    this.loadProducts();
-    this.cdr.detectChanges();
-  }
-
-  selectSubCategory(s: { id: string; label: string }): void {
-    if ((this as any)._isDragging) return;
-    if (this.selectedSubCategory === s.id) return;
-    this.selectedSubCategory = s.id;
-    this.loadProducts();
-    this.cdr.detectChanges();
-  }
-
   openProduct(p: any): void {
     if (!p || p.outOfStock) return;
     let url = `/authed/school-store/product/${encodeURIComponent(p.id)}`;
     const qs: string[] = [];
     if (this.schoolId != null) qs.push(`schoolId=${this.schoolId}`);
+    if (this.classId != null) qs.push(`classId=${this.classId}`);
     if (qs.length) url += '?' + qs.join('&');
     this.router.navigateByUrl(url);
   }
@@ -336,7 +358,12 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
       const action = ev && (ev as any).action;
       if (!action) return;
       if (action.type === 'cart') {
-        try { this.router.navigateByUrl('/authed/cart'); } catch (e) { console.log('Open cart', action); }
+        try {
+          const queryParams: Record<string, string> = {};
+          if (this.schoolId != null) queryParams['schoolId'] = String(this.schoolId);
+          if (this.classId != null) queryParams['classId'] = String(this.classId);
+          this.router.navigate(['/authed/cart'], { queryParams });
+        } catch (e) { console.log('Open cart', action); }
         return;
       }
       if (action.type === 'package') {
@@ -403,22 +430,23 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
       this.schoolId = isNaN(schoolIdNum) ? null : schoolIdNum;
       this.schoolName = params.get('schoolName');
       this.className = params.get('className');
+      const classIdParam = params.get('classId');
+      const classIdNum = classIdParam ? Number(classIdParam) : NaN;
+      this.classId = isNaN(classIdNum) ? null : classIdNum;
+      // Remember this context so it survives a hard refresh on a page (e.g. My
+      // Cart) that has no school/class query params of its own.
+      if (this.schoolId != null || this.classId != null) {
+        this.schoolContext.set(this.schoolId, this.classId);
+      }
 
       this.loadCategories(isNaN(categoryId) ? undefined : categoryId);
     } catch (e) {
       this.loadCategories();
     }
   }
-  // Drag flag used to suppress clicks while user is scrolling
-  private _isDragging = false;
-  private _cleanupSlider?: () => void;
-
   ngOnDestroy(): void {
     try { this._cartCountSub?.unsubscribe(); } catch (e) { }
     try { this._addrSub?.unsubscribe(); } catch (e) { }
-    try {
-      if (this._cleanupSlider) this._cleanupSlider();
-    } catch (e: any) { }
   }
   openAddressPopup(): void {
     this.showAddressPopup = true;
@@ -489,47 +517,6 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
             return;
           }
         });
-      }
-    } catch (e: any) { }
-
-    // Attach robust drag-to-scroll using window listeners so children don't block events
-    try {
-      const el = this.categorySlider?.nativeElement as HTMLElement | undefined;
-      if (el && el.addEventListener) {
-        let active = false;
-        let startX = 0;
-        let startScroll = 0;
-
-        const onMove = (ev: PointerEvent) => {
-          if (!active) return;
-          const dx = ev.clientX - startX;
-          if (Math.abs(dx) > 4) this._isDragging = true;
-          el.scrollLeft = startScroll - dx;
-        };
-
-        const onUp = () => {
-          active = false;
-          setTimeout(() => (this._isDragging = false), 0);
-          window.removeEventListener('pointermove', onMove);
-          window.removeEventListener('pointerup', onUp);
-        };
-
-        const onDown = (ev: PointerEvent) => {
-          active = true;
-          startX = ev.clientX;
-          startScroll = el.scrollLeft;
-          this._isDragging = false;
-          window.addEventListener('pointermove', onMove);
-          window.addEventListener('pointerup', onUp);
-        };
-
-        el.addEventListener('pointerdown', onDown);
-
-        this._cleanupSlider = () => {
-          el.removeEventListener('pointerdown', onDown);
-          window.removeEventListener('pointermove', onMove);
-          window.removeEventListener('pointerup', onUp);
-        };
       }
     } catch (e: any) { }
   }

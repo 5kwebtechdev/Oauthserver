@@ -44,6 +44,7 @@ export class CheckoutComponent implements OnInit {
     placing = false;
     showSuccessSheet = false;
     orderId: string | null = null;
+    orderNumber: string | null = null;
 
     constructor(
         private http: HttpClient,
@@ -79,21 +80,21 @@ export class CheckoutComponent implements OnInit {
         });
     }
 
-    // Summary needs schoolId/classId context; create-order does not
     private summaryBody(): Record<string, any> {
-        const body: Record<string, any> = {
+        return {
             addressId:     this.addressId,
             paymentMethod: this.paymentMethod,
             schoolId:      this.schoolId ?? null,
             classId:       this.classId  ?? null,
         };
-        return body;
     }
 
     private orderBody(): Record<string, any> {
         return {
             addressId:     this.addressId,
             paymentMethod: this.paymentMethod,
+            schoolId:      this.schoolId ?? null,
+            classId:       this.classId  ?? null,
         };
     }
 
@@ -120,6 +121,10 @@ export class CheckoutComponent implements OnInit {
     }
 
     selectPayment(m: PaymentMethod): void {
+        if (m === 'ONLINE') {
+            this.toastService.error('Online payment is coming soon. Please use Cash on Delivery for now.');
+            return;
+        }
         this.paymentMethod = m;
         this.cdr.detectChanges();
     }
@@ -149,6 +154,7 @@ export class CheckoutComponent implements OnInit {
                 } else {
                     this.placing = false;
                     this.orderId = res?.orderId ?? res?.id ?? null;
+                    this.orderNumber = res?.orderNumber ?? null;
                     this.cartService.reset();
                     this.showSuccessSheet = true;
                     this.cdr.detectChanges();
@@ -231,6 +237,7 @@ export class CheckoutComponent implements OnInit {
                 this.placing = false;
                 if (status === 'SUCCESS') {
                     this.orderId = res?.orderId ?? res?.id ?? null;
+                    this.orderNumber = res?.orderNumber ?? null;
                     this.cartService.reset();
                     this.showSuccessSheet = true;
                 } else {

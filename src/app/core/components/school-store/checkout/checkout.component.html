@@ -111,14 +111,12 @@
                         <div class="co-pay-icon co-pay-icon--cod">💵</div>
                     </div>
 
-                    <!-- Online -->
-                    <div class="co-pay-option" [class.co-pay-option--active]="paymentMethod === 'ONLINE'"
-                        (click)="selectPayment('ONLINE')">
-                        <div class="co-pay-radio">
-                            <div class="co-pay-radio-dot" *ngIf="paymentMethod === 'ONLINE'"></div>
-                        </div>
+                    <!-- Online (not available yet) -->
+                    <div class="co-pay-option co-pay-option--disabled" role="button" tabindex="0"
+                        aria-disabled="true" (click)="selectPayment('ONLINE')">
+                        <div class="co-pay-radio"></div>
                         <div class="co-pay-info">
-                            <span class="co-pay-title">Pay Online</span>
+                            <span class="co-pay-title">Pay Online <span class="co-pay-badge">Coming Soon</span></span>
                             <span class="co-pay-sub">UPI · Cards · Net Banking via Razorpay</span>
                         </div>
                         <div class="co-pay-icon co-pay-icon--online">💳</div>
@@ -162,7 +160,7 @@
             <div class="co-success-icon">✓</div>
             <h2 class="co-success-title">Order Placed!</h2>
             <p class="co-success-sub">
-                Your order{{ orderId ? ' #' + orderId : '' }} has been placed successfully.
+                Your order{{ orderNumber ? ' ' + orderNumber : (orderId ? ' #' + orderId : '') }} has been placed successfully.
                 We'll notify you when it's on the way.
             </p>
             <button class="co-success-orders-btn" (click)="goToOrders()">Track My Order</button>

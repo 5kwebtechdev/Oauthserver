@@ -10,6 +10,14 @@ import { SizeGuideComponent } from '../product-store/size-guide/size-guide.compo
 import { AuthService } from '../../../services/auth.service';
 import { CustomToastService } from '../../../services/custom-toast.service';
 import { environment } from '../../../../../environments/environment';
+import { ApiOrder, ApiOrderItem } from '../my-orders/my-orders.components';
+
+const REASON_TEXT: Record<string, string> = {
+  'too-small-big': 'Too Small/ Too Big',
+  'damaged': 'Damaged / Defective',
+  'wrong-item': 'Wrong Item Received',
+  'material-quality': 'Material quality not good',
+};
 
 @Component({
   standalone: true,
@@ -21,11 +29,13 @@ import { environment } from '../../../../../environments/environment';
 export class ReturnExchangeComponent implements OnInit {
 
   // Passed via router state from my-orders
-  orderId: number | null = null;
-  orderNumber: string | null = null;
+  order: ApiOrder | null = null;
+  items: ApiOrderItem[] = [];
+  selectedItem: ApiOrderItem | null = null;
 
-  selectedRequestType = 'return';
+  selectedRequestType: 'return' | 'exchange' = 'return';
   selectedReason = 'too-small-big';
+  additionalComments = '';
   showSizeGuide = false;
   showUploadProof = false;
   uploadedImages: (string | null)[] = [null, null, null];
@@ -55,9 +65,12 @@ export class ReturnExchangeComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const s = (history.state || {}) as { orderId?: number; orderNumber?: string };
-    this.orderId     = s.orderId     ?? null;
-    this.orderNumber = s.orderNumber ?? null;
+    const s = (history.state || {}) as { order?: ApiOrder };
+    this.order = s.order ?? null;
+    this.items = this.order?.items ?? [];
+    if (this.items.length === 1) {
+      this.selectedItem = this.items[0];
+    }
   }
 
   private headers(): HttpHeaders {
@@ -70,9 +83,33 @@ export class ReturnExchangeComponent implements OnInit {
     });
   }
 
+  get hasValidContext(): boolean {
+    return !!this.order && this.items.length > 0;
+  }
+
+  get actionTypeLabel(): 'Return' | 'Exchange' {
+    return this.selectedRequestType === 'exchange' ? 'Exchange' : 'Return';
+  }
+
+  selectItem(item: ApiOrderItem): void {
+    this.selectedItem = item;
+  }
+
+  itemImage(item: ApiOrderItem): string {
+    return item.thumbnailUrl ?? 'assets/School-assets/empty-product-list.png';
+  }
+
+  fmt(v: number | null | undefined): string {
+    return '₹' + (v ?? 0).toFixed(2);
+  }
+
   get disableRequest(): boolean {
     const hasImage = this.uploadedImages.some(i => !!i);
-    return !hasImage || !!this.uploadErrorMessage || this.submitting;
+    return !this.selectedItem || !hasImage || !!this.uploadErrorMessage || this.submitting;
+  }
+
+  get canProceed(): boolean {
+    return !!this.selectedItem && !this.submitting;
   }
 
   removeImage(index: number): void {
@@ -95,23 +132,31 @@ export class ReturnExchangeComponent implements OnInit {
   }
 
   submitRequest(): void {
-    if (!this.orderId || this.submitting) return;
+    if (!this.order || !this.selectedItem || this.submitting) return;
     this.submitting = true;
 
-    const actionType = this.selectedRequestType === 'exchange' ? 'EXCHANGE' : 'RETURN';
-    const body: Record<string, any> = { actionType, reason: this.selectedReason };
-    if (actionType === 'EXCHANGE' && this.selectedSize) {
-      body['newSizeLabel'] = String(this.selectedSize);
-    }
+    const reasonText = REASON_TEXT[this.selectedReason] ?? this.selectedReason;
+    const comments = this.additionalComments.trim();
+    const actionType = this.actionTypeLabel;
+
+    const body = {
+      orderItemId: this.selectedItem.id,
+      actionType,
+      reason: comments ? `${reasonText} - ${comments}` : reasonText,
+      exchangeSize: actionType === 'Exchange' ? String(this.selectedSize) : null,
+      // No image-hosting endpoint is available yet, so a proof photo can be attached
+      // locally for the user's own reference but cannot be sent to the backend.
+      photoUrl: null as string | null,
+    };
 
     this.http.post<any>(
-      `${environment.apiUrl}/user/orders/${this.orderId}/return`,
+      `${environment.apiUrl}/user/orders/${this.order.id}/return`,
       body,
       { headers: this.headers() }
     ).subscribe({
       next: () => {
         this.submitting = false;
-        const msg = actionType === 'RETURN'
+        const msg = actionType === 'Return'
           ? 'Return request submitted successfully.'
           : 'Exchange request submitted successfully.';
         this.toastService.success(msg);
@@ -126,6 +171,7 @@ export class ReturnExchangeComponent implements OnInit {
   }
 
   onNext(): void {
+    if (!this.selectedItem) return;
     if (this.requiresPhoto()) {
       this.showUploadProof = true;
     } else if (this.selectedRequestType === 'exchange' && this.selectedReason === 'too-small-big') {

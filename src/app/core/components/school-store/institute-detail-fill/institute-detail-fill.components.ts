@@ -108,6 +108,10 @@ export class InstituteDetailFillComponent {
   schoolsError = false;
   selectedSchool: SchoolItem | null = null;
 
+  // numeric class id for the currently selected class name, resolved from the classes API
+  selectedClassId: number | null = null;
+  private classIdByName: Record<string, number> = {};
+
   // ── Dynamic options (state / city) ────────────────────────────────────────
   get options(): Record<string, string[]> {
     const selectedState = this.selectedValues['state'];
@@ -186,6 +190,7 @@ export class InstituteDetailFillComponent {
     this.classesLoading = true;
     this.classesError = false;
     this.classOptions = [];
+    this.classIdByName = {};
 
     const token = this.authService.getToken();
     const headers = new HttpHeaders({
@@ -195,12 +200,24 @@ export class InstituteDetailFillComponent {
     });
 
     this.http
-      .get<{ name: string[] }[]>(`${environment.apiUrl}/user/schools/${schoolId}/classes`, { headers })
+      .get<any[]>(`${environment.apiUrl}/user/schools/${schoolId}/classes`, { headers })
       .subscribe({
         next: (res) => {
-          this.classOptions = Array.isArray(res)
-            ? res.map(c => c?.name?.[0]).filter((n): n is string => !!n)
-            : [];
+          const list = Array.isArray(res) ? res : [];
+          this.classIdByName = {};
+          this.classOptions = list
+            .map((c: any) => {
+              const name: string | undefined = Array.isArray(c?.name) ? c.name[0] : c?.name;
+              if (!name) return name;
+              // Prefer a real id from the API; otherwise fall back to the number
+              // embedded in the class label itself (e.g. "Class 3" -> 3), since
+              // classes are commonly just named by grade number.
+              const explicitId = c?.id ?? c?.classId ?? c?.class_id ?? c?._id;
+              const resolvedId = explicitId != null ? Number(explicitId) : this.parseClassNumber(name);
+              if (resolvedId != null) this.classIdByName[name] = resolvedId;
+              return name;
+            })
+            .filter((n): n is string => !!n);
           this.classesLoading = false;
         },
         error: () => {
@@ -210,6 +227,11 @@ export class InstituteDetailFillComponent {
       });
   }
 
+  private parseClassNumber(name: string): number | null {
+    const match = name.match(/\d+/);
+    return match ? Number(match[0]) : null;
+  }
+
   // ── Generic option select (state / city / class) ─────────────────────────
   selectOption(opt: string): void {
     if (!this.activeField) return;
@@ -217,6 +239,10 @@ export class InstituteDetailFillComponent {
     this.selectedValues[this.activeField] = opt;
     const f = this.fields.find(x => x.key === this.activeField);
     if (f) f.placeholder = opt;
+
+    if (this.activeField === 'class') {
+      this.selectedClassId = this.classIdByName[opt] ?? null;
+    }
 
     if (this.activeField === 'state' && prev !== opt) {
       this.resetField('city');
@@ -232,6 +258,7 @@ export class InstituteDetailFillComponent {
 
   private resetField(key: string): void {
     delete this.selectedValues[key];
+    if (key === 'class') this.selectedClassId = null;
     const defaults: Record<string, string> = {
       city:   'Select your city / district',
       school: 'Select school',
@@ -268,7 +295,14 @@ export class InstituteDetailFillComponent {
     this.goToProductStore();
   }
 
+  // This page only ever opens for categories that require both a school and a
+  // class, so require both to be picked before the user can proceed.
+  get canEnterStore(): boolean {
+    return !!this.selectedSchool && !!this.selectedValues['class'];
+  }
+
   enterStore(): void {
+    if (!this.canEnterStore) return;
     this.goToProductStore();
   }
 
@@ -280,6 +314,7 @@ export class InstituteDetailFillComponent {
       queryParams['schoolName'] = this.selectedValues['school'] ?? this.selectedSchool.name;
     }
     if (this.selectedValues['class']) queryParams['className'] = this.selectedValues['class'];
+    if (this.selectedClassId != null) queryParams['classId'] = String(this.selectedClassId);
 
     this.router.navigate(['/authed', 'school-store', 'product'], { queryParams }).catch(() => {});
   }

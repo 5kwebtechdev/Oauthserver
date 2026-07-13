@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { ViewAllComponent } from '../../superme-navigator/view-all/view-all.component';
 
@@ -17,7 +17,7 @@ export class OurPoliciesComponent implements OnInit {
 
   selectedTab: 'terms' | 'privacy' = 'terms';
 
-  constructor(private route: ActivatedRoute) { }
+  constructor(private route: ActivatedRoute, private router: Router) { }
 
   ngOnInit() {
     // Check for tab query parameter
@@ -32,6 +32,10 @@ export class OurPoliciesComponent implements OnInit {
 
   selectTab(tab: 'terms' | 'privacy') {
     this.selectedTab = tab;
+  }
+
+  onContactSupport(): void {
+    this.router.navigate(['/authed', 'bot-helpline']);
   }
 
   openFullPolicies(tab: 'terms' | 'privacy') {

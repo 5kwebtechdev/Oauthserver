@@ -227,6 +227,25 @@ input[type="radio"]:checked::after {
     transform: translateX(0);
 }
 
+.order-cancel-reason-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    z-index: 1100;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.order-cancel-reason-screen.visible {
+    transform: translateX(0);
+}
+
 .nav-head {
     box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
     flex: 0 0 auto;
