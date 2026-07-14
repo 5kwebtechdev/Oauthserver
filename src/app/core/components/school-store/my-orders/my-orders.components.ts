@@ -7,7 +7,7 @@ import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { SupermePopupComponent, SupermePopupCTA } from '../../superme-popup/superme-popup.component';
 import { ViewAllComponent } from '../../superme-navigator/view-all/view-all.component';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { CustomToastService } from '../../../services/custom-toast.service';
 import { environment } from '../../../../../environments/environment';
@@ -178,6 +178,7 @@ export class MyOrdersComponent implements OnInit {
 
     constructor(
         private router: Router,
+        private route: ActivatedRoute,
         private http: HttpClient,
         private authService: AuthService,
         private toastService: CustomToastService,
@@ -186,6 +187,16 @@ export class MyOrdersComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadOrders();
+
+        // Deep link from a notification (e.g. ?orderId=14) — open that order's
+        // detail directly instead of just landing on the list.
+        const orderIdParam = this.route.snapshot.queryParamMap.get('orderId');
+        const orderId = orderIdParam ? Number(orderIdParam) : NaN;
+        if (!isNaN(orderId)) {
+            this.selectedOrderId = orderId;
+            this.isOrderDetailVisible = true;
+            this.loadOrderDetail(orderId);
+        }
     }
 
     // ── API helpers ───────────────────────────────────────────────────────────

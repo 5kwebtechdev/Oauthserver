@@ -1,0 +1,161 @@
+<ion-content fullscreen>
+  <div class="academies-page">
+    <!-- Header -->
+    <div class="ac-header">
+      <div class="header-top">
+        <h2>Your Guides to Greatness!</h2>
+        <superme-button type="columbian-blue" text="Refer an Academy" (click)="openReferModal()"></superme-button>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-bar">
+        <span class="search-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path d="M11.0667 12L6.86667 7.8C6.53333 8.06667 6.15 8.27778 5.71667 8.43333C5.28333 8.58889 4.82222 8.66667 4.33333 8.66667C3.12222 8.66667 2.09722 8.24722 1.25833 7.40833C0.419445 6.56944 0 5.54444 0 4.33333C0 3.12222 0.419445 2.09722 1.25833 1.25833C2.09722 0.419445 3.12222 0 4.33333 0C5.54444 0 6.56944 0.419445 7.40833 1.25833C8.24722 2.09722 8.66667 3.12222 8.66667 4.33333C8.66667 4.82222 8.58889 5.28333 8.43333 5.71667C8.27778 6.15 8.06667 6.53333 7.8 6.86667L12 11.0667L11.0667 12ZM4.33333 7.33333C5.16667 7.33333 5.875 7.04167 6.45833 6.45833C7.04167 5.875 7.33333 5.16667 7.33333 4.33333C7.33333 3.5 7.04167 2.79167 6.45833 2.20833C5.875 1.625 5.16667 1.33333 4.33333 1.33333C3.5 1.33333 2.79167 1.625 2.20833 2.20833C1.625 2.79167 1.33333 3.5 1.33333 4.33333C1.33333 5.16667 1.625 5.875 2.20833 6.45833C2.79167 7.04167 3.5 7.33333 4.33333 7.33333Z" fill="#6B656A" />
+          </svg>
+        </span>
+        <input type="text"
+               placeholder="Looking for the best academy?"
+               [(ngModel)]="searchQuery"
+               (input)="onSearch()"
+               (keyup.enter)="onSearch()">
+        <span class="divider" aria-hidden="true" *ngIf="!searchQuery"></span>
+        <button class="clear-btn" *ngIf="searchQuery" (click)="clearSearch()" aria-label="Clear search">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M1 1L11 11M1 11L11 1" stroke="#6B656A" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Tip message -->
+      <div class="panda-box d-flex">
+        <app-speech-bubble [message]="'Sniffed out the best academies just for you, ready to fetch your favorite?'"
+          type="talking" arrowSide="right">
+        </app-speech-bubble>
+        <superme-pet></superme-pet>
+      </div>
+    </div>
+
+    <!-- Filters and Sort -->
+    <div class="controls-row">
+      <superme-button type="columbian-blue" text="All Filters" (click)="openAllFilters()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="15" viewBox="0 0 17 15" fill="none" aria-hidden="true">
+          <path d="M1 3.5H14C14.2763 3.5 14.5 3.27625 14.5 3V1C14.5 0.72375 14.2763 0.5 14 0.5H1C0.72375 0.5 0.5 0.72375 0.5 1V3C0.5 3.27625 0.72375 3.5 1 3.5ZM16 6H3C2.72375 6 2.5 6.22375 2.5 6.5V8.5C2.5 8.77625 2.72375 9 3 9H16C16.2763 9 16.5 8.77625 16.5 8.5V6.5C16.5 6.22375 16.2763 6 16 6ZM14 11.5H1C0.72375 11.5 0.5 11.7237 0.5 12V14C0.5 14.2763 0.72375 14.5 1 14.5H14C14.2763 14.5 14.5 14.2763 14.5 14V12C14.5 11.7237 14.2763 11.5 14 11.5Z" stroke="white"/>
+        </svg>
+      </superme-button>
+
+      <div class="sort-wrapper" (click)="$event.stopPropagation()">
+        <button class="sort-btn" (click)="toggleSortMenu()" [attr.aria-expanded]="isSortOpen">
+          <span class="sort-label">{{ currentSortLabel }}</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="8" height="6" viewBox="0 0 8 6" fill="none" aria-hidden="true">
+            <path d="M7.64645 1.31441C7.84171 1.50968 7.84171 1.82626 7.64645 2.02152L4.35355 5.31442C4.15829 5.50968 3.84171 5.50968 3.64645 5.31442L0.353553 2.02152C0.158291 1.82626 0.158291 1.50968 0.353553 1.31442L0.57978 1.08819C0.775042 0.892927 1.09162 0.892926 1.28689 1.08819L3.64645 3.44775C3.84171 3.64301 4.15829 3.64301 4.35355 3.44775L6.71311 1.08819C6.90838 0.892926 7.22496 0.892927 7.42022 1.08819L7.64645 1.31441Z" fill="#282527" />
+          </svg>
+        </button>
+
+        <ul class="sort-menu" *ngIf="isSortOpen" role="menu" aria-label="Sort options">
+          <li class="sort-item" role="menuitem" *ngFor="let opt of sortOptions" [class.active]="currentSort === opt.key" (click)="selectSort(opt.key)">
+            {{ opt.label }}
+            <svg *ngIf="currentSort === opt.key" width="8" height="6" viewBox="0 0 8 6" fill="none" aria-hidden="true">
+              <path d="M2.81319 5.70608C2.61793 5.90134 2.30134 5.90134 2.10608 5.70608L0.146523 3.74652C-0.0487396 3.55126 -0.0487401 3.23468 0.146522 3.03942L0.372748 2.81319C0.568011 2.61793 0.884593 2.61793 1.07986 2.81319L2.10608 3.83942C2.30134 4.03468 2.61793 4.03468 2.81319 3.83942L6.50608 0.146523C6.70134 -0.0487396 7.01793 -0.04874 7.21319 0.146522L7.43942 0.372748C7.63468 0.568011 7.63468 0.884593 7.43942 1.07986L2.81319 5.70608Z" fill="#1C1B1F"/>
+            </svg>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div class="academies-list-section">
+      <div class="title-row">
+        <span *ngIf="!searchQuery">Top picks, trusted by many</span>
+        <span *ngIf="searchQuery">Search results for "{{ searchQuery }}"</span>
+        <span class="ac-count" *ngIf="filteredAcademies.length > 0">({{ filteredAcademies.length }})</span>
+      </div>
+
+      <div class="ac-list" *ngIf="!isLoading && !hasError">
+        <ng-container *ngFor="let a of filteredAcademies; let i = index">
+          <div *ngIf="i === 3" class="ac-ad-wrap">
+            <ad-banner [screen]="adScreen"></ad-banner>
+          </div>
+          <article class="ac-card" role="button" tabindex="0" (click)="onViewProfile(a)">
+            <div class="ac-card__image-wrap">
+              <img
+                [src]="a.image || academyPlaceholderImage"
+                [alt]="a.name"
+                loading="lazy"
+                (error)="onAcademyImageError($event)" />
+              <button class="ac-card__like" [class.ac-card__like--active]="a.liked" (click)="toggleLike(a, $event)" aria-label="Save academy">
+                <svg width="16" height="14" viewBox="0 0 16 14" [attr.fill]="a.liked ? '#BB2124' : 'none'" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 13.5L1.5 7.2C-0.2 5.5 -0.1 2.7 1.7 1.1C3.3 -0.3 5.7 -0.1 7.1 1.4L8 2.4L8.9 1.4C10.3 -0.1 12.7 -0.3 14.3 1.1C16.1 2.7 16.2 5.5 14.5 7.2L8 13.5Z" stroke="#BB2124" stroke-width="1.3"/>
+                </svg>
+              </button>
+            </div>
+            <div class="ac-card__body">
+              <div class="ac-card__top">
+                <h3 class="ac-card__name">{{ a.name }}</h3>
+                <span class="ac-card__rating" *ngIf="a.rating || a.experience || a.verified">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="#F0AD4E" aria-hidden="true"><path d="M12 2l2.9 6.26L21.5 9l-4.75 4.63L18 20.5 12 17.14 6 20.5l1.25-6.87L2.5 9l6.6-.74L12 2z"/></svg>
+                  <ng-container *ngIf="a.rating; else verifiedLabel">{{ a.rating | number:'1.1-2' }}</ng-container>
+                  <ng-template #verifiedLabel>{{ a.verified ? 'Verified' : 'Academy' }}</ng-template>
+                  <span *ngIf="a.experience"> | {{ a.experience }}</span>
+                </span>
+              </div>
+              <p class="ac-card__headline" *ngIf="a.headline">{{ a.headline }}</p>
+              <p class="ac-card__subjects" *ngIf="a.subjects.length">{{ a.subjects.join(', ') }}</p>
+              <p class="ac-card__classes" *ngIf="a.classes.length">{{ a.classes.join(', ') }}</p>
+              <p class="ac-card__location" *ngIf="a.location">{{ a.location }}</p>
+              <div class="ac-card__timing" *ngIf="a.days || a.timing">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B656A" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                <span>{{ a.days }}<span *ngIf="a.days && a.timing"> · </span>{{ a.timing }}</span>
+              </div>
+              <div class="ac-card__bottom">
+                <div class="ac-card__fees">
+                  <span class="ac-card__price">₹ {{ a.hourlyRate }}</span>
+                  <span class="ac-card__per">{{ a.feeLabel || '/hour' }}</span>
+                </div>
+                <span class="ac-card__students" *ngIf="a.totalStudents">{{ a.totalStudents }} students</span>
+                <superme-button type="columbian-blue" small text="View Profile" (click)="onViewProfile(a)"></superme-button>
+              </div>
+            </div>
+          </article>
+        </ng-container>
+      </div>
+
+      <!-- No results -->
+      <div *ngIf="!isLoading && !hasError && filteredAcademies.length === 0" class="no-results">
+        <img src="assets/Images-Transparent/File-search.png" alt="No results" class="no-results__image" />
+        <p class="no-results__primary">No academies found</p>
+        <p class="no-results__secondary" *ngIf="searchQuery">Try adjusting your search to find the right academy.</p>
+        <p class="no-results__secondary" *ngIf="!searchQuery">Check back soon — new academies are being added.</p>
+        <superme-button *ngIf="searchQuery" type="columbian-blue" size="medium" text="Clear Search" (click)="clearSearch()"></superme-button>
+      </div>
+
+      <!-- Error -->
+      <div *ngIf="!isLoading && hasError" class="no-results">
+        <p class="no-results__primary">Couldn't load academies</p>
+        <p class="no-results__secondary">Please check your connection and try again.</p>
+        <superme-button type="columbian-blue" size="medium" text="Retry" (click)="loadAcademies()"></superme-button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="isLoading" class="loading-state">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading academies...</p>
+    </div>
+
+    <!-- Refer an Academy -->
+    <app-superme-popup [isVisible]="isReferModalOpen" [config]="{
+        heading: 'Refer an Academy',
+        subtitle: 'Know an academy that should be here? Share our form so they can join',
+        showCloseButton: true,
+        backdrop: true,
+        ctaDirection: 'column',
+        primaryCTA: { text: 'Copy Link', icon: 'assets/icons/attachment-small.svg', iconPosition: 'start', buttonStyle: 'white' },
+        secondaryCTA: { text: ' Share through Whatsapp', icon: 'assets/icons/whatsapp-small.svg', iconPosition: 'start', buttonStyle: 'white' }
+      }" (backdropClick)="closeReferModal()" (primaryAction)="copyLink()" (secondaryAction)="shareWhatsapp()"
+      (closeAction)="closeReferModal()">
+    </app-superme-popup>
+
+    <app-footer></app-footer>
+  </div>
+</ion-content>
