@@ -1,5 +1,6 @@
-<div class="d-flex">
-<superme-navigator (back)="goBack()"></superme-navigator>
+<div class="notes-new-page">
+  <header class="notes-new__topbar">
+    <superme-navigator class="notes-new__nav" (back)="goBack()"></superme-navigator>
 
     <div class="header">
       <input class="title-input" placeholder="Enter title"
@@ -15,24 +16,25 @@
         </div>
       </button>
     </div>
-</div>
-  <div class="note-new-container">
+  </header>
 
-  <!-- Header -->
+  <main class="note-new-container">
 
   <!-- Tag Section -->
-  <superme-tags variant="gray" [singleSelection]="true" [maxTags]="50"
-    [options]="tagOptions"
-    [selectedKeys]="selectedTagKeys"
-    [useDefaultOptions]="false"
-    [persistCustomTags]="false"
-    [serverManaged]="true"
-    [allowEdit]="true"
-    [allowDelete]="true"
-    (selectedKeysChange)="onSelectedKeysChange($event)"
-    (add)="onTagAdd($event)"
-    (edit)="onTagEdit($event)"
-    (delete)="onTagDelete($event)"></superme-tags>
+  <div class="notes-tags-shell">
+    <superme-tags variant="gray" [singleSelection]="true" [maxTags]="50"
+      [options]="tagOptions"
+      [selectedKeys]="selectedTagKeys"
+      [useDefaultOptions]="false"
+      [persistCustomTags]="false"
+      [serverManaged]="true"
+      [allowEdit]="true"
+      [allowDelete]="true"
+      (selectedKeysChange)="onSelectedKeysChange($event)"
+      (add)="onTagAdd($event)"
+      (edit)="onTagEdit($event)"
+      (delete)="onTagDelete($event)"></superme-tags>
+  </div>
   <div class="tag-state-message" *ngIf="tagsLoading">Loading tags...</div>
   <div class="tag-state-message tag-state-message--error" *ngIf="!tagsLoading && tagError">{{ tagError }}</div>
 
@@ -40,6 +42,7 @@
   <div class="notes-section">
     <textarea class="notes-textarea" placeholder="Notes here...." [value]="text" (input)="text = ($any($event.target).value); saveDraft()"></textarea>
   </div>
+  </main>
 
   <footer class="notes-new__footer">
     <superme-button type="magenta" text="Save" full [disabled]="loading || tagsLoading" (click)="save()"></superme-button>

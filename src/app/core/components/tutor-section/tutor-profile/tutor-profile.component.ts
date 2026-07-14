@@ -144,9 +144,39 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     return formatExperience(this.tutor.experience);
   }
 
+  isAcademyProfile(): boolean {
+    const rawType = String((this.tutor as any)?.entityType || '').toUpperCase();
+    return rawType === 'ACADEMY' || rawType === 'ACADEMY_PROFILE';
+  }
+
+  getProfileHeading(): string {
+    return this.isAcademyProfile() ? 'Academy profile' : 'Tutor profile';
+  }
+
+  getProfileNameFallback(): string {
+    return this.isAcademyProfile() ? 'Unknown Academy' : 'Unknown Tutor';
+  }
+
+  getProfileSubtitle(): string {
+    const t = this.tutor as any;
+    return t?.headline || this.tutor?.qualification || (this.isAcademyProfile() ? 'Academy' : 'Subject Expert');
+  }
+
+  getTeachHeading(): string {
+    return this.isAcademyProfile() ? 'What we teach' : 'What I teach';
+  }
+
+  getContactCtaLabel(): string {
+    return this.isAcademyProfile() ? 'Contact Academy' : 'Contact Tutor';
+  }
+
+  getContactSheetTitle(): string {
+    return this.isAcademyProfile() ? 'Get in touch with Academy' : 'Get in touch with Tutor';
+  }
+
   getSubjectsString(): string {
     if (!this.tutor?.subjects || this.tutor.subjects.length === 0) {
-      return this.tutor?.qualification || 'Various Subjects';
+      return (this.tutor as any)?.headline || this.tutor?.qualification || 'Various Subjects';
     }
     return this.tutor.subjects.join(', ');
   }
@@ -221,10 +251,16 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     }
 
     // Generic last-resort fallback (School-style)
-    return [
+    const fallbackRows = [
       { label: 'Subjects', value: this.getSubjectsString() },
-      { label: 'Class', value: this.getLevelsString() }
-    ].filter(row => !!row.value);
+      { label: this.isAcademyProfile() ? 'Classes' : 'Class', value: this.getLevelsString() }
+    ];
+
+    if (this.isAcademyProfile()) {
+      fallbackRows.push({ label: 'Boards', value: this.getBoardString() });
+    }
+
+    return fallbackRows.filter(row => !!row.value && row.value !== 'Not specified');
   }
 
   private guessValueForField(fieldKey: string): string {
@@ -239,7 +275,7 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
       return this.getBoardString();
     }
     if (k.includes('language')) {
-      return this.tutor?.subjects?.join(', ') || this.getSubjectsString();
+      return this.getLanguagesString();
     }
     return '';
   }
@@ -290,20 +326,33 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   getLevelsString(): string {
-    if (!this.tutor?.levels || this.tutor.levels.length === 0) {
-      return 'All Levels';
+    const levels = this.tutor?.levels?.length
+      ? this.tutor.levels
+      : ((this.tutor as any)?.classes || []);
+
+    if (!levels || levels.length === 0) {
+      return this.isAcademyProfile() ? 'Not specified' : 'All Levels';
     }
-    return formatLevels(this.tutor.levels);
+    return formatLevels(levels);
   }
 
   getContactModesString(): string {
     if (!this.tutor?.contactModes || this.tutor.contactModes.length === 0) {
-      return 'Online, Offline';
+      return this.isAcademyProfile() ? 'Not specified' : 'Online, Offline';
     }
     return formatContactModes(this.tutor.contactModes);
   }
 
   getLanguagesString(): string {
+    const directLanguages = [
+      ...(((this.tutor as any)?.languages || []) as string[]),
+      ...(((this.tutor as any)?.languagesOffered || []) as string[])
+    ].map(item => String(item).trim()).filter(Boolean);
+
+    if (directLanguages.length > 0) {
+      return [...new Set(directLanguages)].join(', ');
+    }
+
     const languageRows = this.categoryFieldRows
       .filter(row => row.label.toLowerCase().includes('language'))
       .map(row => row.value)
@@ -319,8 +368,8 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
       ? formatAvailability(this.tutor.availability)
       : 'Not specified';
 
-    const startTime = this.tutor.startTime ? formatTime(this.tutor.startTime) : '';
-    const endTime = this.tutor.endTime ? formatTime(this.tutor.endTime) : '';
+    const startTime = this.tutor.startTime ? this.formatDisplayTime(this.tutor.startTime) : '';
+    const endTime = this.tutor.endTime ? this.formatDisplayTime(this.tutor.endTime) : '';
 
     if (startTime && endTime) {
       return `${days} - ${startTime} - ${endTime}`;
@@ -338,14 +387,23 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
       'PER_HOUR': '/per hour',
       'PER_MONTH': '/per month',
       'PER_SESSION': '/per session',
-      'PER_COURSE': '/per course'
+      'PER_COURSE': '/per course',
+      'PER_SUBJECT': '/per subject'
     };
     return feeTypeMap[this.tutor.feeType] || '/per hour';
   }
 
   getBoardString(): string {
+    const directBoards = ((this.tutor as any)?.boards || [])
+      .map((item: any) => String(item).trim())
+      .filter(Boolean);
+
+    if (directBoards.length > 0) {
+      return [...new Set(directBoards)].join(', ');
+    }
+
     if (!this.tutor?.categoryMappings || this.tutor.categoryMappings.length === 0) {
-      return 'CBSE, State Board';
+      return this.isAcademyProfile() ? 'Not specified' : 'CBSE, State Board';
     }
 
     const boards: string[] = [];
@@ -360,7 +418,26 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
       }
     });
 
-    return boards.length > 0 ? [...new Set(boards)].join(', ') : 'CBSE, State Board';
+    return boards.length > 0 ? [...new Set(boards)].join(', ') : (this.isAcademyProfile() ? 'Not specified' : 'CBSE, State Board');
+  }
+
+  getQualificationDetailLabel(): string {
+    return this.isAcademyProfile() ? 'About' : 'Qualification';
+  }
+
+  getQualificationDetailValue(): string {
+    const t = this.tutor as any;
+    return t?.headline || this.tutor?.qualification || 'Not specified';
+  }
+
+  private formatDisplayTime(value: string): string {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    const match = raw.match(/^(\d{1,2}):(\d{2})/);
+    if (match) {
+      return `${match[1].padStart(2, '0')}:${match[2]}`;
+    }
+    return formatTime(raw);
   }
 
   /**

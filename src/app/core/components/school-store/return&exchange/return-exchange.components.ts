@@ -128,7 +128,7 @@ export class ReturnExchangeComponent implements OnInit {
   }
 
   onHelpClick(): void {
-    this.router.navigate(['/authed', 'bot-helpline']);
+    this.router.navigate(['/authed', 'bot-helpline'], { queryParams: { source: 'ecommerce' } });
   }
 
   submitRequest(): void {
