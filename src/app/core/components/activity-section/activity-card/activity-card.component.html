@@ -2,8 +2,9 @@
 <!-- Shared header used by both list and recent modes -->
 <ng-template #dayHeader>
   <superme-card-header title="Today at a Glance" subtitleMiddle="Check tasks • Finish habits • Crush it">
-    <img src="assets/Icon-Calendar-Clock.jpg" alt="Today at a Glance" class="calendar-icon" (click)="openTimeline()" role="button" aria-label="Open timeline"
-      onerror="this.onerror=null;this.src='assets/Icons-Neutral/Icon-Calendar-3D.png'" />
+    <img src="assets/Icons-Neutral/Icon-Calendar-3D.png" alt="Today at a Glance" class="calendar-icon" loading="lazy" decoding="async"
+      (click)="openTimeline()" role="button" aria-label="Open timeline"
+      onerror="this.onerror=null;this.src='assets/Icons-Neutral/Icon-Calendar.png'" />
   </superme-card-header>
 </ng-template>
 <div *ngIf="mode === 'list'" class="d-flex flex-column gap-2">

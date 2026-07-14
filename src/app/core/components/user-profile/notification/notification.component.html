@@ -1,11 +1,42 @@
-<ion-content fullscreen>
-  <superme-navigator heading="Notifications" backIcon="arrowSvg"></superme-navigator>
+<superme-navigator heading="Notifications" backIcon="arrowSvg"></superme-navigator>
 
-  <div class="notification-container">
-    <section class="notification-empty" aria-label="Notifications coming soon">
+<ion-content class="notif-content">
+  <div class="notif-container">
+
+    <div class="notif-toolbar" *ngIf="!loading && !error && notifications.length">
+      <span class="notif-count">{{ unreadCount ? unreadCount + ' unread' : 'All caught up' }}</span>
+      <button class="notif-mark-all" *ngIf="unreadCount" [disabled]="markingAllRead" (click)="markAllAsRead()">
+        {{ markingAllRead ? 'Marking…' : 'Mark all read' }}
+      </button>
+    </div>
+
+    <div *ngIf="loading" class="notif-loading">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+
+    <div *ngIf="!loading && error" class="notif-error">
+      <p>Failed to load notifications.</p>
+      <button class="notif-retry" (click)="loadNotifications()">Retry</button>
+    </div>
+
+    <section class="notification-empty" *ngIf="!loading && !error && !notifications.length" aria-label="No notifications">
       <img src="assets/Images-Transparent/Notifications Coming Soon.svg" alt="" aria-hidden="true" />
-      <h1>Notifications are on the way!</h1>
-      <p>We&rsquo;re building notification controls for reminders and updates. For now, your app stays quiet no device notifications yet.</p>
+      <h1>You're all caught up!</h1>
+      <p>No notifications yet — we'll let you know when there's something new.</p>
     </section>
+
+    <div class="notif-list" *ngIf="!loading && !error && notifications.length">
+      <div class="notif-row" *ngFor="let n of notifications" [class.notif-row--unread]="!n.readStatus"
+        role="button" tabindex="0" (click)="onTap(n)" (keyup.enter)="onTap(n)">
+        <div class="notif-icon" [ngClass]="iconClassFor(n.type)" aria-hidden="true">{{ iconFor(n.type) }}</div>
+        <div class="notif-body">
+          <h3 class="notif-title">{{ n.title }}</h3>
+          <p class="notif-message">{{ n.message }}</p>
+          <span class="notif-time">{{ formatRelativeTime(n.createdAt) }}</span>
+        </div>
+        <span class="notif-dot" *ngIf="!n.readStatus" aria-hidden="true"></span>
+      </div>
+    </div>
+
   </div>
 </ion-content>
