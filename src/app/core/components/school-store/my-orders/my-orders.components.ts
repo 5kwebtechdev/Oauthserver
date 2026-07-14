@@ -354,7 +354,9 @@ export class MyOrdersComponent implements OnInit {
 
     openFilterScreen(): void { this.isFilterScreenVisible = true; }
 
-    onHelpClick(): void { this.router.navigate(['/authed', 'bot-helpline']); }
+    onHelpClick(): void {
+        this.router.navigate(['/authed', 'bot-helpline'], { queryParams: { source: 'ecommerce' } });
+    }
 
     goToStore(): void { this.router.navigateByUrl('/authed/school-store'); }
 

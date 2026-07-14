@@ -113,7 +113,7 @@
                   <span class="ac-card__per">{{ a.feeLabel || '/hour' }}</span>
                 </div>
                 <span class="ac-card__students" *ngIf="a.totalStudents">{{ a.totalStudents }} students</span>
-                <superme-button type="columbian-blue" small text="View Profile" (click)="onViewProfile(a)"></superme-button>
+                <superme-button type="columbian-blue" small text="View Profile" (click)="onViewProfile(a, $event)"></superme-button>
               </div>
             </div>
           </article>

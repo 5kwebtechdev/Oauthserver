@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ModalController } from '@ionic/angular';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
@@ -12,6 +12,8 @@ import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component
 import { AuthService } from '../../../services/auth.service';
 import { CustomToastService } from '../../../services/custom-toast.service';
 import { environment } from '../../../../../environments/environment';
+import { TutorProfileComponent } from '../../tutor-section/tutor-profile/tutor-profile.component';
+import { Tutor } from '../../../models/tutor.model';
 
 type AcademySort = 'recent' | 'alphabets' | 'rating' | 'price';
 
@@ -32,6 +34,7 @@ interface Academy {
   totalStudents: number;
   verified: boolean;
   liked: boolean;
+  profile: Tutor;
 }
 
 @Component({
@@ -76,6 +79,7 @@ export class AcademiesListComponent implements OnInit {
     private http: HttpClient,
     private authService: AuthService,
     private toastService: CustomToastService,
+    private modalCtrl: ModalController,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -128,10 +132,54 @@ export class AcademiesListComponent implements OnInit {
     const startTime = this.formatTime(a?.startTime);
     const endTime = this.formatTime(a?.endTime);
 
+    const name = a?.entityName ?? a?.name ?? a?.academyName ?? a?.title ?? 'Academy';
+    const image = a?.profilePicUrl ?? a?.image ?? a?.thumbnailUrl ?? a?.imageUrl ?? this.academyPlaceholderImage;
+    const location = a?.location ?? [a?.city, a?.state].filter(Boolean).join(', ');
+    const fees = Number(a?.fees ?? a?.hourlyRate ?? a?.price ?? 0);
+    const totalStudents = Number(a?.totalStudents ?? a?.studentCount ?? 0);
+    const verified = !!(a?.isVerified ?? a?.documentsVerified ?? a?.verificationStatus === 'Verified');
+
+    const profile = {
+      ...a,
+      id: a?.id,
+      name,
+      entityName: name,
+      entityType: 'ACADEMY',
+      profilePicUrl: image,
+      qualification: a?.qualification ?? a?.headline ?? 'Academy',
+      headline: a?.headline ?? a?.qualification ?? '',
+      subjects,
+      levels: classes.length ? classes : this.asStringArray(a?.levels),
+      classes,
+      boards: this.asStringArray(a?.boards),
+      languages: this.asStringArray(a?.languages),
+      availability,
+      startTime: a?.startTime ?? '',
+      endTime: a?.endTime ?? '',
+      contactModes: this.asStringArray(a?.contactModes),
+      hourlyRate: fees,
+      fees,
+      feeType: a?.feeType ?? null,
+      location,
+      addressLine: a?.addressLine,
+      city: a?.city,
+      state: a?.state,
+      pincode: a?.pincode,
+      phone: a?.phone ?? '',
+      email: a?.email ?? '',
+      totalStudents,
+      isVerified: verified,
+      documentsVerified: verified,
+      champsLiked: Number(a?.champsLiked ?? 0),
+      likedByUser: !!(a?.likedByUser ?? a?.liked),
+      likes: Array.isArray(a?.likes) ? a.likes : [],
+      categoryMappings: Array.isArray(a?.categoryMappings) ? a.categoryMappings : []
+    } as unknown as Tutor;
+
     return {
       id: a?.id,
-      name: a?.entityName ?? a?.name ?? a?.academyName ?? a?.title ?? 'Academy',
-      image: a?.profilePicUrl ?? a?.image ?? a?.thumbnailUrl ?? a?.imageUrl ?? this.academyPlaceholderImage,
+      name,
+      image,
       rating: Number(a?.rating ?? 0),
       headline: a?.headline ?? a?.qualification ?? '',
       experience: a?.experience ?? a?.experienceRange ?? '',
@@ -139,12 +187,13 @@ export class AcademiesListComponent implements OnInit {
       classes: classes.length ? classes : this.asStringArray(a?.levels),
       days: availability.length ? this.formatAvailability(availability) : (a?.days ?? a?.availabilityDays ?? ''),
       timing: startTime && endTime ? `${startTime} - ${endTime}` : (a?.timing ?? a?.availabilityTiming ?? ''),
-      hourlyRate: Number(a?.fees ?? a?.hourlyRate ?? a?.price ?? 0),
+      hourlyRate: fees,
       feeLabel: this.formatFeeType(a?.feeType),
-      location: a?.location ?? [a?.city, a?.state].filter(Boolean).join(', '),
-      totalStudents: Number(a?.totalStudents ?? a?.studentCount ?? 0),
-      verified: !!(a?.isVerified ?? a?.documentsVerified ?? a?.verificationStatus === 'Verified'),
-      liked: !!(a?.likedByUser ?? a?.liked)
+      location,
+      totalStudents,
+      verified,
+      liked: !!(a?.likedByUser ?? a?.liked),
+      profile
     };
   }
 
@@ -258,8 +307,14 @@ export class AcademiesListComponent implements OnInit {
     a.liked = !a.liked;
   }
 
-  onViewProfile(a: Academy): void {
-    this.toastService.show(`${a.name} profile page is coming soon.`, 'info');
+  async onViewProfile(a: Academy, event?: Event): Promise<void> {
+    event?.stopPropagation();
+    const modal = await this.modalCtrl.create({
+      component: TutorProfileComponent,
+      componentProps: { tutor: a.profile },
+      cssClass: 'tutor-profile-modal'
+    });
+    await modal.present();
   }
 
   onAcademyImageError(event: Event): void {

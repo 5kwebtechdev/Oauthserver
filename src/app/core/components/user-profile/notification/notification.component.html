@@ -1,7 +1,8 @@
-<superme-navigator heading="Notifications" backIcon="arrowSvg"></superme-navigator>
+<div class="notif-page-shell">
+  <superme-navigator heading="Notifications" backIcon="arrowSvg"></superme-navigator>
 
-<ion-content class="notif-content">
-  <div class="notif-container">
+  <ion-content class="notif-content">
+    <div class="notif-container">
 
     <div class="notif-toolbar" *ngIf="!loading && !error && notifications.length">
       <span class="notif-count">{{ unreadCount ? unreadCount + ' unread' : 'All caught up' }}</span>
@@ -38,5 +39,6 @@
       </div>
     </div>
 
-  </div>
-</ion-content>
+    </div>
+  </ion-content>
+</div>

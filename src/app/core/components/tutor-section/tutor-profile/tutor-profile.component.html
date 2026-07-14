@@ -1,5 +1,5 @@
 <ion-content>
-  <superme-navigator heading="Tutor profile" backIcon="arrowSvg" (back)="close()" [rightActions]="navActions"
+  <superme-navigator [heading]="getProfileHeading()" backIcon="arrowSvg" (back)="close()" [rightActions]="navActions"
     (rightActionClick)="handleNavAction($event)"></superme-navigator>
   <div class="tutor-profile-root">
     <div class="hero">
@@ -7,8 +7,8 @@
         [ngStyle]="{'background-image': 'url(' + (tutor?.profilePicUrl || 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png') + ')'}">
       </div>
       <div class="info">
-        <h2 class="name">{{ tutor?.name || 'Unknown Tutor' }}</h2>
-        <h3 class="achievement">{{ tutor?.qualification || 'Subject Expert' }}</h3>
+        <h2 class="name">{{ tutor?.name || getProfileNameFallback() }}</h2>
+        <h3 class="achievement">{{ getProfileSubtitle() }}</h3>
       </div>
       <div class="meta-row">
         <div class="meta">
@@ -28,7 +28,7 @@
       </div>
     </div>
     <div class="what-teach">
-      <h1>What I teach</h1>
+      <h1>{{ getTeachHeading() }}</h1>
       <div class="teaching-details">
         <div class="teaching-row" *ngFor="let row of categoryFieldRows">
           <h3>{{ row.label }}</h3>
@@ -47,8 +47,8 @@
           <p>{{ getLanguagesString() }}</p>
         </div>
         <div class="teach-detail-list">
-          <h3><img src="assets/Icons-Neutral/Tutor-Qualification.png" alt="">Qualification</h3>
-          <p>{{ tutor?.qualification || 'Not specified' }}</p>
+          <h3><img src="assets/Icons-Neutral/Tutor-Qualification.png" alt="">{{ getQualificationDetailLabel() }}</h3>
+          <p>{{ getQualificationDetailValue() }}</p>
         </div>
         <div class="teach-detail-list">
           <h3><img src="assets/Icons-Neutral/Tutor-TimeDay.png" alt="">Days & Time</h3>
@@ -68,7 +68,7 @@
     <h3>{{ getFeeTypeString() }}</h3>
     </div>
     <!-- Make button visually disabled for child users but keep it clickable so toast can show -->
-    <superme-button type="columbian-blue" size="medium" text="Contact Tutor"
+    <superme-button type="columbian-blue" size="medium" [text]="getContactCtaLabel()"
       [attr.aria-disabled]="isChildUser()"
       [class.disabled]="isChildUser()"
       (click)="contactTutor()"
@@ -86,7 +86,7 @@
   <div class="contact-backdrop" *ngIf="showContactSheet" (click)="closeContactSheet()">
     <div class="contact-sheet" (click)="$event.stopPropagation()">
       <div class="sheet-header">
-        <h2 class="title">Get in touch with Tutor</h2>
+        <h2 class="title">{{ getContactSheetTitle() }}</h2>
         <button class="btn-close" (click)="closeContactSheet()"><img src="assets/icons/cancel-cross.svg" alt="close" /></button>
       </div>
 

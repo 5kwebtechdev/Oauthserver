@@ -108,7 +108,7 @@ export class PickupRefundComponent {
   }
 
   onHelpClick(): void {
-    this.router.navigate(['/authed', 'bot-helpline']);
+    this.router.navigate(['/authed', 'bot-helpline'], { queryParams: { source: 'ecommerce' } });
   }
 
   onConfirm(): void {

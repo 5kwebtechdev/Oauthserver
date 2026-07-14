@@ -105,10 +105,10 @@ export interface TutorLike {
 
 export type Gender = 'MALE' | 'FEMALE' | 'OTHER';
 export type Experience = 'FRESHER' | 'PLUS_1' | 'PLUS_2' | 'PLUS_3' | 'PLUS_5' | 'PLUS_10';
-export type EntityType = 'SELF' | 'SCHOOL' | 'TUITION' | 'COLLEGE' | 'COACHING';
-export type FeeType = 'PER_HOUR' | 'PER_MONTH' | 'PER_SESSION' | 'PER_COURSE';
+export type EntityType = 'SELF' | 'SCHOOL' | 'TUITION' | 'COLLEGE' | 'COACHING' | 'ACADEMY';
+export type FeeType = 'PER_HOUR' | 'PER_MONTH' | 'PER_SESSION' | 'PER_COURSE' | 'PER_SUBJECT';
 export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
-export type ContactMode = 'VIDEO_CALL' | 'IN_PERSON' | 'PHONE_CALL' | 'CHAT';
+export type ContactMode = 'VIDEO_CALL' | 'IN_PERSON' | 'PHONE_CALL' | 'CHAT' | 'HYBRID';
 
 export interface Tutor {
     id: number;
@@ -335,7 +335,8 @@ export function formatContactModes(modes: ContactMode[] | string[]): string {
         'VIDEO_CALL': 'Online',
         'IN_PERSON': 'Offline',
         'PHONE_CALL': 'Phone',
-        'CHAT': 'Chat'
+        'CHAT': 'Chat',
+        'HYBRID': 'Hybrid'
     };
     return modes.map(m => modeMap[m] || m).join(', ');
 }
