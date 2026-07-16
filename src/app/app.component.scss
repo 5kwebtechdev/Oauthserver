@@ -22,6 +22,34 @@
   z-index: 1;
 }
 
+.app-update-blocked {
+  .app-router-container,
+  .monitoring-banner {
+    pointer-events: none;
+    user-select: none;
+  }
+}
+
+.app-update-check-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFFFFF;
+
+  ion-spinner {
+    width: 32px;
+    height: 32px;
+    color: #90214D;
+  }
+}
+
+:host ::ng-deep app-superme-popup.force-update-popup .superme-popup-backdrop {
+  z-index: 2147483647;
+}
+
 .monitoring-banner {
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 8px);

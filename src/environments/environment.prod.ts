@@ -18,7 +18,14 @@ export const environment = {
         tutors_enabled: true,
         school_store_enabled: true,
         force_update_required: false,
-        minimum_supported_version: '0.0.2'
+        minimum_supported_version: '0.0.2',
+        android_minimum_supported_version: '',
+        ios_minimum_supported_version: '',
+        android_force_update_required: '',
+        ios_force_update_required: '',
+        android_store_url: 'https://play.google.com/store/apps/details?id=com.superme.app',
+        // Set this to the public App Store listing before enabling iOS force update.
+        ios_store_url: ''
       }
     },
     appCheck: {

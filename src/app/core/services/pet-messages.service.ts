@@ -237,8 +237,8 @@ export class PetMessagesService {
                     msg: "Whoa! That's a lot of coins! Let's go dress me up or grab something shiny!",
                     mood: 'curious',
                     type: 'header',
-                    timing: 'Till the user purchases something from store or uses the coins in general',
-                    check: (c) => (c.totalCoins || 0) >= 400
+                    timing: 'Until coins drop below 501',
+                    check: (c) => (c.totalCoins || 0) >= 501
                 }
             ],
             'few-coins': [
@@ -246,8 +246,8 @@ export class PetMessagesService {
                     msg: "I know it feels like we don't have much right now, but that just means we're on an exciting journey! Every coin we earn makes us stronger together!",
                     mood: 'base',
                     type: 'header',
-                    timing: 'Till user has around 400 coins',
-                    check: (c) => (c.totalCoins || 0) < 400
+                    timing: 'Until user reaches 501 coins',
+                    check: (c) => (c.totalCoins || 0) <= 500
                 }
             ],
 
@@ -282,13 +282,13 @@ export class PetMessagesService {
                     msg: "Whoa! That's a lot of coins! Let's go dress me up or grab something shiny!",
                     mood: 'curious',
                     type: 'header',
-                    check: (c) => (c.totalCoins || 0) >= 400
+                    check: (c) => (c.totalCoins || 0) >= 501
                 },
                 {
                     msg: "I know it feels like we don't have much right now, but that just means we're on an exciting journey! Every coin we earn makes us stronger together!",
                     mood: 'base',
                     type: 'header',
-                    check: (c) => (c.totalCoins || 0) < 400
+                    check: (c) => (c.totalCoins || 0) <= 500
                 }
             ],
 

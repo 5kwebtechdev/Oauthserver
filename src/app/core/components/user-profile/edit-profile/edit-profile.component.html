@@ -38,16 +38,23 @@
       <div class="edit-details">
         <div class="input-heading">
           <h2 class="heading-text">Gender</h2>
-          <div class="validation-text">Used for small personalization touches</div>
+          <div class="validation-text">Optional personalization</div>
         </div>
-        <!--gender-->
-        <div class="gender-row">
-          <div class="gender-button" (click)="gender = 'Male'" [ngClass]="gender === 'Male' ? 'active' : null">
+        <div class="gender-row" role="group" aria-label="Gender">
+          <button type="button" class="gender-button" (click)="selectGender('Male')"
+            [class.active]="gender === 'Male'" [attr.aria-pressed]="gender === 'Male'">
             Male
-          </div>
-          <div class="gender-button" (click)="gender = 'Female'" [ngClass]="gender === 'Female' ? 'active' : null">
+          </button>
+          <button type="button" class="gender-button" (click)="selectGender('Female')"
+            [class.active]="gender === 'Female'" [attr.aria-pressed]="gender === 'Female'">
             Female
-          </div>
+          </button>
+          <button type="button" class="gender-button gender-button--private"
+            (click)="selectGender('PreferNotToSay')"
+            [class.active]="gender === 'PreferNotToSay'"
+            [attr.aria-pressed]="gender === 'PreferNotToSay'">
+            Prefer not to say
+          </button>
         </div>
       </div>
 

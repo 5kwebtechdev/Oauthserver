@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 
 import com.android.installreferrer.api.InstallReferrerClient;
 import com.android.installreferrer.api.InstallReferrerStateListener;
@@ -12,6 +13,7 @@ import com.getcapacitor.BridgeActivity;
 import io.ionic.starter.plugins.AppCheckPlugin;
 import io.ionic.starter.plugins.CrashlyticsPlugin;
 import io.ionic.starter.plugins.InstallReferrerPlugin;
+import io.ionic.starter.plugins.NativeCredentialsPlugin;
 
 public class MainActivity extends BridgeActivity {
 
@@ -22,7 +24,9 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(AppCheckPlugin.class);
         registerPlugin(CrashlyticsPlugin.class);
         registerPlugin(InstallReferrerPlugin.class);
+        registerPlugin(NativeCredentialsPlugin.class);
         super.onCreate(savedInstanceState);
+        getBridge().getWebView().setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_YES);
         checkInstallReferrer();
     }
 

@@ -38,8 +38,14 @@ export class CoinService {
             tap(response => {
                 if (response && response.history) {
                     this.coinHistorySubject.next(response.history);
-                    // Calculate total coins
-                    const total = response.history.reduce((sum: number, item: CoinHistoryItem) => sum + item.amount, 0);
+                    const historyTotal = response.history.reduce(
+                        (sum: number, item: CoinHistoryItem) => sum + Number(item.amount || 0),
+                        0
+                    );
+                    const responseTotal = Number(response.totalCoins);
+                    const total = response.totalCoins != null && Number.isFinite(responseTotal)
+                        ? Math.max(0, responseTotal)
+                        : Math.max(0, historyTotal);
                     this.totalCoinsSubject.next(total);
                 }
             }),

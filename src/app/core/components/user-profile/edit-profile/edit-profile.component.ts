@@ -11,9 +11,12 @@ import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-in
 import { AuthService as PackageAuthService } from '../../../../../package/api/auth.service';
 import { AuthService as CoreAuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
-import { UserService } from '../../../services/user.service';
+import { UserProfile, UserService } from '../../../services/user.service';
 import { finalize, debounceTime, distinctUntilChanged, switchMap, filter, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { ApiGender, toApiGender, toStoredGender } from '../../../models/gender.model';
+
+type ProfileGender = 'Male' | 'Female' | 'PreferNotToSay';
 
 @Component({
   selector: 'edit-profile',
@@ -96,8 +99,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   avatarNameError: string | null = null;
   showAvatarNameError = false;
 
-  // gender selected in template. 'Male' | 'Female' | null (match backend format)
-  gender: 'Male' | 'Female' | null = null;
+  gender: ProfileGender | null = null;
 
   // Avatar selection
   avatarSelected: any = null;
@@ -142,7 +144,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   // Track initial values to detect changes
   private initialValues: {
     fullName: string | null;
-    gender: 'Male' | 'Female' | null;
+    gender: ProfileGender | null;
     dob: string | null;
     phone: string | null;
     email: string | null;
@@ -234,10 +236,9 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       console.log('[EditProfile] Full Name set to:', this.fullName);
     }
 
-    // 2. Auto-fill Gender - normalize to 'Male' or 'Female'
+    // 2. Auto-fill Gender from current and legacy backend values
     if (userData.gender) {
-      const genderStr = String(userData.gender).toLowerCase();
-      this.gender = genderStr === 'male' ? 'Male' : genderStr === 'female' ? 'Female' : null;
+      this.gender = this.normalizeProfileGender(userData.gender);
       console.log('[EditProfile] Gender set to:', this.gender, 'from:', userData.gender);
     }
 
@@ -347,7 +348,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     if (payload.email !== undefined) updatedProfile.email = payload.email;
     if (payload.phone !== undefined) updatedProfile.phone = payload.phone;
     if (payload.dateOfBirth !== undefined) updatedProfile.dob = payload.dateOfBirth;
-    if (payload.gender !== undefined) updatedProfile.gender = payload.gender.toLowerCase() === 'male' ? 'male' : 'female';
+    if (payload.gender !== undefined) updatedProfile.gender = this.normalizeStoredGender(payload.gender);
     if (payload.avatarName !== undefined) {
       // avatarName remains as textual identifier only
       updatedProfile.avatarName = payload.avatarName;
@@ -577,7 +578,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
                 name: response.name,
                 email: response.email,
                 phone: response.phone,
-                gender: response.gender?.toLowerCase() as 'male' | 'female',
+                gender: this.normalizeStoredGender(response.gender),
                 dob: response.dateOfBirth,
                 avatarUrl: avatarImgName ? this.deriveAvatarUrlFromImageName(avatarImgName) : undefined,
                 avatarName: response.avatarName || response.avatar?.avatarName
@@ -626,7 +627,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       const base: any = {
         name: this.fullName?.trim(),
         dateOfBirth: this.formatDateForBackend(this.profileForm.get('dob')!.value!),
-        gender: this.gender,
+        gender: this.gender ? this.toApiGender(this.gender) : undefined,
         email: this.profileForm.get('email')!.value!.trim(),
         ...(this.avatarSelected ? { avatarName: `avatar${this.avatarSelected}` } : {}),
       };
@@ -651,7 +652,7 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     // Gender
     const currentGender = this.gender || null;
     const initialGender = this.initialValues.gender || null;
-    if (currentGender !== initialGender) payload.gender = currentGender;
+    if (currentGender && currentGender !== initialGender) payload.gender = this.toApiGender(currentGender);
 
     // Phone - compare normalized full phone with country code
     const currentPhoneFull = `${this.selectedCountry.code}${(this.profileForm.get('phone')?.value || '').replace(/\D/g, '')}`;
@@ -1027,13 +1028,39 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     // fallback to the loaded user data gender so avatars appear on edit.
     let selectedGender = this.gender;
     if (!selectedGender && this.currentUserData && this.currentUserData.gender) {
-      const g = String(this.currentUserData.gender).toLowerCase();
-      if (g === 'male') selectedGender = 'Male';
-      if (g === 'female') selectedGender = 'Female';
+      selectedGender = this.normalizeProfileGender(this.currentUserData.gender);
     }
 
     if (!selectedGender) return [];
+    if (selectedGender === 'PreferNotToSay') return this.avatars;
     return this.avatars.filter(a => a.gender === selectedGender);
+  }
+
+  selectGender(gender: ProfileGender): void {
+    if (this.gender !== gender && gender !== 'PreferNotToSay' && this.avatarSelected) {
+      const selectedAvatar = this.avatars.find(avatar => avatar.key === this.avatarSelected);
+      if (selectedAvatar && selectedAvatar.gender !== gender) {
+        this.avatarSelected = null;
+        this.avatarImageName = null;
+      }
+    }
+    this.gender = gender;
+  }
+
+  private normalizeProfileGender(value: unknown): ProfileGender | null {
+    const normalized = toApiGender(value);
+    if (normalized === 'MALE') return 'Male';
+    if (normalized === 'FEMALE') return 'Female';
+    if (normalized === 'PREFER_NOT_TO_SAY') return 'PreferNotToSay';
+    return null;
+  }
+
+  private toApiGender(gender: ProfileGender): ApiGender {
+    return toApiGender(gender)!;
+  }
+
+  private normalizeStoredGender(value: unknown): UserProfile['gender'] {
+    return toStoredGender(value);
   }
 
   /**

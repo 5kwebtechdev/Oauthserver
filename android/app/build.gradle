@@ -97,6 +97,8 @@ dependencies {
     debugImplementation 'com.google.firebase:firebase-appcheck-debug'
     implementation 'com.google.android.gms:play-services-auth:21.2.0'
     implementation 'com.android.installreferrer:installreferrer:2.2'
+    implementation 'androidx.credentials:credentials:1.6.0'
+    implementation 'androidx.credentials:credentials-play-services-auth:1.6.0'
 }
 
 apply from: 'capacitor.build.gradle'

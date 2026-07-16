@@ -95,22 +95,20 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   }
 
   onViewProfile(tutor: TutorListItem): void {
-    // Get full tutor data from cache
-    const fullTutor = this.tutorService.getTutorFromCache(tutor.id);
-    if (fullTutor) {
-      this.openProfileModal(fullTutor);
-    } else {
-      // Fetch if not in cache
-      this.tutorService.getTutorById(tutor.id).subscribe(t => {
-        if (t) this.openProfileModal(t);
-      });
-    }
+    const cachedTutor = this.tutorService.getTutorFromCache(tutor.id);
+    this.tutorService.getTutorById(tutor.id).subscribe(fullTutor => {
+      const profileTutor = fullTutor || cachedTutor;
+      if (profileTutor) this.openProfileModal(profileTutor);
+    });
   }
 
   async openProfileModal(tutor: Tutor): Promise<void> {
     const modal = await this.modalCtrl.create({
       component: TutorProfileComponent,
-      componentProps: { tutor },
+      componentProps: {
+        tutor,
+        categoryKey: this.lastAppliedFilters?.categoryKey || null
+      },
       cssClass: 'tutor-profile-modal'
     });
     await modal.present();

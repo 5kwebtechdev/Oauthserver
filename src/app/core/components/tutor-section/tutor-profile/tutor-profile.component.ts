@@ -32,6 +32,7 @@ import { Observable } from 'rxjs';
 })
 export class TutorProfileComponent implements OnInit, OnDestroy {
   @Input() tutor: Tutor | undefined;
+  @Input() categoryKey: string | null = null;
   categoryFieldRows: Array<{ label: string; value: string }> = [];
 
   // Like toggle state
@@ -150,7 +151,7 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   getProfileHeading(): string {
-    return this.isAcademyProfile() ? 'Academy profile' : 'Tutor profile';
+    return '';
   }
 
   getProfileNameFallback(): string {
@@ -193,18 +194,24 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   private buildCategoryFieldRows(categories: TutorCategory[] = []): Array<{ label: string; value: string }> {
-    const mappings = this.tutor?.categoryMappings || [];
+    const allMappings = this.tutor?.categoryMappings || [];
+    const selectedCategory = this.findSelectedCategory(categories);
+    const mappings = selectedCategory
+      ? allMappings.filter(mapping => String(mapping.categoryId) === String(selectedCategory.id))
+      : allMappings.slice(0, 1);
     const mergedRows = new Map<string, { label: string; values: string[]; order: number }>();
 
     mappings.forEach((mapping, mappingIndex) => {
-      const category = categories.find(cat => cat.id === mapping.categoryId);
+      const category = categories.find(cat => String(cat.id) === String(mapping.categoryId));
       const selectedOptions = this.parseSelectedFieldOptions(mapping.selectedFieldOptions);
 
       Object.entries(selectedOptions).forEach(([fieldKey, rawValue], fieldIndex) => {
+        if (!this.isTeachingField(fieldKey)) return;
+
         const values = this.normalizeFieldValue(rawValue);
         if (values.length === 0) return;
 
-        const field = category?.fields?.find(item => item.fieldKey === fieldKey);
+        const field = category?.fields?.find(item => this.normalizeKey(item.fieldKey) === this.normalizeKey(fieldKey));
         const label = field?.fieldLabel || this.formatFieldLabel(fieldKey);
         const displayValues = values.map(value => this.getOptionDisplayValue(value, field)).filter(Boolean);
         if (displayValues.length === 0) return;
@@ -237,75 +244,115 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
       return rows;
     }
 
-    // Category-aware fallback: use the loaded category's field definitions with tutor data
-    if (categories.length > 0 && mappings.length > 0) {
-      const category = categories.find(c => c.id === mappings[0].categoryId);
-      if (category?.fields?.length) {
-        const fallbackRows = category.fields
+    // Use API field definitions with direct tutor values when a mapping has no selected values.
+    const fallbackCategory = selectedCategory || (mappings.length > 0
+      ? categories.find(category => String(category.id) === String(mappings[0].categoryId))
+      : undefined);
+    if (fallbackCategory?.fields?.length) {
+        const fallbackRows = fallbackCategory.fields
           .slice()
+          .filter(field => this.isTeachingField(field.fieldKey))
           .sort((a, b) => a.displayOrder - b.displayOrder)
           .map(f => ({ label: f.fieldLabel, value: this.guessValueForField(f.fieldKey) }))
           .filter(r => !!r.value);
         if (fallbackRows.length > 0) return fallbackRows;
-      }
     }
 
-    // Generic last-resort fallback (School-style)
-    const fallbackRows = [
-      { label: 'Subjects', value: this.getSubjectsString() },
-      { label: this.isAcademyProfile() ? 'Classes' : 'Class', value: this.getLevelsString() }
-    ];
-
-    if (this.isAcademyProfile()) {
-      fallbackRows.push({ label: 'Boards', value: this.getBoardString() });
-    }
-
-    return fallbackRows.filter(row => !!row.value && row.value !== 'Not specified');
+    return [];
   }
 
   private guessValueForField(fieldKey: string): string {
-    const k = fieldKey.toLowerCase();
-    if (k.includes('subject') || k.includes('stream') || k.includes('course') || k.includes('degree') || k.includes('topic')) {
-      return this.getSubjectsString();
+    const k = this.normalizeKey(fieldKey);
+    const tutor = this.tutor as any;
+
+    if (k.includes('language')) {
+      return this.joinDirectValues(tutor?.languages, tutor?.languagesOffered, tutor?.subjects);
+    }
+    if (k.includes('subject') || k.includes('stream') || k.includes('course') || k.includes('degree') ||
+        k.includes('topic') || k.includes('hobby') || k.includes('activity') || k.includes('exam') || k.includes('skill')) {
+      return this.joinDirectValues(tutor?.subjects);
     }
     if (k.includes('class') || k.includes('grade') || k.includes('year') || k.includes('level')) {
-      return this.getLevelsString();
+      const levels = this.normalizeFieldValue(tutor?.levels || tutor?.classes || []);
+      return levels.length > 0 ? formatLevels(levels) : '';
     }
     if (k.includes('board')) {
-      return this.getBoardString();
-    }
-    if (k.includes('language')) {
-      return this.getLanguagesString();
+      return this.joinDirectValues(tutor?.boards);
     }
     return '';
   }
 
-  private parseSelectedFieldOptions(selectedFieldOptions: string | null | undefined): Record<string, unknown> {
+  private parseSelectedFieldOptions(selectedFieldOptions: string | Record<string, unknown> | null | undefined): Record<string, unknown> {
     if (!selectedFieldOptions) return {};
+    if (typeof selectedFieldOptions === 'object' && !Array.isArray(selectedFieldOptions)) {
+      return selectedFieldOptions;
+    }
+
     try {
-      const parsed = JSON.parse(selectedFieldOptions);
-      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
-    } catch (error) {
+      let parsed: unknown = JSON.parse(String(selectedFieldOptions));
+      if (typeof parsed === 'string') parsed = JSON.parse(parsed);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+        ? parsed as Record<string, unknown>
+        : {};
+    } catch {
       return {};
     }
   }
 
   private normalizeFieldValue(value: unknown): string[] {
     if (Array.isArray(value)) {
-      return value.map(item => String(item).trim()).filter(Boolean);
+      return value.reduce<string[]>((items, item) => items.concat(this.normalizeFieldValue(item)), []);
     }
 
     if (value === null || value === undefined) {
       return [];
     }
 
+    if (typeof value === 'object') {
+      const item = value as Record<string, unknown>;
+      return this.normalizeFieldValue(item['optionValue'] ?? item['value'] ?? item['optionLabel'] ?? item['label']);
+    }
+
     const text = String(value).trim();
-    return text ? [text] : [];
+    return text ? text.split(',').map(item => item.trim()).filter(Boolean) : [];
   }
 
   private getOptionDisplayValue(value: string, field?: TutorCategory['fields'][number]): string {
-    const option = field?.options?.find(item => item.optionValue === value || item.optionLabel === value);
+    const normalizedValue = this.normalizeKey(value);
+    const option = field?.options?.find(item =>
+      this.normalizeKey(item.optionValue) === normalizedValue || this.normalizeKey(item.optionLabel) === normalizedValue
+    );
     return option?.optionLabel || this.formatEnumValue(value);
+  }
+
+  private findSelectedCategory(categories: TutorCategory[]): TutorCategory | undefined {
+    if (!this.categoryKey) return undefined;
+    const selectedKey = this.normalizeCategoryKey(this.categoryKey);
+    return categories.find(category => this.normalizeCategoryKey(category.categoryKey) === selectedKey);
+  }
+
+  private normalizeCategoryKey(value: string): string {
+    const normalized = this.normalizeKey(value);
+    const aliases: Record<string, string> = {
+      LANGUAGES: 'LANGUAGE',
+      EXAM: 'EXAMS',
+      OTHER: 'OTHERS'
+    };
+    return aliases[normalized] || normalized;
+  }
+
+  private isTeachingField(fieldKey: string): boolean {
+    const key = this.normalizeKey(fieldKey);
+    return !['TUTORTYPE', 'MODE', 'LOCATION'].includes(key);
+  }
+
+  private normalizeKey(value: unknown): string {
+    return String(value || '').replace(/[^a-z0-9]/gi, '').toUpperCase();
+  }
+
+  private joinDirectValues(...values: unknown[]): string {
+    const items = values.reduce<string[]>((result, value) => result.concat(this.normalizeFieldValue(value)), []);
+    return [...new Set(items)].join(', ');
   }
 
   private formatFieldLabel(fieldKey: string): string {
@@ -408,14 +455,8 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
 
     const boards: string[] = [];
     this.tutor.categoryMappings.forEach(mapping => {
-      try {
-        const options = JSON.parse(mapping.selectedFieldOptions);
-        if (options.boards) {
-          boards.push(...options.boards);
-        }
-      } catch (e) {
-        // Ignore parse errors
-      }
+      const options = this.parseSelectedFieldOptions(mapping.selectedFieldOptions);
+      boards.push(...this.normalizeFieldValue(options['boards'] ?? options['board']));
     });
 
     return boards.length > 0 ? [...new Set(boards)].join(', ') : (this.isAcademyProfile() ? 'Not specified' : 'CBSE, State Board');

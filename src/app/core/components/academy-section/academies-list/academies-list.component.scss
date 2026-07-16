@@ -4,7 +4,10 @@ h2 { margin: 0; }
 .ac-header {
   height: calc(254px + env(safe-area-inset-top));
   flex-shrink: 0;
-  background: linear-gradient(145deg, #F28745 0%, #EE6621 40%, #90214D 100%);
+  background-image: url('/assets/Images-Thumbnails/Imgae-Tutor-TopBg.jpg');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
   padding: 0 16px;
   box-sizing: border-box;
   position: relative;
@@ -85,6 +88,19 @@ h2 { margin: 0; }
   &:hover { background-color: rgba(0, 0, 0, 0.05); }
 }
 
+.mic {
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
 // ── Tip bubble ────────────────────────────────────────────────────────────────
 .panda-box {
   align-items: flex-end;
@@ -93,7 +109,7 @@ h2 { margin: 0; }
 // ── Filters / Sort row ───────────────────────────────────────────────────────
 .controls-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   width: 100%;
   padding: 16px;
@@ -124,13 +140,13 @@ h2 { margin: 0; }
 
 .sort-menu {
   position: absolute;
-  right: 0;
+  left: -44px;
   top: calc(100% + 10px);
   background: #fff;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
   border-radius: 12px;
   padding: 8px 0;
-  width: 160px;
+  width: 150px;
   z-index: 20;
   list-style: none;
   margin: 0;
@@ -156,6 +172,7 @@ h2 { margin: 0; }
 // ── List section ─────────────────────────────────────────────────────────────
 .academies-list-section {
   padding: 0 16px 130px 16px;
+  gap: 16px;
 }
 
 .title-row {
@@ -170,7 +187,13 @@ h2 { margin: 0; }
   color: #6B656A;
   font-size: 12px;
   font-weight: 500;
-  margin-left: 6px;
+  margin-left: 8px;
+}
+
+::ng-deep tutor-list {
+  display: block;
+  margin-top: 18px;
+  padding-top: 6px;
 }
 
 .ac-list {
@@ -362,7 +385,7 @@ h2 { margin: 0; }
   }
 
   ion-spinner {
-    --color: #90214D;
+    --color: #7284B9;
     width: 32px;
     height: 32px;
   }
@@ -373,7 +396,7 @@ h2 { margin: 0; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px 20px;
+  padding: 0 20px;
   gap: 12px;
   text-align: center;
 

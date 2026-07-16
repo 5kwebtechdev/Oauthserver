@@ -1,7 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
-import { BgSkeletonDirective } from '../../skeleton-image/bg-skeleton.directive';
 import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
 import {
   TutorListItem,
@@ -15,20 +14,23 @@ import { AuthService } from '../../../services/auth.service';
 @Component({
   selector: 'tutor-list',
   standalone: true,
-  imports: [CommonModule, SupermeButtonComponent, BgSkeletonDirective, AdBannerComponent],
+  imports: [CommonModule, SupermeButtonComponent, AdBannerComponent],
   templateUrl: './tutor-list.component.html',
   styleUrls: ['./tutor-list.component.scss']
 })
 export class TutorListComponent implements OnChanges {
   @Input() tutors: TutorListItem[] = [];
+  @Input() itemLabel = 'Tutor';
+  @Input() fallbackAvatar = 'assets/images/Avatar.png';
+  @Input() adScreen?: AdScreen;
 
   // track subscriptions / live states
   private _watching = new Set<string | number>();
 
   constructor(private likeService: TutorLikeService, private authService: AuthService) {}
 
-  get tutorAdScreen(): AdScreen {
-    return this.authService.isParentUser() ? 'PARENT_TUTOR' : 'TUTOR_HOME';
+  get resolvedAdScreen(): AdScreen {
+    return this.adScreen ?? (this.authService.isParentUser() ? 'PARENT_TUTOR' : 'TUTOR_HOME');
   }
 
   /** Emitted when user clicks View Profile. Payload: tutor object. */
@@ -44,8 +46,8 @@ export class TutorListComponent implements OnChanges {
   }
 
   openAvatarViewer(tutor: TutorListItem): void {
-    this.viewerSrc = tutor.avatar || 'assets/images/Avatar.png';
-    this.viewerName = tutor.name || 'Tutor';
+    this.viewerSrc = tutor.avatar || this.fallbackAvatar;
+    this.viewerName = tutor.name || this.itemLabel;
     this.viewerOpen = true;
   }
 
@@ -54,11 +56,11 @@ export class TutorListComponent implements OnChanges {
   }
 
   onAvatarError(event: Event): void {
-    (event.target as HTMLImageElement).src = 'assets/images/Avatar.png';
+    (event.target as HTMLImageElement).src = this.fallbackAvatar;
   }
 
   onViewerError(event: Event): void {
-    (event.target as HTMLImageElement).src = 'assets/images/Avatar.png';
+    (event.target as HTMLImageElement).src = this.fallbackAvatar;
   }
 
   ngOnChanges(changes: SimpleChanges) {

@@ -9,43 +9,56 @@ import { takeUntil } from 'rxjs/operators';
 import { HttpClientModule } from '@angular/common/http';
 import { FooterComponent } from 'src/app/core/components/footer/footer.component';
 import { SupermePetComponent } from 'src/app/core/components/superme-pet/superme-pet.component';
-import { SupermeSpeechBubbleComponent } from 'src/app/core/components/superme-speech-bubble/superme-speech-bubble.component';
+import { LearningService } from 'src/app/core/services/learning.service';
+import { LearningCardData, LearningCategorySummary } from 'src/app/core/models/learning.models';
+import { EmptyStateComponent } from 'src/app/core/components/empty-state/empty-state.component';
+import { CustomToastService } from 'src/app/core/services/custom-toast.service';
+import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
 import { LearningChallengeCardComponent } from '../learning-card/learning-challenge-card.component';
 import { LearningArticleCardComponent } from '../learning-card/learning-article-card.component';
-import { LearningService } from 'src/app/core/services/learning.service';
-import { LearningCardData } from 'src/app/core/models/learning.models';
-import { EmptyStateComponent } from 'src/app/core/components/empty-state/empty-state.component';
-import { AdBannerComponent } from 'src/app/core/components/ad-banner/ad-banner.component';
-import { CustomToastService } from 'src/app/core/services/custom-toast.service';
+
+type LearningCategoryTab = 'puzzles' | 'quizzes' | 'articles' | 'masterclass';
 
 @Component({
   selector: 'learning-main',
   templateUrl: './learning-main.component.html',
   styleUrls: ['./learning-main.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, FormsModule, HttpClientModule, FooterComponent, SupermeSpeechBubbleComponent, SupermePetComponent, LearningChallengeCardComponent, LearningArticleCardComponent, EmptyStateComponent, AdBannerComponent],
+  imports: [CommonModule, IonicModule, RouterModule, FormsModule, HttpClientModule, FooterComponent, SupermePetComponent, EmptyStateComponent, SkeletonImageComponent, LearningChallengeCardComponent, LearningArticleCardComponent],
   providers: [LearningService]
 })
 export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   @Input() title: string = '';
   @Input() body: string = '';
 
-  selectedCategory: 'for-you' | 'puzzles' | 'quizzes' | 'articles' | null = 'for-you';
+  selectedCategory: LearningCategoryTab = 'puzzles';
 
-  forYouItems:  LearningCardData[] = [];
-  puzzleItems:  LearningCardData[] = [];
-  quizItems:    LearningCardData[] = [];
-  articleItems: LearningCardData[] = [];
-  searchItems:  LearningCardData[] = [];
+  categoryTabs: { id: LearningCategoryTab; label: string; icon: string; ariaLabel: string }[] = [
+    { id: 'puzzles', label: 'Puzzles', icon: 'assets/Icons-Neutral/Icon-Content-Puzzle.png', ariaLabel: 'Open Puzzles' },
+    { id: 'quizzes', label: 'Quizzes', icon: 'assets/Icons-Neutral/Icon-Content-Quiz.png', ariaLabel: 'Open Quizzes' },
+    { id: 'articles', label: 'Articles', icon: 'assets/Icons-Neutral/Icon-Content-Articles.png', ariaLabel: 'Open Articles' },
+    { id: 'masterclass', label: 'MasterClass', icon: 'assets/Icons-Neutral/Icon-Content-ForYou.png', ariaLabel: 'Open MasterClass' }
+  ];
 
-  // Per-tab loading flags
-  loadingForYou   = false;
-  loadingPuzzles  = false;
-  loadingQuizzes  = false;
-  loadingArticles = false;
+  categoryItems: Record<LearningCategoryTab, LearningCategorySummary[]> = {
+    puzzles: [],
+    quizzes: [],
+    articles: [],
+    masterclass: []
+  };
+  searchItems: LearningCategorySummary[] = [];
+  selectedCategoryItem: LearningCategorySummary | null = null;
+  categoryContentItems: LearningCardData[] = [];
+  categoryContentLoading = false;
 
-  // Track which tabs have been fetched at least once
-  private loadedTabs = new Set<string>();
+  loadingTabs: Record<LearningCategoryTab, boolean> = {
+    puzzles: false,
+    quizzes: false,
+    articles: false,
+    masterclass: false
+  };
+
+  private loadedTabs = new Set<LearningCategoryTab>();
 
   searchKeyword = '';
   isSearching   = false;
@@ -55,17 +68,29 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   private recognition: any = null;
 
   get isLoading(): boolean {
-    return this.loadingForYou || this.loadingPuzzles || this.loadingQuizzes || this.loadingArticles;
+    return Object.values(this.loadingTabs).some(Boolean);
   }
 
   get activeTabLoading(): boolean {
-    switch (this.selectedCategory) {
-      case 'for-you':  return this.loadingForYou;
-      case 'puzzles':  return this.loadingPuzzles;
-      case 'quizzes':  return this.loadingQuizzes;
-      case 'articles': return this.loadingArticles;
-      default:         return false;
-    }
+    return this.loadingTabs[this.selectedCategory];
+  }
+
+  get visibleCategoryCards(): LearningCategorySummary[] {
+    return this.isSearching ? this.searchItems : this.categoryItems[this.selectedCategory];
+  }
+
+  get visibleCategoryContent(): LearningCardData[] {
+    const keyword = this.searchKeyword.trim().toLowerCase();
+    if (!keyword) return this.categoryContentItems;
+
+    return this.categoryContentItems.filter(item => [
+      item.title,
+      item.description,
+      item.type,
+      item.category,
+      item.subType,
+      ...(item.tags || [])
+    ].filter(Boolean).join(' ').toLowerCase().includes(keyword));
   }
 
   constructor(
@@ -75,77 +100,44 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   ) { }
 
   ngOnInit(): void {
-    this.loadTab('for-you');
+    this.loadTab('puzzles');
   }
 
   ionViewWillEnter(): void {
     // Refresh current tab when returning to the page
-    this.loadTab(this.selectedCategory ?? 'for-you', true);
+    this.loadTab(this.selectedCategory, true);
   }
 
-  private loadTab(tab: 'for-you' | 'puzzles' | 'quizzes' | 'articles', forceRefresh = false): void {
+  private loadTab(tab: LearningCategoryTab, forceRefresh = false): void {
     if (!forceRefresh && this.loadedTabs.has(tab)) return;
 
+    this.loadingTabs[tab] = true;
+    this.getCategoryRequest(tab)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: items => {
+          this.categoryItems[tab] = items;
+          this.loadingTabs[tab] = false;
+          this.loadedTabs.add(tab);
+          if (this.searchKeyword.trim()) this.updateSearchResults();
+        },
+        error: () => {
+          this.loadingTabs[tab] = false;
+        }
+      });
+  }
+
+  private getCategoryRequest(tab: LearningCategoryTab) {
     switch (tab) {
-      case 'for-you':
-        this.loadingForYou = true;
-        this.learningService.fetchForYouCards()
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: items => {
-              this.forYouItems = items;
-              this.loadingForYou = false;
-              this.loadedTabs.add('for-you');
-              if (this.searchKeyword.trim()) this.updateSearchResults();
-            },
-            error: () => { this.loadingForYou = false; }
-          });
-        break;
-
-      case 'puzzles':
-        this.loadingPuzzles = true;
-        this.learningService.fetchPuzzleCards()
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: items => {
-              this.puzzleItems = items;
-              this.loadingPuzzles = false;
-              this.loadedTabs.add('puzzles');
-              if (this.searchKeyword.trim()) this.updateSearchResults();
-            },
-            error: () => { this.loadingPuzzles = false; }
-          });
-        break;
-
       case 'quizzes':
-        this.loadingQuizzes = true;
-        this.learningService.fetchQuizCards()
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: items => {
-              this.quizItems = items;
-              this.loadingQuizzes = false;
-              this.loadedTabs.add('quizzes');
-              if (this.searchKeyword.trim()) this.updateSearchResults();
-            },
-            error: () => { this.loadingQuizzes = false; }
-          });
-        break;
-
+        return this.learningService.fetchChallengeCategorySummary('QUIZ');
       case 'articles':
-        this.loadingArticles = true;
-        this.learningService.fetchArticleCards()
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: items => {
-              this.articleItems = items;
-              this.loadingArticles = false;
-              this.loadedTabs.add('articles');
-              if (this.searchKeyword.trim()) this.updateSearchResults();
-            },
-            error: () => { this.loadingArticles = false; }
-          });
-        break;
+        return this.learningService.fetchArticleCategories();
+      case 'masterclass':
+        return this.learningService.fetchChallengeCategories();
+      case 'puzzles':
+      default:
+        return this.learningService.fetchChallengeCategorySummary('PUZZLE');
     }
   }
 
@@ -155,16 +147,17 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     this.destroy$.complete();
   }
 
-  selectCategory(cat: 'for-you' | 'puzzles' | 'quizzes' | 'articles') {
+  selectCategory(cat: LearningCategoryTab) {
     this.selectedCategory = cat;
-    this.loadTab(cat, true);
+    this.closeCategoryContent();
+    this.loadTab(cat);
     if (this.searchKeyword.trim()) this.updateSearchResults();
   }
 
-  openForYou() { this.selectCategory('for-you'); }
   openPuzzles() { this.selectCategory('puzzles'); }
   openQuizzes() { this.selectCategory('quizzes'); }
   openArticles() { this.selectCategory('articles'); }
+  openMasterClass() { this.selectCategory('masterclass'); }
 
   onSearchInput(): void {
     this.updateSearchResults();
@@ -313,22 +306,68 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       return;
     }
     this.isSearching = true;
-    this.searchItems = this.getCurrentCategoryItems().filter(item => this.matchesSearch(item, keyword));
+    if (this.selectedCategoryItem) return;
+    this.searchItems = this.categoryItems[this.selectedCategory].filter(item => this.matchesSearch(item, keyword));
   }
 
-  private getCurrentCategoryItems(): LearningCardData[] {
+  private matchesSearch(item: LearningCategorySummary, keyword: string): boolean {
+    return [item.name, item.categoryName, item.description, item.type]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      .includes(keyword);
+  }
+
+  getCategoryTitle(item: LearningCategorySummary): string {
+    return item.name || item.categoryName || 'Untitled';
+  }
+
+  getCategoryImage(item: LearningCategorySummary): string {
+    return item.thumbnailUrl || item.image || this.getCategoryFallbackImage();
+  }
+
+  isPhotographicCategoryImage(item: LearningCategorySummary): boolean {
+    const imageUrl = this.getCategoryImage(item).split('?')[0].toLowerCase();
+    return /\.(jpe?g|webp|avif)$/.test(imageUrl);
+  }
+
+  getCategoryImageFit(item: LearningCategorySummary): 'cover' | 'contain' {
+    return this.isPhotographicCategoryImage(item) ? 'cover' : 'contain';
+  }
+
+  getCategoryFallbackImage(): string {
     switch (this.selectedCategory) {
-      case 'puzzles':  return this.puzzleItems;
-      case 'quizzes':  return this.quizItems;
-      case 'articles': return this.articleItems;
-      case 'for-you':
-      default:         return this.forYouItems;
+      case 'quizzes':
+        return 'assets/Icons-Neutral/Icon-Content-Quiz.png';
+      case 'articles':
+        return 'assets/Icons-Neutral/Icon-Content-Articles.png';
+      case 'masterclass':
+        return 'assets/Icons-Neutral/Icon-Content-ForYou.png';
+      case 'puzzles':
+      default:
+        return 'assets/Icons-Neutral/Icon-Content-Puzzle.png';
     }
   }
 
-  private matchesSearch(item: LearningCardData, keyword: string): boolean {
-    return [item.title, item.description, item.type, item.category, item.subType, item.buttonText, ...(item.tags || [])]
-      .filter(Boolean).join(' ').toLowerCase().includes(keyword);
+  getCategoryCountText(item: LearningCategorySummary): string {
+    const count = Number(item.count || 0);
+    const label = this.getCategoryUnitLabel(count);
+    return `${count} ${label}`;
+  }
+
+  private getCategoryUnitLabel(count: number): string {
+    const singular = count === 1;
+    switch (this.selectedCategory) {
+      case 'quizzes':
+        return singular ? 'quiz' : 'quizzes';
+      case 'articles':
+        return singular ? 'article' : 'articles';
+      case 'masterclass':
+        return singular ? 'masterclass' : 'masterclasses';
+      case 'puzzles':
+      default:
+        return singular ? 'puzzle' : 'puzzles';
+    }
   }
 
   clearSearch(): void {
@@ -337,5 +376,43 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     this.searchItems = [];
   }
 
-  onCardClick(event: any) { }
+  onCategoryCardClick(item: LearningCategorySummary): void {
+    const categoryName = item.categoryName || item.name;
+    if (!categoryName) return;
+
+    this.selectedCategoryItem = item;
+    this.categoryContentItems = [];
+    this.categoryContentLoading = true;
+
+    const request = this.selectedCategory === 'articles'
+      ? this.learningService.fetchArticlesForLearningCategory(categoryName)
+      : this.learningService.fetchChallengesForLearningCategory(
+          categoryName,
+          this.getSelectedChallengeType()
+        );
+
+    request.pipe(takeUntil(this.destroy$)).subscribe({
+      next: items => {
+        this.categoryContentItems = items;
+        this.categoryContentLoading = false;
+      },
+      error: () => {
+        this.categoryContentItems = [];
+        this.categoryContentLoading = false;
+      }
+    });
+  }
+
+  closeCategoryContent(): void {
+    this.selectedCategoryItem = null;
+    this.categoryContentItems = [];
+    this.categoryContentLoading = false;
+    if (this.searchKeyword.trim()) this.updateSearchResults();
+  }
+
+  private getSelectedChallengeType(): 'QUIZ' | 'PUZZLE' | undefined {
+    if (this.selectedCategory === 'quizzes') return 'QUIZ';
+    if (this.selectedCategory === 'puzzles') return 'PUZZLE';
+    return undefined;
+  }
 }

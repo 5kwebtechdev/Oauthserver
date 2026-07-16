@@ -424,7 +424,7 @@ export interface EditProfilePayload {
     avatarImageName?: string;       // Avatar image name (e.g., 'Avatar 8', 'Avatar 11')
     name: string;                   // Full name
     dateOfBirth: string;            // Format: YYYY-MM-DD
-    gender: string;                 // Gender (Male/Female)
+    gender: string;                 // Gender (MALE/FEMALE/PREFER_NOT_TO_SAY)
     phone: string;                  // Phone number with country code
     email: string;                  // Email address
 }

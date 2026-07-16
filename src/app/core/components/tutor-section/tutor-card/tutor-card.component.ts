@@ -73,15 +73,11 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   }
 
   onViewProfile(tutor: TutorListItem): void {
-    // Open tutor profile modal directly (use cached full tutor if available)
-    const fullTutor = this.tutorService.getTutorFromCache(tutor.id);
-    if (fullTutor) {
-      this.openProfileModal(fullTutor);
-    } else {
-      this.tutorService.getTutorById(tutor.id).subscribe(t => {
-        if (t) this.openProfileModal(t as Tutor);
-      });
-    }
+    const cachedTutor = this.tutorService.getTutorFromCache(tutor.id);
+    this.tutorService.getTutorById(tutor.id).subscribe(fullTutor => {
+      const profileTutor = fullTutor || cachedTutor;
+      if (profileTutor) this.openProfileModal(profileTutor);
+    });
   }
 
   async openProfileModal(tutor: Tutor): Promise<void> {

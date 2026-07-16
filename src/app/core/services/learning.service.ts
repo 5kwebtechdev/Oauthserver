@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable, catchError, map, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Challenge, Article, LearningCardData } from '../models/learning.models';
+import { Challenge, Article, LearningCardData, LearningCategorySummary } from '../models/learning.models';
 import { AuthService } from '../../../package/api/auth.service';
 
 @Injectable({
@@ -91,6 +91,7 @@ export class LearningService {
     fetchChallengeById(id: number): Observable<Challenge | null> {
         return this.http.get<Challenge>(`${this.apiUrl}/challenges/${id}`, { headers: this.getHeaders() })
             .pipe(
+                map(challenge => challenge ? this.normalizeChallenge(challenge) : null),
                 catchError(error => {
                     console.error(`Error fetching challenge ${id}:`, error);
                     return of(null);
@@ -192,6 +193,7 @@ export class LearningService {
     fetchArticleById(id: number): Observable<Article | null> {
         return this.http.get<Article>(`${this.apiUrl}/articles/${id}`, { headers: this.getHeaders() })
             .pipe(
+                map(article => article ? this.normalizeArticle(article) : null),
                 catchError(error => {
                     console.error(`Error fetching article ${id}:`, error);
                     return of(null);
@@ -230,6 +232,122 @@ export class LearningService {
         return this.fetchArticles().pipe(
             map(articles => articles.map(a => this.transformArticleToCard(a)))
         );
+    }
+
+    /**
+     * Fetch challenge category summaries for the Learning category grid.
+     */
+    fetchChallengeCategorySummary(challengeType: 'QUIZ' | 'PUZZLE'): Observable<LearningCategorySummary[]> {
+        const url = `${this.apiUrl}/challenges/categories/summary?challengeType=${challengeType}`;
+        const type = challengeType === 'QUIZ' ? 'quiz' : 'puzzle';
+
+        return this.http.get<LearningCategorySummary[]>(url, { headers: this.getHeaders() }).pipe(
+            map(categories => this.normalizeLearningCategories(categories, type)),
+            catchError(error => {
+                console.error(`Error fetching ${challengeType} category summary:`, error);
+                return of([]);
+            })
+        );
+    }
+
+    /**
+     * Fetch general challenge categories for the MasterClass tab.
+     */
+    fetchChallengeCategories(): Observable<LearningCategorySummary[]> {
+        return this.http.get<LearningCategorySummary[]>(`${this.apiUrl}/challenges/categories`, { headers: this.getHeaders() }).pipe(
+            map(categories => this.normalizeLearningCategories(categories, 'masterclass')),
+            catchError(error => {
+                console.error('Error fetching challenge categories:', error);
+                return of([]);
+            })
+        );
+    }
+
+    /**
+     * Fetch article categories for the Learning category grid.
+     */
+    fetchArticleCategories(): Observable<LearningCategorySummary[]> {
+        return this.http.get<LearningCategorySummary[]>(`${this.apiUrl}/articles/categories`, { headers: this.getHeaders() }).pipe(
+            map(categories => this.normalizeLearningCategories(categories, 'article')),
+            catchError(error => {
+                console.error('Error fetching article categories:', error);
+                return of([]);
+            })
+        );
+    }
+
+    /**
+     * Fetch the challenge cards belonging to a named Learning category.
+     * The category endpoint returns a summary object instead of a plain array.
+     */
+    fetchChallengesForLearningCategory(
+        categoryName: string,
+        challengeType?: Challenge['category']
+    ): Observable<LearningCardData[]> {
+        const params = new HttpParams().set('category', categoryName);
+
+        return this.http.get<{ challenges?: Challenge[] } | Challenge[]>(
+            `${this.apiUrl}/challenges`,
+            { headers: this.getHeaders(), params }
+        ).pipe(
+            map(response => Array.isArray(response) ? response : (response?.challenges || [])),
+            map(challenges => challengeType
+                ? challenges.filter(challenge => String(challenge.category).toUpperCase() === challengeType)
+                : challenges
+            ),
+            map(challenges => challenges.map(challenge => this.transformChallengeToCard(challenge))),
+            catchError(error => {
+                console.error(`Error fetching challenges for category ${categoryName}:`, error);
+                return of([]);
+            })
+        );
+    }
+
+    /**
+     * Fetch the article cards belonging to a named Learning category.
+     */
+    fetchArticlesForLearningCategory(categoryName: string): Observable<LearningCardData[]> {
+        const params = new HttpParams().set('category', categoryName);
+
+        return this.http.get<{ articles?: Article[] } | Article[]>(
+            `${this.apiUrl}/articles`,
+            { headers: this.getHeaders(), params }
+        ).pipe(
+            map(response => Array.isArray(response) ? response : (response?.articles || [])),
+            map(articles => articles.map(article => this.transformArticleToCard(article))),
+            catchError(error => {
+                console.error(`Error fetching articles for category ${categoryName}:`, error);
+                return of([]);
+            })
+        );
+    }
+
+    private normalizeLearningCategories(
+        categories: LearningCategorySummary[] | null | undefined,
+        type: LearningCategorySummary['type']
+    ): LearningCategorySummary[] {
+        return (categories || [])
+            .filter(category => (category.status || 'ACTIVE').toUpperCase() === 'ACTIVE')
+            .map(category => ({
+                ...category,
+                type,
+                name: category.name || category.categoryName || 'Untitled',
+                categoryName: category.categoryName || category.name || 'Untitled',
+                thumbnailUrl: this.normalizeApiImageUrl(category.thumbnailUrl || category.image),
+                image: this.normalizeApiImageUrl(category.image || category.thumbnailUrl),
+                count: Number(category.count || 0)
+            }));
+    }
+
+    private normalizeApiImageUrl(value?: string | null): string {
+        const raw = (value || '').trim();
+        if (!raw) return '';
+
+        const markdownUrl = raw.match(/\((https?:\/\/[^)]+)\)/);
+        if (markdownUrl?.[1]) return markdownUrl[1];
+
+        const directUrl = raw.match(/https?:\/\/[^\]\s)]+/);
+        return directUrl?.[0] || raw;
     }
 
     /**
@@ -289,26 +407,27 @@ export class LearningService {
      * Transform Challenge to LearningCardData for UI display
      */
     transformChallengeToCard(challenge: Challenge): LearningCardData {
-        const isQuiz = challenge.category === 'QUIZ';
-        const timeText = this.ensureMinSuffix(challenge.timeDuration || '10 min');
+        const normalizedChallenge = this.normalizeChallenge(challenge);
+        const isQuiz = normalizedChallenge.category === 'QUIZ';
+        const timeText = this.formatApiDuration(normalizedChallenge.timeDuration, 10);
         const buttonLabel = isQuiz ? 'Play Quiz' : 'Play Puzzle';
 
         return {
-            id: challenge.challengeId,
-            title: challenge.name,
-            description: challenge.description,
-            image: challenge.thumbnailImageUrl || 'assets/icons/Flux_Dev_a_surreal_and_vibrant_cinematic_photo_of_A_minimal_ye_3%201.jpg',
-            coins: challenge.coins,
-            trophy: challenge.trophies,
-            difficulty: challenge.difficultyDisplay || challenge.difficulty,
+            id: normalizedChallenge.challengeId,
+            title: normalizedChallenge.name,
+            description: normalizedChallenge.description,
+            image: normalizedChallenge.thumbnailImageUrl || 'assets/icons/Flux_Dev_a_surreal_and_vibrant_cinematic_photo_of_A_minimal_ye_3%201.jpg',
+            coins: normalizedChallenge.coins,
+            trophy: normalizedChallenge.trophies,
+            difficulty: normalizedChallenge.difficultyDisplay || normalizedChallenge.difficulty,
             buttonText: timeText ? `Finish in ${timeText}` : buttonLabel,
             type: isQuiz ? 'quiz' : 'puzzle',
             // Preserve backend category for use by UI (e.g. superme-badge)
-            category: challenge.category,
-            subType: challenge.categoryDisplay,
-            totalQuestions: challenge.totalQuestions,
+            category: normalizedChallenge.category,
+            subType: normalizedChallenge.categoryDisplay,
+            totalQuestions: normalizedChallenge.totalQuestions,
             timeDuration: timeText,
-            rawData: challenge
+            rawData: normalizedChallenge
         };
     }
 
@@ -316,29 +435,55 @@ export class LearningService {
      * Transform Article to LearningCardData for UI display
      */
     transformArticleToCard(article: Article): LearningCardData {
-        // Calculate reading time from timeDuration
-        let readTime = '5 min';
-        if (article.timeDuration === 'SHORT') readTime = '3 min';
-        if (article.timeDuration === 'MEDIUM') readTime = '5 min';
-        if (article.timeDuration === 'LONG') readTime = '10 min';
+        const normalizedArticle = this.normalizeArticle(article);
+        const apiArticle = normalizedArticle as Article & { durationMinutes?: number; coins?: number };
+        const readTime = apiArticle.durationMinutes
+            ? `${apiArticle.durationMinutes} min`
+            : this.formatApiDuration(article.timeDuration, 5);
 
         const normalizedTags = Array.isArray((article as any).tags) ? (article as any).tags : ((article as any).tags ? [String((article as any).tags)] : []);
         console.log(`transformArticleToCard: article id=${article.id} incoming tags=`, (article as any).tags, 'normalized=', normalizedTags, 'coins=', (article as any).coins);
 
         return {
-            id: article.id,
-            title: article.title,
-            description: article.description,
-            image: article.thumbnailUrl || 'assets/icons/Flux_Dev_a_surreal_and_vibrant_cinematic_photo_of_A_minimal_ye_3%201.jpg',
+            id: normalizedArticle.id,
+            title: normalizedArticle.title,
+            description: normalizedArticle.description,
+            image: normalizedArticle.thumbnailUrl || 'assets/icons/Flux_Dev_a_surreal_and_vibrant_cinematic_photo_of_A_minimal_ye_3%201.jpg',
             // Prefer coins from backend article if provided, otherwise fall back to 0
-            coins: (article as any)?.coins ?? 0,
+            coins: apiArticle.coins ?? 0,
             buttonText: `Read in ${readTime}`,
             type: 'article',
-            timeDuration: article.timeDuration,
+            timeDuration: normalizedArticle.timeDuration,
             // Normalized tags
             tags: normalizedTags,
-            rawData: article
+            rawData: normalizedArticle
         };
+    }
+
+    private normalizeChallenge(challenge: Challenge): Challenge {
+        const apiChallenge = challenge as Challenge & { id?: number };
+        return {
+            ...challenge,
+            challengeId: Number(apiChallenge.challengeId ?? apiChallenge.id),
+            thumbnailImageUrl: this.normalizeApiImageUrl(challenge.thumbnailImageUrl),
+            innerImageUrl: this.normalizeApiImageUrl(challenge.innerImageUrl)
+        };
+    }
+
+    private normalizeArticle(article: Article): Article {
+        return {
+            ...article,
+            thumbnailUrl: this.normalizeApiImageUrl(article.thumbnailUrl)
+        };
+    }
+
+    private formatApiDuration(value: string | undefined, fallbackMinutes: number): string {
+        switch ((value || '').toUpperCase()) {
+            case 'SHORT': return '3 min';
+            case 'MEDIUM': return '5 min';
+            case 'LONG': return '10 min';
+            default: return this.ensureMinSuffix(value || `${fallbackMinutes} min`);
+        }
     }
 
     /**

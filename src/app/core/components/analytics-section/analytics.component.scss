@@ -1,258 +1,302 @@
 @keyframes shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position:  400px 0; }
+  0% { background-position: -360px 0; }
+  100% { background-position: 360px 0; }
 }
 
-$skel-grad: linear-gradient(90deg, #f0eff1 25%, #faf9fa 50%, #f0eff1 75%);
+$skel-grad: linear-gradient(90deg, rgba(255,255,255,0.45) 25%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0.45) 75%);
 
-// ── Page ─────────────────────────────────────────────────────────────────────
+:host {
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.analytics-content {
+  --background: #ffffff;
+}
+
 .an-page {
-  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(160deg, #FFF5F8 0%, #FFFCF7 55%, #FFFFF9 100%);
+  min-height: 100%;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(28px + env(safe-area-inset-bottom, 0px));
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.5) 45%, rgba(255, 255, 255, 0.08) 100%),
+    linear-gradient(90deg, rgba(139, 141, 203, 0.34) 0%, rgba(225, 82, 124, 0.22) 100%) top / 100% 52% no-repeat,
+    linear-gradient(90deg, rgba(246, 172, 114, 0.3) 0%, rgba(137, 179, 182, 0.34) 100%) bottom / 100% 55% no-repeat,
+    #ffffff;
 }
 
-// ── Header ───────────────────────────────────────────────────────────────────
 .an-header {
-  padding: calc(20px + env(safe-area-inset-top)) 20px 16px;
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  align-items: center;
+  min-height: 86px;
+  margin-bottom: 16px;
+}
+
+.an-back {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #282527;
+  cursor: pointer;
+
+  img {
+    width: 31px;
+    height: 31px;
+    object-fit: contain;
+  }
 }
 
 .an-title {
-  font-family: var(--font-heading, 'Nunito', sans-serif);
-  font-size: 26px;
-  font-weight: 800;
+  margin: 0 0 3px;
   color: #282527;
-  margin: 0 0 4px;
-  letter-spacing: -0.4px;
+  font-family: var(--font-heading, 'Fredoka', sans-serif);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0;
 }
 
 .an-subtitle {
+  margin: 0;
+  color: #282527;
   font-family: var(--font-sans, 'Nunito', sans-serif);
   font-size: 13px;
   font-weight: 500;
-  color: #8B8490;
-  margin: 0;
+  line-height: 1.4;
+  letter-spacing: 0;
 }
 
-// ── Body ─────────────────────────────────────────────────────────────────────
 .an-body {
-  padding: 4px 16px 0;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-// ── Section ──────────────────────────────────────────────────────────────────
 .an-sec {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.an-sec-hd {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.an-sec-ico-box {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.an-sec-ico-img {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-}
-
 .an-sec-nm {
-  font-family: var(--font-heading, 'Nunito', sans-serif);
-  font-size: 17px;
-  font-weight: 700;
-  color: #282527;
   margin: 0;
+  color: #282527;
+  font-family: var(--font-heading, 'Fredoka', sans-serif);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0;
 }
 
-// ── 2-column grid ────────────────────────────────────────────────────────────
 .an-grid-2 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 16px;
 }
 
-// ── Stat card ────────────────────────────────────────────────────────────────
 .an-card {
-  background: #ffffff;
-  border-radius: 18px;
-  padding: 16px 14px 14px;
-  box-shadow: 0 3px 14px rgba(40, 37, 39, 0.08);
+  min-width: 0;
+  min-height: 139px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 8px;
+  overflow: hidden;
+  border: 0;
+  border-bottom: 2px solid var(--card-accent);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: none;
 }
 
-// Card icon container
-.an-card-ico-box {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 4px;
-  flex-shrink: 0;
-
-  // color variants from API `color` field
-  &.ico-red    { background: rgba(144, 33,  77, 0.10); }
-  &.ico-yellow { background: rgba(230, 168, 23, 0.10); }
-  &.ico-green  { background: rgba(44,  159, 92, 0.10); }
-  &.ico-blue   { background: rgba(59,  110, 212, 0.10); }
+.an-card--purple {
+  --card-accent: #524f84;
+  --value-color: #8b8dcb;
 }
 
-.an-card-ico-img {
-  width: 28px;
-  height: 28px;
+.an-card--orange {
+  --card-accent: #f26a2c;
+  --value-color: #f6ac72;
+}
+
+.an-card--pink {
+  --card-accent: #e1527c;
+  --value-color: #e1527c;
+}
+
+.an-card--berry {
+  --card-accent: #9d214c;
+  --value-color: #90214d;
+}
+
+.an-card-ico {
+  width: 47px;
+  height: 47px;
+  margin: 0;
   object-fit: contain;
 }
 
-// Value (big number)
-.an-val {
-  font-family: var(--font-heading, 'Nunito', sans-serif);
-  font-size: 36px;
-  font-weight: 800;
-  color: #282527;
-  line-height: 1;
-  letter-spacing: -1.5px;
+.an-card-ico--mood {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 4px;
 }
 
-// Label (THIS WEEK / THIS MONTH / QUIZZES …)
 .an-lbl {
+  max-width: 100%;
+  color: #6b656a;
   font-family: var(--font-sans, 'Nunito', sans-serif);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.7px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0;
   text-transform: uppercase;
-  color: #8B8490;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
-// Subtitle (small description)
-.an-sub {
+.an-val {
+  max-width: 100%;
+  margin-top: 0;
+  color: var(--value-color);
   font-family: var(--font-sans, 'Nunito', sans-serif);
-  font-size: 11px;
-  font-weight: 500;
-  color: #B8B3BC;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-transform: capitalize;
+  overflow-wrap: anywhere;
+}
+
+.an-val--mood {
+  color: #90214d;
+  font-size: 25px;
   line-height: 1.4;
 }
 
-// ── Mood card (full-width, horizontal) ───────────────────────────────────────
-.an-mood-card {
-  background: #ffffff;
-  border-radius: 18px;
-  padding: 18px 16px;
-  box-shadow: 0 3px 14px rgba(40, 37, 39, 0.08);
-  display: flex;
-  align-items: center;
-  gap: 16px;
+.an-sub {
+  max-width: 100%;
+  margin-top: 0;
+  color: #878286;
+  font-family: var(--font-sans, 'Nunito', sans-serif);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
 }
 
-.an-mood-emoji {
-  font-size: 48px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.an-mood-content {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.an-mood-val {
-  font-family: var(--font-heading, 'Nunito', sans-serif);
-  font-size: 26px;
-  font-weight: 800;
-  color: #282527;
-  line-height: 1.1;
-  letter-spacing: -0.5px;
-}
-
-// ── Error ────────────────────────────────────────────────────────────────────
 .an-error {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px 32px;
+  padding: 88px 28px;
   gap: 14px;
   text-align: center;
 
-  .an-error-ico { font-size: 52px; }
+  .an-error-ico {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgba(157, 33, 76, 0.12);
+    color: #9d214c;
+    font-family: var(--font-heading, var(--font-sans, 'Nunito', sans-serif));
+    font-size: 28px;
+    font-weight: 900;
+  }
 
   p {
+    margin: 0;
+    color: rgba(40, 37, 39, 0.64);
     font-family: var(--font-sans, 'Nunito', sans-serif);
     font-size: 14px;
-    font-weight: 500;
-    color: #6B656A;
-    line-height: 1.6;
-    margin: 0;
+    font-weight: 700;
+    line-height: 1.55;
   }
 }
 
 .an-retry {
-  padding: 11px 32px;
+  min-height: 44px;
+  padding: 0 30px;
+  border: 1px solid #bd2f60;
   border-radius: 22px;
-  background: linear-gradient(135deg, #90214D, #CD3578);
+  background: linear-gradient(99deg, #e1527c 0%, #ac2456 100%);
   color: #fff;
-  border: none;
   font-family: var(--font-sans, 'Nunito', sans-serif);
   font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  letter-spacing: 0.2px;
+  font-weight: 800;
 }
 
-// ── Skeleton ─────────────────────────────────────────────────────────────────
 .skel-hd {
-  height: 20px;
-  width: 100px;
-  border-radius: 8px;
+  width: 118px;
+  height: 25px;
+  border-radius: 10px;
   background: $skel-grad;
-  background-size: 400px 100%;
+  background-size: 360px 100%;
   animation: shimmer 1.4s infinite linear;
 }
 
 .skel-card {
-  background: #fff;
-  border-radius: 18px;
-  padding: 16px 14px 14px;
-  box-shadow: 0 3px 14px rgba(40, 37, 39, 0.06);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  min-height: 139px;
+  padding: 8px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 2px 8px rgba(40, 37, 39, 0.08);
+}
+
+.skel-ico,
+.skel-line {
+  background: $skel-grad;
+  background-size: 360px 100%;
+  animation: shimmer 1.4s infinite linear;
 }
 
 .skel-ico {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  margin-bottom: 4px;
-  background: $skel-grad;
-  background-size: 400px 100%;
-  animation: shimmer 1.4s infinite linear;
+  width: 47px;
+  height: 47px;
+  margin-bottom: 10px;
+  border-radius: 14px;
 }
 
 .skel-line {
-  border-radius: 6px;
-  background: $skel-grad;
-  background-size: 400px 100%;
-  animation: shimmer 1.4s infinite linear;
+  border-radius: 7px;
 
-  &--val { height: 34px; width: 45%; }
-  &--lbl { height: 11px; width: 70%; }
-  &--sub { height: 10px; width: 90%; }
+  &--lbl {
+    width: 74%;
+    height: 17px;
+    margin-bottom: 10px;
+  }
+
+  &--val {
+    width: 42%;
+    height: 32px;
+    margin-bottom: 20px;
+  }
+
+  &--sub {
+    width: 94%;
+    height: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .an-page {
+    padding-inline: 14px;
+  }
+
+  .an-grid-2 {
+    gap: 16px 12px;
+  }
+
 }

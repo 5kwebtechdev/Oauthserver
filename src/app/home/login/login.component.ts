@@ -41,11 +41,6 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
   private returnUrl: string = '';
 
-  public showSaveCredsPrompt = false;
-  public closingSheet = false;
-  private pendingNav = '';
-  private pendingNewCreds: SavedCredentials | null = null;
-
   @ViewChild('passwordInput') passwordInputRef!: ElementRef<HTMLInputElement>;
 
 
@@ -154,7 +149,9 @@ export class LoginComponent implements OnInit, OnDestroy {
                 email: user.email || undefined,
                 phone: user.phone || undefined,
                 dob,
-                gender: user.gender ? (user.gender.toLowerCase() as 'male' | 'female') : undefined,
+                gender: user.gender
+                  ? (user.gender.toLowerCase() as 'male' | 'female' | 'prefer_not_to_say')
+                  : undefined,
                 avatarUrl: resolved.url || undefined,
                 avatarName: user.avatar?.avatarName || undefined,
                 relationship: (user.relationship || '').toUpperCase() as any
@@ -180,23 +177,11 @@ export class LoginComponent implements OnInit, OnDestroy {
             countryCode: saveMode === 'phone' ? this.selectedCountry.code : undefined
           };
 
-          if (!this.credentialSaverService.shouldAskToSave()) {
-            // Already opted in — update silently and navigate
+          void this.credentialSaverService.save(credsToSave).finally(() => {
             this.navCtrl.navigateRoot(navigationTarget).catch(() => {
               this.loading = false;
             });
-          } else if (this.credentialSaverService.wasDismissed()) {
-            // User previously said "Not now" — don't ask again, just navigate
-            this.navCtrl.navigateRoot(navigationTarget).catch(() => {
-              this.loading = false;
-            });
-          } else {
-            // First time — ask user whether to save
-            this.loading = false;
-            this.pendingNav = navigationTarget;
-            this.pendingNewCreds = credsToSave;
-            this.showSaveCredsPrompt = true;
-          }
+          });
         },
         error: (error) => {
           this.loading = false;
@@ -242,18 +227,18 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.switchMode('email');
     console.log('LoginComponent initialized');
 
-    this.credentialSaverService.clearLegacySavedCredentials();
-
     // Load countries from service
     this.subscription.add(
       this.countriesService.getCountries().subscribe({
         next: (countries) => {
           this.countries = countries;
           console.log('Countries loaded:', countries.length);
+          void this.suggestSavedCredentials();
         },
         error: (error) => {
           console.error('Error loading countries:', error);
           this.countries = [this.countriesService.getDefaultCountry()];
+          void this.suggestSavedCredentials();
         }
       })
     );
@@ -375,28 +360,34 @@ export class LoginComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  async onSaveCreds(): Promise<void> {
-    if (this.pendingNewCreds) {
-      await this.credentialSaverService.save(this.pendingNewCreds);
+  private async suggestSavedCredentials(): Promise<void> {
+    const credentials = await this.credentialSaverService.suggest();
+    if (!credentials) {
+      return;
     }
-    this.dismissSheetThenNavigate();
-  }
 
-  onSkipSaveCreds(): void {
-    this.credentialSaverService.dismissPrompt();
-    this.dismissSheetThenNavigate();
-  }
-
-  private dismissSheetThenNavigate(): void {
-    this.closingSheet = true;
-    setTimeout(() => {
-      this.showSaveCredsPrompt = false;
-      this.closingSheet = false;
-      this.loading = true;
-      this.navCtrl.navigateRoot(this.pendingNav).catch(() => {
-        this.loading = false;
+    this.switchMode(credentials.mode);
+    if (credentials.mode === 'email') {
+      this.signInForm.patchValue({
+        email: credentials.identifier,
+        password: credentials.password
       });
-    }, 260);
+      return;
+    }
+
+    const countriesByLongestCode = [...this.countries].sort((a, b) => b.code.length - a.code.length);
+    const matchedCountry = countriesByLongestCode.find(country => credentials.identifier.startsWith(country.code));
+    if (matchedCountry) {
+      this.selectedCountry = matchedCountry;
+    }
+
+    const phoneNumber = matchedCountry
+      ? credentials.identifier.slice(matchedCountry.code.length)
+      : credentials.identifier.replace(/^\+/, '');
+    this.signInForm.patchValue({
+      phone: phoneNumber,
+      password: credentials.password
+    });
   }
 
 }

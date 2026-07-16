@@ -77,7 +77,7 @@ export interface CategoryMapping {
     id: number;
     tutorId: number;
     categoryId: number;
-    selectedFieldOptions: string; // JSON string
+    selectedFieldOptions: string | Record<string, unknown> | null;
     expertiseLevel: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
     yearsOfExperience: number;
     isAcceptingStudents: boolean;
@@ -172,6 +172,7 @@ export interface TutorListItem {
     experience: string;
     qualification: string;
     hourlyRate: number;
+    feeLabel?: string;
     location: string;
     subjects: string[];
     levels: string[];

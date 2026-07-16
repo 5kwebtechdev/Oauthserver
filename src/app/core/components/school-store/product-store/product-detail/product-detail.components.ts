@@ -276,7 +276,7 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
           ? res.images
           : ['assets/School-assets/empty-product-list.png'];
 
-        this.sizes = Array.isArray(res.sizes) ? res.sizes : [];
+        this.sizes = this.getSelectableSizes(res);
         const firstAvailable = this.sizes.find(s => s.available && s.stock > 0) || this.sizes[0];
         this.selectedSizeLabel = firstAvailable ? firstAvailable.sizeLabel : null;
 
@@ -304,6 +304,34 @@ export class ProductDetailComponent implements OnInit, AfterViewInit {
       : (day % 10 === 3 && day !== 13) ? 'rd' : 'th';
     const month = d.toLocaleDateString('en-US', { month: 'short' });
     return `${weekday}, ${day}${suffix} ${month}`;
+  }
+
+  private getSelectableSizes(product: ApiProductDetail): ApiProductSize[] {
+    const sizes = Array.isArray(product.sizes) ? product.sizes : [];
+    return sizes
+      .map(size => ({
+        ...size,
+        sizeLabel: String(size?.sizeLabel ?? '').trim()
+      }))
+      .filter(size => this.isSelectableSizeLabel(size.sizeLabel));
+  }
+
+  private isSelectableSizeLabel(sizeLabel: string | null | undefined): boolean {
+    const label = String(sizeLabel ?? '').trim();
+    if (!label) return false;
+
+    const normalized = label.toLowerCase().replace(/[\s_-]+/g, '');
+    const nonSizeLabels = new Set([
+      'na',
+      'n/a',
+      'notapplicable',
+      'nosize',
+      'none',
+      'null',
+      'default'
+    ]);
+
+    return !nonSizeLabels.has(normalized);
   }
 
   formatCurrency(value: number | null | undefined): string {

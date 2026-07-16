@@ -48,6 +48,9 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
   /** Currently checked subfilters mapped by fieldKey */
   selectedFiltersMap: Map<string, Set<string>> = new Map();
 
+  /** Filters intentionally excluded from the Tutor UI and outgoing requests. */
+  private readonly hiddenFilterFieldKeys = new Set(['tutorType']);
+
   /** Computed number of matching tutors for current selection. null = no interaction yet */
   resultCount: number | null = null;
 
@@ -90,7 +93,7 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
           // Pre-populate selected filters from initialFilters
           if (this.initialFilters?.filters) {
             Object.entries(this.initialFilters.filters).forEach(([fieldKey, values]) => {
-              if (values.length > 0) {
+              if (!this.hiddenFilterFieldKeys.has(fieldKey) && values.length > 0) {
                 this.selectedFiltersMap.set(fieldKey, new Set(values));
               }
             });
@@ -138,18 +141,13 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
 
     const commonFields = (startOrder: number): TutorCategoryField[] => [
       {
-        id: 900, fieldType: 'MULTI_SELECT', fieldKey: 'tutorType', fieldLabel: 'Tutor Type',
-        isRequired: false, isFilterable: true, displayOrder: startOrder, validationRules: null, createdAt: '',
-        options: [opt(9001, 'INDIVIDUAL', 'Individual Tutor', 1), opt(9002, 'ACADEMY', 'Academy', 2)]
-      },
-      {
         id: 901, fieldType: 'MULTI_SELECT', fieldKey: 'mode', fieldLabel: 'Mode',
-        isRequired: false, isFilterable: true, displayOrder: startOrder + 1, validationRules: null, createdAt: '',
+        isRequired: false, isFilterable: true, displayOrder: startOrder, validationRules: null, createdAt: '',
         options: [opt(9011, 'ONLINE', 'Online', 1), opt(9012, 'OFFLINE', 'Offline', 2)]
       },
       {
         id: 902, fieldType: 'MULTI_SELECT', fieldKey: 'location', fieldLabel: 'Location',
-        isRequired: false, isFilterable: true, displayOrder: startOrder + 2, validationRules: null, createdAt: '',
+        isRequired: false, isFilterable: true, displayOrder: startOrder + 1, validationRules: null, createdAt: '',
         options: [
           opt(9021, 'NEARBY', 'Nearby (5 km radius)', 1),
           opt(9022, 'CHENNAI', 'Chennai', 2),
@@ -204,16 +202,9 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
               opt(1050, 'SPOKEN_ENGLISH', 'Spoken English', 20)
             ]
           },
-          // Sidebar order from Figma: Class → Subjects → Tutor Type → Board → Mode → Location
-          // commonFields(3) injects TutorType(3), Mode(4), Location(5) — then Board at 6
-          {
-            id: 900, fieldType: 'MULTI_SELECT', fieldKey: 'tutorType', fieldLabel: 'Tutor Type',
-            isRequired: false, isFilterable: true, displayOrder: 3, validationRules: null, createdAt: '',
-            options: [opt(9001, 'INDIVIDUAL', 'Individual Tutor', 1), opt(9002, 'ACADEMY', 'Academy', 2)]
-          },
           {
             id: 103, fieldType: 'MULTI_SELECT', fieldKey: 'board', fieldLabel: 'Board',
-            isRequired: false, isFilterable: true, displayOrder: 4, validationRules: null, createdAt: '',
+            isRequired: false, isFilterable: true, displayOrder: 3, validationRules: null, createdAt: '',
             options: [
               opt(1061, 'CBSE', 'CBSE', 1), opt(1062, 'ICSE', 'ICSE', 2),
               opt(1063, 'IB', 'IB', 3), opt(1064, 'STATE_BOARD', 'State Board', 4),
@@ -222,12 +213,12 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
           },
           {
             id: 901, fieldType: 'MULTI_SELECT', fieldKey: 'mode', fieldLabel: 'Mode',
-            isRequired: false, isFilterable: true, displayOrder: 5, validationRules: null, createdAt: '',
+            isRequired: false, isFilterable: true, displayOrder: 4, validationRules: null, createdAt: '',
             options: [opt(9011, 'ONLINE', 'Online', 1), opt(9012, 'OFFLINE', 'Offline', 2)]
           },
           {
             id: 902, fieldType: 'MULTI_SELECT', fieldKey: 'location', fieldLabel: 'Location',
-            isRequired: false, isFilterable: true, displayOrder: 6, validationRules: null, createdAt: '',
+            isRequired: false, isFilterable: true, displayOrder: 5, validationRules: null, createdAt: '',
             options: [
               opt(9021, 'NEARBY', 'Nearby (5 km radius)', 1),
               opt(9022, 'CHENNAI', 'Chennai', 2),
@@ -464,7 +455,7 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
     if (category && category.fields.length > 0) {
       // Map API fields to sidebar groups
       this.sidebarGroups = category.fields
-        .filter(field => field.isFilterable)
+        .filter(field => field.isFilterable && !this.hiddenFilterFieldKeys.has(field.fieldKey))
         .sort((a, b) => a.displayOrder - b.displayOrder)
         .map(field => ({
           label: field.fieldLabel,
@@ -593,7 +584,7 @@ export class TutorAllFilterComponent implements OnInit, AfterViewInit, OnDestroy
     const filters: { [fieldKey: string]: string[] } = {};
 
     this.selectedFiltersMap.forEach((values, fieldKey) => {
-      if (values.size > 0) {
+      if (!this.hiddenFilterFieldKeys.has(fieldKey) && values.size > 0) {
         filters[fieldKey] = Array.from(values);
       }
     });

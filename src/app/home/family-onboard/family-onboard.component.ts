@@ -6,6 +6,8 @@ import { FamilyService } from '../../core/services/family.service';
 import { CoreService } from '../../core/services/core.service';
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
+import { CredentialSaverService } from '../../core/services/credential-saver.service';
+import { SignupCredentialStateService } from '../../core/services/signup-credential-state.service';
 import { BarcodeScanner, BarcodesScannedEvent } from '@capacitor-mlkit/barcode-scanning';
 import { AlertController, IonicModule } from '@ionic/angular';
 import { FaqItem, PROFILE_FAQS } from '../../core/components/user-profile/profile-facts/profile-facts.component';
@@ -73,7 +75,9 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         private core: CoreService,
         private alertController: AlertController,
         private authService: AuthService,
-        private userService: UserService
+        private userService: UserService,
+        private credentialSaverService: CredentialSaverService,
+        private signupCredentialState: SignupCredentialStateService
     ) {
         // Single code input form for join-family flows
         this.codeForm = this.fb.group({
@@ -531,7 +535,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         }
 
         const profileStr = sessionStorage.getItem('signup_profile');
-        const password = sessionStorage.getItem('signup_password');
+        const password = this.signupCredentialState.getPassword();
         if (profileStr && password) {
             this.registerAccount();
             return;
@@ -637,51 +641,30 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         if (this.isParentRegistered || (!this.showRegisterButton && this.familyCreated)) {
             // If parent is registered, perform auto-login before navigating
             if (this.isParentRegistered) {
-                const email = sessionStorage.getItem('login_email');
-                const phone = sessionStorage.getItem('login_phone');
-                const password = sessionStorage.getItem('login_password');
+                const loginCredentials = this.signupCredentialState.getPendingLogin();
 
-                const loginCredentials: any = { password: password };
-                if (email) {
-                    loginCredentials.email = email;
-                } else if (phone) {
-                    loginCredentials.phone = phone;
-                }
-
-                if (loginCredentials.email || loginCredentials.phone) {
+                if (loginCredentials?.password && (loginCredentials.email || loginCredentials.phone)) {
                     this.authService.login(loginCredentials).subscribe({
                         next: () => {
-                            // Clear signup session data after successful login
-                            try {
-                                sessionStorage.removeItem('signup_profile');
-                                sessionStorage.removeItem('signup_password');
-                                sessionStorage.removeItem('signup_role');
-                                sessionStorage.removeItem('requestedIdentifier');
-                                sessionStorage.removeItem('loginMode');
-                                sessionStorage.removeItem('countryCode');
-                                sessionStorage.removeItem('familyCode');
-                                sessionStorage.removeItem('familyName');
-                                sessionStorage.removeItem('familyCreator');
-                                sessionStorage.removeItem('login_email');
-                                sessionStorage.removeItem('login_phone');
-                                sessionStorage.removeItem('login_password');
-                            } catch (e) { }
-
-                            // Navigate to parent dashboard
-                            const route = this.authService.getDashboardRoute() || '/authed/parent-account';
-                            this.router.navigate([route]);
+                            const identifier = loginCredentials.email || loginCredentials.phone || '';
+                            void this.credentialSaverService.save({
+                                identifier,
+                                password: loginCredentials.password,
+                                mode: loginCredentials.email ? 'email' : 'phone'
+                            }).finally(() => {
+                                this.clearSignupSession();
+                                this.signupCredentialState.clear();
+                                const route = this.authService.getDashboardRoute() || '/authed/parent-account';
+                                this.router.navigate([route]);
+                            });
                         },
                         error: (loginErr) => {
                             console.error('Auto-login failed', loginErr);
-                            // If auto-login fails, still navigate to dashboard
-                            const route = this.authService.getDashboardRoute() || '/authed/parent-account';
-                            this.router.navigate([route]);
+                            this.router.navigate(['/home/login']);
                         }
                     });
                 } else {
-                    // No credentials, just navigate
-                    const route = this.authService.getDashboardRoute() || '/authed/parent-account';
-                    this.router.navigate([route]);
+                    this.router.navigate(['/home/login']);
                 }
             } else {
                 const route = this.authService.getDashboardRoute() || '/authed/parent-account';
@@ -691,7 +674,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         }
 
         const profileStr = sessionStorage.getItem('signup_profile');
-        const password = sessionStorage.getItem('signup_password');
+        const password = this.signupCredentialState.getPassword();
 
         if (profileStr && password) {
             this.registerAccount();
@@ -709,7 +692,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         }
 
         const profileStr = sessionStorage.getItem('signup_profile');
-        const password = sessionStorage.getItem('signup_password');
+        const password = this.signupCredentialState.getPassword();
 
         if (!profileStr || !password) {
             this.redirectToLogin();
@@ -771,12 +754,11 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
                     this.maxParentsErrorMessage = null; // Clear any previous error
                     this.core.triggerToasrt('Account registered successfully!');
                     
-                    // Store credentials for later auto-login
-                    try {
-                        if (payload.email) sessionStorage.setItem('login_email', payload.email);
-                        if (payload.phone) sessionStorage.setItem('login_phone', payload.phone);
-                        sessionStorage.setItem('login_password', password);
-                    } catch (e) { }
+                    this.signupCredentialState.setPendingLogin({
+                        ...(payload.email ? { email: payload.email } : {}),
+                        ...(payload.phone ? { phone: payload.phone } : {}),
+                        password
+                    });
 
                     this.isLoading = false;
                 },
@@ -880,7 +862,25 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     /**
      * Redirect to login
      */
+    private clearSignupSession(): void {
+        try {
+            [
+                'signup_profile',
+                'signup_role',
+                'requestedIdentifier',
+                'loginMode',
+                'countryCode',
+                'familyCode',
+                'familyName',
+                'familyCreator'
+            ].forEach(key => sessionStorage.removeItem(key));
+        } catch (error) {
+            console.warn('[FamilyOnboard] Unable to clear signup session metadata', error);
+        }
+    }
+
     private redirectToLogin(): void {
+        this.signupCredentialState.clear();
         this.router.navigate(['/home/login'], { queryParams: { role: this.userRole } });
     }
 

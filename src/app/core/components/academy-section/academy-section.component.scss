@@ -74,13 +74,18 @@ $card-bg: #FFFFFF;
         font-weight: 600;
         margin: 0px !important;
         color: $primary;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .meta {
         color: rgba(40, 37, 39, 0.70);
         font-size: 13px;
         font-weight: 500px;
-        // margin-bottom: 12px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .desc {
@@ -100,16 +105,19 @@ $card-bg: #FFFFFF;
 
       .level {
         margin-left: auto;
-        padding: 10px 12px;
-        border-radius: 26px;
+        flex-shrink: 0;
+        white-space: nowrap;
+        padding: 4px 10px;
+        border-radius: 20px;
         border: 1px solid #4CAF50;
         color: #282527;
-        font-weight: 600;
+        font-weight: 700;
         font-size: 10px;
+        line-height: 1.4;
 
-        &.slot-active   { border-color: #F0AD4E; color: #F0AD4E; }
-        &.slot-next_up  { border-color: #4CAF50; color: #4CAF50; }
-        &.slot-new      { border-color: #90214D; color: #90214D; }
+        &.slot-active   { border-color: #F0AD4E; color: #F0AD4E; background: rgba(240, 173, 78, 0.10); }
+        &.slot-next_up  { border-color: #4CAF50; color: #4CAF50; background: rgba(76, 175, 80, 0.10); }
+        &.slot-new      { border-color: #90214D; color: #90214D; background: rgba(144, 33, 77, 0.10); }
       }
     }
   }
@@ -129,10 +137,11 @@ $card-bg: #FFFFFF;
 
 .title-time-level {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  gap: 0px;
+  gap: 8px;
   width: 100%;
+  min-width: 0;
 }
 
 .title-n-time {
@@ -140,6 +149,8 @@ $card-bg: #FFFFFF;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .card-footer {

@@ -3,17 +3,25 @@
   display: block;
 }
 
+:host(.signup-navigator) .navigator-inner {
+  padding-inline: 0;
+}
+
 .navigator-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding:0px 16px 0px 6px;
 }
 
 .left-group {
   display: flex;
   align-items: center;
+  min-width: 0;
 }
 
 .right-group {
@@ -198,6 +206,7 @@
 .navigator-heading-wrap {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .navigator-subtext-row {
