@@ -13,7 +13,10 @@ $skel-grad: linear-gradient(90deg, rgba(255,255,255,0.45) 25%, rgba(255,255,255,
 }
 
 .analytics-content {
-  --background: #ffffff;
+  --background:
+    linear-gradient(90deg, rgba(139, 141, 203, 0.34) 0%, rgba(225, 82, 124, 0.22) 100%) top / 100% 50% no-repeat,
+    linear-gradient(90deg, rgba(246, 172, 114, 0.3) 0%, rgba(137, 179, 182, 0.34) 100%) bottom / 100% 50% no-repeat,
+    #ffffff;
 }
 
 .an-page {
@@ -21,9 +24,8 @@ $skel-grad: linear-gradient(90deg, rgba(255,255,255,0.45) 25%, rgba(255,255,255,
   padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(28px + env(safe-area-inset-bottom, 0px));
   border-radius: 16px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.5) 45%, rgba(255, 255, 255, 0.08) 100%),
-    linear-gradient(90deg, rgba(139, 141, 203, 0.34) 0%, rgba(225, 82, 124, 0.22) 100%) top / 100% 52% no-repeat,
-    linear-gradient(90deg, rgba(246, 172, 114, 0.3) 0%, rgba(137, 179, 182, 0.34) 100%) bottom / 100% 55% no-repeat,
+    linear-gradient(90deg, rgba(139, 141, 203, 0.34) 0%, rgba(225, 82, 124, 0.22) 100%) top / 100% 50% no-repeat,
+    linear-gradient(90deg, rgba(246, 172, 114, 0.3) 0%, rgba(137, 179, 182, 0.34) 100%) bottom / 100% 50% no-repeat,
     #ffffff;
 }
 
