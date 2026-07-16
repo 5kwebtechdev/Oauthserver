@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { HttpHeaders } from '@angular/common/http';
+import { ApiGender, toApiGender } from '../../app/core/models/gender.model';
 
 export interface LoginCredentials {
     email?: string;
@@ -118,8 +119,9 @@ export class AuthService {
      */
     register(payload: any) {
         const url = `${this.apiUrl}/auth/register`;
+        const requestPayload = { ...payload, gender: toApiGender(payload?.gender) };
         // default JSON response
-        return this.http.post<any>(url, payload);
+        return this.http.post<any>(url, requestPayload);
     }
 
     /**
@@ -129,6 +131,7 @@ export class AuthService {
      */
     editProfile(payload: EditProfilePayload): Observable<EditProfileResponse> {
         const url = `${this.apiUrl}/auth/edit-profile`;
+        const requestPayload = { ...payload, gender: toApiGender(payload.gender) };
 
         // Use the user's authentication token from localStorage
         const userToken = this.getToken();
@@ -138,7 +141,7 @@ export class AuthService {
             Authorization: `Bearer ${userToken}`
         });
 
-        return this.http.put<EditProfileResponse>(url, payload, { headers });
+        return this.http.put<EditProfileResponse>(url, requestPayload, { headers });
     }
 
     /**
@@ -161,12 +164,16 @@ export class AuthService {
      */
     updateProfileOnAPI(payload: any): Observable<any> {
         const url = `${this.apiUrl}/user/profile`;
+        const requestPayload = { ...payload };
+        if (Object.prototype.hasOwnProperty.call(requestPayload, 'gender')) {
+            requestPayload.gender = toApiGender(requestPayload.gender);
+        }
         const userToken = this.getToken();
         const headers = new HttpHeaders({
             'Content-Type': 'application/json',
             Authorization: `Bearer ${userToken}`
         });
-        return this.http.put<any>(url, payload, { headers, responseType: 'text' as 'json' });
+        return this.http.put<any>(url, requestPayload, { headers, responseType: 'text' as 'json' });
     }
 
     logout(): void {
@@ -424,7 +431,7 @@ export interface EditProfilePayload {
     avatarImageName?: string;       // Avatar image name (e.g., 'Avatar 8', 'Avatar 11')
     name: string;                   // Full name
     dateOfBirth: string;            // Format: YYYY-MM-DD
-    gender: string;                 // Gender (MALE/FEMALE/PREFER_NOT_TO_SAY)
+    gender: ApiGender;              // Gender (male/female/prefer_not_to_say)
     phone: string;                  // Phone number with country code
     email: string;                  // Email address
 }
