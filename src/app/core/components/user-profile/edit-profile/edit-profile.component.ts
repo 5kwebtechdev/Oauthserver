@@ -1049,14 +1049,14 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
   private normalizeProfileGender(value: unknown): ProfileGender | null {
     const normalized = toApiGender(value);
-    if (normalized === 'MALE') return 'Male';
-    if (normalized === 'FEMALE') return 'Female';
-    if (normalized === 'PREFER_NOT_TO_SAY') return 'PreferNotToSay';
+    if (normalized === 'male') return 'Male';
+    if (normalized === 'female') return 'Female';
+    if (normalized === 'prefer_not_to_say') return 'PreferNotToSay';
     return null;
   }
 
   private toApiGender(gender: ProfileGender): ApiGender {
-    return toApiGender(gender)!;
+    return toApiGender(gender);
   }
 
   private normalizeStoredGender(value: unknown): UserProfile['gender'] {

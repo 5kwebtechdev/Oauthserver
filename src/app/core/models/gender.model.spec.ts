@@ -2,10 +2,16 @@ import { toApiGender, toStoredGender } from './gender.model';
 
 describe('gender model', () => {
   it('maps every supported selection to the backend contract', () => {
-    expect(toApiGender('male')).toBe('MALE');
-    expect(toApiGender('Female')).toBe('FEMALE');
-    expect(toApiGender('prefer_not_to_say')).toBe('PREFER_NOT_TO_SAY');
-    expect(toApiGender('Prefer not to say')).toBe('PREFER_NOT_TO_SAY');
+    expect(toApiGender('male')).toBe('male');
+    expect(toApiGender('Female')).toBe('female');
+    expect(toApiGender('prefer_not_to_say')).toBe('prefer_not_to_say');
+    expect(toApiGender('Prefer not to say')).toBe('prefer_not_to_say');
+  });
+
+  it('uses the privacy-preserving value for blank or unsupported API input', () => {
+    expect(toApiGender('')).toBe('prefer_not_to_say');
+    expect(toApiGender(null)).toBe('prefer_not_to_say');
+    expect(toApiGender('other')).toBe('prefer_not_to_say');
   });
 
   it('keeps the privacy selection when storing API responses locally', () => {

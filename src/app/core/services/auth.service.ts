@@ -11,6 +11,7 @@ import { AnalyticsService } from './analytics.service';
 import { AuthSessionCleanupService } from './auth-session-cleanup.service';
 import { CrashlyticsService } from './crashlytics.service';
 import { PushNotificationService } from './push-notification.service';
+import { toApiGender } from '../models/gender.model';
 
 export interface LoginCredentials {
   email?: string;
@@ -393,18 +394,23 @@ export class AuthService {
 
   register(payload: any) {
     const url = `${this.apiUrl}/auth/register`;
-    return this.http.post<any>(url, payload).pipe(
+    const requestPayload = { ...payload, gender: toApiGender(payload?.gender) };
+    return this.http.post<any>(url, requestPayload).pipe(
       tap(() => this.analytics.logSignUp(payload.email ? 'email' : 'phone'))
     );
   }
 
   /**
-   * Sign in / register with Google OAuth profile data.
-   * Backend endpoint: POST /api/public/oauth2-login
+   * Sign in or create an account with a mobile OAuth profile.
+   * Backend endpoint: POST /v1/auth/oauth2/mobile-login
    */
   googleOAuthLogin(profile: any): Observable<AuthResponse> {
-    const url = `${this.apiUrl}/api/public/oauth2-login`;
-    return this.http.post<AuthResponse>(url, profile);
+    const url = `${this.apiUrl}/auth/oauth2/mobile-login`;
+    const requestProfile = { ...profile };
+    if (Object.prototype.hasOwnProperty.call(requestProfile, 'gender')) {
+      requestProfile.gender = toApiGender(requestProfile.gender);
+    }
+    return this.http.post<AuthResponse>(url, requestProfile);
   }
 
   completeGoogleOnboarding(payload: any): Observable<any> {

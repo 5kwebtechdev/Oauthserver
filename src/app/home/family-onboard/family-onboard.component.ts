@@ -15,6 +15,7 @@ import { SupermeNavigatorComponent } from '../../core/components/superme-navigat
 import { SupermeButtonComponent } from '../../core/components/superme-button/superme-button.component';
 import { ProfileFactsComponent } from '../../core/components/user-profile/profile-facts/profile-facts.component';
 import { QRCodeComponent } from 'angularx-qrcode';
+import { toApiGender } from '../../core/models/gender.model';
 
 type ViewMode = 'instructions-child' | 'instructions-parent' | 'join-family-child' | 'join-family-parent';
 type FamilyMode = 'create' | 'join';
@@ -708,7 +709,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
             const payload: any = {
                 name: profile.name || '',
-                gender: (profile.gender || '').toUpperCase(),
+                gender: toApiGender(profile.gender),
                 relationship: 'PARENT',
                 password: password,
                 familyCode: familyCode || '',
@@ -809,7 +810,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             name:         profile.name || sessionStorage.getItem('google_signup_name') || '',
             avatarUrl,
             role:         'PARENT',              // backend uses "role", not "relationship"
-            gender:       (profile.gender || '').toUpperCase(),
+            gender:       toApiGender(profile.gender),
             referralCode: sessionStorage.getItem('referralCode') || null
         };
 
