@@ -4,7 +4,7 @@
       <ng-container *ngFor="let t of tutors; let i = index">
       <!-- Ad banner after the 3rd tutor card -->
       <div *ngIf="i === 3" class="tutor-ad-wrap">
-        <ad-banner [screen]="tutorAdScreen"></ad-banner>
+        <ad-banner [screen]="resolvedAdScreen"></ad-banner>
       </div>
       <article class="tc" role="listitem">
 
@@ -12,8 +12,8 @@
         <div class="tc__top">
           <div class="tc__avatar-wrap" (click)="openAvatarViewer(t)" role="button" aria-label="View photo">
             <img class="tc__avatar"
-              [src]="t.avatar || 'assets/images/Avatar.png'"
-              [alt]="(t.name || 'Tutor') + ' photo'"
+              [src]="t.avatar || fallbackAvatar"
+              [alt]="(t.name || itemLabel) + ' photo'"
               (error)="onAvatarError($event)" />
             <div class="tc__avatar-zoom">
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -23,7 +23,7 @@
           </div>
 
           <div class="tc__info">
-            <h3 class="tc__name">{{ t.name || 'Unknown Tutor' }}</h3>
+            <h3 class="tc__name">{{ t.name || ('Unknown ' + itemLabel) }}</h3>
             <p class="tc__role">{{ t.description || t.qualification || 'Subject Expert' }}</p>
             <p class="tc__levels">{{ formatLevelsDisplay(t.levels) || 'All Levels' }}</p>
           </div>
@@ -47,10 +47,10 @@
         <div class="tc__bottom">
           <div class="tc__fees">
             <span class="tc__price">₹ {{ t.hourlyRate || 0 }}</span>
-            <span class="tc__per">/hr</span>
+            <span class="tc__per">{{ t.feeLabel || '/hr' }}</span>
           </div>
           <superme-button type="columbian-blue" small [text]="'View Profile'" (click)="onViewProfile(t)"
-            [attr.aria-label]="'View profile of ' + (t.name || 'Tutor')"></superme-button>
+            [attr.aria-label]="'View profile of ' + (t.name || itemLabel)"></superme-button>
         </div>
       </article>
       </ng-container>

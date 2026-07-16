@@ -8,12 +8,13 @@ import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
 import { SupermeSpeechBubbleComponent } from '../../superme-speech-bubble/superme-speech-bubble.component';
 import { SupermePopupComponent } from '../../superme-popup/superme-popup.component';
 import { FooterComponent } from '../../footer/footer.component';
-import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
+import { AdScreen } from '../../ad-banner/ad-banner.component';
 import { AuthService } from '../../../services/auth.service';
 import { CustomToastService } from '../../../services/custom-toast.service';
 import { environment } from '../../../../../environments/environment';
+import { TutorListComponent } from '../../tutor-section/tutor-list/tutor-list.component';
 import { TutorProfileComponent } from '../../tutor-section/tutor-profile/tutor-profile.component';
-import { Tutor } from '../../../models/tutor.model';
+import { Tutor, TutorListItem } from '../../../models/tutor.model';
 
 type AcademySort = 'recent' | 'alphabets' | 'rating' | 'price';
 
@@ -49,7 +50,7 @@ interface Academy {
     SupermeSpeechBubbleComponent,
     SupermePopupComponent,
     FooterComponent,
-    AdBannerComponent
+    TutorListComponent
   ],
   templateUrl: './academies-list.component.html',
   styleUrls: ['./academies-list.component.scss']
@@ -58,6 +59,7 @@ export class AcademiesListComponent implements OnInit {
   readonly adScreen: AdScreen = 'EDUHUB';
   readonly academyPlaceholderImage = 'assets/Images-Transparent/Academies.png';
   academies: Academy[] = [];
+  academyListItems: TutorListItem[] = [];
   totalAcademies = 0;
   isLoading = false;
   hasError = false;
@@ -112,6 +114,7 @@ export class AcademiesListComponent implements OnInit {
           ? res
           : (res?.data?.tutors ?? res?.tutors ?? res?.content ?? []);
         this.academies = (Array.isArray(raw) ? raw : []).map((a: any) => this.mapAcademy(a));
+        this.academyListItems = this.academies.map(academy => this.toAcademyListItem(academy));
         this.totalAcademies = Number(res?.data?.totalElements ?? this.academies.length);
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -248,6 +251,36 @@ export class AcademiesListComponent implements OnInit {
     );
   }
 
+  get filteredAcademyListItems(): TutorListItem[] {
+    const visibleIds = new Set(this.filteredAcademies.map(academy => academy.id));
+    return this.academyListItems.filter(item => visibleIds.has(item.id));
+  }
+
+  private toAcademyListItem(academy: Academy): TutorListItem {
+    return {
+      id: academy.id,
+      name: academy.name,
+      avatar: academy.image || this.academyPlaceholderImage,
+      description: academy.subjects.length ? academy.subjects.join(', ') : (academy.headline || 'Academy'),
+      rating: academy.rating,
+      champsLiked: Number(academy.profile.champsLiked || 0),
+      likedByUser: academy.liked,
+      experience: academy.experience,
+      qualification: academy.headline || 'Academy',
+      hourlyRate: academy.hourlyRate,
+      feeLabel: academy.feeLabel || '/hr',
+      location: academy.location,
+      subjects: academy.subjects,
+      levels: academy.classes,
+      availability: academy.profile.availability || [],
+      startTime: academy.profile.startTime || '',
+      endTime: academy.profile.endTime || '',
+      contactModes: academy.profile.contactModes || [],
+      createdAt: academy.profile.createdAt || '',
+      totalStudents: academy.totalStudents
+    };
+  }
+
   onSearch(): void { /* client-side filter via filteredAcademies */ }
 
   clearSearch(): void { this.searchQuery = ''; }
@@ -271,16 +304,16 @@ export class AcademiesListComponent implements OnInit {
     this.closeReferModal();
   }
 
-  openAllFilters(): void {
-    this.toastService.show('Filters are coming soon.', 'info');
-  }
-
   toggleSortMenu(): void { this.isSortOpen = !this.isSortOpen; }
 
   selectSort(option: AcademySort): void {
     this.currentSort = option;
     this.isSortOpen = false;
     this.academies = this.sortAcademies([...this.academies], option);
+    const order = new Map(this.academies.map((academy, index) => [academy.id, index]));
+    this.academyListItems = [...this.academyListItems].sort(
+      (a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0)
+    );
     this.cdr.detectChanges();
   }
 
@@ -302,30 +335,16 @@ export class AcademiesListComponent implements OnInit {
     return this.sortOptions.find(o => o.key === this.currentSort)?.label ?? 'Recently added';
   }
 
-  toggleLike(a: Academy, event: Event): void {
-    event.stopPropagation();
-    a.liked = !a.liked;
-  }
+  async onViewProfile(item: TutorListItem): Promise<void> {
+    const academy = this.academies.find(candidate => candidate.id === item.id);
+    if (!academy) return;
 
-  async onViewProfile(a: Academy, event?: Event): Promise<void> {
-    event?.stopPropagation();
     const modal = await this.modalCtrl.create({
       component: TutorProfileComponent,
-      componentProps: { tutor: a.profile },
+      componentProps: { tutor: academy.profile },
       cssClass: 'tutor-profile-modal'
     });
     await modal.present();
-  }
-
-  onAcademyImageError(event: Event): void {
-    const imageElement = event.target as HTMLImageElement | null;
-    if (!imageElement || imageElement.dataset['fallbackApplied'] === 'true') {
-      return;
-    }
-
-    imageElement.dataset['fallbackApplied'] = 'true';
-    imageElement.src = this.academyPlaceholderImage;
-    imageElement.classList.add('ac-card__image--placeholder');
   }
 
   @HostListener('document:click')

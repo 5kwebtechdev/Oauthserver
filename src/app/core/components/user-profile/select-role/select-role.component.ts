@@ -82,13 +82,25 @@ import { QRCodeComponent } from 'angularx-qrcode';
 		<superme-navigator heading="Instructions" backIcon="arrowSvg" (back)="prevStep()"></superme-navigator>
 
 		<div class="container" style="max-width:420px; margin: 16px auto;">
-			<instructio-list [items]="selectedRole === 'child' ? childRoleInstructions : roleSelectionInstructions" type="role-selection-instruction"></instructio-list>
+			<instructio-list
+				[heading]="selectedRole === 'child' ? 'Before Switching from Self to Child' : 'Before Switching from Self to Parent'"
+				[items]="selectedRole === 'child' ? childRoleInstructions : roleSelectionInstructions"
+				type="role-selection-instruction">
+			</instructio-list>
 		</div>
 
 		<profile-facts [faqs]="selectedRole === 'child' ? profileChildFaqs : profileParentFaqs"></profile-facts>
 
+		<div class="role-switch-consent">
+			<ion-checkbox
+				[checked]="instructionConsentChecked"
+				(ionChange)="instructionConsentChecked = $any($event).detail.checked === true">
+			</ion-checkbox>
+			<p>I have read and understood that switching roles affects account linkage and family access as described above.</p>
+		</div>
+
 		<div style="margin-top:20px; text-align:center;">
-			<superme-button type="green" size="full" text="Next" (click)="save()"></superme-button>
+			<superme-button type="green" size="full" text="Next" [disabled]="!instructionConsentChecked" (click)="save()"></superme-button>
 		</div>
 	</div>
 
@@ -612,12 +624,42 @@ font-weight: 600;
     background: #f0f8f4;
   }
 }
+
+.role-switch-consent {
+  max-width: 420px;
+  margin: 18px auto 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  ion-checkbox {
+    --size: 16px;
+    --checkbox-background-checked: #4CAF50;
+    margin-top: 2px;
+    flex: 0 0 auto;
+  }
+
+  ion-checkbox::part(container) {
+    border-radius: 3px;
+    border: 2px solid rgba(40, 37, 39, 0.7);
+  }
+
+  p {
+    margin: 0;
+    color: #282527;
+    font-family: Nunito, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+}
 `]
 })
 export class RoleSelectComponent implements OnDestroy {
   // currently selected role: 'child' | 'parent' | 'self' | null
   selectedRole: string | null = null;
   currentStep = 1;
+  instructionConsentChecked = false;
 
   // User data and account type
   userAccountType: 'child' | 'parent' | 'self' | null = null;
@@ -625,19 +667,20 @@ export class RoleSelectComponent implements OnDestroy {
   userDob: string | null = null;
 
   roleSelectionInstructions: string[] = [
-    'Create a new family or join an existing one to continue as a Parent.',
+    'Switching from Self to Parent lets this account create a family or join an existing family as a parent.',
     'If you create a family, you will receive a family code and QR code to share with your child.',
-    'If you join a family, enter the family code shared by the family creator.',
-    'Once connected, you can support your child with progress tracking, routines, approvals, and rewards.'
+    'If you join an existing family, use the family code shared by the family creator.',
+    'Parent mode gives access to family tools such as child progress, approvals, routines, tasks, and rewards.',
+    'If you are the family creator, you cannot switch this same account back to Self mode directly. To use Self mode separately, create another account with different login details.'
   ];
 
   // Instructions shown when a child selects the role
   childRoleInstructions: string[] = [
-    'Choose Child when you want to connect your account with a parent or guardian.',
-    'Ask your parent for their family code or scan the QR code from their app.',
-    'Enter the code on the next screen to send your join request.',
-    'After joining, your parent can view family-linked progress and help you with routines and rewards.',
-    'Your personal account, notes, coins, pet, and learning progress stay safe.'
+    'Switching from Self to Child connects this account to a family created by your parent or guardian.',
+    'You will need the family code or QR code from your parent to complete the switch.',
+    'After linking, your parent can see family activity such as habits, tasks, routines, streaks, progress, and rewards.',
+    'Your personal space stays with you. Notes, coins, pet, and learning progress remain attached to this account.',
+    'If you leave the family or are removed, this account returns to Self mode. Family-linked access stops until you join a family again.'
   ];
 
   faqsForSelectRole = [
@@ -893,6 +936,7 @@ export class RoleSelectComponent implements OnDestroy {
         next: async (response) => {
           this.isSubmitting = false;
           this.applyRoleConversionResponse(response, relationship, familyCode);
+          this.queueFamilyConnectedAcknowledgment(relationship);
           await this.showToast("You're connected to your family", 'success');
 
           const target = relationship === 'PARENT' ? '/authed/parent-account' : '/authed/user-dashboard';
@@ -903,6 +947,7 @@ export class RoleSelectComponent implements OnDestroy {
 
           if (error.status === 200) {
             this.applyRoleConversionResponse({}, relationship, familyCode);
+            this.queueFamilyConnectedAcknowledgment(relationship);
             const target = relationship === 'PARENT' ? '/authed/parent-account' : '/authed/user-dashboard';
             this.router.navigate([target], { replaceUrl: true });
             return;
@@ -978,6 +1023,15 @@ export class RoleSelectComponent implements OnDestroy {
     };
 
     this.authService.setUserData(updatedUser);
+  }
+
+  private queueFamilyConnectedAcknowledgment(relationship: 'CHILD' | 'PARENT'): void {
+    try {
+      const displayRole = relationship === 'PARENT' ? 'Parent' : 'Child';
+      sessionStorage.setItem('family_connected_ack', displayRole);
+    } catch {
+      // Storage can be unavailable in restricted browser contexts; role switching still succeeds.
+    }
   }
 
   private readStoredUserData(): any {
@@ -1064,23 +1118,47 @@ export class RoleSelectComponent implements OnDestroy {
   }
 
   /**
-   * Load user data from localStorage to determine account type and age
+   * Ionic can keep this route alive between visits, so refresh the current role
+   * whenever the page is shown again.
+   */
+  ionViewWillEnter(): void {
+    this.loadUserData();
+  }
+
+  /**
+   * Load the current authenticated profile to determine account type and age.
    */
   private loadUserData(): void {
     try {
-      const userData = localStorage.getItem('user_data');
-      if (userData) {
-        const parsedData = JSON.parse(userData);
-        this.userAccountType = (parsedData.relationship as 'CHILD' | 'PARENT' | 'SELF')?.toLowerCase() as any;
-        this.userDob = parsedData.dateOfBirth;
-        if (this.userDob) {
-          this.userAge = this.calculateAge(this.userDob);
-          console.log('[RoleSelect] User age calculated:', this.userAge);
-        }
+      const userData = this.authService.getUserData() || this.readStoredUserData();
+      this.userAccountType = this.normalizeAccountType(userData?.relationship ?? userData?.role);
+
+      const rawAge = Number(userData?.age ?? userData?.userAge);
+      this.userDob = userData?.dateOfBirth || userData?.dob || userData?.birthDate || null;
+      this.userAge = Number.isFinite(rawAge) && rawAge > 0
+        ? Math.floor(rawAge)
+        : this.userDob
+          ? this.calculateAge(this.userDob)
+          : null;
+
+      if (
+        (this.selectedRole === 'parent' && !this.shouldShowParentRole()) ||
+        (this.selectedRole === 'child' && !this.shouldShowChildRole())
+      ) {
+        this.selectedRole = null;
       }
     } catch (e) {
       console.error('[RoleSelect] Error loading user data:', e);
     }
+  }
+
+  private normalizeAccountType(value: unknown): 'child' | 'parent' | 'self' | null {
+    const normalized = String(value || '').trim().toLowerCase();
+    if (normalized === 'co-parent' || normalized === 'co_parent') return 'parent';
+    if (normalized === 'child' || normalized === 'parent' || normalized === 'self') {
+      return normalized;
+    }
+    return null;
   }
 
   /**
@@ -1100,14 +1178,13 @@ export class RoleSelectComponent implements OnDestroy {
   }
 
   /**
-   * Check if child role should be shown based on age
-   * For 'self' users: show child if under 18
-   * For other account types: always show child
+   * Never offer the role the account already has. Self accounts retain the
+   * existing age-based role eligibility rules.
    */
   shouldShowChildRole(): boolean {
-    if (this.userAccountType !== 'self') {
-      return true;
-    }
+    if (this.userAccountType === 'child') return false;
+    if (this.userAccountType === 'parent') return true;
+    if (this.userAccountType !== 'self') return true;
     if (this.userAge === null) {
       return true; // Show if age not available
     }
@@ -1115,14 +1192,13 @@ export class RoleSelectComponent implements OnDestroy {
   }
 
   /**
-   * Check if parent role should be shown based on age
-   * For 'self' users: show parent if 24 or above
-   * For other account types: always show parent
+   * Never offer the role the account already has. Self accounts retain the
+   * existing age-based role eligibility rules.
    */
   shouldShowParentRole(): boolean {
-    if (this.userAccountType !== 'self') {
-      return true;
-    }
+    if (this.userAccountType === 'parent') return false;
+    if (this.userAccountType === 'child') return true;
+    if (this.userAccountType !== 'self') return true;
     if (this.userAge === null) {
       return true; // Show if age not available
     }
@@ -1131,6 +1207,7 @@ export class RoleSelectComponent implements OnDestroy {
 
   selectRole(role: string) {
     this.selectedRole = role;
+    this.instructionConsentChecked = false;
     // If user picks child role, they must join a family (cannot create)
     if (role === 'child') {
       this.selectedFamilyAction = 'join';
@@ -1158,11 +1235,13 @@ export class RoleSelectComponent implements OnDestroy {
     if (this.currentStep === 1) {
       if (!this.selectedRole) return; // guard
       console.log('Selected role:', this.selectedRole);
+      this.instructionConsentChecked = false;
       this.nextStep();
       return;
     }
 
     if (this.currentStep === 2) {
+      if (!this.instructionConsentChecked) return;
       this.nextStep();
       return;
     }
@@ -1178,7 +1257,12 @@ export class RoleSelectComponent implements OnDestroy {
   }
 
   prevStep() {
-    if (this.currentStep > 1) this.currentStep -= 1;
+    if (this.currentStep > 1) {
+      this.currentStep -= 1;
+      if (this.currentStep === 1) {
+        this.instructionConsentChecked = false;
+      }
+    }
   }
 
   finish() {
@@ -1194,6 +1278,7 @@ export class RoleSelectComponent implements OnDestroy {
   }
 
   async beginParentAccount(): Promise<void> {
+    this.queueFamilyConnectedAcknowledgment('PARENT');
     await this.router.navigate(['/authed/parent-account'], { replaceUrl: true });
   }
 

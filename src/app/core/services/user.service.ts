@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { StoredGender } from '../models/gender.model';
 
 export interface UserProfile {
   userId?: number;
@@ -10,7 +11,7 @@ export interface UserProfile {
   phone?: string;
   age?: number;
   dob?: string;
-  gender?: 'male' | 'female';
+  gender?: StoredGender;
   avatarUrl?: string;
   avatarName?: string;
   pet?: string;
@@ -207,9 +208,14 @@ export class UserService {
    * Get avatar URL from avatar selection number
    */
   private getAvatarUrlFromSelection(avatarNumber: number, gender?: string): string {
-    // Map avatar numbers to actual image paths
-    // This should match your avatar selection in signup
-    const genderPrefix = gender === 'male' ? 'Male' : 'Female';
-    return `/assets/Images-Transparent/Image-Onboarding-Avatar-${genderPrefix}${avatarNumber}.png`;
+    const parsedAvatarNumber = Number(avatarNumber);
+    if (!Number.isInteger(parsedAvatarNumber) || parsedAvatarNumber < 1 || parsedAvatarNumber > 12) {
+      return '/assets/app-assets/Default-avatar-home.svg';
+    }
+
+    const isFemaleAvatar = parsedAvatarNumber <= 6;
+    const avatarIndex = isFemaleAvatar ? parsedAvatarNumber : parsedAvatarNumber - 6;
+    const genderPrefix = isFemaleAvatar ? 'Female' : 'Male';
+    return `/assets/Images-Transparent/Image-Onboarding-Avatar-${genderPrefix}${avatarIndex}.png`;
   }
 }

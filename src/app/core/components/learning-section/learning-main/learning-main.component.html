@@ -7,6 +7,7 @@
         <div class="card-content">
           <h3 class="card-title">Challenge Your Mind: Play, Solve, Win!</h3>
         </div>
+
         <div class="search-row">
           <div class="search-input">
             <span class="search-icon" aria-hidden="true">
@@ -17,8 +18,8 @@
                   fill="#6B656A" />
               </svg>
             </span>
-                 <input type="text" placeholder="Looking for a quiz?" aria-label="Search learnings"
-                   [(ngModel)]="searchKeyword" (input)="onSearchInput()" />
+            <input type="text" placeholder="Crack these and your brain gets stronger. Let's go!"
+              aria-label="Search learning categories" [(ngModel)]="searchKeyword" (input)="onSearchInput()" />
             <span class="search-divider" aria-hidden="true"></span>
             <button type="button" class="mic" [class.listening]="isListening"
               [attr.aria-label]="isListening ? 'Stop voice search' : 'Start voice search'"
@@ -33,11 +34,7 @@
           </div>
         </div>
 
-        <div class="cheer-replacement" style="display:flex;gap:12px;justify-content: flex-end;align-items: center;padding-left: 16px;">
-          <app-speech-bubble class="cheer-bubble" style="text-align:left;" message="I’m cheering for you! Let’s get things done!" type="talking" arrowSide="right"
-            [arrowSize]="14" arrowOffset="20px" color="#ffffff" textColor="#282527" role="status" aria-live="polite">
-          </app-speech-bubble>
-
+        <div class="cheer-replacement">
           <div class="digital-pet" aria-hidden="false">
             <superme-pet pet="panda" [age]="1" mood="happy" sizePreset="96"></superme-pet>
           </div>
@@ -46,150 +43,84 @@
     </div>
 
     <div class="categories">
-      <div class="for-you-label">
-        <button class="category for-you" type="button" (click)="selectCategory('for-you'); openForYou()"
-          [class.selected]="selectedCategory === 'for-you'" aria-label="Open For You">
+      <ng-container *ngFor="let tab of categoryTabs; let isLast = last">
+        <button class="category" [ngClass]="tab.id" type="button" (click)="selectCategory(tab.id)"
+          [class.selected]="selectedCategory === tab.id" [attr.aria-label]="tab.ariaLabel">
           <div class="icon" aria-hidden="true">
-            <img src="assets/Icons-Neutral/Icon-Content-ForYou.png" alt="For You" />
+            <img [src]="tab.icon" [alt]="tab.label" />
           </div>
-          <div class="label">For You</div>
+          <div class="label">{{ tab.label }}</div>
         </button>
-      </div>
-      <div class="sep" aria-hidden="true"></div>
-
-      <button class="category puzzles" type="button" (click)="selectCategory('puzzles'); openPuzzles()"
-        [class.selected]="selectedCategory === 'puzzles'" aria-label="Open Puzzles">
-        <div class="icon" aria-hidden="true">
-          <img src="assets/Icons-Neutral/Icon-Content-Puzzle.png" alt="Puzzles" />
-        </div>
-        <div class="label">Puzzles</div>
-      </button>
-      <div class="sep" aria-hidden="true"></div>
-
-      <button class="category quizzes" type="button" (click)="selectCategory('quizzes'); openQuizzes()"
-        [class.selected]="selectedCategory === 'quizzes'" aria-label="Open Quizzes">
-        <div class="icon" aria-hidden="true">
-          <img src="assets/Icons-Neutral/Icon-Content-Quiz.png" alt="Quizzes" />
-        </div>
-        <div class="label">Quizzes</div>
-      </button>
-      <div class="sep" aria-hidden="true"></div>
-      <button class="category articles" type="button" (click)="selectCategory('articles'); openArticles()"
-        [class.selected]="selectedCategory === 'articles'" aria-label="Open Articles">
-        <div class="icon" aria-hidden="true">
-          <img src="assets/Icons-Neutral/Icon-Content-Articles.png" alt="Articles" />
-        </div>
-        <div class="label">Articles</div>
-      </button>
+        <div class="sep" *ngIf="!isLast" aria-hidden="true"></div>
+      </ng-container>
     </div>
+
     <div class="learning-content">
-      <!-- Loading State -->
-      <div *ngIf="activeTabLoading" class="loading-container">
+      <div *ngIf="activeTabLoading || categoryContentLoading" class="loading-container">
         <ion-spinner name="crescent"></ion-spinner>
-        <p>Loading content...</p>
+        <p>{{ categoryContentLoading ? 'Loading content...' : 'Loading categories...' }}</p>
       </div>
 
-      <!-- Search Results -->
-      <ng-container *ngIf="isSearching && !activeTabLoading">
-        <div class="cards-section">
-          <div *ngIf="searchItems.length > 0; else emptySearch" class="cards-grid">
-            <ng-container *ngFor="let card of searchItems; let i = index">
-              <learning-challenge-card *ngIf="card.type === 'quiz' || card.type === 'puzzle'" [item]="card" [index]="i"
-                (cardClick)="onCardClick($event)">
-              </learning-challenge-card>
-              <learning-article-card *ngIf="card.type === 'article'" [item]="card" [index]="i"
-                (cardClick)="onCardClick($event)">
-              </learning-article-card>
-            </ng-container>
+      <ng-container *ngIf="!activeTabLoading && !categoryContentLoading">
+        <ng-container *ngIf="selectedCategoryItem as activeCategory; else categoryGrid">
+          <div class="selected-category-header">
+            <button type="button" class="category-back-button" (click)="closeCategoryContent()"
+              aria-label="Back to categories" title="Back to categories">
+              <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+            </button>
+            <div class="selected-category-heading">
+              <h2>{{ getCategoryTitle(activeCategory) }}</h2>
+              <p>{{ getCategoryCountText(activeCategory) }}</p>
+            </div>
           </div>
-          <ng-template #emptySearch>
-            <empty-state
-              [imageSrc]="'assets/Images-Pet/Panda-Age1-Curious.png'"
-              imageAlt="Curious Panda"
-              leadText="No Results Found"
-              subText="Try a different search term or browse by category."
-              buttonText="">
-            </empty-state>
-          </ng-template>
-        </div>
-      </ng-container>
 
-      <!-- For You Tab -->
-      <ng-container *ngIf="!isSearching && !loadingForYou && selectedCategory === 'for-you'">
-        <div class="cards-section">
-          <div *ngIf="forYouItems.length > 0; else emptyState" class="cards-grid">
-            <ng-container *ngFor="let card of forYouItems; let i = index">
-              <learning-challenge-card *ngIf="card.type === 'quiz' || card.type === 'puzzle'" [item]="card" [index]="i"
-                (cardClick)="onCardClick($event)">
-              </learning-challenge-card>
-              <learning-article-card *ngIf="card.type === 'article'" [item]="card" [index]="i"
-                (cardClick)="onCardClick($event)">
-              </learning-article-card>
-              <!-- Ad banner injected after the 2nd card — For You tab → ROCKS -->
-              <div *ngIf="i === 1" class="learning-ad-wrap">
-                <ad-banner screen="ROCKS"></ad-banner>
-              </div>
-            </ng-container>
+          <div class="cards-section">
+            <div *ngIf="visibleCategoryContent.length > 0; else emptyContentState" class="cards-grid">
+              <ng-container *ngFor="let card of visibleCategoryContent; let i = index">
+                <learning-challenge-card *ngIf="card.type === 'quiz' || card.type === 'puzzle'"
+                  [item]="card" [index]="i" source="/authed/content">
+                </learning-challenge-card>
+                <learning-article-card *ngIf="card.type === 'article'" [item]="card" [index]="i">
+                </learning-article-card>
+              </ng-container>
+            </div>
+
+            <ng-template #emptyContentState>
+              <empty-state [imageSrc]="'assets/Images-Pet/Panda-Age1-Curious.png'" imageAlt="Curious Panda"
+                [leadText]="isSearching ? 'No Results Found' : 'Fresh Content Coming Soon!'"
+                [subText]="isSearching ? 'Try a different search term.' : 'Nothing is available in this category yet. Check back soon.'"
+                buttonText="">
+              </empty-state>
+            </ng-template>
           </div>
-        </div>
-      </ng-container>
+        </ng-container>
 
-      <!-- Puzzles Tab -->
-      <ng-container *ngIf="!isSearching && !loadingPuzzles && selectedCategory === 'puzzles'">
-        <div class="cards-section">
-          <div *ngIf="puzzleItems.length > 0; else emptyState" class="cards-grid">
-            <ng-container *ngFor="let card of puzzleItems; let i = index">
-              <learning-challenge-card [item]="card" [index]="i" (cardClick)="onCardClick($event)">
-              </learning-challenge-card>
-              <div *ngIf="i === 1" class="learning-ad-wrap">
-                <ad-banner screen="ACCELERARY"></ad-banner>
-              </div>
-            </ng-container>
+        <ng-template #categoryGrid>
+          <div class="cards-section">
+            <div *ngIf="visibleCategoryCards.length > 0; else emptyCategoryState" class="category-cards-grid">
+              <button class="learning-category-card" type="button"
+                *ngFor="let category of visibleCategoryCards; let i = index" (click)="onCategoryCardClick(category)">
+                <span class="category-card-title">{{ getCategoryTitle(category) }}</span>
+                <span class="category-card-count">{{ getCategoryCountText(category) }}</span>
+                <span class="category-card-media"
+                  [class.category-card-media--photo]="isPhotographicCategoryImage(category)">
+                  <app-img [src]="getCategoryImage(category)" [fallback]="getCategoryFallbackImage()"
+                    [alt]="getCategoryTitle(category)" [objectFit]="getCategoryImageFit(category)">
+                  </app-img>
+                </span>
+              </button>
+            </div>
+
+            <ng-template #emptyCategoryState>
+              <empty-state [imageSrc]="'assets/Images-Pet/Panda-Age1-Curious.png'" imageAlt="Curious Panda"
+                [leadText]="isSearching ? 'No Results Found' : 'Fresh Content Coming Soon!'"
+                [subText]="isSearching ? 'Try a different search term or browse another tab.' : 'Nothing is available in this category yet. Check back soon.'"
+                buttonText="">
+              </empty-state>
+            </ng-template>
           </div>
-        </div>
+        </ng-template>
       </ng-container>
-
-      <!-- Quizzes Tab -->
-      <ng-container *ngIf="!isSearching && !loadingQuizzes && selectedCategory === 'quizzes'">
-        <div class="cards-section">
-          <div *ngIf="quizItems.length > 0; else emptyState" class="cards-grid">
-            <ng-container *ngFor="let card of quizItems; let i = index">
-              <learning-challenge-card [item]="card" [index]="i" (cardClick)="onCardClick($event)">
-              </learning-challenge-card>
-              <div *ngIf="i === 1" class="learning-ad-wrap">
-                <ad-banner screen="TUTOR"></ad-banner>
-              </div>
-            </ng-container>
-          </div>
-        </div>
-      </ng-container>
-
-      <!-- Articles Tab -->
-      <ng-container *ngIf="!isSearching && !loadingArticles && selectedCategory === 'articles'">
-        <div class="cards-section">
-          <div *ngIf="articleItems.length > 0; else emptyState" class="cards-grid">
-            <ng-container *ngFor="let card of articleItems; let i = index">
-              <learning-article-card [item]="card" [index]="i" (cardClick)="onCardClick($event)">
-              </learning-article-card>
-              <!-- Articles are tall cards — show banner after the 1st card -->
-              <div *ngIf="i === 0" class="learning-ad-wrap">
-                <ad-banner screen="ARTICLES"></ad-banner>
-              </div>
-            </ng-container>
-          </div>
-        </div>
-      </ng-container>
-
-      <!-- Empty State Template -->
-      <ng-template #emptyState>
-        <empty-state
-          [imageSrc]="'assets/Images-Pet/Panda-Age1-Curious.png'"
-          imageAlt="Curious Panda"
-          leadText="Fresh Content Coming Soon!"
-          subText="Nothing recently added yet, but check back soon — new things will start appearing here once they're live!"
-          buttonText="">
-        </empty-state>
-      </ng-template>
     </div>
   </div>
   <app-footer></app-footer>

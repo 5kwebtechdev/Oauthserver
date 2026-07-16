@@ -1,4 +1,4 @@
-<ion-app>
+<ion-app [class.app-update-blocked]="isAppUpdateBlocked">
   <div class="monitoring-banner" *ngIf="isMonitoringChild">
     <span>Viewing as: <strong>{{ monitoringChildName }}</strong></span>
     <button type="button" (click)="switchBackFromChildView()">Switch Back</button>
@@ -10,6 +10,11 @@
 
   <app-superme-loading [visible]="loading"></app-superme-loading>
   <app-network-issue></app-network-issue>
+
+  <div *ngIf="isUpdateCheckPending" class="app-update-check-gate" role="status"
+    aria-label="Checking app version">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
 
   <!-- Global Toast (z-indexed above loader) -->
   <div class="mb-toast" *ngIf="(toast$ | async) as toast" [ngClass]="{'mb-toast--success': toast.type === 'success', 'mb-toast--error': toast.type === 'error'}" [style.display]="toast.visible ? 'flex' : 'none'" role="status" aria-live="polite">
@@ -64,6 +69,6 @@
   </div>
 
   <!-- Force Update Popup - blocks the app until the user updates -->
-  <app-superme-popup [config]="forceUpdateConfig" [isVisible]="showForceUpdatePopup"
+  <app-superme-popup class="force-update-popup" [config]="forceUpdateConfig" [isVisible]="showForceUpdatePopup"
     (primaryAction)="onUpdateNowClick()"></app-superme-popup>
 </ion-app>

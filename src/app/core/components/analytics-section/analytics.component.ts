@@ -1,16 +1,21 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { FooterComponent } from '../footer/footer.component';
 import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../../environments/environment';
 
 interface AnalyticStat {
   label: string;
-  value: string;
+  value: string | number | null;
   subtitle: string;
-  icon: string;
+  icon?: string | null;
+  iconUrl?: string | null;
+  iconURL?: string | null;
+  image?: string | null;
+  imageUrl?: string | null;
+  thumbnailUrl?: string | null;
+  categoryIconUrl?: string | null;
   color: string;
   completionRate: number | null;
 }
@@ -27,7 +32,7 @@ interface AnalyticsOverview {
 @Component({
   selector: 'app-analytics',
   standalone: true,
-  imports: [CommonModule, IonicModule, FooterComponent],
+  imports: [CommonModule, IonicModule],
   templateUrl: './analytics.component.html',
   styleUrls: ['./analytics.component.scss'],
 })
@@ -36,7 +41,28 @@ export class AnalyticsComponent implements OnInit {
   error = false;
   data: AnalyticsOverview | null = null;
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
+  private readonly iconFallbacks: Record<string, string> = {
+    'arrow-up': 'assets/icons/insights-arrow-up.svg?v=20260715',
+    'bar-chart': 'assets/icons/insights-bars.svg?v=20260715',
+    'task-arrow-up': 'assets/icons/insights-task-arrow-up.svg?v=20260715',
+    'task-bar-chart': 'assets/icons/insights-task-bars.svg?v=20260715',
+    quiz: 'assets/icons/insights-lightning.svg?v=20260715',
+    puzzle: 'assets/icons/insights-puzzle.svg?v=20260715',
+    article: 'assets/icons/insights-book.svg?v=20260715',
+    lesson: 'assets/icons/insights-cap.svg?v=20260715',
+    journal: 'assets/icons/insights-journal.svg?v=20260715',
+    mood: 'assets/icons/insights-mood-sun.svg?v=20260715',
+    badge: 'assets/icons/insights-star.svg?v=20260715',
+    trophy: 'assets/icons/insights-trophy.svg?v=20260715',
+    streak: 'assets/icons/insights-flame.svg?v=20260715',
+    coin: 'assets/icons/insights-coin.svg?v=20260715',
+  };
+
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService,
+    private location: Location
+  ) {}
 
   ngOnInit(): void {
     this.fetchOverview();
@@ -47,11 +73,18 @@ export class AnalyticsComponent implements OnInit {
     const headers = new HttpHeaders({
       Authorization: token?.startsWith('Bearer ') ? token : `Bearer ${token}`
     });
+
     this.http
       .get<AnalyticsOverview>(`${environment.apiUrl}/screen-analytics/overview`, { headers })
       .subscribe({
-        next: (res) => { this.data = res; this.loading = false; },
-        error: () => { this.error = true; this.loading = false; }
+        next: (res) => {
+          this.data = res;
+          this.loading = false;
+        },
+        error: () => {
+          this.error = true;
+          this.loading = false;
+        }
       });
   }
 
@@ -61,36 +94,103 @@ export class AnalyticsComponent implements OnInit {
     this.fetchOverview();
   }
 
-  cardIcon(icon: string): string {
-    const map: Record<string, string> = {
-      'arrow-up':  'assets/Icons-Neutral/Icon-Streak-3D.png',
-      'bar-chart': 'assets/Icons-Neutral/TotalActiveDays-3D.png',
-      'quiz':      'assets/Icons-Neutral/Icon-Content-Quiz.png',
-      'puzzle':    'assets/Icons-Neutral/Icon-Content-Puzzle.png',
-      'article':   'assets/Icons-Neutral/Icon-Content-Articles.png',
-      'lesson':    'assets/Icons-Neutral/Icon-BestStreak-3D.png',
-      'journal':   'assets/Icons-Neutral/Icon-Notes-3D.png',
-      'badge':     'assets/Icons-Neutral/Icon-Badge.png',
-      'trophy':    'assets/Icons-Neutral/Icon-Trophy.png',
-      'streak':    'assets/Icons-Neutral/Icon-Streak-3D.png',
-      'coin':      'assets/Icons-Neutral/Icons-Coins.png',
-    };
-    return map[icon] || 'assets/Icons-Neutral/Icon-SuccessRate.png';
+  goBack(): void {
+    this.location.back();
   }
 
-  moodEmoji(value: string): string {
-    const map: Record<string, string> = {
-      HAPPY: '😊', EXCITED: '🤩', CALM: '😌', GREAT: '😄',
-      UPSET: '😔', SAD: '😢', ANGRY: '😠', ANXIOUS: '😰',
-      TIRED: '😴', BORED: '😑', OKAY: '🙂', NEUTRAL: '😐',
-    };
-    return map[(value || '').toUpperCase()] ?? '😊';
+  cardIcon(stat: AnalyticStat, fallback: string, variant = ''): string {
+    const semanticIcon = variant && stat.icon ? `${variant}-${stat.icon}` : stat.icon;
+    return this.apiIcon(stat) || this.localIcon(semanticIcon, fallback);
   }
 
-  moodLabel(value: string): string {
+  hasApiIcon(stat: AnalyticStat): boolean {
+    return !!this.apiIcon(stat);
+  }
+
+  onIconError(event: Event, fallback: string): void {
+    const image = event.target as HTMLImageElement | null;
+    if (!image || image.dataset['fallbackApplied'] === 'true') return;
+
+    image.dataset['fallbackApplied'] = 'true';
+    image.classList.add('an-card-ico--fallback');
+    image.src = this.iconFallbacks[fallback] || this.iconFallbacks['arrow-up'];
+  }
+
+  habitTaskFallback(index: number): string {
+    return index % 2 === 0 ? 'arrow-up' : 'bar-chart';
+  }
+
+  taskFallback(index: number): string {
+    return index % 2 === 0 ? 'task-arrow-up' : 'task-bar-chart';
+  }
+
+  knowledgeFallback(index: number): string {
+    return ['quiz', 'puzzle', 'article', 'lesson'][index] || 'quiz';
+  }
+
+  achievementFallback(index: number): string {
+    return ['badge', 'trophy', 'streak', 'coin'][index] || 'badge';
+  }
+
+  moodLabel(value: string | number | null): string {
+    if (value === null || value === undefined || value === '') return '';
+    return String(value)
+      .trim()
+      .toLowerCase()
+      .replace(/\b\w/g, character => character.toUpperCase());
+  }
+
+  private apiIcon(stat: AnalyticStat): string {
+    const candidates = [
+      stat.iconUrl,
+      stat.iconURL,
+      stat.imageUrl,
+      stat.thumbnailUrl,
+      stat.categoryIconUrl,
+      stat.image,
+      stat.icon,
+    ];
+
+    for (const candidate of candidates) {
+      const value = this.cleanImageValue(candidate);
+      if (value && this.isImageReference(value)) return this.resolveImageUrl(value);
+    }
+
+    return '';
+  }
+
+  private cleanImageValue(value?: string | null): string {
     if (!value) return '';
-    return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+    const trimmed = String(value).trim();
+    const markdownUrl = trimmed.match(/\]\((https?:\/\/[^)]+)\)/i)?.[1];
+    return (markdownUrl || trimmed).replace(/^['"]|['"]$/g, '');
   }
 
-  skeletonItems = [1, 2, 3, 4, 5, 6];
+  private isImageReference(value: string): boolean {
+    return /^(https?:)?\/\//i.test(value)
+      || /^(data:image|blob:|assets\/)/i.test(value)
+      || value.startsWith('/')
+      || value.includes('/')
+      || /\.(avif|gif|jpe?g|png|svg|webp)(?:[?#].*)?$/i.test(value);
+  }
+
+  private resolveImageUrl(value: string): string {
+    if (/^(https?:\/\/|data:image|blob:|assets\/)/i.test(value)) return value;
+    if (value.startsWith('//')) return `https:${value}`;
+
+    const apiOrigin = environment.apiUrl.replace(/\/v1\/?$/i, '');
+    if (value.startsWith('/')) return `${apiOrigin}${value}`;
+    if (/^v1\//i.test(value)) return `${apiOrigin}/${value}`;
+    return `${environment.apiUrl.replace(/\/$/, '')}/${value.replace(/^\//, '')}`;
+  }
+
+  private localIcon(icon: string | null | undefined, fallback: string): string {
+    const key = String(icon || '')
+      .trim()
+      .replace(/([a-z])([A-Z])/g, '$1-$2')
+      .replace(/_/g, '-')
+      .toLowerCase();
+
+    return this.iconFallbacks[key] || this.iconFallbacks[fallback] || this.iconFallbacks['arrow-up'];
+  }
 }

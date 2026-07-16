@@ -1,12 +1,12 @@
 <ion-content #content [scrollY]="step !== 0.1 && step !== 0.3 && step !== 5" [ngClass]="step === 5 ? 'bg-white' : 'bg-superme-secondary'">
-  <superme-navigator *ngIf="step !== 5 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1"
+  <superme-navigator class="signup-navigator" *ngIf="step !== 5 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1"
     [heading]="headerText"
     [subtext]="headerSubtext"
     [showSubtext]="showHeaderSubtext"
     [variant]="'warm'"
     [hideBack]="true">
   </superme-navigator>
-  <div class="signup-container" [ngClass]="{'step-5-container': step === 5}">
+  <div class="signup-container" [ngClass]="{'step-5-container': step === 5, 'profile-layout': step === 2}">
     <h4 class="step-text" *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 5">
       Step {{step}} of 4
       <span>{{stepDesciption[step-1]}}</span>
@@ -131,7 +131,7 @@
           <div class="pwd-field">
             <label class="pwd-field__label">Password</label>
             <div class="pwd-field__row">
-              <input class="pwd-field__input" formControlName="password" name="new-password" autocomplete="new-password"
+              <input class="pwd-field__input" formControlName="password" name="password" autocomplete="new-password"
                 [type]="hidePassword ? 'password' : 'text'" placeholder="Enter your password"
                 [class.pwd-field__input--error]="password?.invalid && (password?.dirty || password?.touched)" />
               <button type="button" class="pwd-field__eye" (click)="hidePassword = !hidePassword" aria-label="Toggle password">
@@ -241,10 +241,13 @@
         (click)="proceedWithRole()">
       </superme-button>
     </div>
-    <div *ngIf="step === 2" [@slideIn]>
+    <div *ngIf="step === 2" [@slideIn] class="profile-step">
       <div class="profile">
         <form [formGroup]="profileForm">
-          <h4>Full Name <span>Just for setup. Never shown</span></h4>
+          <h4 class="profile-field-heading">
+            <span class="profile-field-title">Full Name</span>
+            <span class="profile-field-hint">Just for setup. Never shown</span>
+          </h4>
           <div class="input-group">
             <input [ngClass]="{'error' : name?.invalid && (name?.dirty || name?.touched)}" formControlName="name" type="text"
               placeholder="Full Name" />
@@ -252,16 +255,16 @@
               {{ getNameErrorMessage() }}
             </div>
           </div>
-         <h4>
-  Date of Birth
-  <span *ngIf="computedAge !== null; else noAge" class="age-count">
-    {{ computedAge }} years old
-  </span>
+          <h4 class="profile-field-heading">
+            <span class="profile-field-title">Date of Birth</span>
+            <span *ngIf="computedAge !== null; else noAge" class="profile-field-hint age-count">
+              {{ computedAge }} years old
+            </span>
 
-  <ng-template #noAge>
-    <span class="age-count">to match content to your age</span>
-  </ng-template>
-</h4>
+            <ng-template #noAge>
+              <span class="profile-field-hint age-count">To match content to your age</span>
+            </ng-template>
+          </h4>
           <div class="input-group">
             <!--            <input  formControlName="dob" type="text" placeholder="Date of Birth" />-->
             <superme-birthdaypicker (dateSelected)="birthdayChanged($event)" (closed)="openBirthdayPicker = false" [showTrigger]="openBirthdayPicker"
@@ -273,20 +276,25 @@
               Please enter your date of birth.
             </div>
           </div>
-          <h4>Gender <span>Used for small personalization touches</span></h4>
-          <div class="row">
-            <div class="col-6">
-              <div class="gender-select-button" (click)="selectGender('male')"
-                [ngClass]="gender === 'male' ? 'active' : null">
-                Male
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="gender-select-button" (click)="selectGender('female')"
-                [ngClass]="gender === 'female' ? 'active' : null">
-                Female
-              </div>
-            </div>
+          <h4 class="profile-field-heading">
+            <span class="profile-field-title">Gender</span>
+            <span class="profile-field-hint">Optional personalization</span>
+          </h4>
+          <div class="gender-options" role="group" aria-label="Gender">
+            <button type="button" class="gender-select-button" (click)="selectGender('male')"
+              [class.active]="gender === 'male'" [attr.aria-pressed]="gender === 'male'">
+              Male
+            </button>
+            <button type="button" class="gender-select-button" (click)="selectGender('female')"
+              [class.active]="gender === 'female'" [attr.aria-pressed]="gender === 'female'">
+              Female
+            </button>
+            <button type="button" class="gender-select-button gender-select-button--private"
+              (click)="selectGender('prefer_not_to_say')"
+              [class.active]="gender === 'prefer_not_to_say'"
+              [attr.aria-pressed]="gender === 'prefer_not_to_say'">
+              Prefer not to say
+            </button>
           </div>
         </form>
         <ng-container *ngIf="gender">
@@ -303,7 +311,7 @@
             <h4 style="margin-top: 15px">Choose an avatar </h4>
             <div class="row">
               <ng-container *ngFor="let avatar of avatars">
-                <div class="col-4 single-avatar" *ngIf="avatar.gender === gender" (click)="avatarSelected = avatar.key"
+                <div class="col-4 single-avatar" *ngIf="gender === 'prefer_not_to_say' || avatar.gender === gender" (click)="avatarSelected = avatar.key"
                   [ngClass]="avatarSelected === avatar.key ? 'active' : null">
                   <img src="{{avatar.value}}" alt="">
                 </div>

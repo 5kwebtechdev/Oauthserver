@@ -209,15 +209,15 @@
         <superme-navigator heading="Instructions" backIcon="arrowSvg" (back)="onInstructionsBack()"></superme-navigator>
         <div class="instructions-container">
             <div class="instruction-list" style="margin-top:16px;">
-                <instructio-list [heading]="'When You Switch to Child Role'"
+                <instructio-list [heading]="'Before Switching from Self to Child'"
                     [items]="instructionItems"></instructio-list>
-                <instructio-list [heading]="'When You Switch to Parent Role'"
+                <instructio-list [heading]="'Before Switching from Self to Parent'"
                     [items]="instructionItemsParent"></instructio-list>
             </div>
 
             <div class="consent">
                 <ion-checkbox slot="start" [(ngModel)]="consentChecked"></ion-checkbox>
-                <p class="check-text">I have read and understood that switching roles affects account linkage and data as described above.</p>
+                <p class="check-text">I have read and understood that switching roles affects account linkage and family access as described above.</p>
             </div>
             <superme-button type="green" size="full" text="Next" [disabled]="!consentChecked" (click)="goToRoleSelect()">
             </superme-button>

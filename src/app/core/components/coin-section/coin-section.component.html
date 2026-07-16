@@ -27,7 +27,7 @@
             <div *ngIf="!isParent" class="panda-message d-flex space-between w-100">
                 <app-speech-bubble [message]="message" type="talking" arrowSide="right">
                 </app-speech-bubble>
-                <superme-pet></superme-pet>
+                <superme-pet [mood]="coinPetMood"></superme-pet>
             </div>
 
             <superme-button *ngIf="!isParent" (click)="onRedeem()" text="Redeem" type="gold" size="large"></superme-button>

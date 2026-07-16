@@ -242,19 +242,19 @@ export class FamilyConnectionComponent implements OnInit {
   }
 
   instructionItems: string[] = [
-    'You will join a family created by your parent. Once linked, your parent can view your activities, track your progress, and give you rewards.',
-    'To complete the switch, you will need a family code or QR code from your parent.',
-    'Family-linked data — habits, tasks, routines, streaks, and rewards — becomes visible to your parent. Your personal data (coins, notes, pet, and learning progress) stays private.',
-    'Even while linked, you can keep using the app on your own and continue adding personal activities independently.',
-    '<span style="color:#282527; opacity: 1;font-family:Nunito; font-size:16px; font-weight:500; text-decoration:underline;">Note:</span> <span style="color:#282527; font-family:Nunito; font-size:16px; font-weight:500;">If you leave or are removed from the family, your account returns to Self mode. Your personal data stays safe, but family-linked data will no longer be accessible.</span>'
+    'Switching from Self to Child connects this account to a family created by your parent or guardian.',
+    'You will need the family code or QR code from your parent to complete the switch.',
+    'After linking, your parent can see family activity such as habits, tasks, routines, streaks, progress, and rewards.',
+    'Your personal space stays with you. Notes, coins, pet, and learning progress remain attached to this account.',
+    '<span style="color:#282527; opacity: 1;font-family:Nunito; font-size:16px; font-weight:500; text-decoration:underline;">Note:</span> <span style="color:#282527; font-family:Nunito; font-size:16px; font-weight:500;">If you leave the family or are removed, this account returns to Self mode. Family-linked access stops until you join a family again.</span>'
   ];
 
   instructionItemsParent: string[] = [
-    'You can monitor your child\'s activities, track their progress, assign tasks, and give rewards directly from your account.',
-    'To get started, create a new family or join an existing one using a family code shared by another parent.',
-    'As a Parent, your dashboard focuses on family tools — child progress, approvals, routines, and reward management.',
-    'If you are the family creator, you cannot leave the family or switch to Self mode directly. To use the app for yourself, you will need to create a separate account with different login details.',
-    '<span style="color:#282527; opacity: 1;font-family:Nunito; font-size:16px; font-weight:500; text-decoration:underline;">Note:</span> <span style="color:#282527; font-family:Nunito; font-size:16px; font-weight:500;">If the family is deleted or you are removed from it, your account returns to Self mode and family management access stops.</span>'
+    'Switching from Self to Parent lets this account create a family or join an existing family as a parent.',
+    'If you create a family, you will receive a family code and QR code to share with your child.',
+    'If you join an existing family, use the family code shared by the family creator.',
+    'Parent mode gives access to family tools such as child progress, approvals, routines, tasks, and rewards.',
+    '<span style="color:#282527; opacity: 1;font-family:Nunito; font-size:16px; font-weight:500; text-decoration:underline;">Note:</span> <span style="color:#282527; font-family:Nunito; font-size:16px; font-weight:500;">If you are the family creator, you cannot switch this same account back to Self mode directly. To use Self mode separately, create another account with different login details.</span>'
   ];
 
   consentChecked: boolean = false;

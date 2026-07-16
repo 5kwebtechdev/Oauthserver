@@ -117,8 +117,10 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy, ViewWillEnt
   }
 
   loadEvents() {
+    console.log('[Timeline][DEBUG] loadEvents() fetching for date ->', this.selectedDate);
     this.calendarService.getUserCalendar(this.selectedDate, 'day').subscribe({
       next: (response) => {
+        console.log('[Timeline][DEBUG] loadEvents() response for', this.selectedDate, '->', JSON.stringify(response));
         // NgZone.run ensures Angular change detection fires even if the HTTP
         // callback arrives outside Angular's zone (common on Capacitor/Android)
         this.ngZone.run(() => {
@@ -145,7 +147,7 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy, ViewWillEnt
         });
       },
       error: (error) => {
-        console.error('Error fetching calendar events:', error);
+        console.error('[Timeline][DEBUG] Error fetching calendar events for', this.selectedDate, '->', error);
       }
     });
   }
@@ -222,6 +224,7 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy, ViewWillEnt
 
   onDateSelected(date: Date): void {
     this.selectedDate = this.formatDate(date);
+    console.log('[Timeline][DEBUG] date selected ->', this.selectedDate);
     this.calendarService.clearCache(this.selectedDate, 'day');
     this.loadEvents();
   }

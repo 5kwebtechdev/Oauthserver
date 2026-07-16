@@ -10,6 +10,7 @@ import { SupermePetComponent } from '../superme-pet/superme-pet.component';
 import { CoinService, CoinHistoryItem } from '../../services/coin.service';
 import { AuthService } from '../../services/auth.service';
 import { RefreshService } from '../../services/refresh.service';
+import { PetMessagesService, PetMood } from '../../services/pet-messages.service';
 
 interface CoinItem {
     id: number;
@@ -39,7 +40,6 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
     coinTotal: number = 0;
     coinAnimDone: boolean = false;
     showTargetDigits: boolean = false;
-    message = "Whoa! That's a lot of coins! Let's go dress me up or grab something shiny!";
     coinItems: CoinItem[] = [];
     isLoading = false;
     isParent: boolean = false;
@@ -51,11 +51,20 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
         return String(this.coinTotal || 0).split('').map(Number);
     }
 
+    get message(): string {
+        return this.getCoinPetMessage().message;
+    }
+
+    get coinPetMood(): PetMood {
+        return this.getCoinPetMessage().mood;
+    }
+
     constructor(
         private router: Router,
         private coinService: CoinService,
         private authService: AuthService,
-        private refreshService: RefreshService
+        private refreshService: RefreshService,
+        private petMessagesService: PetMessagesService
     ) {}
 
     ngOnInit() {
@@ -80,9 +89,12 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
         this.coinService.loadCoinHistory().subscribe({
             next: (response) => {
                 if (response?.totalCoins != null) {
-                    this.coinTotal = response.totalCoins;
+                    this.coinTotal = this.normalizeCoinTotal(response.totalCoins);
                 } else if (response?.history) {
-                    this.coinTotal = response.history.reduce((s: number, i: CoinHistoryItem) => s + i.amount, 0);
+                    const historyTotal = response.history.reduce((s: number, i: CoinHistoryItem) => s + Number(i.amount || 0), 0);
+                    this.coinTotal = this.normalizeCoinTotal(historyTotal);
+                } else {
+                    this.coinTotal = 0;
                 }
                 this.coinItems = response?.history ? this.mapHistoryToCoinItems(response.history) : [];
                 this.groupedCoinItems = this.buildGroupedItems();
@@ -93,6 +105,15 @@ export class CoinSectionComponent implements OnInit, OnDestroy, ViewWillEnter {
                 this.isLoading = false;
             }
         });
+    }
+
+    private getCoinPetMessage() {
+        return this.petMessagesService.getMessage('coins', { totalCoins: this.coinTotal });
+    }
+
+    private normalizeCoinTotal(value: unknown): number {
+        const total = Number(value);
+        return Number.isFinite(total) ? Math.max(0, total) : 0;
     }
 
     private startRollerAnimation(): void {

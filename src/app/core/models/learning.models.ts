@@ -134,6 +134,22 @@ export interface LearningCardData {
 }
 
 /**
+ * Category summary item returned by learning category APIs.
+ */
+export interface LearningCategorySummary {
+    id: number;
+    categoryName?: string;
+    name?: string;
+    description?: string;
+    thumbnailUrl?: string;
+    image?: string;
+    status?: string;
+    count?: number;
+    createdAt?: string;
+    type?: 'puzzle' | 'quiz' | 'article' | 'masterclass';
+}
+
+/**
  * Challenge Submission Request
  */
 export interface ChallengeSubmissionRequest {

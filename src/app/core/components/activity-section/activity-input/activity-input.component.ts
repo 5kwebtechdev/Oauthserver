@@ -336,6 +336,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
       const stateOrigin = nav?.extras?.state?.['origin'] ?? (history && (history.state as any)?.origin);
       this.originUrl = stateOrigin || null;
       const stateHabit = this.editingHabit ?? nav?.extras?.state?.['habit'] ?? (history && (history.state as any)?.habit);
+      const stateSelectedDate = nav?.extras?.state?.['selectedDate'] ?? (history && (history.state as any)?.selectedDate) ?? null;
       // Respect an explicit initialTab passed via componentProps or navigation state even when
       // no `habit` object is provided (creating a new activity). Use habit type as a fallback.
       const stateCurrentActive = this.initialTab ?? nav?.extras?.state?.['currentActive'] ?? (history && (history.state as any)?.currentActive);
@@ -354,7 +355,21 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
       // Auto-switch to the appropriate tab based on: @Input() initialTab, explicit currentActive in state, or habit type
       // Reuse `stateCurrentActive` declared above and fall back to habit type when editing.
       this.currentActive = (stateCurrentActive as any) || (h.type as any) || this.currentActive;
+      // The habit object passed via navigation state (from the timeline/detail list)
+      // doesn't carry the Private-toggle state, so `h.isPrivate` is always undefined.
+      // Use it only as a transient fallback while we fetch the authoritative value.
       this.isPrivate = !!h.isPrivate;
+      if (this.editingId && this.currentActive === 'habits') {
+        const dateForLookup = stateSelectedDate || this.formatDateStr(new Date());
+        this.habitApi.getHabitByIdWithDate(Number(this.editingId), dateForLookup).subscribe({
+          next: (res: any) => {
+            // isToggleOn mirrors isPrivateToChild exactly: true = toggle ON/private.
+            this.isPrivate = !!res?.isToggleOn;
+            this.cd.detectChanges();
+          },
+          error: () => { /* keep the fallback value on error */ }
+        });
+      }
       const createdById = h.createdById ?? h.createdBy;
       const assignedToId = h.assignedToId ?? h.assignedTo;
       if (createdById != null && assignedToId != null && String(createdById) !== String(assignedToId)) {
@@ -783,7 +798,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
         endTime: formattedEndTime || '',
         everyday: !!(this.everyday && coversAllDays),
         everyWeekend: false,
-        sharedWithParent: this.isChild ? !this.isPrivate : false
+        sharedWithParent: this.isChild ? !this.isPrivate : false,
+        isPrivateToChild: this.isChild ? this.isPrivate : false
       };
       // Always include the routine field so a missing selection is represented
       // explicitly as `null` in the payload.

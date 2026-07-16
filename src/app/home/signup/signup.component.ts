@@ -12,8 +12,11 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import { Subscription } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CredentialSaverService } from '../../core/services/credential-saver.service';
+import { SignupCredentialStateService } from '../../core/services/signup-credential-state.service';
+import { StoredGender, toApiGender } from '../../core/models/gender.model';
 
 type SignupRole = 'child' | 'parent' | 'self';
+type SignupGender = StoredGender;
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
@@ -66,7 +69,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   private isFromUserInput = false; // Track if input is from user typing vs auto-fill
 
   public roleSelected !: SignupRole;
-  public gender !: 'male' | 'female';
+  public gender: SignupGender | null = null;
   public avatarSelected: any;
 
   public errorMessage: string | null = null;
@@ -286,6 +289,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     private loadingService: LoadingService,
     public parentImageService: ParentImageService,
     private credentialSaverService: CredentialSaverService,
+    private signupCredentialState: SignupCredentialStateService,
     private navCtrl: NavController
   ) {
     // Initialize with default country
@@ -441,7 +445,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return 'Please enter a valid full name.';
   }
 
-  selectGender(gender: 'male' | 'female'): void {
+  selectGender(gender: SignupGender): void {
     if (this.gender !== gender) {
       this.avatarSelected = null;
     }
@@ -1474,8 +1478,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   proceedWithPassword(): void {
     if (this.passwordForm.valid) {
       this.errorMessage = null; // Clear any previous errors
-      // persist password in session
-      try { sessionStorage.setItem('signup_password', this.password?.value || ''); } catch (e) { }
+      this.signupCredentialState.setPassword(this.password?.value || '');
 
       // Navigate to step 1 (role selection) after password creation
       this.router.navigate(['home/sign-up'], { queryParams: { step: 1 } });
@@ -1500,7 +1503,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // Collect values from session and forms
     const profileStr = sessionStorage.getItem('signup_profile');
-    const password = sessionStorage.getItem('signup_password') || this.password?.value;
+    const password = this.signupCredentialState.getPassword() || this.password?.value;
     const role = sessionStorage.getItem('signup_role') || this.roleSelected;
     const identifier = this.requestedIdentifier || this.email?.value || this.phone?.value;
     const familyCode = sessionStorage.getItem('familyCode');
@@ -1517,7 +1520,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     const payload: any = {
       name: profile.name || this.profileForm.get('name')?.value,
-      gender: (profile.gender || this.gender || '').toUpperCase(),
+      gender: toApiGender(profile.gender || this.gender),
       relationship: (role || '').toUpperCase(),
       password: password || undefined,
       avatarName: avatarNameValue,
@@ -1605,7 +1608,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           name: payload.name,
           email: payload.email,
           phone: payload.phone,
-          gender: payload.gender?.toLowerCase() as 'male' | 'female',
+          gender: payload.gender?.toLowerCase() as SignupGender,
           dob: payload.dateOfBirth,
           avatarName: payload.avatarName,
           avatarUrl: this.getAvatarUrlFromSelection(profile.avatar || this.avatarSelected, payload.gender?.toLowerCase()),
@@ -1613,18 +1616,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           pet: payload.petName
         });
 
-        // IMPORTANT: Store login credentials for auto-login on "Begin My Journey" button
-        const passwordForLogin = password || sessionStorage.getItem('signup_password') || this.password?.value || '';
-        try {
-          if (payload.email) sessionStorage.setItem('login_email', payload.email);
-          if (payload.phone) sessionStorage.setItem('login_phone', payload.phone);
-          sessionStorage.setItem('login_password', passwordForLogin);
-        } catch (e) { }
+        const passwordForLogin = password || this.signupCredentialState.getPassword() || this.password?.value || '';
+        this.signupCredentialState.setPendingLogin({
+          ...(payload.email ? { email: payload.email } : {}),
+          ...(payload.phone ? { phone: payload.phone } : {}),
+          password: passwordForLogin
+        });
 
         // Clear signup session data
         try {
           sessionStorage.removeItem('signup_profile');
-          sessionStorage.removeItem('signup_password');
           sessionStorage.removeItem('signup_role');
           sessionStorage.removeItem('signup_avatar');
           sessionStorage.removeItem('requestedIdentifier');
@@ -1648,6 +1649,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           this.authService.login(credentials).subscribe({
             next: (loginResp) => {
               this.requestPasswordSavePrompt(credentials);
+              this.signupCredentialState.clear();
               // Set family acknowledgment flag if user linked to a family
               try {
                 const role = sessionStorage.getItem('signup_role') || this.roleSelected || '';
@@ -1694,7 +1696,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           return;
         }
         // If registration failed because user already exists, try to login automatically
-        const passwordForLogin = password || sessionStorage.getItem('signup_password') || this.password?.value || '';
+        const passwordForLogin = password || this.signupCredentialState.getPassword() || this.password?.value || '';
         const credentials: any = { password: passwordForLogin };
         if (payload.email) credentials.email = payload.email;
         else if (payload.phone) credentials.phone = payload.phone;
@@ -1703,6 +1705,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           this.authService.login(credentials).subscribe({
             next: () => {
               this.requestPasswordSavePrompt(credentials);
+              this.signupCredentialState.clear();
               const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
               setTimeout(() => {
                 this.loadingService.forceHide();
@@ -1755,7 +1758,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       name:            profile.name || this.profileForm.get('name')?.value || sessionStorage.getItem('google_signup_name'),
       avatarUrl,
       role:            role.toUpperCase(),          // backend uses "role", not "relationship"
-      gender:          (profile.gender || this.gender || '').toUpperCase(),
+      gender:          toApiGender(profile.gender || this.gender),
       avatarName:      avatarKey ? `avatar${avatarKey}` : undefined,
       avatarImageName,
       referralCode:    sessionStorage.getItem('referralCode') || null
@@ -1837,7 +1840,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // Collect values from session and forms (reuse registerFromSession logic)
     const profileStr = sessionStorage.getItem('signup_profile');
-    const password = sessionStorage.getItem('signup_password') || this.password?.value;
+    const password = this.signupCredentialState.getPassword() || this.password?.value;
     const identifier = this.requestedIdentifier || this.email?.value || this.phone?.value;
     const familyCode = sessionStorage.getItem('familyCode');
     const referralCode = sessionStorage.getItem('referralCode');
@@ -1852,7 +1855,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     const payload: any = {
       name: profile.name || this.profileForm.get('name')?.value,
-      gender: (profile.gender || this.gender || '').toUpperCase(),
+      gender: toApiGender(profile.gender || this.gender),
       relationship: (role || '').toUpperCase(),
       password: password || undefined,
       avatarName: avatarNameValue2,
@@ -1892,13 +1895,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     this.authService.register(payload).subscribe({
       next: (resp) => {
-        // IMPORTANT: Store login credentials for auto-login on "Begin My Journey" button
-        const passwordForLogin = password || sessionStorage.getItem('signup_password') || this.password?.value || '';
-        try {
-          if (payload.email) sessionStorage.setItem('login_email', payload.email);
-          if (payload.phone) sessionStorage.setItem('login_phone', payload.phone);
-          sessionStorage.setItem('login_password', passwordForLogin);
-        } catch (e) { }
+        const passwordForLogin = password || this.signupCredentialState.getPassword() || this.password?.value || '';
+        this.signupCredentialState.setPendingLogin({
+          ...(payload.email ? { email: payload.email } : {}),
+          ...(payload.phone ? { phone: payload.phone } : {}),
+          password: passwordForLogin
+        });
 
         // Mark onboarding complete and persist minimal user info
         try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) { }
@@ -1906,7 +1908,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         // Clear transient signup session data (keep login flow separate)
         try {
           sessionStorage.removeItem('signup_profile');
-          sessionStorage.removeItem('signup_password');
           sessionStorage.removeItem('signup_role');
           sessionStorage.removeItem('signup_avatar');
           sessionStorage.removeItem('requestedIdentifier');
@@ -1934,30 +1935,27 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   // Auto-login and redirect to dashboard
   onBegin() {
-    const email = sessionStorage.getItem('login_email');
-    const phone = sessionStorage.getItem('login_phone');
-    const password = sessionStorage.getItem('login_password');
     const isOAuth = sessionStorage.getItem('signup_via_google') === 'true';
 
-    // OAuth users (Apple / Google) are already authenticated — skip re-login
-    if (isOAuth || !password) {
+    // OAuth users (Apple / Google) are already authenticated.
+    if (isOAuth) {
       this.loadingService.forceHide();
       const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
       this.router.navigate([route]);
       return;
     }
 
-    // Standard email/phone users — auto-login with stored credentials
-    const credentials: any = { password };
-    if (email) {
-      credentials.email = email;
-    } else if (phone) {
-      credentials.phone = phone;
+    const credentials = this.signupCredentialState.getPendingLogin();
+    if (!credentials?.password || (!credentials.email && !credentials.phone)) {
+      this.loadingService.forceHide();
+      this.router.navigate(['/home/login']);
+      return;
     }
 
     this.authService.login(credentials).subscribe({
       next: () => {
         this.requestPasswordSavePrompt(credentials);
+        this.signupCredentialState.clear();
         this.loadingService.forceHide();
         const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
         this.router.navigate([route]);
@@ -1973,8 +1971,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
    * Get avatar URL from avatar selection number
    */
   private getAvatarUrlFromSelection(avatarNumber: number, gender?: string): string {
-    const genderPrefix = gender === 'male' ? 'Male' : 'Female';
-    return `/assets/Images-Transparent/Image-Onboarding-Avatar-${genderPrefix}${avatarNumber}.png`;
+    const parsedAvatarNumber = Number(avatarNumber);
+    if (!Number.isInteger(parsedAvatarNumber) || parsedAvatarNumber < 1 || parsedAvatarNumber > 12) {
+      return '/assets/app-assets/Default-avatar-home.svg';
+    }
+
+    const isFemaleAvatar = parsedAvatarNumber <= 6;
+    const avatarIndex = isFemaleAvatar ? parsedAvatarNumber : parsedAvatarNumber - 6;
+    const genderPrefix = isFemaleAvatar ? 'Female' : 'Male';
+    return `/assets/Images-Transparent/Image-Onboarding-Avatar-${genderPrefix}${avatarIndex}.png`;
   }
 
   /**
@@ -2014,7 +2019,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const password = credentials.password;
     const identifier = credentials.email || credentials.phone;
 
-    if (!identifier || !password || !this.credentialSaverService.shouldAskToSave()) {
+    if (!identifier || !password) {
       return;
     }
 
@@ -2037,16 +2042,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           }, { emitEvent: false });
         }
         if (profile?.gender) {
-          this.gender = profile.gender;
+          const savedGender = String(profile.gender).toLowerCase();
+          if (savedGender === 'male' || savedGender === 'female' || savedGender === 'prefer_not_to_say') {
+            this.gender = savedGender;
+          }
         }
         if (profile?.avatar && profile.avatar !== this.getNameInitial()) {
           this.avatarSelected = profile.avatar;
         }
-      }
-
-      const savedPassword = sessionStorage.getItem('signup_password');
-      if (savedPassword) {
-        this.passwordForm.patchValue({ password: savedPassword }, { emitEvent: false });
       }
 
       const identifier = sessionStorage.getItem('requestedIdentifier');

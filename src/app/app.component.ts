@@ -12,7 +12,8 @@ import { AuthApi } from './core/api/auth.api';
 import { UserService } from './core/services/user.service';
 import { CustomToastService, Toast } from './core/services/custom-toast.service';
 import { StatusBar, Style } from '@capacitor/status-bar';
-import { Capacitor, registerPlugin } from '@capacitor/core';
+import { App } from '@capacitor/app';
+import { Capacitor, PluginListenerHandle, registerPlugin } from '@capacitor/core';
 
 interface InstallReferrerPlugin {
   getReferralCode(): Promise<{ code: string }>;
@@ -44,6 +45,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private activeBadgeToken: string | null = null;
   private lastBadgePopupPollAt = 0;
   private readonly badgePopupPollCooldownMs = 15000;
+  private readonly appUpdateConfigFetchTimeoutMs = 8000;
 
   // Badge popup state (global popup shown from any screen)
   showBadgePopup = false;
@@ -54,12 +56,15 @@ export class AppComponent implements OnInit, OnDestroy {
   private monitoringStateListener = () => this.loadMonitoringState();
 
   // Force update popup state (blocks the app until the user updates)
+  isUpdateCheckPending = Capacitor.isNativePlatform();
   showForceUpdatePopup = false;
+  private appStateChangeListener?: PluginListenerHandle;
+  private updateCheckInFlight?: Promise<void>;
   forceUpdateConfig: SupermePopupConfig = {
     heading: 'Update Required',
-    subtitle: "A new version of SuperMe is available. Please update the app to continue.",
+    subtitle: 'A new version of the app is available. Please update to continue using the app.',
     primaryCTA: {
-      text: 'Update Now',
+      text: 'Update',
       buttonStyle: 'green',
       buttonFull: true
     },
@@ -92,16 +97,15 @@ export class AppComponent implements OnInit, OnDestroy {
     this.toast$ = this.toastService.toast$;
   }
 
+  get isAppUpdateBlocked(): boolean {
+    return this.isUpdateCheckPending || this.showForceUpdatePopup;
+  }
+
   ngOnInit() {
     this.loadMonitoringState();
     window.addEventListener('family-monitoring-changed', this.monitoringStateListener);
 
-    this.remoteConfig.initialize().then(() => {
-      this.checkAppUpdate();
-    }).catch(error => {
-      console.warn('[AppComponent] Remote Config initialization failed:', error);
-      this.checkAppUpdate();
-    });
+    this.initializeAppUpdateProtection();
 
     // On Android, check if app was installed via a referral link (Play Install Referrer)
     if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
@@ -153,7 +157,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // Block hardware back button while force-update popup is visible
     this.platform.backButton.subscribeWithPriority(9999, (processNextHandler) => {
-      if (this.showForceUpdatePopup) {
+      if (this.isAppUpdateBlocked) {
         console.log('[AppUpdate] Hardware back button blocked — app update required');
         return;
       }
@@ -221,6 +225,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.badgeSubscription.unsubscribe();
     this.badgeSocketService.disconnect();
     window.removeEventListener('family-monitoring-changed', this.monitoringStateListener);
+    this.appStateChangeListener?.remove().catch(() => {});
   }
 
   switchBackFromChildView(): void {
@@ -498,20 +503,67 @@ export class AppComponent implements OnInit, OnDestroy {
    * is below the minimum supported version. If so, block the app
    * behind a non-dismissible force-update popup.
    */
-  private checkAppUpdate(): void {
-    this.appUpdate.checkForUpdate().then(result => {
-      if (result.updateRequired) {
-        this.showForceUpdatePopup = true;
+  private async initializeAppUpdateProtection(): Promise<void> {
+    if (this.appUpdate.isNativeMobilePlatform()) {
+      try {
+        this.appStateChangeListener = await App.addListener('appStateChange', ({ isActive }) => {
+          if (isActive) this.checkAppUpdate();
+        });
+      } catch (error) {
+        console.warn('[AppComponent] Unable to register app update resume listener:', error);
       }
-    }).catch(error => {
-      console.warn('[AppComponent] App update check failed:', error);
-    });
+    }
+
+    await this.checkAppUpdate();
+  }
+
+  private checkAppUpdate(): Promise<void> {
+    if (this.updateCheckInFlight) return this.updateCheckInFlight;
+
+    this.updateCheckInFlight = (async () => {
+      try {
+        await this.refreshAppUpdateConfig();
+        const result = await this.appUpdate.checkForUpdate();
+        this.showForceUpdatePopup = result.updateRequired;
+
+        if (result.updateRequired) {
+          this.showBadgePopup = false;
+          this.badgePopupService.setPopupVisible(false);
+        }
+      } catch (error) {
+        console.warn('[AppComponent] App update check failed:', error);
+      } finally {
+        this.isUpdateCheckPending = false;
+        this.updateCheckInFlight = undefined;
+      }
+    })();
+
+    return this.updateCheckInFlight;
+  }
+
+  private async refreshAppUpdateConfig(): Promise<void> {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    try {
+      const result = await Promise.race([
+        this.remoteConfig.initialize().then(() => 'completed' as const),
+        new Promise<'timed-out'>(resolve => {
+          timeoutId = setTimeout(() => resolve('timed-out'), this.appUpdateConfigFetchTimeoutMs);
+        })
+      ]);
+
+      if (result === 'timed-out') {
+        console.warn('[AppUpdate] Remote Config fetch timed out; using cached or default values.');
+      }
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+    }
   }
 
   /**
-   * Handle "Update Now" click on the force-update popup
+   * Handle "Update" click on the force-update popup
    */
-  onUpdateNowClick(): void {
-    this.appUpdate.openStore();
+  async onUpdateNowClick(): Promise<void> {
+    await this.appUpdate.openStore();
   }
 }
