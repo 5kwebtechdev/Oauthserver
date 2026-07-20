@@ -67,4 +67,7 @@ export interface TimelineEvent {
     _columnCount?: number;
     // Who created this item (server may return `createdBy` or `created_by`)
     createdBy?: number;
+    // Whether the child has shared this item with their parent — used to hide
+    // items the child marked Private when a parent is viewing their timeline.
+    sharedWithParent?: boolean;
 }

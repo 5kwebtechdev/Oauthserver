@@ -225,7 +225,7 @@ export function toTutorListItem(tutor: Tutor): TutorListItem {
     return {
         id: tutor.id,
         name: tutor.name,
-        avatar: tutor.profilePicUrl || 'assets/images/Avatar.png',
+        avatar: tutor.profilePicUrl || 'assets/Images-Transparent/Image-Tutor.png',
         description: tutor.subjects?.length > 0
             ? tutor.subjects.join(', ')
             : `${tutor.qualification} Specialist`,
@@ -259,7 +259,18 @@ export function formatExperience(exp: Experience | string): string {
         'PLUS_5': '5+ years Exp',
         'PLUS_10': '10+ years Exp'
     };
-    return expMap[exp] || exp;
+    if (expMap[exp]) return expMap[exp];
+
+    // Academy-style range enums, e.g. RANGE_1_3 -> "1-3 years Exp", RANGE_10_PLUS -> "10+ years Exp"
+    if (typeof exp === 'string' && exp.startsWith('RANGE_')) {
+        const parts = exp.replace('RANGE_', '').split('_');
+        if (parts.length === 2) {
+            const [from, to] = parts;
+            return /plus/i.test(to) ? `${from}+ years Exp` : `${from}-${to} years Exp`;
+        }
+    }
+
+    return exp;
 }
 
 /**
@@ -307,7 +318,19 @@ export function getExperienceYears(exp: Experience | string): number {
         'PLUS_5': 5,
         'PLUS_10': 10
     };
-    return expMap[exp] || 0;
+    if (expMap[exp] !== undefined) return expMap[exp];
+
+    // Academy-style range enums, e.g. RANGE_1_3 -> 3, RANGE_10_PLUS -> 10
+    if (typeof exp === 'string' && exp.startsWith('RANGE_')) {
+        const parts = exp.replace('RANGE_', '').split('_');
+        if (parts.length === 2) {
+            const from = parseInt(parts[0], 10) || 0;
+            const to = parseInt(parts[1], 10);
+            return isNaN(to) ? from : to;
+        }
+    }
+
+    return 0;
 }
 
 /**

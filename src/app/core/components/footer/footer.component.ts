@@ -1,14 +1,14 @@
 import { Component, OnInit, Renderer2, ElementRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
-import { NavController } from '@ionic/angular';
+import { IonicModule, NavController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, IonicModule],
   templateUrl: './footer.component.html',
   styleUrls: ['./footer.component.scss']
 })

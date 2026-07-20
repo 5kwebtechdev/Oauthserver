@@ -1,6 +1,6 @@
 import { Component, OnInit, AfterViewInit, ViewChild, Input, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ModalController } from '@ionic/angular';
+import { IonicModule, ModalController, ViewWillEnter } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { SupermeInputsModule } from '../../superme-inputs/superme-inputs.module';
@@ -29,7 +29,7 @@ import { CustomToastService } from '../../../services/custom-toast.service';
   styleUrls: ['./activity-input.component.scss'],
   imports: [CommonModule, IonicModule, FormsModule, SupermeButtonComponent, SupermeInputsModule, SupermeSelectorsComponent, SupermeTagsComponent, SupermeBadgeComponent, SupermeNavigatorComponent, SupermeToggleComponent, SupermePopupComponent]
 })
-export class ActivityInputComponent implements OnInit, AfterViewInit {
+export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEnter {
   private static readonly TIME_REGEX = /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?$/i;
   private static readonly DAY_MAP: Record<string, string> = {
     S: 'SUNDAY', M: 'MONDAY', T: 'TUESDAY', W: 'WEDNESDAY', Th: 'THURSDAY', F: 'FRIDAY', Sa: 'SATURDAY'
@@ -50,6 +50,9 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
   private _endDate: Date | null = null;
   startTime = '';
   endTime = '';
+  // Tracks whether the user has explicitly picked a Start Time, so date changes
+  // only auto-fill it while it's still untouched (see onStartTimeChanged()).
+  private startTimeUserSet = false;
 
   get startDate(): Date | null {
     return this._startDate;
@@ -82,7 +85,31 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
     this._startDate = value;
     this.showDaySelectionError = false;
     this.autoAdjustSelectedDays();
+    this.applyDefaultStartTimeForDate(value);
     try { const validations = this.computeValidations(); Object.assign(this.errors, validations); this.cd.detectChanges(); } catch (e) { }
+  }
+
+  /**
+   * Today should default Start Time to right now (so a habit can start
+   * immediately); a future date should leave it empty until the user picks
+   * one. Only applies while the user hasn't explicitly chosen a time yet,
+   * and never while editing an existing entry that already has a real time.
+   */
+  private applyDefaultStartTimeForDate(date: Date | null): void {
+    if (this.startTimeUserSet || this.editingId || !date) return;
+
+    const today = new Date();
+    const isToday = date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate();
+
+    if (isToday) {
+      const hh = String(today.getHours()).padStart(2, '0');
+      const mm = String(today.getMinutes()).padStart(2, '0');
+      this.startTime = this.to12Hour(`${hh}:${mm}`);
+    } else {
+      this.startTime = '';
+    }
   }
 
   get endDate(): Date | null {
@@ -317,9 +344,12 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
         const parsed = JSON.parse(ud || '{}');
         const rel = (parsed.relationship || parsed.role || '').toString().toUpperCase();
         this.isChild = rel === 'CHILD';
+        console.log('[PrivateToggle][DEBUG] user_data.relationship/role ->', parsed.relationship, '/', parsed.role, '-> isChild =', this.isChild);
+      } else {
+        console.log('[PrivateToggle][DEBUG] no user_data found in localStorage — isChild stays false');
       }
     } catch (e: any) {
-      // ignore parsing errors and leave isChild = false
+      console.error('[PrivateToggle][DEBUG] failed to parse user_data', e);
     }
 
     // Determine whether current user is a parent (parent accounts can assign coins)
@@ -329,6 +359,20 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
       this.isParent = false;
     }
 
+    this.applyStateForActivity();
+  }
+
+  /**
+   * Ionic's router-outlet reuses this page's component instance across visits
+   * (e.g. tapping "Add" again after creating a task). ngOnInit only runs once,
+   * so without this, the previous entry's title/dates/days would stay on screen
+   * looking pre-filled/pre-selected on a supposedly brand-new form.
+   */
+  ionViewWillEnter(): void {
+    this.applyStateForActivity();
+  }
+
+  private applyStateForActivity(): void {
     try {
       // First check @Input() properties (used when opened via modal componentProps)
       // Then fall back to router navigation state or history.state
@@ -341,7 +385,10 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
       // no `habit` object is provided (creating a new activity). Use habit type as a fallback.
       const stateCurrentActive = this.initialTab ?? nav?.extras?.state?.['currentActive'] ?? (history && (history.state as any)?.currentActive);
       this.currentActive = (stateCurrentActive as any) || (stateHabit ? (stateHabit.type as any) : this.currentActive);
-      if (!stateHabit) return;
+      if (!stateHabit) {
+        this.resetForNewEntry();
+        return;
+      }
       const h: any = stateHabit;
       this.originalHabit = h;
       if (h.id) this.editingId = String(h.id);
@@ -441,11 +488,55 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Clears every mutable form field back to its pristine "new entry" state.
+   * Needed because Ionic reuses this page's component instance across visits,
+   * so a stale title/date/day selection from a previous entry must not leak
+   * into what looks like a brand-new, untouched form.
+   */
+  private resetForNewEntry(): void {
+    this.editingId = undefined;
+    this.originalHabit = null;
+    this.title = '';
+    this.notes = '';
+    this.startDate = null;
+    this.endDate = null;
+    this.startTime = '';
+    this.endTime = '';
+    this.startTimeUserSet = false;
+    this.isPrivate = false;
+    this.isParentCreated = false;
+    this.selectedRoutine = '';
+    this.routineTags = [];
+    this.selectedDays = new Set<string>();
+    this.everyday = false;
+    this.priority = '';
+    this.activities = [
+      { name: '', startTime: '', endTime: '' },
+      { name: '', startTime: '', endTime: '' },
+      { name: '', startTime: '', endTime: '' }
+    ];
+    this.selectedTags = [];
+    this.attemptedSubmit = false;
+    this.serverErrorMessage = '';
+    this.showDaySelectionError = false;
+    this.errors = {
+      title: false, time: false, date: false, notes: false, tag: false,
+      routine: false, weekdays: false, priority: false, pastTime: false,
+      endTimeBeforeStart: false, endTimeSingleDay: false,
+      startAfterEnd: false
+    };
+    if (this.tagsComponent) {
+      this.tagsComponent.selectedKeys = [];
+      this.tagsComponent.selectedKeysChange.emit(this.tagsComponent.selectedKeys);
+    }
+  }
+
   get isFormComplete(): boolean {
     if (!this.title?.trim()) return false;
     if (!this.startDate || !this.endDate) return false;
     if (!this.startTime?.trim() || !this.endTime?.trim()) return false;
-    if (this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime)) return false;
+    if (this.isTimeInPast(this.startTime, this.startDate) || this.isTimeInPast(this.endTime, this.endDate)) return false;
     if (this.isEndTimeNotAfterStart(this.startTime, this.endTime)) return false;
     if (this.isEndTimeCrossingMidnight(this.startTime, this.endTime)) return false;
 
@@ -473,16 +564,19 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
     return { hours, minutes };
   }
 
-  private isTimeInPast(timeStr: string): boolean {
+  // referenceDate defaults to startDate (existing callers), but endTime must be
+  // checked against endDate — a habit ending today must end later than now,
+  // regardless of what day it started.
+  private isTimeInPast(timeStr: string, referenceDate: Date | null = this.startDate): boolean {
     if (this.editingId) return false; // Allow past times in edit mode
 
-    if (!timeStr || !this.startDate) return false;
+    if (!timeStr || !referenceDate) return false;
 
     const today = new Date();
-    const startDateOnly = new Date(this.startDate.getFullYear(), this.startDate.getMonth(), this.startDate.getDate());
+    const dateOnly = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), referenceDate.getDate());
     const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-    if (startDateOnly.getTime() !== todayOnly.getTime()) return false;
+    if (dateOnly.getTime() !== todayOnly.getTime()) return false;
 
     const parsed = this.parseTime(timeStr);
     if (!parsed) return false;
@@ -756,7 +850,11 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
         endTime: formattedEndTime || '',
         everyday: !!(this.everyday && coversAllDays),
         everyWeekend: false,
-        sharedWithParent: this.isChild ? !this.isPrivate : false
+        sharedWithParent: this.isChild ? !this.isPrivate : false,
+        // A parent creating this on behalf of a child has no Private toggle
+        // to set (it's not shown to parents), so it must always be sent as
+        // private-to-child rather than defaulting to false.
+        isPrivateToChild: this.isChild ? this.isPrivate : (this.isParent ? true : false)
       };
       // Always include the routine field in the payload. If the user did not select
       // a routine (or explicitly deselected it), `routine` will be `null` and we
@@ -799,7 +897,9 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
         everyday: !!(this.everyday && coversAllDays),
         everyWeekend: false,
         sharedWithParent: this.isChild ? !this.isPrivate : false,
-        isPrivateToChild: this.isChild ? this.isPrivate : false
+        // See tasks branch above: parent-created habits have no Private
+        // toggle to reflect, so always send them as private-to-child.
+        isPrivateToChild: this.isChild ? this.isPrivate : (this.isParent ? true : false)
       };
       // Always include the routine field so a missing selection is represented
       // explicitly as `null` in the payload.
@@ -976,7 +1076,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
       routine: !!(this.selectedRoutine && this.startTime && !this.isStartTimeWithinRoutine()),
       weekdays: !this.everyday && !this.selectedDays?.size,
       time: !this.startTime?.trim() || !this.endTime?.trim(),
-      pastTime: this.isTimeInPast(this.startTime) || this.isTimeInPast(this.endTime),
+      pastTime: this.isTimeInPast(this.startTime, this.startDate) || this.isTimeInPast(this.endTime, this.endDate),
       endTimeBeforeStart: this.isSameDateRange() && this.isEndTimeNotAfterStart(this.startTime, this.endTime),
       // Show the "finish before midnight" error when either it's a single-day
       // range and the end time is midnight/overflow, OR when it's a multi-day
@@ -1531,6 +1631,14 @@ export class ActivityInputComponent implements OnInit, AfterViewInit {
       Object.assign(this.errors, validations);
       try { this.cd.detectChanges(); } catch (e) { }
     } catch (e) { /* ignore */ }
+  }
+
+  onStartTimeChanged() {
+    // Fires only from genuine user interaction with the Start Time picker
+    // (never from our own programmatic date-based defaulting below), so this
+    // is a safe signal that the user now owns the time — stop auto-filling it.
+    this.startTimeUserSet = true;
+    this.clearTimeError();
   }
 
   clearDateError() {

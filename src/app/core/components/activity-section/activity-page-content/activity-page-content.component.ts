@@ -260,7 +260,11 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                         habitData = habitData.filter((h: any) => {
                             // Check assignedTo first — tasks/habits created by a parent have userId=parent but assignedTo=child
                             const habitUserId = h.assignedTo ?? h.assigned_to ?? h.userId ?? h.user_id;
-                            return habitUserId == selectedChildId;
+                            const belongsToSelectedChild = habitUserId == selectedChildId;
+                            // A parent must never see an item the child marked Private
+                            // (sharedWithParent === false) — that's the point of the toggle.
+                            const isSharedWithParent = h.sharedWithParent !== false;
+                            return belongsToSelectedChild && isSharedWithParent;
                         });
                     }
 
@@ -330,7 +334,11 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                         list = list.filter((t: any) => {
                             // Check assignedTo first — tasks created by a parent have userId=parent but assignedTo=child
                             const taskUserId = t.assignedTo ?? t.assigned_to ?? t.userId ?? t.user_id;
-                            return taskUserId == selectedChildId;
+                            const belongsToSelectedChild = taskUserId == selectedChildId;
+                            // A parent must never see an item the child marked Private
+                            // (sharedWithParent === false) — that's the point of the toggle.
+                            const isSharedWithParent = t.sharedWithParent !== false;
+                            return belongsToSelectedChild && isSharedWithParent;
                         });
                     }
 

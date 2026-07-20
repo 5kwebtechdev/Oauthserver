@@ -68,7 +68,8 @@ export class CalendarService {
                 priority: task.priority,
                 status: rawStatus.toLowerCase(),
                 // Preserve creator id if provided by backend (createdBy or created_by)
-                createdBy: (task as any).createdBy ?? (task as any).created_by ?? (task as any).created_by_id ?? undefined
+                createdBy: (task as any).createdBy ?? (task as any).created_by ?? (task as any).created_by_id ?? undefined,
+                sharedWithParent: (task as any).sharedWithParent
             });
         });
 
@@ -97,7 +98,8 @@ export class CalendarService {
                 priority: habit.priority,
                 status: habit.status,
                 // Preserve creator id if provided by backend
-                createdBy: (habit as any).createdBy ?? (habit as any).created_by ?? (habit as any).created_by_id ?? undefined
+                createdBy: (habit as any).createdBy ?? (habit as any).created_by ?? (habit as any).created_by_id ?? undefined,
+                sharedWithParent: (habit as any).sharedWithParent
             });
         });
 

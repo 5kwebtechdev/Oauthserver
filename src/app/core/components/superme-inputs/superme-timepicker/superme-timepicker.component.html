@@ -1,5 +1,5 @@
 <div class="superme-timepicker-wrapper">
-  <input type="text" [attr.placeholder]="placeholder" [value]="hasValue ? timeString : ''"
+  <input type="text" [attr.placeholder]="placeholder" [value]="hasValue ? timeString : ''" [disabled]="disabled"
     (click)="openPopup()" class="time-display-input" readonly />
 
   <div class="overlay" *ngIf="showPopup">

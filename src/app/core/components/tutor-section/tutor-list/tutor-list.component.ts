@@ -21,7 +21,7 @@ import { AuthService } from '../../../services/auth.service';
 export class TutorListComponent implements OnChanges {
   @Input() tutors: TutorListItem[] = [];
   @Input() itemLabel = 'Tutor';
-  @Input() fallbackAvatar = 'assets/images/Avatar.png';
+  @Input() fallbackAvatar = 'assets/Images-Transparent/Image-Tutor.png';
   @Input() adScreen?: AdScreen;
 
   // track subscriptions / live states

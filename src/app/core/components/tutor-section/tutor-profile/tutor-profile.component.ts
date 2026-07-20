@@ -34,6 +34,7 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   @Input() tutor: Tutor | undefined;
   @Input() categoryKey: string | null = null;
   categoryFieldRows: Array<{ label: string; value: string }> = [];
+  readonly fallbackProfileImage = 'assets/Images-Transparent/Image-Tutor.png';
 
   // Like toggle state
   isLiked = false;
@@ -139,8 +140,9 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   getExperienceString(): string {
-    const years = this.getExperienceYears();
-    if (years > 0) return `${years}+ years Exp`;
+    const fromMappings = (this.tutor?.categoryMappings || [])
+      .reduce((max, m) => Math.max(max, m.yearsOfExperience || 0), 0);
+    if (fromMappings > 0) return `${fromMappings}+ years Exp`;
     if (!this.tutor?.experience || this.tutor.experience === 'FRESHER') return 'Fresher';
     return formatExperience(this.tutor.experience);
   }
@@ -156,6 +158,17 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
 
   getProfileNameFallback(): string {
     return this.isAcademyProfile() ? 'Unknown Academy' : 'Unknown Tutor';
+  }
+
+  getProfileImage(): string {
+    return this.tutor?.profilePicUrl?.trim() || this.fallbackProfileImage;
+  }
+
+  onProfileImageError(event: Event): void {
+    const image = event.target as HTMLImageElement;
+    if (!image.src.endsWith(this.fallbackProfileImage)) {
+      image.src = this.fallbackProfileImage;
+    }
   }
 
   getProfileSubtitle(): string {

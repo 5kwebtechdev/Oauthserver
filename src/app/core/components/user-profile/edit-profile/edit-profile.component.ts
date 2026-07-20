@@ -689,17 +689,14 @@ export class EditProfileComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Sync the backend response into legacy `user_data` localStorage (login cache)
-   * so other parts that read from `user_data` stay consistent.
+   * Sync the backend response into `user_data` (localStorage + AuthService's
+   * in-memory BehaviorSubject) so already-loaded pages — like the Profile
+   * screen's age display — reflect the change immediately instead of only
+   * after a fresh logout/login reloads everything from scratch.
    */
   private syncUserDataStorage(response: any): void {
     try {
-      const raw = localStorage.getItem('user_data');
-      if (!raw) return;
-
-      const parsed = JSON.parse(raw);
-      // Merge known fields from response into the stored object
-      const merged = { ...parsed };
+      const merged: any = {};
       if (response.id !== undefined) merged.id = response.id;
       if (response.name !== undefined) merged.name = response.name;
       if (response.email !== undefined) merged.email = response.email;
@@ -708,11 +705,43 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       if (response.gender !== undefined) merged.gender = response.gender;
       if (response.avatar !== undefined) merged.avatar = response.avatar;
 
-      localStorage.setItem('user_data', JSON.stringify(merged));
-      console.log('[EditProfile] Synced user_data in localStorage');
+      // The Profile page displays a precomputed `age` field rather than
+      // deriving it live from dateOfBirth, so it must be refreshed here too —
+      // otherwise a stale `age` silently overrides the new date of birth.
+      if (response.age !== undefined) {
+        merged.age = response.age;
+      } else if (response.dateOfBirth !== undefined) {
+        const computedAge = this.calculateAgeFromDob(response.dateOfBirth);
+        if (computedAge !== null) merged.age = computedAge;
+      }
+
+      // IMPORTANT: this.authService is PackageAuthService (a different class
+      // from package/api/auth.service.ts) — the Profile page actually reads
+      // from CoreAuthService.userData$, so updates must go through that one.
+      this.coreAuthService.updateUserData(merged);
+      console.log('[EditProfile] Synced user_data via CoreAuthService.updateUserData', merged);
     } catch (e) {
-      console.error('[EditProfile] Failed to sync user_data in localStorage:', e);
+      console.error('[EditProfile] Failed to sync user_data:', e);
     }
+  }
+
+  /**
+   * Same age-calculation logic used elsewhere in the app (AuthService's
+   * extractAgeFromUserData) so the recomputed value stays consistent.
+   */
+  private calculateAgeFromDob(dob: string): number | null {
+    const birthDate = new Date(dob);
+    if (Number.isNaN(birthDate.getTime())) return null;
+
+    const today = new Date();
+    let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      calculatedAge--;
+    }
+
+    return calculatedAge > 0 ? calculatedAge : null;
   }
 
   /**

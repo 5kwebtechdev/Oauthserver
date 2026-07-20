@@ -125,13 +125,21 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy, ViewWillEnt
         // callback arrives outside Angular's zone (common on Capacitor/Android)
         this.ngZone.run(() => {
           // The ProfileSelectorInterceptor already sends forUserId to the server,
-          // so the response is already scoped to the selected child. No client-side filter needed.
+          // so the response is already scoped to the selected child.
           const events = this.calendarService.transformToTimelineEvents(response);
 
-          this.allEvents = [...events];
+          // A parent must never see an item the child explicitly marked
+          // Private (sharedWithParent === false) — that's the whole point
+          // of the Private toggle. Items with no such flag (events/timetable)
+          // are left untouched.
+          const visibleEvents = this.isParentUser()
+            ? events.filter(e => e.sharedWithParent !== false)
+            : events;
+
+          this.allEvents = [...visibleEvents];
           this.filteredEvents = this.selectedType === 'all'
-            ? [...events]
-            : [...events.filter(e => e.type === this.selectedType)];
+            ? [...visibleEvents]
+            : [...visibleEvents.filter(e => e.type === this.selectedType)];
 
           this.totalHabits = response.totalHabits || 0;
           this.totalHabitsCompleted = response.totalHabitsCompleted || 0;
@@ -141,7 +149,7 @@ export class ActivityTimelineComponent implements OnInit, OnDestroy, ViewWillEnt
           this.taskCompletionRate = response.taskCompletionRate || 0;
 
           // Persist to localStorage so next visit shows data instantly
-          this.saveToCache(events, response);
+          this.saveToCache(visibleEvents, response);
 
           this.cdr.detectChanges();
         });
