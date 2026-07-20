@@ -2,7 +2,7 @@ export const environment = {
   production: true,
   apiUrl: 'https://api.supermeapp.com/v1',
   // apiUrl: 'http://localhost:8080/v1',
-  apiAuthToken: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzIiwiaWQiOjMsIm5hbWUiOiJKb2huIHdpY2siLCJnZW5kZXIiOiJNQUxFIiwiZGF0ZU9mQmlydGgiOjk0NjY4NDcwMDAwMCwicmVsYXRpb25zaGlwIjoiU0VMRiIsImlhdCI6MTc1ODA5ODQ0MywiZXhwIjoxNzg5NjM0NDQzfQ.Cw5X42RBabW1ZgMm_QHSeYcOElREtmke476YoKNjni8',
+  apiAuthToken: 'Bearer',
   firebase: {
     apiKey: 'AIzaSyBo8GqPQ0Ac2g8tzBS0YCewwLJ-vgouTi4',
     authDomain: 'supermeapp-74589.firebaseapp.com',

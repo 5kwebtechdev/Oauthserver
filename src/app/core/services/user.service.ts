@@ -80,8 +80,32 @@ export class UserService {
     const currentProfile = this.userProfileSubject.value || {} as UserProfile;
     const updatedProfile = { ...currentProfile, ...profile };
 
+    // Whenever dob changes but the caller didn't also pass a fresh `age`,
+    // recompute it here so this cache never keeps serving a stale age
+    // (this is a second, independent store from AuthService's user_data).
+    if (profile.dob !== undefined && profile.age === undefined) {
+      const computedAge = this.calculateAgeFromDob(profile.dob);
+      if (computedAge !== null) updatedProfile.age = computedAge;
+    }
+
     this.userProfileSubject.next(updatedProfile);
     this.saveUserToStorage(updatedProfile);
+  }
+
+  private calculateAgeFromDob(dob: string): number | null {
+    if (!dob) return null;
+    const birthDate = new Date(dob);
+    if (Number.isNaN(birthDate.getTime())) return null;
+
+    const today = new Date();
+    let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      calculatedAge--;
+    }
+
+    return calculatedAge > 0 ? calculatedAge : null;
   }
 
   /**

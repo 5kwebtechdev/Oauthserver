@@ -36,6 +36,12 @@
     width: var(--icon-nav, 24px);
     height: var(--icon-nav, 24px);
   }
+
+  ion-icon {
+    width: var(--icon-nav, 24px);
+    height: var(--icon-nav, 24px);
+    color: #979396;
+  }
 }
 
 .footer-item.active {
@@ -43,6 +49,10 @@
 
   svg path {
     stroke: #90214D;
+  }
+
+  ion-icon {
+    color: #90214D;
   }
 
   .footer-text {

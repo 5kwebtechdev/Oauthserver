@@ -42,7 +42,7 @@ export interface Habit {
   createdById?: number;
   createdByName?: string;
   createdBy?: string;
-  sharedWithParents?: boolean;
+  sharedWithParent?: boolean;
   completed?: boolean;
   rewardCoins?: number;
   familyId?: number | null;

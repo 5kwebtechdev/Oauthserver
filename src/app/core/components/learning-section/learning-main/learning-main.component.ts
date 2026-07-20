@@ -2,10 +2,10 @@ import { Component, Input, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Observable, Subject, of } from 'rxjs';
+import { catchError, map, takeUntil } from 'rxjs/operators';
 import { HttpClientModule } from '@angular/common/http';
 import { FooterComponent } from 'src/app/core/components/footer/footer.component';
 import { SupermePetComponent } from 'src/app/core/components/superme-pet/superme-pet.component';
@@ -13,6 +13,8 @@ import { LearningService } from 'src/app/core/services/learning.service';
 import { LearningCardData, LearningCategorySummary } from 'src/app/core/models/learning.models';
 import { EmptyStateComponent } from 'src/app/core/components/empty-state/empty-state.component';
 import { CustomToastService } from 'src/app/core/services/custom-toast.service';
+import { AcademyCategory, AcademyService } from 'src/app/core/services/academy.service';
+import { AuthService } from 'src/app/core/services/auth.service';
 import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
 import { LearningChallengeCardComponent } from '../learning-card/learning-challenge-card.component';
 import { LearningArticleCardComponent } from '../learning-card/learning-article-card.component';
@@ -96,6 +98,9 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   constructor(
     private learningService: LearningService,
     private toastService: CustomToastService,
+    private academyService: AcademyService,
+    private authService: AuthService,
+    private router: Router,
     private zone: NgZone
   ) { }
 
@@ -127,18 +132,56 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       });
   }
 
-  private getCategoryRequest(tab: LearningCategoryTab) {
+  private getCategoryRequest(tab: LearningCategoryTab): Observable<LearningCategorySummary[]> {
     switch (tab) {
       case 'quizzes':
         return this.learningService.fetchChallengeCategorySummary('QUIZ');
       case 'articles':
         return this.learningService.fetchArticleCategories();
       case 'masterclass':
-        return this.learningService.fetchChallengeCategories();
+        return this.fetchMasterClassCategories();
       case 'puzzles':
       default:
         return this.learningService.fetchChallengeCategorySummary('PUZZLE');
     }
+  }
+
+  /**
+   * MasterClass reuses the same Life Skills Quest categories shown on the
+   * Academy home screen, instead of the generic (and often test-data-polluted)
+   * challenge categories endpoint.
+   */
+  private fetchMasterClassCategories(): Observable<LearningCategorySummary[]> {
+    return this.academyService.getCategories().pipe(
+      map((categories: AcademyCategory[]) => (categories || [])
+        .filter(category => (category.status || 'ACTIVE').toUpperCase() === 'ACTIVE')
+        .map(category => this.mapAcademyCategoryToSummary(category))),
+      catchError(error => {
+        console.error('Error fetching Life Skills Quest categories for MasterClass:', error);
+        return of([]);
+      })
+    );
+  }
+
+  private mapAcademyCategoryToSummary(category: AcademyCategory): LearningCategorySummary {
+    return {
+      id: category.id,
+      name: this.formatMasterClassTitle(category.categoryName),
+      categoryName: category.categoryName,
+      description: category.description || '',
+      thumbnailUrl: category.thumbnailUrl || '',
+      image: category.thumbnailUrl || '',
+      status: category.status,
+      count: category.courseCount || 0,
+      type: 'masterclass'
+    };
+  }
+
+  private formatMasterClassTitle(categoryName: string): string {
+    const title = (categoryName || '').trim().replace(/_/g, ' ');
+    const isAllCaps = title === title.toUpperCase();
+    if (!isAllCaps) return title;
+    return title.toLowerCase().replace(/\b\w/g, letter => letter.toUpperCase());
   }
 
   ngOnDestroy(): void {
@@ -379,6 +422,19 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   onCategoryCardClick(item: LearningCategorySummary): void {
     const categoryName = item.categoryName || item.name;
     if (!categoryName) return;
+
+    if (this.selectedCategory === 'masterclass') {
+      const age = this.authService.getCurrentUserAge();
+      const queryParams: Record<string, string | number> = {
+        category: categoryName,
+        categoryId: item.id,
+        title: this.getCategoryTitle(item),
+        subtitle: item.description || ''
+      };
+      if (age) queryParams['age'] = age;
+      this.router.navigate(['/authed/academy/subject'], { queryParams });
+      return;
+    }
 
     this.selectedCategoryItem = item;
     this.categoryContentItems = [];

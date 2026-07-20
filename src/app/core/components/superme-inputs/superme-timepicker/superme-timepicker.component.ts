@@ -27,6 +27,10 @@ import {
 export class SupermeTimepickerComponent implements ControlValueAccessor {
   @Input() disabled = false;
   @Input() placeholder: string = 'Time';
+  // Optional "h:mm AM/PM" string to seed the popup's clock position when no
+  // value is chosen yet (e.g. seed End Time from Start Time). Falls back to
+  // the current time when not provided.
+  @Input() seedTime: string | null = null;
 
   @ViewChild('popup') popupRef!: ElementRef;
   @ViewChild('hourInput') hourInputRef!: ElementRef<HTMLInputElement>;
@@ -67,7 +71,24 @@ export class SupermeTimepickerComponent implements ControlValueAccessor {
       this.hourBuffer = this.selectedHour.toString().padStart(2, '0');
       this.minuteBuffer = this.selectedMinute.toString().padStart(2, '0');
       this.hasValue = true;
+    } else {
+      // No time chosen (fresh form, or the parent explicitly cleared it e.g.
+      // for a future date). Just reset hasValue here so the field shows its
+      // placeholder instead of a stale time left over from a previous form
+      // use — the actual clock position gets (re-)seeded in openPopup(),
+      // using whatever seedTime/now is current at the moment the user taps
+      // it, not whatever it happened to be when this value was last cleared.
+      this.hasValue = false;
     }
+  }
+
+  private parseSeedTime(value: string | null): { hour: number; minute: number; period: 'AM' | 'PM' } | null {
+    if (!value) return null;
+    const [time, period] = value.trim().split(' ');
+    if (period !== 'AM' && period !== 'PM') return null;
+    const [hour, minute] = time.split(':').map(Number);
+    if (isNaN(hour) || isNaN(minute)) return null;
+    return { hour, minute, period };
   }
 
   registerOnChange(fn: any): void { this.onChange = fn; }
@@ -75,6 +96,30 @@ export class SupermeTimepickerComponent implements ControlValueAccessor {
 
   openPopup() {
     if (this.disabled) return;
+
+    // Seed the clock's starting position fresh every time it opens with no
+    // value chosen yet — prefer seedTime (e.g. End Time seeding from
+    // whatever Start Time currently is) over "now", since "now" is usually
+    // already in the past for a same-day End Time and would make the very
+    // first confirm attempt fail with a "time already passed" error.
+    if (!this.hasValue) {
+      const seeded = this.parseSeedTime(this.seedTime);
+      if (seeded) {
+        this.selectedHour = seeded.hour;
+        this.selectedMinute = seeded.minute;
+        this.ampm = seeded.period;
+      } else {
+        const now = new Date();
+        let hour = now.getHours();
+        const period: 'AM' | 'PM' = hour >= 12 ? 'PM' : 'AM';
+        if (hour === 0) hour = 12;
+        else if (hour > 12) hour -= 12;
+        this.selectedHour = hour;
+        this.selectedMinute = now.getMinutes();
+        this.ampm = period;
+      }
+    }
+
     this.selecting = 'hour';
     this.editingField = null;
     this.hourBuffer = this.selectedHour.toString().padStart(2, '0');

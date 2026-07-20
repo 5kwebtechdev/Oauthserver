@@ -229,7 +229,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
       endTime: res.endTime || res.end_time || '',
       startTimeStamp: timestamps.startTimeStamp,
       endTimeStamp: timestamps.endTimeStamp,
-      isPrivate: !res.sharedWithParents,
+      isPrivate: !res.sharedWithParent,
       selectedRoutine: res.routine || '',
       routineTags: [],
       everyday: res.everyday || false,
@@ -258,7 +258,7 @@ export class ActivityDetailComponent implements OnInit, OnChanges, OnDestroy {
       createdById: res.createdById,
       createdByName: res.createdByName,
       createdBy: res.createdBy || res.createdByName,
-      sharedWithParents: res.sharedWithParents || false,
+      sharedWithParent: res.sharedWithParent || false,
       completed: res.completed || false,
       familyId: res.familyId,
       updatedAt: res.updatedAt

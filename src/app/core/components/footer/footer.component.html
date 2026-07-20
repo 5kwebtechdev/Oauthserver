@@ -20,7 +20,7 @@
     </svg>
     <span class="footer-text">Learning</span>
   </a>
-  <a href="/authed/coin" class="footer-item" [class.active]="isRouteActive('/authed/coin')"
+  <a *ngIf="isParentUser()" href="/authed/coin" class="footer-item" [class.active]="isRouteActive('/authed/coin')"
     (click)="navigateTab($event, '/authed/coin')">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 27 26" fill="none">
       <path
@@ -28,6 +28,12 @@
         stroke="#979396" stroke-width="1.5" />
     </svg>
     <span class="footer-text">Coins</span>
+  </a>
+  <a *ngIf="!isParentUser()" href="/authed/school-store" class="footer-item"
+    [class.active]="isRouteActive('/authed/school-store')"
+    (click)="navigateTab($event, '/authed/school-store')">
+    <ion-icon name="storefront-outline" class="footer-shop-icon" aria-hidden="true"></ion-icon>
+    <span class="footer-text">Shop</span>
   </a>
   <a class="home-button" role="link" aria-label="Open dashboard" [href]="getDashboardLink()"
     (click)="navigateToDashboard($event)">

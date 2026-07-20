@@ -59,8 +59,9 @@ h1 {
 	width: 96px;
 	height: 96px;
 	border-radius: 50%;
-	background-size: cover;
-	background-position: center top;
+	object-fit: cover;
+	object-position: center top;
+	display: block;
 	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.10);
 	border: 3px solid #FFF;
 	flex-shrink: 0;

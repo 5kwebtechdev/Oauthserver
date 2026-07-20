@@ -200,5 +200,14 @@
       color: #6B656A;
       opacity: 0.6;
     }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+
+      &::placeholder {
+        opacity: 0.5;
+      }
+    }
   }
 }

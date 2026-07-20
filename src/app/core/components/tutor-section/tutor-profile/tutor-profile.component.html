@@ -3,9 +3,8 @@
     (rightActionClick)="handleNavAction($event)"></superme-navigator>
   <div class="tutor-profile-root">
     <div class="hero">
-      <div class="avatar"
-        [ngStyle]="{'background-image': 'url(' + (tutor?.profilePicUrl || 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png') + ')'}">
-      </div>
+      <img class="avatar" [src]="getProfileImage()" [alt]="(tutor?.name || getProfileNameFallback()) + ' profile'"
+        (error)="onProfileImageError($event)" />
       <div class="info">
         <h2 class="name">{{ tutor?.name || getProfileNameFallback() }}</h2>
         <h3 class="achievement">{{ getProfileSubtitle() }}</h3>
