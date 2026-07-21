@@ -65,11 +65,24 @@
         <div class="address-popup" [class.open]="showAddressPopup" role="dialog" aria-modal="true" aria-label="Address options">
             <div class="address-popup-inner">
                 <button class="popup-close" aria-label="Close" (click)="closeAddressPopup()">✕</button>
-                <div class="address-item" *ngFor="let a of addresses" (click)="selectAddress(a)" [class.selected]="selectedId === a.id" role="button" tabindex="0" (keyup.enter)="selectAddress(a)">
-                    <div class="address-text" [innerHTML]="a.html"></div>
+                <div *ngIf="addressesLoading" class="address-status">Loading addresses...</div>
+                <div *ngIf="!addressesLoading && addressesError" class="address-status address-status--error">
+                    <span>Unable to load addresses.</span>
+                    <button type="button" (click)="loadAddresses()">Retry</button>
+                </div>
+                <div *ngIf="!addressesLoading && !addressesError && !addresses.length" class="address-status">
+                    No saved address found.
                 </div>
 
-                <button class="add-address">+ Add Address</button>
+                <div class="address-item" *ngFor="let address of addresses"
+                    (click)="selectAddress(address)"
+                    [class.selected]="selectedAddress?.id === address.id"
+                    [class.updating]="updatingDefaultAddressId === address.id"
+                    role="button" tabindex="0" (keyup.enter)="selectAddress(address)">
+                    <div class="address-text" [innerHTML]="formatAddressHtml(address)"></div>
+                </div>
+
+                <button class="add-address" (click)="openAddressInput()">+ Add Address</button>
             </div>
         </div>
     </main>

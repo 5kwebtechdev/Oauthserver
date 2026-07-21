@@ -339,6 +339,35 @@ align-self: stretch;
 	color: #90214D;
 }
 
+.address-item.updating{
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+.address-status{
+	display: flex;
+	width: 100%;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	color: #6B656A;
+	font-family: var(--font-sans);
+	font-size: 14px;
+}
+
+.address-status button{
+	border: 0;
+	background: transparent;
+	color: #90214D;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.address-status--error{
+	color: #B42318;
+}
+
 .add-address{
 	background: transparent;
 	border: 0;

@@ -1,6 +1,6 @@
 ﻿import { Component, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ViewWillEnter } from '@ionic/angular';
+import { AlertController, IonicModule, ViewWillEnter } from '@ionic/angular';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { CartService } from '../../../../services/cart.service';
@@ -85,7 +85,8 @@ export class MyCartComponent implements OnInit, OnDestroy, ViewWillEnter {
         private toastService: CustomToastService,
         private addressService: AddressService,
         private cartService: CartService,
-        private schoolContext: SchoolContextService
+        private schoolContext: SchoolContextService,
+        private alertController: AlertController
     ) { }
 
     ngOnInit(): void {
@@ -447,6 +448,11 @@ export class MyCartComponent implements OnInit, OnDestroy, ViewWillEnter {
     }
 
     addToCart(): void {
+        if (this.isChildUser()) {
+            void this.showParentApprovalRequired();
+            return;
+        }
+
         if (!this.selectedAddress) {
             this.toastService.error('Please select a delivery address first.');
             this.openAddressPopup();
@@ -464,6 +470,23 @@ export class MyCartComponent implements OnInit, OnDestroy, ViewWillEnter {
                 classId:      this.classId
             }
         });
+    }
+
+    private isChildUser(): boolean {
+        return String(this.authService.getUserRelationship() ?? '').toUpperCase() === 'CHILD';
+    }
+
+    private async showParentApprovalRequired(): Promise<void> {
+        const alert = await this.alertController.create({
+            header: 'Parent Approval Required',
+            message: 'A parent must approve this purchase and complete the payment from their account.',
+            backdropDismiss: true,
+            buttons: [{
+                text: 'Got it',
+                role: 'cancel'
+            }]
+        });
+        await alert.present();
     }
 
     get totalPrice(): number {

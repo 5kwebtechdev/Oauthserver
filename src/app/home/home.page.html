@@ -1,43 +1,238 @@
-<div *ngIf="!isAuthenticated" class="carousel-wrapper"
-  [style.background]="slides[currentSlide].background"
+<main
+  *ngIf="!isAuthenticated"
+  class="onboarding"
   (touchstart)="onTouchStart($event)"
-  (touchend)="onTouchEnd($event)">
+  (touchend)="onTouchEnd($event)"
+  aria-label="SuperMeApp introduction"
+>
+  <div
+    class="slides-track"
+    [style.transform]="'translate3d(-' + (currentSlide * 100) + '%, 0, 0)'"
+  >
+    <section
+      class="onboarding-slide super-slide"
+      [attr.aria-hidden]="currentSlide !== 0"
+      [attr.aria-label]="slides[0]"
+    >
+      <div class="slide-canvas">
+        <header class="hero-heading super-heading">
+          <span>Super App</span>
+          <span>For <strong class="gradient-text">Super YOU!</strong></span>
+          <i class="accent-burst" aria-hidden="true"><b></b><b></b><b></b></i>
+          <i class="gradient-underline" aria-hidden="true"></i>
+        </header>
 
-  <!-- Images stacked — only the active one is visible -->
-  <div class="image-container">
-    <img *ngFor="let slide of slides; let i = index"
-         [src]="slide.image"
-         [class.active]="i === currentSlide"
-         class="slide-image"
-         alt="Slide Image" />
+        <div class="super-scene" aria-hidden="true">
+          <article class="floating-card own-day-card">
+            <img src="assets/Images-Transparent/Image-Home-Completed.png" alt="" />
+            <strong>Own Your<br />Day.</strong>
+            <small>Plan. Focus. Achieve.</small>
+            <i class="progress-line purple"></i>
+          </article>
+
+          <article class="floating-card streak-card">
+            <img src="assets/icons/insights-flame.svg" alt="" />
+            <strong><em>14</em> Day<br />Streak</strong>
+            <i class="streak-dots"><b></b><b></b><b></b><b></b><b></b></i>
+          </article>
+
+          <article class="floating-card coins-card">
+            <img src="assets/Icons-Neutral/Icons-Coins.png" alt="" />
+            <strong><em>+25</em><br />Coins Earned</strong>
+            <i class="coin-bars"><b></b><b></b><b></b></i>
+          </article>
+
+          <article class="floating-card brain-card">
+            <img src="assets/icons/insights-book.svg" alt="" />
+            <strong>Train Your<br />Brain.</strong>
+            <small>Quizzes, Puzzles<br />&amp; Courses.</small>
+          </article>
+
+          <article class="floating-card panda-card">
+            <img src="assets/Images-Transparent/Image-Onboarding-Pet2.png" alt="" />
+            <strong>Panda is<br />Happy!</strong>
+            <i class="progress-line green"></i>
+          </article>
+
+          <article class="floating-card reflect-card">
+            <img src="assets/icons/insights-mood-sun.svg" alt="" />
+            <strong>Reflect &amp;<br />Grow.</strong>
+            <small>Mood, Journal &amp;<br />mindful you.</small>
+          </article>
+
+          <img
+            class="super-person"
+            src="assets/School-assets/Boys Uniform.png"
+            alt=""
+          />
+          <img class="scene-coin coin-one" src="assets/icons/insights-coin.svg" alt="" />
+          <img class="scene-coin coin-two" src="assets/icons/insights-coin.svg" alt="" />
+          <i class="sparkle sparkle-one"></i>
+          <i class="sparkle sparkle-two"></i>
+        </div>
+      </div>
+    </section>
+
+    <section
+      class="onboarding-slide foundations-slide"
+      [attr.aria-hidden]="currentSlide !== 1"
+      [attr.aria-label]="slides[1]"
+    >
+      <div class="slide-canvas">
+        <header class="hero-heading foundations-heading">
+          <span>Built On 4</span>
+          <strong class="gradient-text">Foundational Blocks</strong>
+          <span>For Real Life Growth</span>
+          <i class="accent-burst" aria-hidden="true"><b></b><b></b><b></b></i>
+          <i class="gradient-underline" aria-hidden="true"></i>
+        </header>
+
+        <div class="foundation-list">
+          <article class="foundation-card habits-card">
+            <span class="foundation-icon">
+              <img src="assets/icons/insights-flame.svg" alt="" />
+            </span>
+            <span>
+              <strong>Habits</strong>
+              <small>Build habits that<br />actually stick.</small>
+            </span>
+          </article>
+
+          <article class="foundation-card tasks-card">
+            <span class="foundation-icon">
+              <img src="assets/Icons-Neutral/Icon-Badge-HabitMaster.png" alt="" />
+            </span>
+            <span>
+              <strong>Tasks</strong>
+              <small>Get things done,<br />every single day.</small>
+            </span>
+          </article>
+
+          <article class="foundation-card time-card">
+            <span class="foundation-icon">
+              <img src="assets/Icons-Neutral/Icon-Timer.png" alt="" />
+            </span>
+            <span>
+              <strong>Time</strong>
+              <small>Own every hour,<br />master your day.</small>
+            </span>
+          </article>
+
+          <article class="foundation-card learning-card">
+            <span class="foundation-icon">
+              <img src="assets/icons/insights-book.svg" alt="" />
+            </span>
+            <span>
+              <strong>Learning</strong>
+              <small>Grow smarter with<br />adaptive content.</small>
+            </span>
+          </article>
+        </div>
+
+        <i class="sparkle foundation-spark-one"></i>
+        <i class="sparkle foundation-spark-two"></i>
+        <i class="sparkle foundation-spark-three"></i>
+        <i class="sparkle foundation-spark-four"></i>
+      </div>
+    </section>
+
+    <section
+      class="onboarding-slide roles-slide"
+      [attr.aria-hidden]="currentSlide !== 2"
+      [attr.aria-label]="slides[2]"
+    >
+      <div class="slide-canvas">
+        <header class="hero-heading roles-heading">
+          <span>Three Ways To</span>
+          <strong class="gradient-text">Join SuperMeApp</strong>
+          <i class="accent-burst" aria-hidden="true"><b></b><b></b><b></b></i>
+          <i class="gradient-underline" aria-hidden="true"></i>
+          <p>From private personal spaces to connected family<br />accounts, select the option that fits your need</p>
+        </header>
+
+        <div class="role-list">
+          <article class="role-card self-role">
+            <div class="role-art">
+              <img src="assets/Images-Transparent/Image-Role-Self.png" alt="" />
+            </div>
+            <div class="role-copy">
+              <strong>Self</strong>
+              <i></i>
+              <p>100% private. Your<br />journey, your progress,<br />for your eyes only.</p>
+            </div>
+            <span class="role-spark"></span>
+          </article>
+
+          <article class="role-card child-role">
+            <div class="role-art">
+              <img src="assets/Images-Transparent/Image-Role-Child.png" alt="" />
+            </div>
+            <div class="role-copy">
+              <strong>Child</strong>
+              <i></i>
+              <p>Safe place for kids to<br />learn and grow. Sync<br />your account with<br />your parents and<br />show off your wins.</p>
+            </div>
+            <span class="role-spark"></span>
+          </article>
+
+          <article class="role-card parent-role">
+            <div class="role-art">
+              <img src="assets/Images-Transparent/Image-Role-Parent.png" alt="" />
+            </div>
+            <div class="role-copy">
+              <strong>Parent</strong>
+              <i></i>
+              <p>Guide, Reward, Celebrate.<br />Build confidence,<br />accountability, and<br />healthy habits together.</p>
+            </div>
+            <span class="role-spark"></span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section
+      class="onboarding-slide rewards-slide"
+      [attr.aria-hidden]="currentSlide !== 3"
+      [attr.aria-label]="slides[3]"
+    >
+      <div class="slide-canvas">
+        <header class="hero-heading rewards-heading">
+          <span>Stay <strong class="gradient-text">Consistent</strong> Earn</span>
+          <span><strong class="gradient-text">Rewards</strong> Redeem &amp;</span>
+          <span><strong class="gradient-text">Shop</strong> Awesome Stuff!</span>
+          <i class="accent-burst" aria-hidden="true"><b></b><b></b><b></b></i>
+          <i class="gradient-underline" aria-hidden="true"></i>
+          <p>Turn your efforts into coins, unlock rewards, and shop for things that excite and motivate you !</p>
+        </header>
+
+        <div class="rewards-scene" aria-hidden="true">
+          <img
+            class="rewards-composite"
+            src="assets/School-assets/Rewards-Composite.png"
+            alt=""
+          />
+        </div>
+
+        <button
+          type="button"
+          class="journey-button"
+          [attr.tabindex]="currentSlide === 3 ? 0 : -1"
+          (click)="startJourney()"
+        >
+          Let's Personalize Your Journey
+        </button>
+      </div>
+    </section>
   </div>
 
-  <!-- Text section: same gradient as slide -->
-  <div class="text-content" [style.background]="slides[currentSlide].background">
-    <div class="text-body-wrapper">
-      <div *ngFor="let slide of slides; let i = index"
-           class="text-body"
-           [class.active]="i === currentSlide">
-        <h2 [style.color]="slide.color">{{ slide.title }}</h2>
-        <ul>
-          <li *ngFor="let line of slide.subtitle">{{ line }}</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="carousel-footer">
-      <div class="dots">
-        <span *ngFor="let s of slides; let i = index"
-              [class.active]="i === currentSlide"
-              (click)="setSlide(i)"></span>
-      </div>
-      <button class="next-btn"
-              [style.background-color]="slides[currentSlide].next_color"
-              [style.color]="slides[currentSlide].color"
-              (click)="nextSlide()"
-              aria-label="Next slide">
-        <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
-      </button>
-    </div>
-  </div>
-</div>
+  <nav class="pagination" aria-label="Onboarding slides">
+    <button
+      *ngFor="let slide of slides; let i = index"
+      type="button"
+      [class.active]="i === currentSlide"
+      [attr.aria-current]="i === currentSlide ? 'step' : null"
+      [attr.aria-label]="'Show slide ' + (i + 1) + ': ' + slide"
+      (click)="setSlide(i)"
+    ></button>
+  </nav>
+</main>

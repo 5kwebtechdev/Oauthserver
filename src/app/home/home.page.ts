@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { Router } from "@angular/router";
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { NavController } from '@ionic/angular';
 import { AuthService } from '../core/services/auth.service';
 
@@ -9,101 +11,106 @@ import { AuthService } from '../core/services/auth.service';
   styleUrls: ['home.page.scss'],
   standalone: false,
 })
-export class HomePage implements OnInit {
-
-  currentSlide = 0;
-  touchStartX = 0;
-  touchEndX = 0;
-  isAuthenticated = false;
-
-  slides = [
-    {
-      image: 'assets/Images-Thumbnails/Image-Onboarding1.jpg',
-      title: 'Stick to cool habits!',
-      subtitle: [
-        'Track your tasks.',
-        'Earn fun rewards.',
-        'Keep going strong.'
-      ],
-      background: 'linear-gradient(169.84deg, #F28745 0%, #F6AC72 52.35%, #EE6621 98.8%)',
-      color: '#772817',
-      next_color: "#FAD2AE"
-    },
-    {
-      image: 'assets/Images-Thumbnails/Image-Onboarding2.jpg',
-      title: 'Grow with your pet!',
-      subtitle: [
-        'Finish tasks.',
-        'Level up.',
-        'Grow together.'
-      ],
-      background: 'linear-gradient(169.84deg, #ED84A0 0%, #F4ADBF 52.35%, #E1527C 98.8%)',
-      color: '#7C1F47',
-      next_color: "#F9D2DC"
-    },
-    {
-      image: 'assets/Images-Thumbnails/Image-Onboarding3.jpg',
-      title: 'Earn coins daily',
-      subtitle: [
-        'Track progress daily.',
-        'Earn cool rewards.',
-        'Spend in real.'
-      ],
-      background: 'linear-gradient(169.84deg, #8B8DCB 0%, #A1A7D8 52.35%, #7471BA 98.8%)',
-      color: '#46456A',
-      next_color: "#D6DBEF"
-    }
+export class HomePage implements OnInit, OnDestroy {
+  readonly slides = [
+    'Super App for Super You',
+    'Four Foundational Blocks',
+    'Three Ways to Join SuperMeApp',
+    'Stay Consistent and Earn Rewards',
   ];
 
-  constructor(
-    private router: Router,
-    private navCtrl: NavController,
-    private authService: AuthService
-  ) {
-    // Initialize the first slide
-    this.currentSlide = 0;
-  }
+  currentSlide = 0;
+  isAuthenticated = false;
 
-  ngOnInit() {
-    // Check if user is already logged in
+  private touchStartX = 0;
+  private touchStartY = 0;
+
+  constructor(
+    private readonly router: Router,
+    private readonly navCtrl: NavController,
+    private readonly authService: AuthService,
+  ) {}
+
+  ngOnInit(): void {
     this.isAuthenticated = this.authService.isLoggedIn();
 
     if (this.isAuthenticated) {
-      console.log('User is already logged in, redirecting to appropriate dashboard...');
       const dashboardRoute = this.authService.getDashboardRoute();
       this.router.navigate([dashboardRoute], { replaceUrl: true });
+      return;
+    }
+
+    document.body.classList.add('onboarding-active');
+    this.setOnboardingStatusBar();
+  }
+
+  ngOnDestroy(): void {
+    document.body.classList.remove('onboarding-active');
+
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+
+    StatusBar.setStyle({ style: Style.Light }).catch(() => undefined);
+    if (Capacitor.getPlatform() === 'android') {
+      StatusBar.setBackgroundColor({ color: '#FFE9D6' }).catch(() => undefined);
     }
   }
 
-  onTouchStart(event: TouchEvent) {
-    this.touchStartX = event.touches[0].clientX;
+  onTouchStart(event: TouchEvent): void {
+    const touch = event.touches[0];
+    this.touchStartX = touch.clientX;
+    this.touchStartY = touch.clientY;
   }
 
-  onTouchEnd(event: TouchEvent) {
-    this.touchEndX = event.changedTouches[0].clientX;
-    this.handleSwipe();
-  }
+  onTouchEnd(event: TouchEvent): void {
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - this.touchStartX;
+    const deltaY = touch.clientY - this.touchStartY;
 
-  handleSwipe() {
-    const deltaX = this.touchEndX - this.touchStartX;
-    if (deltaX > 50 && this.currentSlide > 0) {
-      this.currentSlide--;
-    } else if (deltaX < -50 && this.currentSlide < this.slides.length - 1) {
-      this.currentSlide++;
+    if (Math.abs(deltaX) < 44 || Math.abs(deltaX) <= Math.abs(deltaY)) {
+      return;
     }
-  }
 
-  setSlide(index: number) {
-    this.currentSlide = index;
-  }
-
-  nextSlide() {
-    if (this.currentSlide < this.slides.length - 1) {
-      this.currentSlide++;
+    if (deltaX < 0) {
+      this.showNextSlide();
     } else {
-      this.navCtrl.navigateRoot(['/home/login']);
+      this.showPreviousSlide();
     }
   }
 
+  @HostListener('document:keydown.arrowright')
+  showNextSlide(): void {
+    if (this.currentSlide < this.slides.length - 1) {
+      this.currentSlide += 1;
+    }
+  }
+
+  @HostListener('document:keydown.arrowleft')
+  showPreviousSlide(): void {
+    if (this.currentSlide > 0) {
+      this.currentSlide -= 1;
+    }
+  }
+
+  setSlide(index: number): void {
+    if (index >= 0 && index < this.slides.length) {
+      this.currentSlide = index;
+    }
+  }
+
+  startJourney(): void {
+    this.navCtrl.navigateRoot(['/home/login']);
+  }
+
+  private setOnboardingStatusBar(): void {
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+
+    StatusBar.setStyle({ style: Style.Dark }).catch(() => undefined);
+    if (Capacitor.getPlatform() === 'android') {
+      StatusBar.setBackgroundColor({ color: '#D8CFFF' }).catch(() => undefined);
+    }
+  }
 }
-/* Onboarding-Value-Proposition-Screen */

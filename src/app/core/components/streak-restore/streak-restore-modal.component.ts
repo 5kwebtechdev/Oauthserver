@@ -80,6 +80,7 @@ export class StreakRestoreModalComponent implements OnInit {
       },
       error: (err) => {
         this.isRestoring = false;
+        console.error('[StreakRestore][DEBUG] restore failed. status=', err?.status, 'error=', err?.error, 'full=', err);
         const msg: string = err?.error?.message || '';
         if (msg.toLowerCase().includes('not enough coins')) {
           this.errorMessage = "You don't have enough coins";

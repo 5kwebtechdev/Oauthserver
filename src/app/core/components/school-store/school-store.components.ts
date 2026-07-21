@@ -9,6 +9,9 @@ import { AdBannerComponent } from '../ad-banner/ad-banner.component';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
+import { AddressService } from '../../services/address.service';
+import { CustomToastService } from '../../services/custom-toast.service';
+import { Address } from '../../api/address.api';
 import { environment } from '../../../../environments/environment';
 
 interface StoreCategory {
@@ -36,27 +39,33 @@ export class SchoolStoreComponent implements AfterViewInit, OnInit, OnDestroy {
 	// popup state for address/subtext
 	showAddressPopup = false;
 
-	// address list and selection
-	addresses = [
-		{
-			id: 'rahul',
-			short: '502, Galaxy Apartment, Association Road',
-			html: 'Rahul- 502, Galaxy Apartment, Association Road<br/>Chennai- 600071'
-		},
-		{
-			id: 'megha',
-			short: '502, Royal Apartment, Altmount Road',
-			html: 'Megha- 502, Royal Apartment, Altmount Road<br/>Chennai- 600071'
-		}
-	];
-
-	selectedId: string | null = this.addresses[0].id;
-	selectedAddress: string = this.addresses[0].short;
+	// Address state is loaded from the signed-in user's address API.
+	addresses: Address[] = [];
+	selectedAddress: Address | null = null;
+	addressesLoading = false;
+	addressesError = false;
+	updatingDefaultAddressId: number | null = null;
+	private _addressSub?: Subscription;
 
 	// navigator subtext truncated to 20 chars + ellipsis
 	get navigatorSubtext(): string {
-		const s = this.selectedAddress || '';
+		if (this.addressesLoading) return 'Loading address...';
+		const s = this.selectedAddress ? this.formatAddressShort(this.selectedAddress) : 'Add address';
 		return s.length > 20 ? s.slice(0, 20) + '...' : s;
+	}
+
+	formatAddressShort(address: Address): string {
+		return [address.line1, address.line2, address.city, address.postalCode]
+			.filter(Boolean)
+			.join(', ');
+	}
+
+	formatAddressHtml(address: Address): string {
+		const cityState = [address.city, address.state].filter(Boolean).join(', ');
+		const cityPostalCode = [cityState, address.postalCode].filter(Boolean).join(' - ');
+		return [address.receiverName, address.line1, address.line2, cityPostalCode]
+			.filter(Boolean)
+			.join('<br/>');
 	}
 
 	// cart count driven by shared CartService
@@ -69,7 +78,15 @@ export class SchoolStoreComponent implements AfterViewInit, OnInit, OnDestroy {
 	categoriesLoading = false;
 	categoriesError = false;
 
-	constructor(private router: Router, private cdr: ChangeDetectorRef, private http: HttpClient, private authService: AuthService, private cartService: CartService) { }
+	constructor(
+		private router: Router,
+		private cdr: ChangeDetectorRef,
+		private http: HttpClient,
+		private authService: AuthService,
+		private cartService: CartService,
+		private addressService: AddressService,
+		private toastService: CustomToastService
+	) { }
 
 	ngOnInit(): void {
 		this._cartSub = this.cartService.count$.subscribe(n => {
@@ -77,11 +94,41 @@ export class SchoolStoreComponent implements AfterViewInit, OnInit, OnDestroy {
 			this.cdr.detectChanges();
 		});
 		this.cartService.refresh();
+		this.subscribeToAddresses();
+		this.loadAddresses();
 		this.loadCategories();
 	}
 
 	ngOnDestroy(): void {
 		try { this._cartSub?.unsubscribe(); } catch (e) { }
+		try { this._addressSub?.unsubscribe(); } catch (e) { }
+	}
+
+	private subscribeToAddresses(): void {
+		this._addressSub = this.addressService.addresses$.subscribe(list => {
+			this.addresses = Array.isArray(list) ? list : [];
+			this.selectedAddress = this.addresses.find(address => address.isDefault)
+				?? this.addresses[0]
+				?? null;
+			this.cdr.detectChanges();
+		});
+	}
+
+	loadAddresses(): void {
+		this.addressesLoading = true;
+		this.addressesError = false;
+		this.addressService.load().subscribe({
+			next: () => {
+				this.addressesLoading = false;
+				this.cdr.detectChanges();
+			},
+			error: () => {
+				this.addressesLoading = false;
+				this.addressesError = true;
+				this.selectedAddress = null;
+				this.cdr.detectChanges();
+			}
+		});
 	}
 
 	loadCategories(): void {
@@ -141,11 +188,36 @@ export class SchoolStoreComponent implements AfterViewInit, OnInit, OnDestroy {
 		this.cdr.detectChanges();
 	}
 
-	selectAddress(a: { id: string; short: string; html: string }): void {
-		this.selectedId = a.id;
-		this.selectedAddress = a.short;
+	selectAddress(address: Address): void {
+		if (this.updatingDefaultAddressId !== null) return;
+		if (address.isDefault) {
+			this.closeAddressPopup();
+			return;
+		}
+
+		const previousAddress = this.selectedAddress;
+		this.selectedAddress = address;
 		this.showAddressPopup = false;
+		this.updatingDefaultAddressId = address.id;
 		this.cdr.detectChanges();
+
+		this.addressService.setDefault(address.id).subscribe({
+			next: () => {
+				this.updatingDefaultAddressId = null;
+				this.cdr.detectChanges();
+			},
+			error: () => {
+				this.updatingDefaultAddressId = null;
+				this.selectedAddress = previousAddress;
+				this.toastService.error('Failed to update default address.');
+				this.cdr.detectChanges();
+			}
+		});
+	}
+
+	openAddressInput(): void {
+		this.closeAddressPopup();
+		this.router.navigateByUrl('/authed/school-store/address-input').catch(() => {});
 	}
 
 
