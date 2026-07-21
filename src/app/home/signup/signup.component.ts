@@ -68,7 +68,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   private resendInterval: any;
   private isFromUserInput = false; // Track if input is from user typing vs auto-fill
 
-  public roleSelected !: SignupRole;
+  public roleSelected?: SignupRole;
   public gender: SignupGender | null = null;
   public avatarSelected: any;
 
@@ -646,7 +646,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     if (age !== null) {
-      const suggestionRoles = this.getAgeSuggestionRoles(this.roleSelected, age);
+      const suggestionRoles = this.getAgeSuggestionRoles(this.roleSelected!, age);
       if (suggestionRoles.length) {
         this.openAgeSuggestionModal(suggestionRoles);
         return;
@@ -742,7 +742,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     } catch (e) { }
 
     // Get the role from session storage or current selection
-    const role = (sessionStorage.getItem('signup_role') as SignupRole) || this.roleSelected;
+    const role = ((sessionStorage.getItem('signup_role') as SignupRole) || this.roleSelected)!;
 
     const suggestionRoles = this.getAgeSuggestionRoles(role, age);
     if (suggestionRoles.length) {
@@ -1496,7 +1496,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // OAuth flow: user already has an account, just complete their profile
     if (sessionStorage.getItem('signup_via_google') === 'true') {
-      const role = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;
+      const role = ((sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected)!;
       this.completeGoogleOnboardingFlow(role);
       return;
     }
