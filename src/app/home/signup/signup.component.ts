@@ -1525,8 +1525,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       password: password || undefined,
       avatarName: avatarNameValue,
       avatarImageName: avatarImageNameValue,
-      familyCode: familyCode || '',
-      familyName: familyName || '',
+      // null (not '') when absent — an empty-string familyCode/familyName can
+      // make the backend attempt (and fail) a lookup for a family that was
+      // never actually requested, surfacing as "Resource not found".
+      familyCode: familyCode || null,
+      familyName: familyName || null,
       referralCode: referralCode || null
     };
 
@@ -1860,7 +1863,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       password: password || undefined,
       avatarName: avatarNameValue2,
       avatarImageName: avatarImageNameValue2,
-      familyCode: familyCode || '',
+      // null (not '') when absent — see registerFromSession for why.
+      familyCode: familyCode || null,
       referralCode: referralCode || null
     };
 

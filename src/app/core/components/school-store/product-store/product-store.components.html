@@ -32,7 +32,7 @@
             <!-- Subcategory Sliders — one row per drill-down level (e.g. Notebooks -> Spiral Notebooks -> A4 Spiral) -->
             <div class="sub-category" *ngFor="let level of subCategoryLevels; let levelIndex = index">
                 <div class="category-slider-wrap w-100">
-                    <swiper-container class="subcategory-swiper" slides-per-view="auto"
+                    <swiper-container #subSwiper class="subcategory-swiper" slides-per-view="auto"
                         space-between="12" free-mode="true" free-mode-momentum="true" grab-cursor="true">
                         <swiper-slide class="subcategory-slide" *ngFor="let s of level.options">
                             <div role="tab" class="tab" [class.tab--selected]="level.selected === s.id"
@@ -48,7 +48,7 @@
             <div class="product-list-wrap">
 
                 <!-- Skeleton while loading -->
-                <div *ngIf="productsLoading" class="product-list-card">
+                <div *ngIf="productsLoading || (!productsRequestCompleted && !productsError)" class="product-list-card">
                     <div class="product-card product-card--skel" *ngFor="let s of [1,2,3,4]">
                         <div class="skel-img"></div>
                         <div class="product-info">
@@ -60,7 +60,8 @@
                 </div>
 
                 <!-- Product list once loaded -->
-                <ng-container *ngIf="!productsLoading">
+                <ng-container *ngIf="productsRequestCompleted && !productsLoading">
+                    <ng-container *ngIf="!productsError; else productsErrorState">
                     <ng-container *ngIf="visibleProducts && visibleProducts.length; else emptyState">
                         <div class="product-list-card">
                             <div class="product-card" *ngFor="let p of visibleProducts"
@@ -90,7 +91,9 @@
 
                                         <superme-button
                                             *ngIf="isTextbooksSelected"
-                                            type="magenta" text="Add To Bag"
+                                            [type]="addedToBagIds.has(p.id) ? 'green' : 'magenta'"
+                                            [text]="addingToBagIds.has(p.id) ? 'Adding…' : addedToBagIds.has(p.id) ? '✓ Added' : 'Add To Bag'"
+                                            [disabled]="addingToBagIds.has(p.id)"
                                             (click)="addToBag(p); $event.stopPropagation()"></superme-button>
                                     </div>
                                 </div>
@@ -106,6 +109,18 @@
                             [buttonText]="'View all Products'"
                             [buttonType]="'magenta'"
                             (buttonClick)="resetSubCategories()">
+                        </empty-state>
+                    </ng-template>
+                    </ng-container>
+
+                    <ng-template #productsErrorState>
+                        <empty-state
+                            [imageSrc]="'assets/School-assets/empty-product-list.png'"
+                            [imageAlt]="'Unable to load products'"
+                            [leadText]="'Unable to load products'"
+                            [buttonText]="'Retry'"
+                            [buttonType]="'magenta'"
+                            (buttonClick)="retryProducts()">
                         </empty-state>
                     </ng-template>
                 </ng-container>

@@ -56,6 +56,11 @@ export class CheckoutComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
+        if (this.isChildUser()) {
+            this.blockChildCheckout();
+            return;
+        }
+
         const s = (history.state || {}) as {
             addressId?: number;
             addressLabel?: string;
@@ -139,6 +144,11 @@ export class CheckoutComponent implements OnInit {
     }
 
     placeOrder(): void {
+        if (this.isChildUser()) {
+            this.blockChildCheckout();
+            return;
+        }
+
         if (!this.canPlace) return;
         this.placing = true;
         this.cdr.detectChanges();
@@ -265,6 +275,15 @@ export class CheckoutComponent implements OnInit {
 
     goBack(): void {
         try { window.history.back(); } catch (e) { }
+    }
+
+    private isChildUser(): boolean {
+        return String(this.authService.getUserRelationship() ?? '').toUpperCase() === 'CHILD';
+    }
+
+    private blockChildCheckout(): void {
+        this.toastService.error('Parent approval is required before payment.');
+        this.router.navigateByUrl('/authed/cart', { replaceUrl: true });
     }
 
     // currency helper

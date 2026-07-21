@@ -188,6 +188,31 @@
   flex-shrink: 0;
 }
 
+/* Cart/package/etc. count badge — pinned to the icon's top-right corner
+   instead of falling into normal document flow beneath it. */
+.action-count {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: clamp(16px, 4.5vw, 20px);
+  height: clamp(16px, 4.5vw, 20px);
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #AC2456;
+  color: #FFFFFF;
+  border: 1.5px solid #FFFFFF;
+  font-family: var(--font-sans);
+  font-size: clamp(9px, 2.6vw, 11px);
+  font-weight: 800;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 1;
+}
+
 
 .right-actions {
   height: 48px;

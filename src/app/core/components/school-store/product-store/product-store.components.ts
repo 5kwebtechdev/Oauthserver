@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ViewChildren, QueryList, ElementRef, ChangeDetectorRef, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, IonContent } from '@ionic/angular';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
@@ -81,6 +81,8 @@ type Product = {
 export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   @ViewChild('navigator', { static: false, read: ElementRef }) navigatorEl?: ElementRef;
   @ViewChild(IonContent, { static: false }) ionContent?: IonContent;
+  @ViewChildren('subSwiper') subSwipers?: QueryList<ElementRef<any>>;
+  private _subSwipersSub?: Subscription;
 
   // popup state for address/subtext
   showAddressPopup = false;
@@ -162,6 +164,8 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   loadCategories(initialCategoryId?: number): void {
     this.categoriesLoading = true;
     this.categoriesError = false;
+    this.productsRequestCompleted = false;
+    this.productsError = false;
     const token = this.authService.getToken();
     const headers = new HttpHeaders({
       'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
@@ -179,12 +183,17 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
           this.subCategoryLevels = [];
           this.loadSubCategoryLevel(0, []);
           this.loadProducts();
+        } else {
+          this.productsRequestCompleted = true;
+          this.productsError = true;
         }
         this.cdr.detectChanges();
       },
       error: () => {
         this.categoriesLoading = false;
         this.categoriesError = true;
+        this.productsRequestCompleted = true;
+        this.productsError = true;
         this.cdr.detectChanges();
       }
     });
@@ -203,9 +212,16 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
     return this.subCategoryLevels.map(l => l.selected).filter(s => s !== 'all');
   }
 
-  private buildSubCategoryUrl(categoryId: number, path: string[]): string {
+  // Level 0 (top-level options for a category, e.g. Boys/Girls) is fetched
+  // from the bare /sub-categories URL. Every deeper level appends both the
+  // path of selections made so far AND a `/sub-category{levelIndex}` suffix
+  // — confirmed against a real working request:
+  // /store/categories/2/sub-categories/Boys/sub-category1
+  private buildSubCategoryUrl(categoryId: number, path: string[], levelIndex: number): string {
     const base = `${environment.apiUrl}/store/categories/${categoryId}/sub-categories`;
-    return path.length ? base + '/' + path.map(p => encodeURIComponent(p)).join('/') : base;
+    const pathPart = path.length ? '/' + path.map(p => encodeURIComponent(p)).join('/') : '';
+    const levelSuffix = levelIndex > 0 ? `/sub-category${levelIndex}` : '';
+    return base + pathPart + levelSuffix;
   }
 
   private loadSubCategoryLevel(levelIndex: number, path: string[]): void {
@@ -217,7 +233,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
       'Accept': 'application/json',
       'x-skip-loading': '1'
     });
-    this.http.get<StoreSubCategory[]>(this.buildSubCategoryUrl(this.selectedCategory!, path), { headers }).subscribe({
+    this.http.get<StoreSubCategory[]>(this.buildSubCategoryUrl(this.selectedCategory!, path, levelIndex), { headers }).subscribe({
       next: (res) => {
         const apiSubCategories = Array.isArray(res) ? res : [];
         this.subCategoryLevels = this.subCategoryLevels.slice(0, levelIndex);
@@ -268,6 +284,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   // product list for cards, loaded from the store products API
   products: Product[] = [];
   productsLoading = false;
+  productsRequestCompleted = false;
   productsError = false;
   productsPage = 0;
   productsTotalPages = 0;
@@ -287,9 +304,11 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   loadProducts(page: number = 0): void {
     if (this.selectedCategory == null) {
       this.products = [];
+      this.productsRequestCompleted = false;
       return;
     }
     this.productsLoading = true;
+    this.productsRequestCompleted = false;
     this.productsError = false;
     const token = this.authService.getToken();
     const headers = new HttpHeaders({
@@ -327,15 +346,25 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
         this.productsPage = res?.number ?? page;
         this.productsTotalPages = res?.totalPages ?? 0;
         this.productsLoading = false;
+        this.productsRequestCompleted = true;
         this.cdr.detectChanges();
       },
       error: () => {
         this.productsLoading = false;
+        this.productsRequestCompleted = true;
         this.productsError = true;
         if (page === 0) this.products = [];
         this.cdr.detectChanges();
       }
     });
+  }
+
+  retryProducts(): void {
+    if (this.selectedCategory == null) {
+      this.loadCategories();
+      return;
+    }
+    this.loadProducts();
   }
 
   openProduct(p: any): void {
@@ -348,8 +377,48 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
     this.router.navigateByUrl(url);
   }
 
+  // Tracks in-flight quick-adds so a double-tap can't fire the request twice,
+  // and so the card can show instant "Added" feedback (Flipkart-style).
+  addingToBagIds = new Set<string>();
+  addedToBagIds = new Set<string>();
+
   addToBag(p: any): void {
-    try { console.log('Add to bag', p && p.id); } catch (e) { }
+    if (!p || p.outOfStock || this.addingToBagIds.has(p.id)) return;
+
+    this.addingToBagIds.add(p.id);
+    this.cdr.detectChanges();
+
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({
+      'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'x-skip-loading': '1'
+    });
+
+    const body: Record<string, any> = { productId: p.id, quantity: 1 };
+    if (this.schoolId != null) body['schoolId'] = this.schoolId;
+    if (this.classId != null) body['classId'] = this.classId;
+
+    this.http.post(`${environment.apiUrl}/cart/items`, body, { headers }).subscribe({
+      next: () => {
+        this.addingToBagIds.delete(p.id);
+        // Update the shared cart count immediately — no need to wait for a
+        // full cart reload — so the badge reflects the change instantly.
+        this.cartService.increment(1);
+        this.addedToBagIds.add(p.id);
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          this.addedToBagIds.delete(p.id);
+          this.cdr.detectChanges();
+        }, 2000);
+      },
+      error: () => {
+        this.addingToBagIds.delete(p.id);
+        this.toastService.error('Failed to add to bag. Please try again.');
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   // handle right action clicks from the navigator (e.g., cart)
@@ -447,6 +516,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   ngOnDestroy(): void {
     try { this._cartCountSub?.unsubscribe(); } catch (e) { }
     try { this._addrSub?.unsubscribe(); } catch (e) { }
+    try { this._subSwipersSub?.unsubscribe(); } catch (e) { }
   }
   openAddressPopup(): void {
     this.showAddressPopup = true;
@@ -519,6 +589,30 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
         });
       }
     } catch (e: any) { }
+
+    // Subcategory rows are inserted dynamically (a new one appears each time a
+    // drill-down level loads). The Swiper web component sometimes mismeasures
+    // its scroll position when inserted like this, landing slightly scrolled
+    // into the first slide instead of fully at the start (clipping its text).
+    // Reset every subcategory swiper's position whenever the set changes.
+    this.resetSubSwipers();
+    this._subSwipersSub = this.subSwipers?.changes.subscribe(() => this.resetSubSwipers());
+  }
+
+  private resetSubSwipers(): void {
+    // Wait a tick so the newly-inserted <swiper-container> has finished its
+    // own custom-element initialization before we touch it.
+    setTimeout(() => {
+      this.subSwipers?.forEach(ref => {
+        try {
+          const swiperInstance = (ref.nativeElement as any)?.swiper;
+          if (swiperInstance) {
+            swiperInstance.update();
+            swiperInstance.slideTo(0, 0, false);
+          }
+        } catch (e) { /* ignore */ }
+      });
+    }, 0);
   }
 
   changeSchool(): void {

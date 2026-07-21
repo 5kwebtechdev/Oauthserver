@@ -649,48 +649,22 @@ export class AuthService {
     try {
       const currentData = this.userDataSubject.value || {};
       const updatedData = { ...currentData, ...data };
-
+      
       // Handle nested avatar object
       if (data['avatar']) {
         updatedData['avatar'] = { ...(currentData['avatar'] || {}), ...data['avatar'] };
       }
-
-      // A caller updating dateOfBirth/dob without also passing a fresh `age`
-      // must not leave the old `age` sitting there — extractAgeFromUserData()
-      // (used by getCurrentUserAge()) prefers `age` over recalculating from
-      // the date, so a stale `age` would silently win forever otherwise.
-      const dobChanged = data['dateOfBirth'] !== undefined || data['dob'] !== undefined;
-      if (dobChanged && data['age'] === undefined) {
-        const recalculated = this.calculateAgeFromDob(updatedData.dateOfBirth || updatedData.dob);
-        if (recalculated !== null) updatedData.age = recalculated;
-      }
-
+      
       // Save to localStorage
       localStorage.setItem('user_data', JSON.stringify(updatedData));
-
+      
       // Notify all subscribers
       this.userDataSubject.next(updatedData);
-
+      
       console.log('[AuthService] User data updated and broadcasted:', updatedData);
     } catch (error) {
       console.error('[AuthService] Error updating user data:', error);
     }
-  }
-
-  private calculateAgeFromDob(dob: string): number | null {
-    if (!dob) return null;
-    const birthDate = new Date(dob);
-    if (Number.isNaN(birthDate.getTime())) return null;
-
-    const today = new Date();
-    let calculatedAge = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      calculatedAge--;
-    }
-
-    return calculatedAge > 0 ? calculatedAge : null;
   }
 
   /**
