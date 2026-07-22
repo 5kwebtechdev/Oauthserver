@@ -77,7 +77,7 @@
 
 
   <!-- Shared transient toast (uses global .mb-toast styles) -->
-  <div class="mb-toast" *ngIf="(toast$ | async) as toast" [ngClass]="{'mb-toast--error': toast.type === 'error', 'mb-toast--success': toast.type === 'success'}" role="status" aria-live="polite">
+  <div class="mb-toast" *ngIf="(toast$ | async) as toast" [ngClass]="{'mb-toast--error': toast.type === 'error', 'mb-toast--success': toast.type === 'success'}" role="status" aria-live="polite" (click)="dismissToast()">
     <div class="mb-toast__text">{{ toast.message }}</div>
   </div>
   

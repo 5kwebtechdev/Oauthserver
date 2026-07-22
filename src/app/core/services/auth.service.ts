@@ -350,6 +350,15 @@ export class AuthService {
     return this.http.get<{ exists: boolean }>(url, { params: { email } });
   }
 
+  checkUsernameExists(username: string): Observable<boolean> {
+    const url = `${this.apiUrl}/auth/check/alreadyRegistered`;
+    return this.http.get<{ status?: boolean; exists?: boolean }>(url, {
+      params: { identifier: username }
+    }).pipe(
+      map(response => Boolean(response?.status ?? response?.exists ?? false))
+    );
+  }
+
   requestOtp(email: string) {
     const headers = environment.apiAuthToken ? new HttpHeaders({
       Authorization: environment.apiAuthToken,
@@ -420,6 +429,20 @@ export class AuthService {
 
   sendLoginOtp(email: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/api/auth/send-otp`, { email });
+  }
+
+  /**
+   * POST /api/auth/send-otp — used for resending an OTP during signup
+   * (replaces /auth/register/generate-otp for the "Resend" action).
+   * Supports both email and phone identifiers, same payload shape as
+   * registerRequestOtp().
+   */
+  resendRegisterOtp(identifier: string, isEmail: boolean, countryCode?: string): Observable<any> {
+    const payload = isEmail
+      ? { email: identifier, identifierType: 'EMAIL' }
+      : { phone: identifier, identifierType: 'PHONE', countryCode };
+
+    return this.http.post(`${this.apiUrl}/api/auth/send-otp`, payload);
   }
 
   verifyLoginOtp(email: string, otp: string): Observable<any> {
@@ -723,6 +746,30 @@ export class AuthService {
   }
 
   /**
+   * A child who signed up without a family code yet. Registered/stored as
+   * relationship SELF with asChild:true — not a real SELF user, and not yet
+   * a real CHILD until they successfully call /family/convert-to-child.
+   */
+  isPendingChild(): boolean {
+    try {
+      const userData = this.getUserData();
+      if (!userData || userData.relationship !== 'SELF' || userData.asChild !== true) {
+        return false;
+      }
+      // "Skip for Now" on the join-family screen lets a pending child use the
+      // app immediately without being bounced back here on every navigation —
+      // they can still link to a family later from their profile.
+      if (localStorage.getItem('familyLinkSkipped') === 'true') {
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error('[AuthService] Error checking pending-child state:', error);
+      return false;
+    }
+  }
+
+  /**
    * Get the appropriate dashboard route based on user's relationship
    */
   getDashboardRoute(): string {
@@ -730,8 +777,16 @@ export class AuthService {
 
     console.log('[AuthService] Determining dashboard route:', {
       relationship,
+      asChild: this.getUserData()?.asChild,
       timestamp: new Date().toISOString()
     });
+
+    // A pending child (SELF + asChild:true) must link to a family before
+    // seeing any dashboard — send them to the same "enter family code"
+    // screen a UI-role 'child' signup already uses.
+    if (this.isPendingChild()) {
+      return '/home/join-family';
+    }
 
     // Parent users go to parent-account page
     if (relationship === 'PARENT') {

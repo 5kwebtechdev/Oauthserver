@@ -1,7 +1,7 @@
 import { Component, OnInit, Renderer2, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { IonContent, NavController } from '@ionic/angular';
 import { Router, ActivatedRoute } from "@angular/router";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from "@angular/forms";
 import { CoreService } from "../../core/services/core.service";
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
@@ -83,6 +83,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   public otpVerifyInProgress: boolean = false;
   public otpResendInProgress: boolean = false;
   private referralCheckInProgress: boolean = false;
+  public usernameAvailability: 'idle' | 'checking' | 'available' | 'taken' = 'idle';
+  private usernameCheckTimer: ReturnType<typeof setTimeout> | null = null;
+  private usernameCheckSubscription?: Subscription;
+  private readonly reservedUsernames = new Set([
+    'admin', 'administrator', 'help', 'moderator', 'official', 'root',
+    'security', 'support', 'superme', 'supermeapp', 'system'
+  ]);
 
   // Use an accessor so we can defensively guard and log unexpected changes
   private _openBirthdayPicker = false;
@@ -142,29 +149,33 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   ];
 
   pets: any[] = [{
-    displayName: 'Bao the superme Panda',
+    displayName: 'Bao the Mindful Panda',
     name: 'Panda',
     apiName: 'Panda-Age1-Happy.png',
     image: 'assets/Images-Pet/Panda-Age1-Happy.png',
+    cardImage: 'assets/Images-Pet/selection-cards/Panda-selection-card.png',
     text: ['Your gentle guide to inner peace', 'Celebrates small acts of kindness']
+  }, {
+    displayName: 'Luna the Wise Owl',
+    name: 'Owl',
+    apiName: 'Owl-Age1-Happy.png',
+    image: 'assets/Images-Pet/Owl-Age1-Happy.png',
+    cardImage: 'assets/Images-Pet/selection-cards/Owl-selection-card.png',
+    text: ['Your midnight study buddy', 'Celebrates "aha!" moments']
   }, {
     displayName: 'Koda the Chill Llama',
     name: 'Llama',
     apiName: 'Llama-Age1-Happy.png',
     image: 'assets/Images-Pet/Llama-Age1-Happy.png',
+    cardImage: 'assets/Images-Pet/selection-cards/Llama-selection-card.png',
     text: ['Master of staying cool under pressure', 'Loves colorful, quirky adventures']
   }, {
     displayName: 'Zuki the Fierce Dragon',
     name: 'Dragon',
     apiName: 'Dragon-Age1-Happy.png',
     image: 'assets/Images-Pet/Dragon-Age1-Happy.png',
+    cardImage: 'assets/Images-Pet/selection-cards/Dragon-selection-card.png',
     text: ['Loves big ideas and bold moves', 'Celebrates when you go on streaks']
-  }, {
-    displayName: 'Luna the Wise Owl',
-    name: 'Owl',
-    apiName: 'Owl-Age1-Happy.png',
-    image: 'assets/Images-Pet/Owl-Age1-Happy.png',
-    text: ['Your midnight study buddy', 'Celebrates "aha!" moments']
   }]
 
   public currentImage: any = this.pets[0];
@@ -183,7 +194,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.currentSlideIndex = 0;
       // Store the selected pet name
       try {
-        sessionStorage.setItem('signup_pet', this.pets[0].name);
+        sessionStorage.setItem('signup_pet', this.pets[0].apiName);
       } catch (e) { }
     });
 
@@ -194,7 +205,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.currentSlideIndex = realIndex;
       // Store the selected pet name whenever it changes
       try {
-        sessionStorage.setItem('signup_pet', this.pets[realIndex].name);
+        sessionStorage.setItem('signup_pet', this.pets[realIndex].apiName);
       } catch (e) { }
     });
   }
@@ -257,6 +268,19 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     this.restoreSignupStateFromSession();
 
+    // Registration now starts with email only. Ignore a stale phone-mode value
+    // left by an older version when this entry step is opened.
+    if (this.step === 0.1) {
+      this.loginMode = 'email';
+      try {
+        sessionStorage.setItem('loginMode', 'email');
+        if (this.requestedIdentifier && !this.requestedIdentifier.includes('@')) {
+          sessionStorage.removeItem('requestedIdentifier');
+          this.requestedIdentifier = '';
+        }
+      } catch (e) { }
+    }
+
     // Pre-fill profile data if coming from an OAuth sign-in
     if (sessionStorage.getItem('signup_via_google') === 'true') {
       const googleName = sessionStorage.getItem('google_signup_name');
@@ -307,12 +331,29 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         Validators.pattern(/^[A-Za-z][A-Za-z\s'-]*$/),
         this.noRepeatedLetterValidator()
       ]],
+      username: ['', [
+        Validators.required,
+        this.usernameRulesValidator()
+      ]],
+      phone: ['', []],
       dob: ['', [Validators.required]],
     })
 
     this.passwordForm = this.fb.group({
       password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(12), this.noCommonPasswordValidator()]],
-    })
+      confirmPassword: ['', [Validators.required]],
+    }, { validators: this.passwordsMatchValidator() })
+
+    this.subscription.add(
+      this.username!.valueChanges.subscribe(() => this.scheduleUsernameAvailabilityCheck())
+    );
+    this.subscription.add(
+      this.name!.valueChanges.subscribe(() => {
+        this.username?.updateValueAndValidity({ emitEvent: false });
+        this.scheduleUsernameAvailabilityCheck();
+      })
+    );
+
     this.route.queryParams.subscribe(params => {
       const stepParam = params['step'];
       const roleParam = params['role'];
@@ -343,6 +384,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           this.ionContent?.scrollToTop(250);
         } catch (e) { /* ignore */ }
       }, 30);
+      // Carry over the phone number if the user already entered one at the
+      // identifier step, so they don't have to type it twice.
+      if (this.step === 2) {
+        if (!this.profilePhone?.value && this.loginMode === 'phone' && this.phone?.value) {
+          this.profilePhone?.setValue(this.phone.value);
+        }
+      }
+
       // If we've navigated directly to pet selection, ensure a pet is selected and carousel shows
       try {
         if (this.step === 4) {
@@ -356,7 +405,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
             this.currentImage = idx >= 0 ? this.pets[idx] : this.pets[0];
           } else {
             this.currentImage = this.pets[0];
-            sessionStorage.setItem('signup_pet', this.pets[0].name);
+            sessionStorage.setItem('signup_pet', this.pets[0].apiName);
           }
 
           // If swiper instance exists, move it to the stored pet index
@@ -364,7 +413,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
             try {
               const swiperInstance = this.swiperRef?.nativeElement?.swiper;
               if (swiperInstance) {
-                const targetIndex = this.pets.findIndex(p => p.name === (petFromSession || this.pets[0].name));
+                const storedPet = petFromSession || this.pets[0].apiName;
+                const targetIndex = this.pets.findIndex(p => p.apiName === storedPet || p.name === storedPet);
                 if (targetIndex >= 0) swiperInstance.slideTo(targetIndex);
                 // reflect in UI state
                 this.currentSlideIndex = targetIndex >= 0 ? targetIndex : 0;
@@ -384,8 +434,23 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return this.signupForm.get('phone');
   }
 
+  get username() {
+    return this.profileForm.get('username');
+  }
+
+  // Separate from signupForm's `phone` (used for the login identifier at the
+  // email/phone entry step) — this one is the profile's own contact number,
+  // shown on the "Tell us about yourself!" step.
+  get profilePhone() {
+    return this.profileForm.get('phone');
+  }
+
   get password() {
     return this.passwordForm.get('password');
+  }
+
+  get confirmPassword() {
+    return this.passwordForm.get('confirmPassword');
   }
 
   get name() {
@@ -394,9 +459,143 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   get isProfileStepInvalid(): boolean {
     if (this.profileForm.invalid) return true;
+    if (this.usernameAvailability !== 'available') return true;
     if (!this.gender) return true;
     if (this.currentRole !== 'parent' && !this.avatarSelected) return true;
     return false;
+  }
+
+  private usernameRulesValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = String(control.value || '');
+      if (!value) return null;
+
+      if (/\s/.test(value)) return { usernameSpaces: true };
+      if (value.length < 3) return { usernameMinLength: true };
+      if (value.length > 20) return { usernameMaxLength: true };
+      if (/[A-Z]/.test(value)) return { usernameUppercase: true };
+      if (value.startsWith('_')) return { usernameStartsWithUnderscore: true };
+      if (value.includes('__')) return { usernameConsecutiveUnderscores: true };
+      if (!/^[a-z0-9_]+$/.test(value)) return { usernameInvalidCharacters: true };
+      if (!/[a-z]/.test(value)) return { usernameMissingLetter: true };
+      if (this.reservedUsernames.has(value)) return { usernameReserved: true };
+      if (this.looksLikeRealName(value)) return { usernameLooksLikeRealName: true };
+
+      return null;
+    };
+  }
+
+  private looksLikeRealName(username: string): boolean {
+    const fullName = String(this.profileForm?.get('name')?.value || '').trim().toLowerCase();
+    if (!fullName) return false;
+
+    const usernameLetters = username.replace(/_/g, '');
+    const nameParts = fullName.split(/[^a-z]+/).filter(part => part.length >= 3);
+    const joinedName = nameParts.join('');
+
+    return joinedName.length >= 3 && (
+      usernameLetters === joinedName ||
+      nameParts.some(part => usernameLetters === part)
+    );
+  }
+
+  public getUsernameValidationMessage(): string {
+    const errors = this.username?.errors;
+    if (!errors) return '';
+
+    if (errors['required']) return 'Username is required.';
+    if (errors['usernameSpaces']) return "Spaces aren't allowed. Use _ instead";
+    if (errors['usernameMinLength']) return 'Minimum 3 characters required.';
+    if (errors['usernameMaxLength']) return 'Maximum limit is 20 characters';
+    if (errors['usernameUppercase']) return 'Only lowercase letters allowed';
+    if (errors['usernameStartsWithUnderscore']) return 'Username cannot start with underscore';
+    if (errors['usernameConsecutiveUnderscores']) return 'Username cannot have consecutive underscores';
+    if (errors['usernameInvalidCharacters']) return 'Only letters, numbers, and underscore are allowed.';
+    if (errors['usernameMissingLetter']) return 'Username must include at least one letter';
+    if (errors['usernameReserved']) return 'Invalid username. Choose another';
+    if (errors['usernameLooksLikeRealName']) return 'This looks like a real name. Try a nickname for privacy';
+    if (errors['usernameTaken']) return 'Oops! Someone already has this username';
+
+    return 'Invalid username. Choose another';
+  }
+
+  public shouldShowUsernameError(): boolean {
+    return Boolean(this.username?.invalid && (this.username?.dirty || this.username?.touched));
+  }
+
+  public shouldShowUsernameSuccess(): boolean {
+    return Boolean(
+      this.usernameAvailability === 'available' &&
+      this.username?.valid &&
+      (this.username?.dirty || this.username?.touched)
+    );
+  }
+
+  public isUsernamePrivacyWarning(): boolean {
+    return Boolean(this.username?.errors?.['usernameLooksLikeRealName']);
+  }
+
+  public onUsernameBlur(): void {
+    this.username?.markAsTouched();
+    if (this.username?.valid && this.usernameAvailability === 'idle') {
+      this.clearUsernameCheckTimer();
+      this.checkUsernameAvailability(String(this.username.value || ''));
+    }
+  }
+
+  private scheduleUsernameAvailabilityCheck(): void {
+    this.clearUsernameCheckTimer();
+    this.usernameCheckSubscription?.unsubscribe();
+    this.usernameAvailability = 'idle';
+
+    const username = String(this.username?.value || '').trim();
+    if (!username || this.username?.invalid) return;
+
+    this.usernameCheckTimer = setTimeout(() => this.checkUsernameAvailability(username), 450);
+  }
+
+  private checkUsernameAvailability(username: string): void {
+    if (!username || this.username?.invalid || String(this.username?.value || '') !== username) return;
+
+    this.usernameAvailability = 'checking';
+    this.usernameCheckSubscription = this.authService.checkUsernameExists(username).subscribe({
+      next: exists => {
+        if (String(this.username?.value || '') !== username) return;
+
+        if (exists) {
+          this.username?.setErrors({ ...(this.username.errors || {}), usernameTaken: true });
+          this.usernameAvailability = 'taken';
+        } else {
+          this.usernameAvailability = 'available';
+        }
+      },
+      error: () => {
+        if (String(this.username?.value || '') === username) {
+          this.usernameAvailability = 'idle';
+        }
+      }
+    });
+    this.subscription.add(this.usernameCheckSubscription);
+  }
+
+  private clearUsernameCheckTimer(): void {
+    if (this.usernameCheckTimer) {
+      clearTimeout(this.usernameCheckTimer);
+      this.usernameCheckTimer = null;
+    }
+  }
+
+  private handleUsernameRegistrationError(message: string): boolean {
+    const isUsernameConflict = /username/i.test(message) && /(already|exist|taken|unavailable|duplicate)/i.test(message);
+    if (!isUsernameConflict) return false;
+
+    this.username?.setErrors({ ...(this.username.errors || {}), usernameTaken: true });
+    this.username?.markAsTouched();
+    this.usernameAvailability = 'taken';
+    this.errorMessage = 'Oops! Someone already has this username';
+    this.router.navigate(['home/sign-up'], { queryParams: { step: 2 } });
+    try { this.core.triggerToasrt(this.errorMessage); } catch (e) { }
+    return true;
   }
 
   private noCommonPasswordValidator(): import('@angular/forms').ValidatorFn {
@@ -404,6 +603,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return (control: import('@angular/forms').AbstractControl) => {
       const v = (control.value || '').toLowerCase();
       return common.includes(v) ? { commonPassword: true } : null;
+    };
+  }
+
+  private passwordsMatchValidator(): import('@angular/forms').ValidatorFn {
+    return (control: import('@angular/forms').AbstractControl) => {
+      const password = control.get('password')?.value;
+      const confirmation = control.get('confirmPassword')?.value;
+      return password && confirmation && password !== confirmation ? { passwordMismatch: true } : null;
     };
   }
 
@@ -424,6 +631,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (control.hasError('maxlength')) return 'Password cannot be more than 12 characters.';
     if (control.hasError('commonPassword')) return 'This password is too common. Please choose a stronger one.';
     return 'Please enter a valid password.';
+  }
+
+  getConfirmPasswordErrorMessage(): string {
+    if (this.confirmPassword?.hasError('required')) return 'Please confirm your password.';
+    if (this.passwordForm.hasError('passwordMismatch')) return 'Passwords do not match.';
+    return '';
   }
 
   hasUpperCase(value: string | null | undefined): boolean {
@@ -695,6 +908,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
+    if (this.profileForm.get('username')?.invalid) {
+      this.core.triggerToasrt(this.getUsernameValidationMessage());
+      return;
+    }
+
     if (this.profileForm.get('dob')?.invalid) {
       this.core.triggerToasrt('Please enter your date of birth');
       return;
@@ -730,6 +948,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     try {
       const profile = {
         name: this.profileForm.get('name')?.value,
+        username: this.profileForm.get('username')?.value,
+        phone: this.profileForm.get('phone')?.value || undefined,
         dob: parsedDob ? parsedDob.getTime() : null,
         gender: this.gender,
         avatar: this.currentRole === 'parent' ? this.getNameInitial() : this.avatarSelected
@@ -751,14 +971,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     // Apply age-based routing rules
-    if (role === 'child') {
-      this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
-      return;
-    } else if (role === 'parent') {
+    if (role === 'parent') {
       this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
       return;
-    } else if (role === 'self') {
-      // For self users, go straight to pet selection (step 4)
+    } else if (role === 'self' || role === 'child') {
+      // Child now registers as a "pending" account (relationship SELF +
+      // asChild:true, no family code) and links to a family AFTER
+      // registration+login via /family/convert-to-child — so it goes
+      // straight to pet selection (step 4) just like a self signup,
+      // skipping the old pre-registration family-code detour entirely.
       this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
       return;
     }
@@ -828,18 +1049,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.currentImage = this.pets[currentIndex];
       this.currentSlideIndex = currentIndex;
 
-      // Store the selected pet name
+      // Keep the backend filename in session so every pet survives navigation.
       if (this.pets[currentIndex]) {
-        const petName = this.pets[currentIndex].name;
+        const petName = this.pets[currentIndex].apiName;
         sessionStorage.setItem('signup_pet', petName);
       }
     } else {
     }
-  }
-
-  // Helper getter for template: only enable certain actions for first slide
-  get isFirstSlideActive(): boolean {
-    return this.currentSlideIndex === 0;
   }
 
   openBirthdayPickerNow() {
@@ -1150,6 +1366,19 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }, 0);
   }
 
+  // Same numeric-only cleanup as onPhoneInput, but for the profile step's own
+  // contact-number field (profileForm.phone), not the login identifier.
+  onProfilePhoneInput(event: any): void {
+    const input = event.target;
+    const numericValue = (input.value || '').replace(/[^0-9]/g, '');
+
+    this.profileForm.patchValue({ phone: numericValue });
+
+    setTimeout(() => {
+      input.setSelectionRange(numericValue.length, numericValue.length);
+    }, 0);
+  }
+
   // OTP related methods
   getOtpDestination(): string {
     if (this.loginMode === 'phone') {
@@ -1394,7 +1623,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     this.otpResendInProgress = true;
-    this.authService.registerRequestOtp(identifier, isEmail, countryCode).subscribe({
+    // Resend uses /api/auth/send-otp — separate from the initial
+    // /auth/register/generate-otp call made when the OTP is first requested.
+    this.authService.resendRegisterOtp(identifier, isEmail, countryCode).subscribe({
       next: () => {
         this.otpResendInProgress = false;
         this.errorMessage = null;
@@ -1461,6 +1692,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return firstTwo + maskedMiddle + lastThree;
   }
 
+  getMaskedEmail(): string {
+    const emailValue = String(this.signupForm.get('email')?.value || this.requestedIdentifier || '').trim();
+    const [localPart, domain] = emailValue.split('@');
+    if (!localPart || !domain) {
+      return emailValue;
+    }
+
+    const visiblePrefix = localPart.slice(0, Math.min(2, localPart.length));
+    const maskLength = Math.max(4, localPart.length - visiblePrefix.length);
+    return `${visiblePrefix}${'*'.repeat(maskLength)}@${domain}`;
+  }
+
   // Format timer display as MM:SS
   formatTime(seconds: number): string {
     const minutes = Math.floor(seconds / 60);
@@ -1469,6 +1712,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.clearUsernameCheckTimer();
+    this.usernameCheckSubscription?.unsubscribe();
     this.subscription.unsubscribe();
     this.clearOtpTimer();
   }
@@ -1520,6 +1765,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     const payload: any = {
       name: profile.name || this.profileForm.get('name')?.value,
+      username: profile.username || this.profileForm.get('username')?.value || undefined,
       gender: toApiGender(profile.gender || this.gender),
       relationship: (role || '').toUpperCase(),
       password: password || undefined,
@@ -1692,6 +1938,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       error: (err) => {
         const serverMsg = err?.error?.message || err?.error || 'Registration failed';
         const registrationMessage = typeof serverMsg === 'string' ? serverMsg : 'Registration failed. Please try again.';
+        if (this.handleUsernameRegistrationError(registrationMessage)) return;
         if (this.isRecoverableFamilyCapacityError(registrationMessage)) {
           this.errorMessage = registrationMessage;
           this.handleRecoverableFamilyJoinError(this.errorMessage);
@@ -1731,6 +1978,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   // Password visibility toggle
   public hidePassword: boolean = true;
+  public hideConfirmPassword: boolean = true;
 
   /**
    * Register a child/self account using session data and then navigate to welcome (step 5).
@@ -1845,7 +2093,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const profileStr = sessionStorage.getItem('signup_profile');
     const password = this.signupCredentialState.getPassword() || this.password?.value;
     const identifier = this.requestedIdentifier || this.email?.value || this.phone?.value;
-    const familyCode = sessionStorage.getItem('familyCode');
     const referralCode = sessionStorage.getItem('referralCode');
 
     let profile: any = {};
@@ -1856,28 +2103,35 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const avatarNameValue2 = avatarKey2 ? `avatar${avatarKey2}` : undefined;
     const avatarImageNameValue2 = avatarKey2 ? `Avatar ${Number(avatarKey2)}` : undefined;
 
+    // Both 'self' and 'child' register as relationship SELF now — a UI role
+    // of 'child' just additionally sets asChild:true, marking them "pending"
+    // until they separately link to a family post-login via
+    // /family/convert-to-child. No familyCode/familyRole is ever sent here.
     const payload: any = {
       name: profile.name || this.profileForm.get('name')?.value,
+      username: profile.username || this.profileForm.get('username')?.value || undefined,
       gender: toApiGender(profile.gender || this.gender),
-      relationship: (role || '').toUpperCase(),
+      relationship: 'SELF',
       password: password || undefined,
       avatarName: avatarNameValue2,
       avatarImageName: avatarImageNameValue2,
-      // null (not '') when absent — see registerFromSession for why.
-      familyCode: familyCode || null,
       referralCode: referralCode || null
     };
 
-    // If this flow included a family code, mark whether the current user created the family
-    try {
-      const createdFlag = sessionStorage.getItem('familyCreator');
-      if (createdFlag === 'true') payload.familyRole = 'CREATOR';
-      else if (payload.familyCode) payload.familyRole = 'CO_PARENT';
-    } catch (e) { }
+    if (role === 'child') {
+      payload.asChild = true;
+    }
 
     // include email or phone depending on loginMode or identifier content
     if (this.loginMode === 'email' || (identifier && identifier.includes && identifier.includes('@'))) {
       payload.email = identifier;
+      // Contact number collected on the profile step (separate from the
+      // login identifier) — only relevant when they signed up via email.
+      const profilePhoneVal = profile.phone || this.profileForm.get('phone')?.value;
+      if (profilePhoneVal) {
+        const contactCode = sessionStorage.getItem('countryCode') || this.selectedCountry.code;
+        payload.phone = contactCode + profilePhoneVal;
+      }
     } else {
       const contactNumber = sessionStorage.getItem('countryCode') || this.selectedCountry.code;
       payload.phone = contactNumber + identifier;
@@ -1931,6 +2185,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       error: (err) => {
         const serverMsg = err?.error?.message || err?.error || 'Registration failed';
         this.errorMessage = typeof serverMsg === 'string' ? serverMsg : 'Registration failed. Please try again.';
+        if (this.handleUsernameRegistrationError(this.errorMessage)) return;
         this.handleRecoverableFamilyJoinError(this.errorMessage);
         try { this.core.triggerToasrt(this.errorMessage); } catch (e) { }
       }

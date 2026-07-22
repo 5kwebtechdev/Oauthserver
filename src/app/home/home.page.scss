@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,800;1,800&display=swap');
+
 :host {
   display: block;
   width: 100%;
@@ -180,157 +182,586 @@
 }
 
 /* Slide 1: Super App */
-.super-heading {
-  top: max(5.5cqh, 34px);
-  font-size: clamp(28px, 7.8cqw, 42px);
-  font-weight: 700;
-  line-height: 1.28;
+
+/* Figma reference background: four large blurred colour blobs behind a
+   70%-white frosted-glass layer, positioned per the exact Figma frame
+   (393x852) and converted to cqw/cqh so it scales with the canvas. */
+.super-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
-.super-heading .line-app {
-  top: -0.5em;
-  right: 0.1em;
+.super-bg .blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(13cqw);
 }
 
-.super-heading .stroke-center {
-  bottom: -2.4cqh;
+.super-bg .blob-1 {
+  left: -60.6cqw;
+  top: -4cqh;
+  width: 147.6cqw;
+  height: 67.8cqh;
+  background: #8B8DCB;
+}
+
+.super-bg .blob-2 {
+  left: 34.1cqw;
+  top: -4.8cqh;
+  width: 156.5cqw;
+  height: 72.2cqh;
+  background: #E1527C;
+}
+
+.super-bg .blob-3 {
+  left: 26.2cqw;
+  top: 50cqh;
+  width: 157cqw;
+  height: 64.7cqh;
+  background: #89B3B6;
+}
+
+.super-bg .blob-4 {
+  left: -45cqw;
+  top: 54.7cqh;
+  width: 125cqw;
+  height: 70.7cqh;
+  background: #F6AC72;
+}
+
+.super-bg .frost {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(6.4cqw);
+  -webkit-backdrop-filter: blur(6.4cqw);
+}
+
+.hero-heading.super-heading {
+  top: 7.981cqh;
+  left: 0;
+  width: 100%;
+  height: 17.371cqh;
+  padding: 1.34cqh 4.071cqw 0;
+  box-sizing: border-box;
+  transform: none;
+  color: #010332;
+  font-family: 'Nunito', sans-serif;
+  font-size: clamp(32px, 10.178cqw, 40px);
+  font-style: italic;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.super-copy {
+  position: absolute;
+  inset: 0 4.071cqw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.super-title-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.036cqw;
+  height: 6.455cqh;
+  line-height: 6.455cqh;
+  white-space: nowrap;
+}
+
+.super-you-line strong {
+  background-image: linear-gradient(115.82deg, #6a35ff 1.994%, #c22cf8 25.997%, #ff2d79 74.003%, #ff8a1e 98.006%);
+  font-family: 'Plus Jakarta Sans', 'Nunito', sans-serif;
+  font-size: inherit;
+  font-style: italic;
+  font-weight: 800;
+  line-height: 5.869cqh;
+}
+
+.super-accent {
+  position: absolute;
+  top: 1.271cqh;
+  left: 77cqw;
+  width: 7.379cqw;
+  height: auto;
+  pointer-events: none;
+}
+
+.super-underline {
+  position: absolute;
+  left: 50%;
+  bottom: 0.986cqh;
+  width: 36.132cqw;
+  height: auto;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
 .super-illustration {
-  inset: 29cqh 0 9cqh;
+  z-index: 1;
+  top: 25.352cqh;
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  width: 87.277cqw;
+  height: 66.08cqh;
+  transform: translateX(-50%);
+  overflow: hidden;
 }
 
-/* Slide 2: Foundational blocks */
-.foundations-heading {
-  top: max(4cqh, 28px);
-  font-size: clamp(26px, 7.2cqw, 38px);
-  line-height: 1.16;
+.super-illustration img {
+  position: absolute;
+  top: -5.26%;
+  left: -0.02%;
+  width: 100.04%;
+  height: 109.36%;
+  max-width: none;
+  max-height: none;
+  object-fit: fill;
 }
 
-.foundations-heading .line-blocks {
-  margin: 0.15em 0;
+.pagination.super-pagination {
+  bottom: 5.516dvh;
+  gap: 8px;
 }
 
-.foundations-heading .line-blocks strong {
-  font-size: 1.04em;
+.pagination.super-pagination button {
+  width: 10px;
+  height: 10px;
+  background: #878286;
 }
 
-.foundations-heading .stroke-center {
-  bottom: -2.6cqh;
+.pagination.super-pagination button.active {
+  width: 32px;
+  background: #90214d;
 }
 
-.foundations-illustration {
-  inset: 33cqh 0 8cqh;
+/* Slide 2: Choose role */
+.role-selection-canvas {
+  background: #fff;
 }
 
-.foundations-illustration img {
-  width: 74cqw;
-  max-width: 310px;
+.onboarding.role-selection-active {
+  background: #fff;
 }
 
-/* Slide 3: roles */
-.roles-heading {
-  top: max(4cqh, 28px);
-  font-size: clamp(26px, 7.4cqw, 40px);
-  line-height: 1.14;
+.role-selection-content {
+  position: absolute;
+  top: 7.981cqh;
+  left: 4.071cqw;
+  width: 91.858cqw;
+  display: flex;
+  flex-direction: column;
+  gap: 3.756cqh;
 }
 
-.roles-heading .line-join {
-  margin-top: 0.15em;
+.role-selection-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1.408cqh;
+  width: 100%;
 }
 
-.roles-heading .line-join strong {
-  font-size: 1.04em;
+.role-back-button {
+  display: block;
+  width: 12.214cqw;
+  height: 4.577cqh;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
-.roles-heading .stroke-center {
-  bottom: -2.4cqh;
+.role-back-button img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
-.roles-heading p {
-  margin: 4.4cqh 0 0;
-  color: #6e6774;
-  font-family: var(--font-sans, 'Nunito', sans-serif);
-  font-size: clamp(11px, 2.9cqw, 16px);
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-.roles-illustration {
-  inset: 40cqh 0 8cqh;
-}
-
-.roles-illustration img {
-  width: 78cqw;
-  max-width: 320px;
-}
-
-/* Slide 4: rewards and shop */
-.rewards-heading {
-  top: max(4cqh, 26px);
-  font-size: clamp(23px, 6.4cqw, 34px);
-  line-height: 1.22;
-}
-
-.rewards-heading .line-shop {
-  top: -0.5em;
-  right: -0.9em;
-}
-
-.rewards-heading .stroke-center {
-  bottom: -2.2cqh;
-}
-
-.rewards-heading p {
-  margin: 4.2cqh 0 0;
-  color: #6b656a;
-  font-family: var(--font-sans, 'Nunito', sans-serif);
-  font-size: clamp(10px, 2.7cqw, 14px);
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: 0;
+.role-selection-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.939cqh;
+  width: 100%;
   text-align: center;
 }
 
-.rewards-illustration {
-  inset: 37cqh 0 16cqh;
+.role-selection-copy h2,
+.role-selection-copy p {
+  margin: 0;
 }
 
-.rewards-illustration img {
-  width: 82cqw;
-  max-width: 330px;
+.role-selection-copy h2 {
+  color: #280f19;
+  font-family: 'Fredoka', sans-serif;
+  font-size: clamp(18px, 5.089cqw, 20px);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.role-selection-copy p {
+  color: #6b656a;
+  font-family: 'Nunito', sans-serif;
+  font-size: clamp(11px, 3.308cqw, 13px);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.role-options {
+  display: flex;
+  flex-direction: column;
+  gap: 2.817cqh;
+  width: 100%;
+}
+
+.role-option {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 19.249cqh;
+  margin: 0;
+  padding: 1.878cqh 4.071cqw;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 8.142cqw;
+  background:
+    linear-gradient(113.769deg, #e8ecf7 0.204%, #fdead7 25.102%, #eaf2f3 74.898%, #fcf3f6 99.796%) padding-box,
+    linear-gradient(113.769deg, #6a35ff 0%, #ff8a1e 28%, #62a9ad 74%, #ff2d79 100%) border-box;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
+  color: #280f19;
+  text-align: left;
+  cursor: pointer;
+}
+
+.role-option-copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.469cqh;
+  color: #6b656a;
+  font-family: 'Nunito', sans-serif;
+  font-size: clamp(11px, 3.308cqw, 13px);
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.role-option-copy strong {
+  display: block;
+  width: 45.802cqw;
+  margin-bottom: 0.469cqh;
+  color: #280f19;
+  font-family: 'Fredoka', sans-serif;
+  font-size: clamp(26px, 8.142cqw, 32px);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.role-option > img {
+  position: absolute;
+  z-index: 1;
+  right: -1.272cqw;
+  bottom: 0;
+  width: 45.038cqw;
+  height: 18.897cqh;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+}
+
+.role-option-child > img {
+  width: 44.784cqw;
+}
+
+.role-option-parent > img {
+  width: 45.293cqw;
+  height: 19.014cqh;
+}
+
+.pagination.foundations-pagination {
+  display: none;
+}
+
+/* Slide 3: Three Ways to Join */
+.hero-heading.roles-heading {
+  top: 7.981cqh;
+  left: 0;
+  width: 100%;
+  height: 17.371cqh;
+  box-sizing: border-box;
+  transform: none;
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-style: normal;
+  text-align: center;
+}
+
+.roles-copy {
+  position: absolute;
+  top: 0.635cqh;
+  left: 4.071cqw;
+  width: 91.858cqw;
+  height: 10.466cqh;
+}
+
+.roles-kicker,
+.roles-title {
+  display: block;
+  white-space: nowrap;
+}
+
+.roles-kicker {
+  height: 3.991cqh;
+  font-size: clamp(20px, 6.361cqw, 25px);
+  font-weight: 800;
+  line-height: 3.991cqh;
+}
+
+.roles-title {
+  height: 4.695cqh;
+  background-image: linear-gradient(125.972deg, #6a35ff 1.994%, #c22cf8 25.997%, #ff2d79 74.003%, #ff8a1e 98.006%);
+  font-family: 'Plus Jakarta Sans', 'Nunito', sans-serif;
+  font-size: clamp(26px, 8.142cqw, 32px);
+  font-weight: 800;
+  line-height: 4.695cqh;
+}
+
+.roles-accent {
+  position: absolute;
+  top: 2.38cqh;
+  right: 2.544cqw;
+  width: 7.379cqw;
+  height: auto;
+  transform: rotate(10deg);
+  pointer-events: none;
+}
+
+.roles-underline {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 36.132cqw;
+  height: auto;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.roles-heading .roles-description {
+  position: absolute;
+  top: 12.51cqh;
+  left: 50%;
+  width: 78.117cqw;
+  height: 4.225cqh;
+  margin: 0;
+  transform: translateX(-50%);
+  color: #6b656a;
+  font-family: 'Nunito', sans-serif;
+  font-size: clamp(11px, 3.308cqw, 13px);
+  font-weight: 600;
+  line-height: 2.113cqh;
+}
+
+.roles-illustration {
+  top: 23.709cqh;
+  right: auto;
+  bottom: auto;
+  left: 0;
+  width: 100cqw;
+  height: 71.362cqh;
+}
+
+.roles-art-frame {
+  width: 86.26cqw;
+  height: 100%;
+  overflow: hidden;
+}
+
+.roles-art-frame img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+}
+
+/* Slide 4: rewards and shop */
+.hero-heading.rewards-heading {
+  top: 7.981cqh;
+  left: 0;
+  width: 100%;
+  height: 19.387cqh;
+  box-sizing: border-box;
+  transform: none;
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-style: normal;
+  text-align: center;
+}
+
+.rewards-copy {
+  position: absolute;
+  top: 0;
+  left: 4.071cqw;
+  width: 91.858cqw;
+  height: 13.753cqh;
+  font-size: clamp(20px, 6.361cqw, 25px);
+  font-weight: 800;
+}
+
+.rewards-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.036cqw;
+  height: 3.991cqh;
+  line-height: 3.991cqh;
+  white-space: nowrap;
+}
+
+.rewards-row strong {
+  font-family: 'Plus Jakarta Sans', 'Nunito', sans-serif;
+  font-size: inherit;
+  font-weight: 800;
+  line-height: 3.756cqh;
+}
+
+.rewards-gradient-one {
+  background-image: linear-gradient(113.772deg, #6a35ff 1.994%, #c22cf8 25.997%, #ff2d79 74.003%, #ff8a1e 98.006%);
+}
+
+.rewards-gradient-two {
+  background-image: linear-gradient(109.545deg, #6a35ff 1.994%, #c22cf8 25.997%, #ff2d79 74.003%, #ff8a1e 98.006%);
+}
+
+.rewards-gradient-three {
+  background-image: linear-gradient(102.06deg, #6a35ff 1.994%, #c22cf8 25.997%, #ff2d79 74.003%, #ff8a1e 98.006%);
+}
+
+.rewards-accent {
+  position: absolute;
+  top: 6.195cqh;
+  right: 2.544cqw;
+  width: 7.379cqw;
+  height: auto;
+  transform: rotate(10deg);
+  pointer-events: none;
+}
+
+.rewards-underline {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 36.132cqw;
+  height: auto;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.rewards-heading .rewards-description {
+  position: absolute;
+  top: 15.161cqh;
+  left: 50%;
+  width: 78.117cqw;
+  height: 4.225cqh;
+  margin: 0;
+  transform: translateX(-50%);
+  color: #6b656a;
+  font-family: 'Nunito', sans-serif;
+  font-size: clamp(11px, 3.308cqw, 13px);
+  font-weight: 600;
+  line-height: 2.113cqh;
+}
+
+.rewards-illustration {
+  top: 29.245cqh;
+  right: auto;
+  bottom: auto;
+  left: 0;
+  width: 100cqw;
+  height: 55.164cqh;
+}
+
+.rewards-art-frame {
+  position: relative;
+  width: 80.407cqw;
+  height: 100%;
+  overflow: hidden;
+}
+
+.rewards-art-frame img {
+  position: absolute;
+  top: 0;
+  left: -33.54%;
+  width: 167.07%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
 }
 
 .journey-button {
   position: absolute;
   z-index: 12;
   left: 50%;
-  bottom: calc(max(28px, 7dvh) + env(safe-area-inset-bottom));
+  top: 85.349cqh;
+  bottom: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 88cqw;
-  min-height: max(52px, 6.4cqh);
-  padding: 0.9cqh 6cqw;
+  width: 91.858cqw;
+  height: 6.573cqh;
+  min-height: 0;
+  padding: 0.939cqh 4.071cqw;
   transform: translateX(-50%);
-  border: 0;
-  border-radius: 999px;
-  // background: linear-gradient(96deg, #6a35ff 1.99%, #c22cf8 26%, #ff2d79 74%, #ff8a1e 98.01%);
-  box-shadow: 0 10px 22px rgba(154, 30, 143, 0.28);
+  border: 1px solid #2d0088;
+  border-radius: 43px;
+  background: linear-gradient(90deg, #4400cc 0%, #cc00cc 100%);
+  box-shadow: inset 0 -2px 2px #eee5ff, 0 0 1px 0.5px rgba(246, 172, 114, 0.2);
   color: #fff;
-  font-family: var(--font-heading, 'Fredoka', sans-serif);
-  font-size: clamp(15px, 3.7cqw, 21px);
-  font-weight: 600;
-  line-height: 1.2;
+  font-family: 'Nunito', sans-serif;
+  font-size: clamp(14px, 4.071cqw, 16px);
+  font-weight: 700;
+  line-height: 1.4;
   letter-spacing: 0;
   text-align: center;
   cursor: pointer;
-  border: 1px solid;
-background: linear-gradient(90deg, #4400CC 0%, #CC00CC 100%);
+}
 
-border-image-source: linear-gradient(90deg, #2D0088 0%, #CC00CC 100%);
+.pagination.roles-pagination,
+.pagination.rewards-pagination {
+  gap: 8px;
+}
 
+.pagination.roles-pagination {
+  bottom: 4.46dvh;
+}
 
+.pagination.rewards-pagination {
+  bottom: 5.027dvh;
+}
+
+.pagination.roles-pagination button,
+.pagination.rewards-pagination button {
+  width: 10px;
+  height: 10px;
+  background: #878286;
+}
+
+.pagination.roles-pagination button.active,
+.pagination.rewards-pagination button.active {
+  width: 32px;
+  background: #90214d;
 }
 
 .journey-button:active {

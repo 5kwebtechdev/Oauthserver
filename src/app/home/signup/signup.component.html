@@ -1,179 +1,191 @@
-<ion-content #content [scrollY]="step !== 0.1 && step !== 0.3 && step !== 5" [ngClass]="step === 5 || step === 1 ? 'bg-white' : 'bg-superme-secondary'">
-  <superme-navigator class="signup-navigator" *ngIf="step !== 5 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1"
+<ion-content #content [scrollY]="step !== 5"
+  [ngClass]="step === 5 || step === 4 || step === 1 || step === 0.1 || step === 0.2 || step === 0.3 ? 'bg-white' : 'bg-superme-secondary'">
+  <superme-navigator class="signup-navigator" *ngIf="step !== 5 && step !== 4 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 2"
     [heading]="headerText"
     [subtext]="headerSubtext"
     [showSubtext]="showHeaderSubtext"
     [variant]="'warm'"
     [hideBack]="true">
   </superme-navigator>
-  <div class="signup-container" [ngClass]="{'step-5-container': step === 5, 'profile-layout': step === 2}">
-    <h4 class="step-text" *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 5">
+  <div class="signup-container"
+    [ngClass]="{'step-5-container': step === 5, 'pet-layout': step === 4, 'profile-layout': step === 2, 'signup-entry-layout': step === 0.1, 'otp-layout': step === 0.2, 'password-layout': step === 0.3}">
+    <h4 class="step-text" *ngIf="step !== 2 && step !== 3 && step !== 4 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 5">
       Step {{step}} of 4
       <span>{{stepDesciption[step-1]}}</span>
       <div class="step-completion-slider {{returnSameNumber(step)}}"
-        *ngIf="step !== 3 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 5">
+        *ngIf="step !== 2 && step !== 3 && step !== 4 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 5">
 
       </div>
     </h4>
 
-    <div *ngIf="step === 0.1" [@slideIn] class="signup-step-initial">
-      <div class="signup-card">
-        <form [formGroup]="signupForm" autocomplete="on" class="signup-form">
-          <ng-container *ngIf="loginMode === 'email'">
-            <div class="su-field">
-              <label class="su-field__label">Email</label>
-              <input class="su-field__input" formControlName="email" type="email"
-                name="username" autocomplete="username" inputmode="email"
-                placeholder="Enter your email"
-                [class.su-field__input--error]="email?.invalid && email?.dirty" />
-              <div class="su-field__error" *ngIf="email?.invalid && (email?.dirty)">
-                Oops! That email looks off. Please check it again.
-              </div>
-            </div>
-          </ng-container>
+    <section *ngIf="step === 0.1" [@slideIn] class="signup-step-initial" aria-labelledby="signup-entry-title">
+      <button type="button" class="signup-entry-back-btn" (click)="goBack()" aria-label="Go back">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      </button>
 
-          <ng-container *ngIf="loginMode === 'phone'">
-            <div class="input-group">
-              <label class="input-label">Phone Number</label>
-              <div class="phone-input-container-v2" [class.error]="!isPhoneValid(phone?.value) && phone?.dirty">
-                <div class="country-code-selector-v2" (click)="openCountryCodeModal()">
-                  <span class="flag-emoji">{{selectedCountry.flag}}</span>
-                  <span class="country-code">{{selectedCountry.code}}</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M7 10l5 5 5-5z" fill="currentColor"/>
-                  </svg>
-                </div>
-                <input formControlName="phone" type="tel" name="username" autocomplete="username tel"
-                  [maxlength]="currentPhoneLength" pattern="[0-9]*"
-                  inputmode="numeric" (input)="onPhoneInput($event)" (keypress)="onKeyPress($event)"
-                  placeholder="Enter {{currentPhoneLength}} digit number" />
-              </div>
-              <div class="field-error" *ngIf="!isPhoneValid(phone?.value) && phone?.dirty">
-                {{getPhoneErrorMessage()}}
-              </div>
-            </div>
-          </ng-container>
+      <div class="signup-entry-shell">
+        <header class="signup-entry-hero">
+          <p class="signup-entry-step">Step 1 of 6</p>
+          <h1 id="signup-entry-title" class="signup-entry-title">Let's Create Your Account</h1>
+          <p class="signup-entry-subtitle">We'll send a verification code to your email</p>
+        </header>
 
-          <superme-button type="orange-onboard" full [text]="otpRequestInProgress ? 'Sending code...' : 'Next'"
-            [disabled]="otpRequestInProgress || (loginMode === 'email' ? email?.invalid : !isPhoneValid(phone?.value))" (click)="signupFromLogin()">
-          </superme-button>
+        <div class="signup-entry-progress" role="progressbar" aria-label="Registration progress"
+          aria-valuemin="1" aria-valuemax="6" aria-valuenow="1">
+          <span></span>
+        </div>
 
-          <div class="error-message" *ngIf="errorMessage">
-            {{ errorMessage }}
+        <form [formGroup]="signupForm" autocomplete="on" class="signup-entry-form" (ngSubmit)="signupFromLogin()">
+          <div class="signup-entry-field"
+            [class.signup-entry-field--error]="email?.invalid && (email?.dirty || email?.touched)">
+            <label for="signup-email" class="signup-entry-sr-label">Email address</label>
+            <input id="signup-email" formControlName="email" type="email" name="email"
+              autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false"
+              placeholder="Enter Your Email Address" />
           </div>
+
+          <p class="signup-entry-error" *ngIf="email?.invalid && (email?.dirty || email?.touched)" role="alert">
+            Please enter a valid email address.
+          </p>
+          <p class="signup-entry-error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
+
+          <button type="submit" class="signup-entry-submit"
+            [disabled]="otpRequestInProgress || email?.invalid">
+            <span class="signup-entry-spinner" *ngIf="otpRequestInProgress" aria-hidden="true"></span>
+            <span>{{ otpRequestInProgress ? 'Sending code...' : 'Send Verification Code' }}</span>
+          </button>
         </form>
 
-        <div class="social-divider">
-          <div class="divider-line"></div>
-          <span class="divider-text">or continue with</span>
-          <div class="divider-line"></div>
+        <div class="signup-entry-divider" aria-hidden="true">
+          <span></span>
+          <strong>OR</strong>
+          <span></span>
         </div>
 
-        <social-media [variant]="'login-with'"></social-media>
-      </div>
+        <social-media class="signup-entry-social" [variant]="'login-with'"></social-media>
 
-      <div class="login-link">
-        <p>Already have an account? <a [routerLink]="['/home/login']">Login</a></p>
+        <p class="signup-entry-login">
+          Already have an account?
+          <a [routerLink]="['/home/login']">Login</a>
+        </p>
       </div>
-    </div>
+    </section>
 
-    <div *ngIf="step === 0.2" [@slideIn] class="otp-step">
-      <div class="otp-hero">
-        <div class="otp-hero__icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#EE6621"/>
-          </svg>
+    <section *ngIf="step === 0.2" [@slideIn] class="otp-step" aria-labelledby="signup-otp-title">
+      <button type="button" class="otp-back-btn" (click)="goBack()" aria-label="Go back">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      </button>
+
+      <div class="otp-shell">
+        <header class="otp-hero">
+          <p class="otp-step-label">Step 2 of 6</p>
+          <h1 id="signup-otp-title" class="otp-hero__title">
+            {{ loginMode === 'phone' ? 'Check Your Phone' : 'Check Your Email' }}
+          </h1>
+          <p class="otp-hero__text">We've sent an OTP to</p>
+          <p class="otp-hero__destination">
+            <span>
+              {{ loginMode === 'phone' ? (selectedCountry.code + ' ' + getMaskedPhoneNumber()) : getMaskedEmail() }}
+            </span>
+            <button type="button" class="otp-hero__change" (click)="goBackToEmail()">Change</button>
+          </p>
+          <p class="otp-hero__hint">
+            {{ loginMode === 'phone' ? 'Please check your messages' : 'Please check your inbox as well as spam folder' }}
+          </p>
+        </header>
+
+        <div class="otp-progress" role="progressbar" aria-label="Registration progress" aria-valuemin="1"
+          aria-valuemax="6" aria-valuenow="2">
+          <span></span>
         </div>
-        <p class="otp-hero__text">We sent a 4-digit code to</p>
-        <p class="otp-hero__email">{{ loginMode === 'phone' ? (selectedCountry.code + ' ' + phone?.value) : email?.value }} <a class="otp-hero__change" (click)="goBackToEmail()">Change</a></p>
-      </div>
 
-      <div class="otp-card">
-        <div class="otp-inputs">
-          <input *ngFor="let digit of otpDigits; let i = index" type="tel" class="otp-cell" [value]="otpDigits[i]"
-            [class.otp-cell--filled]="otpDigits[i]"
-            (input)="onOtpInput($event, i)" (keydown)="onOtpKeydown($event, i)" (keyup)="onOtpKeyup($event, i)"
-            (paste)="onOtpPaste($event)" (focus)="onOtpFocus($event, i)" maxlength="1" inputmode="numeric"
-            pattern="[0-9]*" autocomplete="one-time-code" [id]="'otp-input-' + i" [attr.data-index]="i" />
-        </div>
+        <div class="otp-card">
+          <div class="otp-inputs">
+            <input *ngFor="let digit of otpDigits; let i = index" type="tel" class="otp-cell"
+              [value]="otpDigits[i]" [class.otp-cell--filled]="otpDigits[i]"
+              (input)="onOtpInput($event, i)" (keydown)="onOtpKeydown($event, i)"
+              (keyup)="onOtpKeyup($event, i)" (paste)="onOtpPaste($event)" (focus)="onOtpFocus($event, i)"
+              maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code"
+              [id]="'otp-input-' + i" [attr.data-index]="i"
+              [attr.aria-label]="'Verification code digit ' + (i + 1)" />
+          </div>
 
-        <div class="otp-footer">
-          <span class="otp-timer" *ngIf="!canResendOtp">Resend in {{ formatTime(otpResendTimer) }}</span>
-          <button type="button" class="otp-resend-btn" *ngIf="canResendOtp" [disabled]="otpResendInProgress" (click)="resendOtp()">
-            {{ otpResendInProgress ? 'Resending...' : 'Resend code' }}
+          <div class="otp-error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</div>
+
+          <button type="button" class="otp-verify-btn" [disabled]="otpVerifyInProgress || !isOtpComplete()"
+            (click)="verifyOtp()">
+            <span class="otp-button-spinner" *ngIf="otpVerifyInProgress" aria-hidden="true"></span>
+            <span>{{ otpVerifyInProgress ? 'Verifying...' : 'Verify' }}</span>
           </button>
+
+          <div class="otp-footer">
+            <span class="otp-timer" *ngIf="!canResendOtp">Resend code in {{ formatTime(otpResendTimer) }}</span>
+            <button type="button" class="otp-resend-btn" *ngIf="canResendOtp" [disabled]="otpResendInProgress"
+              (click)="resendOtp()">
+              {{ otpResendInProgress ? 'Resending...' : 'Resend code' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section *ngIf="step === 0.3" [@slideIn] class="pwd-step" aria-labelledby="signup-password-title">
+      <button type="button" class="pwd-back-btn" (click)="goBack()" aria-label="Go back">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      </button>
+
+      <div class="pwd-shell">
+        <header class="pwd-hero">
+          <p class="pwd-step-label">Step 3 of 6</p>
+          <h1 id="signup-password-title" class="pwd-hero__title">Create a Password</h1>
+        </header>
+
+        <div class="pwd-progress" role="progressbar" aria-label="Registration progress"
+          aria-valuemin="1" aria-valuemax="6" aria-valuenow="3">
+          <span></span>
         </div>
 
-        <superme-button type="orange-onboard" full [text]="otpVerifyInProgress ? 'Verifying...' : 'Verify'"
-          [disabled]="otpVerifyInProgress || !isOtpComplete()" (click)="verifyOtp()">
-        </superme-button>
-
-        <div class="otp-error" *ngIf="errorMessage">{{ errorMessage }}</div>
-      </div>
-    </div>
-
-    <div *ngIf="step === 0.3" [@slideIn] class="pwd-step">
-      <div class="pwd-hero">
-        <div class="pwd-hero__icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" fill="#EE6621"/>
-          </svg>
-        </div>
-        <h2 class="pwd-hero__title">Create a password</h2>
-        <p class="pwd-hero__subtitle">Must be at least 6 characters</p>
-      </div>
-
-      <div class="pwd-card">
-        <form [formGroup]="passwordForm" (ngSubmit)="proceedWithPassword()" autocomplete="on">
+        <form [formGroup]="passwordForm" (ngSubmit)="proceedWithPassword()" autocomplete="on" class="pwd-form">
           <input class="credential-username-field" type="text" name="username" autocomplete="username"
             [value]="getSignupCredentialIdentifier()" tabindex="-1" aria-hidden="true" />
 
-          <div class="pwd-field">
-            <label class="pwd-field__label">Password</label>
+          <div class="pwd-field pwd-field--password">
+            <label for="signup-password" class="pwd-sr-label">Password</label>
             <div class="pwd-field__row">
-              <input class="pwd-field__input" formControlName="password" name="password" autocomplete="new-password"
-                [type]="hidePassword ? 'password' : 'text'" placeholder="Enter your password"
+              <input id="signup-password" class="pwd-field__input" formControlName="password" name="password"
+                autocomplete="new-password" [type]="hidePassword ? 'password' : 'text'" placeholder="Enter password"
                 [class.pwd-field__input--error]="password?.invalid && (password?.dirty || password?.touched)" />
-              <button type="button" class="pwd-field__eye" (click)="hidePassword = !hidePassword" aria-label="Toggle password">
-                <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+              <button type="button" class="pwd-field__eye" (click)="hidePassword = !hidePassword"
+                [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'">
+                <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye' : 'fa-eye-slash'" aria-hidden="true"></i>
               </button>
             </div>
-            <div class="pwd-field__error" *ngIf="password?.invalid && (password?.dirty || password?.touched)">
+            <p class="pwd-field__error" *ngIf="password?.invalid && (password?.dirty || password?.touched)" role="alert">
               {{ getPasswordErrorMessage() }}
-            </div>
+            </p>
           </div>
 
-          <!-- Password strength hints -->
-          <div class="pwd-hints" *ngIf="password?.value">
-            <div class="pwd-hint" [class.pwd-hint--pass]="password?.value?.length >= 6">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path *ngIf="password?.value?.length >= 6" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="#4CAF50"/>
-                <circle *ngIf="password?.value?.length < 6" cx="12" cy="12" r="5" fill="#D0C8CC"/>
-              </svg>
-              <span>At least 6 characters</span>
+          <div class="pwd-field pwd-field--confirm">
+            <label for="signup-confirm-password" class="pwd-field__label">Confirm password</label>
+            <div class="pwd-field__row">
+              <input id="signup-confirm-password" class="pwd-field__input" formControlName="confirmPassword"
+                name="confirmPassword" autocomplete="new-password"
+                [type]="hideConfirmPassword ? 'password' : 'text'" placeholder="Enter password"
+                [class.pwd-field__input--error]="confirmPassword?.touched && (confirmPassword?.invalid || passwordForm.hasError('passwordMismatch'))" />
+              <button type="button" class="pwd-field__eye" (click)="hideConfirmPassword = !hideConfirmPassword"
+                [attr.aria-label]="hideConfirmPassword ? 'Show confirmed password' : 'Hide confirmed password'">
+                <i class="fa-solid" [ngClass]="hideConfirmPassword ? 'fa-eye' : 'fa-eye-slash'" aria-hidden="true"></i>
+              </button>
             </div>
-            <div class="pwd-hint" [class.pwd-hint--pass]="hasUpperCase(password?.value)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path *ngIf="hasUpperCase(password?.value)" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="#4CAF50"/>
-                <circle *ngIf="!hasUpperCase(password?.value)" cx="12" cy="12" r="5" fill="#D0C8CC"/>
-              </svg>
-              <span>One uppercase letter</span>
-            </div>
-            <div class="pwd-hint" [class.pwd-hint--pass]="hasNumber(password?.value)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path *ngIf="hasNumber(password?.value)" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="#4CAF50"/>
-                <circle *ngIf="!hasNumber(password?.value)" cx="12" cy="12" r="5" fill="#D0C8CC"/>
-              </svg>
-              <span>One number</span>
-            </div>
+            <p class="pwd-field__error" *ngIf="confirmPassword?.touched && (confirmPassword?.invalid || passwordForm.hasError('passwordMismatch'))" role="alert">
+              {{ getConfirmPasswordErrorMessage() }}
+            </p>
           </div>
+
+          <button type="submit" class="pwd-next-btn" [disabled]="passwordForm.invalid">Next</button>
         </form>
-
-        <superme-button type="orange-onboard" full [text]="'Continue'" [disabled]="!passwordForm.dirty || !passwordForm.valid"
-          (click)="proceedWithPassword()">
-        </superme-button>
       </div>
-    </div>
+    </section>
 
     <div *ngIf="step === 1" [@slideIn] class="role-step">
       <button type="button" class="role-back-btn" (click)="goBack()" aria-label="Go back">
@@ -264,6 +276,20 @@
       </div>
     </div>
     <div *ngIf="step === 2" [@slideIn] class="profile-step">
+      <button type="button" class="profile-back-btn" (click)="goBack()" aria-label="Go back">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      </button>
+
+      <header class="profile-hero">
+        <p class="profile-step-label">Step 4 of 6</p>
+        <h1 class="profile-hero__title">Tell us about yourself !</h1>
+      </header>
+
+      <div class="profile-progress" role="progressbar" aria-label="Registration progress" aria-valuemin="1"
+        aria-valuemax="6" aria-valuenow="4">
+        <span></span>
+      </div>
+
       <div class="profile">
         <form [formGroup]="profileForm">
           <h4 class="profile-field-heading">
@@ -272,11 +298,62 @@
           </h4>
           <div class="input-group">
             <input [ngClass]="{'error' : name?.invalid && (name?.dirty || name?.touched)}" formControlName="name" type="text"
-              placeholder="Full Name" />
+              placeholder="Name" />
             <div class="error" *ngIf="name?.invalid && (name?.dirty || name?.touched)">
               {{ getNameErrorMessage() }}
             </div>
           </div>
+
+          <h4 class="profile-field-heading">
+            <span class="profile-field-title">Username</span>
+            <span class="profile-field-hint">Name used in the app</span>
+          </h4>
+          <div class="input-group username-field">
+            <div class="username-input-shell"
+              [class.username-input-shell--error]="shouldShowUsernameError()"
+              [class.username-input-shell--success]="shouldShowUsernameSuccess()">
+              <input formControlName="username" type="text" placeholder="Enter your username"
+                autocomplete="username" autocapitalize="none" spellcheck="false"
+                (blur)="onUsernameBlur()" [attr.aria-invalid]="shouldShowUsernameError()"
+                aria-describedby="username-validation-message username-policy-message"
+                [attr.aria-busy]="usernameAvailability === 'checking'" />
+              <i *ngIf="shouldShowUsernameSuccess()"
+                class="fa-solid fa-check username-status-icon username-status-icon--success" aria-hidden="true"></i>
+              <i *ngIf="usernameAvailability === 'taken'"
+                class="fa-solid fa-xmark username-status-icon username-status-icon--error" aria-hidden="true"></i>
+            </div>
+
+            <p id="username-validation-message" class="username-validation"
+              [class.username-validation--error]="shouldShowUsernameError()"
+              [class.username-validation--success]="shouldShowUsernameSuccess()"
+              *ngIf="shouldShowUsernameError() || shouldShowUsernameSuccess()"
+              [attr.role]="shouldShowUsernameError() ? 'alert' : 'status'">
+              <i *ngIf="isUsernamePrivacyWarning()" class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+              <span>{{ shouldShowUsernameError() ? getUsernameValidationMessage() : 'Great! This username is available' }}</span>
+            </p>
+
+            <p id="username-policy-message" class="username-policy-note" *ngIf="shouldShowUsernameSuccess()">
+              <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+              <span>You cannot change it again for 30 days.</span>
+            </p>
+          </div>
+
+          <h4 class="profile-field-heading">
+            <span class="profile-field-title">Phone Number</span>
+          </h4>
+          <div class="input-group">
+            <div class="phone-input-container">
+              <div class="country-code-selector" (click)="openCountryCodeModal()">
+                <span class="flag-emoji">{{selectedCountry.flag}}</span>
+                <span class="country-code">{{selectedCountry.code}}</span>
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+              <input formControlName="phone" type="tel" [maxlength]="currentPhoneLength" pattern="[0-9]*"
+                inputmode="numeric" (input)="onProfilePhoneInput($event)" (keypress)="onKeyPress($event)"
+                placeholder="Enter your number" />
+            </div>
+          </div>
+
           <h4 class="profile-field-heading">
             <span class="profile-field-title">Date of Birth</span>
             <span *ngIf="computedAge !== null; else noAge" class="profile-field-hint age-count">
@@ -284,7 +361,7 @@
             </span>
 
             <ng-template #noAge>
-              <span class="profile-field-hint age-count">To match content to your age</span>
+              <span class="profile-field-hint age-count">To show personalized content</span>
             </ng-template>
           </h4>
           <div class="input-group">
@@ -292,7 +369,7 @@
             <superme-birthdaypicker (dateSelected)="birthdayChanged($event)" (closed)="openBirthdayPicker = false" [showTrigger]="openBirthdayPicker"
               style="width: 100%">
               <input type="text" formControlName="dob" readonly (click)="openBirthdayPickerNow()"
-                [ngClass]="{'error' : dob()?.invalid && (dob()?.dirty || dob()?.touched)}" placeholder="Date of Birth" />
+                [ngClass]="{'error' : dob()?.invalid && (dob()?.dirty || dob()?.touched)}" placeholder="Select Date of birth" />
             </superme-birthdaypicker>
             <div class="error" *ngIf="dob()?.invalid && (dob()?.dirty || dob()?.touched)">
               Please enter your date of birth.
@@ -300,7 +377,7 @@
           </div>
           <h4 class="profile-field-heading">
             <span class="profile-field-title">Gender</span>
-            <span class="profile-field-hint">Optional personalization</span>
+            <span class="profile-field-hint">Used for personalization touches</span>
           </h4>
           <div class="gender-options" role="group" aria-label="Gender">
             <button type="button" class="gender-select-button" (click)="selectGender('male')"
@@ -330,7 +407,10 @@
           </ng-container>
           <!-- For child/self roles, keep avatar selection -->
           <ng-template #nonParentAvatar>
-            <h4 style="margin-top: 15px">Choose an avatar </h4>
+            <h4 class="profile-field-heading" style="margin-top: 15px">
+              <span class="profile-field-title">Choose an Avatar</span>
+              <span class="profile-field-hint">Pick one that you like</span>
+            </h4>
             <div class="row">
               <ng-container *ngFor="let avatar of avatars">
                 <div class="col-4 single-avatar" *ngIf="gender === 'prefer_not_to_say' || avatar.gender === gender" (click)="avatarSelected = avatar.key"
@@ -387,7 +467,7 @@
 
       <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
       <div class="profile-button-wrapper">
-        <superme-button type="orange-onboard" full [text]="'Save & Continue'" [disabled]="isProfileStepInvalid" (click)="registerOrProceed()">
+        <superme-button class="signup-primary-action" type="orange-onboard" full [text]="'Save & Continue'" [disabled]="isProfileStepInvalid" (click)="registerOrProceed()">
         </superme-button>
       </div>
 
@@ -423,7 +503,7 @@
             </ng-container>
           </form>
 
-          <superme-button type="orange-onboard" full [text]="'Next'" (click)="signup()"
+          <superme-button class="signup-primary-action" type="orange-onboard" full [text]="'Next'" (click)="signup()"
             [disabled]="loginMode === 'email' ? email?.invalid : !isPhoneValid(phone?.value)">
           </superme-button>
 
@@ -441,32 +521,41 @@
         </p>
       </div>
     </div>
-    <div *ngIf="step === 4 && (currentRole === 'self' || currentRole === 'child')" [@slideIn]>
-      <swiper-container slides-per-view="1.2" centered-slides="true" space-between="10" grab-cursor="true"
-        (slidechange)="onSlideChange()" (swiperstateupdate)="onSlideChange()" #swiperEl [style]="{padding: '0 0 24px 0', height: '67dvh'}">
+    <section *ngIf="step === 4 && (currentRole === 'self' || currentRole === 'child')" [@slideIn]
+      class="pet-step" aria-labelledby="pet-step-title">
+      <button type="button" class="pet-step-back" (click)="goBack()" aria-label="Go back">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      </button>
+
+      <header class="pet-step-header">
+        <p>Step 5 of 6</p>
+        <h1 id="pet-step-title">Choose Your Digital Pet</h1>
+      </header>
+
+      <div class="pet-step-progress" role="progressbar" aria-label="Registration progress"
+        aria-valuemin="1" aria-valuemax="6" aria-valuenow="5">
+        <span></span>
+      </div>
+
+      <swiper-container class="pet-carousel" slides-per-view="1.28" centered-slides="true" space-between="12"
+        grab-cursor="true" (slidechange)="onSlideChange()" (swiperstateupdate)="onSlideChange()" #swiperEl>
         <swiper-slide *ngFor="let pet of pets; let i = index">
-          <div class="pet-card d-flex flex-column" [ngClass]="{ 'panda': pet.name === 'Panda' }">
-            <h4>{{pet.displayName}}</h4>
-            <p>{{pet.text[0]}}</p>
-            <p>{{pet.text[1]}}</p>
-
-            <!--petlock coming soon (placed between text and image; z-index keeps it above the dim overlay) -->
-            <div class="pet-lock" *ngIf="pet.name !== 'Panda'">
-              <img src="assets/icons/lock-orange.svg" alt="lock" aria-hidden="true" />
-              <span>Coming soon</span>
+          <article class="pet-card" [class.pet-card--active]="currentSlideIndex === i"
+            [attr.aria-label]="pet.displayName" [attr.aria-current]="currentSlideIndex === i ? 'true' : null">
+            <img class="pet-card-art" [src]="pet.cardImage" [alt]="pet.displayName" />
+            <div class="pet-card-accessible-copy">
+              <h2>{{pet.displayName}}</h2>
+              <ul>
+                <li>{{pet.text[0]}}</li>
+                <li>{{pet.text[1]}}</li>
+              </ul>
             </div>
-
-            <img [src]="pet.image" alt="" />
-          </div>
-          <!--coming soon end-->
-
+          </article>
         </swiper-slide>
       </swiper-container>
-      <superme-button type="orange-onboard" full [text]="'Let\'s get started'" (click)="proceedWithAvatar()"
-        [disabled]="!isFirstSlideActive">
-      </superme-button>
 
-    </div>
+      <button type="button" class="pet-step-next" (click)="proceedWithAvatar()">Next</button>
+    </section>
 
     <div *ngIf="step === 5 && (currentRole === 'self' || currentRole === 'child')" [@slideIn]
       class="welcome-page d-flex flex-column align-items-center justify-content-center gap-3" style="min-height: 90dvh; margin-top: 10dvh;">
@@ -488,8 +577,8 @@
 
       <!-- new message ends-->
 
-      <div class="begin-action w-100">
-        <superme-button type="magenta" full text="Begin My Journey" (click)="onBegin()"></superme-button>
+      <div class="begin-action welcome-cta-btn w-100">
+        <superme-button type="magenta" full text="Unlock My Potential" (click)="onBegin()"></superme-button>
       </div>
     </div>
 

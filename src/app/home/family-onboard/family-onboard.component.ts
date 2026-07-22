@@ -387,7 +387,10 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         const titles: Record<ViewMode, string> = {
             'instructions-child': 'Instructions',
             'instructions-parent': 'Instructions',
-            'join-family-child': 'Join Your Family',
+            // The child code-entry screen shows its own "Step 6 of 6" hero
+            // header in the page body, so the nav bar itself stays title-less
+            // (back arrow only) to match the reference design.
+            'join-family-child': '',
             'join-family-parent': 'Create or Join Your Family'
         };
         return titles[this.viewMode];
@@ -437,40 +440,76 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * JOIN FAMILY (Child role): validate and store code
+     * JOIN FAMILY (Child role): this screen is now only reached by an
+     * already-registered, already-logged-in "pending child" (relationship
+     * SELF + asChild:true) — either right after signup or on a later app
+     * open via AuthService.getDashboardRoute(). So this calls the real
+     * authenticated /family/convert-to-child endpoint directly, instead of
+     * the old approach of stashing the code and looping back into the
+     * pre-registration signup wizard.
      */
     submitJoinFamily(): void {
         this.submitted = true;
         Object.keys(this.codeForm.controls).forEach(k => this.codeForm.controls[k].markAsTouched());
 
-        if (this.userRole === 'child' && this.codeForm.invalid) {
+        if (this.codeForm.invalid) {
             return;
         }
 
-        const familyCode = this.codeForm.get('code')?.value;
-
-        if (familyCode) {
-            if (!this.isValidCode(familyCode)) {
-                this.core.triggerToasrt('Please enter a valid 8-character family code');
-                return;
-            }
-            sessionStorage.setItem('familyCode', familyCode);
-        } else {
-            if (this.userRole === 'child') {
-                this.core.triggerToasrt('Family code is required to join as a child');
-                return;
-            }
-        }
-
-        sessionStorage.setItem('signup_role', this.userRole);
-
-        if (familyCode) {
-            const queryParams: any = { step: 4, role: this.userRole, familyCode };
-            this.router.navigate(['/home/sign-up'], { queryParams });
+        const familyCode = (this.codeForm.get('code')?.value || '').trim().toUpperCase();
+        if (!familyCode || !this.isValidCode(familyCode)) {
+            this.core.triggerToasrt('Please enter a valid 8-character family code');
             return;
         }
 
-        this.router.navigate(['/home/login'], { queryParams: { role: this.userRole } });
+        if (this.isLoading) return;
+        this.isLoading = true;
+
+        this.familyService.convertToChild(familyCode).subscribe({
+            next: (response) => {
+                this.isLoading = false;
+
+                // A fresh JWT is always returned on a successful role/family
+                // change — swap it in immediately, the old one is now stale.
+                if (response?.token) {
+                    this.authService.replaceAuthToken(response.token);
+                }
+
+                // Update the cached profile so the rest of the app stops
+                // treating this user as a pending child.
+                this.authService.updateUserData({
+                    relationship: response?.relationship || 'CHILD',
+                    asChild: false,
+                    family: {
+                        familyCode: response?.familyCode || familyCode,
+                        familyName: response?.familyName
+                    }
+                });
+                try { localStorage.removeItem('familyLinkSkipped'); } catch (e) { }
+
+                this.core.triggerToasrt(response?.message || 'Joined your family!', 'success');
+
+                const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+                this.router.navigate([route], { replaceUrl: true });
+            },
+            error: (error) => {
+                this.isLoading = false;
+                const msg = error?.error?.message || 'Failed to join family. Please try again.';
+                this.core.triggerToasrt(msg);
+            }
+        });
+    }
+
+    /**
+     * Child chooses not to link to a family right now. Marks the skip so
+     * AuthService.isPendingChild() stops bouncing them back to this screen,
+     * and sends them straight to their dashboard. They can still link a
+     * family later from their profile.
+     */
+    skipForNow(): void {
+        try { localStorage.setItem('familyLinkSkipped', 'true'); } catch (e) { }
+        const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+        this.router.navigate([route], { replaceUrl: true });
     }
 
     /**
@@ -709,6 +748,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
             const payload: any = {
                 name: profile.name || '',
+                username: profile.username || undefined,
                 gender: toApiGender(profile.gender),
                 relationship: 'PARENT',
                 password: password,
@@ -739,6 +779,11 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             // Add email or phone to payload (required by register API)
             if (loginMode === 'email' || (requestedIdentifier && requestedIdentifier.includes('@'))) {
                 payload.email = requestedIdentifier || '';
+                // Contact number collected on the profile step (separate from
+                // the login identifier) — only relevant for email signups.
+                if (profile.phone) {
+                    payload.phone = (countryCode ? countryCode : '') + profile.phone;
+                }
             } else if (requestedIdentifier) {
                 payload.phone = (countryCode ? countryCode : '') + requestedIdentifier;
             }

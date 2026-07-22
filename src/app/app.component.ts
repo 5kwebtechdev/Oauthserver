@@ -97,6 +97,13 @@ export class AppComponent implements OnInit, OnDestroy {
     this.toast$ = this.toastService.toast$;
   }
 
+  // The toast sits at the highest z-index in the app with no click handler,
+  // so it silently swallows taps meant for it (or content behind it) instead
+  // of dismissing — it only disappeared once its auto-hide timer elapsed.
+  dismissToast(): void {
+    this.toastService.hide();
+  }
+
   get isAppUpdateBlocked(): boolean {
     return this.isUpdateCheckPending || this.showForceUpdatePopup;
   }
