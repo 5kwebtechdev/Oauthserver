@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of, BehaviorSubject } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 export interface Country {
   name: string;
@@ -18,90 +17,29 @@ export class CountriesService {
   private countriesSubject = new BehaviorSubject<Country[]>([]);
   public countries$ = this.countriesSubject.asObservable();
 
-  // Fallback countries in case of loading failure
-  private fallbackCountries: Country[] = [
-    { name: 'India', code: '+91', flag: '🇮🇳', phoneLength: 10, iso: 'IN' },
+  // The app only officially supports these 5 markets — shown in this exact
+  // order everywhere a country-code picker appears (signup, login, edit
+  // profile, address input, etc.), matching the approved design reference.
+  private supportedCountries: Country[] = [
     { name: 'United States', code: '+1', flag: '🇺🇸', phoneLength: 10, iso: 'US' },
     { name: 'United Kingdom', code: '+44', flag: '🇬🇧', phoneLength: 10, iso: 'GB' },
     { name: 'Australia', code: '+61', flag: '🇦🇺', phoneLength: 9, iso: 'AU' },
-    { name: 'Canada', code: '+1', flag: '🇨🇦', phoneLength: 10, iso: 'CA' }
+    { name: 'Canada', code: '+1', flag: '🇨🇦', phoneLength: 10, iso: 'CA' },
+    { name: 'India', code: '+91', flag: '🇮🇳', phoneLength: 10, iso: 'IN' }
   ];
 
-  constructor(private http: HttpClient) {
+  constructor() {
     this.loadCountries();
   }
 
   /**
-   * Load countries from JSON file or external API
+   * Load the supported country list. This used to fetch the full
+   * assets/data/countries.json (every world country) — replaced with the
+   * curated 5-country list the app actually supports.
    */
   private loadCountries(): void {
-    // Try to load from local JSON file first
-    this.loadFromJson().subscribe({
-      next: (countries) => {
-        this.countriesSubject.next(countries);
-      },
-      error: (error) => {
-        console.warn('Failed to load countries from JSON, using fallback:', error);
-        this.countriesSubject.next(this.fallbackCountries);
-      }
-    });
+    this.countriesSubject.next(this.supportedCountries);
   }
-
-  /**
-   * Load countries from local JSON file
-   */
-  private loadFromJson(): Observable<Country[]> {
-    interface JsonCountry {
-      name: string;
-      flag: string;
-      code: string; // ISO code
-      dial_code: string; // Phone code
-    }
-
-    return this.http.get<JsonCountry[]>('assets/data/countries.json').pipe(
-      map((jsonCountries: JsonCountry[]) => {
-        // Transform JSON data to Country interface and add phoneLength
-        return jsonCountries.map(jsonCountry => ({
-          name: jsonCountry.name,
-          code: jsonCountry.dial_code, // dial_code becomes code
-          flag: jsonCountry.flag,
-          phoneLength: this.getPhoneLength(jsonCountry.code), // Use ISO code to get phone length
-          iso: jsonCountry.code // code becomes iso
-        })).sort((a, b) => a.name.localeCompare(b.name));
-      }),
-      catchError(error => {
-        console.error('Error loading countries from JSON:', error);
-        return of(this.fallbackCountries);
-      })
-    );
-  }
-
-  /**
-   * Alternative: Load from external API (RestCountries or similar)
-   * Uncomment and modify as needed
-   */
-  /*
-  private loadFromAPI(): Observable<Country[]> {
-    return this.http.get<any[]>('https://restcountries.com/v3.1/all?fields=name,flag,idd,cca2').pipe(
-      map(apiCountries => {
-        return apiCountries
-          .filter(country => country.idd?.root && country.idd?.suffixes?.length > 0)
-          .map(country => ({
-            name: country.name.common,
-            code: country.idd.root + (country.idd.suffixes[0] || ''),
-            flag: this.getEmojiFlag(country.cca2),
-            phoneLength: this.getPhoneLength(country.cca2),
-            iso: country.cca2
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name));
-      }),
-      catchError(error => {
-        console.error('Error loading countries from API:', error);
-        return of(this.fallbackCountries);
-      })
-    );
-  }
-  */
 
   /**
    * Get all countries

@@ -197,6 +197,30 @@ p {
   width: 100%;
 }
 
+:host(.signup-primary-action) .orange-onboard {
+  height: 56px;
+  min-height: 56px;
+  padding: 8px 16px;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  background:
+    linear-gradient(90deg, #7341A7 0%, #432477 50%, #20143F 100%) padding-box,
+    linear-gradient(90deg, #7341A7 0%, #432477 100%) border-box;
+  box-shadow: inset -2px -2px 2px 0 #FFFFFF;
+}
+
+:host(.signup-primary-action:not(.disabled)) .orange-onboard:active {
+  background:
+    linear-gradient(90deg, #7341A7 0%, #432477 50%, #20143F 100%) padding-box,
+    linear-gradient(90deg, #7341A7 0%, #432477 100%) border-box;
+  box-shadow: inset -2px -2px 2px 0 #FFFFFF;
+}
+
+:host(.signup-primary-action.disabled) .button {
+  opacity: 1;
+}
+
 .orange-transparent {
   background: transparent;
   border: 1px solid #F28745;

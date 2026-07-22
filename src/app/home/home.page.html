@@ -1,6 +1,7 @@
 <main
   *ngIf="!isAuthenticated"
   class="onboarding"
+  [class.role-selection-active]="currentSlide === 1"
   (touchstart)="onTouchStart($event)"
   (touchend)="onTouchEnd($event)"
   aria-label="SuperMeApp introduction"
@@ -15,17 +16,25 @@
       [attr.aria-label]="slides[0]"
     >
       <div class="slide-canvas">
+        <div class="super-bg" aria-hidden="true">
+          <span class="blob blob-1"></span>
+          <span class="blob blob-2"></span>
+          <span class="blob blob-3"></span>
+          <span class="blob blob-4"></span>
+          <span class="frost"></span>
+        </div>
+
         <header class="hero-heading super-heading">
-          <span class="heading-line line-app">
-            Super App
-            <img class="stroke-purple" src="assets/Images-Transparent/MainOnbroading-screenpurplestrock.png" alt="" aria-hidden="true" />
-          </span>
-          <span>For <strong class="gradient-text">Super YOU!</strong></span>
-          <img class="stroke-center" src="assets/Images-Transparent/Centerstockonboarding.png" alt="" aria-hidden="true" />
+          <div class="super-copy">
+            <span class="super-title-line super-app-line"><span>Super</span><span>App</span></span>
+            <span class="super-title-line super-you-line"><span>For</span><strong class="gradient-text">Super YOU!</strong></span>
+          </div>
+          <img class="super-accent" src="assets/Images-Transparent/MainOnbroading-screenpurplestrock.png" alt="" aria-hidden="true" />
+          <img class="super-underline" src="assets/Images-Transparent/Centerstockonboarding.png" alt="" aria-hidden="true" />
         </header>
 
         <div class="slide-illustration super-illustration">
-          <img src="assets/Images-Transparent/MainOnbroading-screen1.png" alt="Super App for Super You illustration" />
+          <img src="assets/Images-Transparent/onboarding-super-you-figma.png" alt="Super App for Super You illustration" />
         </div>
       </div>
     </section>
@@ -35,19 +44,50 @@
       [attr.aria-hidden]="currentSlide !== 1"
       [attr.aria-label]="slides[1]"
     >
-      <div class="slide-canvas">
-        <header class="hero-heading foundations-heading">
-          <span>Built On 4</span>
-          <span class="heading-line line-blocks">
-            <strong class="gradient-text">Foundational Blocks</strong>
-            <img class="stroke-purple" src="assets/Images-Transparent/MainOnbroading-screenpurplestrock.png" alt="" aria-hidden="true" />
-          </span>
-          <span>For Real Life Growth</span>
-          <img class="stroke-center" src="assets/Images-Transparent/Centerstockonboarding.png" alt="" aria-hidden="true" />
-        </header>
+      <div class="slide-canvas role-selection-canvas">
+        <div class="role-selection-content">
+          <header class="role-selection-header">
+            <button type="button" class="role-back-button" aria-label="Back to previous slide" (click)="showPreviousSlide()">
+              <img src="assets/Images-Transparent/choose-role-back-figma.svg" alt="" aria-hidden="true" />
+            </button>
 
-        <div class="slide-illustration foundations-illustration">
-          <img src="assets/Images-Transparent/MainOnbroading-screen2.png" alt="Four foundational blocks illustration" />
+            <div class="role-selection-copy">
+              <h2>Who’s Using the App?</h2>
+              <p>Choose your journey. You can always connect<br />accounts later.</p>
+            </div>
+          </header>
+
+          <div class="role-options" aria-label="Choose who is using the app">
+            <button type="button" class="role-option role-option-self">
+              <span class="role-option-copy">
+                <strong>Self</strong>
+                <span>100% Private</span>
+                <span>Your Journey, Your progress</span>
+                <span>For Your Eyes Only.</span>
+              </span>
+              <img src="assets/Images-Transparent/choose-role-self-figma.png" alt="Self profile" />
+            </button>
+
+            <button type="button" class="role-option role-option-child">
+              <span class="role-option-copy">
+                <strong>Child</strong>
+                <span>Show Off your Wins!</span>
+                <span>Sync your Account with Parents</span>
+                <span>Safe Place for Kids to Learn &amp; Grow</span>
+              </span>
+              <img src="assets/Images-Transparent/choose-role-child-figma.png" alt="Child profile" />
+            </button>
+
+            <button type="button" class="role-option role-option-parent">
+              <span class="role-option-copy">
+                <strong>Parent</strong>
+                <span>Guide, Reward, Celebrate</span>
+                <span>Set your Child up for Success</span>
+                <span>Build Confidence &amp; Accountability</span>
+              </span>
+              <img src="assets/Images-Transparent/choose-role-parent-figma.png" alt="Parent profile" />
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -58,19 +98,27 @@
       [attr.aria-label]="slides[2]"
     >
       <div class="slide-canvas">
+        <div class="super-bg roles-bg" aria-hidden="true">
+          <span class="blob blob-1"></span>
+          <span class="blob blob-2"></span>
+          <span class="blob blob-3"></span>
+          <span class="blob blob-4"></span>
+          <span class="frost"></span>
+        </div>
+
         <header class="hero-heading roles-heading">
-          <div class="heading-lines">
-            <span>Three Ways To</span>
-            <span class="heading-line line-join">
-              <strong class="gradient-text">Join SuperMeApp</strong>
-              <img class="stroke-purple" src="assets/Images-Transparent/MainOnbroading-screenpurplestrock.png" alt="" aria-hidden="true" />
-            </span>
-            <img class="stroke-center" src="assets/Images-Transparent/Centerstockonboarding.png" alt="" aria-hidden="true" />
+          <div class="roles-copy">
+            <span class="roles-kicker">Three Ways To</span>
+            <strong class="gradient-text roles-title">Join SuperMeApp</strong>
+            <img class="roles-accent" src="assets/Images-Transparent/MainOnbroading-screenpurplestrock.png" alt="" aria-hidden="true" />
+            <img class="roles-underline" src="assets/Images-Transparent/Centerstockonboarding.png" alt="" aria-hidden="true" />
           </div>
-          <p>From private personal spaces to connected family<br />accounts, select the option that fits your need</p>
+          <p class="roles-description">From private personal spaces to connected family<br />accounts, select the option that fits your need</p>
         </header>
         <div class="slide-illustration roles-illustration">
-          <img src="assets/Images-Transparent/MainOnbroading-screen3.png" alt="Three ways to join SuperMeApp illustration" />
+          <div class="roles-art-frame">
+            <img src="assets/Images-Transparent/onboarding-three-ways-figma.png" alt="Three ways to join SuperMeApp illustration" />
+          </div>
         </div>
       </div>
     </section>
@@ -81,22 +129,39 @@
       [attr.aria-label]="slides[3]"
     >
       <div class="slide-canvas">
+        <div class="super-bg rewards-bg" aria-hidden="true">
+          <span class="blob blob-1"></span>
+          <span class="blob blob-2"></span>
+          <span class="blob blob-3"></span>
+          <span class="blob blob-4"></span>
+          <span class="frost"></span>
+        </div>
+
         <header class="hero-heading rewards-heading">
-          <div class="heading-lines">
-            <span>Stay <strong class="gradient-text">Consistent</strong> Earn</span>
-            <span><strong class="gradient-text">Rewards</strong> Redeem &amp;</span>
-            <span class="heading-line">
-              <strong class="gradient-text">Shop</strong>
-              <span>Awesome Stuff!</span>
-              <img class="stroke-purple" src="assets/Images-Transparent/MainOnbroading-screenpurplestrock.png" alt="" aria-hidden="true" />
+          <div class="rewards-copy">
+            <span class="rewards-row rewards-row-one">
+              <span>Stay</span>
+              <strong class="gradient-text rewards-gradient-one">Consistent</strong>
+              <span>Earn</span>
             </span>
-            <img class="stroke-center" src="assets/Images-Transparent/Centerstockonboarding.png" alt="" aria-hidden="true" />
+            <span class="rewards-row rewards-row-two">
+              <strong class="gradient-text rewards-gradient-two">Rewards</strong>
+              <span>Redeem &amp;</span>
+            </span>
+            <span class="rewards-row rewards-row-three">
+              <strong class="gradient-text rewards-gradient-three">Shop</strong>
+              <span>Awesome Stuff!</span>
+            </span>
+            <img class="rewards-accent" src="assets/Images-Transparent/MainOnbroading-screenpurplestrock.png" alt="" aria-hidden="true" />
+            <img class="rewards-underline" src="assets/Images-Transparent/Centerstockonboarding.png" alt="" aria-hidden="true" />
           </div>
-          <p>Turn your efforts into coins, unlock rewards, and shop for things that excite and motivate you !</p>
+          <p class="rewards-description">Turn your efforts into coins, unlock rewards, and shop for things that excite and motivate you !</p>
         </header>
 
         <div class="slide-illustration rewards-illustration">
-          <img src="assets/Images-Transparent/MainOnbroading-screen4.png" alt="Stay consistent, earn rewards illustration" />
+          <div class="rewards-art-frame">
+            <img src="assets/Images-Transparent/onboarding-rewards-shop-figma.png" alt="Stay consistent, earn rewards illustration" />
+          </div>
         </div>
 
         <button
@@ -111,7 +176,14 @@
     </section>
   </div>
 
-  <nav class="pagination" aria-label="Onboarding slides">
+  <nav
+    class="pagination"
+    [class.super-pagination]="currentSlide === 0"
+    [class.foundations-pagination]="currentSlide === 1"
+    [class.roles-pagination]="currentSlide === 2"
+    [class.rewards-pagination]="currentSlide === 3"
+    aria-label="Onboarding slides"
+  >
     <button
       *ngFor="let slide of slides; let i = index"
       type="button"

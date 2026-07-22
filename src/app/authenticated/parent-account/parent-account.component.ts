@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { ViewWillEnter } from '@ionic/angular';
+import { Platform, ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from "@angular/common";
 import { Router, RouterModule } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, map, of, Subject, takeUntil } from 'rxjs';
 import { NotesComponent } from '../../core/components/notes/notes.component';
 import { UserService } from '../../core/services/user.service';
 import { IonicModule } from "@ionic/angular";
@@ -21,6 +21,7 @@ import { ProfileStoreService } from '../../core/services/profile-store.service';
 import { ChildInfo, mapVibeToChildInfo } from '../../core/models/child-info.model';
 import { RefreshService } from '../../core/services/refresh.service';
 import { SupermeButtonComponent } from '../../core/components/superme-button/superme-button.component';
+import { FamilyService } from '../../core/services/family.service';
 
 
 @Component({
@@ -44,6 +45,7 @@ import { SupermeButtonComponent } from '../../core/components/superme-button/sup
 })
 export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter {
     private readonly destroy$ = new Subject<void>();
+    private childrenRequestId = 0;
     
     public userName: string = 'User';
     public userCoins: number = 0;
@@ -128,9 +130,22 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     // Children from store
     public children: ChildInfo[] = [];
     public selectedChild: ChildInfo | null = null;
+    public childrenLoadState: 'idle' | 'loading' | 'loaded' | 'error' = 'idle';
 
     get hasLinkedChildren(): boolean {
         return this.children.length > 0;
+    }
+
+    get showLinkChildPrompt(): boolean {
+        return this.childrenLoadState === 'loaded' && !this.hasLinkedChildren;
+    }
+
+    get showChildrenLoading(): boolean {
+        return this.childrenLoadState === 'loading' && !this.hasLinkedChildren;
+    }
+
+    get showChildrenLoadError(): boolean {
+        return this.childrenLoadState === 'error' && !this.hasLinkedChildren;
     }
 
     @ViewChild('moodSel') moodSelector?: MoodSelectorComponent;
@@ -144,7 +159,9 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         private authService: AuthService,
         private childSelfImage: ChildSelfImageService,
         private parentImageService: ParentImageService,
-        private refreshService: RefreshService
+        private refreshService: RefreshService,
+        private familyService: FamilyService,
+        private platform: Platform
     ) { }
 
     async openNotes() {
@@ -160,6 +177,9 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     ngOnInit(): void {
         // Register with global pull-to-refresh service
         this.refreshService.registerRefreshHandler('ParentAccount', () => this.onGlobalRefresh());
+        this.platform.resume.pipe(takeUntil(this.destroy$)).subscribe(() => {
+            void this.loadChildren();
+        });
         // Redirect non-parent users
         if (!this.authService.isParentUser()) {
             this.router.navigate(['/authed/user-dashboard'], { replaceUrl: true });
@@ -222,28 +242,106 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
     }
 
-    ionViewWillEnter(): void {
+    async ionViewWillEnter(): Promise<void> {
         // Fires on initial load AND every time this screen becomes active (return from navigation).
-        this.loadChildren();
+        await this.loadChildren();
         // Refresh habits/tasks in the child component (Ionic hooks don't propagate to child components)
         this.habitPageContent?.refresh();
     }
 
-    /** Load children from API and set into store */
-    private loadChildren(): void {
-        this.moodService.getVibesDisplay().pipe(takeUntil(this.destroy$)).subscribe({
-            next: (data) => {
-                if (Array.isArray(data) && data.length > 0) {
-                    const children: ChildInfo[] = data.map(d => {
-                        const avatarUrl = this.childSelfImage.resolveAvatarForMember(d).url || '';
-                        return mapVibeToChildInfo(d, avatarUrl);
-                    });
-                    this.profileStore.setChildren(children);
-                } else {
-                    this.profileStore.setChildren([]);
-                }
-            },
-            error: () => this.profileStore.setChildren([])
+    /**
+     * Load linked children from family status, then enrich them with vibe/stats data.
+     * The family endpoint is the source of truth for whether a child is linked.
+     */
+    public async loadChildren(): Promise<void> {
+        const requestId = ++this.childrenRequestId;
+        this.childrenLoadState = 'loading';
+
+        const result = await firstValueFrom(forkJoin({
+            family: this.familyService.getMyStatus().pipe(
+                map(data => ({ data, failed: false })),
+                catchError(error => of({ data: null, failed: true, error }))
+            ),
+            vibes: this.moodService.getVibesDisplay().pipe(
+                map(data => ({ data, failed: false })),
+                catchError(error => of({ data: [] as VibesDisplayResponse[], failed: true, error }))
+            )
+        }));
+
+        // Ignore an older response if a pull-to-refresh or route re-entry started a newer request.
+        if (requestId !== this.childrenRequestId) return;
+
+        const familyChildren = result.family.failed
+            ? []
+            : this.mapFamilyChildren(result.family.data);
+        const vibeChildren = result.vibes.failed
+            ? []
+            : this.mapVibeChildren(result.vibes.data);
+
+        if (!result.family.failed) {
+            const explicitlyNoFamily = result.family.data?.hasFamily === false;
+            const children = familyChildren.length
+                ? this.mergeChildStats(familyChildren, vibeChildren)
+                : explicitlyNoFamily
+                    ? []
+                    : vibeChildren;
+
+            this.profileStore.setChildren(children);
+            this.childrenLoadState = 'loaded';
+            return;
+        }
+
+        if (!result.vibes.failed && vibeChildren.length) {
+            this.profileStore.setChildren(vibeChildren);
+            this.childrenLoadState = 'loaded';
+            return;
+        }
+
+        // Preserve any previously loaded children during a temporary network failure.
+        this.childrenLoadState = 'error';
+    }
+
+    private mapFamilyChildren(status: any): ChildInfo[] {
+        const members = Array.isArray(status?.members)
+            ? status.members
+            : Array.isArray(status?.family?.members)
+                ? status.family.members
+                : [];
+
+        return members
+            .filter((member: any) => this.isChildMember(member))
+            .map((member: any) => {
+                const normalized = {
+                    ...member,
+                    userName: member?.userName || member?.name || 'Child'
+                };
+                const avatarUrl = this.childSelfImage.resolveAvatarForMember(normalized).url || '';
+                return mapVibeToChildInfo(normalized, avatarUrl);
+            });
+    }
+
+    private mapVibeChildren(data: VibesDisplayResponse[] | null | undefined): ChildInfo[] {
+        if (!Array.isArray(data)) return [];
+
+        return data
+            .filter(item => this.isChildMember(item, true))
+            .map(item => {
+                const avatarUrl = this.childSelfImage.resolveAvatarForMember(item).url || '';
+                return mapVibeToChildInfo(item, avatarUrl);
+            });
+    }
+
+    private isChildMember(member: any, allowMissingRelationship = false): boolean {
+        const relationship = String(member?.relationship || member?.role || '').trim().toUpperCase();
+        return relationship === 'CHILD' || (allowMissingRelationship && !relationship);
+    }
+
+    private mergeChildStats(familyChildren: ChildInfo[], vibeChildren: ChildInfo[]): ChildInfo[] {
+        return familyChildren.map(child => {
+            const stats = vibeChildren.find(item => String(item.id) === String(child.id));
+            return stats
+                ? { ...child, ...stats, name: stats.name || child.name, avatarUrl: stats.avatarUrl || child.avatarUrl }
+                : child;
         });
     }
 
@@ -407,7 +505,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             const isFemale = (userData.gender || '').toLowerCase() === 'female';
             this.parentAvatarStyle = this.parentImageService.getAvatarStyle(this.parentInitial, isFemale, 54);
         }
-        this.loadChildren();
+        await this.loadChildren();
         this.loadUserStats();
         await this.habitPageContent?.refresh();
     }

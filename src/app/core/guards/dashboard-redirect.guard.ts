@@ -15,6 +15,14 @@ export class DashboardRedirectGuard implements CanActivate {
         const userRole = this.authService.getUserRelationship();
         const requestedRoute = state.url;
 
+        // A pending child (SELF + asChild:true) must never land on either
+        // dashboard — e.g. a stale/resumed session landing directly on
+        // /authed/user-dashboard before they've linked to a family.
+        if (this.authService.isPendingChild()) {
+            this.router.navigate(['/home/join-family'], { replaceUrl: true });
+            return false;
+        }
+
         // If user is a parent and tries to access user-dashboard, redirect to parent-account
         if (userRole === 'PARENT' && requestedRoute.includes('/authed/user-dashboard')) {
             this.router.navigate(['/authed/parent-account'], { replaceUrl: true });

@@ -10,7 +10,7 @@
 
 <ion-content>
     <div class="container w-100 p-0">
-        <section class="user-profile-section profile" [class.no-child]="!hasLinkedChildren" aria-labelledby="profile-heading">
+        <section class="user-profile-section profile" [class.no-child]="showLinkChildPrompt" aria-labelledby="profile-heading">
             <header class="profile-header" role="banner">
                 <div class="user-info" role="group" aria-label="User info">
                     <div class="user-avatar" aria-hidden="false">
@@ -113,8 +113,17 @@
             </div>
         </section>
 
-        <div class="dashboard-content" [class.dashboard-content--empty]="!hasLinkedChildren">
-            <section class="link-child-empty-state" *ngIf="!hasLinkedChildren" aria-labelledby="link-child-heading">
+        <div class="dashboard-content" [class.dashboard-content--empty]="showLinkChildPrompt">
+            <section class="children-status-state" *ngIf="showChildrenLoading" aria-live="polite" aria-label="Loading linked children">
+                <ion-spinner name="crescent"></ion-spinner>
+            </section>
+
+            <section class="children-status-state children-status-state--error" *ngIf="showChildrenLoadError" aria-live="polite">
+                <p>We couldn't refresh your family right now.</p>
+                <button type="button" class="children-retry-button" (click)="loadChildren()">Try again</button>
+            </section>
+
+            <section class="link-child-empty-state" *ngIf="showLinkChildPrompt" aria-labelledby="link-child-heading">
                 <div class="link-empty__overlay"></div>
                 <div class="link-empty__content">
                     <img src="assets/Images-Transparent/Image-Parents-Family.png" alt="" aria-hidden="true" />
@@ -157,5 +166,5 @@
     <div *ngIf="hasLinkedChildren" class="fab-add-button" (click)="openActivityInput()">
         <superme-button type="add"></superme-button>
     </div>
-    <app-footer [class.footer-blur]="!hasLinkedChildren"></app-footer>
+    <app-footer [class.footer-blur]="showLinkChildPrompt"></app-footer>
 </ion-content>

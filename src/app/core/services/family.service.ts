@@ -154,17 +154,15 @@ export class FamilyService {
         return this.http.post(`${this.baseUrl}/family/convert-to-parent`, body, { headers });
     }
 
+    /**
+     * POST /family/convert-to-child — auth endpoint, user identified via the
+     * Bearer token server-side. Body is just { familyCode }; do NOT add
+     * userId here (unlike convert-to-parent, which is public and needs it
+     * explicitly).
+     */
     convertToChild(familyCode: string): Observable<any> {
         const headers = this.getHeaders();
-        const userId = this.resolveUserId(headers);
-        if (userId === null) {
-            return throwError(() => ({
-                status: 401,
-                error: { message: 'Unable to identify the signed-in user. Please log in again.' }
-            }));
-        }
-
-        const body = { userId, familyCode };
+        const body = { familyCode };
         return this.http.post(`${this.baseUrl}/family/convert-to-child`, body, { headers });
     }
 

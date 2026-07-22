@@ -175,6 +175,48 @@
     position: relative;
 }
 
+.children-status-state {
+    width: 100%;
+    min-height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    ion-spinner {
+        width: 30px;
+        height: 30px;
+        color: #90214d;
+    }
+}
+
+.children-status-state--error {
+    flex-direction: column;
+    gap: 12px;
+    padding: 24px 16px;
+    text-align: center;
+
+    p {
+        margin: 0;
+        color: #6b656a;
+        font-family: var(--font-sans);
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.4;
+    }
+}
+
+.children-retry-button {
+    min-height: 40px;
+    padding: 0 20px;
+    border: 1px solid #90214d;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #90214d;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 700;
+}
+
 // Blur the profile header when no child linked
 .user-profile-section.no-child {
     .profile-header {

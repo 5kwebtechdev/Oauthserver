@@ -61,6 +61,10 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   // Observable for shared toast service (add toast HTML to template)
   toast$: Observable<Toast | null> = this.toastService.toast$;
 
+  dismissToast(): void {
+    this.toastService.hide();
+  }
+
   constructor(
     private http: HttpClient,
     private authService: AuthService,

@@ -6,6 +6,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { CountriesService } from '../../core/services/countries.service';
 import { AuthService } from '../../core/services/auth.service';
 import { NavController } from '@ionic/angular';
+import { SocialMediaComponent } from '../../core/components/social-media/social-media.component';
 
 interface Country {
   name: string;
@@ -20,7 +21,7 @@ interface Country {
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, SocialMediaComponent],
 })
 export class ResetPasswordComponent implements OnInit, OnDestroy {
   public resetPasswordForm: FormGroup;

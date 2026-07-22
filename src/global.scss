@@ -659,6 +659,7 @@ body.barcode-scanner-active {
 
   background: var(--mb-toast-bg);
   border: var(--mb-toast-border);
+  cursor: pointer;
 
   @media (max-width: 480px) {
     width: 95%;
