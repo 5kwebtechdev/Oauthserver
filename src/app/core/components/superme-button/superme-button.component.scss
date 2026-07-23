@@ -273,7 +273,13 @@ p {
   box-shadow: 0 0 1px 0.5px rgba(144, 33, 77, 0.20), 0 -2px 2px 0 #EA7CB5 inset;
   --text_color: #FFFFFF;
 
-  &.full,
+  &.full{
+        border-radius: 16px;
+    background: linear-gradient(90deg, #7341A7 0%, #432477 50%, #20143F 100%) padding-box, linear-gradient(90deg, #7341A7 0%, #432477 100%) border-box;
+    box-shadow: inset -2px -2px 2px 0 #FFFFFF;
+    color: #fff;
+  }
+  
   &.large {
     border-radius: 8px;
   }
