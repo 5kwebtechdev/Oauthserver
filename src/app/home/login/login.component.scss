@@ -120,26 +120,27 @@ button {
 
 .login-title {
   color: #282527;
-  font-size: 27px;
-  font-weight: 600;
+  font-family: 'Fredoka', var(--font-sans, sans-serif);
+  font-size: 24px;
+  font-weight: 500;
   line-height: 1.3;
 }
 
 .login-subtitle {
   margin-top: 8px;
   color: #716b70;
-  font-size: 16px;
+  font-family: 'Nunito', var(--font-sans, sans-serif);
+  font-size: 14px;
   font-weight: 500;
   line-height: 1.45;
 }
 
-.login-accent {
-  width: 100%;
-  height: 6px;
-  margin-top: 24px;
-  overflow: hidden;
-  border-radius: 3px;
-  background: #f1e8ec;
+.login-card {
+  margin-top: 48px;
+  padding: 32px 24px 48px;
+  border: 1.5px solid #dcd8da;
+  border-radius: 24px;
+  background: #ffffff;
 }
 
 .login-accent span {
@@ -182,8 +183,8 @@ button {
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  margin-top: 18px;
+  gap: 14px;
+  margin-top: 4px;
 }
 
 .login-field {
@@ -209,14 +210,14 @@ button {
 .login-password-wrap {
   display: flex;
   width: 100%;
-  min-height: 68px;
+  min-height: 56px;
   align-items: center;
   overflow: hidden;
-  border: 1px solid #f0ecee;
-  border-radius: 8px;
+  border: 1.5px solid #dcd8da;
+  border-radius: 12px;
   background: #ffffff;
-  box-shadow: 0 2px 12px rgba(107, 101, 106, 0.14);
-  transition: border-color 160ms ease, box-shadow 160ms ease;
+  box-shadow: none;
+  transition: border-color 160ms ease;
 }
 
 .login-input-wrap:focus-within,
@@ -245,15 +246,25 @@ button {
 .login-password-wrap input {
   width: 100%;
   min-width: 0;
-  height: 66px;
-  padding: 0 20px 0 12px;
+  height: 56px;
+  padding: 0 16px;
   border: 0;
   outline: 0;
   background: transparent;
   color: #282527;
-  font-size: 17px;
+  font-family: 'Nunito', var(--font-sans, sans-serif);
+  font-size: 13px;
   font-weight: 500;
   letter-spacing: 0;
+}
+
+/* Override webkit autofill default background color */
+.login-input-wrap input:-webkit-autofill,
+.login-phone-wrap input:-webkit-autofill,
+.login-password-wrap input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  -webkit-text-fill-color: #282527 !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .login-input-wrap input::placeholder,
@@ -312,9 +323,10 @@ button {
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: #90214d;
-  font-size: 14px;
-  font-weight: 700;
+  color: #432477;
+  font-family: 'Nunito', var(--font-sans, sans-serif);
+  font-size: 13px;
+  font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
@@ -349,15 +361,17 @@ button {
   justify-content: center;
   gap: 8px;
   border: 1px solid transparent;
-  border-radius: 16px;
+  border-radius: 20px;
   background:
     linear-gradient(90deg, #7341A7 0%, #432477 50%, #20143F 100%) padding-box,
     linear-gradient(90deg, #7341A7 0%, #432477 100%) border-box;
-  box-shadow: inset -2px -2px 2px 0 #FFFFFF;
+  box-shadow: none;
   color: #ffffff;
-  font-size: 17px;
+  font-family: 'Nunito', var(--font-sans, sans-serif);
+  font-size: 16px;
   font-weight: 700;
   line-height: 1.35;
+  margin-top: 24px;
   cursor: pointer;
   transition: filter 160ms ease, transform 160ms ease, opacity 160ms ease;
 }
@@ -372,7 +386,7 @@ button {
 
 .login-primary-btn:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 1;
 }
 
 .login-spinner {
@@ -386,25 +400,26 @@ button {
 
 .login-divider {
   display: grid;
-  margin: 38px 0 24px;
+  margin: 32px 0 24px;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .login-divider span {
   height: 1px;
-  background: linear-gradient(90deg, transparent, #d9a5ba);
+  background: #e9e3e6;
 }
 
 .login-divider span:last-child {
-  background: linear-gradient(90deg, #d9a5ba, transparent);
+  background: #e9e3e6;
 }
 
 .login-divider strong {
-  color: #282527;
-  font-size: 18px;
-  font-weight: 600;
+  color: #716b70;
+  font-family: 'Nunito', var(--font-sans, sans-serif);
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .login-social {
@@ -419,7 +434,7 @@ button {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  gap: 28px;
+  gap: 24px;
 }
 
 :host ::ng-deep .login-social .social-login-btn {
@@ -453,9 +468,10 @@ button {
 }
 
 .login-signup-copy {
-  margin-top: 32px;
+  margin-top: 48px;
   color: #282527;
-  font-size: 17px;
+  font-family: 'Nunito', var(--font-sans, sans-serif);
+  font-size: 16px;
   font-weight: 500;
   line-height: 1.45;
   text-align: center;
@@ -466,7 +482,7 @@ button {
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: #282527;
+  color: #432477;
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -617,11 +633,11 @@ button {
   }
 
   .login-title {
-    font-size: 30px;
+    font-size: 24px;
   }
 
   .login-subtitle {
-    font-size: 17px;
+    font-size: 14px;
   }
 
   .country-modal {
@@ -637,12 +653,12 @@ button {
   }
 
   .login-title {
-    font-size: 25px;
+    font-size: 22px;
   }
 
   .login-subtitle,
   .login-signup-copy {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .login-country-btn {

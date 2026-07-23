@@ -43,7 +43,7 @@
       <div class="pick-time">
         <label>End Time</label>
         <div class="superme-input-group" [class.missing-placeholder]="showTimeError && attemptedSubmit">
-          <superme-timepicker [placeholder]="endDate ? 'End' : 'Pick End Date first'" [disabled]="!endDate"
+          <superme-timepicker placeholder="End"
             [seedTime]="startTime" [(ngModel)]="endTime" (ngModelChange)="clearTimeError()"></superme-timepicker>
         </div>
       </div>
