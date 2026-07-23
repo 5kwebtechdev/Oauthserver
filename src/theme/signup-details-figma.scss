@@ -1,0 +1,510 @@
+/* Figma: Lets set You Up / user details (node 22844:48296) */
+.signup-container.profile-layout:has(.profile-step--figma) {
+  width: 100%;
+  max-width: 393px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 0 0 calc(var(--sab, 0px) + 28px);
+  gap: 0;
+  overflow: visible;
+  color: #282527;
+  background: #fff;
+}
+
+.signup-container.profile-layout .profile-step--figma {
+  width: 100%;
+  max-width: 393px;
+  margin: 0 auto;
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+}
+
+.profile-step--figma .details-header {
+  position: relative;
+  width: 100%;
+  min-height: 190px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #e2dbfd 0%, #f2effc 62%, #fff 100%);
+}
+
+.profile-step--figma .details-back-btn {
+  position: relative;
+  z-index: 3;
+  width: 48px;
+  height: 48px;
+  margin: calc(var(--sat, 0px) + 20px) 0 0 16px;
+  border-radius: 0;
+}
+
+.profile-step--figma .details-back-btn:hover {
+  background: transparent;
+}
+
+.profile-step--figma .details-back-btn img {
+  display: block;
+  width: 48px;
+  height: 48px;
+}
+
+.profile-step--figma .details-header-content {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-height: 122px;
+  margin-top: -1px;
+  padding-left: 30px;
+  box-sizing: border-box;
+}
+
+.profile-step--figma .details-header-copy {
+  position: relative;
+  z-index: 2;
+  width: 205px;
+  padding-top: 0;
+}
+
+.profile-step--figma .details-title {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  color: #282527;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 25px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+.profile-step--figma .details-title strong {
+  color: transparent;
+  font: inherit;
+  background: linear-gradient(90deg, #432477 0%, #7341a7 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.profile-step--figma .details-progress-copy {
+  margin-top: 12px;
+}
+
+.profile-step--figma .details-progress-copy .profile-step-label {
+  color: #6b656a;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.profile-step--figma .details-progress-copy .profile-hero__title {
+  margin: 4px 0 0;
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.profile-step--figma .details-progress-copy .profile-progress {
+  width: 167px;
+  height: 4px;
+  margin: 8px 0 0;
+  border-radius: 4px;
+  background: #d3d3d3;
+}
+
+.profile-step--figma .details-progress-copy .profile-progress span {
+  width: 88px;
+  background: linear-gradient(90deg, #8b8dcb 0%, #f6ac72 35%, #89b3b6 68%, #e1527c 100%);
+}
+
+.profile-step--figma .details-header-illustration {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 0;
+  width: 156px;
+  height: 142px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.profile-step--figma .details-header-illustration img {
+  display: block;
+  width: 156px;
+  height: 142px;
+  object-fit: contain;
+  object-position: right bottom;
+}
+
+.profile-step--figma .details-header-illustration span {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #fff 100%);
+}
+
+.signup-container.profile-layout .profile-step--figma > .profile,
+.signup-container.profile-layout .profile-step--figma > .details-referral-section,
+.signup-container.profile-layout .profile-step--figma > .profile-button-wrapper,
+.signup-container.profile-layout .profile-step--figma > .error-message {
+  width: calc(100% - 32px);
+  max-width: 361px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.signup-container.profile-layout .profile-step--figma > .profile {
+  margin-top: 24px;
+}
+
+.profile-step--figma .profile form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.profile-step--figma .profile .profile-field-heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+  width: 100%;
+  margin: 0 0 10px;
+  column-gap: 12px;
+}
+
+.profile-step--figma .profile .profile-field-title,
+.profile-step--figma .details-referral-section .referral-text h4 {
+  color: #282527;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.profile-step--figma .profile .profile-field-hint {
+  align-self: center;
+  justify-self: end;
+  max-width: none;
+  margin: 0;
+  color: #6b656a;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: right;
+}
+
+.profile-step--figma .profile .input-group {
+  width: 100%;
+  margin: 0 0 24px;
+}
+
+.profile-step--figma .profile .input-group input,
+.profile-step--figma .details-referral-section .input-group input {
+  width: 100%;
+  height: 57px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 12px !important;
+  outline: none;
+  color: #282527;
+  background: #fff;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.profile-step--figma .profile .input-group input::placeholder,
+.profile-step--figma .details-referral-section .input-group input::placeholder {
+  color: #a6a2a5;
+  opacity: 1;
+}
+
+.profile-step--figma .profile .input-group input:focus,
+.profile-step--figma .profile .input-group input:hover,
+.profile-step--figma .details-referral-section .input-group input:focus,
+.profile-step--figma .details-referral-section .input-group input:hover {
+  border-color: #7341a7;
+}
+
+.profile-step--figma .profile .username-field {
+  margin-bottom: 24px;
+}
+
+.profile-step--figma .username-input-shell {
+  width: 100%;
+}
+
+.profile-step--figma .input-group.username-field .username-input-shell input {
+  height: 57px;
+  padding: 0 48px 0 16px;
+  border-radius: 12px !important;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
+}
+
+.profile-step--figma .username-figma-helper,
+.profile-step--figma .username-change-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 0;
+  color: #6b656a;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.profile-step--figma .username-figma-helper img {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.profile-step--figma .username-change-note {
+  margin-top: 8px;
+}
+
+.profile-step--figma .username-change-note > span {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #6b656a;
+  border-radius: 4px;
+}
+
+.profile-step--figma .phone-input-container {
+  height: 57px;
+  overflow: hidden;
+  border: 1px solid transparent !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
+}
+
+.profile-step--figma .phone-input-container:focus-within {
+  border-color: #7341a7 !important;
+}
+
+.profile-step--figma .phone-input-container .country-code-selector {
+  flex: 0 0 76px;
+  min-width: 76px;
+  height: 57px;
+  padding: 0 6px;
+  gap: 4px;
+  border-radius: 11px 0 0 11px;
+  color: #fff;
+  background: #432477;
+  font-size: 13px;
+}
+
+.profile-step--figma .phone-input-container .country-code-selector .flag-emoji {
+  font-size: 18px;
+}
+
+.profile-step--figma .phone-input-container .country-code-selector .country-code-chevron {
+  width: 12px;
+  height: 12px;
+}
+
+.profile-step--figma .phone-input-container input {
+  height: 55px !important;
+  border: 0 !important;
+  border-radius: 0 12px 12px 0 !important;
+  box-shadow: none !important;
+}
+
+.profile-step--figma superme-birthdaypicker {
+  display: block;
+  width: 100%;
+}
+
+.profile-step--figma .gender-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.profile-step--figma .gender-select-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 7px 5px;
+  border: 1px solid #524f84;
+  border-radius: 12px;
+  color: #282527;
+  background: #fff;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.profile-step--figma .gender-select-button img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.profile-step--figma .gender-select-button.active {
+  border-color: #7341a7;
+  color: #432477;
+  background: #eee9fa;
+  box-shadow: 0 0 0 1px #7341a7;
+}
+
+.profile-step--figma .gender-select-button--private {
+  grid-column: auto;
+}
+
+.profile-step--figma .profile > ng-container + *,
+.profile-step--figma .profile > h4 {
+  margin-top: 0;
+}
+
+.profile-step--figma .profile > .profile-field-heading {
+  margin: 0 0 24px !important;
+}
+
+.profile-step--figma .details-avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 96px));
+  justify-content: space-between;
+  gap: 16px 24px;
+  width: min(336px, 100%);
+  margin: 0 auto;
+}
+
+.profile-step--figma .details-avatar-grid::before,
+.profile-step--figma .details-avatar-grid::after {
+  display: none;
+}
+
+.profile-step--figma .details-avatar-grid .single-avatar {
+  position: relative;
+  width: 100%;
+  max-width: 96px;
+  aspect-ratio: 1;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.profile-step--figma .details-avatar-grid .single-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-step--figma .details-avatar-grid .single-avatar::before {
+  z-index: 1;
+  top: 4px;
+  right: 4px;
+}
+
+.profile-step--figma .details-avatar-grid .single-avatar.active img {
+  border-color: #7341a7;
+}
+
+.profile-step--figma .details-referral-section {
+  margin-top: 40px;
+  margin-bottom: 0;
+}
+
+.profile-step--figma .details-referral-section .referral-toggle {
+  min-height: 42px;
+  padding: 0;
+  border: 0;
+}
+
+.profile-step--figma .details-referral-section .referral-toggle:hover {
+  background: transparent;
+}
+
+.profile-step--figma .details-referral-section .referral-text {
+  gap: 4px;
+}
+
+.profile-step--figma .details-referral-section .referral-text span {
+  color: #6b656a;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.profile-step--figma .details-referral-section .referral-arrow {
+  width: 24px;
+  height: 24px;
+}
+
+.profile-step--figma .details-referral-section .referral-arrow img {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.profile-step--figma .details-referral-section .referral-input-wrapper {
+  margin-top: 12px;
+}
+
+.profile-step--figma .details-referral-section .input-group {
+  margin: 0;
+}
+
+.profile-step--figma .profile-button-wrapper {
+  margin-top: 32px;
+}
+
+.profile-step--figma .details-next-button {
+  width: 100%;
+  height: 56px;
+  padding: 0 20px;
+  border: 1px solid #432477;
+  border-radius: 16px;
+  color: #fff;
+  background: linear-gradient(90deg, #20143f 0%, #7341a7 100%);
+  box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.35);
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.profile-step--figma .details-next-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+@media (max-width: 360px) {
+  .profile-step--figma .details-header-copy {
+    width: 190px;
+  }
+
+  .profile-step--figma .details-header-illustration {
+    right: -18px;
+  }
+
+  .profile-step--figma .details-avatar-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .profile-step--figma .gender-select-button {
+    font-size: 12px;
+  }
+
+  .profile-step--figma .gender-select-button img {
+    width: 28px;
+    height: 28px;
+  }
+}

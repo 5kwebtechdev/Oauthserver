@@ -4,6 +4,7 @@ import { IonicModule } from '@ionic/angular';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { FooterComponent } from '../../footer/footer.component';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
@@ -65,7 +66,7 @@ export interface SchoolItem {
   selector: 'institute-detail-fill',
   templateUrl: './institute-detail-fill.components.html',
   styleUrls: ['./institute-detail-fill.components.scss'],
-  imports: [CommonModule, IonicModule, FormsModule, SupermeNavigatorComponent, SupermeButtonComponent]
+  imports: [CommonModule, IonicModule, FormsModule, SupermeNavigatorComponent, SupermeButtonComponent, FooterComponent]
 })
 export class InstituteDetailFillComponent {
 

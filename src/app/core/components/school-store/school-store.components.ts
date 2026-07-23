@@ -6,6 +6,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { SupermeNavigatorComponent } from '../superme-navigator/superme-navigator.component';
 import { AdBannerComponent } from '../ad-banner/ad-banner.component';
+import { FooterComponent } from '../footer/footer.component';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
@@ -28,7 +29,7 @@ interface StoreCategory {
 	selector: 'school-store',
 	templateUrl: './school-store.components.html',
 	styleUrls: ['./school-store.components.scss'],
-	imports: [CommonModule, IonicModule, RouterModule, SupermeNavigatorComponent, AdBannerComponent],
+	imports: [CommonModule, IonicModule, RouterModule, SupermeNavigatorComponent, AdBannerComponent, FooterComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class SchoolStoreComponent implements AfterViewInit, OnInit, OnDestroy {

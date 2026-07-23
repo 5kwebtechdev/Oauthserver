@@ -1,7 +1,6 @@
 <main
   *ngIf="!isAuthenticated"
   class="onboarding"
-  [class.role-selection-active]="currentSlide === 1"
   (touchstart)="onTouchStart($event)"
   (touchend)="onTouchEnd($event)"
   aria-label="SuperMeApp introduction"
@@ -44,50 +43,27 @@
       [attr.aria-hidden]="currentSlide !== 1"
       [attr.aria-label]="slides[1]"
     >
-      <div class="slide-canvas role-selection-canvas">
-        <div class="role-selection-content">
-          <header class="role-selection-header">
-            <button type="button" class="role-back-button" aria-label="Back to previous slide" (click)="showPreviousSlide()">
-              <img src="assets/Images-Transparent/choose-role-back-figma.svg" alt="" aria-hidden="true" />
-            </button>
+      <div class="slide-canvas">
+        <div class="super-bg foundations-bg" aria-hidden="true">
+          <span class="blob blob-1"></span>
+          <span class="blob blob-2"></span>
+          <span class="blob blob-3"></span>
+          <span class="blob blob-4"></span>
+          <span class="frost"></span>
+        </div>
 
-            <div class="role-selection-copy">
-              <h2>Who’s Using the App?</h2>
-              <p>Choose your journey. You can always connect<br />accounts later.</p>
-            </div>
-          </header>
-
-          <div class="role-options" aria-label="Choose who is using the app">
-            <button type="button" class="role-option role-option-self">
-              <span class="role-option-copy">
-                <strong>Self</strong>
-                <span>100% Private</span>
-                <span>Your Journey, Your progress</span>
-                <span>For Your Eyes Only.</span>
-              </span>
-              <img src="assets/Images-Transparent/choose-role-self-figma.png" alt="Self profile" />
-            </button>
-
-            <button type="button" class="role-option role-option-child">
-              <span class="role-option-copy">
-                <strong>Child</strong>
-                <span>Show Off your Wins!</span>
-                <span>Sync your Account with Parents</span>
-                <span>Safe Place for Kids to Learn &amp; Grow</span>
-              </span>
-              <img src="assets/Images-Transparent/choose-role-child-figma.png" alt="Child profile" />
-            </button>
-
-            <button type="button" class="role-option role-option-parent">
-              <span class="role-option-copy">
-                <strong>Parent</strong>
-                <span>Guide, Reward, Celebrate</span>
-                <span>Set your Child up for Success</span>
-                <span>Build Confidence &amp; Accountability</span>
-              </span>
-              <img src="assets/Images-Transparent/choose-role-parent-figma.png" alt="Parent profile" />
-            </button>
+        <header class="hero-heading foundations-heading">
+          <div class="foundations-copy">
+            <span class="foundations-line foundations-line-one">Built On 4</span>
+            <strong class="gradient-text foundations-line foundations-line-two">Foundational Blocks</strong>
+            <span class="foundations-line foundations-line-three">For Real Life Growth</span>
           </div>
+          <img class="foundations-accent" src="assets/Images-Transparent/MainOnbroading-screenpurplestrock.png" alt="" aria-hidden="true" />
+          <img class="foundations-underline" src="assets/Images-Transparent/Centerstockonboarding.png" alt="" aria-hidden="true" />
+        </header>
+
+        <div class="slide-illustration foundations-illustration">
+          <img src="assets/Images-Transparent/onboarding-foundational-blocks-figma.png" alt="Habits, tasks, time, and learning foundational blocks" />
         </div>
       </div>
     </section>

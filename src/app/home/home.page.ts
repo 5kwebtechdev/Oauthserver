@@ -14,7 +14,7 @@ import { AuthService } from '../core/services/auth.service';
 export class HomePage implements OnInit, OnDestroy {
   readonly slides = [
     'Super App for Super You',
-    'Choose Who Is Using the App',
+    'Four Foundational Blocks',
     'Three Ways to Join SuperMeApp',
     'Stay Consistent and Earn Rewards',
   ];

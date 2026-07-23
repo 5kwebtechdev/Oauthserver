@@ -126,12 +126,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     { key: 4, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female4.png' },
     { key: 5, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female5.png' },
     { key: 6, gender: 'female', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Female6.png' },
-    { key: 7, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png' },
-    { key: 8, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male2.png' },
-    { key: 9, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male3.png' },
-    { key: 10, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male4.png' },
-    { key: 11, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male5.png' },
-    { key: 12, gender: 'male', value: 'assets/Images-Transparent/Image-Onboarding-Avatar-Male6.png' },
+    { key: 7, gender: 'male', value: 'assets/Images-Transparent/details-avatar-1-figma.png' },
+    { key: 8, gender: 'male', value: 'assets/Images-Transparent/details-avatar-2-figma.png' },
+    { key: 9, gender: 'male', value: 'assets/Images-Transparent/details-avatar-3-figma.png' },
+    { key: 10, gender: 'male', value: 'assets/Images-Transparent/details-avatar-4-figma.png' },
+    { key: 11, gender: 'male', value: 'assets/Images-Transparent/details-avatar-5-figma.png' },
+    { key: 12, gender: 'male', value: 'assets/Images-Transparent/details-avatar-6-figma.png' },
   ]
 
   @ViewChild('swiperEl', { static: false }) swiperEl?: ElementRef;
@@ -788,6 +788,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // proceed to next step without age validation
     this.router.navigate(['home/sign-up'], { queryParams: { step: 2 } });
+  }
+
+  chooseRoleAndContinue(role: SignupRole): void {
+    this.roleSelected = role;
+    this.proceedWithRole();
   }
 
   proceedWithAvatar() {

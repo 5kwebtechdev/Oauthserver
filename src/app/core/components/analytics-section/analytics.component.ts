@@ -4,6 +4,7 @@ import { IonicModule } from '@ionic/angular';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../../environments/environment';
+import { FooterComponent } from '../footer/footer.component';
 
 interface AnalyticStat {
   label: string;
@@ -32,7 +33,7 @@ interface AnalyticsOverview {
 @Component({
   selector: 'app-analytics',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, FooterComponent],
   templateUrl: './analytics.component.html',
   styleUrls: ['./analytics.component.scss'],
 })

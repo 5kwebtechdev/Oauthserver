@@ -1,5 +1,4 @@
 @use 'sass:map';
-
 @import "@ionic/angular/css/core.css";
 
 @import "@ionic/angular/css/normalize.css";
@@ -1065,3 +1064,6 @@ ion-content {
     background: rgba(0, 0, 0, 0.5);
   }
 }
+
+@import './theme/signup-details-figma';
+@import './theme/signup-role-figma';

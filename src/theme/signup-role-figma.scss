@@ -1,0 +1,180 @@
+/* Figma role selection shown only at signup step 1. */
+.signup-container.role-layout {
+  width: min(100%, 393px);
+  min-height: 100dvh;
+  margin-inline: auto;
+  padding: 68px 16px 24px;
+  gap: 0;
+  overflow: hidden;
+  background: #fff;
+}
+
+.signup-container.role-layout .role-step--figma {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 0;
+  background: #fff;
+}
+
+.signup-container.role-layout .role-back-btn--figma {
+  display: block;
+  width: 48px;
+  height: 39px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.signup-container.role-layout .role-back-btn--figma img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.signup-container.role-layout .role-hero--figma {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 0;
+  text-align: center;
+}
+
+.signup-container.role-layout .role-hero--figma .role-hero__title {
+  margin: 0 !important;
+  color: #280f19;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.signup-container.role-layout .role-hero--figma .role-hero__subtitle {
+  margin: 0;
+  color: #6b656a;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.signup-role-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  margin-top: 32px;
+}
+
+.signup-role-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 164px;
+  margin: 0;
+  padding: 16px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 32px;
+  background:
+    linear-gradient(113.769deg, #e8ecf7 0.204%, #fdead7 25.102%, #eaf2f3 74.898%, #fcf3f6 99.796%) padding-box,
+    linear-gradient(113.769deg, #6a35ff 0%, #ff8a1e 28%, #62a9ad 74%, #ff2d79 100%) border-box;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
+  color: #280f19;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.signup-role-card:active {
+  transform: scale(0.99);
+}
+
+.signup-role-card__copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  color: #6b656a;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.signup-role-card__copy strong {
+  display: block;
+  width: 180px;
+  margin-bottom: 4px;
+  color: #280f19;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.signup-role-card > img {
+  position: absolute;
+  z-index: 1;
+  right: -5px;
+  bottom: 0;
+  width: 177px;
+  height: 161px;
+  max-width: none;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+}
+
+.signup-role-card--child > img {
+  width: 176px;
+}
+
+.signup-role-card--parent > img {
+  width: 178px;
+  height: 162px;
+}
+
+@media (max-width: 360px), (max-height: 760px) {
+  .signup-container.role-layout {
+    padding-top: clamp(48px, 7.98dvh, 68px);
+  }
+
+  .signup-container.role-layout .role-hero--figma {
+    margin-top: clamp(8px, 1.41dvh, 12px);
+  }
+
+  .signup-role-grid {
+    gap: clamp(16px, 2.82dvh, 24px);
+    margin-top: clamp(20px, 3.76dvh, 32px);
+  }
+
+  .signup-role-card {
+    height: clamp(132px, 19.25dvh, 164px);
+    padding: clamp(12px, 4.07vw, 16px);
+    border-radius: clamp(24px, 8.14vw, 32px);
+  }
+
+  .signup-role-card__copy {
+    gap: 3px;
+    font-size: clamp(10px, 3.31vw, 13px);
+  }
+
+  .signup-role-card__copy strong {
+    margin-bottom: 3px;
+    font-size: clamp(25px, 8.14vw, 32px);
+  }
+
+  .signup-role-card > img {
+    width: 49.03%;
+    height: 98.17%;
+  }
+}
