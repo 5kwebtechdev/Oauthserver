@@ -2202,6 +2202,13 @@ ion-content.bg-white {
   --background: #ffffff !important;
 }
 
+ion-content.details-content {
+  --padding-top: 0px;
+  --padding-start: 0px;
+  --padding-end: 0px;
+  --background: #ffffff !important;
+}
+
 .step5-cancel {
   position: absolute;
   top: 16px;
@@ -2273,10 +2280,11 @@ ion-content.bg-white {
       display: flex;
       align-items: center;
       justify-content: center;
+      transform: rotate(-90deg);
       transition: transform 0.2s ease;
 
       &.open {
-        transform: rotate(180deg);
+        transform: rotate(90deg);
       }
 
       svg {
