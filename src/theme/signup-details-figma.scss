@@ -1,10 +1,10 @@
 /* Figma: Lets set You Up / user details (node 22844:48296) */
 .signup-container.profile-layout:has(.profile-step--figma) {
-  width: 100%;
-  max-width: 393px;
+  width: 100% !important;
+  max-width: none !important;
   min-height: 100dvh;
-  margin: 0 auto;
-  padding: 0 0 calc(var(--sab, 0px) + 28px);
+  margin: 0 !important;
+  padding: 0 0 calc(var(--sab, 0px) + 28px) !important;
   gap: 0;
   overflow: visible;
   color: #282527;
@@ -12,9 +12,13 @@
 }
 
 .signup-container.profile-layout .profile-step--figma {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
   width: 100%;
-  max-width: 393px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   color: #282527;
   font-family: 'Nunito', sans-serif;
 }
@@ -150,13 +154,13 @@
 .signup-container.profile-layout .profile-step--figma > .profile-button-wrapper,
 .signup-container.profile-layout .profile-step--figma > .error-message {
   width: calc(100% - 32px);
-  max-width: 361px;
+  max-width: none;
   margin-right: auto;
   margin-left: auto;
 }
 
 .signup-container.profile-layout .profile-step--figma > .profile {
-  margin-top: 24px;
+  margin-top: 0;
 }
 
 .profile-step--figma .profile form {
@@ -417,7 +421,7 @@
 }
 
 .profile-step--figma .details-referral-section {
-  margin-top: 40px;
+  margin-top: 0;
   margin-bottom: 0;
 }
 
@@ -462,7 +466,7 @@
 }
 
 .profile-step--figma .profile-button-wrapper {
-  margin-top: 32px;
+  margin-top: 0;
 }
 
 .profile-step--figma .details-next-button {
@@ -507,4 +511,195 @@
     width: 28px;
     height: 28px;
   }
+}
+
+/*
+ * Angular's emulated component styles append an attribute selector to every
+ * legacy signup selector. Keep these overrides deliberately specific to the
+ * Figma details step so the old peach credential theme cannot leak into it.
+ */
+.signup-container.profile-layout .profile-step.profile-step--figma .profile {
+  color: #282527;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-field-heading {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin: 0 0 10px !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-field-title {
+  color: #282527 !important;
+  font-family: 'Nunito', sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .profile-field-hint {
+  position: static !important;
+  align-self: center !important;
+  justify-self: end !important;
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  color: #6b656a !important;
+  font-family: 'Nunito', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1.3 !important;
+  text-align: right !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .input-group {
+  width: 100% !important;
+  margin: 0 0 24px !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .input-group input,
+.signup-container.profile-layout .profile-step.profile-step--figma .details-referral-section .input-group input {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 57px !important;
+  box-sizing: border-box !important;
+  padding: 0 16px !important;
+  border: 1px solid transparent !important;
+  border-radius: 12px !important;
+  outline: none !important;
+  color: #282527 !important;
+  background: #fff !important;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1) !important;
+  font-family: 'Nunito', sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  line-height: 1.3 !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .input-group input::placeholder,
+.signup-container.profile-layout .profile-step.profile-step--figma .details-referral-section .input-group input::placeholder {
+  color: #6b656a !important;
+  opacity: 1 !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .input-group input:focus,
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .input-group input:active,
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .input-group input:hover,
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .input-group input:focus-visible,
+.signup-container.profile-layout .profile-step.profile-step--figma .details-referral-section .input-group input:focus {
+  border-color: #7341a7 !important;
+  background: #fff !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .input-group input.error {
+  border-color: var(--error_color) !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .username-field {
+  margin-bottom: 24px !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .username-input-shell input {
+  padding-right: 48px !important;
+  background: #fff !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .phone-input-container {
+  display: flex !important;
+  width: 100% !important;
+  height: 57px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  border: 1px solid transparent !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1) !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .phone-input-container:focus-within {
+  border-color: #7341a7 !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .phone-input-container .country-code-selector {
+  display: flex !important;
+  flex: 0 0 76px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 76px !important;
+  height: 57px !important;
+  padding: 0 6px !important;
+  gap: 4px !important;
+  border-radius: 11px 0 0 11px !important;
+  color: #fff !important;
+  background: #432477 !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .phone-input-container .country-code-selector:hover,
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .phone-input-container .country-code-selector:active {
+  color: #fff !important;
+  background: #432477 !important;
+  transform: none !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .phone-input-container input {
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 55px !important;
+  padding: 0 16px !important;
+  border: 0 !important;
+  border-radius: 0 12px 12px 0 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .gender-options {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin: 0 0 24px !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .gender-select-button {
+  display: flex !important;
+  grid-column: auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  min-height: 48px !important;
+  padding: 7px 5px !important;
+  border: 1px solid #524f84 !important;
+  border-radius: 12px !important;
+  color: #282527 !important;
+  background: #fff !important;
+  font-family: 'Nunito', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .profile .gender-select-button.active {
+  border-color: #7341a7 !important;
+  color: #432477 !important;
+  background: #eee9fa !important;
+  box-shadow: 0 0 0 1px #7341a7 !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .details-avatar-grid .single-avatar {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .details-avatar-grid .single-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  border: 3px solid transparent !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma .details-avatar-grid .single-avatar.active img {
+  border-color: #7341a7 !important;
 }

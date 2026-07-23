@@ -570,3 +570,20 @@ font-weight: 700;
     font-size: 0.875rem;
   }
 }
+
+ion-content.family-code-figma-content {
+  --padding-top: 0px;
+  --padding-start: 0px;
+  --padding-end: 0px;
+  --background: #ffffff !important;
+}
+
+.superme-page-container.family-code-figma-page {
+  display: block;
+  width: 100%;
+  max-width: none;
+  min-height: 100dvh;
+  padding: 0 !important;
+  gap: 0;
+  background: #ffffff;
+}

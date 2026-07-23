@@ -67,6 +67,25 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     createModeFaqs: FaqItem[] = [];
     joinModeFaqs: FaqItem[] = [];
     createdModeFaqs: FaqItem[] = [];
+    expandedFamilyCodeFaq: number | null = null;
+    readonly familyCodeFaqs = [
+        {
+            question: `What if my parent doesn't have an account yet?`,
+            answer: `Ask your parent to create a Parent account in SuperMe first. They can then create a family and share its Family Code or QR Code with you.`
+        },
+        {
+            question: `Can I skip this step and link with my parent later?`,
+            answer: `Yes. You can continue for now and link with your parent later from your profile.`
+        },
+        {
+            question: `What happens if I link to the wrong family by mistake?`,
+            answer: `Ask the family owner to remove the connection, then enter the correct Family Code. You can also contact support if you need help.`
+        },
+        {
+            question: `What information can my parent see about me?`,
+            answer: `Once linked, your parent can see the family progress and activity information available through the SuperMe parental experience.`
+        }
+    ];
 
     constructor(
         private fb: FormBuilder,
@@ -256,7 +275,10 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         if (!control) return;
 
         if (this.userRole === 'child') {
-            control.setValidators([Validators.required, Validators.pattern(/^[A-Za-z0-9]{8}$/)]);
+            control.setValidators([
+                Validators.required,
+                Validators.pattern(/^(?:[A-Za-z0-9]{6}|[A-Za-z0-9]{8})$/)
+            ]);
         } else {
             control.clearValidators();
         }
@@ -275,7 +297,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
     /**
      * Handle code input change for child joining family
-     * Auto-check when 8 characters are entered
+     * Auto-check when a supported 6- or 8-character code is entered.
      */
     private onCodeInputChange(code: string): void {
         // Clear previous timeout
@@ -285,13 +307,13 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
         const trimmedCode = code.trim().toUpperCase();
 
-        // Reset validation if code is not 8 characters
-        if (trimmedCode.length !== 8) {
+        // New family codes are 6 characters; legacy 8-character codes remain supported.
+        if (trimmedCode.length !== 6 && trimmedCode.length !== 8) {
             this.codeValidationStatus = null;
             return;
         }
 
-        // Auto-check when exactly 8 characters
+        // Auto-check at either supported length.
         this.checkFamilyCodeValidity(trimmedCode, 'child');
     }
 
@@ -365,11 +387,12 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Validate code format (8 alphanumeric)
+     * Validate child family-code format. New codes use 6 characters while
+     * existing accounts can still have legacy 8-character codes.
      */
     private isValidCode(code?: string | null): boolean {
         if (!code) return false;
-        return /^[A-Za-z0-9]{8}$/.test(code);
+        return /^(?:[A-Za-z0-9]{6}|[A-Za-z0-9]{8})$/.test(code);
     }
 
     /**
@@ -458,7 +481,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
         const familyCode = (this.codeForm.get('code')?.value || '').trim().toUpperCase();
         if (!familyCode || !this.isValidCode(familyCode)) {
-            this.core.triggerToasrt('Please enter a valid 8-character family code');
+            this.core.triggerToasrt('Please enter a valid 6- or 8-character family code');
             return;
         }
 
@@ -662,6 +685,42 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
     private fallbackShare(): void {
         this.core.triggerToasrt('Share functionality not available on this device');
+    }
+
+    /**
+     * Figma child-linking action: ask a parent to create their account and
+     * return the Family Code or QR Code.
+     */
+    shareFamilyCodeRequest(): void {
+        const text = `Hi! 👋
+Can you help me join our family on SuperMe?
+Create your Parent account and send me the Family Code or QR Code.
+Please download the app: ${window.location.origin}
+
+Thank you!`;
+
+        if (navigator.share) {
+            navigator.share({
+                title: 'Join my family on SuperMe',
+                text
+            }).catch(() => {
+                // Closing the native share sheet is not an application error.
+            });
+            return;
+        }
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                this.core.triggerToasrt('Message copied. Share it with your parent!', 'success');
+            }).catch(() => this.fallbackShare());
+            return;
+        }
+
+        this.fallbackShare();
+    }
+
+    toggleFamilyCodeFaq(index: number): void {
+        this.expandedFamilyCodeFaq = this.expandedFamilyCodeFaq === index ? null : index;
     }
 
     /**
