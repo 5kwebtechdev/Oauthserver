@@ -162,7 +162,7 @@ box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
 }
 
 .form-container{
-    padding:20px 16px;
+    padding:20px 16px calc(20px + var(--footer-visual-height, 80px) + env(safe-area-inset-bottom, 0px));
 }
 
 /* Field selection bottom popup styles */

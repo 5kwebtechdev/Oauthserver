@@ -8,7 +8,7 @@
     [hideBack]="true">
   </superme-navigator>
   <div class="signup-container"
-    [ngClass]="{'step-5-container': step === 5, 'pet-layout': step === 4, 'profile-layout': step === 2, 'signup-entry-layout': step === 0.1, 'otp-layout': step === 0.2, 'password-layout': step === 0.3}">
+    [ngClass]="{'step-5-container': step === 5, 'pet-layout': step === 4, 'profile-layout': step === 2, 'role-layout': step === 1, 'signup-entry-layout': step === 0.1, 'otp-layout': step === 0.2, 'password-layout': step === 0.3}">
     <h4 class="step-text" *ngIf="step !== 2 && step !== 3 && step !== 4 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 5">
       Step {{step}} of 4
       <span>{{stepDesciption[step-1]}}</span>
@@ -187,7 +187,50 @@
       </div>
     </section>
 
-    <div *ngIf="step === 1" [@slideIn] class="role-step">
+    <div *ngIf="step === 1" [@slideIn] class="role-step role-step--figma">
+      <button type="button" class="role-back-btn role-back-btn--figma" (click)="goBack()" aria-label="Go back">
+        <img src="assets/Images-Transparent/choose-role-back-figma.svg" alt="" aria-hidden="true" />
+      </button>
+
+      <div class="role-hero role-hero--figma">
+        <h2 class="role-hero__title">Who’s Using the App?</h2>
+        <p class="role-hero__subtitle">Choose your journey. You can always connect<br />accounts later.</p>
+      </div>
+
+      <div class="signup-role-grid" aria-label="Choose who is using the app">
+        <button type="button" class="signup-role-card signup-role-card--self" (click)="chooseRoleAndContinue('self')">
+          <span class="signup-role-card__copy">
+            <strong>Self</strong>
+            <span>100% Private</span>
+            <span>Your Journey, Your progress</span>
+            <span>For Your Eyes Only.</span>
+          </span>
+          <img src="assets/Images-Transparent/choose-role-self-figma.png" alt="Self profile" />
+        </button>
+
+        <button type="button" class="signup-role-card signup-role-card--child" (click)="chooseRoleAndContinue('child')">
+          <span class="signup-role-card__copy">
+            <strong>Child</strong>
+            <span>Show Off your Wins!</span>
+            <span>Sync your Account with Parents</span>
+            <span>Safe Place for Kids to Learn &amp; Grow</span>
+          </span>
+          <img src="assets/Images-Transparent/choose-role-child-figma.png" alt="Child profile" />
+        </button>
+
+        <button type="button" class="signup-role-card signup-role-card--parent" (click)="chooseRoleAndContinue('parent')">
+          <span class="signup-role-card__copy">
+            <strong>Parent</strong>
+            <span>Guide, Reward, Celebrate</span>
+            <span>Set your Child up for Success</span>
+            <span>Build Confidence &amp; Accountability</span>
+          </span>
+          <img src="assets/Images-Transparent/choose-role-parent-figma.png" alt="Parent profile" />
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="false" class="role-step role-step--legacy" aria-hidden="true">
       <button type="button" class="role-back-btn" (click)="goBack()" aria-label="Go back">
        <svg width="48" height="39" viewBox="0 0 48 39" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M11.2929 14.2929C10.9024 14.6834 10.9024 15.3166 11.2929 15.7071L17.6569 22.0711C18.0474 22.4616 18.6805 22.4616 19.0711 22.0711C19.4616 21.6805 19.4616 21.0474 19.0711 20.6569L13.4142 15L19.0711 9.34315C19.4616 8.95262 19.4616 8.31946 19.0711 7.92893C18.6805 7.53841 18.0474 7.53841 17.6569 7.92893L11.2929 14.2929ZM36 16C36.5523 16 37 15.5523 37 15C37 14.4477 36.5523 14 36 14V15V16ZM12 15V16H36V15V14H12V15Z" fill="#280F19"/>
@@ -275,26 +318,33 @@
         <button type="button" class="role-info-sheet__cta" (click)="proceedWithRole()">Got it, Continue</button>
       </div>
     </div>
-    <div *ngIf="step === 2" [@slideIn] class="profile-step">
-      <button type="button" class="profile-back-btn" (click)="goBack()" aria-label="Go back">
-        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
-      </button>
+    <div *ngIf="step === 2" [@slideIn] class="profile-step profile-step--figma">
+      <header class="details-header">
+        <button type="button" class="profile-back-btn details-back-btn" (click)="goBack()" aria-label="Go back">
+          <img src="assets/Images-Transparent/details-back-figma.svg" alt="" aria-hidden="true" />
+        </button>
 
-      <header class="profile-hero">
-        <p class="profile-step-label">Step 4 of 6</p>
-        <h1 class="profile-hero__title">Tell us about yourself !</h1>
+        <div class="details-header-content">
+          <div class="details-header-copy">
+            <h1 class="details-title"><span>Lets set</span><span>You <strong>Up</strong></span></h1>
+            <div class="details-progress-copy">
+              <p class="profile-step-label">Step 4 of 6</p>
+              <p class="profile-hero__title">Tell us about yourself !</p>
+              <div class="profile-progress" role="progressbar" aria-label="Registration progress" aria-valuemin="1"
+                aria-valuemax="6" aria-valuenow="4"><span></span></div>
+            </div>
+          </div>
+          <div class="details-header-illustration" aria-hidden="true">
+            <img src="assets/Images-Transparent/details-header-child-figma.png" alt="" />
+            <span></span>
+          </div>
+        </div>
       </header>
-
-      <div class="profile-progress" role="progressbar" aria-label="Registration progress" aria-valuemin="1"
-        aria-valuemax="6" aria-valuenow="4">
-        <span></span>
-      </div>
 
       <div class="profile">
         <form [formGroup]="profileForm">
           <h4 class="profile-field-heading">
             <span class="profile-field-title">Full Name</span>
-            <span class="profile-field-hint">Just for setup. Never shown</span>
           </h4>
           <div class="input-group">
             <input [ngClass]="{'error' : name?.invalid && (name?.dirty || name?.touched)}" formControlName="name" type="text"
@@ -336,6 +386,12 @@
               <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
               <span>You cannot change it again for 30 days.</span>
             </p>
+
+            <p class="username-figma-helper">
+              <img src="assets/Images-Transparent/details-info-figma.svg" alt="" aria-hidden="true" />
+              <span>This username will appear throughout SuperMeApp</span>
+            </p>
+            <p class="username-change-note"><span aria-hidden="true"></span>Relax, you can change it again</p>
           </div>
 
           <h4 class="profile-field-heading">
@@ -346,7 +402,8 @@
               <div class="country-code-selector" (click)="openCountryCodeModal()">
                 <span class="flag-emoji">{{selectedCountry.flag}}</span>
                 <span class="country-code">{{selectedCountry.code}}</span>
-                <i class="fa-solid fa-chevron-down"></i>
+                <img class="country-code-chevron" src="assets/Images-Transparent/details-country-chevron-figma.svg"
+                  alt="" aria-hidden="true" />
               </div>
               <input formControlName="phone" type="tel" [maxlength]="currentPhoneLength" pattern="[0-9]*"
                 inputmode="numeric" (input)="onProfilePhoneInput($event)" (keypress)="onKeyPress($event)"
@@ -382,10 +439,12 @@
           <div class="gender-options" role="group" aria-label="Gender">
             <button type="button" class="gender-select-button" (click)="selectGender('male')"
               [class.active]="gender === 'male'" [attr.aria-pressed]="gender === 'male'">
+              <img src="assets/Images-Transparent/details-gender-male-figma.png" alt="" aria-hidden="true" />
               Male
             </button>
             <button type="button" class="gender-select-button" (click)="selectGender('female')"
               [class.active]="gender === 'female'" [attr.aria-pressed]="gender === 'female'">
+              <img src="assets/Images-Transparent/details-gender-female-figma.png" alt="" aria-hidden="true" />
               Female
             </button>
             <button type="button" class="gender-select-button gender-select-button--private"
@@ -411,7 +470,7 @@
               <span class="profile-field-title">Choose an Avatar</span>
               <span class="profile-field-hint">Pick one that you like</span>
             </h4>
-            <div class="row">
+            <div class="row details-avatar-grid">
               <ng-container *ngFor="let avatar of avatars">
                 <div class="col-4 single-avatar" *ngIf="gender === 'prefer_not_to_say' || avatar.gender === gender" (click)="avatarSelected = avatar.key"
                   [ngClass]="avatarSelected === avatar.key ? 'active' : null">
@@ -424,7 +483,7 @@
       </div>
 
 
-      <div class="referral-section" *ngIf="currentRole !== 'parent'">
+      <div class="referral-section details-referral-section">
         <div class="referral-toggle" role="button" tabindex="0" (click)="toggleReferral()"
           (keydown)="$event.key==='Enter' && toggleReferral()">
           <div class="referral-text">
@@ -432,12 +491,7 @@
             <span>Tap to earn 100 bonus coins!</span>
           </div>
           <div class="referral-arrow" [ngClass]="{'open': showReferral}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="7" viewBox="0 0 12 7" fill="none"
-              aria-hidden="true">
-              <path
-                d="M11.4394 0.839806C11.6347 1.03507 11.6347 1.35165 11.4394 1.54691L6.14652 6.83981C5.95126 7.03507 5.63468 7.03507 5.43942 6.83981L0.146522 1.54691C-0.04874 1.35165 -0.0487401 1.03507 0.146522 0.839806L0.839416 0.146913C1.03468 -0.0483499 1.35126 -0.0483494 1.54652 0.146913L5.43942 4.03981C5.63468 4.23507 5.95126 4.23507 6.14652 4.03981L10.0394 0.146913C10.2347 -0.0483494 10.5513 -0.0483494 10.7465 0.146913L11.4394 0.839806Z"
-                fill="#772817" />
-            </svg>
+            <img src="assets/Images-Transparent/details-chevron-figma.svg" alt="" aria-hidden="true" />
           </div>
         </div>
 
@@ -467,8 +521,7 @@
 
       <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
       <div class="profile-button-wrapper">
-        <superme-button class="signup-primary-action" type="orange-onboard" full [text]="'Save & Continue'" [disabled]="isProfileStepInvalid" (click)="registerOrProceed()">
-        </superme-button>
+        <button type="button" class="details-next-button" [disabled]="isProfileStepInvalid" (click)="registerOrProceed()">Next</button>
       </div>
 
     </div>

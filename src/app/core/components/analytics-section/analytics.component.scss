@@ -21,7 +21,7 @@ $skel-grad: linear-gradient(90deg, rgba(255,255,255,0.45) 25%, rgba(255,255,255,
 
 .an-page {
   min-height: 100%;
-  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(28px + env(safe-area-inset-bottom, 0px));
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(28px + var(--footer-visual-height, 80px) + env(safe-area-inset-bottom, 0px));
   border-radius: 16px;
   background:
     linear-gradient(90deg, rgba(139, 141, 203, 0.34) 0%, rgba(225, 82, 124, 0.22) 100%) top / 100% 50% no-repeat,

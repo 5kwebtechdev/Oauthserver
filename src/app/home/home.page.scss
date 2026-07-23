@@ -342,156 +342,99 @@
   background: #90214d;
 }
 
-/* Slide 2: Choose role */
-.role-selection-canvas {
-  background: #fff;
-}
-
-.onboarding.role-selection-active {
-  background: #fff;
-}
-
-.role-selection-content {
-  position: absolute;
+/* Slide 2: Built on 4 foundational blocks */
+.hero-heading.foundations-heading {
   top: 7.981cqh;
-  left: 4.071cqw;
-  width: 91.858cqw;
-  display: flex;
-  flex-direction: column;
-  gap: 3.756cqh;
-}
-
-.role-selection-header {
-  display: flex;
-  flex-direction: column;
-  gap: 1.408cqh;
+  left: 0;
   width: 100%;
-}
-
-.role-back-button {
-  display: block;
-  width: 12.214cqw;
-  height: 4.577cqh;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-
-.role-back-button img {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.role-selection-copy {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.939cqh;
-  width: 100%;
+  height: 17.371cqh;
+  padding: 0 4.071cqw;
+  box-sizing: border-box;
+  transform: none;
+  color: #010332;
+  font-family: 'Nunito', sans-serif;
+  font-size: clamp(26px, 8.142cqw, 32px);
+  font-style: normal;
+  font-weight: 800;
+  line-height: normal;
   text-align: center;
 }
 
-.role-selection-copy h2,
-.role-selection-copy p {
-  margin: 0;
-}
-
-.role-selection-copy h2 {
-  color: #280f19;
-  font-family: 'Fredoka', sans-serif;
-  font-size: clamp(18px, 5.089cqw, 20px);
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.role-selection-copy p {
-  color: #6b656a;
-  font-family: 'Nunito', sans-serif;
-  font-size: clamp(11px, 3.308cqw, 13px);
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.role-options {
+.foundations-copy {
+  position: absolute;
+  inset: 0 4.071cqw;
   display: flex;
   flex-direction: column;
-  gap: 2.817cqh;
-  width: 100%;
+  align-items: center;
+  justify-content: center;
 }
 
-.role-option {
-  position: relative;
+.foundations-line {
   display: block;
-  width: 100%;
-  height: 19.249cqh;
-  margin: 0;
-  padding: 1.878cqh 4.071cqw;
-  overflow: hidden;
-  border: 2px solid transparent;
-  border-radius: 8.142cqw;
-  background:
-    linear-gradient(113.769deg, #e8ecf7 0.204%, #fdead7 25.102%, #eaf2f3 74.898%, #fcf3f6 99.796%) padding-box,
-    linear-gradient(113.769deg, #6a35ff 0%, #ff8a1e 28%, #62a9ad 74%, #ff2d79 100%) border-box;
-  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
-  color: #280f19;
-  text-align: left;
-  cursor: pointer;
-}
-
-.role-option-copy {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.469cqh;
-  color: #6b656a;
-  font-family: 'Nunito', sans-serif;
-  font-size: clamp(11px, 3.308cqw, 13px);
-  font-weight: 600;
-  line-height: 1.3;
+  flex: 0 0 auto;
+  font: inherit;
+  line-height: normal;
   white-space: nowrap;
 }
 
-.role-option-copy strong {
-  display: block;
-  width: 45.802cqw;
-  margin-bottom: 0.469cqh;
-  color: #280f19;
-  font-family: 'Fredoka', sans-serif;
-  font-size: clamp(26px, 8.142cqw, 32px);
-  font-weight: 500;
-  line-height: 1.3;
+.foundations-line-two {
+  background-image: linear-gradient(129.992deg, #6a35ff 1.994%, #c22cf8 25.997%, #ff2d79 74.003%, #ff8a1e 98.006%);
+  font-family: 'Plus Jakarta Sans', 'Nunito', sans-serif;
+  font-size: inherit;
+  font-weight: 800;
 }
 
-.role-option > img {
+.foundations-accent {
   position: absolute;
-  z-index: 1;
-  right: -1.272cqw;
-  bottom: 0;
-  width: 45.038cqw;
-  height: 18.897cqh;
-  max-width: none;
-  max-height: none;
-  object-fit: cover;
-  object-position: center;
+  top: 4.177cqh;
+  left: 85.242cqw;
+  width: 5.999cqw;
+  height: auto;
   pointer-events: none;
 }
 
-.role-option-child > img {
-  width: 44.784cqw;
+.foundations-underline {
+  position: absolute;
+  left: 50%;
+  bottom: 0.275cqh;
+  width: 34.86cqw;
+  height: auto;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
-.role-option-parent > img {
-  width: 45.293cqw;
-  height: 19.014cqh;
+.foundations-illustration {
+  top: 25.352cqh;
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  width: 79.135cqw;
+  height: 65.376cqh;
+  transform: translateX(-50%);
+}
+
+.foundations-illustration img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: fill;
 }
 
 .pagination.foundations-pagination {
-  display: none;
+  bottom: 6.221dvh;
+  gap: 8px;
+}
+
+.pagination.foundations-pagination button {
+  width: 10px;
+  height: 10px;
+  background: #878286;
+}
+
+.pagination.foundations-pagination button.active {
+  width: 32px;
+  background: #90214d;
 }
 
 /* Slide 3: Three Ways to Join */
