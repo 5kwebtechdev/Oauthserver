@@ -2,21 +2,18 @@
   <main class="login-page">
     <section class="login-shell" aria-labelledby="login-title">
       <header class="login-header">
-        <h1 id="login-title" class="login-title">Welcome Back</h1>
-        <p class="login-subtitle">Sign in to continue your journey</p>
+        <h1 id="login-title" class="login-title">{{ hasLoggedInBefore ? 'Welcome Back to SuperMeApp!' : 'Welcome to SuperMeApp!' }}</h1>
+        <p class="login-subtitle">Let's unlock today's achievements.</p>
       </header>
 
-      <div class="login-accent" aria-hidden="true">
-        <span></span>
-      </div>
+      <div class="login-card">
 
       <form [formGroup]="signInForm" (ngSubmit)="onSubmit()" class="login-form" autocomplete="on">
         <div class="login-field">
           <label class="login-sr-only" for="login-email">Email address</label>
           <div class="login-input-wrap" [class.login-input-wrap--error]="email?.invalid && email?.dirty">
-            <i class="fa-regular fa-envelope login-input-icon" aria-hidden="true"></i>
             <input id="login-email" formControlName="email" type="email" name="username" autocomplete="username"
-              inputmode="email" placeholder="Enter Your Email Address" (change)="onEmailAutofill($event)"
+              inputmode="email" placeholder="Enter Email Address" (change)="onEmailAutofill($event)"
               (keydown.enter)="focusPassword()" />
           </div>
           <span class="login-error" *ngIf="email?.invalid && email?.dirty">
@@ -27,13 +24,24 @@
         <div class="login-field">
           <label class="login-sr-only" for="login-password">Password</label>
           <div class="login-password-wrap" [class.login-input-wrap--error]="password?.invalid && password?.dirty">
-            <i class="fa-solid fa-lock login-input-icon" aria-hidden="true"></i>
             <input #passwordInput id="login-password" formControlName="password" name="password"
               autocomplete="current-password" [type]="hidePassword ? 'password' : 'text'"
               placeholder="Enter Your Password" (change)="onPasswordAutofill($event)" />
             <button type="button" class="login-eye-btn" (click)="hidePassword = !hidePassword"
               [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'">
-              <i class="fa-solid" [ngClass]="hidePassword ? 'fa-eye-slash' : 'fa-eye'" aria-hidden="true"></i>
+              <svg *ngIf="hidePassword" viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z" fill="currentColor"/>
+                <circle cx="12" cy="12" r="4.5" fill="#ffffff" />
+                <circle cx="12" cy="12" r="2.8" fill="currentColor" />
+                <circle cx="10.8" cy="10.8" r="1" fill="#ffffff" />
+              </svg>
+              <svg *ngIf="!hidePassword" viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z" fill="currentColor"/>
+                <circle cx="12" cy="12" r="4.5" fill="#ffffff" />
+                <circle cx="12" cy="12" r="2.8" fill="currentColor" />
+                <circle cx="10.8" cy="10.8" r="1" fill="#ffffff" />
+                <path d="M3 3l18 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+              </svg>
             </button>
           </div>
           <button type="button" class="login-forgot-btn" (click)="navigateToForgotPassword()">
@@ -58,9 +66,11 @@
 
       <social-media class="login-social" [variant]="'login-with'"></social-media>
 
+      </div>
+
       <p class="login-signup-copy">
         Don't have an account?
-        <button type="button" (click)="navigateToSignup()">Sign Up</button>
+        <button type="button" (click)="navigateToSignup()">Sign up</button>
       </p>
     </section>
   </main>

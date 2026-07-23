@@ -792,7 +792,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   chooseRoleAndContinue(role: SignupRole): void {
     this.roleSelected = role;
-    this.proceedWithRole();
   }
 
   proceedWithAvatar() {
@@ -1016,6 +1015,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       if (this.step === 4 && savedRole === 'self') {
         this.navCtrl.navigateBack(['/home/sign-up'], { queryParams: { step: 2 } });
         return;
+      }
+      if (this.step === 2) {
+        this.roleSelected = undefined;
       }
       this.navCtrl.navigateBack(['/home/sign-up'], { queryParams: { step: this.step - 1 } });
     }
