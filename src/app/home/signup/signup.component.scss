@@ -2163,13 +2163,27 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 .onboarding-image{
   width: 250px;
-height: 160px;
+height: 130px;
 aspect-ratio: 25/16;
 }
 
-.welcome-content .subtitle {
-  color: #6b6b6b;
+.superpower-title {
+  font-family: 'Nunito', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #000000;
+  text-align: center;
   margin: 0;
+}
+
+.superpower-subtitle {
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b6b6b;
+  text-align: center;
+  line-height: 1.4;
+  margin: 4px 0 0;
 }
 
 
@@ -2383,24 +2397,59 @@ ion-content.bg-white {
   }
 }
 
-/* Subtitle list styles for onboarding welcome message */
-.subtitle {
-  font-size: 16px;
-  color: #6b6b6b;
+/* "Your Superpower is now active!" — Figma-matched card list */
+.superpower-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
 
-  ul {
-    margin: 0.5rem 0 0 1.25rem;
-    padding: 0;
-    list-style-type: disc;
+.superpower-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #ECE6E8;
+  border-radius: 16px;
+  background: #ffffff;
+  box-sizing: border-box;
+
+  p {
+    margin: 0;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #282527;
+    line-height: 1.4;
   }
+}
 
+.superpower-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
 
-
-  .first-word {
-    color: #90214D;
-    font-weight: 600;
-    margin-right: 0.35rem;
+  img {
+    width: 100%;
+    height: 100%;
+    display: block;
   }
+}
+
+.first-word {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  margin-right: 0.3rem;
+
+  &--build { color: #6A35FF; }
+  &--crush { color: #EE6621; }
+  &--own { color: #2AA37A; }
+  &--unlock { color: #CC2B7D; }
 }
 
 // ── Redesigned step 0.1 (initial signup) ──
