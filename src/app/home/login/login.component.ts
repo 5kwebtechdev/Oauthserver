@@ -20,6 +20,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   public whatsappConsent = true;
   public loading = false;
   public loginError: string | null = null;
+  public hasLoggedInBefore = false;
   private returnUrl: string = '';
 
   @ViewChild('passwordInput') passwordInputRef!: ElementRef<HTMLInputElement>;
@@ -104,6 +105,8 @@ export class LoginComponent implements OnInit, OnDestroy {
               console.warn('[LoginComponent] Failed to sync user profile to UserService', e);
             }
 
+          localStorage.setItem('has_logged_in_before', 'true');
+
           // Determine the appropriate dashboard route based on user relationship
           const dashboardRoute = this.authService.getDashboardRoute();
           const navigationTarget = this.returnUrl || dashboardRoute;
@@ -159,6 +162,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     // Get return URL from route parameters (don't set default here, will be determined after login)
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '';
     console.log('[LoginComponent] Return URL set to:', this.returnUrl || 'Will be determined after login');
+
+    this.hasLoggedInBefore = localStorage.getItem('has_logged_in_before') === 'true';
 
     console.log('LoginComponent initialized');
     void this.suggestSavedCredentials();

@@ -228,6 +228,40 @@
           <img src="assets/Images-Transparent/choose-role-parent-figma.png" alt="Parent profile" />
         </button>
       </div>
+
+      <div class="role-info-backdrop" *ngIf="roleSelected" (click)="roleSelected = undefined"></div>
+      <div class="role-info-sheet" *ngIf="roleSelected" role="dialog" aria-modal="true" aria-label="What do I get ?">
+        <div class="role-info-sheet__header">
+          <h3 *ngIf="roleSelected === 'self'">What do I get ?</h3>
+          <h3 *ngIf="roleSelected === 'child'">See the perks</h3>
+          <h3 *ngIf="roleSelected === 'parent'">How it works ?</h3>
+          <button type="button" class="role-info-sheet__close" (click)="roleSelected = undefined" aria-label="Close">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke="#282527" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <ul class="role-info-sheet__list" *ngIf="roleSelected === 'self'">
+          <li>Master life skills, build daily habits, and grow into your best self with practical lessons and tools.</li>
+          <li>Start your personal journey instantly.</li>
+          <li>Total privacy. Your activities, metrics, and progress stay visible only to you.</li>
+        </ul>
+
+        <ul class="role-info-sheet__list" *ngIf="roleSelected === 'child'">
+          <li>Get all the growth tools of Independent mode, plus connect your progress to your family.</li>
+          <li>Your parents can see your activity metrics, receive progress reports, and send you extra coins for activities.</li>
+          <li>Unlock this connected experience by entering the Family Code from your parent.</li>
+        </ul>
+
+        <ul class="role-info-sheet__list" *ngIf="roleSelected === 'parent'">
+          <li>See what your child is working on- habits, activities, and progress, all in one place.</li>
+          <li>Reward their wins by sending coins and celebrating milestones, even when you're not around.</li>
+          <li>Turn daily activities into growth opportunities with actionable insights that help you guide them better.</li>
+        </ul>
+
+        <button type="button" class="role-info-sheet__cta" (click)="proceedWithRole()">Got it, Continue</button>
+      </div>
     </div>
 
     <div *ngIf="false" class="role-step role-step--legacy" aria-hidden="true">
@@ -284,38 +318,6 @@
             <img src="assets/Images-Transparent/Parent-main-section.png" alt="Parent">
           </div>
         </div>
-      </div>
-
-      <div class="role-info-backdrop" *ngIf="roleSelected" (click)="roleSelected = undefined"></div>
-      <div class="role-info-sheet" *ngIf="roleSelected" role="dialog" aria-modal="true" aria-label="What do I get?">
-        <div class="role-info-sheet__header">
-          <h3>What do I get?</h3>
-          <button type="button" class="role-info-sheet__close" (click)="roleSelected = undefined" aria-label="Close">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M18 6L6 18M6 6l12 12" stroke="#282527" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-        </div>
-
-        <ul class="role-info-sheet__list" *ngIf="roleSelected === 'self'">
-          <li>Master life skills, build daily habits, and grow into your best self with practical lessons and tools.</li>
-          <li>Start your personal journey instantly.</li>
-          <li>Total privacy. Your activities, metrics, and progress stay visible only to you.</li>
-        </ul>
-
-        <ul class="role-info-sheet__list" *ngIf="roleSelected === 'child'">
-          <li>Get all the growth tools of independent mode, with practical lessons and tools built for you.</li>
-          <li>Connect your progress to family and earn coins for your wins.</li>
-          <li>A safe, age-appropriate space that grows with you.</li>
-        </ul>
-
-        <ul class="role-info-sheet__list" *ngIf="roleSelected === 'parent'">
-          <li>See your child's habits and progress in one place.</li>
-          <li>Reward their wins with coins and celebrate milestones.</li>
-          <li>Get the insights you need to guide their growth.</li>
-        </ul>
-
-        <button type="button" class="role-info-sheet__cta" (click)="proceedWithRole()">Got it, Continue</button>
       </div>
     </div>
     <div *ngIf="step === 2" [@slideIn] class="profile-step profile-step--figma">
