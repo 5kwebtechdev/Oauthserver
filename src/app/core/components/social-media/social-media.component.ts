@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { IonicModule, Platform, LoadingController, ToastController } from '@ionic/angular';
+import { IonicModule, Platform, LoadingController, ToastController, AlertController } from '@ionic/angular';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { getApps, getApp } from 'firebase/app';
 import { getAuth, signInWithCredential, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
@@ -36,6 +36,7 @@ export class SocialMediaComponent implements OnInit {
     private platform: Platform,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
+    private alertCtrl: AlertController,
     private analytics: AnalyticsService,
     private authSessionCleanup: AuthSessionCleanupService
   ) {}
@@ -149,7 +150,10 @@ export class SocialMediaComponent implements OnInit {
   }
 
   private async signInWithApple(): Promise<void> {
-    if (!this.platform.is('ios')) return;
+    // Use the same iPad-inclusive check as the button's *ngIf (see isIos above) —
+    // platform.is('ios') alone can miss iPadOS in some Capacitor versions, which
+    // would otherwise make this button silently do nothing on iPad.
+    if (!this.isIos) return;
     if (this.isSocialLoginInProgress) return;
     this.isSocialLoginInProgress = true;
 
@@ -194,13 +198,15 @@ export class SocialMediaComponent implements OnInit {
 
       const appleProfile = { provider: 'apple', providerId, email, name, avatarUrl: '' };
 
+      // Apple only returns email/name on the very first authorization a user
+      // ever grants this app — every later sign-in returns neither, by Apple's
+      // own design. If we don't have an email this time, try logging in by
+      // providerId alone first (a genuine returning user, handled silently);
+      // only if no linked account exists do we ask for an email, so the user
+      // isn't dead-ended. Apple's Sign In HIG forbids re-asking for data Apple
+      // already supplied — it does not forbid asking for data it withheld.
       if (!email) {
-        this.loginWithOAuthProfile(
-          appleProfile,
-          loading,
-          'apple',
-          'We could not find your Apple account in SuperMeApp. Please try again or contact support.'
-        );
+        this.attemptAppleProviderLogin(appleProfile, loading);
         return;
       }
 
@@ -235,6 +241,60 @@ export class SocialMediaComponent implements OnInit {
         await toast.present();
       }
     }
+  }
+
+  /**
+   * Apple withheld email/name on this authorization (not the user's first
+   * grant to this app). Try logging in by providerId alone; if no account is
+   * linked yet, fall back to asking for an email instead of dead-ending.
+   */
+  private async attemptAppleProviderLogin(appleProfile: any, loading: any): Promise<void> {
+    this.authService.googleOAuthLogin(appleProfile).subscribe({
+      next: async (response) => {
+        await this.finishSocialLogin(loading);
+        const userId = response.user?.id;
+        if (response.token && userId) {
+          this.authService.setSession(
+            { token: response.token, userId, expiresIn: response.expiresIn, user: response.user },
+            false
+          );
+          this.analytics.logLogin('apple');
+          this.analytics.setUserId(String(userId));
+          this.router.navigate([this.authService.getDashboardRoute()], { replaceUrl: true });
+          return;
+        }
+        await this.promptForAppleEmail(appleProfile.providerId, appleProfile.name);
+      },
+      error: async () => {
+        await this.finishSocialLogin(loading);
+        await this.promptForAppleEmail(appleProfile.providerId, appleProfile.name);
+      }
+    });
+  }
+
+  private async promptForAppleEmail(providerId: string, name: string): Promise<void> {
+    const alert = await this.alertCtrl.create({
+      header: 'Almost there',
+      message: "Apple didn't share an email for this sign-in. Enter your email to continue creating your account.",
+      inputs: [{ name: 'email', type: 'email', placeholder: 'Email address' }],
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Continue',
+          handler: (data) => {
+            const email = (data?.email || '').trim();
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+              return false; // invalid — keep the alert open
+            }
+            this.storeOAuthSignupSession('apple', { email, name: name || email, avatarUrl: '', providerId });
+            this.analytics.logSignUp('apple');
+            this.router.navigate(['home/sign-up'], { queryParams: { step: 1 }, replaceUrl: true });
+            return true;
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
   private loginWithOAuthProfile(

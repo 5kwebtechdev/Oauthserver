@@ -140,6 +140,12 @@
   object-position: right bottom;
 }
 
+/* Child illustration is authored facing the wrong way for this layout — mirror it
+   so the character faces into the greeting text instead of away from it. */
+.profile-step--figma:not(.profile-step--parent) .details-header-illustration img {
+  transform: scaleX(-1);
+}
+
 .profile-step--figma .details-header-illustration span {
   position: absolute;
   right: 0;
