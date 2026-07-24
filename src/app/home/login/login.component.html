@@ -29,12 +29,7 @@
               placeholder="Enter Your Password" (change)="onPasswordAutofill($event)" />
             <button type="button" class="login-eye-btn" (click)="hidePassword = !hidePassword"
               [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'">
-              <svg *ngIf="hidePassword" viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z" fill="currentColor"/>
-                <circle cx="12" cy="12" r="4.5" fill="#ffffff" />
-                <circle cx="12" cy="12" r="2.8" fill="currentColor" />
-                <circle cx="10.8" cy="10.8" r="1" fill="#ffffff" />
-              </svg>
+              <img *ngIf="hidePassword" src="assets/icons/login-eye-figma.svg" alt="" aria-hidden="true" />
               <svg *ngIf="!hidePassword" viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z" fill="currentColor"/>
                 <circle cx="12" cy="12" r="4.5" fill="#ffffff" />
