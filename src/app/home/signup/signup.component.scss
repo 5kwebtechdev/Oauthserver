@@ -16,6 +16,13 @@ ion-content {
   max-width: 100%;
 }
 
+ion-content.auth-static-content {
+  --overflow: hidden;
+  --padding-top: 0px;
+  height: 100%;
+  overscroll-behavior: none;
+}
+
 superme-navigator.signup-navigator {
   display: block;
   width: calc(100% - var(--signup-profile-gutter) - var(--signup-profile-gutter));
@@ -2848,11 +2855,11 @@ ion-content.details-content {
 
 // Registration OTP redesign
 .signup-container.otp-layout {
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100%;
+  min-height: 0;
   gap: 0;
   padding: 0;
-  overflow: visible;
+  overflow: hidden;
   background: #ffffff;
   color: #282527;
 }
@@ -2861,8 +2868,9 @@ ion-content.details-content {
   position: relative;
   display: block;
   width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
   background: #ffffff;
   color: #282527;
   font-family: var(--font-sans, 'Nunito', sans-serif);
@@ -3230,9 +3238,10 @@ ion-content.details-content {
 
 // Email-only registration entry (Step 1 of 6)
 .signup-container.signup-entry-layout {
-  min-height: 100dvh;
+  height: 100%;
+  min-height: 0;
   padding: 0;
-  overflow: visible;
+  overflow: hidden;
   background: #ffffff;
   color: #282527;
   font-family: 'Nunito', sans-serif;
@@ -3241,7 +3250,9 @@ ion-content.details-content {
     position: relative;
     display: block;
     width: 100%;
-    min-height: 100dvh;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
     padding: 0;
     background: #ffffff;
   }
@@ -3275,7 +3286,8 @@ ion-content.details-content {
 
   .signup-entry-shell {
     width: min(100%, 560px);
-    min-height: 100dvh;
+    height: 100%;
+    min-height: 0;
     margin: 0 auto;
     padding: calc(env(safe-area-inset-top, 0px) + 148px) 22px
       calc(env(safe-area-inset-bottom, 0px) + 42px);

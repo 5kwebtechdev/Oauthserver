@@ -1,4 +1,6 @@
-<ion-content #content [scrollY]="step !== 5" [class.details-content]="step === 2"
+<ion-content #content [scrollY]="step !== 5 && step !== 0.1 && step !== 0.2"
+  [class.auth-static-content]="step === 0.1 || step === 0.2"
+  [class.details-content]="step === 2"
   [ngClass]="step === 5 || step === 4 || step === 2 || step === 1 || step === 0.1 || step === 0.2 || step === 0.3 ? 'bg-white' : 'bg-superme-secondary'">
   <superme-navigator class="signup-navigator" *ngIf="step !== 5 && step !== 4 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 2"
     [heading]="headerText"

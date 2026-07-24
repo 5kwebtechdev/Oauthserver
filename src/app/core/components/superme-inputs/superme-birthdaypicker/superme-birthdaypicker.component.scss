@@ -244,7 +244,8 @@ button {
 }
 
 .popover.variant-figma-purple .highlight-bar {
-  top: 66px;
+  top: 50%;
+  transform: translateY(-50%);
   height: 40px;
   border-radius: 10px;
   background: #4f2c83;
