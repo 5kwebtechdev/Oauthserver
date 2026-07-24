@@ -774,9 +774,9 @@ superme-navigator.signup-navigator {
   .profile-hero__title {
     margin: 6px 0 0;
     color: #282527;
-    font-family: var(--font-heading, 'Fredoka', sans-serif);
-    font-size: 22px;
-    font-weight: 600;
+    font-family: nunito;
+    font-size: 15px;
+    font-weight: 500;
     line-height: 1.3;
   }
 
@@ -2437,18 +2437,18 @@ ion-content.details-content {
       align-items: flex-start;
 
       h4 {
-        color: #772817;
-        font-family: var(--font-sans);
-        font-size: 20px;
+            color: black;
+         font-family: nunito;
+          font-size: 16px;
         font-style: normal;
         font-weight: 600;
         margin: 0;
       }
 
       span {
-        color: #EE6621;
-        font-family: var(--font-sans);
-        font-size: 13px;
+        color: #6b656a;
+    font-family: nunito;
+    font-size: 13px;
         font-style: normal;
         font-weight: 500;
       }
@@ -2879,7 +2879,7 @@ ion-content.details-content {
 .signup-container.otp-layout .otp-back-btn {
   position: absolute;
   z-index: 2;
-  top: calc(env(safe-area-inset-top, 0px) + 58px);
+  top: calc(env(safe-area-inset-top, 0px) + 20px);
   left: max(24px, env(safe-area-inset-left, 0px));
   display: grid;
   width: 48px;
@@ -3260,7 +3260,7 @@ ion-content.details-content {
   .signup-entry-back-btn {
     position: absolute;
     z-index: 2;
-    top: calc(env(safe-area-inset-top, 0px) + 54px);
+    top: calc(env(safe-area-inset-top, 0px) + 20px);
     left: max(22px, env(safe-area-inset-left, 0px));
     display: grid;
     width: 48px;
@@ -3655,7 +3655,7 @@ ion-content.details-content {
   .pwd-back-btn {
     position: absolute;
     z-index: 2;
-    top: calc(env(safe-area-inset-top, 0px) + 54px);
+    top: calc(env(safe-area-inset-top, 0px) + 20px);
     left: max(22px, env(safe-area-inset-left, 0px));
     display: grid;
     width: 48px;

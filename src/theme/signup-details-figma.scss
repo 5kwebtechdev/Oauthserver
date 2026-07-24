@@ -337,7 +337,11 @@
   width: 100%;
   margin-bottom: 24px;
 }
-
+.gender-option{
+  background: linear-gradient(135deg, #524F84 0%, #E04D16 33%, #537C81 66%, #AC2456 100%) border-box;
+    border-radius: 12px !important;
+    padding: 1px;
+}
 .profile-step--figma .gender-select-button {
   display: flex;
   align-items: center;
@@ -744,12 +748,12 @@
   gap: 4px !important;
   min-height: 48px !important;
   padding: 7px 5px !important;
-  border: 1px solid #524f84 !important;
+  border: 1px solid transparent !important;
   border-radius: 12px !important;
   color: #282527 !important;
   background: #fff !important;
   font-family: 'Nunito', sans-serif !important;
-  font-size: 13px !important;
+  font-size: 11px !important;
   font-weight: 700 !important;
 }
 
