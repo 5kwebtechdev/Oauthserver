@@ -26,17 +26,14 @@ type SignupGender = StoredGender;
   animations: [
     trigger('slideIn', [
       transition(':enter', [
-        style({ transform: 'translateX(100%)', opacity: 0 }),
-        animate('300ms ease-out', style({ transform: 'translateX(0)', opacity: 1 })),
-      ]),
-      transition(':leave', [
-        animate('300ms ease-in',
-          style({ transform: 'translateX(-100%)', opacity: 0 })),
+        style({ opacity: 0 }),
+        animate('140ms ease-out', style({ opacity: 1 })),
       ]),
     ]),
   ],
 })
 export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
+  private static readonly CHILD_POST_FAMILY_WELCOME_KEY = 'show_child_welcome_after_family';
   // Persist identifier used to request OTP so it can be reused in later steps
   public requestedIdentifier: string | null = null;
   public signupForm: FormGroup;
@@ -353,6 +350,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     );
 
     this.route.queryParams.subscribe(params => {
+      // Query-param steps reuse this component instance. Clear every transient
+      // overlay before rendering the destination so a modal from the previous
+      // step can never remain visible over the new one.
+      this.resetTransientStepUi();
+
       const stepParam = params['step'];
       const roleParam = params['role'];
 
@@ -592,7 +594,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.username?.markAsTouched();
     this.usernameAvailability = 'taken';
     this.errorMessage = 'Oops! Someone already has this username';
-    this.router.navigate(['home/sign-up'], { queryParams: { step: 2 } });
+    this.navigateToSignupStep(2);
     try { this.core.triggerToasrt(this.errorMessage); } catch (e) { }
     return true;
   }
@@ -670,6 +672,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return stored || this.roleSelected;
   }
 
+  get isPostFamilyChildPetStep(): boolean {
+    return this.step === 4
+      && this.currentRole === 'child'
+      && this.authService.isLoggedIn()
+      && sessionStorage.getItem(SignupComponent.CHILD_POST_FAMILY_WELCOME_KEY) === 'true';
+  }
+
   // Generate initial from name for parent avatar placeholder
   getNameInitial(): string {
     try {
@@ -720,7 +729,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.registerFromSession();
     } else {
       // Self/Child: go to pet selection screen before registering
-      this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
+      this.navigateToSignupStep(4);
     }
   }
 
@@ -757,7 +766,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
               }
             } catch (e) { }
             this.startOtpTimer();
-            this.router.navigate(['home/sign-up'], { queryParams: { step: 0.2 } });
+            this.navigateToSignupStep(0.2);
           },
           error: (err) => {
             this.otpRequestInProgress = false;
@@ -786,7 +795,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     try { sessionStorage.setItem('signup_role', this.roleSelected); } catch (e) { }
 
     // proceed to next step without age validation
-    this.router.navigate(['home/sign-up'], { queryParams: { step: 2 } });
+    this.navigateToSignupStep(2);
   }
 
   chooseRoleAndContinue(role: SignupRole): void {
@@ -832,21 +841,31 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         sessionStorage.setItem('signup_pet', selectedPetName);
       }
 
-      // If role is child or self, register account now and then show welcome step
+      // Self registers here. A fresh Child account is already registered and
+      // linked to a family before this post-family Pet step is shown.
       const role = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;
-      if (role === 'child' || role === 'self') {
-        this.registerChildOrSelfFromSession(role as 'child' | 'self');
+      if (this.isPostFamilyChildPetStep) {
+        if (!selectedPetName) {
+          this.core.triggerToasrt('Please choose your pet to continue.');
+          return;
+        }
+        this.persistPostFamilyPetSelection(selectedPetName);
+        return;
+      }
+
+      if (role === 'self') {
+        this.registerChildOrSelfFromSession('self');
         return;
       }
 
       // Navigate to welcome step (step 5) for other flows
-      this.router.navigate(['home/sign-up'], { queryParams: { step: 5 } });
+      this.navigateToSignupStep(5);
       return;
     }
 
     // If role is 'self', go to pet selection (step 4)
     if (this.roleSelected === 'self') {
-      this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
+      this.navigateToSignupStep(4);
       return;
     }
 
@@ -869,12 +888,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
 
       if (this.roleSelected === 'child') {
-        this.router.navigate(['home/instructions-for-child'], { queryParams: { role: 'child' } });
+        void this.navCtrl.navigateRoot('/home/instructions-for-child', {
+          queryParams: { role: 'child' },
+          animated: false
+        });
         return;
       }
 
       if (this.roleSelected === 'parent') {
-        this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
+        void this.navCtrl.navigateRoot('/home/instructions-for-parent', {
+          queryParams: { role: 'parent' },
+          animated: false
+        });
         return;
       }
     }
@@ -897,7 +922,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     } catch (e) { }
 
     // Fallback: continue to step 3 (phone/email)
-    this.router.navigate(['home/sign-up'], { queryParams: { step: 3 } });
+    this.navigateToSignupStep(3);
   }
 
   /**
@@ -975,50 +1000,102 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // Apply age-based routing rules
     if (role === 'parent') {
-      this.router.navigate(['home/instructions-for-parent'], { queryParams: { role: 'parent' } });
+      void this.navCtrl.navigateRoot('/home/instructions-for-parent', {
+        queryParams: { role: 'parent' },
+        animated: false
+      });
       return;
-    } else if (role === 'self' || role === 'child') {
-      // Child now registers as a "pending" account (relationship SELF +
-      // asChild:true, no family code) and links to a family AFTER
-      // registration+login via /family/convert-to-child — so it goes
-      // straight to pet selection (step 4) just like a self signup,
-      // skipping the old pre-registration family-code detour entirely.
-      this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
+    } else if (role === 'self') {
+      // Self accounts retain the existing Pet-before-registration flow.
+      this.navigateToSignupStep(4);
+      return;
+    } else if (role === 'child') {
+      // Join Family needs an authenticated pending-child account. Register and
+      // sign in now, then defer Pet selection until the family join succeeds.
+      this.registerChildOrSelfFromSession('child');
       return;
     }
+  }
+
+  private persistPostFamilyPetSelection(petName: string): void {
+    this.loadingService.show();
+    this.authService.updatePetSelection(petName).subscribe({
+      next: () => {
+        const currentPet = this.authService.getUserPet() || {};
+        this.authService.updateUserData({
+          pet: { ...currentPet, petName }
+        });
+        this.userService.updateUserProfile({ pet: petName });
+        this.loadingService.forceHide();
+        this.navigateToSignupStep(5);
+      },
+      error: (error) => {
+        console.error('Failed to save pet selection', error);
+        this.loadingService.forceHide();
+        this.core.triggerToasrt('We could not save your pet. Please try again.');
+      }
+    });
+  }
+
+  /**
+   * Signup is a single wizard, not a stack of independent pages. Replacing the
+   * current URL prevents Ionic/browser history from briefly rendering stale
+   * completed steps and stops the device Back action from reopening them.
+   */
+  private navigateToSignupStep(step: number): void {
+    this.resetTransientStepUi();
+    void this.navCtrl.navigateRoot('/home/sign-up', {
+      queryParams: { step },
+      animated: false
+    });
+  }
+
+  private navigateReplacing(url: string): void {
+    this.resetTransientStepUi();
+    void this.navCtrl.navigateRoot(url, { animated: false });
+  }
+
+  private resetTransientStepUi(): void {
+    this.openBirthdayPicker = false;
+    this.showCountryCodeModal = false;
+    this.countrySearch = '';
+    this.showAgeSuggestionModal = false;
+    this.ageSuggestionTarget = null;
+    this.ageSuggestionRoles = [];
+    this.showAccessRestrictedModal = false;
   }
 
   goBackToEmail() {
     this.clearOtpTimer();
     this.otpDigits = ['', '', '', ''];
     this.errorMessage = null;
-    this.navCtrl.navigateBack(['/home/sign-up'], { queryParams: { step: 0.1 } });
+    this.navigateToSignupStep(0.1);
   }
 
   goBack() {
     if (this.step === 0.1) {
-      this.navCtrl.navigateBack(['/home/login']);
+      this.navigateReplacing('/home/login');
     } else if (this.step === 0.2) {
       this.clearOtpTimer();
-      this.navCtrl.navigateBack(['/home/sign-up'], { queryParams: { step: 0.1 } });
+      this.navigateToSignupStep(0.1);
     } else if (this.step === 0.3) {
-      this.navCtrl.navigateBack(['/home/sign-up'], { queryParams: { step: 0.1 } });
+      this.navigateToSignupStep(0.1);
     } else if (this.step === 1) {
       if (sessionStorage.getItem('signup_via_google') === 'true') {
-        this.navCtrl.navigateBack(['/home/login']);
+        this.navigateReplacing('/home/login');
       } else {
-        this.navCtrl.navigateBack(['/home/sign-up'], { queryParams: { step: 0.3 } });
+        this.navigateToSignupStep(0.3);
       }
     } else if (this.step > 1) {
       const savedRole = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;
-      if (this.step === 4 && savedRole === 'self') {
-        this.navCtrl.navigateBack(['/home/sign-up'], { queryParams: { step: 2 } });
+      if (this.step === 4 && (savedRole === 'self' || savedRole === 'child')) {
+        this.navigateToSignupStep(2);
         return;
       }
       if (this.step === 2) {
         this.roleSelected = undefined;
       }
-      this.navCtrl.navigateBack(['/home/sign-up'], { queryParams: { step: this.step - 1 } });
+      this.navigateToSignupStep(this.step - 1);
     }
   }
 
@@ -1191,7 +1268,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.ageSuggestionTarget = null;
     this.ageSuggestionRoles = [];
     try { sessionStorage.setItem('signup_role', role); } catch (e) { }
-    this.router.navigate(['home/sign-up'], { queryParams: { step: 1 } });
+    this.navigateToSignupStep(1);
   }
 
   openCountryCodeModal(): void {
@@ -1588,7 +1665,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.errorMessage = null;
         this.clearOtpTimer();
         // Proceed to password creation
-        this.router.navigate(['home/sign-up'], { queryParams: { step: 0.3 } });
+        this.navigateToSignupStep(0.3);
       },
       error: (err) => {
         this.otpVerifyInProgress = false;
@@ -1732,7 +1809,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.signupCredentialState.setPassword(this.password?.value || '');
 
       // Navigate to step 1 (role selection) after password creation
-      this.router.navigate(['home/sign-up'], { queryParams: { step: 1 } });
+      this.navigateToSignupStep(1);
     } else {
       this.passwordForm.markAllAsTouched();
       this.core.triggerToasrt(this.getPasswordErrorMessage());
@@ -1920,7 +1997,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
               const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
               setTimeout(() => {
                 this.loadingService.forceHide();
-                this.router.navigate([route]);
+                this.navigateReplacing(route);
               }, 50);
             },
             error: (loginErr) => {
@@ -1929,7 +2006,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
               this.core.triggerToasrt('Account created. Please login to continue.');
               setTimeout(() => {
                 this.loadingService.forceHide();
-                this.router.navigate(['/home/login']);
+                this.navigateReplacing('/home/login');
               }, 50);
             }
           });
@@ -1937,7 +2014,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           // No credentials available - redirect to login
           setTimeout(() => {
             this.loadingService.forceHide();
-            this.router.navigate(['/home/login']);
+            this.navigateReplacing('/home/login');
           }, 50);
         }
       },
@@ -1965,7 +2042,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
               const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
               setTimeout(() => {
                 this.loadingService.forceHide();
-                this.router.navigate([route]);
+                this.navigateReplacing(route);
               }, 50);
             },
             error: (loginErr) => {
@@ -2058,11 +2135,25 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           );
         }
         try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) {}
+        if (role === 'child') {
+          try {
+            sessionStorage.setItem(SignupComponent.CHILD_POST_FAMILY_WELCOME_KEY, 'true');
+          } catch (e) {}
+        }
         this.clearGoogleSignupSession();
-        const route = role === 'parent' ? '/authed/parent-account' : '/authed/user-dashboard';
+        const route = role === 'child'
+          ? '/home/join-family'
+          : (role === 'parent' ? '/authed/parent-account' : '/authed/user-dashboard');
         setTimeout(() => {
           this.loadingService.forceHide();
-          this.router.navigate([route], { replaceUrl: true });
+          if (role === 'child') {
+            void this.navCtrl.navigateRoot(route, {
+              queryParams: { role: 'child' },
+              animated: false
+            });
+          } else {
+            this.navigateReplacing(route);
+          }
         }, 50);
       },
       error: (err) => {
@@ -2182,10 +2273,43 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           sessionStorage.removeItem('referralCodeLocked');
         } catch (e) { }
 
-        // Navigate to welcome step with a small delay to ensure loader state is properly updated
+        if (role === 'child') {
+          const credentials = this.signupCredentialState.getPendingLogin();
+          if (!credentials?.password || (!credentials.email && !credentials.phone)) {
+            this.loadingService.forceHide();
+            this.navigateReplacing('/home/login');
+            return;
+          }
+
+          // Family linking is authenticated. Log the newly registered child in
+          // now, open Link with Your Family first, and reserve the welcome
+          // screen until convert-to-child succeeds.
+          this.authService.login(credentials).subscribe({
+            next: () => {
+              this.requestPasswordSavePrompt(credentials);
+              this.signupCredentialState.clear();
+              try {
+                sessionStorage.setItem(SignupComponent.CHILD_POST_FAMILY_WELCOME_KEY, 'true');
+              } catch (e) {}
+              this.loadingService.forceHide();
+              void this.navCtrl.navigateRoot('/home/join-family', {
+                queryParams: { role: 'child' },
+                animated: false
+              });
+            },
+            error: () => {
+              this.loadingService.forceHide();
+              this.core.triggerToasrt('Account created. Please login to link your family.');
+              this.navigateReplacing('/home/login');
+            }
+          });
+          return;
+        }
+
+        // Self accounts keep the existing welcome-before-dashboard sequence.
         setTimeout(() => {
           this.loadingService.forceHide();
-          this.router.navigate(['home/sign-up'], { queryParams: { step: 5 } });
+          this.navigateToSignupStep(5);
         }, 50);
       },
       error: (err) => {
@@ -2200,6 +2324,21 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   // Auto-login and redirect to dashboard
   onBegin() {
+    // Child users reach this welcome screen only after a successful family
+    // link and are already logged in. Continue directly without a second login.
+    if (this.authService.isLoggedIn()) {
+      try {
+        sessionStorage.removeItem(SignupComponent.CHILD_POST_FAMILY_WELCOME_KEY);
+        sessionStorage.removeItem('signup_role');
+        sessionStorage.removeItem('signup_pet');
+      } catch (e) {}
+      this.signupCredentialState.clear();
+      this.loadingService.forceHide();
+      const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
+      this.navigateReplacing(route);
+      return;
+    }
+
     const isOAuth = sessionStorage.getItem('signup_via_google') === 'true';
 
     // OAuth users (Apple / Google) are already authenticated.
@@ -2210,14 +2349,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       } catch (e) {}
       this.loadingService.forceHide();
       const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
-      this.router.navigate([route]);
+      this.navigateReplacing(route);
       return;
     }
 
     const credentials = this.signupCredentialState.getPendingLogin();
     if (!credentials?.password || (!credentials.email && !credentials.phone)) {
       this.loadingService.forceHide();
-      this.router.navigate(['/home/login']);
+      this.navigateReplacing('/home/login');
       return;
     }
 
@@ -2227,11 +2366,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.signupCredentialState.clear();
         this.loadingService.forceHide();
         const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
-        this.router.navigate([route]);
+        this.navigateReplacing(route);
       },
       error: () => {
         this.loadingService.forceHide();
-        this.router.navigate(['/home/login']);
+        this.navigateReplacing('/home/login');
       }
     });
   }

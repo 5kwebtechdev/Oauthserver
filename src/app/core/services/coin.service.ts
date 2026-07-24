@@ -71,4 +71,9 @@ export class CoinService {
     getTotalCoins(): number {
         return this.totalCoinsSubject.value;
     }
+
+    reset(): void {
+        this.coinHistorySubject.next([]);
+        this.totalCoinsSubject.next(0);
+    }
 }

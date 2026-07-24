@@ -63,6 +63,15 @@ export const guestGuard: CanActivateFn = (
         return true;
     }
 
+    // A newly registered child is already authenticated after linking their
+    // family. Allow only the remaining Pet and welcome onboarding steps.
+    const isPostFamilyOnboarding = sessionStorage.getItem('show_child_welcome_after_family') === 'true'
+        && state.url.includes('/sign-up')
+        && (state.url.includes('step=4') || state.url.includes('step=5'));
+    if (isPostFamilyOnboarding) {
+        return true;
+    }
+
     const isLoggedIn = authService.isLoggedIn();
 
     console.log('[GuestGuard] Route activation check:', {

@@ -2,17 +2,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-
+  gap: 12px;
+  width: 100%;
 }
 
 .mood-left {
   display: flex;
-  // width: 267px;
+  flex: 1 1 auto;
+  min-width: 0;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
   gap: 12px;
-  flex-shrink: 0;
 }
 
 .mood-text {
@@ -25,8 +26,7 @@
 }
 
 .mood-right {
-  width: var(--touch-md, 52px);
-  height: var(--touch-md, 52px);
+  width: 72px;
   flex-shrink: 0;
 }
 
@@ -36,7 +36,7 @@
   font-weight: 400;
   font-size: 16px;
   color: #282527;
-  width: 73vw;
+  width: 100%;
 }
 
 /* Apply gradient styles to server-provided <h1> injected via innerHTML */
@@ -104,6 +104,7 @@
 }
 
 .mood-emoji {
+  position: relative;
   font-size: clamp(28px, 7vw, 36px);
   width: var(--touch-md, 52px);
   height: var(--touch-md, 52px);
@@ -112,11 +113,7 @@
   justify-content: center;
   border-radius: 50%;
   background: #ffecec;
-  cursor: pointer;
-
-  &:active {
-    transform: scale(0.95);
-  }
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 
   .blocked-tooltip {
     display: inline-flex;
@@ -137,6 +134,75 @@
     pointer-events: auto;
 
   }
+}
+
+.mood-edit-trigger {
+  appearance: none;
+  width: 72px;
+  min-height: 72px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #6f1840;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+
+  &:active .mood-emoji {
+    transform: scale(0.92);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #90214d;
+    outline-offset: 3px;
+    border-radius: 12px;
+  }
+
+  &:not(.mood-edit-trigger--readonly):hover .mood-emoji {
+    box-shadow: 0 4px 12px rgba(144, 33, 77, 0.2);
+  }
+
+  &--readonly {
+    min-height: 52px;
+    cursor: default;
+  }
+}
+
+.mood-edit-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #90214d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(40, 37, 39, 0.25);
+  pointer-events: none;
+
+  img {
+    width: 11px;
+    height: 11px;
+    filter: brightness(0) invert(1);
+  }
+}
+
+.mood-edit-label {
+  color: #90214d;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 /* Mood Popup */
@@ -162,11 +228,11 @@
 
 .mood-popup {
   position: relative;
-  width: 80vw;
+  width: min(80vw, 360px);
   background: #ffffff;
   box-shadow: 0px 0px 8px 2px rgba(107, 101, 106, 0.15);
   border-radius: 12px;
-  padding: 5vw;
+  padding: clamp(16px, 5vw, 24px);
   z-index: 60;
   opacity: 0;
   transform: translateY(-6px) scale(0.98);
@@ -232,8 +298,10 @@
 
 .active-asset {
   width: 56px;
+  max-height: 56px;
   height: auto;
   display: block;
+  object-fit: contain;
 }
 
 /* Animation */
@@ -251,5 +319,34 @@
 
   to {
     opacity: 1;
+  }
+}
+
+@media (max-width: 360px) {
+  .mood-card {
+    gap: 8px;
+  }
+
+  .mood-right,
+  .mood-edit-trigger {
+    width: 64px;
+  }
+
+  .mood-title,
+  :host ::ng-deep .mood-title h1 {
+    font-size: 14px;
+  }
+
+  .mood-sub {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mood-emoji,
+  .mood-popup,
+  .mood-popup-backdrop {
+    animation: none;
+    transition: none;
   }
 }

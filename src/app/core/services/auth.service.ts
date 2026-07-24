@@ -5,7 +5,7 @@ import { tap, map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Platform } from '@ionic/angular';
+import { NavController, Platform } from '@ionic/angular';
 import { MoodService } from './mood.service';
 import { AnalyticsService } from './analytics.service';
 import { AuthSessionCleanupService } from './auth-session-cleanup.service';
@@ -113,6 +113,7 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private router: Router,
+    private navCtrl: NavController,
     private platform: Platform,
     private moodService: MoodService,
     private analytics: AnalyticsService,
@@ -288,6 +289,13 @@ export class AuthService {
    */
   setSession(authResponse: { token: string; userId: number; expiresIn?: number; user?: any }, rememberMe: boolean = false)
     : void {
+    const previousUserId = localStorage.getItem(this.USER_ID_KEY);
+    if (previousUserId && previousUserId !== String(authResponse.userId)) {
+      // Defensive account-switch boundary: even if a caller reached login
+      // without completing logout, no previous user's state may survive.
+      this.clearLocalUserState();
+    }
+
     const currentTime = Date.now().toString();
     const platformType = this.isMobilePlatform ? 'mobile' : 'web';
 
@@ -343,6 +351,23 @@ export class AuthService {
         lastActivity: Date.now()
       });
     }
+  }
+
+  /**
+   * Persist the pet chosen during authenticated child onboarding.
+   */
+  updatePetSelection(petName: string): Observable<any> {
+    const token = this.getToken();
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      Authorization: token?.startsWith('Bearer ') ? token : `Bearer ${token || ''}`
+    });
+
+    return this.http.put<any>(
+      `${this.apiUrl}/user/profile`,
+      { petName },
+      { headers, responseType: 'text' as 'json' }
+    );
   }
 
   checkEmailExists(email: string) {
@@ -505,23 +530,36 @@ export class AuthService {
   async logout(redirectToLogin: boolean = true): Promise<void> {
     console.log('[AuthService] Logging out user');
 
-    // Deregister FCM token before clearing storage so we still have it.
-    await this.pushNotifications.clearToken().catch(() => {});
-
-    this.authSessionCleanup.clearBrowserStorage();
-    this.moodService.clearVibesDisplayCache();
+    // Start device-token cleanup while the old session is still identifiable,
+    // but revoke all local/in-memory access immediately rather than waiting on
+    // network or native sign-out operations.
+    const pushCleanup = this.pushNotifications.clearToken().catch(() => {});
+    this.clearLocalUserState();
     this.analytics.clearUserId();
     this.crashlytics.clearUserId();
 
+    // Remove the authenticated Ionic view stack immediately. External/native
+    // sign-out can finish in parallel without leaving old user content visible.
+    const navigation = redirectToLogin
+      ? this.navCtrl.navigateRoot('/home/login', { animated: false })
+      : Promise.resolve(true);
+
+    await Promise.all([
+      navigation,
+      pushCleanup,
+      this.authSessionCleanup.clearExternalAuthSessions()
+    ]);
+  }
+
+  private clearLocalUserState(): void {
+    // Publish logged-out state first so active views stop using user data.
     this.isAuthenticatedSubject.next(false);
     this.currentUserSubject.next(null);
     this.userDataSubject.next(null);
 
-    await this.authSessionCleanup.clearExternalAuthSessions();
-
-    if (redirectToLogin) {
-      await this.router.navigate(['/home/login'], { replaceUrl: true });
-    }
+    this.authSessionCleanup.clearInMemoryUserData();
+    this.moodService.clearVibesDisplayCache();
+    this.authSessionCleanup.clearBrowserStorage();
   }
 
   /**

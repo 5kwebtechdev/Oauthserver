@@ -4,10 +4,11 @@ import {
   HttpHandler,
   HttpEvent,
   HttpInterceptor,
-  HttpErrorResponse
+  HttpErrorResponse,
+  HttpResponse
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, filter, tap } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { environment } from '../../../environments/environment';
 import { Router } from '@angular/router';
@@ -23,9 +24,14 @@ export class AuthInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     // Skip adding auth header if the request already has one (from API services)
     const skipAuthHandler = request.headers.get('X-Skip-Auth-Handler') === 'true';
+    const requestSessionToken = this.readSessionValue('auth_token');
+    const requestSessionUserId = this.readSessionValue('user_id');
+
     if (request.headers.has('Authorization')) {
       console.log('[AuthInterceptor] Request already has Authorization header, skipping');
-      return next.handle(request);
+      return next.handle(request).pipe(
+        filter(event => this.belongsToCurrentSession(event, requestSessionToken, requestSessionUserId))
+      );
     }
 
     // Get token with fallback: localStorage first, then environment
@@ -54,6 +60,7 @@ export class AuthInterceptor implements HttpInterceptor {
       });
       console.log('[AuthInterceptor] Added token to request');
       return next.handle(authRequest).pipe(
+        filter(event => this.belongsToCurrentSession(event, requestSessionToken, requestSessionUserId)),
         tap((event) => {
           console.log('[AuthInterceptor] Request completed successfully');
         }),
@@ -89,6 +96,7 @@ export class AuthInterceptor implements HttpInterceptor {
     // If no token, continue with the original request
     console.log('[AuthInterceptor] No token found, continuing without auth header');
     return next.handle(request).pipe(
+      filter(event => this.belongsToCurrentSession(event, requestSessionToken, requestSessionUserId)),
       catchError((error: HttpErrorResponse) => {
         console.error('[AuthInterceptor] Request failed (no auth):', {
           status: error.status,
@@ -110,5 +118,31 @@ export class AuthInterceptor implements HttpInterceptor {
         return throwError(() => error);
       })
     );
+  }
+
+  private belongsToCurrentSession(
+    event: HttpEvent<unknown>,
+    requestToken: string | null,
+    requestUserId: string | null
+  ): boolean {
+    if (!(event instanceof HttpResponse) || !requestToken || !requestUserId) {
+      return true;
+    }
+
+    const isCurrent = this.readSessionValue('auth_token') === requestToken
+      && this.readSessionValue('user_id') === requestUserId;
+
+    if (!isCurrent) {
+      console.warn('[AuthInterceptor] Discarded response from a replaced user session');
+    }
+    return isCurrent;
+  }
+
+  private readSessionValue(key: string): string | null {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
   }
 }

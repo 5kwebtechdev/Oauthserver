@@ -105,6 +105,11 @@ export class PetAgeService {
     return this.petDataSubject.value;
   }
 
+  /** Reset the in-memory pet state without recreating user storage on logout. */
+  clearSessionData(): void {
+    this.petDataSubject.next(this.createNewPet());
+  }
+
   getCurrentAge(): number {
     return this.petDataSubject.value.currentAge;
   }

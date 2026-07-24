@@ -1,5 +1,5 @@
-<ion-content #content [scrollY]="step !== 5 && step !== 0.1 && step !== 0.2"
-  [class.auth-static-content]="step === 0.1 || step === 0.2"
+<ion-content #content [scrollY]="step !== 5 && step !== 0.1 && step !== 0.2 && step !== 0.3"
+  [class.auth-static-content]="step === 0.1 || step === 0.2 || step === 0.3"
   [class.details-content]="step === 2"
   [ngClass]="step === 5 || step === 4 || step === 2 || step === 1 || step === 0.1 || step === 0.2 || step === 0.3 ? 'bg-white' : 'bg-superme-secondary'">
   <superme-navigator class="signup-navigator" *ngIf="step !== 5 && step !== 4 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 2"
@@ -589,7 +589,7 @@
     </div>
     <section *ngIf="step === 4 && (currentRole === 'self' || currentRole === 'child')" [@slideIn]
       class="pet-step" aria-labelledby="pet-step-title">
-      <button type="button" class="pet-step-back" (click)="goBack()" aria-label="Go back">
+      <button *ngIf="!isPostFamilyChildPetStep" type="button" class="pet-step-back" (click)="goBack()" aria-label="Go back">
         <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
       </button>
 
@@ -734,13 +734,24 @@
     </div>
 
     <!-- Access restricted popup for users under 8 years -->
-    <div class="popup-backdrop age-modal-backdrop" *ngIf="showAccessRestrictedModal" (click)="closeAccessRestrictedModal()"></div>
-    <div class="popup access-popup age-modal" *ngIf="showAccessRestrictedModal" role="dialog" aria-modal="true">
+    <div class="popup-backdrop age-modal-backdrop access-popup-backdrop" *ngIf="showAccessRestrictedModal"
+      (click)="closeAccessRestrictedModal()"></div>
+    <div class="popup access-popup age-modal" *ngIf="showAccessRestrictedModal" role="alertdialog" aria-modal="true"
+      aria-labelledby="access-restricted-title" aria-describedby="access-restricted-description">
       <div class="popup__content">
-        <h3 class="access-popup__title">Access Restricted</h3>
-        <p class="access-popup__subtitle">Based on the date of birth entered, you are not eligible to create an account</p>
+        <div class="access-popup__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M7.5 10V7.5a4.5 4.5 0 0 1 9 0V10" />
+            <rect x="5" y="10" width="14" height="10" rx="3" />
+            <path d="M12 14v2.5" />
+          </svg>
+        </div>
+        <h3 class="access-popup__title" id="access-restricted-title">Access Restricted</h3>
+        <p class="access-popup__subtitle" id="access-restricted-description">
+          Based on the date of birth entered, you are not eligible to create an account.
+        </p>
         <div class="access-popup__actions">
-          <superme-button type="orange-onboard" size="small" (click)="closeAccessRestrictedModal()" [text]="'Okay'"></superme-button>
+          <superme-button type="magenta" full (click)="closeAccessRestrictedModal()" text="Got it"></superme-button>
         </div>
       </div>
     </div>

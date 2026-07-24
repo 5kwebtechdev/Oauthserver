@@ -832,6 +832,15 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     const rawRoutine = (habit.selectedRoutine || this.selectedRoutine);
     const routine = rawRoutine ? String(rawRoutine).toUpperCase() : null;
 
+    // Resolve the creator's role at submit time. A parent assigning an activity
+    // to a child must always be able to see it; the child privacy toggle is not
+    // applicable to parent-created activities.
+    const isCreatedByParent = this.authService.isParentUser();
+    const sharedWithParent = isCreatedByParent || (this.isChild && !this.isPrivate);
+    const isPrivateToChild = isCreatedByParent
+      ? false
+      : (this.isChild ? this.isPrivate : false);
+
     // Check if date range covers all weekdays
     const daysInRange = this.getDaysInRange();
     const coversAllDays = daysInRange.length === 7;
@@ -850,11 +859,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         endTime: formattedEndTime || '',
         everyday: !!(this.everyday && coversAllDays),
         everyWeekend: false,
-        sharedWithParent: this.isChild ? !this.isPrivate : false,
-        // A parent creating this on behalf of a child has no Private toggle
-        // to set (it's not shown to parents), so it must always be sent as
-        // private-to-child rather than defaulting to false.
-        isPrivateToChild: this.isChild ? this.isPrivate : (this.isParent ? true : false)
+        sharedWithParent,
+        isPrivateToChild
       };
       // Always include the routine field in the payload. If the user did not select
       // a routine (or explicitly deselected it), `routine` will be `null` and we
@@ -875,7 +881,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         startDate: this.formatDateStr(this.startDate) || '',
         endDate: this.formatDateStr(this.endDate) || '',
         priority,
-        sharedWithParent: this.isChild ? !this.isPrivate : false
+        sharedWithParent
       };
       if (!(this.everyday && coversAllDays)) {
         payload.daysOfWeek = daysOfWeek;
@@ -896,10 +902,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         endTime: formattedEndTime || '',
         everyday: !!(this.everyday && coversAllDays),
         everyWeekend: false,
-        sharedWithParent: this.isChild ? !this.isPrivate : false,
-        // See tasks branch above: parent-created habits have no Private
-        // toggle to reflect, so always send them as private-to-child.
-        isPrivateToChild: this.isChild ? this.isPrivate : (this.isParent ? true : false)
+        sharedWithParent,
+        isPrivateToChild
       };
       // Always include the routine field so a missing selection is represented
       // explicitly as `null` in the payload.
@@ -911,7 +915,13 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     }
     // Debug: show computed values to help diagnose server mismatch
     try {
-      console.log('[Submit Debug] isChild=', this.isChild, 'isPrivate=', this.isPrivate, 'sharedWithParent=', (this.isChild ? !this.isPrivate : false));
+      console.log(
+        '[Submit Debug] isCreatedByParent=', isCreatedByParent,
+        'isChild=', this.isChild,
+        'isPrivate=', this.isPrivate,
+        'sharedWithParent=', sharedWithParent,
+        'isPrivateToChild=', isPrivateToChild
+      );
       console.log('[Submit Debug] Payload before forUserId:', JSON.stringify(payload, null, 2));
     } catch (e: any) { /* ignore logging errors */ }
 

@@ -43,4 +43,8 @@ export class AddressService {
             tap(() => this.load().subscribe())
         );
     }
+
+    reset(): void {
+        this._addresses.next([]);
+    }
 }

@@ -9,7 +9,7 @@ import { UserService } from '../../core/services/user.service';
 import { CredentialSaverService } from '../../core/services/credential-saver.service';
 import { SignupCredentialStateService } from '../../core/services/signup-credential-state.service';
 import { BarcodeScanner, BarcodesScannedEvent } from '@capacitor-mlkit/barcode-scanning';
-import { AlertController, IonicModule } from '@ionic/angular';
+import { AlertController, IonicModule, NavController } from '@ionic/angular';
 import { FaqItem, PROFILE_FAQS } from '../../core/components/user-profile/profile-facts/profile-facts.component';
 import { SupermeNavigatorComponent } from '../../core/components/superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../core/components/superme-button/superme-button.component';
@@ -29,6 +29,7 @@ type UserRole = 'child' | 'parent' | 'self';
     styleUrls: ['./family-onboard.component.scss']
 })
 export class FamilyOnboardComponent implements OnInit, OnDestroy {
+    private static readonly CHILD_POST_FAMILY_WELCOME_KEY = 'show_child_welcome_after_family';
     @Input() viewMode: ViewMode = 'instructions-child';
 
     // Form controls
@@ -96,6 +97,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         private familyService: FamilyService,
         private core: CoreService,
         private alertController: AlertController,
+        private navCtrl: NavController,
         private authService: AuthService,
         private userService: UserService,
         private credentialSaverService: CredentialSaverService,
@@ -437,6 +439,13 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     /**
      * Navigation: Back button behavior varies by view mode
      */
+    private navigateWithoutHistory(url: string, queryParams?: Record<string, any>): void {
+        void this.navCtrl.navigateRoot(url, {
+            animated: false,
+            ...(queryParams ? { queryParams } : {})
+        });
+    }
+
     goBack(): void {
         if (this.viewMode === 'join-family-parent' && this.familyCreated) {
             this.familyCreated = false;
@@ -455,7 +464,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         const route = backRoutes[this.viewMode];
         // If user arrived from sign-up, back should return them to the profile/details entry (step 2)
         const queryParams = this.viewMode.startsWith('join-family') ? { role: this.userRole } : { step: 2 };
-        this.router.navigate([route], { queryParams });
+        this.navigateWithoutHistory(route, queryParams);
     }
 
     /**
@@ -479,9 +488,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
     chooseParentFamilyMode(mode: FamilyMode): void {
         this.selectedMode = mode;
-        this.router.navigate(['/home/join-family2'], {
-            queryParams: { role: 'parent', mode }
-        });
+        this.navigateWithoutHistory('/home/join-family2', { role: 'parent', mode });
     }
 
     toggleCreateFamilyFaq(index: number): void {
@@ -542,8 +549,13 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
                 this.core.triggerToasrt(response?.message || 'Joined your family!', 'success');
 
+                if (sessionStorage.getItem(FamilyOnboardComponent.CHILD_POST_FAMILY_WELCOME_KEY) === 'true') {
+                    this.navigateWithoutHistory('/home/sign-up', { step: 4, role: 'child' });
+                    return;
+                }
+
                 const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
-                this.router.navigate([route], { replaceUrl: true });
+                this.navigateWithoutHistory(route);
             },
             error: (error) => {
                 this.isLoading = false;
@@ -561,8 +573,11 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
      */
     skipForNow(): void {
         try { localStorage.setItem('familyLinkSkipped', 'true'); } catch (e) { }
+        try {
+            sessionStorage.removeItem(FamilyOnboardComponent.CHILD_POST_FAMILY_WELCOME_KEY);
+        } catch (e) {}
         const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
-        this.router.navigate([route], { replaceUrl: true });
+        this.navigateWithoutHistory(route);
     }
 
     /**
@@ -652,7 +667,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         const signupRole = sessionStorage.getItem('signup_role');
         if (signupRole === 'parent') {
             // Navigate to signup step 2 (profile information) to continue parent signup
-            this.router.navigate(['/home/sign-up'], { queryParams: { step: 2 } });
+            this.navigateWithoutHistory('/home/sign-up', { step: 2 });
             return;
         }
 
@@ -777,7 +792,7 @@ Thank you!`;
 
         if (role === 'child' || role === 'self') {
             // Navigate to pet selection in signup flow
-            this.router.navigate(['home/sign-up'], { queryParams: { step: 4 } });
+            this.navigateWithoutHistory('/home/sign-up', { step: 4 });
             return;
         }
 
@@ -798,20 +813,20 @@ Thank you!`;
                                 this.clearSignupSession();
                                 this.signupCredentialState.clear();
                                 const route = this.authService.getDashboardRoute() || '/authed/parent-account';
-                                this.router.navigate([route]);
+                                this.navigateWithoutHistory(route);
                             });
                         },
                         error: (loginErr) => {
                             console.error('Auto-login failed', loginErr);
-                            this.router.navigate(['/home/login']);
+                            this.navigateWithoutHistory('/home/login');
                         }
                     });
                 } else {
-                    this.router.navigate(['/home/login']);
+                    this.navigateWithoutHistory('/home/login');
                 }
             } else {
                 const route = this.authService.getDashboardRoute() || '/authed/parent-account';
-                this.router.navigate([route]);
+                this.navigateWithoutHistory(route);
             }
             return;
         }
@@ -998,10 +1013,7 @@ Thank you!`;
                  'familyCode', 'familyName', 'familyCreator', 'referralCode', 'referralCodeLocked'].forEach(k => {
                     try { sessionStorage.removeItem(k); } catch (e) {}
                 });
-                this.router.navigate(['/home/sign-up'], {
-                    queryParams: { step: 5 },
-                    replaceUrl: true
-                });
+                this.navigateWithoutHistory('/home/sign-up', { step: 5 });
             },
             error: (err) => {
                 this.isLoading = false;
@@ -1040,15 +1052,12 @@ Thank you!`;
         }
 
         this.clearSignupSession();
-        this.router.navigate(['/home/sign-up'], {
-            queryParams: { step: 5 },
-            replaceUrl: true
-        });
+        this.navigateWithoutHistory('/home/sign-up', { step: 5 });
     }
 
     private redirectToLogin(): void {
         this.signupCredentialState.clear();
-        this.router.navigate(['/home/login'], { queryParams: { role: this.userRole } });
+        this.navigateWithoutHistory('/home/login', { role: this.userRole });
     }
 
     /**

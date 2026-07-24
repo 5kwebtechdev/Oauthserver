@@ -1223,6 +1223,126 @@ swiper-slide.swiper-slide-active .pet-card {
   width: 100%;
   gap: 8px;
 }
+
+/* Branded restricted-access dialog */
+.access-popup-backdrop {
+  background: rgba(32, 20, 63, 0.52);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: accessBackdropIn 180ms ease-out both;
+}
+
+.access-popup.age-modal {
+  width: min(328px, calc(100vw - 32px));
+  min-height: 0;
+  padding: clamp(24px, 7vw, 30px) clamp(20px, 6vw, 26px) 24px;
+  border: 1px solid rgba(115, 65, 167, 0.16);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(236, 129, 157, 0.12), transparent 42%),
+    #fffdfb;
+  box-shadow: 0 20px 56px rgba(32, 20, 63, 0.28);
+  animation: accessPopupIn 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+
+  .popup__content {
+    width: 100%;
+    gap: 0;
+  }
+}
+
+.access-popup__icon {
+  width: 58px;
+  height: 58px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(144, 33, 77, 0.14);
+  border-radius: 50%;
+  background: linear-gradient(145deg, #fdeaf2, #f5ebff);
+  box-shadow: 0 8px 20px rgba(144, 33, 77, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 28px;
+    height: 28px;
+    fill: none;
+    stroke: #90214d;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.access-popup__title {
+  margin: 0 0 8px;
+  color: #20143f;
+  font-family: var(--font-heading);
+  font-size: clamp(20px, 5.5vw, 22px);
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.access-popup__subtitle {
+  max-width: 246px;
+  margin: 0;
+  color: #6b656a;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.access-popup__actions {
+  margin-top: 22px;
+
+  superme-button {
+    width: 100%;
+  }
+}
+
+@keyframes accessBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes accessPopupIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 12px)) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@media (max-width: 360px) {
+  .access-popup.age-modal {
+    width: calc(100vw - 24px);
+    padding: 22px 18px 20px;
+    border-radius: 20px;
+  }
+
+  .access-popup__icon {
+    width: 52px;
+    height: 52px;
+    margin-bottom: 14px;
+  }
+
+  .access-popup__actions {
+    margin-top: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .access-popup-backdrop,
+  .access-popup.age-modal {
+    animation: none;
+  }
+}
+
 .age-modal__title {
   text-align: center;
   color: #282527;
@@ -2879,8 +2999,8 @@ ion-content.details-content {
 .signup-container.otp-layout .otp-back-btn {
   position: absolute;
   z-index: 2;
-  top: calc(env(safe-area-inset-top, 0px) + 20px);
-  left: max(24px, env(safe-area-inset-left, 0px));
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  left: max(18px, env(safe-area-inset-left, 0px));
   display: grid;
   width: 48px;
   height: 48px;
@@ -2919,7 +3039,7 @@ ion-content.details-content {
   width: min(100%, 620px);
   margin: 0 auto;
   padding:
-    calc(env(safe-area-inset-top, 0px) + clamp(140px, 16dvh, 180px))
+    calc(env(safe-area-inset-top, 0px) + clamp(84px, 10dvh, 104px))
     clamp(20px, 6vw, 36px)
     calc(env(safe-area-inset-bottom, 0px) + 40px);
 }
@@ -3164,14 +3284,14 @@ ion-content.details-content {
 
 @media (min-width: 768px) {
   .signup-container.otp-layout .otp-back-btn {
-    top: calc(env(safe-area-inset-top, 0px) + 52px);
-    left: max(48px, env(safe-area-inset-left, 0px));
+    top: calc(env(safe-area-inset-top, 0px) + 16px);
+    left: max(32px, env(safe-area-inset-left, 0px));
   }
 
   .signup-container.otp-layout .otp-shell {
     width: 650px;
     max-width: calc(100% - 96px);
-    padding-top: calc(env(safe-area-inset-top, 0px) + clamp(164px, 17dvh, 200px));
+    padding-top: calc(env(safe-area-inset-top, 0px) + 104px);
   }
 
   .signup-container.otp-layout .otp-hero__text,
@@ -3202,11 +3322,11 @@ ion-content.details-content {
 
 @media (max-height: 700px) {
   .signup-container.otp-layout .otp-back-btn {
-    top: calc(env(safe-area-inset-top, 0px) + 18px);
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
   }
 
   .signup-container.otp-layout .otp-shell {
-    padding-top: calc(env(safe-area-inset-top, 0px) + 86px);
+    padding-top: calc(env(safe-area-inset-top, 0px) + 68px);
   }
 
   .signup-container.otp-layout .otp-progress {
@@ -3260,8 +3380,8 @@ ion-content.details-content {
   .signup-entry-back-btn {
     position: absolute;
     z-index: 2;
-    top: calc(env(safe-area-inset-top, 0px) + 20px);
-    left: max(22px, env(safe-area-inset-left, 0px));
+    top: calc(env(safe-area-inset-top, 0px) + 12px);
+    left: max(18px, env(safe-area-inset-left, 0px));
     display: grid;
     width: 48px;
     height: 48px;
@@ -3289,7 +3409,7 @@ ion-content.details-content {
     height: 100%;
     min-height: 0;
     margin: 0 auto;
-    padding: calc(env(safe-area-inset-top, 0px) + 148px) 22px
+    padding: calc(env(safe-area-inset-top, 0px) + clamp(84px, 10dvh, 104px)) 22px
       calc(env(safe-area-inset-bottom, 0px) + 42px);
   }
 
@@ -3550,14 +3670,14 @@ ion-content.details-content {
 @media (min-width: 768px) {
   .signup-container.signup-entry-layout {
     .signup-entry-back-btn {
-      top: calc(env(safe-area-inset-top, 0px) + 52px);
-      left: max(48px, env(safe-area-inset-left, 0px));
+      top: calc(env(safe-area-inset-top, 0px) + 16px);
+      left: max(32px, env(safe-area-inset-left, 0px));
     }
 
     .signup-entry-shell {
       width: 650px;
       max-width: calc(100% - 96px);
-      padding-top: calc(env(safe-area-inset-top, 0px) + 176px);
+      padding-top: calc(env(safe-area-inset-top, 0px) + 104px);
     }
 
     .signup-entry-title {
@@ -3591,11 +3711,11 @@ ion-content.details-content {
 @media (max-height: 700px) {
   .signup-container.signup-entry-layout {
     .signup-entry-back-btn {
-      top: calc(env(safe-area-inset-top, 0px) + 14px);
+      top: calc(env(safe-area-inset-top, 0px) + 8px);
     }
 
     .signup-entry-shell {
-      padding-top: calc(env(safe-area-inset-top, 0px) + 78px);
+      padding-top: calc(env(safe-area-inset-top, 0px) + 68px);
     }
 
     .signup-entry-form {
@@ -3636,10 +3756,11 @@ ion-content.details-content {
 
 // Password creation (Step 3 of 6)
 .signup-container.password-layout {
-  min-height: 100dvh;
+  height: 100%;
+  min-height: 0;
   padding: 0;
   gap: 0;
-  overflow: visible;
+  overflow: hidden;
   background: #ffffff;
   color: #282527;
   font-family: 'Nunito', sans-serif;
@@ -3648,15 +3769,17 @@ ion-content.details-content {
     position: relative;
     display: block;
     width: 100%;
-    min-height: 100dvh;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
     background: #ffffff;
   }
 
   .pwd-back-btn {
     position: absolute;
     z-index: 2;
-    top: calc(env(safe-area-inset-top, 0px) + 20px);
-    left: max(22px, env(safe-area-inset-left, 0px));
+    top: calc(env(safe-area-inset-top, 0px) + 12px);
+    left: max(18px, env(safe-area-inset-left, 0px));
     display: grid;
     width: 48px;
     height: 48px;
@@ -3681,9 +3804,10 @@ ion-content.details-content {
 
   .pwd-shell {
     width: min(100%, 560px);
-    min-height: 100dvh;
+    height: 100%;
+    min-height: 0;
     margin: 0 auto;
-    padding: calc(env(safe-area-inset-top, 0px) + 148px) 22px
+    padding: calc(env(safe-area-inset-top, 0px) + clamp(84px, 10dvh, 104px)) 22px
       calc(env(safe-area-inset-bottom, 0px) + 42px);
   }
 
@@ -3880,14 +4004,14 @@ ion-content.details-content {
 @media (min-width: 768px) {
   .signup-container.password-layout {
     .pwd-back-btn {
-      top: calc(env(safe-area-inset-top, 0px) + 52px);
-      left: max(48px, env(safe-area-inset-left, 0px));
+      top: calc(env(safe-area-inset-top, 0px) + 16px);
+      left: max(32px, env(safe-area-inset-left, 0px));
     }
 
     .pwd-shell {
       width: 650px;
       max-width: calc(100% - 96px);
-      padding-top: calc(env(safe-area-inset-top, 0px) + 176px);
+      padding-top: calc(env(safe-area-inset-top, 0px) + 104px);
     }
 
     .pwd-hero__title {
@@ -3916,11 +4040,11 @@ ion-content.details-content {
 @media (max-height: 700px) {
   .signup-container.password-layout {
     .pwd-back-btn {
-      top: calc(env(safe-area-inset-top, 0px) + 14px);
+      top: calc(env(safe-area-inset-top, 0px) + 8px);
     }
 
     .pwd-shell {
-      padding-top: calc(env(safe-area-inset-top, 0px) + 78px);
+      padding-top: calc(env(safe-area-inset-top, 0px) + 68px);
     }
 
     .pwd-form {
