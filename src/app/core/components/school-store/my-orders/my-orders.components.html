@@ -62,7 +62,7 @@
                             <img [src]="itemImage(order.items[0])" alt="Order Item Image">
                             </div>
                             <div class="item-info w-100">
-                                <h2>{{ order.items?.length ? truncateText(order.items[0]?.productName ?? '', 48) : ('Order #' + (order.orderNumber ?? order.id)) }}</h2>
+                                <h2>{{ order.items.length ? truncateText(order.items[0].productName, 48) : ('Order #' + (order.orderNumber ?? order.id)) }}</h2>
                                 <p class="product-subtitle" *ngIf="order.items && order.items.length > 1">+{{ order.items.length - 1 }} more item(s)</p>
                                 <p class="school-name">{{ order.schoolName }}</p>
                             </div>

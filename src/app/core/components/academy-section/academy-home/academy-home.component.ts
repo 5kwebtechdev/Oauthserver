@@ -5,8 +5,6 @@ import { Router, RouterModule } from '@angular/router';
 import { NavigationService } from '../../../services/navigation.service';
 import { AcademyCategory, AcademyService } from '../../../services/academy.service';
 import { AuthService } from '../../../services/auth.service';
-import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
-import { SupermeSpeechBubbleComponent } from '../../superme-speech-bubble/superme-speech-bubble.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
 import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
 
@@ -24,7 +22,7 @@ interface CategoryCard {
 @Component({
   selector: 'app-academy-home',
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, SupermeCardHeaderComponent, SupermeSpeechBubbleComponent, SupermePetComponent, SkeletonImageComponent],
+  imports: [CommonModule, IonicModule, RouterModule, SupermePetComponent, SkeletonImageComponent],
   templateUrl: './academy-home.component.html',
   styleUrls: ['./academy-home.component.scss']
 })

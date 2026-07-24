@@ -2,7 +2,6 @@ import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
-import { ProfileEditInputComponent } from '../profile-edit-input/profile-edit-input.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse, HttpClientModule } from '@angular/common/http';
@@ -16,7 +15,7 @@ import { finalize } from 'rxjs/operators';
 @Component({
   selector: 'reset-pasword',
   standalone: true,
-  imports: [CommonModule, IonicModule, SupermeNavigatorComponent, ProfileEditInputComponent, SupermeButtonComponent, ReactiveFormsModule, HttpClientModule],
+  imports: [CommonModule, IonicModule, SupermeNavigatorComponent, SupermeButtonComponent, ReactiveFormsModule, HttpClientModule],
   templateUrl: './reset-pasword.component.html',
   styleUrls: ['./reset-pasword.component.scss']
 })
@@ -282,4 +281,3 @@ export class ResetPaswordComponent implements OnDestroy {
   }
 
 }
-

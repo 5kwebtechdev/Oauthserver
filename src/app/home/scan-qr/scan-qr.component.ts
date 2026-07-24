@@ -239,6 +239,7 @@ export class ScanQrComponent implements OnInit, OnDestroy {
       this.router.navigate(['/home/join-family2'], {
         queryParams: {
           role: this.userRole,
+          mode: 'join',
           scannedCode: code
         }
       });
@@ -285,7 +286,10 @@ export class ScanQrComponent implements OnInit, OnDestroy {
   enterCode() {
     this.stopScan();
     const targetRoute = this.returnTo === 'join-family2' ? '/home/join-family2' : '/home/join-family';
-    this.router.navigate([targetRoute], { queryParams: { role: this.userRole } });
+    const queryParams = this.returnTo === 'join-family2'
+      ? { role: this.userRole, mode: 'join' }
+      : { role: this.userRole };
+    this.router.navigate([targetRoute], { queryParams });
   }
 
   async close() {
@@ -302,6 +306,9 @@ export class ScanQrComponent implements OnInit, OnDestroy {
     }
 
     const targetRoute = this.returnTo === 'join-family2' ? '/home/join-family2' : '/home/join-family';
-    this.router.navigate([targetRoute], { queryParams: { role: this.userRole } });
+    const queryParams = this.returnTo === 'join-family2'
+      ? { role: this.userRole, mode: 'join' }
+      : { role: this.userRole };
+    this.router.navigate([targetRoute], { queryParams });
   }
 }

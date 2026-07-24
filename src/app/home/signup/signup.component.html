@@ -320,7 +320,8 @@
         </div>
       </div>
     </div>
-    <div *ngIf="step === 2" [@slideIn] class="profile-step profile-step--figma">
+    <div *ngIf="step === 2" [@slideIn] class="profile-step profile-step--figma"
+      [class.profile-step--parent]="currentRole === 'parent'">
       <header class="details-header">
         <button type="button" class="profile-back-btn details-back-btn" (click)="goBack()" aria-label="Go back">
           <img src="assets/Images-Transparent/details-back-figma.svg" alt="" aria-hidden="true" />
@@ -330,14 +331,18 @@
           <div class="details-header-copy">
             <h1 class="details-title"><span>Lets set</span><span>You <strong>Up</strong></span></h1>
             <div class="details-progress-copy">
-              <p class="profile-step-label">Step 4 of 6</p>
+              <p class="profile-step-label">Step 4 of {{ currentRole === 'parent' ? 5 : 6 }}</p>
               <p class="profile-hero__title">Tell us about yourself !</p>
               <div class="profile-progress" role="progressbar" aria-label="Registration progress" aria-valuemin="1"
-                aria-valuemax="6" aria-valuenow="4"><span></span></div>
+                [attr.aria-valuemax]="currentRole === 'parent' ? 5 : 6" aria-valuenow="4"><span></span></div>
             </div>
           </div>
           <div class="details-header-illustration" aria-hidden="true">
-            <img src="assets/Images-Transparent/details-header-child-figma.png" alt="" />
+            <img
+              [src]="currentRole === 'parent'
+                ? 'assets/Images-Transparent/details-header-parent-figma.png'
+                : 'assets/Images-Transparent/details-header-child-figma.png'"
+              alt="" />
             <span></span>
           </div>
         </div>
@@ -356,6 +361,7 @@
             </div>
           </div>
 
+          <ng-container *ngIf="currentRole !== 'parent'">
           <h4 class="profile-field-heading">
             <span class="profile-field-title">Username</span>
             <span class="profile-field-hint">Name used in the app</span>
@@ -395,6 +401,7 @@
             </p>
             <p class="username-change-note"><span aria-hidden="true"></span>Relax, you can change it again</p>
           </div>
+          </ng-container>
 
           <h4 class="profile-field-heading">
             <span class="profile-field-title">Phone Number</span>
@@ -415,17 +422,20 @@
 
           <h4 class="profile-field-heading">
             <span class="profile-field-title">Date of Birth</span>
-            <span *ngIf="computedAge !== null; else noAge" class="profile-field-hint age-count">
-              {{ computedAge }} years old
-            </span>
+            <ng-container *ngIf="currentRole !== 'parent'">
+              <span *ngIf="computedAge !== null; else noAge" class="profile-field-hint age-count">
+                {{ computedAge }} years old
+              </span>
 
-            <ng-template #noAge>
-              <span class="profile-field-hint age-count">To show personalized content</span>
-            </ng-template>
+              <ng-template #noAge>
+                <span class="profile-field-hint age-count">To show personalized content</span>
+              </ng-template>
+            </ng-container>
           </h4>
           <div class="input-group">
             <!--            <input  formControlName="dob" type="text" placeholder="Date of Birth" />-->
-            <superme-birthdaypicker (dateSelected)="birthdayChanged($event)" (closed)="openBirthdayPicker = false" [showTrigger]="openBirthdayPicker"
+            <superme-birthdaypicker (dateSelected)="birthdayChanged($event)" (closed)="openBirthdayPicker = false"
+              [showTrigger]="openBirthdayPicker" [variant]="'figma-purple'"
               style="width: 100%">
               <input type="text" formControlName="dob" readonly (click)="openBirthdayPickerNow()"
                 [ngClass]="{'error' : dob()?.invalid && (dob()?.dirty || dob()?.touched)}" placeholder="Select Date of birth" />
@@ -436,7 +446,9 @@
           </div>
           <h4 class="profile-field-heading">
             <span class="profile-field-title">Gender</span>
-            <span class="profile-field-hint">Used for personalization touches</span>
+            <span class="profile-field-hint">
+              {{ currentRole === 'parent' ? 'Used for identifying relationship with child' : 'Used for personalization touches' }}
+            </span>
           </h4>
           <div class="gender-options" role="group" aria-label="Gender">
             <button type="button" class="gender-select-button" (click)="selectGender('male')"
@@ -453,21 +465,11 @@
               (click)="selectGender('prefer_not_to_say')"
               [class.active]="gender === 'prefer_not_to_say'"
               [attr.aria-pressed]="gender === 'prefer_not_to_say'">
-              Prefer not to say
+              Prefer Not to Say
             </button>
           </div>
         </form>
-        <ng-container *ngIf="gender">
-          <!-- For parent role, show auto-generated initial avatar and skip selection -->
-          <ng-container *ngIf="currentRole === 'parent'; else nonParentAvatar">
-            <h4 style="margin-top: 15px">Profile picture</h4>
-            <div class="initial-avatar-preview">
-                <div class="initial-avatar-circle" [ngStyle]="parentImageService.getAvatarStyle(getNameInitial(), gender === 'female')">{{ getNameInitial() }}</div>
-              <p class="initial-avatar-hint">This will be used as your profile picture</p>
-            </div>
-          </ng-container>
-          <!-- For child/self roles, keep avatar selection -->
-          <ng-template #nonParentAvatar>
+        <ng-container *ngIf="gender && currentRole !== 'parent'">
             <h4 class="profile-field-heading" style="margin-top: 15px">
               <span class="profile-field-title">Choose an Avatar</span>
               <span class="profile-field-hint">Pick one that you like</span>
@@ -480,7 +482,6 @@
                 </div>
               </ng-container>
             </div>
-          </ng-template>
         </ng-container>
       </div>
 
@@ -492,14 +493,15 @@
             <h4>Got a Referral Code?</h4>
             <span>Tap to earn 100 bonus coins!</span>
           </div>
-          <div class="referral-arrow" [ngClass]="{'open': showReferral}">
+          <div class="referral-arrow" [ngClass]="{'open': showReferral || currentRole === 'parent'}">
             <img src="assets/Images-Transparent/details-chevron-figma.svg" alt="" aria-hidden="true" />
           </div>
         </div>
 
-        <div class="referral-input-wrapper" *ngIf="showReferral">
+        <div class="referral-input-wrapper" *ngIf="showReferral || currentRole === 'parent'">
           <div class="input-group">
-            <input type="text" [value]="referralCode" (input)="onReferralInput($event)" placeholder="Type 8 character code"
+            <input type="text" [value]="referralCode" (input)="onReferralInput($event)"
+              [placeholder]="currentRole === 'parent' ? 'Code' : 'Type 8 character code'"
               maxlength="8" [readonly]="referralCodeReadonly" [attr.aria-readonly]="referralCodeReadonly" />
             <div class="error" *ngIf="referralCode && referralCode.length > 8">Referral code must be up to 8 characters
             </div>
@@ -612,7 +614,7 @@
       <button type="button" class="pet-step-next" (click)="proceedWithAvatar()">Next</button>
     </section>
 
-    <div *ngIf="step === 5 && (currentRole === 'self' || currentRole === 'child')" [@slideIn]
+    <div *ngIf="step === 5" [@slideIn]
       class="welcome-page d-flex flex-column align-items-center justify-content-center gap-3" style="min-height: 90dvh; margin-top: 10dvh;">
       <img src="assets/Images-Transparent/SuperMeLogoFinal3.png" alt="Onboarding pet" class="onboarding-image" />
 
@@ -719,7 +721,7 @@
           [ngClass]="isPrimaryAgeSuggestion(role) ? 'age-modal__btn--primary' : 'age-modal__btn--secondary'"
           (click)="selectSuggestedRole(role)">Try {{ getRoleDisplayName(role) }} Role</button>
       </div>
-      <p class="age-modal__footer">You can always switch role in<br>settings if you prefer</p>
+      <p class="age-modal__footer">You can always switch role in<br>profile if you prefer</p>
     </div>
 
     <!-- Access restricted popup for users under 8 years -->
@@ -742,7 +744,7 @@
           <i class="fa-solid fa-times"></i>
         </button>
       </div>
-      <div class="country-modal__search-wrap">
+      <div class="country-modal__search-wrap" *ngIf="false">
         <div class="country-search-box">
           <svg class="country-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input class="country-search-input" type="text" placeholder="Search by name or code…" [(ngModel)]="countrySearch" autocomplete="off" />
@@ -753,12 +755,12 @@
       </div>
       <div class="country-modal__content">
         <div class="country-list">
-          <div class="country-item" *ngFor="let country of filteredCountries" (click)="selectCountry(country)"
-            [class.selected]="selectedCountry.code === country.code">
+          <button type="button" class="country-item" *ngFor="let country of countries" (click)="selectCountry(country)"
+            [class.selected]="selectedCountry.iso === country.iso">
             <span class="country-flag">{{country.flag}}</span>
             <span class="country-name">{{country.name}}</span>
             <span class="country-code">{{country.code}}</span>
-          </div>
+          </button>
         </div>
       </div>
       <div class="country-modal__footer">

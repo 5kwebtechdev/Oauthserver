@@ -22,7 +22,8 @@
             "allowedCommonJsDependencies": [
               "qrcode",
               "@stomp/stompjs",
-              "sockjs-client"
+              "sockjs-client",
+              "scriptjs"
             ],
             "assets": [
               {

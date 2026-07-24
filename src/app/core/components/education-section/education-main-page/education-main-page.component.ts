@@ -2,7 +2,6 @@ import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, AfterViewInit, ViewChild, El
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
 import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
@@ -12,7 +11,7 @@ import { AuthService } from '../../../services/auth.service';
     selector: 'app-education-main-page',
     standalone: true,
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    imports: [CommonModule, IonicModule, SupermeNavigatorComponent, RouterModule, FooterComponent, SkeletonImageComponent, AdBannerComponent],
+    imports: [CommonModule, IonicModule, RouterModule, FooterComponent, SkeletonImageComponent, AdBannerComponent],
     templateUrl: './education-main-page.component.html',
     styleUrls: ['./education-main-page.component.scss']
 })

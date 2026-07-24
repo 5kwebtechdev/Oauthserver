@@ -6,7 +6,7 @@
 <div class="overlay" *ngIf="show">
   <div class="popover" [ngClass]="variant ? 'variant-' + variant : ''">
     <div class="header">
-      <span (click)="close()">✕</span>
+      <button type="button" class="picker-close" (click)="close()" aria-label="Close date picker">&times;</button>
     </div>
 
     <div class="picker">
@@ -18,7 +18,7 @@
 
   <div #monthCol class="column month-column" (scroll)="onScroll('month')">
         <div *ngFor="let month of months; let i = index"
-             [ngClass]="{ 'item': true, 'selected': i === getCurrentMonthIndex() }">{{ month || '' }}</div>
+             [ngClass]="{ 'item': true, 'selected': i === getCurrentMonthIndex() }">{{ getMonthLabel(month) }}</div>
       </div>
 
   <div #yearCol class="column year-column" (scroll)="onScroll('year')">

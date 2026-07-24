@@ -60,7 +60,6 @@ import { debounceTime, takeUntil } from 'rxjs/operators';
     SupermeSpeechBubbleComponent,
     SupermeCoinsStatsComponent,
     FooterComponent,
-    StreakRestoreModalComponent,
     SkeletonImageComponent,
   ]
 })
