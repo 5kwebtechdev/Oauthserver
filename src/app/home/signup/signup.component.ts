@@ -7,7 +7,6 @@ import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
 import { CountriesService, Country } from "../../core/services/countries.service";
 import { LoadingService } from '../../core/services/loading.service';
-import { ParentImageService } from '../../core/services/parent-image.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Subscription } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -311,7 +310,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     private authService: AuthService,
     private userService: UserService,
     private loadingService: LoadingService,
-    public parentImageService: ParentImageService,
     private credentialSaverService: CredentialSaverService,
     private signupCredentialState: SignupCredentialStateService,
     private navCtrl: NavController
@@ -458,8 +456,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   get isProfileStepInvalid(): boolean {
-    if (this.profileForm.invalid) return true;
-    if (this.usernameAvailability !== 'available') return true;
+    if (this.name?.invalid || this.dob()?.invalid) return true;
+    if (this.currentRole !== 'parent' && this.username?.invalid) return true;
+    if (this.currentRole !== 'parent' && this.usernameAvailability !== 'available') return true;
     if (!this.gender) return true;
     if (this.currentRole !== 'parent' && !this.avatarSelected) return true;
     return false;
@@ -912,7 +911,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
-    if (this.profileForm.get('username')?.invalid) {
+    if (this.currentRole !== 'parent' && this.profileForm.get('username')?.invalid) {
       this.core.triggerToasrt(this.getUsernameValidationMessage());
       return;
     }
@@ -1196,7 +1195,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   openCountryCodeModal(): void {
-    if (this.loginMode === 'phone') {
+    if (this.step === 2 || this.loginMode === 'phone') {
       this.countrySearch = '';
       this.showCountryCodeModal = true;
     }
@@ -2205,6 +2204,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // OAuth users (Apple / Google) are already authenticated.
     if (isOAuth) {
+      try {
+        sessionStorage.removeItem('signup_via_google');
+        sessionStorage.removeItem('signup_via_oauth');
+      } catch (e) {}
       this.loadingService.forceHide();
       const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
       this.router.navigate([route]);
@@ -2359,7 +2362,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   /**
-   * Parent role should not see self-only onboarding steps (pet selection, begin journey)
+   * Parent role should not see the self/child-only pet selection step.
+   * The shared welcome step is intentionally available after parent registration.
    */
   private enforceParentFlowRestrictions(): void {
     if (this.currentRole !== 'parent') {
@@ -2368,7 +2372,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     const stepValue = Number(this.step);
 
-    if (stepValue === 4 || stepValue === 5) {
+    if (stepValue === 4) {
       const fallbackStep = 2;
       this.step = fallbackStep;
       this.router.navigate(['home/sign-up'], {

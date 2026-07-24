@@ -489,6 +489,73 @@
   cursor: default;
 }
 
+/* Parent details frame: Figma node 22895:47573 */
+.profile-step--figma.profile-step--parent .details-header-illustration {
+  width: 128px;
+}
+
+.profile-step--figma.profile-step--parent .details-header-illustration img {
+  width: 254px !important;
+  max-width: none;
+  height: 142px;
+  transform: translateX(-70px);
+}
+
+.profile-step--figma.profile-step--parent .profile .profile-field-title,
+.profile-step--figma.profile-step--parent .details-referral-section .referral-text h4 {
+  color: #282527 !important;
+  font-weight: 600 !important;
+}
+
+.profile-step--figma.profile-step--parent .details-referral-section .referral-text span {
+  color: #6b656a !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma.profile-step--parent .profile .input-group input,
+.signup-container.profile-layout .profile-step.profile-step--figma.profile-step--parent .details-referral-section .input-group input {
+  font-size: 13px !important;
+}
+
+.profile-step--figma.profile-step--parent .details-next-button {
+  border-radius: 20px;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma.profile-step--parent .profile .gender-options {
+  margin-bottom: 0 !important;
+}
+
+.profile-step--figma.profile-step--parent .gender-select-button {
+  white-space: nowrap;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma.profile-step--parent > .details-referral-section {
+  margin-top: -12px !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma.profile-step--parent .details-header {
+  min-height: 228px;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma.profile-step--parent .details-progress-copy .profile-hero__title {
+  margin: 4px 0 0 !important;
+  color: #282527 !important;
+  font-family: 'Nunito', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+  white-space: nowrap;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma > .profile,
+.signup-container.profile-layout .profile-step.profile-step--figma > .details-referral-section,
+.signup-container.profile-layout .profile-step.profile-step--figma > .profile-button-wrapper,
+.signup-container.profile-layout .profile-step.profile-step--figma > .error-message {
+  width: calc(100% - 32px) !important;
+  max-width: none !important;
+  margin-right: auto !important;
+  margin-left: auto !important;
+}
+
 @media (max-width: 360px) {
   .profile-step--figma .details-header-copy {
     width: 190px;

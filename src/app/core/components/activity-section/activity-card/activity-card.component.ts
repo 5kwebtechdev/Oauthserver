@@ -6,7 +6,6 @@ import { SupermeButtonComponent } from "../../superme-button/superme-button.comp
 import { SupermePopupComponent, SupermePopupConfig, SupermePopupCTA } from '../../superme-popup/superme-popup.component';
 
 import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
-import { ViewAllComponent } from '../../superme-navigator/view-all/view-all.component';
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
@@ -40,7 +39,6 @@ import { AuthApi } from '../../../api/auth.api';
     SupermeButtonComponent,
 
     SupermeCardHeaderComponent,
-    ViewAllComponent,
     RouterModule,
     SupermePopupComponent,
     EmptyStateComponent,

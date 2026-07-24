@@ -35,18 +35,18 @@
     <div class="product-info-section">
       <div class="product-name-price d-flex flex-column gap-1">
         <div class="title-n-name d-flex flex-column gap-1 align-start">
-          <h1 class="product-title">{{ product?.name || heading }}</h1>
-          <p class="product-subtitle" *ngIf="product?.tag">
-            {{ product?.tag }}
+          <h1 class="product-title">{{ product.name || heading }}</h1>
+          <p class="product-subtitle" *ngIf="product.tag">
+            {{ product.tag }}
           </p>
         </div>
         <div class="price-n-quantity d-flex justify-content-between">
           <div class="price d-flex gap-2">
             <span class="discounted-price">
-              {{ formatCurrency(product?.sellingPrice) }}
+              {{ formatCurrency(product.sellingPrice) }}
             </span>
             <span *ngIf="product && product.mrp > product.sellingPrice" class="original-price">
-              {{ formatCurrency(product?.mrp) }}
+              {{ formatCurrency(product.mrp) }}
             </span>
           </div>
           <div class="quantity-selector d-flex align-center gap-2">
@@ -71,7 +71,7 @@
               <a role="button" tabindex="0" (click)="openSizeGuide()">Check size guide</a>
             </div>
           </div>
-          <p *ngIf="product?.ageGroup">Recommended for <br />{{ product?.ageGroup }}</p>
+          <p *ngIf="product.ageGroup">Recommended for <br />{{ product.ageGroup }}</p>
         </div>
         <div class="size-selector">
           <button *ngFor="let s of sizes" class="size-tag" [class.selected]="selectedSizeLabel === s.sizeLabel"
@@ -88,21 +88,21 @@
 
       <!--book-detail-->
       <div *ngIf="isBook" class="book-info d-flex align-items-center justify-content-between">
-        <div class="book-detail" *ngIf="product?.pageCount">
+        <div class="book-detail" *ngIf="product.pageCount">
           <p>Pages</p>
-          <h2>{{ product?.pageCount }}</h2>
+          <h2>{{ product.pageCount }}</h2>
         </div>
-        <div class="book-detail" *ngIf="product?.coverType">
+        <div class="book-detail" *ngIf="product.coverType">
           <p>Binding</p>
-          <h2>{{ product?.coverType }}</h2>
+          <h2>{{ product.coverType }}</h2>
         </div>
-        <div class="book-detail" *ngIf="product?.type">
+        <div class="book-detail" *ngIf="product.type">
           <p>Type</p>
-          <h2>{{ product?.type }}</h2>
+          <h2>{{ product.type }}</h2>
         </div>
-        <div class="book-detail" *ngIf="product?.material">
+        <div class="book-detail" *ngIf="product.material">
           <p>Material</p>
-          <h2>{{ product?.material }}</h2>
+          <h2>{{ product.material }}</h2>
         </div>
       </div>
       <!-- address-detail: show filled address or an empty-state prompting for pincode -->
@@ -149,7 +149,7 @@
           <h2 class="footer-text">Official School Partner</h2>
         </div>
 
-        <div class="footer-item" *ngIf="product?.exchangeAvailable !== false">
+        <div class="footer-item" *ngIf="product.exchangeAvailable !== false">
           <img src="assets/School-assets/Easy Exchange.png" alt="Easy Exchange" />
           <h2 class="footer-text">Easy 7 day Return & Exchange</h2>
         </div>
@@ -169,13 +169,13 @@
           <ion-icon name="caret-down" [class.open]="detailsExpanded"></ion-icon>
         </div>
         <div class="product-detail-body">
-          <p *ngIf="product?.details || product?.description">{{ product?.details || product?.description }}</p>
+          <p *ngIf="product.details || product.description">{{ product.details || product.description }}</p>
           <ul>
-            <li *ngIf="product?.material"><strong>Material:</strong> {{ product?.material }}</li>
-            <li *ngIf="product?.brandName"><strong>Brand:</strong> {{ product?.brandName }}</li>
-            <li *ngIf="product?.manufacturer"><strong>Manufacturer:</strong> {{ product?.manufacturer }}</li>
-            <li *ngIf="product?.sellerName"><strong>Seller:</strong> {{ product?.sellerName }}</li>
-            <li *ngIf="product?.countryOfOrigin"><strong>Country of Origin:</strong> {{ product?.countryOfOrigin }}</li>
+            <li *ngIf="product.material"><strong>Material:</strong> {{ product.material }}</li>
+            <li *ngIf="product.brandName"><strong>Brand:</strong> {{ product.brandName }}</li>
+            <li *ngIf="product.manufacturer"><strong>Manufacturer:</strong> {{ product.manufacturer }}</li>
+            <li *ngIf="product.sellerName"><strong>Seller:</strong> {{ product.sellerName }}</li>
+            <li *ngIf="product.countryOfOrigin"><strong>Country of Origin:</strong> {{ product.countryOfOrigin }}</li>
           </ul>
         </div>
       </div>
@@ -184,7 +184,7 @@
     <!--purchase-bar-->
     <div class="product-purchase-bar">
       <span class="discounted-price">
-        {{ formatCurrency(product?.sellingPrice) }}
+        {{ formatCurrency(product.sellingPrice) }}
       </span>
       <superme-button
         class="page-cta"

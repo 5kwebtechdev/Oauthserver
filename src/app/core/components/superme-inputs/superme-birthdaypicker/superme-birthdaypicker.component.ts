@@ -56,6 +56,10 @@ export class SupermeBirthdaypickerComponent implements ControlValueAccessor, Aft
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ], null, null];
+  private readonly fullMonths = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
   years = [null, null, ...Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i), null, null];
 
   rowHeight = 40;
@@ -220,6 +224,12 @@ export class SupermeBirthdaypickerComponent implements ControlValueAccessor, Aft
     if (!el) return 0;
     const offset = Math.floor(el.clientHeight / 2 - this.rowHeight / 2) || (2 * this.rowHeight);
     return Math.round((el.scrollTop + offset) / this.rowHeight);
+  }
+
+  getMonthLabel(month: string | null): string {
+    if (!month || this.variant !== 'figma-purple') return month || '';
+    const monthIndex = this.months.indexOf(month) - 2;
+    return this.fullMonths[monthIndex] || month;
   }
 
   ngOnChanges(changes: SimpleChanges) {

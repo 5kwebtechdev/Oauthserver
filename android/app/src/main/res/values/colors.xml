@@ -3,6 +3,8 @@
     <color name="colorPrimary">#EE6621</color>
     <color name="colorPrimaryDark">#C9501A</color>
     <color name="colorAccent">#EE6621</color>
+    <!-- Native launch window shown before the Angular splash is ready. -->
+    <color name="splash_background">#FFFFFF</color>
     <!-- Accent color shown as the notification icon background tint on Android 12+ -->
     <color name="notification_color">#EE6621</color>
 </resources>

@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
-import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AddressService } from '../../../services/address.service';
 import { Address, AddressPayload } from '../../../api/address.api';
@@ -12,7 +11,7 @@ import { CustomToastService } from '../../../services/custom-toast.service';
 @Component({
     selector: 'address-input',
     standalone: true,
-    imports: [CommonModule, IonicModule, ReactiveFormsModule, SupermeNavigatorComponent, SupermeButtonComponent],
+    imports: [CommonModule, IonicModule, ReactiveFormsModule, SupermeNavigatorComponent],
     templateUrl: './address-input.components.html',
     styleUrls: ['./address-input.components.scss']
 })

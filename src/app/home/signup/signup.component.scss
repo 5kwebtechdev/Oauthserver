@@ -1660,6 +1660,162 @@ swiper-slide.swiper-slide-active .pet-card {
   }
 }
 
+/* Figma country-code sheet and parent DOB validation states. */
+.country-modal-backdrop {
+  background: rgba(40, 37, 39, 0.3);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.country-modal {
+  height: calc(308px + env(safe-area-inset-bottom, 0px));
+  max-height: calc(100dvh - env(safe-area-inset-top, 0px));
+  border-radius: 15px 15px 0 0;
+  background: #fff;
+}
+
+.country-modal__header {
+  flex: 0 0 64px;
+  height: 64px;
+  padding: 0 16px;
+  border: 0;
+  box-sizing: border-box;
+}
+
+.country-modal__title {
+  color: #282527;
+  font: 500 20px/1.3 'Fredoka', sans-serif;
+}
+
+.country-modal__close {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  place-items: center;
+  color: #282527;
+  font-size: 20px;
+}
+
+.country-modal__content {
+  flex: 0 0 175px;
+  overflow: hidden;
+}
+
+.country-item {
+  width: 100%;
+  min-height: 35px;
+  height: 35px;
+  padding: 4px 16px;
+  border: 0;
+  border-radius: 0;
+  color: #282527;
+  background: #fff;
+  box-sizing: border-box;
+  font-family: 'Nunito', sans-serif;
+  text-align: left;
+}
+
+.country-item:hover {
+  background: #f5f2f8;
+}
+
+.country-item.selected,
+.country-item.selected:hover {
+  color: #fff;
+  background: #432477;
+}
+
+.country-flag {
+  width: 20px;
+  margin-right: 16px;
+  font-size: 16px;
+}
+
+.country-name,
+.country-item .country-code {
+  color: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.country-modal__footer {
+  flex: 1 0 69px;
+  padding: 4px 16px max(12px, env(safe-area-inset-bottom, 12px));
+  border: 0;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.country-modal__done-btn {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 24px;
+  color: #432477;
+  background: transparent;
+  font: 600 16px/20px 'Nunito', sans-serif;
+}
+
+.country-modal__done-btn:hover {
+  background: transparent;
+}
+
+.age-modal {
+  width: min(297px, calc(100vw - 32px));
+  min-height: 218px;
+  padding: 12px 24px;
+  gap: 24px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 0 4px rgba(107, 101, 106, 0.15);
+  box-sizing: border-box;
+}
+
+.age-modal__actions {
+  gap: 24px;
+}
+
+.age-modal__btn {
+  min-width: 0;
+  min-height: 42px;
+  height: 42px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font: 700 13px/1.4 'Nunito', sans-serif;
+  white-space: nowrap;
+}
+
+.age-modal__btn--secondary {
+  border: 1px solid #20143f;
+  border-radius: 8px;
+  color: #282527;
+  background: #fff;
+  box-shadow: none;
+}
+
+.age-modal__btn--secondary:hover {
+  background: #f5f2f8;
+}
+
+.age-modal__btn--primary {
+  border: 1px solid #432477;
+  color: #fff;
+  background: linear-gradient(93deg, #7341a7 0%, #20143f 100%);
+  box-shadow: inset -2px -2px 2px #fff;
+}
+
+.age-modal__btn--primary:hover {
+  background: linear-gradient(93deg, #7341a7 0%, #20143f 100%);
+}
+
+.age-modal__footer {
+  margin-top: -8px;
+  color: #432477;
+  font-size: 13px;
+  font-weight: 500;
+}
+
 // ── Redesigned OTP step ──
 .otp-step {
   width: 100%;

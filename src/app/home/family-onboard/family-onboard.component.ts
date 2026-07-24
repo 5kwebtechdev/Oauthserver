@@ -68,6 +68,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     joinModeFaqs: FaqItem[] = [];
     createdModeFaqs: FaqItem[] = [];
     expandedFamilyCodeFaq: number | null = null;
+    expandedCreateFamilyFaq: number | null = null;
+    expandedParentJoinFamilyFaq: number | null = null;
     readonly familyCodeFaqs = [
         {
             question: `What if my parent doesn't have an account yet?`,
@@ -109,15 +111,15 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             familyName: ['', [
                 Validators.required,
                 Validators.minLength(2),
-                Validators.maxLength(10)
+                Validators.maxLength(30)
             ]]
         });
 
-        // Join family form (exactly 8 alphanumeric characters)
+        // Join family form (current 6-character and legacy 8-character codes)
         this.joinFamilyForm = this.fb.group({
             familyCode: ['', [
                 Validators.required,
-                Validators.pattern(/^[A-Za-z0-9]{8}$/)
+                Validators.pattern(/^(?:[A-Za-z0-9]{6}|[A-Za-z0-9]{8})$/)
             ]]
         });
     }
@@ -138,10 +140,15 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         this.route.queryParams.subscribe(params => {
             const role = params['role'];
             const scannedCode = params['scannedCode'];
+            const requestedMode = params['mode'];
             const savedFamilyCode = (sessionStorage.getItem('familyCode') || '').trim().toUpperCase();
 
             if (role && ['child', 'parent', 'self'].includes(role)) {
                 this.userRole = role as UserRole;
+            }
+
+            if (this.viewMode === 'join-family-parent' && (requestedMode === 'create' || requestedMode === 'join')) {
+                this.selectedMode = requestedMode;
             }
 
             if (scannedCode) {
@@ -154,7 +161,9 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
                 this.router.navigate([], {
                     relativeTo: this.route,
-                    queryParams: { role: this.userRole },
+                    queryParams: this.viewMode === 'join-family-parent'
+                        ? { role: this.userRole, mode: 'join' }
+                        : { role: this.userRole },
                     queryParamsHandling: 'replace'
                 });
             } else if (savedFamilyCode) {
@@ -176,7 +185,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         this.initializeFaqs();
         this.applyCodeValidators();
 
-        // Also watch parent join-family input for exact-8 validation and auto-check
+        // Also watch parent join-family input for 6/8-character validation and auto-check
         const joinCtrl = this.joinFamilyForm.get('familyCode');
         if (joinCtrl) {
             joinCtrl.valueChanges.subscribe((val: any) => {
@@ -192,8 +201,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
                 if (trimmed.length > 8) {
                     const truncated = trimmed.slice(0, 8);
                     joinCtrl.setValue(truncated, { emitEvent: false });
-                    // trigger check for truncated value
-                    if (truncated.length === 8) {
+                    // Trigger a check for a supported truncated value.
+                    if (truncated.length === 6 || truncated.length === 8) {
                         this.onJoinFamilyCodeInputChange(truncated);
                     } else {
                         this.joinFamilyCodeValidationStatus = null;
@@ -201,7 +210,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
                     return;
                 }
 
-                if (trimmed.length === 8) {
+                if (trimmed.length === 6 || trimmed.length === 8) {
                     this.onJoinFamilyCodeInputChange(trimmed);
                 } else {
                     this.joinFamilyCodeValidationStatus = null;
@@ -319,7 +328,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
     /**
      * Handle family code input change for parent joining family
-     * Auto-check when 8 characters are entered
+     * Auto-check when a supported 6- or 8-character code is entered.
      */
     private onJoinFamilyCodeInputChange(code: string): void {
         // Clear previous timeout
@@ -329,8 +338,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
         const trimmedCode = code.trim().toUpperCase();
 
-        // Reset validation if code is not 8 characters
-        if (trimmedCode.length !== 8) {
+        // New family codes are 6 characters; legacy 8-character codes remain supported.
+        if (trimmedCode.length !== 6 && trimmedCode.length !== 8) {
             this.joinFamilyCodeValidationStatus = null;
             return;
         }
@@ -338,7 +347,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         // Clear any previous max parents error when user changes the code
         this.maxParentsErrorMessage = null;
 
-        // Auto-check when exactly 8 characters
+        // Auto-check at either supported length.
         this.checkFamilyCodeValidity(trimmedCode, 'parent');
     }
 
@@ -402,6 +411,12 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     get codeControl() { return this.codeForm.get('code'); }
     get familyNameControl() { return this.familyForm.get('familyName'); }
     get familyCodeControl() { return this.joinFamilyForm.get('familyCode'); }
+    get isCreateFamilyScreen(): boolean {
+        return this.viewMode === 'join-family-parent' && this.selectedMode === 'create' && !this.familyCreated;
+    }
+    get isParentJoinFamilyScreen(): boolean {
+        return this.viewMode === 'join-family-parent' && this.selectedMode === 'join' && !this.familyCreated;
+    }
 
     /**
      * Get dynamic navigation title based on view mode
@@ -460,6 +475,21 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             this.familyForm.reset();
             this.familyCreated = false;
         }
+    }
+
+    chooseParentFamilyMode(mode: FamilyMode): void {
+        this.selectedMode = mode;
+        this.router.navigate(['/home/join-family2'], {
+            queryParams: { role: 'parent', mode }
+        });
+    }
+
+    toggleCreateFamilyFaq(index: number): void {
+        this.expandedCreateFamilyFaq = this.expandedCreateFamilyFaq === index ? null : index;
+    }
+
+    toggleParentJoinFamilyFaq(index: number): void {
+        this.expandedParentJoinFamilyFaq = this.expandedParentJoinFamilyFaq === index ? null : index;
     }
 
     /**
@@ -587,7 +617,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const familyCode = this.joinFamilyForm.get('familyCode')?.value;
+        const familyCode = (this.joinFamilyForm.get('familyCode')?.value || '').trim().toUpperCase();
         sessionStorage.setItem('familyCode', familyCode);
         try { sessionStorage.removeItem('familyCreator'); } catch (e) { }
 
@@ -866,6 +896,7 @@ Thank you!`;
                     });
 
                     this.isLoading = false;
+                    this.navigateToParentWelcome();
                 },
                 error: (error) => {
                     this.isLoading = false;
@@ -947,14 +978,17 @@ Thank you!`;
                     );
                 }
                 try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) {}
-                ['signup_via_google', 'signup_via_oauth', 'oauth_signup_provider',
-                 'google_signup_email', 'google_signup_name',
+                try { sessionStorage.setItem('family_connected_ack', 'Parent'); } catch (e) {}
+                ['oauth_signup_provider', 'google_signup_email', 'google_signup_name',
                  'google_signup_avatar', 'google_signup_provider_id', 'signup_profile',
                  'signup_role', 'signup_avatar', 'requestedIdentifier',
                  'familyCode', 'familyName', 'familyCreator', 'referralCode', 'referralCodeLocked'].forEach(k => {
                     try { sessionStorage.removeItem(k); } catch (e) {}
                 });
-                this.router.navigate(['/authed/parent-account'], { replaceUrl: true });
+                this.router.navigate(['/home/sign-up'], {
+                    queryParams: { step: 5 },
+                    replaceUrl: true
+                });
             },
             error: (err) => {
                 this.isLoading = false;
@@ -982,6 +1016,21 @@ Thank you!`;
         } catch (error) {
             console.warn('[FamilyOnboard] Unable to clear signup session metadata', error);
         }
+    }
+
+    private navigateToParentWelcome(): void {
+        try {
+            sessionStorage.setItem('family_connected_ack', 'Parent');
+            localStorage.setItem('onboardingComplete', 'true');
+        } catch (error) {
+            console.warn('[FamilyOnboard] Unable to persist completed onboarding state', error);
+        }
+
+        this.clearSignupSession();
+        this.router.navigate(['/home/sign-up'], {
+            queryParams: { step: 5 },
+            replaceUrl: true
+        });
     }
 
     private redirectToLogin(): void {

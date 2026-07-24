@@ -4,7 +4,6 @@ import { NavigationService } from '../../../services/navigation.service';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { AcademyService, Course } from '../../../services/academy.service';
-import { SupermeCardHeaderComponent } from '../../superme-navigator/superme-card-header/superme-card-header.component';
 
 interface AcademyLessonCard {
   title: string;
@@ -21,7 +20,7 @@ interface AcademyLessonCard {
 @Component({
   selector: 'app-academy-subject',
   standalone: true,
-  imports: [CommonModule, IonicModule, SupermeCardHeaderComponent],
+  imports: [CommonModule, IonicModule],
   templateUrl: './academy-subject.component.html',
   styleUrls: ['./academy-subject.component.scss']
 })

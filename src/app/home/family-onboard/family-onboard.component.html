@@ -1,10 +1,16 @@
-<ion-content class="bg-superme-secondary" [class.family-code-figma-content]="viewMode === 'join-family-child'">
-    <superme-navigator *ngIf="viewMode !== 'join-family-child'"
+<ion-content class="bg-superme-secondary"
+    [class.family-code-figma-content]="viewMode === 'join-family-child'"
+    [class.parent-family-choice-content]="viewMode === 'instructions-parent'"
+    [class.create-family-content]="isCreateFamilyScreen || isParentJoinFamilyScreen">
+    <superme-navigator *ngIf="viewMode !== 'join-family-child' && viewMode !== 'instructions-parent' && !isCreateFamilyScreen && !isParentJoinFamilyScreen"
       [heading]="getNavigationTitle()" 
       variant="warm"
       (back)="goBack()">
     </superme-navigator>
-  <div class="superme-page-container" [class.family-code-figma-page]="viewMode === 'join-family-child'">
+  <div class="superme-page-container"
+    [class.family-code-figma-page]="viewMode === 'join-family-child'"
+    [class.parent-family-choice-page]="viewMode === 'instructions-parent'"
+    [class.create-family-page]="isCreateFamilyScreen || isParentJoinFamilyScreen">
 
     <!-- ===== INSTRUCTIONS FOR CHILD ===== -->
     <ng-container *ngIf="viewMode === 'instructions-child'">
@@ -55,35 +61,62 @@
 
     <!-- ===== INSTRUCTIONS FOR PARENT ===== -->
     <ng-container *ngIf="viewMode === 'instructions-parent'">
+      <main class="parent-family-choice">
+        <header class="parent-family-choice__hero">
+          <button type="button" class="parent-family-choice__back" (click)="goBack()" aria-label="Go back">
+            <img src="assets/Images-Transparent/details-back-figma.svg" alt="" aria-hidden="true">
+          </button>
 
-      <div class="superme-instructions">
-        <div class="superme-instructions__item">
-          <div class="superme-instructions__number">1</div>
-          <p class="superme-instructions__text">Create your family in the next step to get started.</p>
-        </div>
-        <div class="superme-instructions__item">
-          <div class="superme-instructions__number">2</div>
-          <p class="superme-instructions__text">You'll receive a unique family code and QR code instantly.</p>
-        </div>
-        <div class="superme-instructions__item">
-          <div class="superme-instructions__number">3</div>
-          <p class="superme-instructions__text">Share the code with your child or let them scan the QR code on their device.</p>
-        </div>
-        <div class="superme-instructions__item">
-          <div class="superme-instructions__number">4</div>
-          <p class="superme-instructions__text">Once your child enters the code, you'll both be connected and can track progress together!</p>
-        </div>
-      </div>
+          <div class="parent-family-choice__hero-row">
+            <div class="parent-family-choice__hero-copy">
+              <h1><span>Set up your</span><strong>Family Space</strong></h1>
+              <p>Choose the option that matches your role to get started</p>
+              <div class="parent-family-choice__progress-copy">
+                <span>Step 5 of 5</span>
+                <div class="parent-family-choice__progress" role="progressbar"
+                  aria-label="Registration progress" aria-valuemin="1" aria-valuemax="5" aria-valuenow="5">
+                  <span></span>
+                </div>
+              </div>
+            </div>
 
-      <profile-facts [faqs]="faqs"></profile-facts>
+            <div class="parent-family-choice__hero-image" aria-hidden="true">
+              <img src="assets/Images-Transparent/family-space-header-figma.png" alt="">
+              <span></span>
+            </div>
+          </div>
+        </header>
 
-      <superme-button 
-        type="orange-onboard" 
-        full 
-        text="Next" 
-        [disabled]="false"
-        (click)="router.navigate(['/home/join-family2'], {queryParams: {role: userRole}})">
-      </superme-button>
+        <section class="parent-family-choice__options" aria-label="Choose how to set up your family">
+          <button type="button" class="parent-family-option parent-family-option--create"
+            (click)="chooseParentFamilyMode('create')">
+            <span class="parent-family-option__copy">
+              <span class="parent-family-option__badge">Primary Parent</span>
+              <strong class="parent-family-option__title">Create Family</strong>
+              <span class="parent-family-option__description">
+                Start a new family space. You become the family creator and get a unique code to connect your co-parent and children.
+              </span>
+            </span>
+            <span class="parent-family-option__image" aria-hidden="true">
+              <img src="assets/Images-Transparent/family-space-create-figma.png" alt="">
+            </span>
+          </button>
+
+          <button type="button" class="parent-family-option parent-family-option--join"
+            (click)="chooseParentFamilyMode('join')">
+            <span class="parent-family-option__copy">
+              <span class="parent-family-option__badge">Co Parent</span>
+              <strong class="parent-family-option__title">Join Family</strong>
+              <span class="parent-family-option__description">
+                A family space already exists. Enter the code given by your family creator to link with your family and track progress together.
+              </span>
+            </span>
+            <span class="parent-family-option__image" aria-hidden="true">
+              <img src="assets/Images-Transparent/family-space-join-figma.png" alt="">
+            </span>
+          </button>
+        </section>
+      </main>
     </ng-container>
 
     <!-- ===== JOIN FAMILY (CHILD ROLE) ===== -->
@@ -224,7 +257,226 @@
 
     <!-- ===== JOIN FAMILY (PARENT ROLE) ===== -->
     <ng-container *ngIf="viewMode === 'join-family-parent'">
-      <div class="superme-step-indicator">
+      <main class="create-family-screen" *ngIf="isCreateFamilyScreen">
+        <header class="create-family-hero">
+          <button type="button" class="create-family-back" (click)="goBack()" aria-label="Go back">
+            <img src="assets/Images-Transparent/family-code-back-figma.svg" alt="" aria-hidden="true">
+          </button>
+
+          <div class="create-family-hero__row">
+            <div class="create-family-hero__copy">
+              <h1><span>Set your</span><strong>Family Name</strong></h1>
+              <p>Create your family space to build healthy habits and grow together</p>
+            </div>
+
+            <div class="create-family-hero__image" aria-hidden="true">
+              <img src="assets/Images-Transparent/create-family-header-figma.png" alt="">
+              <span></span>
+            </div>
+          </div>
+        </header>
+
+        <section class="create-family-how" aria-labelledby="create-family-how-title">
+          <div class="create-family-how__heading">
+            <img src="assets/Images-Transparent/family-code-how-left-figma.svg" alt="" aria-hidden="true">
+            <h2 id="create-family-how-title">How it works</h2>
+            <img src="assets/Images-Transparent/family-code-how-right-figma.svg" alt="" aria-hidden="true">
+          </div>
+
+          <div class="create-family-steps">
+            <div class="create-family-step">
+              <span>1</span>
+              <img src="assets/Images-Transparent/create-family-step-1-figma.png" alt="">
+              <p>Name your family.</p>
+            </div>
+            <img class="create-family-step-arrow" src="assets/Images-Transparent/family-code-arrow-figma.svg"
+              alt="" aria-hidden="true">
+            <div class="create-family-step">
+              <span>2</span>
+              <img src="assets/Images-Transparent/create-family-step-2-figma.png" alt="">
+              <p>Get your unique family code.</p>
+            </div>
+            <img class="create-family-step-arrow" src="assets/Images-Transparent/family-code-arrow-figma.svg"
+              alt="" aria-hidden="true">
+            <div class="create-family-step">
+              <span>3</span>
+              <img src="assets/Images-Transparent/create-family-step-3-figma.png" alt="">
+              <p>Share the code with your child.</p>
+            </div>
+            <img class="create-family-step-arrow" src="assets/Images-Transparent/family-code-arrow-figma.svg"
+              alt="" aria-hidden="true">
+            <div class="create-family-step">
+              <span>4</span>
+              <img src="assets/Images-Transparent/create-family-step-4-figma.png" alt="">
+              <p>They join and you're connected!</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="create-family-entry">
+          <form [formGroup]="familyForm" (ngSubmit)="createFamily()" class="create-family-form">
+            <div class="create-family-form__heading">
+              <span class="create-family-form__icon" aria-hidden="true">
+                <img src="assets/Images-Transparent/create-family-groups-figma.svg" alt="">
+              </span>
+              <span class="create-family-form__copy">
+                <strong>Set your family name</strong>
+                <span>This will be your family space</span>
+              </span>
+            </div>
+
+            <div class="create-family-input">
+              <input type="text" formControlName="familyName" placeholder="eg. Sharma Family"
+                [class.error]="familyNameControl?.invalid && familyNameControl?.touched"
+                maxlength="30" autocomplete="organization" aria-label="Family name">
+            </div>
+
+            <div class="create-family-validation error-message"
+              *ngIf="familyNameControl?.invalid && familyNameControl?.touched">
+              <span *ngIf="familyNameControl?.errors?.['required']">Family name is required</span>
+              <span *ngIf="familyNameControl?.errors?.['minlength']">Family name must be at least 2 characters</span>
+              <span *ngIf="familyNameControl?.errors?.['maxlength']">Family name must be 30 characters or fewer</span>
+            </div>
+
+            <button type="submit" class="create-family-submit"
+              [disabled]="familyForm.invalid || isLoading" [attr.aria-busy]="isLoading">
+              {{ isLoading ? 'Creating...' : 'Create Family' }}
+            </button>
+          </form>
+        </section>
+
+        <section class="create-family-faqs" aria-labelledby="create-family-faq-title">
+          <h2 id="create-family-faq-title">FAQ’s</h2>
+          <div class="create-family-faq" *ngFor="let faq of faqs; let i = index">
+            <button type="button" (click)="toggleCreateFamilyFaq(i)"
+              [attr.aria-expanded]="expandedCreateFamilyFaq === i">
+              <span>{{ faq.question }}</span>
+              <img src="assets/Images-Transparent/family-code-chevron-figma.svg" alt="" aria-hidden="true"
+                [class.open]="expandedCreateFamilyFaq === i">
+            </button>
+            <p *ngIf="expandedCreateFamilyFaq === i">{{ faq.answer }}</p>
+          </div>
+        </section>
+      </main>
+
+      <main class="create-family-screen parent-join-family-screen" *ngIf="isParentJoinFamilyScreen">
+        <header class="create-family-hero parent-join-family-hero">
+          <button type="button" class="create-family-back" (click)="goBack()" aria-label="Go back">
+            <img src="assets/Images-Transparent/family-code-back-figma.svg" alt="" aria-hidden="true">
+          </button>
+
+          <div class="create-family-hero__row">
+            <div class="create-family-hero__copy parent-join-family-hero__copy">
+              <h1><span>Join Your</span><strong>Family Space</strong></h1>
+              <p>Enter the family code given by your family creator to connect and track progress together.</p>
+            </div>
+
+            <div class="create-family-hero__image" aria-hidden="true">
+              <img src="assets/Images-Transparent/create-family-header-figma.png" alt="">
+              <span></span>
+            </div>
+          </div>
+        </header>
+
+        <section class="create-family-how" aria-labelledby="parent-join-family-how-title">
+          <div class="create-family-how__heading">
+            <img src="assets/Images-Transparent/family-code-how-left-figma.svg" alt="" aria-hidden="true">
+            <h2 id="parent-join-family-how-title">How it works</h2>
+            <img src="assets/Images-Transparent/family-code-how-right-figma.svg" alt="" aria-hidden="true">
+          </div>
+
+          <div class="parent-join-family-steps">
+            <div class="create-family-step">
+              <span>1</span>
+              <img src="assets/Images-Transparent/create-family-step-3-figma.png" alt="">
+              <p>Get code from your family creator.</p>
+            </div>
+            <img class="create-family-step-arrow" src="assets/Images-Transparent/family-code-arrow-figma.svg"
+              alt="" aria-hidden="true">
+            <div class="create-family-step">
+              <span>2</span>
+              <img src="assets/Images-Transparent/join-family-parent-step-2-figma.png" alt="">
+              <p>Enter the family code or scan the QR code</p>
+            </div>
+            <img class="create-family-step-arrow" src="assets/Images-Transparent/family-code-arrow-figma.svg"
+              alt="" aria-hidden="true">
+            <div class="create-family-step">
+              <span>3</span>
+              <img src="assets/Images-Transparent/create-family-step-4-figma.png" alt="">
+              <p>You're now connected!</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="parent-join-family-entry">
+          <div class="parent-join-family-tabs" role="tablist" aria-label="Choose how to join your family">
+            <button type="button" class="parent-join-family-tab parent-join-family-tab--active"
+              role="tab" aria-selected="true">
+              <img src="assets/Images-Transparent/family-code-tab-entry-figma.svg" alt="" aria-hidden="true">
+              Enter Family Code
+            </button>
+            <button type="button" class="parent-join-family-tab" role="tab" aria-selected="false"
+              (click)="openQRScanner()">
+              <img src="assets/Images-Transparent/family-code-tab-qr-figma.svg" alt="" aria-hidden="true">
+              Scan QR Code
+            </button>
+          </div>
+
+          <form [formGroup]="joinFamilyForm" (ngSubmit)="joinFamily()" class="parent-join-family-form">
+            <div class="create-family-input parent-join-family-input">
+              <input type="text" formControlName="familyCode"
+                placeholder="Enter the 6-character code shared by your creator"
+                [class.error]="familyCodeControl?.invalid && familyCodeControl?.touched"
+                [attr.aria-invalid]="familyCodeControl?.invalid && familyCodeControl?.touched"
+                maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false"
+                aria-label="Family code">
+            </div>
+
+            <div class="parent-join-family-validation error-message"
+              *ngIf="familyCodeControl?.invalid && familyCodeControl?.touched">
+              <span *ngIf="familyCodeControl?.errors?.['required']">Family code is required</span>
+              <span *ngIf="familyCodeControl?.errors?.['pattern']">Family code must be 6 or 8 characters</span>
+            </div>
+
+            <div class="parent-join-family-validation"
+              *ngIf="familyCodeControl?.value && (familyCodeControl?.value?.length === 6 || familyCodeControl?.value?.length === 8)">
+              <span *ngIf="isCheckingJoinFamilyCode" class="checking">Checking code...</span>
+              <span *ngIf="!isCheckingJoinFamilyCode && joinFamilyCodeValidationStatus === 'valid'" class="valid">
+                Family code is valid
+              </span>
+              <span class="error-message"
+                *ngIf="!isCheckingJoinFamilyCode && joinFamilyCodeValidationStatus === 'invalid'">
+                Family code is invalid!
+              </span>
+            </div>
+
+            <div class="parent-join-family-validation error-message" *ngIf="maxParentsErrorMessage">
+              <span>{{ maxParentsErrorMessage }}</span>
+            </div>
+
+            <button type="submit" class="create-family-submit parent-join-family-submit"
+              [disabled]="joinFamilyForm.invalid || isLoading || joinFamilyCodeValidationStatus !== 'valid'"
+              [attr.aria-busy]="isLoading">
+              {{ isLoading ? 'Joining...' : 'Join Family' }}
+            </button>
+          </form>
+        </section>
+
+        <section class="create-family-faqs" aria-labelledby="parent-join-family-faq-title">
+          <h2 id="parent-join-family-faq-title">FAQ’s</h2>
+          <div class="create-family-faq" *ngFor="let faq of createModeFaqs; let i = index">
+            <button type="button" (click)="toggleParentJoinFamilyFaq(i)"
+              [attr.aria-expanded]="expandedParentJoinFamilyFaq === i">
+              <span>{{ faq.question }}</span>
+              <img src="assets/Images-Transparent/family-code-chevron-figma.svg" alt="" aria-hidden="true"
+                [class.open]="expandedParentJoinFamilyFaq === i">
+            </button>
+            <p *ngIf="expandedParentJoinFamilyFaq === i">{{ faq.answer }}</p>
+          </div>
+        </section>
+      </main>
+
+      <div class="superme-step-indicator" *ngIf="!isCreateFamilyScreen && !isParentJoinFamilyScreen">
         <p class="superme-step-indicator__step">Step 3 of 3</p>
         <h3 class="superme-step-indicator__title">Manage your family's progress</h3>
         <div class="superme-step-indicator__progress">
@@ -233,7 +485,7 @@
       </div>
 
       <!-- MODE TOGGLE (Create/Join) -->
-      <div class="mode-selection" *ngIf="!familyCreated">
+      <div class="mode-selection" *ngIf="!familyCreated && !isCreateFamilyScreen && !isParentJoinFamilyScreen">
         <div class="toggle-buttons">
           <button [class.active]="selectedMode === 'create'" (click)="selectMode('create')">
             Create Family
@@ -242,90 +494,6 @@
             Join Family
           </button>
         </div>
-      </div>
-
-      <!-- CREATE FAMILY SECTION -->
-      <div class="family-creation-section" *ngIf="selectedMode === 'create' && !familyCreated">
-        <div class="section-header">
-          <p class="section-label">For naming your family</p>
-        </div>
-
-        <form [formGroup]="familyForm" (ngSubmit)="createFamily()" class="family-form">
-          <div class="superme-input-group">
-            <input 
-              type="text" 
-              formControlName="familyName" 
-              placeholder="Set family name"
-              [class.error]="familyNameControl?.invalid && familyNameControl?.touched" 
-              maxlength="10">
-            <div class="error-message" *ngIf="familyNameControl?.invalid && familyNameControl?.touched">
-              <span *ngIf="familyNameControl?.errors?.['required']">Family name is required</span>
-              <span *ngIf="familyNameControl?.errors?.['minlength']">Family name must be at least 2 characters</span>
-              <span *ngIf="familyNameControl?.errors?.['maxlength']">Family name must be less than 10 characters</span>
-            </div>
-          </div>
-
-          <superme-button 
-            type="orange-onboard" 
-            full 
-            [text]="isLoading ? 'Creating...' : 'Create Family'"
-            [disabled]="familyForm.invalid || isLoading" 
-            (click)="createFamily()">
-          </superme-button>
-        </form>
-      </div>
-
-      <!-- JOIN FAMILY SECTION -->
-      <div class="family-join-section" *ngIf="selectedMode === 'join'">
-        <form [formGroup]="joinFamilyForm" class="family-form">
-          <div class="superme-input-group">
-            <div class="code-input-container">
-              <input 
-                type="text" 
-                formControlName="familyCode" 
-                placeholder="Enter code"
-                [class.error]="familyCodeControl?.invalid && familyCodeControl?.touched" 
-                maxlength="8" 
-                autocomplete="off"
-                autocapitalize="characters" 
-                spellcheck="false">
-              <button 
-                type="button" 
-                class="qr-scanner-btn" 
-                (click)="openQRScanner()"
-                (touchstart)="openQRScanner(); $event.preventDefault()" 
-                aria-label="Scan QR Code" 
-                title="Scan QR Code">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                  <path d="M0 8V0H8V8H0ZM2 6H6V2H2V6ZM0 18V10H8V18H0ZM2 16H6V12H2V16ZM10 8V0H18V8H10ZM12 6H16V2H12V6ZM16 18V16H18V18H16ZM10 12V10H12V12H10ZM12 14V12H14V14H12ZM10 16V14H12V16H10ZM12 18V16H14V18H12ZM14 16V14H16V16H14ZM14 12V10H16V12H14ZM16 14V12H18V14H16Z" fill="#B87D62" />
-                </svg>
-              </button>
-            </div>
-            <p class="note-text">Note: Double-check the code before entering</p>
-            <div class="error-message" *ngIf="familyCodeControl?.invalid && familyCodeControl?.touched">
-              <span *ngIf="familyCodeControl?.errors?.['required']">Family code is required</span>
-              <span *ngIf="familyCodeControl?.errors?.['pattern']">Family code must be 8 characters</span>
-            </div>
-            <div *ngIf="familyCodeControl?.value && familyCodeControl?.value?.length === 8">
-              <span *ngIf="isCheckingJoinFamilyCode" class="checking">Checking code...</span>
-              <span *ngIf="!isCheckingJoinFamilyCode && joinFamilyCodeValidationStatus === 'valid'" class="valid">Family code is valid</span>
-              <div class="error-message" *ngIf="!isCheckingJoinFamilyCode && joinFamilyCodeValidationStatus === 'invalid'">
-                <span>Family code is invalid!</span>
-              </div>
-            </div>
-            <div class="error-message" *ngIf="maxParentsErrorMessage">
-              <span>{{ maxParentsErrorMessage }}</span>
-            </div>
-          </div>
-
-          <superme-button 
-            type="orange-onboard" 
-            full 
-            [text]="isLoading ? 'Joining...' : 'Join Family'"
-            [disabled]="joinFamilyForm.invalid || isLoading || joinFamilyCodeValidationStatus !== 'valid'" 
-            (click)="joinFamily()">
-          </superme-button>
-        </form>
       </div>
 
       <!-- FAMILY CREATED SUCCESS STATE -->
@@ -383,7 +551,7 @@
       </div>
 
       <!-- Conditional FAQs for each mode -->
-      <profile-facts [faqs]="faqs"></profile-facts>
+      <profile-facts *ngIf="!isCreateFamilyScreen && !isParentJoinFamilyScreen" [faqs]="faqs"></profile-facts>
     </ng-container>
   </div>
 </ion-content>
