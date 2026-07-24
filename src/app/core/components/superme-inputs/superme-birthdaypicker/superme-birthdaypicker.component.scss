@@ -12,7 +12,7 @@
   position: fixed;
   bottom: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   height: 100dvh;
   background: rgba(0, 0, 0, 0.4);
   z-index: 999;
@@ -32,6 +32,7 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
   max-width: unset;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* Variant: white-green (use by passing [variant]="'white-green'") */
@@ -58,16 +59,34 @@
 .picker {
   position: relative;
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   height: 200px; // 5 rows * 40
+  max-width: 320px;
+  margin: 0 auto;
+  padding: 0 8px;
+  box-sizing: border-box;
+  gap: 6px;
 }
 
 .column {
-  width: 33%;
+  /* No fixed flex-basis: each column sizes to its own widest item (e.g. the
+     month column shrinks to fit "September") so nothing is ever clipped,
+     while still grouping day/month/year close together instead of spanning
+     the full picker width. */
+  flex: 0 1 auto;
+  min-width: max-content;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   scroll-snap-type: y mandatory;
   text-align: center;
+  white-space: nowrap;
+  scrollbar-width: none; // Firefox
+  -ms-overflow-style: none; // IE/Edge
+}
+
+.column::-webkit-scrollbar {
+  display: none; // Chrome/Safari/WebView
 }
 
 .item {
@@ -96,14 +115,14 @@
 // removed empty ruleset
 
 .highlight-bar {
- 
   border-radius: 10px;
   background: #EE6621;
-      position: absolute;
-    top: 38%;
-    height: 50px;
-    width: 90%;
-    pointer-events: none;
+  position: absolute;
+  top: 38%;
+  height: 50px;
+  left: 0;
+  right: 0;
+  pointer-events: none;
 }
 
 /* highlight for variant */
@@ -226,7 +245,6 @@ button {
 
 .popover.variant-figma-purple .highlight-bar {
   top: 66px;
-  width: min(316px, calc(100% - 76px));
   height: 40px;
   border-radius: 10px;
   background: #4f2c83;

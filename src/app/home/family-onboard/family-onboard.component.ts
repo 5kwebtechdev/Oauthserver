@@ -589,6 +589,20 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             return;
         }
 
+        // Fresh signup (no account/token yet): /family/convert-to-parent is an
+        // authenticated endpoint and would 401 here. The /auth/register call
+        // itself creates the family via familyName + familyRole=CREATOR, so
+        // defer straight to registration instead — same pattern joinFamily()
+        // already uses below.
+        const profileStr = sessionStorage.getItem('signup_profile');
+        const password = this.signupCredentialState.getPassword();
+        if (profileStr && password) {
+            sessionStorage.setItem('familyCreator', 'true');
+            sessionStorage.removeItem('familyCode');
+            this.registerAccount();
+            return;
+        }
+
         this.isLoading = true;
         this.familyService.createFamily(familyName).subscribe({
             next: (response) => {
@@ -887,8 +901,7 @@ Thank you!`;
                 next: () => {
                     this.isParentRegistered = true;
                     this.maxParentsErrorMessage = null; // Clear any previous error
-                    this.core.triggerToasrt('Account registered successfully!');
-                    
+
                     this.signupCredentialState.setPendingLogin({
                         ...(payload.email ? { email: payload.email } : {}),
                         ...(payload.phone ? { phone: payload.phone } : {}),

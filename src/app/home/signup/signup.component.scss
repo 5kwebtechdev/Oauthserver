@@ -217,7 +217,7 @@ superme-navigator.signup-navigator {
         display: flex;
         align-items: center;
         padding: 0.8rem 0.6rem;
-        background: #EE6621;
+        background: #432477;
         color: white;
         cursor: pointer;
         gap: 0.3rem;
@@ -232,11 +232,11 @@ superme-navigator.signup-navigator {
         -ms-user-select: none;
 
         &:hover {
-          background: #e6742e;
+          background: #38205f;
         }
 
         &:active {
-          background: #d55a1e;
+          background: #2e1a4d;
           transform: scale(0.98);
         }
 
