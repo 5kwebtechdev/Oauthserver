@@ -453,22 +453,29 @@
             </span>
           </h4>
           <div class="gender-options" role="group" aria-label="Gender">
+            <div class="gender-option">
+            
             <button type="button" class="gender-select-button" (click)="selectGender('male')"
               [class.active]="gender === 'male'" [attr.aria-pressed]="gender === 'male'">
               <img src="assets/Images-Transparent/details-gender-male-figma.png" alt="" aria-hidden="true" />
               Male
             </button>
+            </div>
+            <div class="gender-option">
             <button type="button" class="gender-select-button" (click)="selectGender('female')"
               [class.active]="gender === 'female'" [attr.aria-pressed]="gender === 'female'">
               <img src="assets/Images-Transparent/details-gender-female-figma.png" alt="" aria-hidden="true" />
               Female
             </button>
+            </div>
+            <div class="gender-option">
             <button type="button" class="gender-select-button gender-select-button--private"
               (click)="selectGender('prefer_not_to_say')"
               [class.active]="gender === 'prefer_not_to_say'"
               [attr.aria-pressed]="gender === 'prefer_not_to_say'">
               Prefer Not to Say
             </button>
+            </div>
           </div>
         </form>
         <ng-container *ngIf="gender && currentRole !== 'parent'">
