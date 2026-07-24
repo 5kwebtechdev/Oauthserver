@@ -1,14 +1,28 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { getApps } from 'firebase/app';
 import { getAuth, signOut as firebaseSignOut } from 'firebase/auth';
 import { GOOGLE_AUTH_INIT_OPTIONS } from '../config/google-auth.config';
+import { TaskApi } from '../api/task.api';
+import { UserService } from './user.service';
+import { ProfileStoreService } from './profile-store.service';
+import { LearningService } from './learning.service';
+import { TutorService } from './tutor.service';
+import { CoinService } from './coin.service';
+import { AddressService } from './address.service';
+import { CartService } from './cart.service';
+import { PetAgeService } from './pet-age.service';
+import { TutorLikeService } from './tutor-like.service';
+import { BadgeSocketService } from './badge-socket.service';
+import { LoadingService } from './loading.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthSessionCleanupService {
   private googleInitialized = false;
+
+  constructor(private injector: Injector) {}
 
   async initializeGoogleAuth(): Promise<void> {
     if (this.googleInitialized) return;
@@ -45,6 +59,40 @@ export class AuthSessionCleanupService {
     } catch (error) {
       console.warn('[AuthSessionCleanup] Unable to clear localStorage:', error);
     }
+  }
+
+  /**
+   * Clear singleton state that survives local/session storage removal.
+   * Injector lookup keeps cleanup centralized without creating constructor
+   * cycles with services that themselves depend on AuthService.
+   */
+  clearInMemoryUserData(): void {
+    const resets: Array<[string, () => void]> = [
+      ['tasks/calendar', () => this.injector.get(TaskApi).clearCache()],
+      ['user profile', () => this.injector.get(UserService).clearUserProfile()],
+      ['selected child', () => this.injector.get(ProfileStoreService).reset()],
+      ['learning', () => this.injector.get(LearningService).clearCache()],
+      ['tutors', () => this.injector.get(TutorService).clearCache()],
+      ['coins', () => this.injector.get(CoinService).reset()],
+      ['addresses', () => this.injector.get(AddressService).reset()],
+      ['cart', () => this.injector.get(CartService).reset()],
+      ['pet state', () => this.injector.get(PetAgeService).clearSessionData()],
+      ['tutor likes', () => this.injector.get(TutorLikeService).reset()],
+      ['badge socket', () => {
+        const socket = this.injector.get(BadgeSocketService);
+        socket.disconnect();
+        socket.clearQueue();
+      }],
+      ['loading state', () => this.injector.get(LoadingService).reset()]
+    ];
+
+    resets.forEach(([name, reset]) => {
+      try {
+        reset();
+      } catch (error) {
+        console.warn(`[AuthSessionCleanup] Unable to reset ${name}:`, error);
+      }
+    });
   }
 
   private async signOutGoogle(initializeFirst: boolean): Promise<void> {

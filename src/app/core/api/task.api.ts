@@ -12,6 +12,7 @@ export class TaskApi {
     private calendarDataCache: Map<string, any> = new Map();
     // Track in-flight HTTP observables to coalesce concurrent requests
     private inflightRequests: Map<string, Observable<any>> = new Map();
+    private cacheGeneration = 0;
 
     constructor(private http: HttpClient, private authApi: AuthApi) { }
 
@@ -67,12 +68,15 @@ export class TaskApi {
      * @param force When true, bypass cached data and fetch fresh
      */
     getCalendarByDate(date: string, force: boolean = false): Observable<any> {
-        if (!force && this.calendarDataCache.has(date)) {
-            return of(this.calendarDataCache.get(date));
+        const cacheKey = this.getCalendarCacheKey(date);
+        const requestGeneration = this.cacheGeneration;
+
+        if (!force && this.calendarDataCache.has(cacheKey)) {
+            return of(this.calendarDataCache.get(cacheKey));
         }
 
-        if (this.inflightRequests.has(date)) {
-            return this.inflightRequests.get(date)!;
+        if (this.inflightRequests.has(cacheKey)) {
+            return this.inflightRequests.get(cacheKey)!;
         }
 
         const url = `${this.base}/calendar/user-calendar?date=${date}&viewType=day`;
@@ -87,7 +91,12 @@ export class TaskApi {
         const cached = new Observable<any>(subscriber => {
             const sub = obs.subscribe({
                 next: (resp) => {
-                    this.calendarDataCache.set(date, resp);
+                    // Never cache a response created under a previous account
+                    // or selected-child context.
+                    if (requestGeneration === this.cacheGeneration
+                        && cacheKey === this.getCalendarCacheKey(date)) {
+                        this.calendarDataCache.set(cacheKey, resp);
+                    }
                     subscriber.next(resp);
                 },
                 error: (err) => subscriber.error(err),
@@ -95,15 +104,30 @@ export class TaskApi {
             });
             return () => {
                 sub.unsubscribe();
-                this.inflightRequests.delete(date);
+                this.inflightRequests.delete(cacheKey);
             };
         }).pipe(
             // replay last value for current subscribers
             shareReplay({ bufferSize: 1, refCount: true })
         );
 
-        this.inflightRequests.set(date, cached);
+        this.inflightRequests.set(cacheKey, cached);
         return cached;
+    }
+
+    clearCache(): void {
+        this.cacheGeneration++;
+        this.calendarDataCache.clear();
+        this.inflightRequests.clear();
+    }
+
+    private getCalendarCacheKey(date: string): string {
+        const userId = this.authApi.getUserId() || 'anonymous';
+        let selectedChildId = 'self';
+        try {
+            selectedChildId = localStorage.getItem('mb_selected_child_id') || 'self';
+        } catch {}
+        return `${userId}:${selectedChildId}:${date}`;
     }
 
     

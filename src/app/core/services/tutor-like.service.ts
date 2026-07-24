@@ -50,6 +50,17 @@ export class TutorLikeService {
     return this.states.get(key)!;
   }
 
+  reset(): void {
+    this.states.forEach(subject => {
+      subject.next({ liked: false, count: 0, pending: false });
+    });
+    this.states.clear();
+    try {
+      this.bc?.close();
+    } catch {}
+    this.bc = null;
+  }
+
   watch(tutorId: string | number): Observable<TutorLikeState> {
     return this.getSubject(tutorId).asObservable();
   }
