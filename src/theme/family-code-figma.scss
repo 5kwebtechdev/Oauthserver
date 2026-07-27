@@ -42,6 +42,7 @@
   display: flex;
   width: 100%;
   min-height: 140px;
+  margin-top: calc(env(safe-area-inset-top, 0px) + 68px);
 }
 
 .family-code-hero__copy {

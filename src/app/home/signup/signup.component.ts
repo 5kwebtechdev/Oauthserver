@@ -13,6 +13,7 @@ import { environment } from '../../../environments/environment';
 import { CredentialSaverService } from '../../core/services/credential-saver.service';
 import { SignupCredentialStateService } from '../../core/services/signup-credential-state.service';
 import { StoredGender, toApiGender } from '../../core/models/gender.model';
+import { OnboardingStateService } from '../../core/services/onboarding-state.service';
 
 type SignupRole = 'child' | 'parent' | 'self';
 type SignupGender = StoredGender;
@@ -309,7 +310,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     private loadingService: LoadingService,
     private credentialSaverService: CredentialSaverService,
     private signupCredentialState: SignupCredentialStateService,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private onboardingState: OnboardingStateService
   ) {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -793,9 +795,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.errorMessage = null; // Clear any previous errors
     // persist role selection
     try { sessionStorage.setItem('signup_role', this.roleSelected); } catch (e) { }
+    this.onboardingState.markRoleSelectionCompleted();
 
-    // proceed to next step without age validation
-    this.navigateToSignupStep(2);
+    // The first-launch flow asks for the role before account credentials.
+    // Existing signup entry points may already have verified credentials.
+    const hasCredentials = !!this.signupCredentialState.getPassword()
+      || sessionStorage.getItem('signup_via_google') === 'true';
+    this.navigateToSignupStep(hasCredentials ? 2 : 0.1);
   }
 
   chooseRoleAndContinue(role: SignupRole): void {
@@ -1074,7 +1080,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   goBack() {
     if (this.step === 0.1) {
-      this.navigateReplacing('/home/login');
+      this.returnToRoleSelection();
     } else if (this.step === 0.2) {
       this.clearOtpTimer();
       this.navigateToSignupStep(0.1);
@@ -1083,8 +1089,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     } else if (this.step === 1) {
       if (sessionStorage.getItem('signup_via_google') === 'true') {
         this.navigateReplacing('/home/login');
-      } else {
+      } else if (this.signupCredentialState.getPassword()) {
         this.navigateToSignupStep(0.3);
+      } else {
+        this.navigateReplacing('/home/login');
       }
     } else if (this.step > 1) {
       const savedRole = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;
@@ -1097,6 +1105,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
       this.navigateToSignupStep(this.step - 1);
     }
+  }
+
+  private returnToRoleSelection(): void {
+    this.roleSelected = undefined;
+    this.onboardingState.resetRoleSelection();
+    this.navigateToSignupStep(1);
   }
 
   onCancel() {
@@ -1808,8 +1822,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.errorMessage = null; // Clear any previous errors
       this.signupCredentialState.setPassword(this.password?.value || '');
 
-      // Navigate to step 1 (role selection) after password creation
-      this.navigateToSignupStep(1);
+      // First-launch users selected their role before entering credentials.
+      // Other signup entry points still show role selection at this point.
+      const savedRole = sessionStorage.getItem('signup_role');
+      this.navigateToSignupStep(savedRole ? 2 : 1);
     } else {
       this.passwordForm.markAllAsTouched();
       this.core.triggerToasrt(this.getPasswordErrorMessage());
@@ -1968,8 +1984,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           sessionStorage.removeItem('referralCodeLocked');
         } catch (e) { }
 
-        // Mark onboarding completed so onboarding routes are blocked later
-        try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) { }
+        // Keep device-level onboarding state separate from user session data.
+        this.onboardingState.markExistingUser();
 
         // Attempt automatic login after registration (useful on mobile)
         const credentials: any = { password: passwordForLogin };
@@ -2134,7 +2150,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
             false
           );
         }
-        try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) {}
+        this.onboardingState.markExistingUser();
         if (role === 'child') {
           try {
             sessionStorage.setItem(SignupComponent.CHILD_POST_FAMILY_WELCOME_KEY, 'true');
@@ -2257,8 +2273,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           password: passwordForLogin
         });
 
-        // Mark onboarding complete and persist minimal user info
-        try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) { }
+        // Keep device-level onboarding state separate from user session data.
+        this.onboardingState.markExistingUser();
 
         // Clear transient signup session data (keep login flow separate)
         try {

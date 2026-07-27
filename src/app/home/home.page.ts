@@ -4,6 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { NavController } from '@ionic/angular';
 import { AuthService } from '../core/services/auth.service';
+import { OnboardingStateService } from '../core/services/onboarding-state.service';
 
 @Component({
   selector: 'app-home',
@@ -29,12 +30,14 @@ export class HomePage implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly navCtrl: NavController,
     private readonly authService: AuthService,
+    private readonly onboardingState: OnboardingStateService,
   ) {}
 
   ngOnInit(): void {
     this.isAuthenticated = this.authService.isLoggedIn();
 
     if (this.isAuthenticated) {
+      this.onboardingState.markExistingUser();
       const dashboardRoute = this.authService.getDashboardRoute();
       this.router.navigate([dashboardRoute], { replaceUrl: true });
       return;
@@ -100,7 +103,11 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   startJourney(): void {
-    this.navCtrl.navigateRoot(['/home/login']);
+    this.onboardingState.markSplashCompleted();
+    this.navCtrl.navigateRoot(['/home/sign-up'], {
+      queryParams: { step: 1 },
+      animated: false
+    });
   }
 
   private setOnboardingStatusBar(): void {

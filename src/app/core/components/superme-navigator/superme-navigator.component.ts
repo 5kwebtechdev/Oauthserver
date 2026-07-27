@@ -2,11 +2,12 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavigationService } from '../../services/navigation.service';
 import { ModalController } from '@ionic/angular';
+import { AuthBackButtonComponent } from '../auth-back-button/auth-back-button.component';
 
 @Component({
   selector: 'superme-navigator',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AuthBackButtonComponent],
   templateUrl: './superme-navigator.component.html',
   styleUrls: ['./superme-navigator.component.scss']
 })
@@ -47,6 +48,7 @@ export class SupermeNavigatorComponent implements OnInit {
   @Output() rightActionClick = new EventEmitter<{ index: number, action: any }>();
   // When true the back button is completely hidden (e.g. login page after onboarding).
   @Input() hideBack: boolean = false;
+  @Input() backStyle: 'default' | 'auth' = 'default';
 
   // Emit when the back button is clicked so parents can intercept navigation.
   @Output() back = new EventEmitter<void>();

@@ -5,6 +5,7 @@
     <superme-navigator *ngIf="viewMode !== 'join-family-child' && viewMode !== 'instructions-parent' && !isCreateFamilyScreen && !isParentJoinFamilyScreen"
       [heading]="getNavigationTitle()" 
       variant="warm"
+      backStyle="auth"
       (back)="goBack()">
     </superme-navigator>
   <div class="superme-page-container"
@@ -63,9 +64,7 @@
     <ng-container *ngIf="viewMode === 'instructions-parent'">
       <main class="parent-family-choice">
         <header class="parent-family-choice__hero">
-          <button type="button" class="parent-family-choice__back" (click)="goBack()" aria-label="Go back">
-            <img src="assets/Images-Transparent/details-back-figma.svg" alt="" aria-hidden="true">
-          </button>
+          <superme-auth-back-button (back)="goBack()"></superme-auth-back-button>
 
           <div class="parent-family-choice__hero-row">
             <div class="parent-family-choice__hero-copy">
@@ -81,7 +80,7 @@
             </div>
 
             <div class="parent-family-choice__hero-image" aria-hidden="true">
-              <img src="assets/Images-Transparent/family-space-header-figma.png" alt="">
+              <img src="assets/Images-Transparent/family-code-header-figma.png" alt="">
               <span></span>
             </div>
           </div>
@@ -123,9 +122,7 @@
     <ng-container *ngIf="viewMode === 'join-family-child'">
       <main class="family-code-screen">
       <header class="family-code-hero">
-        <button type="button" class="family-code-back" (click)="goBack()" aria-label="Go back">
-          <img src="assets/Images-Transparent/family-code-back-figma.svg" alt="" aria-hidden="true">
-        </button>
+        <superme-auth-back-button (back)="goBack()"></superme-auth-back-button>
 
         <div class="family-code-hero__row">
           <div class="family-code-hero__copy">
@@ -259,9 +256,7 @@
     <ng-container *ngIf="viewMode === 'join-family-parent'">
       <main class="create-family-screen" *ngIf="isCreateFamilyScreen">
         <header class="create-family-hero">
-          <button type="button" class="create-family-back" (click)="goBack()" aria-label="Go back">
-            <img src="assets/Images-Transparent/family-code-back-figma.svg" alt="" aria-hidden="true">
-          </button>
+          <superme-auth-back-button (back)="goBack()"></superme-auth-back-button>
 
           <div class="create-family-hero__row">
             <div class="create-family-hero__copy">
@@ -270,7 +265,7 @@
             </div>
 
             <div class="create-family-hero__image" aria-hidden="true">
-              <img src="assets/Images-Transparent/create-family-header-figma.png" alt="">
+              <img src="assets/Images-Transparent/family-code-header-figma.png" alt="">
               <span></span>
             </div>
           </div>
@@ -361,9 +356,7 @@
 
       <main class="create-family-screen parent-join-family-screen" *ngIf="isParentJoinFamilyScreen">
         <header class="create-family-hero parent-join-family-hero">
-          <button type="button" class="create-family-back" (click)="goBack()" aria-label="Go back">
-            <img src="assets/Images-Transparent/family-code-back-figma.svg" alt="" aria-hidden="true">
-          </button>
+          <superme-auth-back-button (back)="goBack()"></superme-auth-back-button>
 
           <div class="create-family-hero__row">
             <div class="create-family-hero__copy parent-join-family-hero__copy">
@@ -372,7 +365,7 @@
             </div>
 
             <div class="create-family-hero__image" aria-hidden="true">
-              <img src="assets/Images-Transparent/create-family-header-figma.png" alt="">
+              <img src="assets/Images-Transparent/family-code-header-figma.png" alt="">
               <span></span>
             </div>
           </div>

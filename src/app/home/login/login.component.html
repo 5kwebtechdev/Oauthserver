@@ -1,5 +1,7 @@
 <ion-content class="login-content" [scrollY]="false" [fullscreen]="true">
   <main class="login-page">
+    <superme-auth-back-button (back)="goBack()"></superme-auth-back-button>
+
     <section class="login-shell" aria-labelledby="login-title">
       <header class="login-header">
         <h1 id="login-title" class="login-title">{{ hasLoggedInBefore ? 'Welcome Back to SuperMeApp!' : 'Welcome to SuperMeApp!' }}</h1>

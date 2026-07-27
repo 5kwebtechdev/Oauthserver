@@ -1,0 +1,14 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="365" height="4" viewBox="0 0 365 4" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Progress line">
+<path id="Line 100" d="M2 2H363" stroke="#F1E9EC" stroke-width="4" stroke-linecap="round"/>
+<path id="Line 101" d="M2 2H62.1667" stroke="url(#paint0_linear_0_47)" stroke-width="4" stroke-linecap="round"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_47" x1="2" y1="2.5" x2="62.1667" y2="2.5" gradientUnits="userSpaceOnUse">
+<stop stop-color="#8B8DCB"/>
+<stop offset="0.25" stop-color="#F6AC72"/>
+<stop offset="0.754808" stop-color="#89B3B6"/>
+<stop offset="1" stop-color="#E1527C"/>
+</linearGradient>
+</defs>
+</svg>

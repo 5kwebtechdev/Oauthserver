@@ -649,7 +649,7 @@ ion-content.parent-family-choice-content {
   display: flex;
   width: 100%;
   min-height: 160px;
-  margin-top: -8px;
+  margin-top: calc(env(safe-area-inset-top, 0px) + 60px);
   padding-left: 40px;
   box-sizing: border-box;
 }
@@ -977,6 +977,7 @@ ion-content.create-family-content {
   display: flex;
   width: 100%;
   min-height: 135px;
+  margin-top: calc(env(safe-area-inset-top, 0px) + 68px);
 }
 
 .create-family-hero__copy {

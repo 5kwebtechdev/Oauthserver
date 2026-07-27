@@ -16,6 +16,8 @@ import { SupermeButtonComponent } from '../../core/components/superme-button/sup
 import { ProfileFactsComponent } from '../../core/components/user-profile/profile-facts/profile-facts.component';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { toApiGender } from '../../core/models/gender.model';
+import { OnboardingStateService } from '../../core/services/onboarding-state.service';
+import { AuthBackButtonComponent } from '../../core/components/auth-back-button/auth-back-button.component';
 
 type ViewMode = 'instructions-child' | 'instructions-parent' | 'join-family-child' | 'join-family-parent';
 type FamilyMode = 'create' | 'join';
@@ -24,7 +26,7 @@ type UserRole = 'child' | 'parent' | 'self';
 @Component({
     selector: 'app-family-onboard',
     standalone: true,
-    imports: [CommonModule, IonicModule, ReactiveFormsModule, SupermeNavigatorComponent, SupermeButtonComponent, ProfileFactsComponent, QRCodeComponent],
+    imports: [CommonModule, IonicModule, ReactiveFormsModule, SupermeNavigatorComponent, SupermeButtonComponent, ProfileFactsComponent, QRCodeComponent, AuthBackButtonComponent],
     templateUrl: './family-onboard.component.html',
     styleUrls: ['./family-onboard.component.scss']
 })
@@ -101,7 +103,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         private authService: AuthService,
         private userService: UserService,
         private credentialSaverService: CredentialSaverService,
-        private signupCredentialState: SignupCredentialStateService
+        private signupCredentialState: SignupCredentialStateService,
+        private onboardingState: OnboardingStateService
     ) {
         // Single code input form for join-family flows
         this.codeForm = this.fb.group({
@@ -1005,7 +1008,7 @@ Thank you!`;
                         false
                     );
                 }
-                try { localStorage.setItem('onboardingComplete', 'true'); } catch (e) {}
+                this.onboardingState.markExistingUser();
                 try { sessionStorage.setItem('family_connected_ack', 'Parent'); } catch (e) {}
                 ['oauth_signup_provider', 'google_signup_email', 'google_signup_name',
                  'google_signup_avatar', 'google_signup_provider_id', 'signup_profile',
@@ -1046,7 +1049,7 @@ Thank you!`;
     private navigateToParentWelcome(): void {
         try {
             sessionStorage.setItem('family_connected_ack', 'Parent');
-            localStorage.setItem('onboardingComplete', 'true');
+            this.onboardingState.markExistingUser();
         } catch (error) {
             console.warn('[FamilyOnboard] Unable to persist completed onboarding state', error);
         }

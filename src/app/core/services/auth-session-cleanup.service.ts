@@ -15,6 +15,7 @@ import { PetAgeService } from './pet-age.service';
 import { TutorLikeService } from './tutor-like.service';
 import { BadgeSocketService } from './badge-socket.service';
 import { LoadingService } from './loading.service';
+import { PERSISTENT_DEVICE_PREFERENCE_KEYS } from './onboarding-state.service';
 
 @Injectable({
   providedIn: 'root'
@@ -48,6 +49,19 @@ export class AuthSessionCleanupService {
   }
 
   clearBrowserStorage(): void {
+    const persistentDevicePreferences = new Map<string, string>();
+
+    try {
+      PERSISTENT_DEVICE_PREFERENCE_KEYS.forEach(key => {
+        const value = localStorage.getItem(key);
+        if (value !== null) {
+          persistentDevicePreferences.set(key, value);
+        }
+      });
+    } catch (error) {
+      console.warn('[AuthSessionCleanup] Unable to read persistent device preferences:', error);
+    }
+
     try {
       sessionStorage.clear();
     } catch (error) {
@@ -56,6 +70,9 @@ export class AuthSessionCleanupService {
 
     try {
       localStorage.clear();
+      persistentDevicePreferences.forEach((value, key) => {
+        localStorage.setItem(key, value);
+      });
     } catch (error) {
       console.warn('[AuthSessionCleanup] Unable to clear localStorage:', error);
     }

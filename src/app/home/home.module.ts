@@ -17,6 +17,7 @@ import { ProfileFactsComponent } from '../core/components/user-profile/profile-f
 import { FamilyOnboardComponent } from "./family-onboard/family-onboard.component";
 import { ScanQrComponent } from "./scan-qr/scan-qr.component";
 import { ResetPasswordComponent } from "./reset-password/reset-password.component";
+import { AuthBackButtonComponent } from "../core/components/auth-back-button/auth-back-button.component";
 
 @NgModule({
   imports: [
@@ -34,6 +35,7 @@ import { ResetPasswordComponent } from "./reset-password/reset-password.componen
     ScanQrComponent,
     ResetPasswordComponent,
     SocialMediaComponent,
+    AuthBackButtonComponent,
     QRCodeComponent
   ],
   declarations: [

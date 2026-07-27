@@ -4,7 +4,8 @@
     <button type="button" (click)="switchBackFromChildView()">Switch Back</button>
   </div>
 
-  <div class="app-router-container w-full p-0">
+  <div class="app-router-container w-full p-0" [attr.aria-hidden]="isAppUpdateBlocked ? 'true' : null"
+    [attr.inert]="isAppUpdateBlocked ? '' : null">
     <ion-router-outlet></ion-router-outlet>
   </div>
 
@@ -70,5 +71,5 @@
 
   <!-- Force Update Popup - blocks the app until the user updates -->
   <app-superme-popup class="force-update-popup" [config]="forceUpdateConfig" [isVisible]="showForceUpdatePopup"
-    (primaryAction)="onUpdateNowClick()"></app-superme-popup>
+    (primaryAction)="onUpdateNowClick()" (secondaryAction)="onUpdateSecondaryAction()"></app-superme-popup>
 </ion-app>

@@ -43,20 +43,20 @@ export class AnalyticsComponent implements OnInit {
   data: AnalyticsOverview | null = null;
 
   private readonly iconFallbacks: Record<string, string> = {
-    'arrow-up': 'assets/icons/insights-arrow-up.svg?v=20260715',
-    'bar-chart': 'assets/icons/insights-bars.svg?v=20260715',
-    'task-arrow-up': 'assets/icons/insights-task-arrow-up.svg?v=20260715',
-    'task-bar-chart': 'assets/icons/insights-task-bars.svg?v=20260715',
-    quiz: 'assets/icons/insights-lightning.svg?v=20260715',
-    puzzle: 'assets/icons/insights-puzzle.svg?v=20260715',
-    article: 'assets/icons/insights-book.svg?v=20260715',
-    lesson: 'assets/icons/insights-cap.svg?v=20260715',
-    journal: 'assets/icons/insights-journal.svg?v=20260715',
-    mood: 'assets/icons/insights-mood-sun.svg?v=20260715',
-    badge: 'assets/icons/insights-star.svg?v=20260715',
-    trophy: 'assets/icons/insights-trophy.svg?v=20260715',
-    streak: 'assets/icons/insights-flame.svg?v=20260715',
-    coin: 'assets/icons/insights-coin.svg?v=20260715',
+    'arrow-up': 'assets/icons/insights-arrow-up.png?v=20260727',
+    'bar-chart': 'assets/icons/insights-bars.png?v=20260727',
+    'task-arrow-up': 'assets/icons/insights-task-arrow-up.png?v=20260727',
+    'task-bar-chart': 'assets/icons/insights-task-bars.png?v=20260727',
+    quiz: 'assets/icons/insights-lightning.png?v=20260727',
+    puzzle: 'assets/icons/insights-puzzle.png?v=20260727',
+    article: 'assets/icons/insights-book.png?v=20260727',
+    lesson: 'assets/icons/insights-cap.png?v=20260727',
+    journal: 'assets/icons/insights-journal.png?v=20260727',
+    mood: 'assets/icons/insights-mood-sun.png?v=20260727',
+    badge: 'assets/icons/insights-star.png?v=20260727',
+    trophy: 'assets/icons/insights-trophy.png?v=20260727',
+    streak: 'assets/icons/insights-flame.png?v=20260727',
+    coin: 'assets/icons/insights-coin.png?v=20260727',
   };
 
   constructor(

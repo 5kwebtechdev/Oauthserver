@@ -6,12 +6,13 @@ import { SignupComponent } from "./signup/signup.component";
 import { FamilyOnboardComponent } from "./family-onboard/family-onboard.component";
 import { ScanQrComponent } from './scan-qr/scan-qr.component';
 import { ResetPasswordComponent } from "./reset-password/reset-password.component";
-import { guestGuard } from "../core/authe-guard/authe-guard";
+import { guestGuard, startupGuard } from "../core/authe-guard/authe-guard";
 
 const routes: Routes = [
   {
     path: '',
     component: HomePage,
+    canActivate: [startupGuard],
   }, {
     path: 'login',
     component: LoginComponent,
