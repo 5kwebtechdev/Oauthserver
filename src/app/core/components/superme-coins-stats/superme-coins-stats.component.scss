@@ -23,8 +23,8 @@
 }
 
 .stat-icon {
-  width: clamp(28px, 8vw, 40px);
-  height: clamp(28px, 8vw, 40px);
+  width: clamp(28px, 14vw, 60px);
+    height: clamp(28px, 18vw, 50px);
   flex-shrink: 0;
   object-fit: contain;
 }
@@ -37,12 +37,12 @@
 }
 
 .stat-divider-vertical {
-  width: 1px;
-  height: 36px;
-  background: #6B656A;
+  width: 2px;
+    height: 45px;
+    background: #6b656a;
   display: inline-block;
   flex-shrink: 0;
-  opacity: 0.4;
+  opacity: 0.8;
 }
 
 .visually-hidden {

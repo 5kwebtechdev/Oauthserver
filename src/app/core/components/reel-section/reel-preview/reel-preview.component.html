@@ -1,0 +1,34 @@
+<section class="reel-preview-section" aria-labelledby="reel-preview-heading">
+
+  <div class="reel-preview-header">
+    <div class="reel-preview-heading">
+      <h3 class="reel-preview-title" id="reel-preview-heading">{{ title }}</h3>
+      <p class="reel-preview-subtitle">{{ subtitle }}</p>
+    </div>
+    <a class="reel-preview-viewall" [routerLink]="['/authed/reel-section']">View all</a>
+  </div>
+
+  <div class="reel-preview-grid">
+    <a class="reel-preview-card" [ngClass]="item.categoryClass" *ngFor="let item of items"
+      [routerLink]="['/authed/reel-section']" [attr.aria-label]="item.title">
+
+      <span class="reel-preview-tag">{{ item.category }}</span>
+
+      <span class="reel-preview-play" aria-hidden="true">
+        <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
+          <path d="M13.1 7.06L1.9 0.4C1.02 -0.1 0 0.47 0 1.42V14.58C0 15.53 1.02 16.1 1.9 15.6L13.1 8.94C13.97 8.44 13.97 7.56 13.1 7.06Z"
+            fill="#7C74D8" />
+        </svg>
+      </span>
+
+      <div class="reel-preview-overlay">
+        <div class="reel-preview-meta">
+          <span class="reel-preview-avatar"></span>
+          <span class="reel-preview-author">{{ item.author }}</span>
+        </div>
+        <p class="reel-preview-card-title">{{ item.title }}</p>
+      </div>
+    </a>
+  </div>
+
+</section>
