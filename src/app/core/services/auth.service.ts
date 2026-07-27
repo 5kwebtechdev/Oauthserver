@@ -552,14 +552,26 @@ export class AuthService {
   }
 
   private clearLocalUserState(): void {
-    // Publish logged-out state first so active views stop using user data.
-    this.isAuthenticatedSubject.next(false);
-    this.currentUserSubject.next(null);
-    this.userDataSubject.next(null);
+    // Browser storage contains the security-sensitive session source of truth.
+    // Clear it even if a subscriber reacting to the logged-out state throws.
+    try {
+      this.isAuthenticatedSubject.next(false);
+      this.currentUserSubject.next(null);
+      this.userDataSubject.next(null);
+    } catch (error) {
+      console.warn('[AuthService] A logout-state subscriber failed:', error);
+    }
 
-    this.authSessionCleanup.clearInMemoryUserData();
-    this.moodService.clearVibesDisplayCache();
     this.authSessionCleanup.clearBrowserStorage();
+
+    // Singleton cache cleanup is best-effort and must never prevent token,
+    // user-id, or cached browser data from being removed.
+    try {
+      this.authSessionCleanup.clearInMemoryUserData();
+      this.moodService.clearVibesDisplayCache();
+    } catch (error) {
+      console.warn('[AuthService] Unable to clear an in-memory logout cache:', error);
+    }
   }
 
   /**

@@ -5,6 +5,14 @@
   (touchend)="onTouchEnd($event)"
   aria-label="SuperMeApp introduction"
 >
+  <div class="onboarding-background" aria-hidden="true">
+    <img
+      class="onboarding-background-art"
+      src="assets/Images-Transparent/onboarding-background-figma-latest.svg"
+      alt=""
+    />
+  </div>
+
   <div
     class="slides-track"
     [style.transform]="'translate3d(-' + (currentSlide * 100) + '%, 0, 0)'"
@@ -15,25 +23,17 @@
       [attr.aria-label]="slides[0]"
     >
       <div class="slide-canvas">
-        <div class="super-bg" aria-hidden="true">
-          <span class="blob blob-1"></span>
-          <span class="blob blob-2"></span>
-          <span class="blob blob-3"></span>
-          <span class="blob blob-4"></span>
-          <span class="frost"></span>
-        </div>
-
         <header class="hero-heading super-heading">
           <div class="super-copy">
             <span class="super-title-line super-app-line"><span>Super</span><span>App</span></span>
             <span class="super-title-line super-you-line"><span>For</span><strong class="gradient-text">Super YOU!</strong></span>
           </div>
-          <img class="super-accent" src="assets/Images-Transparent/MainOnbroading-screenpurplestrock.png" alt="" aria-hidden="true" />
-          <img class="super-underline" src="assets/Images-Transparent/Centerstockonboarding.png" alt="" aria-hidden="true" />
+          <img class="super-accent" src="assets/Images-Transparent/onboarding-super-accent-figma-latest.svg" alt="" aria-hidden="true" />
+          <img class="super-underline" src="assets/Images-Transparent/onboarding-super-underline-figma-latest.svg" alt="" aria-hidden="true" />
         </header>
 
         <div class="slide-illustration super-illustration">
-          <img src="assets/Images-Transparent/onboarding-super-you-figma.png" alt="Super App for Super You illustration" />
+          <img src="assets/Images-Transparent/onboarding-super-you-figma-latest.png" alt="Super App for Super You illustration" />
         </div>
       </div>
     </section>
@@ -44,26 +44,30 @@
       [attr.aria-label]="slides[1]"
     >
       <div class="slide-canvas">
-        <div class="super-bg foundations-bg" aria-hidden="true">
-          <span class="blob blob-1"></span>
-          <span class="blob blob-2"></span>
-          <span class="blob blob-3"></span>
-          <span class="blob blob-4"></span>
-          <span class="frost"></span>
-        </div>
-
         <header class="hero-heading foundations-heading">
           <div class="foundations-copy">
             <span class="foundations-line foundations-line-one">Built On 4</span>
-            <strong class="gradient-text foundations-line foundations-line-two">Foundational Blocks</strong>
+            <span class="foundations-line-two-wrap">
+              <strong class="gradient-text foundations-line foundations-line-two">Foundational Blocks</strong>
+              <img
+                class="foundations-accent"
+                src="assets/Images-Transparent/onboarding-foundations-accent-figma-latest.svg"
+                alt=""
+                aria-hidden="true"
+              />
+            </span>
             <span class="foundations-line foundations-line-three">For Real Life Growth</span>
           </div>
-          <img class="foundations-accent" src="assets/Images-Transparent/MainOnbroading-screenpurplestrock.png" alt="" aria-hidden="true" />
-          <img class="foundations-underline" src="assets/Images-Transparent/Centerstockonboarding.png" alt="" aria-hidden="true" />
+          <img
+            class="foundations-underline"
+            src="assets/Images-Transparent/onboarding-foundations-underline-figma-latest.svg"
+            alt=""
+            aria-hidden="true"
+          />
         </header>
 
         <div class="slide-illustration foundations-illustration">
-          <img src="assets/Images-Transparent/onboarding-foundational-blocks-figma.png" alt="Habits, tasks, time, and learning foundational blocks" />
+          <img src="assets/Images-Transparent/onboarding-foundations-art-figma-latest.png" alt="Habits, tasks, time, and learning foundational blocks" />
         </div>
       </div>
     </section>
@@ -74,20 +78,12 @@
       [attr.aria-label]="slides[2]"
     >
       <div class="slide-canvas">
-        <div class="super-bg roles-bg" aria-hidden="true">
-          <span class="blob blob-1"></span>
-          <span class="blob blob-2"></span>
-          <span class="blob blob-3"></span>
-          <span class="blob blob-4"></span>
-          <span class="frost"></span>
-        </div>
-
         <header class="hero-heading roles-heading">
           <div class="roles-copy">
-            <span class="roles-kicker">Three Ways To</span>
-            <strong class="gradient-text roles-title">Join SuperMeApp</strong>
-            <img class="roles-accent" src="assets/Images-Transparent/MainOnbroading-screenpurplestrock.png" alt="" aria-hidden="true" />
-            <img class="roles-underline" src="assets/Images-Transparent/Centerstockonboarding.png" alt="" aria-hidden="true" />
+            <span class="roles-kicker">Three Ways To Join</span>
+            <strong class="gradient-text roles-title">SuperMeApp</strong>
+            <img class="roles-accent" src="assets/Images-Transparent/onboarding-roles-accent-figma-latest.svg" alt="" aria-hidden="true" />
+            <img class="roles-underline" src="assets/Images-Transparent/onboarding-roles-underline-figma-latest.svg" alt="" aria-hidden="true" />
           </div>
           <p class="roles-description">From private personal spaces to connected family<br />accounts, select the option that fits your need</p>
         </header>
@@ -105,14 +101,6 @@
       [attr.aria-label]="slides[3]"
     >
       <div class="slide-canvas">
-        <div class="super-bg rewards-bg" aria-hidden="true">
-          <span class="blob blob-1"></span>
-          <span class="blob blob-2"></span>
-          <span class="blob blob-3"></span>
-          <span class="blob blob-4"></span>
-          <span class="frost"></span>
-        </div>
-
         <header class="hero-heading rewards-heading">
           <div class="rewards-copy">
             <span class="rewards-row rewards-row-one">

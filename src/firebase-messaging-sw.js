@@ -6,6 +6,9 @@
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 
+const SUPERME_NOTIFICATION_ICON = '/assets/Images-Transparent/SuperMeLogoFinal3.png';
+const SUPERME_NOTIFICATION_BADGE = '/assets/Icons-Neutral/home-logo.png';
+
 // Firebase config is injected by the app at runtime via the service-worker
 // client messaging channel. Until then, background messages are buffered.
 let messagingInstance = null;
@@ -19,13 +22,14 @@ self.addEventListener('message', (event) => {
       messagingInstance.onBackgroundMessage((payload) => {
         const title = payload.notification?.title || 'SuperMeApp';
         const body  = payload.notification?.body  || '';
-        const icon  = payload.notification?.icon  || '/assets/Icons-Neutral/home-logo.png';
-        const badge = payload.notification?.badge || '/assets/Icons-Neutral/home-logo.png';
 
         return self.registration.showNotification(title, {
           body,
-          icon,
-          badge,
+          // Always use local, packaged brand assets. A remote or invalid icon
+          // supplied by a payload otherwise produces an empty notification
+          // icon on several mobile browsers.
+          icon: SUPERME_NOTIFICATION_ICON,
+          badge: SUPERME_NOTIFICATION_BADGE,
           data: payload.data || {},
           vibrate: [200, 100, 200],
           requireInteraction: false

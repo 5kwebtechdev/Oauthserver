@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        FCM prefers an icon name supplied by the server over the manifest
+        default. Keep the common payload names mapped to the notification-safe
+        monochrome drawable so a backend "icon" override can never select the
+        full-colour adaptive launcher artwork as a small notification icon.
+
+        The application launcher continues to use @mipmap/ic_launcher.
+    -->
+    <item name="ic_launcher" type="drawable">@drawable/ic_stat_notification</item>
+    <item name="ic_launcher_round" type="drawable">@drawable/ic_stat_notification</item>
+    <item name="ic_notification" type="drawable">@drawable/ic_stat_notification</item>
+    <item name="notification_icon" type="drawable">@drawable/ic_stat_notification</item>
+    <item name="ic_stat_ic_notification" type="drawable">@drawable/ic_stat_notification</item>
+    <item name="app_icon" type="drawable">@drawable/ic_stat_notification</item>
+</resources>

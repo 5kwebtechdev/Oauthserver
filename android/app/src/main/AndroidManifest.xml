@@ -68,6 +68,8 @@
             Without these, FCM falls back to the full-color ic_launcher, which
             Android 5+ renders as a solid white/gray blob in the status bar.
             The icon must be a monochrome (white on transparent) vector drawable.
+            Common server-supplied icon names are also mapped to this resource
+            in values/notification_icons.xml so payload overrides remain safe.
         -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"

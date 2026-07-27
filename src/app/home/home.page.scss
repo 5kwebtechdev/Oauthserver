@@ -28,6 +28,8 @@
 }
 
 .slides-track {
+  position: relative;
+  z-index: 1;
   display: flex;
   width: 100%;
   height: 100%;
@@ -37,6 +39,8 @@
 
 .onboarding-slide {
   flex: 0 0 100%;
+  display: grid;
+  place-items: center;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -45,8 +49,10 @@
 .slide-canvas {
   container-type: size;
   position: relative;
-  // width: min(100%, 560px, 47dvh);
-  height: 100%;
+  width: min(100vw, 46.1268dvh);
+  height: auto;
+  max-height: 100dvh;
+  aspect-ratio: 393 / 852;
   margin: 0 auto;
   overflow: hidden;
 }
@@ -149,30 +155,42 @@
 .pagination {
   position: fixed;
   z-index: 20;
-  left: 50%;
-  bottom: calc(max(20px, 3.2dvh) + env(safe-area-inset-bottom));
+  right: 0;
+  bottom: env(safe-area-inset-bottom, 0px);
+  left: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  transform: translateX(-50%);
+  width: 100%;
+  height: 56px;
+  padding: 0 12px;
+  gap: 8px;
+  box-sizing: border-box;
+  pointer-events: none;
 }
 
 .pagination button {
-  width: 11px;
-  height: 11px;
+  display: block;
+  flex: 0 0 10px;
+  width: 10px;
+  min-width: 0;
+  height: 10px;
   margin: 0;
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: #918d95;
+  appearance: none;
+  background: #878286;
+  box-shadow: none;
   cursor: pointer;
+  pointer-events: auto;
   transition: width 220ms ease, background-color 220ms ease, transform 180ms ease;
 }
 
 .pagination button.active {
-  width: 36px;
-  background: #a61f55;
+  flex-basis: 32px;
+  width: 32px;
+  background: #90214d;
 }
 
 .pagination button:focus-visible,
@@ -183,10 +201,9 @@
 
 /* Slide 1: Super App */
 
-/* Figma reference background: four large blurred colour blobs behind a
-   70%-white frosted-glass layer, positioned per the exact Figma frame
-   (393x852) and converted to cqw/cqh so it scales with the canvas. */
-.super-bg {
+/* Full-viewport background is independent from the proportional design
+   canvas so tablets and short/wide phones never reveal side gutters. */
+.onboarding-background {
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -194,50 +211,11 @@
   pointer-events: none;
 }
 
-.super-bg .blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(13cqw);
-}
-
-.super-bg .blob-1 {
-  left: -60.6cqw;
-  top: -4cqh;
-  width: 147.6cqw;
-  height: 67.8cqh;
-  background: #8B8DCB;
-}
-
-.super-bg .blob-2 {
-  left: 34.1cqw;
-  top: -4.8cqh;
-  width: 156.5cqw;
-  height: 72.2cqh;
-  background: #E1527C;
-}
-
-.super-bg .blob-3 {
-  left: 26.2cqw;
-  top: 50cqh;
-  width: 157cqw;
-  height: 64.7cqh;
-  background: #89B3B6;
-}
-
-.super-bg .blob-4 {
-  left: -45cqw;
-  top: 54.7cqh;
-  width: 125cqw;
-  height: 70.7cqh;
-  background: #F6AC72;
-}
-
-.super-bg .frost {
-  position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(6.4cqw);
-  -webkit-backdrop-filter: blur(6.4cqw);
+.onboarding-background-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
 }
 
 .hero-heading.super-heading {
@@ -250,7 +228,7 @@
   transform: none;
   color: #010332;
   font-family: 'Nunito', sans-serif;
-  font-size: clamp(32px, 10.178cqw, 40px);
+  font-size: 10.178cqw;
   font-style: italic;
   font-weight: 900;
   line-height: 1;
@@ -308,26 +286,26 @@
   top: 25.352cqh;
   right: auto;
   bottom: auto;
-  left: 50%;
-  width: 87.277cqw;
+  left: 4.071cqw;
+  width: 91.858cqw;
   height: 66.08cqh;
-  transform: translateX(-50%);
+  transform: none;
   overflow: hidden;
 }
 
 .super-illustration img {
   position: absolute;
-  top: -5.26%;
-  left: -0.02%;
-  width: 100.04%;
-  height: 109.36%;
+  top: 0;
+  left: 50%;
+  width: 119.668%;
+  height: 100%;
   max-width: none;
   max-height: none;
+  transform: translateX(-50%);
   object-fit: fill;
 }
 
 .pagination.super-pagination {
-  bottom: 5.516dvh;
   gap: 8px;
 }
 
@@ -353,7 +331,7 @@
   transform: none;
   color: #010332;
   font-family: 'Nunito', sans-serif;
-  font-size: clamp(26px, 8.142cqw, 32px);
+  font-size: 8.142cqw;
   font-style: normal;
   font-weight: 800;
   line-height: normal;
@@ -384,22 +362,34 @@
   font-weight: 800;
 }
 
+.foundations-line-two-wrap {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
 .foundations-accent {
   position: absolute;
-  top: 4.177cqh;
-  left: 85.242cqw;
-  width: 5.999cqw;
-  height: auto;
+  top: 50%;
+  left: calc(100% + clamp(4px, 1.25cqw, 6px));
+  width: 7.374cqw;
+  height: 4.845cqh;
+  transform: translateY(-50%);
+  object-fit: fill;
   pointer-events: none;
 }
 
 .foundations-underline {
   position: absolute;
   left: 50%;
-  bottom: 0.275cqh;
-  width: 34.86cqw;
-  height: auto;
+  bottom: 0;
+  width: 35.906cqw;
+  height: 1.421cqh;
   transform: translateX(-50%);
+  object-fit: fill;
   pointer-events: none;
 }
 
@@ -418,11 +408,10 @@
   height: 100%;
   max-width: none;
   max-height: none;
-  object-fit: fill;
+  object-fit: cover;
 }
 
 .pagination.foundations-pagination {
-  bottom: 6.221dvh;
   gap: 8px;
 }
 
@@ -467,26 +456,27 @@
 
 .roles-kicker {
   height: 3.991cqh;
-  font-size: clamp(20px, 6.361cqw, 25px);
+  font-size: 6.361cqw;
   font-weight: 800;
   line-height: 3.991cqh;
+  text-transform: capitalize;
 }
 
 .roles-title {
   height: 4.695cqh;
-  background-image: linear-gradient(125.972deg, #6a35ff 1.994%, #c22cf8 25.997%, #ff2d79 74.003%, #ff8a1e 98.006%);
+  background-image: linear-gradient(118.793deg, #6a35ff 1.9944%, #c22cf8 25.997%, #ff2d79 74.003%, #ff8a1e 98.006%);
   font-family: 'Plus Jakarta Sans', 'Nunito', sans-serif;
-  font-size: clamp(26px, 8.142cqw, 32px);
+  font-size: 8.142cqw;
   font-weight: 800;
   line-height: 4.695cqh;
 }
 
 .roles-accent {
   position: absolute;
-  top: 2.38cqh;
-  right: 2.544cqw;
-  width: 7.379cqw;
-  height: auto;
+  top: 3.59cqh;
+  right: 9.43cqw;
+  width: 7.527cqw;
+  height: 4.715cqh;
   transform: rotate(10deg);
   pointer-events: none;
 }
@@ -494,9 +484,9 @@
 .roles-underline {
   position: absolute;
   left: 50%;
-  bottom: 0;
-  width: 36.132cqw;
-  height: auto;
+  top: 9.765cqh;
+  width: 34.86cqw;
+  height: 0.842cqh;
   transform: translateX(-50%);
   pointer-events: none;
 }
@@ -511,7 +501,7 @@
   transform: translateX(-50%);
   color: #6b656a;
   font-family: 'Nunito', sans-serif;
-  font-size: clamp(11px, 3.308cqw, 13px);
+  font-size: 3.308cqw;
   font-weight: 600;
   line-height: 2.113cqh;
 }
@@ -559,7 +549,7 @@
   left: 4.071cqw;
   width: 91.858cqw;
   height: 13.753cqh;
-  font-size: clamp(20px, 6.361cqw, 25px);
+  font-size: 6.361cqw;
   font-weight: 800;
 }
 
@@ -622,7 +612,7 @@
   transform: translateX(-50%);
   color: #6b656a;
   font-family: 'Nunito', sans-serif;
-  font-size: clamp(11px, 3.308cqw, 13px);
+  font-size: 3.308cqw;
   font-weight: 600;
   line-height: 2.113cqh;
 }
@@ -673,7 +663,7 @@
   box-shadow: inset 0 -2px 2px #eee5ff, 0 0 1px 0.5px rgba(246, 172, 114, 0.2);
   color: #fff;
   font-family: 'Nunito', sans-serif;
-  font-size: clamp(14px, 4.071cqw, 16px);
+  font-size: 4.071cqw;
   font-weight: 700;
   line-height: 1.4;
   letter-spacing: 0;
@@ -684,14 +674,6 @@
 .pagination.roles-pagination,
 .pagination.rewards-pagination {
   gap: 8px;
-}
-
-.pagination.roles-pagination {
-  bottom: 4.46dvh;
-}
-
-.pagination.rewards-pagination {
-  bottom: 5.027dvh;
 }
 
 .pagination.roles-pagination button,
@@ -709,20 +691,6 @@
 
 .journey-button:active {
   transform: translateX(-50%) scale(0.98);
-}
-
-@media (max-height: 700px) {
-  .hero-heading {
-    font-size: clamp(24px, 6.6cqw, 34px);
-  }
-
-  .rewards-heading {
-    font-size: clamp(20px, 5.6cqw, 28px);
-  }
-
-  .roles-heading p {
-    margin-top: 3.4cqh;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

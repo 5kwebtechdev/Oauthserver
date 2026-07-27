@@ -14,6 +14,7 @@ import io.ionic.starter.plugins.AppCheckPlugin;
 import io.ionic.starter.plugins.CrashlyticsPlugin;
 import io.ionic.starter.plugins.InstallReferrerPlugin;
 import io.ionic.starter.plugins.NativeCredentialsPlugin;
+import io.ionic.starter.plugins.PlayStoreUpdatePlugin;
 
 public class MainActivity extends BridgeActivity {
 
@@ -25,6 +26,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(CrashlyticsPlugin.class);
         registerPlugin(InstallReferrerPlugin.class);
         registerPlugin(NativeCredentialsPlugin.class);
+        registerPlugin(PlayStoreUpdatePlugin.class);
         super.onCreate(savedInstanceState);
         getBridge().getWebView().setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_YES);
         checkInstallReferrer();

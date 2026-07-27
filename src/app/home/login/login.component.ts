@@ -6,6 +6,7 @@ import { UserService } from '../../core/services/user.service';
 import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { CredentialSaverService, SavedCredentials } from '../../core/services/credential-saver.service';
+import { OnboardingStateService } from '../../core/services/onboarding-state.service';
 
 @Component({
   selector: 'app-login',
@@ -33,7 +34,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     private childSelfImageService: ChildSelfImageService,
     private route: ActivatedRoute,
     private credentialSaverService: CredentialSaverService,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private onboardingState: OnboardingStateService
   ) {
     this.signInForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -105,7 +107,7 @@ export class LoginComponent implements OnInit, OnDestroy {
               console.warn('[LoginComponent] Failed to sync user profile to UserService', e);
             }
 
-          localStorage.setItem('has_logged_in_before', 'true');
+          this.onboardingState.markExistingUser();
 
           // Determine the appropriate dashboard route based on user relationship
           const dashboardRoute = this.authService.getDashboardRoute();
@@ -189,11 +191,11 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   navigateToSignup(): void {
-    this.navCtrl.navigateForward(['/home/sign-up'], { queryParams: { step: '0.1' } });
+    this.returnToRoleSelection();
   }
 
   goBack(): void {
-    this.navCtrl.navigateBack(['/home']);
+    this.returnToRoleSelection();
   }
 
   navigateToForgotPassword(): void {
@@ -217,6 +219,14 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.signInForm.patchValue({
       email: credentials.identifier,
       password: credentials.password
+    });
+  }
+
+  private returnToRoleSelection(): void {
+    this.onboardingState.resetRoleSelection();
+    void this.navCtrl.navigateRoot('/home/sign-up', {
+      queryParams: { step: 1 },
+      animated: false
     });
   }
 

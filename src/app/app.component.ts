@@ -23,9 +23,8 @@ const InstallReferrer = registerPlugin<InstallReferrerPlugin>('InstallReferrer')
 import { AnalyticsService } from './core/services/analytics.service';
 import { AuthSessionCleanupService } from './core/services/auth-session-cleanup.service';
 import { CrashlyticsService } from './core/services/crashlytics.service';
-import { RemoteConfigService } from './core/services/remote-config.service';
 import { DeepLinkService } from './core/services/deep-link.service';
-import { AppUpdateService } from './core/services/app-update.service';
+import { AppUpdateBlockReason, AppUpdateService } from './core/services/app-update.service';
 import { SupermePopupConfig } from './core/components/superme-popup/superme-popup.component';
 import { PushNotificationService } from './core/services/push-notification.service';
 import { AuthService as CoreAuthService } from './core/services/auth.service';
@@ -45,7 +44,6 @@ export class AppComponent implements OnInit, OnDestroy {
   private activeBadgeToken: string | null = null;
   private lastBadgePopupPollAt = 0;
   private readonly badgePopupPollCooldownMs = 15000;
-  private readonly appUpdateConfigFetchTimeoutMs = 8000;
 
   // Badge popup state (global popup shown from any screen)
   showBadgePopup = false;
@@ -58,13 +56,14 @@ export class AppComponent implements OnInit, OnDestroy {
   // Force update popup state (blocks the app until the user updates)
   isUpdateCheckPending = Capacitor.isNativePlatform();
   showForceUpdatePopup = false;
+  private updateBlockReason: AppUpdateBlockReason = null;
   private appStateChangeListener?: PluginListenerHandle;
   private updateCheckInFlight?: Promise<void>;
   forceUpdateConfig: SupermePopupConfig = {
     heading: 'Update Required',
-    subtitle: 'A new version of the app is available. Please update to continue using the app.',
+    subtitle: 'A new version of the app is available. Please update the app to continue.',
     primaryCTA: {
-      text: 'Update',
+      text: 'Update Now',
       buttonStyle: 'green',
       buttonFull: true
     },
@@ -88,7 +87,6 @@ export class AppComponent implements OnInit, OnDestroy {
     private analytics: AnalyticsService,
     private authSessionCleanup: AuthSessionCleanupService,
     private crashlytics: CrashlyticsService,
-    private remoteConfig: RemoteConfigService,
     private deepLinks: DeepLinkService,
     private appUpdate: AppUpdateService,
     private pushNotifications: PushNotificationService,
@@ -505,11 +503,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.onBadgePopupClose(false);
   }
 
-  /**
-   * Check Firebase Remote Config to see if the installed app version
-   * is below the minimum supported version. If so, block the app
-   * behind a non-dismissible force-update popup.
-   */
+  /** Check Google Play and Remote Config before allowing app access. */
   private async initializeAppUpdateProtection(): Promise<void> {
     if (this.appUpdate.isNativeMobilePlatform()) {
       try {
@@ -529,16 +523,30 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.updateCheckInFlight = (async () => {
       try {
-        await this.refreshAppUpdateConfig();
         const result = await this.appUpdate.checkForUpdate();
-        this.showForceUpdatePopup = result.updateRequired;
+        this.updateBlockReason = result.blockReason;
+        this.showForceUpdatePopup = result.blockReason !== null;
 
         if (result.updateRequired) {
+          this.setUpdateRequiredPopup();
+        } else if (result.verificationFailed) {
+          this.setUpdateVerificationFailedPopup();
+        }
+
+        if (this.showForceUpdatePopup) {
           this.showBadgePopup = false;
           this.badgePopupService.setPopupVisible(false);
         }
       } catch (error) {
         console.warn('[AppComponent] App update check failed:', error);
+        if (Capacitor.getPlatform() === 'android') {
+          // An unexpected production check error must not silently unlock the
+          // app. The retry action lets the user recover when connectivity or
+          // Google Play becomes available again.
+          this.updateBlockReason = 'verification-failed';
+          this.showForceUpdatePopup = true;
+          this.setUpdateVerificationFailedPopup();
+        }
       } finally {
         this.isUpdateCheckPending = false;
         this.updateCheckInFlight = undefined;
@@ -548,29 +556,61 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.updateCheckInFlight;
   }
 
-  private async refreshAppUpdateConfig(): Promise<void> {
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  /** Handle the primary action on either blocking popup state. */
+  async onUpdateNowClick(): Promise<void> {
+    if (this.updateBlockReason === 'verification-failed') {
+      this.isUpdateCheckPending = true;
+      this.showForceUpdatePopup = false;
+      await this.checkAppUpdate();
+      return;
+    }
 
-    try {
-      const result = await Promise.race([
-        this.remoteConfig.initialize().then(() => 'completed' as const),
-        new Promise<'timed-out'>(resolve => {
-          timeoutId = setTimeout(() => resolve('timed-out'), this.appUpdateConfigFetchTimeoutMs);
-        })
-      ]);
-
-      if (result === 'timed-out') {
-        console.warn('[AppUpdate] Remote Config fetch timed out; using cached or default values.');
-      }
-    } finally {
-      if (timeoutId) clearTimeout(timeoutId);
+    const opened = await this.appUpdate.openStore();
+    if (!opened) {
+      this.forceUpdateConfig = {
+        ...this.forceUpdateConfig,
+        subtitle: 'Google Play could not be opened. Check your connection and Play Store app, then tap Update Now again.'
+      };
     }
   }
 
-  /**
-   * Handle "Update" click on the force-update popup
-   */
-  async onUpdateNowClick(): Promise<void> {
+  /** The verification-error popup offers the Play Store as a safe fallback. */
+  async onUpdateSecondaryAction(): Promise<void> {
     await this.appUpdate.openStore();
+  }
+
+  private setUpdateRequiredPopup(): void {
+    this.forceUpdateConfig = {
+      heading: 'Update Required',
+      subtitle: 'A new version of the app is available. Please update the app to continue.',
+      primaryCTA: {
+        text: 'Update Now',
+        buttonStyle: 'green',
+        buttonFull: true
+      },
+      showCloseButton: false,
+      backdrop: true,
+      ctaDirection: 'column'
+    };
+  }
+
+  private setUpdateVerificationFailedPopup(): void {
+    this.forceUpdateConfig = {
+      heading: 'Unable to Check for Updates',
+      subtitle: 'Connect to the internet and make sure Google Play is available. You must verify your app version before continuing.',
+      primaryCTA: {
+        text: 'Try Again',
+        buttonStyle: 'green',
+        buttonFull: true
+      },
+      secondaryCTA: {
+        text: 'Open Google Play',
+        buttonStyle: 'magenta-transparent',
+        buttonFull: true
+      },
+      showCloseButton: false,
+      backdrop: true,
+      ctaDirection: 'column'
+    };
   }
 }

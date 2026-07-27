@@ -1,7 +1,12 @@
 <div class="navigator-root" [class.warm]="variant === 'warm'">
   <div class="navigator-inner">
     <div class="left-group">
-      <button *ngIf="!hideBack" class="back-button" (click)="goBack()" aria-label="Go back" [class.cancel]="backIcon === 'cancel'">
+      <superme-auth-back-button
+        *ngIf="!hideBack && backStyle === 'auth' && backIcon !== 'cancel'"
+        mode="inline"
+        (back)="goBack()">
+      </superme-auth-back-button>
+      <button *ngIf="!hideBack && (backStyle !== 'auth' || backIcon === 'cancel')" class="back-button" (click)="goBack()" aria-label="Go back" [class.cancel]="backIcon === 'cancel'">
         <ng-container *ngIf="backIcon !== 'cancel'; else imgIcon">
           <img [src]="variant === 'warm' ? 'assets/icons/back-arrow-warm.svg' : 'assets/icons/back-arrow.svg'" alt="Back" class="back-svg" aria-hidden="true">
         </ng-container>

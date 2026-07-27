@@ -1,6 +1,34 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { OnboardingStateService } from '../services/onboarding-state.service';
+
+/**
+ * Resolves the first screen before HomePage is created, preventing onboarding
+ * screens from flashing while a returning user is redirected.
+ */
+export const startupGuard: CanActivateFn = () => {
+    const router = inject(Router);
+    const authService = inject(AuthService);
+    const onboardingState = inject(OnboardingStateService);
+
+    if (authService.isLoggedIn()) {
+        onboardingState.markExistingUser();
+        return router.parseUrl(authService.getDashboardRoute());
+    }
+
+    if (onboardingState.hasCompletedRoleSelection()) {
+        return router.parseUrl('/home/login');
+    }
+
+    if (onboardingState.hasSeenSplash()) {
+        return router.createUrlTree(['/home/sign-up'], {
+            queryParams: { step: 1 }
+        });
+    }
+
+    return true;
+};
 
 /**
  * Authentication guard to protect routes
