@@ -15,9 +15,11 @@ import { AcademySectionComponent } from "../../core/components/academy-section/a
 import { IonicModule } from "@ionic/angular";
 import { SupermeInputsModule } from "../../core/components/superme-inputs/superme-inputs.module";
 import { MoodSelectorComponent } from "../../core/components/mood-selector/mood-selector.component";
+import { WeekStreakSectionComponent } from "../../core/components/week-streak-section/week-streak-section.component";
+import { ReelPreviewSectionComponent } from "../../core/components/reel-section/reel-preview/reel-preview.component";
+import { QuickAccessSectionComponent } from "../../core/components/quick-access-section/quick-access-section.component";
 import { SupermeSpeechBubbleComponent } from '../../core/components/superme-speech-bubble/superme-speech-bubble.component';
 import { SupermePetComponent } from '../../core/components/superme-pet/superme-pet.component';
-import { SupermeCoinsStatsComponent } from '../../core/components/superme-coins-stats/superme-coins-stats.component';
 
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { SkeletonImageComponent } from '../../core/components/skeleton-image/skeleton-image.component';
@@ -55,10 +57,12 @@ import { debounceTime, takeUntil } from 'rxjs/operators';
     AcademySectionComponent,
     IonicModule,
     MoodSelectorComponent,
+    WeekStreakSectionComponent,
+    ReelPreviewSectionComponent,
+    QuickAccessSectionComponent,
     SupermeInputsModule,
     SupermePetComponent,
     SupermeSpeechBubbleComponent,
-    SupermeCoinsStatsComponent,
     FooterComponent,
     SkeletonImageComponent,
   ]
@@ -88,6 +92,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   // Recent habits and tasks
   public recentHabits: Habit[] = [];
   public recentTasks: any[] = [];
+  public recentTimetables: any[] = [];
 
   // Completion data
   public totalTasks: number = 0;
@@ -96,6 +101,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   public totalHabits: number = 0;
   public totalHabitsCompleted: number = 0;
   public habitCompletionRate: number = 0;
+  public totalTimetables: number = 0;
   public awaitingTasks: number = 0;
   public awaitingHabits: number = 0;
 
@@ -360,6 +366,58 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
           setTimeout(() => this.recentTasks = [...this.recentTasks], 0);
         }
 
+        // Process timetable entries (calendar events — no completion tracking/rewards, just scheduled blocks)
+        if (Array.isArray(resp.events)) {
+          const today = new Date();
+          const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+          let timetableData = resp.events.map((item: any) => {
+            const isRecurring = item.daysOfWeek?.length || item.everyday || item.everyWeekend;
+            const itemForTimestamp = isRecurring ? { ...item, startDate: todayStr, endDate: todayStr } : item;
+            const timestamps = this.buttonLogic.calculateTimestamps(itemForTimestamp);
+            return {
+              id: item.id || '',
+              title: item.title || '',
+              notes: item.description || '',
+              startDate: item.startDate ? new Date(item.startDate) : new Date(),
+              endDate: item.endDate ? new Date(item.endDate) : new Date(),
+              startTime: item.startTime || '07:00:00',
+              endTime: item.endTime || '08:00:00',
+              startTimeStamp: timestamps.startTimeStamp,
+              endTimeStamp: timestamps.endTimeStamp,
+              type: 'timetable',
+              status: item.completed ? 'completed' : 'pending',
+              tags: (() => {
+                const raw = Array.isArray(item.tags) ? item.tags : [];
+                return raw.map((t: any) => {
+                  if (!t) return '';
+                  if (typeof t === 'string') return t;
+                  if (typeof t === 'object') return (t.value || t.name || t.text || t.title || '').toString().trim();
+                  return '';
+                }).filter(Boolean);
+              })(),
+              coinReward: 0,
+              routine: null,
+              createdAt: item.createdAt ? new Date(item.createdAt) : new Date()
+            };
+          });
+
+          // Filter out completed and items 5 min past their endTime
+          const nowTt = Date.now();
+          const fiveMinTt = 5 * 60 * 1000;
+          timetableData = timetableData.filter((e: any) => {
+            if (e.status === 'completed') return false;
+            const endTs = Number(e.endTimeStamp || 0);
+            if (endTs > 0 && nowTt > endTs + fiveMinTt) return false;
+            return true;
+          })
+          .sort((a: any, b: any) => this.sortByUpcoming(a, b))
+          .slice(0, 4);
+
+          this.recentTimetables = timetableData;
+          this.totalTimetables = resp.events.length;
+          setTimeout(() => this.recentTimetables = [...this.recentTimetables], 0);
+        }
+
         // Set completion data
         this.totalTasks = resp.totalTasks || 0;
         this.totalTasksCompleted = resp.totalTasksCompleted || 0;
@@ -492,9 +550,12 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     console.log('mood changed to', mood);
   }
 
-  openCalendar() {
-    // Navigate to the activity-calendar component route
-    this.router.navigate(['/authed/activity-calendar']);
+  openNotifications() {
+    this.router.navigate(['/authed/notifications']);
+  }
+
+  openCoinPage() {
+    this.router.navigateByUrl('/authed/coin', { state: { coins: this.userCoins } } as any);
   }
 
   protected readonly console = console;
