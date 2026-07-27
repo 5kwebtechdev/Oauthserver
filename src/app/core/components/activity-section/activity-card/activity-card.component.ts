@@ -59,6 +59,9 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   recentTasks: any[] = [];
 
   @Input()
+  recentTimetables: any[] = [];
+
+  @Input()
   expanded: boolean = false;
 
   @Input({ transform: booleanAttribute })
@@ -116,6 +119,20 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   totalHabitsCompleted: number = 0;
 
   /**
+   * Optional input for total timetable entries (alias for totalTimetablesLoaded)
+   */
+  @Input()
+  set totalTimetables(value: number) {
+    this.totalTimetablesLoaded = value;
+  }
+
+  /**
+   * Optional input for total timetable entries loaded from API
+   */
+  @Input()
+  totalTimetablesLoaded: number = 0;
+
+  /**
    * Optional input for task completion rate (0-100)
    */
   @Input()
@@ -166,8 +183,10 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
   public habits: Habit[] = [];
   public tasks: any[] = [];
+  public timetables: any[] = [];
   public hasHabits: boolean = false;
   public hasTasks: boolean = false;
+  public hasTimetables: boolean = false;
   // Flags to control task-specific empty states
   public taskAllDoneComputed: boolean = false;
   // Flags to control habit-specific empty states
@@ -1000,6 +1019,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     if (this.mode === 'recent') {
       this.hasHabits = this.filteredRecentHabits.length > 0;
       this.hasTasks = this.filteredRecentTasks.length > 0;
+      this.hasTimetables = this.filteredRecentTimetables.length > 0;
 
       // Compute habit-all-done for recent mode using `recentHabits` if provided (it may contain completed items)
       const recentList = (this.recentHabits && this.recentHabits.length > 0) ? this.recentHabits : this.filteredRecentHabits;
@@ -1033,8 +1053,10 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         } else {
           this.isEmpty = false;
         }
+      } else if (this.currentActive === 'timetable') {
+        this.isEmpty = !this.hasTimetables;
       } else {
-        this.isEmpty = !this.hasHabits && !this.hasTasks;
+        this.isEmpty = !this.hasHabits && !this.hasTasks && !this.hasTimetables;
       }
       this.showContent = !this.isEmpty;
 
@@ -1489,7 +1511,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       this.cdr.detectChanges();
     }
     // If in recent mode and recent habits or tasks change, update the display
-    if (this.mode === 'recent' && (changes['recentHabits'] || changes['recentTasks'])) {
+    if (this.mode === 'recent' && (changes['recentHabits'] || changes['recentTasks'] || changes['recentTimetables'])) {
       this.updateRecentDisplay();
       // Trigger change detection to update button states
       this.cdr.detectChanges();
@@ -1506,6 +1528,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       // Use filtered arrays to determine if we have habits/tasks
       this.hasHabits = this.filteredRecentHabits.length > 0;
       this.hasTasks = this.filteredRecentTasks.length > 0;
+      this.hasTimetables = this.filteredRecentTimetables.length > 0;
 
       // Compute habit-all-done and task-all-done using recent arrays (these may include completed items)
       const recentList = (this.recentHabits && this.recentHabits.length > 0) ? this.recentHabits : this.filteredRecentHabits;
@@ -1539,8 +1562,10 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         } else {
           this.isEmpty = false;
         }
+      } else if (this.currentActive === 'timetable') {
+        this.isEmpty = !this.hasTimetables;
       } else {
-        this.isEmpty = !this.hasHabits && !this.hasTasks;
+        this.isEmpty = !this.hasHabits && !this.hasTasks && !this.hasTimetables;
       }
 
       this.showContent = !this.isEmpty;
@@ -1875,6 +1900,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
     if (this.mode === 'recent') {
       this.hasHabits = this.filteredRecentHabits.length > 0;
       this.hasTasks = this.filteredRecentTasks.length > 0;
+      this.hasTimetables = this.filteredRecentTimetables.length > 0;
 
       const recentList = (this.recentHabits && this.recentHabits.length > 0) ? this.recentHabits : this.filteredRecentHabits;
       this.habitAllDoneComputed = Array.isArray(recentList) && recentList.length > 0 && recentList.every(h => {
@@ -1904,8 +1930,10 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         } else {
           this.isEmpty = false;
         }
+      } else if (this.currentActive === 'timetable') {
+        this.isEmpty = !this.hasTimetables;
       } else {
-        this.isEmpty = !this.hasHabits && !this.hasTasks;
+        this.isEmpty = !this.hasHabits && !this.hasTasks && !this.hasTimetables;
       }
 
       this.showContent = !this.isEmpty;
@@ -2125,12 +2153,23 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   /**
-   * Get combined habits and tasks sorted by start time (closest to current time on top)
+   * Get filtered recent timetable entries excluding completed ones
+   */
+  get filteredRecentTimetables(): any[] {
+    if (!this.recentTimetables) return [];
+    return this.recentTimetables.filter(item => {
+      const status = (item.status || '').toLowerCase();
+      return status !== 'completed' && status !== 'skipped';
+    });
+  }
+
+  /**
+   * Get combined habits, tasks and timetable entries sorted by start time (closest to current time on top)
    */
   get combinedAndSortedItems(): any[] {
     // For list mode, combine habits and tasks
     if (this.mode === 'list') {
-      const combined = [...(this.habits || []), ...(this.tasks || [])];
+      const combined = [...(this.habits || []), ...(this.tasks || []), ...(this.timetables || [])];
       return combined.sort((a, b) => {
         // Sort by start time: closest to current time first
         const aStart = a.startTimeStamp || 0;
@@ -2139,9 +2178,9 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       });
     }
 
-    // For recent mode, combine recent habits and tasks
+    // For recent mode, combine recent habits, tasks and timetable entries
     if (this.mode === 'recent') {
-      const combined = [...(this.recentHabits || []), ...(this.recentTasks || [])];
+      const combined = [...(this.recentHabits || []), ...(this.recentTasks || []), ...(this.recentTimetables || [])];
       return combined.sort((a, b) => {
         // Sort by start time: closest to current time first
         const aStart = a.startTimeStamp || 0;
@@ -2177,6 +2216,26 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
    */
   get isTaskTabNoTasks(): boolean {
     return this.currentActive === 'tasks' && !!this.hasHabits && !this.hasTasks;
+  }
+
+  /** "Today at a Glance" header subtitle, e.g. "5 Habits • 3 Tasks • 1 Time Table" */
+  get glanceSubtitle(): string {
+    const parts = [
+      `${this.totalHabitsLoaded} Habit${this.totalHabitsLoaded === 1 ? '' : 's'}`,
+      `${this.totalTasksLoaded} Task${this.totalTasksLoaded === 1 ? '' : 's'}`
+    ];
+    if (this.totalTimetablesLoaded > 0) {
+      parts.push(`${this.totalTimetablesLoaded} Time Table${this.totalTimetablesLoaded === 1 ? '' : 's'}`);
+    }
+    return parts.join(' • ');
+  }
+
+  /** Combined habit+task completion percentage shown in the header pill */
+  get overallCompletionRate(): number {
+    const total = this.totalHabitsLoaded + this.totalTasksLoaded;
+    if (total === 0) return 0;
+    const completed = this.totalHabitsCompleted + this.totalTasksCompleted;
+    return Math.round((completed / total) * 100);
   }
 
   // Fallback computed flag used for recent mode when parent inputs may be pre-filtered.

@@ -1,0 +1,82 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.week-streak-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  background: #EDEBFA;
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-sizing: border-box;
+}
+
+.week-streak-title {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  color: #282527;
+}
+
+.week-streak-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.week-streak-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.week-streak-day-label {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(40, 37, 39, 0.55);
+}
+
+.week-streak-marker {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &.completed {
+    background: #4CAF50;
+  }
+
+  &.missed {
+    background: #E5484D;
+  }
+
+  &.pending {
+    background: #fff;
+    border: 1.5px solid rgba(40, 37, 39, 0.15);
+  }
+}
+
+@media (max-width: 360px) {
+  .week-streak-card {
+    padding: 14px;
+  }
+
+  .week-streak-marker {
+    width: 24px;
+    height: 24px;
+  }
+
+  .week-streak-day-label {
+    font-size: 11px;
+  }
+}

@@ -115,6 +115,18 @@
   font-family: var(--font-sans);
 }
 
+.message-title {
+  font-weight: 800;
+  font-size: 17px;
+}
+
+.message-subtitle {
+  font-weight: 500;
+  font-size: 14px;
+  color: rgba(40, 37, 39, 0.7);
+  margin-top: 4px;
+}
+
 // Host class override for left-aligned text
 :host(.text-left) .message-text {
   text-align: left;
