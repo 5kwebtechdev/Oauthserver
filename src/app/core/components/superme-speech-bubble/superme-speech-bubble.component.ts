@@ -121,6 +121,14 @@ export class SupermeSpeechBubbleComponent implements OnDestroy {
     return this.petMessage?.message || this.message;
   }
 
+  /** Splits displayMessage into non-empty lines (used to render a bold title + lighter body when the message has multiple lines) */
+  get messageLines(): string[] {
+    return this.displayMessage
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+  }
+
   /** Computes the CSS offset value for the arrow position */
   get computedArrowOffset(): string {
     if (typeof this.arrowPosition === 'number') {

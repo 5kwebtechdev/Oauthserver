@@ -8,7 +8,6 @@ import { AuthApi } from '../../api/auth.api';
 import { MoodService } from '../../services/mood.service';
 import { VibesDisplayResponse } from '../../models/mood.model';
 import { AuthService } from '../../services/auth.service';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 export interface MoodOption { key: string; label: string; emoji?: string }
 
@@ -31,8 +30,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
   vibes: VibesDisplayResponse[] = [];
   private setsToday = 0;
 
-  // popup state
-  showPopup = false;
+  // selection state
   popupSelection: string | null = null;
   // blocked-tooltip state
   blockedTooltipVisible = false;
@@ -129,40 +127,24 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
     this.valueChange.emit(this.value);
   }
 
-  // Popup helpers
-  openPopup() {
-    // Prevent parents from opening popup
-    const userRelationship = this.authService.getUserRelationship();
-    if (userRelationship === 'PARENT') {
-      return;
-    }
-
-    // Limit to 2 sets/day
-    if (this.setsToday >= 2) {
-      // Show a small inline tooltip explaining the limit
-      this.showBlockedTooltip();
-      return;
-    }
-
-    this.popupSelection = null;
-    this.showPopup = true;
-  }
-  
-  // First-layer click handler used by template to prevent opening popup when blocked
-  onMoodClick() {
-    // Prevent parents from opening popup
-    const userRelationship = this.authService.getUserRelationship();
-    if (userRelationship === 'PARENT') return;
-
+  // Tapping a mood option — gated by the same daily-limit rule the submit button enforces
+  choosePopup(src: string) {
+    if (this.isParent) return;
     if (this.setsToday >= 2) {
       this.showBlockedTooltip();
       return;
     }
-
-    this.openPopup();
+    this.popupSelection = src;
   }
-  closePopup() { this.showPopup = false }
-  choosePopup(src: string) { this.popupSelection = src }
+
+  // Big preview circle: shows the tapped option, falling back to today's current/neutral mood
+  get popupPreviewSrc(): string {
+    return this.popupSelection || this.displayAssetSrc || this.moodAssetMap['NEUTRAL'];
+  }
+  get popupPreviewLabel(): string {
+    const opt = this.popupOptions.find(p => p.src === this.popupSelection);
+    return opt?.label || 'Neutral';
+  }
 
   showBlockedTooltip() {
     try {
@@ -182,8 +164,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
     private http: HttpClient,
     private authApi: AuthApi,
     private moodService: MoodService,
-    private authService: AuthService,
-    private sanitizer: DomSanitizer
+    private authService: AuthService
   ) { }
 
   setVibe() {
@@ -192,7 +173,6 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
     // Safety guard: if we already hit the daily limit, don't attempt network call
     if (this.setsToday >= 2) {
       this.showBlockedTooltip();
-      this.showPopup = false;
       return;
     }
 
@@ -216,7 +196,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
         this.value = 'asset:' + this.popupSelection;
         this.valueChange.emit(this.value);
         this.incrementDailySetCount();
-        this.showPopup = false;
+        this.popupSelection = null;
         // Clear cache and refresh
         this.moodService.clearVibesDisplayCache();
         this.getTodayVibe();
@@ -224,7 +204,6 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
       error: (err) => {
         console.error('Failed to set vibe', err);
         // Do NOT change mood on error; keep previous state
-        this.showPopup = false;
 
         // Defensive: if server reports the daily limit, show blocked tooltip
         const serverMsg = err?.error?.message || err?.message || '';
@@ -270,11 +249,6 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
     const m = this.options.find(x => x.key === this.value) || this.options[0];
     return m?.label || '';
   }
-  get activeSubtitle() {
-    const vibe = this.activeVibe;
-    if (!vibe) return '';
-    return vibe.description || '';
-  }
   get progressPercent() {
     const vibe = this.activeVibe;
     if (vibe) {
@@ -294,16 +268,6 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
     const idx = this.options.findIndex(x => x.key === this.value);
     const pos = idx === -1 ? 0 : idx;
     return Math.round(((pos + 1) / this.options.length) * 100);
-  }
-
-  get currentVibe(): VibesDisplayResponse | null {
-    return this.activeVibe;
-  }
-
-  get currentVibeTitleSafe(): SafeHtml | null {
-    const v = this.currentVibe;
-    if (!v || !v.title) return null;
-    return this.sanitizer.bypassSecurityTrustHtml(v.title);
   }
 
   trackByUserId = (_: number, item: VibesDisplayResponse) => item?.userId ?? _;

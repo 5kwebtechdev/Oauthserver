@@ -1,0 +1,192 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.qa-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.qa-title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 500;
+  color: #282527;
+  margin: 0;
+}
+
+// ── Hero "Write Now" card ─────────────────────────────────────────────────────
+.qa-hero-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  background: #edfff8;
+  border: 1.5px solid #6BD1A8;
+  border-radius: 20px;
+  padding: 14px 16px;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.qa-hero-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qa-hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.qa-hero-title {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 500;
+  color: #282527;
+}
+
+.qa-hero-subtitle {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(40, 37, 39, 0.6);
+  line-height: 1.35;
+}
+
+.qa-write-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 16px;
+  background: #19c292;
+  color: black;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 -2px 2px 0 rgba(255, 255, 255, 0.25) inset, 0 3px 8px rgba(23, 168, 118, 0.35);
+}
+
+// ── Notes / Calendar shortcut cards ───────────────────────────────────────────
+.qa-shortcuts {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.qa-shortcut-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  background: #fff;
+  border-radius: 16px;
+  border-bottom: 3px solid transparent;
+  box-shadow: 0 4px 12px rgba(20, 20, 20, 0.08);
+  padding: 14px 12px;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.qa-shortcut-notes {
+  border-bottom-color: #3B7DED;
+}
+
+.qa-shortcut-calendar {
+  border-bottom-color: #E1527C;
+}
+
+.qa-shortcut-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.qa-shortcut-label {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  color: #282527;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── Recently submitted notes ──────────────────────────────────────────────────
+.qa-recent-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.qa-recent-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 2px 8px rgba(20, 20, 20, 0.06);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.qa-recent-note-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3B7DED;
+  flex-shrink: 0;
+}
+
+.qa-recent-note-title {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: #282527;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 360px) {
+  .qa-hero-card {
+    flex-wrap: wrap;
+  }
+
+  .qa-write-btn {
+    width: 100%;
+    order: 3;
+  }
+
+  .qa-shortcut-label {
+    font-size: 13px;
+  }
+}
