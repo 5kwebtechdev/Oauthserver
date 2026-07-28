@@ -146,6 +146,39 @@
   </div>
 </ng-template>
 
+<ng-template #reminderSection>
+  <section class="reminder-section" aria-label="Reminder">
+    <button type="button" class="reminder-trigger" (click)="toggleReminderOptions()"
+      [attr.aria-expanded]="reminderExpanded" aria-controls="activity-reminder-options">
+      <span class="reminder-trigger-left">
+        <span class="reminder-icon-tile" aria-hidden="true">
+          <img src="assets/icons/reminder-bell-figma.svg" alt="">
+        </span>
+        <span class="reminder-copy">
+          <span class="reminder-title">Set Reminder (Optional)</span>
+          <span *ngIf="reminderOffset" class="reminder-summary">{{ reminderSummary }}</span>
+        </span>
+      </span>
+      <img class="reminder-add-icon" [class.expanded]="reminderExpanded"
+        src="assets/icons/reminder-add-figma.svg" alt="" aria-hidden="true">
+    </button>
+
+    <div id="activity-reminder-options" class="reminder-options" [class.open]="reminderExpanded"
+      [attr.aria-hidden]="!reminderExpanded">
+      <div class="reminder-options-inner" role="radiogroup" aria-label="Select reminder time">
+        <button *ngFor="let option of reminderOptions" type="button" class="reminder-option"
+          [class.selected]="reminderOffset === option.value"
+          [attr.aria-checked]="reminderOffset === option.value"
+          [attr.tabindex]="reminderExpanded ? 0 : -1" role="radio"
+          (click)="selectReminderOffset(option.value)">
+          <span class="reminder-radio" aria-hidden="true"></span>
+          <span>{{ option.label }}</span>
+        </button>
+      </div>
+    </div>
+  </section>
+</ng-template>
+
 <ng-template #submitSection let-btnType="btnType" let-btnTypeFaded="btnTypeFaded" let-itemType="itemType">
   <div class="submit-row" (click)="onSubmitRowClick($event)">
     <div *ngIf="serverErrorMessage && (currentActive === 'habits' || currentActive === 'tasks')" class="field-error"
@@ -186,6 +219,7 @@
           <ng-container *ngTemplateOutlet="datePickerSection"></ng-container>
         </div>
       </div>
+      <ng-container *ngTemplateOutlet="reminderSection"></ng-container>
       <ng-container *ngTemplateOutlet="prioritySection"></ng-container>
       <!-- coinSection removed -->
       <ng-container *ngTemplateOutlet="notesSection; context: {showNotesValidation: true}"></ng-container>
@@ -204,6 +238,7 @@
           <ng-container *ngTemplateOutlet="datePickerSection"></ng-container>
         </div>
       </div>
+      <ng-container *ngTemplateOutlet="reminderSection"></ng-container>
       <ng-container *ngTemplateOutlet="prioritySection"></ng-container>
       <!-- coinSection removed -->
       <ng-container *ngTemplateOutlet="notesSection; context: {showNotesValidation: true}"></ng-container>
@@ -241,6 +276,7 @@
             daySelectionErrorMessage }}</div>
         </div>
       </div>
+      <ng-container *ngTemplateOutlet="reminderSection"></ng-container>
       <ng-container *ngTemplateOutlet="prioritySection"></ng-container>
       <ng-container *ngTemplateOutlet="notesSection; context: {showNotesValidation: false}"></ng-container>
       <div *ngIf="attemptedSubmit && showNotesError" class="field-error" role="alert">Please add a short note about

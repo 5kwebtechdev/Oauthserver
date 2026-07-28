@@ -23,6 +23,20 @@ ion-content.auth-static-content {
   overscroll-behavior: none;
 }
 
+ion-content.password-scroll-content {
+  --overflow: auto;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  height: 100%;
+  overscroll-behavior-y: contain;
+}
+
+ion-content.password-scroll-content::part(scroll) {
+  scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 68px);
+  scroll-padding-bottom: calc(var(--signup-keyboard-inset, 0px) + env(safe-area-inset-bottom, 0px) + 24px);
+  -webkit-overflow-scrolling: touch;
+}
+
 superme-navigator.signup-navigator {
   display: block;
   width: calc(100% - var(--signup-profile-gutter) - var(--signup-profile-gutter));
@@ -2509,6 +2523,26 @@ ion-content.details-content {
   --background: #ffffff !important;
 }
 
+ion-content.details-content::part(scroll) {
+  scroll-padding-bottom: calc(
+    var(--signup-referral-keyboard-inset, 0px)
+    + env(safe-area-inset-bottom, 0px)
+    + 24px
+  );
+  -webkit-overflow-scrolling: touch;
+}
+
+ion-content.details-content.referral-keyboard-open {
+  .signup-container.profile-layout {
+    padding-bottom: calc(
+      var(--signup-referral-keyboard-inset, 0px)
+      + env(safe-area-inset-bottom, 0px)
+      + 28px
+    ) !important;
+    transition: padding-bottom 180ms ease-out;
+  }
+}
+
 .step5-cancel {
   position: absolute;
   top: 16px;
@@ -2539,12 +2573,17 @@ ion-content.details-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    width: 100%;
     gap: 12px;
     padding: 0.6rem 0;
+    color: inherit;
     background: transparent;
     cursor: pointer;
     border-radius: 12px;
     border: 2px solid transparent;
+    font: inherit;
+    text-align: left;
+    appearance: none;
     transition: 0.18s ease;
 
     &:hover {
@@ -2596,7 +2635,33 @@ ion-content.details-content {
   }
 
   .referral-input-wrapper {
-    margin-top: 0.6rem;
+    display: grid;
+    grid-template-rows: 0fr;
+    margin-top: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      grid-template-rows 240ms ease,
+      margin-top 240ms ease,
+      opacity 180ms ease,
+      visibility 0s linear 240ms;
+
+    &.is-open {
+      grid-template-rows: 1fr;
+      margin-top: 0.6rem;
+      opacity: 1;
+      visibility: visible;
+      transition:
+        grid-template-rows 240ms ease,
+        margin-top 240ms ease,
+        opacity 180ms ease 40ms,
+        visibility 0s linear 0s;
+    }
+
+    .referral-input-inner {
+      min-height: 0;
+      overflow: hidden;
+    }
 
     .input-group {
       input {
@@ -2616,6 +2681,10 @@ ion-content.details-content {
           outline: none;
         }
 
+        &[aria-invalid='true'] {
+          border-color: var(--error_color);
+        }
+
         &:read-only {
           color: #772817;
           cursor: default;
@@ -2629,6 +2698,7 @@ ion-content.details-content {
 
       .referral-validation {
         margin-top: 0.5rem;
+        min-height: 20px;
 
         .validation-status {
          
@@ -3756,11 +3826,11 @@ ion-content.details-content {
 
 // Password creation (Step 3 of 6)
 .signup-container.password-layout {
-  height: 100%;
-  min-height: 0;
+  height: auto;
+  min-height: 100%;
   padding: 0;
   gap: 0;
-  overflow: hidden;
+  overflow: visible;
   background: #ffffff;
   color: #282527;
   font-family: 'Nunito', sans-serif;
@@ -3769,10 +3839,16 @@ ion-content.details-content {
     position: relative;
     display: block;
     width: 100%;
-    height: 100%;
-    min-height: 0;
-    overflow: hidden;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
     background: #ffffff;
+    touch-action: pan-y;
+  }
+
+  superme-auth-back-button.pwd-fixed-back {
+    position: fixed;
+    z-index: 20;
   }
 
   .pwd-back-btn {
@@ -3804,11 +3880,13 @@ ion-content.details-content {
 
   .pwd-shell {
     width: min(100%, 560px);
-    height: 100%;
-    min-height: 0;
+    height: auto;
+    min-height: 100%;
     margin: 0 auto;
     padding: calc(env(safe-area-inset-top, 0px) + clamp(84px, 10dvh, 104px)) 22px
-      calc(env(safe-area-inset-bottom, 0px) + 42px);
+      calc(env(safe-area-inset-bottom, 0px) + 42px + var(--signup-keyboard-inset, 0px));
+    box-sizing: border-box;
+    transition: padding-bottom 180ms ease-out;
   }
 
   .pwd-hero {
@@ -3912,6 +3990,8 @@ ion-content.details-content {
       font-weight: 500;
       letter-spacing: 0;
       box-shadow: none;
+      scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 82px);
+      scroll-margin-bottom: calc(var(--signup-keyboard-inset, 0px) + 96px);
 
       &::placeholder {
         color: #746e72;
@@ -4001,6 +4081,35 @@ ion-content.details-content {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .referral-section {
+    .referral-arrow,
+    .referral-input-wrapper {
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+ion-content.password-keyboard-open {
+  .signup-container.password-layout {
+    .pwd-shell {
+      padding-top: calc(env(safe-area-inset-top, 0px) + 68px);
+    }
+
+    .pwd-form {
+      margin-top: 24px;
+    }
+
+    .pwd-field--confirm {
+      margin-top: 20px;
+    }
+
+    .pwd-next-btn {
+      margin-top: 24px;
+    }
+  }
+}
+
 @media (min-width: 768px) {
   .signup-container.password-layout {
     .pwd-back-btn {
@@ -4063,6 +4172,7 @@ ion-content.details-content {
 
 @media (prefers-reduced-motion: reduce) {
   .signup-container.password-layout {
+    .pwd-shell,
     .pwd-back-btn,
     .pwd-field__row,
     .pwd-next-btn {

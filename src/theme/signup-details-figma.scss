@@ -26,37 +26,33 @@
 .profile-step--figma .details-header {
   position: relative;
   width: 100%;
-  min-height: 190px;
+  min-height: calc(190px + var(--sat, 0px));
+  padding-top: var(--sat, 0px);
+  box-sizing: border-box;
   overflow: hidden;
   background: linear-gradient(180deg, #e2dbfd 0%, #f2effc 62%, #fff 100%);
 }
 
-.profile-step--figma .details-back-btn {
+.profile-step--figma .details-back-row {
   position: relative;
-  z-index: 3;
-  width: 48px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  width: min(393px, 100%);
   height: 48px;
-  margin: calc(var(--sat, 0px) + 20px) 0 0 16px;
-  border-radius: 0;
-}
-
-.profile-step--figma .details-back-btn:hover {
-  background: transparent;
-}
-
-.profile-step--figma .details-back-btn img {
-  display: block;
-  width: 48px;
-  height: 48px;
+  margin: 0 auto;
+  padding-left: 16px;
+  box-sizing: border-box;
 }
 
 .profile-step--figma .details-header-content {
   position: relative;
   display: flex;
-  width: 100%;
-  min-height: 122px;
-  margin-top: -1px;
-  padding-left: 30px;
+  align-items: center;
+  width: min(393px, 100%);
+  min-height: 142px;
+  margin: 0 auto;
+  padding-left: clamp(28px, 10.18vw, 40px);
   box-sizing: border-box;
 }
 
@@ -159,8 +155,8 @@
 .signup-container.profile-layout .profile-step--figma > .details-referral-section,
 .signup-container.profile-layout .profile-step--figma > .profile-button-wrapper,
 .signup-container.profile-layout .profile-step--figma > .error-message {
-  width: calc(100% - 32px);
-  max-width: none;
+  width: min(361px, calc(100% - 32px));
+  max-width: 361px;
   margin-right: auto;
   margin-left: auto;
 }
@@ -436,13 +432,26 @@
 }
 
 .profile-step--figma .details-referral-section .referral-toggle {
+  width: 100%;
   min-height: 42px;
   padding: 0;
   border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  appearance: none;
 }
 
-.profile-step--figma .details-referral-section .referral-toggle:hover {
+.profile-step--figma .details-referral-section .referral-toggle:hover,
+.profile-step--figma .details-referral-section .referral-toggle:active {
   background: transparent;
+}
+
+.profile-step--figma .details-referral-section .referral-toggle:focus-visible {
+  border-radius: 8px;
+  outline: 2px solid #7341a7;
+  outline-offset: 4px;
 }
 
 .profile-step--figma .details-referral-section .referral-text {
@@ -459,6 +468,7 @@
 .profile-step--figma .details-referral-section .referral-arrow {
   width: 24px;
   height: 24px;
+  flex: 0 0 24px;
 }
 
 .profile-step--figma .details-referral-section .referral-arrow img {
@@ -468,11 +478,44 @@
 }
 
 .profile-step--figma .details-referral-section .referral-input-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-top: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows 240ms ease,
+    margin-top 240ms ease,
+    opacity 180ms ease,
+    visibility 0s linear 240ms;
+}
+
+.profile-step--figma .details-referral-section .referral-input-wrapper.is-open {
+  grid-template-rows: 1fr;
   margin-top: 12px;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows 240ms ease,
+    margin-top 240ms ease,
+    opacity 180ms ease 40ms,
+    visibility 0s linear 0s;
+}
+
+.profile-step--figma .details-referral-section .referral-input-inner {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .profile-step--figma .details-referral-section .input-group {
   margin: 0;
+}
+
+.profile-step--figma .details-referral-section .referral-validation {
+  margin-top: 8px;
+  padding: 0 2px;
+  font-size: 13px;
+  line-height: 1.35;
 }
 
 .profile-step--figma .profile-button-wrapper {
@@ -501,14 +544,16 @@
 
 /* Parent details frame: Figma node 22895:47573 */
 .profile-step--figma.profile-step--parent .details-header-illustration {
-  width: 128px;
+  right: 16px;
+  width: 114px;
+  height: 138px;
 }
 
 .profile-step--figma.profile-step--parent .details-header-illustration img {
-  width: 254px !important;
+  width: 249px !important;
   max-width: none;
-  height: 142px;
-  transform: translateX(-70px);
+  height: 139px;
+  transform: translateX(-75px);
 }
 
 .profile-step--figma.profile-step--parent .profile .profile-field-title,
@@ -543,7 +588,11 @@
 }
 
 .signup-container.profile-layout .profile-step.profile-step--figma.profile-step--parent .details-header {
-  min-height: 228px;
+  min-height: calc(188px + var(--sat, 0px));
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma.profile-step--parent .details-header-content {
+  min-height: 140px;
 }
 
 .signup-container.profile-layout .profile-step.profile-step--figma.profile-step--parent .details-progress-copy .profile-hero__title {
@@ -560,8 +609,8 @@
 .signup-container.profile-layout .profile-step.profile-step--figma > .details-referral-section,
 .signup-container.profile-layout .profile-step.profile-step--figma > .profile-button-wrapper,
 .signup-container.profile-layout .profile-step.profile-step--figma > .error-message {
-  width: calc(100% - 32px) !important;
-  max-width: none !important;
+  width: min(361px, calc(100% - 32px)) !important;
+  max-width: 361px !important;
   margin-right: auto !important;
   margin-left: auto !important;
 }
@@ -572,7 +621,13 @@
   }
 
   .profile-step--figma .details-header-illustration {
-    right: -18px;
+    right: 0;
+  }
+
+  .profile-step--figma.profile-step--parent .details-header-illustration {
+    right: 8px;
+    transform: scale(0.92);
+    transform-origin: right bottom;
   }
 
   .profile-step--figma .details-avatar-grid {

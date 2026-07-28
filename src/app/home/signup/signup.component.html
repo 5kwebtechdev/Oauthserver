@@ -1,6 +1,11 @@
-<ion-content #content [scrollY]="step !== 5 && step !== 0.1 && step !== 0.2 && step !== 0.3"
-  [class.auth-static-content]="step === 0.1 || step === 0.2 || step === 0.3"
+<ion-content #content [scrollY]="step !== 5 && step !== 0.1 && step !== 0.2"
+  [class.auth-static-content]="step === 0.1 || step === 0.2"
+  [class.password-scroll-content]="step === 0.3"
+  [class.password-keyboard-open]="step === 0.3 && isPasswordKeyboardOpen"
+  [style.--signup-keyboard-inset.px]="step === 0.3 ? passwordKeyboardHeight : 0"
   [class.details-content]="step === 2"
+  [class.referral-keyboard-open]="step === 2 && referralKeyboardHeight > 0"
+  [style.--signup-referral-keyboard-inset.px]="step === 2 ? referralKeyboardHeight : 0"
   [ngClass]="step === 5 || step === 4 || step === 2 || step === 1 || step === 0.1 || step === 0.2 || step === 0.3 ? 'bg-white' : 'bg-superme-secondary'">
   <superme-navigator class="signup-navigator" *ngIf="step !== 5 && step !== 4 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 2"
     [heading]="headerText"
@@ -127,8 +132,9 @@
       </div>
     </section>
 
-    <section *ngIf="step === 0.3" [@slideIn] class="pwd-step" aria-labelledby="signup-password-title">
-      <superme-auth-back-button (back)="goBack()"></superme-auth-back-button>
+    <section *ngIf="step === 0.3" [@slideIn] class="pwd-step" aria-labelledby="signup-password-title"
+      (click)="onPasswordScreenTap($event)">
+      <superme-auth-back-button class="pwd-fixed-back" (back)="goBack()"></superme-auth-back-button>
 
       <div class="pwd-shell">
         <header class="pwd-hero">
@@ -150,6 +156,7 @@
             <div class="pwd-field__row">
               <input id="signup-password" class="pwd-field__input" formControlName="password" name="password"
                 autocomplete="new-password" [type]="hidePassword ? 'password' : 'text'" placeholder="Enter password"
+                enterkeyhint="next" (focus)="onPasswordFieldFocus($event)"
                 [class.pwd-field__input--error]="password?.invalid && (password?.dirty || password?.touched)" />
               <button type="button" class="pwd-field__eye" (click)="hidePassword = !hidePassword"
                 [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'">
@@ -167,6 +174,7 @@
               <input id="signup-confirm-password" class="pwd-field__input" formControlName="confirmPassword"
                 name="confirmPassword" autocomplete="new-password"
                 [type]="hideConfirmPassword ? 'password' : 'text'" placeholder="Enter password"
+                enterkeyhint="done" (focus)="onPasswordFieldFocus($event)"
                 [class.pwd-field__input--error]="confirmPassword?.touched && (confirmPassword?.invalid || passwordForm.hasError('passwordMismatch'))" />
               <button type="button" class="pwd-field__eye" (click)="hideConfirmPassword = !hideConfirmPassword"
                 [attr.aria-label]="hideConfirmPassword ? 'Show confirmed password' : 'Hide confirmed password'">
@@ -311,7 +319,9 @@
     <div *ngIf="step === 2" [@slideIn] class="profile-step profile-step--figma"
       [class.profile-step--parent]="currentRole === 'parent'">
       <header class="details-header">
-        <superme-auth-back-button (back)="goBack()"></superme-auth-back-button>
+        <div class="details-back-row">
+          <superme-auth-back-button mode="inline" (back)="goBack()"></superme-auth-back-button>
+        </div>
 
         <div class="details-header-content">
           <div class="details-header-copy">
@@ -480,36 +490,45 @@
 
 
       <div class="referral-section details-referral-section">
-        <div class="referral-toggle" role="button" tabindex="0" (click)="toggleReferral()"
-          (keydown)="$event.key==='Enter' && toggleReferral()">
+        <button type="button" class="referral-toggle" (click)="toggleReferral()"
+          [attr.aria-expanded]="showReferral" aria-controls="signup-referral-panel">
           <div class="referral-text">
             <h4>Got a Referral Code?</h4>
             <span>Tap to earn 100 bonus coins!</span>
           </div>
-          <div class="referral-arrow" [ngClass]="{'open': showReferral || currentRole === 'parent'}">
+          <span class="referral-arrow" [class.open]="showReferral" aria-hidden="true">
             <img src="assets/Images-Transparent/details-chevron-figma.svg" alt="" aria-hidden="true" />
-          </div>
-        </div>
+          </span>
+        </button>
 
-        <div class="referral-input-wrapper" *ngIf="showReferral || currentRole === 'parent'">
-          <div class="input-group">
-            <input type="text" [value]="referralCode" (input)="onReferralInput($event)"
-              [placeholder]="currentRole === 'parent' ? 'Code' : 'Type 8 character code'"
-              maxlength="8" [readonly]="referralCodeReadonly" [attr.aria-readonly]="referralCodeReadonly" />
-            <div class="error" *ngIf="referralCode && referralCode.length > 8">Referral code must be up to 8 characters
-            </div>
-            <!-- Validation status indicators -->
-            <div class="referral-validation" *ngIf="referralValidationStatus || referralErrorMessage">
-              <div class="validation-status" [ngClass]="referralValidationStatus">
-                <span *ngIf="referralValidationStatus === 'pending'" class="status-text">
-                  <i class="fa-solid fa-spinner fa-spin"></i> Validating...
-                </span>
-                <span *ngIf="referralValidationStatus === 'valid'" class="status-text success">
-                  <i class="fa-solid fa-check-circle"></i> Referral code applied!
-                </span>
-                <span *ngIf="referralValidationStatus === 'invalid'" class="status-text error">
-                  <i class="fa-solid fa-exclamation-circle"></i> {{referralErrorMessage || 'Invalid referral code'}}
-                </span>
+        <div id="signup-referral-panel" class="referral-input-wrapper" [class.is-open]="showReferral"
+          [attr.aria-hidden]="!showReferral">
+          <div class="referral-input-inner">
+            <div class="input-group">
+              <label class="signup-entry-sr-label" for="signup-referral-code">Referral code</label>
+              <input #referralInput id="signup-referral-code" type="text" [value]="referralCode"
+                (input)="onReferralInput($event)" (focus)="onReferralFieldFocus($event)"
+                (blur)="onReferralFieldBlur()" [disabled]="!showReferral"
+                [placeholder]="currentRole === 'parent' ? 'Code' : 'Type 8 character code'"
+                maxlength="8" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false"
+                [readonly]="referralCodeReadonly" [attr.aria-readonly]="referralCodeReadonly"
+                [attr.aria-invalid]="referralValidationStatus === 'invalid'"
+                aria-describedby="signup-referral-feedback" />
+
+              <div id="signup-referral-feedback" class="referral-validation" aria-live="polite"
+                *ngIf="referralValidationStatus || referralErrorMessage">
+                <div class="validation-status" [ngClass]="referralValidationStatus">
+                  <span *ngIf="referralValidationStatus === 'pending'" class="status-text">
+                    <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Validating...
+                  </span>
+                  <span *ngIf="referralValidationStatus === 'valid'" class="status-text success">
+                    <i class="fa-solid fa-check-circle" aria-hidden="true"></i> Referral code applied!
+                  </span>
+                  <span *ngIf="referralValidationStatus === 'invalid'" class="status-text error" role="alert">
+                    <i class="fa-solid fa-exclamation-circle" aria-hidden="true"></i>
+                    {{referralErrorMessage || 'Invalid referral code'}}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -518,7 +537,9 @@
 
       <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
       <div class="profile-button-wrapper">
-        <button type="button" class="details-next-button" [disabled]="isProfileStepInvalid" (click)="registerOrProceed()">Next</button>
+        <button type="button" class="details-next-button"
+          [disabled]="isProfileStepInvalid || registrationInProgress || referralValidationStatus === 'pending'"
+          (click)="registerOrProceed()">Next</button>
       </div>
 
     </div>
@@ -602,7 +623,9 @@
         </swiper-slide>
       </swiper-container>
 
-      <button type="button" class="pet-step-next" (click)="proceedWithAvatar()">Next</button>
+      <button type="button" class="pet-step-next"
+        [disabled]="!currentImage || registrationInProgress"
+        (click)="proceedWithAvatar()">Next</button>
     </section>
 
     <div *ngIf="step === 5" [@slideIn]

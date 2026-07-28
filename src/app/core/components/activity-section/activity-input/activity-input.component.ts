@@ -15,7 +15,7 @@ import { HabitApi } from '../../../api/habit.api';
 import { TaskApi } from '../../../api/task.api';
 import { CalendarApi } from '../../../api/calendar.api';
 import { TagsApi } from '../../../api/tags.api';
-import { Habit } from '../habit.types';
+import { Habit, ReminderOffset } from '../habit.types';
 import { Router } from '@angular/router';
 import { NavigationService } from '../../../services/navigation.service';
 import { AuthService } from '../../../services/auth.service';
@@ -155,6 +155,35 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   weekdays = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'];
   selectedDays = new Set<string>();
   priority: '' | 'low' | 'medium' | 'high' = '';
+  reminderOffset: ReminderOffset | null = null;
+  reminderExpanded = false;
+
+  readonly reminderOptions: ReadonlyArray<{ value: ReminderOffset | null; label: string }> = [
+    { value: null, label: 'No reminder' },
+    { value: 'MINUTES_15', label: '15 minutes before' },
+    { value: 'MINUTES_30', label: '30 minutes before' },
+    { value: 'MINUTES_45', label: '45 minutes before' }
+  ];
+
+  get reminderSummary(): string {
+    return this.reminderOptions.find(option => option.value === this.reminderOffset)?.label || 'No reminder';
+  }
+
+  toggleReminderOptions(): void {
+    this.reminderExpanded = !this.reminderExpanded;
+  }
+
+  selectReminderOffset(value: ReminderOffset | null): void {
+    this.reminderOffset = value;
+    this.reminderExpanded = false;
+  }
+
+  private normalizeReminderOffset(value: unknown): ReminderOffset | null {
+    const normalized = String(value ?? '').trim().toUpperCase();
+    return this.reminderOptions.some(option => option.value === normalized)
+      ? normalized as ReminderOffset
+      : null;
+  }
 
   // Priority options for template
   readonly priorities = [
@@ -399,6 +428,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       // Convert times to 12-hour format for the timepicker component
       this.startTime = this.to12Hour(h.startTime || h.start_time || '');
       this.endTime = this.to12Hour(h.endTime || h.end_time || '');
+      this.reminderOffset = this.normalizeReminderOffset(h.reminderOffset ?? h.reminder_offset);
+      this.reminderExpanded = false;
       // Auto-switch to the appropriate tab based on: @Input() initialTab, explicit currentActive in state, or habit type
       // Reuse `stateCurrentActive` declared above and fall back to habit type when editing.
       this.currentActive = (stateCurrentActive as any) || (h.type as any) || this.currentActive;
@@ -412,6 +443,9 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
           next: (res: any) => {
             // isToggleOn mirrors isPrivateToChild exactly: true = toggle ON/private.
             this.isPrivate = !!res?.isToggleOn;
+            if (res && ('reminderOffset' in res || 'reminder_offset' in res)) {
+              this.reminderOffset = this.normalizeReminderOffset(res.reminderOffset ?? res.reminder_offset);
+            }
             this.cd.detectChanges();
           },
           error: () => { /* keep the fallback value on error */ }
@@ -511,6 +545,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     this.selectedDays = new Set<string>();
     this.everyday = false;
     this.priority = '';
+    this.reminderOffset = null;
+    this.reminderExpanded = false;
     this.activities = [
       { name: '', startTime: '', endTime: '' },
       { name: '', startTime: '', endTime: '' },
@@ -823,6 +859,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       routine: this.selectedRoutine,
       status: 'pending',
       createdAt: new Date(),
+      reminderOffset: this.reminderOffset,
       activities: this.currentActive === 'timetable' ? this.activities.filter(a => a.name.trim()) : undefined
     };
 
@@ -913,6 +950,16 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         payload.daysOfWeek = daysOfWeek;
       }
     }
+
+    // Leave the optional field out of new payloads when no reminder is chosen,
+    // preserving the existing API behavior. Updates send null so users can
+    // remove a reminder that was saved previously.
+    if (this.reminderOffset) {
+      payload.reminderOffset = this.reminderOffset;
+    } else if (this.editingId) {
+      payload.reminderOffset = null;
+    }
+
     // Debug: show computed values to help diagnose server mismatch
     try {
       console.log(
@@ -1146,7 +1193,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       completionPercentage: data.completionPercentage ?? data.completionRate ?? 0,
       totalCompletedDays: data.totalCompletedDays ?? data.completedDays ?? 0,
       milestoneBadges: data.milestoneBadges ?? data.badgeList ?? null,
-      daysOfWeek: Array.isArray(data.daysOfWeek) ? data.daysOfWeek : (this.everyday ? ActivityInputComponent.FULL_WEEK : daysOfWeek)
+      daysOfWeek: Array.isArray(data.daysOfWeek) ? data.daysOfWeek : (this.everyday ? ActivityInputComponent.FULL_WEEK : daysOfWeek),
+      reminderOffset: this.normalizeReminderOffset(data.reminderOffset ?? data.reminder_offset ?? baseHabit.reminderOffset)
     };
   }
 

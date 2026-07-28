@@ -2,6 +2,17 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 export type PetActivityType = 'tasks' | 'habits' | 'quizzes' | 'puzzles' | 'articles' | 'lessons';
+export type PetType = 'panda' | 'dragon' | 'llama' | 'owl';
+export type PetMood = 'happy' | 'playful' | 'curious' | 'base' | 'tired' | 'anger';
+
+export interface ApiUserPet {
+  id?: number;
+  petName?: string;
+  name?: string;
+  petType?: string;
+  gender?: string | null;
+  url?: string;
+}
 
 export interface PetActivityCounts {
   tasks: number;
@@ -19,7 +30,7 @@ export interface PetAgeConfig {
 }
 
 export interface UserPetData {
-  petType: 'panda' | 'dragon' | 'llama' | 'owl';
+  petType: PetType;
   currentAge: number;            // 1, 2, or 3 (3 = max per PRD)
   activityCounts: PetActivityCounts;  // per-type counters, reset on each age-up
   totalActivityScore: number;         // accumulated score toward next threshold
@@ -37,6 +48,8 @@ const AGE_THRESHOLD: Record<number, number> = { 1: 100, 2: 300 };
 const EMPTY_COUNTS: PetActivityCounts = {
   tasks: 0, habits: 0, quizzes: 0, puzzles: 0, articles: 0, lessons: 0
 };
+
+const PET_TYPES: readonly PetType[] = ['panda', 'dragon', 'llama', 'owl'];
 
 @Injectable({ providedIn: 'root' })
 export class PetAgeService {
@@ -66,7 +79,7 @@ export class PetAgeService {
   /** Migrate legacy streak-based format to activity-based format */
   private migrateData(raw: any): UserPetData {
     return {
-      petType: raw.petType || 'panda',
+      petType: this.resolvePetType(raw.petType) || 'panda',
       currentAge: Math.min(3, Math.max(1, Number(raw.currentAge) || 1)),
       activityCounts: raw.activityCounts ? { ...EMPTY_COUNTS, ...raw.activityCounts } : { ...EMPTY_COUNTS },
       totalActivityScore: Number(raw.totalActivityScore) || 0,
@@ -78,7 +91,7 @@ export class PetAgeService {
     };
   }
 
-  private createNewPet(petType: 'panda' | 'dragon' | 'llama' | 'owl' = 'panda'): UserPetData {
+  private createNewPet(petType: PetType = 'panda'): UserPetData {
     return {
       petType,
       currentAge: 1,
@@ -112,6 +125,61 @@ export class PetAgeService {
 
   getCurrentAge(): number {
     return this.petDataSubject.value.currentAge;
+  }
+
+  getCurrentPetType(): PetType {
+    return this.petDataSubject.value.petType;
+  }
+
+  getCurrentPetDisplayName(): string {
+    const petType = this.getCurrentPetType();
+    return petType.charAt(0).toUpperCase() + petType.slice(1);
+  }
+
+  /**
+   * Synchronize the locally-rendered pet with the pet object returned by the
+   * login/profile API. Activity age and progress are preserved.
+   */
+  syncFromUserPet(userPet: ApiUserPet | string | null | undefined): void {
+    const petType = this.resolvePetType(userPet);
+    if (!petType || petType === this.getCurrentPetType()) return;
+
+    this.savePetData({
+      ...this.getCurrentPetData(),
+      petType
+    });
+  }
+
+  /**
+   * Resolve all supported backend shapes, including values such as
+   * "Panda-Age1-Happy.png" and "src/main/resources/pets/Panda-Age1-Happy.png".
+   */
+  resolvePetType(userPet: ApiUserPet | string | null | undefined): PetType | null {
+    if (!userPet) return null;
+
+    const values = typeof userPet === 'string'
+      ? [userPet]
+      : [userPet.petName, userPet.name, userPet.petType, userPet.url];
+    const normalized = values.filter(Boolean).join(' ').toLowerCase();
+
+    return PET_TYPES.find(type => normalized.includes(type)) || null;
+  }
+
+  getPetImagePath(
+    mood: PetMood = 'base',
+    age: number = this.getCurrentAge(),
+    animated: boolean = false
+  ): string {
+    const petName = this.getCurrentPetDisplayName();
+    const normalizedAge = Math.max(1, Math.min(3, Number(age) || 1));
+    const moodName = mood.charAt(0).toUpperCase() + mood.slice(1);
+    const prefix = animated ? `${petName}-Move` : petName;
+    return `assets/Images-Pet/${prefix}-Age${normalizedAge}-${moodName}.png`;
+  }
+
+  getPetImageAlt(mood?: PetMood): string {
+    const moodLabel = mood && mood !== 'base' ? `${mood} ` : '';
+    return `${moodLabel}${this.getCurrentPetDisplayName()} illustration`;
   }
 
   getCurrentStreak(): number {
@@ -226,11 +294,11 @@ export class PetAgeService {
     };
   }
 
-  changePetType(petType: 'panda' | 'dragon' | 'llama' | 'owl'): void {
+  changePetType(petType: PetType): void {
     this.savePetData({ ...this.getCurrentPetData(), petType });
   }
 
-  resetPetData(petType?: 'panda' | 'dragon' | 'llama' | 'owl'): void {
+  resetPetData(petType?: PetType): void {
     this.savePetData(this.createNewPet(petType));
   }
 

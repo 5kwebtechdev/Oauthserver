@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -9,7 +9,7 @@ import { UserService } from '../../core/services/user.service';
 import { CredentialSaverService } from '../../core/services/credential-saver.service';
 import { SignupCredentialStateService } from '../../core/services/signup-credential-state.service';
 import { BarcodeScanner, BarcodesScannedEvent } from '@capacitor-mlkit/barcode-scanning';
-import { AlertController, IonicModule, NavController } from '@ionic/angular';
+import { AlertController, IonicModule, IonRouterOutlet, NavController, Platform } from '@ionic/angular';
 import { FaqItem, PROFILE_FAQS } from '../../core/components/user-profile/profile-facts/profile-facts.component';
 import { SupermeNavigatorComponent } from '../../core/components/superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../core/components/superme-button/superme-button.component';
@@ -18,8 +18,11 @@ import { QRCodeComponent } from 'angularx-qrcode';
 import { toApiGender } from '../../core/models/gender.model';
 import { OnboardingStateService } from '../../core/services/onboarding-state.service';
 import { AuthBackButtonComponent } from '../../core/components/auth-back-button/auth-back-button.component';
+import { environment } from '../../../environments/environment';
+import { Subscription } from 'rxjs';
+import { NavigationService } from '../../core/services/navigation.service';
 
-type ViewMode = 'instructions-child' | 'instructions-parent' | 'join-family-child' | 'join-family-parent';
+type ViewMode = 'instructions-parent' | 'join-family-child' | 'join-family-parent';
 type FamilyMode = 'create' | 'join';
 type UserRole = 'child' | 'parent' | 'self';
 
@@ -32,7 +35,8 @@ type UserRole = 'child' | 'parent' | 'self';
 })
 export class FamilyOnboardComponent implements OnInit, OnDestroy {
     private static readonly CHILD_POST_FAMILY_WELCOME_KEY = 'show_child_welcome_after_family';
-    @Input() viewMode: ViewMode = 'instructions-child';
+    private readonly appDownloadUrl = environment.firebase.remoteConfig.defaults.android_store_url;
+    @Input() viewMode: ViewMode = 'join-family-child';
 
     // Form controls
     codeForm: FormGroup;
@@ -61,6 +65,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     isCheckingJoinFamilyCode = false;
     private codeCheckTimeout: any;
     private joinFamilyCodeCheckTimeout: any;
+    private backButtonSubscription?: Subscription;
+    private previousSwipeGesture: boolean | null = null;
 
     // Max parents error state
     maxParentsErrorMessage: string | null = null;
@@ -104,7 +110,10 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         private userService: UserService,
         private credentialSaverService: CredentialSaverService,
         private signupCredentialState: SignupCredentialStateService,
-        private onboardingState: OnboardingStateService
+        private onboardingState: OnboardingStateService,
+        private platform: Platform,
+        private navigation: NavigationService,
+        @Optional() private routerOutlet?: IonRouterOutlet
     ) {
         // Single code input form for join-family flows
         this.codeForm = this.fb.group({
@@ -132,9 +141,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     ngOnInit() {
         // Detect viewMode from current route URL if not set as @Input
         const currentUrl = this.router.url;
-        if (currentUrl.includes('instructions-for-child')) {
-            this.viewMode = 'instructions-child';
-        } else if (currentUrl.includes('instructions-for-parent')) {
+        if (currentUrl.includes('instructions-for-parent')) {
             this.viewMode = 'instructions-parent';
         } else if (currentUrl.includes('join-family2')) {
             this.viewMode = 'join-family-parent';
@@ -146,7 +153,11 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             const role = params['role'];
             const scannedCode = params['scannedCode'];
             const requestedMode = params['mode'];
-            const savedFamilyCode = (sessionStorage.getItem('familyCode') || '').trim().toUpperCase();
+            const savedFamilyCode = (
+                sessionStorage.getItem('familyCode')
+                || this.onboardingState.getRegistrationState()?.savedData?.familyCode
+                || ''
+            ).trim().toUpperCase();
 
             if (role && ['child', 'parent', 'self'].includes(role)) {
                 this.userRole = role as UserRole;
@@ -189,6 +200,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
         this.initializeFaqs();
         this.applyCodeValidators();
+        this.configureChildBackHandling();
 
         // Also watch parent join-family input for 6/8-character validation and auto-check
         const joinCtrl = this.joinFamilyForm.get('familyCode');
@@ -225,6 +237,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
+        this.releaseChildBackHandling();
         // Clear any pending timeouts
         if (this.codeCheckTimeout) {
             clearTimeout(this.codeCheckTimeout);
@@ -235,6 +248,14 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         this.stopScanner().catch(e => console.error('Error stopping scanner:', e));
     }
 
+    ionViewDidEnter(): void {
+        this.configureChildBackHandling();
+    }
+
+    ionViewWillLeave(): void {
+        this.releaseChildBackHandling();
+    }
+
     /**
      * Initialize FAQs based on view mode
      */
@@ -243,9 +264,6 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             (f: FaqItem) => (f.section || '').toLowerCase() === 'onboarding' && (f.screen || '').toLowerCase().includes(screen);
 
         switch (this.viewMode) {
-            case 'instructions-child':
-                this.faqs = PROFILE_FAQS.filter(baseFilter('instructions- child (pre linking)'));
-                break;
             case 'instructions-parent':
                 this.faqs = PROFILE_FAQS.filter(baseFilter('instructions-parents'));
                 break;
@@ -428,7 +446,6 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
      */
     getNavigationTitle(): string {
         const titles: Record<ViewMode, string> = {
-            'instructions-child': 'Instructions',
             'instructions-parent': 'Instructions',
             // The child code-entry screen shows its own "Step 6 of 6" hero
             // header in the page body, so the nav bar itself stays title-less
@@ -457,17 +474,58 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             return;
         }
 
+        if (this.viewMode === 'join-family-child') {
+            const enteredCode = String(this.codeForm.get('code')?.value || '').trim().toUpperCase();
+            if (enteredCode) {
+                this.onboardingState.updateRegistrationDraft({ familyCode: enteredCode }, 5);
+            }
+
+            const targetUrl = '/home/sign-up?step=2&role=child&editOnboarding=true';
+            this.navigation.replaceHistory(targetUrl);
+            this.navigateWithoutHistory('/home/sign-up', {
+                step: 2,
+                role: 'child',
+                editOnboarding: 'true'
+            });
+            return;
+        }
+
         const backRoutes: Record<ViewMode, string> = {
-            'instructions-child': '/home/sign-up',
             'instructions-parent': '/home/sign-up',
-            'join-family-child': '/home/instructions-for-child',
+            'join-family-child': '/home/sign-up',
             'join-family-parent': '/home/instructions-for-parent'
         };
-
         const route = backRoutes[this.viewMode];
         // If user arrived from sign-up, back should return them to the profile/details entry (step 2)
         const queryParams = this.viewMode.startsWith('join-family') ? { role: this.userRole } : { step: 2 };
         this.navigateWithoutHistory(route, queryParams);
+    }
+
+    private configureChildBackHandling(): void {
+        if (this.viewMode !== 'join-family-child') return;
+
+        if (!this.backButtonSubscription) {
+            // Higher priority than the app-wide handler so Android Back follows
+            // the same deterministic route as the header button.
+            this.backButtonSubscription = this.platform.backButton.subscribeWithPriority(100, () => {
+                this.goBack();
+            });
+        }
+
+        if (this.routerOutlet && this.previousSwipeGesture === null) {
+            this.previousSwipeGesture = this.routerOutlet.swipeGesture;
+            this.routerOutlet.swipeGesture = false;
+        }
+    }
+
+    private releaseChildBackHandling(): void {
+        this.backButtonSubscription?.unsubscribe();
+        this.backButtonSubscription = undefined;
+
+        if (this.routerOutlet && this.previousSwipeGesture !== null) {
+            this.routerOutlet.swipeGesture = this.previousSwipeGesture;
+            this.previousSwipeGesture = null;
+        }
     }
 
     /**
@@ -527,6 +585,12 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
         if (this.isLoading) return;
         this.isLoading = true;
+        this.onboardingState.updateRegistrationDraft({
+            familyCode,
+            relationship: 'CHILD',
+            asChild: true,
+            onboardingStep: 5
+        }, 5);
 
         this.familyService.convertToChild(familyCode).subscribe({
             next: (response) => {
@@ -548,6 +612,14 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
                         familyName: response?.familyName
                     }
                 });
+                const onboardingStep = Number(response?.onboardingStep) || 5;
+                this.onboardingState.saveRegistrationDraft({
+                    ...(response || {}),
+                    familyCode: response?.familyCode || familyCode,
+                    relationship: response?.relationship || 'CHILD',
+                    asChild: false,
+                    onboardingStep
+                }, onboardingStep);
                 try { localStorage.removeItem('familyLinkSkipped'); } catch (e) { }
 
                 this.core.triggerToasrt(response?.message || 'Joined your family!', 'success');
@@ -587,6 +659,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
      * CREATE FAMILY (Parent role)
      */
     createFamily(): void {
+        if (this.isLoading) return;
+
         if (this.familyForm.invalid) {
             this.familyForm.markAllAsTouched();
             this.core.triggerToasrt('Please enter a valid family name (2-30 characters)');
@@ -596,6 +670,13 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         const familyName = this.familyForm.get('familyName')?.value;
         sessionStorage.setItem('familyName', familyName);
         this.createdFamilyName = familyName;
+        this.onboardingState.updateRegistrationDraft({
+            familyName,
+            familyCode: null,
+            relationship: 'PARENT',
+            familyRole: 'CREATOR',
+            onboardingStep: 4
+        }, 4);
 
         // Google OAuth signup: backend creates the family via oauth2-login (familyName param).
         // Do NOT pre-create the family here — it would create a duplicate.
@@ -613,8 +694,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         // defer straight to registration instead — same pattern joinFamily()
         // already uses below.
         const profileStr = sessionStorage.getItem('signup_profile');
-        const password = this.signupCredentialState.getPassword();
-        if (profileStr && password) {
+        if (profileStr) {
             sessionStorage.setItem('familyCreator', 'true');
             sessionStorage.removeItem('familyCode');
             this.registerAccount();
@@ -643,6 +723,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
      * JOIN FAMILY (Parent role)
      */
     joinFamily(): void {
+        if (this.isLoading) return;
+
         if (this.joinFamilyForm.invalid) {
             this.joinFamilyForm.markAllAsTouched();
             this.core.triggerToasrt('Please enter a valid family code (6-8 characters)');
@@ -651,6 +733,12 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
         const familyCode = (this.joinFamilyForm.get('familyCode')?.value || '').trim().toUpperCase();
         sessionStorage.setItem('familyCode', familyCode);
+        this.onboardingState.updateRegistrationDraft({
+            familyCode,
+            relationship: 'PARENT',
+            familyRole: 'CO_PARENT',
+            onboardingStep: 4
+        }, 4);
         try { sessionStorage.removeItem('familyCreator'); } catch (e) { }
 
         // Google OAuth signup: no password available — use oauth2-login instead
@@ -660,8 +748,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         }
 
         const profileStr = sessionStorage.getItem('signup_profile');
-        const password = this.signupCredentialState.getPassword();
-        if (profileStr && password) {
+        if (profileStr) {
             this.registerAccount();
             return;
         }
@@ -736,7 +823,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             navigator.share({
                 title: 'Family Code',
                 text: `Join my family with code: ${this.familyCode}`,
-                url: `${window.location.origin}/join-family?code=${this.familyCode}`
+                url: this.appDownloadUrl
             }).catch(() => {
                 this.fallbackShare();
             });
@@ -757,7 +844,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         const text = `Hi! 👋
 Can you help me join our family on SuperMe?
 Create your Parent account and send me the Family Code or QR Code.
-Please download the app: ${window.location.origin}
+Please download the app: ${this.appDownloadUrl}
 
 Thank you!`;
 
@@ -806,13 +893,18 @@ Thank you!`;
 
                 if (loginCredentials?.password && (loginCredentials.email || loginCredentials.phone)) {
                     this.authService.login(loginCredentials).subscribe({
-                        next: () => {
+                        next: (loginResponse) => {
                             const identifier = loginCredentials.email || loginCredentials.phone || '';
                             void this.credentialSaverService.save({
                                 identifier,
                                 password: loginCredentials.password,
                                 mode: loginCredentials.email ? 'email' : 'phone'
                             }).finally(() => {
+                                const resume = this.onboardingState.getResumeNavigation(loginResponse.user);
+                                if (resume) {
+                                    this.navigateWithoutHistory(resume.url, resume.queryParams);
+                                    return;
+                                }
                                 this.clearSignupSession();
                                 this.signupCredentialState.clear();
                                 const route = this.authService.getDashboardRoute() || '/authed/parent-account';
@@ -846,6 +938,8 @@ Thank you!`;
      * Register parent account
      */
     registerAccount(): void {
+        if (this.isLoading) return;
+
         // Google OAuth signup: no password — use oauth2-login instead
         if (sessionStorage.getItem('signup_via_google') === 'true') {
             this.completeGoogleParentSignup();
@@ -855,7 +949,7 @@ Thank you!`;
         const profileStr = sessionStorage.getItem('signup_profile');
         const password = this.signupCredentialState.getPassword();
 
-        if (!profileStr || !password) {
+        if (!profileStr) {
             this.redirectToLogin();
             return;
         }
@@ -872,10 +966,10 @@ Thank you!`;
                 username: profile.username || undefined,
                 gender: toApiGender(profile.gender),
                 relationship: 'PARENT',
-                password: password,
                 familyCode: familyCode || '',
                 familyName: sessionStorage.getItem('familyName') || this.createdFamilyName || ''
             };
+            if (password) payload.password = password;
 
             // Add date of birth from profile (required by register API)
             if (profile.dob) {
@@ -915,18 +1009,39 @@ Thank you!`;
                 payload.familyRole = 'CO_PARENT';
             }
 
+            this.onboardingState.saveRegistrationDraft(payload, 4, payload.email ? 'EMAIL' : 'PHONE');
             this.authService.register(payload).subscribe({
-                next: () => {
+                next: (response) => {
                     this.isParentRegistered = true;
                     this.maxParentsErrorMessage = null; // Clear any previous error
+                    const onboardingStep = Number(
+                        response?.savedData?.onboardingStep
+                        ?? response?.user?.onboardingStep
+                        ?? response?.onboardingStep
+                        ?? response?.nextStep
+                    );
+                    if (Number.isInteger(onboardingStep) && onboardingStep >= 1 && onboardingStep <= 6) {
+                        this.onboardingState.saveRegistrationDraft({
+                            ...payload,
+                            ...(response?.savedData || {}),
+                            ...(response?.user || {}),
+                            onboardingStep
+                        }, onboardingStep, payload.email ? 'EMAIL' : 'PHONE');
+                    }
 
-                    this.signupCredentialState.setPendingLogin({
-                        ...(payload.email ? { email: payload.email } : {}),
-                        ...(payload.phone ? { phone: payload.phone } : {}),
-                        password
-                    });
+                    if (password) {
+                        this.signupCredentialState.setPendingLogin({
+                            ...(payload.email ? { email: payload.email } : {}),
+                            ...(payload.phone ? { phone: payload.phone } : {}),
+                            password
+                        });
+                    }
 
                     this.isLoading = false;
+                    if (onboardingStep >= 6) {
+                        this.finishCompletedParentRegistration(response, payload, password);
+                        return;
+                    }
                     this.navigateToParentWelcome();
                 },
                 error: (error) => {
@@ -1056,6 +1171,60 @@ Thank you!`;
 
         this.clearSignupSession();
         this.navigateWithoutHistory('/home/sign-up', { step: 5 });
+    }
+
+    private finishCompletedParentRegistration(response: any, payload: any, password: string): void {
+        const completeNavigation = () => {
+            this.onboardingState.clearRegistrationDraft();
+            this.onboardingState.markExistingUser();
+            this.clearSignupSession();
+            this.signupCredentialState.clear();
+            this.isLoading = false;
+            this.navigateWithoutHistory(this.authService.getDashboardRoute() || '/authed/parent-account');
+        };
+
+        const responseUserId = response?.user?.id;
+        if (response?.token && responseUserId) {
+            this.authService.setSession({
+                token: response.token,
+                userId: responseUserId,
+                expiresIn: response.expiresIn,
+                user: response.user
+            });
+        }
+
+        if (this.authService.isLoggedIn()) {
+            completeNavigation();
+            return;
+        }
+
+        if (!password || (!payload.email && !payload.phone)) {
+            this.onboardingState.clearRegistrationDraft();
+            this.clearSignupSession();
+            this.navigateWithoutHistory('/home/login');
+            return;
+        }
+
+        const credentials = {
+            ...(payload.email ? { email: payload.email } : {}),
+            ...(payload.phone ? { phone: payload.phone } : {}),
+            password
+        };
+        this.authService.login(credentials).subscribe({
+            next: (loginResponse) => {
+                const resume = this.onboardingState.getResumeNavigation(loginResponse.user);
+                if (resume) {
+                    this.navigateWithoutHistory(resume.url, resume.queryParams);
+                    return;
+                }
+                completeNavigation();
+            },
+            error: () => {
+                this.onboardingState.clearRegistrationDraft();
+                this.clearSignupSession();
+                this.navigateWithoutHistory('/home/login');
+            }
+        });
     }
 
     private redirectToLogin(): void {

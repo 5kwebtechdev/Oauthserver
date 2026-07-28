@@ -15,6 +15,7 @@ import { EmptyStateComponent } from 'src/app/core/components/empty-state/empty-s
 import { CustomToastService } from 'src/app/core/services/custom-toast.service';
 import { AcademyCategory, AcademyService } from 'src/app/core/services/academy.service';
 import { AuthService } from 'src/app/core/services/auth.service';
+import { PetAgeService } from 'src/app/core/services/pet-age.service';
 import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
 import { LearningChallengeCardComponent } from '../learning-card/learning-challenge-card.component';
 import { LearningArticleCardComponent } from '../learning-card/learning-article-card.component';
@@ -100,12 +101,21 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     private toastService: CustomToastService,
     private academyService: AcademyService,
     private authService: AuthService,
+    private petAgeService: PetAgeService,
     private router: Router,
     private zone: NgZone
   ) { }
 
   ngOnInit(): void {
     this.loadTab('puzzles');
+  }
+
+  get currentPetCuriousImage(): string {
+    return this.petAgeService.getPetImagePath('curious');
+  }
+
+  get currentPetCuriousAlt(): string {
+    return this.petAgeService.getPetImageAlt('curious');
   }
 
   ionViewWillEnter(): void {

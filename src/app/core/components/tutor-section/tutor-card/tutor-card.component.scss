@@ -1,22 +1,305 @@
- $primary-text: #282527;
- $accent: #90214D;
- $card-bg: #D6E3EF;
- $heart-color: #E1527C;
- $cta-grad-start: #7284B9;
- $cta-grad-end: #505D83;
+:host {
+  display: block;
+  width: 100%;
+}
 
- //  .tutors-section {
- //  	display: flex;
- //  	flex-direction: column;
- //  	align-items: flex-start;
- //  	gap: 12px;
+.eduhub-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 16px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #B8D0F6;
+}
 
- //  }
+.eduhub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
 
- // @media (max-width: 420px) {
- // 	.tutors-section {
- // 		width: 100%;
- // 		&__card { width: 100%; }
- // 		&__header { width: 100%; }
- // 	}
- // }
+  h3 {
+    margin: 0;
+    color: #091530;
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.2;
+
+    span {
+      color: #1432A8;
+    }
+  }
+
+  p {
+    margin: 1px 0 0;
+    color: rgba(9, 21, 48, 0.7);
+    font-family: var(--font-sans);
+    font-size: 10px;
+  }
+}
+
+.eduhub-listings {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  color: #1432A8;
+  font-family: var(--font-sans);
+
+  strong {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  > span {
+    margin-top: -2px;
+    font-size: 12px;
+  }
+}
+
+.eduhub-listings__label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  color: #1432A8;
+  font-size: 13px !important;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+
+  img {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    object-fit: contain;
+  }
+}
+
+.eduhub-categories,
+.eduhub-tutors {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  padding-bottom: 3px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.eduhub-category {
+  position: relative;
+  flex: 0 0 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0 0 5px;
+  border: 0;
+  background: transparent;
+  color: #282527;
+  font-family: var(--font-sans);
+  font-size: 9px;
+  white-space: nowrap;
+
+  &.active::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 1px;
+    content: '';
+    background: #282527;
+  }
+}
+
+.eduhub-category__image {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #77B7F4, #2F81D5);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.eduhub-loading {
+  display: flex;
+  justify-content: center;
+  min-height: 132px;
+  align-items: center;
+}
+
+.eduhub-tutors {
+  gap: 10px;
+}
+
+.eduhub-tutor {
+  flex: 0 0 280px;
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 8px;
+  height: 102px;
+  min-height: 102px;
+  padding: 4px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 12px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 5px rgba(18, 63, 180, 0.12);
+}
+
+.eduhub-tutor__avatar {
+  width: 89px;
+  height: 94px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #EDECED;
+}
+
+.eduhub-tutor__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 2px 3px 2px 0;
+  color: #282527;
+  font-family: var(--font-sans);
+
+  p,
+  small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  p {
+    margin: 2px 0;
+    font-size: 10px;
+  }
+
+  small {
+    color: #6B656A;
+    font-size: 8px;
+    line-height: 1.4;
+  }
+}
+
+.eduhub-tutor__headline {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  min-width: 0;
+
+  strong {
+    overflow: hidden;
+    font-size: 10px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    color: rgba(40, 37, 39, 0.7);
+    font-size: 8px;
+  }
+}
+
+.eduhub-tutor__likes,
+.eduhub-tutor__time {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  white-space: nowrap;
+
+  img {
+    width: 12px;
+    height: 12px;
+    flex: 0 0 12px;
+    object-fit: contain;
+  }
+}
+
+.eduhub-tutor__likes {
+  max-width: 92px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eduhub-tutor__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 5px;
+  margin-top: auto;
+
+  span {
+    color: #123FB4;
+    font-size: 9px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  button {
+    min-height: 30px;
+    padding: 8px;
+    border: 1px solid #3158A8;
+    border-radius: 10px;
+    background: radial-gradient(circle at center, #3158A8 0%, #2345A8 50%, #1432A8 100%);
+    color: #FFFFFF;
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: inset -1px -1px 1px #B2CAF2;
+  }
+}
+
+.eduhub-empty {
+  margin: 0;
+  padding: 16px 0;
+  color: #4F596C;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  text-align: center;
+}
+
+.eduhub-view-all {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #4F73DD;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #164ED4 0%, #0C37AF 100%);
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: inset 0 -2px 2px rgba(255, 255, 255, 0.35);
+}
+
+@media (max-width: 360px) {
+  .eduhub-section {
+    padding-inline: 12px;
+  }
+
+  .eduhub-categories {
+    gap: 10px;
+  }
+
+  .eduhub-tutor {
+    flex-basis: 264px;
+  }
+}

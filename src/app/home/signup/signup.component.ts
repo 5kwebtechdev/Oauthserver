@@ -1,4 +1,4 @@
-import { Component, OnInit, Renderer2, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, Renderer2, ViewChild, ElementRef, AfterViewInit, OnDestroy, NgZone } from '@angular/core';
 import { IonContent, NavController } from '@ionic/angular';
 import { Router, ActivatedRoute } from "@angular/router";
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from "@angular/forms";
@@ -8,12 +8,17 @@ import { UserService } from '../../core/services/user.service';
 import { CountriesService, Country } from "../../core/services/countries.service";
 import { LoadingService } from '../../core/services/loading.service';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { Subscription } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { CredentialSaverService } from '../../core/services/credential-saver.service';
 import { SignupCredentialStateService } from '../../core/services/signup-credential-state.service';
-import { StoredGender, toApiGender } from '../../core/models/gender.model';
-import { OnboardingStateService } from '../../core/services/onboarding-state.service';
+import { StoredGender, toApiGender, toStoredGender } from '../../core/models/gender.model';
+import {
+  OnboardingStateService,
+  RegistrationDraftData
+} from '../../core/services/onboarding-state.service';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { Keyboard, KeyboardInfo } from '@capacitor/keyboard';
 
 type SignupRole = 'child' | 'parent' | 'self';
 type SignupGender = StoredGender;
@@ -79,7 +84,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   public otpRequestInProgress: boolean = false;
   public otpVerifyInProgress: boolean = false;
   public otpResendInProgress: boolean = false;
+  public registrationInProgress: boolean = false;
+  private isEditingPendingChildOnboarding = false;
   private referralCheckInProgress: boolean = false;
+  private validatedReferralCode: string = '';
+  private referralValidationTimer: ReturnType<typeof setTimeout> | null = null;
   public usernameAvailability: 'idle' | 'checking' | 'available' | 'taken' = 'idle';
   private usernameCheckTimer: ReturnType<typeof setTimeout> | null = null;
   private usernameCheckSubscription?: Subscription;
@@ -134,6 +143,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   @ViewChild('swiperEl', { static: false }) swiperEl?: ElementRef;
   @ViewChild('swiperEl', { static: false }) swiperRef!: ElementRef;
   @ViewChild('content', { static: false }) ionContent?: IonContent;
+  @ViewChild('referralInput', { static: false }) referralInput?: ElementRef<HTMLInputElement>;
+  public isPasswordKeyboardOpen = false;
+  public passwordKeyboardHeight = 0;
+  public referralKeyboardHeight = 0;
+  private focusedPasswordField: HTMLElement | null = null;
+  private focusedReferralField: HTMLElement | null = null;
+  private keyboardShowListener: { remove: () => Promise<void> } | null = null;
+  private keyboardHideListener: { remove: () => Promise<void> } | null = null;
+  private visualViewportBaseline = 0;
+  private readonly visualViewportResizeHandler = () => this.handleVisualViewportResize();
 
   // track active slide index so UI can react (e.g. enable button only on first slide)
   public currentSlideIndex: number = 0;
@@ -175,9 +194,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     text: ['Loves big ideas and bold moves', 'Celebrates when you go on streaks']
   }]
 
-  public currentImage: any = this.pets[0];
+  public currentImage: any = null;
 
   ngAfterViewInit(): void {
+    this.setupPasswordKeyboardHandling();
+
     if (!this.swiperRef?.nativeElement) {
       return;
     }
@@ -186,13 +207,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // Wait until Swiper instance is ready
     swiperEl.addEventListener('swiperinit', () => {
       const swiperInstance = swiperEl.swiper;
-      // Initialize with first pet
-      this.currentImage = this.pets[0];
-      this.currentSlideIndex = 0;
-      // Store the selected pet name
-      try {
-        sessionStorage.setItem('signup_pet', this.pets[0].apiName);
-      } catch (e) { }
+      const storedPet = sessionStorage.getItem('signup_pet')
+        || this.onboardingState.getRegistrationState()?.savedData?.petName;
+      const storedIndex = storedPet
+        ? this.pets.findIndex(p => p.apiName === storedPet || p.name === storedPet)
+        : -1;
+
+      this.currentImage = storedIndex >= 0 ? this.pets[storedIndex] : null;
+      this.currentSlideIndex = storedIndex;
+      if (storedIndex >= 0) {
+        swiperInstance?.slideTo(storedIndex, 0);
+      }
     });
 
     swiperEl.addEventListener('swiperslidechange', () => {
@@ -264,6 +289,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     this.restoreSignupStateFromSession();
+    this.restorePersistedRegistrationState();
+    this.refreshIncompleteAuthenticatedOnboarding();
 
     // Registration now starts with email only. Ignore a stale phone-mode value
     // left by an older version when this entry step is opened.
@@ -311,7 +338,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     private credentialSaverService: CredentialSaverService,
     private signupCredentialState: SignupCredentialStateService,
     private navCtrl: NavController,
-    private onboardingState: OnboardingStateService
+    private onboardingState: OnboardingStateService,
+    private ngZone: NgZone
   ) {
     // Initialize with default country
     this.selectedCountry = this.countriesService.getDefaultCountry();
@@ -359,6 +387,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
       const stepParam = params['step'];
       const roleParam = params['role'];
+      this.isEditingPendingChildOnboarding = params['editOnboarding'] === 'true'
+        && stepParam === '2'
+        && roleParam === 'child';
 
       // If role was provided via query (e.g. from scanner), persist it
       if (roleParam && ['child', 'parent', 'self'].includes(roleParam)) {
@@ -377,6 +408,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
       this.enforceParentFlowRestrictions();
       this.renderer.setStyle(document.documentElement, '--step', this.step);
+      this.syncSignupStatusBar();
+      if (this.step === 0.2 && !this.resendInterval) {
+        this.startOtpTimer();
+      }
       // Ensure birthday picker doesn't open automatically when navigating to step 3
       this.openBirthdayPicker = false;
       // Ensure the view is at the top when step changes (prevents previous scroll position hiding the navigator)
@@ -404,10 +439,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           const petFromSession = sessionStorage.getItem('signup_pet');
           if (petFromSession) {
             const idx = this.pets.findIndex(p => p.apiName === petFromSession || p.name === petFromSession);
-            this.currentImage = idx >= 0 ? this.pets[idx] : this.pets[0];
+            this.currentImage = idx >= 0 ? this.pets[idx] : null;
+            this.currentSlideIndex = idx;
           } else {
-            this.currentImage = this.pets[0];
-            sessionStorage.setItem('signup_pet', this.pets[0].apiName);
+            this.currentImage = null;
+            this.currentSlideIndex = -1;
           }
 
           // If swiper instance exists, move it to the stored pet index
@@ -415,7 +451,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
             try {
               const swiperInstance = this.swiperRef?.nativeElement?.swiper;
               if (swiperInstance) {
-                const storedPet = petFromSession || this.pets[0].apiName;
+                const storedPet = petFromSession;
                 const targetIndex = this.pets.findIndex(p => p.apiName === storedPet || p.name === storedPet);
                 if (targetIndex >= 0) swiperInstance.slideTo(targetIndex);
                 // reflect in UI state
@@ -748,37 +784,67 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.errorMessage = null;
     this.otpRequestInProgress = true;
 
-    // Step 1: check if email already exists
-    this.authService.checkEmailExists(identifier).subscribe({
-      next: (res) => {
-        if (res.exists) {
-          this.otpRequestInProgress = false;
-          this.errorMessage = 'This email is already registered. Please login instead.';
+    this.authService.registerRequestOtp(identifier, true).subscribe({
+      next: (response) => {
+        this.otpRequestInProgress = false;
+        if (response?.success === false) {
+          this.errorMessage = response.message || 'Failed to send OTP. Please try again.';
           return;
         }
-        // Step 2: email is new — send OTP
-        this.authService.sendLoginOtp(identifier).subscribe({
-          next: () => {
-            this.otpRequestInProgress = false;
-            this.requestedIdentifier = identifier;
-            try {
-              if (identifier) {
-                sessionStorage.setItem('requestedIdentifier', identifier);
-                sessionStorage.setItem('loginMode', 'email');
-              }
-            } catch (e) { }
-            this.startOtpTimer();
-            this.navigateToSignupStep(0.2);
-          },
-          error: (err) => {
-            this.otpRequestInProgress = false;
-            this.errorMessage = err?.error?.message || 'Failed to send OTP. Please try again.';
+
+        this.requestedIdentifier = identifier;
+        try {
+          sessionStorage.setItem('requestedIdentifier', identifier);
+          sessionStorage.setItem('loginMode', 'email');
+        } catch (e) { }
+
+        const savedData = response?.savedData;
+        const effectiveStep = savedData?.onboardingStep ?? response?.nextStep;
+
+        if (savedData) {
+          // Some backend versions return the resume step only as `nextStep`.
+          // Put that effective value onto the draft before routing so an
+          // email-verified draft never falls back to the OTP screen.
+          const restoredDraft: RegistrationDraftData = {
+            ...savedData,
+            ...(effectiveStep != null ? { onboardingStep: Number(effectiveStep) } : {})
+          };
+          this.onboardingState.saveRegistrationDraft(restoredDraft, effectiveStep, 'EMAIL');
+          this.applyRegistrationDraft(restoredDraft);
+
+          if (savedData.emailVerified === true) {
+            if (Number(effectiveStep) >= 6) {
+              this.onboardingState.clearRegistrationDraft();
+              this.core.triggerToasrt('Your account is already set up. Please log in to continue.');
+              this.navigateReplacing('/home/login');
+              return;
+            }
+            const resume = this.onboardingState.getResumeNavigation(restoredDraft);
+            if (resume) {
+              void this.navCtrl.navigateRoot(resume.url, {
+                queryParams: resume.queryParams,
+                animated: false
+              });
+              return;
+            }
           }
-        });
+        } else {
+          this.onboardingState.saveRegistrationDraft({
+            email: identifier,
+            emailVerified: false,
+            onboardingStep: 2
+          }, 2, 'EMAIL');
+        }
+
+        this.startOtpTimer();
+        this.navigateToSignupStep(0.2);
       },
-      error: () => {
+      error: (err) => {
         this.otpRequestInProgress = false;
-        this.errorMessage = 'Unable to verify email. Please try again.';
+        this.errorMessage = this.getApiErrorMessage(
+          err,
+          'Failed to send OTP. Please try again.'
+        );
       }
     });
   }
@@ -795,6 +861,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.errorMessage = null; // Clear any previous errors
     // persist role selection
     try { sessionStorage.setItem('signup_role', this.roleSelected); } catch (e) { }
+    this.onboardingState.updateRegistrationDraft({
+      relationship: this.roleSelected.toUpperCase(),
+      asChild: this.roleSelected === 'child'
+    });
     this.onboardingState.markRoleSelectionCompleted();
 
     // The first-launch flow asks for the role before account credentials.
@@ -838,29 +908,27 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         selectedPetName = sessionStorage.getItem('signup_pet');
       }
 
-      // Last resort: use first pet
-      if (!selectedPetName && this.pets.length > 0) {
-        selectedPetName = this.pets[0].apiName;
-      }
-
       if (selectedPetName) {
         sessionStorage.setItem('signup_pet', selectedPetName);
+        this.onboardingState.updateRegistrationDraft({
+          petName: selectedPetName,
+          onboardingStep: 5
+        }, 5);
+      } else {
+        this.core.triggerToasrt('Please choose your pet to continue.');
+        return;
       }
 
       // Self registers here. A fresh Child account is already registered and
       // linked to a family before this post-family Pet step is shown.
       const role = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;
       if (this.isPostFamilyChildPetStep) {
-        if (!selectedPetName) {
-          this.core.triggerToasrt('Please choose your pet to continue.');
-          return;
-        }
-        this.persistPostFamilyPetSelection(selectedPetName);
+        this.registerChildOrSelfFromSession('child', true);
         return;
       }
 
       if (role === 'self') {
-        this.registerChildOrSelfFromSession('self');
+        this.registerChildOrSelfFromSession('self', true);
         return;
       }
 
@@ -894,10 +962,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
 
       if (this.roleSelected === 'child') {
-        void this.navCtrl.navigateRoot('/home/instructions-for-child', {
-          queryParams: { role: 'child' },
-          animated: false
-        });
+        // The old instruction interstitial was retired. Register/sign in the
+        // pending child and open the real family-code screen directly.
+        this.registerChildOrSelfFromSession('child', false);
         return;
       }
 
@@ -925,6 +992,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         avatar: this.currentRole === 'parent' ? this.getNameInitial() : this.avatarSelected
       };
       sessionStorage.setItem('signup_profile', JSON.stringify(profile));
+      this.persistProfileDraft(profile);
     } catch (e) { }
 
     // Fallback: continue to step 3 (phone/email)
@@ -934,7 +1002,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   /**
    * Called from profile Save & Continue when user should be registered immediately
    */
-  registerOrProceed(): void {
+  async registerOrProceed(): Promise<void> {
+    if (
+      this.registrationInProgress
+      || (this.showReferral && this.referralCheckInProgress)
+    ) {
+      return;
+    }
+
     this.profileForm.markAllAsTouched();
 
     if (this.profileForm.get('name')?.invalid) {
@@ -978,6 +1053,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
+    if (!(await this.validateReferralBeforeContinue())) {
+      return;
+    }
+
     // persist profile details (store initial as avatar for parent)
     try {
       const profile = {
@@ -989,6 +1068,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         avatar: this.currentRole === 'parent' ? this.getNameInitial() : this.avatarSelected
       };
       sessionStorage.setItem('signup_profile', JSON.stringify(profile));
+      this.persistProfileDraft(profile);
       // Persist referral code (if provided)
       if (this.referralCode && this.referralCode.length > 0) {
         try { sessionStorage.setItem('referralCode', this.referralCode); } catch (e) { }
@@ -1004,6 +1084,22 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
+    if (
+      role === 'child'
+      && this.isEditingPendingChildOnboarding
+      && this.authService.isPendingChild()
+    ) {
+      // Back from Join Family is an edit/review action for an already-created
+      // pending child. Preserve the edited draft and return directly without
+      // issuing a duplicate registration request.
+      this.onboardingState.setRegistrationStep(5);
+      void this.navCtrl.navigateRoot('/home/join-family', {
+        queryParams: { role: 'child' },
+        animated: false
+      });
+      return;
+    }
+
     // Apply age-based routing rules
     if (role === 'parent') {
       void this.navCtrl.navigateRoot('/home/instructions-for-parent', {
@@ -1012,35 +1108,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       });
       return;
     } else if (role === 'self') {
-      // Self accounts retain the existing Pet-before-registration flow.
-      this.navigateToSignupStep(4);
+      // Save backend step 4 before opening pet selection (backend step 5).
+      this.registerChildOrSelfFromSession('self', false);
       return;
     } else if (role === 'child') {
       // Join Family needs an authenticated pending-child account. Register and
       // sign in now, then defer Pet selection until the family join succeeds.
-      this.registerChildOrSelfFromSession('child');
+      this.registerChildOrSelfFromSession('child', false);
       return;
     }
-  }
-
-  private persistPostFamilyPetSelection(petName: string): void {
-    this.loadingService.show();
-    this.authService.updatePetSelection(petName).subscribe({
-      next: () => {
-        const currentPet = this.authService.getUserPet() || {};
-        this.authService.updateUserData({
-          pet: { ...currentPet, petName }
-        });
-        this.userService.updateUserProfile({ pet: petName });
-        this.loadingService.forceHide();
-        this.navigateToSignupStep(5);
-      },
-      error: (error) => {
-        console.error('Failed to save pet selection', error);
-        this.loadingService.forceHide();
-        this.core.triggerToasrt('We could not save your pet. Please try again.');
-      }
-    });
   }
 
   /**
@@ -1049,6 +1125,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
    * completed steps and stops the device Back action from reopening them.
    */
   private navigateToSignupStep(step: number): void {
+    if (this.step === 0.3 && step !== 0.3) {
+      this.dismissPasswordKeyboard();
+    }
     this.resetTransientStepUi();
     void this.navCtrl.navigateRoot('/home/sign-up', {
       queryParams: { step },
@@ -1069,6 +1148,21 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.ageSuggestionTarget = null;
     this.ageSuggestionRoles = [];
     this.showAccessRestrictedModal = false;
+    this.focusedReferralField = null;
+    this.referralKeyboardHeight = 0;
+  }
+
+  private syncSignupStatusBar(): void {
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+
+    const isDetailsStep = this.step === 2;
+    StatusBar.setStyle({ style: isDetailsStep ? Style.Dark : Style.Light }).catch(() => undefined);
+    if (Capacitor.getPlatform() === 'android') {
+      const backgroundColor = isDetailsStep ? '#E2DBFD' : '#FFE9D6';
+      StatusBar.setBackgroundColor({ color: backgroundColor }).catch(() => undefined);
+    }
   }
 
   goBackToEmail() {
@@ -1336,113 +1430,205 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return true;
   }
 
-  // Toggle the referral code input visibility
+  // Toggle the optional referral-code field and keep its value, validation,
+  // persisted draft, and accessibility state synchronized.
   toggleReferral(): void {
-    if (this.referralCodeReadonly) {
-      this.showReferral = true;
+    this.showReferral = !this.showReferral;
+
+    if (!this.showReferral) {
+      this.clearReferralState();
       return;
     }
 
-    this.showReferral = !this.showReferral;
-    // If hiding the input, clear stored code
-    if (!this.showReferral) {
-      this.referralCode = '';
-      this.referralCodeReadonly = false;
-      try {
-        sessionStorage.removeItem('referralCode');
-        sessionStorage.removeItem('referralCodeLocked');
-      } catch (e) { }
-    }
-    // If showing, focus the input after a short delay
-    if (this.showReferral) {
-      setTimeout(() => {
-        const input = document.querySelector('.referral-input-wrapper input') as HTMLInputElement;
-        if (input) input.focus();
-      }, 50);
-    }
+    this.referralValidationStatus = null;
+    this.referralErrorMessage = '';
+    // Let the expand animation begin before opening the native keyboard.
+    setTimeout(() => this.referralInput?.nativeElement.focus(), 220);
   }
 
   // Handle referral input: allow only alphanumeric and max length 8
-  onReferralInput(event: any): void {
+  onReferralInput(event: Event): void {
     if (this.referralCodeReadonly) {
-      try { event.target.value = this.referralCode; } catch (e) { }
+      if (event.target instanceof HTMLInputElement) {
+        event.target.value = this.referralCode;
+      }
       return;
     }
 
-    const raw = (event.target.value || '') as string;
+    const input = event.target instanceof HTMLInputElement ? event.target : null;
+    const raw = input?.value || '';
     // Allow only alphanumeric, up to 8 chars, and normalize to UPPERCASE
     const cleaned = raw.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase();
     this.referralCode = cleaned;
-    // Update input value to cleaned value (prevents caret jump)
-    try { event.target.value = cleaned; } catch (e) { }
+    this.validatedReferralCode = '';
+    this.clearReferralValidationTimer();
+    if (input) input.value = cleaned;
+
     try {
-      sessionStorage.setItem('referralCode', this.referralCode);
+      if (cleaned) {
+        sessionStorage.setItem('referralCode', cleaned);
+      } else {
+        sessionStorage.removeItem('referralCode');
+      }
       sessionStorage.removeItem('referralCodeLocked');
     } catch (e) { }
+    this.onboardingState.updateRegistrationDraft({ referralCode: cleaned || null });
 
-    // Check referral code validity when exactly 8 characters are entered
+    this.referralValidationStatus = null;
+    this.referralErrorMessage = '';
+
+    // Validate after the user pauses. The Next handler still validates
+    // immediately, so a quick tap never requires a second attempt.
     if (cleaned.length === 8) {
-      this.checkReferralCodeValidity(cleaned);
-    } else {
-      // Reset validation status if user clears or modifies the code
-      this.referralValidationStatus = null;
-      this.referralErrorMessage = '';
+      this.referralValidationTimer = setTimeout(() => {
+        void this.checkReferralCodeValidity(cleaned);
+      }, 450);
     }
   }
 
-  // Check if referral code is valid by calling the API
-  private checkReferralCodeValidity(referralCode: string): void {
-    if (this.referralCheckInProgress) {
-      return; // Prevent duplicate requests
+  onReferralFieldFocus(event: FocusEvent): void {
+    this.focusedReferralField = event.target instanceof HTMLElement ? event.target : null;
+    this.visualViewportBaseline = Math.max(
+      this.visualViewportBaseline,
+      window.visualViewport?.height || window.innerHeight
+    );
+    setTimeout(() => this.scrollReferralControlsIntoView(), 80);
+    setTimeout(() => this.scrollReferralControlsIntoView(), 320);
+  }
+
+  onReferralFieldBlur(): void {
+    setTimeout(() => {
+      if (document.activeElement !== this.referralInput?.nativeElement) {
+        this.focusedReferralField = null;
+        if (!Capacitor.isNativePlatform()) {
+          this.referralKeyboardHeight = 0;
+        }
+      }
+    }, 0);
+  }
+
+  private async validateReferralBeforeContinue(): Promise<boolean> {
+    if (!this.showReferral) {
+      return true;
     }
 
+    const code = this.referralCode.trim().toUpperCase();
+    if (code.length !== 8) {
+      this.referralValidationStatus = 'invalid';
+      this.referralErrorMessage = code
+        ? 'Referral code must be exactly 8 characters.'
+        : 'Enter your 8-character referral code, or close this section to continue.';
+      this.focusReferralField();
+      return false;
+    }
+
+    if (
+      this.referralValidationStatus === 'valid'
+      && this.validatedReferralCode === code
+    ) {
+      return true;
+    }
+
+    this.clearReferralValidationTimer();
+    const isValid = await this.checkReferralCodeValidity(code);
+    if (!isValid) {
+      this.focusReferralField();
+    }
+    return isValid;
+  }
+
+  // Check if referral code is valid by calling the API.
+  private async checkReferralCodeValidity(referralCode: string): Promise<boolean> {
+    if (this.referralCheckInProgress) {
+      return false;
+    }
+
+    const requestedCode = referralCode.trim().toUpperCase();
     this.referralCheckInProgress = true;
     this.referralValidationStatus = 'pending';
     this.referralErrorMessage = '';
 
-    const apiUrl = `${environment.apiUrl}/auth/check-referral?referralCode=${referralCode}`;
-
-    this.authService.checkReferralCode(referralCode).subscribe({
-      next: (response: any) => {
-        this.referralCheckInProgress = false;
-
-        // Handle several possible response shapes from the backend.
-        // If the API returns an explicit boolean or an object with a flag, respect it.
-        let isValid: boolean | null = null;
-        try {
-          if (typeof response === 'boolean') {
-            isValid = response;
-          } else if (response && typeof response === 'object') {
-            if ('valid' in response) isValid = !!response.valid;
-            else if ('isValid' in response) isValid = !!response.isValid;
-            else if ('success' in response) isValid = !!response.success;
-            else if ('status' in response && typeof response.status === 'string') {
-              isValid = response.status === 'valid' || response.status === 'success';
-            }
-          }
-        } catch (e) {
-          isValid = null;
-        }
-
-        if (isValid === false) {
-          this.referralValidationStatus = 'invalid';
-          this.referralErrorMessage = (response && response.message) ? response.message : 'Invalid referral code';
-          console.log('Referral code is invalid (server indicated false):', response);
-        } else {
-          // If server didn't explicitly return false, treat 200 as valid
-          this.referralValidationStatus = 'valid';
-          this.referralErrorMessage = '';
-          console.log('Referral code is valid:', response);
-        }
-      },
-      error: (error: any) => {
-        this.referralCheckInProgress = false;
-        this.referralValidationStatus = 'invalid';
-        const errorMsg = error?.error?.message || 'Invalid referral code';
-        this.referralErrorMessage = errorMsg;
-        console.error('Referral code validation failed:', error);
+    try {
+      const response: any = await firstValueFrom(this.authService.checkReferralCode(requestedCode));
+      // Ignore a response for a code that was changed or hidden while the
+      // request was running.
+      if (!this.showReferral || this.referralCode !== requestedCode) {
+        this.referralValidationStatus = null;
+        this.referralErrorMessage = '';
+        return false;
       }
-    });
+
+      const result = response?.data ?? response;
+      let isValid: boolean | null = null;
+      if (typeof result === 'boolean') {
+        isValid = result;
+      } else if (result && typeof result === 'object') {
+        if ('valid' in result) isValid = !!result.valid;
+        else if ('isValid' in result) isValid = !!result.isValid;
+        else if ('success' in result) isValid = !!result.success;
+        else if ('status' in result && typeof result.status === 'string') {
+          const status = result.status.toLowerCase();
+          isValid = status === 'valid' || status === 'success' || status === 'active';
+        }
+      }
+
+      // The live endpoint may return a successful response without a flag.
+      // A 2xx response is valid unless the payload explicitly says otherwise.
+      if (isValid === false) {
+        this.referralValidationStatus = 'invalid';
+        this.referralErrorMessage = response?.message || result?.message || 'Invalid referral code.';
+        this.validatedReferralCode = '';
+        return false;
+      }
+
+      this.referralValidationStatus = 'valid';
+      this.referralErrorMessage = '';
+      this.validatedReferralCode = requestedCode;
+      this.onboardingState.updateRegistrationDraft({ referralCode: requestedCode });
+      return true;
+    } catch (error: any) {
+      if (this.showReferral && this.referralCode === requestedCode) {
+        this.referralValidationStatus = 'invalid';
+        this.referralErrorMessage = error?.error?.message
+          || (error?.status === 0
+            ? 'Unable to verify the code. Check your connection and try again.'
+            : 'Invalid referral code.');
+      }
+      this.validatedReferralCode = '';
+      return false;
+    } finally {
+      this.referralCheckInProgress = false;
+    }
+  }
+
+  private clearReferralState(): void {
+    this.clearReferralValidationTimer();
+    this.referralCode = '';
+    this.referralCodeReadonly = false;
+    this.referralValidationStatus = null;
+    this.referralErrorMessage = '';
+    this.validatedReferralCode = '';
+    this.focusedReferralField = null;
+    this.referralKeyboardHeight = 0;
+    try {
+      sessionStorage.removeItem('referralCode');
+      sessionStorage.removeItem('referralCodeLocked');
+    } catch (e) { }
+    this.onboardingState.updateRegistrationDraft({ referralCode: null });
+  }
+
+  private clearReferralValidationTimer(): void {
+    if (this.referralValidationTimer) {
+      clearTimeout(this.referralValidationTimer);
+      this.referralValidationTimer = null;
+    }
+  }
+
+  private focusReferralField(): void {
+    setTimeout(() => {
+      this.referralInput?.nativeElement.focus();
+      this.scrollReferralControlsIntoView();
+    }, 0);
   }
 
   // Handle phone input to ensure only numbers
@@ -1673,12 +1859,32 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const identifier = this.requestedIdentifier || (savedLoginMode === 'phone' ? this.phone?.value : this.email?.value);
 
     this.otpVerifyInProgress = true;
-    this.authService.verifyLoginOtp(identifier || '', otp).subscribe({
-      next: () => {
+    this.authService.registerVerifyOtp(
+      identifier || '',
+      otp,
+      savedLoginMode === 'email',
+      savedLoginMode === 'phone' ? this.selectedCountry.code : undefined
+    ).subscribe({
+      next: (response) => {
         this.otpVerifyInProgress = false;
+        if (response?.success === false) {
+          this.errorMessage = response.message || 'OTP verification failed. Please try again.';
+          return;
+        }
+
         this.errorMessage = null;
         this.clearOtpTimer();
-        // Proceed to password creation
+        const nextStep = this.getResponseOnboardingStep(response) || 4;
+        this.onboardingState.updateRegistrationDraft({
+          ...(savedLoginMode === 'email'
+            ? { email: identifier || undefined }
+            : { phone: identifier || undefined }),
+          emailVerified: true,
+          onboardingStep: nextStep
+        }, nextStep);
+
+        // Password creation is the app's first UI within backend step 4.
+        // It is intentionally kept in memory only and never persisted.
         this.navigateToSignupStep(0.3);
       },
       error: (err) => {
@@ -1809,10 +2015,200 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    void this.keyboardShowListener?.remove();
+    void this.keyboardHideListener?.remove();
+    window.visualViewport?.removeEventListener('resize', this.visualViewportResizeHandler);
+    if (Capacitor.isNativePlatform()) {
+      StatusBar.setStyle({ style: Style.Light }).catch(() => undefined);
+      if (Capacitor.getPlatform() === 'android') {
+        StatusBar.setBackgroundColor({ color: '#FFE9D6' }).catch(() => undefined);
+      }
+    }
     this.clearUsernameCheckTimer();
+    this.clearReferralValidationTimer();
     this.usernameCheckSubscription?.unsubscribe();
     this.subscription.unsubscribe();
     this.clearOtpTimer();
+  }
+
+  onPasswordFieldFocus(event: FocusEvent): void {
+    const target = event.target instanceof HTMLElement ? event.target : null;
+    if (!target) return;
+
+    this.focusedPasswordField = target;
+    this.visualViewportBaseline = Math.max(
+      this.visualViewportBaseline,
+      window.visualViewport?.height || window.innerHeight
+    );
+
+    // First position the field immediately, then repeat after the native
+    // keyboard animation reports its final height.
+    setTimeout(() => this.scrollPasswordFieldIntoView(target), 60);
+  }
+
+  onPasswordScreenTap(event: MouseEvent): void {
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target) return;
+
+    // Field rows, visibility toggles, submit, and Back remain interactive.
+    if (target.closest('.pwd-field, .pwd-next-btn, superme-auth-back-button')) {
+      return;
+    }
+
+    this.dismissPasswordKeyboard();
+  }
+
+  private setupPasswordKeyboardHandling(): void {
+    this.visualViewportBaseline = window.visualViewport?.height || window.innerHeight;
+    window.visualViewport?.addEventListener('resize', this.visualViewportResizeHandler);
+
+    if (!Capacitor.isNativePlatform()) return;
+
+    void Keyboard.addListener('keyboardDidShow', (info: KeyboardInfo) => {
+      this.ngZone.run(() => {
+        const keyboardHeight = Number(info?.keyboardHeight) || 0;
+        if (this.step === 0.3) {
+          this.setPasswordKeyboardState(keyboardHeight);
+          setTimeout(() => this.scrollPasswordFieldIntoView(), 90);
+        } else if (this.step === 2 && this.focusedReferralField) {
+          this.referralKeyboardHeight = Math.max(0, Math.round(keyboardHeight));
+          setTimeout(() => this.scrollReferralControlsIntoView(), 90);
+        }
+      });
+    }).then(listener => {
+      this.keyboardShowListener = listener;
+    }).catch(() => undefined);
+
+    void Keyboard.addListener('keyboardDidHide', () => {
+      this.ngZone.run(() => {
+        this.setPasswordKeyboardState(0);
+        this.referralKeyboardHeight = 0;
+      });
+    }).then(listener => {
+      this.keyboardHideListener = listener;
+    }).catch(() => undefined);
+  }
+
+  private handleVisualViewportResize(): void {
+    // Native builds use Capacitor's reliable keyboard height. visualViewport
+    // is retained as a fallback for mobile browsers and responsive previews.
+    if (Capacitor.isNativePlatform() || !window.visualViewport) {
+      return;
+    }
+
+    const isPasswordFieldActive = this.step === 0.3;
+    const isReferralFieldActive = this.step === 2 && !!this.focusedReferralField;
+    if (!isPasswordFieldActive && !isReferralFieldActive) {
+      return;
+    }
+
+    const viewport = window.visualViewport;
+    const baseline = Math.max(this.visualViewportBaseline, window.innerHeight);
+    const obscuredHeight = Math.max(0, Math.round(baseline - viewport.height - viewport.offsetTop));
+    this.ngZone.run(() => {
+      const keyboardHeight = obscuredHeight > 100 ? obscuredHeight : 0;
+      if (isPasswordFieldActive) {
+        this.setPasswordKeyboardState(keyboardHeight);
+        if (keyboardHeight) {
+          setTimeout(() => this.scrollPasswordFieldIntoView(), 60);
+        }
+      } else {
+        this.referralKeyboardHeight = keyboardHeight;
+        if (keyboardHeight) {
+          setTimeout(() => this.scrollReferralControlsIntoView(), 60);
+        }
+      }
+
+      if (!keyboardHeight) {
+        this.referralKeyboardHeight = 0;
+        if (isPasswordFieldActive) {
+          this.setPasswordKeyboardState(0);
+        }
+        this.visualViewportBaseline = viewport.height;
+      } else {
+        this.visualViewportBaseline = Math.max(this.visualViewportBaseline, window.innerHeight);
+      }
+    });
+  }
+
+  private setPasswordKeyboardState(height: number): void {
+    this.passwordKeyboardHeight = Math.max(0, Math.round(height));
+    this.isPasswordKeyboardOpen = this.passwordKeyboardHeight > 0;
+    if (!this.isPasswordKeyboardOpen) {
+      this.focusedPasswordField = null;
+    }
+  }
+
+  private scrollPasswordFieldIntoView(target: HTMLElement | null = this.focusedPasswordField): void {
+    if (this.step !== 0.3 || !target || !this.ionContent) return;
+
+    void this.ionContent.getScrollElement().then(scrollElement => {
+      if (!target.isConnected) return;
+      const targetRect = target.getBoundingClientRect();
+      const scrollRect = scrollElement.getBoundingClientRect();
+      const isConfirmation = target.id === 'signup-confirm-password';
+      const preferredTop = isConfirmation
+        ? Math.max(72, scrollElement.clientHeight * 0.18)
+        : Math.max(96, scrollElement.clientHeight * 0.28);
+      const nextScrollTop = Math.max(
+        0,
+        scrollElement.scrollTop + targetRect.top - scrollRect.top - preferredTop
+      );
+      void this.ionContent?.scrollToPoint(0, nextScrollTop, 220);
+    }).catch(() => {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+
+  private scrollReferralControlsIntoView(): void {
+    const input = this.referralInput?.nativeElement;
+    if (this.step !== 2 || !this.showReferral || !input || !this.ionContent) return;
+
+    void this.ionContent.getScrollElement().then(scrollElement => {
+      if (!input.isConnected) return;
+
+      const inputRect = input.getBoundingClientRect();
+      const scrollRect = scrollElement.getBoundingClientRect();
+      const actionButton = input
+        .closest('.profile-step--figma')
+        ?.querySelector<HTMLElement>('.details-next-button');
+      const actionRect = actionButton?.getBoundingClientRect();
+      const contentBottom = Math.max(inputRect.bottom, actionRect?.bottom || inputRect.bottom);
+      const visibleBottom = scrollRect.bottom - 18;
+      const visibleTop = scrollRect.top + 64;
+      let offset = 0;
+
+      if (contentBottom > visibleBottom) {
+        offset = contentBottom - visibleBottom;
+      } else if (inputRect.top < visibleTop) {
+        offset = inputRect.top - visibleTop;
+      }
+
+      if (Math.abs(offset) > 1) {
+        void this.ionContent?.scrollToPoint(
+          0,
+          Math.max(0, scrollElement.scrollTop + offset),
+          220
+        );
+      }
+    }).catch(() => {
+      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+
+  private dismissPasswordKeyboard(): void {
+    const activeElement = document.activeElement;
+    if (
+      activeElement instanceof HTMLElement
+      && activeElement.closest('.pwd-step')
+    ) {
+      activeElement.blur();
+    }
+
+    if (Capacitor.isNativePlatform()) {
+      void Keyboard.hide().catch(() => undefined);
+    }
+    this.setPasswordKeyboardState(0);
   }
 
   protected readonly top = top;
@@ -1821,6 +2217,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.passwordForm.valid) {
       this.errorMessage = null; // Clear any previous errors
       this.signupCredentialState.setPassword(this.password?.value || '');
+      this.onboardingState.setRegistrationStep(4);
 
       // First-launch users selected their role before entering credentials.
       // Other signup entry points still show role selection at this point.
@@ -1836,6 +2233,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
    * Assemble registration payload from session and current form values and call register API
    */
   registerFromSession(): void {
+    if (this.registrationInProgress) {
+      return;
+    }
+
     this.errorMessage = null;
 
     // OAuth flow: user already has an account, just complete their profile
@@ -1844,6 +2245,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.completeGoogleOnboardingFlow(role);
       return;
     }
+
+    this.registrationInProgress = true;
+    this.loadingService.show();
 
     // Collect values from session and forms
     const profileStr = sessionStorage.getItem('signup_profile');
@@ -1934,22 +2338,41 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         petName = this.currentImage.apiName;
       }
 
-      // Last resort: use first pet
-      if (!petName && this.pets.length > 0) {
-        petName = this.pets[0].apiName;
-      }
-
-      if (petName) {
+      if (petName && role !== 'parent') {
         payload.petName = petName;
       }
 
     } catch (e) {
       console.error('Error setting pet name:', e);
       // If all else fails, don't set a pet name
-    }    // Call register API
+    }
+
+    this.onboardingState.saveRegistrationDraft(
+      payload,
+      payload.petName ? 5 : 4,
+      payload.email ? 'EMAIL' : 'PHONE'
+    );
+
+    // Call register API
     this.authService.register(payload).subscribe({
       next: (resp) => {
+        this.registrationInProgress = false;
         this.errorMessage = null; // Clear any previous errors
+        const responseStep = this.getResponseOnboardingStep(resp);
+        if (responseStep) {
+          this.onboardingState.saveRegistrationDraft({
+            ...payload,
+            ...(resp?.savedData || {}),
+            ...(resp?.user || {}),
+            onboardingStep: responseStep
+          }, responseStep, payload.email ? 'EMAIL' : 'PHONE');
+        }
+
+        const completedPassword = password || this.signupCredentialState.getPassword() || this.password?.value || '';
+        if (responseStep && responseStep >= 6) {
+          this.finishCompletedRegistration(resp, payload, completedPassword);
+          return;
+        }
 
         // Save user profile to UserService (best-effort)
         this.userService.setUserProfile({
@@ -2008,6 +2431,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
                   sessionStorage.setItem('family_connected_ack', displayRole);
                 }
               } catch {}
+              const resume = this.onboardingState.getResumeNavigation(loginResp.user);
+              if (resume) {
+                this.loadingService.forceHide();
+                void this.navCtrl.navigateRoot(resume.url, {
+                  queryParams: resume.queryParams,
+                  animated: false
+                });
+                return;
+              }
               // After login, user session is set by AuthService
               // Navigate to appropriate dashboard with loader hidden
               const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
@@ -2035,6 +2467,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         }
       },
       error: (err) => {
+        this.registrationInProgress = false;
+        this.loadingService.forceHide();
         const serverMsg = err?.error?.message || err?.error || 'Registration failed';
         const registrationMessage = typeof serverMsg === 'string' ? serverMsg : 'Registration failed. Please try again.';
         if (this.handleUsernameRegistrationError(registrationMessage)) return;
@@ -2052,9 +2486,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
         if (credentials.password && (credentials.email || credentials.phone)) {
           this.authService.login(credentials).subscribe({
-            next: () => {
+            next: (loginResponse) => {
               this.requestPasswordSavePrompt(credentials);
               this.signupCredentialState.clear();
+              const resume = this.onboardingState.getResumeNavigation(loginResponse.user);
+              if (resume) {
+                this.loadingService.forceHide();
+                void this.navCtrl.navigateRoot(resume.url, {
+                  queryParams: resume.queryParams,
+                  animated: false
+                });
+                return;
+              }
               const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
               setTimeout(() => {
                 this.loadingService.forceHide();
@@ -2133,7 +2576,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         const foundPet = storedPet
           ? this.pets.find(p => p.apiName === storedPet || p.name === storedPet)
           : null;
-        const petName = foundPet?.name ?? (this.pets.length > 0 ? this.pets[0].name : undefined);
+        const petName = foundPet?.name;
         if (petName) googlePayload.petName = petName;
       } catch (e) {}
     }
@@ -2193,7 +2636,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     } catch (e) {}
   }
 
-  private registerChildOrSelfFromSession(role: 'child' | 'self') {
+  private registerChildOrSelfFromSession(role: 'child' | 'self', includePet: boolean = false) {
+    if (this.registrationInProgress) {
+      return;
+    }
+
     this.errorMessage = null;
 
     // OAuth flow: user already has an account, just complete their profile
@@ -2201,11 +2648,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.completeGoogleOnboardingFlow(role);
       return;
     }
+    this.registrationInProgress = true;
+    this.loadingService.show();
 
     // Collect values from session and forms (reuse registerFromSession logic)
     const profileStr = sessionStorage.getItem('signup_profile');
     const password = this.signupCredentialState.getPassword() || this.password?.value;
-    const identifier = this.requestedIdentifier || this.email?.value || this.phone?.value;
+    const persistedDraft = this.onboardingState.getRegistrationState()?.savedData || {};
+    const identifier = this.requestedIdentifier
+      || persistedDraft.email
+      || persistedDraft.phone
+      || this.email?.value
+      || this.phone?.value;
     const referralCode = sessionStorage.getItem('referralCode');
 
     let profile: any = {};
@@ -2221,13 +2675,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // until they separately link to a family post-login via
     // /family/convert-to-child. No familyCode/familyRole is ever sent here.
     const payload: any = {
-      name: profile.name || this.profileForm.get('name')?.value,
-      username: profile.username || this.profileForm.get('username')?.value || undefined,
-      gender: toApiGender(profile.gender || this.gender),
+      name: profile.name || persistedDraft.name || this.profileForm.get('name')?.value,
+      username: profile.username || persistedDraft.username || this.profileForm.get('username')?.value || undefined,
+      gender: toApiGender(profile.gender || persistedDraft.gender || this.gender),
       relationship: 'SELF',
       password: password || undefined,
       avatarName: avatarNameValue2,
-      avatarImageName: avatarImageNameValue2,
+      avatarImageName: persistedDraft.avatarImageName || avatarImageNameValue2,
       referralCode: referralCode || null
     };
 
@@ -2251,27 +2705,83 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     // dateOfBirth
-    const dobValue = profile.dob || this.profileForm.get('dob')?.value;
+    const dobValue = profile.dob || persistedDraft.dateOfBirth || this.profileForm.get('dob')?.value;
     if (dobValue) {
       const dobDate = new Date(dobValue);
       payload.dateOfBirth = dobDate.toISOString().split('T')[0];
     }
 
-    // petName
-    try {
-      let petName = sessionStorage.getItem('signup_pet') || this.currentImage?.apiName;
-      if (!petName && this.pets.length > 0) petName = this.pets[0].apiName;
-      if (petName) payload.petName = petName;
-    } catch (e) { }
+    if (includePet) {
+      const petName = sessionStorage.getItem('signup_pet')
+        || this.currentImage?.apiName
+        || persistedDraft.petName;
+      if (!petName) {
+        this.registrationInProgress = false;
+        this.loadingService.forceHide();
+        this.core.triggerToasrt('Please choose your pet to continue.');
+        return;
+      }
+      payload.petName = petName;
+
+      if (role === 'child' && this.authService.getUserRelationship() === 'CHILD') {
+        payload.relationship = 'CHILD';
+        delete payload.asChild;
+        const familyCode = this.authService.getUserData()?.family?.familyCode
+          || persistedDraft.familyCode;
+        if (familyCode) payload.familyCode = familyCode;
+      }
+    }
+
+    this.onboardingState.saveRegistrationDraft(
+      payload,
+      includePet ? 5 : 4,
+      payload.email ? 'EMAIL' : 'PHONE'
+    );
 
     this.authService.register(payload).subscribe({
       next: (resp) => {
+        this.registrationInProgress = false;
         const passwordForLogin = password || this.signupCredentialState.getPassword() || this.password?.value || '';
         this.signupCredentialState.setPendingLogin({
           ...(payload.email ? { email: payload.email } : {}),
           ...(payload.phone ? { phone: payload.phone } : {}),
           password: passwordForLogin
         });
+
+        const responseStep = this.getResponseOnboardingStep(resp);
+        if (responseStep) {
+          this.onboardingState.saveRegistrationDraft(
+            {
+              ...payload,
+              ...(resp?.savedData || {}),
+              ...(resp?.user || {}),
+              onboardingStep: responseStep
+            },
+            responseStep,
+            payload.email ? 'EMAIL' : 'PHONE'
+          );
+        }
+
+        if (responseStep && responseStep >= 6) {
+          this.finishCompletedRegistration(resp, payload, passwordForLogin);
+          return;
+        }
+
+        if (!includePet && (responseStep === 5 || !responseStep)) {
+          if (role === 'self') {
+            this.loadingService.forceHide();
+            this.navigateToSignupStep(4);
+            return;
+          }
+          // Child keeps the established family-link-first sequence. Once the
+          // family link succeeds, backend step 5 resumes at Pet selection.
+        }
+
+        if (includePet && responseStep === 5) {
+          this.loadingService.forceHide();
+          this.core.triggerToasrt('Your pet was not saved yet. Please try again.');
+          return;
+        }
 
         // Keep device-level onboarding state separate from user session data.
         this.onboardingState.markExistingUser();
@@ -2302,6 +2812,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           // screen until convert-to-child succeeds.
           this.authService.login(credentials).subscribe({
             next: () => {
+              this.registrationInProgress = false;
               this.requestPasswordSavePrompt(credentials);
               this.signupCredentialState.clear();
               try {
@@ -2314,6 +2825,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
               });
             },
             error: () => {
+              this.registrationInProgress = false;
               this.loadingService.forceHide();
               this.core.triggerToasrt('Account created. Please login to link your family.');
               this.navigateReplacing('/home/login');
@@ -2324,11 +2836,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
         // Self accounts keep the existing welcome-before-dashboard sequence.
         setTimeout(() => {
+          this.registrationInProgress = false;
           this.loadingService.forceHide();
           this.navigateToSignupStep(5);
         }, 50);
       },
       error: (err) => {
+        this.registrationInProgress = false;
+        this.loadingService.forceHide();
         const serverMsg = err?.error?.message || err?.error || 'Registration failed';
         this.errorMessage = typeof serverMsg === 'string' ? serverMsg : 'Registration failed. Please try again.';
         if (this.handleUsernameRegistrationError(this.errorMessage)) return;
@@ -2343,6 +2858,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // Child users reach this welcome screen only after a successful family
     // link and are already logged in. Continue directly without a second login.
     if (this.authService.isLoggedIn()) {
+      const resume = this.onboardingState.getResumeNavigation(this.authService.getUserData());
+      if (resume) {
+        this.loadingService.forceHide();
+        void this.navCtrl.navigateRoot(resume.url, {
+          queryParams: resume.queryParams,
+          animated: false
+        });
+        return;
+      }
       try {
         sessionStorage.removeItem(SignupComponent.CHILD_POST_FAMILY_WELCOME_KEY);
         sessionStorage.removeItem('signup_role');
@@ -2377,10 +2901,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     this.authService.login(credentials).subscribe({
-      next: () => {
+      next: (loginResponse) => {
         this.requestPasswordSavePrompt(credentials);
         this.signupCredentialState.clear();
         this.loadingService.forceHide();
+        const resume = this.onboardingState.getResumeNavigation(loginResponse.user);
+        if (resume) {
+          void this.navCtrl.navigateRoot(resume.url, {
+            queryParams: resume.queryParams,
+            animated: false
+          });
+          return;
+        }
         const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
         this.navigateReplacing(route);
       },
@@ -2491,6 +3023,249 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     } catch (error) {
       console.warn('[Signup] Unable to restore saved onboarding state', error);
     }
+  }
+
+  private restorePersistedRegistrationState(): void {
+    const registrationState = this.onboardingState.getRegistrationState();
+    if (!registrationState) return;
+    this.applyRegistrationDraft(registrationState.savedData);
+  }
+
+  private applyRegistrationDraft(savedData: RegistrationDraftData): void {
+    if (!savedData) return;
+
+    const role = this.onboardingState.getSignupRole(savedData);
+    if (role) {
+      this.roleSelected = role;
+      try { sessionStorage.setItem('signup_role', role); } catch {}
+    }
+
+    const identifier = savedData.email || savedData.phone;
+    if (identifier) {
+      this.requestedIdentifier = identifier;
+      this.loginMode = savedData.email ? 'email' : 'phone';
+      this.signupForm.patchValue(
+        savedData.email ? { email: savedData.email } : { phone: savedData.phone },
+        { emitEvent: false }
+      );
+      try {
+        sessionStorage.setItem('requestedIdentifier', identifier);
+        sessionStorage.setItem('loginMode', this.loginMode);
+      } catch {}
+    }
+
+    const storedGender = toStoredGender(savedData.gender);
+    if (storedGender) {
+      this.gender = storedGender;
+    }
+
+    const dateOfBirth = this.toDateInputValue(savedData.dateOfBirth);
+    this.profileForm.patchValue({
+      name: savedData.name || this.profileForm.get('name')?.value || '',
+      username: savedData.username || this.profileForm.get('username')?.value || '',
+      phone: savedData.phone || this.profileForm.get('phone')?.value || '',
+      dob: dateOfBirth || this.profileForm.get('dob')?.value || ''
+    }, { emitEvent: false });
+
+    if (savedData.username) {
+      this.usernameAvailability = 'available';
+    }
+
+    const avatarKey = this.extractAvatarKey(savedData.avatarImageName || savedData.avatarName);
+    if (avatarKey) {
+      this.avatarSelected = avatarKey;
+    }
+
+    const petName = savedData.petName;
+    if (petName) {
+      const petIndex = this.pets.findIndex(p => p.apiName === petName || p.name === petName);
+      this.currentImage = petIndex >= 0 ? this.pets[petIndex] : null;
+      this.currentSlideIndex = petIndex;
+      try { sessionStorage.setItem('signup_pet', petName); } catch {}
+    } else if (petName === null) {
+      this.currentImage = null;
+      this.currentSlideIndex = -1;
+      try { sessionStorage.removeItem('signup_pet'); } catch {}
+    }
+
+    const savedReferralCode = String(savedData['referralCode'] || '')
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .slice(0, 8)
+      .toUpperCase();
+    if (savedReferralCode && !this.referralCode) {
+      this.referralCode = savedReferralCode;
+      this.showReferral = true;
+      this.referralValidationStatus = null;
+      this.validatedReferralCode = '';
+      try { sessionStorage.setItem('referralCode', savedReferralCode); } catch {}
+    }
+
+    const profile = {
+      name: savedData.name || '',
+      username: savedData.username || undefined,
+      phone: savedData.phone || undefined,
+      dob: dateOfBirth || null,
+      gender: storedGender,
+      avatar: avatarKey || undefined
+    };
+    try { sessionStorage.setItem('signup_profile', JSON.stringify(profile)); } catch {}
+  }
+
+  private persistProfileDraft(profile: any): void {
+    const role = this.currentRole;
+    const avatarKey = Number(profile?.avatar);
+    const avatar = Number.isInteger(avatarKey)
+      ? this.avatars.find(item => item.key === avatarKey)
+      : undefined;
+    const dateOfBirth = this.toDateInputValue(profile?.dob);
+
+    this.onboardingState.updateRegistrationDraft({
+      email: this.loginMode === 'email' ? this.getSignupCredentialIdentifier() : undefined,
+      phone: profile?.phone || undefined,
+      name: profile?.name || undefined,
+      username: profile?.username || undefined,
+      gender: profile?.gender || undefined,
+      dateOfBirth: dateOfBirth || undefined,
+      relationship: role ? role.toUpperCase() : undefined,
+      asChild: role === 'child',
+      avatarName: avatarKey ? `avatar${avatarKey}` : undefined,
+      avatarImageName: avatar?.value?.split('/').pop(),
+      referralCode: this.showReferral && this.referralCode ? this.referralCode : null,
+      onboardingStep: 4
+    }, 4);
+  }
+
+  private refreshIncompleteAuthenticatedOnboarding(): void {
+    if (!this.authService.isLoggedIn()) return;
+    if (this.isEditingPendingChildOnboarding && this.step === 2) return;
+
+    const localResume = this.onboardingState.getResumeNavigation(this.authService.getUserData());
+    if (!localResume) return;
+
+    this.subscription.add(
+      this.authService.refreshUserData().subscribe({
+        next: () => {
+          const freshUser = this.authService.getUserData() as RegistrationDraftData | null;
+          const freshStep = this.onboardingState.getOnboardingStep(freshUser);
+
+          if (freshStep && freshStep >= 6) {
+            this.onboardingState.clearRegistrationDraft();
+            this.onboardingState.markExistingUser();
+            this.navigateReplacing(this.authService.getDashboardRoute());
+            return;
+          }
+
+          if (freshUser && freshStep) {
+            this.onboardingState.saveRegistrationDraft(freshUser, freshStep);
+            this.applyRegistrationDraft(freshUser);
+          }
+
+          const resume = this.onboardingState.getResumeNavigation(freshUser);
+          const targetStep = Number(resume?.queryParams?.['step']);
+          if (resume && Number.isFinite(targetStep) && targetStep !== this.step) {
+            void this.navCtrl.navigateRoot(resume.url, {
+              queryParams: resume.queryParams,
+              animated: false
+            });
+          }
+        },
+        error: () => {
+          // The persisted backend step is used immediately when offline.
+        }
+      })
+    );
+  }
+
+  private getResponseOnboardingStep(response: any): number | null {
+    const rawStep = response?.savedData?.onboardingStep
+      ?? response?.user?.onboardingStep
+      ?? response?.onboardingStep
+      ?? response?.nextStep;
+    const step = Number(rawStep);
+    return Number.isInteger(step) && step >= 1 && step <= 6 ? step : null;
+  }
+
+  private finishCompletedRegistration(response: any, payload: any, password: string): void {
+    const completeNavigation = () => {
+      this.registrationInProgress = false;
+      this.loadingService.forceHide();
+      this.onboardingState.clearRegistrationDraft();
+      this.onboardingState.markExistingUser();
+      this.signupCredentialState.clear();
+      this.navigateReplacing(this.authService.getDashboardRoute());
+    };
+
+    const responseUserId = response?.user?.id;
+    if (response?.token && responseUserId) {
+      this.authService.setSession({
+        token: response.token,
+        userId: responseUserId,
+        expiresIn: response.expiresIn,
+        user: response.user
+      });
+    }
+
+    if (this.authService.isLoggedIn()) {
+      completeNavigation();
+      return;
+    }
+
+    const credentials: any = { password };
+    if (payload.email) credentials.email = payload.email;
+    if (payload.phone) credentials.phone = payload.phone;
+
+    if (!credentials.password || (!credentials.email && !credentials.phone)) {
+      this.registrationInProgress = false;
+      this.loadingService.forceHide();
+      this.onboardingState.clearRegistrationDraft();
+      this.navigateReplacing('/home/login');
+      return;
+    }
+
+    this.authService.login(credentials).subscribe({
+      next: (loginResponse) => {
+        const resume = this.onboardingState.getResumeNavigation(loginResponse.user);
+        if (resume) {
+          this.registrationInProgress = false;
+          this.loadingService.forceHide();
+          void this.navCtrl.navigateRoot(resume.url, {
+            queryParams: resume.queryParams,
+            animated: false
+          });
+          return;
+        }
+        this.requestPasswordSavePrompt(credentials);
+        completeNavigation();
+      },
+      error: () => {
+        this.registrationInProgress = false;
+        this.loadingService.forceHide();
+        this.onboardingState.clearRegistrationDraft();
+        this.navigateReplacing('/home/login');
+      }
+    });
+  }
+
+  private extractAvatarKey(value: unknown): number | null {
+    const matches = String(value || '').match(/(\d+)/g);
+    if (!matches?.length) return null;
+    const key = Number(matches[matches.length - 1]);
+    return Number.isInteger(key) && key >= 1 && key <= 12 ? key : null;
+  }
+
+  private toDateInputValue(value: unknown): string {
+    if (value === null || value === undefined || value === '') return '';
+    const date = new Date(value as string | number);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toISOString().slice(0, 10);
+  }
+
+  private getApiErrorMessage(error: any, fallback: string): string {
+    let body = error?.error;
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch {}
+    }
+    return body?.message || body?.error?.message || (typeof body === 'string' ? body : fallback);
   }
 
   private handleRecoverableFamilyJoinError(message?: string | null): void {

@@ -11,7 +11,13 @@ import { AnalyticsService } from './analytics.service';
 import { AuthSessionCleanupService } from './auth-session-cleanup.service';
 import { CrashlyticsService } from './crashlytics.service';
 import { PushNotificationService } from './push-notification.service';
+import { PetAgeService } from './pet-age.service';
 import { toApiGender } from '../models/gender.model';
+import {
+  OnboardingStateService,
+  RegistrationDraftData,
+  OnboardingResumeNavigation
+} from './onboarding-state.service';
 
 export interface LoginCredentials {
   email?: string;
@@ -59,8 +65,17 @@ export interface AuthResponse {
       gender: string | null;
       url: string;
     } | null;
+    onboardingStep?: number;
+    emailVerified?: boolean;
   };
   expiresIn?: number;
+}
+
+export interface RegistrationOtpResponse {
+  success?: boolean;
+  message?: string;
+  nextStep?: number;
+  savedData?: RegistrationDraftData;
 }
 
 export interface ReferralCodeResponse {
@@ -119,10 +134,13 @@ export class AuthService {
     private analytics: AnalyticsService,
     private authSessionCleanup: AuthSessionCleanupService,
     private crashlytics: CrashlyticsService,
-    private pushNotifications: PushNotificationService
+    private pushNotifications: PushNotificationService,
+    private petAgeService: PetAgeService,
+    private onboardingState: OnboardingStateService
   ) {
     this.detectPlatform();
     this.initSessionMonitoring();
+    this.syncPetFromUserData(this.userDataSubject.value);
   }
 
   /**
@@ -307,6 +325,16 @@ export class AuthService {
     
     // Store full user data and notify all subscribers
     this.setUserData(authResponse.user);
+    const onboardingStep = this.onboardingState.getOnboardingStep(authResponse.user);
+    if (onboardingStep && onboardingStep < 6) {
+      this.onboardingState.saveRegistrationDraft(authResponse.user, onboardingStep);
+    } else if (onboardingStep && onboardingStep >= 6) {
+      this.onboardingState.clearRegistrationDraft();
+    } else {
+      // Older completed-user responses may omit onboardingStep entirely.
+      // Do not let an unrelated unauthenticated draft override that login.
+      this.onboardingState.clearRegistrationDraft();
+    }
     this.crashlytics.setUserId(authResponse.userId);
 
     console.log('[AuthService] Session established:', {
@@ -367,6 +395,14 @@ export class AuthService {
       `${this.apiUrl}/user/profile`,
       { petName },
       { headers, responseType: 'text' as 'json' }
+    ).pipe(
+      tap(() => {
+        const currentPet = this.getUserPet();
+        const pet = typeof currentPet === 'object' && currentPet !== null
+          ? { ...currentPet, petName }
+          : { petName };
+        this.updateUserData({ pet });
+      })
     );
   }
 
@@ -498,10 +534,17 @@ export class AuthService {
     console.log('[AuthService] registerRequestOtp - Payload:', payload);
     console.log('[AuthService] registerRequestOtp - Has Auth Token:', !!headers);
 
-    return this.http.post<string>(url, payload, options);
+    return this.http.post<string>(url, payload, options).pipe(
+      map(response => this.parseRegistrationResponse(response))
+    );
   }
 
-  registerVerifyOtp(identifier: string, otp: string, isEmail: boolean, countryCode?: string) {
+  registerVerifyOtp(
+    identifier: string,
+    otp: string,
+    isEmail: boolean,
+    countryCode?: string
+  ): Observable<RegistrationOtpResponse> {
     const url = `${this.apiUrl}/auth/register/verify-otp`;
 
     const headers = environment.apiAuthToken ? new HttpHeaders({
@@ -521,7 +564,13 @@ export class AuthService {
       ? { email: identifier, otp, "identifierType": "EMAIL" }
       : { phone: identifier, otp, "identifierType": "PHONE" };
 
-    return this.http.post<string>(url, payload, options);
+    return this.http.post<string>(url, payload, options).pipe(
+      map(response => this.parseRegistrationResponse(response))
+    );
+  }
+
+  getOnboardingResumeNavigation(user?: RegistrationDraftData | null): OnboardingResumeNavigation | null {
+    return this.onboardingState.getResumeNavigation(user);
   }
 
   /**
@@ -727,12 +776,29 @@ export class AuthService {
       if (data['avatar']) {
         updatedData['avatar'] = { ...(currentData['avatar'] || {}), ...data['avatar'] };
       }
+
+      // Preserve pet metadata (id, gender and backend URL) when only petName
+      // changes, while still supporting APIs that return a pet string.
+      if (Object.prototype.hasOwnProperty.call(data, 'pet')) {
+        const nextPet = data['pet'];
+        const currentPet = (
+          currentData['pet'] && typeof currentData['pet'] === 'object' && !Array.isArray(currentData['pet'])
+        )
+          ? currentData['pet']
+          : {};
+        updatedData['pet'] = (
+          nextPet && typeof nextPet === 'object' && !Array.isArray(nextPet)
+        )
+          ? { ...currentPet, ...nextPet }
+          : nextPet;
+      }
       
       // Save to localStorage
       localStorage.setItem('user_data', JSON.stringify(updatedData));
       
       // Notify all subscribers
       this.userDataSubject.next(updatedData);
+      this.syncPetFromUserData(updatedData);
       
       console.log('[AuthService] User data updated and broadcasted:', updatedData);
     } catch (error) {
@@ -748,6 +814,7 @@ export class AuthService {
     try {
       localStorage.setItem('user_data', JSON.stringify(data));
       this.userDataSubject.next(data);
+      this.syncPetFromUserData(data);
       console.log('[AuthService] User data set and broadcasted');
     } catch (error) {
       console.error('[AuthService] Error setting user data:', error);
@@ -877,6 +944,10 @@ export class AuthService {
     return null;
   }
 
+  private syncPetFromUserData(userData: any): void {
+    this.petAgeService.syncFromUserPet(userData?.pet);
+  }
+
   /**
    * Check if the current user is a parent
    */
@@ -1001,21 +1072,30 @@ export class AuthService {
     return this.http.get<any>(`${this.apiUrl}/users/${userId}/profile`, { headers }).pipe(
       tap({
         next: (userData) => {
+          const refreshedUser = userData?.user && typeof userData.user === 'object'
+            ? userData.user
+            : userData;
           console.log('[AuthService] User data refreshed successfully:', {
-            userId: userData?.id || userId,
-            hasData: !!userData,
+            userId: refreshedUser?.id || userId,
+            hasData: !!refreshedUser,
             timestamp: new Date().toISOString()
           });
 
-          if (userData) {
+          if (refreshedUser) {
             // Update user_data using the new method (updates localStorage and notifies subscribers)
             const existingData = this.getUserData() || {};
             const updatedData = {
               ...existingData,
-              ...userData,
-              id: userData.id || existingData.id || parseInt(userId, 10)
+              ...refreshedUser,
+              id: refreshedUser.id || existingData.id || parseInt(userId, 10)
             };
             this.setUserData(updatedData);
+            const onboardingStep = this.onboardingState.getOnboardingStep(updatedData);
+            if (onboardingStep && onboardingStep < 6) {
+              this.onboardingState.saveRegistrationDraft(updatedData, onboardingStep);
+            } else if (onboardingStep && onboardingStep >= 6) {
+              this.onboardingState.clearRegistrationDraft();
+            }
 
             // Update last activity to keep session fresh
             this.updateLastActivity();
@@ -1072,5 +1152,20 @@ export class AuthService {
         return of(false);
       })
     );
+  }
+
+  private parseRegistrationResponse(response: unknown): RegistrationOtpResponse {
+    if (response && typeof response === 'object') {
+      return response as RegistrationOtpResponse;
+    }
+
+    const text = String(response ?? '').trim();
+    if (!text) return { success: true };
+
+    try {
+      return JSON.parse(text) as RegistrationOtpResponse;
+    } catch {
+      return { success: true, message: text };
+    }
   }
 }

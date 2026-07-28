@@ -1,10 +1,9 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { Subscription } from 'rxjs';
-import { PetAgeService } from '../../services/pet-age.service';
+import { PetAgeService, PetMood, PetType } from '../../services/pet-age.service';
 
-export type PetType = 'panda' | 'dragon' | 'llama' | 'owl';
-export type PetMood = 'happy' | 'playful' | 'curious' | 'base' | 'tired' | 'anger';
+export type { PetType, PetMood } from '../../services/pet-age.service';
 
 @Component({
   selector: 'superme-pet',
@@ -38,8 +37,14 @@ export class SupermePetComponent implements OnInit, OnChanges, OnDestroy {
 
   currentImage = '';
   private petSub?: Subscription;
+  private hasExplicitPetInput = false;
+  private hasExplicitAgeInput = false;
 
-  constructor(private petAgeService: PetAgeService) { }
+  constructor(private petAgeService: PetAgeService) {
+    const currentPet = this.petAgeService.getCurrentPetData();
+    this.pet = currentPet.petType;
+    this.age = currentPet.currentAge;
+  }
 
   /**
    * Get image path based on pet type, age, mood, and animation state
@@ -95,17 +100,17 @@ export class SupermePetComponent implements OnInit, OnChanges, OnDestroy {
     // Initial render (handles cases where age/pet were set via @Input before init)
     this.updateImage();
 
-    // Subscribe to real-time age updates from the service.
-    // Only overrides this.age when it is at the default (1) — i.e. not explicitly
-    // set to 2 or 3 by a parent for a decorative/fixed display.
+    // Unbound pets follow the logged-in user's persisted API selection in real time.
+    // Decorative instances with explicit pet/age inputs keep those inputs.
     this.petSub = this.petAgeService.petData$.subscribe(data => {
-      if (this.age <= 1) {
-        const newAge = Math.min(3, Math.max(1, data.currentAge));
-        if (this.age !== newAge || this.pet !== data.petType) {
-          this.age = newAge;
-          this.pet = data.petType;
-          this.updateImage();
-        }
+      const newAge = Math.min(3, Math.max(1, data.currentAge));
+      const nextAge = this.hasExplicitAgeInput ? this.age : newAge;
+      const nextPet = this.hasExplicitPetInput ? this.pet : data.petType;
+
+      if (this.age !== nextAge || this.pet !== nextPet) {
+        this.age = nextAge;
+        this.pet = nextPet;
+        this.updateImage();
       }
     });
   }
@@ -115,6 +120,9 @@ export class SupermePetComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['pet']) this.hasExplicitPetInput = true;
+    if (changes['age']) this.hasExplicitAgeInput = true;
+
     if (changes['pet'] || changes['age'] || changes['mood'] || changes['imageOverride'] || changes['animated']) {
       this.updateImage();
     }
