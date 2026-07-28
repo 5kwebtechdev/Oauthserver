@@ -272,14 +272,14 @@ ion-content {
 .user-profile-section {
     position: relative;
     height: clamp(240px, 38dvh, 340px);
-    background-image: url(/assets/Images-Thumbnails/Background-Home.png);
+    // background-image: url(/assets/Images-Thumbnails/HeaderV2.png);
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
     border-radius: 0 0 48px 48px;
     flex-shrink: 0;
     display: flex;
-    background-color: #fee581;
+    // background-color: #E9DFF6;
     width: 100%;
     box-sizing: border-box;
 }
@@ -291,6 +291,7 @@ ion-content {
   width: 100%;
   box-sizing: border-box;
   min-width: 0;
+  justify-content: space-evenly;
 }
 
 
@@ -341,65 +342,84 @@ ion-content {
     }
 
     .user-name-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
       .user-name {
-        color: #282527;
-        font-size: 16px;
-        font-style: normal;
-        font-weight: 400;
-        line-height: 140%;
-        /* 22.4px */
+        color: #6b656a;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 140%;
+    font-family: Fredoka;
+      }
+
+      .user-subtitle {
+        color: black;
+    font-family: 'Nunito';
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 140%;
       }
     }
   }
 
   .header-tools {
     display: flex;
-    justify-content: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     align-items: center;
-    gap: 24px;
+    gap: 10px;
 
-    .tool-item {
+    .bell-tool {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 4px;
-      background: transparent;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.85);
       border: none;
-      padding: 0;
+      box-shadow: 0 2px 6px rgba(20, 20, 20, 0.08);
       cursor: pointer;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
 
-      .tool-icon {
-        width: clamp(34px, 8.5vw, 42px);
-        height: clamp(34px, 8.5vw, 42px);
-        aspect-ratio: 1/1;
+      &:active {
+        transform: scale(0.94);
+      }
+    }
+
+    .coin-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.85);
+      border: none;
+      border-radius: 20px;
+      padding: 5px 12px 5px 6px;
+      box-shadow: 0 2px 6px rgba(20, 20, 20, 0.08);
+      cursor: pointer;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+
+      .coin-pill-icon {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+        flex-shrink: 0;
       }
 
-      .tool-label {
-        position: relative;
-        background: #ffffff;
-        color: #000000;
-        font-size: 10px;
-        line-height: 24px;
-        //box-shadow: 0px 0px 1px 1px rgba(163, 163, 163, 0.87);
-        text-align: center;
-        width: 54px;
-        height: 22px;
-        border-radius: 4px;
-        padding: 0px;
+      span {
+        color: #282527;
+        font-family: var(--font-sans);
+        font-size: 13px;
+        font-weight: 700;
+      }
 
-        &:after {
-          content: '';
-          position: absolute;
-          display: block;
-          width: 0;
-          z-index: 1;
-          border-style: solid;
-          border-color: #ffffff transparent;
-          border-width: 0 4px 4px;
-          top: -4px;
-          left: 50%;
-          margin-left: -4px;
-        }
+      &:active {
+        transform: scale(0.96);
       }
     }
   }
@@ -487,14 +507,102 @@ ion-content {
   }
 }
 
+// PROFILE GREETING ROW (frosted speech bubble + pet, sits at the base of the hero banner)
+.profile-greeting-row {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  padding: 0 16px;
+  // margin-top: auto;
+  box-sizing: border-box;
+}
+
+.greeting-bubble {
+  flex: 1;
+  min-width: 0;
+
+  ::ng-deep .speech-bubble {
+    display: block;
+    width: 70%;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 22px;
+    padding: 14px 18px 14px 18px;
+    box-shadow: 0 8px 24px rgba(20, 20, 20, 0.08);
+        // margin-bottom: 20px;
+  }
+}
+
 // DIGITAL PET
 .digital-pet {
-  margin-top: 16px;
+  position: absolute;
+  right: 7px;
+  bottom: -82px;
+  z-index: 2;
+  pointer-events: none;
 
   img {
-    width: clamp(56px, 14vw, 72px);
+    width: clamp(72px, 20vw, 96px);
     height: auto;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.15));
   }
+}
+
+// Groups the greeting bubble+pet with the stats row so they sit close together
+// at the base of the hero banner, independent of .dasboard-wrapper's own spacing
+.profile-bottom-group {
+     display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    background-image: url(/assets/Images-Thumbnails/HeaderV2.png);
+    position: relative;
+    // height: clamp(253px, 38dvh, 181px);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 48px 48px 48px 48px;
+    flex-shrink: 0;
+    /* display: flex; */
+    /* width: 100%; */
+    box-sizing: border-box;
+    padding-top: 37px;
+    padding-bottom: 37px;
+}
+
+// HEADER STATS ROW (trophy / streak / badges — coins moved to the header pill)
+.header-stats-row {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  gap: clamp(24px, 10vw, 48px);
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.header-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.header-stat-icon {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.header-stat-value {
+  color: #282527;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 800;
 }
 
 @media (min-width: 768px) {
