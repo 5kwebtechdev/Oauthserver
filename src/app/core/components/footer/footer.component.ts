@@ -1,9 +1,11 @@
-import { Component, OnInit, Renderer2, ElementRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, Renderer2, ElementRef, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { IonicModule, NavController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
+// Capacitor Keyboard (optional in web builds)
+import { Keyboard } from '@capacitor/keyboard';
 
 @Component({
   selector: 'app-footer',
@@ -17,13 +19,21 @@ export class FooterComponent implements OnInit, OnDestroy {
   private routerSub: Subscription | undefined;
   currentUrl: string = '';
   isEducationActive: boolean = false;
+  // Hide the fixed bottom bar while the on-screen keyboard is up — with
+  // Keyboard.resize set to 'body', a position:fixed bar otherwise ends up
+  // floating above the keyboard, appearing to cover a large chunk of the
+  // (now shrunk) visible screen on some devices.
+  isKeyboardOpen = false;
+  private keyboardShowListener: any = null;
+  private keyboardHideListener: any = null;
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private navController: NavController,
     private renderer: Renderer2,
-    private elRef: ElementRef
+    private elRef: ElementRef,
+    private ngZone: NgZone
   ) { }
 
   ngOnInit() {
@@ -62,6 +72,18 @@ export class FooterComponent implements OnInit, OnDestroy {
         this.isEducationActive = this.isAnyRouteActive(['/authed/education', '/authed/tutors']);
       }
     });
+
+    // Wire Capacitor Keyboard listeners if available
+    try {
+      this.keyboardShowListener = Keyboard.addListener('keyboardDidShow', () => {
+        this.ngZone.run(() => { this.isKeyboardOpen = true; });
+      });
+      this.keyboardHideListener = Keyboard.addListener('keyboardDidHide', () => {
+        this.ngZone.run(() => { this.isKeyboardOpen = false; });
+      });
+    } catch (e) {
+      // Capacitor Keyboard may not be available in desktop browser; ignore
+    }
   }
 
   ngOnDestroy() {
@@ -69,6 +91,8 @@ export class FooterComponent implements OnInit, OnDestroy {
       this.routerSub.unsubscribe();
     }
     if (this.resizeListener) this.resizeListener();
+    if (this.keyboardShowListener && this.keyboardShowListener.remove) this.keyboardShowListener.remove();
+    if (this.keyboardHideListener && this.keyboardHideListener.remove) this.keyboardHideListener.remove();
   }
 
   // Get the appropriate dashboard route based on user relationship
