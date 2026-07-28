@@ -88,6 +88,16 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl(route);
   }
 
+  getTutorMeta(tutor: TutorListItem): string {
+    const likes = typeof tutor.champsLiked === 'number'
+      ? tutor.champsLiked
+      : (typeof tutor.rating === 'number' ? tutor.rating : null);
+    const experience = tutor.experience?.trim();
+
+    if (likes === null) return experience || '';
+    return experience ? `${likes} | ${experience}` : String(likes);
+  }
+
   onViewProfile(tutor: TutorListItem): void {
     const cachedTutor = this.tutorService.getTutorFromCache(tutor.id);
     this.tutorService.getTutorById(tutor.id).subscribe(fullTutor => {

@@ -432,13 +432,26 @@
 }
 
 .profile-step--figma .details-referral-section .referral-toggle {
+  width: 100%;
   min-height: 42px;
   padding: 0;
   border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  appearance: none;
 }
 
-.profile-step--figma .details-referral-section .referral-toggle:hover {
+.profile-step--figma .details-referral-section .referral-toggle:hover,
+.profile-step--figma .details-referral-section .referral-toggle:active {
   background: transparent;
+}
+
+.profile-step--figma .details-referral-section .referral-toggle:focus-visible {
+  border-radius: 8px;
+  outline: 2px solid #7341a7;
+  outline-offset: 4px;
 }
 
 .profile-step--figma .details-referral-section .referral-text {
@@ -455,6 +468,7 @@
 .profile-step--figma .details-referral-section .referral-arrow {
   width: 24px;
   height: 24px;
+  flex: 0 0 24px;
 }
 
 .profile-step--figma .details-referral-section .referral-arrow img {
@@ -464,11 +478,44 @@
 }
 
 .profile-step--figma .details-referral-section .referral-input-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-top: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows 240ms ease,
+    margin-top 240ms ease,
+    opacity 180ms ease,
+    visibility 0s linear 240ms;
+}
+
+.profile-step--figma .details-referral-section .referral-input-wrapper.is-open {
+  grid-template-rows: 1fr;
   margin-top: 12px;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows 240ms ease,
+    margin-top 240ms ease,
+    opacity 180ms ease 40ms,
+    visibility 0s linear 0s;
+}
+
+.profile-step--figma .details-referral-section .referral-input-inner {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .profile-step--figma .details-referral-section .input-group {
   margin: 0;
+}
+
+.profile-step--figma .details-referral-section .referral-validation {
+  margin-top: 8px;
+  padding: 0 2px;
+  font-size: 13px;
+  line-height: 1.35;
 }
 
 .profile-step--figma .profile-button-wrapper {

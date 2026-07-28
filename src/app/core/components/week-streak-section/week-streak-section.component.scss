@@ -74,11 +74,31 @@
   }
 }
 
-.week-streak-fire,
+.week-streak-fire-crop,
 .week-streak-check {
   display: block;
   width: 16px;
   height: 16px;
+  flex-shrink: 0;
+}
+
+.week-streak-fire-crop {
+  position: relative;
+  overflow: hidden;
+}
+
+.week-streak-fire {
+  position: absolute;
+  top: -15.46%;
+  left: -53.4%;
+  display: block;
+  width: 205.07%;
+  height: 140.08%;
+  max-width: none;
+  object-fit: fill;
+}
+
+.week-streak-check {
   object-fit: contain;
 }
 
@@ -96,11 +116,6 @@
   .week-streak-row {
     justify-content: space-between;
     gap: 0;
-  }
-
-  .week-streak-marker {
-    width: 30px;
-    height: 30px;
   }
 
   .week-streak-day-label {

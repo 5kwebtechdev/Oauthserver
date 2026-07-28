@@ -1,3 +1,5 @@
+import { ReminderOffset } from '../components/activity-section/habit.types';
+
 export interface CalendarResponse {
     events: CalendarEvent[];
     tasks: CalendarTask[];
@@ -27,6 +29,7 @@ export interface CalendarEvent {
     daysOfWeek: string[];
     priority: 'HIGH' | 'MEDIUM' | 'LOW';
     everyday: boolean;
+    reminderOffset?: ReminderOffset | null;
 }
 
 export interface CalendarHabit {
@@ -47,6 +50,7 @@ export interface CalendarHabit {
     coinReward: number;
     everyday: boolean;
     tags: string[];
+    reminderOffset?: ReminderOffset | null;
 }
 
 export interface CalendarTask extends CalendarEvent { }
@@ -70,4 +74,5 @@ export interface TimelineEvent {
     // Whether the child has shared this item with their parent — used to hide
     // items the child marked Private when a parent is viewing their timeline.
     sharedWithParent?: boolean;
+    reminderOffset?: ReminderOffset | null;
 }

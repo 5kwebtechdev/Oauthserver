@@ -151,6 +151,7 @@ export class HabitService {
         completionPercentage: item.completionPercentage || item.completionRate || 0,
         totalCompletedDays: item.totalCompletedDays || item.completedDays || 0,
         milestoneBadges: item.milestoneBadges || item.badges || [],
+        reminderOffset: item.reminderOffset ?? item.reminder_offset ?? null,
         createdAt: new Date(item.createdAt || Date.now())
       };
     });

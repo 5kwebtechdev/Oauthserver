@@ -1,125 +1,157 @@
+:host {
+  display: block;
+}
+
 .footer-main {
-  border-radius: 0 0 24px 24px;
-  background: #FDFDFD;
-  box-shadow: 0 0 12px 0 rgba(107, 101, 106, 0.15);
   position: fixed;
-  width: 100vw;
-  bottom: 0;
   left: 0;
+  bottom: 0;
   z-index: 99;
   display: flex;
   align-items: center;
-  justify-content: space-around;
-
-  padding-top: 8px;
-  /* Extend below content for iPhone home-indicator (safe area bottom inset).
-     The padding does NOT count toward --footer-visual-height — that var
-     represents only the icon/label area so that superme-page-container can
-     add sab separately. */
-  padding-bottom: env(safe-area-inset-bottom);
+  justify-content: space-between;
+  width: 100%;
+  min-height: calc(var(--footer-visual-height, 80px) + env(safe-area-inset-bottom, 0px));
+  padding: 0 16px env(safe-area-inset-bottom, 0px);
   box-sizing: border-box;
-  min-height: var(--footer-visual-height, 80px);
+  background: transparent;
+  isolation: isolate;
+}
+
+.footer-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: var(--footer-visual-height, 80px);
+  object-fit: fill;
+  pointer-events: none;
+  filter: drop-shadow(0 0 6px rgba(107, 101, 106, 0.15));
 }
 
 .footer-item {
+  position: relative;
+  z-index: 1;
+  flex: 0 1 53px;
+  min-width: 38px;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  opacity: 0.7;
-  cursor: pointer;
+  color: #878286;
   text-decoration: none;
-  color: inherit;
-  width: clamp(44px, 14vw, 70px);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 
-  svg {
-    width: var(--icon-nav, 24px);
-    height: var(--icon-nav, 24px);
+  ion-icon,
+  .footer-icon {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
   }
 
   ion-icon {
-    width: var(--icon-nav, 24px);
-    height: var(--icon-nav, 24px);
-    color: #979396;
+    color: currentColor;
+  }
+
+  &.active {
+    color: #90214D;
   }
 }
 
-.footer-item.active {
-  opacity: 1;
+.footer-icon {
+  display: block;
+  background-color: currentColor;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
 
-  svg path {
-    stroke: #90214D;
-  }
+.footer-icon--learning {
+  -webkit-mask-image: url('/assets/figma/child-home/footer/nav-learning.png');
+  mask-image: url('/assets/figma/child-home/footer/nav-learning.png');
+}
 
-  ion-icon {
-    color: #90214D;
-  }
+.footer-icon--shop {
+  -webkit-mask-image: url('/assets/figma/child-home/footer/nav-shop.png');
+  mask-image: url('/assets/figma/child-home/footer/nav-shop.png');
+}
 
-  .footer-text {
-    color: #90214D;
-  }
+.footer-icon--eduhub {
+  -webkit-mask-image: url('/assets/figma/child-home/footer/nav-eduhub.png');
+  mask-image: url('/assets/figma/child-home/footer/nav-eduhub.png');
+}
+
+.footer-icon--insights {
+  -webkit-mask-image: url('/assets/figma/child-home/footer/nav-insights.png');
+  mask-image: url('/assets/figma/child-home/footer/nav-insights.png');
 }
 
 .footer-text {
-  color: #6B656A;
+  margin: 0;
+  color: currentColor;
   font-family: var(--font-sans);
-  font-size: clamp(10px, 2.8vw, 13px);
+  font-size: 13px;
   font-style: normal;
   font-weight: 600;
-  line-height: 140%;
-  /* 18.2px */
-  margin: 0;
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .home-button {
-  width: clamp(50px, 13vw, 60px);
-  height: clamp(50px, 13vw, 60px);
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
+  z-index: 2;
+  flex: 0 0 72px;
+  width: 72px;
+  height: 72px;
+  transform: translateY(-21px);
   cursor: pointer;
-  position: relative;
-  z-index: 100;
-  bottom: 14px;
-
-  svg {
-    width: clamp(76px, 19vw, 92px);
-    height: clamp(76px, 19vw, 92px);
-    position: absolute;
-    z-index: 1;
-  }
-
-  &::before {
-    content: '';
-    position: absolute;
-    width: clamp(50px, 13vw, 60px);
-    height: clamp(50px, 13vw, 60px);
-    background: #ffffff;
-    border-radius: 50%;
-    z-index: 2;
-  }
-}
-
-/* If home-button is an anchor, ensure it behaves the same */
-.home-button[routerLink],
-.home-button[role="link"] {
-  display: flex;
   text-decoration: none;
-  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+
+  img {
+    display: block;
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+  }
+
+  &:focus-visible {
+    border-radius: 50%;
+    outline: 2px solid rgba(144, 33, 77, 0.35);
+    outline-offset: 2px;
+  }
 }
 
-.home-button:focus {
-  outline: 2px solid rgba(144, 33, 77, 0.15);
-  outline-offset: 4px;
-}
+@media (max-width: 360px) {
+  .footer-main {
+    padding-inline: 8px;
+  }
 
-.home-logo {
-  width: clamp(50px, 13vw, 60px);
-  height: clamp(50px, 13vw, 60px);
-  flex-shrink: 0;
-  aspect-ratio: 1/1;
-  background: url('/assets/Icons-Neutral/home-logo.png') 50% / cover no-repeat;
-  position: relative;
-  z-index: 3;
+  .footer-item {
+    flex-basis: 48px;
+  }
+
+  .footer-text {
+    font-size: 11px;
+  }
+
+  .home-button {
+    flex-basis: 64px;
+    width: 64px;
+    height: 64px;
+    transform: translateY(-18px);
+
+    img {
+      width: 64px;
+      height: 64px;
+    }
+  }
 }

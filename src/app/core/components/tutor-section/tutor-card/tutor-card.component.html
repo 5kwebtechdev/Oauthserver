@@ -1,12 +1,15 @@
 <section class="eduhub-section" aria-labelledby="eduhub-title">
   <header class="eduhub-header">
     <div>
-      <h3 id="eduhub-title">EduHub</h3>
+      <h3 id="eduhub-title"><span>Edu</span>Hub</h3>
       <p>Tutors • Academies • And more near you</p>
     </div>
     <div class="eduhub-listings" *ngIf="!isLoading">
-      <strong>{{ listingCount }}</strong>
-      <span>Listings</span>
+      <strong>{{ listingCount }}<ng-container *ngIf="listingCount > 0">+</ng-container></strong>
+      <span class="eduhub-listings__label">
+        <img src="assets/figma/child-home/footer/eduhub-verified.png" alt="" aria-hidden="true">
+        Listings
+      </span>
     </div>
   </header>
 
@@ -34,10 +37,9 @@
       <div class="eduhub-tutor__body">
         <div class="eduhub-tutor__headline">
           <strong>{{ tutor.name }}</strong>
-          <span class="eduhub-tutor__likes" *ngIf="tutor.champsLiked !== undefined">
+          <span class="eduhub-tutor__likes" *ngIf="getTutorMeta(tutor) as tutorMeta">
             <img src="assets/figma/child-home/eduhub-heart.png" alt="" aria-hidden="true">
-            {{ tutor.champsLiked }}
-            <ng-container *ngIf="tutor.experience"> | {{ tutor.experience }}</ng-container>
+            {{ tutorMeta }}
           </span>
         </div>
         <p>{{ tutor.description }}</p>
@@ -47,7 +49,7 @@
           {{ tutor.startTime }}<ng-container *ngIf="tutor.startTime && tutor.endTime">–</ng-container>{{ tutor.endTime }}
         </small>
         <div class="eduhub-tutor__footer">
-          <span *ngIf="tutor.hourlyRate">₹ {{ tutor.hourlyRate }} / hour</span>
+          <span *ngIf="tutor.hourlyRate">₹ {{ tutor.hourlyRate }} / Per Hour</span>
           <button type="button" (click)="onViewProfile(tutor); $event.stopPropagation()">View Profile</button>
         </div>
       </div>
