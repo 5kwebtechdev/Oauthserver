@@ -22,16 +22,20 @@
 
   h3 {
     margin: 0;
-    color: #123FB4;
+    color: #091530;
     font-family: var(--font-heading);
     font-size: 20px;
     font-weight: 500;
     line-height: 1.2;
+
+    span {
+      color: #1432A8;
+    }
   }
 
   p {
     margin: 1px 0 0;
-    color: #4F596C;
+    color: rgba(9, 21, 48, 0.7);
     font-family: var(--font-sans);
     font-size: 10px;
   }
@@ -40,19 +44,38 @@
 .eduhub-listings {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  color: #123FB4;
+  align-items: flex-end;
+  color: #1432A8;
   font-family: var(--font-sans);
 
   strong {
     font-size: 20px;
     font-weight: 700;
-    line-height: 1;
+    line-height: 1.4;
   }
 
-  span {
-    margin-top: 3px;
+  > span {
+    margin-top: -2px;
     font-size: 12px;
+  }
+}
+
+.eduhub-listings__label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  color: #1432A8;
+  font-size: 13px !important;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+
+  img {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    object-fit: contain;
   }
 }
 
@@ -189,7 +212,7 @@
   }
 
   span {
-    color: #E1527C;
+    color: rgba(40, 37, 39, 0.7);
     font-size: 8px;
   }
 }
@@ -211,7 +234,7 @@
 }
 
 .eduhub-tutor__likes {
-  max-width: 82px;
+  max-width: 92px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -231,16 +254,17 @@
   }
 
   button {
-    min-height: 26px;
-    padding: 5px 8px;
-    border: 0;
-    border-radius: 12px;
-    background: #123FB4;
+    min-height: 30px;
+    padding: 8px;
+    border: 1px solid #3158A8;
+    border-radius: 10px;
+    background: radial-gradient(circle at center, #3158A8 0%, #2345A8 50%, #1432A8 100%);
     color: #FFFFFF;
     font-family: var(--font-sans);
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 700;
     white-space: nowrap;
+    box-shadow: inset -1px -1px 1px #B2CAF2;
   }
 }
 

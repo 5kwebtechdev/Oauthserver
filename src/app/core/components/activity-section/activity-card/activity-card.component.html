@@ -19,8 +19,8 @@
   <div class="day-at-glance-container">
     <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
 
-    <!-- Tab Navigation: show if there are items in any tab (even if current tab is done, user can see other tabs) -->
-    <div class="container w-full" *ngIf="(totalTasksLoaded > 0 || totalHabitsLoaded > 0 || totalTimetablesLoaded > 0) && !((taskCompletionRate === 100 && habitCompletionRate === 100) || (totalTasksLoaded === 0 && habitCompletionRate === 100) || (totalHabitsLoaded === 0 && taskCompletionRate === 100))">
+    <!-- Keep category navigation visible in loading, empty and completed states. -->
+    <div class="container w-full glance-tabs-shell">
       <div class="glance-tabs" role="tablist" aria-label="Filter by type">
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
           [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
@@ -195,8 +195,8 @@
   <div class="day-at-glance-container">
     <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
 
-    <!-- Tab Navigation: show if there are items in any tab (even if current tab is done, user can see other tabs) -->
-    <div class="container w-full" *ngIf="(totalTasksLoaded > 0 || totalHabitsLoaded > 0 || totalTimetablesLoaded > 0) && !((taskCompletionRate === 100 && habitCompletionRate === 100) || (totalTasksLoaded === 0 && habitCompletionRate === 100) || (totalHabitsLoaded === 0 && taskCompletionRate === 100))">
+    <!-- Keep category navigation visible in loading, empty and completed states. -->
+    <div class="container w-full glance-tabs-shell">
       <div class="glance-tabs" role="tablist" aria-label="Filter by type">
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
           [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">

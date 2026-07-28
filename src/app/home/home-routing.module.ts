@@ -6,7 +6,7 @@ import { SignupComponent } from "./signup/signup.component";
 import { FamilyOnboardComponent } from "./family-onboard/family-onboard.component";
 import { ScanQrComponent } from './scan-qr/scan-qr.component';
 import { ResetPasswordComponent } from "./reset-password/reset-password.component";
-import { guestGuard, startupGuard } from "../core/authe-guard/authe-guard";
+import { guestGuard, retiredChildInstructionsGuard, startupGuard } from "../core/authe-guard/authe-guard";
 
 const routes: Routes = [
   {
@@ -28,7 +28,8 @@ const routes: Routes = [
   },
   {
     path: 'instructions-for-child',
-    component: FamilyOnboardComponent
+    component: FamilyOnboardComponent,
+    canActivate: [retiredChildInstructionsGuard]
   }, {
     path: 'instructions-for-parent',
     component: FamilyOnboardComponent

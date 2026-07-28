@@ -13,6 +13,11 @@ import { CrashlyticsService } from './crashlytics.service';
 import { PushNotificationService } from './push-notification.service';
 import { PetAgeService } from './pet-age.service';
 import { toApiGender } from '../models/gender.model';
+import {
+  OnboardingStateService,
+  RegistrationDraftData,
+  OnboardingResumeNavigation
+} from './onboarding-state.service';
 
 export interface LoginCredentials {
   email?: string;
@@ -60,8 +65,17 @@ export interface AuthResponse {
       gender: string | null;
       url: string;
     } | null;
+    onboardingStep?: number;
+    emailVerified?: boolean;
   };
   expiresIn?: number;
+}
+
+export interface RegistrationOtpResponse {
+  success?: boolean;
+  message?: string;
+  nextStep?: number;
+  savedData?: RegistrationDraftData;
 }
 
 export interface ReferralCodeResponse {
@@ -121,7 +135,8 @@ export class AuthService {
     private authSessionCleanup: AuthSessionCleanupService,
     private crashlytics: CrashlyticsService,
     private pushNotifications: PushNotificationService,
-    private petAgeService: PetAgeService
+    private petAgeService: PetAgeService,
+    private onboardingState: OnboardingStateService
   ) {
     this.detectPlatform();
     this.initSessionMonitoring();
@@ -310,6 +325,16 @@ export class AuthService {
     
     // Store full user data and notify all subscribers
     this.setUserData(authResponse.user);
+    const onboardingStep = this.onboardingState.getOnboardingStep(authResponse.user);
+    if (onboardingStep && onboardingStep < 6) {
+      this.onboardingState.saveRegistrationDraft(authResponse.user, onboardingStep);
+    } else if (onboardingStep && onboardingStep >= 6) {
+      this.onboardingState.clearRegistrationDraft();
+    } else {
+      // Older completed-user responses may omit onboardingStep entirely.
+      // Do not let an unrelated unauthenticated draft override that login.
+      this.onboardingState.clearRegistrationDraft();
+    }
     this.crashlytics.setUserId(authResponse.userId);
 
     console.log('[AuthService] Session established:', {
@@ -509,10 +534,17 @@ export class AuthService {
     console.log('[AuthService] registerRequestOtp - Payload:', payload);
     console.log('[AuthService] registerRequestOtp - Has Auth Token:', !!headers);
 
-    return this.http.post<string>(url, payload, options);
+    return this.http.post<string>(url, payload, options).pipe(
+      map(response => this.parseRegistrationResponse(response))
+    );
   }
 
-  registerVerifyOtp(identifier: string, otp: string, isEmail: boolean, countryCode?: string) {
+  registerVerifyOtp(
+    identifier: string,
+    otp: string,
+    isEmail: boolean,
+    countryCode?: string
+  ): Observable<RegistrationOtpResponse> {
     const url = `${this.apiUrl}/auth/register/verify-otp`;
 
     const headers = environment.apiAuthToken ? new HttpHeaders({
@@ -532,7 +564,13 @@ export class AuthService {
       ? { email: identifier, otp, "identifierType": "EMAIL" }
       : { phone: identifier, otp, "identifierType": "PHONE" };
 
-    return this.http.post<string>(url, payload, options);
+    return this.http.post<string>(url, payload, options).pipe(
+      map(response => this.parseRegistrationResponse(response))
+    );
+  }
+
+  getOnboardingResumeNavigation(user?: RegistrationDraftData | null): OnboardingResumeNavigation | null {
+    return this.onboardingState.getResumeNavigation(user);
   }
 
   /**
@@ -1034,21 +1072,30 @@ export class AuthService {
     return this.http.get<any>(`${this.apiUrl}/users/${userId}/profile`, { headers }).pipe(
       tap({
         next: (userData) => {
+          const refreshedUser = userData?.user && typeof userData.user === 'object'
+            ? userData.user
+            : userData;
           console.log('[AuthService] User data refreshed successfully:', {
-            userId: userData?.id || userId,
-            hasData: !!userData,
+            userId: refreshedUser?.id || userId,
+            hasData: !!refreshedUser,
             timestamp: new Date().toISOString()
           });
 
-          if (userData) {
+          if (refreshedUser) {
             // Update user_data using the new method (updates localStorage and notifies subscribers)
             const existingData = this.getUserData() || {};
             const updatedData = {
               ...existingData,
-              ...userData,
-              id: userData.id || existingData.id || parseInt(userId, 10)
+              ...refreshedUser,
+              id: refreshedUser.id || existingData.id || parseInt(userId, 10)
             };
             this.setUserData(updatedData);
+            const onboardingStep = this.onboardingState.getOnboardingStep(updatedData);
+            if (onboardingStep && onboardingStep < 6) {
+              this.onboardingState.saveRegistrationDraft(updatedData, onboardingStep);
+            } else if (onboardingStep && onboardingStep >= 6) {
+              this.onboardingState.clearRegistrationDraft();
+            }
 
             // Update last activity to keep session fresh
             this.updateLastActivity();
@@ -1105,5 +1152,20 @@ export class AuthService {
         return of(false);
       })
     );
+  }
+
+  private parseRegistrationResponse(response: unknown): RegistrationOtpResponse {
+    if (response && typeof response === 'object') {
+      return response as RegistrationOtpResponse;
+    }
+
+    const text = String(response ?? '').trim();
+    if (!text) return { success: true };
+
+    try {
+      return JSON.parse(text) as RegistrationOtpResponse;
+    } catch {
+      return { success: true, message: text };
+    }
   }
 }

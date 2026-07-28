@@ -13,8 +13,22 @@ export const startupGuard: CanActivateFn = () => {
     const onboardingState = inject(OnboardingStateService);
 
     if (authService.isLoggedIn()) {
+        if (authService.isPendingChild()) {
+            return router.parseUrl('/home/join-family');
+        }
+        const resume = onboardingState.getResumeNavigation(authService.getUserData());
+        if (resume) {
+            return router.createUrlTree([resume.url], { queryParams: resume.queryParams });
+        }
         onboardingState.markExistingUser();
         return router.parseUrl(authService.getDashboardRoute());
+    }
+
+    const registrationResume = onboardingState.getResumeNavigation();
+    if (registrationResume) {
+        return router.createUrlTree([registrationResume.url], {
+            queryParams: registrationResume.queryParams
+        });
     }
 
     if (onboardingState.hasCompletedRoleSelection()) {
@@ -31,6 +45,22 @@ export const startupGuard: CanActivateFn = () => {
 };
 
 /**
+ * The old child instruction page is retired. Keeping a guarded legacy route
+ * safely redirects browser history, old deep links, and upgraded sessions
+ * without ever instantiating or flashing the removed component state.
+ */
+export const retiredChildInstructionsGuard: CanActivateFn = () => {
+    const router = inject(Router);
+    return router.createUrlTree(['/home/sign-up'], {
+        queryParams: {
+            step: 2,
+            role: 'child',
+            editOnboarding: 'true'
+        }
+    });
+};
+
+/**
  * Authentication guard to protect routes
  * Redirects to login page if user is not authenticated
  */
@@ -40,6 +70,7 @@ export const authGuard: CanActivateFn = (
 ) => {
     const router = inject(Router);
     const authService = inject(AuthService);
+    const onboardingState = inject(OnboardingStateService);
 
     const isLoggedIn = authService.isLoggedIn();
 
@@ -51,6 +82,14 @@ export const authGuard: CanActivateFn = (
     });
 
     if (isLoggedIn) {
+        if (authService.isPendingChild()) {
+            return router.parseUrl('/home/join-family');
+        }
+        const resume = onboardingState.getResumeNavigation(authService.getUserData());
+        if (resume) {
+            return router.createUrlTree([resume.url], { queryParams: resume.queryParams });
+        }
+
         // Check if session is expiring soon and log a warning
         if (authService.isSessionExpiringSoon()) {
             console.warn('[AuthGuard] Session expiring soon. Remaining time:',
@@ -80,6 +119,7 @@ export const guestGuard: CanActivateFn = (
 ) => {
     const router = inject(Router);
     const authService = inject(AuthService);
+    const onboardingState = inject(OnboardingStateService);
 
     // Allow OAuth new-user flow to access sign-up even when authenticated
     const isOAuthOnboarding = (
@@ -101,6 +141,18 @@ export const guestGuard: CanActivateFn = (
     }
 
     const isLoggedIn = authService.isLoggedIn();
+    const isPendingChildDetailsBack = isLoggedIn
+        && authService.isPendingChild()
+        && state.url.includes('/home/sign-up')
+        && route.queryParamMap.get('step') === '2'
+        && route.queryParamMap.get('editOnboarding') === 'true';
+    if (isPendingChildDetailsBack) {
+        return true;
+    }
+
+    const registrationResume = onboardingState.getResumeNavigation(
+        isLoggedIn ? authService.getUserData() : undefined
+    );
 
     console.log('[GuestGuard] Route activation check:', {
         path: state.url,
@@ -109,6 +161,15 @@ export const guestGuard: CanActivateFn = (
 
     if (!isLoggedIn) {
         return true;
+    } else if (authService.isPendingChild()) {
+        return router.parseUrl('/home/join-family');
+    } else if (registrationResume) {
+        if (state.url.includes('/home/sign-up')) {
+            return true;
+        }
+        return router.createUrlTree([registrationResume.url], {
+            queryParams: registrationResume.queryParams
+        });
     } else {
         console.log('[GuestGuard] User already authenticated. Redirecting to appropriate dashboard.');
         const dashboardRoute = authService.getDashboardRoute();

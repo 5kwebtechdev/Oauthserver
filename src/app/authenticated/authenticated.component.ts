@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { RefresherCustomEvent } from '@ionic/angular';
+import { NavController, RefresherCustomEvent } from '@ionic/angular';
 import { buttonStyles } from "../core/components/superme-button/button.types";
 import { AuthService } from '../core/services/auth.service';
 import { RefreshService } from '../core/services/refresh.service';
+import { OnboardingStateService } from '../core/services/onboarding-state.service';
 
 @Component({
   selector: 'app-authenticated',
@@ -31,10 +32,30 @@ export class AuthenticatedComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private refreshService: RefreshService
+    private refreshService: RefreshService,
+    private onboardingState: OnboardingStateService,
+    private navCtrl: NavController
   ) {}
 
-  ngOnInit() {}
+  ngOnInit(): void {
+    // Local user_data enables immediate startup. Refresh in the background so
+    // the backend onboardingStep remains authoritative if it changed while
+    // the app was closed.
+    this.authService.refreshUserData().subscribe({
+      next: () => {
+        const user = this.authService.getUserData();
+        const resume = this.onboardingState.getResumeNavigation(user);
+        if (resume) {
+          void this.navCtrl.navigateRoot(resume.url, {
+            queryParams: resume.queryParams,
+            animated: false
+          });
+        } else if (this.onboardingState.getOnboardingStep(user) === 6) {
+          this.onboardingState.clearRegistrationDraft();
+        }
+      }
+    });
+  }
 
   /**
    * Global pull-to-refresh handler.

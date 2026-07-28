@@ -50,7 +50,8 @@ export class CalendarService {
                 type: 'timetable', // Changed from 'event' to 'timetable' to match the filter
                 description: event.description,
                 tags: event.tags,
-                priority: event.priority
+                priority: event.priority,
+                reminderOffset: event.reminderOffset ?? (event as any).reminder_offset ?? null
             });
         });
 
@@ -69,7 +70,8 @@ export class CalendarService {
                 status: rawStatus.toLowerCase(),
                 // Preserve creator id if provided by backend (createdBy or created_by)
                 createdBy: (task as any).createdBy ?? (task as any).created_by ?? (task as any).created_by_id ?? undefined,
-                sharedWithParent: (task as any).sharedWithParent
+                sharedWithParent: (task as any).sharedWithParent,
+                reminderOffset: (task as any).reminderOffset ?? (task as any).reminder_offset ?? null
             });
         });
 
@@ -99,7 +101,8 @@ export class CalendarService {
                 status: habit.status,
                 // Preserve creator id if provided by backend
                 createdBy: (habit as any).createdBy ?? (habit as any).created_by ?? (habit as any).created_by_id ?? undefined,
-                sharedWithParent: (habit as any).sharedWithParent
+                sharedWithParent: (habit as any).sharedWithParent,
+                reminderOffset: (habit as any).reminderOffset ?? (habit as any).reminder_offset ?? null
             });
         });
 

@@ -60,42 +60,48 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin-top: 4px;
-  position: relative;
-  padding: 0 32px;   // reserve space so counter doesn't overlap dots
+  min-height: 18px;
+  margin-top: 0;
+  padding: 0 16px;
 }
 
 // ── Slide counter badge — right side of dots row (Instamart style) ────────────
 .adb__counter {
-  position: absolute;
-  right: 0;
-  background: rgba(0, 0, 0, 0.50);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 31px;
+  height: 18px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #432477;
   color: #fff;
   font-family: var(--font-sans, 'Nunito', sans-serif);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-  padding: 3px 8px;
-  border-radius: 20px;
-  letter-spacing: 0.3px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0;
   pointer-events: none;
   user-select: none;
   white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .adb__dot {
-  height: 6px;
-  border-radius: 3px;
-  width: 6px;
-  background: rgba(144, 33, 77, 0.18);
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+  background: #6B656A;
   border: none;
   padding: 0;
   cursor: pointer;
-  transition: width 0.3s ease, background 0.25s ease;
+  opacity: 0.75;
+  transition: opacity 0.2s ease, transform 0.2s ease;
   -webkit-tap-highlight-color: transparent;
 
-  &--active {
-    width: 20px;
-    background: #90214D;
+  &:active {
+    opacity: 1;
+    transform: scale(0.9);
   }
 }
