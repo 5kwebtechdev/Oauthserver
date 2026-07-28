@@ -36,7 +36,7 @@
 
         <div class="cheer-replacement">
           <div class="digital-pet" aria-hidden="false">
-            <superme-pet pet="panda" [age]="1" mood="happy" sizePreset="96"></superme-pet>
+            <superme-pet mood="happy" sizePreset="96"></superme-pet>
           </div>
         </div>
       </div>
@@ -86,7 +86,7 @@
             </div>
 
             <ng-template #emptyContentState>
-              <empty-state [imageSrc]="'assets/Images-Pet/Panda-Age1-Curious.png'" imageAlt="Curious Panda"
+              <empty-state [imageSrc]="currentPetCuriousImage" [imageAlt]="currentPetCuriousAlt"
                 [leadText]="isSearching ? 'No Results Found' : 'Fresh Content Coming Soon!'"
                 [subText]="isSearching ? 'Try a different search term.' : 'Nothing is available in this category yet. Check back soon.'"
                 buttonText="">
@@ -112,7 +112,7 @@
             </div>
 
             <ng-template #emptyCategoryState>
-              <empty-state [imageSrc]="'assets/Images-Pet/Panda-Age1-Curious.png'" imageAlt="Curious Panda"
+              <empty-state [imageSrc]="currentPetCuriousImage" [imageAlt]="currentPetCuriousAlt"
                 [leadText]="isSearching ? 'No Results Found' : 'Fresh Content Coming Soon!'"
                 [subText]="isSearching ? 'Try a different search term or browse another tab.' : 'Nothing is available in this category yet. Check back soon.'"
                 buttonText="">

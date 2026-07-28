@@ -507,26 +507,29 @@
 }
 
 .roles-illustration {
-  top: 23.709cqh;
+  top: 25.352cqh;
   right: auto;
   bottom: auto;
   left: 0;
   width: 100cqw;
-  height: 71.362cqh;
+  height: 68.075cqh;
 }
 
 .roles-art-frame {
-  width: 86.26cqw;
-  height: 100%;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 91.858cqw;
+  height: 67.136cqh;
+  overflow: visible;
 }
 
 .roles-art-frame img {
-  width: 100%;
+  width: 81.17cqw;
   height: 100%;
   max-width: none;
   max-height: none;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 /* Slide 4: rewards and shop */
@@ -584,10 +587,10 @@
 
 .rewards-accent {
   position: absolute;
-  top: 6.195cqh;
-  right: 2.544cqw;
-  width: 7.379cqw;
-  height: auto;
+  top: 6.524cqh;
+  right: 2.814cqw;
+  width: 7.527cqw;
+  height: 4.715cqh;
   transform: rotate(10deg);
   pointer-events: none;
 }
@@ -596,8 +599,8 @@
   position: absolute;
   left: 50%;
   bottom: 0;
-  width: 36.132cqw;
-  height: auto;
+  width: 34.86cqw;
+  height: 0.842cqh;
   transform: translateX(-50%);
   pointer-events: none;
 }
@@ -627,20 +630,20 @@
 }
 
 .rewards-art-frame {
-  position: relative;
-  width: 80.407cqw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 91.858cqw;
   height: 100%;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .rewards-art-frame img {
-  position: absolute;
-  top: 0;
-  left: -33.54%;
-  width: 167.07%;
+  width: 84.987cqw;
   height: 100%;
   max-width: none;
   max-height: none;
+  object-fit: cover;
 }
 
 .journey-button {
@@ -674,6 +677,28 @@
 .pagination.roles-pagination,
 .pagination.rewards-pagination {
   gap: 8px;
+}
+
+.pagination.roles-pagination {
+  bottom: max(
+    env(safe-area-inset-bottom, 0px),
+    calc(
+      (100dvh - min(100dvh, 216.7939vw)) / 2 +
+      min(4.4601dvh, 9.6692vw)
+    )
+  );
+  height: 10px;
+}
+
+.pagination.rewards-pagination {
+  bottom: max(
+    env(safe-area-inset-bottom, 0px),
+    calc(
+      (100dvh - min(100dvh, 216.7939vw)) / 2 +
+      min(5.0265dvh, 10.8972vw)
+    )
+  );
+  height: 10px;
 }
 
 .pagination.roles-pagination button,

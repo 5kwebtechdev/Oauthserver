@@ -6,25 +6,29 @@
 .week-streak-card {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   width: 100%;
-  background: #EDEBFA;
-  border-radius: 18px;
-  padding: 16px 18px;
+  min-height: 100px;
+  background: #EBE6F5;
+  border-radius: 24px;
+  padding: 8px 16px;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .week-streak-title {
-  font-family: var(--font-heading);
-  font-size: 14px;
-  font-weight: 700;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: normal;
   color: #282527;
 }
 
 .week-streak-row {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 16px;
   width: 100%;
 }
 
@@ -32,20 +36,23 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 4px;
+  width: 32px;
   min-width: 0;
 }
 
 .week-streak-day-label {
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  color: rgba(40, 37, 39, 0.55);
+  line-height: normal;
+  color: #6B656A;
 }
 
 .week-streak-marker {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -53,30 +60,50 @@
   flex-shrink: 0;
 
   &.completed {
-    background: #4CAF50;
+    background: radial-gradient(circle at 50% 45%, #F6AC72 0%, #EB7D44 50%, #E6652D 75%, #E04D16 100%);
+    box-shadow: 2px 4px 8px rgba(224, 77, 22, 0.4);
   }
 
   &.missed {
-    background: #E5484D;
+    background: radial-gradient(circle at 50% 45%, #7341A7 0%, #5B338F 50%, #432477 100%);
   }
 
   &.pending {
-    background: #fff;
-    border: 1.5px solid rgba(40, 37, 39, 0.15);
+    background: transparent;
+    border: 1px solid #6B656A;
   }
+}
+
+.week-streak-fire,
+.week-streak-check {
+  display: block;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.week-streak-rest {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  font-size: 16px;
+  line-height: 1;
 }
 
 @media (max-width: 360px) {
   .week-streak-card {
-    padding: 14px;
+    padding-inline: 12px;
+  }
+
+  .week-streak-row {
+    justify-content: space-between;
+    gap: 0;
   }
 
   .week-streak-marker {
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
   }
 
   .week-streak-day-label {
-    font-size: 11px;
+    font-size: 12px;
   }
 }

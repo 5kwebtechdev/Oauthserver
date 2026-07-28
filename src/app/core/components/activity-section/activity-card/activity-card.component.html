@@ -1,16 +1,18 @@
 <!-- List Mode -->
 <!-- Shared header used by both list and recent modes -->
 <ng-template #dayHeader>
-  <superme-card-header title="Today at a Glance" [subtitleMiddle]="glanceSubtitle">
-    <div class="glance-header-actions" superme-header-actions>
-      <span class="glance-done-pill">{{ overallCompletionRate }}% done</span>
-      <img src="assets/Icons-Neutral/Icon-Calendar-3D.png" alt="Open timeline" class="calendar-icon" loading="lazy" decoding="async"
-        (click)="openTimeline()" role="button" aria-label="Open timeline"
-        onerror="this.onerror=null;this.src='assets/Icons-Neutral/Icon-Calendar.png'" />
+  <div class="glance-heading-block">
+    <superme-card-header title="Today at a Glance" [subtitleMiddle]="glanceSubtitle">
+      <div class="glance-header-actions" superme-header-actions>
+        <button type="button" class="glance-done-pill" (click)="openTimeline()"
+          aria-label="Open today's progress timeline">
+          {{ overallCompletionRate }}% done
+        </button>
+      </div>
+    </superme-card-header>
+    <div class="glance-progress-track" *ngIf="totalHabitsLoaded > 0 || totalTasksLoaded > 0">
+      <div class="glance-progress-fill" [style.width.%]="overallCompletionRate"></div>
     </div>
-  </superme-card-header>
-  <div class="glance-progress-track" *ngIf="totalHabitsLoaded > 0 || totalTasksLoaded > 0">
-    <div class="glance-progress-fill" [style.width.%]="overallCompletionRate"></div>
   </div>
 </ng-template>
 <div *ngIf="mode === 'list'" class="d-flex flex-column gap-2 glance-card">
@@ -22,39 +24,22 @@
       <div class="glance-tabs" role="tablist" aria-label="Filter by type">
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
           [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
-          <svg class="glance-tab-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <rect x="1" y="1" width="5" height="5" rx="1.2" fill="currentColor" />
-            <rect x="8" y="1" width="5" height="5" rx="1.2" fill="currentColor" />
-            <rect x="1" y="8" width="5" height="5" rx="1.2" fill="currentColor" />
-            <rect x="8" y="8" width="5" height="5" rx="1.2" fill="currentColor" />
-          </svg>
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-all.png" alt="" aria-hidden="true">
           <span>All</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'habits'"
           [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
-          <svg class="glance-tab-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <path d="M2 7a5 5 0 1 1 2 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none" />
-            <path d="M2 4.5V7h2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
-              stroke-linejoin="round" fill="none" />
-          </svg>
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-habit.png" alt="" aria-hidden="true">
           <span>Habit</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
           [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
-          <svg class="glance-tab-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <rect x="2" y="2" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4" fill="none" />
-            <path d="M4.5 7l1.8 1.8L9.5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
-              stroke-linejoin="round" fill="none" />
-          </svg>
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-task.png" alt="" aria-hidden="true">
           <span>Task</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
           [attr.aria-selected]="currentActive === 'timetable'" (click)="switchTab('timetable')">
-          <svg class="glance-tab-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.4" fill="none" />
-            <path d="M7 4.2V7l2 1.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
-              stroke-linejoin="round" fill="none" />
-          </svg>
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-timetable.png" alt="" aria-hidden="true">
           <span>Time Table</span>
         </button>
       </div>
@@ -197,15 +182,9 @@
   </div>
   <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
     <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">
-      View All
-      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-        <path d="M8.94097 6.39773L4.38604 10.9526C4.16636 11.1723 3.8102 11.1723 3.59054 10.9526L3.05929 10.4214C2.83998 10.2021 2.83956 9.84666 3.05835 9.62684L6.66822 5.99998L3.05835 2.37314C2.83956 2.15332 2.83998 1.79789 3.05929 1.57859L3.59054 1.04733C3.81022 0.827648 4.16638 0.827648 4.38604 1.04733L8.94095 5.60224C9.16063 5.8219 9.16063 6.17805 8.94097 6.39773Z" fill="currentColor" />
-      </svg>
+      View all
     </button>
     <button class="add-new-pill" (click)="openHabitInput()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-        <path d="M6 1V11M1 6H11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
       Add New
     </button>
   </div>
@@ -221,39 +200,22 @@
       <div class="glance-tabs" role="tablist" aria-label="Filter by type">
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
           [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
-          <svg class="glance-tab-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <rect x="1" y="1" width="5" height="5" rx="1.2" fill="currentColor" />
-            <rect x="8" y="1" width="5" height="5" rx="1.2" fill="currentColor" />
-            <rect x="1" y="8" width="5" height="5" rx="1.2" fill="currentColor" />
-            <rect x="8" y="8" width="5" height="5" rx="1.2" fill="currentColor" />
-          </svg>
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-all.png" alt="" aria-hidden="true">
           <span>All</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'habits'"
           [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
-          <svg class="glance-tab-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <path d="M2 7a5 5 0 1 1 2 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none" />
-            <path d="M2 4.5V7h2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
-              stroke-linejoin="round" fill="none" />
-          </svg>
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-habit.png" alt="" aria-hidden="true">
           <span>Habit</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
           [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
-          <svg class="glance-tab-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <rect x="2" y="2" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4" fill="none" />
-            <path d="M4.5 7l1.8 1.8L9.5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
-              stroke-linejoin="round" fill="none" />
-          </svg>
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-task.png" alt="" aria-hidden="true">
           <span>Task</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
           [attr.aria-selected]="currentActive === 'timetable'" (click)="switchTab('timetable')">
-          <svg class="glance-tab-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-            <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.4" fill="none" />
-            <path d="M7 4.2V7l2 1.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
-              stroke-linejoin="round" fill="none" />
-          </svg>
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-timetable.png" alt="" aria-hidden="true">
           <span>Time Table</span>
         </button>
       </div>
@@ -378,15 +340,9 @@
   </div>
   <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
     <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">
-      View All
-      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-        <path d="M8.94097 6.39773L4.38604 10.9526C4.16636 11.1723 3.8102 11.1723 3.59054 10.9526L3.05929 10.4214C2.83998 10.2021 2.83956 9.84666 3.05835 9.62684L6.66822 5.99998L3.05835 2.37314C2.83956 2.15332 2.83998 1.79789 3.05929 1.57859L3.59054 1.04733C3.81022 0.827648 4.16638 0.827648 4.38604 1.04733L8.94095 5.60224C9.16063 5.8219 9.16063 6.17805 8.94097 6.39773Z" fill="currentColor" />
-      </svg>
+      View all
     </button>
     <button class="add-new-pill" (click)="openHabitInput()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-        <path d="M6 1V11M1 6H11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
       Add New
     </button>
   </div>
@@ -489,7 +445,7 @@
             <!-- Completion Message: Show when status is COMPLETED -->
             <!-- <div class="d-flex gap-2" *ngIf="getStatus() === 'completed'">
               <div class="bubble">You did it</div>
-              <superme-pet pet="panda" mood="tired" [size]="44"></superme-pet>
+              <superme-pet mood="tired" [size]="44"></superme-pet>
             </div> -->
 
           </div>

@@ -2,11 +2,9 @@ import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { SupermeButtonComponent } from '../superme-button/superme-button.component';
-import { SupermeCardHeaderComponent } from '../superme-navigator/superme-card-header/superme-card-header.component';
-import { ViewAllComponent } from '../superme-navigator/view-all/view-all.component';
 import { AcademyService, AcademyFeedCourse, AcademyFeedLesson } from '../../services/academy.service';
 import { AuthService } from '../../services/auth.service';
+import { LearningService } from '../../services/learning.service';
 
 // Kept for backward compatibility — academy-course.component imports this
 export interface CourseCard {
@@ -20,37 +18,35 @@ export interface CourseCard {
   fallbackImage?: string;
 }
 
-const FALLBACK_IMAGES = [
-  'assets/Images-Transparent/Academy-Course-Thubmnail1.png',
-  'assets/Images-Transparent/Academy-Course-Thubmnail2.png',
-  'assets/Images-Transparent/Academy-Course-Thubmnail3.png',
-  'assets/Images-Transparent/Academy-Course-Thubmnail4.png',
-  'assets/Images-Transparent/Academy-Course-Thubmnail5.png',
-];
-
 @Component({
   selector: 'academy-section',
   templateUrl: './academy-section.component.html',
   styleUrls: ['./academy-section.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, SupermeButtonComponent, SupermeCardHeaderComponent, ViewAllComponent],
+  imports: [CommonModule, IonicModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class AcademySectionComponent implements OnInit {
   loading = true;
   state: 1 | 2 | 3 = 1;
-  headerTitle = 'Begin Your Life Skills Quest!';
+  headerTitle = 'Your Skills Quest';
 
   // State 1 — courses
   courses: AcademyFeedCourse[] = [];
 
   // State 2 — lessons
   lessons: AcademyFeedLesson[] = [];
+  articleCount = 0;
+
+  get masterClassCount(): number {
+    return this.state === 2 ? this.lessons.length : this.courses.length;
+  }
 
   constructor(
     private router: Router,
     private academyService: AcademyService,
-    private authService: AuthService
+    private authService: AuthService,
+    private learningService: LearningService
   ) {}
 
   ngOnInit(): void {
@@ -65,6 +61,19 @@ export class AcademySectionComponent implements OnInit {
       },
       error: () => { this.loading = false; }
     });
+
+    this.learningService.getArticleCards().subscribe({
+      next: (cards) => {
+        this.articleCount = Array.isArray(cards) ? cards.length : 0;
+      },
+      error: () => {
+        this.articleCount = 0;
+      }
+    });
+  }
+
+  openArticles(): void {
+    this.router.navigate(['/authed/content']);
   }
 
   onViewAll(): void {
@@ -81,26 +90,34 @@ export class AcademySectionComponent implements OnInit {
     }
   }
 
-  getCourseImage(course: AcademyFeedCourse, index: number): string {
-    return this.normalizeImageUrl(course.thumbnailUrl || '', FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]);
+  getCourseProgress(course: AcademyFeedCourse): number {
+    const totalLessons = Number(course.noOfLessons) || 0;
+    const completedLessons = Number(course.completedLessons) || 0;
+    const derivedProgress = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+    const progress = Number(course.completionPercentage ?? derivedProgress);
+    return Math.min(100, Math.max(0, Math.round(Number.isFinite(progress) ? progress : 0)));
   }
 
-  getLessonImage(lesson: AcademyFeedLesson, index: number): string {
+  getLessonProgress(lesson: AcademyFeedLesson): number {
+    return lesson.isCompleted ? 100 : 0;
+  }
+
+  getCourseImage(course: AcademyFeedCourse): string {
+    return this.normalizeImageUrl(course.thumbnailUrl || '');
+  }
+
+  getLessonImage(lesson: AcademyFeedLesson): string {
     const url = lesson.thumbnailUrl || lesson.courseThumbnailUrl || '';
-    return this.normalizeImageUrl(url, FALLBACK_IMAGES[index % FALLBACK_IMAGES.length]);
+    return this.normalizeImageUrl(url);
   }
 
-  onCourseImageError(event: Event, index: number): void {
-    (event.target as HTMLImageElement).src = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
+  onImageError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
   }
 
-  onLessonImageError(event: Event, index: number): void {
-    (event.target as HTMLImageElement).src = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
-  }
-
-  private normalizeImageUrl(url: string, fallback: string): string {
+  private normalizeImageUrl(url: string): string {
     const trimmedUrl = (url || '').trim();
-    if (!trimmedUrl) return fallback;
+    if (!trimmedUrl) return '';
     if (/^data:image\//i.test(trimmedUrl) || /^https?:\/\//i.test(trimmedUrl)) return trimmedUrl;
     if (trimmedUrl.startsWith('//')) return `https:${trimmedUrl}`;
     if (/^\/?assets\//i.test(trimmedUrl)) return trimmedUrl.startsWith('/') ? trimmedUrl : `/${trimmedUrl}`;

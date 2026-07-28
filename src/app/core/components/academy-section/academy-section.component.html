@@ -1,88 +1,88 @@
-<section class="academy">
-  <superme-card-header
-    [title]="headerTitle"
-    [subtitleLeft]="'Real lessons'"
-    [subtitleMiddle]="'Life ready'"
-    [subtitleRight]="'Future strong'">
-    <superme-view-all superme-header-actions class="see-all" (clicked)="onViewAll()">
-    </superme-view-all>
-  </superme-card-header>
+<section class="academy" aria-labelledby="skills-quest-title">
+  <header class="academy__header">
+    <div class="academy__heading">
+      <div class="academy__title-row">
+        <img src="assets/figma/child-home/skills-header.png" alt="" aria-hidden="true">
+        <h3 id="skills-quest-title">Your Skills Quest</h3>
+      </div>
+      <p>Real lessons <span></span> Life ready <span></span> Future strong</p>
+    </div>
+  </header>
 
-  <div class="academy__cards">
+  <button type="button" class="academy__feature academy__feature--articles" (click)="openArticles()">
+    <img class="academy__feature-icon" src="assets/figma/child-home/skills-articles.png" alt="" aria-hidden="true">
+    <span class="academy__feature-copy">
+      <strong>Articles</strong>
+      <small>Expand your knowledge</small>
+      <em>{{ articleCount }} {{ articleCount === 1 ? 'article' : 'articles' }}</em>
+    </span>
+    <img class="academy__feature-arrow" src="assets/figma/child-home/skills-arrow.svg" alt="" aria-hidden="true">
+  </button>
 
-    <!-- Loading -->
+  <div class="academy__masterclass">
+    <button type="button" class="academy__feature academy__feature--masterclass" (click)="onViewAll()">
+      <img class="academy__feature-icon" src="assets/figma/child-home/skills-masterclass.png" alt="" aria-hidden="true">
+      <span class="academy__feature-copy">
+        <strong>MasterClass</strong>
+        <small>Learn from the best</small>
+        <em>{{ masterClassCount }} {{ masterClassCount === 1 ? 'course' : 'courses' }}</em>
+      </span>
+      <img class="academy__feature-arrow" src="assets/figma/child-home/skills-arrow.svg" alt="" aria-hidden="true">
+    </button>
+
     <div class="academy__loading" *ngIf="loading">
       <ion-spinner name="crescent"></ion-spinner>
     </div>
 
-    <!-- State 1: Courses (new user) -->
-    <swiper-container *ngIf="!loading && state === 1 && courses.length"
-      class="academy-swiper" [slides-per-view]="'auto'" [space-between]="10"
-      [pagination]="false" [scrollbar]="false" [centeredSlides]="false" [freeMode]="true"
-      prevent-clicks="false" prevent-clicks-propagation="false">
-      <swiper-slide class="academy-slide" *ngFor="let c of courses; let i = index" (click)="onStartCourse(c)">
-        <article class="academy__card">
-          <div class="academy__content">
-            <div class="academy-main-title">
-              <img class="academy__img" [src]="getCourseImage(c, i)" [alt]="c.courseName"
-                   (error)="onCourseImageError($event, i)">
-              <div class="title-time-level">
-                <div class="title-n-time">
-                  <h4 class="title">{{ c.courseName }}</h4>
-                  <div class="meta">{{ c.noOfLessons }} {{ c.noOfLessons === 1 ? 'lesson' : 'lessons' }}{{ c.duration ? ' • ' + c.duration + ' min' : '' }}</div>
-                </div>
-                <span class="level" *ngIf="c.difficulty">{{ c.difficulty }}</span>
-              </div>
-            </div>
-            <p class="desc">{{ c.description }}</p>
-            <div class="card-footer">
-              <superme-button class="start" type="pink-small" size="medium" text="Start Course"></superme-button>
-            </div>
-          </div>
-        </article>
-      </swiper-slide>
-    </swiper-container>
+    <div class="academy__progress-cards" *ngIf="!loading && state === 1 && courses.length">
+      <button type="button" class="academy__progress-card" *ngFor="let course of courses"
+        (click)="onStartCourse(course)">
+        <span class="academy__course-head">
+          <img *ngIf="getCourseImage(course) as courseImage" [src]="courseImage" [alt]="course.courseName"
+            (error)="onImageError($event)">
+          <span>
+            <small>{{ course.category || 'MasterClass' }}</small>
+            <strong>{{ course.courseName }}</strong>
+          </span>
+        </span>
+        <span class="academy__progress-label">
+          <em>Lessons completed: {{ course.completedLessons || 0 }}/{{ course.noOfLessons || 0 }}</em>
+          <small>{{ getCourseProgress(course) }}%</small>
+        </span>
+        <span class="academy__progress-track">
+          <span [style.width.%]="getCourseProgress(course)"></span>
+        </span>
+      </button>
+    </div>
 
-    <!-- State 2: Lessons (returning user with active progress) -->
-    <swiper-container *ngIf="!loading && state === 2 && lessons.length"
-      class="academy-swiper" [slides-per-view]="'auto'" [space-between]="10"
-      [pagination]="false" [scrollbar]="false" [centeredSlides]="false" [freeMode]="true"
-      prevent-clicks="false" prevent-clicks-propagation="false">
-      <swiper-slide class="academy-slide" *ngFor="let l of lessons; let i = index" (click)="onLessonCta(l)">
-        <article class="academy__card">
-          <div class="academy__content">
-            <div class="academy-main-title">
-              <img class="academy__img" [src]="getLessonImage(l, i)" [alt]="l.lessonTitle"
-                   (error)="onLessonImageError($event, i)">
-              <div class="title-time-level">
-                <div class="title-n-time">
-                  <h4 class="title">{{ l.lessonTitle }}</h4>
-                  <div class="meta">{{ l.courseName }}{{ l.duration ? ' • ' + l.duration + ' min' : '' }}</div>
-                </div>
-                <span class="level slot-{{ (l.slotType || '').toLowerCase() }}" *ngIf="l.slotType">
-                  {{ l.slotType === 'ACTIVE' ? 'In Progress' : l.slotType === 'NEXT_UP' ? 'Next Up' : 'New' }}
-                </span>
-              </div>
-            </div>
-            <p class="desc">{{ l.lessonDescription }}</p>
-            <div class="card-footer">
-              <superme-button class="start" type="pink-small" size="medium"
-                [text]="l.ctaLabel || 'Start Lesson'"></superme-button>
-            </div>
-          </div>
-        </article>
-      </swiper-slide>
-    </swiper-container>
+    <div class="academy__progress-cards" *ngIf="!loading && state === 2 && lessons.length">
+      <button type="button" class="academy__progress-card" *ngFor="let lesson of lessons"
+        (click)="onLessonCta(lesson)">
+        <span class="academy__course-head">
+          <img *ngIf="getLessonImage(lesson) as lessonImage" [src]="lessonImage" [alt]="lesson.lessonTitle"
+            (error)="onImageError($event)">
+          <span>
+            <small>{{ lesson.courseName || 'MasterClass' }}</small>
+            <strong>{{ lesson.lessonTitle }}</strong>
+          </span>
+        </span>
+        <span class="academy__progress-label">
+          <em>{{ lesson.ctaLabel || lesson.lessonStatus || 'Ready to continue' }}</em>
+          <small>{{ getLessonProgress(lesson) }}%</small>
+        </span>
+        <span class="academy__progress-track">
+          <span [style.width.%]="getLessonProgress(lesson)"></span>
+        </span>
+      </button>
+    </div>
 
-    <!-- State 3: All completed -->
     <p class="academy__empty" *ngIf="!loading && state === 3">
-      You've completed all courses! Amazing work!
+      You’ve completed all courses! Amazing work!
     </p>
 
-    <!-- Fallback empty (state 1 or 2 but no data) -->
-    <p class="academy__empty" *ngIf="!loading && state !== 3 && !courses.length && !lessons.length">
+    <p class="academy__empty"
+      *ngIf="!loading && state !== 3 && !courses.length && !lessons.length">
       No courses available right now.
     </p>
-
   </div>
 </section>

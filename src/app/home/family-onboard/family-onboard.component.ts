@@ -18,6 +18,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 import { toApiGender } from '../../core/models/gender.model';
 import { OnboardingStateService } from '../../core/services/onboarding-state.service';
 import { AuthBackButtonComponent } from '../../core/components/auth-back-button/auth-back-button.component';
+import { environment } from '../../../environments/environment';
 
 type ViewMode = 'instructions-child' | 'instructions-parent' | 'join-family-child' | 'join-family-parent';
 type FamilyMode = 'create' | 'join';
@@ -32,6 +33,7 @@ type UserRole = 'child' | 'parent' | 'self';
 })
 export class FamilyOnboardComponent implements OnInit, OnDestroy {
     private static readonly CHILD_POST_FAMILY_WELCOME_KEY = 'show_child_welcome_after_family';
+    private readonly appDownloadUrl = environment.firebase.remoteConfig.defaults.android_store_url;
     @Input() viewMode: ViewMode = 'instructions-child';
 
     // Form controls
@@ -736,7 +738,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
             navigator.share({
                 title: 'Family Code',
                 text: `Join my family with code: ${this.familyCode}`,
-                url: `${window.location.origin}/join-family?code=${this.familyCode}`
+                url: this.appDownloadUrl
             }).catch(() => {
                 this.fallbackShare();
             });
@@ -757,7 +759,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         const text = `Hi! 👋
 Can you help me join our family on SuperMe?
 Create your Parent account and send me the Family Code or QR Code.
-Please download the app: ${window.location.origin}
+Please download the app: ${this.appDownloadUrl}
 
 Thank you!`;
 
