@@ -1,4 +1,4 @@
-<div class="footer-main">
+<div class="footer-main" [class.keyboard-hidden]="isKeyboardOpen">
   <!-- Show TimeTable for Parent users, Learning for others -->
   <a *ngIf="isParentUser()" href="/authed/activity-timeline" class="footer-item"
     [class.active]="isRouteActive('/authed/activity-timeline')"

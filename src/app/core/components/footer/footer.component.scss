@@ -19,6 +19,15 @@
   padding-bottom: env(safe-area-inset-bottom);
   box-sizing: border-box;
   min-height: var(--footer-visual-height, 80px);
+  transform: translateY(0);
+  transition: transform 0.2s ease;
+
+  /* Slide the bar off-screen while the keyboard is open, instead of leaving
+     it floating above the keyboard covering part of the visible viewport. */
+  &.keyboard-hidden {
+    transform: translateY(100%);
+    pointer-events: none;
+  }
 }
 
 .footer-item {
