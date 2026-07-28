@@ -18,6 +18,7 @@ import { NavController } from '@ionic/angular';
 export class NavigationService {
   private readonly STORAGE_KEY = 'nav_history';
   private readonly MAX_HISTORY = 50;
+  private readonly REMOVED_ROUTES = new Set(['/home/instructions-for-child']);
 
   // True while we are in the middle of a back navigation so pushUrl is a no-op.
   private isGoingBack = false;
@@ -57,12 +58,20 @@ export class NavigationService {
   private initHistory(): void {
     if (!sessionStorage.getItem(this.STORAGE_KEY)) {
       sessionStorage.setItem(this.STORAGE_KEY, JSON.stringify([]));
+      return;
     }
+
+    // Remove retired onboarding destinations left by an older app version so
+    // hardware/browser Back can never reopen them after an upgrade.
+    this.saveHistory(this.getStoredHistory());
   }
 
   private getStoredHistory(): string[] {
     try {
-      return JSON.parse(sessionStorage.getItem(this.STORAGE_KEY) || '[]');
+      const history = JSON.parse(sessionStorage.getItem(this.STORAGE_KEY) || '[]');
+      return Array.isArray(history)
+        ? history.filter(url => typeof url === 'string' && !this.isRemovedRoute(url))
+        : [];
     } catch {
       return [];
     }
@@ -78,12 +87,19 @@ export class NavigationService {
       this.isGoingBack = false;
       return;
     }
+    if (this.isRemovedRoute(url)) return;
+
     const history = this.getStoredHistory();
     // Deduplicate consecutive identical entries (e.g. guard redirects to same page).
     if (history.length > 0 && history[history.length - 1] === url) return;
     history.push(url);
     if (history.length > this.MAX_HISTORY) history.shift();
     this.saveHistory(history);
+  }
+
+  private isRemovedRoute(url: string): boolean {
+    const path = String(url || '').split('?')[0].split('#')[0].replace(/\/+$/, '');
+    return this.REMOVED_ROUTES.has(path);
   }
 
   private doNavigateBack(url: string): void {
@@ -150,6 +166,15 @@ export class NavigationService {
   getPreviousUrl(): string | null {
     const history = this.getStoredHistory();
     return history.length > 1 ? history[history.length - 2] : null;
+  }
+
+  /**
+   * Replace the custom navigation stack with one known-safe destination.
+   * Used when an onboarding screen must not be reachable by any Back action.
+   */
+  replaceHistory(url: string): void {
+    this.isGoingBack = false;
+    this.saveHistory(this.isRemovedRoute(url) ? [] : [url]);
   }
 
   /** Clear history — call on logout. */

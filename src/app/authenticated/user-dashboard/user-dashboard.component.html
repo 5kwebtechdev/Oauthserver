@@ -19,7 +19,7 @@
 
     <!-- Pet -->
     <div class="home-overlay__pet">
-      <superme-pet pet="panda" [age]="1" [mood]="overlayPetMood"></superme-pet>
+      <superme-pet [mood]="overlayPetMood"></superme-pet>
     </div>
 
     <!-- Message bubble -->
@@ -58,12 +58,15 @@
             <div class="user-info" role="group" aria-label="User info">
               <div class="user-avatar" aria-hidden="false">
                 <a [routerLink]="['/authed','user-profile']" aria-label="Open profile">
-                  <app-img
+                  <app-img *ngIf="userAvatarUrl; else avatarInitial"
                     [src]="userAvatarUrl"
                     [alt]="avatarImageName ? avatarImageName : (userName + ' avatar')"
                     [circle]="true"
                     objectFit="cover">
                   </app-img>
+                  <ng-template #avatarInitial>
+                    <span class="user-avatar-initial" aria-hidden="true">{{ userInitial }}</span>
+                  </ng-template>
                 </a>
               </div>
               <div class="user-name-wrap">
@@ -74,48 +77,65 @@
 
             <nav class="header-tools" role="navigation" aria-label="Profile tools">
               <button class="bell-tool" type="button" aria-label="Notifications" (click)="openNotifications()">
-                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                  <path d="M10 2.5c-2.9 0-5.25 2.35-5.25 5.25v2.55c0 .55-.2 1.08-.58 1.49L3.1 13.05c-.7.76-.16 1.98.87 1.98h12.06c1.03 0 1.57-1.22.87-1.98l-1.07-1.26a2.25 2.25 0 0 1-.58-1.49V7.75C15.25 4.85 12.9 2.5 10 2.5Z"
-                    stroke="#282527" stroke-width="1.4" stroke-linejoin="round" />
-                  <path d="M8 16.5a2 2 0 0 0 4 0" stroke="#282527" stroke-width="1.4" stroke-linecap="round" />
-                </svg>
+                <img src="assets/icons/child-home-notification-figma.svg" alt="" class="notification-tool-icon" aria-hidden="true">
               </button>
               <button class="coin-pill" type="button" aria-label="Open coins" (click)="openCoinPage()">
-                <img src="assets/Icons-Neutral/Icons-Coins.png" alt="" class="coin-pill-icon">
+                <img src="assets/icons/child-home-coin-figma.png" alt="" class="coin-pill-icon" aria-hidden="true">
                 <span>{{ userCoins }}</span>
               </button>
             </nav>
           </header>
         </div>
 
-        <div class="profile-bottom-group">
-          <div class="profile-greeting-row">
-            <app-speech-bubble [message]="greetingMessage" [petMessage]="currentPetMessage" type="talking"
-              arrowSide="none" color="rgba(255, 255, 255, 0.55)" textColor="#282527"
-              class="greeting-bubble text-left" aria-label="Greeting message" role="status" aria-live="polite">
-            </app-speech-bubble>
-
-            <div class="digital-pet" aria-hidden="false">
-              <superme-pet pet="panda" [age]="1" [mood]="petMood" [size]="92">
-              </superme-pet>
+        <section
+          class="profile-bottom-group"
+          [ngClass]="'home-period-' + homeTimePeriod"
+          [attr.data-home-period]="homeTimePeriod"
+          aria-label="Today's progress">
+          <div class="home-hero-message" role="status" aria-live="polite">
+            <img class="home-hero-message__shape" src="assets/icons/child-home-message-arrow-figma.svg" alt="" aria-hidden="true">
+            <div class="home-hero-message__content">
+              <p class="home-hero-message__title">Let’s get <strong>going!</strong></p>
+              <div class="home-hero-message__summary">
+                <img src="assets/icons/child-home-calendar-figma.svg" alt="" aria-hidden="true">
+                <p>
+                  You have
+                  <strong>{{ awaitingHabits }} {{ awaitingHabits === 1 ? 'habit' : 'habits' }}</strong>
+                  and
+                  <strong>{{ awaitingTasks }} {{ awaitingTasks === 1 ? 'task' : 'tasks' }}</strong>
+                  pending for today!
+                </p>
+              </div>
             </div>
+          </div>
+
+          <div class="digital-pet" aria-hidden="false">
+            <superme-pet [mood]="petMood" [size]="132"></superme-pet>
           </div>
 
           <div class="header-stats-row" aria-label="Your stats">
             <div class="header-stat">
-              <img src="assets/Icons-Neutral/Icon-Trophy.png" alt="" class="header-stat-icon">
-              <span class="header-stat-value">{{ userDays }}</span>
-            </div>
-            <div class="header-stat">
-              <img src="assets/Icons-Neutral/Icon-Streak.png" alt="" class="header-stat-icon">
+              <span class="header-stat-icon-frame header-stat-icon-frame--streak" aria-hidden="true">
+                <img src="assets/icons/child-home-streak-figma.png" alt="" class="header-stat-icon">
+              </span>
               <span class="header-stat-value">{{ userStreaks }}</span>
             </div>
+            <img class="header-stat-divider" src="assets/icons/child-home-stat-divider-figma.svg" alt="" aria-hidden="true">
             <div class="header-stat">
-              <img src="assets/Icons-Neutral/Icon-Badge.png" alt="" class="header-stat-icon">
+              <span class="header-stat-icon-frame" aria-hidden="true">
+                <img src="assets/icons/child-home-trophy-figma.png" alt="" class="header-stat-icon">
+              </span>
+              <span class="header-stat-value">{{ userDays }}</span>
+            </div>
+            <img class="header-stat-divider" src="assets/icons/child-home-stat-divider-figma.svg" alt="" aria-hidden="true">
+            <div class="header-stat">
+              <span class="header-stat-icon-frame" aria-hidden="true">
+                <img src="assets/icons/child-home-badge-figma.png" alt="" class="header-stat-icon">
+              </span>
               <span class="header-stat-value">{{ userBadges }}</span>
             </div>
           </div>
-        </div>
+        </section>
       </div>
     </section>
 
@@ -135,43 +155,37 @@
         </div>
       </div>
 
-      <!-- Current Week's Streak (hardcoded for now — will be API-driven) -->
-      <week-streak-section class="w-full"></week-streak-section>
+      <!-- Current Week's API-backed streak -->
+      <week-streak-section class="w-full" [days]="weekStreakDays"></week-streak-section>
 
       <div class="mood-selector w-full">
         <mood-selector [value]="selectedMood" (valueChange)="onMoodChange($event)"></mood-selector>
       </div>
 
       <!-- activity Card -->
-      <activity-card style="width: 100%;" mode="recent" [recentHabits]="recentHabits"
+      <activity-card class="home-glance-card" mode="recent" [recentHabits]="recentHabits"
         [recentTasks]="recentTasks" [recentTimetables]="recentTimetables" [totalTasks]="totalTasks" [totalTasksCompleted]="totalTasksCompleted"
         [taskCompletionRate]="taskCompletionRate" [totalHabits]="totalHabits" [totalHabitsCompleted]="totalHabitsCompleted"
         [habitCompletionRate]="habitCompletionRate" [totalTimetables]="totalTimetables"></activity-card>
 
       <!-- Ad-banner -->
-      <div class="w-full">
+      <div class="ad-full-bleed">
         <ad-banner screen="HOME"></ad-banner>
       </div>
 
       <!-- Content Card -->
-      <div class="w-full" style="width: 100%;">
+      <section class="learning-quest-shell" aria-label="Learning and skills">
         <learning-section source="/authed/user-dashboard"></learning-section>
-      </div>
+        <academy-section class="w-full"></academy-section>
+      </section>
 
       <!-- Tutor card-->
       <tutor-card style="width: 100%;"></tutor-card>
 
-      <!-- Journals component-->
-      <journals class="w-full" [showCreateButton]="true" [maxDisplayEntries]="3">
-      </journals>
-
-      <!--Academy section-->
-      <academy-section class="w-full"></academy-section>
-
       <!-- Quick Access (Write Now / Notes / Calendar) -->
       <quick-access-section class="w-full"></quick-access-section>
 
-      <!-- Reels preview (hardcoded for now — will be API-driven) -->
+      <!-- API-backed reels preview -->
       <reel-preview-section class="w-full"></reel-preview-section>
 
     </div>

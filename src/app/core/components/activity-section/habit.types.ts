@@ -1,3 +1,5 @@
+export type ReminderOffset = 'MINUTES_15' | 'MINUTES_30' | 'MINUTES_45';
+
 export interface Habit {
   id: string; // Unique identifier
   title: string;
@@ -47,4 +49,5 @@ export interface Habit {
   rewardCoins?: number;
   familyId?: number | null;
   updatedAt?: string | null;
+  reminderOffset?: ReminderOffset | null;
 }

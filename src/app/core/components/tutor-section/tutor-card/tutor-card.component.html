@@ -1,20 +1,62 @@
-<section class="tutors-section d-flex flex-column gap-4">
-  <superme-card-header [title]="'Your Guides to Greatness!'" [subtitleLeft]="'Pick tutor'" [subtitleMiddle]="'Learn'"
-    [subtitleRight]="'Level up'">
-    <superme-view-all superme-header-actions [routerLink]="['/authed','tutors']" (clicked)="onViewAll()"
-      class="tutors-section__view-all">
-    </superme-view-all>
-  </superme-card-header>
-
-
-  <div class="tutors-section__list" role="list">
-    <!-- Loading state -->
-    <div *ngIf="isLoading" class="loading-state">
-      <ion-spinner name="crescent"></ion-spinner>
-      <p>Loading tutors...</p>
+<section class="eduhub-section" aria-labelledby="eduhub-title">
+  <header class="eduhub-header">
+    <div>
+      <h3 id="eduhub-title"><span>Edu</span>Hub</h3>
+      <p>Tutors • Academies • And more near you</p>
     </div>
+    <div class="eduhub-listings" *ngIf="!isLoading">
+      <strong>{{ listingCount }}<ng-container *ngIf="listingCount > 0">+</ng-container></strong>
+      <span class="eduhub-listings__label">
+        <img src="assets/figma/child-home/footer/eduhub-verified.png" alt="" aria-hidden="true">
+        Listings
+      </span>
+    </div>
+  </header>
 
-    <!-- Tutor list -->
-    <tutor-list *ngIf="!isLoading" [tutors]="tutors" (viewProfile)="onViewProfile($event)"></tutor-list>
+  <nav class="eduhub-categories" aria-label="Education categories">
+    <button *ngFor="let category of categories; let first = first"
+      type="button"
+      class="eduhub-category"
+      [class.active]="first"
+      (click)="navigateCategory(category.route)">
+      <span class="eduhub-category__image">
+        <img [src]="category.image" [alt]="category.label">
+      </span>
+      <span>{{ category.label }}</span>
+    </button>
+  </nav>
+
+  <div class="eduhub-loading" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
   </div>
+
+  <div class="eduhub-tutors" *ngIf="!isLoading && tutors.length">
+    <article class="eduhub-tutor" *ngFor="let tutor of tutors" (click)="onViewProfile(tutor)"
+      role="button" tabindex="0" (keyup.enter)="onViewProfile(tutor)">
+      <img class="eduhub-tutor__avatar" [src]="tutor.avatar" [alt]="tutor.name">
+      <div class="eduhub-tutor__body">
+        <div class="eduhub-tutor__headline">
+          <strong>{{ tutor.name }}</strong>
+          <span class="eduhub-tutor__likes" *ngIf="getTutorMeta(tutor) as tutorMeta">
+            <img src="assets/figma/child-home/eduhub-heart.png" alt="" aria-hidden="true">
+            {{ tutorMeta }}
+          </span>
+        </div>
+        <p>{{ tutor.description }}</p>
+        <small *ngIf="tutor.location">{{ tutor.location }}</small>
+        <small class="eduhub-tutor__time" *ngIf="tutor.startTime || tutor.endTime">
+          <img src="assets/figma/child-home/eduhub-time.png" alt="" aria-hidden="true">
+          {{ tutor.startTime }}<ng-container *ngIf="tutor.startTime && tutor.endTime">–</ng-container>{{ tutor.endTime }}
+        </small>
+        <div class="eduhub-tutor__footer">
+          <span *ngIf="tutor.hourlyRate">₹ {{ tutor.hourlyRate }} / Per Hour</span>
+          <button type="button" (click)="onViewProfile(tutor); $event.stopPropagation()">View Profile</button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <p class="eduhub-empty" *ngIf="!isLoading && !tutors.length">No listings available right now.</p>
+
+  <button class="eduhub-view-all" type="button" (click)="onViewAll()">View all categories</button>
 </section>

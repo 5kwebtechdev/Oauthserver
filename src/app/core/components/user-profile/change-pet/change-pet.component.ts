@@ -26,24 +26,28 @@ export class ChangePetComponent implements AfterViewInit, OnInit, OnDestroy {
       {
         displayName: 'Bao the superme Panda',
         name: 'Panda',
+        apiName: 'Panda-Age1-Happy.png',
         image: 'assets/Images-Pet/Panda-Age3-Happy.png',
         text: ['Your gentle guide to inner peace', 'Celebrates small acts of kindness']
       },
       {
         displayName: 'Luna the Wise Owl',
         name: 'Owl',
+        apiName: 'Owl-Age1-Happy.png',
         image: 'assets/Images-Pet/Owl-Age3-Happy.png',
         text: ['Your midnight study buddy', 'Celebrates "aha!" moments']
       },
       {
         displayName: 'Zuki the Fierce Dragon',
         name: 'Dragon',
+        apiName: 'Dragon-Age1-Happy.png',
         image: 'assets/Images-Pet/Dragon-Age3-Happy.png',
         text: ['Loves big ideas and bold moves', 'Celebrates when you go on streaks']
       },
       {
         displayName: 'Koda the Chill Llama',
         name: 'Llama',
+        apiName: 'Llama-Age1-Happy.png',
         image: 'assets/Images-Pet/Llama-Age3-Happy.png',
         text: ['Master of staying cool under pressure', 'Loves colorful, quirky adventures']
       }

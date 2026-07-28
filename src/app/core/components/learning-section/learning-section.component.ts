@@ -11,30 +11,21 @@ import { LearningService } from 'src/app/core/services/learning.service';
   selector: 'learning-section',
   template: `
     <section class="content-section" aria-label="Curiosity highlights">
-      <img src="/assets/Images-Transparent/Image-Content-bg1.png" class="content-banner content-banner--bulb"
-        aria-hidden="true" role="presentation" />
-      <img src="/assets/Images-Transparent/Image-Content-bg4.png" class="content-banner content-banner--puzzle"
-        aria-hidden="true" role="presentation" />
-      <img src="/assets/Images-Transparent/Image-Content-bg2.png" class="content-banner content-banner--book"
-        aria-hidden="true" role="presentation" />
-      <img src="/assets/Images-Transparent/Image-Content-bg3.png" class="content-banner content-banner--blue"
-        aria-hidden="true" role="presentation" />
       <header class="content-header">
         <div class="content-title">
-          <h2>{{ title || 'Start Curious, Play, Conquer!' }}</h2>
-          <p class="content-sub">{{ subtitle || 'Dive into brain-teasing quizzes, mind-bending puzzles, captivating stories,
-            and insightful reads.' }}</p>
+          <h2>
+            <img src="assets/figma/child-home/learning-header.png" class="content-title-icon"
+              aria-hidden="true" role="presentation" />
+            {{ title || 'Start Curious, Play, Conquer!' }}
+          </h2>
+          <p class="content-sub">{{ subtitle || 'Explore • Challenge • Grow' }}</p>
         </div>
+        <nav class="content-actions">
+          <button class="view-all-pill" [routerLink]="['/authed','content']" aria-label="View all content">
+            View all
+          </button>
+        </nav>
       </header>
-
-      <nav class="content-actions">
-        <button class="view-all-pill" [routerLink]="['/authed','content']" aria-label="View all content">
-          View All
-          <svg xmlns="http://www.w3.org/2000/svg" width="7" height="11" viewBox="0 0 7 11" fill="none" aria-hidden="true">
-            <path d="M1.5 1.5L5.5 5.5L1.5 9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </nav>
 
       <div class="slides" #slides>
         <learning-card 
@@ -52,54 +43,64 @@ import { LearningService } from 'src/app/core/services/learning.service';
           (click)="goToSlide(i)"></div>
       </div>
 
-      <div class="debug-indicator" *ngIf="items.length" style="text-align:center;margin-top:8px;font-size:12px;color:#333;">
-      </div>
-
     </section>
   `,
   styles: [`
     .content-section {
       position: relative;
       width: 100%;
-      max-width: 90vw;
-
-      background: #FBE8EF;
-      border-radius: 1rem;
-      padding: clamp(1rem, 2.5vw, 1.25rem);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+      max-width: none;
+      background: transparent;
+      border-radius: 0;
+      padding: 0;
+      box-shadow: none;
       overflow: visible;
 
       .content-header {
         display: flex;
         flex-direction: row;
-        justify-content: center;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
         box-sizing: border-box;
-        margin-top: 5px;
+        margin: 0 0 16px;
 
         .content-title {
-          text-align: center;
+          text-align: left;
           display: flex;
           flex-direction: column;
-          align-items: center;
+          align-items: flex-start;
+          min-width: 0;
         }
 
         .content-title h2 {
-          text-align: center;
-          display: block;
+          display: flex;
+          align-items: center;
+          gap: 2px;
           margin: 0;
-          font-size: 1.25rem;
+          text-align: left;
+          font-family: var(--font-heading);
+          font-size: 16px;
+          font-weight: 500;
           color: #282527;
-          width: 137px;
+          width: auto;
+          white-space: nowrap;
+        }
+
+        .content-title-icon {
+          width: 24px;
+          height: 24px;
+          object-fit: contain;
         }
 
         .content-sub {
-          margin:0;
+          margin: 0;
           font-size: 10px;
-          text-align: center;
-          color:#282527;
-          font-family: 'Nunito';
-          width: 235px;
-          align-self: center;
+          text-align: left;
+          color: #6B656A;
+          font-family: var(--font-sans);
+          width: auto;
+          align-self: flex-start;
         }
       }
 
@@ -148,22 +149,25 @@ import { LearningService } from 'src/app/core/services/learning.service';
       .content-actions {
         display: flex;
         justify-content: flex-end;
-        width: 100%;
-        padding: 6px 0;
+        width: auto;
+        padding: 0;
         box-sizing: border-box;
       }
 
       .view-all-pill {
         display: inline-flex;
         align-items: center;
-        gap: 5px;
-        background: transparent;
-        border: 1.5px solid #E1527C;
-        border-radius: 20px;
-        padding: 7px 12px 7px 16px;
-        color: #E1527C;
-        font-family: 'Nunito', sans-serif;
-        font-size: 14px;
+        min-width: 71px;
+        min-height: 22px;
+        background:
+          linear-gradient(#FFFFFF, #FFFFFF) padding-box,
+          linear-gradient(135deg, #7C74D8, #E1527C, #F2A33B) border-box;
+        border: 2px solid transparent;
+        border-radius: 16px;
+        padding: 4px 16px;
+        color: #432478;
+        font-family: var(--font-sans);
+        font-size: 10px;
         font-weight: 700;
         line-height: 1;
         cursor: pointer;
@@ -179,16 +183,16 @@ import { LearningService } from 'src/app/core/services/learning.service';
       }
 
       .slides {
-        margin-top: 0px;
+        margin-top: 0;
         display: flex;
-        gap: 1rem;
+        gap: 8px;
         height: auto;
         width: 100%;
         box-sizing: border-box;
         overflow-x: auto;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
-        padding-bottom: 1rem;
+        padding-bottom: 0;
 
         -ms-overflow-style: none;
         scrollbar-width: none;
@@ -220,6 +224,125 @@ import { LearningService } from 'src/app/core/services/learning.service';
         background: #90214D;
         border-radius: 23px;
       }
+
+      learning-card {
+        flex: 0 0 175px;
+        height: 104px;
+        scroll-snap-align: start;
+      }
+
+      ::ng-deep learning-card .card-root {
+        position: relative;
+        height: 104px;
+        border-radius: 12px;
+        box-shadow: none;
+      }
+
+      ::ng-deep learning-card .media {
+        height: 104px;
+      }
+
+      ::ng-deep learning-card .slide-body,
+      ::ng-deep learning-card .article-body {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 2;
+        min-height: 38px;
+        padding: 0 8px 4px;
+        gap: 4px;
+        background: linear-gradient(180deg, rgba(40, 37, 39, 0.35) 0%, #282527 100%);
+        box-sizing: border-box;
+      }
+
+      ::ng-deep learning-card .desc,
+      ::ng-deep learning-card superme-button,
+      ::ng-deep learning-card .tags-row {
+        display: none;
+      }
+
+      ::ng-deep learning-card .head h3,
+      ::ng-deep learning-card .slide-body h3,
+      ::ng-deep learning-card .article-body h3 {
+        max-width: 100%;
+        overflow: hidden;
+        color: #FFFFFF;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.4;
+        text-align: left;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      ::ng-deep learning-card .meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 0;
+      }
+
+      ::ng-deep learning-card .coins,
+      ::ng-deep learning-card .trophy {
+        color: #FFFFFF;
+        font-size: 10px;
+      }
+
+      ::ng-deep learning-card .coins img,
+      ::ng-deep learning-card .trophy img {
+        width: 16px !important;
+        height: 16px !important;
+        margin-right: 2px;
+        object-fit: contain;
+      }
+
+      ::ng-deep learning-card .meta-left {
+        gap: 12px;
+      }
+
+      ::ng-deep learning-card .time-duration {
+        color: #FFFFFF;
+        font-size: 10px;
+      }
+
+      ::ng-deep learning-card .difficulty {
+        top: 8px;
+        right: 8px;
+        min-width: 32px;
+        min-height: 18px;
+        padding: 4px 8px;
+        border: 1px solid #BB2124;
+        border-radius: 16px;
+        background: #F8E9E9;
+        box-sizing: border-box;
+      }
+
+      ::ng-deep learning-card .difficulty img {
+        display: none;
+      }
+
+      ::ng-deep learning-card .difficulty::after {
+        content: attr(data-label);
+        color: #BB2124;
+        font-family: var(--font-sans);
+        font-size: 7px;
+        font-weight: 600;
+        line-height: 1.4;
+      }
+
+      .pager {
+        gap: 5px;
+      }
+
+      .dot {
+        width: 6px;
+        height: 6px;
+      }
+
+      .dot.active {
+        width: 16px;
+      }
     }
   `],
   imports: [NgIf, NgForOf, IonicModule, RouterModule, LearningCardComponent],
@@ -242,7 +365,7 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
   // allow consumers to provide a custom slide template via content projection
   @ContentChild(TemplateRef) slideTemplate?: TemplateRef<any>;
 
-  @Input() showPager: boolean = true;
+  @Input() showPager: boolean = false;
   @Output() itemSelected = new EventEmitter<any>();
   @Output() viewAll = new EventEmitter<void>();
 
@@ -313,61 +436,13 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   ngOnInit(): void {
-    // If no items provided by the consumer, attempt to load latest items from API
     if (!this.items || this.items.length === 0) {
-      // Load latest quiz, puzzle and article from service
       try {
         this.loadLatestFromService();
-        return;
       } catch (e) {
         console.error('Error loading learning service items', e);
+        this.items = [];
       }
-
-      // Fallback static defaults so UI renders even if API unavailable
-      this.items = [
-        // Quiz (challenge) card
-        {
-          id: 'quiz-1',
-          type: 'challenge',
-          subType: 'quiz',
-          title: 'Quick Quiz: Animal Facts',
-          description: 'Test your knowledge with a short 5-question quiz.',
-          image: 'assets/images/Content-quiz-thumbnail.png',
-          difficulty: 'Easy',
-          difficultyImage: 'assets/images/difficulty-easy.png',
-          tag: 'Quiz',
-          coins: 40,
-          trophy: 1,
-          buttonText: 'Play Quiz'
-        },
-
-        // Puzzle (challenge) card
-        {
-          id: 'puzzle-1',
-          type: 'challenge',
-          subType: 'puzzle',
-          title: 'Memory Maze',
-          description: 'Sharpen your memory with a quick puzzle.',
-          image: 'assets/images/Content-memory-maze-thumbnail.png',
-          difficulty: 'Medium',
-          difficultyImage: 'assets/images/difficulty-medium.png',
-          tag: 'Puzzle',
-          coins: 50,
-          trophy: 1,
-          buttonText: 'Play Puzzle'
-        },
-
-        // Article card
-        {
-          id: 'article-1',
-          type: 'article',
-          title: '5 Science-Backed Study Hacks That Actually Work',
-          description: 'Boost focus and retention in 10 minutes or less. Backed by standford researchers.',
-          image: 'assets/images/Content-story-thumbnail.png',
-          coins: 30,
-          buttonText: 'Read Article'
-        }
-      ];
     }
   }
 

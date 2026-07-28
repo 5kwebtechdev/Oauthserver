@@ -12,6 +12,7 @@ import { HabitButtonLogicService } from '../habit-button-logic.service';
 import { TaskApi } from '../../../api/task.api';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { AuthService } from '../../../services/auth.service';
+import { PetAgeService } from '../../../services/pet-age.service';
 import { CustomToastService, Toast } from '../../../services/custom-toast.service';
 import { Habit } from '../habit.types';
 import { Observable, Subscription, filter, take } from 'rxjs';
@@ -71,6 +72,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private profileSelector: ProfileSelectorService,
         private authService: AuthService,
+        private petAgeService: PetAgeService,
         private cdr: ChangeDetectorRef,
         private toastService: CustomToastService
     ) {
@@ -87,6 +89,14 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         } catch (e) {
             return true;
         }
+    }
+
+    public get currentPetBaseImage(): string {
+        return this.petAgeService.getPetImagePath('base');
+    }
+
+    public get currentPetImageAlt(): string {
+        return this.petAgeService.getPetImageAlt();
     }
 
     get adScreen(): AdScreen {

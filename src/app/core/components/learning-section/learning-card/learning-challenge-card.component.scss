@@ -130,3 +130,18 @@
     height: auto;
     margin-right: 0.35rem
 }
+
+.time-duration {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+
+    img {
+        width: 16px;
+        height: 16px;
+    }
+}

@@ -13,53 +13,6 @@
     [class.parent-family-choice-page]="viewMode === 'instructions-parent'"
     [class.create-family-page]="isCreateFamilyScreen || isParentJoinFamilyScreen">
 
-    <!-- ===== INSTRUCTIONS FOR CHILD ===== -->
-    <ng-container *ngIf="viewMode === 'instructions-child'">
-
-      <div class="family-info-box">
-        You'll need a Family Code from your parent to link with your family and proceed in the next screen.
-        <br><br>
-        Don't have the code yet? You can skip this step and continue on your own for now and add it later.
-      </div>
-
-      <h4 class="family-section-heading">To link with your family:</h4>
-
-      <div class="superme-instructions">
-        <div class="superme-instructions__item">
-          <div class="superme-instructions__number">1</div>
-          <p class="superme-instructions__text">Ask your parent to create their account on their device.</p>
-        </div>
-        <div class="superme-instructions__item">
-          <div class="superme-instructions__number">2</div>
-          <p class="superme-instructions__text">After signup, your parent creates a family in the app.</p>
-        </div>
-        <div class="superme-instructions__item">
-          <div class="superme-instructions__number">3</div>
-          <p class="superme-instructions__text">Your parent will see a family code and a QR code.</p>
-        </div>
-        <div class="superme-instructions__item">
-          <div class="superme-instructions__number">4</div>
-          <p class="superme-instructions__text">Enter the family code or scan the QR code in the next screen to join their family.</p>
-        </div>
-        <div class="superme-instructions__item">
-          <div class="superme-instructions__number">5</div>
-          <p class="superme-instructions__text">Once linked, you are good to proceed!</p>
-        </div>
-      </div>
-
-      <profile-facts [faqs]="faqs"></profile-facts>
-
-      <div class="family-gradient-btn" style="margin-top: 24px !important;">
-      <superme-button
-        type="orange-onboard"
-        full
-        text="Next"
-        [disabled]="false"
-        (click)="router.navigate(['/home/join-family'], {queryParams: {role: userRole}})">
-      </superme-button>
-      </div>
-    </ng-container>
-
     <!-- ===== INSTRUCTIONS FOR PARENT ===== -->
     <ng-container *ngIf="viewMode === 'instructions-parent'">
       <main class="parent-family-choice">

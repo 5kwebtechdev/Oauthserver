@@ -22,6 +22,7 @@ import { ChildInfo, mapVibeToChildInfo } from '../../core/models/child-info.mode
 import { RefreshService } from '../../core/services/refresh.service';
 import { SupermeButtonComponent } from '../../core/components/superme-button/superme-button.component';
 import { FamilyService } from '../../core/services/family.service';
+import { PetAgeService } from '../../core/services/pet-age.service';
 
 
 @Component({
@@ -157,6 +158,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         private habitService: HabitService,
         private profileStore: ProfileStoreService,
         private authService: AuthService,
+        private petAgeService: PetAgeService,
         private childSelfImage: ChildSelfImageService,
         private parentImageService: ParentImageService,
         private refreshService: RefreshService,
@@ -473,7 +475,8 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
     get greetingMessage(): string {
         const name = this.userName || 'there';
-        return `Hey ${name}, Still Panda! \n\n🌟 You've got 5 tasks, 2 habits, and a challenge waiting for you today. Let’s go!`;
+        const petName = this.petAgeService.getCurrentPetDisplayName();
+        return `Hey ${name}, ${petName} is here! \n\n🌟 You've got 5 tasks, 2 habits, and a challenge waiting for you today. Let’s go!`;
     }
 
     onMoodChange(mood: string) {

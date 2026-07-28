@@ -107,9 +107,17 @@ export class LoginComponent implements OnInit, OnDestroy {
               console.warn('[LoginComponent] Failed to sync user profile to UserService', e);
             }
 
-          this.onboardingState.markExistingUser();
+          const onboardingResume = this.onboardingState.getResumeNavigation(response.user);
+          if (!onboardingResume) {
+            this.onboardingState.markExistingUser();
+            const onboardingStep = this.onboardingState.getOnboardingStep(response.user);
+            if (onboardingStep && onboardingStep >= 6) {
+              this.onboardingState.clearRegistrationDraft();
+            }
+          }
 
-          // Determine the appropriate dashboard route based on user relationship
+          // Incomplete onboarding always wins over a returnUrl or dashboard
+          // deep link. The main app is reachable only after backend step 6.
           const dashboardRoute = this.authService.getDashboardRoute();
           const navigationTarget = this.returnUrl || dashboardRoute;
 
@@ -120,7 +128,14 @@ export class LoginComponent implements OnInit, OnDestroy {
           };
 
           void this.credentialSaverService.save(credsToSave).finally(() => {
-            this.navCtrl.navigateRoot(navigationTarget).catch(() => {
+            const navigation = onboardingResume
+              ? this.navCtrl.navigateRoot(onboardingResume.url, {
+                  queryParams: onboardingResume.queryParams,
+                  animated: false
+                })
+              : this.navCtrl.navigateRoot(navigationTarget);
+
+            navigation.catch(() => {
               this.loading = false;
             });
           });

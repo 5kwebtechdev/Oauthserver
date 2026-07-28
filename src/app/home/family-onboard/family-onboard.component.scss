@@ -763,7 +763,8 @@ ion-content.parent-family-choice-content {
   position: relative;
   display: block;
   width: 100%;
-  height: 163px;
+  min-height: 163px;
+  aspect-ratio: 361 / 163;
   padding: 16px 0 0 16px;
   overflow: hidden;
   border: 2px solid transparent;
@@ -850,32 +851,27 @@ ion-content.parent-family-choice-content {
 .parent-family-option__image {
   position: absolute;
   z-index: 1;
-  right: 0;
-  bottom: 0;
+  inset: 2px;
   display: block;
-  width: 178px;
-  height: 153px;
   overflow: hidden;
+  border-radius: 30px;
   pointer-events: none;
 
   img {
+    position: absolute;
+    right: -19.5%;
+    bottom: -1px;
     display: block;
-    width: 178px;
-    height: 153px;
+    width: 79.3%;
+    height: auto;
     max-width: none;
+    object-fit: contain;
   }
 }
 
-.parent-family-option--join .parent-family-option__image {
-  right: 0;
-  bottom: 0;
-  width: 176px;
-  height: 147px;
-
-  img {
-    width: 176px;
-    height: 147px;
-  }
+.parent-family-option--join .parent-family-option__image img {
+  right: -18%;
+  width: 73.7%;
 }
 
 @media (max-width: 360px) {
@@ -888,7 +884,8 @@ ion-content.parent-family-choice-content {
   }
 
   .parent-family-option {
-    height: 174px;
+    min-height: 163px;
+    aspect-ratio: auto;
     padding-left: 14px;
   }
 
@@ -908,11 +905,32 @@ ion-content.parent-family-choice-content {
   }
 
   .parent-family-option__image {
-    right: -28px;
+    inset: 2px;
+
+    img {
+      right: -22.4%;
+    }
   }
 
-  .parent-family-option--join .parent-family-option__image {
-    right: -28px;
+  .parent-family-option--join .parent-family-option__image img {
+    right: -24%;
+  }
+}
+
+@media (max-width: 320px) {
+  .parent-family-option {
+    min-height: 170px;
+  }
+
+  .parent-family-option__copy,
+  .parent-family-option--join .parent-family-option__copy {
+    width: 148px;
+  }
+
+  .parent-family-option__description,
+  .parent-family-option--join .parent-family-option__description {
+    width: 145px;
+    font-size: 9px;
   }
 }
 
