@@ -311,7 +311,9 @@
     <div *ngIf="step === 2" [@slideIn] class="profile-step profile-step--figma"
       [class.profile-step--parent]="currentRole === 'parent'">
       <header class="details-header">
-        <superme-auth-back-button (back)="goBack()"></superme-auth-back-button>
+        <div class="details-back-row">
+          <superme-auth-back-button mode="inline" (back)="goBack()"></superme-auth-back-button>
+        </div>
 
         <div class="details-header-content">
           <div class="details-header-copy">

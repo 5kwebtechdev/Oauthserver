@@ -4,21 +4,18 @@ import { ModalController, RefresherCustomEvent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { StreakRestoreApi, StreakStatus } from '../../core/api/streak-restore.api';
 import { StreakRestoreModalComponent } from '../../core/components/streak-restore/streak-restore-modal.component';
-import { NotesComponent } from '../../core/components/notes/notes.component';
 import { ActivityCardComponent } from "../../core/components/activity-section/activity-card/activity-card.component";
 import { LearningSectionComponent } from "../../core/components/learning-section/learning-section.component";
 import { AdBannerComponent } from '../../core/components/ad-banner/ad-banner.component';
 import { TutorCardComponent } from "../../core/components/tutor-section/tutor-card/tutor-card.component";
 
-import { JournalsComponent } from "../../core/components/journals/journals.component";
 import { AcademySectionComponent } from "../../core/components/academy-section/academy-section.component";
 import { IonicModule } from "@ionic/angular";
 import { SupermeInputsModule } from "../../core/components/superme-inputs/superme-inputs.module";
 import { MoodSelectorComponent } from "../../core/components/mood-selector/mood-selector.component";
-import { WeekStreakSectionComponent } from "../../core/components/week-streak-section/week-streak-section.component";
+import { DayStreak, WeekStreakSectionComponent } from "../../core/components/week-streak-section/week-streak-section.component";
 import { ReelPreviewSectionComponent } from "../../core/components/reel-section/reel-preview/reel-preview.component";
 import { QuickAccessSectionComponent } from "../../core/components/quick-access-section/quick-access-section.component";
-import { SupermeSpeechBubbleComponent } from '../../core/components/superme-speech-bubble/superme-speech-bubble.component';
 import { SupermePetComponent } from '../../core/components/superme-pet/superme-pet.component';
 
 import { FooterComponent } from '../../core/components/footer/footer.component';
@@ -41,6 +38,8 @@ import { RefreshService } from '../../core/services/refresh.service';
 import { Observable, Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 
+type HomeTimePeriod = 'morning' | 'evening' | 'night';
+
 @Component({
   selector: 'app-user-dashboard',
   templateUrl: './user-dashboard.component.html',
@@ -53,7 +52,6 @@ import { debounceTime, takeUntil } from 'rxjs/operators';
     AdBannerComponent,
     LearningSectionComponent,
     TutorCardComponent,
-    JournalsComponent,
     AcademySectionComponent,
     IonicModule,
     MoodSelectorComponent,
@@ -62,22 +60,22 @@ import { debounceTime, takeUntil } from 'rxjs/operators';
     QuickAccessSectionComponent,
     SupermeInputsModule,
     SupermePetComponent,
-    SupermeSpeechBubbleComponent,
     FooterComponent,
     SkeletonImageComponent,
   ]
 })
 export class UserDashboardComponent implements OnInit, OnDestroy {
   // Minimal properties used by the template
-  public userName: string = 'User';
-  public userAvatarUrl: string = 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
+  public userName = '';
+  public userAvatarUrl: string | null = null;
   public avatarImageName: string | null = null;
   public userCoins: number = 0;
   public userStreaks: number = 0;
   public userDays: number = 0;
   public userBadges: number = 0;
+  public homeTimePeriod: HomeTimePeriod = 'morning';
   // currently selected mood
-  public selectedMood: string | null = 'happy';
+  public selectedMood: string | null = null;
   // Pet message and mood
   public currentPetMessage: PetMessage | undefined = undefined;
   public petMood: PetMood | 'anger' = 'happy';
@@ -104,6 +102,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   public totalTimetables: number = 0;
   public awaitingTasks: number = 0;
   public awaitingHabits: number = 0;
+  public weekStreakDays: DayStreak[] = [];
 
   // Family connected acknowledgment popup
   showFamilyAck = false;
@@ -121,6 +120,18 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   // Subject for cleanup
   private destroy$ = new Subject<void>();
   private refreshScheduled$ = new Subject<void>();
+  private homeTimeChangeTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly homePeriodBackgrounds = [
+    '/assets/Images-Thumbnails/HeaderV2.png',
+    '/assets/Images-Thumbnails/HeaderV2-evening.png',
+    '/assets/Images-Thumbnails/HeaderV2-night.png'
+  ];
+  private readonly handleHomeVisibilityChange = (): void => {
+    if (document.visibilityState === 'visible') {
+      this.syncHomeTimePeriod();
+    }
+  };
+  private readonly handleHomeWindowFocus = (): void => this.syncHomeTimePeriod();
 
   constructor(
     private modalCtrl: ModalController,
@@ -159,6 +170,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.startHomeTimeSync();
+
     // Check for family connected acknowledgment
     try {
       const ack = sessionStorage.getItem('family_connected_ack');
@@ -171,30 +184,35 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
     // Subscribe to user data changes from AuthService (primary source of truth)
     // This will update the UI whenever user data is modified (e.g., from edit-profile)
-    this.authService.userData$.subscribe(userData => {
-      if (userData) {
-        console.log('[UserDashboard] User data updated from AuthService:', userData.name);
-        this.userName = userData.name || 'User';
-        
-        // Update avatar from user data
-        const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
-        if (resolved.url) this.userAvatarUrl = resolved.url;
-        if (resolved.alt) this.avatarImageName = resolved.alt;
-      }
-    });
+    this.authService.userData$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(userData => {
+        if (userData) {
+          console.log('[UserDashboard] User data updated from AuthService:', userData.name);
+          this.userName = userData.name || '';
+
+          // The avatar is resolved only from the logged-in user's API/stored profile.
+          const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
+          this.userAvatarUrl = resolved.url || null;
+          this.avatarImageName = resolved.alt || null;
+        }
+      });
 
     // Load user profile from service (secondary source for additional profile info)
-    this.userService.getUserProfile$().subscribe(profile => {
-      if (profile) {
-        // Only update if not already set from AuthService
-        if (!this.userName || this.userName === 'User') {
-          this.userName = profile.name || 'User';
+    this.userService.getUserProfile$()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(profile => {
+        if (profile) {
+          if (!this.userName) {
+            this.userName = profile.name || '';
+          }
+          if (!this.userAvatarUrl && profile.avatarUrl) {
+            this.userAvatarUrl = profile.avatarUrl;
+          }
         }
-        if (!this.userAvatarUrl) {
-          this.userAvatarUrl = this.userService.getUserAvatarUrl();
-        }
-      }
-    });
+      });
+
+    this.refreshWeekStreakDays();
 
     // Fetch user stats (coins, streaks, badges, etc.) from backend
     this.loadUserStats();
@@ -242,6 +260,67 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       streakDays: this.userStreaks
     });
     this.petMood = this.currentPetMessage.mood;
+  }
+
+  ionViewWillEnter(): void {
+    this.syncHomeTimePeriod();
+  }
+
+  private startHomeTimeSync(): void {
+    this.preloadHomePeriodBackgrounds();
+    this.syncHomeTimePeriod();
+    document.addEventListener('visibilitychange', this.handleHomeVisibilityChange);
+    window.addEventListener('focus', this.handleHomeWindowFocus);
+  }
+
+  private preloadHomePeriodBackgrounds(): void {
+    this.homePeriodBackgrounds.forEach(src => {
+      const image = new Image();
+      image.src = src;
+    });
+  }
+
+  private syncHomeTimePeriod(): void {
+    const now = new Date();
+    this.homeTimePeriod = this.resolveHomeTimePeriod(now);
+    this.scheduleNextHomeTimeChange(now);
+  }
+
+  private resolveHomeTimePeriod(date: Date): HomeTimePeriod {
+    const hour = date.getHours();
+
+    if (hour >= 4 && hour < 16) {
+      return 'morning';
+    }
+
+    if (hour >= 16 && hour < 20) {
+      return 'evening';
+    }
+
+    return 'night';
+  }
+
+  private scheduleNextHomeTimeChange(now: Date): void {
+    if (this.homeTimeChangeTimer) {
+      clearTimeout(this.homeTimeChangeTimer);
+    }
+
+    const nextChange = new Date(now);
+    const hour = now.getHours();
+
+    if (hour < 4) {
+      nextChange.setHours(4, 0, 0, 0);
+    } else if (hour < 16) {
+      nextChange.setHours(16, 0, 0, 0);
+    } else if (hour < 20) {
+      nextChange.setHours(20, 0, 0, 0);
+    } else {
+      nextChange.setDate(nextChange.getDate() + 1);
+      nextChange.setHours(4, 0, 0, 0);
+    }
+
+    const delay = Math.max(1000, nextChange.getTime() - now.getTime() + 1000);
+    this.homeTimeChangeTimer = setTimeout(() => this.syncHomeTimePeriod(), delay);
   }
 
   /**
@@ -425,8 +504,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         this.totalHabits = resp.totalHabits || 0;
         this.totalHabitsCompleted = resp.totalHabitsCompleted || 0;
         this.habitCompletionRate = resp.habitCompletionRate || 0;
-        this.awaitingTasks = resp.awaitingTasks ?? (this.totalTasks - this.totalTasksCompleted);
-        this.awaitingHabits = resp.awaitingHabits ?? (this.totalHabits - this.totalHabitsCompleted);
+        this.awaitingTasks = Math.max(0, Number(resp.awaitingTasks ?? (this.totalTasks - this.totalTasksCompleted)) || 0);
+        this.awaitingHabits = Math.max(0, Number(resp.awaitingHabits ?? (this.totalHabits - this.totalHabitsCompleted)) || 0);
 
         this.updatePetMessageWithCounts();
       },
@@ -498,6 +577,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       this.userStreaks = cachedStats.streaks;
       this.userDays = cachedStats.days;
       this.userBadges = cachedStats.badges;
+      this.refreshWeekStreakDays();
 
       console.log('[UserDashboard] Loaded stats from localStorage:', cachedStats);
     }
@@ -512,6 +592,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
           this.userStreaks = userStats.streak || 0;
           this.userDays = userStats.trophies || 0; // Map trophies to days
           this.userBadges = userStats.badges || 0;
+          this.refreshWeekStreakDays();
 
           // Cache the updated stats
           this.userService.saveUserStats({
@@ -539,10 +620,33 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  get greetingMessage(): string {
-    // build the message in TypeScript to avoid template parsing issues with quotes and newlines
-    const name = this.userName || 'there';
-    return `Hey ${name}, Still Panda! \n\n🌟 You've got 5 tasks, 2 habits, and a challenge waiting for you today. Let’s go!`;
+  get userInitial(): string {
+    return (this.userName || '').trim().charAt(0).toUpperCase();
+  }
+
+  /**
+   * Build the visible week from the API-backed current streak count.
+   * Future days remain pending instead of displaying invented completion data.
+   */
+  private refreshWeekStreakDays(streakLength: number = this.userStreaks): void {
+    const labels = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'];
+    const todayIndex = new Date().getDay();
+    const safeStreak = Math.max(0, Number(streakLength) || 0);
+    const completedFrom = Math.max(0, todayIndex - safeStreak + 1);
+
+    this.weekStreakDays = labels.map((label, index) => {
+      let status: DayStreak['status'];
+      if (index > todayIndex) {
+        status = 'pending';
+      } else if (safeStreak > 0 && index >= completedFrom) {
+        status = 'completed';
+      } else if (index === todayIndex) {
+        status = 'pending';
+      } else {
+        status = 'missed';
+      }
+      return { label, status };
+    });
   }
 
   onMoodChange(mood: string) {
@@ -592,8 +696,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       this.userName = userData.name || this.userName;
 
       const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
-      if (resolved.url) this.userAvatarUrl = resolved.url;
-      if (resolved.alt) this.avatarImageName = resolved.alt;
+      this.userAvatarUrl = resolved.url || null;
+      this.avatarImageName = resolved.alt || null;
 
       this.userService.updateUserProfile({
         name: userData.name,
@@ -623,6 +727,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   private checkStreakRestore(): void {
     this.streakRestoreApi.getStreakStatus().subscribe({
       next: (status: StreakStatus) => {
+        this.refreshWeekStreakDays(status.currentStreak);
         this.canRestoreStreak = status.canRestoreStreak;
         this.restoreToStreak = status.restoreToStreak;
         this.restoreCost = status.restoreCost ?? 5;
@@ -771,6 +876,12 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Unregister from global refresh
     this.refreshService.unregisterRefreshHandler('UserDashboard');
+    if (this.homeTimeChangeTimer) {
+      clearTimeout(this.homeTimeChangeTimer);
+      this.homeTimeChangeTimer = null;
+    }
+    document.removeEventListener('visibilitychange', this.handleHomeVisibilityChange);
+    window.removeEventListener('focus', this.handleHomeWindowFocus);
     // Cleanup all subscriptions
     this.destroy$.next();
     this.destroy$.complete();

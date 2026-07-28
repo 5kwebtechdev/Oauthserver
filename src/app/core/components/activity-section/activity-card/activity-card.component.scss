@@ -719,3 +719,134 @@ h4 {
   margin-top: -8px;
   display: block;
 }
+
+// Compact Child Home treatment from Figma node 23113:12658.
+.glance-card {
+  gap: 16px !important;
+  padding: 16px;
+  border-radius: 0;
+  background: #EEF0FB;
+  box-shadow: none;
+}
+
+.day-at-glance-container {
+  gap: 24px;
+}
+
+.glance-heading-block {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.glance-card ::ng-deep .superme-card-header__title {
+  color: #282527;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.glance-card ::ng-deep .superme-card-header__tagline .tag {
+  color: #6B656A;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.glance-done-pill {
+  min-width: 91px;
+  min-height: 34px;
+  padding: 8px 16px;
+  border-color: transparent;
+  background:
+    linear-gradient(#FFFFFF, #FFFFFF) padding-box,
+    linear-gradient(135deg, #7C74D8, #E1527C, #F2A33B) border-box;
+  border: 2px solid transparent;
+  border-radius: 24px;
+  color: #282527;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.glance-progress-track {
+  height: 6px;
+  background: #D7D5DB;
+}
+
+.glance-tabs {
+  min-height: 38px;
+  padding: 2px;
+  gap: 0;
+  border: 0;
+  border-radius: 8px;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+
+.glance-tab {
+  min-height: 34px;
+  padding: 8px 4px;
+  border-radius: 8px;
+  color: #6B656A;
+  font-size: 13px;
+  font-weight: 700;
+
+  &.active {
+    border-radius: 10px;
+    background: #8B8DCB;
+    color: #45456A;
+    box-shadow: none;
+  }
+}
+
+.glance-tab-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.habit-wrapper {
+  gap: 12px;
+  padding: 8px 12px 12px 24px;
+  border-left-color: #8B8DCB;
+  border-radius: 16px;
+  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+}
+
+.text-view-all,
+.add-new-pill {
+  min-height: 22px;
+  padding: 4px 16px;
+  border: 2px solid #8B8DCB;
+  border-radius: 16px;
+  background: #FFFFFF;
+  color: #432477;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.add-new-pill {
+  border-color: transparent;
+  background:
+    linear-gradient(#FFFFFF, #FFFFFF) padding-box,
+    linear-gradient(135deg, #8B8DCB, #E1527C, #F2A33B) border-box;
+}
+
+@media (max-width: 360px) {
+  .glance-card {
+    padding-inline: 12px;
+  }
+
+  .glance-tab {
+    gap: 2px;
+    padding-inline: 3px;
+    font-size: 10px;
+  }
+
+  .glance-tab-icon {
+    width: 12px;
+    height: 12px;
+  }
+}

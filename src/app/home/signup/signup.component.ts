@@ -14,6 +14,8 @@ import { CredentialSaverService } from '../../core/services/credential-saver.ser
 import { SignupCredentialStateService } from '../../core/services/signup-credential-state.service';
 import { StoredGender, toApiGender } from '../../core/models/gender.model';
 import { OnboardingStateService } from '../../core/services/onboarding-state.service';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 type SignupRole = 'child' | 'parent' | 'self';
 type SignupGender = StoredGender;
@@ -377,6 +379,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
       this.enforceParentFlowRestrictions();
       this.renderer.setStyle(document.documentElement, '--step', this.step);
+      this.syncSignupStatusBar();
       // Ensure birthday picker doesn't open automatically when navigating to step 3
       this.openBirthdayPicker = false;
       // Ensure the view is at the top when step changes (prevents previous scroll position hiding the navigator)
@@ -1069,6 +1072,19 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.ageSuggestionTarget = null;
     this.ageSuggestionRoles = [];
     this.showAccessRestrictedModal = false;
+  }
+
+  private syncSignupStatusBar(): void {
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+
+    const isDetailsStep = this.step === 2;
+    StatusBar.setStyle({ style: isDetailsStep ? Style.Dark : Style.Light }).catch(() => undefined);
+    if (Capacitor.getPlatform() === 'android') {
+      const backgroundColor = isDetailsStep ? '#E2DBFD' : '#FFE9D6';
+      StatusBar.setBackgroundColor({ color: backgroundColor }).catch(() => undefined);
+    }
   }
 
   goBackToEmail() {
@@ -1809,6 +1825,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (Capacitor.isNativePlatform()) {
+      StatusBar.setStyle({ style: Style.Light }).catch(() => undefined);
+      if (Capacitor.getPlatform() === 'android') {
+        StatusBar.setBackgroundColor({ color: '#FFE9D6' }).catch(() => undefined);
+      }
+    }
     this.clearUsernameCheckTimer();
     this.usernameCheckSubscription?.unsubscribe();
     this.subscription.unsubscribe();

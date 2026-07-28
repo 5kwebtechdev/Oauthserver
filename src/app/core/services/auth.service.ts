@@ -11,6 +11,7 @@ import { AnalyticsService } from './analytics.service';
 import { AuthSessionCleanupService } from './auth-session-cleanup.service';
 import { CrashlyticsService } from './crashlytics.service';
 import { PushNotificationService } from './push-notification.service';
+import { PetAgeService } from './pet-age.service';
 import { toApiGender } from '../models/gender.model';
 
 export interface LoginCredentials {
@@ -119,10 +120,12 @@ export class AuthService {
     private analytics: AnalyticsService,
     private authSessionCleanup: AuthSessionCleanupService,
     private crashlytics: CrashlyticsService,
-    private pushNotifications: PushNotificationService
+    private pushNotifications: PushNotificationService,
+    private petAgeService: PetAgeService
   ) {
     this.detectPlatform();
     this.initSessionMonitoring();
+    this.syncPetFromUserData(this.userDataSubject.value);
   }
 
   /**
@@ -367,6 +370,14 @@ export class AuthService {
       `${this.apiUrl}/user/profile`,
       { petName },
       { headers, responseType: 'text' as 'json' }
+    ).pipe(
+      tap(() => {
+        const currentPet = this.getUserPet();
+        const pet = typeof currentPet === 'object' && currentPet !== null
+          ? { ...currentPet, petName }
+          : { petName };
+        this.updateUserData({ pet });
+      })
     );
   }
 
@@ -727,12 +738,29 @@ export class AuthService {
       if (data['avatar']) {
         updatedData['avatar'] = { ...(currentData['avatar'] || {}), ...data['avatar'] };
       }
+
+      // Preserve pet metadata (id, gender and backend URL) when only petName
+      // changes, while still supporting APIs that return a pet string.
+      if (Object.prototype.hasOwnProperty.call(data, 'pet')) {
+        const nextPet = data['pet'];
+        const currentPet = (
+          currentData['pet'] && typeof currentData['pet'] === 'object' && !Array.isArray(currentData['pet'])
+        )
+          ? currentData['pet']
+          : {};
+        updatedData['pet'] = (
+          nextPet && typeof nextPet === 'object' && !Array.isArray(nextPet)
+        )
+          ? { ...currentPet, ...nextPet }
+          : nextPet;
+      }
       
       // Save to localStorage
       localStorage.setItem('user_data', JSON.stringify(updatedData));
       
       // Notify all subscribers
       this.userDataSubject.next(updatedData);
+      this.syncPetFromUserData(updatedData);
       
       console.log('[AuthService] User data updated and broadcasted:', updatedData);
     } catch (error) {
@@ -748,6 +776,7 @@ export class AuthService {
     try {
       localStorage.setItem('user_data', JSON.stringify(data));
       this.userDataSubject.next(data);
+      this.syncPetFromUserData(data);
       console.log('[AuthService] User data set and broadcasted');
     } catch (error) {
       console.error('[AuthService] Error setting user data:', error);
@@ -875,6 +904,10 @@ export class AuthService {
       console.error('[AuthService] Error getting user pet:', error);
     }
     return null;
+  }
+
+  private syncPetFromUserData(userData: any): void {
+    this.petAgeService.syncFromUserPet(userData?.pet);
   }
 
   /**

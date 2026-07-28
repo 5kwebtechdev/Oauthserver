@@ -1,39 +1,24 @@
 <section class="qa-section" aria-labelledby="qa-heading">
   <h3 class="qa-title" id="qa-heading">Quick Access</h3>
 
-  <a class="qa-hero-card" [routerLink]="['/authed/notes/new']" [queryParams]="{ fresh: '1' }">
-    <span class="qa-hero-icon" aria-hidden="true">
-      <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
-        <rect x="3" y="5" width="21" height="20" rx="3" fill="#9C6B3E" />
-        <path d="M13.5 5v20" stroke="#6B4423" stroke-width="1.2" />
-        <rect x="3" y="5" width="10.5" height="20" rx="3" fill="#B98249" />
-        <path d="M19 2.5l5.5 3-2.2 3.3-5.5-3L19 2.5Z" fill="#EAB676" />
-        <path d="M19 2.5l5.5 3-2.2 3.3-5.5-3L19 2.5Z" stroke="#B98249" stroke-width="0.6" />
-      </svg>
-    </span>
+  <a class="qa-hero-card" [routerLink]="['/authed/journal-input']">
+    <img class="qa-hero-icon" src="assets/figma/child-home/quick-journal.png" alt="" aria-hidden="true">
     <span class="qa-hero-copy">
+      <span class="qa-hero-kicker">Your Journal</span>
       <span class="qa-hero-title">How was your day?</span>
-      <span class="qa-hero-subtitle">Write your thoughts, track your mood, and celebrate little wins</span>
+      <span class="qa-hero-subtitle">Write your thoughts, track your mood,<br>and celebrate little wins</span>
     </span>
     <span class="qa-write-btn">Write Now</span>
   </a>
 
   <div class="qa-shortcuts">
     <a class="qa-shortcut-card qa-shortcut-notes" [routerLink]="['/authed/notes']">
-      <img src="assets/Icons-Neutral/Icon-Notes.png" alt="" class="qa-shortcut-icon">
+      <img src="assets/figma/child-home/quick-notes.png" alt="" class="qa-shortcut-icon">
       <span class="qa-shortcut-label">Notes</span>
     </a>
     <a class="qa-shortcut-card qa-shortcut-calendar" [routerLink]="['/authed/activity-calendar']">
-      <img src="assets/Icons-Neutral/Icon-Calendar.png" alt="" class="qa-shortcut-icon">
+      <img src="assets/figma/child-home/quick-calendar.png" alt="" class="qa-shortcut-icon">
       <span class="qa-shortcut-label">Calendar</span>
-    </a>
-  </div>
-
-  <!-- Recently submitted notes — reflects NotesService live, so a just-written note shows up here too -->
-  <div class="qa-recent-notes" *ngIf="qaRecentNotes.length" aria-label="Recent notes">
-    <a class="qa-recent-note" *ngFor="let note of qaRecentNotes" [routerLink]="['/authed/notes']">
-      <span class="qa-recent-note-dot" aria-hidden="true"></span>
-      <span class="qa-recent-note-title">{{ qaNoteTitle(note) }}</span>
     </a>
   </div>
 </section>

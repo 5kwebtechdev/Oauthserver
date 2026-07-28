@@ -38,23 +38,22 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
 
   // Mood to asset mapping (backend mood -> asset path)
   private readonly moodAssetMap: Record<string, string> = {
-    'HAPPY': 'assets/Images-Transparent/Image-Mood-Happy.png',
-    'VERY HAPPY': 'assets/Images-Transparent/Image-Mood-Very happy.png',
-    'SAD': 'assets/Images-Transparent/Image-Mood-Sad.png',
-    'NERVOUS': 'assets/Images-Transparent/Image-Mood-Nervous.png',
-    'UPSET': 'assets/Images-Transparent/Image-Mood-Upset.png',
-    'EXCITED': 'assets/Images-Transparent/Image-Mood-Excited.png',
+    'HAPPY': 'assets/figma/child-home/mood-happy.png',
+    'VERY HAPPY': 'assets/figma/child-home/mood-excited.png',
+    'SAD': 'assets/figma/child-home/mood-sad.png',
+    'NERVOUS': 'assets/figma/child-home/mood-anxious.png',
+    'UPSET': 'assets/figma/child-home/mood-frustrated.png',
+    'EXCITED': 'assets/figma/child-home/mood-excited.png',
     'NEUTRAL': 'assets/Images-Transparent/Mood-emoji-neutral-home.png'
   };
 
   // Popup options - Neutral is NOT shown in popup, only as default
   popupOptions = [
-    { src: 'assets/Images-Transparent/Image-Mood-Very happy.png', label: 'Very happy', vibe: 'VERY HAPPY' },
-    { src: 'assets/Images-Transparent/Image-Mood-Happy.png', label: 'Happy', vibe: 'HAPPY' },
-    { src: 'assets/Images-Transparent/Image-Mood-Excited.png', label: 'Excited', vibe: 'EXCITED' },
-    { src: 'assets/Images-Transparent/Image-Mood-Sad.png', label: 'Sad', vibe: 'SAD' },
-    { src: 'assets/Images-Transparent/Image-Mood-Upset.png', label: 'Upset', vibe: 'UPSET' },
-    { src: 'assets/Images-Transparent/Image-Mood-Nervous.png', label: 'Nervous', vibe: 'NERVOUS' }
+    { src: 'assets/figma/child-home/mood-happy.png', label: 'Happy', vibe: 'HAPPY' },
+    { src: 'assets/figma/child-home/mood-excited.png', label: 'Excited', vibe: 'EXCITED' },
+    { src: 'assets/figma/child-home/mood-anxious.png', label: 'Anxious', vibe: 'NERVOUS' },
+    { src: 'assets/figma/child-home/mood-sad.png', label: 'Sad', vibe: 'SAD' },
+    { src: 'assets/figma/child-home/mood-frustrated.png', label: 'Frustrated', vibe: 'UPSET' }
   ];
 
   ngOnInit() {

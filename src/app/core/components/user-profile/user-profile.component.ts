@@ -313,7 +313,30 @@ export class UserProfileComponent implements OnInit, OnChanges {
     if (data && data.selected) {
       const selectedPet = data.selected;
       console.log('Selected pet from modal:', selectedPet);
-      if (this.user) this.user.pet = selectedPet;
+      const petName = selectedPet.apiName || `${selectedPet.name}-Age1-Happy.png`;
+
+      this.coreAuthService.updatePetSelection(petName).subscribe({
+        next: () => {
+          if (this.user) {
+            const currentPet = (
+              this.user.pet && typeof this.user.pet === 'object' && !Array.isArray(this.user.pet)
+            )
+              ? this.user.pet
+              : {};
+            this.user = {
+              ...this.user,
+              pet: {
+                ...currentPet,
+                petName
+              }
+            };
+          }
+          this.userService.updateUserProfile({ pet: petName });
+        },
+        error: error => {
+          console.error('[UserProfile] Failed to update selected pet:', error);
+        }
+      });
     }
   }
 
