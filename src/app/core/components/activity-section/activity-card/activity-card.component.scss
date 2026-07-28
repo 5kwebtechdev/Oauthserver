@@ -1,5 +1,42 @@
 @use 'sass:color';
 
+// ── "Today at a Glance" premium palette ──────────────────────────────────────
+:host {
+  --glance-bg: #F6F5FF;
+  --glance-primary: #7C74D8;
+  --glance-primary-dark: #453F8C;
+  --glance-orange: #FF8A4C;
+  --glance-green: #4CAF50;
+  --glance-gray: #E8E8E8;
+}
+
+@keyframes glanceCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Outer card wrapping the whole "Today at a Glance" section (header, tabs, items, footer)
+.glance-card {
+  background: var(--glance-bg);
+  border-radius: 22px;
+  padding: 18px 16px;
+  box-shadow: 0 8px 24px rgba(124, 116, 216, 0.10);
+  box-sizing: border-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .habit-wrapper {
+    animation: none !important;
+  }
+}
+
 // Swipe-to-delete
 .swipe-backdrop {
   position: fixed;
@@ -81,59 +118,101 @@
   margin-bottom: 20px;
 }
 
-// Tab Navigation
-.toggler {
+// "Today at a Glance" header pill + progress bar
+.glance-header-actions {
   display: flex;
-  // background-color: #f5f5f5;
-  // border-radius: 20px;
+  align-items: center;
+  gap: 10px;
+}
+
+.glance-done-pill {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--glance-primary-dark);
+  background: #fff;
+  border: 1px solid rgba(124, 116, 216, 0.25);
+  border-radius: 20px;
+  padding: 6px 14px;
+  white-space: nowrap;
+}
+
+.glance-progress-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--glance-gray);
   overflow: hidden;
-  margin: 0 16px 16px 16px;
+}
 
-  .col-4 {
-    flex: 1;
-    text-align: center;
-    padding: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+.glance-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--glance-primary) 0%, var(--glance-orange) 40%, #E1527C 70%, var(--glance-green) 100%);
+  transition: width 0.5s ease;
+}
 
-    &.active {
-      color: #90214D;
-      font-weight: bold;
-    }
+// Icon-pill tab bar (All / Habit / Task / Time Table)
+.glance-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(124, 116, 216, 0.08);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.glance-tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: none;
+  background: #fff;
+  border-radius: 12px;
+  padding: 9px 4px;
+  color: rgba(40, 37, 39, 0.5);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+
+  .glance-tab-icon {
+    flex-shrink: 0;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.active {
+    background: var(--glance-primary);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(124, 116, 216, 0.35);
   }
 }
 
-/* Mode-specific styles: change active color and underline based on selected mode */
-.toggler .col-4 {
-  position: relative;
+// Scoped bump to the shared card-header's title/tagline typography (only within this card)
+.glance-card ::ng-deep .superme-card-header__title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--glance-primary-dark);
 }
 
-.toggler.habits-active .col-4.active {
-  color: #8B8DCB;
+.glance-card ::ng-deep .superme-card-header__tagline .tag {
+  color: rgba(69, 63, 140, 0.6);
+  font-weight: 600;
 }
 
-.toggler.habits-active .col-4.active::before {
-  content: "";
-  position: absolute;
-  left: 20%;
-  bottom: 0;
-  width: 60%;
-  height: 2px;
-  background: #8B8DCB;
-}
-
-.toggler.tasks-active .col-4.active {
-  color: #F6AC72;
-}
-
-.toggler.tasks-active .col-4.active::before {
-  content: "";
-  position: absolute;
-  left: 20%;
-  bottom: 0;
-  width: 60%;
-  height: 2px;
-  background: #F6AC72;
+.glance-card ::ng-deep .superme-card-header__tagline .dot {
+  background-color: var(--glance-primary);
 }
 
 p {
@@ -147,7 +226,7 @@ p {
   justify-content: space-between;
   width: 100%;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: background-color 0.3s ease, transform 0.15s ease;
   border-radius: 12px;
 
   &:hover {
@@ -156,11 +235,7 @@ p {
 
   &:active {
     background-color: #ffffff;
-    transform: scale(0.99);
-  }
-
-  &:active {
-    background-color: #ffffff;
+    transform: scale(0.97);
   }
 }
 
@@ -196,7 +271,7 @@ p {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 0px 16px;
+  padding: 0;
   margin: 0 !important;
 
   .empty-add-btn {
@@ -207,22 +282,21 @@ p {
 .habit-wrapper {
   display: flex;
   height: auto;
-  padding: 8px 12px 12px 24px;
+  padding: 14px 16px 14px 20px;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: 4px;
   flex-shrink: 0;
-  border-radius: 16px;
-  border-left: 4px solid #8B8DCB;
-  background: #FDFDFD;
-  border-radius: 16px;
+  border-radius: 18px;
+  border-left: 4px solid var(--glance-primary);
   background: #FFF;
-  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+  box-shadow: 0 4px 16px rgba(124, 116, 216, 0.10);
+  animation: glanceCardFadeIn 0.35s ease both;
 }
 
 /* Task variant: use orange left border */
 .habit-wrapper.task {
-  border-left: 4px solid #F6AC72;
+  border-left: 4px solid var(--glance-orange);
 }
 
 // .habit-wrapper.expanded {
@@ -270,7 +344,7 @@ h3 {
 
 /* Task title color override */
 .habit-wrapper.task h3 {
-  color: #E04D16;
+  color: var(--glance-orange);
 }
 
 h4 {
@@ -299,19 +373,15 @@ h4 {
 .badge {
   display: flex;
   align-items: center;
-  padding: 5px 16px;
+  padding: 5px 14px;
   height: 24px;
   font-family: var(--font-sans);
   font-weight: bold;
   font-size: 10px;
-  color: #45456A;
+  color: var(--glance-primary-dark);
   border-radius: 16px;
-  border: 1px solid #524F84;
-  background: #E8ECF7;
-  // padding: 7px 14px;
-  // position: absolute;
-  // top: 0;
-  // right: 10px;
+  border: 1px solid rgba(124, 116, 216, 0.35);
+  background: #fff;
 }
 
 /* Routine icon styling */
@@ -325,9 +395,9 @@ h4 {
 /* Task-specific badge styling (routine badge) */
 .habit-wrapper.task .badge {
   border-radius: 16px;
-  border: 1px solid #EE6621;
-  background: #FDEAD7;
-  color: #772817;
+  border: 1px solid rgba(255, 138, 76, 0.4);
+  background: #fff;
+  color: var(--glance-orange);
 }
 
 .habit-footer {
@@ -371,8 +441,8 @@ h4 {
 .habit-footer-progress-box {
   width: 100%;
   height: 6px;
-  background: #ddd; // Grey background for empty progress
-  border-radius: 4px;
+  background: var(--glance-gray); // Grey background for empty progress
+  border-radius: 999px;
   overflow: hidden;
 }
 
@@ -380,9 +450,9 @@ h4 {
 .habit-footer-progress {
   height: 100%;
   width: 0%; // Initially 0%, updated by Angular binding
-  background: #4CAF50; // Green color for progress
-  transition: width 0.3s ease; // Smooth transition
-  border-radius: 4px;
+  background: var(--glance-green); // Green color for progress
+  transition: width 0.5s ease; // Smooth transition
+  border-radius: 999px;
 }
 
 // Green glow when expanded and in progress
@@ -437,6 +507,12 @@ h4 {
   vertical-align: middle;
 }
 
+.single-point-container p.score {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--glance-primary-dark);
+}
+
 // List mode styles
 .glance-in-day {
   font-family: var(--font-heading);
@@ -445,46 +521,18 @@ h4 {
   margin-top: 30px;
 }
 
-.toggler {
-  margin-top: 25px;
-}
-
-.toggler div {
-  text-align: center;
-  font-size: 18px;
-  font-family: var(--font-sans);
-  font-weight: 500;
-  color: black;
-  position: relative;
-  padding: 8px 0;
-}
-
-.toggler div.active {
-  color: #8B8DCB;
-}
-
-.toggler div.active:before {
-  position: absolute;
-  content: '';
-  width: 60%;
-  height: 2px;
-  left: 20%;
-  bottom: 0;
-  background: #90214D;
-}
-
-.toggler div:not(:last-child) {
-  border-right: 1px solid black;
-}
-
-.d-flex flex-column .container w-full {
-  --bs-gutter-x: 0px !important;
-  margin-left: 0px !important;
-  padding-left: 0px !important;
+// Bootstrap's .container ships built-in left/right padding — cancel it so the tab row,
+// item lists and card wrapper all share the same edge alignment as .glance-card's own padding.
+.container.w-full {
+  --bs-gutter-x: 0;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 .habit-title {
-  color: #524F84;
+  color: var(--glance-primary-dark);
   font-size: 16px;
   font-weight: 700;
   line-height: 140%;
@@ -492,7 +540,7 @@ h4 {
 }
 
 .habit-timing {
-  color: #6360A2;
+  color: var(--glance-primary);
   font-size: 13px;
   font-weight: 600;
   line-height: 140%;
@@ -503,7 +551,7 @@ h4 {
 }
 
 .task-timing {
-  color: #BB2124;
+  color: var(--glance-orange);
   font-size: 13px;
   font-weight: 600;
   line-height: 140%;
@@ -581,9 +629,32 @@ h4 {
   align-items: center;
   gap: 5px;
   background: transparent;
-  border: 1.5px solid #E1527C;
-  border-radius: 20px;
-  padding: 7px 14px 7px 16px;
+  border: none;
+  padding: 6px 0;
+  color: rgba(40, 37, 39, 0.6);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+
+  &:active {
+    opacity: 0.6;
+    transform: scale(0.96);
+  }
+}
+
+.add-new-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  padding: 6px 0;
   color: #E1527C;
   font-family: var(--font-sans);
   font-size: 14px;
@@ -593,43 +664,15 @@ h4 {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-  transition: background 0.15s ease;
-
-  svg path {
-    fill: #E1527C;
-  }
-
-  &:active {
-    background: rgba(225, 82, 124, 0.1);
-  }
-}
-
-.add-new-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: linear-gradient(99deg, #E1527C 0.65%, #AC2456 99.35%);
-  border: 1px solid #CF3359;
-  border-radius: 20px;
-  padding: 8px 16px 8px 12px;
-  color: #FFF;
-  font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  box-shadow: 0 -2px 2px 0 #F4ADC6 inset, 0 0 1px 0.5px rgba(225, 82, 124, 0.20);
-  transition: opacity 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 
   svg {
     flex-shrink: 0;
   }
 
   &:active {
-    opacity: 0.85;
+    opacity: 0.7;
+    transform: scale(0.96);
   }
 }
 

@@ -1,25 +1,62 @@
 <!-- List Mode -->
 <!-- Shared header used by both list and recent modes -->
 <ng-template #dayHeader>
-  <superme-card-header title="Today at a Glance" subtitleMiddle="Check tasks • Finish habits • Crush it">
-    <img src="assets/Icons-Neutral/Icon-Calendar-3D.png" alt="Today at a Glance" class="calendar-icon" loading="lazy" decoding="async"
-      (click)="openTimeline()" role="button" aria-label="Open timeline"
-      onerror="this.onerror=null;this.src='assets/Icons-Neutral/Icon-Calendar.png'" />
+  <superme-card-header title="Today at a Glance" [subtitleMiddle]="glanceSubtitle">
+    <div class="glance-header-actions" superme-header-actions>
+      <span class="glance-done-pill">{{ overallCompletionRate }}% done</span>
+      <img src="assets/Icons-Neutral/Icon-Calendar-3D.png" alt="Open timeline" class="calendar-icon" loading="lazy" decoding="async"
+        (click)="openTimeline()" role="button" aria-label="Open timeline"
+        onerror="this.onerror=null;this.src='assets/Icons-Neutral/Icon-Calendar.png'" />
+    </div>
   </superme-card-header>
+  <div class="glance-progress-track" *ngIf="totalHabitsLoaded > 0 || totalTasksLoaded > 0">
+    <div class="glance-progress-fill" [style.width.%]="overallCompletionRate"></div>
+  </div>
 </ng-template>
-<div *ngIf="mode === 'list'" class="d-flex flex-column gap-2">
+<div *ngIf="mode === 'list'" class="d-flex flex-column gap-2 glance-card">
   <div class="day-at-glance-container">
     <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
 
     <!-- Tab Navigation: show if there are items in any tab (even if current tab is done, user can see other tabs) -->
-    <div class="container w-full" *ngIf="(totalTasksLoaded > 0 || totalHabitsLoaded > 0) && !((taskCompletionRate === 100 && habitCompletionRate === 100) || (totalTasksLoaded === 0 && habitCompletionRate === 100) || (totalHabitsLoaded === 0 && taskCompletionRate === 100))">
-      <div class="row toggler"
-        [ngClass]="{ 'habits-active': currentActive === 'habits', 'tasks-active': currentActive === 'tasks' }">
-        <div class="col-4" (click)="switchTab('all')" [ngClass]="currentActive === 'all' ? 'active' : ''">All</div>
-        <div class="col-4" (click)="switchTab('habits')" [ngClass]="currentActive === 'habits' ? 'active' : ''">Habits
-        </div>
-        <div class="col-4" (click)="switchTab('tasks')" [ngClass]="currentActive === 'tasks' ? 'active' : ''">Tasks
-        </div>
+    <div class="container w-full" *ngIf="(totalTasksLoaded > 0 || totalHabitsLoaded > 0 || totalTimetablesLoaded > 0) && !((taskCompletionRate === 100 && habitCompletionRate === 100) || (totalTasksLoaded === 0 && habitCompletionRate === 100) || (totalHabitsLoaded === 0 && taskCompletionRate === 100))">
+      <div class="glance-tabs" role="tablist" aria-label="Filter by type">
+        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
+          [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
+          <svg class="glance-tab-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <rect x="1" y="1" width="5" height="5" rx="1.2" fill="currentColor" />
+            <rect x="8" y="1" width="5" height="5" rx="1.2" fill="currentColor" />
+            <rect x="1" y="8" width="5" height="5" rx="1.2" fill="currentColor" />
+            <rect x="8" y="8" width="5" height="5" rx="1.2" fill="currentColor" />
+          </svg>
+          <span>All</span>
+        </button>
+        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'habits'"
+          [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
+          <svg class="glance-tab-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M2 7a5 5 0 1 1 2 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none" />
+            <path d="M2 4.5V7h2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
+              stroke-linejoin="round" fill="none" />
+          </svg>
+          <span>Habit</span>
+        </button>
+        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
+          [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
+          <svg class="glance-tab-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <rect x="2" y="2" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4" fill="none" />
+            <path d="M4.5 7l1.8 1.8L9.5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
+              stroke-linejoin="round" fill="none" />
+          </svg>
+          <span>Task</span>
+        </button>
+        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
+          [attr.aria-selected]="currentActive === 'timetable'" (click)="switchTab('timetable')">
+          <svg class="glance-tab-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.4" fill="none" />
+            <path d="M7 4.2V7l2 1.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
+              stroke-linejoin="round" fill="none" />
+          </svg>
+          <span>Time Table</span>
+        </button>
       </div>
     </div>
 
@@ -63,6 +100,13 @@
     <empty-state *ngIf="currentActive === 'habits' && !hasHabits && totalHabitsLoaded > 0 && habitCompletionRate < 100"
       leadText="Check pending items"
       subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
+      buttonText="">
+    </empty-state>
+
+    <!-- Timetable-specific: no time table entries for today -->
+    <empty-state *ngIf="currentActive === 'timetable' && !hasTimetables"
+      leadText="No time table entries for today"
+      subText="Nothing scheduled yet. Add a time block to plan out your day."
       buttonText="">
     </empty-state>
 
@@ -128,9 +172,18 @@
     </activity-card>
   </div>
 
+  <!-- Timetable Items (when timetable tab is active) -->
+  <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
+    *ngIf="currentActive === 'timetable' && hasTimetables">
+    <activity-card *ngFor="let ttItem of timetables.slice(0, maxItemsToShow)" [habit]="ttItem"
+      [startTime]="ttItem.startTimeStamp || 0" [endTime]="ttItem.endTimeStamp || 0" [inProgress]="false"
+      mode="single">
+    </activity-card>
+  </div>
+
   <!-- Combined Items (when all tab is active - sorted by closest start time) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="currentActive === 'all' && (hasHabits || hasTasks)">
+    *ngIf="currentActive === 'all' && (hasHabits || hasTasks || hasTimetables)">
     <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
       [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
       [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)" mode="single">
@@ -159,19 +212,50 @@
 </div>
 
 <!-- Recent Mode -->
-<div *ngIf="mode === 'recent'" class="d-flex flex-column gap-2">
+<div *ngIf="mode === 'recent'" class="d-flex flex-column gap-2 glance-card">
   <div class="day-at-glance-container">
     <ng-container *ngTemplateOutlet="dayHeader"></ng-container>
 
     <!-- Tab Navigation: show if there are items in any tab (even if current tab is done, user can see other tabs) -->
-    <div class="container w-full" *ngIf="(totalTasksLoaded > 0 || totalHabitsLoaded > 0) && !((taskCompletionRate === 100 && habitCompletionRate === 100) || (totalTasksLoaded === 0 && habitCompletionRate === 100) || (totalHabitsLoaded === 0 && taskCompletionRate === 100))">
-      <div class="row toggler"
-        [ngClass]="{ 'habits-active': currentActive === 'habits', 'tasks-active': currentActive === 'tasks' }">
-        <div class="col-4" (click)="switchTab('all')" [ngClass]="currentActive === 'all' ? 'active' : ''">All</div>
-        <div class="col-4" (click)="switchTab('habits')" [ngClass]="currentActive === 'habits' ? 'active' : ''">Habits
-        </div>
-        <div class="col-4" (click)="switchTab('tasks')" [ngClass]="currentActive === 'tasks' ? 'active' : ''">Tasks
-        </div>
+    <div class="container w-full" *ngIf="(totalTasksLoaded > 0 || totalHabitsLoaded > 0 || totalTimetablesLoaded > 0) && !((taskCompletionRate === 100 && habitCompletionRate === 100) || (totalTasksLoaded === 0 && habitCompletionRate === 100) || (totalHabitsLoaded === 0 && taskCompletionRate === 100))">
+      <div class="glance-tabs" role="tablist" aria-label="Filter by type">
+        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
+          [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
+          <svg class="glance-tab-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <rect x="1" y="1" width="5" height="5" rx="1.2" fill="currentColor" />
+            <rect x="8" y="1" width="5" height="5" rx="1.2" fill="currentColor" />
+            <rect x="1" y="8" width="5" height="5" rx="1.2" fill="currentColor" />
+            <rect x="8" y="8" width="5" height="5" rx="1.2" fill="currentColor" />
+          </svg>
+          <span>All</span>
+        </button>
+        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'habits'"
+          [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
+          <svg class="glance-tab-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M2 7a5 5 0 1 1 2 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none" />
+            <path d="M2 4.5V7h2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
+              stroke-linejoin="round" fill="none" />
+          </svg>
+          <span>Habit</span>
+        </button>
+        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
+          [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
+          <svg class="glance-tab-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <rect x="2" y="2" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4" fill="none" />
+            <path d="M4.5 7l1.8 1.8L9.5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
+              stroke-linejoin="round" fill="none" />
+          </svg>
+          <span>Task</span>
+        </button>
+        <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
+          [attr.aria-selected]="currentActive === 'timetable'" (click)="switchTab('timetable')">
+          <svg class="glance-tab-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.4" fill="none" />
+            <path d="M7 4.2V7l2 1.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"
+              stroke-linejoin="round" fill="none" />
+          </svg>
+          <span>Time Table</span>
+        </button>
       </div>
     </div>
 
@@ -214,6 +298,13 @@
     <empty-state *ngIf="currentActive === 'habits' && !hasHabits && totalHabitsLoaded > 0 && habitCompletionRate < 100"
       leadText="Check pending items"
       subText="Some activities missed their schedule. You can find them in the Pending where you can mark them done."
+      buttonText="">
+    </empty-state>
+
+    <!-- Timetable-specific: no time table entries for today -->
+    <empty-state *ngIf="currentActive === 'timetable' && !hasTimetables"
+      leadText="No time table entries for today"
+      subText="Nothing scheduled yet. Add a time block to plan out your day."
       buttonText="">
     </empty-state>
 
@@ -260,9 +351,18 @@
     </activity-card>
   </div>
 
+  <!-- Recent Timetable Items (when timetable tab is active) -->
+  <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
+    *ngIf="currentActive === 'timetable' && hasTimetables">
+    <activity-card *ngFor="let ttItem of filteredRecentTimetables" [habit]="ttItem"
+      [startTime]="ttItem.startTimeStamp || 0" [endTime]="ttItem.endTimeStamp || 0" [inProgress]="false"
+      mode="single">
+    </activity-card>
+  </div>
+
   <!-- Recent Combined Items (when all tab is active - sorted by closest start time) -->
   <div class="d-flex flex-column container w-full" style="padding: 0; gap: 16px"
-    *ngIf="currentActive === 'all' && (hasHabits || hasTasks)">
+    *ngIf="currentActive === 'all' && (hasHabits || hasTasks || hasTimetables)">
     <activity-card *ngFor="let item of combinedAndSortedItems.slice(0, maxItemsToShow)" [habit]="item"
       [startTime]="item.startTimeStamp || 0" [endTime]="item.endTimeStamp || 0"
       [inProgress]="item.type === 'tasks' ? false : isHabitInProgress(item)" mode="single">
@@ -351,8 +451,8 @@
         </div>
       </div>
     </div>
-    <!-- Expandable content wrapper with animation -->
-    <div class="habit-expandable-content" [ngClass]="{'expanded': expanded}">
+    <!-- Expandable content wrapper with animation (timetable entries have no streak/coin/complete actions) -->
+    <div class="habit-expandable-content" [ngClass]="{'expanded': expanded}" *ngIf="habit?.type !== 'timetable'">
       <div class="habit-footer-progress-box" *ngIf="getStatus() === 'ongoing'">
         <div class="habit-footer-progress" #percentageWrapper [style.width.%]="percentageCompleted"></div>
       </div>

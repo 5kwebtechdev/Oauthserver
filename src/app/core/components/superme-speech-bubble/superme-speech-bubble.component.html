@@ -10,7 +10,13 @@
 
     <!-- Message Content -->
     <div class="bubble-content">
-      <p class="message-text">{{ displayMessage }}</p>
+      <ng-container *ngIf="messageLines.length > 1; else singleLine">
+        <p class="message-text message-title">{{ messageLines[0] }}</p>
+        <p class="message-text message-subtitle">{{ messageLines.slice(1).join(' ') }}</p>
+      </ng-container>
+      <ng-template #singleLine>
+        <p class="message-text">{{ displayMessage }}</p>
+      </ng-template>
     </div>
 
     <!-- Arrow - Only for talking type with a valid side -->

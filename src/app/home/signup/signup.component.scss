@@ -3370,10 +3370,8 @@ ion-content.details-content {
     position: relative;
     display: block;
     width: 100%;
-    max-width: 393px;
     height: 100%;
     min-height: 0;
-    margin: 0 auto;
     overflow: hidden;
     padding: 0;
     background: #ffffff;
@@ -3382,8 +3380,8 @@ ion-content.details-content {
   .signup-entry-back-btn {
     position: absolute;
     z-index: 2;
-    top: calc(env(safe-area-inset-top, 0px) + 32px);
-    left: 16px;
+    top: calc(env(safe-area-inset-top, 0px) + 12px);
+    left: max(18px, env(safe-area-inset-left, 0px));
     display: grid;
     width: 48px;
     height: 48px;
@@ -3396,10 +3394,8 @@ ion-content.details-content {
     cursor: pointer;
     transition: background-color 160ms ease, transform 160ms ease;
 
-    img {
-      display: block;
-      width: 48px;
-      height: 48px;
+    i {
+      font-size: 29px;
     }
 
     &:active {
@@ -3409,14 +3405,12 @@ ion-content.details-content {
   }
 
   .signup-entry-shell {
-    width: calc(100% - 32px);
-    max-width: 361px;
+    width: min(100%, 560px);
     height: 100%;
     min-height: 0;
     margin: 0 auto;
-    padding: calc(env(safe-area-inset-top, 0px) + 88px) 0
-      calc(env(safe-area-inset-bottom, 0px) + 24px);
-    box-sizing: border-box;
+    padding: calc(env(safe-area-inset-top, 0px) + clamp(84px, 10dvh, 104px)) 22px
+      calc(env(safe-area-inset-bottom, 0px) + 42px);
   }
 
   .signup-entry-hero {
@@ -3431,86 +3425,88 @@ ion-content.details-content {
   }
 
   .signup-entry-step {
-    color: #6b656a;
-    font-size: 13px;
+    color: #746e72;
+    font-size: 16px;
     font-weight: 500;
-    line-height: 21px;
+    line-height: 1.4;
   }
 
   .signup-entry-title {
-    margin-top: 8px;
+    margin-top: 12px;
     color: #282527;
-    font-family: 'Nunito', sans-serif;
-    font-size: 16px;
-    font-weight: 600;
+    font-family: 'Fredoka', 'Nunito', sans-serif;
+    font-size: 25px;
+    font-weight: 500;
     line-height: 1.3;
     letter-spacing: 0;
   }
 
   .signup-entry-subtitle {
-    margin-top: 4px;
-    color: #6b656a;
-    font-size: 13px;
+    margin-top: 6px;
+    color: #746e72;
+    font-size: 16px;
     font-weight: 500;
-    line-height: normal;
+    line-height: 1.45;
   }
 
   .signup-entry-progress {
     width: 100%;
-    height: 4px;
-    margin-top: 16px;
-    overflow: visible;
+    height: 6px;
+    margin-top: 20px;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #f1e8ec;
 
-    img {
+    span {
       display: block;
-      width: calc(100% + 4px);
-      height: 4px;
-      max-width: none;
-      transform: translateX(-2px);
+      width: 16.667%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #8b8dcb 0%, #f6ac72 34%, #89b3b6 66%, #e1527c 100%);
     }
   }
 
   .signup-entry-form {
     display: flex;
     flex-direction: column;
-    margin-top: 28px;
+    margin-top: 38px;
   }
 
   .signup-entry-field {
     display: flex;
-    min-height: 61px;
+    min-height: 72px;
     align-items: center;
-    border: 0;
-    border-radius: 12px;
+    border: 1px solid #f1eef0;
+    border-radius: 8px;
     background: #ffffff;
-    box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
+    box-shadow: 0 2px 9px rgba(40, 37, 39, 0.12);
     transition: border-color 160ms ease, box-shadow 160ms ease;
 
     &:focus-within {
-      box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1), 0 0 0 3px rgba(154, 117, 189, 0.12);
+      border-color: #9a75bd;
+      box-shadow: 0 2px 9px rgba(40, 37, 39, 0.1), 0 0 0 3px rgba(154, 117, 189, 0.12);
     }
 
     &--error {
-      box-shadow: 0 0 0 1px #c93f60, 0 0 2px 2px rgba(107, 101, 106, 0.1);
+      border-color: #c93f60;
     }
 
     input {
       width: 100%;
-      height: 61px;
-      padding: 0 24px;
+      height: 70px;
+      padding: 0 22px;
       border: 0;
       outline: 0;
       background: transparent;
       color: #282527;
       font: inherit;
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 500;
-      line-height: 1.3;
       letter-spacing: 0;
 
       &::placeholder {
-        color: #282527;
-        opacity: 0.5;
+        color: #9a9698;
+        opacity: 1;
       }
     }
   }
@@ -3539,22 +3535,21 @@ ion-content.details-content {
     width: 100%;
     height: 56px;
     min-height: 56px;
-    min-width: 100%;
-    max-width: none;
-    margin-top: 32px;
+    margin-top: 30px;
     padding: 8px 16px;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    border: 1px solid #432477;
+    border: 1px solid transparent;
     border-radius: 20px;
-    background: linear-gradient(-82.817deg, #20143f 0.1798%, #7341a7 99.82%);
-    box-shadow: inset -2px -2px 2px #ffffff;
+    background:
+      linear-gradient(90deg, #7341A7 0%, #432477 50%, #20143F 100%) padding-box,
+      linear-gradient(90deg, #7341A7 0%, #432477 100%) border-box;
+    box-shadow: none;
     color: #ffffff;
     font-family: 'Nunito', sans-serif;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 700;
-    line-height: 1.4;
     letter-spacing: 0;
     cursor: pointer;
     transition: filter 160ms ease, transform 160ms ease;
@@ -3581,24 +3576,27 @@ ion-content.details-content {
 
   .signup-entry-divider {
     display: grid;
-    grid-template-columns: minmax(0, 126.25px) 24px minmax(0, 126.25px);
-    gap: 8px;
+    grid-template-columns: minmax(0, 126.25px) auto minmax(0, 126.25px);
+    gap: 12px;
     width: 100%;
-    margin: 32px auto 0;
+    margin: 44px auto 0;
     align-items: center;
     justify-content: center;
 
-    img {
-      display: block;
+    span {
       width: 100%;
       height: 1px;
+      border: 0;
+      background: linear-gradient(90deg,
+        rgba(144, 33, 77, 0.2) 0%,
+        #90214d 50%,
+        rgba(144, 33, 77, 0.2) 100%);
     }
 
     strong {
       color: #282527;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 600;
-      line-height: 1.3;
     }
   }
 
@@ -3608,11 +3606,11 @@ ion-content.details-content {
   }
 
   .signup-entry-login {
-    margin-top: 32px;
+    margin-top: 34px;
     color: #282527;
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 1.3;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.45;
     text-align: center;
 
     a {
@@ -3624,21 +3622,17 @@ ion-content.details-content {
   }
 
   .signup-entry-social::ng-deep {
-    .social-media {
-      padding-bottom: 0;
-    }
-
     .login-with-buttons {
       flex-direction: row;
       justify-content: center;
-      gap: 16px;
+      gap: 24px;
     }
 
     .social-login-btn {
-      width: 40px;
-      height: 40px;
-      min-width: 40px;
-      padding: 0;
+      width: 54px;
+      height: 54px;
+      min-width: 54px;
+      padding: 7px;
       border: 0;
       border-radius: 50%;
       background: transparent;
@@ -3649,8 +3643,8 @@ ion-content.details-content {
     }
 
     .social-login-btn__icon {
-      width: 32px;
-      height: 32px;
+      width: 42px;
+      height: 42px;
     }
 
     .social-login-btn__label {
@@ -3659,11 +3653,6 @@ ion-content.details-content {
 
     .social-login-btn--apple {
       background: transparent;
-
-      .social-login-btn__icon {
-        width: 40px;
-        height: 40px;
-      }
 
       path {
         fill: #000000;
@@ -3678,42 +3667,75 @@ ion-content.details-content {
   }
 }
 
-@media (max-height: 540px) {
+@media (min-width: 768px) {
   .signup-container.signup-entry-layout {
     .signup-entry-back-btn {
       top: calc(env(safe-area-inset-top, 0px) + 16px);
+      left: max(32px, env(safe-area-inset-left, 0px));
     }
 
     .signup-entry-shell {
-      padding-top: calc(env(safe-area-inset-top, 0px) + 64px);
+      width: 650px;
+      max-width: calc(100% - 96px);
+      padding-top: calc(env(safe-area-inset-top, 0px) + 104px);
+    }
+
+    .signup-entry-title {
+      font-size: 28px;
+    }
+
+    .signup-entry-subtitle {
+      font-size: 17px;
+    }
+  }
+}
+
+@media (max-width: 359px) {
+  .signup-container.signup-entry-layout {
+    .signup-entry-shell {
+      padding-right: 16px;
+      padding-left: 16px;
+    }
+
+    .signup-entry-title {
+      font-size: 23px;
+    }
+
+    .signup-entry-subtitle,
+    .signup-entry-login {
+      font-size: 15px;
+    }
+  }
+}
+
+@media (max-height: 700px) {
+  .signup-container.signup-entry-layout {
+    .signup-entry-back-btn {
+      top: calc(env(safe-area-inset-top, 0px) + 8px);
+    }
+
+    .signup-entry-shell {
+      padding-top: calc(env(safe-area-inset-top, 0px) + 68px);
     }
 
     .signup-entry-form {
       margin-top: 24px;
     }
 
-    .signup-entry-field input {
-      padding-right: 16px;
-      padding-left: 16px;
-      font-size: 14px;
-    }
-
     .signup-entry-submit {
-      margin-top: 24px;
+      margin-top: 20px;
     }
 
     .signup-entry-divider {
-      margin-top: 24px;
+      margin-top: 28px;
     }
 
     .signup-entry-social {
-      margin-top: 12px;
+      margin-top: 14px;
     }
 
     .signup-entry-login {
-      margin-top: 12px;
-      font-size: 14px;
-      white-space: nowrap;
+      margin-top: 18px;
     }
   }
 }
