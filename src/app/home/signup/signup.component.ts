@@ -2279,7 +2279,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       // never actually requested, surfacing as "Resource not found".
       familyCode: familyCode || null,
       familyName: familyName || null,
-      referralCode: referralCode || null
+      referralCode: referralCode || null,
+      unlockPotential: false
     };
 
     // Include explicit family role: CREATOR when user created the family in this session,
@@ -2682,7 +2683,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       password: password || undefined,
       avatarName: avatarNameValue2,
       avatarImageName: persistedDraft.avatarImageName || avatarImageNameValue2,
-      referralCode: referralCode || null
+      referralCode: referralCode || null,
+      unlockPotential: false
     };
 
     if (role === 'child') {
@@ -2855,6 +2857,53 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   // Auto-login and redirect to dashboard
   onBegin() {
+    // Prevent duplicate taps from firing multiple requests while the
+    // unlockPotential update is in flight.
+    if (this.registrationInProgress) {
+      return;
+    }
+
+    const userData = this.authService.getUserData();
+    if (userData?.['unlockPotential'] === true) {
+      // Already unlocked server-side (e.g. resumed session) — no need to
+      // send the update again.
+      this.continueAfterUnlock();
+      return;
+    }
+
+    this.registrationInProgress = true;
+    this.errorMessage = null;
+    this.loadingService.show();
+
+    const payload: any = { unlockPotential: true };
+    if (userData?.email) {
+      payload.email = userData.email;
+    } else if (userData?.phone) {
+      payload.phone = userData.phone;
+    } else {
+      const identifier = this.getSignupCredentialIdentifier();
+      if (identifier && identifier.includes('@')) {
+        payload.email = identifier;
+      } else if (identifier) {
+        payload.phone = identifier;
+      }
+    }
+
+    this.authService.register(payload).subscribe({
+      next: () => {
+        this.registrationInProgress = false;
+        this.authService.updateUserData({ unlockPotential: true });
+        this.continueAfterUnlock();
+      },
+      error: (err) => {
+        this.registrationInProgress = false;
+        this.loadingService.forceHide();
+        this.errorMessage = err?.error?.message || 'Something went wrong. Please try again.';
+      }
+    });
+  }
+
+  private continueAfterUnlock(): void {
     // Child users reach this welcome screen only after a successful family
     // link and are already logged in. Continue directly without a second login.
     if (this.authService.isLoggedIn()) {
