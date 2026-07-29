@@ -1926,8 +1926,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     this.otpResendInProgress = true;
-    // Resend uses /api/auth/send-otp — separate from the initial
-    // /auth/register/generate-otp call made when the OTP is first requested.
+    // Resend uses /api/auth/send-otp — same endpoint the initial OTP
+    // request now uses too (see AuthService.registerRequestOtp).
     this.authService.resendRegisterOtp(identifier, isEmail, countryCode).subscribe({
       next: () => {
         this.otpResendInProgress = false;
