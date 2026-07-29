@@ -493,10 +493,9 @@ export class AuthService {
   }
 
   /**
-   * POST /api/auth/send-otp — used for resending an OTP during signup
-   * (replaces /auth/register/generate-otp for the "Resend" action).
-   * Supports both email and phone identifiers, same payload shape as
-   * registerRequestOtp().
+   * POST /api/auth/send-otp — used for resending an OTP during signup.
+   * Same endpoint and payload shape as registerRequestOtp()'s initial call.
+   * Supports both email and phone identifiers.
    */
   resendRegisterOtp(identifier: string, isEmail: boolean, countryCode?: string): Observable<any> {
     const payload = isEmail
@@ -516,25 +515,23 @@ export class AuthService {
       'Content-Type': 'application/json'
     }) : undefined;
 
-    const url = `${this.apiUrl}/auth/register/generate-otp`;
+    const url = `${this.apiUrl}/api/auth/send-otp`;
 
-    const options: any = {
-      responseType: 'text'
-    };
+    const options: any = {};
 
     if (headers) {
       options.headers = headers;
     }
 
     const payload = isEmail
-      ? { email: identifier, "identifierType": "EMAIL" }
-      : { phone: identifier, "identifierType": "PHONE" };
+      ? { email: identifier, identifierType: 'EMAIL' }
+      : { phone: identifier, identifierType: 'PHONE', countryCode };
 
     console.log('[AuthService] registerRequestOtp - Calling:', url);
     console.log('[AuthService] registerRequestOtp - Payload:', payload);
     console.log('[AuthService] registerRequestOtp - Has Auth Token:', !!headers);
 
-    return this.http.post<string>(url, payload, options).pipe(
+    return this.http.post(url, payload, options).pipe(
       map(response => this.parseRegistrationResponse(response))
     );
   }
