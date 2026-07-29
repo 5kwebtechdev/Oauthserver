@@ -13,6 +13,123 @@ index 6432925..93f654b 100644
 -    s.static_framework = true
 +    s.dependency 'GoogleSignIn', '~> 7.0'
    end
+diff --git a/node_modules/@codetrix-studio/capacitor-google-auth/android/build.gradle b/node_modules/@codetrix-studio/capacitor-google-auth/android/build.gradle
+index 4bb66ea..8455f37 100644
+--- a/node_modules/@codetrix-studio/capacitor-google-auth/android/build.gradle
++++ b/node_modules/@codetrix-studio/capacitor-google-auth/android/build.gradle
+@@ -57,5 +57,5 @@ dependencies {
+     testImplementation "junit:junit:$junitVersion"
+     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+-    implementation 'com.google.android.gms:play-services-auth:18.+'
++    implementation 'com.google.android.gms:play-services-auth:21.2.0'
+ }
+diff --git a/node_modules/@codetrix-studio/capacitor-google-auth/android/src/main/java/com/codetrixstudio/capacitor/GoogleAuth/GoogleAuth.java b/node_modules/@codetrix-studio/capacitor-google-auth/android/src/main/java/com/codetrixstudio/capacitor/GoogleAuth/GoogleAuth.java
+index 147fac8..f258335 100644
+--- a/node_modules/@codetrix-studio/capacitor-google-auth/android/src/main/java/com/codetrixstudio/capacitor/GoogleAuth/GoogleAuth.java
++++ b/node_modules/@codetrix-studio/capacitor-google-auth/android/src/main/java/com/codetrixstudio/capacitor/GoogleAuth/GoogleAuth.java
+@@ -96,38 +96,22 @@ public class GoogleAuth extends Plugin {
+       executor.execute(() -> {
+         try {
+           JSONObject accessTokenObject = getAuthToken(account.getAccount(), true);
+-
+-          JSObject authentication = new JSObject();
+-          authentication.put("idToken", account.getIdToken());
+-          authentication.put(FIELD_ACCESS_TOKEN, accessTokenObject.get(FIELD_ACCESS_TOKEN));
+-          authentication.put(FIELD_TOKEN_EXPIRES, accessTokenObject.get(FIELD_TOKEN_EXPIRES));
+-          authentication.put(FIELD_TOKEN_EXPIRES_IN, accessTokenObject.get(FIELD_TOKEN_EXPIRES_IN));
+-
+-          JSObject user = new JSObject();
+-          user.put("serverAuthCode", account.getServerAuthCode());
+-          user.put("idToken", account.getIdToken());
+-          user.put("authentication", authentication);
+-
+-          user.put("name", account.getDisplayName());
+-          // Deprecated: Use `user` instead of `displayName`
+-          user.put("displayName", account.getDisplayName());
+-          user.put("email", account.getEmail());
+-          user.put("familyName", account.getFamilyName());
+-          user.put("givenName", account.getGivenName());
+-          user.put("id", account.getId());
+-          user.put("imageUrl", account.getPhotoUrl());
+-
+-          call.resolve(user);
++          call.resolve(buildUserPayload(account, accessTokenObject));
+         } catch (Exception e) {
+           e.printStackTrace();
+-          call.reject("Something went wrong while retrieving access token", e);
++          Log.w("GoogleAuth", "Access token lookup failed after Google sign-in. Continuing with ID token only.", e);
++          try {
++            call.resolve(buildUserPayload(account, null));
++          } catch (JSONException jsonException) {
++            call.reject("Google sign-in succeeded but response parsing failed", jsonException);
++          }
+         }
+       });
+     } catch (ApiException e) {
+       if (SIGN_IN_CANCELLED == e.getStatusCode()) {
+         call.reject("The user canceled the sign-in flow.", "" + e.getStatusCode());
+       } else {
+-        call.reject("Something went wrong", "" + e.getStatusCode());
++        call.reject("Google sign-in failed", "" + e.getStatusCode());
+       }
+     }
+   }
+@@ -148,7 +132,15 @@ public class GoogleAuth extends Plugin {
+         call.resolve(authentication);
+       } catch(Exception e){
+         e.printStackTrace();
+-        call.reject("Something went wrong while retrieving access token", e);
++        if (account.getIdToken() != null) {
++          JSObject authentication = new JSObject();
++          authentication.put("idToken", account.getIdToken());
++          authentication.put(FIELD_ACCESS_TOKEN, "");
++          authentication.put("refreshToken", "");
++          call.resolve(authentication);
++        } else {
++          call.reject("Something went wrong while retrieving access token", e);
++        }
+       }
+     }
+   }
+@@ -247,6 +239,37 @@ public class GoogleAuth extends Plugin {
+     return jsonResponse;
+   }
+
++  private JSObject buildUserPayload(GoogleSignInAccount account, JSONObject accessTokenObject) throws JSONException {
++    JSObject authentication = new JSObject();
++    authentication.put("idToken", account.getIdToken());
++
++    if (accessTokenObject != null) {
++      if (accessTokenObject.has(FIELD_ACCESS_TOKEN)) {
++        authentication.put(FIELD_ACCESS_TOKEN, accessTokenObject.get(FIELD_ACCESS_TOKEN));
++      }
++      if (accessTokenObject.has(FIELD_TOKEN_EXPIRES)) {
++        authentication.put(FIELD_TOKEN_EXPIRES, accessTokenObject.get(FIELD_TOKEN_EXPIRES));
++      }
++      if (accessTokenObject.has(FIELD_TOKEN_EXPIRES_IN)) {
++        authentication.put(FIELD_TOKEN_EXPIRES_IN, accessTokenObject.get(FIELD_TOKEN_EXPIRES_IN));
++      }
++    }
++
++    JSObject user = new JSObject();
++    user.put("serverAuthCode", account.getServerAuthCode());
++    user.put("idToken", account.getIdToken());
++    user.put("authentication", authentication);
++    user.put("name", account.getDisplayName());
++    // Deprecated: Use `user` instead of `displayName`
++    user.put("displayName", account.getDisplayName());
++    user.put("email", account.getEmail());
++    user.put("familyName", account.getFamilyName());
++    user.put("givenName", account.getGivenName());
++    user.put("id", account.getId());
++    user.put("imageUrl", account.getPhotoUrl());
++    return user;
++  }
++
+   private static String fromStream(InputStream is) throws IOException {
+     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+     StringBuilder sb = new StringBuilder();
 diff --git a/node_modules/@codetrix-studio/capacitor-google-auth/ios/Plugin/Plugin.swift b/node_modules/@codetrix-studio/capacitor-google-auth/ios/Plugin/Plugin.swift
 index fd39ed9..0e23704 100644
 --- a/node_modules/@codetrix-studio/capacitor-google-auth/ios/Plugin/Plugin.swift
@@ -88,7 +205,7 @@ index fd39ed9..0e23704 100644
 +        // On iOS, GIDConfiguration.clientID must be the iOS OAuth client ID,
 +        // NOT the web client ID. Precedence:
 +        //   1. iosClientId from JS call params (never set in practice)
-+        //   2. iosClientId from capacitor.config.ts plugin config  ← wins here
++        //   2. iosClientId from capacitor.config.ts plugin config  â† wins here
 +        //   3. Plist CLIENT_ID fallback
 +        //   4. Generic clientId as last resort
 +        guard let clientId = call.getString("iosClientId")
@@ -293,15 +410,4 @@ index fd39ed9..0e23704 100644
 -        signInCall?.resolve(userData);
 +        signInCall?.resolve(userData)
      }
- }
-diff --git a/node_modules/@codetrix-studio/capacitor-google-auth/android/build.gradle b/node_modules/@codetrix-studio/capacitor-google-auth/android/build.gradle
-index 76f15e2..b063e45 100644
---- a/node_modules/@codetrix-studio/capacitor-google-auth/android/build.gradle
-+++ b/node_modules/@codetrix-studio/capacitor-google-auth/android/build.gradle
-@@ -57,5 +57,5 @@ dependencies {
-     testImplementation "junit:junit:$junitVersion"
-     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
-     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
--    implementation 'com.google.android.gms:play-services-auth:18.+'
-+    implementation 'com.google.android.gms:play-services-auth:21.2.0'
  }

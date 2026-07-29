@@ -8,9 +8,31 @@ import { getAuth, signInWithCredential, GoogleAuthProvider, OAuthProvider } from
 import { AuthService } from '../../services/auth.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { AuthSessionCleanupService } from '../../services/auth-session-cleanup.service';
+import { CrashlyticsService } from '../../services/crashlytics.service';
 import { OnboardingStateService } from '../../services/onboarding-state.service';
 
 type OAuthProviderName = 'google' | 'apple';
+
+type GoogleOAuthProfile = {
+  provider: 'google';
+  providerId: string;
+  email: string;
+  name: string;
+  avatarUrl: string;
+  idToken: string;
+  accessToken?: string;
+  serverAuthCode?: string;
+};
+
+type OAuthSignupSessionData = {
+  email: string;
+  name: string;
+  avatarUrl: string;
+  providerId: string;
+  idToken?: string;
+  accessToken?: string;
+  serverAuthCode?: string;
+};
 
 @Component({
   selector: 'social-media',
@@ -40,6 +62,7 @@ export class SocialMediaComponent implements OnInit {
     private alertCtrl: AlertController,
     private analytics: AnalyticsService,
     private authSessionCleanup: AuthSessionCleanupService,
+    private crashlytics: CrashlyticsService,
     private onboardingState: OnboardingStateService
   ) {}
 
@@ -83,39 +106,33 @@ export class SocialMediaComponent implements OnInit {
     if (this.isSocialLoginInProgress) return;
     this.isSocialLoginInProgress = true;
 
-    const loading = await this.loadingCtrl.create({ message: 'Signing in with Google…' });
+    const loading = await this.loadingCtrl.create({ message: 'Signing in with Google...' });
     await loading.present();
 
     try {
       await this.authSessionCleanup.prepareGoogleSignIn();
 
       const googleUser = await GoogleAuth.signIn();
-      console.log('[SocialMedia] Google user:', JSON.stringify(googleUser));
+      const googleProfile = this.buildGoogleOAuthProfile(googleUser);
+      console.log('[SocialMedia] Google user:', JSON.stringify({
+        ...googleProfile,
+        idToken: googleProfile.idToken ? '[present]' : '[missing]',
+        accessToken: googleProfile.accessToken ? '[present]' : '[missing]',
+        serverAuthCode: googleProfile.serverAuthCode ? '[present]' : '[missing]'
+      }));
 
       // Register the user in Firebase Authentication so they appear in the
       // Firebase console. This is independent of the backend auth flow and
       // fails silently if Firebase is not yet initialized.
       await this.registerWithFirebaseAuth(googleUser);
 
-      const providerId = googleUser.id;
-      const email = googleUser.email;
-      const name = googleUser.name || `${googleUser.givenName || ''} ${googleUser.familyName || ''}`.trim();
-      const avatarUrl = googleUser.imageUrl || '';
-
-      if (!providerId || !email) {
-        throw new Error('Google sign-in did not return user ID or email.');
-      }
-
-      // Step 1: check if email is already registered
-      this.authService.checkEmailExists(email).subscribe({
+      this.authService.checkEmailExists(googleProfile.email).subscribe({
         next: (res) => {
           if (res.exists) {
-            // Existing user — login via oauth2-login and go to dashboard
-            this.loginWithOAuthProfile({ provider: 'google', providerId, email, name, avatarUrl }, loading, 'google');
+            this.loginWithOAuthProfile(googleProfile, loading, 'google');
           } else {
-            // New user — store Google data, do NOT log in yet, go to step 1
             void this.finishSocialLogin(loading);
-            this.storeOAuthSignupSession('google', { email, name, avatarUrl, providerId });
+            this.storeOAuthSignupSession('google', googleProfile);
             this.analytics.logSignUp('google');
             this.router.navigate(['home/sign-up'], { queryParams: { step: 1 }, replaceUrl: true });
           }
@@ -123,6 +140,10 @@ export class SocialMediaComponent implements OnInit {
         error: async (err) => {
           await this.finishSocialLogin(loading);
           console.error('[SocialMedia] Email check error:', err);
+          this.crashlytics.recordException(err, {
+            provider: 'google',
+            stage: 'checkEmailExists'
+          });
           const toast = await this.toastCtrl.create({
             message: 'Unable to verify account. Please try again.',
             duration: 3000,
@@ -133,17 +154,20 @@ export class SocialMediaComponent implements OnInit {
       });
     } catch (err: any) {
       await this.finishSocialLogin(loading);
-      console.error('[SocialMedia] Google signIn error:', err?.message, err?.code, err?.error);
-      // Android error code 12501 = user cancelled; also check string messages
-      const cancelled = err?.code === 12501
-        || err?.error === 'popup_closed_by_user'
-        || err?.message === 'The user canceled the sign-in flow.'
-        || err?.message?.includes('canceled')
-        || err?.message?.includes('cancelled');
-      if (!cancelled) {
+      const normalizedError = this.normalizeGoogleSignInError(err);
+      console.error('[SocialMedia] Google signIn error:', normalizedError.debugDetails, err);
+      this.crashlytics.log(`[Google Sign-In] ${normalizedError.debugDetails}`);
+      this.crashlytics.recordException(err, {
+        provider: 'google',
+        stage: 'signIn',
+        code: normalizedError.code || '',
+        message: normalizedError.message
+      });
+
+      if (!normalizedError.cancelled) {
         const toast = await this.toastCtrl.create({
-          message: err?.message || 'Google sign-in failed. Please try again.',
-          duration: 3000,
+          message: normalizedError.userMessage,
+          duration: 4500,
           position: 'bottom'
         });
         await toast.present();
@@ -159,7 +183,7 @@ export class SocialMediaComponent implements OnInit {
     if (this.isSocialLoginInProgress) return;
     this.isSocialLoginInProgress = true;
 
-    const loading = await this.loadingCtrl.create({ message: 'Signing in with Apple…' });
+    const loading = await this.loadingCtrl.create({ message: 'Signing in with Apple...' });
     await loading.present();
 
     try {
@@ -183,7 +207,6 @@ export class SocialMediaComponent implements OnInit {
       const familyName = appleUser.familyName || '';
       const name = [givenName, familyName].filter(Boolean).join(' ') || email || 'Apple User';
 
-      // Register in Firebase Auth (non-fatal)
       try {
         if (getApps().length) {
           const provider = new OAuthProvider('apple.com');
@@ -200,13 +223,6 @@ export class SocialMediaComponent implements OnInit {
 
       const appleProfile = { provider: 'apple', providerId, email, name, avatarUrl: '' };
 
-      // Apple only returns email/name on the very first authorization a user
-      // ever grants this app — every later sign-in returns neither, by Apple's
-      // own design. If we don't have an email this time, try logging in by
-      // providerId alone first (a genuine returning user, handled silently);
-      // only if no linked account exists do we ask for an email, so the user
-      // isn't dead-ended. Apple's Sign In HIG forbids re-asking for data Apple
-      // already supplied — it does not forbid asking for data it withheld.
       if (!email) {
         this.attemptAppleProviderLogin(appleProfile, loading);
         return;
@@ -227,7 +243,8 @@ export class SocialMediaComponent implements OnInit {
           await this.finishSocialLogin(loading);
           const toast = await this.toastCtrl.create({
             message: 'Unable to verify account. Please try again.',
-            duration: 3000, position: 'bottom'
+            duration: 3000,
+            position: 'bottom'
           });
           await toast.present();
         }
@@ -238,7 +255,8 @@ export class SocialMediaComponent implements OnInit {
       if (!cancelled) {
         const toast = await this.toastCtrl.create({
           message: err?.message || 'Apple sign-in failed. Please try again.',
-          duration: 3000, position: 'bottom'
+          duration: 3000,
+          position: 'bottom'
         });
         await toast.present();
       }
@@ -286,7 +304,7 @@ export class SocialMediaComponent implements OnInit {
           handler: (data) => {
             const email = (data?.email || '').trim();
             if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-              return false; // invalid — keep the alert open
+              return false;
             }
             this.storeOAuthSignupSession('apple', { email, name: name || email, avatarUrl: '', providerId });
             this.analytics.logSignUp('apple');
@@ -317,10 +335,6 @@ export class SocialMediaComponent implements OnInit {
           this.analytics.logLogin(provider);
           this.analytics.setUserId(String(userId));
 
-          // Incomplete onboarding always wins over the dashboard — mirrors
-          // the same check LoginComponent does for email/password login, so
-          // an account that exists but never finished registration resumes
-          // at the right step instead of landing on the dashboard.
           const onboardingResume = this.onboardingState.getResumeNavigation(response.user);
           if (onboardingResume) {
             this.router.navigate([onboardingResume.url], {
@@ -340,14 +354,20 @@ export class SocialMediaComponent implements OnInit {
       error: async (err) => {
         await this.finishSocialLogin(loading);
         console.error('[SocialMedia] OAuth login error:', err);
-        await this.presentToast(err?.error?.message || fallbackMessage || `${this.getProviderLabel(provider)} sign-in failed. Please try again.`);
+        this.crashlytics.recordException(err, {
+          provider,
+          stage: 'oauthLogin'
+        });
+        await this.presentToast(
+          err?.error?.message || fallbackMessage || `${this.getProviderLabel(provider)} sign-in failed. Please try again.`
+        );
       }
     });
   }
 
   private storeOAuthSignupSession(
     provider: OAuthProviderName,
-    data: { email: string; name: string; avatarUrl: string; providerId: string }
+    data: OAuthSignupSessionData
   ): void {
     try {
       sessionStorage.setItem('signup_via_google', 'true');
@@ -357,6 +377,25 @@ export class SocialMediaComponent implements OnInit {
       sessionStorage.setItem('google_signup_name', data.name);
       sessionStorage.setItem('google_signup_avatar', data.avatarUrl);
       sessionStorage.setItem('google_signup_provider_id', data.providerId);
+
+      if (data.idToken) {
+        sessionStorage.setItem('oauth_signup_id_token', data.idToken);
+      } else {
+        sessionStorage.removeItem('oauth_signup_id_token');
+      }
+
+      if (data.accessToken) {
+        sessionStorage.setItem('oauth_signup_access_token', data.accessToken);
+      } else {
+        sessionStorage.removeItem('oauth_signup_access_token');
+      }
+
+      if (data.serverAuthCode) {
+        sessionStorage.setItem('oauth_signup_server_auth_code', data.serverAuthCode);
+      } else {
+        sessionStorage.removeItem('oauth_signup_server_auth_code');
+      }
+
       sessionStorage.setItem('requestedIdentifier', data.email);
     } catch (e) {}
   }
@@ -379,6 +418,82 @@ export class SocialMediaComponent implements OnInit {
 
   private getProviderLabel(provider: OAuthProviderName): string {
     return provider === 'apple' ? 'Apple' : 'Google';
+  }
+
+  private buildGoogleOAuthProfile(googleUser: any): GoogleOAuthProfile {
+    const providerId = String(googleUser?.id || '').trim();
+    const email = String(googleUser?.email || '').trim();
+    const name = String(
+      googleUser?.name || `${googleUser?.givenName || ''} ${googleUser?.familyName || ''}`
+    ).trim();
+    const avatarUrl = String(googleUser?.imageUrl || '').trim();
+    const idToken = String(googleUser?.authentication?.idToken || googleUser?.idToken || '').trim();
+    const accessToken = String(googleUser?.authentication?.accessToken || '').trim();
+    const serverAuthCode = String(googleUser?.serverAuthCode || '').trim();
+
+    if (!providerId || !email) {
+      throw new Error('Google sign-in did not return user ID or email.');
+    }
+
+    if (!idToken) {
+      throw new Error(
+        'Google sign-in did not return an ID token. Please verify the Google OAuth configuration.'
+      );
+    }
+
+    return {
+      provider: 'google',
+      providerId,
+      email,
+      name: name || email,
+      avatarUrl,
+      idToken,
+      ...(accessToken ? { accessToken } : {}),
+      ...(serverAuthCode ? { serverAuthCode } : {})
+    };
+  }
+
+  private normalizeGoogleSignInError(err: any): {
+    cancelled: boolean;
+    code: string;
+    message: string;
+    userMessage: string;
+    debugDetails: string;
+  } {
+    const rawCode = err?.code ?? err?.errorCode ?? err?.status ?? '';
+    const code = String(rawCode || '').trim();
+    const message = String(err?.message || err?.error || 'Google sign-in failed').trim();
+    const lowerMessage = message.toLowerCase();
+    const cancelled = code === '12501'
+      || err?.error === 'popup_closed_by_user'
+      || lowerMessage.includes('canceled')
+      || lowerMessage.includes('cancelled')
+      || lowerMessage.includes('closed by user');
+
+    let userMessage = message || 'Google sign-in failed. Please try again.';
+    if (!cancelled) {
+      if (code === '10' || lowerMessage.includes('developer error')) {
+        userMessage = 'Google sign-in configuration error (code 10). Please check the package name, SHA certificate, and Google OAuth client IDs.';
+      } else if (code === '7') {
+        userMessage = 'Google sign-in could not connect to Google services (code 7). Please check the network and try again.';
+      } else if (code === '12500') {
+        userMessage = 'Google sign-in failed because the current app build is not authorized correctly (code 12500). Please verify the Google OAuth setup.';
+      } else if (lowerMessage.includes('access token')) {
+        userMessage = 'Google sign-in could not retrieve the access token correctly. Please try again.';
+      } else if (code) {
+        userMessage = `Google sign-in failed (code ${code}). ${message}`;
+      } else if (message === 'Something went wrong') {
+        userMessage = 'Google sign-in failed before the token could be verified. Please try again.';
+      }
+    }
+
+    return {
+      cancelled,
+      code,
+      message,
+      userMessage,
+      debugDetails: `code=${code || 'n/a'} message=${message}`
+    };
   }
 
   /**
@@ -405,7 +520,6 @@ export class SocialMediaComponent implements OnInit {
       const result = await signInWithCredential(auth, credential);
       console.log('[SocialMedia] Firebase Auth: signed in as', result.user.email);
     } catch (error: any) {
-      // auth/invalid-credential or network errors — never break the sign-in flow
       console.warn('[SocialMedia] Firebase signInWithCredential failed (non-fatal):', error?.code ?? error);
     }
   }

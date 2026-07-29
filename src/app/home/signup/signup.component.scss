@@ -1115,6 +1115,8 @@ superme-navigator.signup-navigator {
 
 .pet-card {
   position: relative;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   aspect-ratio: 1220 / 1920;
   overflow: hidden;
@@ -1139,9 +1141,7 @@ swiper-slide.swiper-slide-active .pet-card {
    is centered in the carousel while swiping). Matches the selected-state
    border language used elsewhere in this flow (gender buttons, etc). */
 .pet-card--selected {
-  outline: 3px solid #7341a7;
-  outline-offset: -3px;
-  box-shadow: 0 0 0 3px rgba(115, 65, 167, 0.18);
+  box-shadow: 0 8px 24px rgba(115, 65, 167, 0.16);
 }
 
 .pet-card-check {
@@ -1164,7 +1164,49 @@ swiper-slide.swiper-slide-active .pet-card {
   display: block;
   width: 100%;
   height: 100%;
+  max-width: 92%;
+  max-height: 100%;
   object-fit: contain;
+  object-position: center bottom;
+}
+
+.pet-card-copy {
+  position: relative;
+  z-index: 2;
+  padding: clamp(22px, 4vw, 28px) clamp(24px, 4.6vw, 34px) 0;
+
+  h2 {
+    margin: 0 0 14px;
+    color: #282527;
+    font-family: var(--font-heading);
+    font-size: clamp(18px, 4.2vw, 28px);
+    font-weight: 700;
+    line-height: 1.12;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 18px;
+    color: rgba(40, 37, 39, 0.88);
+    font-family: var(--font-sans);
+    font-size: clamp(12px, 3.1vw, 17px);
+    font-weight: 500;
+    line-height: 1.45;
+  }
+
+  li + li {
+    margin-top: 8px;
+  }
+}
+
+.pet-card-figure {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 8px clamp(16px, 4vw, 30px) clamp(14px, 3vw, 24px);
 }
 
 .pet-card-accessible-copy {
@@ -1210,6 +1252,32 @@ swiper-slide.swiper-slide-active .pet-card {
 
   .pet-step-next {
     margin-top: 22px;
+  }
+
+  .pet-card-copy {
+    padding: 18px 18px 0;
+
+    h2 {
+      margin-bottom: 10px;
+      font-size: 17px;
+    }
+
+    ul {
+      padding-left: 16px;
+      font-size: 12px;
+    }
+
+    li + li {
+      margin-top: 6px;
+    }
+  }
+
+  .pet-card-figure {
+    padding: 4px 12px 18px;
+  }
+
+  .pet-card-art {
+    max-width: 96%;
   }
 }
 

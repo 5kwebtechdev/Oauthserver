@@ -9,6 +9,7 @@ import { VibesDisplayResponse } from '../../models/mood.model';
 import { AuthService } from '../../services/auth.service';
 
 export interface MoodOption { key: string; label: string; emoji?: string }
+type PopupMoodOption = { src: string; label: string; vibe: string; art: string };
 
 @Component({
   selector: 'mood-selector',
@@ -35,24 +36,40 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
   blockedTooltipVisible = false;
   private blockedTooltipTimer: any = null;
 
+  private readonly neutralAsset = 'assets/Images-Transparent/Mood-emoji-neutral-home.png';
+
   // Mood to asset mapping (backend mood -> asset path)
   private readonly moodAssetMap: Record<string, string> = {
-    'HAPPY': 'assets/figma/child-home/mood-happy.png',
-    'VERY HAPPY': 'assets/figma/child-home/mood-excited.png',
-    'SAD': 'assets/figma/child-home/mood-sad.png',
-    'NERVOUS': 'assets/figma/child-home/mood-anxious.png',
+    'HAPPY': 'assets/Images-Transparent/Image-Mood-Happy.png',
+    'VERY HAPPY': 'assets/Images-Transparent/Image-Mood-Very happy.png',
+    'EXCITED': 'assets/Images-Transparent/Image-Mood-Excited.png',
+    'NERVOUS': 'assets/Images-Transparent/Image-Mood-Nervous.png',
+    'ANXIOUS': 'assets/Images-Transparent/Image-Mood-Nervous.png',
+    'SAD': 'assets/Images-Transparent/Image-Mood-Sad.png',
     'UPSET': 'assets/figma/child-home/mood-frustrated.png',
-    'EXCITED': 'assets/figma/child-home/mood-excited.png',
-    'NEUTRAL': 'assets/Images-Transparent/Mood-emoji-neutral-home.png'
+    'FRUSTRATED': 'assets/figma/child-home/mood-frustrated.png',
+    'NEUTRAL': this.neutralAsset
+  };
+
+  private readonly moodLabelMap: Record<string, string> = {
+    'HAPPY': 'Happy',
+    'VERY HAPPY': 'Very Happy',
+    'EXCITED': 'Excited',
+    'NERVOUS': 'Anxious',
+    'ANXIOUS': 'Anxious',
+    'SAD': 'Sad',
+    'UPSET': 'Frustrated',
+    'FRUSTRATED': 'Frustrated',
+    'NEUTRAL': 'Neutral'
   };
 
   // Popup options - Neutral is NOT shown in popup, only as default
-  popupOptions = [
-    { src: 'assets/figma/child-home/mood-happy.png', label: 'Happy', vibe: 'HAPPY' },
-    { src: 'assets/figma/child-home/mood-excited.png', label: 'Excited', vibe: 'EXCITED' },
-    { src: 'assets/figma/child-home/mood-anxious.png', label: 'Anxious', vibe: 'NERVOUS' },
-    { src: 'assets/figma/child-home/mood-sad.png', label: 'Sad', vibe: 'SAD' },
-    { src: 'assets/figma/child-home/mood-frustrated.png', label: 'Frustrated', vibe: 'UPSET' }
+  popupOptions: PopupMoodOption[] = [
+    { src: 'assets/Images-Transparent/Image-Mood-Happy.png', label: 'Happy', vibe: 'HAPPY', art: 'happy' },
+    { src: 'assets/Images-Transparent/Image-Mood-Excited.png', label: 'Excited', vibe: 'EXCITED', art: 'excited' },
+    { src: 'assets/Images-Transparent/Image-Mood-Nervous.png', label: 'Anxious', vibe: 'NERVOUS', art: 'anxious' },
+    { src: 'assets/Images-Transparent/Image-Mood-Sad.png', label: 'Sad', vibe: 'SAD', art: 'sad' },
+    { src: 'assets/figma/child-home/mood-frustrated.png', label: 'Frustrated', vibe: 'UPSET', art: 'frustrated' }
   ];
 
   ngOnInit() {
@@ -135,13 +152,28 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
     this.popupSelection = src;
   }
 
+  /**
+   * Keep the selected treatment in sync with both a newly tapped option and
+   * the mood currently returned by the API. This makes the active mood clear
+   * when the card is reopened without changing the server-side selection flow.
+   */
+  isMoodSelected(option: { src: string }): boolean {
+    return this.popupSelection
+      ? this.popupSelection === option.src
+      : this.displayAssetSrc === option.src;
+  }
+
   // Big preview circle: shows the tapped option, falling back to today's current/neutral mood
   get popupPreviewSrc(): string {
-    return this.popupSelection || this.displayAssetSrc || this.moodAssetMap['NEUTRAL'];
+    return this.popupSelection || this.displayAssetSrc || this.neutralAsset;
   }
   get popupPreviewLabel(): string {
     const opt = this.popupOptions.find(p => p.src === this.popupSelection);
-    return opt?.label || 'Neutral';
+    if (opt?.label) {
+      return opt.label;
+    }
+    const moodKey = (this.activeVibe?.mood || 'NEUTRAL').toUpperCase();
+    return this.moodLabelMap[moodKey] || 'Neutral';
   }
 
   showBlockedTooltip() {
@@ -230,7 +262,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
   get displayAssetSrc(): string | null {
     const active = this.activeAssetSrc;
     if (active) return active;
-    return this.moodAssetMap['NEUTRAL'] || null;
+    return this.neutralAsset || null;
   }
 
   get activeEmoji() {
@@ -242,7 +274,8 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
   get activeLabel() {
     const vibe = this.activeVibe;
     if (vibe && vibe.mood) {
-      return vibe.mood;
+      const moodUpper = String(vibe.mood).toUpperCase();
+      return this.moodLabelMap[moodUpper] || vibe.mood;
     }
     const m = this.options.find(x => x.key === this.value) || this.options[0];
     return m?.label || '';
@@ -269,6 +302,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
   }
 
   trackByUserId = (_: number, item: VibesDisplayResponse) => item?.userId ?? _;
+  trackByMood = (_: number, item: PopupMoodOption) => item.vibe;
 
   // Check if user can set vibe (for UI indicators)
   get canSetVibe(): boolean {

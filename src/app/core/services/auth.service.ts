@@ -326,9 +326,9 @@ export class AuthService {
     // Store full user data and notify all subscribers
     this.setUserData(authResponse.user);
     const onboardingStep = this.onboardingState.getOnboardingStep(authResponse.user);
-    if (onboardingStep && onboardingStep < 6) {
+    if (onboardingStep && onboardingStep < 7) {
       this.onboardingState.saveRegistrationDraft(authResponse.user, onboardingStep);
-    } else if (onboardingStep && onboardingStep >= 6) {
+    } else if (onboardingStep && onboardingStep >= 7) {
       this.onboardingState.clearRegistrationDraft();
     } else {
       // Older completed-user responses may omit onboardingStep entirely.
@@ -1088,9 +1088,9 @@ export class AuthService {
             };
             this.setUserData(updatedData);
             const onboardingStep = this.onboardingState.getOnboardingStep(updatedData);
-            if (onboardingStep && onboardingStep < 6) {
+            if (onboardingStep && onboardingStep < 7) {
               this.onboardingState.saveRegistrationDraft(updatedData, onboardingStep);
-            } else if (onboardingStep && onboardingStep >= 6) {
+            } else if (onboardingStep && onboardingStep >= 7) {
               this.onboardingState.clearRegistrationDraft();
             }
 
