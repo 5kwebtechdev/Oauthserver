@@ -77,7 +77,8 @@ export class EditProfileComponent implements OnInit, OnDestroy {
 
   // Form with proper validators
   profileForm = new FormGroup({
-    dob: new FormControl<string | null>(null, [Validators.required]),
+    // Date of birth is optional — user can update their profile without it.
+    dob: new FormControl<string | null>(null, []),
     // Phone is optional now — user can update profile without providing phone
     phone: new FormControl<string | null>(null, []),
     email: new FormControl<string | null>(null, [Validators.required, Validators.email]),
@@ -508,15 +509,8 @@ export class EditProfileComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.profileForm.get('dob')?.value) {
-      this.coreService.triggerToasrt('Please enter your date of birth');
-      return;
-    }
-
-    if (!this.gender) {
-      this.coreService.triggerToasrt('Please select your gender');
-      return;
-    }
+    // Date of birth and gender are optional — users may save their profile
+    // without providing them, and add them later if they choose to.
 
     const phoneValue = this.profileForm.get('phone')?.value;
     // Phone is optional: validate only when user has entered a phone
@@ -624,13 +618,16 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     if (!this.initialValues) {
       // If we don't have initial values, be conservative and send everything
       const phoneRaw = (this.profileForm.get('phone')?.value || '').replace(/\D/g, '');
+      const dobRaw = this.profileForm.get('dob')?.value;
       const base: any = {
         name: this.fullName?.trim(),
-        dateOfBirth: this.formatDateForBackend(this.profileForm.get('dob')!.value!),
         gender: this.gender ? this.toApiGender(this.gender) : undefined,
         email: this.profileForm.get('email')!.value!.trim(),
         ...(this.avatarSelected ? { avatarName: `avatar${this.avatarSelected}` } : {}),
       };
+      if (dobRaw) {
+        base.dateOfBirth = this.formatDateForBackend(dobRaw);
+      }
       if (phoneRaw) {
         base.phone = `${this.selectedCountry.code}${phoneRaw}`;
       }
@@ -1030,11 +1027,11 @@ export class EditProfileComponent implements OnInit, OnDestroy {
     // Full name: required, max 40 chars
     if (!this.fullName?.trim() || this.showFullNameError) return true;
 
-    // Date of birth: required, no age constraint error
-    if (!this.profileForm.get('dob')?.value || !!this.ageError) return true;
+    // Date of birth: optional — only block saving if an entered value fails
+    // the age-range check, not for being empty.
+    if (this.profileForm.get('dob')?.value && !!this.ageError) return true;
 
-    // Gender: required
-    if (!this.gender) return true;
+    // Gender: optional
 
     // Phone: optional — validate only when a value is present
     const phone = this.profileForm.get('phone')?.value;

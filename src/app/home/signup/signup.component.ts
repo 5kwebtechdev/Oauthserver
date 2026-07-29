@@ -156,6 +156,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   // track active slide index so UI can react (e.g. enable button only on first slide)
   public currentSlideIndex: number = 0;
+  // The user's confirmed pet choice — set only by an explicit tap, never by
+  // swiping. Distinct from currentSlideIndex (just "what's centered right
+  // now") so the UI can clearly show which pet is actually selected.
+  public selectedPetIndex: number | null = null;
 
   images = [
     'https://picsum.photos/id/1011/600/400',
@@ -215,20 +219,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
       this.currentImage = storedIndex >= 0 ? this.pets[storedIndex] : null;
       this.currentSlideIndex = storedIndex;
+      this.selectedPetIndex = storedIndex >= 0 ? storedIndex : null;
       if (storedIndex >= 0) {
         swiperInstance?.slideTo(storedIndex, 0);
       }
     });
 
+    // Swiping only moves which card is centered — it does NOT select a pet.
+    // Selection happens exclusively via an explicit tap (selectPet()).
     swiperEl.addEventListener('swiperslidechange', () => {
       const swiperInstance = swiperEl.swiper;
-      const realIndex = swiperInstance.realIndex;
-      this.currentImage = this.pets[realIndex];
-      this.currentSlideIndex = realIndex;
-      // Store the selected pet name whenever it changes
-      try {
-        sessionStorage.setItem('signup_pet', this.pets[realIndex].apiName);
-      } catch (e) { }
+      this.currentSlideIndex = swiperInstance.realIndex;
     });
   }
 
@@ -361,7 +362,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.usernameRulesValidator()
       ]],
       phone: ['', []],
-      dob: ['', [Validators.required]],
+      // Optional — Apple/Google sign-in never supplies this, and Apple's
+      // App Review flagged requiring it as a Sign In with Apple violation.
+      dob: ['', []],
     })
 
     this.passwordForm = this.fb.group({
@@ -441,9 +444,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
             const idx = this.pets.findIndex(p => p.apiName === petFromSession || p.name === petFromSession);
             this.currentImage = idx >= 0 ? this.pets[idx] : null;
             this.currentSlideIndex = idx;
+            this.selectedPetIndex = idx >= 0 ? idx : null;
           } else {
             this.currentImage = null;
             this.currentSlideIndex = -1;
+            this.selectedPetIndex = null;
           }
 
           // If swiper instance exists, move it to the stored pet index
@@ -499,7 +504,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.name?.invalid || this.dob()?.invalid) return true;
     if (this.currentRole !== 'parent' && this.username?.invalid) return true;
     if (this.currentRole !== 'parent' && this.usernameAvailability !== 'available') return true;
-    if (!this.gender) return true;
+    // Gender, date of birth, and phone are optional — Apple App Review
+    // rejected requiring personal details beyond what Sign In with Apple
+    // provides, and users can add these later from the Profile screen.
     if (this.currentRole !== 'parent' && !this.avatarSelected) return true;
     return false;
   }
@@ -893,15 +900,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     // If we're currently on the pet selection step (step 4), persist selected pet and navigate to welcome step
     if (this.step === 4) {
-      const swiperInstance = this.swiperRef?.nativeElement?.swiper;
-
-      let selectedPetName;
-      if (swiperInstance) {
-        const currentIndex = swiperInstance.realIndex;
-        selectedPetName = this.pets[currentIndex]?.apiName;
-      } else {
-        selectedPetName = this.currentImage?.apiName;
-      }
+      // Use the user's explicit tap-selection — never the carousel's current
+      // scroll position, which can drift away from what was actually chosen
+      // if the user swipes to browse after selecting.
+      let selectedPetName = this.selectedPetIndex !== null
+        ? this.pets[this.selectedPetIndex]?.apiName
+        : this.currentImage?.apiName;
 
       // If still no pet name, check session storage
       if (!selectedPetName) {
@@ -977,11 +981,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
     }
 
-    // If no age provided, require age input
-    if (age === null) {
-      this.core.triggerToasrt('Please enter your date of birth');
-      return;
-    }
+    // Date of birth is optional — no age gate here beyond the under-8 check above.
 
     // persist profile details in session (name, dob, gender, avatar/initial)
     try {
@@ -1022,15 +1022,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
-    if (this.profileForm.get('dob')?.invalid) {
-      this.core.triggerToasrt('Please enter your date of birth');
-      return;
-    }
-
-    if (!this.gender) {
-      this.core.triggerToasrt('Please select your gender');
-      return;
-    }
+    // Date of birth and gender are optional — not required to continue.
 
     // Skip avatar requirement for parent; require for others
     if (this.currentRole !== 'parent' && !this.avatarSelected) {
@@ -1042,14 +1034,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const parsedDob = dobVal ? new Date(dobVal) : null;
     const age = parsedDob ? this.calculateAge(parsedDob) : null;
 
-    // If user is under 8 years old, show access restricted popup
+    // If user is under 8 years old, show access restricted popup. Only
+    // applies when a date of birth was actually provided — dob is optional.
     if (age !== null && age < 8) {
       this.showAccessRestrictedModal = true;
-      return;
-    }
-
-    if (age === null) {
-      this.core.triggerToasrt('Please enter your date of birth');
       return;
     }
 
@@ -1228,6 +1216,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
   }
 
+  // Swiping only tracks which card is centered for the carousel's visual
+  // state — it does NOT select a pet. Selection happens exclusively via an
+  // explicit tap (selectPet()).
   onSlideChange() {
     if (!this.swiperRef?.nativeElement) {
       return;
@@ -1235,18 +1226,29 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     const swiperInstance = this.swiperRef.nativeElement.swiper;
     if (swiperInstance) {
-      const currentIndex = swiperInstance.realIndex;
-
-      this.currentImage = this.pets[currentIndex];
-      this.currentSlideIndex = currentIndex;
-
-      // Keep the backend filename in session so every pet survives navigation.
-      if (this.pets[currentIndex]) {
-        const petName = this.pets[currentIndex].apiName;
-        sessionStorage.setItem('signup_pet', petName);
-      }
-    } else {
+      this.currentSlideIndex = swiperInstance.realIndex;
     }
+  }
+
+  /**
+   * Explicitly confirm a pet as the user's choice (tap-to-select). Centers
+   * the tapped card, marks it as selected, and persists the choice — but
+   * never calls the registration API; that only happens on "Next".
+   */
+  selectPet(index: number): void {
+    const pet = this.pets[index];
+    if (!pet) return;
+
+    this.selectedPetIndex = index;
+    this.currentImage = pet;
+    this.currentSlideIndex = index;
+
+    try {
+      sessionStorage.setItem('signup_pet', pet.apiName);
+    } catch (e) { }
+
+    const swiperInstance = this.swiperRef?.nativeElement?.swiper;
+    swiperInstance?.slideTo(index);
   }
 
   openBirthdayPickerNow() {
@@ -1291,7 +1293,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
   }
 
-  private getAgeSuggestionRoles(role: SignupRole, age: number): SignupRole[] {
+  private getAgeSuggestionRoles(role: SignupRole, age: number | null): SignupRole[] {
+    // No date of birth provided (it's optional) — nothing to suggest.
+    if (age === null) return [];
+
     if (role === 'child') {
       if (age >= 25) {
         return ['self', 'parent'];
@@ -2266,10 +2271,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const avatarNameValue = avatarKey ? `avatar${avatarKey}` : undefined;
     const avatarImageNameValue = avatarKey ? `Avatar ${Number(avatarKey)}` : undefined;
 
+    // Optional — omit entirely rather than defaulting to a value the user
+    // never actually chose (toApiGender() always resolves to a real enum).
+    const genderValue = profile.gender || this.gender;
+
     const payload: any = {
       name: profile.name || this.profileForm.get('name')?.value,
       username: profile.username || this.profileForm.get('username')?.value || undefined,
-      gender: toApiGender(profile.gender || this.gender),
+      ...(genderValue ? { gender: toApiGender(genderValue) } : {}),
       relationship: (role || '').toUpperCase(),
       password: password || undefined,
       avatarName: avatarNameValue,
@@ -2321,22 +2330,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // Include selected pet name if available (from session or current selection)
     try {
 
-      // Try to get current swiper selection first
-      let petName;
-      const swiperInstance = this.swiperRef?.nativeElement?.swiper;
-      if (swiperInstance) {
-        const currentIndex = swiperInstance.realIndex;
-        petName = this.pets[currentIndex]?.apiName;
-      }
+      // Use the user's explicit tap-selection — never the carousel's current
+      // scroll position, which can drift away from what was actually chosen
+      // if the user swipes to browse after selecting.
+      let petName = this.selectedPetIndex !== null
+        ? this.pets[this.selectedPetIndex]?.apiName
+        : this.currentImage?.apiName;
 
-      // If no pet from swiper, try session storage
+      // If no explicit selection in memory, fall back to session storage
       if (!petName) {
         petName = sessionStorage.getItem('signup_pet');
-      }
-
-      // If still no pet, try current image
-      if (!petName && this.currentImage) {
-        petName = this.currentImage.apiName;
       }
 
       if (petName && role !== 'parent') {
@@ -2552,11 +2555,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       name:            profile.name || this.profileForm.get('name')?.value || sessionStorage.getItem('google_signup_name'),
       avatarUrl,
       role:            role.toUpperCase(),          // backend uses "role", not "relationship"
-      gender:          toApiGender(profile.gender || this.gender),
       avatarName:      avatarKey ? `avatar${avatarKey}` : undefined,
       avatarImageName,
       referralCode:    sessionStorage.getItem('referralCode') || null
     };
+
+    // Gender and DOB are optional — Apple/Google never supply them, and
+    // Sign In with Apple review requires we don't force them.
+    const oauthGenderValue = profile.gender || this.gender;
+    if (oauthGenderValue) {
+      googlePayload.gender = toApiGender(oauthGenderValue);
+    }
 
     // Use field name "dob" as expected by oauth2-login endpoint
     const dobValue = profile.dob || this.profileForm.get('dob')?.value;
@@ -2675,10 +2684,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // of 'child' just additionally sets asChild:true, marking them "pending"
     // until they separately link to a family post-login via
     // /family/convert-to-child. No familyCode/familyRole is ever sent here.
+    // Optional — omit entirely rather than defaulting to a value the user
+    // never actually chose (toApiGender() always resolves to a real enum).
+    const genderValue2 = profile.gender || persistedDraft.gender || this.gender;
+
     const payload: any = {
       name: profile.name || persistedDraft.name || this.profileForm.get('name')?.value,
       username: profile.username || persistedDraft.username || this.profileForm.get('username')?.value || undefined,
-      gender: toApiGender(profile.gender || persistedDraft.gender || this.gender),
+      ...(genderValue2 ? { gender: toApiGender(genderValue2) } : {}),
       relationship: 'SELF',
       password: password || undefined,
       avatarName: avatarNameValue2,
@@ -3130,10 +3143,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       const petIndex = this.pets.findIndex(p => p.apiName === petName || p.name === petName);
       this.currentImage = petIndex >= 0 ? this.pets[petIndex] : null;
       this.currentSlideIndex = petIndex;
+      this.selectedPetIndex = petIndex >= 0 ? petIndex : null;
       try { sessionStorage.setItem('signup_pet', petName); } catch {}
     } else if (petName === null) {
       this.currentImage = null;
       this.currentSlideIndex = -1;
+      this.selectedPetIndex = null;
       try { sessionStorage.removeItem('signup_pet'); } catch {}
     }
 
