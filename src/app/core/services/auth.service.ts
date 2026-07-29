@@ -542,7 +542,7 @@ export class AuthService {
     isEmail: boolean,
     countryCode?: string
   ): Observable<RegistrationOtpResponse> {
-    const url = `${this.apiUrl}/auth/register/verify-otp`;
+    const url = `${this.apiUrl}/api/auth/verify-otp`;
 
     const headers = environment.apiAuthToken ? new HttpHeaders({
       Authorization: environment.apiAuthToken,
