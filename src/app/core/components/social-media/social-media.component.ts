@@ -8,6 +8,7 @@ import { getAuth, signInWithCredential, GoogleAuthProvider, OAuthProvider } from
 import { AuthService } from '../../services/auth.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { AuthSessionCleanupService } from '../../services/auth-session-cleanup.service';
+import { OnboardingStateService } from '../../services/onboarding-state.service';
 
 type OAuthProviderName = 'google' | 'apple';
 
@@ -38,7 +39,8 @@ export class SocialMediaComponent implements OnInit {
     private toastCtrl: ToastController,
     private alertCtrl: AlertController,
     private analytics: AnalyticsService,
-    private authSessionCleanup: AuthSessionCleanupService
+    private authSessionCleanup: AuthSessionCleanupService,
+    private onboardingState: OnboardingStateService
   ) {}
 
   ngOnInit() {
@@ -314,7 +316,21 @@ export class SocialMediaComponent implements OnInit {
           );
           this.analytics.logLogin(provider);
           this.analytics.setUserId(String(userId));
-          this.router.navigate([this.authService.getDashboardRoute()], { replaceUrl: true });
+
+          // Incomplete onboarding always wins over the dashboard — mirrors
+          // the same check LoginComponent does for email/password login, so
+          // an account that exists but never finished registration resumes
+          // at the right step instead of landing on the dashboard.
+          const onboardingResume = this.onboardingState.getResumeNavigation(response.user);
+          if (onboardingResume) {
+            this.router.navigate([onboardingResume.url], {
+              queryParams: onboardingResume.queryParams,
+              replaceUrl: true
+            });
+          } else {
+            this.onboardingState.markExistingUser();
+            this.router.navigate([this.authService.getDashboardRoute()], { replaceUrl: true });
+          }
           return;
         }
 
