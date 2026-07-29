@@ -7,10 +7,6 @@
 @mixin input-style($color) {
   color: $color !important;
   opacity: 1 !important;
-
-  &:placeholder-shown {
-    border-bottom: 1px solid $color !important;
-  }
 }
 
 $theme-colors: (
@@ -28,7 +24,7 @@ $theme-colors: (
 
   @each $theme, $color in $theme-colors {
     &.#{$theme} {
-      .title-input, .routine-section, .priority-selection{
+      .routine-section, .priority-selection{
         @include border-color($color);
         color: $color;
       }
@@ -51,16 +47,44 @@ $theme-colors: (
 
 /* ── "Create. Commit. Grow." heading ── */
 :host ::ng-deep ion-content superme-navigator .navigator-heading {
-  font-size: clamp(18px, 5vw, 22px);
+  font-size: clamp(20px, 5vw, 22px);
   font-weight: 500;
   color: #282527;
   line-height: 1.2;
 }
 
 .header-toggle-label {
-  font-size: 14px;
-  color: #6B656A;
+  font-size: 13px;
+  color: black;
   margin-right: 6px;
+  font-family:nunito;
+  font-weight:500;
+  margin-bottom:5px;
+}
+
+.header-toggle ::ng-deep .superme-toggle {
+  width: 50px;
+  height: 28px;
+}
+
+.header-toggle ::ng-deep .superme-toggle .track {
+  width: 50px;
+  height: 31px;
+  border-radius: 20px;
+  background: #C9C6DA;
+}
+
+.header-toggle ::ng-deep .superme-toggle .thumb {
+  width: 24px;
+  height: 24px;
+  background: #3F3D56;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
+  transform: translateX(4px);
+}
+
+.header-toggle ::ng-deep .superme-toggle[aria-checked="true"] .thumb {
+  transform: translateX(22px);
+  background: #3F3D56;
 }
 
 
@@ -129,7 +153,7 @@ $theme-colors: (
   align-items: center;
   gap: 6px;
   background: rgba(0, 0, 0, 0.05);
-  border-radius: 50px;
+  border-radius: 10px;
   padding: 5px;
   margin-top: 12px;
   width: 100%;
@@ -137,20 +161,30 @@ $theme-colors: (
 
 .activity-tab {
   flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   text-align: center;
   padding: 9px 8px;
-  border-radius: 50px;
+  border-radius: 10px;
   border: none;
   background: transparent;
-  font-family: var(--font-heading);
+  font-family:nunito;
   font-size: 13px;
   font-weight: 600;
-  color: #8A8490;
+  color: #6b656a;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
   white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
   outline: none;
+
+  .activity-tab-icon {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+  }
 
   &.active {
     font-weight: 700;
@@ -158,8 +192,8 @@ $theme-colors: (
   }
 
   &.tab-habits.active {
-    background: rgba(116, 113, 186, 0.18);
-    color: #6360b0;
+    background: #8b8dcc;
+    color: #46466b;
   }
 
   &.tab-tasks.active {
@@ -360,37 +394,217 @@ $theme-colors: (
 }
 
 .title-input {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  border-bottom: 1px solid #7471BA;
-  width: 100%;
-  padding-bottom: 4px;
+  // position: relative;
+  // display: flex;
+  // flex-direction: column;
+  // width: 100%;
+  // padding: 14px 16px 24px;
+  // border: 1px solid #E5E7EB;
+  // border-radius: 16px;
+  // background: #ffffff;
+  // box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  &.invalid {
+    border-color: #BB2124;
+  }
 
   /* Title input field itself */
   input {
     font-family: var(--font-heading);
-    font-size: 20px !important;
+    font-size: 14px !important;
     font-weight: 700 !important;
     color: #282527 !important;
     border: none !important;
     outline: none !important;
     background: transparent !important;
     width: 100%;
-    padding: 4px 0 8px !important;
+    padding: 0 !important;
     caret-color: #7471BA;
-
-    &::placeholder {
-      font-size: 20px;
-      font-weight: 600;
-      color: #C8C4CC;
-      opacity: 1;
-    }
   }
 }
 
-/* Per-theme title input caret + border color */
+.title-card-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+   position: relative;
+  padding: 10px;
+  border: 1px solid #E5E7EB;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.title-card-icon {
+  display: inline-flex;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #e9ecf7;
+
+  img {
+    display: block;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.title-card-body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 2px;
+}
+
+.title-card-subtitle {
+  color: #6B656A;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 140%;
+}
+
+.title-card-count {
+      color: #a19ca0;
+    font-size: 13px;
+    text-align: right;
+    font-family: nunito;
+    padding-top: 5px;
+}
+
+/* Category selection card (redesigned pills, driven by the hidden superme-tags engine below) */
+.category-card {
+  width: 100%;
+  padding: 20px;
+  border: 1px solid #E8EAF3;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.category-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.category-icon-tile {
+  display: inline-flex;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #E9EDFB;
+
+  img {
+    display: block;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.category-heading {
+  font-family: nunito;
+    font-size: 15px;
+    font-weight: 600;
+    color: #282527;
+}
+
+.category-add-btn {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  padding: 4px;
+  color: #4B4A7D;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.category-pills {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.category-pill {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: #E9EDFB;
+  color: #45456A;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 220ms ease, border-color 220ms ease, box-shadow 220ms ease, transform 120ms ease;
+
+  &:hover {
+    background: #DEE3F8;
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &.selected {
+    background: #ffffff;
+    border-color: #4B4A7D;
+    color: #4B4A7D;
+    box-shadow: 0 2px 6px rgba(75, 74, 125, 0.16);
+  }
+}
+
+.category-pill-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+}
+
+/* Keep the superme-tags engine mounted for its add/edit/delete popups + storage/formGroup wiring,
+   but hide its own pill row since the .category-pills row above replaces it visually */
+::ng-deep superme-tags.category-engine .tags-row {
+  display: none;
+}
+
+/* Per-theme title input caret color */
 .habit-input-root.habits .title-input input { caret-color: #7471BA; }
 .habit-input-root.tasks .title-input input { caret-color: #F6AC72; }
 .habit-input-root.timetable .title-input input { caret-color: #89B3B6; }
@@ -614,12 +828,13 @@ $theme-colors: (
   width: 36px;
   height: 36px;
   border-radius: 18px;
-  background: #eee;
-  border: none;
+  background: #d9d7d8;
+    border: none;
+    color: #6b656a;
 }
 
 .day.selected {
-  background: #90214D;
+  background: #46466b;
   color: #ffffff;
 }
 
@@ -663,10 +878,31 @@ $theme-colors: (
   gap: 8px;
 }
 
+.priority-toggle-control {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  width: 100%;
+  // padding-bottom: 16px;
+  flex-direction:column;
+}
+
+.priority-toggle-label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: #282527;
+}
+
+.priority-selection.invalid .priority-toggle-label {
+  color: #BB2124;
+}
+
 .priority-selection {
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid;
+  border-bottom: 0px solid;
 }
 
 .notes {
@@ -739,18 +975,12 @@ $notes-themes: (
 }
 
 .title-input .superme-input-group input {
-  color: #6B656A;
+  color: #282527;
   font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 600;
-  opacity: 0.5;
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 1;
   padding: 0px !important;
-}
-
-/* Full-width underline when input is empty (has placeholder) */
-.title-input .superme-input-group input:placeholder-shown {
-  border-bottom: 1px solid #6B656A;
-  padding-bottom: 2px !important;
 }
 
 $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
@@ -769,15 +999,12 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
 
 .title-input .superme-input-group input::placeholder,
 .habit-input-root .title-input .superme-input-group input::placeholder {
-  color: #6B656A !important;
+  color: #282527 !important;
   font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   line-height: 140%;
-  opacity: 0.5;
-  text-decoration: underline;
-  text-decoration-color: currentColor;
-  text-underline-position: under;
+  opacity: 1;
 }
 
 %input-placeholder {

@@ -15,7 +15,7 @@
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  padding:0px 16px 0px 6px;
+  padding:10px 16px 0px 16px;
 }
 
 .left-group {
@@ -233,7 +233,10 @@
   flex-direction: column;
   min-width: 0;
 }
-
+.close-btn-habbit{
+  margin-right:10px;
+  background: transparent;
+}
 .navigator-subtext-row {
   margin-top: 0px;
 }
