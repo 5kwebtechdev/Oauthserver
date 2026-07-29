@@ -671,7 +671,8 @@
       <!-- new message ends-->
 
       <div class="begin-action welcome-cta-btn w-100">
-        <superme-button type="magenta" full text="Unlock My Potential" (click)="onBegin()"></superme-button>
+        <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+        <superme-button type="magenta" full text="Unlock My Potential" [disabled]="registrationInProgress" (click)="onBegin()"></superme-button>
       </div>
     </div>
 

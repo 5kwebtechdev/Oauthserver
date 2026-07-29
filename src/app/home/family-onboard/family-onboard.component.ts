@@ -967,7 +967,8 @@ Thank you!`;
                 gender: toApiGender(profile.gender),
                 relationship: 'PARENT',
                 familyCode: familyCode || '',
-                familyName: sessionStorage.getItem('familyName') || this.createdFamilyName || ''
+                familyName: sessionStorage.getItem('familyName') || this.createdFamilyName || '',
+                unlockPotential: false
             };
             if (password) payload.password = password;
 
