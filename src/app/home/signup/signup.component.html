@@ -401,6 +401,7 @@
 
           <h4 class="profile-field-heading">
             <span class="profile-field-title">Phone Number</span>
+            <span class="profile-field-hint">Optional</span>
           </h4>
           <div class="input-group">
             <div class="phone-input-container">
@@ -424,9 +425,10 @@
               </span>
 
               <ng-template #noAge>
-                <span class="profile-field-hint age-count">To show personalized content</span>
+                <span class="profile-field-hint age-count">Optional</span>
               </ng-template>
             </ng-container>
+            <span *ngIf="currentRole === 'parent'" class="profile-field-hint">Optional</span>
           </h4>
           <div class="input-group">
             <!--            <input  formControlName="dob" type="text" placeholder="Date of Birth" />-->
@@ -434,16 +436,13 @@
               [showTrigger]="openBirthdayPicker" [variant]="'figma-purple'"
               style="width: 100%">
               <input type="text" formControlName="dob" readonly (click)="openBirthdayPickerNow()"
-                [ngClass]="{'error' : dob()?.invalid && (dob()?.dirty || dob()?.touched)}" placeholder="Select Date of birth" />
+                placeholder="Select Date of birth" />
             </superme-birthdaypicker>
-            <div class="error" *ngIf="dob()?.invalid && (dob()?.dirty || dob()?.touched)">
-              Please enter your date of birth.
-            </div>
           </div>
           <h4 class="profile-field-heading">
             <span class="profile-field-title">Gender</span>
             <span class="profile-field-hint">
-              {{ currentRole === 'parent' ? 'Used for identifying relationship with child' : 'Used for personalization touches' }}
+              Optional — {{ currentRole === 'parent' ? 'used for identifying relationship with child' : 'used for personalization touches' }}
             </span>
           </h4>
           <div class="gender-options" role="group" aria-label="Gender">
@@ -610,8 +609,13 @@
         grab-cursor="true" (slidechange)="onSlideChange()" (swiperstateupdate)="onSlideChange()" #swiperEl>
         <swiper-slide *ngFor="let pet of pets; let i = index">
           <article class="pet-card" [class.pet-card--active]="currentSlideIndex === i"
-            [attr.aria-label]="pet.displayName" [attr.aria-current]="currentSlideIndex === i ? 'true' : null">
+            [class.pet-card--selected]="selectedPetIndex === i"
+            role="button" tabindex="0" (click)="selectPet(i)" (keydown.enter)="selectPet(i)" (keydown.space)="selectPet(i); $event.preventDefault()"
+            [attr.aria-label]="pet.displayName" [attr.aria-pressed]="selectedPetIndex === i ? 'true' : 'false'">
             <img class="pet-card-art" [src]="pet.cardImage" [alt]="pet.displayName" />
+            <span class="pet-card-check" *ngIf="selectedPetIndex === i" aria-hidden="true">
+              <i class="fa-solid fa-check"></i>
+            </span>
             <div class="pet-card-accessible-copy">
               <h2>{{pet.displayName}}</h2>
               <ul>
@@ -624,7 +628,7 @@
       </swiper-container>
 
       <button type="button" class="pet-step-next"
-        [disabled]="!currentImage || registrationInProgress"
+        [disabled]="selectedPetIndex === null || registrationInProgress"
         (click)="proceedWithAvatar()">Next</button>
     </section>
 

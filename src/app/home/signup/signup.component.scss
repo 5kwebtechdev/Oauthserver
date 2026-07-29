@@ -1131,6 +1131,35 @@ swiper-slide.swiper-slide-active .pet-card {
   transform: scale(1);
 }
 
+.pet-card {
+  cursor: pointer;
+}
+
+/* Confirmed selection — distinct from --active (which only tracks whatever
+   is centered in the carousel while swiping). Matches the selected-state
+   border language used elsewhere in this flow (gender buttons, etc). */
+.pet-card--selected {
+  outline: 3px solid #7341a7;
+  outline-offset: -3px;
+  box-shadow: 0 0 0 3px rgba(115, 65, 167, 0.18);
+}
+
+.pet-card-check {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 3;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #7341a7;
+  color: #fff;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
 .pet-card-art {
   display: block;
   width: 100%;

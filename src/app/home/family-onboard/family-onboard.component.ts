@@ -964,12 +964,17 @@ Thank you!`;
             const payload: any = {
                 name: profile.name || '',
                 username: profile.username || undefined,
-                gender: toApiGender(profile.gender),
                 relationship: 'PARENT',
                 familyCode: familyCode || '',
                 familyName: sessionStorage.getItem('familyName') || this.createdFamilyName || '',
                 unlockPotential: false
             };
+            // Optional — omit entirely rather than defaulting to a value the
+            // user never actually chose (toApiGender() always resolves to a
+            // real enum, which would falsely look like an explicit choice).
+            if (profile.gender) {
+                payload.gender = toApiGender(profile.gender);
+            }
             if (password) payload.password = password;
 
             // Add date of birth from profile (required by register API)
