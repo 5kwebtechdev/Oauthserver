@@ -6,7 +6,6 @@ import { SupermeButtonComponent } from '../../superme-button/superme-button.comp
 import { SupermeInputsModule } from '../../superme-inputs/superme-inputs.module';
 import { SupermeSelectorsComponent } from '../../superme-selectors/superme-selectors.component';
 import { SupermeTagsComponent } from '../../superme-selectors/superme-tags/superme-tags.component';
-import { SupermeBadgeComponent } from '../../superme-badge/superme-badge.component';
 import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { SupermeToggleComponent } from '../../superme-selectors/superme-toggle/superme-toggle.component';
 import { SupermePopupComponent, SupermePopupConfig } from '../../superme-popup/superme-popup.component';
@@ -27,7 +26,7 @@ import { CustomToastService } from '../../../services/custom-toast.service';
   selector: 'activity-input',
   templateUrl: './activity-input.component.html',
   styleUrls: ['./activity-input.component.scss'],
-  imports: [CommonModule, IonicModule, FormsModule, SupermeButtonComponent, SupermeInputsModule, SupermeSelectorsComponent, SupermeTagsComponent, SupermeBadgeComponent, SupermeNavigatorComponent, SupermeToggleComponent, SupermePopupComponent]
+  imports: [CommonModule, IonicModule, FormsModule, SupermeButtonComponent, SupermeInputsModule, SupermeSelectorsComponent, SupermeTagsComponent, SupermeNavigatorComponent, SupermeToggleComponent, SupermePopupComponent]
 })
 export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEnter {
   private static readonly TIME_REGEX = /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?$/i;
@@ -151,6 +150,31 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   // API-loaded tag options passed to superme-tags component
   tagOptions: Array<{ key: number; value: string; system?: boolean; editable?: boolean; deletable?: boolean; type?: string }> = [];
 
+  // Icon lookup for the Category pills, keyed by lowercased tag value
+  readonly categoryIcons: Record<string, string> = {
+    study: 'assets/icons/Study.svg',
+    health: 'assets/icons/Health.svg',
+    skill: 'assets/icons/Skill.svg',
+    routine: 'assets/icons/Routine.svg',
+    personal: 'assets/icons/Personal.svg'
+  };
+
+  getCategoryIcon(value: string): string | null {
+    return this.categoryIcons[(value || '').trim().toLowerCase()] || null;
+  }
+
+  isCategorySelected(key: any): boolean {
+    return !!this.selectedTags?.some(t => String(t.key) === String(key));
+  }
+
+  selectCategory(key: any) {
+    this.tagsComponent?.toggleSelection(key);
+  }
+
+  openAddCategory(elRef?: any) {
+    this.tagsComponent?.openAdd(elRef);
+  }
+
   everyday = false;
   weekdays = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'];
   selectedDays = new Set<string>();
@@ -184,13 +208,6 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       ? normalized as ReminderOffset
       : null;
   }
-
-  // Priority options for template
-  readonly priorities = [
-    { key: 'high' as const, text: 'High', type: 'red' },
-    { key: 'medium' as const, text: 'Medium', type: 'yellow' },
-    { key: 'low' as const, text: 'Low', type: 'green' }
-  ];
 
   // Tag variant mapping by activity type
   readonly tagVariants: Record<string, 'blue' | 'orange' | 'green' | 'gray'> = { habits: 'blue', tasks: 'orange', timetable: 'green' };
