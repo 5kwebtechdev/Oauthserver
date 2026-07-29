@@ -612,7 +612,16 @@
             [class.pet-card--selected]="selectedPetIndex === i"
             role="button" tabindex="0" (click)="selectPet(i)" (keydown.enter)="selectPet(i)" (keydown.space)="selectPet(i); $event.preventDefault()"
             [attr.aria-label]="pet.displayName" [attr.aria-pressed]="selectedPetIndex === i ? 'true' : 'false'">
-            <img class="pet-card-art" [src]="pet.cardImage" [alt]="pet.displayName" />
+            <div class="pet-card-copy">
+              <h2>{{pet.displayName}}</h2>
+              <ul>
+                <li>{{pet.text[0]}}</li>
+                <li>{{pet.text[1]}}</li>
+              </ul>
+            </div>
+            <div class="pet-card-figure">
+              <img class="pet-card-art" [src]="pet.image" [alt]="pet.displayName" />
+            </div>
             <span class="pet-card-check" *ngIf="selectedPetIndex === i" aria-hidden="true">
               <i class="fa-solid fa-check"></i>
             </span>

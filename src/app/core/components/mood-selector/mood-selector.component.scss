@@ -1,15 +1,20 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
 .mood-card {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  background: #ffffff;
   min-height: 170px;
-  border: 0;
-  box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
-  border-radius: 16px;
-  padding: 12px 16px;
-  box-sizing: border-box;
+  padding: 14px 16px 16px;
+  background: #ffffff;
+  border: 1px solid rgba(111, 90, 170, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 4px 18px rgba(52, 33, 91, 0.08);
 }
 
 .mood-card-header {
@@ -17,55 +22,59 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .mood-card-title {
+  color: #282527;
   font-family: var(--font-heading);
   font-size: 16px;
-  font-weight: 500;
-  line-height: 1.4;
-  color: #282527;
+  font-weight: 600;
+  line-height: 1.35;
   text-align: center;
 }
 
 .mood-card-preview {
-  width: 84px;
-  height: 84px;
-  border-radius: 50%;
-  border: 2px solid #90214D;
-  padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 84px;
+  height: 84px;
   margin-bottom: 14px;
+  padding: 6px;
+  border: 2px solid #e6dff7;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffffff 0%, #faf7ff 100%);
 
   img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
     border-radius: 50%;
+    object-fit: contain;
   }
 }
 
 .mood-card-subtitle {
+  margin: 0 0 18px;
+  color: #282527;
   font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 500;
-  color: #282527;
+  line-height: 1.45;
   text-align: center;
-  margin: 0 0 20px;
 
   strong {
-    color: #90214D;
+    color: #90214d;
     font-weight: 800;
   }
 }
 
 .mood-card-grid {
-  display: flex;
-  justify-content: space-between;
-  gap: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  column-gap: clamp(4px, 1.8vw, 10px);
+  row-gap: 6px;
+  align-items: start;
   width: 100%;
   margin-bottom: 16px;
 }
@@ -74,72 +83,98 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 0;
-  flex: 1;
-  background: transparent;
-  border: none;
-  padding: 0;
+  justify-content: flex-start;
+  gap: 8px;
   min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+
+  &:focus-visible {
+    outline: 2px solid #432477;
+    outline-offset: 3px;
+    border-radius: 14px;
+  }
 }
 
 .mood-option-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.12s, transform 0.12s;
+  width: 54px;
+  height: 54px;
+  border: 1.5px solid transparent;
+  border-radius: 16px;
+  background: transparent;
+  box-sizing: border-box;
+  transition: transform 140ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.mood-option-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  line-height: 0;
 
   img {
-    width: 51px;
-    height: 40px;
-    max-width: none;
+    display: block;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
   }
 }
 
+.mood-option-art--frustrated {
+  width: 40px;
+  height: 40px;
+}
+
 .mood-option-label {
-  font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 600;
-  line-height: normal;
+  overflow: hidden;
+  max-width: 100%;
   color: #282527;
+  font-family: var(--font-sans);
+  font-size: clamp(10px, 3.2vw, 13px);
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .mood-option.selected {
   .mood-option-avatar {
-    border-color: #7471BA;
-    transform: translateY(-2px);
+    border-color: #d8cdfb;
+    background: linear-gradient(180deg, #ffffff 0%, #f4f1ff 100%);
+    box-shadow: 0 4px 12px rgba(117, 83, 214, 0.14);
+    transform: translateY(-1px);
   }
 
   .mood-option-label {
-    color: #7471BA;
+    color: #432477;
     font-weight: 700;
   }
 }
 
-// "Set the Vibe" — a centered pill button rather than the button's default full-width bar
 .mood-card-cta {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 112px;
-  height: 38px;
   min-width: 112px;
   min-height: 38px;
+  height: 38px;
   margin: 0 auto;
   padding: 8px 16px;
   border: 2px solid transparent;
-  border-radius: 999px;
+  border-radius: 12px;
   background:
-    linear-gradient(#FFFFFF, #FFFFFF) padding-box,
+    linear-gradient(#ffffff, #ffffff) padding-box,
     linear-gradient(90deg, #8b8dcb 0%, #f6ac72 25%, #89b3b6 75.5%, #e1527c 100%) border-box;
   color: #432477;
   font-family: var(--font-sans);
@@ -147,58 +182,56 @@
   font-weight: 700;
   line-height: 1.4;
   cursor: pointer;
-  opacity: 1;
 
   &:disabled {
     cursor: default;
-    opacity: 1;
+    opacity: 0.5;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #432477;
+    outline-offset: 3px;
   }
 }
 
 .blocked-tooltip {
   display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 12px;
   padding: 6px 10px;
   border-radius: 8px;
-  background: #FDECF2;
-  color: #90214D;
-  text-align: center;
+  background: #fdecf2;
+  color: #90214d;
   font-family: var(--font-sans);
   font-size: 11px;
   font-weight: 600;
-  width: 100%;
-  box-sizing: border-box;
-  margin-bottom: 12px;
+  text-align: center;
 }
 
 @media (max-width: 360px) {
-  .mood-card-title {
-    font-size: 14px;
-  }
-
-  .mood-card-subtitle {
-    font-size: 12px;
+  .mood-card {
+    padding-inline: 12px;
   }
 
   .mood-card-grid {
-    gap: 4px;
+    column-gap: 2px;
   }
 
   .mood-option-avatar {
-    width: 40px;
-    height: 44px;
-
-    img {
-      width: 44px;
-      height: 35px;
-    }
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
   }
 
-  .mood-option-label {
-    font-size: 10px;
+  .mood-option-art {
+    width: 38px;
+    height: 38px;
   }
 
-  .mood-card-cta {
-    width: auto;
+  .mood-option-art--frustrated {
+    width: 36px;
+    height: 36px;
   }
 }
 

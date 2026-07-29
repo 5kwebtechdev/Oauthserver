@@ -820,7 +820,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           this.applyRegistrationDraft(restoredDraft);
 
           if (savedData.emailVerified === true) {
-            if (Number(effectiveStep) >= 6) {
+            if (Number(effectiveStep) >= 7) {
               this.onboardingState.clearRegistrationDraft();
               this.core.triggerToasrt('Your account is already set up. Please log in to continue.');
               this.navigateReplacing('/home/login');
@@ -2366,13 +2366,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         if (responseStep) {
           this.onboardingState.saveRegistrationDraft({
             ...payload,
-            ...(resp?.savedData || {}),
-            ...(resp?.user || {}),
+            ...this.getRegistrationResponseDraft(resp),
             onboardingStep: responseStep
           }, responseStep, payload.email ? 'EMAIL' : 'PHONE');
         }
 
         const completedPassword = password || this.signupCredentialState.getPassword() || this.password?.value || '';
+        if (this.shouldOpenUnlockPotentialStep(resp, responseStep, payload, !!payload.petName)) {
+          this.loadingService.forceHide();
+          this.navigateToSignupStep(5);
+          return;
+        }
+
         if (responseStep && responseStep >= 6) {
           this.finishCompletedRegistration(resp, payload, completedPassword);
           return;
@@ -2540,6 +2545,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const email     = sessionStorage.getItem('google_signup_email') || this.email?.value;
     const providerId = sessionStorage.getItem('google_signup_provider_id') || '';
     const avatarUrl  = sessionStorage.getItem('google_signup_avatar') || '';
+    const idToken    = sessionStorage.getItem('oauth_signup_id_token') || '';
+    const accessToken = sessionStorage.getItem('oauth_signup_access_token') || '';
+    const serverAuthCode = sessionStorage.getItem('oauth_signup_server_auth_code') || '';
     const avatarKey  = profile.avatar ?? this.avatarSelected ?? null;
 
     // Resolve avatar filename from the avatars list (e.g. "Image-Onboarding-Avatar-Female1.png")
@@ -2559,6 +2567,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       avatarImageName,
       referralCode:    sessionStorage.getItem('referralCode') || null
     };
+
+    if (idToken) {
+      googlePayload.idToken = idToken;
+    }
+    if (accessToken) {
+      googlePayload.accessToken = accessToken;
+    }
+    if (serverAuthCode) {
+      googlePayload.serverAuthCode = serverAuthCode;
+    }
 
     // Gender and DOB are optional — Apple/Google never supply them, and
     // Sign In with Apple review requires we don't force them.
@@ -2638,7 +2656,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     try {
       ['signup_via_google', 'signup_via_oauth', 'oauth_signup_provider',
         'google_signup_email', 'google_signup_name',
-        'google_signup_avatar', 'google_signup_provider_id', 'signup_profile',
+        'google_signup_avatar', 'google_signup_provider_id',
+        'oauth_signup_id_token', 'oauth_signup_access_token', 'oauth_signup_server_auth_code',
+        'signup_profile',
         'signup_role', 'signup_avatar', 'signup_pet', 'requestedIdentifier',
         'familyCode', 'familyName', 'familyCreator', 'referralCode', 'referralCodeLocked'].forEach(k => {
         sessionStorage.removeItem(k);
@@ -2768,13 +2788,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           this.onboardingState.saveRegistrationDraft(
             {
               ...payload,
-              ...(resp?.savedData || {}),
-              ...(resp?.user || {}),
+              ...this.getRegistrationResponseDraft(resp),
               onboardingStep: responseStep
             },
             responseStep,
             payload.email ? 'EMAIL' : 'PHONE'
           );
+        }
+
+        if (this.shouldOpenUnlockPotentialStep(resp, responseStep, payload, includePet)) {
+          this.loadingService.forceHide();
+          this.navigateToSignupStep(5);
+          return;
         }
 
         if (responseStep && responseStep >= 6) {
@@ -2888,7 +2913,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.errorMessage = null;
     this.loadingService.show();
 
+    const persistedDraft = this.onboardingState.getRegistrationState()?.savedData || {};
+    let signupProfile: any = {};
+    try {
+      const profileStr = sessionStorage.getItem('signup_profile');
+      signupProfile = profileStr ? JSON.parse(profileStr) : {};
+    } catch (error) {
+      signupProfile = {};
+    }
+
     const payload: any = { unlockPotential: true };
+
     if (userData?.email) {
       payload.email = userData.email;
     } else if (userData?.phone) {
@@ -2902,10 +2937,79 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
     }
 
+    const resolvedName = userData?.name
+      || signupProfile?.name
+      || persistedDraft?.name
+      || this.profileForm.get('name')?.value
+      || '';
+    if (resolvedName) {
+      payload.name = resolvedName;
+    }
+
+    const resolvedUsername = userData?.username
+      || signupProfile?.username
+      || persistedDraft?.username
+      || this.profileForm.get('username')?.value
+      || '';
+    if (resolvedUsername) {
+      payload.username = resolvedUsername;
+    }
+
+    const resolvedGender = userData?.gender
+      || signupProfile?.gender
+      || persistedDraft?.gender
+      || this.gender;
+    if (resolvedGender) {
+      payload.gender = toApiGender(resolvedGender);
+    }
+
+    const resolvedRelationship = userData?.relationship
+      || persistedDraft?.relationship
+      || (sessionStorage.getItem('signup_role') || this.roleSelected || '').toUpperCase();
+    if (resolvedRelationship) {
+      payload.relationship = resolvedRelationship;
+    }
+
+    const resolvedDob = userData?.dateOfBirth
+      || userData?.dob
+      || userData?.birthDate
+      || signupProfile?.dob
+      || persistedDraft?.dateOfBirth
+      || persistedDraft?.dob
+      || persistedDraft?.birthDate
+      || this.profileForm.get('dob')?.value;
+    if (resolvedDob) {
+      const dobDate = new Date(resolvedDob);
+      if (!isNaN(dobDate.getTime())) {
+        payload.dateOfBirth = dobDate.toISOString().split('T')[0];
+      }
+    }
+
     this.authService.register(payload).subscribe({
-      next: () => {
+      next: (response) => {
         this.registrationInProgress = false;
-        this.authService.updateUserData({ unlockPotential: true });
+
+        const responseStep = this.getResponseOnboardingStep(response);
+        const responseDraft: RegistrationDraftData = {
+          ...payload,
+          ...this.getRegistrationResponseDraft(response),
+          unlockPotential: true,
+          ...(responseStep ? { onboardingStep: responseStep } : {})
+        };
+
+        this.authService.updateUserData(responseDraft);
+
+        if (responseStep && responseStep >= 7) {
+          this.onboardingState.clearRegistrationDraft();
+          this.onboardingState.markExistingUser();
+        } else if (responseStep) {
+          this.onboardingState.saveRegistrationDraft(
+            responseDraft,
+            responseStep,
+            payload.email ? 'EMAIL' : 'PHONE'
+          );
+        }
+
         this.continueAfterUnlock();
       },
       error: (err) => {
@@ -2948,6 +3052,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       try {
         sessionStorage.removeItem('signup_via_google');
         sessionStorage.removeItem('signup_via_oauth');
+        sessionStorage.removeItem('oauth_signup_id_token');
+        sessionStorage.removeItem('oauth_signup_access_token');
+        sessionStorage.removeItem('oauth_signup_server_auth_code');
       } catch (e) {}
       this.loadingService.forceHide();
       const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
@@ -3212,7 +3319,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           const freshUser = this.authService.getUserData() as RegistrationDraftData | null;
           const freshStep = this.onboardingState.getOnboardingStep(freshUser);
 
-          if (freshStep && freshStep >= 6) {
+          if (freshStep && freshStep >= 7) {
             this.onboardingState.clearRegistrationDraft();
             this.onboardingState.markExistingUser();
             this.navigateReplacing(this.authService.getDashboardRoute());
@@ -3246,7 +3353,66 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       ?? response?.onboardingStep
       ?? response?.nextStep;
     const step = Number(rawStep);
-    return Number.isInteger(step) && step >= 1 && step <= 6 ? step : null;
+    return Number.isInteger(step) && step >= 1 && step <= 7 ? step : null;
+  }
+
+  private getRegistrationResponseDraft(response: any): RegistrationDraftData {
+    if (!response || typeof response !== 'object') {
+      return {};
+    }
+
+    const {
+      token: _token,
+      expiresIn: _expiresIn,
+      success: _success,
+      message: _message,
+      savedData,
+      user,
+      ...topLevelData
+    } = response;
+
+    return {
+      ...topLevelData,
+      ...(savedData || {}),
+      ...(user || {})
+    };
+  }
+
+  private shouldOpenUnlockPotentialStep(
+    response: any,
+    responseStep: number | null,
+    payload: any,
+    includePet: boolean
+  ): boolean {
+    if (!includePet || responseStep !== 6) {
+      return false;
+    }
+
+    const relationship = String(
+      payload?.relationship
+      || response?.relationship
+      || response?.user?.relationship
+      || ''
+    ).toUpperCase();
+
+    const isSelfFlow = relationship === 'SELF' && !payload?.asChild;
+    const isChildPostFamilyFlow = (
+      this.isPostFamilyChildPetStep
+      || (
+        relationship === 'CHILD'
+        && sessionStorage.getItem(SignupComponent.CHILD_POST_FAMILY_WELCOME_KEY) === 'true'
+      )
+    );
+
+    if (isChildPostFamilyFlow) {
+      return true;
+    }
+
+    if (!isSelfFlow) {
+      return false;
+    }
+
+    return !response?.token;
   }
 
   private finishCompletedRegistration(response: any, payload: any, password: string): void {

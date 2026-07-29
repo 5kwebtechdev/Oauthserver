@@ -4,7 +4,6 @@
     <span class="mood-card-title">Today’s Mood</span>
   </div>
 
-  <!-- Read-only parent view: show today's current mood -->
   <ng-container *ngIf="isParent">
     <div class="mood-card-preview">
       <img [src]="popupPreviewSrc" [alt]="popupPreviewLabel" />
@@ -16,10 +15,17 @@
 
   <ng-container *ngIf="!isParent">
     <div class="mood-card-grid" aria-label="Choose your mood">
-      <button *ngFor="let p of popupOptions" type="button" class="mood-option" (click)="choosePopup(p.src)"
-        [class.selected]="popupSelection === p.src">
+      <button
+        *ngFor="let p of popupOptions; trackBy: trackByMood"
+        type="button"
+        class="mood-option"
+        [class.selected]="isMoodSelected(p)"
+        [attr.aria-pressed]="isMoodSelected(p)"
+        (click)="choosePopup(p.src)">
         <span class="mood-option-avatar">
-          <img [src]="p.src" [alt]="p.label" />
+          <span class="mood-option-art" [ngClass]="'mood-option-art--' + p.art">
+            <img [src]="p.src" [alt]="p.label" />
+          </span>
         </span>
         <span class="mood-option-label">{{ p.label }}</span>
       </button>

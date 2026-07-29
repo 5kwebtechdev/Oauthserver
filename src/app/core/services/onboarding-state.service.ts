@@ -136,7 +136,7 @@ export class OnboardingStateService {
 
   isOnboardingIncomplete(source?: RegistrationDraftData | null): boolean {
     const step = this.getOnboardingStep(source);
-    return step !== null && step < 6;
+    return step !== null && step < 7;
   }
 
   getResumeNavigation(source?: RegistrationDraftData | null): OnboardingResumeNavigation | null {
@@ -150,7 +150,7 @@ export class OnboardingStateService {
         ? source.onboardingStep
         : state?.onboardingStep
     );
-    if (!backendStep || backendStep >= 6) return null;
+    if (!backendStep || backendStep >= 7) return null;
 
     let signupStep: number;
     if (backendStep === 1) {
@@ -161,6 +161,8 @@ export class OnboardingStateService {
       signupStep = 0.3;
     } else if (backendStep === 4) {
       signupStep = 2;
+    } else if (backendStep === 6) {
+      signupStep = 5;
     } else {
       signupStep = this.getSignupRole(savedData) === 'parent' ? 5 : 4;
     }
@@ -270,7 +272,7 @@ export class OnboardingStateService {
 
   private normalizeOnboardingStep(value: unknown): number | null {
     const step = Number(value);
-    if (!Number.isInteger(step) || step < 1 || step > 6) return null;
+    if (!Number.isInteger(step) || step < 1 || step > 7) return null;
     return step;
   }
 

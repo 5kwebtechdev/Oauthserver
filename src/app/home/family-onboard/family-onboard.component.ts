@@ -1086,6 +1086,9 @@ Thank you!`;
         const email      = sessionStorage.getItem('google_signup_email') || '';
         const providerId = sessionStorage.getItem('google_signup_provider_id') || '';
         const avatarUrl  = sessionStorage.getItem('google_signup_avatar') || '';
+        const idToken    = sessionStorage.getItem('oauth_signup_id_token') || '';
+        const accessToken = sessionStorage.getItem('oauth_signup_access_token') || '';
+        const serverAuthCode = sessionStorage.getItem('oauth_signup_server_auth_code') || '';
         const isCreator  = sessionStorage.getItem('familyCreator') === 'true';
         const familyCode = sessionStorage.getItem('familyCode') || this.familyCode || '';
         const familyName = sessionStorage.getItem('familyName') || this.createdFamilyName || '';
@@ -1100,6 +1103,16 @@ Thank you!`;
             gender:       toApiGender(profile.gender),
             referralCode: sessionStorage.getItem('referralCode') || null
         };
+
+        if (idToken) {
+            googlePayload.idToken = idToken;
+        }
+        if (accessToken) {
+            googlePayload.accessToken = accessToken;
+        }
+        if (serverAuthCode) {
+            googlePayload.serverAuthCode = serverAuthCode;
+        }
 
         // Case A: creating new family — send familyName, backend creates family + user in one call
         // Case B: joining existing family — send familyCode only
@@ -1132,7 +1145,9 @@ Thank you!`;
                 this.onboardingState.markExistingUser();
                 try { sessionStorage.setItem('family_connected_ack', 'Parent'); } catch (e) {}
                 ['oauth_signup_provider', 'google_signup_email', 'google_signup_name',
-                 'google_signup_avatar', 'google_signup_provider_id', 'signup_profile',
+                 'google_signup_avatar', 'google_signup_provider_id',
+                 'oauth_signup_id_token', 'oauth_signup_access_token', 'oauth_signup_server_auth_code',
+                 'signup_profile',
                  'signup_role', 'signup_avatar', 'requestedIdentifier',
                  'familyCode', 'familyName', 'familyCreator', 'referralCode', 'referralCodeLocked'].forEach(k => {
                     try { sessionStorage.removeItem(k); } catch (e) {}
