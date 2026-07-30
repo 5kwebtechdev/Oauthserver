@@ -21,7 +21,9 @@ import { environment } from '../../../../../environments/environment';
 import { AuthService } from '../../../services/auth.service';
 import { TutorLikeService } from '../../../services/tutor-like.service';
 import { CustomToastService, Toast } from '../../../services/custom-toast.service';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
+import { Capacitor } from '@capacitor/core';
+import { AppLauncher } from '@capacitor/app-launcher';
 
 @Component({
   selector: 'tutor-profile',
@@ -51,10 +53,12 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
 
   // Whether a like/unlike request is in progress to avoid duplicate requests
   isLikeRequestInProgress = false;
+  private subscriptions = new Subscription();
 
   // Inline contact sheet state
   showContactSheet = false;
   selectedContactMethod: 'call' | 'email' | null = 'call';
+  isContactLaunching = false;
 
   // Transient contact message
   contactToastMessage = 'Ask your parent to reach out';
@@ -87,8 +91,9 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
       this.likeService.initFromServer(this.tutor);
 
       // subscribe to live updates for this tutor
-      this.likeService.watch(this.tutor.id).subscribe(s => {
+      this.subscriptions.add(this.likeService.watch(this.tutor.id).subscribe(s => {
         this.isLiked = s.liked;
+        this.isLikeRequestInProgress = s.pending;
         if (this.tutor) this.tutor.champsLiked = s.count;
 
         // update heart svg to reflect current liked state
@@ -97,7 +102,7 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
           const neutralSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60" fill="none"><g filter="url(#filter0_d_4507_48920)"><foreignObject x="-10" y="-10" width="80" height="80"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(8px);clip-path:url(#bgblur_0_4507_48920_clip_path);height:100%;width:100%"></div></foreignObject><circle data-figma-bg-blur-radius="16" cx="30" cy="30" r="24" fill="url(#paint0_linear_4507_48920)"/><mask id="mask0_4507_48920" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="18" y="18" width="24" height="24"><rect x="18" y="18" width="24" height="24" fill="#282527"/></mask><g mask="url(#mask0_4507_48920)"><path d="M30 38.9984L28.55 37.6984C26.8667 36.1818 25.475 34.8734 24.375 33.7734C23.275 32.6734 22.4 31.6859 21.75 30.8109C21.1 29.9359 20.6458 29.1318 20.3875 28.3984C20.1292 27.6651 20 26.9151 20 26.1484C20 24.5818 20.525 23.2734 21.575 22.2234C22.625 21.1734 23.9333 20.6484 25.5 20.6484C26.3667 20.6484 27.1917 20.8318 27.975 21.1984C28.7583 21.5651 29.4333 22.0818 30 22.7484C30.5667 22.0818 31.2417 21.5651 32.025 21.1984C32.8083 20.8318 33.6333 20.6484 34.5 20.6484C36.0667 20.6484 37.375 21.1734 38.425 22.2234C39.475 23.2734 40 24.5818 40 26.1484C40 26.9151 39.8708 27.6651 39.6125 28.3984C39.3542 29.1318 38.9 29.9359 38.25 30.8109C37.6 31.6859 36.725 32.6734 35.625 33.7734C34.525 34.8734 33.1333 36.1818 31.45 37.6984L30 38.9984ZM30 36.2984C31.6 34.8651 32.9167 33.6359 33.95 32.6109C34.9833 31.5859 35.8 30.6943 36.4 29.9359C37 29.1776 37.4167 28.5026 37.65 27.9109C37.8833 27.3193 38 26.7318 38 26.1484C38 25.1484 37.6667 24.3151 37 23.6484C36.3333 22.9818 35.5 22.6484 34.5 22.6484C33.7167 22.6484 32.9917 22.8693 32.325 23.3109C31.6583 23.7526 31.2 24.3151 30.95 24.9984H29.05C28.8 24.3151 28.3417 23.7526 27.675 23.3109C27.0083 22.8693 26.2833 22.6484 25.5 22.6484C24.5 22.6484 23.6667 22.9818 23 23.6484C22.3333 24.3151 22 25.1484 22 26.1484C22 26.7318 22.1167 27.3193 22.35 27.9109C22.5833 28.5026 23 29.1776 23.6 29.9359C24.2 30.6943 25.0167 31.5859 26.05 32.6109C27.0833 33.6359 28.4 34.8651 30 36.2984Z" fill="#282527"/></g></g><defs><filter id="filter0_d_4507_48920" x="0" y="0" width="60" height="60" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feGaussianBlur stdDeviation="3"/><feComposite in2="hardAlpha" operator="out"/><feColorMatrix type="matrix" values="0 0 0 0 0.419608 0 0 0 0 0.396078 0 0 0 0 0.415686 0 0 0 0.15 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_4507_48920"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_4507_48920" result="shape"/></filter></defs></svg>';
     this.navActions[0].src = 'data:image/svg+xml;utf8,' + encodeURIComponent(this.isLiked ? gradientSvg : neutralSvg);
         }
-      });
+      }));
     }
   }
 
@@ -130,7 +135,10 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   getLikesCount(): number {
-    return this.tutor?.champsLiked || this.tutor?.likes?.length || 0;
+    if (typeof this.tutor?.champsLiked === 'number') {
+      return this.tutor.champsLiked;
+    }
+    return this.tutor?.likes?.length ?? 0;
   }
 
   getExperienceYears(): number {
@@ -533,10 +541,17 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   handleNavAction(event: any): void {
-    const { index, action } = event;
+    const { action } = event;
     if (action.type === 'heart') {
-      this.likeService.toggleLike(this.tutor);
+      if (this.isLikeRequestInProgress) return;
+
+      const request = this.likeService.toggleLike(this.tutor);
+      if (!request) return;
+
       this.onFavorite();
+      void request.catch(() => {
+        this.toastService.error('Unable to update like. Please try again.');
+      });
     }
   }
 
@@ -555,7 +570,7 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // no local timeouts to clear; shared toast service auto-hides
+    this.subscriptions.unsubscribe();
   }
 
   openContactSheet(): void {
@@ -574,40 +589,97 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   async confirmContact(): Promise<void> {
-    const method = this.selectedContactMethod;
-    this.closeContactSheet();
+    if (this.isContactLaunching) return;
 
+    const method = this.selectedContactMethod;
     if (!method) return;
 
-    const openUrl = async (url: string) => {
+    const url = method === 'call'
+      ? this.buildTelephoneUrl()
+      : this.buildEmailUrl();
+
+    if (!url) {
+      this.toastService.error(
+        method === 'call'
+          ? 'A phone number is not available for this tutor.'
+          : 'An email address is not available for this tutor.'
+      );
+      return;
+    }
+
+    this.isContactLaunching = true;
+    try {
+      await this.openContactUrl(url);
+      this.closeContactSheet();
+    } catch (error) {
+      console.error('[TutorProfile] Unable to open contact action', error);
+      this.toastService.error(
+        method === 'call'
+          ? 'Unable to open the phone app. Please try again.'
+          : 'Unable to open the email app. Please try again.'
+      );
+    } finally {
+      this.isContactLaunching = false;
+    }
+  }
+
+  private buildTelephoneUrl(): string | null {
+    const tutor = this.tutor as any;
+    const rawPhone = this.firstContactValue(
+      tutor?.phone,
+      tutor?.phoneNumber,
+      tutor?.mobile,
+      tutor?.mobileNumber,
+      tutor?.contactNumber,
+      tutor?.contactPhone,
+      tutor?.user?.phone
+    );
+    if (!rawPhone) return null;
+
+    const normalized = rawPhone.replace(/(?!^\+)[^\d]/g, '');
+    return normalized.replace(/\D/g, '').length >= 7
+      ? `tel:${normalized}`
+      : null;
+  }
+
+  private buildEmailUrl(): string | null {
+    const tutor = this.tutor as any;
+    const email = this.firstContactValue(
+      tutor?.email,
+      tutor?.emailAddress,
+      tutor?.contactEmail,
+      tutor?.user?.email
+    );
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null;
+
+    const subject = `SuperMe enquiry for ${tutor?.entityName || tutor?.name || 'tutor'}`;
+    return `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}`;
+  }
+
+  private firstContactValue(...values: unknown[]): string {
+    const value = values.find(candidate =>
+      typeof candidate === 'string' && candidate.trim().length > 0
+    );
+    return typeof value === 'string' ? value.trim() : '';
+  }
+
+  private async openContactUrl(url: string): Promise<void> {
+    if (Capacitor.isNativePlatform()) {
       try {
-        const mod = await import('@capacitor/app');
-        const appAny: any = (mod && (mod as any).App) || null;
-        if (appAny && typeof appAny.openUrl === 'function') {
-          await appAny.openUrl({ url });
-          return;
-        }
-      } catch (e) {
-        // ignore and fallback
+        const result = await AppLauncher.openUrl({ url });
+        if (result.completed) return;
+      } catch {
+        // Use the installed Cordova system launcher as a native fallback.
       }
-      window.location.href = url;
-    };
 
-    if (method === 'call') {
-      const raw = (this.tutor?.phone || '').toString().trim();
-      if (!raw) return;
-      const normalized = raw.replace(/[^+\d]/g, '');
-      const telUrl = `tel:${normalized}`;
-      await openUrl(telUrl);
-      return;
+      const inAppBrowser = (window as any)?.cordova?.InAppBrowser;
+      if (typeof inAppBrowser?.open === 'function') {
+        inAppBrowser.open(url, '_system', 'location=yes');
+        return;
+      }
     }
 
-    if (method === 'email') {
-      const email = (this.tutor?.email || '').toString().trim();
-      if (!email) return;
-      const mailto = `mailto:${encodeURIComponent(email)}`;
-      await openUrl(mailto);
-      return;
-    }
+    // Browser fallback for local/web testing.
+    window.location.assign(url);
   }
 }

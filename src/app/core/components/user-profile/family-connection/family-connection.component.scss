@@ -599,6 +599,10 @@ ion-checkbox::part(container) {
     align-items: center;
     gap: 21px;
 
+    .family-code-label {
+        position: relative;
+    }
+
     P {
         color: #282527;
         text-align: center;
@@ -617,6 +621,59 @@ ion-checkbox::part(container) {
         align-items: center;
         justify-content: center;
         gap: 8px;
+        min-height: 28px;
+        border-radius: 8px;
+        transition: color 0.18s ease, background-color 0.18s ease;
+
+        &:focus-visible {
+            outline: 2px solid #56308F;
+            outline-offset: 3px;
+        }
+
+        &.is-copied {
+            color: #56308F;
+            background: #F6F1FC;
+        }
+    }
+}
+
+.family-code-copy-feedback {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 50%;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    color: #56308F;
+    background: #F6F1FC;
+    box-shadow: 0 2px 8px rgba(86, 48, 143, 0.14);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+    transform: translateX(-50%);
+    animation: family-code-feedback-in 0.18s ease-out;
+}
+
+.family-code-copy-feedback--error {
+    color: #9F173D;
+    background: #FFF0F4;
+    box-shadow: 0 2px 8px rgba(159, 23, 61, 0.12);
+}
+
+@keyframes family-code-feedback-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
     }
 }
 

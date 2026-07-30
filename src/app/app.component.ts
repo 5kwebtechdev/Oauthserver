@@ -178,6 +178,18 @@ export class AppComponent implements OnInit, OnDestroy {
     // show loading on navigation using LoadingService to centralize behaviour
     this.router.events.subscribe((event: RouterEvent) => {
       if (event instanceof NavigationStart) {
+        const routePath = event.url.split('?')[0];
+        const skipNavigationLoader = routePath === '/home/reset-password';
+
+        if (skipNavigationLoader) {
+          if (this._navToken) {
+            this.loadingService.hide(this._navToken);
+            this._navToken = undefined;
+          }
+          this.loading = false;
+          return;
+        }
+
         // start nav loader (returns token)
         this._navToken = this.loadingService.show(undefined, { delayMs: 80, minVisibleMs: 120 });
         this.loading = true;

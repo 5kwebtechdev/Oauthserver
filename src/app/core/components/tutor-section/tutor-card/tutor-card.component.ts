@@ -6,6 +6,7 @@ import { TutorService } from '../../../services/tutor.service';
 import { TutorListItem, Tutor } from '../../../models/tutor.model';
 import { TutorProfileComponent } from '../tutor-profile/tutor-profile.component';
 import { Subscription } from 'rxjs';
+import { TutorLikeService } from '../../../services/tutor-like.service';
 
 @Component({
   selector: 'tutor-card',
@@ -30,11 +31,13 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   ];
   
   private subscriptions = new Subscription();
+  private likeSubscriptions = new Map<string, Subscription>();
 
   constructor(
     private router: Router,
     private tutorService: TutorService,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private likeService: TutorLikeService
   ) { }
 
   ngOnInit(): void {
@@ -43,6 +46,8 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    this.likeSubscriptions.forEach(subscription => subscription.unsubscribe());
+    this.likeSubscriptions.clear();
   }
 
   /**
@@ -69,6 +74,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.tutorService.getRecentTutors(this.maxTutors).subscribe(tutors => {
         this.tutors = tutors;
+        this.syncLikeStates();
         this.isLoading = false;
       })
     );
@@ -78,6 +84,39 @@ export class TutorCardComponent implements OnInit, OnDestroy {
         this.listingCount = tutors.length;
       })
     );
+  }
+
+  private syncLikeStates(): void {
+    const visibleIds = new Set(
+      this.tutors
+        .filter(tutor => !!tutor?.id)
+        .map(tutor => String(tutor.id))
+    );
+
+    this.likeSubscriptions.forEach((subscription, id) => {
+      if (!visibleIds.has(id)) {
+        subscription.unsubscribe();
+        this.likeSubscriptions.delete(id);
+      }
+    });
+
+    this.tutors.forEach(tutor => {
+      if (!tutor?.id) return;
+
+      const id = String(tutor.id);
+      this.likeService.initFromServer(tutor);
+      if (this.likeSubscriptions.has(id)) return;
+
+      const subscription = this.likeService.watch(id).subscribe(state => {
+        this.tutors
+          .filter(currentTutor => String(currentTutor.id) === id)
+          .forEach(currentTutor => {
+            currentTutor.champsLiked = state.count;
+            (currentTutor as any).likedByUser = state.liked;
+          });
+      });
+      this.likeSubscriptions.set(id, subscription);
+    });
   }
 
   onViewAll(): void {

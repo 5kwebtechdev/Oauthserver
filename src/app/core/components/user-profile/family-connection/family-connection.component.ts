@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -19,6 +19,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Clipboard } from '@capacitor/clipboard';
 @Component({
   standalone: true,
   selector: 'family-connection',
@@ -26,7 +27,7 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
   templateUrl: './family-connection.component.html',
   styleUrls: ['./family-connection.component.scss']
 })
-export class FamilyConnectionComponent implements OnInit {
+export class FamilyConnectionComponent implements OnInit, OnDestroy {
   familyName: string = 'Your Family';
   familyStatus: string = 'ACTIVE';
   createdOn: string = '';
@@ -45,6 +46,9 @@ export class FamilyConnectionComponent implements OnInit {
   familyAgeLocked = false;
   familyHasFamily = false;
   isSwitchingMember = false;
+  copyFeedbackMessage = '';
+  copyFeedbackIsError = false;
+  private copyFeedbackTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
     private router: Router,
@@ -216,29 +220,62 @@ export class FamilyConnectionComponent implements OnInit {
    * Copy family code to clipboard with native toast feedback
    */
   async copyFamilyCode(): Promise<void> {
-    if (!this.familyCode) {
-      console.warn('No family code available to copy');
+    const familyCode = this.familyCode.trim();
+    if (!familyCode) {
+      this.showCopyFeedback('Family code is not available yet.', true);
       return;
     }
 
     try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(this.familyCode);
+      if (Capacitor.isNativePlatform()) {
+        await Clipboard.write({ string: familyCode });
+      } else if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(familyCode);
       } else {
-        const textArea = document.createElement('textarea');
-        textArea.value = this.familyCode;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-9999px';
-        textArea.style.top = '-9999px';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
+        this.copyWithLegacyClipboard(familyCode);
       }
+
+      this.showCopyFeedback('Copied!');
     } catch (error) {
-      console.error('Error copying family code:', error);
+      console.error('[FamilyConnection] Unable to copy family code:', error);
+      this.showCopyFeedback('Could not copy. Please try again.', true);
     }
+  }
+
+  private copyWithLegacyClipboard(text: string): void {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.readOnly = true;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-9999px';
+    textArea.style.top = '0';
+    document.body.appendChild(textArea);
+
+    try {
+      textArea.focus();
+      textArea.select();
+      textArea.setSelectionRange(0, text.length);
+      if (!document.execCommand('copy')) {
+        throw new Error('Legacy clipboard command was rejected');
+      }
+    } finally {
+      document.body.removeChild(textArea);
+    }
+  }
+
+  private showCopyFeedback(message: string, isError = false): void {
+    clearTimeout(this.copyFeedbackTimer);
+    this.copyFeedbackMessage = message;
+    this.copyFeedbackIsError = isError;
+    this.copyFeedbackTimer = setTimeout(() => {
+      this.copyFeedbackMessage = '';
+      this.copyFeedbackIsError = false;
+      try { this.cdr.detectChanges(); } catch (error) { /* component may be closing */ }
+    }, 2200);
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.copyFeedbackTimer);
   }
 
   instructionItems: string[] = [
