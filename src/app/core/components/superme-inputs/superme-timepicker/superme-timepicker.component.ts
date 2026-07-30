@@ -10,6 +10,8 @@ import {
   NG_VALUE_ACCESSOR,
 } from '@angular/forms';
 
+type WheelField = 'hour' | 'minute' | 'period';
+
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'superme-timepicker',
@@ -27,30 +29,36 @@ import {
 export class SupermeTimepickerComponent implements ControlValueAccessor {
   @Input() disabled = false;
   @Input() placeholder: string = 'Time';
-  // Optional "h:mm AM/PM" string to seed the popup's clock position when no
+  // Label shown in the popup title as "Set {label}" (e.g. "Start Time").
+  @Input() label: string = 'Time';
+  // Optional "h:mm AM/PM" string to seed the popup's wheel position when no
   // value is chosen yet (e.g. seed End Time from Start Time). Falls back to
   // the current time when not provided.
   @Input() seedTime: string | null = null;
+  // Optional quick-pick durations (in minutes, e.g. [15, 30, 45, 60]) shown as
+  // pills below the wheels — each jumps the wheels to seedTime + that many
+  // minutes. Used for End Time; omitted (null) hides the row entirely.
+  @Input() quickDurations: number[] | null = null;
 
   @ViewChild('popup') popupRef!: ElementRef;
-  @ViewChild('hourInput') hourInputRef!: ElementRef<HTMLInputElement>;
-  @ViewChild('minuteInput') minuteInputRef!: ElementRef<HTMLInputElement>;
-  @ViewChild('clockSvg') clockSvgRef!: ElementRef<SVGSVGElement>;
+  @ViewChild('hourWheel') hourWheelRef?: ElementRef<HTMLDivElement>;
+  @ViewChild('minuteWheel') minuteWheelRef?: ElementRef<HTMLDivElement>;
+  @ViewChild('periodWheel') periodWheelRef?: ElementRef<HTMLDivElement>;
+
+  // Row height in px — must match $wheel-row-height in the stylesheet.
+  readonly rowHeight = 44;
+  readonly hoursList = Array.from({ length: 12 }, (_, i) => i + 1);
+  readonly minutesList = Array.from({ length: 60 }, (_, i) => i);
+  readonly periodsList: Array<'AM' | 'PM'> = ['AM', 'PM'];
 
   showPopup = false;
   selectedHour = 12;
   selectedMinute = 0;
   ampm: 'AM' | 'PM' = 'AM';
-  selecting: 'hour' | 'minute' = 'hour';
   hasValue = false;
-  isDragging = false;
+  selectedDurationMinutes: number | null = null;
 
-  editingField: 'hour' | 'minute' | null = null;
-  hourBuffer: string = '12';
-  minuteBuffer: string = '00';
-
-  /** Start position of the current pointer-down, used to distinguish tap vs drag. */
-  private tapStartPos: { x: number; y: number } | null = null;
+  private scrollTimeouts: Record<WheelField, any> = { hour: null, minute: null, period: null };
 
   onChange: any = () => {};
   onTouched: any = () => {};
@@ -68,14 +76,12 @@ export class SupermeTimepickerComponent implements ControlValueAccessor {
       if (!isNaN(hour)) this.selectedHour = hour;
       if (!isNaN(minute)) this.selectedMinute = minute;
       if (period === 'AM' || period === 'PM') this.ampm = period;
-      this.hourBuffer = this.selectedHour.toString().padStart(2, '0');
-      this.minuteBuffer = this.selectedMinute.toString().padStart(2, '0');
       this.hasValue = true;
     } else {
       // No time chosen (fresh form, or the parent explicitly cleared it e.g.
       // for a future date). Just reset hasValue here so the field shows its
       // placeholder instead of a stale time left over from a previous form
-      // use — the actual clock position gets (re-)seeded in openPopup(),
+      // use — the actual wheel position gets (re-)seeded in openPopup(),
       // using whatever seedTime/now is current at the moment the user taps
       // it, not whatever it happened to be when this value was last cleared.
       this.hasValue = false;
@@ -97,7 +103,7 @@ export class SupermeTimepickerComponent implements ControlValueAccessor {
   openPopup() {
     if (this.disabled) return;
 
-    // Seed the clock's starting position fresh every time it opens with no
+    // Seed the wheel's starting position fresh every time it opens with no
     // value chosen yet — prefer seedTime (e.g. End Time seeding from
     // whatever Start Time currently is) over "now", since "now" is usually
     // already in the past for a same-day End Time and would make the very
@@ -120,201 +126,110 @@ export class SupermeTimepickerComponent implements ControlValueAccessor {
       }
     }
 
-    this.selecting = 'hour';
-    this.editingField = null;
-    this.hourBuffer = this.selectedHour.toString().padStart(2, '0');
-    this.minuteBuffer = this.selectedMinute.toString().padStart(2, '0');
+    // If the current value happens to equal one of the quick-duration
+    // shortcuts (measured from seedTime), pre-highlight that pill.
+    this.selectedDurationMinutes = this.quickDurations?.find(d => {
+      const r = this.computeTimeFromDuration(d);
+      return r.hour === this.selectedHour && r.minute === this.selectedMinute && r.period === this.ampm;
+    }) ?? null;
+
     this.showPopup = true;
     this.onTouched();
+
+    // Wait for the popup to render (it's behind *ngIf) before measuring/scrolling.
+    setTimeout(() => this.scrollWheelsToCurrentValues(), 0);
   }
 
   cancel() {
     this.showPopup = false;
-    this.editingField = null;
   }
 
   confirm() {
-    this.finishEdit('hour');
-    this.finishEdit('minute');
     this.onChange(this.timeString);
     this.hasValue = true;
     this.showPopup = false;
-    this.editingField = null;
   }
 
-  startEdit(field: 'hour' | 'minute') {
-    this.selecting = field;
-    this.editingField = field;
-    if (field === 'hour') {
-      this.hourBuffer = this.selectedHour.toString().padStart(2, '0');
-    } else {
-      this.minuteBuffer = this.selectedMinute.toString().padStart(2, '0');
-    }
-    // Use a small delay so Ionic WebView registers the focus and shows the keyboard
-    setTimeout(() => {
-      try {
-        const el = field === 'hour'
-          ? this.hourInputRef?.nativeElement
-          : this.minuteInputRef?.nativeElement;
-        if (el) {
-          el.focus();
-          el.select();
-        }
-      } catch (e) {}
-    }, 50);
+  // Set while openPopup() is snapping the wheels to the seeded/current value,
+  // so the resulting synthetic 'scroll' events don't get mistaken for a real
+  // user pick and commit a spurious onChange before the user has touched anything.
+  private isProgrammaticScroll = false;
+
+  private scrollWheelsToCurrentValues() {
+    this.isProgrammaticScroll = true;
+    this.scrollWheelTo(this.hourWheelRef, this.hoursList.indexOf(this.selectedHour));
+    this.scrollWheelTo(this.minuteWheelRef, this.minutesList.indexOf(this.selectedMinute));
+    this.scrollWheelTo(this.periodWheelRef, this.periodsList.indexOf(this.ampm));
+    setTimeout(() => { this.isProgrammaticScroll = false; }, 50);
   }
 
-  finishEdit(field: 'hour' | 'minute') {
-    if (field === 'hour') {
-      if (!this.hourBuffer) this.hourBuffer = this.selectedHour.toString().padStart(2, '0');
-    } else {
-      if (!this.minuteBuffer) this.minuteBuffer = this.selectedMinute.toString().padStart(2, '0');
-    }
-    if (this.editingField === field) this.editingField = null;
-    try { this.onChange(this.timeString); } catch (e) {}
+  private scrollWheelTo(ref: ElementRef<HTMLDivElement> | undefined, index: number, smooth = false) {
+    const el = ref?.nativeElement;
+    if (!el || index < 0) return;
+    if (smooth) el.scrollTo({ top: index * this.rowHeight, behavior: 'smooth' });
+    else el.scrollTop = index * this.rowHeight;
   }
 
-  onHourInput(event: Event) {
-    const input = event.target as HTMLInputElement;
-    // Strip non-digits, cap at 2 chars
-    const raw = input.value.replace(/\D/g, '').slice(0, 2);
-    this.hourBuffer = raw;
+  private computeTimeFromDuration(minutes: number): { hour: number; minute: number; period: 'AM' | 'PM' } {
+    const base = this.parseSeedTime(this.seedTime) || { hour: this.selectedHour, minute: this.selectedMinute, period: this.ampm };
+    let hour24 = base.hour % 12;
+    if (base.period === 'PM') hour24 += 12;
+    const total = (((hour24 * 60 + base.minute + minutes) % 1440) + 1440) % 1440;
+    const hour24Result = Math.floor(total / 60);
+    const minute = total % 60;
+    const period: 'AM' | 'PM' = hour24Result >= 12 ? 'PM' : 'AM';
+    const hour = hour24Result % 12 === 0 ? 12 : hour24Result % 12;
+    return { hour, minute, period };
+  }
 
-    if (!raw.length) return;
-
-    const num = parseInt(raw, 10);
-    let val = raw === '00' ? 12 : num;
-    if (val < 1) val = 1;
-    if (val > 12) val = 12;
-    this.selectedHour = val;
-
-    // After 2 digits, auto-advance to minute
-    if (raw.length === 2) {
-      this.selecting = 'minute';
-      this.editingField = 'minute';
-      this.minuteBuffer = this.selectedMinute.toString().padStart(2, '0');
-      setTimeout(() => {
-        try {
-          this.minuteInputRef?.nativeElement?.focus();
-          this.minuteInputRef?.nativeElement?.select();
-        } catch (e) {}
-      }, 50);
+  formatDuration(minutes: number): string {
+    if (minutes % 60 === 0) {
+      const hrs = minutes / 60;
+      return `${hrs} hr${hrs > 1 ? 's' : ''}`;
     }
+    return `${minutes} min`;
+  }
+
+  /** Jumps the wheels to seedTime + `minutes` — a genuine user pick, so it commits immediately. */
+  selectDuration(minutes: number) {
+    const result = this.computeTimeFromDuration(minutes);
+    this.selectedHour = result.hour;
+    this.selectedMinute = result.minute;
+    this.ampm = result.period;
+    this.selectedDurationMinutes = minutes;
+
+    this.isProgrammaticScroll = true;
+    this.scrollWheelTo(this.hourWheelRef, this.hoursList.indexOf(this.selectedHour), true);
+    this.scrollWheelTo(this.minuteWheelRef, this.minutesList.indexOf(this.selectedMinute), true);
+    this.scrollWheelTo(this.periodWheelRef, this.periodsList.indexOf(this.ampm), true);
+    setTimeout(() => { this.isProgrammaticScroll = false; }, 400);
 
     try { this.onChange(this.timeString); } catch (e) {}
   }
 
-  onMinuteInput(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const raw = input.value.replace(/\D/g, '').slice(0, 2);
-    this.minuteBuffer = raw;
+  /**
+   * Fires on every scroll tick so the highlighted row tracks the finger in
+   * real time; the actual onChange (form value commit) is debounced until
+   * scrolling settles so validation doesn't run mid-drag.
+   */
+  onWheelScroll(field: WheelField, el: HTMLDivElement) {
+    const list: Array<number | 'AM' | 'PM'> =
+      field === 'hour' ? this.hoursList : field === 'minute' ? this.minutesList : this.periodsList;
+    const idx = Math.max(0, Math.min(list.length - 1, Math.round(el.scrollTop / this.rowHeight)));
+    const value = list[idx];
 
-    if (!raw.length) return;
+    if (field === 'hour') this.selectedHour = value as number;
+    else if (field === 'minute') this.selectedMinute = value as number;
+    else this.ampm = value as 'AM' | 'PM';
 
-    const num = parseInt(raw, 10);
-    this.selectedMinute = Math.min(59, Math.max(0, num));
+    if (this.isProgrammaticScroll) return;
 
-    try { this.onChange(this.timeString); } catch (e) {}
-  }
+    // A manual scroll on any wheel overrides whatever quick-duration pill was selected.
+    this.selectedDurationMinutes = null;
 
-  setAMPM(period: 'AM' | 'PM') {
-    this.ampm = period;
-    try { this.onChange(this.timeString); } catch (e) {}
-  }
-
-  selectTime(unit: number) {
-    if (this.selecting === 'hour') {
-      this.selectedHour = unit;
-      this.hourBuffer = unit.toString().padStart(2, '0');
-    } else {
-      this.selectedMinute = unit;
-      this.minuteBuffer = unit.toString().padStart(2, '0');
-    }
-    if (this.editingField === this.selecting) this.editingField = null;
-    try { this.onChange(this.timeString); } catch (e) {}
-  }
-
-  getHandAngle(): number {
-    if (this.selecting === 'hour') {
-      return (360 / 12) * (this.selectedHour % 12);
-    }
-    return (360 / 60) * this.selectedMinute;
-  }
-
-  getHandX(): number {
-    const angle = this.getHandAngle();
-    return 100 + 60 * Math.sin((angle * Math.PI) / 180);
-  }
-
-  getHandY(): number {
-    const angle = this.getHandAngle();
-    return 100 - 60 * Math.cos((angle * Math.PI) / 180);
-  }
-
-  getTransform(index: number): string {
-    const angle = (360 / 12) * index;
-    const radius = 77;
-    const radians = (angle * Math.PI) / 180;
-    const x = radius * Math.sin(radians);
-    const y = -radius * Math.cos(radians);
-    return `translate(${x} ${y})`;
-  }
-
-  isSelected(index: number): boolean {
-    if (this.selecting === 'hour') {
-      return (index === 0 ? 12 : index) === this.selectedHour;
-    }
-    return (index * 5) === this.selectedMinute;
-  }
-
-  private getValueFromPointer(event: PointerEvent): number {
-    const svg = this.clockSvgRef.nativeElement;
-    const rect = svg.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * 200;
-    const y = ((event.clientY - rect.top) / rect.height) * 200;
-    const dx = x - 100;
-    const dy = y - 100;
-
-    let angle = Math.atan2(dx, -dy) * (180 / Math.PI);
-    if (angle < 0) angle += 360;
-
-    if (this.selecting === 'hour') {
-      let value = Math.round(angle / 30) % 12;
-      if (value === 0) value = 12;
-      return value;
-    }
-    return Math.round(angle / 6) % 60;
-  }
-
-  onClockPointerDown(event: PointerEvent): void {
-    event.preventDefault();
-    this.isDragging = true;
-    this.tapStartPos = { x: event.clientX, y: event.clientY };
-    // Capture on the SVG element itself — keeps pointermove firing even when
-    // the pointer moves outside the SVG bounds (fixes counter-clockwise drag)
-    try { this.clockSvgRef.nativeElement.setPointerCapture(event.pointerId); } catch (e) {}
-    this.selectTime(this.getValueFromPointer(event));
-  }
-
-  onClockPointerMove(event: PointerEvent): void {
-    if (!this.isDragging) return;
-    event.preventDefault();
-    this.selectTime(this.getValueFromPointer(event));
-  }
-
-  onClockPointerUp(event: PointerEvent): void {
-    if (!this.isDragging) return;
-    this.isDragging = false;
-    try { this.clockSvgRef.nativeElement.releasePointerCapture(event.pointerId); } catch (e) {}
-
-    // Auto-advance from hour → minute on a single tap (pointer barely moved)
-    if (this.tapStartPos && this.selecting === 'hour') {
-      const dx = event.clientX - this.tapStartPos.x;
-      const dy = event.clientY - this.tapStartPos.y;
-      if (Math.sqrt(dx * dx + dy * dy) < 8) {
-        setTimeout(() => { this.selecting = 'minute'; }, 180);
-      }
-    }
-    this.tapStartPos = null;
+    clearTimeout(this.scrollTimeouts[field]);
+    this.scrollTimeouts[field] = setTimeout(() => {
+      try { this.onChange(this.timeString); } catch (e) {}
+    }, 120);
   }
 }
