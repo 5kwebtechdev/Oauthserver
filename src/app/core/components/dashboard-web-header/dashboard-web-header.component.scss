@@ -1,0 +1,197 @@
+@use '../../../../theme/breakpoints' as bp;
+
+:host {
+  display: none;
+}
+
+@include bp.tablet-up {
+  :host {
+    display: block;
+  }
+}
+
+.web-header {
+  width: 100%;
+  box-sizing: border-box;
+  background: #FFFFFF;
+  box-shadow: 0 2px 10px rgba(40, 37, 39, 0.06);
+  position: relative;
+  z-index: 20;
+}
+
+.web-header__inner {
+  @include bp.web-container;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 14px 32px;
+}
+
+.web-header__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.web-header__logo {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.web-header__wordmark {
+  color: #282527;
+  font-family: var(--font-heading);
+  font-size: 19px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.web-header__nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-shrink: 1;
+}
+
+.web-header__nav-item {
+  position: relative;
+}
+
+.web-header__nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: #6B656A;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+
+  ion-icon {
+    font-size: 14px;
+  }
+
+  &:hover,
+  &.active {
+    color: #432478;
+  }
+}
+
+.web-header__nav-item.open .web-header__nav-link--toggle {
+  color: #432478;
+
+  ion-icon {
+    transform: rotate(180deg);
+  }
+}
+
+.web-header__dropdown {
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 200px;
+  background: #FFFFFF;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(40, 37, 39, 0.16);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.web-header__dropdown-link {
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #282527;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    background: #FCF3F6;
+    color: #90214D;
+  }
+}
+
+// ── Right-hand group (stats + avatar) ─────────────────────────────────────
+.web-header__right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.web-header__stats {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-shrink: 0;
+}
+
+.web-header__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+
+  span {
+    color: #282527;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 800;
+  }
+}
+
+.web-header__stat-icon {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.web-header__avatar {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border: 2px solid #8B8DCB;
+  background: #FFFFFF;
+
+  app-img {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.web-header__avatar-initial {
+  color: #432478;
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+@include bp.above(lg) {
+  .web-header__inner {
+    padding-inline: 48px;
+  }
+
+  .web-header__nav {
+    gap: 36px;
+  }
+}

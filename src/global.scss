@@ -107,6 +107,18 @@ label {
   max-width: unset;
 }
 
+// Bootstrap (loaded globally in index.html, purely for utility classes like
+// d-flex/w-100/p-0 used across the app) ships its own `.container` with a
+// hidden responsive max-width (540px/720px/960px/1140px/1320px per
+// breakpoint). That silently caps any element using the bare `container`
+// class on tablet/desktop, which is never what's intended here — every
+// current usage relies on `.container` purely for its (non-existent, until
+// now) layout-reset behavior, not Bootstrap's grid sizing. Neutralize it once
+// globally instead of chasing per-component overrides.
+.container {
+  max-width: none;
+}
+
 .p-0 {
   padding: 0 !important;
 }
