@@ -401,7 +401,9 @@
 
           <h4 class="profile-field-heading">
             <span class="profile-field-title">Phone Number</span>
-            <span class="profile-field-hint">Optional</span>
+            <span class="profile-field-meta">
+              <span class="profile-optional-badge">Optional</span>
+            </span>
           </h4>
           <div class="input-group">
             <div class="phone-input-container">
@@ -419,16 +421,11 @@
 
           <h4 class="profile-field-heading">
             <span class="profile-field-title">Date of Birth</span>
-            <ng-container *ngIf="currentRole !== 'parent'">
-              <span *ngIf="computedAge !== null; else noAge" class="profile-field-hint age-count">
+            <span class="profile-field-meta">
+              <span *ngIf="computedAge !== null && currentRole !== 'parent'" class="profile-field-hint age-count">
                 {{ computedAge }} years old
               </span>
-
-              <ng-template #noAge>
-                <span class="profile-field-hint age-count">Optional</span>
-              </ng-template>
-            </ng-container>
-            <span *ngIf="currentRole === 'parent'" class="profile-field-hint">Optional</span>
+            </span>
           </h4>
           <div class="input-group">
             <!--            <input  formControlName="dob" type="text" placeholder="Date of Birth" />-->
@@ -438,13 +435,21 @@
               <input type="text" formControlName="dob" readonly (click)="openBirthdayPickerNow()"
                 placeholder="Select Date of birth" />
             </superme-birthdaypicker>
+            <div class="error" *ngIf="dob()?.invalid && (dob()?.dirty || dob()?.touched)">
+              Please select your date of birth.
+            </div>
           </div>
           <h4 class="profile-field-heading">
             <span class="profile-field-title">Gender</span>
-            <span class="profile-field-hint">
-              Optional — {{ currentRole === 'parent' ? 'used for identifying relationship with child' : 'used for personalization touches' }}
+            <span class="profile-field-meta">
+              <span class="profile-optional-badge">Optional</span>
             </span>
           </h4>
+          <p class="profile-field-description">
+            {{ currentRole === 'parent'
+              ? 'Used only to help identify your relationship with your child.'
+              : 'Used only to personalize your experience.' }}
+          </p>
           <div class="gender-options" role="group" aria-label="Gender">
             <div class="gender-option">
             
@@ -471,20 +476,24 @@
             </div>
           </div>
         </form>
-        <ng-container *ngIf="gender && currentRole !== 'parent'">
-            <h4 class="profile-field-heading" style="margin-top: 15px">
+        <section class="profile-avatar-section" aria-labelledby="choose-avatar-heading">
+            <h4 id="choose-avatar-heading" class="profile-field-heading profile-avatar-heading">
               <span class="profile-field-title">Choose an Avatar</span>
               <span class="profile-field-hint">Pick one that you like</span>
             </h4>
             <div class="row details-avatar-grid">
               <ng-container *ngFor="let avatar of avatars">
-                <div class="col-4 single-avatar" *ngIf="gender === 'prefer_not_to_say' || avatar.gender === gender" (click)="avatarSelected = avatar.key"
-                  [ngClass]="avatarSelected === avatar.key ? 'active' : null">
-                  <img src="{{avatar.value}}" alt="">
-                </div>
+                <button type="button" class="col-4 single-avatar"
+                  *ngIf="!gender || gender === 'prefer_not_to_say' || avatar.gender === gender"
+                  (click)="avatarSelected = avatar.key"
+                  [ngClass]="avatarSelected === avatar.key ? 'active' : null"
+                  [attr.aria-label]="'Choose avatar ' + avatar.key"
+                  [attr.aria-pressed]="avatarSelected === avatar.key">
+                  <img [src]="avatar.value" [alt]="'Avatar ' + avatar.key">
+                </button>
               </ng-container>
             </div>
-        </ng-container>
+        </section>
       </div>
 
 

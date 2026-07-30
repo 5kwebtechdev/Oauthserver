@@ -50,7 +50,7 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   isSortOpen = false;
   currentSort: TutorSortOption = 'recent';
   readonly sortOptions: { key: TutorSortOption; label: string }[] = [
-    { key: 'alphabets', label: 'Alphabets' },
+    { key: 'alphabets', label: 'Alphabetical' },
     { key: 'mostLiked', label: 'Most Liked' },
     { key: 'experience', label: 'Experience' },
     { key: 'recent', label: 'Recently added' }

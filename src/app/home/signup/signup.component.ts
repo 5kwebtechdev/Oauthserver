@@ -370,9 +370,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.usernameRulesValidator()
       ]],
       phone: ['', []],
-      // Optional — Apple/Google sign-in never supplies this, and Apple's
-      // App Review flagged requiring it as a Sign In with Apple violation.
-      dob: ['', []],
+      dob: ['', [Validators.required]],
     })
 
     this.passwordForm = this.fb.group({
@@ -512,10 +510,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.name?.invalid || this.dob()?.invalid) return true;
     if (this.currentRole !== 'parent' && this.username?.invalid) return true;
     if (this.currentRole !== 'parent' && this.usernameAvailability !== 'available') return true;
-    // Gender, date of birth, and phone are optional — Apple App Review
-    // rejected requiring personal details beyond what Sign In with Apple
-    // provides, and users can add these later from the Profile screen.
-    if (this.currentRole !== 'parent' && !this.avatarSelected) return true;
+    // Phone and gender remain optional; DOB and avatar are required.
+    if (!this.avatarSelected) return true;
     return false;
   }
 
@@ -738,17 +734,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       && !!this.pets[this.selectedPetIndex];
   }
 
-  // Generate initial from name for parent avatar placeholder
-  getNameInitial(): string {
-    try {
-      const fullName: string = (this.profileForm.get('name')?.value || '').trim();
-      if (!fullName) return '?';
-      return fullName.charAt(0).toUpperCase();
-    } catch {
-      return '?';
-    }
-  }
-
   // Header helpers for template bindings to avoid complex inline expressions
   get headerText(): string {
     if (this.step === 1) return "Who's using the app?";
@@ -905,15 +890,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
-    // Only validate avatar selection if not on pet selection AND role is not parent
-    if (this.step !== 4 && this.currentRole !== 'parent' && !this.avatarSelected) {
+    // Profile completion requires an explicit avatar for every signup role.
+    if (this.step !== 4 && !this.avatarSelected) {
       this.core.triggerToasrt('Please select an avatar');
       return;
     }
 
-    // persist avatar or initial when applicable
+    // Persist the user's explicit avatar selection.
     try {
-      const avatarValue = this.currentRole === 'parent' ? this.getNameInitial() : (this.avatarSelected ?? '');
+      const avatarValue = this.avatarSelected ?? '';
       if (avatarValue) sessionStorage.setItem('signup_avatar', String(avatarValue));
     } catch (e) { }
 
@@ -1000,17 +985,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       }
     }
 
-    // Date of birth is optional — no age gate here beyond the under-8 check above.
+    // Date of birth was collected on the required profile step.
 
-    // persist profile details in session (name, dob, gender, avatar/initial)
+    // Persist profile details in session.
     try {
       const profile = {
         name: this.profileForm.get('name')?.value,
         dob: parsedDob ? parsedDob.getTime() : null,
         gender: this.gender,
-        avatar: this.currentRole === 'parent' ? this.getNameInitial() : this.avatarSelected
+        avatar: this.avatarSelected
       };
       sessionStorage.setItem('signup_profile', JSON.stringify(profile));
+      sessionStorage.setItem('signup_avatar', String(this.avatarSelected));
       this.persistProfileDraft(profile);
     } catch (e) { }
 
@@ -1041,10 +1027,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
-    // Date of birth and gender are optional — not required to continue.
+    if (this.profileForm.get('dob')?.invalid) {
+      this.core.triggerToasrt('Please select your date of birth.');
+      return;
+    }
 
-    // Skip avatar requirement for parent; require for others
-    if (this.currentRole !== 'parent' && !this.avatarSelected) {
+    if (!this.avatarSelected) {
       this.core.triggerToasrt('Please select an avatar');
       return;
     }
@@ -1053,8 +1041,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const parsedDob = dobVal ? new Date(dobVal) : null;
     const age = parsedDob ? this.calculateAge(parsedDob) : null;
 
-    // If user is under 8 years old, show access restricted popup. Only
-    // applies when a date of birth was actually provided — dob is optional.
+    // If user is under 8 years old, show the access restricted popup.
     if (age !== null && age < 8) {
       this.showAccessRestrictedModal = true;
       return;
@@ -1064,7 +1051,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
-    // persist profile details (store initial as avatar for parent)
+    // Persist profile details, including the selected avatar for every role.
     try {
       const profile = {
         name: this.profileForm.get('name')?.value,
@@ -1072,9 +1059,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         phone: this.profileForm.get('phone')?.value || undefined,
         dob: parsedDob ? parsedDob.getTime() : null,
         gender: this.gender,
-        avatar: this.currentRole === 'parent' ? this.getNameInitial() : this.avatarSelected
+        avatar: this.avatarSelected
       };
       sessionStorage.setItem('signup_profile', JSON.stringify(profile));
+      sessionStorage.setItem('signup_avatar', String(this.avatarSelected));
       this.persistProfileDraft(profile);
       // Persist referral code (if provided)
       if (this.referralCode && this.referralCode.length > 0) {
@@ -3105,16 +3093,23 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
-    const credentials = this.signupCredentialState.getPendingLogin();
-    if (!credentials?.password || (!credentials.email && !credentials.phone)) {
+    const credentials = this.resolveCompletedLoginCredentials(completedUserData);
+    if (!credentials) {
       this.registrationInProgress = false;
       this.loadingService.forceHide();
-      this.navigateReplacing('/home/login');
+      this.errorMessage = 'Your account was created, but automatic sign-in could not start. Please tap Unlock My Potential again.';
       return;
     }
 
     this.authService.login(credentials).subscribe({
       next: (loginResponse) => {
+        if (!this.authService.isLoggedIn()) {
+          this.registrationInProgress = false;
+          this.loadingService.forceHide();
+          this.errorMessage = 'Your account is ready, but automatic sign-in did not complete. Please tap Unlock My Potential again.';
+          return;
+        }
+
         // AuthService stores the login response before this callback. Reapply
         // the newer unlock response so a stale login payload cannot send the
         // completed parent back into onboarding.
@@ -3142,10 +3137,48 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       error: (error) => {
         this.registrationInProgress = false;
         this.loadingService.forceHide();
-        this.errorMessage = error?.error?.message || 'Account created. Please log in to continue.';
-        this.navigateReplacing('/home/login');
+        this.errorMessage = error?.error?.message || 'Your account is ready, but automatic sign-in failed. Please tap Unlock My Potential again.';
       }
     });
+  }
+
+  private resolveCompletedLoginCredentials(
+    completedUserData?: RegistrationDraftData
+  ): { email?: string; phone?: string; password: string } | null {
+    const pending = this.signupCredentialState.getPendingLogin();
+    const draft = this.onboardingState.getRegistrationState()?.savedData || {};
+    const currentUser = this.authService.getUserData() || {};
+    const password = String(
+      pending?.password
+      || this.signupCredentialState.getPassword()
+      || ''
+    );
+    const email = String(
+      pending?.email
+      || completedUserData?.email
+      || currentUser?.email
+      || draft?.email
+      || ''
+    ).trim();
+    const phone = String(
+      pending?.phone
+      || completedUserData?.phone
+      || currentUser?.phone
+      || draft?.phone
+      || ''
+    ).trim();
+
+    if (!password || (!email && !phone)) {
+      return null;
+    }
+
+    const credentials = {
+      ...(email ? { email } : {}),
+      ...(!email && phone ? { phone } : {}),
+      password
+    };
+    this.signupCredentialState.setPendingLogin(credentials);
+    return credentials;
   }
 
   private beginManagedChildSignupAfterParentUnlock(): boolean {
@@ -3298,7 +3331,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
             this.gender = savedGender;
           }
         }
-        if (profile?.avatar && profile.avatar !== this.getNameInitial()) {
+        if (profile?.avatar) {
           this.avatarSelected = profile.avatar;
         }
       }

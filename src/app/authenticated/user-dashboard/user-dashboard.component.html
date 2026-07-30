@@ -114,26 +114,29 @@
           </div>
 
           <div class="header-stats-row" aria-label="Your stats">
-            <div class="header-stat">
+            <button type="button" class="header-stat" [routerLink]="['/authed/streaks']"
+              [attr.aria-label]="'Open streaks. Current streak: ' + userStreaks">
               <span class="header-stat-icon-frame header-stat-icon-frame--streak" aria-hidden="true">
                 <img src="assets/icons/child-home-streak-figma.png" alt="" class="header-stat-icon">
               </span>
               <span class="header-stat-value">{{ userStreaks }}</span>
-            </div>
+            </button>
             <img class="header-stat-divider" src="assets/icons/child-home-stat-divider-figma.svg" alt="" aria-hidden="true">
-            <div class="header-stat">
+            <button type="button" class="header-stat" [routerLink]="['/authed/trophies']"
+              [attr.aria-label]="'Open trophies. Total trophies: ' + userDays">
               <span class="header-stat-icon-frame" aria-hidden="true">
                 <img src="assets/icons/child-home-trophy-figma.png" alt="" class="header-stat-icon">
               </span>
               <span class="header-stat-value">{{ userDays }}</span>
-            </div>
+            </button>
             <img class="header-stat-divider" src="assets/icons/child-home-stat-divider-figma.svg" alt="" aria-hidden="true">
-            <div class="header-stat">
+            <button type="button" class="header-stat" [routerLink]="['/authed/badges']"
+              [attr.aria-label]="'Open badges. Total badges: ' + userBadges">
               <span class="header-stat-icon-frame" aria-hidden="true">
                 <img src="assets/icons/child-home-badge-figma.png" alt="" class="header-stat-icon">
               </span>
               <span class="header-stat-value">{{ userBadges }}</span>
-            </div>
+            </button>
           </div>
         </section>
       </div>
