@@ -19,6 +19,8 @@ import { QuickAccessSectionComponent } from "../../core/components/quick-access-
 import { SupermePetComponent } from '../../core/components/superme-pet/superme-pet.component';
 
 import { FooterComponent } from '../../core/components/footer/footer.component';
+import { DashboardWebHeaderComponent } from '../../core/components/dashboard-web-header/dashboard-web-header.component';
+import { DashboardWebFooterComponent } from '../../core/components/dashboard-web-footer/dashboard-web-footer.component';
 import { SkeletonImageComponent } from '../../core/components/skeleton-image/skeleton-image.component';
 import { PetMessagesService, PetMessage, PetMood } from '../../core/services/pet-messages.service';
 import { PetMessageApiService, ApiOverlayType } from '../../core/services/pet-message-api.service';
@@ -61,6 +63,8 @@ type HomeTimePeriod = 'morning' | 'evening' | 'night';
     SupermeInputsModule,
     SupermePetComponent,
     FooterComponent,
+    DashboardWebHeaderComponent,
+    DashboardWebFooterComponent,
     SkeletonImageComponent,
   ]
 })

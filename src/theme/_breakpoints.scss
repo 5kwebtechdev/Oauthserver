@@ -26,3 +26,15 @@ $_breakpoints: (xs: $bp-xs, sm: $bp-sm, md: $bp-md, lg: $bp-lg, xl: $bp-xl, '2xl
 @mixin tablet-up     { @media (min-width: #{$bp-md + 1}) { @content; } }
 @mixin mobile-only   { @media (max-width: $bp-sm)         { @content; } }
 @mixin landscape-xs  { @media (orientation: landscape) and (max-height: 500px) { @content; } }
+
+// Shared fluid container: full-bleed background, content capped and centered.
+// Used by the tablet/web-only dashboard header, footer, and page content so
+// they all line up on the same left/right edges instead of drifting.
+$web-container-max: 1200px;
+
+@mixin web-container {
+  width: 100%;
+  max-width: $web-container-max;
+  margin-inline: auto;
+  box-sizing: border-box;
+}

@@ -1,4 +1,5 @@
 @use 'sass:list';
+@use 'sass:map';
 // Mixins
 @mixin border-color($color) {
   border-bottom-color: $color;
@@ -9,10 +10,39 @@
   opacity: 1 !important;
 }
 
+/* Flat single-color glyph icons, recolored per active tab via CSS mask (see $theme-colors-dark below) */
+.form-icon {
+  display: block;
+  background-color: currentColor;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.form-icon--edit { -webkit-mask-image: url('/assets/icons/edit.svg'); mask-image: url('/assets/icons/edit.svg'); }
+.form-icon--category { -webkit-mask-image: url('/assets/icons/category.svg'); mask-image: url('/assets/icons/category.svg'); }
+.form-icon--reminder-bell { -webkit-mask-image: url('/assets/icons/reminder-bell-figma.svg'); mask-image: url('/assets/icons/reminder-bell-figma.svg'); }
+.form-icon--reminder-add { -webkit-mask-image: url('/assets/icons/reminder-add-figma.svg'); mask-image: url('/assets/icons/reminder-add-figma.svg'); }
+.form-icon--study { -webkit-mask-image: url('/assets/icons/Study.svg'); mask-image: url('/assets/icons/Study.svg'); }
+.form-icon--health { -webkit-mask-image: url('/assets/icons/Health.svg'); mask-image: url('/assets/icons/Health.svg'); }
+.form-icon--skill { -webkit-mask-image: url('/assets/icons/Skill.svg'); mask-image: url('/assets/icons/Skill.svg'); }
+.form-icon--routine { -webkit-mask-image: url('/assets/icons/Routine.svg'); mask-image: url('/assets/icons/Routine.svg'); }
+.form-icon--personal { -webkit-mask-image: url('/assets/icons/Personal.svg'); mask-image: url('/assets/icons/Personal.svg'); }
+
 $theme-colors: (
-  habits: #7471BA,
+  habits: #8B8DCB,
   tasks: #F6AC72,
   timetable: #89B3B6
+);
+
+// Darker companion "ink" shade per theme, used for toggle thumbs/selected-day accents
+$theme-colors-dark: (
+  habits: #46456A,
+  tasks: #B93915,
+  timetable: #3E5A60
 );
 
 .habit-input-root {
@@ -24,6 +54,8 @@ $theme-colors: (
 
   @each $theme, $color in $theme-colors {
     &.#{$theme} {
+      $dark: map.get($theme-colors-dark, $theme);
+
       .routine-section, .priority-selection{
         @include border-color($color);
         color: $color;
@@ -31,6 +63,47 @@ $theme-colors: (
       .date-time-selection{
                 @include border-color($color);
 
+      }
+
+      .day.selected {
+        background: $dark;
+      }
+
+      .priority-toggle-control ::ng-deep .superme-toggle,
+      .everyday-toggle ::ng-deep .superme-toggle {
+        .track { background: rgba($color, 0.35) !important; }
+        .thumb { background: $dark !important; box-shadow: none !important; }
+
+        &[aria-checked="true"] .track { background: $color !important; }
+        &[aria-checked="true"] .thumb { background: $dark !important; }
+      }
+
+      .title-card-icon,
+      .category-icon-tile,
+      .reminder-icon-tile {
+        background: rgba($color, 0.35);
+        color: $dark;
+      }
+
+      .reminder-add-icon,
+      .category-add-btn {
+        color: $dark;
+      }
+
+      .category-pill {
+        background: rgba($color, 0.18);
+        color: $dark;
+
+        &:hover {
+          background: rgba($color, 0.28);
+        }
+
+        &.selected {
+          background: #ffffff;
+          border-color: $dark;
+          color: $dark;
+          box-shadow: 0 2px 6px rgba($dark, 0.16);
+        }
       }
     }
   }
@@ -87,6 +160,17 @@ $theme-colors: (
   background: #3F3D56;
 }
 
+/* Private toggle: tint per active tab (habits/tasks/timetable) */
+@each $theme, $color in $theme-colors {
+  .header-toggle.#{$theme} ::ng-deep .superme-toggle {
+    .track { background: rgba($color, 0.35); }
+    .thumb { background: map.get($theme-colors-dark, $theme); }
+
+    &[aria-checked="true"] .track { background: $color; }
+    &[aria-checked="true"] .thumb { background: map.get($theme-colors-dark, $theme); }
+  }
+}
+
 
 
 .section.days-row {
@@ -96,55 +180,6 @@ $theme-colors: (
 
   .days-top {
     width: 100%;
-  }
-
-  .toggle-right {
-
-    ion-toggle,
-    superme-toggle {
-      --handle-background-checked: #90214D !important;
-      --background-checked: rgba(144, 33, 77, 0.12) !important;
-      --handle-background: #ffffff;
-      --background: #e6e6e6;
-    }
-
-    ion-toggle::part(handle) {
-      background: #90214D !important;
-      box-shadow: none !important;
-    }
-
-    ion-toggle[aria-checked="false"]::part(handle) {
-      background: #ffffff !important;
-    }
-
-    ion-toggle::part(track) {
-      background: #e6e6e6 !important;
-    }
-
-    ion-toggle[aria-checked="true"]::part(track) {
-      background: rgba(144, 33, 77, 0.12) !important;
-    }
-
-    .superme-toggle {
-      .track {
-        background: #e6e6e6 !important;
-      }
-
-      .thumb {
-        background: #ffffff !important;
-        box-shadow: none !important;
-      }
-
-      &[aria-checked="true"] {
-        .track {
-          background: rgba(144, 33, 77, 0.12) !important;
-        }
-
-        .thumb {
-          background: #90214D !important;
-        }
-      }
-    }
   }
 }
 
@@ -192,7 +227,7 @@ $theme-colors: (
   }
 
   &.tab-habits.active {
-    background: #8b8dcc;
+    background: #8B8DCB;
     color: #46466b;
   }
 
@@ -267,11 +302,9 @@ $theme-colors: (
   background: #e8ecf7;
 }
 
-.reminder-icon-tile img {
-  display: block;
+.reminder-icon-tile .form-icon {
   width: 24px;
   height: 24px;
-  object-fit: contain;
 }
 
 .reminder-copy {
@@ -301,11 +334,9 @@ $theme-colors: (
 }
 
 .reminder-add-icon {
-  display: block;
   width: 16px;
   height: 16px;
   flex: 0 0 16px;
-  object-fit: contain;
   transition: transform 180ms ease;
 }
 
@@ -446,8 +477,7 @@ $theme-colors: (
   border-radius: 10px;
   background: #e9ecf7;
 
-  img {
-    display: block;
+  .form-icon {
     width: 18px;
     height: 18px;
   }
@@ -513,8 +543,7 @@ $theme-colors: (
   border-radius: 8px;
   background: #E9EDFB;
 
-  img {
-    display: block;
+  .form-icon {
     width: 18px;
     height: 18px;
   }
@@ -605,7 +634,7 @@ $theme-colors: (
 }
 
 /* Per-theme title input caret color */
-.habit-input-root.habits .title-input input { caret-color: #7471BA; }
+.habit-input-root.habits .title-input input { caret-color: #8B8DCB; }
 .habit-input-root.tasks .title-input input { caret-color: #F6AC72; }
 .habit-input-root.timetable .title-input input { caret-color: #89B3B6; }
 

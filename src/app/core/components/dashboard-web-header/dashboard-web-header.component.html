@@ -1,0 +1,70 @@
+<header class="web-header" role="banner">
+  <div class="web-header__inner">
+    <a class="web-header__brand" routerLink="/authed/user-dashboard" aria-label="SuperMe App home">
+      <img class="web-header__logo" src="assets/Icons-Neutral/home-logo.png" alt="" aria-hidden="true">
+      <span class="web-header__wordmark">SuperMe App</span>
+    </a>
+
+    <nav class="web-header__nav" aria-label="Primary">
+      <ng-container *ngFor="let item of navItems">
+        <a *ngIf="!item.children" class="web-header__nav-link" [routerLink]="item.link" routerLinkActive="active">
+          {{ item.label }}
+        </a>
+
+        <div *ngIf="item.children" class="web-header__nav-item" [class.open]="openMenu === item.label">
+          <button type="button" class="web-header__nav-link web-header__nav-link--toggle"
+            (click)="toggleMenu(item.label, $event)"
+            [attr.aria-expanded]="openMenu === item.label">
+            {{ item.label }}
+            <ion-icon name="chevron-down-outline" aria-hidden="true"></ion-icon>
+          </button>
+
+          <div class="web-header__dropdown" *ngIf="openMenu === item.label" (click)="$event.stopPropagation()">
+            <a *ngFor="let child of item.children"
+              class="web-header__dropdown-link"
+              [routerLink]="child.link ? child.link : null"
+              [attr.href]="child.href || null"
+              [attr.target]="child.href ? '_blank' : null"
+              [attr.rel]="child.href ? 'noopener noreferrer' : null"
+              (click)="closeMenu()">
+              {{ child.label }}
+            </a>
+          </div>
+        </div>
+      </ng-container>
+    </nav>
+
+    <div class="web-header__right">
+      <div class="web-header__stats" aria-label="Your stats">
+        <div class="web-header__stat">
+          <img src="assets/icons/child-home-coin-figma.png" alt="Coins" class="web-header__stat-icon">
+          <span>{{ coins }}</span>
+        </div>
+        <div class="web-header__stat">
+          <img src="assets/icons/child-home-trophy-figma.png" alt="Trophies" class="web-header__stat-icon">
+          <span>{{ trophies }}</span>
+        </div>
+        <div class="web-header__stat">
+          <img src="assets/icons/child-home-streak-figma.png" alt="Streak" class="web-header__stat-icon">
+          <span>{{ streaks }}</span>
+        </div>
+        <div class="web-header__stat">
+          <img src="assets/icons/child-home-badge-figma.png" alt="Badges" class="web-header__stat-icon">
+          <span>{{ badges }}</span>
+        </div>
+      </div>
+
+      <a class="web-header__avatar" routerLink="/authed/user-profile" aria-label="Open profile">
+        <app-img *ngIf="userAvatarUrl; else avatarInitial"
+          [src]="userAvatarUrl"
+          [alt]="avatarImageName ? avatarImageName : (userName + ' avatar')"
+          [circle]="true"
+          objectFit="cover">
+        </app-img>
+        <ng-template #avatarInitial>
+          <span class="web-header__avatar-initial" aria-hidden="true">{{ userInitial }}</span>
+        </ng-template>
+      </a>
+    </div>
+  </div>
+</header>

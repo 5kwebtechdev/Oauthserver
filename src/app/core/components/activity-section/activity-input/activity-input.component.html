@@ -98,7 +98,7 @@
   <div class="title-input" [class.invalid]="attemptedSubmit && showTitleError">
     <div class="title-card-main">
       <div class="title-card-icon" aria-hidden="true">
-        <img src="assets/icons/edit.svg" alt="">
+        <span class="form-icon form-icon--edit"></span>
       </div>
       <div class="superme-input-group w-100 title-card-body" [class.missing-placeholder]="showTitleError && attemptedSubmit">
         <input class="w-100" [(ngModel)]="title" (ngModelChange)="clearTitleError()" [placeholder]="placeholder"
@@ -123,7 +123,7 @@
     <div class="category-header">
       <div class="category-header-left">
         <span class="category-icon-tile" aria-hidden="true">
-          <img src="assets/icons/category.svg" alt="">
+          <span class="form-icon form-icon--category"></span>
         </span>
         <span class="category-heading">Category</span>
       </div>
@@ -135,8 +135,8 @@
       <button type="button" *ngFor="let option of tagOptions" class="category-pill"
         [class.selected]="isCategorySelected(option.key)" role="listitem"
         (click)="selectCategory(option.key)">
-        <img *ngIf="getCategoryIcon(option.value)" [src]="getCategoryIcon(option.value)" alt=""
-          class="category-pill-icon" aria-hidden="true">
+        <span *ngIf="getCategoryIcon(option.value)" class="category-pill-icon form-icon"
+          [ngClass]="'form-icon--' + (option.value | lowercase)" aria-hidden="true"></span>
         <span class="category-pill-text">{{ option.value }}</span>
       </button>
     </div>
@@ -192,15 +192,15 @@
       [attr.aria-expanded]="reminderExpanded" aria-controls="activity-reminder-options">
       <span class="reminder-trigger-left">
         <span class="reminder-icon-tile" aria-hidden="true">
-          <img src="assets/icons/reminder-bell-figma.svg" alt="">
+          <span class="form-icon form-icon--reminder-bell"></span>
         </span>
         <span class="reminder-copy">
           <span class="reminder-title">Set Reminder (Optional)</span>
           <span *ngIf="reminderOffset" class="reminder-summary">{{ reminderSummary }}</span>
         </span>
       </span>
-      <img class="reminder-add-icon" [class.expanded]="reminderExpanded"
-        src="assets/icons/reminder-add-figma.svg" alt="" aria-hidden="true">
+      <span class="reminder-add-icon form-icon form-icon--reminder-add" [class.expanded]="reminderExpanded"
+        aria-hidden="true"></span>
     </button>
 
     <div id="activity-reminder-options" class="reminder-options" [class.open]="reminderExpanded"
@@ -232,7 +232,7 @@
 <ion-content fullscreen>
   <superme-navigator [heading]="editingId ? 'Update Activity' : 'Create. Commit. Grow.'"
     [rightActions]="navigatorActions" (rightActionClick)="onNavigatorAction($event)" (back)="onNavigatorBack()">
-    <div *ngIf="isChild && !isParentCreated" slot="end" class="header-toggle d-flex flex-column " aria-label="Private toggle">
+    <div *ngIf="isChild && !isParentCreated" slot="end" class="header-toggle d-flex flex-column " [ngClass]="currentActive" aria-label="Private toggle">
       <label class="header-toggle-label">Private</label>
       <div class="toggle-right">
         <superme-toggle [(checked)]="isPrivate" (checkedChange)="onPrivateChange($event)"></superme-toggle>
@@ -260,7 +260,7 @@
     <div *ngIf="currentActive === 'habits'" class="form-card">
       <ng-container
         *ngTemplateOutlet="titleInputSection; context: {placeholder: 'What habit do you want to build?', errorMsg: 'Please give this a name', subtitle: 'Be specific and actionable.'}"></ng-container>
-      <ng-container *ngTemplateOutlet="routineSection; context: {borderColor: '#7471BA'}"></ng-container>
+      <ng-container *ngTemplateOutlet="routineSection; context: {borderColor: '#8B8DCB'}"></ng-container>
       <div class="date-time-selection">
         <ng-container *ngTemplateOutlet="repeatSection"></ng-container>
         <div class="date-time--pick">

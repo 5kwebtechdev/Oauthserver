@@ -1,0 +1,244 @@
+@use '../../../../theme/breakpoints' as bp;
+
+:host {
+  display: none;
+}
+
+@include bp.tablet-up {
+  :host {
+    display: block;
+  }
+}
+
+.web-footer {
+  width: 100%;
+  box-sizing: border-box;
+  background: #FDF1F4;
+}
+
+.web-footer__inner {
+  @include bp.web-container;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 40px 32px 24px;
+}
+
+.web-footer__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+// ── Brand column ─────────────────────────────────────────────────────────
+.web-footer__brand-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.web-footer__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.web-footer__logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.web-footer__wordmark {
+  color: #282527;
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.web-footer__socials {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.web-footer__social-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(40, 37, 39, 0.1);
+  -webkit-tap-highlight-color: transparent;
+
+  &:active {
+    transform: scale(0.94);
+  }
+}
+
+// ── Link columns ─────────────────────────────────────────────────────────
+.web-footer__columns {
+  display: flex;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+
+.web-footer__column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 120px;
+}
+
+.web-footer__column-title {
+  position: relative;
+  margin: 0 0 4px;
+  padding-bottom: 8px;
+  color: #6B656A;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 28px;
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #90214D, #EBA235);
+  }
+}
+
+.web-footer__column-link {
+  color: #282527;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    color: #90214D;
+    text-decoration: underline;
+  }
+}
+
+// ── CTA (store badges + QR) ───────────────────────────────────────────────
+.web-footer__cta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.web-footer__store-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(109deg, #BE0F6F 1%, #EB3592 100%);
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+
+  ion-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  span {
+    display: flex;
+    flex-direction: column;
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.3;
+    text-align: left;
+  }
+
+  strong {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.web-footer__store-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.web-footer__qr-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.web-footer__qr {
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(40, 37, 39, 0.1);
+
+  ::ng-deep canvas {
+    display: block;
+  }
+}
+
+.web-footer__qr-label {
+  color: #90214D;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+// ── Divider + copyright ────────────────────────────────────────────────────
+.web-footer__divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(40, 37, 39, 0.1);
+}
+
+.web-footer__copyright {
+  margin: 0;
+  text-align: center;
+  color: rgba(40, 37, 39, 0.55);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+@include bp.above(lg) {
+  .web-footer__inner {
+    padding-inline: 48px;
+  }
+}
+
+@include bp.between(md, lg) {
+  .web-footer__top {
+    flex-direction: column;
+  }
+
+  .web-footer__cta {
+    align-self: stretch;
+    justify-content: space-between;
+  }
+}
