@@ -6,9 +6,12 @@
         mode="inline"
         (back)="goBack()">
       </superme-auth-back-button>
-      <button *ngIf="!hideBack && (backStyle !== 'auth' || backIcon === 'cancel')" class="back-button" (click)="goBack()" aria-label="Go back" [class.cancel]="backIcon === 'cancel'">
+      <button *ngIf="!hideBack && (backStyle !== 'auth' || backIcon === 'cancel')" class="close-btn-habbit" (click)="goBack()" aria-label="Go back" [class.cancel]="backIcon === 'cancel'">
         <ng-container *ngIf="backIcon !== 'cancel'; else imgIcon">
-          <img [src]="variant === 'warm' ? 'assets/icons/back-arrow-warm.svg' : 'assets/icons/back-arrow.svg'" alt="Back" class="back-svg" aria-hidden="true">
+          <svg class="back-svg" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M1 1.31348L12.3137 12.6272" stroke="#282527" stroke-width="2" stroke-linecap="round"/>
+            <path d="M1 12.3135L12.3137 0.999768" stroke="#282527" stroke-width="2" stroke-linecap="round"/>
+          </svg>
         </ng-container>
         <ng-template #imgIcon>
           <!-- Render inline 'cancel' SVG when backIcon is 'cancel', otherwise use the provided image src -->
