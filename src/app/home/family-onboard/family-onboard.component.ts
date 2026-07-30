@@ -12,7 +12,6 @@ import { BarcodeScanner, BarcodesScannedEvent } from '@capacitor-mlkit/barcode-s
 import { AlertController, IonicModule, IonRouterOutlet, NavController, Platform } from '@ionic/angular';
 import { FaqItem, PROFILE_FAQS } from '../../core/components/user-profile/profile-facts/profile-facts.component';
 import { SupermeNavigatorComponent } from '../../core/components/superme-navigator/superme-navigator.component';
-import { SupermeButtonComponent } from '../../core/components/superme-button/superme-button.component';
 import { ProfileFactsComponent } from '../../core/components/user-profile/profile-facts/profile-facts.component';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { toApiGender } from '../../core/models/gender.model';
@@ -21,6 +20,7 @@ import { AuthBackButtonComponent } from '../../core/components/auth-back-button/
 import { environment } from '../../../environments/environment';
 import { Subscription } from 'rxjs';
 import { NavigationService } from '../../core/services/navigation.service';
+import { Share } from '@capacitor/share';
 
 type ViewMode = 'instructions-parent' | 'join-family-child' | 'join-family-parent';
 type FamilyMode = 'create' | 'join';
@@ -29,7 +29,7 @@ type UserRole = 'child' | 'parent' | 'self';
 @Component({
     selector: 'app-family-onboard',
     standalone: true,
-    imports: [CommonModule, IonicModule, ReactiveFormsModule, SupermeNavigatorComponent, SupermeButtonComponent, ProfileFactsComponent, QRCodeComponent, AuthBackButtonComponent],
+    imports: [CommonModule, IonicModule, ReactiveFormsModule, SupermeNavigatorComponent, ProfileFactsComponent, QRCodeComponent, AuthBackButtonComponent],
     templateUrl: './family-onboard.component.html',
     styleUrls: ['./family-onboard.component.scss']
 })
@@ -79,6 +79,14 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     expandedFamilyCodeFaq: number | null = null;
     expandedCreateFamilyFaq: number | null = null;
     expandedParentJoinFamilyFaq: number | null = null;
+    expandedSuccessFaq: number | null = null;
+    private pendingFamilyRegistration: {
+        response: any;
+        payload: any;
+        password: string;
+        onboardingStep: number;
+    } | null = null;
+    private pendingOAuthFamilyCompletion = false;
     readonly familyCodeFaqs = [
         {
             question: `What if my parent doesn't have an account yet?`,
@@ -95,6 +103,24 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         {
             question: `What information can my parent see about me?`,
             answer: `Once linked, your parent can see the family progress and activity information available through the SuperMe parental experience.`
+        }
+    ];
+    readonly familySuccessFaqs = [
+        {
+            question: 'Does the family code expire or stop working?',
+            answer: 'No. Your family code stays active while the family exists. If it ever changes, the latest code will be available in your family profile.'
+        },
+        {
+            question: 'Can multiple children use the same family code?',
+            answer: 'Yes. Each child can use this same code to request access to your family.'
+        },
+        {
+            question: 'Is this code private or can anyone with it join my family?',
+            answer: 'Keep the code private and share it only with trusted family members. Anyone with the code may be able to request access.'
+        },
+        {
+            question: `What if my child enters the wrong code or it doesn't work?`,
+            answer: 'Ask them to check every letter and number, or scan the QR code instead. You can copy and share the code again from this screen.'
         }
     ];
 
@@ -434,6 +460,9 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     get codeControl() { return this.codeForm.get('code'); }
     get familyNameControl() { return this.familyForm.get('familyName'); }
     get familyCodeControl() { return this.joinFamilyForm.get('familyCode'); }
+    get formattedFamilyCode(): string {
+        return this.familyCode.split('').join(' ');
+    }
     get isCreateFamilyScreen(): boolean {
         return this.viewMode === 'join-family-parent' && this.selectedMode === 'create' && !this.familyCreated;
     }
@@ -560,6 +589,10 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         this.expandedParentJoinFamilyFaq = this.expandedParentJoinFamilyFaq === index ? null : index;
     }
 
+    toggleSuccessFaq(index: number): void {
+        this.expandedSuccessFaq = this.expandedSuccessFaq === index ? null : index;
+    }
+
     /**
      * JOIN FAMILY (Child role): this screen is now only reached by an
      * already-registered, already-logged-in "pending child" (relationship
@@ -683,8 +716,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         if (sessionStorage.getItem('signup_via_google') === 'true') {
             sessionStorage.setItem('familyCreator', 'true');
             sessionStorage.removeItem('familyCode');
-            this.familyCreated = true;
-            this.showRegisterButton = true;
+            this.completeGoogleParentSignup();
             return;
         }
 
@@ -705,12 +737,9 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         this.familyService.createFamily(familyName).subscribe({
             next: (response) => {
                 this.isLoading = false;
-                this.familyCreated = true;
-                this.familyCode = response.familyCode || this.generateFamilyCode();
-                this.qrCodeData = 'GROUP:' + this.familyCode;
-                sessionStorage.setItem('familyCode', this.familyCode);
                 try { sessionStorage.setItem('familyCreator', 'true'); } catch (e) { }
-                this.showRegisterButton = true;
+                this.showRegisterButton = false;
+                this.showFamilyCreationSuccess(response);
             },
             error: (error) => {
                 this.isLoading = false;
@@ -818,16 +847,29 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     /**
      * Share QR code via native share or fallback toast
      */
-    shareQRCode(): void {
-        if (navigator.share) {
-            navigator.share({
+    async shareQRCode(): Promise<void> {
+        if (!this.familyCode) return;
+
+        const text = `Join my family on SuperMe with code: ${this.familyCode}`;
+        try {
+            await Share.share({
                 title: 'Family Code',
-                text: `Join my family with code: ${this.familyCode}`,
+                text,
                 url: this.appDownloadUrl
-            }).catch(() => {
-                this.fallbackShare();
             });
-        } else {
+        } catch (error) {
+            const message = String((error as any)?.message || error || '').toLowerCase();
+            if (message.includes('cancel') || message.includes('dismiss')) return;
+
+            if (navigator.clipboard && window.isSecureContext) {
+                try {
+                    await navigator.clipboard.writeText(`${text}\n${this.appDownloadUrl}`);
+                    this.core.triggerToasrt('Family code copied. You can share it now!', 'success');
+                    return;
+                } catch (clipboardError) {
+                    // Continue to the standard unavailable message below.
+                }
+            }
             this.fallbackShare();
         }
     }
@@ -870,6 +912,35 @@ Thank you!`;
 
     toggleFamilyCodeFaq(index: number): void {
         this.expandedFamilyCodeFaq = this.expandedFamilyCodeFaq === index ? null : index;
+    }
+
+    completeFamilySuccess(): void {
+        if (this.isLoading) return;
+
+        if (this.pendingOAuthFamilyCompletion) {
+            this.pendingOAuthFamilyCompletion = false;
+            this.clearOAuthSignupSession();
+            this.navigateWithoutHistory('/home/sign-up', { step: 5 });
+            return;
+        }
+
+        if (this.pendingFamilyRegistration) {
+            const pending = this.pendingFamilyRegistration;
+            this.pendingFamilyRegistration = null;
+            if (pending.onboardingStep >= 6) {
+                this.isLoading = true;
+                this.finishCompletedParentRegistration(
+                    pending.response,
+                    pending.payload,
+                    pending.password
+                );
+                return;
+            }
+            this.navigateToParentWelcome();
+            return;
+        }
+
+        this.childCompleted();
     }
 
     /**
@@ -1044,6 +1115,15 @@ Thank you!`;
                     }
 
                     this.isLoading = false;
+                    if (isCreator && this.showFamilyCreationSuccess(response)) {
+                        this.pendingFamilyRegistration = {
+                            response,
+                            payload,
+                            password: password || '',
+                            onboardingStep: Number.isInteger(onboardingStep) ? onboardingStep : 5
+                        };
+                        return;
+                    }
                     if (onboardingStep >= 6) {
                         this.finishCompletedParentRegistration(response, payload, password);
                         return;
@@ -1144,14 +1224,12 @@ Thank you!`;
                 }
                 this.onboardingState.markExistingUser();
                 try { sessionStorage.setItem('family_connected_ack', 'Parent'); } catch (e) {}
-                ['oauth_signup_provider', 'google_signup_email', 'google_signup_name',
-                 'google_signup_avatar', 'google_signup_provider_id',
-                 'oauth_signup_id_token', 'oauth_signup_access_token', 'oauth_signup_server_auth_code',
-                 'signup_profile',
-                 'signup_role', 'signup_avatar', 'requestedIdentifier',
-                 'familyCode', 'familyName', 'familyCreator', 'referralCode', 'referralCodeLocked'].forEach(k => {
-                    try { sessionStorage.removeItem(k); } catch (e) {}
-                });
+                if (isCreator && this.showFamilyCreationSuccess(response)) {
+                    this.pendingOAuthFamilyCompletion = true;
+                    return;
+                }
+
+                this.clearOAuthSignupSession();
                 this.navigateWithoutHistory('/home/sign-up', { step: 5 });
             },
             error: (err) => {
@@ -1165,6 +1243,59 @@ Thank you!`;
     /**
      * Redirect to login
      */
+    private showFamilyCreationSuccess(response: any): boolean {
+        const familyCode = this.extractFamilyCode(response);
+        if (!familyCode) {
+            this.core.triggerToasrt('Your family was created, but the family code could not be loaded. Please try again.');
+            return false;
+        }
+
+        this.familyCode = familyCode;
+        this.qrCodeData = `GROUP:${familyCode}`;
+        this.familyCreated = true;
+        this.showRegisterButton = false;
+        this.expandedSuccessFaq = null;
+        sessionStorage.setItem('familyCode', familyCode);
+        this.updateParentFaqs();
+        return true;
+    }
+
+    private extractFamilyCode(response: any): string {
+        let currentUser: any = null;
+        try { currentUser = this.authService.getUserData(); } catch (e) {}
+
+        const candidates = [
+            response?.familyCode,
+            response?.family?.familyCode,
+            response?.user?.familyCode,
+            response?.user?.family?.familyCode,
+            response?.savedData?.familyCode,
+            response?.savedData?.family?.familyCode,
+            response?.data?.familyCode,
+            response?.data?.family?.familyCode,
+            currentUser?.familyCode,
+            currentUser?.family?.familyCode,
+            sessionStorage.getItem('familyCode')
+        ];
+
+        const familyCode = candidates.find(value => typeof value === 'string' && value.trim());
+        return familyCode ? familyCode.trim().toUpperCase() : '';
+    }
+
+    private clearOAuthSignupSession(): void {
+        [
+            'signup_via_google', 'signup_via_oauth', 'oauth_signup_provider',
+            'google_signup_email', 'google_signup_name', 'google_signup_avatar',
+            'google_signup_provider_id', 'oauth_signup_id_token',
+            'oauth_signup_access_token', 'oauth_signup_server_auth_code',
+            'signup_profile', 'signup_role', 'signup_avatar',
+            'requestedIdentifier', 'familyCode', 'familyName', 'familyCreator',
+            'referralCode', 'referralCodeLocked'
+        ].forEach(key => {
+            try { sessionStorage.removeItem(key); } catch (e) {}
+        });
+    }
+
     private clearSignupSession(): void {
         try {
             [
@@ -1251,18 +1382,6 @@ Thank you!`;
     private redirectToLogin(): void {
         this.signupCredentialState.clear();
         this.navigateWithoutHistory('/home/login', { role: this.userRole });
-    }
-
-    /**
-     * Generate random family code
-     */
-    private generateFamilyCode(): string {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let result = '';
-        for (let i = 0; i < 8; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return result;
     }
 
     /**
