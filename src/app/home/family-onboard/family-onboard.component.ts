@@ -35,6 +35,9 @@ type UserRole = 'child' | 'parent' | 'self';
 })
 export class FamilyOnboardComponent implements OnInit, OnDestroy {
     private static readonly CHILD_POST_FAMILY_WELCOME_KEY = 'show_child_welcome_after_family';
+    private static readonly CREATE_CHILD_AFTER_FAMILY_KEY = 'create_child_after_family';
+    private static readonly MANAGED_CHILD_SIGNUP_KEY = 'managed_child_signup';
+    private static readonly MANAGED_CHILD_FAMILY_CODE_KEY = 'managed_child_family_code';
     private readonly appDownloadUrl = environment.firebase.remoteConfig.defaults.android_store_url;
     @Input() viewMode: ViewMode = 'join-family-child';
 
@@ -653,7 +656,11 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
                     asChild: false,
                     onboardingStep
                 }, onboardingStep);
-                try { localStorage.removeItem('familyLinkSkipped'); } catch (e) { }
+                try {
+                    localStorage.removeItem('familyLinkSkipped');
+                    sessionStorage.removeItem(FamilyOnboardComponent.MANAGED_CHILD_SIGNUP_KEY);
+                    sessionStorage.removeItem(FamilyOnboardComponent.MANAGED_CHILD_FAMILY_CODE_KEY);
+                } catch (e) { }
 
                 this.core.triggerToasrt(response?.message || 'Joined your family!', 'success');
 
@@ -683,6 +690,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         try { localStorage.setItem('familyLinkSkipped', 'true'); } catch (e) { }
         try {
             sessionStorage.removeItem(FamilyOnboardComponent.CHILD_POST_FAMILY_WELCOME_KEY);
+            sessionStorage.removeItem(FamilyOnboardComponent.MANAGED_CHILD_SIGNUP_KEY);
+            sessionStorage.removeItem(FamilyOnboardComponent.MANAGED_CHILD_FAMILY_CODE_KEY);
         } catch (e) {}
         const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
         this.navigateWithoutHistory(route);
@@ -944,6 +953,29 @@ Thank you!`;
     }
 
     /**
+     * Complete the parent account first, then start the existing Child signup
+     * wizard on the same device with this family's code ready for linking.
+     */
+    startChildAccountCreation(): void {
+        if (this.isLoading) return;
+
+        const familyCode = (this.familyCode || '').trim().toUpperCase();
+        if (!familyCode) {
+            this.core.triggerToasrt('Family code is not available yet. Please try again.');
+            return;
+        }
+
+        try {
+            sessionStorage.setItem(FamilyOnboardComponent.CREATE_CHILD_AFTER_FAMILY_KEY, 'true');
+            sessionStorage.setItem(FamilyOnboardComponent.MANAGED_CHILD_FAMILY_CODE_KEY, familyCode);
+        } catch (error) {
+            console.warn('[FamilyOnboard] Unable to prepare child account creation', error);
+        }
+
+        this.completeFamilySuccess();
+    }
+
+    /**
      * Child completed setup - redirect or register parent
      */
     childCompleted(): void {
@@ -978,6 +1010,9 @@ Thank you!`;
                                 }
                                 this.clearSignupSession();
                                 this.signupCredentialState.clear();
+                                if (this.beginManagedChildSignup()) {
+                                    return;
+                                }
                                 const route = this.authService.getDashboardRoute() || '/authed/parent-account';
                                 this.navigateWithoutHistory(route);
                             });
@@ -991,6 +1026,9 @@ Thank you!`;
                     this.navigateWithoutHistory('/home/login');
                 }
             } else {
+                if (this.beginManagedChildSignup()) {
+                    return;
+                }
                 const route = this.authService.getDashboardRoute() || '/authed/parent-account';
                 this.navigateWithoutHistory(route);
             }
@@ -1332,6 +1370,9 @@ Thank you!`;
             this.clearSignupSession();
             this.signupCredentialState.clear();
             this.isLoading = false;
+            if (this.beginManagedChildSignup()) {
+                return;
+            }
             this.navigateWithoutHistory(this.authService.getDashboardRoute() || '/authed/parent-account');
         };
 
@@ -1377,6 +1418,46 @@ Thank you!`;
                 this.navigateWithoutHistory('/home/login');
             }
         });
+    }
+
+    private beginManagedChildSignup(): boolean {
+        let shouldStart = false;
+        let familyCode = this.familyCode.trim().toUpperCase();
+
+        try {
+            shouldStart = sessionStorage.getItem(FamilyOnboardComponent.CREATE_CHILD_AFTER_FAMILY_KEY) === 'true';
+            familyCode = (
+                sessionStorage.getItem(FamilyOnboardComponent.MANAGED_CHILD_FAMILY_CODE_KEY)
+                || familyCode
+            ).trim().toUpperCase();
+        } catch (error) {
+            console.warn('[FamilyOnboard] Unable to read child account handoff state', error);
+        }
+
+        if (!shouldStart || !familyCode) {
+            return false;
+        }
+
+        this.onboardingState.clearRegistrationDraft();
+        this.signupCredentialState.clear();
+        this.clearSignupSession();
+
+        try {
+            sessionStorage.removeItem(FamilyOnboardComponent.CREATE_CHILD_AFTER_FAMILY_KEY);
+            sessionStorage.setItem(FamilyOnboardComponent.MANAGED_CHILD_SIGNUP_KEY, 'true');
+            sessionStorage.setItem(FamilyOnboardComponent.MANAGED_CHILD_FAMILY_CODE_KEY, familyCode);
+            sessionStorage.setItem('signup_role', 'child');
+            sessionStorage.setItem('familyCode', familyCode);
+        } catch (error) {
+            console.warn('[FamilyOnboard] Unable to persist child account handoff state', error);
+        }
+
+        this.navigateWithoutHistory('/home/sign-up', {
+            step: 0.1,
+            role: 'child',
+            managedChild: true
+        });
+        return true;
     }
 
     private redirectToLogin(): void {

@@ -131,6 +131,14 @@ export const guestGuard: CanActivateFn = (
         return true;
     }
 
+    // A parent can intentionally create a separate Child account on the same
+    // device after creating a family. Keep this narrowly scoped to signup.
+    const isManagedChildSignup = sessionStorage.getItem('managed_child_signup') === 'true'
+        && state.url.includes('/sign-up');
+    if (isManagedChildSignup) {
+        return true;
+    }
+
     // A newly registered child is already authenticated after linking their
     // family. Allow only the remaining Pet and welcome onboarding steps.
     const isPostFamilyOnboarding = sessionStorage.getItem('show_child_welcome_after_family') === 'true'

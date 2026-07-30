@@ -519,6 +519,43 @@
             </div>
           </section>
 
+          <section class="create-child-account-banner" aria-labelledby="create-child-account-title">
+            <div class="create-child-account-banner__content">
+              <div class="create-child-account-banner__copy">
+                <div class="create-child-account-banner__badge">
+                  <ion-icon name="star" aria-hidden="true"></ion-icon>
+                  <span>Best Way to Get Started</span>
+                </div>
+
+                <h2 id="create-child-account-title">Create Child Account</h2>
+                <p class="create-child-account-banner__subtitle">
+                  Don’t have a device for your child? No problem!
+                </p>
+
+                <div class="create-child-account-banner__tip">
+                  <ion-icon name="bulb-outline" aria-hidden="true"></ion-icon>
+                  <p>
+                    This is the best way to create an account. You can both use
+                    the same device and enjoy SuperMe together.
+                  </p>
+                </div>
+              </div>
+
+              <img class="create-child-account-banner__child"
+                src="assets/Images-Transparent/choose-role-child-figma.png"
+                alt="" aria-hidden="true">
+            </div>
+
+            <button type="button" class="create-child-account-banner__action"
+              [disabled]="isLoading" [attr.aria-busy]="isLoading"
+              (click)="startChildAccountCreation()">
+              <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+              <ion-icon *ngIf="!isLoading" name="person-add-outline" aria-hidden="true"></ion-icon>
+              <span>{{ isLoading ? 'Please wait...' : 'Create Child Account' }}</span>
+              <ion-icon *ngIf="!isLoading" name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+            </button>
+          </section>
+
           <button type="button" class="family-success-done" [disabled]="isLoading"
             [attr.aria-busy]="isLoading" (click)="completeFamilySuccess()">
             <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>

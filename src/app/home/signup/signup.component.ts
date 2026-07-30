@@ -40,6 +40,9 @@ type SignupGender = StoredGender;
 })
 export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   private static readonly CHILD_POST_FAMILY_WELCOME_KEY = 'show_child_welcome_after_family';
+  private static readonly CREATE_CHILD_AFTER_FAMILY_KEY = 'create_child_after_family';
+  private static readonly MANAGED_CHILD_SIGNUP_KEY = 'managed_child_signup';
+  private static readonly MANAGED_CHILD_FAMILY_CODE_KEY = 'managed_child_family_code';
   // Persist identifier used to request OTP so it can be reused in later steps
   public requestedIdentifier: string | null = null;
   public signupForm: FormGroup;
@@ -86,6 +89,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   public otpResendInProgress: boolean = false;
   public registrationInProgress: boolean = false;
   private isEditingPendingChildOnboarding = false;
+  private managedChildFamilyCode = '';
   private referralCheckInProgress: boolean = false;
   private validatedReferralCode: string = '';
   private referralValidationTimer: ReturnType<typeof setTimeout> | null = null;
@@ -288,6 +292,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (savedRole) {
       this.roleSelected = savedRole;
     }
+    this.managedChildFamilyCode = (
+      sessionStorage.getItem(SignupComponent.MANAGED_CHILD_FAMILY_CODE_KEY)
+      || ''
+    ).trim().toUpperCase();
 
     this.restoreSignupStateFromSession();
     this.restorePersistedRegistrationState();
@@ -2871,7 +2879,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
               } catch (e) {}
               this.loadingService.forceHide();
               void this.navCtrl.navigateRoot('/home/join-family', {
-                queryParams: { role: 'child' },
+                queryParams: {
+                  role: 'child',
+                  ...(this.managedChildFamilyCode
+                    ? { scannedCode: this.managedChildFamilyCode }
+                    : {})
+                },
                 animated: false
               });
             },
@@ -3042,6 +3055,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // link and are already logged in. Continue directly without a second login.
     if (this.authService.isLoggedIn()) {
       this.applyCompletedUnlockState(completedUserData);
+      if (this.beginManagedChildSignupAfterParentUnlock()) {
+        return;
+      }
       const resume = completedStep && completedStep >= 6
         ? null
         : this.onboardingState.getResumeNavigation(this.authService.getUserData());
@@ -3079,6 +3095,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         sessionStorage.removeItem('oauth_signup_server_auth_code');
       } catch (e) {}
       this.applyCompletedUnlockState(completedUserData);
+      if (this.beginManagedChildSignupAfterParentUnlock()) {
+        return;
+      }
       this.registrationInProgress = false;
       this.loadingService.forceHide();
       const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
@@ -3100,6 +3119,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         // the newer unlock response so a stale login payload cannot send the
         // completed parent back into onboarding.
         this.applyCompletedUnlockState(completedUserData);
+        if (this.beginManagedChildSignupAfterParentUnlock()) {
+          return;
+        }
         this.requestPasswordSavePrompt(credentials);
         this.signupCredentialState.clear();
         this.registrationInProgress = false;
@@ -3124,6 +3146,63 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.navigateReplacing('/home/login');
       }
     });
+  }
+
+  private beginManagedChildSignupAfterParentUnlock(): boolean {
+    let shouldStart = false;
+    let familyCode = '';
+
+    try {
+      shouldStart = sessionStorage.getItem(SignupComponent.CREATE_CHILD_AFTER_FAMILY_KEY) === 'true';
+      familyCode = (
+        sessionStorage.getItem(SignupComponent.MANAGED_CHILD_FAMILY_CODE_KEY)
+        || ''
+      ).trim().toUpperCase();
+    } catch (error) {
+      console.warn('[Signup] Unable to read managed child signup state', error);
+    }
+
+    if (!shouldStart || !familyCode) {
+      return false;
+    }
+
+    this.onboardingState.clearRegistrationDraft();
+    this.signupCredentialState.clear();
+    this.signupForm.reset({ email: '', phone: '' });
+    this.profileForm.reset({ name: '', username: '', phone: '', dob: '' });
+    this.passwordForm.reset({ password: '', confirmPassword: '' });
+    this.requestedIdentifier = null;
+    this.roleSelected = 'child';
+    this.gender = null;
+    this.avatarSelected = null;
+    this.errorMessage = null;
+    this.registrationInProgress = false;
+    this.loadingService.forceHide();
+    this.managedChildFamilyCode = familyCode;
+
+    try {
+      [
+        'signup_profile', 'signup_avatar', 'signup_pet', 'requestedIdentifier',
+        'familyName', 'familyCreator', 'referralCode', 'referralCodeLocked'
+      ].forEach(key => sessionStorage.removeItem(key));
+      sessionStorage.removeItem(SignupComponent.CREATE_CHILD_AFTER_FAMILY_KEY);
+      sessionStorage.setItem(SignupComponent.MANAGED_CHILD_SIGNUP_KEY, 'true');
+      sessionStorage.setItem(SignupComponent.MANAGED_CHILD_FAMILY_CODE_KEY, familyCode);
+      sessionStorage.setItem('signup_role', 'child');
+      sessionStorage.setItem('familyCode', familyCode);
+    } catch (error) {
+      console.warn('[Signup] Unable to prepare managed child signup', error);
+    }
+
+    void this.navCtrl.navigateRoot('/home/sign-up', {
+      queryParams: {
+        step: 0.1,
+        role: 'child',
+        managedChild: true
+      },
+      animated: false
+    });
+    return true;
   }
 
   private applyCompletedUnlockState(completedUserData?: RegistrationDraftData): void {
