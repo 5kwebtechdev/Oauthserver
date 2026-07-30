@@ -35,7 +35,7 @@ import { CommonModule } from '@angular/common';
       background: transparent;
       border: none;
       cursor: pointer;
-      width: 40px;
+      width: 50px;
       /* overall control width (matches SVG) */
       height: 25px;
       /* overall control height (matches SVG) */
@@ -49,14 +49,14 @@ import { CommonModule } from '@angular/common';
 
     .superme-toggle .track {
       position: relative;
-      width: 40px;
+      width: 50px;
       /* match SVG */
-      height: 16px;
+      height: 31px;
       /* match SVG rect height */
-      border-radius: 8px;
-      /* rx=8 in SVG */
-      background: #DCDBDC;
-      /* inactive track (SVG inactive rect fill) */
+      border-radius: 20px;
+      /* rx=20 in SVG */
+      background: #C9C6DA;
+      /* inactive track */
       transition: background 0.18s ease-in-out;
       display: flex;
       align-items: center;
@@ -70,24 +70,24 @@ import { CommonModule } from '@angular/common';
       /* diameter 24 (r=12) */
       height: 24px;
       border-radius: 50%;
-      background: #90214D;
+      background: #3F3D56;
       /* thumb color */
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
       transition: transform 0.18s ease-in-out, background 0.18s ease-in-out;
-      transform: translateX(0);
+      transform: translateX(4px);
     }
 
     /* checked state: move thumb to right and change track */
     .superme-toggle[aria-checked="true"] .track,
     :host(.toggle-checked) .track {
-      background: #6B656A;
-      /* active track (SVG active rect fill) */
+      background: #7C6FCF;
+      /* active track */
     }
 
     .superme-toggle[aria-checked="true"] .thumb,
     :host(.toggle-checked) .thumb {
-      transform: translateX(16px);
-      background: #90214D;
+      transform: translateX(22px);
+      background: #3F3D56;
     }
   `]
 })

@@ -83,43 +83,83 @@
 </ng-template>
 
 <ng-template #prioritySection>
-  <div class="priority-selection priority-selectors" [class.invalid]="attemptedSubmit && showPriorityError">
-    <div class="d-flex align-items-center gap-2" style="padding-bottom: 16px;">
-      <label>Priority</label>
-      <div class="priority-row">
-        <superme-badge *ngFor="let p of priorities" [text]="p.text" [type]="p.type" [disabled]="priority !== p.key"
-          [active]="priority === p.key" (click)="selectPriority(p.key)"></superme-badge>
+  <!-- <div class="priority-selection priority-toggle-row" [class.invalid]="attemptedSubmit && showPriorityError">
+    <div class="priority-toggle-control">
+      <span class="priority-toggle-label">{{ priority === 'high' ? 'High Priority' : 'Low Priority' }}</span>
+      <superme-toggle [checked]="priority === 'high'"
+        (checkedChange)="selectPriority($event ? 'high' : 'low')"></superme-toggle>
+    </div>
+    <div *ngIf="attemptedSubmit && showPriorityError" class="field-error" role="alert">How important is this? Pick a
+      priority.</div>
+  </div> -->
+</ng-template>
+
+<ng-template #titleInputSection let-placeholder="placeholder" let-errorMsg="errorMsg" let-subtitle="subtitle">
+  <div class="title-input" [class.invalid]="attemptedSubmit && showTitleError">
+    <div class="title-card-main">
+      <div class="title-card-icon" aria-hidden="true">
+        <img src="assets/icons/edit.svg" alt="">
       </div>
+      <div class="superme-input-group w-100 title-card-body" [class.missing-placeholder]="showTitleError && attemptedSubmit">
+        <input class="w-100" [(ngModel)]="title" (ngModelChange)="clearTitleError()" [placeholder]="placeholder"
+          maxlength="20" />
+        <div class="title-card-subtitle">{{ subtitle || 'Be specific and actionable.' }}</div>
+      </div>
+      <div class="priority-selection priority-toggle-row" [class.invalid]="attemptedSubmit && showPriorityError">
+    <div class="priority-toggle-control">
+      <span class="priority-toggle-label">{{ priority === 'high' ? 'High Priority' : 'Low Priority' }}</span>
+      <superme-toggle [checked]="priority === 'high'"
+        (checkedChange)="selectPriority($event ? 'high' : 'low')"></superme-toggle>
     </div>
     <div *ngIf="attemptedSubmit && showPriorityError" class="field-error" role="alert">How important is this? Pick a
       priority.</div>
   </div>
-</ng-template>
-
-<ng-template #titleInputSection let-placeholder="placeholder" let-errorMsg="errorMsg" let-showError="showError">
-  <div class="title-input">
-    <div class="superme-input-group w-100" [class.missing-placeholder]="showTitleError && attemptedSubmit">
-      <input class="w-100" [(ngModel)]="title" (ngModelChange)="clearTitleError()" [placeholder]="placeholder"
-        maxlength="20" />
-      <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">{{errorMsg}}</div>
     </div>
-    <div class="add-new-row">
-      <superme-tags
-        [options]="tagOptions"
-        [useDefaultOptions]="false"
-        [persistCustomTags]="false"
-        [serverManaged]="true"
-        [allowEdit]="false"
-        [singleSelection]="true"
-        [size]="'small'"
-        [variant]="tagVariants[currentActive]"
-        (selectedKeysChange)="onTagsChange($event)"
-        (add)="onTagAdd($event)"
-        (delete)="onTagDelete($event)">
-      </superme-tags>
-      <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Pick a tag for this activity.</div>
-    </div>
+    <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">{{errorMsg}}</div>
+    <div class="title-card-count">{{ title.length }}/20</div>
   </div>
+  <!-- <div class="title-card-count">{{ title.length }}/20</div> -->
+  <div class="category-card">
+    <div class="category-header">
+      <div class="category-header-left">
+        <span class="category-icon-tile" aria-hidden="true">
+          <img src="assets/icons/category.svg" alt="">
+        </span>
+        <span class="category-heading">Category</span>
+      </div>
+      <button type="button" class="category-add-btn" #categoryAddBtn
+        (click)="openAddCategory(categoryAddBtn)">+ Add new</button>
+    </div>
+
+    <div class="category-pills" role="list">
+      <button type="button" *ngFor="let option of tagOptions" class="category-pill"
+        [class.selected]="isCategorySelected(option.key)" role="listitem"
+        (click)="selectCategory(option.key)">
+        <img *ngIf="getCategoryIcon(option.value)" [src]="getCategoryIcon(option.value)" alt=""
+          class="category-pill-icon" aria-hidden="true">
+        <span class="category-pill-text">{{ option.value }}</span>
+      </button>
+    </div>
+
+    <div *ngIf="attemptedSubmit && showTagError" class="field-error" role="alert">Pick a tag for this activity.</div>
+  </div>
+
+  <!-- superme-tags stays mounted (its pill row is hidden) so add/edit/delete popovers,
+       localStorage sync and formGroup wiring keep working behind the redesigned pills above -->
+  <superme-tags
+    class="category-engine"
+    [options]="tagOptions"
+    [useDefaultOptions]="false"
+    [persistCustomTags]="false"
+    [serverManaged]="true"
+    [allowEdit]="false"
+    [singleSelection]="true"
+    [size]="'small'"
+    [variant]="tagVariants[currentActive]"
+    (selectedKeysChange)="onTagsChange($event)"
+    (add)="onTagAdd($event)"
+    (delete)="onTagDelete($event)">
+  </superme-tags>
 </ng-template>
 
 <ng-template #routineSection let-borderColor="borderColor">
@@ -200,17 +240,26 @@
     </div>
   </superme-navigator>
   <div class="habit-input-root" [ngClass]="currentActive">
-    <div *ngIf="!editingId" class="container w-full">
+    <div *ngIf="!editingId" class=" w-full">
       <div class="activity-tabs">
-        <button class="activity-tab tab-habits" (click)="currentActive = 'habits'" [class.active]="currentActive === 'habits'">Habits</button>
-        <button class="activity-tab tab-tasks" (click)="currentActive = 'tasks'" [class.active]="currentActive === 'tasks'">Tasks</button>
-        <button class="activity-tab tab-timetable" (click)="currentActive = 'timetable'" [class.active]="currentActive === 'timetable'">Time Table</button>
+        <button class="activity-tab tab-habits" (click)="currentActive = 'habits'" [class.active]="currentActive === 'habits'">
+          <img src="assets/icons/Habit.svg" alt="" class="activity-tab-icon" aria-hidden="true">
+          Habits
+        </button>
+        <button class="activity-tab tab-tasks" (click)="currentActive = 'tasks'" [class.active]="currentActive === 'tasks'">
+          <img src="assets/icons/Task.svg" alt="" class="activity-tab-icon" aria-hidden="true">
+          Tasks
+        </button>
+        <button class="activity-tab tab-timetable" (click)="currentActive = 'timetable'" [class.active]="currentActive === 'timetable'">
+          <img src="assets/icons/Time-table.svg" alt="" class="activity-tab-icon" aria-hidden="true">
+          Time Table
+        </button>
       </div>
     </div>
 
     <div *ngIf="currentActive === 'habits'" class="form-card">
       <ng-container
-        *ngTemplateOutlet="titleInputSection; context: {placeholder: 'Habit Title', errorMsg: 'Please give this a name'}"></ng-container>
+        *ngTemplateOutlet="titleInputSection; context: {placeholder: 'What habit do you want to build?', errorMsg: 'Please give this a name', subtitle: 'Be specific and actionable.'}"></ng-container>
       <ng-container *ngTemplateOutlet="routineSection; context: {borderColor: '#7471BA'}"></ng-container>
       <div class="date-time-selection">
         <ng-container *ngTemplateOutlet="repeatSection"></ng-container>
@@ -229,7 +278,7 @@
 
     <div *ngIf="currentActive === 'tasks'" class="form-card">
       <ng-container
-        *ngTemplateOutlet="titleInputSection; context: {placeholder: 'Task Title', errorMsg: 'Please give this a name'}"></ng-container>
+        *ngTemplateOutlet="titleInputSection; context: {placeholder: 'What task do you want to complete?', errorMsg: 'Please give this a name', subtitle: 'Be specific and actionable.'}"></ng-container>
       <ng-container *ngTemplateOutlet="routineSection; context: {borderColor: '#F6AC72'}"></ng-container>
       <div class="date-time-selection">
         <ng-container *ngTemplateOutlet="repeatSection"></ng-container>
@@ -248,7 +297,7 @@
 
     <div *ngIf="currentActive === 'timetable'" class="form-card">
       <ng-container
-        *ngTemplateOutlet="titleInputSection; context: {placeholder: 'Time Table Title', errorMsg: 'Enter timetable title'}"></ng-container>
+        *ngTemplateOutlet="titleInputSection; context: {placeholder: 'What do you want to schedule?', errorMsg: 'Enter timetable title', subtitle: 'Be specific and actionable.'}"></ng-container>
       <div class="date-time-selection">
         <ng-container *ngTemplateOutlet="repeatSection"></ng-container>
         <div class="date-time--pick">
