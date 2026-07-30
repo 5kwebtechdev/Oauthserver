@@ -82,6 +82,12 @@ export interface ReferralCodeResponse {
   referralCode: string;
 }
 
+export interface ShareLoginCredentialsPayload {
+  email: string;
+  password: string;
+  message: string;
+}
+
 export interface UserSession {
   userId: number;
   token: string;
@@ -474,6 +480,34 @@ export class AuthService {
     return this.http.post<any>(url, requestPayload).pipe(
       tap(() => this.analytics.logSignUp(payload.email ? 'email' : 'phone'))
     );
+  }
+
+  /**
+   * Create a Child account while preserving the signed-in Parent session.
+   * Loading is controlled by the managed-child wizard so registration and
+   * credential sharing appear as one uninterrupted action.
+   */
+  registerManagedChild(payload: any): Observable<any> {
+    const url = `${this.apiUrl}/auth/register`;
+    const requestPayload = { ...payload };
+    if (Object.prototype.hasOwnProperty.call(requestPayload, 'gender')) {
+      requestPayload.gender = toApiGender(requestPayload.gender);
+    }
+    const headers = new HttpHeaders({ 'X-Skip-Loading': 'true' });
+
+    return this.http.post<any>(url, requestPayload, { headers }).pipe(
+      tap(() => this.analytics.logSignUp(payload.email ? 'email' : 'phone'))
+    );
+  }
+
+  /**
+   * Email the credentials for an account created by a signed-in Parent.
+   * Backend endpoint: POST /v1/auth/parent/share-login-credentials
+   */
+  shareLoginCredentials(payload: ShareLoginCredentialsPayload): Observable<string> {
+    const url = `${this.apiUrl}/auth/parent/share-login-credentials`;
+    const headers = new HttpHeaders({ 'X-Skip-Loading': 'true' });
+    return this.http.post(url, payload, { headers, responseType: 'text' });
   }
 
   /**

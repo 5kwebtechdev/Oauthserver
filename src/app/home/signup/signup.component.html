@@ -6,8 +6,8 @@
   [class.details-content]="step === 2"
   [class.referral-keyboard-open]="step === 2 && referralKeyboardHeight > 0"
   [style.--signup-referral-keyboard-inset.px]="step === 2 ? referralKeyboardHeight : 0"
-  [ngClass]="step === 5 || step === 4 || step === 2 || step === 1 || step === 0.1 || step === 0.2 || step === 0.3 ? 'bg-white' : 'bg-superme-secondary'">
-  <superme-navigator class="signup-navigator" *ngIf="step !== 5 && step !== 4 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 2"
+  [ngClass]="step === 5 || step === 4 || step === 2 || step === 1 || step === 0.1 || step === 0.2 || step === 0.3 || (step === 6 && isManagedChildSignup) ? 'bg-white' : 'bg-superme-secondary'">
+  <superme-navigator class="signup-navigator" *ngIf="step !== 5 && step !== 4 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 2 && !(step === 6 && isManagedChildSignup)"
     [heading]="headerText"
     [subtext]="headerSubtext"
     [showSubtext]="showHeaderSubtext"
@@ -15,8 +15,8 @@
     [hideBack]="true">
   </superme-navigator>
   <div class="signup-container"
-    [ngClass]="{'step-5-container': step === 5, 'pet-layout': step === 4, 'profile-layout': step === 2, 'role-layout': step === 1, 'signup-entry-layout': step === 0.1, 'otp-layout': step === 0.2, 'password-layout': step === 0.3}">
-    <h4 class="step-text" *ngIf="step !== 2 && step !== 3 && step !== 4 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 5">
+    [ngClass]="{'step-5-container': step === 5, 'pet-layout': step === 4, 'profile-layout': step === 2, 'role-layout': step === 1, 'signup-entry-layout': step === 0.1, 'otp-layout': step === 0.2, 'password-layout': step === 0.3, 'managed-child-flow': isManagedChildSignup, 'managed-child-success-layout': step === 6 && isManagedChildSignup}">
+    <h4 class="step-text" *ngIf="step !== 2 && step !== 3 && step !== 4 && step !== 0.1 && step !== 0.2 && step !== 0.3 && step !== 1 && step !== 5 && !(step === 6 && isManagedChildSignup)">
       Step {{step}} of 4
       <span>{{stepDesciption[step-1]}}</span>
       <div class="step-completion-slider {{returnSameNumber(step)}}"
@@ -30,14 +30,17 @@
 
       <div class="signup-entry-shell">
         <header class="signup-entry-hero">
-          <p class="signup-entry-step">Step 1 of 6</p>
-          <h1 id="signup-entry-title" class="signup-entry-title">Let's Create Your Account</h1>
+          <p class="signup-entry-step">Step 1 of {{ isManagedChildSignup ? 5 : 6 }}</p>
+          <h1 id="signup-entry-title" class="signup-entry-title">
+            {{ isManagedChildSignup ? "Let's Create Your Child's Account" : "Let's Create Your Account" }}
+          </h1>
           <p class="signup-entry-subtitle">We'll send a verification code to your email</p>
         </header>
 
         <div class="signup-entry-progress" role="progressbar" aria-label="Registration progress"
           aria-valuemin="1" aria-valuemax="6" aria-valuenow="1">
-          <img src="assets/icons/signup-progress-step-1-figma.svg" alt="" aria-hidden="true" />
+          <span *ngIf="isManagedChildSignup" aria-hidden="true"></span>
+          <img *ngIf="!isManagedChildSignup" src="assets/icons/signup-progress-step-1-figma.svg" alt="" aria-hidden="true" />
         </div>
 
         <form [formGroup]="signupForm" autocomplete="on" class="signup-entry-form" (ngSubmit)="signupFromLogin()">
@@ -81,7 +84,7 @@
 
       <div class="otp-shell">
         <header class="otp-hero">
-          <p class="otp-step-label">Step 2 of 6</p>
+          <p class="otp-step-label">Step 2 of {{ isManagedChildSignup ? 5 : 6 }}</p>
           <h1 id="signup-otp-title" class="otp-hero__title">
             {{ loginMode === 'phone' ? 'Check Your Phone' : 'Check Your Email' }}
           </h1>
@@ -98,7 +101,7 @@
         </header>
 
         <div class="otp-progress" role="progressbar" aria-label="Registration progress" aria-valuemin="1"
-          aria-valuemax="6" aria-valuenow="2">
+          [attr.aria-valuemax]="isManagedChildSignup ? 5 : 6" aria-valuenow="2">
           <span></span>
         </div>
 
@@ -138,12 +141,12 @@
 
       <div class="pwd-shell">
         <header class="pwd-hero">
-          <p class="pwd-step-label">Step 3 of 6</p>
+          <p class="pwd-step-label">Step 3 of {{ isManagedChildSignup ? 5 : 6 }}</p>
           <h1 id="signup-password-title" class="pwd-hero__title">Create a Password</h1>
         </header>
 
         <div class="pwd-progress" role="progressbar" aria-label="Registration progress"
-          aria-valuemin="1" aria-valuemax="6" aria-valuenow="3">
+          aria-valuemin="1" [attr.aria-valuemax]="isManagedChildSignup ? 5 : 6" aria-valuenow="3">
           <span></span>
         </div>
 
@@ -317,7 +320,8 @@
       </div>
     </div>
     <div *ngIf="step === 2" [@slideIn] class="profile-step profile-step--figma"
-      [class.profile-step--parent]="currentRole === 'parent'">
+      [class.profile-step--parent]="currentRole === 'parent'"
+      [class.profile-step--managed-child]="isManagedChildSignup">
       <header class="details-header">
         <div class="details-back-row">
           <superme-auth-back-button mode="inline" (back)="goBack()"></superme-auth-back-button>
@@ -325,12 +329,17 @@
 
         <div class="details-header-content">
           <div class="details-header-copy">
-            <h1 class="details-title"><span>Lets set</span><span>You <strong>Up</strong></span></h1>
+            <h1 class="details-title">
+              <span>Lets set</span>
+              <span>{{ isManagedChildSignup ? 'Your Child' : 'You' }} <strong>Up</strong></span>
+            </h1>
             <div class="details-progress-copy">
-              <p class="profile-step-label">Step 4 of {{ currentRole === 'parent' ? 5 : 6 }}</p>
-              <p class="profile-hero__title">Tell us about yourself !</p>
+              <p class="profile-step-label">Step 4 of {{ isManagedChildSignup || currentRole === 'parent' ? 5 : 6 }}</p>
+              <p class="profile-hero__title">
+                {{ isManagedChildSignup ? 'Tell us about your child!' : 'Tell us about yourself !' }}
+              </p>
               <div class="profile-progress" role="progressbar" aria-label="Registration progress" aria-valuemin="1"
-                [attr.aria-valuemax]="currentRole === 'parent' ? 5 : 6" aria-valuenow="4"><span></span></div>
+                [attr.aria-valuemax]="isManagedChildSignup || currentRole === 'parent' ? 5 : 6" aria-valuenow="4"><span></span></div>
             </div>
           </div>
           <div class="details-header-illustration" aria-hidden="true">
@@ -448,7 +457,9 @@
           <p class="profile-field-description">
             {{ currentRole === 'parent'
               ? 'Used only to help identify your relationship with your child.'
-              : 'Used only to personalize your experience.' }}
+              : isManagedChildSignup
+                ? "Used only to personalize your child's experience."
+                : 'Used only to personalize your experience.' }}
           </p>
           <div class="gender-options" role="group" aria-label="Gender">
             <div class="gender-option">
@@ -605,12 +616,12 @@
       <superme-auth-back-button *ngIf="!isPostFamilyChildPetStep" (back)="goBack()"></superme-auth-back-button>
 
       <header class="pet-step-header">
-        <p>Step 5 of 6</p>
+        <p>Step 5 of {{ isManagedChildSignup ? 5 : 6 }}</p>
         <h1 id="pet-step-title">Choose Your Digital Pet</h1>
       </header>
 
       <div class="pet-step-progress" role="progressbar" aria-label="Registration progress"
-        aria-valuemin="1" aria-valuemax="6" aria-valuenow="5">
+        aria-valuemin="1" [attr.aria-valuemax]="isManagedChildSignup ? 5 : 6" aria-valuenow="5">
         <span></span>
       </div>
 
@@ -624,8 +635,8 @@
             <div class="pet-card-copy">
               <h2>{{pet.displayName}}</h2>
               <ul>
-                <li>{{pet.text[0]}}</li>
-                <li>{{pet.text[1]}}</li>
+                <li>{{ getPetTrait(pet, 0) }}</li>
+                <li>{{ getPetTrait(pet, 1) }}</li>
               </ul>
             </div>
             <div class="pet-card-figure">
@@ -637,8 +648,8 @@
             <div class="pet-card-accessible-copy">
               <h2>{{pet.displayName}}</h2>
               <ul>
-                <li>{{pet.text[0]}}</li>
-                <li>{{pet.text[1]}}</li>
+                <li>{{ getPetTrait(pet, 0) }}</li>
+                <li>{{ getPetTrait(pet, 1) }}</li>
               </ul>
             </div>
           </article>
@@ -648,7 +659,11 @@
       <button type="button" class="pet-step-next"
         [disabled]="!hasSelectedPet || registrationInProgress"
         [attr.aria-label]="hasSelectedPet ? 'Continue with selected pet' : 'Select a pet to enable Next'"
-        (click)="proceedWithAvatar()">Next</button>
+        (click)="proceedWithAvatar()">
+        <ion-spinner *ngIf="registrationInProgress" name="crescent" aria-hidden="true"></ion-spinner>
+        <span>{{ registrationInProgress ? 'Creating account...' : 'Next' }}</span>
+      </button>
+      <p class="pet-step-error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
     </section>
 
     <div *ngIf="step === 5" [@slideIn]
@@ -698,6 +713,54 @@
         <superme-button type="magenta" full text="Unlock My Potential" [disabled]="registrationInProgress" (click)="onBegin()"></superme-button>
       </div>
     </div>
+
+    <section *ngIf="step === 6 && isManagedChildSignup" [@slideIn]
+      class="managed-child-success" aria-labelledby="managed-child-success-title">
+      <img class="managed-child-success__confetti managed-child-success__confetti--side"
+        src="assets/figma/family-success/confetti-side.svg" alt="" aria-hidden="true" />
+
+      <div class="managed-child-success__hero">
+        <img class="managed-child-success__confetti managed-child-success__confetti--top"
+          src="assets/figma/family-success/confetti-top.svg" alt="" aria-hidden="true" />
+        <div class="managed-child-success__check" aria-hidden="true">
+          <img src="assets/figma/family-success/check.svg" alt="" />
+        </div>
+        <h1 id="managed-child-success-title">
+          <span>Child account Created</span>
+          <strong>Successfully !</strong>
+        </h1>
+        <p>You're all set! Use the credentials on your child’s device or your device to login their account.</p>
+      </div>
+
+      <div class="managed-child-success__body">
+        <article class="managed-child-success__credential-card">
+          <span class="managed-child-success__credential-icon" aria-hidden="true">
+            <img src="assets/figma/family-success/groups.svg" alt="" />
+          </span>
+          <div>
+            <p>Credentials are sent to this email:</p>
+            <strong>{{ managedChildSuccessEmail }}</strong>
+          </div>
+        </article>
+
+        <button type="button" class="managed-child-success__return" (click)="returnToParentApp()">
+          Go back to my app
+        </button>
+
+        <section class="managed-child-success__faqs" aria-labelledby="managed-child-success-faq-title">
+          <h2 id="managed-child-success-faq-title">FAQ’s</h2>
+          <article *ngFor="let faq of managedChildSuccessFaqs; let i = index">
+            <button type="button" (click)="toggleManagedChildFaq(i)"
+              [attr.aria-expanded]="expandedManagedChildFaq === i">
+              <span>{{ faq.question }}</span>
+              <img src="assets/figma/family-success/chevron-left.svg" alt="" aria-hidden="true"
+                [class.open]="expandedManagedChildFaq === i" />
+            </button>
+            <p *ngIf="expandedManagedChildFaq === i">{{ faq.answer }}</p>
+          </article>
+        </section>
+      </div>
+    </section>
 
     <div class="age-modal-backdrop" *ngIf="showAgeSuggestionModal" (click)="closeAgeSuggestionModal()"></div>
     <div class="age-modal" *ngIf="showAgeSuggestionModal" role="dialog" aria-modal="true">
