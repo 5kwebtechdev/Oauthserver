@@ -69,6 +69,10 @@
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.prod.ts"
+                },
+                {
+                  "replace": "src/app/core/services/apple-sign-in.development-mock.ts",
+                  "with": "src/app/core/services/apple-sign-in.production-mock.ts"
                 }
               ],
               "outputHashing": "all"

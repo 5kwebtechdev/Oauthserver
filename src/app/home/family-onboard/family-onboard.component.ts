@@ -38,6 +38,7 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
     private static readonly CREATE_CHILD_AFTER_FAMILY_KEY = 'create_child_after_family';
     private static readonly MANAGED_CHILD_SIGNUP_KEY = 'managed_child_signup';
     private static readonly MANAGED_CHILD_FAMILY_CODE_KEY = 'managed_child_family_code';
+    private static readonly MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY = 'managed_child_parent_welcome_pending';
     private readonly appDownloadUrl = environment.firebase.remoteConfig.defaults.android_store_url;
     @Input() viewMode: ViewMode = 'join-family-child';
 
@@ -722,7 +723,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
 
         // Google OAuth signup: backend creates the family via oauth2-login (familyName param).
         // Do NOT pre-create the family here — it would create a duplicate.
-        if (sessionStorage.getItem('signup_via_google') === 'true') {
+        if (sessionStorage.getItem('signup_via_oauth') === 'true'
+            || sessionStorage.getItem('signup_via_google') === 'true') {
             sessionStorage.setItem('familyCreator', 'true');
             sessionStorage.removeItem('familyCode');
             this.completeGoogleParentSignup();
@@ -780,7 +782,8 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         try { sessionStorage.removeItem('familyCreator'); } catch (e) { }
 
         // Google OAuth signup: no password available — use oauth2-login instead
-        if (sessionStorage.getItem('signup_via_google') === 'true') {
+        if (sessionStorage.getItem('signup_via_oauth') === 'true'
+            || sessionStorage.getItem('signup_via_google') === 'true') {
             this.completeGoogleParentSignup();
             return;
         }
@@ -929,6 +932,9 @@ Thank you!`;
         if (this.pendingOAuthFamilyCompletion) {
             this.pendingOAuthFamilyCompletion = false;
             this.clearOAuthSignupSession();
+            if (this.beginManagedChildSignup()) {
+                return;
+            }
             this.navigateWithoutHistory('/home/sign-up', { step: 5 });
             return;
         }
@@ -943,6 +949,10 @@ Thank you!`;
                     pending.payload,
                     pending.password
                 );
+                return;
+            }
+            if (this.shouldStartManagedChildSignup()) {
+                this.completeParentBeforeManagedChild(pending);
                 return;
             }
             this.navigateToParentWelcome();
@@ -968,11 +978,55 @@ Thank you!`;
         try {
             sessionStorage.setItem(FamilyOnboardComponent.CREATE_CHILD_AFTER_FAMILY_KEY, 'true');
             sessionStorage.setItem(FamilyOnboardComponent.MANAGED_CHILD_FAMILY_CODE_KEY, familyCode);
+            sessionStorage.setItem(FamilyOnboardComponent.MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY, 'true');
         } catch (error) {
             console.warn('[FamilyOnboard] Unable to prepare child account creation', error);
         }
 
         this.completeFamilySuccess();
+    }
+
+    /**
+     * Finish the parent's existing final onboarding update without displaying
+     * the welcome screen yet. The same welcome screen is shown after the
+     * managed child account flow finishes.
+     */
+    private completeParentBeforeManagedChild(
+        pending: { response: any; payload: any; password: string; onboardingStep: number }
+    ): void {
+        this.isLoading = true;
+        const completionPayload = {
+            ...pending.payload,
+            unlockPotential: true
+        };
+
+        this.authService.register(completionPayload).subscribe({
+            next: (response) => {
+                this.finishCompletedParentRegistration(
+                    response,
+                    completionPayload,
+                    pending.password
+                );
+            },
+            error: (error) => {
+                this.isLoading = false;
+                this.pendingFamilyRegistration = pending;
+                this.core.triggerToasrt(
+                    error?.error?.message
+                    || 'We could not continue to child account creation. Please try again.'
+                );
+            }
+        });
+    }
+
+    private shouldStartManagedChildSignup(): boolean {
+        try {
+            return sessionStorage.getItem(
+                FamilyOnboardComponent.CREATE_CHILD_AFTER_FAMILY_KEY
+            ) === 'true';
+        } catch {
+            return false;
+        }
     }
 
     /**
@@ -1050,7 +1104,8 @@ Thank you!`;
         if (this.isLoading) return;
 
         // Google OAuth signup: no password — use oauth2-login instead
-        if (sessionStorage.getItem('signup_via_google') === 'true') {
+        if (sessionStorage.getItem('signup_via_oauth') === 'true'
+            || sessionStorage.getItem('signup_via_google') === 'true') {
             this.completeGoogleParentSignup();
             return;
         }
@@ -1201,6 +1256,17 @@ Thank you!`;
      * Case B (joiner):   sends familyCode only  → backend links to existing family
      */
     private completeGoogleParentSignup(): void {
+        if (
+            !environment.production
+            && sessionStorage.getItem('oauth_signup_is_development_mock') === 'true'
+        ) {
+            this.isLoading = false;
+            this.core.triggerToasrt(
+                'Apple development mock completed the UI flow. Backend submission was safely blocked.'
+            );
+            return;
+        }
+
         const profileStr = sessionStorage.getItem('signup_profile');
         let profile: any = {};
         try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) {}
@@ -1212,6 +1278,10 @@ Thank you!`;
         const idToken    = sessionStorage.getItem('oauth_signup_id_token') || '';
         const accessToken = sessionStorage.getItem('oauth_signup_access_token') || '';
         const serverAuthCode = sessionStorage.getItem('oauth_signup_server_auth_code') || '';
+        const identityToken = sessionStorage.getItem('oauth_signup_identity_token') || '';
+        const authorizationCode = sessionStorage.getItem('oauth_signup_authorization_code') || '';
+        const rawNonce = sessionStorage.getItem('oauth_signup_raw_nonce') || '';
+        const clientId = sessionStorage.getItem('oauth_signup_client_id') || '';
         const isCreator  = sessionStorage.getItem('familyCreator') === 'true';
         const familyCode = sessionStorage.getItem('familyCode') || this.familyCode || '';
         const familyName = sessionStorage.getItem('familyName') || this.createdFamilyName || '';
@@ -1223,9 +1293,11 @@ Thank you!`;
             name:         profile.name || sessionStorage.getItem('google_signup_name') || '',
             avatarUrl,
             role:         'PARENT',              // backend uses "role", not "relationship"
-            gender:       toApiGender(profile.gender),
             referralCode: sessionStorage.getItem('referralCode') || null
         };
+        if (profile.gender) {
+            googlePayload.gender = toApiGender(profile.gender);
+        }
         const avatarKey = Number(profile.avatar);
         if (Number.isInteger(avatarKey) && avatarKey >= 1 && avatarKey <= 12) {
             googlePayload.avatarName = `avatar_${avatarKey}`;
@@ -1240,6 +1312,18 @@ Thank you!`;
         }
         if (serverAuthCode) {
             googlePayload.serverAuthCode = serverAuthCode;
+        }
+        if (identityToken) {
+            googlePayload.identityToken = identityToken;
+        }
+        if (authorizationCode) {
+            googlePayload.authorizationCode = authorizationCode;
+        }
+        if (rawNonce) {
+            googlePayload.rawNonce = rawNonce;
+        }
+        if (clientId) {
+            googlePayload.clientId = clientId;
         }
 
         // Case A: creating new family — send familyName, backend creates family + user in one call
@@ -1257,7 +1341,17 @@ Thank you!`;
             }
         }
 
-        console.log('[OAuth parent signup] payload:', JSON.stringify(googlePayload));
+        if (!environment.production) {
+            console.info('[OAuth parent signup] Submitting provider profile', {
+                provider,
+                providerId,
+                hasEmail: !!email,
+                hasName: !!googlePayload.name,
+                hasIdentityToken: !!(googlePayload.identityToken || googlePayload.idToken),
+                hasAuthorizationCode: !!googlePayload.authorizationCode,
+                familyMode: isCreator ? 'create' : 'join'
+            });
+        }
 
         this.isLoading = true;
         this.authService.googleOAuthLogin(googlePayload).subscribe({
@@ -1336,6 +1430,9 @@ Thank you!`;
             'google_signup_email', 'google_signup_name', 'google_signup_avatar',
             'google_signup_provider_id', 'oauth_signup_id_token',
             'oauth_signup_access_token', 'oauth_signup_server_auth_code',
+            'oauth_signup_identity_token', 'oauth_signup_authorization_code',
+            'oauth_signup_raw_nonce', 'oauth_signup_client_id',
+            'oauth_signup_is_development_mock',
             'signup_profile', 'signup_role', 'signup_avatar',
             'requestedIdentifier', 'familyCode', 'familyName', 'familyCreator',
             'referralCode', 'referralCodeLocked'
@@ -1429,6 +1526,10 @@ Thank you!`;
         };
         this.authService.login(credentials).subscribe({
             next: (loginResponse) => {
+                if (this.shouldStartManagedChildSignup()) {
+                    completeNavigation();
+                    return;
+                }
                 const resume = this.onboardingState.getResumeNavigation(loginResponse.user);
                 if (resume) {
                     this.navigateWithoutHistory(resume.url, resume.queryParams);

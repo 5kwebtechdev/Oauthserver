@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { IonicModule, Platform, LoadingController, ToastController, AlertController } from '@ionic/angular';
+import { IonicModule, Platform, LoadingController, ToastController } from '@ionic/angular';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { getApps, getApp } from 'firebase/app';
 import { getAuth, signInWithCredential, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
@@ -10,6 +10,11 @@ import { AnalyticsService } from '../../services/analytics.service';
 import { AuthSessionCleanupService } from '../../services/auth-session-cleanup.service';
 import { CrashlyticsService } from '../../services/crashlytics.service';
 import { OnboardingStateService } from '../../services/onboarding-state.service';
+import {
+  AppleAuthorizationCredential,
+  AppleSignInService
+} from '../../services/apple-sign-in.service';
+import { environment } from '../../../../environments/environment';
 
 type OAuthProviderName = 'google' | 'apple';
 
@@ -32,6 +37,11 @@ type OAuthSignupSessionData = {
   idToken?: string;
   accessToken?: string;
   serverAuthCode?: string;
+  identityToken?: string;
+  authorizationCode?: string;
+  rawNonce?: string;
+  clientId?: string;
+  isDevelopmentMock?: boolean;
 };
 
 @Component({
@@ -59,16 +69,18 @@ export class SocialMediaComponent implements OnInit {
     private platform: Platform,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController,
     private analytics: AnalyticsService,
     private authSessionCleanup: AuthSessionCleanupService,
     private crashlytics: CrashlyticsService,
-    private onboardingState: OnboardingStateService
+    private onboardingState: OnboardingStateService,
+    private appleSignIn: AppleSignInService
   ) {}
 
   ngOnInit() {
     // Include iPad — platform.is('ios') may not catch iPadOS in some Capacitor versions
-    this.isIos = this.platform.is('ios') || this.platform.is('ipad');
+    this.isIos = this.platform.is('ios')
+      || this.platform.is('ipad')
+      || this.appleSignIn.isDevelopmentMockActive();
   }
 
   open(link: { name: string; url?: string }) {
@@ -179,7 +191,7 @@ export class SocialMediaComponent implements OnInit {
     // Use the same iPad-inclusive check as the button's *ngIf (see isIos above) —
     // platform.is('ios') alone can miss iPadOS in some Capacitor versions, which
     // would otherwise make this button silently do nothing on iPad.
-    if (!this.isIos) return;
+    if (!this.isIos && !this.appleSignIn.isDevelopmentMockActive()) return;
     if (this.isSocialLoginInProgress) return;
     this.isSocialLoginInProgress = true;
 
@@ -187,134 +199,73 @@ export class SocialMediaComponent implements OnInit {
     await loading.present();
 
     try {
-      const { SignInWithApple } = await import('@capacitor-community/apple-sign-in') as any;
-      const result = await SignInWithApple.authorize({
-        clientId: 'com.supermeapp.app',
-        redirectURI: '',
-        scopes: 'email name',
-        state: '',
-        nonce: ''
-      });
+      const credential: AppleAuthorizationCredential = await this.appleSignIn.authorize();
+      const {
+        isDevelopmentMock,
+        ...appleProfile
+      } = credential;
 
-      const appleUser = result?.response;
-      if (!appleUser?.identityToken) {
-        throw new Error('Apple sign-in did not return an identity token.');
+      if (!environment.production) {
+        console.info('[Apple Sign-In] Authorization completed', {
+          providerId: appleProfile.providerId,
+          hasEmail: !!appleProfile.email,
+          hasName: !!appleProfile.name,
+          hasIdentityToken: !!appleProfile.identityToken,
+          hasAuthorizationCode: !!appleProfile.authorizationCode,
+          developmentMock: !!isDevelopmentMock
+        });
       }
 
-      const providerId = appleUser.user || '';
-      const email = (appleUser.email || '').trim();
-      const givenName = appleUser.givenName || '';
-      const familyName = appleUser.familyName || '';
-      const name = [givenName, familyName].filter(Boolean).join(' ') || email || 'Apple User';
+      if (isDevelopmentMock) {
+        // The development mock is intentionally client-only. Never send its
+        // unsigned token or synthetic identity to Firebase or the live API.
+        await this.finishSocialLogin(loading);
+        this.storeOAuthSignupSession('apple', credential);
+        await this.presentToast(
+          'Apple development mock verified. Live backend authentication was not called.'
+        );
+        this.router.navigate(
+          ['home/sign-up'],
+          { queryParams: { step: 1 }, replaceUrl: true }
+        );
+        return;
+      }
 
       try {
         if (getApps().length) {
           const provider = new OAuthProvider('apple.com');
-          const credential = provider.credential({ idToken: appleUser.identityToken });
-          await signInWithCredential(getAuth(getApp()), credential);
+          const firebaseCredential = provider.credential({
+            idToken: appleProfile.identityToken,
+            rawNonce: appleProfile.rawNonce
+          });
+          await signInWithCredential(getAuth(getApp()), firebaseCredential);
         }
       } catch (fbErr) {
         console.warn('[SocialMedia] Firebase Apple sign-in (non-fatal):', fbErr);
       }
 
-      if (!providerId) {
-        throw new Error('Apple sign-in did not return a user ID.');
-      }
-
-      const appleProfile = { provider: 'apple', providerId, email, name, avatarUrl: '' };
-
-      if (!email) {
-        this.attemptAppleProviderLogin(appleProfile, loading);
-        return;
-      }
-
-      this.authService.checkEmailExists(email).subscribe({
-        next: (res) => {
-          if (res.exists) {
-            this.loginWithOAuthProfile(appleProfile, loading, 'apple');
-          } else {
-            void this.finishSocialLogin(loading);
-            this.storeOAuthSignupSession('apple', { email, name, avatarUrl: '', providerId });
-            this.analytics.logSignUp('apple');
-            this.router.navigate(['home/sign-up'], { queryParams: { step: 1 }, replaceUrl: true });
-          }
-        },
-        error: async () => {
-          await this.finishSocialLogin(loading);
-          const toast = await this.toastCtrl.create({
-            message: 'Unable to verify account. Please try again.',
-            duration: 3000,
-            position: 'bottom'
-          });
-          await toast.present();
-        }
-      });
+      // Always let the backend verify the Apple token and stable `sub`.
+      // Email is not a reliable account key and Apple may omit name/email on
+      // later authorizations.
+      this.loginWithOAuthProfile(appleProfile, loading, 'apple');
     } catch (err: any) {
       await this.finishSocialLogin(loading);
-      const cancelled = err?.message?.includes('cancel') || err?.message?.includes('dismiss');
-      if (!cancelled) {
+      const normalizedError = this.appleSignIn.normalizeError(err);
+      if (!normalizedError.cancelled) {
+        console.error('[Apple Sign-In] Authorization failed:', normalizedError.debugMessage, err);
+        this.crashlytics.recordException(err, {
+          provider: 'apple',
+          stage: 'authorize',
+          code: normalizedError.code || ''
+        });
         const toast = await this.toastCtrl.create({
-          message: err?.message || 'Apple sign-in failed. Please try again.',
-          duration: 3000,
+          message: normalizedError.userMessage,
+          duration: 4500,
           position: 'bottom'
         });
         await toast.present();
       }
     }
-  }
-
-  /**
-   * Apple withheld email/name on this authorization (not the user's first
-   * grant to this app). Try logging in by providerId alone; if no account is
-   * linked yet, fall back to asking for an email instead of dead-ending.
-   */
-  private async attemptAppleProviderLogin(appleProfile: any, loading: any): Promise<void> {
-    this.authService.googleOAuthLogin(appleProfile).subscribe({
-      next: async (response) => {
-        await this.finishSocialLogin(loading);
-        const userId = response.user?.id;
-        if (response.token && userId) {
-          this.authService.setSession(
-            { token: response.token, userId, expiresIn: response.expiresIn, user: response.user },
-            false
-          );
-          this.analytics.logLogin('apple');
-          this.analytics.setUserId(String(userId));
-          this.router.navigate([this.authService.getDashboardRoute()], { replaceUrl: true });
-          return;
-        }
-        await this.promptForAppleEmail(appleProfile.providerId, appleProfile.name);
-      },
-      error: async () => {
-        await this.finishSocialLogin(loading);
-        await this.promptForAppleEmail(appleProfile.providerId, appleProfile.name);
-      }
-    });
-  }
-
-  private async promptForAppleEmail(providerId: string, name: string): Promise<void> {
-    const alert = await this.alertCtrl.create({
-      header: 'Almost there',
-      message: "Apple didn't share an email for this sign-in. Enter your email to continue creating your account.",
-      inputs: [{ name: 'email', type: 'email', placeholder: 'Email address' }],
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        {
-          text: 'Continue',
-          handler: (data) => {
-            const email = (data?.email || '').trim();
-            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-              return false;
-            }
-            this.storeOAuthSignupSession('apple', { email, name: name || email, avatarUrl: '', providerId });
-            this.analytics.logSignUp('apple');
-            this.router.navigate(['home/sign-up'], { queryParams: { step: 1 }, replaceUrl: true });
-            return true;
-          }
-        }
-      ]
-    });
-    await alert.present();
   }
 
   private loginWithOAuthProfile(
@@ -328,12 +279,44 @@ export class SocialMediaComponent implements OnInit {
         await this.finishSocialLogin(loading);
         const userId = response.user?.id;
         if (response.token && userId) {
+          const appleOnboardingStep = provider === 'apple'
+            ? Number(response.user?.onboardingStep)
+            : null;
+          if (
+            provider === 'apple'
+            && (!Number.isFinite(appleOnboardingStep) || Number(appleOnboardingStep) < 1)
+          ) {
+            console.error(
+              '[Apple Sign-In] Login response is missing a valid onboardingStep:',
+              response
+            );
+            await this.presentToast(
+              'Apple sign-in could not determine your account setup status. Please try again.'
+            );
+            return;
+          }
+
           this.authService.setSession(
             { token: response.token, userId, expiresIn: response.expiresIn, user: response.user },
             false
           );
           this.analytics.logLogin(provider);
           this.analytics.setUserId(String(userId));
+
+          if (provider === 'apple') {
+            // Apple authentication replaces email/OTP/password steps. A new
+            // Apple user still selects a role before entering optional profile
+            // details. Preserve the Apple credential for that flow.
+            const savedRole = this.onboardingState.getSignupRole(response.user);
+            if (Number(appleOnboardingStep) < 4 || !savedRole) {
+              this.storeOAuthSignupSession('apple', profile);
+              this.router.navigate(
+                ['home/sign-up'],
+                { queryParams: { step: 1 }, replaceUrl: true }
+              );
+              return;
+            }
+          }
 
           const onboardingResume = this.onboardingState.getResumeNavigation(response.user);
           if (onboardingResume) {
@@ -394,6 +377,36 @@ export class SocialMediaComponent implements OnInit {
         sessionStorage.setItem('oauth_signup_server_auth_code', data.serverAuthCode);
       } else {
         sessionStorage.removeItem('oauth_signup_server_auth_code');
+      }
+
+      if (data.identityToken) {
+        sessionStorage.setItem('oauth_signup_identity_token', data.identityToken);
+      } else {
+        sessionStorage.removeItem('oauth_signup_identity_token');
+      }
+
+      if (data.authorizationCode) {
+        sessionStorage.setItem('oauth_signup_authorization_code', data.authorizationCode);
+      } else {
+        sessionStorage.removeItem('oauth_signup_authorization_code');
+      }
+
+      if (data.rawNonce) {
+        sessionStorage.setItem('oauth_signup_raw_nonce', data.rawNonce);
+      } else {
+        sessionStorage.removeItem('oauth_signup_raw_nonce');
+      }
+
+      if (data.clientId) {
+        sessionStorage.setItem('oauth_signup_client_id', data.clientId);
+      } else {
+        sessionStorage.removeItem('oauth_signup_client_id');
+      }
+
+      if (!environment.production && data.isDevelopmentMock) {
+        sessionStorage.setItem('oauth_signup_is_development_mock', 'true');
+      } else {
+        sessionStorage.removeItem('oauth_signup_is_development_mock');
       }
 
       sessionStorage.setItem('requestedIdentifier', data.email);

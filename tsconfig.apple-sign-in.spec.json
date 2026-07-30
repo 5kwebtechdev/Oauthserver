@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "files": [
+    "src/test.ts",
+    "src/polyfills.ts",
+    "src/app/core/services/apple-sign-in.service.spec.ts"
+  ],
+  "include": [
+    "src/**/*.d.ts"
+  ]
+}
