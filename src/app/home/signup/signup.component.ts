@@ -43,6 +43,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   private static readonly CREATE_CHILD_AFTER_FAMILY_KEY = 'create_child_after_family';
   private static readonly MANAGED_CHILD_SIGNUP_KEY = 'managed_child_signup';
   private static readonly MANAGED_CHILD_FAMILY_CODE_KEY = 'managed_child_family_code';
+  private static readonly MANAGED_CHILD_SUCCESS_EMAIL_KEY = 'managed_child_success_email';
   // Persist identifier used to request OTP so it can be reused in later steps
   public requestedIdentifier: string | null = null;
   public signupForm: FormGroup;
@@ -88,8 +89,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   public otpVerifyInProgress: boolean = false;
   public otpResendInProgress: boolean = false;
   public registrationInProgress: boolean = false;
+  public managedChildSignup = false;
+  public managedChildSuccessEmail = '';
+  public expandedManagedChildFaq: number | null = null;
   private isEditingPendingChildOnboarding = false;
   private managedChildFamilyCode = '';
+  private managedChildRegistrationComplete = false;
   private referralCheckInProgress: boolean = false;
   private validatedReferralCode: string = '';
   private referralValidationTimer: ReturnType<typeof setTimeout> | null = null;
@@ -202,6 +207,25 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     text: ['Loves big ideas and bold moves', 'Celebrates when you go on streaks']
   }]
 
+  readonly managedChildSuccessFaqs = [
+    {
+      question: 'Does the family code expire or stop working?',
+      answer: 'No. Your family code stays active while the family exists. If it ever changes, the latest code will be available in your family profile.'
+    },
+    {
+      question: 'Can multiple children use the same family code?',
+      answer: 'Yes. You can create or connect more than one child account with the same family.'
+    },
+    {
+      question: 'Is this code private or can anyone with it join my family?',
+      answer: 'Keep the code private and share it only with trusted family members. Anyone with the code may be able to request access.'
+    },
+    {
+      question: `What if my child enters the wrong code or it doesn't work?`,
+      answer: 'Check every letter and number, or share the latest code again from your family profile.'
+    }
+  ];
+
   public currentImage: any = null;
 
   ngAfterViewInit(): void {
@@ -296,6 +320,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       sessionStorage.getItem(SignupComponent.MANAGED_CHILD_FAMILY_CODE_KEY)
       || ''
     ).trim().toUpperCase();
+    this.managedChildSignup = (
+      this.managedChildSignup
+      || sessionStorage.getItem(SignupComponent.MANAGED_CHILD_SIGNUP_KEY) === 'true'
+    );
+    this.managedChildSuccessEmail = (
+      sessionStorage.getItem(SignupComponent.MANAGED_CHILD_SUCCESS_EMAIL_KEY)
+      || ''
+    ).trim();
 
     this.restoreSignupStateFromSession();
     this.restorePersistedRegistrationState();
@@ -396,6 +428,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
       const stepParam = params['step'];
       const roleParam = params['role'];
+      const managedChildParam = params['managedChild'] === 'true';
+      this.managedChildSignup = managedChildParam
+        || sessionStorage.getItem(SignupComponent.MANAGED_CHILD_SIGNUP_KEY) === 'true';
+      if (managedChildParam) {
+        try {
+          sessionStorage.setItem(SignupComponent.MANAGED_CHILD_SIGNUP_KEY, 'true');
+        } catch (error) {
+          console.warn('[Signup] Unable to persist managed child route state', error);
+        }
+      }
       this.isEditingPendingChildOnboarding = params['editOnboarding'] === 'true'
         && stepParam === '2'
         && roleParam === 'child';
@@ -721,6 +763,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return stored || this.roleSelected;
   }
 
+  get isManagedChildSignup(): boolean {
+    return this.managedChildSignup && this.currentRole === 'child';
+  }
+
   get isPostFamilyChildPetStep(): boolean {
     return this.step === 4
       && this.currentRole === 'child'
@@ -732,6 +778,24 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return this.selectedPetIndex !== null
       && Number.isInteger(this.selectedPetIndex)
       && !!this.pets[this.selectedPetIndex];
+  }
+
+  getPetTrait(pet: any, traitIndex: number): string {
+    const fallback = pet?.text?.[traitIndex] || '';
+    if (!this.isManagedChildSignup) {
+      return fallback;
+    }
+
+    if (pet?.name === 'Panda' && traitIndex === 0) {
+      return 'Their gentle guide to inner peace';
+    }
+    if (pet?.name === 'Owl' && traitIndex === 0) {
+      return 'Their midnight study buddy';
+    }
+    if (pet?.name === 'Dragon' && traitIndex === 1) {
+      return 'Celebrates when they go on streaks';
+    }
+    return fallback;
   }
 
   // Header helpers for template bindings to avoid complex inline expressions
@@ -930,6 +994,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       // Self registers here. A fresh Child account is already registered and
       // linked to a family before this post-family Pet step is shown.
       const role = (sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected;
+      if (this.isManagedChildSignup) {
+        void this.createManagedChildAccount(selectedPetName);
+        return;
+      }
+
       if (this.isPostFamilyChildPetStep) {
         this.registerChildOrSelfFromSession('child', true);
         return;
@@ -1073,6 +1142,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // Get the role from session storage or current selection
     const role = ((sessionStorage.getItem('signup_role') as SignupRole) || this.roleSelected)!;
 
+    if (this.isManagedChildSignup) {
+      this.navigateToSignupStep(4);
+      return;
+    }
+
     const suggestionRoles = this.getAgeSuggestionRoles(role, age);
     if (suggestionRoles.length) {
       this.openAgeSuggestionModal(suggestionRoles);
@@ -1124,8 +1198,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       this.dismissPasswordKeyboard();
     }
     this.resetTransientStepUi();
+    const queryParams: Record<string, string | number | boolean> = { step };
+    if (this.isManagedChildSignup) {
+      queryParams['role'] = 'child';
+      queryParams['managedChild'] = true;
+    }
     void this.navCtrl.navigateRoot('/home/sign-up', {
-      queryParams: { step },
+      queryParams,
       animated: false
     });
   }
@@ -1169,6 +1248,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
   goBack() {
     if (this.step === 0.1) {
+      if (this.isManagedChildSignup) {
+        this.cancelManagedChildSignup();
+        return;
+      }
       this.returnToRoleSelection();
     } else if (this.step === 0.2) {
       this.clearOtpTimer();
@@ -1193,6 +1276,192 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.roleSelected = undefined;
       }
       this.navigateToSignupStep(this.step - 1);
+    }
+  }
+
+  toggleManagedChildFaq(index: number): void {
+    this.expandedManagedChildFaq = this.expandedManagedChildFaq === index ? null : index;
+  }
+
+  returnToParentApp(): void {
+    this.clearManagedChildSignupState();
+    this.loadingService.forceHide();
+    void this.navCtrl.navigateRoot(this.authService.getDashboardRoute() || '/authed/parent-account', {
+      animated: false
+    });
+  }
+
+  private cancelManagedChildSignup(): void {
+    this.clearManagedChildSignupState();
+    this.loadingService.forceHide();
+    void this.navCtrl.navigateRoot(this.authService.getDashboardRoute() || '/authed/parent-account', {
+      animated: false
+    });
+  }
+
+  private async createManagedChildAccount(selectedPetName: string): Promise<void> {
+    if (this.registrationInProgress) {
+      return;
+    }
+
+    const payload = this.buildManagedChildRegistrationPayload(selectedPetName);
+    if (!payload) {
+      return;
+    }
+
+    const password = this.signupCredentialState.getPassword() || this.password?.value || '';
+    if (!password) {
+      this.core.triggerToasrt('Please create a password for your child before continuing.');
+      return;
+    }
+
+    this.registrationInProgress = true;
+    this.errorMessage = null;
+    const loaderToken = this.loadingService.show('Creating child account...', {
+      delayMs: 0,
+      minVisibleMs: 300
+    });
+
+    try {
+      if (!this.managedChildRegistrationComplete) {
+        const registrationResponse = await firstValueFrom(
+          this.authService.registerManagedChild(payload)
+        );
+        const onboardingStep = this.getResponseOnboardingStep(registrationResponse);
+        if (onboardingStep !== 6) {
+          throw new Error(
+            registrationResponse?.message
+            || 'The child account could not be completed. Please try again.'
+          );
+        }
+        this.managedChildRegistrationComplete = true;
+      }
+
+      await firstValueFrom(this.authService.shareLoginCredentials({
+        email: payload.email,
+        password,
+        message: 'Your parent has created your SuperMe account. Use these credentials to log in.'
+      }));
+
+      this.managedChildSuccessEmail = payload.email;
+      try {
+        sessionStorage.setItem(
+          SignupComponent.MANAGED_CHILD_SUCCESS_EMAIL_KEY,
+          this.managedChildSuccessEmail
+        );
+      } catch (error) {
+        console.warn('[Signup] Unable to persist managed child success email', error);
+      }
+
+      this.authService.refreshUserData().subscribe({
+        error: () => {
+          // The Parent screen can refresh again when it is opened.
+        }
+      });
+      this.navigateToSignupStep(6);
+    } catch (error: any) {
+      this.errorMessage = error?.error?.message
+        || error?.message
+        || 'We could not create the child account. Please check your connection and try again.';
+      this.core.triggerToasrt(this.errorMessage);
+    } finally {
+      this.registrationInProgress = false;
+      this.loadingService.hide(loaderToken);
+    }
+  }
+
+  private buildManagedChildRegistrationPayload(selectedPetName: string): any | null {
+    const email = this.getSignupCredentialIdentifier().trim();
+    const password = this.signupCredentialState.getPassword() || this.password?.value || '';
+    if (!email || !email.includes('@')) {
+      this.core.triggerToasrt('Please enter a valid email address for your child.');
+      return null;
+    }
+    if (!password) {
+      this.core.triggerToasrt('Please create a password for your child.');
+      return null;
+    }
+    if (!this.managedChildFamilyCode) {
+      this.core.triggerToasrt('Family code is not available. Please return to your family and try again.');
+      return null;
+    }
+
+    let profile: any = {};
+    try {
+      profile = JSON.parse(sessionStorage.getItem('signup_profile') || '{}');
+    } catch (error) {
+      console.warn('[Signup] Unable to read managed child profile', error);
+    }
+
+    const persistedDraft = this.onboardingState.getRegistrationState()?.savedData || {};
+    const avatarKey = Number(profile.avatar || this.avatarSelected);
+    const avatar = this.avatars.find(item => item.key === avatarKey);
+    const dobValue = profile.dob
+      || persistedDraft.dateOfBirth
+      || this.profileForm.get('dob')?.value;
+    const dateOfBirth = dobValue ? this.toDateInputValue(dobValue) : '';
+    const profilePhone = String(
+      profile.phone
+      || this.profileForm.get('phone')?.value
+      || ''
+    ).trim();
+    const payload: any = {
+      email,
+      password,
+      name: profile.name || persistedDraft.name || this.profileForm.get('name')?.value,
+      username: profile.username || persistedDraft.username || this.profileForm.get('username')?.value,
+      relationship: 'CHILD',
+      familyCode: this.managedChildFamilyCode,
+      avatarName: avatarKey ? `avatar${avatarKey}` : undefined,
+      avatarImageName: avatar?.value?.split('/').pop(),
+      petName: selectedPetName,
+      referralCode: this.referralCode || null,
+      unlockPotential: false
+    };
+
+    if (this.gender) {
+      payload.gender = this.gender;
+    }
+    if (dateOfBirth) {
+      payload.dateOfBirth = dateOfBirth;
+    }
+    if (profilePhone) {
+      const countryCode = sessionStorage.getItem('countryCode') || this.selectedCountry.code;
+      payload.phone = profilePhone.startsWith('+')
+        ? profilePhone
+        : `${countryCode}${profilePhone}`;
+    }
+
+    return payload;
+  }
+
+  private clearManagedChildSignupState(): void {
+    this.onboardingState.clearRegistrationDraft();
+    this.signupCredentialState.clear();
+    this.managedChildSignup = false;
+    this.managedChildFamilyCode = '';
+    this.managedChildSuccessEmail = '';
+    this.managedChildRegistrationComplete = false;
+    this.expandedManagedChildFaq = null;
+    try {
+      [
+        SignupComponent.CREATE_CHILD_AFTER_FAMILY_KEY,
+        SignupComponent.MANAGED_CHILD_SIGNUP_KEY,
+        SignupComponent.MANAGED_CHILD_FAMILY_CODE_KEY,
+        SignupComponent.MANAGED_CHILD_SUCCESS_EMAIL_KEY,
+        'signup_profile',
+        'signup_role',
+        'signup_avatar',
+        'signup_pet',
+        'requestedIdentifier',
+        'loginMode',
+        'countryCode',
+        'familyCode',
+        'referralCode',
+        'referralCodeLocked'
+      ].forEach(key => sessionStorage.removeItem(key));
+    } catch (error) {
+      console.warn('[Signup] Unable to clear managed child signup state', error);
     }
   }
 

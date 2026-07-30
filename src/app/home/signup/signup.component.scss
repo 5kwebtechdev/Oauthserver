@@ -1035,6 +1035,24 @@ superme-navigator.signup-navigator {
   background: #fff;
 }
 
+.signup-container.managed-child-flow {
+  &.signup-entry-layout .signup-entry-progress span {
+    width: 20%;
+  }
+
+  &.otp-layout .otp-progress span {
+    width: 40%;
+  }
+
+  &.password-layout .pwd-progress span {
+    width: 60%;
+  }
+
+  &.pet-layout .pet-step-progress span {
+    width: 100%;
+  }
+}
+
 .pet-step {
   display: flex;
   flex-direction: column;
@@ -1222,6 +1240,10 @@ swiper-slide.swiper-slide-active .pet-card {
 }
 
 .pet-step-next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: calc(100% - clamp(30px, 7.5vw, 72px));
   height: 56px;
   min-height: 56px;
@@ -1250,6 +1272,20 @@ swiper-slide.swiper-slide-active .pet-card {
     cursor: not-allowed;
     opacity: 1;
   }
+
+  ion-spinner {
+    width: 20px;
+    height: 20px;
+    color: currentColor;
+  }
+}
+
+.pet-step-error {
+  width: min(361px, calc(100% - 32px));
+  margin: 12px auto 0;
+  color: #b42345;
+  font: 600 13px/1.4 var(--font-sans);
+  text-align: center;
 }
 
 @media (max-width: 360px) {
