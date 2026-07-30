@@ -308,9 +308,13 @@ button {
 .login-eye-btn {
   display: grid;
   width: 40px;
+  min-width: 40px;
+  max-width: 40px;
   height: 40px;
   margin-right: 12px;
   flex: 0 0 40px;
+  flex-shrink: 0;
+  box-sizing: border-box;
   padding: 0;
   place-items: center;
   border: 0;
@@ -320,10 +324,20 @@ button {
   cursor: pointer;
 }
 
-.login-eye-btn img,
+.login-eye-btn img {
+  display: block;
+  width: 18px;
+  height: auto;
+  aspect-ratio: 17 / 11.6667;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
 .login-eye-btn svg {
-  width: 16px;
-  height: 16px;
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
 }
 
 .login-error {
@@ -335,7 +349,8 @@ button {
 
 .login-forgot-btn {
   align-self: flex-end;
-  width: 114px;
+  width: max-content;
+  max-width: 100%;
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -348,6 +363,7 @@ button {
   text-decoration: underline;
   text-underline-offset: 3px;
   text-align: right;
+  white-space: nowrap;
   cursor: pointer;
 }
 

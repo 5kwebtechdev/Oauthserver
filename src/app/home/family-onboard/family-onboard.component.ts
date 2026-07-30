@@ -1078,6 +1078,11 @@ Thank you!`;
                 familyName: sessionStorage.getItem('familyName') || this.createdFamilyName || '',
                 unlockPotential: false
             };
+            const avatarKey = Number(profile.avatar);
+            if (Number.isInteger(avatarKey) && avatarKey >= 1 && avatarKey <= 12) {
+                payload.avatarName = `avatar_${avatarKey}`;
+                payload.avatarImageName = `avatars/avatar${avatarKey}.png`;
+            }
             // Optional — omit entirely rather than defaulting to a value the
             // user never actually chose (toApiGender() always resolves to a
             // real enum, which would falsely look like an explicit choice).
@@ -1221,6 +1226,11 @@ Thank you!`;
             gender:       toApiGender(profile.gender),
             referralCode: sessionStorage.getItem('referralCode') || null
         };
+        const avatarKey = Number(profile.avatar);
+        if (Number.isInteger(avatarKey) && avatarKey >= 1 && avatarKey <= 12) {
+            googlePayload.avatarName = `avatar_${avatarKey}`;
+            googlePayload.avatarImageName = `avatars/avatar${avatarKey}.png`;
+        }
 
         if (idToken) {
             googlePayload.idToken = idToken;
@@ -1353,6 +1363,20 @@ Thank you!`;
 
     private navigateToParentWelcome(): void {
         try {
+            const draft = this.onboardingState.getRegistrationState()?.savedData || {};
+            const existingCredentials = this.signupCredentialState.getPendingLogin();
+            const password = existingCredentials?.password || this.signupCredentialState.getPassword();
+            const email = existingCredentials?.email || String(draft.email || '').trim();
+            const phone = existingCredentials?.phone || String(draft.phone || '').trim();
+
+            if (password && (email || phone)) {
+                this.signupCredentialState.setPendingLogin({
+                    ...(email ? { email } : {}),
+                    ...(!email && phone ? { phone } : {}),
+                    password
+                });
+            }
+
             sessionStorage.setItem('family_connected_ack', 'Parent');
             this.onboardingState.markExistingUser();
         } catch (error) {

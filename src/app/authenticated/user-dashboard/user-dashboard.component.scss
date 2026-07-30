@@ -589,7 +589,30 @@ ion-content {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  min-width: 44px;
+  min-height: 58px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease, background-color 120ms ease;
+}
+
+.header-stat:active {
+  transform: scale(0.96);
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.header-stat:focus-visible {
+  outline: 2px solid #59318f;
+  outline-offset: 3px;
 }
 
 .header-stat-icon {
@@ -1075,8 +1098,8 @@ ion-content {
 }
 
 .header-stat {
-  width: 40px;
-  min-width: 40px;
+  width: 44px;
+  min-width: 44px;
   gap: 2px;
 }
 
