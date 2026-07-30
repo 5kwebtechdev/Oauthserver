@@ -16,6 +16,12 @@ const PENDING_KEY = 'mb_tutor_likes_pending_v1';
 @Injectable({ providedIn: 'root' })
 export class TutorLikeService {
   private states = new Map<string | number, BehaviorSubject<TutorLikeState>>();
+  /**
+   * Tutors whose latest like state was confirmed during this app session.
+   * This prevents an older list/cache object from replacing a freshly updated
+   * count when a detail modal is closed.
+   */
+  private locallySettled = new Set<string>();
   private bc: BroadcastChannel | null = null;
 
   constructor(private http: HttpClient, private auth: AuthService) {
@@ -29,7 +35,9 @@ export class TutorLikeService {
         this.bc.onmessage = (ev: any) => {
           const { tutorId, state } = ev.data || {};
           if (tutorId && state) {
-            this.getSubject(tutorId).next(state);
+            const id = String(tutorId);
+            this.getSubject(id).next(state);
+            if (!state.pending) this.locallySettled.add(id);
           }
         };
       }
@@ -55,6 +63,7 @@ export class TutorLikeService {
       subject.next({ liked: false, count: 0, pending: false });
     });
     this.states.clear();
+    this.locallySettled.clear();
     try {
       this.bc?.close();
     } catch {}
@@ -65,10 +74,20 @@ export class TutorLikeService {
     return this.getSubject(tutorId).asObservable();
   }
 
-  initFromServer(tutor: any) {
+  initFromServer(tutor: any): void {
     if (!tutor || !tutor.id) return;
     const id = String(tutor.id);
     const subj = this.getSubject(id);
+
+    // A cached list response can be older than a like/unlike just confirmed on
+    // the detail screen. Keep the shared per-item state and apply it to the
+    // supplied object rather than reloading the complete tutor list.
+    if (subj.value.pending || this.locallySettled.has(id)) {
+      tutor.champsLiked = subj.value.count;
+      tutor.likedByUser = subj.value.liked;
+      return;
+    }
+
     const persisted = this.loadUserLikes();
     const pending = this.loadPending();
 
@@ -89,12 +108,12 @@ export class TutorLikeService {
     return this.getSubject(tutorId).value.count;
   }
 
-  toggleLike(tutor: any): void {
-    if (!tutor || !tutor.id) return;
+  toggleLike(tutor: any): Promise<TutorLikeState> | null {
+    if (!tutor || !tutor.id) return null;
     const id = String(tutor.id);
     const subj = this.getSubject(id);
     const prev = subj.value;
-    if (prev.pending) return; // avoid duplicate
+    if (prev.pending) return null; // avoid duplicate requests
 
     const newState: TutorLikeState = {
       liked: !prev.liked,
@@ -115,28 +134,34 @@ export class TutorLikeService {
     if (tokenValue && !tokenValue.toLowerCase().startsWith('bearer ')) tokenValue = 'Bearer ' + tokenValue;
     const headers = tokenValue ? new HttpHeaders({ Authorization: tokenValue }) : undefined as any;
 
-    this.http.post<{ champsLiked?: number; liked?: boolean }>(url, {}, { headers })
-      .subscribe({
-        next: (res) => {
-          const settled: TutorLikeState = {
-            liked: typeof res.liked === 'boolean' ? res.liked : newState.liked,
-            count: typeof res.champsLiked === 'number' ? res.champsLiked : newState.count,
-            pending: false
-          };
-          subj.next(settled);
-          this.broadcast(id, settled);
-          this.saveUserLike(id, settled.liked);
-          this.savePending(id, false);
-        },
-        error: (err) => {
-          // rollback to previous state
-          subj.next({ ...prev, pending: false });
-          this.broadcast(id, subj.value);
-          this.saveUserLike(id, prev.liked);
-          this.savePending(id, false);
-          console.error('[TutorLikeService] toggle error', err);
-        }
-      });
+    return new Promise<TutorLikeState>((resolve, reject) => {
+      this.http.post<{ champsLiked?: number; liked?: boolean }>(url, {}, { headers })
+        .subscribe({
+          next: (res) => {
+            const settled: TutorLikeState = {
+              liked: typeof res.liked === 'boolean' ? res.liked : newState.liked,
+              count: typeof res.champsLiked === 'number' ? res.champsLiked : newState.count,
+              pending: false
+            };
+            subj.next(settled);
+            this.locallySettled.add(id);
+            this.broadcast(id, settled);
+            this.saveUserLike(id, settled.liked);
+            this.savePending(id, false);
+            resolve(settled);
+          },
+          error: (err) => {
+            // Roll back both screens to the exact state before the failed tap.
+            const rolledBack = { ...prev, pending: false };
+            subj.next(rolledBack);
+            this.broadcast(id, rolledBack);
+            this.saveUserLike(id, prev.liked);
+            this.savePending(id, false);
+            console.error('[TutorLikeService] toggle error', err);
+            reject(err);
+          }
+        });
+    });
   }
 
   private broadcast(tutorId: string | number, state: TutorLikeState) {
@@ -199,6 +224,7 @@ export class TutorLikeService {
                 pending: false
               };
               subj.next(settled);
+              this.locallySettled.add(id);
               this.saveUserLike(id, settled.liked);
               this.savePending(id, false);
               this.broadcast(id, settled);

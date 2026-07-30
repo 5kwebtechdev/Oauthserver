@@ -136,7 +136,8 @@ export class OnboardingStateService {
 
   isOnboardingIncomplete(source?: RegistrationDraftData | null): boolean {
     const step = this.getOnboardingStep(source);
-    return step !== null && step < 7;
+    // The backend defines step 6 as the completed onboarding state.
+    return step !== null && step < 6;
   }
 
   getResumeNavigation(source?: RegistrationDraftData | null): OnboardingResumeNavigation | null {
@@ -150,7 +151,9 @@ export class OnboardingStateService {
         ? source.onboardingStep
         : state?.onboardingStep
     );
-    if (!backendStep || backendStep >= 7) return null;
+    // Step 6 is complete; never route a completed user back to the
+    // activation/pet portion of signup.
+    if (!backendStep || backendStep >= 6) return null;
 
     let signupStep: number;
     if (backendStep === 1) {
@@ -161,8 +164,6 @@ export class OnboardingStateService {
       signupStep = 0.3;
     } else if (backendStep === 4) {
       signupStep = 2;
-    } else if (backendStep === 6) {
-      signupStep = 5;
     } else {
       signupStep = this.getSignupRole(savedData) === 'parent' ? 5 : 4;
     }

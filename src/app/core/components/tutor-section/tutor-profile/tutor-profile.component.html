@@ -104,7 +104,7 @@
       </div>
 
       <div class="action">
-        <superme-button type="columbian-blue" size="large" [disabled]="!selectedContactMethod" [text]="selectedContactMethod === 'call' ? 'Call Now' : 'Send Email'" (click)="confirmContact()"></superme-button>
+        <superme-button type="columbian-blue" size="large" [disabled]="!selectedContactMethod || isContactLaunching" [text]="selectedContactMethod === 'call' ? 'Call Now' : 'Send Email'" (click)="confirmContact()"></superme-button>
       </div>
     </div>
   </div>

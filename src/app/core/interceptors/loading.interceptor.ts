@@ -14,7 +14,11 @@ export class LoadingInterceptor implements HttpInterceptor {
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         const skip = req.headers.has('x-skip-loading') || req.headers.has('X-Skip-Loading');
         if (skip) {
-            return next.handle(req);
+            // This header is only an instruction for the app. Do not forward it
+            // to the API, where it can trigger an unnecessary CORS preflight.
+            return next.handle(req.clone({
+                headers: req.headers.delete('x-skip-loading')
+            }));
         }
 
         const message = req.headers.get('x-loading-message') ?? undefined;

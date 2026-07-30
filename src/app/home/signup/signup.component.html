@@ -637,7 +637,8 @@
       </swiper-container>
 
       <button type="button" class="pet-step-next"
-        [disabled]="selectedPetIndex === null || registrationInProgress"
+        [disabled]="!hasSelectedPet || registrationInProgress"
+        [attr.aria-label]="hasSelectedPet ? 'Continue with selected pet' : 'Select a pet to enable Next'"
         (click)="proceedWithAvatar()">Next</button>
     </section>
 

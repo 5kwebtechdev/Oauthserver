@@ -11,7 +11,8 @@
                         <p>Your Family Code</p>
                         <h1 (click)="copyFamilyCode()" role="button" tabindex="0"
                             (keydown.enter)="copyFamilyCode()" (keydown.space)="copyFamilyCode()"
-                            [attr.aria-label]="'Copy family code ' + familyCode" style="cursor: pointer;">
+                            [attr.aria-label]="copyFeedbackMessage === 'Copied!' ? 'Family code copied' : 'Copy family code ' + familyCode"
+                            [class.is-copied]="copyFeedbackMessage === 'Copied!'" style="cursor: pointer;">
                             {{ familyCode }}
                             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="15"
                                 viewBox="0 0 13 15" fill="none">
@@ -20,6 +21,13 @@
                                     fill="#282527" />
                             </svg>
                         </h1>
+                        <span *ngIf="copyFeedbackMessage"
+                            class="family-code-copy-feedback"
+                            [class.family-code-copy-feedback--error]="copyFeedbackIsError"
+                            role="status" aria-live="polite">
+                            <span aria-hidden="true">{{ copyFeedbackIsError ? '!' : '✓' }}</span>
+                            {{ copyFeedbackMessage }}
+                        </span>
                     </div>
                     <div class="hori-divider">
                         <svg xmlns="http://www.w3.org/2000/svg" width="1" height="56" viewBox="0 0 1 56" fill="none">
@@ -287,7 +295,8 @@
                         <p>Facing errors?<br>Try entering the code instead.</p>
                         <h1 (click)="copyFamilyCode()" role="button" tabindex="0" 
                             (keydown.enter)="copyFamilyCode()" (keydown.space)="copyFamilyCode()"
-                            [attr.aria-label]="'Copy family code ' + familyCode" style="cursor: pointer;">
+                            [attr.aria-label]="copyFeedbackMessage === 'Copied!' ? 'Family code copied' : 'Copy family code ' + familyCode"
+                            [class.is-copied]="copyFeedbackMessage === 'Copied!'" style="cursor: pointer;">
                             {{ familyCode }}
                             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="15"
                                 viewBox="0 0 13 15" fill="none">
@@ -296,6 +305,13 @@
                                     fill="#282527" />
                             </svg>
                         </h1>
+                        <span *ngIf="copyFeedbackMessage"
+                            class="family-code-copy-feedback"
+                            [class.family-code-copy-feedback--error]="copyFeedbackIsError"
+                            role="status" aria-live="polite">
+                            <span aria-hidden="true">{{ copyFeedbackIsError ? '!' : '✓' }}</span>
+                            {{ copyFeedbackMessage }}
+                        </span>
                     </div>
 
                 </div>

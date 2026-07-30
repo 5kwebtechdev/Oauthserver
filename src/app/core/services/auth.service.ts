@@ -326,9 +326,9 @@ export class AuthService {
     // Store full user data and notify all subscribers
     this.setUserData(authResponse.user);
     const onboardingStep = this.onboardingState.getOnboardingStep(authResponse.user);
-    if (onboardingStep && onboardingStep < 7) {
+    if (onboardingStep && onboardingStep < 6) {
       this.onboardingState.saveRegistrationDraft(authResponse.user, onboardingStep);
-    } else if (onboardingStep && onboardingStep >= 7) {
+    } else if (onboardingStep && onboardingStep >= 6) {
       this.onboardingState.clearRegistrationDraft();
     } else {
       // Older completed-user responses may omit onboardingStep entirely.
@@ -421,15 +421,17 @@ export class AuthService {
   }
 
   requestOtp(email: string) {
-    const headers = environment.apiAuthToken ? new HttpHeaders({
-      Authorization: environment.apiAuthToken,
-      'Content-Type': 'application/json'
-    }) : undefined;
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'X-Skip-Loading': 'true'
+    });
+    if (environment.apiAuthToken) {
+      headers = headers.set('Authorization', environment.apiAuthToken);
+    }
 
     const url = `${this.apiUrl}/auth/forgot-password`;
 
-    const options: any = { responseType: 'text' };
-    if (headers) options.headers = headers;
+    const options: any = { responseType: 'text', headers };
 
     return this.http.post<string>(url, { email }, options);
   }
@@ -437,13 +439,15 @@ export class AuthService {
   verifyOtp(email: string, otp: string) {
     const url = `${this.apiUrl}/auth/forgot-password/verify-otp`;
 
-    const headers = environment.apiAuthToken ? new HttpHeaders({
-      Authorization: environment.apiAuthToken,
-      'Content-Type': 'application/json'
-    }) : undefined;
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'X-Skip-Loading': 'true'
+    });
+    if (environment.apiAuthToken) {
+      headers = headers.set('Authorization', environment.apiAuthToken);
+    }
 
-    const options: any = { responseType: 'text' };
-    if (headers) options.headers = headers;
+    const options: any = { responseType: 'text', headers };
 
     return this.http.post<string>(url, { email, otp }, options);
   }
@@ -451,13 +455,15 @@ export class AuthService {
   resetPassword(email: string, password: string) {
     const url = `${this.apiUrl}/auth/forgot-password/reset-password`;
 
-    const headers = environment.apiAuthToken ? new HttpHeaders({
-      Authorization: environment.apiAuthToken,
-      'Content-Type': 'application/json'
-    }) : undefined;
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'X-Skip-Loading': 'true'
+    });
+    if (environment.apiAuthToken) {
+      headers = headers.set('Authorization', environment.apiAuthToken);
+    }
 
-    const options: any = { responseType: 'text' };
-    if (headers) options.headers = headers;
+    const options: any = { responseType: 'text', headers };
 
     return this.http.post<string>(url, { email, password }, options);
   }
@@ -1088,9 +1094,9 @@ export class AuthService {
             };
             this.setUserData(updatedData);
             const onboardingStep = this.onboardingState.getOnboardingStep(updatedData);
-            if (onboardingStep && onboardingStep < 7) {
+            if (onboardingStep && onboardingStep < 6) {
               this.onboardingState.saveRegistrationDraft(updatedData, onboardingStep);
-            } else if (onboardingStep && onboardingStep >= 7) {
+            } else if (onboardingStep && onboardingStep >= 6) {
               this.onboardingState.clearRegistrationDraft();
             }
 

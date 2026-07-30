@@ -724,6 +724,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       && sessionStorage.getItem(SignupComponent.CHILD_POST_FAMILY_WELCOME_KEY) === 'true';
   }
 
+  get hasSelectedPet(): boolean {
+    return this.selectedPetIndex !== null
+      && Number.isInteger(this.selectedPetIndex)
+      && !!this.pets[this.selectedPetIndex];
+  }
+
   // Generate initial from name for parent avatar placeholder
   getNameInitial(): string {
     try {
@@ -820,7 +826,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           this.applyRegistrationDraft(restoredDraft);
 
           if (savedData.emailVerified === true) {
-            if (Number(effectiveStep) >= 7) {
+            if (Number(effectiveStep) >= 6) {
               this.onboardingState.clearRegistrationDraft();
               this.core.triggerToasrt('Your account is already set up. Please log in to continue.');
               this.navigateReplacing('/home/login');
@@ -886,6 +892,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   proceedWithAvatar() {
+    if (this.step === 4 && !this.hasSelectedPet) {
+      this.core.triggerToasrt('Please choose your pet to continue.');
+      return;
+    }
+
     // Only validate avatar selection if not on pet selection AND role is not parent
     if (this.step !== 4 && this.currentRole !== 'parent' && !this.avatarSelected) {
       this.core.triggerToasrt('Please select an avatar');
@@ -2905,7 +2916,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (userData?.['unlockPotential'] === true) {
       // Already unlocked server-side (e.g. resumed session) — no need to
       // send the update again.
-      this.continueAfterUnlock();
+      this.registrationInProgress = true;
+      this.errorMessage = null;
+      this.loadingService.show();
+      this.continueAfterUnlock(userData);
       return;
     }
 
@@ -2987,8 +3001,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     this.authService.register(payload).subscribe({
       next: (response) => {
-        this.registrationInProgress = false;
-
         const responseStep = this.getResponseOnboardingStep(response);
         const responseDraft: RegistrationDraftData = {
           ...payload,
@@ -2999,7 +3011,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
         this.authService.updateUserData(responseDraft);
 
-        if (responseStep && responseStep >= 7) {
+        if (responseStep && responseStep >= 6) {
           this.onboardingState.clearRegistrationDraft();
           this.onboardingState.markExistingUser();
         } else if (responseStep) {
@@ -3010,7 +3022,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           );
         }
 
-        this.continueAfterUnlock();
+        // Keep this final register response as the authoritative onboarding
+        // state. An immediate login can briefly return the previous step while
+        // the backend finishes persisting unlockPotential.
+        this.continueAfterUnlock(responseDraft);
       },
       error: (err) => {
         this.registrationInProgress = false;
@@ -3020,12 +3035,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     });
   }
 
-  private continueAfterUnlock(): void {
+  private continueAfterUnlock(completedUserData?: RegistrationDraftData): void {
+    const completedStep = this.onboardingState.getOnboardingStep(completedUserData);
+
     // Child users reach this welcome screen only after a successful family
     // link and are already logged in. Continue directly without a second login.
     if (this.authService.isLoggedIn()) {
-      const resume = this.onboardingState.getResumeNavigation(this.authService.getUserData());
+      this.applyCompletedUnlockState(completedUserData);
+      const resume = completedStep && completedStep >= 6
+        ? null
+        : this.onboardingState.getResumeNavigation(this.authService.getUserData());
       if (resume) {
+        this.registrationInProgress = false;
         this.loadingService.forceHide();
         void this.navCtrl.navigateRoot(resume.url, {
           queryParams: resume.queryParams,
@@ -3039,6 +3060,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         sessionStorage.removeItem('signup_pet');
       } catch (e) {}
       this.signupCredentialState.clear();
+      this.registrationInProgress = false;
       this.loadingService.forceHide();
       const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
       this.navigateReplacing(route);
@@ -3056,6 +3078,8 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         sessionStorage.removeItem('oauth_signup_access_token');
         sessionStorage.removeItem('oauth_signup_server_auth_code');
       } catch (e) {}
+      this.applyCompletedUnlockState(completedUserData);
+      this.registrationInProgress = false;
       this.loadingService.forceHide();
       const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
       this.navigateReplacing(route);
@@ -3064,6 +3088,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     const credentials = this.signupCredentialState.getPendingLogin();
     if (!credentials?.password || (!credentials.email && !credentials.phone)) {
+      this.registrationInProgress = false;
       this.loadingService.forceHide();
       this.navigateReplacing('/home/login');
       return;
@@ -3071,10 +3096,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     this.authService.login(credentials).subscribe({
       next: (loginResponse) => {
+        // AuthService stores the login response before this callback. Reapply
+        // the newer unlock response so a stale login payload cannot send the
+        // completed parent back into onboarding.
+        this.applyCompletedUnlockState(completedUserData);
         this.requestPasswordSavePrompt(credentials);
         this.signupCredentialState.clear();
+        this.registrationInProgress = false;
         this.loadingService.forceHide();
-        const resume = this.onboardingState.getResumeNavigation(loginResponse.user);
+        const resume = completedStep && completedStep >= 6
+          ? null
+          : this.onboardingState.getResumeNavigation(loginResponse.user);
         if (resume) {
           void this.navCtrl.navigateRoot(resume.url, {
             queryParams: resume.queryParams,
@@ -3085,11 +3117,26 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         const route = this.authService.getDashboardRoute() || '/authed/user-dashboard';
         this.navigateReplacing(route);
       },
-      error: () => {
+      error: (error) => {
+        this.registrationInProgress = false;
         this.loadingService.forceHide();
+        this.errorMessage = error?.error?.message || 'Account created. Please log in to continue.';
         this.navigateReplacing('/home/login');
       }
     });
+  }
+
+  private applyCompletedUnlockState(completedUserData?: RegistrationDraftData): void {
+    if (!completedUserData) {
+      return;
+    }
+
+    this.authService.updateUserData(completedUserData);
+    const completedStep = this.onboardingState.getOnboardingStep(completedUserData);
+    if (completedStep && completedStep >= 6) {
+      this.onboardingState.clearRegistrationDraft();
+      this.onboardingState.markExistingUser();
+    }
   }
 
   /**
@@ -3319,7 +3366,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           const freshUser = this.authService.getUserData() as RegistrationDraftData | null;
           const freshStep = this.onboardingState.getOnboardingStep(freshUser);
 
-          if (freshStep && freshStep >= 7) {
+          if (freshStep && freshStep >= 6) {
             this.onboardingState.clearRegistrationDraft();
             this.onboardingState.markExistingUser();
             this.navigateReplacing(this.authService.getDashboardRoute());
