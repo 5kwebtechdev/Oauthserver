@@ -5,16 +5,16 @@
 
   <div class="calendar-overlay" *ngIf="isOpen">
     <div class="calendar-popup">
+      <h2 class="calendar-title">Set {{ label }}</h2>
+
       <div class="calendar-header">
+        <button type="button" class="nav-arrow" (click)="prevMonth()" aria-label="Previous month">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </button>
         <span>{{ currentMonth | date: 'MMMM yyyy' }}</span>
-        <div class="nav-buttons d-flex gap-4">
-          <button class="nav-arrow" (click)="prevMonth()">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
-          <button class="nav-arrow" (click)="nextMonth()">
-            <ion-icon name="chevron-forward-outline"></ion-icon>
-          </button>
-        </div>
+        <button type="button" class="nav-arrow" (click)="nextMonth()" aria-label="Next month">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
       </div>
 
       <div class="range-selector" *ngIf="type === 'range'">
@@ -29,7 +29,7 @@
       </div>
 
       <div class="calendar-grid">
-        <div class="day" *ngFor="let d of ['Sun','Mon','Tue','Wed','Thur','Fri','Sat']">{{ d }}</div>
+        <div class="day" *ngFor="let d of ['Su','Mo','Tu','We','Th','Fr','Sa']">{{ d }}</div>
         <button *ngFor="let date of getVisibleMonthDays()" [class.isStartDate]="isStartOfRange(date)"
           [class.isEndDate]="isEndOfRange(date)" [class.currentMonth]="isDateinCurrentMonth(date)"
           [class.selected]="isSameDay(date, getEffectiveStart()) || isSameDay(date, getEffectiveEnd())"
@@ -39,9 +39,15 @@
         </button>
       </div>
 
+      <div class="quick-ranges" *ngIf="quickRanges && quickRanges.length">
+        <button type="button" class="range-pill" *ngFor="let r of quickRanges"
+          [class.selected]="selectedRangeLabel === r.label"
+          (click)="selectQuickRange(r)">{{ r.label }}</button>
+      </div>
+
       <div class="calendar-actions">
-        <button (click)="cancelSelection()">Cancel</button>
-        <button (click)="confirmSelection()">OK</button>
+        <button type="button" class="cancel" (click)="cancelSelection()">Cancel</button>
+        <button type="button" class="done" (click)="confirmSelection()">Done</button>
       </div>
     </div>
   </div>

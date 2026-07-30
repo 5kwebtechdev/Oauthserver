@@ -174,6 +174,12 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // global.scss caps every ion-page/ion-router-outlet to a readable content
+    // width (see body.onboarding-active for the same pattern) — this page's
+    // web layout builds its own wider container internally (bp.web-container),
+    // so it opts out of that generic cap for as long as it's active.
+    document.body.classList.add('dashboard-web-view');
+
     this.startHomeTimeSync();
 
     // Check for family connected acknowledgment
@@ -878,6 +884,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   // ─────────────────────────────────────────────────────────────────────────────
 
   ngOnDestroy(): void {
+    document.body.classList.remove('dashboard-web-view');
     // Unregister from global refresh
     this.refreshService.unregisterRefreshHandler('UserDashboard');
     if (this.homeTimeChangeTimer) {

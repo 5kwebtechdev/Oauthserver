@@ -195,3 +195,39 @@
     gap: 36px;
   }
 }
+
+// Between tablet-up and lg, the full brand + 5 nav links + 4 stat pills +
+// avatar don't fit at the default gaps/padding and overflow off-screen
+// (clipping the avatar). Tighten spacing rather than wrapping, since a
+// second header row would push page content down unexpectedly.
+@include bp.between(md, lg) {
+  .web-header__inner {
+    gap: 12px;
+    padding-inline: 20px;
+  }
+
+  .web-header__nav {
+    gap: 14px;
+  }
+
+  .web-header__nav-link {
+    font-size: 14px;
+  }
+
+  .web-header__right {
+    gap: 12px;
+  }
+
+  .web-header__stats {
+    gap: 10px;
+  }
+
+  .web-header__stat span {
+    font-size: 13px;
+  }
+
+  .web-header__stat-icon {
+    width: 22px;
+    height: 22px;
+  }
+}

@@ -1131,14 +1131,23 @@ ion-content {
   object-fit: fill;
 }
 
-.dashboard-content {
-  align-items: stretch;
-  gap: 32px;
-  width: 100%;
-  max-width: 393px;
-  margin-inline: auto;
-  padding: 16px;
-  box-sizing: border-box;
+// Phone-width cap from the Figma "Child Home" mobile frame — must stay
+// scoped to mobile widths only. Previously unguarded, so it silently
+// leaked into tablet/desktop and only got clawed back by whichever
+// `.dashboard-content` rule happened to compile later (see bp.tablet-up
+// below) — fragile, and any bleed math that assumed this 16px/393px
+// mobile layout (e.g. .home-glance-card, .ad-full-bleed) stayed wrong
+// at wider widths regardless. Scoping it here removes that footgun.
+@media (max-width: 768px) {
+  .dashboard-content {
+    align-items: stretch;
+    gap: 32px;
+    width: 100%;
+    max-width: 393px;
+    margin-inline: auto;
+    padding: 16px;
+    box-sizing: border-box;
+  }
 }
 
 .home-glance-card {
@@ -1241,6 +1250,19 @@ footer {
 // dashboard-web-footer (wired up in the template) instead of the mobile
 // hero banner + fixed bottom tab bar, per PRD website-view requirements.
 @include bp.tablet-up {
+  // global.scss caps every routed page (`ion-router-outlet, .ion-page`) at
+  // `--container-md`/`--container-lg` (768px/960px) — a generic "readable
+  // width" treatment for typical single-column pages (see app-home.ion-page
+  // for the same escape-hatch pattern used there). This page's web layout
+  // is built around its own 1200px `bp.web-container` (dashboard-web-header/
+  // footer, .dasboard-wrapper, .dashboard-content below), so the outer page
+  // itself must stay unconstrained or that inner container gets clipped to
+  // 768/960px regardless of what .dashboard-content's own max-width says.
+  :host(.ion-page) {
+    max-width: none !important;
+    margin-inline: 0 !important;
+  }
+
   .mobile-chrome {
     display: none !important;
   }
@@ -1260,6 +1282,18 @@ footer {
     padding-top: 32px;
     padding-bottom: 48px;
     padding-inline: 32px;
+  }
+
+  // The "full-bleed" negative-margin trick (.home-glance-card, .ad-full-bleed)
+  // only cancels out .dashboard-content's mobile 16px padding. At tablet-up
+  // that padding is 32-48px instead, so the old calc(100% + 32px)/-16px math
+  // under/over-shoots the edge and — combined with .ad-full-bleed's
+  // `overflow: hidden` — can clip the ad banner. Desktop cards don't bleed
+  // edge-to-edge like the phone layout does, so just cancel the bleed here.
+  .home-glance-card,
+  .ad-full-bleed {
+    width: 100%;
+    margin-inline: 0;
   }
 }
 

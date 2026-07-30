@@ -31,6 +31,10 @@
 .form-icon--skill { -webkit-mask-image: url('/assets/icons/Skill.svg'); mask-image: url('/assets/icons/Skill.svg'); }
 .form-icon--routine { -webkit-mask-image: url('/assets/icons/Routine.svg'); mask-image: url('/assets/icons/Routine.svg'); }
 .form-icon--personal { -webkit-mask-image: url('/assets/icons/Personal.svg'); mask-image: url('/assets/icons/Personal.svg'); }
+.form-icon--repeat { -webkit-mask-image: url('/assets/icons/repeat.svg'); mask-image: url('/assets/icons/repeat.svg'); }
+.form-icon--start-time-end-time { -webkit-mask-image: url('/assets/icons/Start-time-end-time.svg'); mask-image: url('/assets/icons/Start-time-end-time.svg'); }
+.form-icon--start-date-end-date { -webkit-mask-image: url('/assets/icons/Start-date-end-date.svg'); mask-image: url('/assets/icons/Start-date-end-date.svg'); }
+.form-icon--notes { -webkit-mask-image: url('/assets/icons/NOTES.svg'); mask-image: url('/assets/icons/NOTES.svg'); }
 
 $theme-colors: (
   habits: #8B8DCB,
@@ -60,10 +64,6 @@ $theme-colors-dark: (
         @include border-color($color);
         color: $color;
       }
-      .date-time-selection{
-                @include border-color($color);
-
-      }
 
       .day.selected {
         background: $dark;
@@ -80,13 +80,17 @@ $theme-colors-dark: (
 
       .title-card-icon,
       .category-icon-tile,
-      .reminder-icon-tile {
+      .reminder-icon-tile,
+      .picker-icon-tile,
+      .notes-icon-tile {
         background: rgba($color, 0.35);
         color: $dark;
       }
 
       .reminder-add-icon,
-      .category-add-btn {
+      .category-add-btn,
+      .repeat-icon,
+      .picker-plus {
         color: $dark;
       }
 
@@ -873,6 +877,129 @@ $theme-colors-dark: (
   box-shadow: none;
 }
 
+/* Repeat card (icon + label, Everyday toggle, weekday row) */
+.repeat-card {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #E8EAF3;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.repeat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.repeat-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  label {
+    color: #282527;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 700;
+  }
+}
+
+.repeat-icon {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
+.everyday-label-text {
+  color: #6B656A;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Start/End Time & Start/End Date picker cards */
+.picker-row {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  width: 100%;
+}
+
+.picker-card {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #E8EAF3;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.picker-icon-tile {
+  display: inline-flex;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #F3F4F6;
+
+  .form-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.picker-body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.picker-title {
+  color: #282527;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 140%;
+}
+
+.picker-plus {
+  flex: 0 0 auto;
+  color: #4B4A7D;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.picker-card ::ng-deep .superme-timepicker-wrapper input,
+.picker-card ::ng-deep .datepicker-wrapper input {
+  width: 100%;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  color: #6B656A;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.picker-card ::ng-deep .superme-timepicker-wrapper input::placeholder,
+.picker-card ::ng-deep .datepicker-wrapper input::placeholder {
+  color: #6B656A;
+  opacity: 1;
+}
+
 .time-row {
   display: flex;
   padding: 8px 0px 0px 16px;
@@ -934,42 +1061,65 @@ $theme-colors-dark: (
   border-bottom: 0px solid;
 }
 
-.notes {
-  border-bottom: 1px solid;
+.notes-card {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #E8EAF3;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: border-color 180ms ease-in-out, box-shadow 180ms ease-in-out;
 
-  textarea {
-    width: 85%;
-    min-height: 60px;
-    max-height: 300px;
-    border-radius: 10px;
-    border: 1px solid;
-    padding: 12px;
-    display: block;
-    margin: 0 auto;
-    resize: none;
-    overflow-y: hidden;
-    transition: border-color 180ms ease-in-out, box-shadow 180ms ease-in-out;
-    font-family: inherit;
-    font-size: inherit;
-
-    &:focus {
-      outline: none;
-    }
+  &.invalid {
+    border-color: #BB2124;
   }
 }
 
-$notes-themes: (
-  habits: (#8B8DCB, #7471BA),
-  tasks: (#FAD2AE, #F28745),
-  timetable: (#89B3B6, #3E5A60)
-);
+.notes-card-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
 
-.habit-input-root {
-  @each $theme, $colors in $notes-themes {
-    &.#{$theme} .notes textarea {
-      border-color: list.nth($colors, 1);
-      &:focus { border-color: list.nth($colors, 2); }
-    }
+.notes-icon-tile {
+  display: inline-flex;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #F3F4F6;
+
+  .form-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.notes-card textarea {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  min-height: 24px;
+  max-height: 300px;
+  border: none;
+  padding: 5px 0 0;
+  display: block;
+  resize: none;
+  overflow-y: hidden;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: #282527;
+
+  &::placeholder {
+    color: #9A96A0;
+  }
+
+  &:focus {
+    outline: none;
   }
 }
 
@@ -979,8 +1129,10 @@ $notes-themes: (
 
 .char-count {
   text-align: right;
-  color: #999;
-  margin-top: 6px;
+  color: #a19ca0;
+  font-size: 12px;
+  font-family: nunito;
+  margin-top: 8px;
 }
 
 .superme-input-group input {
@@ -1082,8 +1234,9 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
 }
 
 .date-time-selection {
-  border-bottom: 1px solid;
-  padding-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 
   /* Keep inline field errors visually inside the date/time section */
   .field-error.bottom-margin {
@@ -1186,7 +1339,7 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60);
   }
 }
 
-.section.notes textarea.missing-border {
+.notes-card textarea.missing-border {
   border-color: #D32F2F !important;
   box-shadow: none !important;
   /* remove blur / subtle shadow */
