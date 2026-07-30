@@ -1,8 +1,19 @@
 export const environment = {
-  production: true,
+  production: false,
   apiUrl: 'https://api.supermeapp.com/v1',
   // apiUrl: 'http://localhost:8080/v1',
   apiAuthToken: 'Bearer',
+  appleSignIn: {
+    // Native iOS audience. This must match PRODUCT_BUNDLE_IDENTIFIER and the
+    // primary App ID configured in Apple Developer.
+    nativeClientId: 'com.supermeapp.app',
+    // Native AuthenticationServices does not use a redirect URL. Keep this
+    // empty unless a separate web Sign in with Apple flow is introduced.
+    redirectUri: '',
+    // Requires the explicit localStorage opt-in documented in
+    // docs/apple-sign-in-release-checklist.md.
+    developmentMockEnabled: true
+  },
   firebase: {
     apiKey: 'AIzaSyBo8GqPQ0Ac2g8tzBS0YCewwLJ-vgouTi4',
     authDomain: 'supermeapp-74589.firebaseapp.com',

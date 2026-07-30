@@ -4,6 +4,12 @@ export const environment = {
   // apiAuthToken should NOT be hardcoded in production
   // Users must login to get their own token stored in localStorage
   apiAuthToken: '',
+  appleSignIn: {
+    nativeClientId: 'com.supermeapp.app',
+    redirectUri: '',
+    // Never allow mock Apple identities in production/App Store builds.
+    developmentMockEnabled: false
+  },
   firebase: {
     apiKey: 'AIzaSyBo8GqPQ0Ac2g8tzBS0YCewwLJ-vgouTi4',
     authDomain: 'supermeapp-74589.firebaseapp.com',

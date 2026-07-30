@@ -19,6 +19,7 @@ import {
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Keyboard, KeyboardInfo } from '@capacitor/keyboard';
+import { environment } from '../../../environments/environment';
 
 type SignupRole = 'child' | 'parent' | 'self';
 type SignupGender = StoredGender;
@@ -44,6 +45,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   private static readonly MANAGED_CHILD_SIGNUP_KEY = 'managed_child_signup';
   private static readonly MANAGED_CHILD_FAMILY_CODE_KEY = 'managed_child_family_code';
   private static readonly MANAGED_CHILD_SUCCESS_EMAIL_KEY = 'managed_child_success_email';
+  private static readonly MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY = 'managed_child_parent_welcome_pending';
   // Persist identifier used to request OTP so it can be reused in later steps
   public requestedIdentifier: string | null = null;
   public signupForm: FormGroup;
@@ -65,6 +67,15 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return this.countries.filter(c =>
       c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
     );
+  }
+
+  public get isOAuthSignup(): boolean {
+    try {
+      return sessionStorage.getItem('signup_via_oauth') === 'true'
+        || sessionStorage.getItem('signup_via_google') === 'true';
+    } catch {
+      return false;
+    }
   }
 
   // OTP related properties
@@ -347,7 +358,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     // Pre-fill profile data if coming from an OAuth sign-in
-    if (sessionStorage.getItem('signup_via_google') === 'true') {
+    if (this.isOAuthSignup) {
       const googleName = sessionStorage.getItem('google_signup_name');
       const googleEmail = sessionStorage.getItem('google_signup_email');
       if (googleName) {
@@ -359,6 +370,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.signupForm.patchValue({ email: googleEmail });
         this.requestedIdentifier = googleEmail;
       }
+
+      // Apple and Google don't provide DOB. It is optional for OAuth accounts
+      // and must not block App Store review or account completion.
+      this.profileForm.get('dob')?.clearValidators();
+      this.profileForm.get('dob')?.updateValueAndValidity({ emitEvent: false });
     }
   }
 
@@ -940,7 +956,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // The first-launch flow asks for the role before account credentials.
     // Existing signup entry points may already have verified credentials.
     const hasCredentials = !!this.signupCredentialState.getPassword()
-      || sessionStorage.getItem('signup_via_google') === 'true';
+      || this.isOAuthSignup;
     this.navigateToSignupStep(hasCredentials ? 2 : 0.1);
   }
 
@@ -1259,7 +1275,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     } else if (this.step === 0.3) {
       this.navigateToSignupStep(0.1);
     } else if (this.step === 1) {
-      if (sessionStorage.getItem('signup_via_google') === 'true') {
+      if (this.isOAuthSignup) {
         this.navigateReplacing('/home/login');
       } else if (this.signupCredentialState.getPassword()) {
         this.navigateToSignupStep(0.3);
@@ -1284,8 +1300,26 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   returnToParentApp(): void {
+    let showParentWelcome = false;
+    try {
+      showParentWelcome = sessionStorage.getItem(
+        SignupComponent.MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY
+      ) === 'true';
+      sessionStorage.removeItem(SignupComponent.MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY);
+    } catch (error) {
+      console.warn('[Signup] Unable to read deferred parent welcome state', error);
+    }
+
     this.clearManagedChildSignupState();
     this.loadingService.forceHide();
+    if (showParentWelcome) {
+      void this.navCtrl.navigateRoot('/home/sign-up', {
+        queryParams: { step: 5 },
+        animated: false
+      });
+      return;
+    }
+
     void this.navCtrl.navigateRoot(this.authService.getDashboardRoute() || '/authed/parent-account', {
       animated: false
     });
@@ -2521,7 +2555,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.errorMessage = null;
 
     // OAuth flow: user already has an account, just complete their profile
-    if (sessionStorage.getItem('signup_via_google') === 'true') {
+    if (this.isOAuthSignup) {
       const role = ((sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self') || this.roleSelected)!;
       this.completeGoogleOnboardingFlow(role);
       return;
@@ -2813,6 +2847,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   private completeGoogleOnboardingFlow(role: 'child' | 'parent' | 'self'): void {
     this.errorMessage = null;
 
+    if (
+      !environment.production
+      && sessionStorage.getItem('oauth_signup_is_development_mock') === 'true'
+    ) {
+      this.registrationInProgress = false;
+      this.core.triggerToasrt(
+        'Apple development mock completed the UI flow. Backend submission was safely blocked.'
+      );
+      return;
+    }
+
     const profileStr = sessionStorage.getItem('signup_profile');
     let profile: any = {};
     try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) {}
@@ -2824,6 +2869,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     const idToken    = sessionStorage.getItem('oauth_signup_id_token') || '';
     const accessToken = sessionStorage.getItem('oauth_signup_access_token') || '';
     const serverAuthCode = sessionStorage.getItem('oauth_signup_server_auth_code') || '';
+    const identityToken = sessionStorage.getItem('oauth_signup_identity_token') || '';
+    const authorizationCode = sessionStorage.getItem('oauth_signup_authorization_code') || '';
+    const rawNonce = sessionStorage.getItem('oauth_signup_raw_nonce') || '';
+    const clientId = sessionStorage.getItem('oauth_signup_client_id') || '';
     const avatarKey  = profile.avatar ?? this.avatarSelected ?? null;
 
     // Resolve avatar filename from the avatars list (e.g. "Image-Onboarding-Avatar-Female1.png")
@@ -2852,6 +2901,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
     if (serverAuthCode) {
       googlePayload.serverAuthCode = serverAuthCode;
+    }
+    if (identityToken) {
+      googlePayload.identityToken = identityToken;
+    }
+    if (authorizationCode) {
+      googlePayload.authorizationCode = authorizationCode;
+    }
+    if (rawNonce) {
+      googlePayload.rawNonce = rawNonce;
+    }
+    if (clientId) {
+      googlePayload.clientId = clientId;
     }
 
     // Gender and DOB are optional — Apple/Google never supply them, and
@@ -2885,7 +2946,17 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       } catch (e) {}
     }
 
-    console.log('[OAuth signup] payload:', JSON.stringify(googlePayload));
+    if (!environment.production) {
+      console.info('[OAuth signup] Submitting provider profile', {
+        provider,
+        providerId,
+        hasEmail: !!email,
+        hasName: !!googlePayload.name,
+        hasIdentityToken: !!(googlePayload.identityToken || googlePayload.idToken),
+        hasAuthorizationCode: !!googlePayload.authorizationCode,
+        role
+      });
+    }
 
     // Use oauth2-login — it creates the user if new, returns a valid token
     this.authService.googleOAuthLogin(googlePayload).subscribe({
@@ -2934,6 +3005,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         'google_signup_email', 'google_signup_name',
         'google_signup_avatar', 'google_signup_provider_id',
         'oauth_signup_id_token', 'oauth_signup_access_token', 'oauth_signup_server_auth_code',
+        'oauth_signup_identity_token', 'oauth_signup_authorization_code',
+        'oauth_signup_raw_nonce', 'oauth_signup_client_id',
+        'oauth_signup_is_development_mock',
         'signup_profile',
         'signup_role', 'signup_avatar', 'signup_pet', 'requestedIdentifier',
         'familyCode', 'familyName', 'familyCreator', 'referralCode', 'referralCodeLocked'].forEach(k => {
@@ -2950,7 +3024,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     this.errorMessage = null;
 
     // OAuth flow: user already has an account, just complete their profile
-    if (sessionStorage.getItem('signup_via_google') === 'true') {
+    if (this.isOAuthSignup) {
       this.completeGoogleOnboardingFlow(role);
       return;
     }
@@ -3340,7 +3414,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
-    const isOAuth = sessionStorage.getItem('signup_via_google') === 'true';
+    const isOAuth = this.isOAuthSignup;
 
     // OAuth users (Apple / Google) are already authenticated.
     if (isOAuth) {
@@ -3350,6 +3424,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         sessionStorage.removeItem('oauth_signup_id_token');
         sessionStorage.removeItem('oauth_signup_access_token');
         sessionStorage.removeItem('oauth_signup_server_auth_code');
+        sessionStorage.removeItem('oauth_signup_identity_token');
+        sessionStorage.removeItem('oauth_signup_authorization_code');
+        sessionStorage.removeItem('oauth_signup_raw_nonce');
+        sessionStorage.removeItem('oauth_signup_client_id');
+        sessionStorage.removeItem('oauth_signup_is_development_mock');
       } catch (e) {}
       this.applyCompletedUnlockState(completedUserData);
       if (this.beginManagedChildSignupAfterParentUnlock()) {
