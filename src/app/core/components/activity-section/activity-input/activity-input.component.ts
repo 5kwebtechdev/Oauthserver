@@ -150,6 +150,14 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   // API-loaded tag options passed to superme-tags component
   tagOptions: Array<{ key: number; value: string; system?: boolean; editable?: boolean; deletable?: boolean; type?: string }> = [];
 
+  // Quick-pick shortcuts for the End Date picker, each measured from Start Date
+  readonly endDateQuickRanges: Array<{ label: string; unit: 'day' | 'month'; amount: number }> = [
+    { label: '15 days', unit: 'day', amount: 15 },
+    { label: '1 week', unit: 'day', amount: 7 },
+    { label: '1 month', unit: 'month', amount: 1 },
+    { label: '2 months', unit: 'month', amount: 2 }
+  ];
+
   // Icon lookup for the Category pills, keyed by lowercased tag value
   readonly categoryIcons: Record<string, string> = {
     study: 'assets/icons/Study.svg',
