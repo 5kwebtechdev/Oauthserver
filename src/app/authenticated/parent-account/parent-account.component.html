@@ -11,7 +11,7 @@
   </div>
 </div>
 
-<ion-content class="parent-home-content">
+<ion-content class="parent-home-content" [scrollY]="!showMessageComposer">
   <main class="parent-home" aria-label="Parent home">
     <section class="parent-home__loading" *ngIf="showChildrenLoading" aria-live="polite">
       <ion-spinner name="crescent"></ion-spinner>
@@ -22,8 +22,7 @@
       <button type="button" (click)="loadChildren()">Try again</button>
     </section>
 
-    <ng-container *ngIf="hasLinkedChildren">
-      <header class="parent-header">
+    <header class="parent-header" *ngIf="hasLinkedChildren || showNoChildHome">
         <div class="parent-header__identity">
           <a class="parent-avatar" [routerLink]="['/authed', 'user-profile']"
             [attr.aria-label]="'Open ' + parentName + ' profile'">
@@ -36,7 +35,12 @@
 
           <div class="parent-header__copy">
             <strong>{{ greetingPeriod }} {{ parentName }} !</strong>
-            <span>Here's {{ selectedChildName }}'s overview for today</span>
+            <span *ngIf="hasLinkedChildren; else noChildHeaderCopy">
+              Here's {{ selectedChildName }}'s overview for today
+            </span>
+            <ng-template #noChildHeaderCopy>
+              <span>Set up SuperMeApp for your child today</span>
+            </ng-template>
           </div>
         </div>
 
@@ -52,6 +56,7 @@
         </nav>
       </header>
 
+    <ng-container *ngIf="hasLinkedChildren">
       <section class="child-switcher" aria-label="Family profiles">
         <div class="child-switcher__rail"
           [class.child-switcher__rail--single]="children.length === 1"
@@ -276,13 +281,106 @@
       </section>
     </ng-container>
 
-    <section class="link-child-empty-state" *ngIf="showLinkChildPrompt">
-      <img src="assets/Images-Transparent/Image-Parents-Family.png" alt="" aria-hidden="true">
-      <h1>Link with your child to see their progress</h1>
-      <p>Share your Family Code with them, or show the QR. It only takes a few seconds.</p>
-      <button type="button" (click)="openFamilyConnection()">Link my child</button>
-    </section>
+    <ng-container *ngIf="showNoChildHome">
+      <section class="child-switcher child-switcher--empty" aria-label="Set up family profiles">
+        <div class="child-switcher__rail child-switcher__rail--empty">
+          <button *ngFor="let slot of emptyChildSlotNumbers" type="button"
+            class="switcher-action switcher-action--empty-child" (click)="openAddChild()">
+            <span class="switcher-action__icon">
+              <img src="assets/figma/parent-home/no-child-person.svg" alt="" aria-hidden="true">
+              <i aria-hidden="true">+</i>
+            </span>
+            <span>Add Child {{ slot }}</span>
+          </button>
+
+          <button *ngIf="showInviteCoParentAction" type="button"
+            class="switcher-action switcher-action--empty-parent" (click)="inviteCoParent()">
+            <span class="switcher-action__icon">
+              <img src="assets/figma/parent-home/no-child-group.svg" alt="" aria-hidden="true">
+              <i aria-hidden="true">+</i>
+            </span>
+            <span>Invite Co Parent</span>
+          </button>
+
+          <button *ngIf="coParent" type="button" class="switcher-co-parent"
+            (click)="openFamilyConnection()" [attr.aria-label]="'Open ' + coParent.name + ' profile'">
+            <span class="switcher-co-parent__avatar">
+              <img *ngIf="coParent.avatarUrl; else emptyStateCoParentInitial"
+                [src]="coParent.avatarUrl" [alt]="coParent.name + ' avatar'">
+              <ng-template #emptyStateCoParentInitial>
+                <span aria-hidden="true">{{ coParent.initial }}</span>
+              </ng-template>
+            </span>
+            <strong>{{ coParent.name }}</strong>
+            <small>Co-parent</small>
+          </button>
+        </div>
+      </section>
+
+      <section class="no-child-family-card" aria-labelledby="no-child-family-title">
+        <div class="no-child-family-card__visual" aria-hidden="true">
+          <img src="assets/figma/parent-home/no-child-family.png" alt="">
+        </div>
+        <div class="no-child-family-card__content">
+          <h1 id="no-child-family-title">
+            <span>Your Family Adventure</span>
+            <strong>Starts Here!</strong>
+          </h1>
+          <p>Add your child in under 10 seconds to unlock insights, celebrate milestones together, and support every step of their growth.</p>
+          <button type="button" (click)="openAddChild()">Add my Child</button>
+        </div>
+      </section>
+
+      <section class="parent-ad" aria-label="Featured">
+        <ad-banner screen="HOME_PARENTS"></ad-banner>
+      </section>
+
+      <section class="parent-learning-card" aria-label="Learning and skills">
+        <learning-section source="/authed/parent-account"></learning-section>
+        <academy-section></academy-section>
+      </section>
+
+      <tutor-card class="parent-eduhub"></tutor-card>
+    </ng-container>
   </main>
 
   <app-footer></app-footer>
 </ion-content>
+
+<div *ngIf="showMessageComposer" class="message-composer-backdrop"
+  [class.message-composer-backdrop--closing]="messageComposerClosing"
+  (click)="closeMessageComposer()">
+  <section class="message-composer-sheet" [class.message-composer-sheet--closing]="messageComposerClosing"
+    role="dialog" aria-modal="true" aria-labelledby="message-composer-title"
+    aria-describedby="message-composer-description" (click)="$event.stopPropagation()">
+    <header class="message-composer-header">
+      <h2 id="message-composer-title">Message to {{ selectedChildName }}</h2>
+      <p id="message-composer-description">{{ selectedChildName }} will receive this as a notification</p>
+    </header>
+
+    <div class="message-composer-field">
+      <div class="message-composer-input">
+        <span class="message-composer-input__icon" aria-hidden="true">
+          <img src="assets/figma/parent-home/message-edit.svg" alt="">
+        </span>
+        <textarea #messageInput rows="2" maxlength="100" [value]="messageDraft"
+          placeholder="Write your message here" aria-label="Message"
+          (input)="onMessageInput($event)"></textarea>
+      </div>
+      <span class="message-composer-counter" aria-live="polite">
+        {{ messageDraft.length }}/{{ messageMaxLength }}
+      </span>
+    </div>
+
+    <div class="message-composer-actions">
+      <button type="button" class="message-composer-cancel" (click)="closeMessageComposer()">
+        Cancel
+      </button>
+      <button type="button" class="message-composer-send" [disabled]="!messageDraft.trim()"
+        (click)="sendMessageNow()">
+        <img src="assets/figma/parent-home/message-send.svg" alt="" aria-hidden="true">
+        Send Now
+      </button>
+    </div>
+  </section>
+</div>

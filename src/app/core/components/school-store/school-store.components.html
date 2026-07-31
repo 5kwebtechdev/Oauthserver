@@ -16,7 +16,7 @@
         <div class="school-store-content">
 
             <!-- Ad banner — loads STUDENT_STORE screen ads from API -->
-            <div class="store-ad-wrap">
+            <div *ngIf="categoriesLoading || categoriesError || storeCategories.length" class="store-ad-wrap">
                 <ad-banner screen="STUDENT_STORE"></ad-banner>
             </div>
 
@@ -44,7 +44,14 @@
                          onerror="this.style.display='none'">
                 </div>
             </div>
-            <div class="footer-exchange" role="contentinfo" aria-label="Store footer features">
+
+            <section-coming-soon
+                *ngIf="!categoriesLoading && !categoriesError && !storeCategories.length"
+                sectionName="Shop"
+                [compact]="true">
+            </section-coming-soon>
+
+            <div *ngIf="storeCategories.length" class="footer-exchange" role="contentinfo" aria-label="Store footer features">
                 <div class="footer-item">
                     <img src="assets/School-assets/School Partner.png" alt="Official School Partner" />
                     <div class="footer-text">Official School Partner</div>
