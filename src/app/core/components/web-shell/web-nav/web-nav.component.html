@@ -1,6 +1,6 @@
 <header class="web-header" role="banner">
   <div class="web-header__inner">
-    <a class="web-header__brand" routerLink="/authed/user-dashboard" aria-label="SuperMe App home">
+    <a class="web-header__brand" [routerLink]="isParent ? '/authed/parent-account' : '/authed/user-dashboard'" aria-label="SuperMe App home">
       <img class="web-header__logo" src="assets/Icons-Neutral/home-logo.png" alt="" aria-hidden="true">
       <span class="web-header__wordmark">SuperMe App</span>
     </a>
@@ -35,7 +35,7 @@
     </nav>
 
     <div class="web-header__right">
-      <div class="web-header__stats" aria-label="Your stats">
+      <div class="web-header__stats" *ngIf="!isParent" aria-label="Your stats">
         <div class="web-header__stat">
           <img src="assets/icons/child-home-coin-figma.png" alt="Coins" class="web-header__stat-icon">
           <span>{{ coins }}</span>
@@ -54,16 +54,19 @@
         </div>
       </div>
 
-      <a class="web-header__avatar" routerLink="/authed/user-profile" aria-label="Open profile">
-        <app-img *ngIf="userAvatarUrl; else avatarInitial"
-          [src]="userAvatarUrl"
-          [alt]="avatarImageName ? avatarImageName : (userName + ' avatar')"
-          [circle]="true"
-          objectFit="cover">
-        </app-img>
-        <ng-template #avatarInitial>
-          <span class="web-header__avatar-initial" aria-hidden="true">{{ userInitial }}</span>
-        </ng-template>
+      <a class="web-header__profile" routerLink="/authed/user-profile" aria-label="Open profile">
+        <span class="web-header__avatar">
+          <app-img *ngIf="userAvatarUrl; else avatarInitial"
+            [src]="userAvatarUrl"
+            [alt]="avatarImageName ? avatarImageName : (userName + ' avatar')"
+            [circle]="true"
+            objectFit="cover">
+          </app-img>
+          <ng-template #avatarInitial>
+            <span class="web-header__avatar-initial" aria-hidden="true">{{ userInitial }}</span>
+          </ng-template>
+        </span>
+        <span class="web-header__profile-name">{{ userName }}</span>
       </a>
     </div>
   </div>

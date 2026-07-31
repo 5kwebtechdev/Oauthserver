@@ -19,14 +19,11 @@ import { QuickAccessSectionComponent } from "../../core/components/quick-access-
 import { SupermePetComponent } from '../../core/components/superme-pet/superme-pet.component';
 
 import { FooterComponent } from '../../core/components/footer/footer.component';
-import { DashboardWebHeaderComponent } from '../../core/components/dashboard-web-header/dashboard-web-header.component';
 import { DashboardWebFooterComponent } from '../../core/components/dashboard-web-footer/dashboard-web-footer.component';
 import { SkeletonImageComponent } from '../../core/components/skeleton-image/skeleton-image.component';
 import { PetMessagesService, PetMessage, PetMood } from '../../core/services/pet-messages.service';
 import { PetMessageApiService, ApiOverlayType } from '../../core/services/pet-message-api.service';
 import { UserService } from '../../core/services/user.service';
-import { MoodService } from '../../core/services/mood.service';
-import { VibesDisplayResponse } from '../../core/models/mood.model';
 import { HabitService } from '../../core/components/activity-section/habit.service';
 import { Habit } from '../../core/components/activity-section/habit.types';
 import { TaskApi } from '../../core/api/task.api';
@@ -63,7 +60,6 @@ type HomeTimePeriod = 'morning' | 'evening' | 'night';
     SupermeInputsModule,
     SupermePetComponent,
     FooterComponent,
-    DashboardWebHeaderComponent,
     DashboardWebFooterComponent,
     SkeletonImageComponent,
   ]
@@ -142,7 +138,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     private router: Router,
     private petMessagesService: PetMessagesService,
     private userService: UserService,
-    private moodService: MoodService,
     private habitService: HabitService,
     private taskApi: TaskApi,
     private habitApi: HabitApi,
@@ -592,32 +587,20 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       console.log('[UserDashboard] Loaded stats from localStorage:', cachedStats);
     }
 
-    // Always fetch fresh data from API in background and update cache
-    this.moodService.getVibesDisplay().subscribe({
-      next: (data: VibesDisplayResponse[]) => {
-        // The API returns an array, get the first item (current user's data)
-        if (data && data.length > 0) {
-          const userStats = data[0];
-          this.userCoins = userStats.coins || 0;
-          this.userStreaks = userStats.streak || 0;
-          this.userDays = userStats.trophies || 0; // Map trophies to days
-          this.userBadges = userStats.badges || 0;
+    // Always fetch fresh data from API in background and update cache.
+    // Routed through UserService.refreshStats() (shared/deduped) instead of
+    // calling moodService directly, so the persistent website shell nav can
+    // subscribe to the same stats$ stream without duplicating this request.
+    this.userService.refreshStats().subscribe({
+      next: (stats) => {
+        if (stats) {
+          this.userCoins = stats.coins;
+          this.userStreaks = stats.streaks;
+          this.userDays = stats.days;
+          this.userBadges = stats.badges;
           this.refreshWeekStreakDays();
 
-          // Cache the updated stats
-          this.userService.saveUserStats({
-            coins: this.userCoins,
-            streaks: this.userStreaks,
-            days: this.userDays,
-            badges: this.userBadges
-          });
-
-          console.log('[UserDashboard] Updated stats from API:', {
-            coins: this.userCoins,
-            streaks: this.userStreaks,
-            days: this.userDays,
-            badges: this.userBadges
-          });
+          console.log('[UserDashboard] Updated stats from API:', stats);
 
           // Build overlay queue now that we have real streak/coins data
           this.buildOverlayQueue();

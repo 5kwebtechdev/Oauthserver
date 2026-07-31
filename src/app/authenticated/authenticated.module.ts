@@ -19,6 +19,7 @@ import { UserProfileComponent } from "../core/components/user-profile/user-profi
 import { SupermeTimerComponent } from '../core/components/superme-timer/superme-timer.component';
 import { StreaksSectionComponent } from '../core/components/streaks-section/streaks-section.component';
 import { CoinPurchaseComponent } from '../core/components/coin-section/coin-purchase/coin-purchase.component';
+import { WebNavComponent } from '../core/components/web-shell/web-nav/web-nav.component';
 
 @NgModule({
   declarations: [
@@ -45,7 +46,8 @@ import { CoinPurchaseComponent } from '../core/components/coin-section/coin-purc
     StreaksSectionComponent,
     SupermeNavigatorComponent,
     CoinPurchaseComponent,
-    FooterComponent
+    FooterComponent,
+    WebNavComponent
   ]
 })
 export class AuthenticatedModule { }
