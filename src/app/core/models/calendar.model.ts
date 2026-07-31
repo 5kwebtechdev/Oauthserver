@@ -30,6 +30,9 @@ export interface CalendarEvent {
     priority: 'HIGH' | 'MEDIUM' | 'LOW';
     everyday: boolean;
     reminderOffset?: ReminderOffset | null;
+    eventType?: string;
+    recurrence?: 'ONE_TIME' | 'MONTHLY' | 'YEARLY' | string;
+    allDay?: boolean;
 }
 
 export interface CalendarHabit {

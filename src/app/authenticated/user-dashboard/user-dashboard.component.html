@@ -8,6 +8,57 @@
   </div>
 </div>
 
+<!-- Daily API-backed streak celebration — shown once per user per local day -->
+<div *ngIf="showDailyStreakPopup"
+  class="daily-streak-backdrop"
+  (click)="dismissDailyStreakPopup()">
+  <section class="daily-streak-popup"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="daily-streak-title"
+    aria-describedby="daily-streak-instruction"
+    tabindex="0"
+    (keyup.enter)="dismissDailyStreakPopup()">
+    <h2 id="daily-streak-title">Current Week’s Streak</h2>
+
+    <div class="daily-streak-popup__week" role="list">
+      <div *ngFor="let day of weekStreakDays; let dayIndex = index"
+        class="daily-streak-popup__day"
+        [class.daily-streak-popup__day--current]="dayIndex === currentStreakDayIndex"
+        [attr.aria-current]="dayIndex === currentStreakDayIndex ? 'date' : null"
+        role="listitem">
+        <span class="daily-streak-popup__label">{{ day.label }}</span>
+        <span class="daily-streak-popup__marker"
+          [ngClass]="dayIndex === currentStreakDayIndex ? 'current' : day.status"
+          [attr.aria-label]="getStreakDayAriaLabel(day, dayIndex)">
+          <span *ngIf="dayIndex === currentStreakDayIndex"
+            class="daily-streak-popup__current-fire" aria-hidden="true">
+            <img src="assets/figma/child-home/daily-streak-fire.png" alt="">
+          </span>
+
+          <span *ngIf="dayIndex !== currentStreakDayIndex && day.status === 'completed'"
+            class="daily-streak-popup__small-fire" aria-hidden="true">
+            <img src="assets/figma/child-home/daily-streak-fire.png" alt="">
+          </span>
+
+          <span *ngIf="dayIndex !== currentStreakDayIndex && day.status === 'missed'"
+            class="daily-streak-popup__rest" aria-hidden="true">😴</span>
+
+          <img *ngIf="dayIndex !== currentStreakDayIndex && day.status === 'pending'"
+            class="daily-streak-popup__check"
+            src="assets/figma/child-home/daily-streak-check.svg"
+            alt=""
+            aria-hidden="true">
+        </span>
+      </div>
+    </div>
+
+    <span id="daily-streak-instruction" class="daily-streak-popup__instruction">
+      Tap to continue
+    </span>
+  </section>
+</div>
+
 <!-- ══ Home-screen overlays (PRD: bonus coins, daily login, mood prompt, streak milestone) ══ -->
 <div *ngIf="activeOverlay"
      class="home-overlay"

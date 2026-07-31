@@ -2,6 +2,7 @@ import { Component, Output, EventEmitter, HostListener, OnInit, OnDestroy, Chang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ModalController, ViewWillEnter } from '@ionic/angular';
+import { Router } from '@angular/router';
 
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -10,12 +11,11 @@ import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
 import { SupermeSpeechBubbleComponent } from '../../superme-speech-bubble/superme-speech-bubble.component';
 import { TutorListComponent } from '../tutor-list/tutor-list.component';
 import { TutorAllFilterComponent } from '../tutor-all-filter/tutor-all-filter.component';
-import { TutorProfileComponent } from '../tutor-profile/tutor-profile.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SupermePopupComponent } from '../../superme-popup/superme-popup.component';
 import { TutorService } from '../../../services/tutor.service';
 import { TutorApi } from '../../../api/tutor.api';
-import { TutorListItem, TutorSortOption, Tutor } from '../../../models/tutor.model';
+import { TutorListItem, TutorSortOption } from '../../../models/tutor.model';
 
 @Component({
   selector: 'tutor-homepage',
@@ -62,7 +62,8 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
     private modalCtrl: ModalController,
     private tutorService: TutorService,
     private tutorApi: TutorApi,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -96,22 +97,12 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
 
   onViewProfile(tutor: TutorListItem): void {
     const cachedTutor = this.tutorService.getTutorFromCache(tutor.id);
-    this.tutorService.getTutorById(tutor.id).subscribe(fullTutor => {
-      const profileTutor = fullTutor || cachedTutor;
-      if (profileTutor) this.openProfileModal(profileTutor);
+    void this.router.navigate(['/authed/tutors', tutor.id], {
+      queryParams: this.lastAppliedFilters?.categoryKey
+        ? { category: this.lastAppliedFilters.categoryKey }
+        : undefined,
+      state: cachedTutor ? { tutor: cachedTutor } : undefined
     });
-  }
-
-  async openProfileModal(tutor: Tutor): Promise<void> {
-    const modal = await this.modalCtrl.create({
-      component: TutorProfileComponent,
-      componentProps: {
-        tutor,
-        categoryKey: this.lastAppliedFilters?.categoryKey || null
-      },
-      cssClass: 'tutor-profile-modal'
-    });
-    await modal.present();
   }
 
   async openAllFilters(): Promise<void> {

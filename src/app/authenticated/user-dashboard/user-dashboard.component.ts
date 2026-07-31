@@ -91,6 +91,19 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   private overlayQueue: Array<'bonus-coins' | 'mood-prompt' | 'daily-login' | 'streak-milestone'> = [];
   private overlayQueueBuilt = false;
 
+  // Figma daily streak popup. It is shown only after fresh/cached API stats
+  // confirm an active streak and after the existing home overlay flow finishes.
+  public showDailyStreakPopup = false;
+  public currentStreakDayIndex = new Date().getDay();
+  public readonly streakWeekdayNames = [
+    'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+  ];
+  private dailyStreakEligible = false;
+  private streakStatusResolved = false;
+  private streakContinuityConfirmed = false;
+  private homeOverlayFlowComplete = false;
+  private dailyStreakShownDateThisSession: string | null = null;
+
   // Recent habits and tasks
   public recentHabits: Habit[] = [];
   public recentTasks: any[] = [];
@@ -133,9 +146,15 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   private readonly handleHomeVisibilityChange = (): void => {
     if (document.visibilityState === 'visible') {
       this.syncHomeTimePeriod();
+      this.refreshWeekStreakDays();
+      this.maybeShowDailyStreakPopup();
     }
   };
-  private readonly handleHomeWindowFocus = (): void => this.syncHomeTimePeriod();
+  private readonly handleHomeWindowFocus = (): void => {
+    this.syncHomeTimePeriod();
+    this.refreshWeekStreakDays();
+    this.maybeShowDailyStreakPopup();
+  };
 
   constructor(
     private modalCtrl: ModalController,
@@ -160,6 +179,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   dismissFamilyAck(): void {
     this.showFamilyAck = false;
+    this.maybeShowDailyStreakPopup();
   }
 
   async openNotes() {
@@ -274,6 +294,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   ionViewWillEnter(): void {
     this.syncHomeTimePeriod();
+    this.refreshWeekStreakDays();
+    this.maybeShowDailyStreakPopup();
   }
 
   private startHomeTimeSync(): void {
@@ -603,6 +625,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
           this.userDays = userStats.trophies || 0; // Map trophies to days
           this.userBadges = userStats.badges || 0;
           this.refreshWeekStreakDays();
+          this.dailyStreakEligible = this.dailyStreakEligible || this.userStreaks > 0;
 
           // Cache the updated stats
           this.userService.saveUserStats({
@@ -621,11 +644,20 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
           // Build overlay queue now that we have real streak/coins data
           this.buildOverlayQueue();
+          this.maybeShowDailyStreakPopup();
+        } else {
+          // Preserve the cached streak when the endpoint temporarily returns
+          // no rows, while still respecting the once-per-day guard.
+          this.dailyStreakEligible = this.dailyStreakEligible || this.userStreaks > 0;
+          this.buildOverlayQueue();
+          this.maybeShowDailyStreakPopup();
         }
       },
       error: (error) => {
         console.error('Failed to load user stats:', error);
         // Keep cached or default values (0) on error
+        this.dailyStreakEligible = this.dailyStreakEligible || this.userStreaks > 0;
+        this.maybeShowDailyStreakPopup();
       }
     });
   }
@@ -641,6 +673,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   private refreshWeekStreakDays(streakLength: number = this.userStreaks): void {
     const labels = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'];
     const todayIndex = new Date().getDay();
+    this.currentStreakDayIndex = todayIndex;
     const safeStreak = Math.max(0, Number(streakLength) || 0);
     const completedFrom = Math.max(0, todayIndex - safeStreak + 1);
 
@@ -657,6 +690,71 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       }
       return { label, status };
     });
+  }
+
+  getStreakDayAriaLabel(day: DayStreak, index: number): string {
+    const dayName = this.streakWeekdayNames[index] || day.label;
+    if (index === this.currentStreakDayIndex) {
+      return `${dayName}, current streak day`;
+    }
+    return `${dayName}, ${day.status}`;
+  }
+
+  dismissDailyStreakPopup(): void {
+    this.showDailyStreakPopup = false;
+  }
+
+  private maybeShowDailyStreakPopup(): void {
+    if (!this.dailyStreakEligible
+      || !this.streakStatusResolved
+      || !this.streakContinuityConfirmed
+      || !this.homeOverlayFlowComplete
+      || this.activeOverlay
+      || this.showFamilyAck
+      || this.showDailyStreakPopup) {
+      return;
+    }
+
+    const today = this.getLocalDateKey(new Date());
+    if (this.dailyStreakShownDateThisSession === today) return;
+
+    const storageKey = this.getDailyStreakStorageKey();
+    try {
+      if (storageKey && localStorage.getItem(storageKey) === today) return;
+    } catch {
+      // Storage can be unavailable in strict privacy modes; the in-memory
+      // date still prevents repeats for the current app session.
+    }
+
+    this.dailyStreakShownDateThisSession = today;
+    try {
+      if (storageKey) localStorage.setItem(storageKey, today);
+    } catch {}
+    this.showDailyStreakPopup = true;
+  }
+
+  private getDailyStreakStorageKey(): string | null {
+    const session = this.authService.getUserData();
+    const user = session?.user && typeof session.user === 'object' ? session.user : session;
+    let identity = user?.id ?? user?.userId ?? user?.email ?? null;
+
+    if (identity == null) {
+      try {
+        identity = localStorage.getItem('user_id');
+      } catch {}
+    }
+
+    return identity == null || String(identity).trim() === ''
+      ? null
+      : `superme_daily_streak_seen_${String(identity)}`;
+  }
+
+  private getLocalDateKey(date: Date): string {
+    return [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, '0'),
+      String(date.getDate()).padStart(2, '0')
+    ].join('-');
   }
 
   onMoodChange(mood: string) {
@@ -739,15 +837,24 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       next: (status: StreakStatus) => {
         this.refreshWeekStreakDays(status.currentStreak);
         this.canRestoreStreak = status.canRestoreStreak;
+        this.dailyStreakEligible = Number(status.currentStreak) > 0;
+        this.streakStatusResolved = true;
+        this.streakContinuityConfirmed = Number(status.currentStreak) > 0 && !status.canRestoreStreak;
         this.restoreToStreak = status.restoreToStreak;
         this.restoreCost = status.restoreCost ?? 5;
         if (status.canRestoreStreak && !this.streakPopupShown) {
           this.streakPopupShown = true;
           setTimeout(() => this.openStreakRestoreModal(), 800);
         }
+        this.maybeShowDailyStreakPopup();
       },
       error: () => {
         this.canRestoreStreak = false;
+        this.streakStatusResolved = true;
+        // The general stats endpoint remains a safe fallback when the
+        // dedicated streak-status endpoint is temporarily unavailable.
+        this.streakContinuityConfirmed = true;
+        this.maybeShowDailyStreakPopup();
       }
     });
   }
@@ -786,6 +893,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
   /** Call GET /overlay, apply result. Re-called after every dismiss/mood-save. */
   private pollHomeOverlay(): void {
+    this.homeOverlayFlowComplete = false;
     this.petMessageApi.getHomeOverlay().subscribe({
       next: (resp) => {
         if (resp.hasOverlay && resp.overlayType && resp.overlayType !== 'NONE') {
@@ -821,13 +929,17 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
         } else {
           // No more overlays — show normal home screen
           this.activeOverlay = null;
+          this.homeOverlayFlowComplete = true;
           this.loadHomeHeader();
+          this.maybeShowDailyStreakPopup();
         }
       },
       error: () => {
         // If API fails entirely, skip overlays and show home
         this.activeOverlay = null;
+        this.homeOverlayFlowComplete = true;
         this.loadHomeHeader();
+        this.maybeShowDailyStreakPopup();
       }
     });
   }

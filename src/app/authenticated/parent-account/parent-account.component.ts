@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Platform, ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from "@angular/common";
 import { Router, RouterModule } from '@angular/router';
@@ -77,6 +77,9 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     private readonly destroy$ = new Subject<void>();
     private childrenRequestId = 0;
     private moodBalanceRequestId = 0;
+    private messageComposerCloseTimer?: ReturnType<typeof setTimeout>;
+    private messageComposerTrigger?: HTMLElement;
+    private activeMessageTemplate?: 'celebrate' | 'encourage';
     
     public userName: string = 'User';
     public parentName: string = 'Parent';
@@ -89,6 +92,10 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     public selectedMood: string | null = null;
     public showFamilyAck = false;
     public familyAckRole = '';
+    public showMessageComposer = false;
+    public messageComposerClosing = false;
+    public messageDraft = '';
+    public readonly messageMaxLength = 100;
 
     public userAvatarUrl: string = '';
     public parentAvatarStyle: { [k: string]: string } = {};
@@ -230,6 +237,15 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         return Math.max(0, this.familyCapacity - this.linkedFamilyMemberCount);
     }
 
+    get emptyChildSlotNumbers(): number[] {
+        const reservedCoParentSlot = this.coParent ? 0 : 1;
+        const childSlotCount = Math.min(
+            2,
+            Math.max(0, this.availableFamilySlots - reservedCoParentSlot)
+        );
+        return Array.from({ length: childSlotCount }, (_, index) => index + 1);
+    }
+
     get showInviteCoParentAction(): boolean {
         return !this.coParent && this.availableFamilySlots > 0;
     }
@@ -317,7 +333,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         return this.children.length > 0;
     }
 
-    get showLinkChildPrompt(): boolean {
+    get showNoChildHome(): boolean {
         return this.childrenLoadState === 'loaded' && !this.hasLinkedChildren;
     }
 
@@ -330,6 +346,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     }
 
     @ViewChild(ActivityCardComponent) activityCard?: ActivityCardComponent;
+    @ViewChild('messageInput') messageInput?: ElementRef<HTMLTextAreaElement>;
     constructor(
         private router: Router,
         private userService: UserService,
@@ -349,6 +366,8 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     }
 
     ngOnDestroy(): void {
+        if (this.messageComposerCloseTimer) clearTimeout(this.messageComposerCloseTimer);
+        document.body.style.overflow = '';
         this.refreshService.unregisterRefreshHandler('ParentAccount');
         this.destroy$.next();
         this.destroy$.complete();
@@ -984,13 +1003,89 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     }
 
     openMessageComposer(template?: 'celebrate' | 'encourage'): void {
-        this.router.navigate(['/authed/notes/new'], {
-            queryParams: {
-                childId: this.selectedChild?.id ?? '',
-                childName: this.selectedChildName,
-                ...(template ? { template } : {})
-            }
+        if (this.messageComposerCloseTimer) clearTimeout(this.messageComposerCloseTimer);
+
+        this.messageComposerTrigger = document.activeElement instanceof HTMLElement
+            ? document.activeElement
+            : undefined;
+        this.activeMessageTemplate = template;
+        this.messageDraft = this.getMessageTemplate(template).slice(0, this.messageMaxLength);
+        this.messageComposerClosing = false;
+        this.showMessageComposer = true;
+        document.body.style.overflow = 'hidden';
+
+        setTimeout(() => this.messageInput?.nativeElement.focus(), 280);
+    }
+
+    onMessageInput(event: Event): void {
+        const value = (event.target as HTMLTextAreaElement).value || '';
+        this.messageDraft = value.slice(0, this.messageMaxLength);
+    }
+
+    closeMessageComposer(): void {
+        this.dismissMessageComposer();
+    }
+
+    sendMessageNow(): void {
+        const message = this.messageDraft.trim();
+        if (!message) {
+            this.messageInput?.nativeElement.focus();
+            return;
+        }
+
+        const template = this.activeMessageTemplate;
+        this.dismissMessageComposer(() => {
+            // Keep the existing message destination intact. The composed text is
+            // carried in navigation state so the destination can send/store it
+            // without exposing a private message in the URL.
+            this.router.navigate(['/authed/notes/new'], {
+                queryParams: {
+                    childId: this.selectedChild?.id ?? '',
+                    childName: this.selectedChildName,
+                    ...(template ? { template } : {})
+                },
+                state: {
+                    parentMessage: message,
+                    childId: this.selectedChild?.id ?? null,
+                    childName: this.selectedChildName
+                }
+            });
         });
+    }
+
+    @HostListener('document:keydown.escape')
+    onMessageComposerEscape(): void {
+        if (this.showMessageComposer) this.closeMessageComposer();
+    }
+
+    private dismissMessageComposer(afterClose?: () => void): void {
+        if (!this.showMessageComposer || this.messageComposerClosing) return;
+
+        this.messageComposerClosing = true;
+        this.messageComposerCloseTimer = setTimeout(() => {
+            this.showMessageComposer = false;
+            this.messageComposerClosing = false;
+            this.messageDraft = '';
+            this.activeMessageTemplate = undefined;
+            document.body.style.overflow = '';
+
+            if (afterClose) {
+                afterClose();
+            } else {
+                this.messageComposerTrigger?.focus();
+            }
+            this.messageComposerTrigger = undefined;
+        }, 220);
+    }
+
+    private getMessageTemplate(template?: 'celebrate' | 'encourage'): string {
+        if (template === 'celebrate') {
+            return `I'm proud of your progress today, ${this.selectedChildName}!`;
+        }
+        if (template === 'encourage') {
+            return `Keep going, ${this.selectedChildName}. You've got this!`;
+        }
+        return '';
     }
 
     /**
