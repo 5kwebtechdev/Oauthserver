@@ -40,19 +40,6 @@
   </div>
 </div>
 
-<ion-header class="ion-no-border">
-  <dashboard-web-header
-    [userName]="userName"
-    [userInitial]="userInitial"
-    [userAvatarUrl]="userAvatarUrl"
-    [avatarImageName]="avatarImageName"
-    [coins]="userCoins"
-    [trophies]="userDays"
-    [streaks]="userStreaks"
-    [badges]="userBadges">
-  </dashboard-web-header>
-</ion-header>
-
 <ion-content>
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content
