@@ -1,21 +1,45 @@
-<ion-content>
+<ion-content class="product-store-page">
     <main class="school-store-main">
+        <header class="store-header">
+            <div class="store-toolbar">
+                <div class="store-toolbar__title-group">
+                    <button type="button" class="store-icon-button store-back-button" aria-label="Go back"
+                        (click)="goBack()">
+                        <img src="assets/figma/product-store/back.svg" alt="" aria-hidden="true">
+                    </button>
+                    <button type="button" class="store-title-button"
+                        [attr.aria-label]="selectedAddress ? 'Open delivery address options' : selectedCategoryLabel"
+                        (click)="openAddressPopup()">
+                        {{ selectedCategoryLabel }}
+                    </button>
+                </div>
 
-        <div class="navigator-wrap">
-            <superme-navigator #navigator
-                [heading]="selectedCategoryLabel"
-                [subtext]="navigatorSubtext"
-                [showSubtext]="true"
-                (back)="goBack()"
-                [rightActions]="[{ type: 'cart', count: cartCount, alt: 'My cart' }, { type: 'package', count: packageCount, alt: 'Packages' }]"
-                (rightActionClick)="onNavigatorAction($event)">
-            </superme-navigator>
+                <nav class="store-toolbar__actions" aria-label="Store actions">
+                    <button type="button" class="store-icon-button store-action-button" aria-label="Open cart"
+                        (click)="openCart()">
+                        <img src="assets/figma/product-store/cart.svg" alt="" aria-hidden="true">
+                        <span *ngIf="cartCount > 0" class="store-action-count">{{ cartCount }}</span>
+                    </button>
+                    <button type="button" class="store-icon-button store-action-button" aria-label="Open orders"
+                        (click)="openOrders()">
+                        <img src="assets/figma/product-store/orders.svg" alt="" aria-hidden="true">
+                        <span *ngIf="packageCount > 0" class="store-action-count">{{ packageCount }}</span>
+                    </button>
+                </nav>
+            </div>
 
-            <button class="subtext-trigger" aria-label="Open address popup" (click)="openAddressPopup()"></button>
-        </div>
+            <nav *ngIf="primarySubCategoryLevel as primaryLevel" class="primary-category-tabs"
+                aria-label="Product categories">
+                <button *ngFor="let category of primaryLevel.options" type="button"
+                    [class.primary-category-tab--selected]="primaryLevel.selected === category.id"
+                    [attr.aria-pressed]="primaryLevel.selected === category.id"
+                    class="primary-category-tab" (click)="selectSubCategoryAt(0, category)">
+                    {{ category.label }}
+                </button>
+            </nav>
+        </header>
 
         <div class="product-store-content">
-            <!-- School / Class info chip — shown only when selected category requires school -->
             <div class="school-info-bar" *ngIf="selectedCategoryRequiresSchoolClass && (schoolName || className)">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -29,103 +53,148 @@
                 <button class="school-info-change" (click)="changeSchool()">Change</button>
             </div>
 
-            <!-- Subcategory Sliders — one row per drill-down level (e.g. Notebooks -> Spiral Notebooks -> A4 Spiral) -->
-            <div class="sub-category" *ngFor="let level of subCategoryLevels; let levelIndex = index">
-                <div class="category-slider-wrap w-100">
-                    <swiper-container #subSwiper class="subcategory-swiper" slides-per-view="auto"
-                        space-between="12" free-mode="true" free-mode-momentum="true" grab-cursor="true">
-                        <swiper-slide class="subcategory-slide" *ngFor="let s of level.options">
-                            <div role="tab" class="tab" [class.tab--selected]="level.selected === s.id"
-                                (click)="selectSubCategoryAt(levelIndex, s)" tabindex="0"
-                                [attr.aria-selected]="level.selected === s.id">
-                                <span class="tab-text">{{ s.label }}</span>
-                            </div>
-                        </swiper-slide>
-                    </swiper-container>
-                </div>
-            </div>
-            <!-- Product List -->
-            <div class="product-list-wrap">
+            <div class="store-catalog-layout">
+                <aside *ngIf="railSubCategoryLevel as railLevel" class="subcategory-rail"
+                    aria-label="Product types">
+                    <button *ngFor="let category of railLevel.options" type="button" class="rail-category"
+                        [class.rail-category--selected]="railLevel.selected === category.id"
+                        [attr.aria-pressed]="railLevel.selected === category.id"
+                        (click)="selectSubCategoryAt(1, category)">
+                        <span class="rail-category__visual">
+                            <img *ngIf="category.imageUrl" [src]="category.imageUrl" [alt]="category.label">
+                        </span>
+                        <span>{{ category.label }}</span>
+                    </button>
+                </aside>
 
-                <!-- Skeleton while loading -->
-                <div *ngIf="productsLoading || (!productsRequestCompleted && !productsError)" class="product-list-card">
-                    <div class="product-card product-card--skel" *ngFor="let s of [1,2,3,4]">
-                        <div class="skel-img"></div>
-                        <div class="product-info">
-                            <div class="skel-line skel-line--title"></div>
-                            <div class="skel-line skel-line--sub"></div>
-                            <div class="skel-line skel-line--price"></div>
+                <section class="product-pane" aria-label="Products">
+                    <div class="product-filter-pills">
+                        <button type="button" class="product-filter-pill" (click)="openFilters('brand')">
+                            <span>Brand</span>
+                            <img src="assets/figma/product-store/chevron.svg" alt="" aria-hidden="true">
+                        </button>
+                        <button type="button" class="product-filter-pill" (click)="openFilters('pageCount')">
+                            <span>Page Count</span>
+                            <img src="assets/figma/product-store/chevron.svg" alt="" aria-hidden="true">
+                        </button>
+                    </div>
+
+                    <div class="product-list-wrap">
+                        <div *ngIf="productsLoading || (!productsRequestCompleted && !productsError)"
+                            class="product-list-card">
+                            <div class="product-card product-card--skel" *ngFor="let s of [1,2,3,4]">
+                                <div class="skel-img"></div>
+                                <div class="product-info">
+                                    <div class="skel-line skel-line--title"></div>
+                                    <div class="skel-line skel-line--sub"></div>
+                                    <div class="skel-line skel-line--price"></div>
+                                </div>
+                            </div>
                         </div>
+
+                        <ng-container *ngIf="productsRequestCompleted && !productsLoading">
+                            <ng-container *ngIf="!productsError; else productsErrorState">
+                                <ng-container *ngIf="visibleProducts && visibleProducts.length; else emptyState">
+                                    <div class="product-list-card">
+                                        <article class="product-card" *ngFor="let p of visibleProducts"
+                                            [class.product-card--disabled]="p.outOfStock"
+                                            (click)="!p.outOfStock && openProduct(p)">
+                                            <div class="product-image-wrap">
+                                                <img [src]="p.img" [alt]="p.title">
+                                                <h3 class="product-badge" *ngIf="getBadge(p) as badge">{{ badge }}</h3>
+                                                <div class="oos-overlay" *ngIf="p.outOfStock">
+                                                    <div class="oos-text">Out of stock</div>
+                                                    <superme-button type="magenta" text="Notify"
+                                                        (click)="notifyMe(p); $event.stopPropagation()"></superme-button>
+                                                </div>
+                                            </div>
+
+                                            <div class="product-info">
+                                                <div class="product-copy">
+                                                    <h3 class="product-tag" *ngIf="p.tag">{{ p.tag }}</h3>
+                                                    <h3 class="product-title">{{ p.title }}</h3>
+                                                    <h3 class="product-subtitle" *ngIf="p.subtitle">{{ p.subtitle }}</h3>
+                                                </div>
+                                                <div class="product-card__footer">
+                                                    <div class="product-prices">
+                                                        <div class="price-discount">{{ p.price }}</div>
+                                                        <div class="price-mrp" *ngIf="p.mrp">{{ p.mrp }}</div>
+                                                    </div>
+
+                                                    <superme-button *ngIf="isTextbooksSelected"
+                                                        [type]="addedToBagIds.has(p.id) ? 'green' : 'magenta'"
+                                                        [text]="addingToBagIds.has(p.id) ? 'Adding…' : addedToBagIds.has(p.id) ? '✓ Added' : 'Add To Bag'"
+                                                        [disabled]="addingToBagIds.has(p.id)"
+                                                        (click)="addToBag(p); $event.stopPropagation()">
+                                                    </superme-button>
+                                                </div>
+                                            </div>
+                                        </article>
+                                    </div>
+                                </ng-container>
+
+                                <ng-template #emptyState>
+                                    <empty-state [imageSrc]="'assets/School-assets/empty-product-list.png'"
+                                        [imageAlt]="'No products'" [leadText]="'Nothing Here... Yet!'"
+                                        [buttonText]="'View all Products'" [buttonType]="'magenta'"
+                                        (buttonClick)="resetSubCategories()">
+                                    </empty-state>
+                                </ng-template>
+                            </ng-container>
+
+                            <ng-template #productsErrorState>
+                                <empty-state [imageSrc]="'assets/School-assets/empty-product-list.png'"
+                                    [imageAlt]="'Unable to load products'" [leadText]="'Unable to load products'"
+                                    [buttonText]="'Retry'" [buttonType]="'magenta'"
+                                    (buttonClick)="retryProducts()">
+                                </empty-state>
+                            </ng-template>
+                        </ng-container>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <div *ngIf="showFilters" class="filter-sheet-backdrop" (click)="closeFilters()">
+            <section class="filter-sheet" role="dialog" aria-modal="true" aria-labelledby="filter-sheet-title"
+                (click)="$event.stopPropagation()">
+                <header class="filter-sheet__header">
+                    <h2 id="filter-sheet-title">Filters</h2>
+                    <button type="button" aria-label="Close filters" (click)="closeFilters()">
+                        <img src="assets/figma/product-store/close.svg" alt="" aria-hidden="true">
+                    </button>
+                </header>
+
+                <div class="filter-sheet__body">
+                    <nav class="filter-sheet__tabs" aria-label="Filter types">
+                        <button type="button" [class.filter-sheet__tab--active]="activeFilter === 'brand'"
+                            (click)="setActiveFilter('brand')">Brand</button>
+                        <button type="button" [class.filter-sheet__tab--active]="activeFilter === 'pageCount'"
+                            (click)="setActiveFilter('pageCount')">Page Count</button>
+                    </nav>
+
+                    <div class="filter-sheet__options">
+                        <button *ngFor="let option of activeFilterOptions" type="button" class="filter-option"
+                            role="checkbox" [attr.aria-checked]="isDraftFilterSelected(option)"
+                            (click)="toggleDraftFilter(option)">
+                            <span>{{ option }}</span>
+                            <i [class.filter-option__checkbox--checked]="isDraftFilterSelected(option)"
+                                aria-hidden="true">✓</i>
+                        </button>
+                        <p *ngIf="activeFilterOptions.length === 0" class="filter-options-empty">
+                            No options available
+                        </p>
                     </div>
                 </div>
 
-                <!-- Product list once loaded -->
-                <ng-container *ngIf="productsRequestCompleted && !productsLoading">
-                    <ng-container *ngIf="!productsError; else productsErrorState">
-                    <ng-container *ngIf="visibleProducts && visibleProducts.length; else emptyState">
-                        <div class="product-list-card">
-                            <div class="product-card" *ngFor="let p of visibleProducts"
-                                (click)="!p.outOfStock && openProduct(p)">
-                                <div class="product-image-wrap">
-                                    <img [src]="p.img" [alt]="p.title">
-                                    <h3 class="product-badge" *ngIf="getBadge(p) as badge">{{ badge }}</h3>
-                                    <!-- Out of stock overlay -->
-                                    <div class="oos-overlay" *ngIf="p.outOfStock">
-                                        <div class="oos-text">Out of stock</div>
-                                        <superme-button type="magenta" text="Notify" (click)="notifyMe(p)"></superme-button>
-                                    </div>
-                                </div>
-
-                                <div class="product-info">
-                                    <h3 class="product-tag"
-                                        *ngIf="p.tag && !isTextbooksSelected">{{
-                                        p.tag }}</h3>
-
-                                    <h3 class="product-title">{{ p.title }}</h3>
-                                    <h3 class="product-subtitle" *ngIf="p.subtitle">{{ p.subtitle }}</h3>
-                                    <div class="d-flex align-items-center justify-content-between w-100">
-                                        <div class="product-prices">
-                                            <div class="price-discount">{{ p.price }}</div>
-                                            <div class="price-mrp">{{ p.mrp }}</div>
-                                        </div>
-
-                                        <superme-button
-                                            *ngIf="isTextbooksSelected"
-                                            [type]="addedToBagIds.has(p.id) ? 'green' : 'magenta'"
-                                            [text]="addingToBagIds.has(p.id) ? 'Adding…' : addedToBagIds.has(p.id) ? '✓ Added' : 'Add To Bag'"
-                                            [disabled]="addingToBagIds.has(p.id)"
-                                            (click)="addToBag(p); $event.stopPropagation()"></superme-button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </ng-container>
-
-                    <ng-template #emptyState>
-                        <empty-state
-                            [imageSrc]="'assets/School-assets/empty-product-list.png'"
-                            [imageAlt]="'No products'"
-                            [leadText]="'Nothing Here... Yet!'"
-                            [buttonText]="'View all Products'"
-                            [buttonType]="'magenta'"
-                            (buttonClick)="resetSubCategories()">
-                        </empty-state>
-                    </ng-template>
-                    </ng-container>
-
-                    <ng-template #productsErrorState>
-                        <empty-state
-                            [imageSrc]="'assets/School-assets/empty-product-list.png'"
-                            [imageAlt]="'Unable to load products'"
-                            [leadText]="'Unable to load products'"
-                            [buttonText]="'Retry'"
-                            [buttonType]="'magenta'"
-                            (buttonClick)="retryProducts()">
-                        </empty-state>
-                    </ng-template>
-                </ng-container>
-
-            </div>
+                <footer class="filter-sheet__footer">
+                    <button type="button" class="filter-clear-button"
+                        [disabled]="draftBrands.size === 0 && draftPageCounts.size === 0"
+                        (click)="clearFilterDraft()">Clear all</button>
+                    <button type="button" class="filter-apply-button" [disabled]="draftFilterResultCount === 0"
+                        (click)="applyFilters()">Show {{ draftFilterResultCount }} products</button>
+                </footer>
+            </section>
         </div>
 
         <!-- Bottom fixed address popup -->
@@ -188,16 +257,4 @@
         </div>
 
     </main>
-
-    <!-- Floating Top button -->
-    <button *ngIf="visibleProducts && visibleProducts.length" class="top-button" aria-label="Scroll to top"
-        (click)="scrollToTop()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="8" height="13" viewBox="0 0 8 13" fill="none">
-            <path
-                d="M4.03568 0.146447C3.84042 -0.0488155 3.52384 -0.0488155 3.32858 0.146447L0.146595 3.32843C-0.0486672 3.52369 -0.0486672 3.84027 0.146595 4.03553C0.341857 4.2308 0.65844 4.2308 0.853702 4.03553L3.68213 1.20711L6.51056 4.03553C6.70582 4.2308 7.0224 4.2308 7.21766 4.03553C7.41293 3.84027 7.41293 3.52369 7.21766 3.32843L4.03568 0.146447ZM3.18213 12.5C3.18213 12.7761 3.40599 13 3.68213 13C3.95827 13 4.18213 12.7761 4.18213 12.5H3.68213H3.18213ZM3.68213 0.5H3.18213L3.18213 12.5H3.68213H4.18213L4.18213 0.5L3.68213 0.5Z"
-                fill="#282527" />
-        </svg>
-        <span class="top-text">Top</span>
-    </button>
-
 </ion-content>

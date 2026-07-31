@@ -1,14 +1,11 @@
-import { Component, AfterViewInit, ViewChild, ViewChildren, QueryList, ElementRef, ChangeDetectorRef, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
+import { Component, ViewChild, ChangeDetectorRef, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, IonContent } from '@ionic/angular';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { CartService } from '../../../services/cart.service';
-import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { Router, ActivatedRoute } from '@angular/router';
-import { ModalController } from '@ionic/angular';
-import { AddressInputComponent } from '../address-input/address-input.components';
 import { EmptyStateComponent } from '../../empty-state/empty-state.component';
 import { AuthService } from '../../../services/auth.service';
 import { AddressService } from '../../../services/address.service';
@@ -29,6 +26,17 @@ interface StoreCategory {
 interface StoreSubCategory {
   name: string;
   imageUrl: string | null;
+}
+
+interface SubCategoryOption {
+  id: string;
+  label: string;
+  imageUrl: string | null;
+}
+
+interface SubCategoryLevel {
+  options: SubCategoryOption[];
+  selected: string;
 }
 
 interface ApiProduct {
@@ -67,6 +75,8 @@ type Product = {
   img: string;
   outOfStock?: boolean;
   badge?: string;
+  brand?: string;
+  pageCount?: string;
 };
 
 @Component({
@@ -74,15 +84,12 @@ type Product = {
   selector: 'product-store',
   templateUrl: './product-store.components.html',
   styleUrls: ['./product-store.components.scss'],
-  imports: [CommonModule, IonicModule, SupermeNavigatorComponent, SupermeButtonComponent, EmptyStateComponent]
+  imports: [CommonModule, IonicModule, SupermeButtonComponent, EmptyStateComponent]
   ,
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
-  @ViewChild('navigator', { static: false, read: ElementRef }) navigatorEl?: ElementRef;
+export class ProductStoreComponent implements OnDestroy, OnInit {
   @ViewChild(IonContent, { static: false }) ionContent?: IonContent;
-  @ViewChildren('subSwiper') subSwipers?: QueryList<ElementRef<any>>;
-  private _subSwipersSub?: Subscription;
 
   // popup state for address/subtext
   showAddressPopup = false;
@@ -90,7 +97,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   // cart count driven by shared CartService
   cartCount: number = 0;
   private _cartCountSub?: Subscription;
-  // local package count shown in navigator right action
+  // local package count shown in the orders action
   packageCount: number = 0;
 
   // address state (loaded from API via AddressService)
@@ -121,7 +128,6 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
-    private modalCtrl: ModalController,
     private http: HttpClient,
     private authService: AuthService,
     private addressService: AddressService,
@@ -182,7 +188,6 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
         if (this.selectedCategory != null) {
           this.subCategoryLevels = [];
           this.loadSubCategoryLevel(0, []);
-          this.loadProducts();
         } else {
           this.productsRequestCompleted = true;
           this.productsError = true;
@@ -199,14 +204,20 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
     });
   }
 
-  // Sub-categories drill down through nested levels (e.g. Notebooks -> Spiral
-  // Notebooks -> A4 Spiral), each fetched from the API as the previous level's
-  // selection narrows: /sub-categories, then /sub-categories/{level0}, then
-  // /sub-categories/{level0}/{level1}, etc. Each level renders its own chip row;
-  // picking "All" (or a different option) at a level drops any deeper levels.
-  subCategoryLevels: { options: { id: string; label: string }[]; selected: string }[] = [];
+  // Level 0 drives the horizontal Figma tabs. Level 1 drives the illustrated
+  // category rail. Names and images remain sourced from the category API.
+  subCategoryLevels: SubCategoryLevel[] = [];
   subCategoriesLoading = false;
   subCategoriesError = false;
+  private subCategoryRequestId = 0;
+
+  get primarySubCategoryLevel(): SubCategoryLevel | null {
+    return this.subCategoryLevels[0] || null;
+  }
+
+  get railSubCategoryLevel(): SubCategoryLevel | null {
+    return this.subCategoryLevels[1] || null;
+  }
 
   get selectedSubCategoryPath(): string[] {
     return this.subCategoryLevels.map(l => l.selected).filter(s => s !== 'all');
@@ -225,8 +236,11 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   private loadSubCategoryLevel(levelIndex: number, path: string[]): void {
+    const requestId = ++this.subCategoryRequestId;
     this.subCategoriesLoading = true;
     this.subCategoriesError = false;
+    this.productsLoading = true;
+    this.productsRequestCompleted = false;
     const token = this.authService.getToken();
     const headers = new HttpHeaders({
       'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
@@ -235,49 +249,68 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
     });
     this.http.get<StoreSubCategory[]>(this.buildSubCategoryUrl(this.selectedCategory!, path, levelIndex), { headers }).subscribe({
       next: (res) => {
+        if (requestId !== this.subCategoryRequestId) return;
         const apiSubCategories = Array.isArray(res) ? res : [];
         this.subCategoryLevels = this.subCategoryLevels.slice(0, levelIndex);
         if (apiSubCategories.length) {
+          const options = apiSubCategories.map(s => ({
+            id: s.name,
+            label: s.name,
+            imageUrl: s.imageUrl || null
+          }));
           this.subCategoryLevels.push({
-            options: [{ id: 'all', label: 'All' }, ...apiSubCategories.map(s => ({ id: s.name, label: s.name }))],
-            selected: 'all'
+            options,
+            selected: options[0].id
           });
+
+          if (levelIndex === 0 && this.selectedCategory != null) {
+            this.loadSubCategoryLevel(1, [options[0].id]);
+            this.cdr.detectChanges();
+            return;
+          }
         }
         this.subCategoriesLoading = false;
+        this.loadProducts();
         this.cdr.detectChanges();
       },
       error: () => {
+        if (requestId !== this.subCategoryRequestId) return;
         this.subCategoriesLoading = false;
         this.subCategoriesError = true;
+        this.loadProducts();
         this.cdr.detectChanges();
       }
     });
   }
 
-  selectSubCategoryAt(levelIndex: number, option: { id: string; label: string }): void {
+  selectSubCategoryAt(levelIndex: number, option: SubCategoryOption): void {
     const level = this.subCategoryLevels[levelIndex];
     if (!level || level.selected === option.id) return;
 
+    this.clearProductFilters(false);
     level.selected = option.id;
     // Drop deeper levels — they no longer apply to the new selection
     this.subCategoryLevels = this.subCategoryLevels.slice(0, levelIndex + 1);
 
-    if (option.id !== 'all' && this.selectedCategory != null) {
+    if (levelIndex === 0 && this.selectedCategory != null) {
       const path = this.subCategoryLevels.map(l => l.selected);
       this.loadSubCategoryLevel(levelIndex + 1, path);
+    } else {
+      this.loadProducts();
     }
 
-    this.loadProducts();
     this.cdr.detectChanges();
   }
 
-  /** Reset all subcategory drill-down levels back to "All" (e.g. from the empty-state CTA). */
+  /** Reset to the first API-provided category when the current selection is empty. */
   resetSubCategories(): void {
-    if (this.subCategoryLevels.length) {
+    if (this.subCategoryLevels[0]?.options.length) {
       this.subCategoryLevels = this.subCategoryLevels.slice(0, 1);
-      this.subCategoryLevels[0].selected = 'all';
+      this.subCategoryLevels[0].selected = this.subCategoryLevels[0].options[0].id;
+      this.loadSubCategoryLevel(1, [this.subCategoryLevels[0].selected]);
+    } else {
+      this.loadProducts();
     }
-    this.loadProducts();
     this.cdr.detectChanges();
   }
 
@@ -289,11 +322,100 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   productsPage = 0;
   productsTotalPages = 0;
   private readonly productsPageSize = 20;
+  private productsRequestId = 0;
 
-  // Kept so the template's existing `visibleProducts` binding keeps working;
-  // filtering now happens server-side via categoryId/subCategory query params.
+  showFilters = false;
+  activeFilter: 'brand' | 'pageCount' = 'brand';
+  selectedBrands = new Set<string>();
+  selectedPageCounts = new Set<string>();
+  draftBrands = new Set<string>();
+  draftPageCounts = new Set<string>();
+
   get visibleProducts(): Product[] {
-    return this.products;
+    return this.filterProducts(this.products, this.selectedBrands, this.selectedPageCounts);
+  }
+
+  get brandFilterOptions(): string[] {
+    return this.uniqueValues(this.products.map(product => product.brand));
+  }
+
+  get pageCountFilterOptions(): string[] {
+    return this.uniqueValues(this.products.map(product => product.pageCount));
+  }
+
+  get activeFilterOptions(): string[] {
+    return this.activeFilter === 'brand' ? this.brandFilterOptions : this.pageCountFilterOptions;
+  }
+
+  get draftFilterResultCount(): number {
+    return this.filterProducts(this.products, this.draftBrands, this.draftPageCounts).length;
+  }
+
+  private uniqueValues(values: Array<string | undefined>): string[] {
+    return Array.from(new Set(
+      values.map(value => String(value || '').trim()).filter(Boolean)
+    ));
+  }
+
+  private filterProducts(products: Product[], brands: Set<string>, pageCounts: Set<string>): Product[] {
+    return products.filter(product => {
+      const matchesBrand = brands.size === 0 || (!!product.brand && brands.has(product.brand));
+      const matchesPageCount = pageCounts.size === 0
+        || (!!product.pageCount && pageCounts.has(product.pageCount));
+      return matchesBrand && matchesPageCount;
+    });
+  }
+
+  openFilters(panel: 'brand' | 'pageCount'): void {
+    this.activeFilter = panel;
+    this.draftBrands = new Set(this.selectedBrands);
+    this.draftPageCounts = new Set(this.selectedPageCounts);
+    this.showFilters = true;
+    this.cdr.detectChanges();
+  }
+
+  closeFilters(): void {
+    this.showFilters = false;
+    this.cdr.detectChanges();
+  }
+
+  setActiveFilter(panel: 'brand' | 'pageCount'): void {
+    this.activeFilter = panel;
+  }
+
+  isDraftFilterSelected(option: string): boolean {
+    return this.activeFilter === 'brand'
+      ? this.draftBrands.has(option)
+      : this.draftPageCounts.has(option);
+  }
+
+  toggleDraftFilter(option: string): void {
+    const target = this.activeFilter === 'brand' ? this.draftBrands : this.draftPageCounts;
+    if (target.has(option)) target.delete(option);
+    else target.add(option);
+    this.cdr.detectChanges();
+  }
+
+  clearFilterDraft(): void {
+    this.draftBrands.clear();
+    this.draftPageCounts.clear();
+    this.cdr.detectChanges();
+  }
+
+  applyFilters(): void {
+    this.selectedBrands = new Set(this.draftBrands);
+    this.selectedPageCounts = new Set(this.draftPageCounts);
+    this.showFilters = false;
+    this.cdr.detectChanges();
+  }
+
+  private clearProductFilters(updateDraft = true): void {
+    this.selectedBrands.clear();
+    this.selectedPageCounts.clear();
+    if (updateDraft) {
+      this.draftBrands.clear();
+      this.draftPageCounts.clear();
+    }
   }
 
   private formatCurrency(value: number): string {
@@ -307,6 +429,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
       this.productsRequestCompleted = false;
       return;
     }
+    const requestId = ++this.productsRequestId;
     this.productsLoading = true;
     this.productsRequestCompleted = false;
     this.productsError = false;
@@ -330,17 +453,20 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
     }
     this.http.get<ProductPage>(`${environment.apiUrl}/store/products`, { headers, params }).subscribe({
       next: (res) => {
+        if (requestId !== this.productsRequestId) return;
         const content = Array.isArray(res?.content) ? res.content : [];
         const mapped: Product[] = content.map(p => ({
           id: String(p.id),
-          tag: p.tag || undefined,
+          tag: p.brandName || p.tag || p.schoolName || undefined,
           title: p.name,
-          subtitle: p.brandName || p.schoolName || undefined,
+          subtitle: p.schoolName || undefined,
           price: this.formatCurrency(p.sellingPrice),
           mrp: this.formatCurrency(p.mrp),
           img: p.thumbnailUrl || 'assets/School-assets/empty-product-list.png',
           outOfStock: !p.inStock,
-          badge: p.mandatory ? 'Mandatory' : undefined
+          badge: p.mandatory ? 'Mandatory' : undefined,
+          brand: p.brandName || p.tag || undefined,
+          pageCount: p.pageCount ? String(p.pageCount) : undefined
         }));
         this.products = page === 0 ? mapped : [...this.products, ...mapped];
         this.productsPage = res?.number ?? page;
@@ -350,6 +476,7 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
         this.cdr.detectChanges();
       },
       error: () => {
+        if (requestId !== this.productsRequestId) return;
         this.productsLoading = false;
         this.productsRequestCompleted = true;
         this.productsError = true;
@@ -427,19 +554,25 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
       const action = ev && (ev as any).action;
       if (!action) return;
       if (action.type === 'cart') {
-        try {
-          const queryParams: Record<string, string> = {};
-          if (this.schoolId != null) queryParams['schoolId'] = String(this.schoolId);
-          if (this.classId != null) queryParams['classId'] = String(this.classId);
-          this.router.navigate(['/authed/cart'], { queryParams });
-        } catch (e) { console.log('Open cart', action); }
+        this.openCart();
         return;
       }
       if (action.type === 'package') {
-        try { this.router.navigateByUrl('/authed/school-store/my-orders'); } catch (e) { console.log('Open packages', action); }
+        this.openOrders();
         return;
       }
     } catch (e) { }
+  }
+
+  openCart(): void {
+    const queryParams: Record<string, string> = {};
+    if (this.schoolId != null) queryParams['schoolId'] = String(this.schoolId);
+    if (this.classId != null) queryParams['classId'] = String(this.classId);
+    this.router.navigate(['/authed/cart'], { queryParams });
+  }
+
+  openOrders(): void {
+    this.router.navigateByUrl('/authed/school-store/my-orders');
   }
 
   // Compute a display badge for a product when appropriate.
@@ -516,7 +649,6 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
   ngOnDestroy(): void {
     try { this._cartCountSub?.unsubscribe(); } catch (e) { }
     try { this._addrSub?.unsubscribe(); } catch (e) { }
-    try { this._subSwipersSub?.unsubscribe(); } catch (e) { }
   }
   openAddressPopup(): void {
     this.showAddressPopup = true;
@@ -573,46 +705,6 @@ export class ProductStoreComponent implements AfterViewInit, OnDestroy, OnInit {
         this.cdr.detectChanges();
       }
     });
-  }
-
-  ngAfterViewInit(): void {
-    try {
-      const navNative = this.navigatorEl?.nativeElement;
-      if (navNative && typeof navNative.addEventListener === 'function') {
-        navNative.addEventListener('click', (ev: Event) => {
-          const target = ev.target as HTMLElement | null;
-          if (!target) return;
-          if (target.closest && (target.closest('.navigator-heading') || target.closest('.navigator-subtext-row') || target.closest('.navigator-subtext') || target.closest('.navigator-subtext-text'))) {
-            this.openAddressPopup();
-            return;
-          }
-        });
-      }
-    } catch (e: any) { }
-
-    // Subcategory rows are inserted dynamically (a new one appears each time a
-    // drill-down level loads). The Swiper web component sometimes mismeasures
-    // its scroll position when inserted like this, landing slightly scrolled
-    // into the first slide instead of fully at the start (clipping its text).
-    // Reset every subcategory swiper's position whenever the set changes.
-    this.resetSubSwipers();
-    this._subSwipersSub = this.subSwipers?.changes.subscribe(() => this.resetSubSwipers());
-  }
-
-  private resetSubSwipers(): void {
-    // Wait a tick so the newly-inserted <swiper-container> has finished its
-    // own custom-element initialization before we touch it.
-    setTimeout(() => {
-      this.subSwipers?.forEach(ref => {
-        try {
-          const swiperInstance = (ref.nativeElement as any)?.swiper;
-          if (swiperInstance) {
-            swiperInstance.update();
-            swiperInstance.slideTo(0, 0, false);
-          }
-        } catch (e) { /* ignore */ }
-      });
-    }, 0);
   }
 
   changeSchool(): void {
