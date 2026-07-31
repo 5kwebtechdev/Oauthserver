@@ -1,6 +1,9 @@
 export const environment = {
   production: true,
   apiUrl: 'https://api.supermeapp.com/v1',
+  // Keep this in sync with the Razorpay account used by the backend.
+  // Razorpay Key ID is public; the Key Secret must remain backend-only.
+  razorpayKeyId: 'rzp_test_TG7krxwa0XFHO6',
   // apiAuthToken should NOT be hardcoded in production
   // Users must login to get their own token stored in localStorage
   apiAuthToken: '',

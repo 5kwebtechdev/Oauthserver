@@ -15,16 +15,33 @@ export class ProfileSelectorInterceptor implements HttpInterceptor {
 
   constructor() { }
 
+  private validUserId(value: unknown): string | null {
+    const id = value === null || value === undefined ? '' : String(value).trim();
+    return id && id.toLowerCase() !== 'nan' && id.toLowerCase() !== 'null'
+      ? id
+      : null;
+  }
+
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return this.profileSelector.child$.pipe(
       take(1),
       switchMap((forUserId) => {
-        console.log('[ProfileSelectorInterceptor] forUserId:', forUserId, 'method:', req.method, 'url:', req.url);
+        const requestBody = typeof req.body === 'object' && req.body !== null
+          ? req.body as Record<string, unknown>
+          : null;
+        const explicitUserId = this.validUserId(requestBody?.['forUserId'])
+          ?? this.validUserId(req.params.get('forUserId'));
+
+        // A request that explicitly chooses its user context (for example,
+        // checkout for the authenticated parent) must not be overwritten by
+        // the child currently selected in the parent dashboard.
+        if (explicitUserId) {
+          return next.handle(req);
+        }
 
         // If no valid child id selected, forward request unchanged
-        const idStr = forUserId === null || forUserId === undefined ? null : String(forUserId);
-        if (!idStr || idStr.trim() === '' || idStr.toLowerCase() === 'nan') {
-          console.log('[ProfileSelectorInterceptor] No valid child id selected, forwarding request unchanged', forUserId);
+        const idStr = this.validUserId(forUserId);
+        if (!idStr) {
           return next.handle(req);
         }
 
@@ -33,7 +50,6 @@ export class ProfileSelectorInterceptor implements HttpInterceptor {
           const body = typeof req.body === 'object' && req.body !== null
             ? { ...req.body, forUserId: idStr }
             : { forUserId: idStr };
-          console.log('[ProfileSelectorInterceptor] Adding forUserId to body:', body);
           const modifiedReq = req.clone({ body });
           return next.handle(modifiedReq);
         } else {

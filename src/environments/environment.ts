@@ -1,6 +1,8 @@
 export const environment = {
   production: false,
   apiUrl: 'https://api.supermeapp.com/v1',
+  // Razorpay Key ID is a public checkout identifier. Never add the Key Secret here.
+  razorpayKeyId: 'rzp_test_TG7krxwa0XFHO6',
   // apiUrl: 'http://localhost:8080/v1',
   apiAuthToken: 'Bearer',
   appleSignIn: {
