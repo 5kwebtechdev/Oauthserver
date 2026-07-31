@@ -29,13 +29,21 @@
 
   // ── Popup card ───────────────────────────────────────────────────────────────
   .calendar-popup {
-    background: linear-gradient(145deg, #FFF9FB 0%, #FEF2F7 100%);
-    border: 1px solid rgba(144, 33, 77, 0.12);
-    box-shadow: 0 8px 32px rgba(144, 33, 77, 0.14), 0 2px 8px rgba(107, 101, 106, 0.08);
-    padding: 20px 16px 16px;
+    background: #ffffff;
+    box-shadow: 0 8px 32px rgba(40, 37, 39, 0.18), 0 2px 8px rgba(40, 37, 39, 0.08);
+    padding: 24px 20px 16px;
     border-radius: 24px;
     width: calc(100vw - 32px);
     max-width: 360px;
+
+    .calendar-title {
+      margin: 0 0 16px;
+      text-align: center;
+      color: #282527;
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 700;
+    }
 
     // ── Header: month title + nav arrows ───────────────────────────────────────
     .calendar-header {
@@ -43,42 +51,37 @@
       justify-content: space-between;
       align-items: center;
       padding-bottom: 12px;
-      border-bottom: 1.5px solid rgba(144, 33, 77, 0.10);
       margin-bottom: 8px;
 
       span {
         color: #282527;
-        font-family: var(--font-sans);
+        font-family: var(--font-heading);
         font-size: 16px;
         font-weight: 700;
         letter-spacing: 0.2px;
       }
 
-      .nav-buttons {
-        display: flex;
-        gap: 8px;
-      }
-
       .nav-arrow {
-        background: rgba(144, 33, 77, 0.08);
+        background: #EDEBFB;
         border: none;
         cursor: pointer;
-        width: 30px;
-        height: 30px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 0;
         transition: background 0.18s ease;
+        -webkit-tap-highlight-color: transparent;
 
         &:active {
-          background: rgba(144, 33, 77, 0.20);
+          background: #DCD8F5;
         }
 
         ion-icon {
           font-size: 16px;
-          color: #90214D;
+          color: #45456A;
         }
       }
 
@@ -129,7 +132,7 @@
         font-size: 11px;
         letter-spacing: 0.5px;
         text-align: center;
-        color: #90214D;
+        color: #9A96A0;
         text-transform: uppercase;
         padding: 6px 0;
       }
@@ -147,6 +150,7 @@
         align-items: center;
         justify-content: center;
         transition: background 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
 
         p {
           font-family: var(--font-sans);
@@ -170,13 +174,13 @@
             width: 28px;
             height: 28px;
             transform: translate(-50%, -50%);
-            border-radius: 8px;
-            border: 2px solid #90214D;
+            border-radius: 50%;
+            border: 2px solid #45456A;
             z-index: 1;
             pointer-events: none;
           }
 
-          p { color: #90214D; font-weight: 700; }
+          p { color: #45456A; font-weight: 700; }
         }
 
         // ── Selected — filled brand circle ─────────────────────────────────────
@@ -189,8 +193,8 @@
             width: 30px;
             height: 30px;
             transform: translate(-50%, -50%);
-            border-radius: 8px;
-            background: #90214D;
+            border-radius: 50%;
+            background: #45456A;
             z-index: 2;
             pointer-events: none;
           }
@@ -200,7 +204,7 @@
 
         // ── Today + Selected (today IS the selected date) ─────────────────────
         &.today.selected {
-          &::before { background: #90214D; }
+          &::before { background: #45456A; }
 
           p { color: #FDFDFD; font-weight: 700; }
         }
@@ -216,12 +220,12 @@
             height: 30px;
             transform: translate(-50%, -50%) scaleX(250%);
             transform-origin: center;
-            background: rgba(144, 33, 77, 0.10);
+            background: #EDEBFB;
             z-index: 0;
             pointer-events: none;
           }
 
-          p { color: #90214D; font-weight: 600; }
+          p { color: #45456A; font-weight: 600; }
         }
 
         // Today in range: keep the filled selected look for clarity
@@ -236,16 +240,16 @@
             transform: translate(-50%, -50%) !important;
             width: 30px;
             height: 30px;
-            border-radius: 8px !important;
-            background: rgba(144, 33, 77, 0.2) !important;
+            border-radius: 50% !important;
+            background: #DCD8F5 !important;
             z-index: 1 !important;
           }
 
-          p { color: #90214D; font-weight: 700; }
+          p { color: #45456A; font-weight: 700; }
         }
 
-        &.isStartDate::before { border-radius: 8px 0 0 8px; }
-        &.isEndDate::before   { border-radius: 0 8px 8px 0; }
+        &.isStartDate::before { border-radius: 50% 0 0 50%; }
+        &.isEndDate::before   { border-radius: 0 50% 50% 0; }
 
         // Out-of-month
         &:not(.currentMonth) {
@@ -262,43 +266,69 @@
       }
     }
 
-    // ── Cancel / OK actions ─────────────────────────────────────────────────────
-    .calendar-actions {
+    // ── Quick-range pills (e.g. End Date: 15 days / 1 week / 1 month / 2 months) ──
+    .quick-ranges {
       display: flex;
-      justify-content: flex-end;
-      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 8px;
       margin-top: 16px;
+    }
+
+    .range-pill {
+      padding: 8px 14px;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 999px;
+      background: transparent;
+      color: #6B656A;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+      -webkit-tap-highlight-color: transparent;
+
+      &:active {
+        opacity: 0.8;
+      }
+
+      &.selected {
+        background: #EDEBFB;
+        border-color: #45456A;
+        color: #45456A;
+      }
+    }
+
+    // ── Cancel / Done actions ─────────────────────────────────────────────────────
+    .calendar-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
       padding-top: 12px;
-      border-top: 1.5px solid rgba(144, 33, 77, 0.08);
+      border-top: 1px solid #EDEBF3;
 
       button {
-        padding: 8px 20px;
+        padding: 8px 12px;
         border: none;
-        border-radius: 10px;
+        background: transparent;
         font-family: var(--font-sans);
         font-size: 15px;
         font-weight: 700;
         cursor: pointer;
-        transition: all 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
 
-        // Cancel — ghost style
-        &:first-child {
-          background: transparent;
-          color: #6B656A;
-          margin-left: 0;
-
-          &:active { background: rgba(107, 101, 106, 0.08); }
+        &:active {
+          opacity: 0.7;
         }
+      }
 
-        // OK — filled brand style
-        &:last-child {
-          background: #90214D;
-          color: #FDFDFD;
-          box-shadow: 0 2px 8px rgba(144, 33, 77, 0.25);
+      .cancel {
+        color: #9A96A0;
+      }
 
-          &:active { background: #6e1939; }
-        }
+      .done {
+        color: #45456A;
       }
     }
   }

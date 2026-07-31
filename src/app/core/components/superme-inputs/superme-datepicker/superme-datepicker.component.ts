@@ -26,12 +26,21 @@ export class SupermeDatepickerComponent implements ControlValueAccessor {
   // Optional external range endpoints to allow highlighting when this is used as a single-date picker
   @Input() rangeStart: Date | null = null;
   @Input() rangeEnd: Date | null = null;
+  // Label shown in the popup title as "Set {label}" (e.g. "Start Date").
+  @Input() label: string = 'Date';
+  // Base date the quick-range pills add to (e.g. seed End Date from Start Date). Falls back to
+  // this picker's own current value, then minDate, then today.
+  @Input() seedDate: Date | null = null;
+  // Optional quick-pick ranges shown as pills below the calendar — each jumps
+  // straight to seedDate + amount. Omitted (null) hides the row entirely.
+  @Input() quickRanges: Array<{ label: string; unit: 'day' | 'month'; amount: number }> | null = null;
 
   isOpen = false;
   currentMonth = new Date();
   selectingStart = true;
   startDate: Date | null = null;
   endDate: Date | null = null;
+  selectedRangeLabel: string | null = null;
 
   private onChange = (_: any) => { };
   private onTouched = () => { };
@@ -54,6 +63,13 @@ export class SupermeDatepickerComponent implements ControlValueAccessor {
       } else {
         this.currentMonth = new Date();
       }
+
+      // If the current value happens to equal one of the quick-range
+      // shortcuts (measured from seedDate), pre-highlight that pill.
+      this.selectedRangeLabel = this.quickRanges?.find(r => {
+        const target = this.computeRangeDate(r);
+        return this.startDate && this.isSameDay(this.startDate, target);
+      })?.label ?? null;
     }
   }
 
@@ -73,6 +89,9 @@ export class SupermeDatepickerComponent implements ControlValueAccessor {
       const min = new Date(this.minDate.getFullYear(), this.minDate.getMonth(), this.minDate.getDate());
       if (date < min) return; // do not select past dates
     }
+    // A manual day tap overrides whatever quick-range pill was selected.
+    this.selectedRangeLabel = null;
+
     if (this.type === 'date') {
       // For single-date instances, set the internal startDate and emit immediately for live preview
       this.startDate = date;
@@ -102,6 +121,29 @@ export class SupermeDatepickerComponent implements ControlValueAccessor {
     } else {
       this.onChange({ start: this.startDate, end: this.endDate });
     }
+  }
+
+  private computeRangeDate(range: { unit: 'day' | 'month'; amount: number }): Date {
+    const base = this.seedDate || this.startDate || this.minDate || new Date();
+    const b = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+    if (range.unit === 'month') {
+      return new Date(b.getFullYear(), b.getMonth() + range.amount, b.getDate());
+    }
+    b.setDate(b.getDate() + range.amount);
+    return b;
+  }
+
+  /** Jumps straight to seedDate + range — a genuine user pick, so it commits immediately. */
+  selectQuickRange(range: { label: string; unit: 'day' | 'month'; amount: number }) {
+    let target = this.computeRangeDate(range);
+    if (this.minDate) {
+      const min = new Date(this.minDate.getFullYear(), this.minDate.getMonth(), this.minDate.getDate());
+      if (target < min) target = min;
+    }
+    this.startDate = target;
+    this.currentMonth = new Date(target.getFullYear(), target.getMonth(), 1);
+    this.selectedRangeLabel = range.label;
+    this.onChange(this.startDate);
   }
 
   cancelSelection() {

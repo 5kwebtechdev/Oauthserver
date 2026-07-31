@@ -1,8 +1,17 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { finalize, map, shareReplay, tap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { StoredGender } from '../models/gender.model';
+import { MoodService } from './mood.service';
+
+export interface UserStats {
+  coins: number;
+  streaks: number;
+  days: number;
+  badges: number;
+}
 
 export interface UserProfile {
   userId?: number;
@@ -28,7 +37,15 @@ export class UserService {
   private userProfileSubject = new BehaviorSubject<UserProfile | null>(this.loadUserFromStorage());
   public userProfile$ = this.userProfileSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  // BehaviorSubject to hold the current user stats (coins/streaks/days/badges),
+  // seeded from the same localStorage cache saveUserStats()/getUserStats() already use.
+  // Lets multiple consumers (e.g. the website shell nav) share one fetch instead of
+  // each re-calling the vibes/display API independently.
+  private statsSubject = new BehaviorSubject<UserStats | null>(this.getUserStats());
+  public stats$: Observable<UserStats | null> = this.statsSubject.asObservable();
+  private statsRefresh$: Observable<UserStats | null> | null = null;
+
+  constructor(private http: HttpClient, private moodService: MoodService) {
     // Initialize user profile from storage
     this.loadUserFromStorage();
   }
@@ -163,19 +180,20 @@ export class UserService {
   /**
    * Save user stats to localStorage
    */
-  saveUserStats(stats: { coins: number; streaks: number; days: number; badges: number }): void {
+  saveUserStats(stats: UserStats): void {
     try {
       localStorage.setItem('user_stats', JSON.stringify(stats));
       console.log('[UserService] Saved user stats to localStorage:', stats);
     } catch (e) {
       console.error('[UserService] Error saving user stats:', e);
     }
+    this.statsSubject.next(stats);
   }
 
   /**
    * Get user stats from localStorage
    */
-  getUserStats(): { coins: number; streaks: number; days: number; badges: number } | null {
+  getUserStats(): UserStats | null {
     try {
       const stats = localStorage.getItem('user_stats');
       if (stats) {
@@ -185,6 +203,38 @@ export class UserService {
       console.error('[UserService] Error loading user stats:', e);
     }
     return null;
+  }
+
+  /**
+   * Fetch fresh stats from the vibes/display API and share the result via
+   * stats$. Concurrent callers (e.g. the dashboard page and the persistent
+   * website shell both mounting on the same load) ride the same in-flight
+   * request instead of firing duplicate HTTP calls.
+   */
+  refreshStats(): Observable<UserStats | null> {
+    if (this.statsRefresh$) {
+      return this.statsRefresh$;
+    }
+
+    this.statsRefresh$ = this.moodService.getVibesDisplay().pipe(
+      tap(data => {
+        if (data && data.length > 0) {
+          const userStats = data[0];
+          const stats: UserStats = {
+            coins: userStats.coins || 0,
+            streaks: userStats.streak || 0,
+            days: userStats.trophies || 0,
+            badges: userStats.badges || 0
+          };
+          this.saveUserStats(stats);
+        }
+      }),
+      map(() => this.statsSubject.value),
+      finalize(() => { this.statsRefresh$ = null; }),
+      shareReplay(1)
+    );
+
+    return this.statsRefresh$;
   }
 
   /**
