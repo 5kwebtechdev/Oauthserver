@@ -14,7 +14,7 @@ import { LearningService } from 'src/app/core/services/learning.service';
       <header class="content-header">
         <div class="content-title">
           <h2>
-            <img src="assets/figma/child-home/learning-header.png" class="content-title-icon"
+            <img [src]="headerIcon || 'assets/figma/child-home/learning-header.png'" class="content-title-icon"
               aria-hidden="true" role="presentation" />
             {{ title || 'Start Curious, Play, Conquer!' }}
           </h2>
@@ -28,14 +28,22 @@ import { LearningService } from 'src/app/core/services/learning.service';
       </header>
 
       <div class="slides" #slides>
-        <learning-card 
-          *ngFor="let item of items; trackBy: trackByFn; let i = index" 
-          [item]="item" 
-          [index]="i"
-          [source]="source"
-          (cardClick)="onItemClick($event.item, $event.index)"
-          (click)="onItemClick(item, i)">
-        </learning-card>
+        <div class="learning-slide-shell" [class.learning-slide-shell--reward]="rewardMode"
+          *ngFor="let item of items; trackBy: trackByFn; let i = index">
+          <learning-card
+            [item]="item"
+            [index]="i"
+            [source]="source"
+            (cardClick)="onItemClick($event.item, $event.index)">
+          </learning-card>
+          <button *ngIf="rewardMode" type="button" class="reward-assign"
+            [attr.aria-label]="'Assign ' + getRewardCoins(item) + ' coins to ' + (item?.title || 'learning activity')"
+            (click)="onRewardClick($event, item, i)">
+            <span>Assign</span>
+            <img src="assets/figma/parent-home/coin.png" alt="" aria-hidden="true">
+            <strong>{{ getRewardCoins(item) }}</strong>
+          </button>
+        </div>
       </div>
 
       <div class="pager" *ngIf="showPager" #pager>
@@ -157,6 +165,7 @@ import { LearningService } from 'src/app/core/services/learning.service';
       .view-all-pill {
         display: inline-flex;
         align-items: center;
+        flex: 0 0 auto;
         min-width: 71px;
         min-height: 22px;
         background:
@@ -176,6 +185,7 @@ import { LearningService } from 'src/app/core/services/learning.service';
         user-select: none;
         transition: background 0.15s ease;
         text-decoration: none;
+        white-space: nowrap;
 
         &:active {
           background: rgba(225, 82, 124, 0.1);
@@ -225,10 +235,58 @@ import { LearningService } from 'src/app/core/services/learning.service';
         border-radius: 23px;
       }
 
-      learning-card {
+      .learning-slide-shell {
+        display: flex;
         flex: 0 0 175px;
-        height: 104px;
+        flex-direction: column;
+        overflow: hidden;
+        border-radius: 12px;
         scroll-snap-align: start;
+      }
+
+      learning-card {
+        display: block;
+        width: 100%;
+        height: 104px;
+      }
+
+      .learning-slide-shell--reward {
+        border: 1px solid #f2cddd;
+        background: #ffffff;
+        box-shadow: 0 0 2px rgba(172, 36, 86, 0.12);
+      }
+
+      .reward-assign {
+        display: flex;
+        width: 100%;
+        min-height: 36px;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        padding: 8px 12px;
+        border: 0;
+        border-top: 1px solid #f6dce6;
+        background: #ffffff;
+        color: #432477;
+        font-family: var(--font-sans);
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.4;
+        cursor: pointer;
+
+        img {
+          width: 16px;
+          height: 16px;
+          object-fit: contain;
+        }
+
+        strong {
+          font-weight: 800;
+        }
+
+        &:active {
+          background: #fff2f7;
+        }
       }
 
       ::ng-deep learning-card .card-root {
@@ -351,6 +409,8 @@ import { LearningService } from 'src/app/core/services/learning.service';
 export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() title: string = '';
   @Input() subtitle: string = '';
+  @Input() headerIcon: string = '';
+  @Input() rewardMode: boolean = false;
   @Input() imageUrl: string = '';
   @Input() difficulty: string = '';
   @Input() likes: number = 0;
@@ -367,6 +427,7 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
 
   @Input() showPager: boolean = false;
   @Output() itemSelected = new EventEmitter<any>();
+  @Output() rewardSelected = new EventEmitter<any>();
   @Output() viewAll = new EventEmitter<void>();
 
   @ViewChild('slides', { read: ElementRef }) slidesRef!: ElementRef<HTMLElement>;
@@ -429,6 +490,16 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
 
   onItemClick(item: any, index: number) {
     this.itemSelected.emit({ item, index });
+  }
+
+  onRewardClick(event: Event, item: any, index: number): void {
+    event.stopPropagation();
+    this.rewardSelected.emit({ item, index, coins: this.getRewardCoins(item) });
+  }
+
+  getRewardCoins(item: any): number {
+    const value = Number(item?.assignmentCoins ?? item?.rewardCoins ?? item?.coins ?? 0);
+    return Number.isFinite(value) && value > 0 ? Math.round(value) : 0;
   }
 
   trackByFn(index: number, item: any) {

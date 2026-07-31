@@ -2,7 +2,7 @@
 <!-- Shared header used by both list and recent modes -->
 <ng-template #dayHeader>
   <div class="glance-heading-block">
-    <superme-card-header title="Today at a Glance" [subtitleMiddle]="glanceSubtitle">
+    <superme-card-header [title]="headerTitle" [subtitleMiddle]="glanceSubtitle">
       <div class="glance-header-actions" superme-header-actions>
         <button type="button" class="glance-done-pill" (click)="openTimeline()"
           aria-label="Open today's progress timeline">
@@ -185,7 +185,7 @@
       View all
     </button>
     <button class="add-new-pill" (click)="openHabitInput()">
-      Add New
+      {{ addButtonLabel }}
     </button>
   </div>
 </div>
@@ -343,7 +343,7 @@
       View all
     </button>
     <button class="add-new-pill" (click)="openHabitInput()">
-      Add New
+      {{ addButtonLabel }}
     </button>
   </div>
 </div>

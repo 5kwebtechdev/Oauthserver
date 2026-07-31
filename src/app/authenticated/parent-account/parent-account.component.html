@@ -1,170 +1,290 @@
-<!-- ══ Family connected acknowledgment popup ══ -->
+<!-- Family connected acknowledgment -->
 <div class="family-ack-backdrop" *ngIf="showFamilyAck" (click)="dismissFamilyAck()">
   <div class="family-ack-popup" (click)="$event.stopPropagation()">
-    <img class="family-ack-popup__img" src="assets/Images-Transparent/Image-Parents-Family.png" alt="" aria-hidden="true" />
+    <img class="family-ack-popup__img" src="assets/Images-Transparent/Image-Parents-Family.png" alt=""
+      aria-hidden="true">
     <h2 class="family-ack-popup__title">You're connected to your family</h2>
-    <p class="family-ack-popup__desc">This account is now set to {{ familyAckRole }} and linked to your family.</p>
-    <button class="family-ack-popup__btn" (click)="dismissFamilyAck()">Let's Begin</button>
+    <p class="family-ack-popup__desc">
+      This account is now set to {{ familyAckRole }} and linked to your family.
+    </p>
+    <button class="family-ack-popup__btn" type="button" (click)="dismissFamilyAck()">Let's Begin</button>
   </div>
 </div>
 
-<ion-content>
-    <div class="container w-100 p-0">
-        <section class="user-profile-section profile" [class.no-child]="showLinkChildPrompt" aria-labelledby="profile-heading">
-            <header class="profile-header" role="banner">
-                <div class="user-info" role="group" aria-label="User info">
-                    <div class="user-avatar" aria-hidden="false">
-                        <a [routerLink]="['/authed','user-profile']" aria-label="Open profile">
-                            <ng-container *ngIf="userAvatarUrl; else parentAvatar">
-                                <img [src]="userAvatarUrl" alt="{{ userName }} avatar">
-                            </ng-container>
-                            <ng-template #parentAvatar>
-                                <div class="parent-avatar" [ngStyle]="parentAvatarStyle" aria-hidden="false">{{ parentInitial }}</div>
-                            </ng-template>
-                        </a>
-                    </div>
-                    <div class="user-name-wrap">
-                        <span class="user-name">{{ userName }}</span>
+<ion-content class="parent-home-content">
+  <main class="parent-home" aria-label="Parent home">
+    <section class="parent-home__loading" *ngIf="showChildrenLoading" aria-live="polite">
+      <ion-spinner name="crescent"></ion-spinner>
+    </section>
 
-                        <!-- Switch user trigger -->
-                        <button *ngIf="children.length" class="switch-trigger" aria-label="Switch user" (click)="toggleSwitchPopup($event)">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="8" viewBox="0 0 13 8"
-                                fill="none">
-                                <path
-                                    d="M0.246614 1.42734C-0.0801544 1.10057 -0.0801535 0.570779 0.246615 0.244011C0.573383 -0.0827579 1.10318 -0.082758 1.42995 0.24401L5.61451 4.42857C6.00503 4.8191 6.6382 4.8191 7.02872 4.42857L11.2133 0.24401C11.5401 -0.0827585 12.0698 -0.0827579 12.3966 0.244011C12.7234 0.570779 12.7234 1.10058 12.3966 1.42734L7.02872 6.79524C6.6382 7.18576 6.00503 7.18576 5.61451 6.79524L0.246614 1.42734Z"
-                                    fill="#282527" />
-                            </svg>
-                        </button>
+    <section class="parent-home__error" *ngIf="showChildrenLoadError" aria-live="polite">
+      <p>We couldn't refresh your family right now.</p>
+      <button type="button" (click)="loadChildren()">Try again</button>
+    </section>
 
-                        <!-- Switch user popup + backdrop -->
-                        <div *ngIf="showSwitchPopup" class="switch-popup-backdrop" (click)="closeSwitchPopup()">
-                            <div class="switch-popup" (click)="$event.stopPropagation()">
-                                <div class="switch-popup-list">
-                                    <ng-container *ngFor="let c of children">
-                                        <button class="child-row" (click)="selectChild(c)" [attr.aria-selected]="selectedChild?.id === c.id">
-                                            <img [src]="c.avatarUrl" [alt]="c.name + ' avatar'" class="child-avatar">
-                                            <div class="child-info">
-                                                <div class="child-name">{{ c.name }}</div>
-                                                <div class="child-meta">{{ c.relationship || 'Child' }}</div>
-                                            </div>
-                                            <div class="child-selected" *ngIf="selectedChild && selectedChild.id !== null && (''+selectedChild.id) === (''+c.id)">
-                                                <!-- simple check mark -->
-                                                ✓
-                                            </div>
-                                        </button>
-                                    </ng-container>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <ng-container *ngIf="hasLinkedChildren">
+      <header class="parent-header">
+        <div class="parent-header__identity">
+          <a class="parent-avatar" [routerLink]="['/authed', 'user-profile']"
+            [attr.aria-label]="'Open ' + parentName + ' profile'">
+            <img *ngIf="userAvatarUrl; else parentInitialAvatar" [src]="userAvatarUrl"
+              [alt]="parentName + ' avatar'">
+            <ng-template #parentInitialAvatar>
+              <span [ngStyle]="parentAvatarStyle">{{ parentInitial }}</span>
+            </ng-template>
+          </a>
 
-                <nav class="header-tools" role="navigation" aria-label="Profile tools">
-                    <a class="tool-item-lock" aria-label="Parental Control" [routerLink]="['/authed','parental-control']">
-                        <img src="assets/Icons-Neutral/Icon-Parents-ParentalControl.png" alt="Parental Control" class="tool-icon">
-                    </a>
-                    <a class="tool-item" aria-label="Calendar" [routerLink]="['/authed/activity-calendar']">
-                        <img src="assets/Icons-Neutral/Icon-Calendar.png" alt="Calendar" class="tool-icon">
-                    </a>
-                </nav>
-            </header>
-            <div class="child-progress" *ngIf="hasLinkedChildren">
-                <div class="timeline-score-card container w-full p-0">
-                    <div class="d-flex justify-content-between w-100 m-0 p-3">
-                        <div class="col-3 p-0">
-                            <superme-completion
-                                [completionPercentage]="completionRate"
-                                [borderColor]="completionRateColor"
-                                [innerText]="completionRate + '%'"
-                                [belowText]="'Completion Rate'">
-                            </superme-completion>
-                        </div>
-                        <div class="col-3 p-0">
-                            <superme-completion
-                                [completionPercentage]="consistencyRate"
-                                [borderColor]="consistencyRateColor"
-                                [innerText]="consistencyRate + '%'"
-                                [belowText]="'Consistency Rate'">
-                            </superme-completion>
-                        </div>
-                        <div class="col-3 p-0">
-                            <superme-completion
-                                [completionPercentage]="Math.abs(improvementRate)"
-                                [borderColor]="improvementRateColor"
-                                [innerText]="(improvementRate > 0 ? '+' : '') + improvementRate + '%'"
-                                [belowText]="'Improvement Rate'">
-                            </superme-completion>
-                        </div>
-                        <div class="col-3 p-0">
-                            <superme-completion
-                                [completionPercentage]="appScore"
-                                [borderColor]="appScoreColor"
-                                [innerText]="appScore + ''"
-                                [belowText]="'App\'s Score'">
-                            </superme-completion>
-                        </div>
-                    </div>
-                    <!-- App Score badge -->
-                    <div class="app-score-badge-row">
-                        <span class="app-score-badge" [style.background]="appScoreColor">{{ appScoreBadge }}</span>
-                        <span class="app-score-hint">Your child is growing with <strong>{{ appScoreBadge === 'Excellent!' ? 'EXCELLENCE' : appScoreBadge === 'Doing okay' ? 'CONSISTENCY' : 'YOUR SUPPORT' }}</strong> 🌟</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <div class="dashboard-content" [class.dashboard-content--empty]="showLinkChildPrompt">
-            <section class="children-status-state" *ngIf="showChildrenLoading" aria-live="polite" aria-label="Loading linked children">
-                <ion-spinner name="crescent"></ion-spinner>
-            </section>
-
-            <section class="children-status-state children-status-state--error" *ngIf="showChildrenLoadError" aria-live="polite">
-                <p>We couldn't refresh your family right now.</p>
-                <button type="button" class="children-retry-button" (click)="loadChildren()">Try again</button>
-            </section>
-
-            <section class="link-child-empty-state" *ngIf="showLinkChildPrompt" aria-labelledby="link-child-heading">
-                <div class="link-empty__overlay"></div>
-                <div class="link-empty__content">
-                    <img src="assets/Images-Transparent/Image-Parents-Family.png" alt="" aria-hidden="true" />
-                    <h1 id="link-child-heading">Link with your child to see their progress</h1>
-                    <p>Share your Family Code with them, or show the QR. Takes 10 seconds.</p>
-                    <superme-button type="magenta" full text="Link my child" (click)="openFamilyConnection()"></superme-button>
-                </div>
-            </section>
-
-            <a *ngIf="
-            hasLinkedChildren" class="school-shopping-link w-100" style="
-    text-decoration: none;
-" [routerLink]="['/authed','school-store']" role="link">
-                <div class="school-shopping-banner d-flex">
-                    <div class="school-shop-txt">
-                        <h1>School Shopping, Done?</h1>
-                        <p>Get your child's Uniforms & Books here.</p>
-                    </div>
-                    <div class="school-mascot">
-                        <img src="assets/School-assets/school-mascot.png" alt="School Mascot" />
-                    </div>
-                </div>
-            </a>
-
-            <div class="mood-selector w-full parent-mood-readonly" *ngIf="hasLinkedChildren" aria-label=" Mood (view
-                only)">
-                <mood-selector #moodSel [value]="selectedMood" [vibeOverride]="selectedChildVibe"></mood-selector>
-            </div>
-
-            <div class="parent-ad-wrap" *ngIf="hasLinkedChildren">
-                <ad-banner screen="HOME_PARENTS"></ad-banner>
-            </div>
-
-            <div class="habit-page w-full" #habitPage *ngIf="hasLinkedChildren">
-                <activity-page-content></activity-page-content>
-            </div>
-
+          <div class="parent-header__copy">
+            <strong>{{ greetingPeriod }} {{ parentName }} !</strong>
+            <span>Here's {{ selectedChildName }}'s overview for today</span>
+          </div>
         </div>
-    </div>
-    <div *ngIf="hasLinkedChildren" class="fab-add-button" (click)="openActivityInput()">
-        <superme-button type="add"></superme-button>
-    </div>
-    <app-footer [class.footer-blur]="showLinkChildPrompt"></app-footer>
+
+        <nav class="parent-header__tools" aria-label="Parent tools">
+          <button type="button" class="notification-button" aria-label="Open notifications"
+            (click)="openNotifications()">
+            <img src="assets/figma/parent-home/notification.svg" alt="" aria-hidden="true">
+          </button>
+          <button type="button" class="parent-coin-pill" aria-label="Open coins" (click)="openCoinPage()">
+            <img src="assets/figma/parent-home/coin.png" alt="" aria-hidden="true">
+            <span>{{ parentCoins }}</span>
+          </button>
+        </nav>
+      </header>
+
+      <section class="child-switcher" aria-label="Family profiles">
+        <div class="child-switcher__rail"
+          [class.child-switcher__rail--single]="children.length === 1"
+          [class.child-switcher__rail--multiple]="children.length > 1">
+          <button *ngFor="let child of switcherChildren" type="button"
+            class="switcher-child"
+            [class.switcher-child--selected]="isSelectedChild(child)"
+            [class.switcher-child--selected-single]="isSelectedChild(child) && children.length === 1"
+            [class.switcher-child--selected-multiple]="isSelectedChild(child) && children.length > 1"
+            [attr.aria-current]="isSelectedChild(child) ? 'true' : null"
+            [attr.aria-expanded]="isSelectedChild(child) ? showSwitchPopup : null"
+            (click)="onSwitcherChildClick(child, $event)">
+            <img *ngIf="isSelectedChild(child)" class="switcher-child__shape"
+              [src]="children.length === 1
+                ? 'assets/figma/parent-home/selected-child-shape.svg'
+                : 'assets/figma/parent-home/selected-child-shape-middle.svg'"
+              alt="" aria-hidden="true">
+            <span class="switcher-child__content">
+              <span class="switcher-child__avatar">
+                <img [src]="child.avatarUrl" [alt]="child.name + ' avatar'">
+                <i aria-hidden="true"></i>
+              </span>
+              <span class="switcher-child__details">
+                <strong>{{ child.name }}</strong>
+                <span class="switcher-child__stats">
+                  <span>
+                    <img src="assets/figma/parent-home/streak.png" alt="" aria-hidden="true">
+                    {{ child.streak ?? 0 }}
+                  </span>
+                  <span>
+                    <img src="assets/figma/parent-home/coin.png" alt="" aria-hidden="true">
+                    {{ child.coins ?? 0 }}
+                  </span>
+                </span>
+              </span>
+            </span>
+          </button>
+
+          <button *ngIf="showAddChildAction" type="button"
+            class="switcher-action switcher-action--add" (click)="openAddChild()">
+            <span class="switcher-action__icon">
+              <img src="assets/figma/parent-home/add-child.svg" alt="" aria-hidden="true">
+              <i aria-hidden="true">+</i>
+            </span>
+            <span>Add Child</span>
+          </button>
+
+          <button *ngIf="showInviteCoParentAction" type="button"
+            class="switcher-action switcher-action--invite" (click)="inviteCoParent()">
+            <span class="switcher-action__icon">
+              <img src="assets/figma/parent-home/invite-parent.svg" alt="" aria-hidden="true">
+              <i aria-hidden="true">+</i>
+            </span>
+            <span>Invite Co Parent</span>
+          </button>
+
+          <button *ngIf="coParent" type="button" class="switcher-co-parent"
+            (click)="openFamilyConnection()" [attr.aria-label]="'Open ' + coParent.name + ' profile'">
+            <span class="switcher-co-parent__avatar">
+              <img *ngIf="coParent.avatarUrl; else coParentInitial"
+                [src]="coParent.avatarUrl" [alt]="coParent.name + ' avatar'">
+              <ng-template #coParentInitial>
+                <span aria-hidden="true">{{ coParent.initial }}</span>
+              </ng-template>
+            </span>
+            <strong>{{ coParent.name }}</strong>
+            <small>Co-parent</small>
+          </button>
+        </div>
+
+        <div *ngIf="showSwitchPopup" class="switch-popup-backdrop" (click)="closeSwitchPopup()">
+          <div class="switch-popup" role="dialog" aria-label="Choose child"
+            (click)="$event.stopPropagation()">
+            <button *ngFor="let child of children" type="button" class="child-row"
+              [class.child-row--selected]="isSelectedChild(child)" (click)="selectChild(child)">
+              <img [src]="child.avatarUrl" [alt]="child.name + ' avatar'">
+              <span>
+                <strong>{{ child.name }}</strong>
+                <small>{{ child.relationship || 'Child' }}</small>
+              </span>
+              <b *ngIf="isSelectedChild(child)" aria-label="Selected">✓</b>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="performance-section" aria-labelledby="performance-title">
+        <div class="section-heading">
+          <h2 id="performance-title">This Week's Performance</h2>
+          <span>Updated {{ statsUpdatedLabel }}</span>
+        </div>
+
+        <div class="performance-card">
+          <div class="metric-grid">
+            <article class="metric" *ngFor="let metric of performanceMetrics">
+              <div class="metric__label">
+                <span>{{ metric.label }}</span>
+                <img src="assets/figma/parent-home/info.svg" alt="" aria-hidden="true">
+              </div>
+              <div class="metric__ring"
+                [style.--metric-value]="metric.value + '%'"
+                [style.--metric-color]="metric.color">
+                <span>{{ metric.displayValue }}</span>
+              </div>
+              <strong [style.color]="metric.color">{{ metric.status }}</strong>
+            </article>
+          </div>
+
+          <button class="ai-insight" type="button" (click)="openInsights()">
+            <img src="assets/figma/parent-home/ai-insight.png" alt="" aria-hidden="true">
+            <span>
+              <span><strong>AI Insight :</strong> {{ aiInsight }}</span>
+              <u>View full insights</u>
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <section class="mood-balance-section" aria-labelledby="mood-balance-title">
+        <div class="section-heading section-heading--button">
+          <h2 id="mood-balance-title">
+            Mood Balance (Last 7 days)
+            <img src="assets/figma/parent-home/info.svg" alt="" aria-hidden="true">
+          </h2>
+          <button type="button" class="outline-pill" (click)="openInsights()">View more</button>
+        </div>
+
+        <div class="mood-balance" [class.mood-balance--loading]="moodBalanceLoading">
+          <div class="mood-balance__bar" role="img" aria-label="Mood balance for the last seven days">
+            <span *ngFor="let segment of moodBalance"
+              [style.flex-basis.%]="segment.value"
+              [style.background]="segment.color"
+              [class.mood-balance__segment--empty]="segment.value === 0">
+              <b *ngIf="segment.value > 0">{{ segment.value }}%</b>
+            </span>
+          </div>
+          <div class="mood-balance__legend">
+            <span *ngFor="let segment of moodBalance">
+              <i [style.background]="segment.color"></i>{{ segment.label }}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section class="foundation-section" aria-labelledby="foundation-title">
+        <div class="section-heading section-heading--button">
+          <h2 id="foundation-title">Weekly Foundational Overview</h2>
+          <button type="button" class="outline-pill" (click)="openInsights()">View all</button>
+        </div>
+
+        <div class="foundation-rail">
+          <article *ngFor="let item of foundationalOverview" class="foundation-card"
+            [ngClass]="'foundation-card--' + item.tone">
+            <span class="foundation-card__icon">
+              <img [src]="item.icon" alt="" aria-hidden="true">
+            </span>
+            <span class="foundation-card__copy">
+              <strong>{{ item.label }}</strong>
+              <span>
+                <b>{{ item.value }}%</b>
+                <em [class.foundation-card__status--good]="item.status === 'Good'"
+                  [class.foundation-card__status--focus]="item.status === 'Needs Focus'">
+                  {{ item.status }}
+                </em>
+              </span>
+            </span>
+          </article>
+        </div>
+      </section>
+
+      <section class="today-plan" aria-label="Today's plan">
+        <activity-card mode="list" [isParentOverride]="true" headerTitle="Today’s Plan"
+          addButtonLabel="Add New activity"></activity-card>
+      </section>
+
+      <section class="parent-ad" aria-label="Featured">
+        <ad-banner screen="HOME_PARENTS"></ad-banner>
+      </section>
+
+      <section class="parent-learning-card parent-learning-card--rewards" aria-label="Coin motivation">
+        <learning-section
+          title="Motivate with coins"
+          subtitle="Assign bonus coins to learning activities to boost motivation"
+          headerIcon="assets/figma/parent-home/coin.png"
+          [rewardMode]="true"
+          source="/authed/parent-account">
+        </learning-section>
+      </section>
+
+      <section class="parent-learning-card" aria-label="Learning and skills">
+        <learning-section source="/authed/parent-account"></learning-section>
+        <academy-section></academy-section>
+      </section>
+
+      <tutor-card class="parent-eduhub"></tutor-card>
+
+      <section class="parent-message" aria-labelledby="parent-message-title">
+        <h2 id="parent-message-title">Send a message to {{ selectedChildName }}!</h2>
+        <div class="parent-message__card">
+          <img class="parent-message__icon" src="assets/figma/parent-home/message.png" alt=""
+            aria-hidden="true">
+          <div class="parent-message__content">
+            <div>
+              <strong>Check in with {{ selectedChildName }}</strong>
+              <p>Celebrate progress, encourage, or simply write what you want to convey.</p>
+            </div>
+            <div class="parent-message__actions">
+              <div>
+                <button type="button" (click)="openMessageComposer('celebrate')">
+                  <img src="assets/figma/parent-home/celebrate.svg" alt="" aria-hidden="true">
+                  Celebrate
+                </button>
+                <button type="button" (click)="openMessageComposer('encourage')">
+                  <img src="assets/figma/parent-home/encourage.svg" alt="" aria-hidden="true">
+                  Encourage
+                </button>
+              </div>
+              <button type="button" class="parent-message__write" (click)="openMessageComposer()">
+                Write Now
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </ng-container>
+
+    <section class="link-child-empty-state" *ngIf="showLinkChildPrompt">
+      <img src="assets/Images-Transparent/Image-Parents-Family.png" alt="" aria-hidden="true">
+      <h1>Link with your child to see their progress</h1>
+      <p>Share your Family Code with them, or show the QR. It only takes a few seconds.</p>
+      <button type="button" (click)="openFamilyConnection()">Link my child</button>
+    </section>
+  </main>
+
+  <app-footer></app-footer>
 </ion-content>

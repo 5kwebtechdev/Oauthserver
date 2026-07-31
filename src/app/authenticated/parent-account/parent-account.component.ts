@@ -3,16 +3,13 @@ import { Platform, ViewWillEnter } from '@ionic/angular';
 import { CommonModule } from "@angular/common";
 import { Router, RouterModule } from '@angular/router';
 import { catchError, firstValueFrom, forkJoin, map, of, Subject, takeUntil } from 'rxjs';
-import { NotesComponent } from '../../core/components/notes/notes.component';
 import { UserService } from '../../core/services/user.service';
 import { IonicModule } from "@ionic/angular";
-import { SupermeInputsModule } from "../../core/components/superme-inputs/superme-inputs.module";
-import { MoodSelectorComponent } from '../../core/components/mood-selector/mood-selector.component';
 import { MoodService } from '../../core/services/mood.service';
-import { VibesDisplayResponse } from '../../core/models/mood.model';
+import { MoodTransition, VibesDisplayResponse } from '../../core/models/mood.model';
 import { FooterComponent } from '../../core/components/footer/footer.component';
 import { AdBannerComponent } from '../../core/components/ad-banner/ad-banner.component';
-import { ActivityPageContentComponent } from '../../core/components/activity-section/activity-page-content/activity-page-content.component';
+import { ActivityCardComponent } from '../../core/components/activity-section/activity-card/activity-card.component';
 import { HabitService } from '../../core/components/activity-section/habit.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ChildSelfImageService } from '../../core/services/child-self-image.service';
@@ -20,9 +17,42 @@ import { ParentImageService } from '../../core/services/parent-image.service';
 import { ProfileStoreService } from '../../core/services/profile-store.service';
 import { ChildInfo, mapVibeToChildInfo } from '../../core/models/child-info.model';
 import { RefreshService } from '../../core/services/refresh.service';
-import { SupermeButtonComponent } from '../../core/components/superme-button/superme-button.component';
 import { FamilyService } from '../../core/services/family.service';
-import { PetAgeService } from '../../core/services/pet-age.service';
+import { LearningSectionComponent } from '../../core/components/learning-section/learning-section.component';
+import { AcademySectionComponent } from '../../core/components/academy-section/academy-section.component';
+import { TutorCardComponent } from '../../core/components/tutor-section/tutor-card/tutor-card.component';
+
+type MoodBalanceKey = 'good' | 'okay' | 'tough' | 'hard';
+
+interface MoodBalanceSegment {
+    key: MoodBalanceKey;
+    label: string;
+    value: number;
+    color: string;
+}
+
+interface ParentMetric {
+    label: string;
+    value: number;
+    displayValue: string;
+    color: string;
+    status: string;
+}
+
+interface FoundationOverviewItem {
+    label: string;
+    value: number;
+    status: string;
+    tone: 'habit' | 'task' | 'time' | 'learning';
+    icon: string;
+}
+
+interface FamilySwitcherParent {
+    id: string | number | null;
+    name: string;
+    avatarUrl: string;
+    initial: string;
+}
 
 
 @Component({
@@ -34,33 +64,39 @@ import { PetAgeService } from '../../core/services/pet-age.service';
         CommonModule,
         RouterModule,
         IonicModule,
-        SupermeInputsModule,
-        MoodSelectorComponent,
         AdBannerComponent,
         FooterComponent,
-        ActivityPageContentComponent,
-        SupermeButtonComponent,
-
+        ActivityCardComponent,
+        LearningSectionComponent,
+        AcademySectionComponent,
+        TutorCardComponent,
     ],
     providers: [RefreshService]
 })
 export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter {
     private readonly destroy$ = new Subject<void>();
     private childrenRequestId = 0;
+    private moodBalanceRequestId = 0;
     
     public userName: string = 'User';
+    public parentName: string = 'Parent';
+    public parentCoins: number = 0;
+    public familyCode = '';
     public userCoins: number = 0;
     public userStreaks: number = 0;
     public userDays: number = 0;
     public userBadges: number = 0;
-    public selectedMood: string | null = 'happy';
+    public selectedMood: string | null = null;
     public showFamilyAck = false;
     public familyAckRole = '';
 
-    public userAvatarUrl: string = 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
+    public userAvatarUrl: string = '';
     public parentAvatarStyle: { [k: string]: string } = {};
     public parentInitial: string = 'U';
     public currentProfile: any = null;
+    public statsUpdatedAt = new Date();
+    public moodBalanceLoading = false;
+    public moodBalance: MoodBalanceSegment[] = this.createEmptyMoodBalance();
     
     // Stats
     public completionRate: number = 0;
@@ -74,6 +110,56 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
     dismissFamilyAck(): void {
         this.showFamilyAck = false;
+    }
+
+    private clampPercentage(value: number): number {
+        if (!Number.isFinite(Number(value))) return 0;
+        return Math.min(100, Math.max(0, Math.round(Number(value))));
+    }
+
+    private buildMetric(label: string, value: number, displayValue: string): ParentMetric {
+        const normalizedValue = this.clampPercentage(value);
+        const isNegativeImprovement = label === 'Improvement Rate' && this.improvementRate < 0;
+        return {
+            label,
+            value: normalizedValue,
+            displayValue,
+            color: this.getMetricColor(
+                isNegativeImprovement ? -1 : normalizedValue
+            ),
+            status: isNegativeImprovement
+                ? 'Needs Improvement'
+                : normalizedValue >= 80
+                ? 'Great progress !'
+                : normalizedValue >= 60
+                    ? 'Attention Needed'
+                    : 'Needs Improvement'
+        };
+    }
+
+    private buildFoundation(
+        label: string,
+        value: number,
+        tone: FoundationOverviewItem['tone'],
+        icon: string
+    ): FoundationOverviewItem {
+        const normalizedValue = this.clampPercentage(value);
+        return {
+            label,
+            value: normalizedValue,
+            status: normalizedValue >= 80 ? 'Good' : normalizedValue >= 50 ? 'Moderate' : 'Needs Focus',
+            tone,
+            icon
+        };
+    }
+
+    private createEmptyMoodBalance(): MoodBalanceSegment[] {
+        return [
+            { key: 'good', label: 'Good', value: 0, color: '#4CAF50' },
+            { key: 'okay', label: 'Okay', value: 0, color: '#F0AD4E' },
+            { key: 'tough', label: 'Tough', value: 0, color: '#EE6621' },
+            { key: 'hard', label: 'Hard', value: 0, color: '#BB2124' }
+        ];
     }
 
     /** PRD color logic: Red 0-59, Yellow 60-79, Green 80-100 */
@@ -132,6 +218,113 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     public children: ChildInfo[] = [];
     public selectedChild: ChildInfo | null = null;
     public childrenLoadState: 'idle' | 'loading' | 'loaded' | 'error' = 'idle';
+    public coParent: FamilySwitcherParent | null = null;
+    public familyCapacity = 4;
+    private linkedFamilyMemberCount = 1;
+
+    get selectedChildName(): string {
+        return this.selectedChild?.name || 'your child';
+    }
+
+    /**
+     * The Figma switcher keeps the active child in the purple middle card once
+     * more than one child exists. Reordering is presentation-only; the shared
+     * child store remains unchanged.
+     */
+    get switcherChildren(): ChildInfo[] {
+        if (this.children.length <= 1) return this.children;
+
+        const selected = this.children.find(child => this.isSelectedChild(child)) || this.children[0];
+        const remaining = this.children.filter(child => String(child.id) !== String(selected.id));
+        return [remaining[0], selected, ...remaining.slice(1)].filter(Boolean);
+    }
+
+    get availableFamilySlots(): number {
+        return Math.max(0, this.familyCapacity - this.linkedFamilyMemberCount);
+    }
+
+    get showInviteCoParentAction(): boolean {
+        return !this.coParent && this.availableFamilySlots > 0;
+    }
+
+    get showAddChildAction(): boolean {
+        if (this.availableFamilySlots <= 0) return false;
+
+        // With one slot left, reserve it for a missing co-parent. When a
+        // co-parent already exists, that slot can be used for another child.
+        return !!this.coParent || this.availableFamilySlots >= 2;
+    }
+
+    get greetingPeriod(): string {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'Good Morning';
+        if (hour < 17) return 'Good Afternoon';
+        return 'Good Evening';
+    }
+
+    get statsUpdatedLabel(): string {
+        return this.statsUpdatedAt.toLocaleTimeString([], {
+            hour: 'numeric',
+            minute: '2-digit'
+        });
+    }
+
+    get performanceMetrics(): ParentMetric[] {
+        return [
+            this.buildMetric('Completion Rate', this.completionRate, `${this.clampPercentage(this.completionRate)}%`),
+            this.buildMetric('Consistency Rate', this.consistencyRate, `${this.clampPercentage(this.consistencyRate)}%`),
+            this.buildMetric(
+                'Improvement Rate',
+                Math.abs(this.improvementRate),
+                `${this.improvementRate > 0 ? '+' : ''}${Math.round(this.improvementRate)}%`
+            ),
+            this.buildMetric('App’s Score', this.appScore, `${Math.round(this.appScore)}`)
+        ];
+    }
+
+    get aiInsight(): string {
+        const name = this.selectedChildName;
+        if (this.appScore >= 80) {
+            return `${name} is showing strong and consistent progress this week.`;
+        }
+        if (this.appScore >= 60) {
+            return `${name} is doing reasonably well, though there’s room to tighten one or two areas.`;
+        }
+        return `${name} may benefit from a little extra support and a simpler daily plan this week.`;
+    }
+
+    get foundationalOverview(): FoundationOverviewItem[] {
+        const taskRate = this.totalTasks > 0
+            ? Math.round((this.completedTasks / this.totalTasks) * 100)
+            : 0;
+
+        return [
+            this.buildFoundation(
+                'HABIT FORMATION',
+                this.completionRate,
+                'habit',
+                'assets/figma/parent-home/foundation-habit.png'
+            ),
+            this.buildFoundation(
+                'TASK MANAGEMENT',
+                taskRate,
+                'task',
+                'assets/figma/parent-home/foundation-task.png'
+            ),
+            this.buildFoundation(
+                'TIME MANAGEMENT',
+                this.consistencyRate,
+                'time',
+                'assets/figma/parent-home/foundation-time.png'
+            ),
+            this.buildFoundation(
+                'LEARNING',
+                this.appScore,
+                'learning',
+                'assets/figma/parent-home/foundation-learning.png'
+            )
+        ];
+    }
 
     get hasLinkedChildren(): boolean {
         return this.children.length > 0;
@@ -149,8 +342,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         return this.childrenLoadState === 'error' && !this.hasLinkedChildren;
     }
 
-    @ViewChild('moodSel') moodSelector?: MoodSelectorComponent;
-    @ViewChild(ActivityPageContentComponent) habitPageContent?: ActivityPageContentComponent;
+    @ViewChild(ActivityCardComponent) activityCard?: ActivityCardComponent;
     constructor(
         private router: Router,
         private userService: UserService,
@@ -158,7 +350,6 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         private habitService: HabitService,
         private profileStore: ProfileStoreService,
         private authService: AuthService,
-        private petAgeService: PetAgeService,
         private childSelfImage: ChildSelfImageService,
         private parentImageService: ParentImageService,
         private refreshService: RefreshService,
@@ -188,6 +379,30 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             return;
         }
 
+        const authenticatedSession = this.authService.getUserData();
+        const authenticatedParent = authenticatedSession?.user ?? authenticatedSession;
+        if (authenticatedParent) {
+            this.parentName = authenticatedParent.name || this.parentName;
+            this.userName = this.parentName;
+            this.parentCoins = Number(
+                authenticatedParent.coins
+                ?? authenticatedParent.totalCoins
+                ?? authenticatedParent.wallet?.coins
+                ?? 0
+            ) || 0;
+            this.parentInitial = this.parentName.charAt(0) || 'P';
+            this.parentAvatarStyle = this.parentImageService.getAvatarStyle(
+                this.parentInitial,
+                String(authenticatedParent.gender || '').toLowerCase() === 'female',
+                54
+            );
+            this.userAvatarUrl = authenticatedParent.avatarUrl
+                || authenticatedParent.avatar?.url
+                || this.userService.getUserAvatarUrl()
+                || '';
+        }
+        this.applyFamilySwitcherMetadata(authenticatedSession);
+
         // Check for family connected acknowledgment
         try {
             const ack = sessionStorage.getItem('family_connected_ack');
@@ -202,7 +417,12 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         this.userService.getUserProfile$().pipe(takeUntil(this.destroy$)).subscribe(profile => {
             if (profile) {
                 this.currentProfile = profile;
-                this.userName = profile.name || 'User';
+                this.parentName = profile.name || 'Parent';
+                this.userName = this.parentName;
+                const profileWithStats = profile as any;
+                this.parentCoins = Number(
+                    profileWithStats.coins ?? profileWithStats.totalCoins ?? this.parentCoins
+                ) || 0;
                 this.userAvatarUrl = this.userService.getUserAvatarUrl();
                 this.parentInitial = profile.name?.charAt(0) || 'U';
                 this.parentAvatarStyle = this.parentImageService.getAvatarStyle(
@@ -223,9 +443,12 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             this.selectedChild = child;
             if (child) {
                 this.applyChildStats(child);
+                this.loadMoodBalance();
             } else {
                 this.useParentAsDefault();
+                this.moodBalance = this.createEmptyMoodBalance();
             }
+            setTimeout(() => this.activityCard?.refresh());
         });
 
         // Reload stats when habits/tasks change
@@ -236,7 +459,6 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         // Load cached stats first
         const stats = this.userService.getUserStats();
         if (stats) {
-            this.userCoins = stats.coins || 0;
             this.userStreaks = stats.streaks || 0;
             this.userDays = stats.days || 0;
             this.userBadges = stats.badges || 0;
@@ -247,8 +469,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     async ionViewWillEnter(): Promise<void> {
         // Fires on initial load AND every time this screen becomes active (return from navigation).
         await this.loadChildren();
-        // Refresh habits/tasks in the child component (Ionic hooks don't propagate to child components)
-        this.habitPageContent?.refresh();
+        this.activityCard?.refresh();
     }
 
     /**
@@ -281,6 +502,8 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             : this.mapVibeChildren(result.vibes.data);
 
         if (!result.family.failed) {
+            this.familyCode = this.extractFamilyCode(result.family.data);
+            this.applyFamilySwitcherMetadata(result.family.data);
             const explicitlyNoFamily = result.family.data?.hasFamily === false;
             const children = familyChildren.length
                 ? this.mergeChildStats(familyChildren, vibeChildren)
@@ -290,12 +513,14 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
             this.profileStore.setChildren(children);
             this.childrenLoadState = 'loaded';
+            this.statsUpdatedAt = new Date();
             return;
         }
 
         if (!result.vibes.failed && vibeChildren.length) {
             this.profileStore.setChildren(vibeChildren);
             this.childrenLoadState = 'loaded';
+            this.statsUpdatedAt = new Date();
             return;
         }
 
@@ -304,11 +529,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     }
 
     private mapFamilyChildren(status: any): ChildInfo[] {
-        const members = Array.isArray(status?.members)
-            ? status.members
-            : Array.isArray(status?.family?.members)
-                ? status.family.members
-                : [];
+        const members = this.extractFamilyMembers(status);
 
         return members
             .filter((member: any) => this.isChildMember(member))
@@ -320,6 +541,156 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                 const avatarUrl = this.childSelfImage.resolveAvatarForMember(normalized).url || '';
                 return mapVibeToChildInfo(normalized, avatarUrl);
             });
+    }
+
+    private applyFamilySwitcherMetadata(status: any): void {
+        if (!status) return;
+
+        const members = this.extractFamilyMembers(status);
+        const currentUser = this.authService.getUserData()?.user ?? this.authService.getUserData();
+        const otherParent = members.find(member =>
+            this.isParentMember(member) && !this.isCurrentFamilyMember(member, status, currentUser)
+        );
+
+        this.coParent = otherParent
+            ? {
+                id: otherParent?.userId ?? otherParent?.id ?? otherParent?.memberId ?? null,
+                name: String(otherParent?.name || otherParent?.userName || 'Co-parent').trim(),
+                avatarUrl: String(
+                    otherParent?.avatarUrl
+                    || otherParent?.avatar?.url
+                    || otherParent?.profileImage
+                    || ''
+                ).trim(),
+                initial: String(otherParent?.name || otherParent?.userName || 'P')
+                    .trim()
+                    .charAt(0)
+                    .toUpperCase() || 'P'
+            }
+            : null;
+
+        const capacityCandidates = [
+            status?.maxMembers,
+            status?.maxFamilyMembers,
+            status?.memberLimit,
+            status?.family?.maxMembers,
+            status?.family?.maxFamilyMembers,
+            status?.family?.memberLimit,
+            status?.data?.maxMembers,
+            status?.data?.family?.maxMembers
+        ];
+        const reportedCapacity = capacityCandidates
+            .map(value => Number(value))
+            .find(value => Number.isFinite(value) && value > 0);
+        this.familyCapacity = reportedCapacity || 4;
+
+        const childCount = members.filter(member => this.isChildMember(member)).length;
+        const inferredCount = Math.max(members.length, childCount + 1 + (this.coParent ? 1 : 0));
+        const countCandidates = [
+            status?.memberCount,
+            status?.totalMembers,
+            status?.family?.memberCount,
+            status?.family?.totalMembers,
+            status?.data?.memberCount,
+            status?.data?.family?.memberCount
+        ];
+        const reportedCount = countCandidates
+            .map(value => Number(value))
+            .find(value => Number.isFinite(value) && value > 0);
+        this.linkedFamilyMemberCount = Math.max(1, inferredCount, reportedCount || 0);
+    }
+
+    private extractFamilyMembers(status: any): any[] {
+        if (!status) return [];
+
+        const collections = [
+            status?.members,
+            status?.family?.members,
+            status?.familyMembers,
+            status?.children,
+            status?.data?.members,
+            status?.data?.familyMembers,
+            status?.data?.children,
+            status?.data?.family?.members
+        ].filter(Array.isArray) as any[][];
+        const creators = [
+            status?.creator,
+            status?.family?.creator,
+            status?.data?.creator,
+            status?.data?.family?.creator
+        ].filter(value => value && typeof value === 'object');
+
+        const collectionMembers = collections.reduce(
+            (all: any[], collection: any[]) => all.concat(collection),
+            []
+        );
+        const unique = new Map<string, any>();
+        [...collectionMembers, ...creators].forEach((member: any, index: number) => {
+            if (!member || typeof member !== 'object') return;
+            const identity = this.familyMemberIdentity(member) || `member-${index}`;
+            if (!unique.has(identity)) unique.set(identity, member);
+        });
+        return Array.from(unique.values());
+    }
+
+    private familyMemberIdentity(member: any): string {
+        const id = member?.userId ?? member?.id ?? member?.memberId;
+        if (id !== null && id !== undefined && String(id).trim()) {
+            return `id:${String(id).trim()}`;
+        }
+
+        const email = String(member?.email || '').trim().toLowerCase();
+        if (email) return `email:${email}`;
+
+        const relationship = String(
+            member?.relationship || member?.familyRole || member?.memberRole || member?.role || ''
+        ).trim().toUpperCase();
+        const name = String(member?.name || member?.userName || '').trim().toLowerCase();
+        return relationship || name ? `${relationship}:${name}` : '';
+    }
+
+    private isParentMember(member: any): boolean {
+        const relationship = String(
+            member?.relationship || member?.familyRole || member?.memberRole || member?.role || ''
+        ).trim().toUpperCase().replace(/[\s-]+/g, '_');
+        return ['PARENT', 'CO_PARENT', 'COPARENT', 'CREATOR'].includes(relationship);
+    }
+
+    private isCurrentFamilyMember(member: any, status: any, currentUser: any): boolean {
+        if (member?.you === true || member?.isCurrentUser === true || member?.currentUser === true) {
+            return true;
+        }
+
+        const memberId = member?.userId ?? member?.id ?? member?.memberId;
+        const currentIds = [
+            currentUser?.id,
+            currentUser?.userId,
+            status?.userId,
+            status?.currentUserId,
+            status?.data?.userId,
+            status?.data?.currentUserId
+        ]
+            .filter(value => value !== null && value !== undefined && String(value).trim())
+            .map(value => String(value));
+        if (memberId !== null && memberId !== undefined && currentIds.includes(String(memberId))) {
+            return true;
+        }
+
+        const memberEmail = String(member?.email || '').trim().toLowerCase();
+        const currentEmail = String(currentUser?.email || '').trim().toLowerCase();
+        return !!memberEmail && !!currentEmail && memberEmail === currentEmail;
+    }
+
+    private extractFamilyCode(status: any): string {
+        return String(
+            status?.familyCode
+            ?? status?.code
+            ?? status?.family?.familyCode
+            ?? status?.family?.code
+            ?? status?.data?.familyCode
+            ?? status?.data?.family?.familyCode
+            ?? ''
+        ).trim().toUpperCase();
     }
 
     private mapVibeChildren(data: VibesDisplayResponse[] | null | undefined): ChildInfo[] {
@@ -349,11 +720,12 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
     /** Use parent display when no children */
     private useParentAsDefault(): void {
-        this.userName = this.currentProfile?.name || 'User';
-        this.parentInitial = this.userName.charAt(0) || 'U';
+        this.parentName = this.currentProfile?.name || this.parentName || 'Parent';
+        this.userName = this.parentName;
+        this.parentInitial = this.parentName.charAt(0) || 'P';
         const isFemale = (this.currentProfile?.gender || '').toLowerCase() === 'female';
         this.parentAvatarStyle = this.parentImageService.getAvatarStyle(this.parentInitial, isFemale, 54);
-        this.userAvatarUrl = '';
+        this.userAvatarUrl = this.userService.getUserAvatarUrl() || '';
     }
 
     // Toggle popup
@@ -365,12 +737,6 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             return;
         }
         this.showSwitchPopup = !this.showSwitchPopup;
-        // Debug log
-        console.log('[ParentAccount] toggleSwitchPopup', {
-            selectedChild: this.selectedChild,
-            selectedChildId: this.selectedChild?.id,
-            children: this.children.map(c => ({ id: c.id, name: c.name }))
-        });
     }
 
     closeSwitchPopup() {
@@ -379,15 +745,24 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
     /** Select child via store (atomic update) */
     selectChild(child: ChildInfo): void {
-        console.log('[ParentAccount] selectChild called', { childId: child.id, childName: child.name });
         this.profileStore.select(child);
         this.closeSwitchPopup();
     }
 
+    isSelectedChild(child: ChildInfo): boolean {
+        return String(child.id) === String(this.selectedChild?.id);
+    }
+
+    onSwitcherChildClick(child: ChildInfo, event: Event): void {
+        if (this.isSelectedChild(child)) {
+            this.toggleSwitchPopup(event);
+            return;
+        }
+        this.selectChild(child);
+    }
+
     /** Apply child stats to UI */
     private applyChildStats(c: ChildInfo): void {
-        this.userName = c.name || this.userName;
-        this.userAvatarUrl = c.avatarUrl || '';
         // Mood
         if (c.mood) {
             const moodUpper = String(c.mood).toUpperCase();
@@ -446,6 +821,84 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             improvementRate: c.improvementRate ?? 0,
             appScore: c.appScore ?? 0,
         };
+        this.statsUpdatedAt = new Date();
+    }
+
+    private loadMoodBalance(): void {
+        const requestId = ++this.moodBalanceRequestId;
+        const selectedChildId = this.selectedChild?.id;
+        if (selectedChildId === null || selectedChildId === undefined) {
+            this.moodBalance = this.createEmptyMoodBalance();
+            return;
+        }
+
+        this.moodBalanceLoading = true;
+        const now = new Date();
+        const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+        forkJoin([
+            this.moodService.getMoodTransitionsMonthly(now.getFullYear(), now.getMonth() + 1)
+                .pipe(catchError(() => of([] as MoodTransition[]))),
+            this.moodService.getMoodTransitionsMonthly(
+                previousMonth.getFullYear(),
+                previousMonth.getMonth() + 1
+            ).pipe(catchError(() => of([] as MoodTransition[])))
+        ])
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(([current, previous]) => {
+                if (requestId !== this.moodBalanceRequestId) return;
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setHours(0, 0, 0, 0);
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+
+                const transitions = [...previous, ...current].filter(item => {
+                    const date = new Date(`${item.date}T00:00:00`);
+                    return Number.isFinite(date.getTime()) && date >= sevenDaysAgo && date <= now;
+                });
+
+                this.moodBalance = this.calculateMoodBalance(transitions);
+                this.moodBalanceLoading = false;
+            });
+    }
+
+    private calculateMoodBalance(transitions: MoodTransition[]): MoodBalanceSegment[] {
+        const counts: Record<MoodBalanceKey, number> = {
+            good: 0,
+            okay: 0,
+            tough: 0,
+            hard: 0
+        };
+
+        transitions.forEach(item => {
+            counts[this.mapMoodBalanceKey(item.toMood || item.fromMood)] += 1;
+        });
+
+        let total = Object.values(counts).reduce((sum, value) => sum + value, 0);
+        if (total === 0 && this.selectedChild?.mood) {
+            counts[this.mapMoodBalanceKey(this.selectedChild.mood)] = 1;
+            total = 1;
+        }
+
+        const base = this.createEmptyMoodBalance();
+        if (total === 0) return base;
+
+        let assigned = 0;
+        return base.map((segment, index) => {
+            const isLast = index === base.length - 1;
+            const value = isLast
+                ? Math.max(0, 100 - assigned)
+                : Math.round((counts[segment.key] / total) * 100);
+            assigned += value;
+            return { ...segment, value };
+        });
+    }
+
+    private mapMoodBalanceKey(mood: string): MoodBalanceKey {
+        const normalized = String(mood || '').trim().toLowerCase().replace(/[_-]+/g, ' ');
+        if (/(angry|upset|frustrated|very sad|terrible|hard)/.test(normalized)) return 'hard';
+        if (/(sad|nervous|anxious|worried|tough)/.test(normalized)) return 'tough';
+        if (/(neutral|okay|calm|fine)/.test(normalized)) return 'okay';
+        return 'good';
     }
 
     /** Load user stats from API */
@@ -453,7 +906,8 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         this.moodService.getVibesDisplay().pipe(takeUntil(this.destroy$)).subscribe({
             next: (data) => {
                 if (data?.length) {
-                    const d = data[0];
+                    const selectedId = this.selectedChild?.id;
+                    const d = data.find(item => String(item.userId) === String(selectedId)) || data[0];
                     this.userCoins = d.coins || 0;
                     this.userStreaks = d.streak || 0;
                     this.userDays = d.trophies || 0;
@@ -468,24 +922,10 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                         days: this.userDays,
                         badges: this.userBadges
                     });
+                    this.statsUpdatedAt = new Date();
                 }
             }
         });
-    }
-
-    get greetingMessage(): string {
-        const name = this.userName || 'there';
-        const petName = this.petAgeService.getCurrentPetDisplayName();
-        return `Hey ${name}, ${petName} is here! \n\n🌟 You've got 5 tasks, 2 habits, and a challenge waiting for you today. Let’s go!`;
-    }
-
-    onMoodChange(mood: string) {
-        this.selectedMood = mood;
-        console.log('mood changed to', mood);
-    }
-
-    openCalendar() {
-        this.router.navigateByUrl('/authed/activity-calendar');
     }
 
     openActivityInput(): void {
@@ -496,6 +936,54 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         this.router.navigate(['/authed/family-connection']);
     }
 
+    openNotifications(): void {
+        this.router.navigate(['/authed/notifications']);
+    }
+
+    openCoinPage(): void {
+        this.router.navigate(['/authed/coin']);
+    }
+
+    openInsights(): void {
+        this.router.navigate(['/authed/analytics']);
+    }
+
+    openAddChild(): void {
+        if (!this.familyCode) {
+            this.openFamilyConnection();
+            return;
+        }
+
+        try {
+            sessionStorage.setItem('managed_child_signup', 'true');
+            sessionStorage.setItem('managed_child_family_code', this.familyCode);
+            sessionStorage.setItem('signup_role', 'child');
+            sessionStorage.setItem('familyCode', this.familyCode);
+        } catch (error) {
+            console.warn('[ParentAccount] Unable to prepare the child signup flow', error);
+        }
+
+        this.router.navigate(['/home/sign-up'], {
+            queryParams: { step: 0.1, role: 'child', managedChild: true }
+        });
+    }
+
+    inviteCoParent(): void {
+        this.router.navigate(['/authed/family-connection'], {
+            queryParams: { invite: 'parent' }
+        });
+    }
+
+    openMessageComposer(template?: 'celebrate' | 'encourage'): void {
+        this.router.navigate(['/authed/notes/new'], {
+            queryParams: {
+                childId: this.selectedChild?.id ?? '',
+                childName: this.selectedChildName,
+                ...(template ? { template } : {})
+            }
+        });
+    }
+
     /**
      * Called by the global RefreshService when the user pulls to refresh.
      * Session validation is already handled by the authenticated shell.
@@ -503,14 +991,15 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     private async onGlobalRefresh(): Promise<void> {
         const userData = this.authService.getUserData();
         if (userData) {
-            this.userName = userData.name || this.userName;
+            this.parentName = userData.name || this.parentName;
+            this.userName = this.parentName;
             this.parentInitial = userData.name?.charAt(0) || this.parentInitial;
             const isFemale = (userData.gender || '').toLowerCase() === 'female';
             this.parentAvatarStyle = this.parentImageService.getAvatarStyle(this.parentInitial, isFemale, 54);
         }
         await this.loadChildren();
         this.loadUserStats();
-        await this.habitPageContent?.refresh();
+        this.activityCard?.refresh();
     }
 
     protected readonly console = console;

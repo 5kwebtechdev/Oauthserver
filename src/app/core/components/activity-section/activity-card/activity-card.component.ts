@@ -52,6 +52,13 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   @Input()
   mode: 'single' | 'list' | 'recent' = 'single';
 
+  /** Allows dashboards to use the same dynamic card with role-specific copy. */
+  @Input()
+  headerTitle: string = 'Today at a Glance';
+
+  @Input()
+  addButtonLabel: string = 'Add New';
+
   @Input()
   recentHabits: Habit[] = [];
 
@@ -1231,6 +1238,11 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       this.updateRecentDisplay();
       this.cdr.detectChanges();
     }
+  }
+
+  /** Refresh the visible list after the parent switches the selected child. */
+  public refresh(): void {
+    this.reloadData();
   }
 
   ngAfterViewInit(): void {
