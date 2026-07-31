@@ -60,8 +60,10 @@
                         [class.rail-category--selected]="railLevel.selected === category.id"
                         [attr.aria-pressed]="railLevel.selected === category.id"
                         (click)="selectSubCategoryAt(1, category)">
-                        <span class="rail-category__visual">
+                        <span class="rail-category__visual"
+                            [class.rail-category__visual--all]="category.id === allSubCategoryId">
                             <img *ngIf="category.imageUrl" [src]="category.imageUrl" [alt]="category.label">
+                            <span *ngIf="category.id === allSubCategoryId" aria-hidden="true">All</span>
                         </span>
                         <span>{{ category.label }}</span>
                     </button>

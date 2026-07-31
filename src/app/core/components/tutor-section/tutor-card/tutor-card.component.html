@@ -62,20 +62,35 @@
       <p class="eduhub-empty" *ngIf="!visibleTutors.length">No tutors available right now.</p>
     </ng-container>
 
-    <!-- Academies -->
+    <!-- Academies — same directory/entity as Tutors (entityType: ACADEMY),
+         so it reuses the exact same card markup. -->
     <ng-container *ngIf="selectedCategoryKey === 'academies'">
-      <div class="eduhub-academies" *ngIf="academyItems.length">
-        <article class="eduhub-academy" *ngFor="let item of academyItems" (click)="onAcademyItemClick(item)"
-          role="button" tabindex="0" (keyup.enter)="onAcademyItemClick(item)">
-          <img class="eduhub-academy__image" *ngIf="item.image" [src]="item.image" [alt]="item.title">
-          <div class="eduhub-academy__body">
-            <strong>{{ item.title }}</strong>
-            <p *ngIf="item.description">{{ item.description }}</p>
-            <small *ngIf="item.meta">{{ item.meta }}</small>
+      <div class="eduhub-tutors" *ngIf="academyTutors.length">
+        <article class="eduhub-tutor" *ngFor="let academy of academyTutors" (click)="onViewAcademyProfile(academy)"
+          role="button" tabindex="0" (keyup.enter)="onViewAcademyProfile(academy)">
+          <img class="eduhub-tutor__avatar" [src]="academy.avatar" [alt]="academy.name">
+          <div class="eduhub-tutor__body">
+            <div class="eduhub-tutor__headline">
+              <strong>{{ academy.name }}</strong>
+              <span class="eduhub-tutor__likes" *ngIf="getTutorMeta(academy) as academyMeta">
+                <img src="assets/figma/child-home/eduhub-heart.png" alt="" aria-hidden="true">
+                {{ academyMeta }}
+              </span>
+            </div>
+            <p>{{ academy.description }}</p>
+            <small *ngIf="academy.location">{{ academy.location }}</small>
+            <small class="eduhub-tutor__time" *ngIf="academy.startTime || academy.endTime">
+              <img src="assets/figma/child-home/eduhub-time.png" alt="" aria-hidden="true">
+              {{ academy.startTime }}<ng-container *ngIf="academy.startTime && academy.endTime">–</ng-container>{{ academy.endTime }}
+            </small>
+            <div class="eduhub-tutor__footer">
+              <span *ngIf="academy.hourlyRate">₹ {{ academy.hourlyRate }} / Per Hour</span>
+              <button type="button" (click)="onViewAcademyProfile(academy); $event.stopPropagation()">View Profile</button>
+            </div>
           </div>
         </article>
       </div>
-      <p class="eduhub-empty" *ngIf="!academyItems.length">No academies available right now.</p>
+      <p class="eduhub-empty" *ngIf="!academyTutors.length">No academies available right now.</p>
     </ng-container>
 
     <!-- Workshops / Events / Stationery — no data source yet -->

@@ -141,6 +141,32 @@
         </div>
       </section>
 
+      <section class="mood-balance-section" aria-labelledby="mood-balance-title">
+        <div class="section-heading section-heading--button">
+          <h2 id="mood-balance-title">
+            Mood Balance (Last 7 days)
+            <img src="assets/figma/parent-home/info.svg" alt="" aria-hidden="true">
+          </h2>
+          <button type="button" class="outline-pill" (click)="openInsights()">View more</button>
+        </div>
+
+        <div class="mood-balance" [class.mood-balance--loading]="moodBalanceLoading">
+          <div class="mood-balance__bar" role="img" aria-label="Mood balance for the last seven days">
+            <span *ngFor="let segment of moodBalance"
+              [style.flex-basis.%]="segment.value"
+              [style.background]="segment.color"
+              [class.mood-balance__segment--empty]="segment.value === 0">
+              <b *ngIf="segment.value > 0">{{ segment.value }}%</b>
+            </span>
+          </div>
+          <div class="mood-balance__legend">
+            <span *ngFor="let segment of moodBalance">
+              <i [style.background]="segment.color"></i>{{ segment.label }}
+            </span>
+          </div>
+        </div>
+      </section>
+
       <section class="performance-section" aria-labelledby="performance-title">
         <div class="section-heading">
           <h2 id="performance-title">This Week's Performance</h2>
@@ -170,32 +196,6 @@
               <u>View full insights</u>
             </span>
           </button>
-        </div>
-      </section>
-
-      <section class="mood-balance-section" aria-labelledby="mood-balance-title">
-        <div class="section-heading section-heading--button">
-          <h2 id="mood-balance-title">
-            Mood Balance (Last 7 days)
-            <img src="assets/figma/parent-home/info.svg" alt="" aria-hidden="true">
-          </h2>
-          <button type="button" class="outline-pill" (click)="openInsights()">View more</button>
-        </div>
-
-        <div class="mood-balance" [class.mood-balance--loading]="moodBalanceLoading">
-          <div class="mood-balance__bar" role="img" aria-label="Mood balance for the last seven days">
-            <span *ngFor="let segment of moodBalance"
-              [style.flex-basis.%]="segment.value"
-              [style.background]="segment.color"
-              [class.mood-balance__segment--empty]="segment.value === 0">
-              <b *ngIf="segment.value > 0">{{ segment.value }}%</b>
-            </span>
-          </div>
-          <div class="mood-balance__legend">
-            <span *ngFor="let segment of moodBalance">
-              <i [style.background]="segment.color"></i>{{ segment.label }}
-            </span>
-          </div>
         </div>
       </section>
 
