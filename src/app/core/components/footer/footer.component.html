@@ -1,28 +1,14 @@
 <nav class="footer-main" aria-label="Primary navigation" [class.keyboard-hidden]="isKeyboardOpen">
   <img class="footer-background" src="assets/figma/child-home/footer/nav-background.png" alt="" aria-hidden="true">
 
-  <a *ngIf="isParentUser()" href="/authed/activity-timeline" class="footer-item"
-    [class.active]="isRouteActive('/authed/activity-timeline')"
-    (click)="navigateTab($event, '/authed/activity-timeline')">
-    <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
-    <span class="footer-text">TimeTable</span>
-  </a>
-
-  <a *ngIf="!isParentUser()" href="/authed/content" class="footer-item"
+  <a href="/authed/content" class="footer-item"
     [class.active]="isRouteActive('/authed/content')"
     (click)="navigateTab($event, '/authed/content')">
     <span class="footer-icon footer-icon--learning" aria-hidden="true"></span>
     <span class="footer-text">Learning</span>
   </a>
 
-  <a *ngIf="isParentUser()" href="/authed/coin" class="footer-item"
-    [class.active]="isRouteActive('/authed/coin')"
-    (click)="navigateTab($event, '/authed/coin')">
-    <ion-icon name="cash-outline" aria-hidden="true"></ion-icon>
-    <span class="footer-text">Coins</span>
-  </a>
-
-  <a *ngIf="!isParentUser()" href="/authed/school-store" class="footer-item"
+  <a href="/authed/school-store" class="footer-item"
     [class.active]="isRouteActive('/authed/school-store')"
     (click)="navigateTab($event, '/authed/school-store')">
     <span class="footer-icon footer-icon--shop" aria-hidden="true"></span>
@@ -40,14 +26,7 @@
     <span class="footer-text">EdHub</span>
   </a>
 
-  <a *ngIf="isParentUser()" href="/authed/reels" class="footer-item"
-    [class.active]="isRouteActive('/authed/reels')"
-    (click)="navigateTab($event, '/authed/reels')">
-    <ion-icon name="videocam-outline" aria-hidden="true"></ion-icon>
-    <span class="footer-text">Reels</span>
-  </a>
-
-  <a *ngIf="!isParentUser()" href="/authed/analytics" class="footer-item"
+  <a href="/authed/analytics" class="footer-item"
     [class.active]="isRouteActive('/authed/analytics')"
     (click)="navigateTab($event, '/authed/analytics')">
     <span class="footer-icon footer-icon--insights" aria-hidden="true"></span>

@@ -11,9 +11,6 @@ PODS:
     - Capacitor
   - CapacitorAppLauncher (7.0.4):
     - Capacitor
-  - CapacitorBarcodeScanner (2.1.0):
-    - Capacitor
-    - OSBarcodeLib (= 2.0.1)
   - CapacitorCamera (7.0.2):
     - Capacitor
   - CapacitorClipboard (7.0.3):
@@ -182,14 +179,12 @@ PODS:
     - nanopb/encode (= 3.30910.0)
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
-  - OSBarcodeLib (2.0.1)
   - PromisesObjC (2.4.1)
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
   - "CapacitorAppLauncher (from `../../node_modules/@capacitor/app-launcher`)"
-  - "CapacitorBarcodeScanner (from `../../node_modules/@capacitor/barcode-scanner`)"
   - "CapacitorCamera (from `../../node_modules/@capacitor/camera`)"
   - "CapacitorClipboard (from `../../node_modules/@capacitor/clipboard`)"
   - "CapacitorCommunityAppleSignIn (from `../../node_modules/@capacitor-community/apple-sign-in`)"
@@ -231,7 +226,6 @@ SPEC REPOS:
     - MLKitCommon
     - MLKitVision
     - nanopb
-    - OSBarcodeLib
     - PromisesObjC
 
 EXTERNAL SOURCES:
@@ -241,8 +235,6 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/app"
   CapacitorAppLauncher:
     :path: "../../node_modules/@capacitor/app-launcher"
-  CapacitorBarcodeScanner:
-    :path: "../../node_modules/@capacitor/barcode-scanner"
   CapacitorCamera:
     :path: "../../node_modules/@capacitor/camera"
   CapacitorClipboard:
@@ -281,7 +273,6 @@ SPEC CHECKSUMS:
   Capacitor: 106e7a4205f4618d582b886a975657c61179138d
   CapacitorApp: d63334c052278caf5d81585d80b21905c6f93f39
   CapacitorAppLauncher: e86ebb5a51c3a075c4cf1ff0a6f119e3e56b9658
-  CapacitorBarcodeScanner: e30ed55789ff5f3e35a0d50c182f8623993da938
   CapacitorCamera: 6e18d54c8ab30d7dc7b8cd93d96f9b4f57e9202a
   CapacitorClipboard: 2b2346e139eb00c74b2b4e7a0e922cb1e1cd94ee
   CapacitorCommunityAppleSignIn: 59bc8ade5677e6ea60a14bdca8d3f4bdc91069e2
@@ -319,9 +310,8 @@ SPEC CHECKSUMS:
   MLKitCommon: 07c2c33ae5640e5380beaaa6e4b9c249a205542d
   MLKitVision: 45e79d68845a2de77e2dd4d7f07947f0ed157b0e
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
-  OSBarcodeLib: 57987d2eb1f916f701f4554e20e349b3cb83f023
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
 
-PODFILE CHECKSUM: 3e3b39f4cef18f697c53b84fd97534823bb0ffe0
+PODFILE CHECKSUM: 881fdd99a130784aaf71679c57fc5c5b7c22f50f
 
 COCOAPODS: 1.16.2
