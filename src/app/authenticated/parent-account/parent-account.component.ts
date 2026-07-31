@@ -1033,24 +1033,11 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             return;
         }
 
-        const template = this.activeMessageTemplate;
-        this.dismissMessageComposer(() => {
-            // Keep the existing message destination intact. The composed text is
-            // carried in navigation state so the destination can send/store it
-            // without exposing a private message in the URL.
-            this.router.navigate(['/authed/notes/new'], {
-                queryParams: {
-                    childId: this.selectedChild?.id ?? '',
-                    childName: this.selectedChildName,
-                    ...(template ? { template } : {})
-                },
-                state: {
-                    parentMessage: message,
-                    childId: this.selectedChild?.id ?? null,
-                    childName: this.selectedChildName
-                }
-            });
-        });
+        // Just close the composer — the modal lives on the home screen itself,
+        // so this naturally leaves the user right where they were. No
+        // navigation to notes/new: that screen doesn't even read the message
+        // that was being passed to it, so it was a dead end, not a real send.
+        this.dismissMessageComposer();
     }
 
     @HostListener('document:keydown.escape')

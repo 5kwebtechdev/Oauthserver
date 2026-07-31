@@ -2,12 +2,13 @@ import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from "@ionic/angular";
 import { CommonModule } from '@angular/common';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { TutorService } from '../../../services/tutor.service';
-import { TutorListItem } from '../../../models/tutor.model';
+import { Tutor, TutorListItem } from '../../../models/tutor.model';
 import { Subscription } from 'rxjs';
 import { TutorLikeService } from '../../../services/tutor-like.service';
-import { AcademyService } from '../../../services/academy.service';
 import { AuthService } from '../../../services/auth.service';
+import { environment } from '../../../../../environments/environment';
 
 type CategoryKey =
   | 'tutors'
@@ -27,17 +28,6 @@ interface EduHubCategory {
   route: string;
 }
 
-// Normalized card shape shared by categories that don't have their own
-// bespoke rendering (currently just Academies — Tutors keeps its existing
-// detailed card markup untouched).
-interface EduHubListItem {
-  id: string | number;
-  title: string;
-  description: string;
-  image: string;
-  meta?: string;
-}
-
 @Component({
   selector: 'tutor-card',
   templateUrl: './tutor-card.component.html',
@@ -54,7 +44,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
   readonly categories: EduHubCategory[] = [
     { key: 'tutors', label: 'Tutors', spriteX: '-8px', route: '/authed/tutors' },
-    { key: 'academies', label: 'Academies', spriteX: '-88px', route: '/authed/academy' },
+    { key: 'academies', label: 'Academies', spriteX: '-88px', route: '/authed/academies' },
     { key: 'workshops', label: 'Workshops', spriteX: '-180px', route: '/authed/education' },
     { key: 'events', label: 'Events', spriteX: '-263px', route: '/authed/education' },
     { key: 'stationery', label: 'Stationery Shops', spriteX: '-362px', route: '/authed/school-store' },
@@ -66,9 +56,13 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
   selectedCategoryKey: CategoryKey = 'tutors';
 
-  // Academies — lazily loaded the first time that category is selected.
-  academyItems: EduHubListItem[] = [];
+  // Academies are the same underlying entity as tutors (entityType:
+  // 'ACADEMY' on /tutors/overview), just a different filter on the same
+  // directory — not the unrelated in-app "Skills Quest" learning feed.
+  // Lazily loaded the first time that category is selected.
+  academyTutors: TutorListItem[] = [];
   academyTotalCount = 0;
+  private academyProfiles = new Map<number, Tutor>();
   private academyLoaded = false;
   private academyLoading = false;
 
@@ -79,8 +73,8 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     private router: Router,
     private tutorService: TutorService,
     private likeService: TutorLikeService,
-    private academyService: AcademyService,
-    private authService: AuthService
+    private authService: AuthService,
+    private http: HttpClient
   ) { }
 
   ngOnInit(): void {
@@ -106,12 +100,17 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     return this.listingCount > this.visibleTutors.length;
   }
 
-  /** Whether the currently selected category has more than 4 items to view. */
+  /**
+   * Whether to show the View All button for the current category. Tutors
+   * and Academies only show it once there are more than 4 items to see;
+   * the remaining categories have no inline preview data yet, so the
+   * button is their only way to reach that category's section at all.
+   */
   get showViewAll(): boolean {
     if (this.isLoading) return false;
     if (this.selectedCategoryKey === 'tutors') return this.hasMoreTutors;
     if (this.selectedCategoryKey === 'academies') return this.academyTotalCount > this.maxTutors;
-    return false; // Remaining categories have no Home-card data source yet.
+    return true;
   }
 
   /**
@@ -168,38 +167,48 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     );
   }
 
+  private academyHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    const authValue = token
+      ? (token.startsWith('Bearer ') ? token : `Bearer ${token}`)
+      : (environment.apiAuthToken?.startsWith('Bearer ') ? environment.apiAuthToken : `Bearer ${environment.apiAuthToken ?? ''}`);
+
+    return new HttpHeaders({
+      'Authorization': authValue,
+      'Accept': 'application/json',
+      'x-skip-loading': '1'
+    });
+  }
+
   private loadAcademies(): void {
     this.academyLoading = true;
     this.isLoading = true;
 
-    const age = this.authService.getCurrentUserAge() ?? undefined;
     this.subscriptions.add(
-      this.academyService.getAcademyFeed(age).subscribe({
+      this.http.get<any>(`${environment.apiUrl}/tutors/overview`, {
+        headers: this.academyHeaders(),
+        params: { entityType: 'ACADEMY' }
+      }).subscribe({
         next: (res) => {
-          const items = res.state === 2
-            ? (res.lessons ?? []).map(lesson => ({
-                id: lesson.lessonId,
-                title: lesson.lessonTitle,
-                description: lesson.lessonDescription || '',
-                image: lesson.thumbnailUrl || lesson.courseThumbnailUrl || '',
-                meta: lesson.duration ? `${lesson.duration} min` : undefined
-              } as EduHubListItem))
-            : (res.courses ?? []).map(course => ({
-                id: course.id,
-                title: course.courseName,
-                description: course.description || '',
-                image: course.thumbnailUrl || '',
-                meta: course.noOfLessons ? `${course.noOfLessons} lessons` : undefined
-              } as EduHubListItem));
+          const raw = Array.isArray(res)
+            ? res
+            : (res?.data?.tutors ?? res?.tutors ?? res?.content ?? []);
 
-          this.academyItems = items.slice(0, this.maxTutors);
-          this.academyTotalCount = items.length;
+          this.academyProfiles.clear();
+          const mapped: TutorListItem[] = (Array.isArray(raw) ? raw : []).map((a: any) => {
+            const { listItem, profile } = this.mapAcademy(a);
+            if (listItem.id != null) this.academyProfiles.set(Number(listItem.id), profile);
+            return listItem;
+          });
+
+          this.academyTutors = mapped.slice(0, this.maxTutors);
+          this.academyTotalCount = Number(res?.data?.totalElements ?? mapped.length);
           this.academyLoaded = true;
           this.academyLoading = false;
           if (this.selectedCategoryKey === 'academies') this.isLoading = false;
         },
         error: () => {
-          this.academyItems = [];
+          this.academyTutors = [];
           this.academyTotalCount = 0;
           this.academyLoaded = true;
           this.academyLoading = false;
@@ -207,6 +216,57 @@ export class TutorCardComponent implements OnInit, OnDestroy {
         }
       })
     );
+  }
+
+  // Mirrors AcademiesListComponent's mapping so the two screens agree on
+  // what an "Academy" is — field names are a best guess pending the real
+  // API contract, same caveat as the full academies list page.
+  private mapAcademy(a: any): { listItem: TutorListItem; profile: Tutor } {
+    const name = a?.entityName ?? a?.name ?? a?.academyName ?? a?.title ?? 'Academy';
+    const image = a?.profilePicUrl ?? a?.image ?? a?.thumbnailUrl ?? a?.imageUrl ?? '';
+    const location = a?.location ?? [a?.city, a?.state].filter(Boolean).join(', ');
+    const subjects = Array.isArray(a?.subjects) ? a.subjects.map((s: any) => String(s).trim()).filter(Boolean) : [];
+    const levels = Array.isArray(a?.classes) ? a.classes.map((s: any) => String(s).trim()).filter(Boolean) : [];
+    const fees = Number(a?.fees ?? a?.hourlyRate ?? a?.price ?? 0);
+
+    const profile = {
+      ...a,
+      id: a?.id,
+      name,
+      entityName: name,
+      entityType: 'ACADEMY',
+      profilePicUrl: image,
+      subjects,
+      levels,
+      location,
+      hourlyRate: fees,
+      fees
+    } as unknown as Tutor;
+
+    const listItem: TutorListItem = {
+      id: a?.id,
+      name,
+      avatar: image,
+      description: subjects.length ? subjects.join(', ') : (a?.headline || 'Academy'),
+      rating: Number(a?.rating ?? 0),
+      champsLiked: Number(a?.champsLiked ?? 0),
+      likedByUser: !!(a?.likedByUser ?? a?.liked),
+      experience: a?.experience ?? a?.experienceRange ?? '',
+      qualification: a?.qualification ?? a?.headline ?? 'Academy',
+      hourlyRate: fees,
+      feeLabel: a?.feeType ? `/${String(a.feeType).replace(/^PER_/, '').toLowerCase()}` : '',
+      location,
+      subjects,
+      levels,
+      availability: Array.isArray(a?.availability) ? a.availability : [],
+      startTime: a?.startTime ?? '',
+      endTime: a?.endTime ?? '',
+      contactModes: Array.isArray(a?.contactModes) ? a.contactModes : [],
+      createdAt: a?.createdAt ?? '',
+      totalStudents: Number(a?.totalStudents ?? a?.studentCount ?? 0)
+    };
+
+    return { listItem, profile };
   }
 
   private syncLikeStates(): void {
@@ -267,8 +327,11 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     });
   }
 
-  onAcademyItemClick(item: EduHubListItem): void {
-    this.router.navigate(['/authed/academy/course', item.id]);
+  onViewAcademyProfile(item: TutorListItem): void {
+    const profile = this.academyProfiles.get(Number(item.id));
+    void this.router.navigate(['/authed/tutors', item.id], {
+      state: profile ? { tutor: profile } : undefined
+    });
   }
 
 }

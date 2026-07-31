@@ -2,6 +2,8 @@
 // Usage: @use 'src/theme/breakpoints' as bp; @include bp.below(md) { ... }
 // Or:    @use 'src/theme/breakpoints' as *;   @include below(md) { ... }
 
+@use 'sass:map';
+
 $bp-xs:   380px;
 $bp-sm:   480px;
 $bp-md:   768px;
@@ -12,15 +14,15 @@ $bp-2xl: 1536px;
 $_breakpoints: (xs: $bp-xs, sm: $bp-sm, md: $bp-md, lg: $bp-lg, xl: $bp-xl, '2xl': $bp-2xl);
 
 @mixin below($key) {
-  @media (max-width: map-get($_breakpoints, $key)) { @content; }
+  @media (max-width: map.get($_breakpoints, $key)) { @content; }
 }
 
 @mixin above($key) {
-  @media (min-width: #{map-get($_breakpoints, $key) + 1}) { @content; }
+  @media (min-width: #{map.get($_breakpoints, $key) + 1}) { @content; }
 }
 
 @mixin between($lower, $upper) {
-  @media (min-width: #{map-get($_breakpoints, $lower) + 1}) and (max-width: map-get($_breakpoints, $upper)) { @content; }
+  @media (min-width: #{map.get($_breakpoints, $lower) + 1}) and (max-width: map.get($_breakpoints, $upper)) { @content; }
 }
 
 @mixin tablet-up     { @media (min-width: #{$bp-md + 1}) { @content; } }

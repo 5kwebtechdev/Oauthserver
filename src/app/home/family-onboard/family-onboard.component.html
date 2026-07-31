@@ -77,7 +77,9 @@
     <ng-container *ngIf="viewMode === 'join-family-child'">
       <main class="family-code-screen">
       <header class="family-code-hero">
-        <superme-auth-back-button (back)="goBack()"></superme-auth-back-button>
+        <button type="button" class="family-code-back" aria-label="Go back" (click)="goBack()">
+          <img src="assets/Images-Transparent/family-code-back-figma.svg" alt="" aria-hidden="true">
+        </button>
 
         <div class="family-code-hero__row">
           <div class="family-code-hero__copy">
@@ -153,7 +155,8 @@
             <input type="text" formControlName="code"
               placeholder="Enter the 6-character code shared by your parent"
               [class.error]="codeControl.invalid && codeControl.touched"
-              maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false">
+              maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false"
+              aria-label="Family code">
           </div>
 
           <div class="family-code-validation error-message" *ngIf="codeControl.invalid && codeControl.touched">

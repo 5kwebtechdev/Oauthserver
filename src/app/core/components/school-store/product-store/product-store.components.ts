@@ -142,6 +142,8 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
   categoriesError = false;
 
   selectedCategory: number | null = null;
+  readonly allSubCategoryId = '__all_products__';
+  activeProductSubCategory: string | null = null;
 
   // school + class the user picked on the "find your school" page, forwarded here via query params
   schoolId: number | null = null;
@@ -186,7 +188,12 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
         const matched = initialCategoryId != null && this.categories.some(c => c.id === initialCategoryId);
         this.selectedCategory = matched ? initialCategoryId! : (this.categories[0]?.id ?? null);
         if (this.selectedCategory != null) {
+          this.activeProductSubCategory = null;
           this.subCategoryLevels = [];
+          // Show every product in the selected store category immediately.
+          // Subcategory metadata loads independently and only filters products
+          // after the user explicitly chooses an item from the left rail.
+          this.loadProducts();
           this.loadSubCategoryLevel(0, []);
         } else {
           this.productsRequestCompleted = true;
@@ -219,10 +226,6 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
     return this.subCategoryLevels[1] || null;
   }
 
-  get selectedSubCategoryPath(): string[] {
-    return this.subCategoryLevels.map(l => l.selected).filter(s => s !== 'all');
-  }
-
   // Level 0 (top-level options for a category, e.g. Boys/Girls) is fetched
   // from the bare /sub-categories URL. Every deeper level appends both the
   // path of selections made so far AND a `/sub-category{levelIndex}` suffix
@@ -239,8 +242,6 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
     const requestId = ++this.subCategoryRequestId;
     this.subCategoriesLoading = true;
     this.subCategoriesError = false;
-    this.productsLoading = true;
-    this.productsRequestCompleted = false;
     const token = this.authService.getToken();
     const headers = new HttpHeaders({
       'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
@@ -253,31 +254,32 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
         const apiSubCategories = Array.isArray(res) ? res : [];
         this.subCategoryLevels = this.subCategoryLevels.slice(0, levelIndex);
         if (apiSubCategories.length) {
-          const options = apiSubCategories.map(s => ({
+          const apiOptions = apiSubCategories.map(s => ({
             id: s.name,
             label: s.name,
             imageUrl: s.imageUrl || null
           }));
+          const options = levelIndex > 0
+            ? [{ id: this.allSubCategoryId, label: 'All Products', imageUrl: null }, ...apiOptions]
+            : apiOptions;
           this.subCategoryLevels.push({
             options,
-            selected: options[0].id
+            selected: levelIndex > 0 ? this.allSubCategoryId : options[0].id
           });
 
           if (levelIndex === 0 && this.selectedCategory != null) {
-            this.loadSubCategoryLevel(1, [options[0].id]);
+            this.loadSubCategoryLevel(1, [apiOptions[0].id]);
             this.cdr.detectChanges();
             return;
           }
         }
         this.subCategoriesLoading = false;
-        this.loadProducts();
         this.cdr.detectChanges();
       },
       error: () => {
         if (requestId !== this.subCategoryRequestId) return;
         this.subCategoriesLoading = false;
         this.subCategoriesError = true;
-        this.loadProducts();
         this.cdr.detectChanges();
       }
     });
@@ -293,24 +295,29 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
     this.subCategoryLevels = this.subCategoryLevels.slice(0, levelIndex + 1);
 
     if (levelIndex === 0 && this.selectedCategory != null) {
-      const path = this.subCategoryLevels.map(l => l.selected);
+      // A top tab changes the available left-side choices, but keeps the
+      // product list at the full top-level category until a rail item is tapped.
+      this.activeProductSubCategory = null;
+      this.loadProducts();
+      const path = [option.id];
       this.loadSubCategoryLevel(levelIndex + 1, path);
     } else {
+      this.activeProductSubCategory = option.id === this.allSubCategoryId ? null : option.id;
       this.loadProducts();
     }
 
     this.cdr.detectChanges();
   }
 
-  /** Reset to the first API-provided category when the current selection is empty. */
+  /** Clear the rail filter and return to all products in the opened category. */
   resetSubCategories(): void {
-    if (this.subCategoryLevels[0]?.options.length) {
-      this.subCategoryLevels = this.subCategoryLevels.slice(0, 1);
-      this.subCategoryLevels[0].selected = this.subCategoryLevels[0].options[0].id;
-      this.loadSubCategoryLevel(1, [this.subCategoryLevels[0].selected]);
-    } else {
-      this.loadProducts();
+    this.activeProductSubCategory = null;
+    const railLevel = this.railSubCategoryLevel;
+    if (railLevel?.options.some(option => option.id === this.allSubCategoryId)) {
+      railLevel.selected = this.allSubCategoryId;
     }
+    this.clearProductFilters();
+    this.loadProducts();
     this.cdr.detectChanges();
   }
 
@@ -443,9 +450,8 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
       .set('categoryId', String(this.selectedCategory))
       .set('page', String(page))
       .set('size', String(this.productsPageSize));
-    const subCategoryPath = this.selectedSubCategoryPath;
-    if (subCategoryPath.length) {
-      params = params.set('subCategory', subCategoryPath[subCategoryPath.length - 1]);
+    if (this.activeProductSubCategory) {
+      params = params.set('subCategory', this.activeProductSubCategory);
     }
     // school + class only apply to categories scoped to a specific school (e.g. School Uniform, Textbooks)
     if (this.selectedCategoryRequiresSchoolClass && this.schoolId != null && this.className) {
