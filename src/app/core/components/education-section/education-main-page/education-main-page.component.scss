@@ -67,64 +67,6 @@
     border-radius: 23px;
 }
 
-.edu-categories {
-    display: flex;
-    gap: 18px;
-    width: calc(100% + 32px);
-    margin-left: -16px;
-    padding: 4px 16px 6px;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-
-    &::-webkit-scrollbar {
-        display: none;
-    }
-}
-
-.edu-category {
-    display: flex;
-    flex: 0 0 auto;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    width: 76px;
-    border: none;
-    background: transparent;
-    padding: 0;
-    scroll-snap-align: start;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-
-    &:active .edu-category-badge {
-        transform: scale(0.94);
-    }
-}
-
-.edu-category-badge {
-    display: grid;
-    place-items: center;
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: linear-gradient(160deg, #8ec5ff 0%, #3f7fdb 100%);
-    box-shadow: 0 4px 10px rgba(63, 127, 219, 0.35);
-    color: #fff;
-    font-size: 24px;
-    transition: transform 0.15s ease;
-}
-
-.edu-category-label {
-    color: #282527;
-    font-family: var(--font-sans);
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 1.3;
-    text-align: center;
-}
-
 .edu-item-list {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

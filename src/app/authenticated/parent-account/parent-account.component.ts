@@ -367,27 +367,10 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         }
 
         const authenticatedSession = this.authService.getUserData();
-        const authenticatedParent = authenticatedSession?.user ?? authenticatedSession;
-        if (authenticatedParent) {
-            this.parentName = authenticatedParent.name || this.parentName;
-            this.userName = this.parentName;
-            this.parentCoins = Number(
-                authenticatedParent.coins
-                ?? authenticatedParent.totalCoins
-                ?? authenticatedParent.wallet?.coins
-                ?? 0
-            ) || 0;
-            this.parentInitial = this.parentName.charAt(0) || 'P';
-            this.parentAvatarStyle = this.parentImageService.getAvatarStyle(
-                this.parentInitial,
-                String(authenticatedParent.gender || '').toLowerCase() === 'female',
-                54
-            );
-            this.userAvatarUrl = authenticatedParent.avatarUrl
-                || authenticatedParent.avatar?.url
-                || this.userService.getUserAvatarUrl()
-                || '';
-        }
+        this.applyAuthenticatedParent(authenticatedSession);
+        this.authService.userData$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(session => this.applyAuthenticatedParent(session));
         this.applyFamilySwitcherMetadata(authenticatedSession);
 
         // Check for family connected acknowledgment
@@ -406,10 +389,6 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                 this.currentProfile = profile;
                 this.parentName = profile.name || 'Parent';
                 this.userName = this.parentName;
-                const profileWithStats = profile as any;
-                this.parentCoins = Number(
-                    profileWithStats.coins ?? profileWithStats.totalCoins ?? this.parentCoins
-                ) || 0;
                 this.userAvatarUrl = this.userService.getUserAvatarUrl();
                 this.parentInitial = profile.name?.charAt(0) || 'U';
                 this.parentAvatarStyle = this.parentImageService.getAvatarStyle(
@@ -457,8 +436,49 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
     async ionViewWillEnter(): Promise<void> {
         // Fires on initial load AND every time this screen becomes active (return from navigation).
-        await this.loadChildren();
+        await Promise.all([
+            this.loadChildren(),
+            firstValueFrom(
+                this.authService.refreshUserData().pipe(catchError(() => of(false)))
+            )
+        ]);
         this.activityCard?.refresh();
+    }
+
+    private applyAuthenticatedParent(session: any): void {
+        if (!session) return;
+
+        const parent = session?.user ?? session?.data?.user ?? session?.data ?? session;
+        this.parentName = parent?.name || this.parentName;
+        this.userName = this.parentName;
+
+        const coinCandidates = [
+            parent?.coins,
+            parent?.totalCoins,
+            parent?.coinBalance,
+            parent?.availableCoins,
+            parent?.wallet?.coins,
+            parent?.wallet?.balance,
+            session?.coins,
+            session?.totalCoins
+        ];
+        const resolvedCoins = coinCandidates
+            .map(value => value === null || value === undefined || value === '' ? NaN : Number(value))
+            .find(value => Number.isFinite(value));
+        if (resolvedCoins !== undefined) {
+            this.parentCoins = Math.max(0, resolvedCoins);
+        }
+
+        this.parentInitial = this.parentName.charAt(0) || 'P';
+        this.parentAvatarStyle = this.parentImageService.getAvatarStyle(
+            this.parentInitial,
+            String(parent?.gender || '').toLowerCase() === 'female',
+            54
+        );
+        this.userAvatarUrl = parent?.avatarUrl
+            || parent?.avatar?.url
+            || this.userService.getUserAvatarUrl()
+            || '';
     }
 
     /**
@@ -978,15 +998,13 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
      * Session validation is already handled by the authenticated shell.
      */
     private async onGlobalRefresh(): Promise<void> {
-        const userData = this.authService.getUserData();
-        if (userData) {
-            this.parentName = userData.name || this.parentName;
-            this.userName = this.parentName;
-            this.parentInitial = userData.name?.charAt(0) || this.parentInitial;
-            const isFemale = (userData.gender || '').toLowerCase() === 'female';
-            this.parentAvatarStyle = this.parentImageService.getAvatarStyle(this.parentInitial, isFemale, 54);
-        }
-        await this.loadChildren();
+        await Promise.all([
+            this.loadChildren(),
+            firstValueFrom(
+                this.authService.refreshUserData().pipe(catchError(() => of(false)))
+            )
+        ]);
+        this.applyAuthenticatedParent(this.authService.getUserData());
         this.loadUserStats();
         this.activityCard?.refresh();
     }

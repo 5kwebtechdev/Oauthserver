@@ -200,16 +200,16 @@ button {
   }
 
   &--selected-single {
-    width: 181px;
-    flex-basis: 181px;
-    padding: 18px 8px;
+    width: 212px;
+    flex-basis: 212px;
+    padding: 10px 8px;
     border-radius: 16px 0 0 16px;
   }
 
   &--selected-multiple {
-    width: 157px;
-    flex-basis: 157px;
-    padding: 18px 8px;
+    width: 196px;
+    flex-basis: 196px;
+    padding: 10px 8px;
   }
 
   &__shape {
@@ -228,6 +228,7 @@ button {
     display: flex;
     align-items: center;
     gap: 8px;
+    width: 100%;
     min-width: 0;
   }
 
@@ -260,6 +261,7 @@ button {
 
   &__details {
     display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 4px;
     min-width: 0;
@@ -302,11 +304,23 @@ button {
   }
 
   &--selected-single &__details > strong {
-    max-width: 112px;
+    max-width: 148px;
   }
 
   &--selected-multiple &__details > strong {
-    max-width: 88px;
+    max-width: 132px;
+  }
+
+  &--selected-single &__details > strong,
+  &--selected-multiple &__details > strong {
+    display: -webkit-box;
+    overflow: hidden;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 }
 

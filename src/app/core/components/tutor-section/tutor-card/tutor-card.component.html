@@ -20,9 +20,9 @@
       [class.active]="selectedCategoryKey === category.key"
       [attr.aria-pressed]="selectedCategoryKey === category.key ? 'true' : 'false'"
       (click)="selectCategory(category)">
-      <span class="eduhub-category__image">
-        <img [src]="category.image" [alt]="category.label">
-      </span>
+      <span class="eduhub-category__image"
+        [style.--category-sprite-x]="category.spriteX"
+        aria-hidden="true"></span>
       <span>{{ category.label }}</span>
     </button>
   </nav>
@@ -34,8 +34,8 @@
   <ng-container *ngIf="!isLoading">
     <!-- Tutors -->
     <ng-container *ngIf="selectedCategoryKey === 'tutors'">
-      <div class="eduhub-tutors" *ngIf="tutors.length">
-        <article class="eduhub-tutor" *ngFor="let tutor of tutors" (click)="onViewProfile(tutor)"
+      <div class="eduhub-tutors" *ngIf="visibleTutors.length">
+        <article class="eduhub-tutor" *ngFor="let tutor of visibleTutors" (click)="onViewProfile(tutor)"
           role="button" tabindex="0" (keyup.enter)="onViewProfile(tutor)">
           <img class="eduhub-tutor__avatar" [src]="tutor.avatar" [alt]="tutor.name">
           <div class="eduhub-tutor__body">
@@ -59,7 +59,7 @@
           </div>
         </article>
       </div>
-      <p class="eduhub-empty" *ngIf="!tutors.length">No tutors available right now.</p>
+      <p class="eduhub-empty" *ngIf="!visibleTutors.length">No tutors available right now.</p>
     </ng-container>
 
     <!-- Academies -->
@@ -79,12 +79,14 @@
     </ng-container>
 
     <!-- Workshops / Events / Stationery — no data source yet -->
-    <ng-container *ngIf="selectedCategoryKey === 'workshops' || selectedCategoryKey === 'events' || selectedCategoryKey === 'stationery'">
+    <ng-container *ngIf="selectedCategoryKey !== 'tutors' && selectedCategoryKey !== 'academies'">
       <p class="eduhub-empty">{{ selectedCategory.label }} are coming soon.</p>
     </ng-container>
   </ng-container>
 
-  <button class="eduhub-view-all" type="button" *ngIf="showViewAll" (click)="onViewAll()">
+  <button class="eduhub-view-all" type="button" *ngIf="showViewAll"
+    [attr.aria-label]="'View all ' + selectedCategory.label.toLowerCase()"
+    (click)="onViewAll()">
     View all {{ selectedCategory.label.toLowerCase() }}
   </button>
 </section>
