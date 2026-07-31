@@ -14,11 +14,12 @@
   </header>
 
   <nav class="eduhub-categories" aria-label="Education categories">
-    <button *ngFor="let category of categories; let first = first"
+    <button *ngFor="let category of categories"
       type="button"
       class="eduhub-category"
-      [class.active]="first"
-      (click)="navigateCategory(category.route)">
+      [class.active]="selectedCategoryKey === category.key"
+      [attr.aria-pressed]="selectedCategoryKey === category.key ? 'true' : 'false'"
+      (click)="selectCategory(category)">
       <span class="eduhub-category__image">
         <img [src]="category.image" [alt]="category.label">
       </span>
@@ -30,33 +31,60 @@
     <ion-spinner name="crescent"></ion-spinner>
   </div>
 
-  <div class="eduhub-tutors" *ngIf="!isLoading && tutors.length">
-    <article class="eduhub-tutor" *ngFor="let tutor of tutors" (click)="onViewProfile(tutor)"
-      role="button" tabindex="0" (keyup.enter)="onViewProfile(tutor)">
-      <img class="eduhub-tutor__avatar" [src]="tutor.avatar" [alt]="tutor.name">
-      <div class="eduhub-tutor__body">
-        <div class="eduhub-tutor__headline">
-          <strong>{{ tutor.name }}</strong>
-          <span class="eduhub-tutor__likes" *ngIf="getTutorMeta(tutor) as tutorMeta">
-            <img src="assets/figma/child-home/eduhub-heart.png" alt="" aria-hidden="true">
-            {{ tutorMeta }}
-          </span>
-        </div>
-        <p>{{ tutor.description }}</p>
-        <small *ngIf="tutor.location">{{ tutor.location }}</small>
-        <small class="eduhub-tutor__time" *ngIf="tutor.startTime || tutor.endTime">
-          <img src="assets/figma/child-home/eduhub-time.png" alt="" aria-hidden="true">
-          {{ tutor.startTime }}<ng-container *ngIf="tutor.startTime && tutor.endTime">–</ng-container>{{ tutor.endTime }}
-        </small>
-        <div class="eduhub-tutor__footer">
-          <span *ngIf="tutor.hourlyRate">₹ {{ tutor.hourlyRate }} / Per Hour</span>
-          <button type="button" (click)="onViewProfile(tutor); $event.stopPropagation()">View Profile</button>
-        </div>
+  <ng-container *ngIf="!isLoading">
+    <!-- Tutors -->
+    <ng-container *ngIf="selectedCategoryKey === 'tutors'">
+      <div class="eduhub-tutors" *ngIf="tutors.length">
+        <article class="eduhub-tutor" *ngFor="let tutor of tutors" (click)="onViewProfile(tutor)"
+          role="button" tabindex="0" (keyup.enter)="onViewProfile(tutor)">
+          <img class="eduhub-tutor__avatar" [src]="tutor.avatar" [alt]="tutor.name">
+          <div class="eduhub-tutor__body">
+            <div class="eduhub-tutor__headline">
+              <strong>{{ tutor.name }}</strong>
+              <span class="eduhub-tutor__likes" *ngIf="getTutorMeta(tutor) as tutorMeta">
+                <img src="assets/figma/child-home/eduhub-heart.png" alt="" aria-hidden="true">
+                {{ tutorMeta }}
+              </span>
+            </div>
+            <p>{{ tutor.description }}</p>
+            <small *ngIf="tutor.location">{{ tutor.location }}</small>
+            <small class="eduhub-tutor__time" *ngIf="tutor.startTime || tutor.endTime">
+              <img src="assets/figma/child-home/eduhub-time.png" alt="" aria-hidden="true">
+              {{ tutor.startTime }}<ng-container *ngIf="tutor.startTime && tutor.endTime">–</ng-container>{{ tutor.endTime }}
+            </small>
+            <div class="eduhub-tutor__footer">
+              <span *ngIf="tutor.hourlyRate">₹ {{ tutor.hourlyRate }} / Per Hour</span>
+              <button type="button" (click)="onViewProfile(tutor); $event.stopPropagation()">View Profile</button>
+            </div>
+          </div>
+        </article>
       </div>
-    </article>
-  </div>
+      <p class="eduhub-empty" *ngIf="!tutors.length">No tutors available right now.</p>
+    </ng-container>
 
-  <p class="eduhub-empty" *ngIf="!isLoading && !tutors.length">No listings available right now.</p>
+    <!-- Academies -->
+    <ng-container *ngIf="selectedCategoryKey === 'academies'">
+      <div class="eduhub-academies" *ngIf="academyItems.length">
+        <article class="eduhub-academy" *ngFor="let item of academyItems" (click)="onAcademyItemClick(item)"
+          role="button" tabindex="0" (keyup.enter)="onAcademyItemClick(item)">
+          <img class="eduhub-academy__image" *ngIf="item.image" [src]="item.image" [alt]="item.title">
+          <div class="eduhub-academy__body">
+            <strong>{{ item.title }}</strong>
+            <p *ngIf="item.description">{{ item.description }}</p>
+            <small *ngIf="item.meta">{{ item.meta }}</small>
+          </div>
+        </article>
+      </div>
+      <p class="eduhub-empty" *ngIf="!academyItems.length">No academies available right now.</p>
+    </ng-container>
 
-  <button class="eduhub-view-all" type="button" (click)="onViewAll()">View all categories</button>
+    <!-- Workshops / Events / Stationery — no data source yet -->
+    <ng-container *ngIf="selectedCategoryKey === 'workshops' || selectedCategoryKey === 'events' || selectedCategoryKey === 'stationery'">
+      <p class="eduhub-empty">{{ selectedCategory.label }} are coming soon.</p>
+    </ng-container>
+  </ng-container>
+
+  <button class="eduhub-view-all" type="button" *ngIf="showViewAll" (click)="onViewAll()">
+    View all {{ selectedCategory.label.toLowerCase() }}
+  </button>
 </section>

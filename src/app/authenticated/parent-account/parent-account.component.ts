@@ -226,19 +226,6 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         return this.selectedChild?.name || 'your child';
     }
 
-    /**
-     * The Figma switcher keeps the active child in the purple middle card once
-     * more than one child exists. Reordering is presentation-only; the shared
-     * child store remains unchanged.
-     */
-    get switcherChildren(): ChildInfo[] {
-        if (this.children.length <= 1) return this.children;
-
-        const selected = this.children.find(child => this.isSelectedChild(child)) || this.children[0];
-        const remaining = this.children.filter(child => String(child.id) !== String(selected.id));
-        return [remaining[0], selected, ...remaining.slice(1)].filter(Boolean);
-    }
-
     get availableFamilySlots(): number {
         return Math.max(0, this.familyCapacity - this.linkedFamilyMemberCount);
     }
@@ -438,8 +425,10 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             this.children = list;
         });
 
-        // Subscribe to selected child changes
-        this.profileStore.selectedChild$.pipe(takeUntil(this.destroy$)).subscribe(child => {
+        // Subscribe to selected child changes. selectionChanged$ (not
+        // selectedChild$) skips duplicate emissions, so re-tapping the
+        // already-selected child never re-triggers mood/activity API calls.
+        this.profileStore.selectionChanged$.pipe(takeUntil(this.destroy$)).subscribe(child => {
             this.selectedChild = child;
             if (child) {
                 this.applyChildStats(child);
