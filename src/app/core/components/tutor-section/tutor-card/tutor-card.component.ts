@@ -10,12 +10,21 @@ import { TutorLikeService } from '../../../services/tutor-like.service';
 import { AcademyService } from '../../../services/academy.service';
 import { AuthService } from '../../../services/auth.service';
 
-type CategoryKey = 'tutors' | 'academies' | 'workshops' | 'events' | 'stationery';
+type CategoryKey =
+  | 'tutors'
+  | 'academies'
+  | 'workshops'
+  | 'events'
+  | 'stationery'
+  | 'book-stores'
+  | 'counselors'
+  | 'second-hand-books'
+  | 'sports-shops';
 
 interface EduHubCategory {
   key: CategoryKey;
   label: string;
-  image: string;
+  spriteX: string;
   route: string;
 }
 
@@ -45,11 +54,15 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   isLoading = false;
 
   readonly categories: EduHubCategory[] = [
-    { key: 'tutors', label: 'Tutors', image: 'assets/figma/child-home/eduhub-tutors.png', route: '/authed/tutors' },
-    { key: 'academies', label: 'Academies', image: 'assets/figma/child-home/eduhub-academies.png', route: '/authed/academy' },
-    { key: 'workshops', label: 'Workshops', image: 'assets/figma/child-home/eduhub-workshops.png', route: '/authed/education' },
-    { key: 'events', label: 'Events', image: 'assets/figma/child-home/eduhub-events.png', route: '/authed/education' },
-    { key: 'stationery', label: 'Stationery', image: 'assets/figma/child-home/eduhub-stationery.png', route: '/authed/school-store' }
+    { key: 'tutors', label: 'Tutors', spriteX: '-8px', route: '/authed/tutors' },
+    { key: 'academies', label: 'Academies', spriteX: '-88px', route: '/authed/academy' },
+    { key: 'workshops', label: 'Workshops', spriteX: '-180px', route: '/authed/education' },
+    { key: 'events', label: 'Events', spriteX: '-263px', route: '/authed/education' },
+    { key: 'stationery', label: 'Stationery Shops', spriteX: '-362px', route: '/authed/school-store' },
+    { key: 'book-stores', label: 'Book Stores', spriteX: '-473px', route: '/authed/school-store' },
+    { key: 'counselors', label: 'Counselors', spriteX: '-571px', route: '/authed/education' },
+    { key: 'second-hand-books', label: 'Second-Hand Books', spriteX: '-685px', route: '/authed/school-store' },
+    { key: 'sports-shops', label: 'Sports Shops', spriteX: '-810px', route: '/authed/school-store' }
   ];
 
   selectedCategoryKey: CategoryKey = 'tutors';
@@ -86,12 +99,21 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     return this.categories.find(c => c.key === this.selectedCategoryKey) || this.categories[0];
   }
 
+  /** The Home preview must never render more than the first four tutors. */
+  get visibleTutors(): TutorListItem[] {
+    return this.tutors.slice(0, this.maxTutors);
+  }
+
+  get hasMoreTutors(): boolean {
+    return this.listingCount > this.visibleTutors.length;
+  }
+
   /** Whether the currently selected category has more than 4 items to view. */
   get showViewAll(): boolean {
     if (this.isLoading) return false;
-    if (this.selectedCategoryKey === 'tutors') return this.listingCount > this.maxTutors;
+    if (this.selectedCategoryKey === 'tutors') return this.hasMoreTutors;
     if (this.selectedCategoryKey === 'academies') return this.academyTotalCount > this.maxTutors;
-    return false; // Workshops / Events / Stationery have no data source yet.
+    return false; // Remaining categories have no Home-card data source yet.
   }
 
   /**
@@ -223,6 +245,10 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   }
 
   onViewAll(): void {
+    if (this.selectedCategoryKey === 'tutors') {
+      this.router.navigateByUrl('/authed/tutors');
+      return;
+    }
     this.router.navigateByUrl(this.selectedCategory.route);
   }
 

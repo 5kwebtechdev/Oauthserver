@@ -6,13 +6,6 @@ import { FooterComponent } from '../../footer/footer.component';
 import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
 import { AdBannerComponent, AdScreen } from '../../ad-banner/ad-banner.component';
 import { AuthService } from '../../../services/auth.service';
-import { CoreService } from '../../../services/core.service';
-
-export interface EduCategory {
-    label: string;
-    icon: string;
-    route: string | null;
-}
 
 @Component({
     selector: 'app-education-main-page',
@@ -27,33 +20,10 @@ export class EducationMainPageComponent implements OnInit {
     @ViewChild('swiperEl', { static: false }) swiperRef?: ElementRef;
     currentSlide = 0;
 
-    // Shown for every role (parent/child/self) — this page has no role gating.
-    // Categories without a built destination yet route to null and show a
-    // "coming soon" toast instead of a broken link.
-    readonly eduCategories: EduCategory[] = [
-        { label: 'Tutors', icon: 'fa-solid fa-chalkboard-user', route: '/authed/tutors' },
-        { label: 'Academies', icon: 'fa-solid fa-school', route: '/authed/academies' },
-        { label: 'Workshops', icon: 'fa-solid fa-lightbulb', route: null },
-        { label: 'Events', icon: 'fa-solid fa-calendar-days', route: null },
-        { label: 'Stationery Shops', icon: 'fa-solid fa-pen-ruler', route: null },
-        { label: 'Book Stores', icon: 'fa-solid fa-book', route: null },
-        { label: 'Counselors', icon: 'fa-solid fa-comments', route: null },
-        { label: 'Second-Hand Books', icon: 'fa-solid fa-book-open', route: null },
-        { label: 'Sports Shops', icon: 'fa-solid fa-basketball', route: null },
-    ];
-
-    constructor(private router: Router, private authService: AuthService, private core: CoreService) { }
+    constructor(private router: Router, private authService: AuthService) { }
 
     get eduAdScreen(): AdScreen {
         return this.authService.isParentUser() ? 'EDUHUB_PARENTS' : 'EDUHUB';
-    }
-
-    openCategory(category: EduCategory): void {
-        if (category.route) {
-            this.router.navigate([category.route]);
-            return;
-        }
-        this.core.triggerToasrt(`${category.label} is coming soon.`);
     }
 
     ngOnInit(): void {
