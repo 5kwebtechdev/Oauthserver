@@ -86,11 +86,13 @@
             </div>
 
             <ng-template #emptyContentState>
-              <empty-state [imageSrc]="currentPetCuriousImage" [imageAlt]="currentPetCuriousAlt"
-                [leadText]="isSearching ? 'No Results Found' : 'Fresh Content Coming Soon!'"
-                [subText]="isSearching ? 'Try a different search term.' : 'Nothing is available in this category yet. Check back soon.'"
-                buttonText="">
+              <empty-state *ngIf="isSearching; else contentComingSoon"
+                [imageSrc]="currentPetCuriousImage" [imageAlt]="currentPetCuriousAlt"
+                leadText="No Results Found" subText="Try a different search term." buttonText="">
               </empty-state>
+              <ng-template #contentComingSoon>
+                <section-coming-soon sectionName="Learning" [compact]="true"></section-coming-soon>
+              </ng-template>
             </ng-template>
           </div>
         </ng-container>
@@ -112,11 +114,13 @@
             </div>
 
             <ng-template #emptyCategoryState>
-              <empty-state [imageSrc]="currentPetCuriousImage" [imageAlt]="currentPetCuriousAlt"
-                [leadText]="isSearching ? 'No Results Found' : 'Fresh Content Coming Soon!'"
-                [subText]="isSearching ? 'Try a different search term or browse another tab.' : 'Nothing is available in this category yet. Check back soon.'"
-                buttonText="">
+              <empty-state *ngIf="isSearching; else categoryComingSoon"
+                [imageSrc]="currentPetCuriousImage" [imageAlt]="currentPetCuriousAlt"
+                leadText="No Results Found" subText="Try a different search term or browse another tab." buttonText="">
               </empty-state>
+              <ng-template #categoryComingSoon>
+                <section-coming-soon sectionName="Learning" [compact]="true"></section-coming-soon>
+              </ng-template>
             </ng-template>
           </div>
         </ng-template>

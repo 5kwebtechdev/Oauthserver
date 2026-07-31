@@ -86,6 +86,191 @@
   to { opacity: 1; transform: scale(1); }
 }
 
+// ── Once-daily streak celebration (Figma 23232:75667) ───────────────────────
+.daily-streak-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10010;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px));
+  background: rgba(40, 37, 39, 0.3);
+  cursor: pointer;
+}
+
+.daily-streak-popup {
+  display: flex;
+  width: min(100%, 361px);
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  padding: 16px;
+  overflow: hidden;
+  border-radius: 24px;
+  background: #ebe6f5;
+  animation: daily-streak-popup-in 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  outline: none;
+
+  h2 {
+    margin: 0;
+    color: #282527;
+    font-family: var(--font-sans, 'Nunito', sans-serif);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: normal;
+  }
+
+  &__week {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  &__day {
+    position: relative;
+    display: flex;
+    width: 32px;
+    flex: 0 0 32px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+
+    &--current {
+      z-index: 2;
+    }
+
+    &:first-child.daily-streak-popup__day--current .daily-streak-popup__current-fire {
+      left: calc(50% + 24px);
+    }
+
+    &:last-child.daily-streak-popup__day--current .daily-streak-popup__current-fire {
+      left: calc(50% - 24px);
+    }
+  }
+
+  &__label {
+    color: #6b656a;
+    font-family: var(--font-sans, 'Nunito', sans-serif);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: normal;
+    white-space: nowrap;
+  }
+
+  &__marker {
+    position: relative;
+    display: flex;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+
+    &.completed {
+      background: radial-gradient(circle at 50% 45%, #f6ac72 0%, #eb7d44 50%, #e6652d 75%, #e04d16 100%);
+      box-shadow: 2px 4px 8px rgba(224, 77, 22, 0.4);
+    }
+
+    &.missed {
+      background: radial-gradient(circle at 50% 45%, #7341a7 0%, #5b338f 50%, #432477 100%);
+    }
+
+    &.pending {
+      border: 1px solid #6b656a;
+      background: transparent;
+    }
+
+    &.current {
+      background: transparent;
+    }
+  }
+
+  &__small-fire,
+  &__check {
+    display: block;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+  }
+
+  &__small-fire {
+    position: relative;
+    overflow: hidden;
+
+    img {
+      position: absolute;
+      top: -15.46%;
+      left: -53.4%;
+      display: block;
+      width: 205.07%;
+      height: 140.08%;
+      max-width: none;
+      object-fit: fill;
+    }
+  }
+
+  &__current-fire {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    z-index: 3;
+    display: block;
+    width: 80px;
+    height: 80px;
+    overflow: hidden;
+    transform: translateX(-50%);
+    pointer-events: none;
+
+    img {
+      position: absolute;
+      top: -15.46%;
+      left: -53.4%;
+      display: block;
+      width: 205.07%;
+      height: 140.08%;
+      max-width: none;
+      object-fit: fill;
+    }
+  }
+
+  &__rest {
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  &__check {
+    object-fit: contain;
+  }
+
+  &__instruction {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+@keyframes daily-streak-popup-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 // ── Home-screen overlays ─────────────────────────────────────────────────────
 .home-overlay {
   position: fixed;
@@ -1325,5 +1510,3 @@ footer {
     padding-inline: 48px;
   }
 }
-
-

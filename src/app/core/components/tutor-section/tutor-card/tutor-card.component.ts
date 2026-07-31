@@ -1,10 +1,9 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonicModule, ModalController } from "@ionic/angular";
+import { IonicModule } from "@ionic/angular";
 import { CommonModule } from '@angular/common';
 import { TutorService } from '../../../services/tutor.service';
-import { TutorListItem, Tutor } from '../../../models/tutor.model';
-import { TutorProfileComponent } from '../tutor-profile/tutor-profile.component';
+import { TutorListItem } from '../../../models/tutor.model';
 import { Subscription } from 'rxjs';
 import { TutorLikeService } from '../../../services/tutor-like.service';
 import { AcademyService } from '../../../services/academy.service';
@@ -79,7 +78,6 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private tutorService: TutorService,
-    private modalCtrl: ModalController,
     private likeService: TutorLikeService,
     private academyService: AcademyService,
     private authService: AuthService
@@ -264,9 +262,8 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
   onViewProfile(tutor: TutorListItem): void {
     const cachedTutor = this.tutorService.getTutorFromCache(tutor.id);
-    this.tutorService.getTutorById(tutor.id).subscribe(fullTutor => {
-      const profileTutor = fullTutor || cachedTutor;
-      if (profileTutor) this.openProfileModal(profileTutor);
+    void this.router.navigate(['/authed/tutors', tutor.id], {
+      state: cachedTutor ? { tutor: cachedTutor } : undefined
     });
   }
 
@@ -274,12 +271,4 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/authed/academy/course', item.id]);
   }
 
-  async openProfileModal(tutor: Tutor): Promise<void> {
-    const modal = await this.modalCtrl.create({
-      component: TutorProfileComponent,
-      componentProps: { tutor },
-      cssClass: 'tutor-profile-modal'
-    });
-    await modal.present();
-  }
 }

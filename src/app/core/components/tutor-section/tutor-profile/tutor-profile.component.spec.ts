@@ -48,6 +48,8 @@ describe('TutorProfileComponent category fields', () => {
       {} as any,
       {} as any,
       {} as any,
+      {} as any,
+      {} as any,
       {} as any
     );
 

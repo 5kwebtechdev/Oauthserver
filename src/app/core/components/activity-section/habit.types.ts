@@ -10,7 +10,7 @@ export interface Habit {
   endTime: string;
   startTimeStamp: number; // For card calculations
   endTimeStamp: number;
-  type: 'habits' | 'tasks' | 'timetable';
+  type: 'habits' | 'tasks' | 'timetable' | 'events';
   isPrivate: boolean;
   selectedRoutine: string;
   routineTags: { key: string; value: string; type: string }[];
@@ -50,4 +50,7 @@ export interface Habit {
   familyId?: number | null;
   updatedAt?: string | null;
   reminderOffset?: ReminderOffset | null;
+  eventType?: string;
+  recurrence?: 'ONE_TIME' | 'MONTHLY' | 'YEARLY' | string;
+  allDay?: boolean;
 }
