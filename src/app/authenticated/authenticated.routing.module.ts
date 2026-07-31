@@ -138,6 +138,9 @@ const routes: Routes = [
         path: 'education',
         loadComponent: () => import('../core/components/education-section/education-main-page/education-main-page.component').then(m => m.EducationMainPageComponent)
       }, {
+        path: 'tutors/:id',
+        loadComponent: () => import('../core/components/tutor-section/tutor-profile/tutor-profile.component').then(m => m.TutorProfileComponent)
+      }, {
         path: 'tutors',
         loadComponent: () => import('../core/components/tutor-section/tutor-homepage/tutor-homepage.component').then(m => m.TutorHomepageComponent)
       }, {

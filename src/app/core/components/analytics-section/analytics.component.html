@@ -1,118 +1,14 @@
 <ion-content fullscreen class="analytics-content">
-  <div class="an-page">
-    <header class="an-header">
-      <button type="button" class="an-back" aria-label="Go back" (click)="goBack()">
+  <main class="analytics-page">
+    <header class="analytics-header">
+      <button type="button" class="analytics-back" aria-label="Go back" (click)="goBack()">
         <img src="assets/icons/back-arrow.svg" alt="" />
       </button>
-      <div>
-        <h1 class="an-title">Insights</h1>
-        <p class="an-subtitle">See how far you have come</p>
-      </div>
+      <h1>Insights</h1>
     </header>
 
-    <ng-container *ngIf="loading">
-      <div class="an-body">
-        <section class="an-sec" *ngFor="let s of [1,2,3,4]">
-          <div class="skel-hd"></div>
-          <div class="an-grid-2">
-            <div class="skel-card" *ngFor="let c of [1,2]">
-              <div class="skel-ico"></div>
-              <div class="skel-line skel-line--lbl"></div>
-              <div class="skel-line skel-line--val"></div>
-              <div class="skel-line skel-line--sub"></div>
-            </div>
-          </div>
-        </section>
-      </div>
-    </ng-container>
+    <section-coming-soon sectionName="Insights"></section-coming-soon>
+  </main>
 
-    <div class="an-error" *ngIf="!loading && error">
-      <div class="an-error-ico">!</div>
-      <p>Couldn't load analytics.<br />Check your connection and try again.</p>
-      <button class="an-retry" type="button" (click)="retryLoad()">Try Again</button>
-    </div>
-
-    <ng-container *ngIf="!loading && !error && data">
-      <div class="an-body">
-        <section class="an-sec">
-          <h2 class="an-sec-nm">Habits</h2>
-          <div class="an-grid-2">
-            <article class="an-card an-card--purple" *ngFor="let s of data.habits; let i = index">
-              <img [src]="cardIcon(s, habitTaskFallback(i))" alt="" class="an-card-ico"
-                [class.an-card-ico--fallback]="!hasApiIcon(s)" (error)="onIconError($event, habitTaskFallback(i))" />
-              <div class="an-lbl">{{ s.label }}</div>
-              <div class="an-val">{{ s.value }}</div>
-              <div class="an-sub">{{ s.subtitle }}</div>
-            </article>
-          </div>
-        </section>
-
-        <section class="an-sec">
-          <h2 class="an-sec-nm">Tasks</h2>
-          <div class="an-grid-2">
-            <article class="an-card an-card--orange" *ngFor="let s of data.tasks; let i = index">
-              <img [src]="cardIcon(s, taskFallback(i), 'task')" alt="" class="an-card-ico"
-                [class.an-card-ico--fallback]="!hasApiIcon(s)" (error)="onIconError($event, taskFallback(i))" />
-              <div class="an-lbl">{{ s.label }}</div>
-              <div class="an-val">{{ s.value }}</div>
-              <div class="an-sub">{{ s.subtitle }}</div>
-            </article>
-          </div>
-        </section>
-
-        <section class="an-sec">
-          <h2 class="an-sec-nm">Mood</h2>
-          <div class="an-grid-2">
-            <article class="an-card an-card--berry" *ngFor="let s of data.mood">
-              <img [src]="cardIcon(s, 'mood')" alt="" class="an-card-ico an-card-ico--mood"
-                [class.an-card-ico--fallback]="!hasApiIcon(s)" (error)="onIconError($event, 'mood')" />
-              <div class="an-lbl">{{ s.label }}</div>
-              <div class="an-val an-val--mood">{{ moodLabel(s.value) }}</div>
-              <div class="an-sub">{{ s.subtitle }}</div>
-            </article>
-          </div>
-        </section>
-
-        <section class="an-sec">
-          <h2 class="an-sec-nm">Knowledge gained</h2>
-          <div class="an-grid-2">
-            <article class="an-card an-card--pink" *ngFor="let s of data.knowledgeGained; let i = index">
-              <img [src]="cardIcon(s, knowledgeFallback(i))" alt="" class="an-card-ico"
-                [class.an-card-ico--fallback]="!hasApiIcon(s)" (error)="onIconError($event, knowledgeFallback(i))" />
-              <div class="an-lbl">{{ s.label }}</div>
-              <div class="an-val">{{ s.value }}</div>
-              <div class="an-sub">{{ s.subtitle }}</div>
-            </article>
-          </div>
-        </section>
-
-        <section class="an-sec">
-          <h2 class="an-sec-nm">Journal</h2>
-          <div class="an-grid-2">
-            <article class="an-card an-card--purple" *ngFor="let s of data.journal">
-              <img [src]="cardIcon(s, 'journal')" alt="" class="an-card-ico"
-                [class.an-card-ico--fallback]="!hasApiIcon(s)" (error)="onIconError($event, 'journal')" />
-              <div class="an-lbl">{{ s.label }}</div>
-              <div class="an-val">{{ s.value }}</div>
-              <div class="an-sub">{{ s.subtitle }}</div>
-            </article>
-          </div>
-        </section>
-
-        <section class="an-sec">
-          <h2 class="an-sec-nm">Achievements</h2>
-          <div class="an-grid-2">
-            <article class="an-card an-card--berry" *ngFor="let s of data.achievements; let i = index">
-              <img [src]="cardIcon(s, achievementFallback(i))" alt="" class="an-card-ico"
-                [class.an-card-ico--fallback]="!hasApiIcon(s)" (error)="onIconError($event, achievementFallback(i))" />
-              <div class="an-lbl">{{ s.label }}</div>
-              <div class="an-val">{{ s.value }}</div>
-              <div class="an-sub">{{ s.subtitle }}</div>
-            </article>
-          </div>
-        </section>
-      </div>
-    </ng-container>
-  </div>
   <app-footer></app-footer>
 </ion-content>

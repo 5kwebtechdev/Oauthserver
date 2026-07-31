@@ -21,6 +21,22 @@ import { AuthService } from '../../../services/auth.service';
 import { ProfileSelectorService } from '../../../services/profile-selector-service';
 import { CustomToastService } from '../../../services/custom-toast.service';
 
+type ActivityTab = 'habits' | 'tasks' | 'timetable' | 'events';
+type EventRecurrence = 'ONE_TIME' | 'MONTHLY' | 'YEARLY';
+
+interface ActivityTabOption {
+  key: ActivityTab;
+  label: string;
+  icon: string;
+}
+
+interface EventChoice {
+  key: string;
+  label: string;
+  icon: string;
+  custom?: boolean;
+}
+
 @Component({
   standalone: true,
   selector: 'activity-input',
@@ -41,7 +57,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
 
   // Input properties for modal usage - allows passing data directly via componentProps
   @Input() editingHabit: any = null;
-  @Input() initialTab: 'habits' | 'tasks' | 'timetable' | null = null;
+  @Input() initialTab: ActivityTab | null = null;
 
   title = '';
   notes = '';
@@ -123,8 +139,15 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     this.autoAdjustSelectedDays();
     try { const validations = this.computeValidations(); Object.assign(this.errors, validations); this.cd.detectChanges(); } catch (e) { }
   }
-  currentActive: 'habits' | 'tasks' | 'timetable' = 'habits';
+  currentActive: ActivityTab = 'habits';
   originUrl: string | null = null;
+
+  readonly activityTabs: ReadonlyArray<ActivityTabOption> = [
+    { key: 'habits', label: 'Habit', icon: 'assets/figma/activity-event/tab-habit.png' },
+    { key: 'tasks', label: 'Task', icon: 'assets/figma/activity-event/tab-task.png' },
+    { key: 'timetable', label: 'Time Table', icon: 'assets/figma/activity-event/tab-calendar.png' },
+    { key: 'events', label: 'Event', icon: 'assets/figma/activity-event/tab-calendar.png' }
+  ];
 
   get isTasks(): boolean {
     return this.currentActive === 'tasks';
@@ -190,6 +213,23 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   reminderOffset: ReminderOffset | null = null;
   reminderExpanded = false;
 
+  eventDate: Date | null = null;
+  eventAllDay = false;
+  eventHighPriority = false;
+  eventInfoVisible = true;
+  selectedEventType = '';
+  eventRecurrence: EventRecurrence = 'ONE_TIME';
+  addingEventType = false;
+  customEventTypeName = '';
+
+  eventTypes: EventChoice[] = [];
+
+  readonly recurrenceOptions: ReadonlyArray<EventChoice & { key: EventRecurrence }> = [
+    { key: 'ONE_TIME', label: 'One Time', icon: 'assets/figma/activity-event/one-time.svg' },
+    { key: 'MONTHLY', label: 'Monthly', icon: 'assets/figma/activity-event/monthly.svg' },
+    { key: 'YEARLY', label: 'Yearly', icon: 'assets/figma/activity-event/yearly.svg' }
+  ];
+
   readonly reminderOptions: ReadonlyArray<{ value: ReminderOffset | null; label: string }> = [
     { value: null, label: 'No reminder' },
     { value: 'MINUTES_15', label: '15 minutes before' },
@@ -218,7 +258,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   }
 
   // Tag variant mapping by activity type
-  readonly tagVariants: Record<string, 'blue' | 'orange' | 'green' | 'gray'> = { habits: 'blue', tasks: 'orange', timetable: 'green' };
+  readonly tagVariants: Record<string, 'blue' | 'orange' | 'green' | 'gray'> = { habits: 'blue', tasks: 'orange', timetable: 'green', events: 'gray' };
 
   // Coin selector
   // coin selector removed for parent accounts
@@ -247,7 +287,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     title: false, time: false, date: false, notes: false, tag: false,
     routine: false, weekdays: false, priority: false, pastTime: false,
     endTimeBeforeStart: false, endTimeSingleDay: false,
-    startAfterEnd: false
+    startAfterEnd: false, eventType: false
   };
 
   // Backward compatibility getters
@@ -263,6 +303,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   get showEndTimeSingleDayError() { return this.errors.endTimeSingleDay; }
   get showEndTimeBeforeStart() { return this.errors.endTimeBeforeStart; }
   get showStartAfterEnd() { return this.errors.startAfterEnd; }
+  get showEventTypeError() { return this.errors.eventType; }
 
   // When start date is today and the start time is in the past, but the
   // activity repeats on future days (everyday or selected days beyond today),
@@ -371,6 +412,133 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     });
   }
 
+  private loadEventTypes(): void {
+    const base: EventChoice[] = [
+      { key: 'BIRTHDAY', label: 'Birthday', icon: 'assets/figma/activity-event/birthday.svg' },
+      { key: 'ANNIVERSARY', label: 'Anniversary', icon: 'assets/figma/activity-event/anniversary.svg' },
+      { key: 'HOLIDAY', label: 'Holiday', icon: 'assets/figma/activity-event/holiday.svg' },
+      { key: 'WORK', label: 'Work', icon: 'assets/figma/activity-event/work.svg' },
+      { key: 'PERSONAL', label: 'Personal', icon: 'assets/figma/activity-event/personal.svg' }
+    ];
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(this.eventTypesStorageKey) || '[]');
+      const custom = Array.isArray(saved)
+        ? saved.filter(item => item && item.key && item.label).map(item => ({
+            key: String(item.key),
+            label: String(item.label),
+            icon: 'assets/figma/activity-event/personal.svg',
+            custom: true
+          }))
+        : [];
+      this.eventTypes = [...base, ...custom.filter(item => !base.some(baseItem => baseItem.key === item.key))];
+    } catch {
+      this.eventTypes = base;
+    }
+  }
+
+  private get eventTypesStorageKey(): string {
+    return `superme_event_types_${this.authService.getUserId() || 'guest'}`;
+  }
+
+  private ensureEventTypeOption(key: string): void {
+    if (!key || this.eventTypes.some(item => item.key === key)) return;
+    const label = key
+      .replace(/^CUSTOM_/, '')
+      .toLowerCase()
+      .split('_')
+      .filter(Boolean)
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+    this.eventTypes = [...this.eventTypes, {
+      key,
+      label: label || 'Custom',
+      icon: 'assets/figma/activity-event/personal.svg',
+      custom: true
+    }];
+  }
+
+  selectActivityTab(tab: ActivityTab): void {
+    if (this.currentActive === tab) return;
+    this.currentActive = tab;
+    this.attemptedSubmit = false;
+    this.serverErrorMessage = '';
+    Object.keys(this.errors).forEach(key => (this.errors as any)[key] = false);
+  }
+
+  selectEventType(key: string): void {
+    this.selectedEventType = key;
+    this.clearError('eventType');
+  }
+
+  selectEventRecurrence(key: string): void {
+    if (key === 'ONE_TIME' || key === 'MONTHLY' || key === 'YEARLY') {
+      this.eventRecurrence = key;
+    }
+  }
+
+  beginAddEventType(): void {
+    this.addingEventType = true;
+    this.customEventTypeName = '';
+  }
+
+  cancelAddEventType(): void {
+    this.addingEventType = false;
+    this.customEventTypeName = '';
+  }
+
+  saveCustomEventType(): void {
+    const label = this.customEventTypeName.trim().slice(0, 20);
+    if (!label) return;
+
+    const key = `CUSTOM_${label.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '')}`;
+    const existing = this.eventTypes.find(item => item.key === key || item.label.toLowerCase() === label.toLowerCase());
+    if (existing) {
+      this.selectEventType(existing.key);
+      this.cancelAddEventType();
+      return;
+    }
+
+    const custom: EventChoice = {
+      key,
+      label,
+      icon: 'assets/figma/activity-event/personal.svg',
+      custom: true
+    };
+    this.eventTypes = [...this.eventTypes, custom];
+    this.selectedEventType = key;
+    this.clearError('eventType');
+    this.addingEventType = false;
+    this.customEventTypeName = '';
+
+    try {
+      localStorage.setItem(this.eventTypesStorageKey, JSON.stringify(this.eventTypes.filter(item => item.custom)));
+    } catch { /* custom event types still remain available for this session */ }
+  }
+
+  dismissEventInfo(): void {
+    this.eventInfoVisible = false;
+  }
+
+  onEventDateChanged(): void {
+    this.clearError('date');
+    this.clearError('pastTime');
+  }
+
+  onEventAllDayChange(value: any): void {
+    this.eventAllDay = !!(value?.detail?.checked ?? value);
+    if (this.eventAllDay) {
+      this.clearError('time');
+      this.clearError('pastTime');
+      this.clearError('endTimeBeforeStart');
+      this.clearError('endTimeSingleDay');
+    }
+  }
+
+  onEventPriorityChange(value: any): void {
+    this.eventHighPriority = !!(value?.detail?.checked ?? value);
+  }
+
   private syncSelectedTagsToComponent(): void {
     if (!this.tagsComponent || !Array.isArray(this.selectedTags) || !this.selectedTags.length) return;
     const keys = this.selectedTags.map(st => {
@@ -391,6 +559,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
 
   ngOnInit() {
     this.loadTagsFromApi();
+    this.loadEventTypes();
     // Determine whether current user is a child (only children should see Private toggle)
     try {
       const ud = localStorage.getItem('user_data');
@@ -426,6 +595,21 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     this.applyStateForActivity();
   }
 
+  private normalizeActivityTab(value: unknown, fallback: ActivityTab = 'habits'): ActivityTab {
+    const normalized = String(value || '').trim().toLowerCase();
+    if (normalized === 'habit' || normalized === 'habits') return 'habits';
+    if (normalized === 'task' || normalized === 'tasks') return 'tasks';
+    if (normalized === 'event' || normalized === 'events') return 'events';
+    if (normalized === 'timetable' || normalized === 'time table') return 'timetable';
+    return fallback;
+  }
+
+  private normalizeEventRecurrence(value: unknown): EventRecurrence {
+    const normalized = String(value || '').trim().toUpperCase().replace(/[ -]+/g, '_');
+    if (normalized === 'MONTHLY' || normalized === 'YEARLY') return normalized;
+    return 'ONE_TIME';
+  }
+
   private applyStateForActivity(): void {
     try {
       // First check @Input() properties (used when opened via modal componentProps)
@@ -438,7 +622,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       // Respect an explicit initialTab passed via componentProps or navigation state even when
       // no `habit` object is provided (creating a new activity). Use habit type as a fallback.
       const stateCurrentActive = this.initialTab ?? nav?.extras?.state?.['currentActive'] ?? (history && (history.state as any)?.currentActive);
-      this.currentActive = (stateCurrentActive as any) || (stateHabit ? (stateHabit.type as any) : this.currentActive);
+      this.currentActive = this.normalizeActivityTab(stateCurrentActive || stateHabit?.type, this.currentActive);
       if (!stateHabit) {
         this.resetForNewEntry();
         return;
@@ -457,7 +641,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       this.reminderExpanded = false;
       // Auto-switch to the appropriate tab based on: @Input() initialTab, explicit currentActive in state, or habit type
       // Reuse `stateCurrentActive` declared above and fall back to habit type when editing.
-      this.currentActive = (stateCurrentActive as any) || (h.type as any) || this.currentActive;
+      this.currentActive = this.normalizeActivityTab(stateCurrentActive || h.type, this.currentActive);
       // The habit object passed via navigation state (from the timeline/detail list)
       // doesn't carry the Private-toggle state, so `h.isPrivate` is always undefined.
       // Use it only as a transient fallback while we fetch the authoritative value.
@@ -518,6 +702,15 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         ? rawPriority
         : ActivityInputComponent.PRIORITY_MAP[rawPriority] || '') as any;
 
+      if (this.currentActive === 'events') {
+        this.eventDate = this.startDate;
+        this.eventAllDay = !!(h.allDay ?? h.all_day);
+        this.eventHighPriority = rawPriority === 'high' || rawPriority === '3';
+        this.selectedEventType = String(h.eventType ?? h.event_type ?? '').trim().toUpperCase();
+        this.ensureEventTypeOption(this.selectedEventType);
+        this.eventRecurrence = this.normalizeEventRecurrence(h.recurrence ?? h.repeatType ?? h.repeat_type);
+      }
+
       this.activities = Array.isArray(h.activities) && h.activities.length ? h.activities : this.activities;
 
       // Handle new API format: h.tag = { id, name, system, userId }
@@ -572,6 +765,14 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     this.priority = '';
     this.reminderOffset = null;
     this.reminderExpanded = false;
+    this.eventDate = null;
+    this.eventAllDay = false;
+    this.eventHighPriority = false;
+    this.eventInfoVisible = true;
+    this.selectedEventType = '';
+    this.eventRecurrence = 'ONE_TIME';
+    this.addingEventType = false;
+    this.customEventTypeName = '';
     this.activities = [
       { name: '', startTime: '', endTime: '' },
       { name: '', startTime: '', endTime: '' },
@@ -585,7 +786,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       title: false, time: false, date: false, notes: false, tag: false,
       routine: false, weekdays: false, priority: false, pastTime: false,
       endTimeBeforeStart: false, endTimeSingleDay: false,
-      startAfterEnd: false
+      startAfterEnd: false, eventType: false
     };
     if (this.tagsComponent) {
       this.tagsComponent.selectedKeys = [];
@@ -594,6 +795,15 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   }
 
   get isFormComplete(): boolean {
+    if (this.currentActive === 'events') {
+      if (!this.title?.trim() || !this.selectedEventType || !this.eventDate) return false;
+      if (this.eventAllDay) return true;
+      if (!this.startTime?.trim() || !this.endTime?.trim()) return false;
+      if (this.isTimeInPast(this.startTime, this.eventDate)) return false;
+      if (this.isEndTimeNotAfterStart(this.startTime, this.endTime)) return false;
+      return !this.isEndTimeCrossingMidnight(this.startTime, this.endTime);
+    }
+
     if (!this.title?.trim()) return false;
     if (!this.startDate || !this.endDate) return false;
     if (!this.startTime?.trim() || !this.endTime?.trim()) return false;
@@ -848,6 +1058,11 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
 
 
   submit() {
+    if (this.currentActive === 'events') {
+      this.submitEvent();
+      return;
+    }
+
     this.attemptedSubmit = true;
     // clear any previous server-side message
     this.serverErrorMessage = '';
@@ -1111,6 +1326,107 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     }
   }
 
+  private submitEvent(): void {
+    if (this.isSubmitting) return;
+
+    this.attemptedSubmit = true;
+    this.serverErrorMessage = '';
+    Object.keys(this.errors).forEach(key => (this.errors as any)[key] = false);
+    const validations = this.computeValidations();
+    Object.assign(this.errors, validations);
+    if (Object.values(validations).some(Boolean)) {
+      try { this.cd.detectChanges(); } catch { /* template will update naturally */ }
+      return;
+    }
+
+    const eventDate = this.formatDateStr(this.eventDate);
+    const formattedStartTime = this.eventAllDay ? '00:00:00' : this.to24Hour(this.startTime || '');
+    const formattedEndTime = this.eventAllDay ? '23:59:00' : this.to24Hour(this.endTime || '');
+    const isCreatedByParent = this.authService.isParentUser();
+    const sharedWithParent = isCreatedByParent || (this.isChild && !this.isPrivate);
+    const isPrivateToChild = isCreatedByParent ? false : (this.isChild ? this.isPrivate : false);
+    const forUserId = this.profileSelector.getChildId() || this.authService.getUserId();
+
+    const payload: any = {
+      title: this.title.trim(),
+      description: this.notes.trim(),
+      notes: this.notes.trim(),
+      type: 'EVENT',
+      eventType: this.selectedEventType,
+      recurrence: this.eventRecurrence,
+      allDay: this.eventAllDay,
+      startDate: eventDate,
+      endDate: eventDate,
+      startTime: formattedStartTime,
+      endTime: formattedEndTime,
+      priority: this.eventHighPriority ? 'HIGH' : 'MEDIUM',
+      everyday: false,
+      sharedWithParent,
+      isPrivateToChild
+    };
+
+    if (this.reminderOffset) payload.reminderOffset = this.reminderOffset;
+    else if (this.editingId) payload.reminderOffset = null;
+    if (forUserId) payload.forUserId = forUserId;
+
+    const localEvent: Habit = {
+      id: crypto.randomUUID(),
+      title: this.title.trim(),
+      notes: this.notes.trim(),
+      startDate: this.eventDate,
+      endDate: this.eventDate,
+      startTime: formattedStartTime,
+      endTime: formattedEndTime,
+      startTimeStamp: this.eventDate ? new Date(`${eventDate}T${formattedStartTime}`).getTime() : 0,
+      endTimeStamp: this.eventDate ? new Date(`${eventDate}T${formattedEndTime}`).getTime() : 0,
+      type: 'events',
+      isPrivate: this.isPrivate,
+      selectedRoutine: '',
+      routineTags: [],
+      everyday: false,
+      selectedDays: [],
+      priority: this.eventHighPriority ? 'high' : 'medium',
+      routine: '',
+      status: 'pending',
+      createdAt: new Date(),
+      reminderOffset: this.reminderOffset,
+      eventType: this.selectedEventType,
+      recurrence: this.eventRecurrence,
+      allDay: this.eventAllDay
+    };
+
+    this.isSubmitting = true;
+    const request$ = this.editingId
+      ? this.calendarApi.updateCalendarEvent(this.editingId, payload)
+      : this.calendarApi.addCalendarEvent(payload);
+
+    request$.subscribe({
+      next: (response) => {
+        try {
+          const savedEvent = this.buildHabitFromResponse(
+            response,
+            localEvent,
+            'events',
+            formattedStartTime,
+            formattedEndTime,
+            []
+          );
+          if (this.editingId) this.habitService.updateHabit(savedEvent);
+          else this.habitService.addHabit(savedEvent);
+          this.showSuccessToast(this.title.trim(), 'event', !!this.editingId);
+          this.finalizeAndReturn();
+        } finally {
+          this.isSubmitting = false;
+        }
+      },
+      error: (error) => {
+        this.isSubmitting = false;
+        this.serverErrorMessage = error?.error?.message || error?.message || 'Failed to save the event. Please try again.';
+        this.toastService.error(this.serverErrorMessage);
+      }
+    });
+  }
+
   private finalizeAndReturn(): void {
     // Persist the active tab so the list page can restore it after navigating back
     try { sessionStorage.setItem('activityInitialTab', String(this.currentActive || 'habits')); } catch (e) { /* ignore if storage unavailable */ }
@@ -1152,6 +1468,24 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
 
   // Compute validation flags without performing submission; reused by submit() and click-on-disabled handler
   private computeValidations() {
+    if (this.currentActive === 'events') {
+      return {
+        title: !this.title?.trim(),
+        tag: false,
+        routine: false,
+        weekdays: false,
+        time: !this.eventAllDay && (!this.startTime?.trim() || !this.endTime?.trim()),
+        pastTime: !this.eventAllDay && this.isTimeInPast(this.startTime, this.eventDate),
+        endTimeBeforeStart: !this.eventAllDay && this.isEndTimeNotAfterStart(this.startTime, this.endTime),
+        endTimeSingleDay: !this.eventAllDay && this.isEndTimeCrossingMidnight(this.startTime, this.endTime),
+        date: !this.eventDate,
+        startAfterEnd: false,
+        priority: false,
+        notes: false,
+        eventType: !this.selectedEventType
+      } as any;
+    }
+
     return {
       title: !this.title?.trim(),
       tag: !this.selectedTags?.length,
@@ -1168,7 +1502,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       date: !this.startDate || !this.endDate || (this.startDate instanceof Date && this.endDate instanceof Date && this.startDate > this.endDate),
       startAfterEnd: !!(this._startDate && this._endDate && this._startDate > this._endDate),
       priority: !this.priority,
-      notes: !this.notes?.trim()
+      notes: !this.notes?.trim(),
+      eventType: false
     } as any;
   }
 
@@ -1189,7 +1524,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     try { event.stopPropagation(); } catch (e) { }
   }
 
-  private buildHabitFromResponse(res: any, baseHabit: Habit, type: 'habits' | 'tasks' | 'timetable', formattedStartTime: string, formattedEndTime: string, daysOfWeek: string[]): Habit {
+  private buildHabitFromResponse(res: any, baseHabit: Habit, type: ActivityTab, formattedStartTime: string, formattedEndTime: string, daysOfWeek: string[]): Habit {
     const data = res || {};
     return {
       id: String(data.id ?? baseHabit.id),
@@ -1219,7 +1554,10 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       totalCompletedDays: data.totalCompletedDays ?? data.completedDays ?? 0,
       milestoneBadges: data.milestoneBadges ?? data.badgeList ?? null,
       daysOfWeek: Array.isArray(data.daysOfWeek) ? data.daysOfWeek : (this.everyday ? ActivityInputComponent.FULL_WEEK : daysOfWeek),
-      reminderOffset: this.normalizeReminderOffset(data.reminderOffset ?? data.reminder_offset ?? baseHabit.reminderOffset)
+      reminderOffset: this.normalizeReminderOffset(data.reminderOffset ?? data.reminder_offset ?? baseHabit.reminderOffset),
+      eventType: data.eventType ?? data.event_type ?? baseHabit.eventType,
+      recurrence: data.recurrence ?? data.repeatType ?? data.repeat_type ?? baseHabit.recurrence,
+      allDay: data.allDay ?? data.all_day ?? baseHabit.allDay
     };
   }
 
@@ -1500,7 +1838,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       return;
     }
 
-    if (this.currentActive === 'timetable') {
+    if (this.currentActive === 'timetable' || this.currentActive === 'events') {
       this.calendarApi.deleteCalendarEvent(backendId).subscribe({
         next: () => {
           console.log('Calendar event deleted successfully');
@@ -1529,7 +1867,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
 
               if (isActualError2) {
                 console.error('Failed to delete calendar event on server', err2);
-                alert('Failed to delete timetable on server. Please try again.');
+                alert(`Failed to delete ${this.currentActive === 'events' ? 'event' : 'timetable'} on server. Please try again.`);
                 this.deleting = false;
               } else {
                 console.log('Treating alternate path as successful deletion');
@@ -1734,7 +2072,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   }
 
   hasAnyErrors(): boolean {
-    return !!(this.showTitleError || this.showTagError || this.showRoutineError || this.showWeekdaysError || this.showTimeError || this.showPastTimeError || this.showEndTimeBeforeStart || this.showEndTimeSingleDayError || this.showDateError || this.showPriorityError || this.showNotesError);
+    return !!(this.showTitleError || this.showEventTypeError || this.showTagError || this.showRoutineError || this.showWeekdaysError || this.showTimeError || this.showPastTimeError || this.showEndTimeBeforeStart || this.showEndTimeSingleDayError || this.showDateError || this.showPriorityError || this.showNotesError);
   }
 
   // User-facing message for day-selection errors. If the date range is a single
@@ -1752,6 +2090,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   orderedErrorMessages(): string[] {
     const msgs: string[] = [];
     if (this.showTitleError) msgs.push('Enter title');
+    if (this.showEventTypeError) msgs.push('Select an event type');
     if (this.showTagError) msgs.push('Select a tag');
     if (this.showRoutineError) msgs.push('Select a routine');
     if (this.showWeekdaysError) msgs.push('Select at least one weekday');

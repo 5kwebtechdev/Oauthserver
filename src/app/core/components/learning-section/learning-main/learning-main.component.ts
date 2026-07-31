@@ -19,6 +19,7 @@ import { PetAgeService } from 'src/app/core/services/pet-age.service';
 import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
 import { LearningChallengeCardComponent } from '../learning-card/learning-challenge-card.component';
 import { LearningArticleCardComponent } from '../learning-card/learning-article-card.component';
+import { SectionComingSoonComponent } from '../../section-coming-soon/section-coming-soon.component';
 
 type LearningCategoryTab = 'puzzles' | 'quizzes' | 'articles' | 'masterclass';
 
@@ -27,7 +28,7 @@ type LearningCategoryTab = 'puzzles' | 'quizzes' | 'articles' | 'masterclass';
   templateUrl: './learning-main.component.html',
   styleUrls: ['./learning-main.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, FormsModule, HttpClientModule, FooterComponent, SupermePetComponent, EmptyStateComponent, SkeletonImageComponent, LearningChallengeCardComponent, LearningArticleCardComponent],
+  imports: [CommonModule, IonicModule, RouterModule, FormsModule, HttpClientModule, FooterComponent, SupermePetComponent, EmptyStateComponent, SkeletonImageComponent, LearningChallengeCardComponent, LearningArticleCardComponent, SectionComingSoonComponent],
   providers: [LearningService]
 })
 export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {

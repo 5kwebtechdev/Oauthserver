@@ -1,111 +1,252 @@
-<ion-content>
-  <superme-navigator [heading]="getProfileHeading()" backIcon="arrowSvg" (back)="close()" [rightActions]="navActions"
-    (rightActionClick)="handleNavAction($event)"></superme-navigator>
-  <div class="tutor-profile-root">
-    <div class="hero">
-      <img class="avatar" [src]="getProfileImage()" [alt]="(tutor?.name || getProfileNameFallback()) + ' profile'"
-        (error)="onProfileImageError($event)" />
-      <div class="info">
-        <h2 class="name">{{ tutor?.name || getProfileNameFallback() }}</h2>
-        <h3 class="achievement">{{ getProfileSubtitle() }}</h3>
+<ion-content fullscreen class="tutor-detail-page">
+  <div class="detail-shell">
+    <header class="detail-header">
+      <button type="button" class="header-action" aria-label="Go back" (click)="close()">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 19 8 12l7-7" />
+        </svg>
+      </button>
+
+      <div class="header-actions">
+        <button type="button" class="header-action" [class.is-liked]="isLiked"
+          [disabled]="isLikeRequestInProgress" [attr.aria-label]="isLiked ? 'Unlike tutor' : 'Like tutor'"
+          (click)="toggleLike()">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
+          </svg>
+        </button>
+
+        <button type="button" class="header-action" aria-label="Share tutor" (click)="shareTutor()">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="18" cy="5" r="2.5" />
+            <circle cx="6" cy="12" r="2.5" />
+            <circle cx="18" cy="19" r="2.5" />
+            <path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4" />
+          </svg>
+        </button>
       </div>
-      <div class="meta-row">
-        <div class="meta">
-          <img src="assets/Icons-Neutral/Experience.png" alt="experience" />
-          <h3><strong>{{ getExperienceString() }}</strong></h3>
-        </div>
-        <h4>|</h4>
-        <div class="meta like" (click)="handleNavAction({index: 0, action: navActions[0]})">
-          <img src="assets/Icons-Neutral/Icon-Tutor-Like.png" alt="likes" />
-          <h3>{{ getLikesCount() }} likes</h3>
-        </div>
-        <h4>|</h4>
-        <div class="meta">
-          <img src="assets/Icons-Neutral/Students.png" alt="students" />
-          <h3><strong>{{ tutor?.totalStudents || 0 }}</strong> students</h3>
-        </div>
-      </div>
-    </div>
-    <div class="what-teach">
-      <h1>{{ getTeachHeading() }}</h1>
-      <div class="teaching-details">
-        <div class="teaching-row" *ngFor="let row of categoryFieldRows">
-          <h3>{{ row.label }}</h3>
-          <p>{{ row.value }}</p>
-        </div>
-      </div>
+    </header>
+
+    <div class="loading-state" *ngIf="isLoading && !tutor" role="status" aria-live="polite">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading tutor details…</p>
     </div>
 
-    <div class="teacher-details">
-        <div class="teach-detail-list">
-          <h3><img src="assets/Icons-Neutral/Tutor-Mode.png" alt="">Mode</h3>
-          <p>{{ getContactModesString() }}</p>
-        </div>
-        <div class="teach-detail-list">
-          <h3><img src="assets/Icons-Neutral/Tutor-LanguageSpoken.png" alt="">Languages Spoken</h3>
-          <p>{{ getLanguagesString() }}</p>
-        </div>
-        <div class="teach-detail-list">
-          <h3><img src="assets/Icons-Neutral/Tutor-Qualification.png" alt="">{{ getQualificationDetailLabel() }}</h3>
-          <p>{{ getQualificationDetailValue() }}</p>
-        </div>
-        <div class="teach-detail-list">
-          <h3><img src="assets/Icons-Neutral/Tutor-TimeDay.png" alt="">Days & Time</h3>
-          <p>{{ getAvailabilityString() }}</p>
-        </div>
-         <div class="teach-detail-list">
-          <h3><img src="assets/Icons-Neutral/Tutor-Location.png" alt="">Location</h3>
-         <p class="location">{{ getFullLocation() }} <br>
-          <a *ngIf="tutor?.location">See on map</a></p>
-        </div>
+    <div class="error-state" *ngIf="loadError && !tutor">
+      <div class="error-icon">!</div>
+      <h1>Unable to load tutor</h1>
+      <p>{{ loadError }}</p>
+      <button type="button" (click)="retryLoad()">Try again</button>
     </div>
-    <profile-facts [faqs]="tutorFaqs"></profile-facts>
+
+    <main *ngIf="tutor" class="detail-content">
+      <section class="profile-hero">
+        <div class="avatar-wrap">
+          <img class="avatar" [src]="getProfileImage()" [alt]="getDisplayName() + ' profile image'"
+            (error)="onProfileImageError($event)" />
+          <span class="verified-badge" *ngIf="isVerified()" aria-label="Verified tutor">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m8.3 12.4 2.3 2.3 5.2-5.4" />
+            </svg>
+          </span>
+        </div>
+
+        <div class="profile-copy">
+          <h1>{{ getDisplayName() }}</h1>
+          <p>{{ getProfileSubtitle() }}</p>
+        </div>
+
+        <div class="profile-stats" aria-label="Tutor statistics">
+          <div class="stat">
+            <img src="assets/Icons-Neutral/Experience.png" alt="" aria-hidden="true" />
+            <span>{{ getExperienceString() }}</span>
+          </div>
+          <span class="stat-divider" aria-hidden="true"></span>
+          <button type="button" class="stat stat-button" (click)="toggleLike()"
+            [disabled]="isLikeRequestInProgress">
+            <img src="assets/Icons-Neutral/Icon-Tutor-Like.png" alt="" aria-hidden="true" />
+            <span>{{ getLikesCount() }} likes</span>
+          </button>
+          <span class="stat-divider" aria-hidden="true"></span>
+          <div class="stat">
+            <img src="assets/Icons-Neutral/Students.png" alt="" aria-hidden="true" />
+            <span><strong>{{ getStudentsCount() }}</strong> students</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="teaching-section">
+        <h2>{{ getTeachHeading() }}</h2>
+        <div class="teaching-grid" *ngIf="getTeachingRows().length; else noTeachingDetails">
+          <div class="teaching-pill" *ngFor="let row of getTeachingRows()">
+            <div class="pill-label">
+              <img [src]="getTeachingIcon(row.label)" alt="" aria-hidden="true" />
+              <span>{{ row.label }}</span>
+            </div>
+            <p>{{ row.value }}</p>
+          </div>
+        </div>
+        <ng-template #noTeachingDetails>
+          <p class="empty-detail">Teaching details are not specified.</p>
+        </ng-template>
+      </section>
+
+      <section class="information-card" aria-label="Tutor information">
+        <div class="information-row">
+          <div class="information-label">
+            <img src="assets/Icons-Neutral/Tutor-Mode.png" alt="" aria-hidden="true" />
+            <span>Mode</span>
+          </div>
+          <div class="information-value">{{ getContactModesString() }}</div>
+        </div>
+
+        <div class="information-row">
+          <div class="information-label">
+            <img src="assets/Icons-Neutral/Tutor-LanguageSpoken.png" alt="" aria-hidden="true" />
+            <span>Languages Spoken</span>
+          </div>
+          <div class="information-value">{{ getLanguagesString() }}</div>
+        </div>
+
+        <div class="information-row information-row--about">
+          <div class="information-label">
+            <img src="assets/Icons-Neutral/Tutor-Qualification.png" alt="" aria-hidden="true" />
+            <span>About</span>
+          </div>
+          <div class="information-value about-value">
+            <p [class.is-collapsed]="!isAboutExpanded && shouldShowReadMore()">{{ getAboutText() }}</p>
+            <button type="button" *ngIf="shouldShowReadMore()" (click)="toggleAbout()">
+              {{ isAboutExpanded ? 'Read less' : 'Read more' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="information-row">
+          <div class="information-label">
+            <img src="assets/Icons-Neutral/Tutor-TimeDay.png" alt="" aria-hidden="true" />
+            <span>Days &amp; Time</span>
+          </div>
+          <div class="information-value">
+            <span>{{ getAvailabilityDays() }}</span>
+            <span class="value-subline">{{ getAvailabilityTime() }}</span>
+          </div>
+        </div>
+
+        <div class="information-row">
+          <div class="information-label">
+            <img src="assets/Icons-Neutral/Tutor-Location.png" alt="" aria-hidden="true" />
+            <span>Location</span>
+          </div>
+          <div class="information-value">
+            <span>{{ getPublicLocation() }}</span>
+            <button type="button" class="locked-link" (click)="requestUnlock()">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7.5 10V7.5a4.5 4.5 0 0 1 9 0V10M6 10h12v10H6z" />
+              </svg>
+              Unlock exact address &amp; map
+            </button>
+          </div>
+        </div>
+
+        <div class="information-row information-row--last">
+          <div class="information-label">
+            <img src="assets/Icons-Neutral/Icon-Tutor-Fees.png" alt="" aria-hidden="true" />
+            <span>Fee</span>
+          </div>
+          <div class="information-value fee-value">
+            <span *ngIf="getHourlyRate() > 0; else feeUnavailable">
+              Starts from <strong>₹{{ getHourlyRate() | number:'1.0-0' }}</strong>
+              <small>{{ getFeeTypeString() }}</small>
+            </span>
+            <ng-template #feeUnavailable>Not specified</ng-template>
+            <button type="button" class="locked-link" (click)="requestUnlock()">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7.5 10V7.5a4.5 4.5 0 0 1 9 0V10M6 10h12v10H6z" />
+              </svg>
+              Unlock detailed fee structure
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="unlock-card">
+        <div class="unlock-heading">
+          <div class="unlock-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M7.5 10V7.5a4.5 4.5 0 0 1 9 0V10M6 10h12v10H6z" />
+              <path d="M12 14v3" />
+            </svg>
+          </div>
+          <div>
+            <h2>Unlock contact details</h2>
+            <p>Subscribe to view full details and get in touch</p>
+          </div>
+        </div>
+
+        <div class="unlock-benefits" aria-label="Details included">
+          <span>🔒 Phone number</span>
+          <span>🔒 WhatsApp</span>
+          <span>🔒 Exact address</span>
+          <span>🔒 View on map</span>
+          <span>🔒 Full schedule</span>
+          <span>🔒 Fee details</span>
+        </div>
+
+        <button type="button" class="unlock-button" (click)="requestUnlock()">
+          <span aria-hidden="true">♛</span>
+          Unlock Now
+        </button>
+      </section>
+
+      <profile-facts class="tutor-faq" [faqs]="tutorFaqs" heading="FAQ's"></profile-facts>
+    </main>
   </div>
-  <div class="footer-actions d-flex justify-content-between align-items-center" *ngIf="true">
-    <div class="d-flex align-items-center gap-1">
-    <h2>₹ {{ getHourlyRate() }}</h2>
-    <h3>{{ getFeeTypeString() }}</h3>
-    </div>
-    <!-- Make button visually disabled for child users but keep it clickable so toast can show -->
-    <superme-button type="columbian-blue" size="medium" [text]="getContactCtaLabel()"
-      [attr.aria-disabled]="isChildUser()"
-      [class.disabled]="isChildUser()"
-      (click)="contactTutor()"
-      style="height: 42px !important; width: 170px;"></superme-button>
-  </div>
 
-
-
-  <!-- Shared transient toast (uses global .mb-toast styles) -->
-  <div class="mb-toast" *ngIf="(toast$ | async) as toast" [ngClass]="{'mb-toast--error': toast.type === 'error', 'mb-toast--success': toast.type === 'success'}" role="status" aria-live="polite" (click)="dismissToast()">
+  <div class="mb-toast" *ngIf="(toast$ | async) as toast"
+    [ngClass]="{'mb-toast--error': toast.type === 'error', 'mb-toast--success': toast.type === 'success'}"
+    role="status" aria-live="polite" (click)="dismissToast()">
     <div class="mb-toast__text">{{ toast.message }}</div>
   </div>
-  
-  <!-- Inline bottom sheet for contact (parent or self only) -->
+
   <div class="contact-backdrop" *ngIf="showContactSheet" (click)="closeContactSheet()">
-    <div class="contact-sheet" (click)="$event.stopPropagation()">
+    <section class="contact-sheet" role="dialog" aria-modal="true" aria-labelledby="contact-title"
+      (click)="$event.stopPropagation()">
+      <div class="sheet-handle" aria-hidden="true"></div>
       <div class="sheet-header">
-        <h2 class="title">{{ getContactSheetTitle() }}</h2>
-        <button class="btn-close" (click)="closeContactSheet()"><img src="assets/icons/cancel-cross.svg" alt="close" /></button>
+        <div>
+          <h2 id="contact-title">Contact {{ getDisplayName() }}</h2>
+          <p>Choose how you would like to get in touch.</p>
+        </div>
+        <button type="button" class="sheet-close" aria-label="Close contact options" (click)="closeContactSheet()">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+        </button>
       </div>
 
-      <div class="options">
-        <label class="option" [class.selected]="selectedContactMethod === 'call'" (click)="selectContact('call')">
-          <input type="radio" name="contactMethod" [checked]="selectedContactMethod === 'call'" aria-label="Call option" />
-          <span class="radio" aria-hidden="true"></span>
-          <span class="label-text">Call</span>
-        </label>
-
-        <label class="option" [class.selected]="selectedContactMethod === 'email'" (click)="selectContact('email')">
-          <input type="radio" name="contactMethod" [checked]="selectedContactMethod === 'email'" aria-label="Email option" />
-          <span class="radio" aria-hidden="true"></span>
-          <span class="label-text">Email</span>
-        </label>
+      <div class="contact-options">
+        <button type="button" [class.selected]="selectedContactMethod === 'call'" [disabled]="!hasPhoneNumber()"
+          (click)="selectContact('call')">
+          <span class="option-icon">☎</span>
+          <span><strong>Call</strong><small>{{ hasPhoneNumber() ? 'Phone number available' : 'Not available' }}</small></span>
+          <span class="radio"></span>
+        </button>
+        <button type="button" [class.selected]="selectedContactMethod === 'whatsapp'" [disabled]="!hasPhoneNumber()"
+          (click)="selectContact('whatsapp')">
+          <span class="option-icon">◉</span>
+          <span><strong>WhatsApp</strong><small>{{ hasPhoneNumber() ? 'Start a conversation' : 'Not available' }}</small></span>
+          <span class="radio"></span>
+        </button>
+        <button type="button" [class.selected]="selectedContactMethod === 'email'" [disabled]="!hasEmailAddress()"
+          (click)="selectContact('email')">
+          <span class="option-icon">✉</span>
+          <span><strong>Email</strong><small>{{ hasEmailAddress() ? 'Send an enquiry' : 'Not available' }}</small></span>
+          <span class="radio"></span>
+        </button>
       </div>
 
-      <div class="action">
-        <superme-button type="columbian-blue" size="large" [disabled]="!selectedContactMethod || isContactLaunching" [text]="selectedContactMethod === 'call' ? 'Call Now' : 'Send Email'" (click)="confirmContact()"></superme-button>
-      </div>
-    </div>
+      <button type="button" class="contact-confirm" [disabled]="isContactLaunching" (click)="confirmContact()">
+        <ion-spinner *ngIf="isContactLaunching" name="crescent"></ion-spinner>
+        <span *ngIf="!isContactLaunching">{{ getSelectedContactLabel() }}</span>
+      </button>
+    </section>
   </div>
 </ion-content>

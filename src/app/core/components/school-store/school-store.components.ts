@@ -14,6 +14,7 @@ import { AddressService } from '../../services/address.service';
 import { CustomToastService } from '../../services/custom-toast.service';
 import { Address } from '../../api/address.api';
 import { environment } from '../../../../environments/environment';
+import { SectionComingSoonComponent } from '../section-coming-soon/section-coming-soon.component';
 
 interface StoreCategory {
 	id: number;
@@ -29,7 +30,7 @@ interface StoreCategory {
 	selector: 'school-store',
 	templateUrl: './school-store.components.html',
 	styleUrls: ['./school-store.components.scss'],
-	imports: [CommonModule, IonicModule, RouterModule, SupermeNavigatorComponent, AdBannerComponent, FooterComponent],
+	imports: [CommonModule, IonicModule, RouterModule, SupermeNavigatorComponent, AdBannerComponent, FooterComponent, SectionComingSoonComponent],
 	schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class SchoolStoreComponent implements AfterViewInit, OnInit, OnDestroy {

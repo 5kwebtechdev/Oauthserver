@@ -262,18 +262,12 @@
   </superme-navigator>
   <div class="habit-input-root" [ngClass]="currentActive">
     <div *ngIf="!editingId" class=" w-full">
-      <div class="activity-tabs">
-        <button class="activity-tab tab-habits" (click)="currentActive = 'habits'" [class.active]="currentActive === 'habits'">
-          <img src="assets/icons/Habit.svg" alt="" class="activity-tab-icon" aria-hidden="true">
-          Habits
-        </button>
-        <button class="activity-tab tab-tasks" (click)="currentActive = 'tasks'" [class.active]="currentActive === 'tasks'">
-          <img src="assets/icons/Task.svg" alt="" class="activity-tab-icon" aria-hidden="true">
-          Tasks
-        </button>
-        <button class="activity-tab tab-timetable" (click)="currentActive = 'timetable'" [class.active]="currentActive === 'timetable'">
-          <img src="assets/icons/Time-table.svg" alt="" class="activity-tab-icon" aria-hidden="true">
-          Time Table
+      <div class="activity-tabs" role="tablist" aria-label="Activity type">
+        <button *ngFor="let tab of activityTabs" type="button" class="activity-tab"
+          [ngClass]="'tab-' + tab.key" [class.active]="currentActive === tab.key"
+          role="tab" [attr.aria-selected]="currentActive === tab.key" (click)="selectActivityTab(tab.key)">
+          <img [src]="tab.icon" alt="" class="activity-tab-icon" aria-hidden="true">
+          <span>{{ tab.label }}</span>
         </button>
       </div>
     </div>
@@ -366,6 +360,197 @@
         this.</div>
       <ng-container
         *ngTemplateOutlet="submitSection; context: {btnType: 'aqua', btnTypeFaded: 'aqua-light', itemType: 'Time Table'}"></ng-container>
+    </div>
+
+    <div *ngIf="currentActive === 'events'" class="form-card event-form">
+      <section *ngIf="eventInfoVisible" class="event-info" aria-label="Calendar information">
+        <span class="event-info__copy">
+          <img src="assets/figma/activity-event/info.svg" alt="" aria-hidden="true">
+          <span>Events exist only in your calendar</span>
+        </span>
+        <button type="button" class="event-info__close" aria-label="Dismiss calendar information"
+          (click)="dismissEventInfo()">
+          <img src="assets/figma/activity-event/close.svg" alt="" aria-hidden="true">
+        </button>
+      </section>
+
+      <section class="event-title-field" [class.invalid]="attemptedSubmit && showTitleError">
+        <div class="event-title-field__main">
+          <span class="event-icon-tile" aria-hidden="true">
+            <img src="assets/figma/activity-event/edit.svg" alt="">
+          </span>
+          <label class="event-title-field__copy">
+            <span class="visually-hidden">Event title</span>
+            <input [(ngModel)]="title" (ngModelChange)="clearTitleError()" maxlength="20"
+              placeholder="What’s the event? (eg. Birthday etc)">
+            <span>Be specific and actionable.</span>
+          </label>
+        </div>
+        <span class="event-character-count" aria-live="polite">{{ title.length }}/20</span>
+        <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">Please give this event a name.</div>
+      </section>
+
+      <section class="event-card event-type-card" [class.invalid]="attemptedSubmit && showEventTypeError">
+        <div class="event-section-header">
+          <span class="event-section-title">
+            <span class="event-icon-tile" aria-hidden="true">
+              <img src="assets/figma/activity-event/event-type.svg" alt="">
+            </span>
+            <span>Event Type</span>
+          </span>
+          <button type="button" class="event-add-new" (click)="beginAddEventType()">+ Add new</button>
+        </div>
+
+        <div class="event-pill-row" role="radiogroup" aria-label="Event type">
+          <button *ngFor="let option of eventTypes" type="button" class="event-pill"
+            [class.selected]="selectedEventType === option.key"
+            [attr.aria-checked]="selectedEventType === option.key" role="radio"
+            (click)="selectEventType(option.key)">
+            <img [src]="option.icon" alt="" aria-hidden="true">
+            <span>{{ option.label }}</span>
+          </button>
+        </div>
+
+        <div *ngIf="addingEventType" class="event-custom-type">
+          <input [(ngModel)]="customEventTypeName" maxlength="20" placeholder="Event type name"
+            aria-label="New event type" (keyup.enter)="saveCustomEventType()">
+          <button type="button" (click)="cancelAddEventType()">Cancel</button>
+          <button type="button" class="event-custom-type__save" [disabled]="!customEventTypeName.trim()"
+            (click)="saveCustomEventType()">Add</button>
+        </div>
+        <div *ngIf="attemptedSubmit && showEventTypeError" class="field-error" role="alert">Select an event type.</div>
+      </section>
+
+      <section class="event-card event-date-time-card">
+        <div class="event-section-header">
+          <span class="event-section-title">
+            <span class="event-icon-tile" aria-hidden="true">
+              <img src="assets/figma/activity-event/date-time.svg" alt="">
+            </span>
+            <span>Date &amp; Time</span>
+          </span>
+          <span class="event-toggle-control">
+            <span>All Day</span>
+            <superme-toggle [checked]="eventAllDay" (checkedChange)="onEventAllDayChange($event)"></superme-toggle>
+          </span>
+        </div>
+
+        <div class="event-picker-card" (click)="eventDateCtrl.toggleCalendar()">
+          <span class="event-picker-icon" aria-hidden="true">
+            <img src="assets/figma/activity-event/event-date.svg" alt="">
+          </span>
+          <span class="event-picker-copy">
+            <strong>Event Date</strong>
+            <superme-datepicker #eventDateCtrl type="date" label="Event Date" [(ngModel)]="eventDate"
+              (ngModelChange)="onEventDateChanged()" [minDate]="today" placeholder="Select Date"></superme-datepicker>
+          </span>
+          <img class="event-picker-add" src="assets/figma/activity-event/add.svg" alt="" aria-hidden="true">
+        </div>
+
+        <div *ngIf="!eventAllDay" class="event-time-row">
+          <div class="event-picker-card" (click)="eventStartTimeCtrl.openPopup()">
+            <span class="event-picker-icon" aria-hidden="true">
+              <img src="assets/figma/activity-event/time.svg" alt="">
+            </span>
+            <span class="event-picker-copy">
+              <strong>Start Time</strong>
+              <superme-timepicker #eventStartTimeCtrl label="Start Time" placeholder="Select Start Time"
+                [(ngModel)]="startTime" (ngModelChange)="onStartTimeChanged()"></superme-timepicker>
+            </span>
+            <img class="event-picker-add" src="assets/figma/activity-event/add.svg" alt="" aria-hidden="true">
+          </div>
+          <div class="event-picker-card" (click)="eventEndTimeCtrl.openPopup()">
+            <span class="event-picker-icon" aria-hidden="true">
+              <img src="assets/figma/activity-event/time.svg" alt="">
+            </span>
+            <span class="event-picker-copy">
+              <strong>End Time</strong>
+              <superme-timepicker #eventEndTimeCtrl label="End Time" placeholder="Select End Time"
+                [seedTime]="startTime" [quickDurations]="[15, 30, 45, 60]"
+                [(ngModel)]="endTime" (ngModelChange)="clearTimeError()"></superme-timepicker>
+            </span>
+            <img class="event-picker-add" src="assets/figma/activity-event/add.svg" alt="" aria-hidden="true">
+          </div>
+        </div>
+
+        <div *ngIf="attemptedSubmit && showDateError" class="field-error" role="alert">Select an event date.</div>
+        <div *ngIf="attemptedSubmit && showTimeError" class="field-error" role="alert">Select a start and end time, or choose All Day.</div>
+        <div *ngIf="showPastTimeError" class="field-error" role="alert">That start time has already passed.</div>
+        <div *ngIf="showEndTimeBeforeStart || showEndTimeSingleDayError" class="field-error" role="alert">End time must be later than start time.</div>
+      </section>
+
+      <section class="event-card event-recurrence-card">
+        <div class="event-section-header">
+          <span class="event-section-title">
+            <span class="event-icon-tile" aria-hidden="true">
+              <img src="assets/figma/activity-event/recurrence.svg" alt="">
+            </span>
+            <span>Recurrence</span>
+          </span>
+        </div>
+        <div class="event-pill-row" role="radiogroup" aria-label="Event recurrence">
+          <button *ngFor="let option of recurrenceOptions" type="button" class="event-pill"
+            [class.selected]="eventRecurrence === option.key" [attr.aria-checked]="eventRecurrence === option.key"
+            role="radio" (click)="selectEventRecurrence(option.key)">
+            <img [src]="option.icon" alt="" aria-hidden="true">
+            <span>{{ option.label }}</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="event-card event-expandable-card">
+        <button type="button" class="event-card-trigger" [attr.aria-expanded]="reminderExpanded"
+          aria-controls="event-reminder-options" (click)="toggleReminderOptions()">
+          <span class="event-section-title">
+            <span class="event-icon-tile" aria-hidden="true">
+              <img src="assets/figma/activity-event/reminder.svg" alt="">
+            </span>
+            <span class="event-trigger-copy">
+              <span>Set Reminder (Optional)</span>
+              <small *ngIf="reminderOffset">{{ reminderSummary }}</small>
+            </span>
+          </span>
+          <img class="event-trigger-add" src="assets/figma/activity-event/add.svg" alt="" aria-hidden="true"
+            [class.expanded]="reminderExpanded">
+        </button>
+        <div id="event-reminder-options" class="event-reminder-options" [class.open]="reminderExpanded">
+          <button *ngFor="let option of reminderOptions" type="button" class="event-reminder-option"
+            [class.selected]="reminderOffset === option.value" (click)="selectReminderOffset(option.value)">
+            <span class="event-reminder-radio" aria-hidden="true"></span>
+            <span>{{ option.label }}</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="event-card event-priority-card">
+        <span class="event-section-title">
+          <span class="event-icon-tile" aria-hidden="true">
+            <img src="assets/figma/activity-event/priority.svg" alt="">
+          </span>
+          <span>Priority (optional)</span>
+        </span>
+        <span class="event-toggle-control">
+          <span>High</span>
+          <superme-toggle [checked]="eventHighPriority" (checkedChange)="onEventPriorityChange($event)"></superme-toggle>
+        </span>
+      </section>
+
+      <section class="event-card event-notes-card">
+        <div class="event-notes-main">
+          <span class="event-icon-tile" aria-hidden="true">
+            <img src="assets/figma/activity-event/notes.svg" alt="">
+          </span>
+          <textarea [(ngModel)]="notes" (input)="autoExpandTextarea($event)" maxlength="100"
+            placeholder="Add a note to this event (optional)" aria-label="Event note"></textarea>
+        </div>
+        <span class="event-character-count" aria-live="polite">{{ notes.length }}/100</span>
+      </section>
+
+      <div *ngIf="serverErrorMessage" class="field-error event-server-error" role="alert">{{ serverErrorMessage }}</div>
+      <button type="button" class="event-submit" [disabled]="isSubmitting || !isFormComplete" (click)="submit()">
+        <span *ngIf="isSubmitting" class="event-submit__spinner" aria-hidden="true"></span>
+        <span>{{ isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Event' : 'Create Event') }}</span>
+      </button>
     </div>
 
   </div>
