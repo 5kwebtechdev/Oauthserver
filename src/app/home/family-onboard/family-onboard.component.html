@@ -152,15 +152,15 @@
           <div class="family-code-input-shell">
             <input type="text" formControlName="code"
               placeholder="Enter the 6-character code shared by your parent"
-              [class.error]="codeControl?.invalid && codeControl?.touched"
+              [class.error]="codeControl.invalid && codeControl.touched"
               maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false">
           </div>
 
-          <div class="family-code-validation error-message" *ngIf="codeControl?.invalid && codeControl?.touched">
-            <span *ngIf="codeControl?.errors?.['required']">Code is required</span>
-            <span *ngIf="codeControl?.errors?.['pattern']">Code must be 6 to 8 characters</span>
+          <div class="family-code-validation error-message" *ngIf="codeControl.invalid && codeControl.touched">
+            <span *ngIf="codeControl.errors?.['required']">Code is required</span>
+            <span *ngIf="codeControl.errors?.['pattern']">Code must be 6 to 8 characters</span>
           </div>
-          <div class="family-code-validation" *ngIf="codeControl?.value && (codeControl?.value?.length === 6 || codeControl?.value?.length === 8)">
+          <div class="family-code-validation" *ngIf="codeControl.value && (codeControl.value.length === 6 || codeControl.value.length === 8)">
             <span *ngIf="isCheckingCode" class="checking">Checking code...</span>
             <span *ngIf="!isCheckingCode && codeValidationStatus === 'valid'" class="valid">Family code is valid</span>
             <span class="error-message" *ngIf="!isCheckingCode && codeValidationStatus === 'invalid'">Family code is invalid!</span>
@@ -277,15 +277,15 @@
 
             <div class="create-family-input">
               <input type="text" formControlName="familyName" placeholder="eg. Sharma Family"
-                [class.error]="familyNameControl?.invalid && familyNameControl?.touched"
+                [class.error]="familyNameControl.invalid && familyNameControl.touched"
                 maxlength="30" autocomplete="organization" aria-label="Family name">
             </div>
 
             <div class="create-family-validation error-message"
-              *ngIf="familyNameControl?.invalid && familyNameControl?.touched">
-              <span *ngIf="familyNameControl?.errors?.['required']">Family name is required</span>
-              <span *ngIf="familyNameControl?.errors?.['minlength']">Family name must be at least 2 characters</span>
-              <span *ngIf="familyNameControl?.errors?.['maxlength']">Family name must be 30 characters or fewer</span>
+              *ngIf="familyNameControl.invalid && familyNameControl.touched">
+              <span *ngIf="familyNameControl.errors?.['required']">Family name is required</span>
+              <span *ngIf="familyNameControl.errors?.['minlength']">Family name must be at least 2 characters</span>
+              <span *ngIf="familyNameControl.errors?.['maxlength']">Family name must be 30 characters or fewer</span>
             </div>
 
             <button type="submit" class="create-family-submit"
@@ -374,20 +374,20 @@
             <div class="create-family-input parent-join-family-input">
               <input type="text" formControlName="familyCode"
                 placeholder="Enter the 6-character code shared by your creator"
-                [class.error]="familyCodeControl?.invalid && familyCodeControl?.touched"
-                [attr.aria-invalid]="familyCodeControl?.invalid && familyCodeControl?.touched"
+                [class.error]="familyCodeControl.invalid && familyCodeControl.touched"
+                [attr.aria-invalid]="familyCodeControl.invalid && familyCodeControl.touched"
                 maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false"
                 aria-label="Family code">
             </div>
 
             <div class="parent-join-family-validation error-message"
-              *ngIf="familyCodeControl?.invalid && familyCodeControl?.touched">
-              <span *ngIf="familyCodeControl?.errors?.['required']">Family code is required</span>
-              <span *ngIf="familyCodeControl?.errors?.['pattern']">Family code must be 6 or 8 characters</span>
+              *ngIf="familyCodeControl.invalid && familyCodeControl.touched">
+              <span *ngIf="familyCodeControl.errors?.['required']">Family code is required</span>
+              <span *ngIf="familyCodeControl.errors?.['pattern']">Family code must be 6 or 8 characters</span>
             </div>
 
             <div class="parent-join-family-validation"
-              *ngIf="familyCodeControl?.value && (familyCodeControl?.value?.length === 6 || familyCodeControl?.value?.length === 8)">
+              *ngIf="familyCodeControl.value && (familyCodeControl.value.length === 6 || familyCodeControl.value.length === 8)">
               <span *ngIf="isCheckingJoinFamilyCode" class="checking">Checking code...</span>
               <span *ngIf="!isCheckingJoinFamilyCode && joinFamilyCodeValidationStatus === 'valid'" class="valid">
                 Family code is valid

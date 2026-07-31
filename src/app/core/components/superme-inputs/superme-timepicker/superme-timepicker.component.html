@@ -3,94 +3,62 @@
     (click)="openPopup()" class="time-display-input" readonly />
 
   <div class="overlay" *ngIf="showPopup">
-    <div class="popup" #popup>
+    <div class="popup wheel-popup" #popup>
+      <h2 class="wheel-title">Set {{ label }}</h2>
+      <p class="wheel-subtitle">Scroll to pick your time</p>
 
-      <!-- Mode label -->
-      <p class="mode-label">{{ selecting === 'hour' ? 'Select hour' : 'Select minute' }}</p>
-
-      <div class="popup-header">
-        <div class="time-select">
-          <!-- Hour input: type="text" + inputmode="numeric" works reliably inside fixed overlays on Android/iOS -->
-          <input #hourInput
-            type="text"
-            inputmode="numeric"
-            maxlength="2"
-            autocomplete="off"
-            class="time-button"
-            [class.active]="selecting === 'hour'"
-            [value]="editingField === 'hour' ? hourBuffer : selectedHour.toString().padStart(2, '0')"
-            (focus)="startEdit('hour')"
-            (click)="startEdit('hour')"
-            (blur)="finishEdit('hour')"
-            (input)="onHourInput($event)" />
-
-          <p class="time-colon">:</p>
-
-          <!-- Minute input -->
-          <input #minuteInput
-            type="text"
-            inputmode="numeric"
-            maxlength="2"
-            autocomplete="off"
-            class="time-button"
-            [class.active]="selecting === 'minute'"
-            [value]="editingField === 'minute' ? minuteBuffer : selectedMinute.toString().padStart(2, '0')"
-            (focus)="startEdit('minute')"
-            (click)="startEdit('minute')"
-            (blur)="finishEdit('minute')"
-            (input)="onMinuteInput($event)" />
+      <div class="wheel-columns">
+        <div class="wheel-col">
+          <span class="wheel-col-label">HOUR</span>
+          <div class="wheel-viewport">
+            <div class="wheel-highlight" aria-hidden="true"></div>
+            <div class="wheel-scroll" #hourWheel (scroll)="onWheelScroll('hour', hourWheel)">
+              <div class="wheel-spacer" aria-hidden="true"></div>
+              <div class="wheel-item" *ngFor="let h of hoursList" [class.selected]="h === selectedHour">{{ h }}</div>
+              <div class="wheel-spacer" aria-hidden="true"></div>
+            </div>
+          </div>
         </div>
 
-        <div class="ampm-box">
-          <div class="container p-0" style="max-width: 75px">
-            <button class="ampm-button" [class.selected]="ampm === 'AM'" (click)="setAMPM('AM')">AM</button>
-            <hr />
-            <button class="ampm-button" [class.selected]="ampm === 'PM'" (click)="setAMPM('PM')">PM</button>
+        <span class="wheel-colon">:</span>
+
+        <div class="wheel-col">
+          <span class="wheel-col-label">MINUTE</span>
+          <div class="wheel-viewport">
+            <div class="wheel-highlight" aria-hidden="true"></div>
+            <div class="wheel-scroll" #minuteWheel (scroll)="onWheelScroll('minute', minuteWheel)">
+              <div class="wheel-spacer" aria-hidden="true"></div>
+              <div class="wheel-item" *ngFor="let m of minutesList" [class.selected]="m === selectedMinute">{{
+                m.toString().padStart(2, '0') }}</div>
+              <div class="wheel-spacer" aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+
+        <span class="wheel-colon">:</span>
+
+        <div class="wheel-col">
+          <span class="wheel-col-label">PERIOD</span>
+          <div class="wheel-viewport">
+            <div class="wheel-highlight" aria-hidden="true"></div>
+            <div class="wheel-scroll" #periodWheel (scroll)="onWheelScroll('period', periodWheel)">
+              <div class="wheel-spacer" aria-hidden="true"></div>
+              <div class="wheel-item" *ngFor="let p of periodsList" [class.selected]="p === ampm">{{ p }}</div>
+              <div class="wheel-spacer" aria-hidden="true"></div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="clock-face">
-        <!--
-          pointerleave is intentionally omitted — with setPointerCapture on the SVG, the browser
-          delivers pointermove/pointerup to this element even when the pointer exits its bounds,
-          so removing pointerleave fixes counter-clockwise dragging.
-        -->
-        <svg class="clock-svg" #clockSvg viewBox="0 0 200 200"
-          (pointerdown)="onClockPointerDown($event)"
-          (pointermove)="onClockPointerMove($event)"
-          (pointerup)="onClockPointerUp($event)"
-          (pointercancel)="onClockPointerUp($event)">
-
-          <!-- Clock face -->
-          <circle cx="100" cy="100" r="97" fill="#DCDBDC" stroke="none"></circle>
-          <!-- Center dot -->
-          <circle cx="100" cy="100" r="3" fill="#90214D" stroke="none"></circle>
-          <!-- Clock hand -->
-          <line x1="100" y1="100" [attr.x2]="getHandX()" [attr.y2]="getHandY()"
-            stroke="#90214D" stroke-width="2" stroke-linecap="round"></line>
-          <!-- Hand tip dot -->
-          <circle [attr.cx]="getHandX()" [attr.cy]="getHandY()" r="5" fill="#90214D"></circle>
-
-          <!-- Numbers -->
-          <g transform="translate(100, 100)">
-            <ng-container *ngFor="let i of [].constructor(12); let idx = index">
-              <g [attr.transform]="getTransform(idx)" class="clock-number">
-                <circle cx="0" cy="0" r="18"
-                  [attr.fill]="isSelected(idx) ? '#90214D' : 'transparent'"></circle>
-                <text x="0" y="1" text-anchor="middle" dominant-baseline="middle"
-                  [attr.fill]="isSelected(idx) ? 'white' : '#282527'" font-size="10" font-weight="500">
-                  {{ selecting === 'hour' ? (idx === 0 ? 12 : idx) : (idx * 5).toString().padStart(2, '0') }}
-                </text>
-              </g>
-            </ng-container>
-          </g>
-        </svg>
+      <div class="wheel-durations" *ngIf="quickDurations && quickDurations.length">
+        <button type="button" class="duration-pill" *ngFor="let d of quickDurations"
+          [class.selected]="selectedDurationMinutes === d"
+          (click)="$event.stopPropagation(); selectDuration(d)">{{ formatDuration(d) }}</button>
       </div>
 
-      <div class="popup-footer">
-        <button class="cancel" (click)="cancel()">Cancel</button>
-        <button class="ok" (click)="confirm()">OK</button>
+      <div class="wheel-footer">
+        <button type="button" class="wheel-cancel" (click)="$event.stopPropagation(); cancel()">Cancel</button>
+        <button type="button" class="wheel-done" (click)="$event.stopPropagation(); confirm()">Done</button>
       </div>
     </div>
   </div>

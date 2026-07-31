@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, Input, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FamilyService } from '../../core/services/family.service';
 import { CoreService } from '../../core/services/core.service';
@@ -461,9 +461,9 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
      * Get form controls for template
      */
     get f() { return this.codeForm.controls as any; }
-    get codeControl() { return this.codeForm.get('code'); }
-    get familyNameControl() { return this.familyForm.get('familyName'); }
-    get familyCodeControl() { return this.joinFamilyForm.get('familyCode'); }
+    get codeControl(): FormControl { return this.codeForm.get('code') as FormControl; }
+    get familyNameControl(): FormControl { return this.familyForm.get('familyName') as FormControl; }
+    get familyCodeControl(): FormControl { return this.joinFamilyForm.get('familyCode') as FormControl; }
     get formattedFamilyCode(): string {
         return this.familyCode.split('').join(' ');
     }

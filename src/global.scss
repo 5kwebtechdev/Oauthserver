@@ -107,6 +107,18 @@ label {
   max-width: unset;
 }
 
+// Bootstrap (loaded globally in index.html, purely for utility classes like
+// d-flex/w-100/p-0 used across the app) ships its own `.container` with a
+// hidden responsive max-width (540px/720px/960px/1140px/1320px per
+// breakpoint). That silently caps any element using the bare `container`
+// class on tablet/desktop, which is never what's intended here — every
+// current usage relies on `.container` purely for its (non-existent, until
+// now) layout-reset behavior, not Bootstrap's grid sizing. Neutralize it once
+// globally instead of chasing per-component overrides.
+.container {
+  max-width: none;
+}
+
 .p-0 {
   padding: 0 !important;
 }
@@ -970,6 +982,24 @@ body.onboarding-active {
 
   app-home.ion-page {
     width: 100vw !important;
+    max-width: none !important;
+    margin-inline: 0 !important;
+  }
+}
+
+// Some authenticated pages (eg. the user dashboard's web/tablet layout) build
+// their own wide container internally instead of the default readable-width
+// page above — same escape-hatch pattern as body.onboarding-active, but for
+// a *nested* route: the page sits behind two ion-router-outlet/.ion-page
+// layers (the top-level app shell's outlet, then the "authenticated" module's
+// own outlet), and since ion-page uses absolute positioning with left/right
+// insets, capping any ancestor in that chain caps this page's rendered width
+// too, no matter what max-width this page's own host declares. Toggled via
+// `document.body.classList.add('dashboard-web-view')` for as long as such a
+// page is active (see UserDashboardComponent).
+body.dashboard-web-view {
+  .ion-page,
+  ion-router-outlet {
     max-width: none !important;
     margin-inline: 0 !important;
   }

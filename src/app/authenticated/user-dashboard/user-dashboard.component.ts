@@ -19,6 +19,8 @@ import { QuickAccessSectionComponent } from "../../core/components/quick-access-
 import { SupermePetComponent } from '../../core/components/superme-pet/superme-pet.component';
 
 import { FooterComponent } from '../../core/components/footer/footer.component';
+import { DashboardWebHeaderComponent } from '../../core/components/dashboard-web-header/dashboard-web-header.component';
+import { DashboardWebFooterComponent } from '../../core/components/dashboard-web-footer/dashboard-web-footer.component';
 import { SkeletonImageComponent } from '../../core/components/skeleton-image/skeleton-image.component';
 import { PetMessagesService, PetMessage, PetMood } from '../../core/services/pet-messages.service';
 import { PetMessageApiService, ApiOverlayType } from '../../core/services/pet-message-api.service';
@@ -61,6 +63,8 @@ type HomeTimePeriod = 'morning' | 'evening' | 'night';
     SupermeInputsModule,
     SupermePetComponent,
     FooterComponent,
+    DashboardWebHeaderComponent,
+    DashboardWebFooterComponent,
     SkeletonImageComponent,
   ]
 })
@@ -169,6 +173,12 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       this.router.navigate(['/authed/parent-account'], { replaceUrl: true });
       return;
     }
+
+    // global.scss caps every ion-page/ion-router-outlet to a readable content
+    // width (see body.onboarding-active for the same pattern) — this page's
+    // web layout builds its own wider container internally (bp.web-container),
+    // so it opts out of that generic cap for as long as it's active.
+    document.body.classList.add('dashboard-web-view');
 
     this.startHomeTimeSync();
 
@@ -874,6 +884,7 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   // ─────────────────────────────────────────────────────────────────────────────
 
   ngOnDestroy(): void {
+    document.body.classList.remove('dashboard-web-view');
     // Unregister from global refresh
     this.refreshService.unregisterRefreshHandler('UserDashboard');
     if (this.homeTimeChangeTimer) {
