@@ -193,6 +193,7 @@ button {
   text-align: left;
   cursor: pointer;
   scroll-snap-align: start;
+  transition: flex-basis 220ms ease, width 220ms ease, color 220ms ease;
 
   &--selected {
     color: #ffffff;
@@ -218,6 +219,7 @@ button {
     height: 100%;
     object-fit: fill;
     pointer-events: none;
+    animation: switcher-shape-in 220ms ease;
   }
 
   &__content {
@@ -305,6 +307,25 @@ button {
 
   &--selected-multiple &__details > strong {
     max-width: 88px;
+  }
+}
+
+@keyframes switcher-shape-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .switcher-child {
+    transition: none;
+  }
+
+  .switcher-child__shape {
+    animation: none;
   }
 }
 

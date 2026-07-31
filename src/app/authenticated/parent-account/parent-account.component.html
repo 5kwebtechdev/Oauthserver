@@ -56,7 +56,7 @@
         <div class="child-switcher__rail"
           [class.child-switcher__rail--single]="children.length === 1"
           [class.child-switcher__rail--multiple]="children.length > 1">
-          <button *ngFor="let child of switcherChildren" type="button"
+          <button *ngFor="let child of children" type="button"
             class="switcher-child"
             [class.switcher-child--selected]="isSelectedChild(child)"
             [class.switcher-child--selected-single]="isSelectedChild(child) && children.length === 1"
@@ -65,9 +65,7 @@
             [attr.aria-expanded]="isSelectedChild(child) ? showSwitchPopup : null"
             (click)="onSwitcherChildClick(child, $event)">
             <img *ngIf="isSelectedChild(child)" class="switcher-child__shape"
-              [src]="children.length === 1
-                ? 'assets/figma/parent-home/selected-child-shape.svg'
-                : 'assets/figma/parent-home/selected-child-shape-middle.svg'"
+              src="assets/figma/parent-home/selected-child-shape.svg"
               alt="" aria-hidden="true">
             <span class="switcher-child__content">
               <span class="switcher-child__avatar">
