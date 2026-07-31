@@ -123,31 +123,48 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         });
     }
 
-    private summaryBody(): Record<string, any> {
+    private checkoutUserId(): string | null {
+        const userId = this.authService.getUserId()?.trim();
+        return userId && userId.toLowerCase() !== 'nan' ? userId : null;
+    }
+
+    private summaryBody(forUserId: string): Record<string, any> {
         return {
             addressId:     this.addressId,
             paymentMethod: this.paymentMethod,
             schoolId:      this.schoolId ?? null,
             classId:       this.classId  ?? null,
+            forUserId,
         };
     }
 
-    private orderBody(): Record<string, any> {
+    private orderBody(forUserId: string): Record<string, any> {
         return {
             addressId:     this.addressId,
             paymentMethod: this.paymentMethod,
             schoolId:      this.schoolId ?? null,
             classId:       this.classId  ?? null,
+            forUserId,
         };
     }
 
     fetchSummary(): void {
         if (!this.addressId) return;
+
+        const forUserId = this.checkoutUserId();
+        if (!forUserId) {
+            this.summaryLoading = false;
+            this.summaryError = true;
+            this.toastService.error('Your session could not be verified. Please sign in again.');
+            this.cdr.detectChanges();
+            return;
+        }
+
         this.summaryLoading = true;
         this.summaryError   = false;
         this.http.post<CheckoutSummary>(
             `${environment.apiUrl}/user/checkout/summary`,
-            this.summaryBody(),
+            this.summaryBody(forUserId),
             { headers: this.headers() }
         ).subscribe({
             next: (res) => {
@@ -185,6 +202,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
             return;
         }
 
+        const forUserId = this.checkoutUserId();
+        if (!forUserId) {
+            this.toastService.error('Your session could not be verified. Please sign in again.');
+            return;
+        }
+
         if (!this.canPlace) return;
         this.placing = true;
         this.paymentTerminal = false;
@@ -193,7 +216,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
         this.http.post<any>(
             `${environment.apiUrl}/user/checkout/create-order`,
-            this.orderBody(),
+            this.orderBody(forUserId),
             { headers: this.headers() }
         ).subscribe({
             next: (res) => {
@@ -564,6 +587,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     private openRazorpay(orderRes: any): void {
         const payload = this.paymentPayload(orderRes) ?? {};
         const gatewayOrderId = payload?.order_id
+            ?? payload?.id
             ?? payload?.gatewayOrderId
             ?? orderRes?.paymentOrderId
             ?? orderRes?.gatewayOrderId
@@ -573,31 +597,38 @@ export class CheckoutComponent implements OnInit, OnDestroy {
             ?? payload?.key
             ?? orderRes?.razorpayKeyId
             ?? orderRes?.keyId
+            ?? environment.razorpayKeyId
             ?? '';
         const amount = payload?.amount
             ?? orderRes?.amount
             ?? Math.round((this.summary?.payableTotal ?? 0) * 100);
         const currency = payload?.currency ?? orderRes?.currency ?? 'INR';
 
-        if (!gatewayOrderId || !keyId || !amount) {
+        if (!gatewayOrderId || !/^rzp_(?:test|live)_[A-Za-z0-9]+$/.test(String(keyId)) || !amount) {
             this.placing = false;
             this.toastService.error('Payment details are missing. Please try again.');
             this.cdr.detectChanges();
             return;
         }
 
+        this.hostedOrderResponse = orderRes;
+        this.paymentTerminal = false;
+        this.paymentFinalizing = false;
+
+        const storedUser = this.authService.getUserData() ?? {};
+        const currentUser = storedUser?.user ?? storedUser?.data?.user ?? storedUser?.data ?? storedUser;
+        const prefill = {
+            name: String(currentUser?.name ?? currentUser?.fullName ?? '').trim(),
+            email: String(currentUser?.email ?? '').trim(),
+            contact: String(currentUser?.phone ?? currentUser?.phoneNumber ?? '').trim()
+        };
+
         // Load Razorpay checkout.js if not already present
         const existing = document.getElementById('rzp-script');
         const load = (cb: () => void) => {
             if ((window as any).Razorpay) { cb(); return; }
             if (existing) {
-                existing.addEventListener('load', cb, { once: true });
-                existing.addEventListener('error', () => {
-                    this.placing = false;
-                    this.toastService.error('Could not load the payment gateway. Please try again.');
-                    this.cdr.detectChanges();
-                }, { once: true });
-                return;
+                existing.remove();
             }
             const s = document.createElement('script');
             s.id = 'rzp-script';
@@ -628,19 +659,23 @@ export class CheckoutComponent implements OnInit, OnDestroy {
                 },
                 modal: {
                     ondismiss: () => {
+                        if (this.paymentFinalizing || this.paymentTerminal) return;
                         this.placing = false;
                         this.cdr.detectChanges();
-                        this.toastService.error('Payment cancelled.');
+                        this.toastService.show('Payment cancelled. Your cart has not been cleared.', 'info');
                     }
                 },
-                prefill: { contact: '' },
+                prefill,
                 theme: { color: '#90214D' }
             };
 
             const rzp = new (window as any).Razorpay(options);
-            rzp.on('payment.failed', () => {
+            rzp.on('payment.failed', (failure: any) => {
                 this.placing = false;
-                this.toastService.error('Payment failed. Please try again.');
+                const message = failure?.error?.description
+                    || failure?.error?.reason
+                    || 'Payment failed. Please try again.';
+                this.toastService.error(message);
                 this.cdr.detectChanges();
             });
             rzp.open();
@@ -661,7 +696,23 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         }
 
         this.paymentFinalizing = true;
-        const body = { gatewayOrderId, gatewayPaymentId, gatewaySignature };
+        const forUserId = this.checkoutUserId();
+        if (!forUserId) {
+            void this.finishPaymentAttempt(
+                'Your session could not be verified. Payment confirmation is pending.',
+                'error'
+            );
+            return;
+        }
+
+        const body = {
+            paymentGateway: 'RAZORPAY',
+            gatewayOrderId,
+            gatewayPaymentId,
+            gatewaySignature,
+            status: 'SUCCESS',
+            forUserId
+        };
         this.http.post<any>(
             `${environment.apiUrl}/user/checkout/payment/callback`,
             body,
