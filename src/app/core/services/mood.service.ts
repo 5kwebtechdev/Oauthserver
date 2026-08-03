@@ -20,11 +20,23 @@ export class MoodService {
    */
   /**
    * Fetch mood transitions for a specific month.
-   * The ProfileSelectorInterceptor automatically adds userId when a child is selected.
+   * Pass forUserId to bind the response to a particular child. Existing
+   * callers can still rely on ProfileSelectorInterceptor when it is omitted.
    */
-  getMoodTransitionsMonthly(year: number, month: number): Observable<MoodTransition[]> {
-    const url = `${this.apiUrl}/vibes/transition/monthly?year=${year}&month=${month}`;
-    return this.http.get<MoodTransition[]>(url);
+  getMoodTransitionsMonthly(
+    year: number,
+    month: number,
+    forUserId?: string | number
+  ): Observable<MoodTransition[]> {
+    const params: Record<string, string> = {
+      year: String(year),
+      month: String(month)
+    };
+    if (forUserId !== undefined && forUserId !== null) {
+      params['forUserId'] = String(forUserId);
+    }
+
+    return this.http.get<MoodTransition[]>(`${this.apiUrl}/vibes/transition/monthly`, { params });
   }
 
   /**
@@ -81,11 +93,14 @@ export class MoodService {
 
   /**
    * Fetch vibes display data containing user stats (coins, trophies, streaks, badges, etc.)
-   * Uses caching to prevent duplicate API calls - multiple subscribers will share the same request
+   * Pass forUserId when the caller needs a child-scoped analytics response.
    * @returns Observable of VibesDisplayResponse array
    */
-  getVibesDisplay(): Observable<VibesDisplayResponse[]> {
-    return this.http.get<VibesDisplayResponse[]>(`${this.apiUrl}/vibes/display`);
+  getVibesDisplay(forUserId?: string | number): Observable<VibesDisplayResponse[]> {
+    const params = forUserId !== undefined && forUserId !== null
+      ? { forUserId: String(forUserId) }
+      : undefined;
+    return this.http.get<VibesDisplayResponse[]>(`${this.apiUrl}/vibes/display`, { params });
   }
 
   /** No-op kept for call-site compatibility */

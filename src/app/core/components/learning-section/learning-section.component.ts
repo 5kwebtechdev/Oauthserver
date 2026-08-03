@@ -40,7 +40,7 @@ import { LearningService } from 'src/app/core/services/learning.service';
             [attr.aria-label]="'Assign ' + getRewardCoins(item) + ' coins to ' + (item?.title || 'learning activity')"
             (click)="onRewardClick($event, item, i)">
             <span>Assign</span>
-            <img src="assets/figma/parent-home/coin.png" alt="" aria-hidden="true">
+            <img src="assets/icons/child-home-coin-figma.png" alt="" aria-hidden="true">
             <strong>{{ getRewardCoins(item) }}</strong>
           </button>
         </div>

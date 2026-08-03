@@ -50,7 +50,7 @@
             <img src="assets/figma/parent-home/notification.svg" alt="" aria-hidden="true">
           </button>
           <button type="button" class="parent-coin-pill" aria-label="Open coins" (click)="openCoinPage()">
-            <img src="assets/figma/parent-home/coin.png" alt="" aria-hidden="true">
+            <img src="assets/icons/child-home-coin-figma.png" alt="" aria-hidden="true">
             <span>{{ parentCoins }}</span>
           </button>
         </nav>
@@ -81,11 +81,11 @@
                 <strong [attr.title]="child.name">{{ child.name }}</strong>
                 <span class="switcher-child__stats">
                   <span>
-                    <img src="assets/figma/parent-home/streak.png" alt="" aria-hidden="true">
+                    <img src="assets/icons/child-home-streak-figma.png" alt="" aria-hidden="true">
                     {{ child.streak ?? 0 }}
                   </span>
                   <span>
-                    <img src="assets/figma/parent-home/coin.png" alt="" aria-hidden="true">
+                    <img src="assets/icons/child-home-coin-figma.png" alt="" aria-hidden="true">
                     {{ child.coins ?? 0 }}
                   </span>
                 </span>
@@ -174,18 +174,19 @@
         </div>
 
         <div class="performance-card">
-          <div class="metric-grid">
+          <div class="metric-grid" [attr.aria-busy]="performanceLoading ? 'true' : null">
             <article class="metric" *ngFor="let metric of performanceMetrics">
               <div class="metric__label">
                 <span>{{ metric.label }}</span>
                 <img src="assets/figma/parent-home/info.svg" alt="" aria-hidden="true">
               </div>
-              <div class="metric__ring"
+              <div class="metric__ring" [class.metric__ring--loading]="performanceLoading"
                 [style.--metric-value]="metric.value + '%'"
                 [style.--metric-color]="metric.color">
-                <span>{{ metric.displayValue }}</span>
+                <span *ngIf="!performanceLoading">{{ metric.displayValue }}</span>
               </div>
-              <strong [style.color]="metric.color">{{ metric.status }}</strong>
+              <strong *ngIf="!performanceLoading" [style.color]="metric.color">{{ metric.status }}</strong>
+              <span *ngIf="performanceLoading" class="metric__status-skeleton" aria-hidden="true"></span>
             </article>
           </div>
 
@@ -238,7 +239,7 @@
         <learning-section
           title="Motivate with coins"
           subtitle="Assign bonus coins to learning activities to boost motivation"
-          headerIcon="assets/figma/parent-home/coin.png"
+          headerIcon="assets/icons/child-home-coin-figma.png"
           [rewardMode]="true"
           source="/authed/parent-account">
         </learning-section>

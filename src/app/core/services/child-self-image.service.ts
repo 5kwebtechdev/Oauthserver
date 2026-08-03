@@ -45,6 +45,17 @@ export class ChildSelfImageService {
                 }
             }
 
+            // Preset-avatar system couldn't resolve one — fall back to an
+            // actual hosted photo before giving up to initials. This matters
+            // for Google/Apple accounts, which get an auto-generated
+            // avatarName like "john93046503" that doesn't match the
+            // "Avatar N" (1-12) convention, so the check above always fails
+            // for them even though a real photo may be available.
+            const hostedUrl = this.extractHostedAvatarUrl(user);
+            if (hostedUrl) {
+                return { url: hostedUrl, alt: user.name ? `${user.name} avatar` : null };
+            }
+
             // Fallback: no avatar found
             return { url: null, alt: user.name ? `${user.name} avatar` : null };
         } catch (e) {
@@ -76,11 +87,39 @@ export class ChildSelfImageService {
                 }
             }
 
+            // Same OAuth fallback as resolveAvatarFromUser — see its comment.
+            const hostedUrl = this.extractHostedAvatarUrl(member);
+            if (hostedUrl) {
+                return { url: hostedUrl, alt: member.name ? `${member.name} avatar` : null };
+            }
+
             return { url: null, alt: member.name ? `${member.name} avatar` : null };
         } catch (e) {
             console.error('[ChildSelfImageService] Error resolving member avatar:', e);
             return { url: null, alt: null };
         }
+    }
+
+    /**
+     * Best-effort extraction of a real hosted avatar URL (Google profile
+     * photo, uploaded picture, etc.) from the various shapes it can appear
+     * in across API responses.
+     */
+    private extractHostedAvatarUrl(obj: any): string {
+        if (!obj) return '';
+
+        const candidates = [
+            obj.avatar?.url,
+            obj.avatarUrl,
+            obj.avatar?.imageUrl,
+            obj.profilePicUrl
+        ];
+
+        for (const c of candidates) {
+            if (c && String(c).trim().length > 0) return String(c).trim();
+        }
+
+        return '';
     }
 
     /**
