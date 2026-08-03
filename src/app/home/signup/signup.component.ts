@@ -361,7 +361,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.isOAuthSignup) {
       const googleName = sessionStorage.getItem('google_signup_name');
       const googleEmail = sessionStorage.getItem('google_signup_email');
-      if (googleName) {
+      // Only seed the field with Google's name if it's still empty here.
+      // restoreSignupStateFromSession() (called just above) already
+      // restores whatever name the user previously saved/edited in this
+      // session — re-patching unconditionally would clobber that edit
+      // every time this component re-initializes (e.g. navigating away
+      // and back), silently reverting the user's correction.
+      const existingName = this.profileForm.get('name')?.value;
+      if (googleName && !existingName) {
         this.profileForm.patchValue({ name: googleName });
         this.profileForm.get('name')?.markAsDirty();
         this.profileForm.markAsDirty();

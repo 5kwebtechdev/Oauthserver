@@ -26,6 +26,11 @@ const routes: Routes = [
         canActivate: [DashboardRedirectGuard],
         data: { allowedRoles: ['PARENT'] }
       }, {
+        path: 'parent-learning',
+        loadComponent: () => import('../core/components/learning-section/parent-learning-listing/parent-learning-listing.component').then(m => m.ParentLearningListingComponent),
+        canActivate: [DashboardRedirectGuard],
+        data: { allowedRoles: ['PARENT'] }
+      }, {
         path: 'user-profile',
         component: UserProfileComponent
       }, {

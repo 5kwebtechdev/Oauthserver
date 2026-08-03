@@ -268,6 +268,10 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
           });
 
           if (levelIndex === 0 && this.selectedCategory != null) {
+            // The first top tab is auto-selected on load — filter the product
+            // list to it immediately instead of leaving the unfiltered list up.
+            this.activeProductSubCategory = options[0].id;
+            this.loadProducts();
             this.loadSubCategoryLevel(1, [apiOptions[0].id]);
             this.cdr.detectChanges();
             return;
@@ -295,23 +299,27 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
     this.subCategoryLevels = this.subCategoryLevels.slice(0, levelIndex + 1);
 
     if (levelIndex === 0 && this.selectedCategory != null) {
-      // A top tab changes the available left-side choices, but keeps the
-      // product list at the full top-level category until a rail item is tapped.
-      this.activeProductSubCategory = null;
+      // A top tab now filters the product list to that top-level sub-category;
+      // the rail underneath narrows it further once the user taps an item there.
+      this.activeProductSubCategory = option.id;
       this.loadProducts();
       const path = [option.id];
       this.loadSubCategoryLevel(levelIndex + 1, path);
     } else {
-      this.activeProductSubCategory = option.id === this.allSubCategoryId ? null : option.id;
+      // "All Products" in the rail clears only the rail-level narrowing —
+      // it falls back to the active top tab's filter, not to an unfiltered list.
+      this.activeProductSubCategory = option.id === this.allSubCategoryId
+        ? (this.subCategoryLevels[0]?.selected ?? null)
+        : option.id;
       this.loadProducts();
     }
 
     this.cdr.detectChanges();
   }
 
-  /** Clear the rail filter and return to all products in the opened category. */
+  /** Clear the rail filter and return to all products in the active top tab. */
   resetSubCategories(): void {
-    this.activeProductSubCategory = null;
+    this.activeProductSubCategory = this.subCategoryLevels[0]?.selected ?? null;
     const railLevel = this.railSubCategoryLevel;
     if (railLevel?.options.some(option => option.id === this.allSubCategoryId)) {
       railLevel.selected = this.allSubCategoryId;

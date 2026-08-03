@@ -1,15 +1,25 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { IonicModule } from '@ionic/angular';
-import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
-import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
+import { Share } from '@capacitor/share';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { SupermePopupComponent, SupermePopupConfig } from '../../superme-popup/superme-popup.component';
+import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
 import { LearningService } from 'src/app/core/services/learning.service';
 import { BadgePopupService } from 'src/app/core/services/badge-popup.service';
 import { PetAgeService } from 'src/app/core/services/pet-age.service';
-import { Article } from 'src/app/core/models/learning.models';
+import { Article, LearningCardData } from 'src/app/core/models/learning.models';
+
+type HelpfulnessValue = 'very-helpful' | 'helpful' | 'not-helpful';
+
+interface HelpfulnessOption {
+  value: HelpfulnessValue;
+  label: string;
+  image: string;
+}
 
 @Component({
   selector: 'app-article-page',
@@ -21,16 +31,38 @@ import { Article } from 'src/app/core/models/learning.models';
     RouterModule,
     IonicModule,
     HttpClientModule,
-    SupermeNavigatorComponent,
-    SupermeButtonComponent,
-    SupermePopupComponent
+    SupermePopupComponent,
+    AdBannerComponent
   ],
   providers: [LearningService]
 })
 export class ArticlePageComponent implements OnInit, OnDestroy {
   article: Article | null = null;
+  relatedQuiz: LearningCardData | null = null;
+  primaryArticleContent = '';
+  secondaryArticleContent = '';
   isLoading = true;
   isMarking = false;
+  actionError = '';
+  selectedHelpfulness: HelpfulnessValue | null = null;
+
+  readonly helpfulnessOptions: HelpfulnessOption[] = [
+    {
+      value: 'very-helpful',
+      label: 'Very Helpful',
+      image: 'assets/figma/learning-details/very-helpful.png'
+    },
+    {
+      value: 'helpful',
+      label: 'Helpful',
+      image: 'assets/figma/learning-details/helpful.png'
+    },
+    {
+      value: 'not-helpful',
+      label: 'Not Helpful',
+      image: 'assets/figma/learning-details/not-helpful.png'
+    }
+  ];
 
   // Minimum reading time gate
   readonly minReadSeconds = 60;
@@ -42,6 +74,8 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   readTimerComplete = false;
   justUnlocked = false;
   private justUnlockedTimeout: any;
+  private readonly destroy$ = new Subject<void>();
+  private readonly returnUrl: string;
 
   // Popup state and config
   showMarkPopup = false;
@@ -69,9 +103,14 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private learningService: LearningService,
     public router: Router,
+    private location: Location,
     private badgePopupService: BadgePopupService,
     private petAgeService: PetAgeService
-  ) { }
+  ) {
+    const navigationState = this.router.getCurrentNavigation()?.extras.state || history.state;
+    const source = String(navigationState?.['source'] || '');
+    this.returnUrl = source.startsWith('/authed/') ? source : '/authed/content';
+  }
 
   get isArticleRead(): boolean {
     return !!this.article?.alreadyRead;
@@ -85,6 +124,79 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     if (this.minReadSeconds <= 0) return 100;
     const elapsed = this.minReadSeconds - this.remainingReadSeconds;
     return Math.min(100, Math.max(0, (elapsed / this.minReadSeconds) * 100));
+  }
+
+  get articleImage(): string {
+    const article = this.article as any;
+    return String(
+      article?.heroImageUrl
+      || article?.coverImageUrl
+      || article?.thumbnailUrl
+      || article?.image
+      || ''
+    ).trim();
+  }
+
+  get articleAuthorName(): string {
+    const article = this.article as any;
+    const createdBy = typeof article?.createdBy === 'string' ? article.createdBy : '';
+    return String(
+      article?.author?.name
+      || article?.authorName
+      || article?.createdByName
+      || article?.createdBy?.name
+      || createdBy
+      || 'SuperMeApp'
+    );
+  }
+
+  get articleAuthorImage(): string {
+    const article = this.article as any;
+    return String(
+      article?.author?.avatarUrl
+      || article?.authorAvatarUrl
+      || article?.createdByAvatarUrl
+      || 'assets/figma/learning-details/app-icon.png'
+    );
+  }
+
+  get articleReadTime(): string {
+    const article = this.article as any;
+    const numericMinutes = Number(
+      article?.durationMinutes
+      || article?.estimatedTimeMinutes
+      || article?.readTimeMinutes
+      || 0
+    );
+    if (numericMinutes > 0) return `${numericMinutes} min`;
+
+    const rawDuration = String(article?.timeDuration || '').trim();
+    if (/\d/.test(rawDuration)) {
+      return /min|hour|sec/i.test(rawDuration) ? rawDuration : `${rawDuration} min`;
+    }
+
+    const durationBySize: Record<string, number> = { SHORT: 5, MEDIUM: 10, LONG: 15 };
+    const mappedMinutes = durationBySize[rawDuration.toUpperCase()];
+    return mappedMinutes ? `${mappedMinutes} min` : '';
+  }
+
+  get articlePublishedDate(): string {
+    const article = this.article as any;
+    const value = article?.publishedAt || article?.createdAt || article?.updatedAt;
+    if (!value) return '';
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    }).format(date);
+  }
+
+  get articleCoins(): number {
+    const article = this.article as any;
+    return Math.max(0, Number(article?.coins ?? article?.rewardCoins ?? 0) || 0);
   }
 
   /**
@@ -107,19 +219,23 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   confirmMarkAsRead(): void {
     if (!this.article || this.isArticleRead || this.isMarking) return;
     this.isMarking = true;
-    this.learningService.markArticleComplete(this.article.id).subscribe({
+    this.actionError = '';
+    this.learningService.markArticleComplete(this.article.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
       next: (res) => {
         console.log('Article marked as read response:', res);
         this.isMarking = false;
         this.showMarkPopup = false;
         this.petAgeService.recordActivity('articles');
         this.badgePopupService.check();
-        this.router.navigate(['/authed/content']);
+        void this.router.navigateByUrl(this.returnUrl);
       },
       error: (err) => {
         console.error('Failed to mark article as read:', err);
         this.isMarking = false;
         this.showMarkPopup = false;
+        this.actionError = 'We could not update this article. Please try again.';
       }
     });
   }
@@ -130,12 +246,20 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     console.log('Article ID from route:', articleId);
 
     if (articleId) {
-      this.learningService.fetchArticleById(Number(articleId)).subscribe({
+      this.learningService.fetchArticleById(Number(articleId))
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
         next: (article) => {
           console.log('Article loaded:', article);
           this.article = article;
           this.isLoading = false;
-          this.startReadingTimer();
+          if (article) {
+            this.prepareArticleContent(article.content);
+            this.initializeHelpfulness(article);
+            this.loadRelatedQuiz(article);
+            this.updatePopupRewardCopy();
+            this.startReadingTimer();
+          }
         },
         error: (error) => {
           console.error('Error loading article:', error);
@@ -149,11 +273,86 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.stopReadingTimer();
     if (this.justUnlockedTimeout) {
       clearTimeout(this.justUnlockedTimeout);
       this.justUnlockedTimeout = null;
     }
+  }
+
+  goBack(): void {
+    this.location.back();
+  }
+
+  async shareArticle(): Promise<void> {
+    if (!this.article) return;
+
+    try {
+      await Share.share({
+        title: this.article.title,
+        text: this.article.description || this.article.title,
+        url: window.location.href,
+        dialogTitle: `Share ${this.article.title}`
+      });
+    } catch (error) {
+      console.warn('Article share is unavailable:', error);
+    }
+  }
+
+  selectHelpfulness(value: HelpfulnessValue): void {
+    this.selectedHelpfulness = value;
+    if (!this.article) return;
+
+    try {
+      localStorage.setItem(`superme_article_helpfulness_${this.article.id}`, value);
+    } catch { /* Storage can be unavailable in restricted browser modes. */ }
+  }
+
+  openRelatedQuiz(): void {
+    if (!this.relatedQuiz) return;
+    void this.router.navigate(['/authed/content/description', this.relatedQuiz.id], {
+      state: { source: this.router.url }
+    });
+  }
+
+  getRelatedDifficulty(): string {
+    if (!this.relatedQuiz) return '';
+    const raw = this.relatedQuiz.rawData as any;
+    return String(
+      this.relatedQuiz.difficulty
+      || raw?.difficultyDisplay
+      || raw?.difficulty
+      || ''
+    );
+  }
+
+  getRelatedDuration(): string {
+    if (!this.relatedQuiz) return '';
+    const raw = this.relatedQuiz.rawData as any;
+    const value = this.relatedQuiz.timeDuration
+      || raw?.estimatedTimeMinutes
+      || raw?.timeDuration;
+
+    if (typeof value === 'number') return `${value} min`;
+    const text = String(value || '').trim();
+    return text && !/min|hour|sec/i.test(text) ? `${text} min` : text;
+  }
+
+  hasRelatedImage(): boolean {
+    const image = String(this.relatedQuiz?.image || '').trim();
+    return !!image && !image.includes('Flux_Dev_a_surreal');
+  }
+
+  hideBrokenImage(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
+  }
+
+  useAuthorFallback(event: Event): void {
+    const image = event.target as HTMLImageElement;
+    const fallback = 'assets/figma/learning-details/app-icon.png';
+    if (!image.src.endsWith(fallback)) image.src = fallback;
   }
 
   /**
@@ -199,5 +398,76 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     this.justUnlockedTimeout = setTimeout(() => {
       this.justUnlocked = false;
     }, 4000);
+  }
+
+  private prepareArticleContent(content: string | null | undefined): void {
+    const html = String(content || '').trim();
+    this.primaryArticleContent = html;
+    this.secondaryArticleContent = '';
+    if (!html || typeof document === 'undefined') return;
+
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    const nodes = Array.from(container.childNodes);
+    if (nodes.length < 2) return;
+
+    const isHeading = (node: Node) => node instanceof Element && /^H[1-6]$/.test(node.tagName);
+    const serialize = (node: Node) => node instanceof Element ? node.outerHTML : (node.textContent || '');
+    const firstHeadingIndex = nodes.findIndex(isHeading);
+    const nextHeadingIndex = nodes.findIndex((node, index) => (
+      index > Math.max(firstHeadingIndex, 0) && isHeading(node)
+    ));
+
+    if (nextHeadingIndex <= 0) return;
+    this.primaryArticleContent = nodes.slice(0, nextHeadingIndex).map(serialize).join('');
+    this.secondaryArticleContent = nodes.slice(nextHeadingIndex).map(serialize).join('');
+  }
+
+  private initializeHelpfulness(article: Article): void {
+    const apiValue = String((article as any)?.helpfulness || (article as any)?.feedback || '')
+      .trim()
+      .toLowerCase()
+      .replace(/_/g, '-');
+
+    if (apiValue === 'very-helpful' || apiValue === 'helpful' || apiValue === 'not-helpful') {
+      this.selectedHelpfulness = apiValue;
+      return;
+    }
+
+    try {
+      const storedValue = localStorage.getItem(`superme_article_helpfulness_${article.id}`) as HelpfulnessValue | null;
+      if (storedValue === 'very-helpful' || storedValue === 'helpful' || storedValue === 'not-helpful') {
+        this.selectedHelpfulness = storedValue;
+      }
+    } catch { /* Storage can be unavailable in restricted browser modes. */ }
+  }
+
+  private loadRelatedQuiz(article: Article): void {
+    this.learningService.fetchQuizCards()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(items => {
+        const articleTerms = [
+          ...((article.tags || []).map(tag => String(tag).toLowerCase())),
+          String((article as any)?.topic || '').toLowerCase()
+        ].filter(Boolean);
+
+        this.relatedQuiz = items.find(item => {
+          const raw = item.rawData as any;
+          const quizText = [item.title, item.subType, raw?.topic, raw?.categoryDisplay]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+          return articleTerms.some(term => quizText.includes(term));
+        }) || items[0] || null;
+      });
+  }
+
+  private updatePopupRewardCopy(): void {
+    this.markPopupConfig = {
+      ...this.markPopupConfig,
+      subtitle: this.articleCoins > 0
+        ? `You'll earn ${this.articleCoins} coins when you mark this article as read. Are you sure you want to complete it?`
+        : 'Mark this article as read to complete it.'
+    };
   }
 }

@@ -1,0 +1,109 @@
+<ion-content fullscreen class="parent-learning-listing-content">
+  <div class="parent-learning-listing-page">
+    <header class="parent-learning-hero">
+      <div class="parent-learning-hero__nav">
+        <button type="button" class="parent-learning-hero__back" (click)="goBack()" aria-label="Back to Parent Home">
+          <img src="assets/figma/parent-home/parent-learning-back.svg" alt="" aria-hidden="true">
+        </button>
+        <button type="button" class="parent-learning-hero__search-button" (click)="toggleSearch()"
+          [attr.aria-expanded]="searchOpen" aria-controls="parent-learning-search" aria-label="Search parenting content">
+          <img src="assets/figma/parent-home/parent-learning-search.svg" alt="" aria-hidden="true">
+        </button>
+      </div>
+
+      <label *ngIf="searchOpen" id="parent-learning-search" class="parent-learning-search">
+        <img src="assets/figma/parent-home/parent-learning-search.svg" alt="" aria-hidden="true">
+        <input #parentSearchInput type="search" [(ngModel)]="searchQuery" (input)="onSearchChange()"
+          [placeholder]="'Search ' + selectedTab.label.toLowerCase()" [attr.aria-label]="'Search ' + selectedTab.label.toLowerCase()">
+        <button *ngIf="searchQuery" type="button" (click)="clearSearch()" aria-label="Clear search">×</button>
+      </label>
+
+      <div class="parent-learning-hero__content">
+        <div class="parent-learning-hero__copy">
+          <h1>Small Steps Today,<br>Stronger Tomorrow</h1>
+          <p>Practical insights, helpful tips, and fun quizzes to support your parenting journey every day.</p>
+        </div>
+        <img class="parent-learning-hero__art" src="assets/figma/parent-home/parent-learning-hero.png"
+          alt="A family learning and growing together">
+      </div>
+    </header>
+
+    <main class="parent-learning-listing-main">
+      <nav class="parent-learning-tabs" aria-label="Parenting content categories">
+        <button *ngFor="let tab of tabs" type="button" (click)="selectCategory(tab.key)"
+          [class.parent-learning-tabs__active]="selectedCategory === tab.key"
+          [attr.aria-pressed]="selectedCategory === tab.key">
+          <span class="parent-learning-tabs__icon" [class.parent-learning-tabs__icon--quiz]="tab.key === 'quizzes'">
+            <img [src]="tab.icon" alt="" aria-hidden="true">
+          </span>
+          <span>{{ tab.label }}</span>
+        </button>
+      </nav>
+
+      <h2 class="parent-learning-results-title">
+        <ng-container *ngIf="!searchQuery">Top Picks Just for You</ng-container>
+        <ng-container *ngIf="searchQuery">Results for “{{ searchQuery }}”</ng-container>
+      </h2>
+
+      <section class="parent-learning-state" *ngIf="isLoading" aria-live="polite">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Loading {{ selectedTab.label.toLowerCase() }}...</p>
+      </section>
+
+      <section class="parent-learning-state parent-learning-state--error" *ngIf="!isLoading && hasError"
+        aria-live="assertive">
+        <span aria-hidden="true">!</span>
+        <h2>Couldn’t load {{ selectedTab.label.toLowerCase() }}</h2>
+        <p>Please check your connection and try again.</p>
+        <button type="button" (click)="retry()">Retry</button>
+      </section>
+
+      <section class="parent-learning-state" *ngIf="!isLoading && !hasError && filteredItems.length === 0">
+        <img src="assets/figma/parent-home/no-child-person.svg" alt="" aria-hidden="true">
+        <h2>No {{ selectedTab.label.toLowerCase() }} available</h2>
+        <p *ngIf="!searchQuery">Please check again soon.</p>
+        <p *ngIf="searchQuery">Try another search term.</p>
+        <button *ngIf="searchQuery" type="button" (click)="clearSearch()">Clear search</button>
+      </section>
+
+      <section class="parent-learning-list" *ngIf="!isLoading && !hasError && pagedItems.length"
+        [attr.aria-label]="selectedTab.label + ' list'">
+        <article class="parent-learning-row" *ngFor="let item of pagedItems; trackBy: trackByItemId">
+          <button type="button" class="parent-learning-row__image" (click)="openItem(item)"
+            [attr.aria-label]="'Open ' + item.title">
+            <img *ngIf="hasItemImage(item)" [src]="item.image" [alt]="item.title" (error)="onImageError($event)">
+          </button>
+          <div class="parent-learning-row__body">
+            <span class="parent-learning-row__tag"
+              [class.parent-learning-row__tag--difficulty]="selectedCategory === 'quizzes'">{{ getItemTag(item) }}</span>
+            <button type="button" class="parent-learning-row__title" (click)="openItem(item)">
+              {{ item.title }}
+            </button>
+            <div class="parent-learning-row__meta">
+              <span>
+                <img src="assets/figma/parent-home/parent-learning-coin.png" alt="" aria-hidden="true">
+                {{ item.coins || 0 }}
+              </span>
+              <span *ngIf="getItemDuration(item) as duration">
+                <img src="assets/figma/parent-home/parent-learning-clock.svg" alt="" aria-hidden="true">
+                {{ duration }}
+              </span>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <nav class="parent-learning-pagination" *ngIf="!isLoading && !hasError && totalPages > 1"
+        aria-label="Content pages">
+        <button *ngFor="let page of pageNumbers" type="button" (click)="setPage(page)"
+          [class.parent-learning-pagination__active]="currentPage === page"
+          [attr.aria-current]="currentPage === page ? 'page' : null"
+          [attr.aria-label]="'Open page ' + page">
+          {{ page }}
+        </button>
+      </nav>
+    </main>
+  </div>
+
+  <app-footer mode="parenting"></app-footer>
+</ion-content>

@@ -1,4 +1,4 @@
-import { Component, OnInit, Renderer2, ElementRef, OnDestroy, NgZone } from '@angular/core';
+import { Component, Input, OnInit, Renderer2, ElementRef, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { IonicModule, NavController } from '@ionic/angular';
@@ -15,6 +15,7 @@ import { Keyboard } from '@capacitor/keyboard';
   styleUrls: ['./footer.component.scss']
 })
 export class FooterComponent implements OnInit, OnDestroy {
+  @Input() mode: 'default' | 'parenting' = 'default';
   private resizeListener: any;
   private routerSub: Subscription | undefined;
   currentUrl: string = '';
@@ -98,6 +99,14 @@ export class FooterComponent implements OnInit, OnDestroy {
   // Get the appropriate dashboard route based on user relationship
   getDashboardLink(): string {
     return this.authService.getDashboardRoute();
+  }
+
+  get primaryLink(): string {
+    return this.mode === 'parenting' ? '/authed/parent-learning' : '/authed/content';
+  }
+
+  get primaryLabel(): string {
+    return this.mode === 'parenting' ? 'Parenting' : 'Learning';
   }
 
   // Check if the current user is a parent
