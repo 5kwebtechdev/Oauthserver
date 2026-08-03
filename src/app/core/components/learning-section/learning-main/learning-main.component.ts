@@ -129,7 +129,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   get parentHeaderTitle(): string {
-    return this.selectedCategoryItem ? this.getCategoryTitle(this.selectedCategoryItem) : 'Your Learnings';
+    return this.selectedCategoryItem ? this.getCategoryTitle(this.selectedCategoryItem) : 'Your Child’s Learnings';
   }
 
   get parentHeaderSubtitle(): string {
@@ -159,14 +159,84 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   ) { }
 
   ngOnInit(): void {
-    const requestedChildSelfView = this.route.snapshot.queryParamMap.get('view') === 'child-self';
-    const relationship = String(this.authService.getUserRelationship() || '').trim().toUpperCase();
-    this.parentView = requestedChildSelfView && (relationship === 'CHILD' || relationship === 'SELF');
+    this.parentView = this.route.snapshot.queryParamMap.get('view') === 'parent';
     if (this.parentView) {
       const savedCategory = this.readParentCategory();
       if (savedCategory) this.selectedCategory = savedCategory;
     }
     this.loadTab(this.selectedCategory);
+  }
+
+  private readParentCategory(): LearningCategoryTab | null {
+    const queryCategory = this.normalizeParentCategory(this.route.snapshot.queryParamMap.get('category'));
+    if (queryCategory) return queryCategory;
+
+    try {
+      return this.normalizeParentCategory(sessionStorage.getItem('superme_parent_learning_main_tab'));
+    } catch {
+      return null;
+    }
+  }
+
+  private normalizeParentCategory(value: string | null): LearningCategoryTab | null {
+    const normalized = String(value || '').trim().toLowerCase();
+    const validTabs: LearningCategoryTab[] = ['puzzles', 'quizzes', 'articles', 'masterclass'];
+    return validTabs.includes(normalized as LearningCategoryTab) ? (normalized as LearningCategoryTab) : null;
+  }
+
+  goBackFromParentLearning(): void {
+    this.location.back();
+  }
+
+  retryParentLoad(): void {
+    if (this.selectedCategoryItem) {
+      this.onCategoryCardClick(this.selectedCategoryItem);
+      return;
+    }
+    this.loadTab(this.selectedCategory, true);
+  }
+
+  setParentStatus(status: ParentLearningStatus): void {
+    this.parentStatus = status;
+  }
+
+  /**
+   * Only "completed" has real backend signal today (Article.alreadyRead).
+   * Challenges carry no per-user completion field yet, and there's no
+   * assignment API at all, so both fall back to "pending" until the
+   * backend exposes that data — this keeps the tabs honest instead of
+   * guessing.
+   */
+  getParentItemStatus(item: LearningCardData): ParentLearningStatus {
+    const raw = item.rawData as any;
+    if (item.type === 'article') {
+      return raw?.alreadyRead === true || raw?.status === 'READ' ? 'completed' : 'pending';
+    }
+    return raw?.completed === true || raw?.isCompleted === true ? 'completed' : 'pending';
+  }
+
+  getParentStatusCount(status: ParentLearningStatus): number {
+    return this.visibleCategoryContent.filter(item => this.getParentItemStatus(item) === status).length;
+  }
+
+  getParentActionLabel(item: LearningCardData): string {
+    const status = this.getParentItemStatus(item);
+    if (status === 'completed') return item.type === 'article' ? 'Read Again' : 'Play Again';
+    if (status === 'assigned') return item.type === 'article' ? 'Start Reading' : 'Start';
+    return item.type === 'article' ? 'Read Now' : 'Play Now';
+  }
+
+  openParentLearningItem(item: LearningCardData): void {
+    const extras = { state: { source: '/authed/learning-main?view=parent' } };
+    if (item.type === 'article') {
+      void this.router.navigate(['/authed/content/article', item.id], extras);
+      return;
+    }
+    void this.router.navigate(['/authed/content/description', item.id], extras);
+  }
+
+  onParentImageError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
   }
 
   get currentPetCuriousImage(): string {
@@ -263,8 +333,6 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
 
   selectCategory(cat: LearningCategoryTab) {
     this.selectedCategory = cat;
-    this.parentStatus = 'pending';
-    if (this.parentView) this.writeParentCategory(cat);
     this.closeCategoryContent();
     this.loadTab(cat);
     if (this.searchKeyword.trim()) this.updateSearchResults();
@@ -515,11 +583,10 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     this.categoryContentError = false;
 
     const request = this.selectedCategory === 'articles'
-      ? this.learningService.fetchArticlesForLearningCategory(categoryName, !this.parentView)
+      ? this.learningService.fetchArticlesForLearningCategory(categoryName)
       : this.learningService.fetchChallengesForLearningCategory(
           categoryName,
-          this.getSelectedChallengeType(),
-          !this.parentView
+          this.getSelectedChallengeType()
         );
 
     request.pipe(takeUntil(this.destroy$)).subscribe({
@@ -539,7 +606,6 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     this.selectedCategoryItem = null;
     this.categoryContentItems = [];
     this.categoryContentLoading = false;
-    this.categoryContentError = false;
     if (this.searchKeyword.trim()) this.updateSearchResults();
   }
 
@@ -547,97 +613,5 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     if (this.selectedCategory === 'quizzes') return 'QUIZ';
     if (this.selectedCategory === 'puzzles') return 'PUZZLE';
     return undefined;
-  }
-
-  goBackFromParentLearning(): void {
-    if (this.selectedCategoryItem) {
-      this.closeCategoryContent();
-      return;
-    }
-    this.location.back();
-  }
-
-  retryParentLoad(): void {
-    if (this.selectedCategoryItem) {
-      const selected = this.selectedCategoryItem;
-      this.selectedCategoryItem = null;
-      this.onCategoryCardClick(selected);
-      return;
-    }
-    this.loadedTabs.delete(this.selectedCategory);
-    this.loadTab(this.selectedCategory, true);
-  }
-
-  setParentStatus(status: ParentLearningStatus): void {
-    this.parentStatus = status;
-  }
-
-  getParentItemStatus(item: LearningCardData): ParentLearningStatus {
-    const raw = (item.rawData || {}) as any;
-    const status = String(
-      raw.assignmentStatus
-      ?? raw.userStatus
-      ?? raw.progressStatus
-      ?? raw.lessonStatus
-      ?? ''
-    ).trim().toUpperCase();
-
-    if (
-      raw.completed === true
-      || raw.isCompleted === true
-      || raw.alreadyRead === true
-      || ['COMPLETED', 'DONE', 'READ'].includes(status)
-    ) return 'completed';
-
-    if (
-      raw.assigned === true
-      || raw.isAssigned === true
-      || raw.assignedTo != null
-      || raw.assignedToId != null
-      || ['ASSIGNED', 'IN_PROGRESS', 'STARTED'].includes(status)
-    ) return 'assigned';
-
-    return 'pending';
-  }
-
-  getParentActionLabel(item: LearningCardData): string {
-    const status = this.getParentItemStatus(item);
-    if (status === 'completed') return 'Review';
-    if (status === 'assigned') return 'Continue';
-    return 'Start';
-  }
-
-  openParentLearningItem(item: LearningCardData): void {
-    if (item.type === 'article') {
-      void this.router.navigate(['/authed/content/article', item.id]);
-      return;
-    }
-    void this.router.navigate(['/authed/content/description', item.id], {
-      state: { source: '/authed/content?view=child-self' }
-    });
-  }
-
-  onParentImageError(event: Event): void {
-    const image = event.target as HTMLImageElement;
-    image.src = 'assets/icons/Flux_Dev_a_surreal_and_vibrant_cinematic_photo_of_A_minimal_ye_3%201.jpg';
-  }
-
-  private getParentStatusCount(status: ParentLearningStatus): number {
-    return this.categoryContentItems.filter(item => this.getParentItemStatus(item) === status).length;
-  }
-
-  private readParentCategory(): LearningCategoryTab | null {
-    try {
-      const value = sessionStorage.getItem('superme_child_self_learning_category') as LearningCategoryTab | null;
-      return value && this.categoryTabs.some(tab => tab.id === value) ? value : null;
-    } catch {
-      return null;
-    }
-  }
-
-  private writeParentCategory(category: LearningCategoryTab): void {
-    try {
-      sessionStorage.setItem('superme_child_self_learning_category', category);
-    } catch { /* Storage may be unavailable in restricted browser modes. */ }
   }
 }
