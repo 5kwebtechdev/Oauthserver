@@ -232,16 +232,23 @@ button {
   justify-content: center;
   gap: 4px;
   padding: 4px 8px;
-  border-right: 1px solid transparent;
+  border-right: 3px solid transparent;
   border-radius: 1px;
   color: #282527;
   font-size: 13px;
   font-weight: 600;
   line-height: 1.4;
   text-align: center;
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
 
   &--selected {
     border-right-color: #90214d;
+    background: rgba(144, 33, 77, 0.08);
+    color: #90214d;
+
+    .rail-category__visual--all {
+      background: linear-gradient(135deg, #90214d 0%, #c72e6d 100%);
+    }
   }
 
   > span:last-child {

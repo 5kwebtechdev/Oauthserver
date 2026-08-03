@@ -1,10 +1,10 @@
 import { Component, Input, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { ViewWillEnter } from '@ionic/angular';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Observable, Subject, of } from 'rxjs';
+import { Observable, Subject, of, throwError } from 'rxjs';
 import { catchError, map, takeUntil } from 'rxjs/operators';
 import { HttpClientModule } from '@angular/common/http';
 import { FooterComponent } from 'src/app/core/components/footer/footer.component';
@@ -20,15 +20,17 @@ import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.comp
 import { LearningChallengeCardComponent } from '../learning-card/learning-challenge-card.component';
 import { LearningArticleCardComponent } from '../learning-card/learning-article-card.component';
 import { SectionComingSoonComponent } from '../../section-coming-soon/section-coming-soon.component';
+import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
 
 type LearningCategoryTab = 'puzzles' | 'quizzes' | 'articles' | 'masterclass';
+type ParentLearningStatus = 'pending' | 'completed' | 'assigned';
 
 @Component({
   selector: 'learning-main',
   templateUrl: './learning-main.component.html',
   styleUrls: ['./learning-main.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, FormsModule, HttpClientModule, FooterComponent, SupermePetComponent, EmptyStateComponent, SkeletonImageComponent, LearningChallengeCardComponent, LearningArticleCardComponent, SectionComingSoonComponent],
+  imports: [CommonModule, IonicModule, RouterModule, FormsModule, HttpClientModule, FooterComponent, SupermePetComponent, EmptyStateComponent, SkeletonImageComponent, LearningChallengeCardComponent, LearningArticleCardComponent, SectionComingSoonComponent, AdBannerComponent],
   providers: [LearningService]
 })
 export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
@@ -36,6 +38,9 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   @Input() body: string = '';
 
   selectedCategory: LearningCategoryTab = 'puzzles';
+  parentView = false;
+  parentStatus: ParentLearningStatus = 'pending';
+  categoryContentError = false;
 
   categoryTabs: { id: LearningCategoryTab; label: string; icon: string; ariaLabel: string }[] = [
     { id: 'puzzles', label: 'Puzzles', icon: 'assets/Icons-Neutral/Icon-Content-Puzzle.png', ariaLabel: 'Open Puzzles' },
@@ -56,6 +61,13 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   categoryContentLoading = false;
 
   loadingTabs: Record<LearningCategoryTab, boolean> = {
+    puzzles: false,
+    quizzes: false,
+    articles: false,
+    masterclass: false
+  };
+
+  tabErrors: Record<LearningCategoryTab, boolean> = {
     puzzles: false,
     quizzes: false,
     articles: false,
@@ -97,6 +109,43 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     ].filter(Boolean).join(' ').toLowerCase().includes(keyword));
   }
 
+  get parentCategoryTabs(): typeof this.categoryTabs {
+    const order: LearningCategoryTab[] = ['quizzes', 'puzzles', 'articles', 'masterclass'];
+    return order
+      .map(id => this.categoryTabs.find(tab => tab.id === id))
+      .filter((tab): tab is typeof this.categoryTabs[number] => !!tab);
+  }
+
+  get visibleParentContent(): LearningCardData[] {
+    return this.visibleCategoryContent.filter(item => this.getParentItemStatus(item) === this.parentStatus);
+  }
+
+  get parentStatusOptions(): Array<{ id: ParentLearningStatus; label: string; count: number }> {
+    return [
+      { id: 'pending', label: 'Pending', count: this.getParentStatusCount('pending') },
+      { id: 'completed', label: 'Completed', count: this.getParentStatusCount('completed') },
+      { id: 'assigned', label: 'Assigned', count: this.getParentStatusCount('assigned') }
+    ];
+  }
+
+  get parentHeaderTitle(): string {
+    return this.selectedCategoryItem ? this.getCategoryTitle(this.selectedCategoryItem) : 'Your Child’s Learnings';
+  }
+
+  get parentHeaderSubtitle(): string {
+    return this.selectedCategoryItem ? this.getCategoryCountText(this.selectedCategoryItem) : '';
+  }
+
+  get parentSearchPlaceholder(): string {
+    const singular: Record<LearningCategoryTab, string> = {
+      quizzes: 'quiz',
+      puzzles: 'puzzle',
+      articles: 'article',
+      masterclass: 'masterclass'
+    };
+    return `Looking for a ${singular[this.selectedCategory]}?`;
+  }
+
   constructor(
     private learningService: LearningService,
     private toastService: CustomToastService,
@@ -104,11 +153,90 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     private authService: AuthService,
     private petAgeService: PetAgeService,
     private router: Router,
-    private zone: NgZone
+    private zone: NgZone,
+    private route: ActivatedRoute,
+    private location: Location
   ) { }
 
   ngOnInit(): void {
-    this.loadTab('puzzles');
+    this.parentView = this.route.snapshot.queryParamMap.get('view') === 'parent';
+    if (this.parentView) {
+      const savedCategory = this.readParentCategory();
+      if (savedCategory) this.selectedCategory = savedCategory;
+    }
+    this.loadTab(this.selectedCategory);
+  }
+
+  private readParentCategory(): LearningCategoryTab | null {
+    const queryCategory = this.normalizeParentCategory(this.route.snapshot.queryParamMap.get('category'));
+    if (queryCategory) return queryCategory;
+
+    try {
+      return this.normalizeParentCategory(sessionStorage.getItem('superme_parent_learning_main_tab'));
+    } catch {
+      return null;
+    }
+  }
+
+  private normalizeParentCategory(value: string | null): LearningCategoryTab | null {
+    const normalized = String(value || '').trim().toLowerCase();
+    const validTabs: LearningCategoryTab[] = ['puzzles', 'quizzes', 'articles', 'masterclass'];
+    return validTabs.includes(normalized as LearningCategoryTab) ? (normalized as LearningCategoryTab) : null;
+  }
+
+  goBackFromParentLearning(): void {
+    this.location.back();
+  }
+
+  retryParentLoad(): void {
+    if (this.selectedCategoryItem) {
+      this.onCategoryCardClick(this.selectedCategoryItem);
+      return;
+    }
+    this.loadTab(this.selectedCategory, true);
+  }
+
+  setParentStatus(status: ParentLearningStatus): void {
+    this.parentStatus = status;
+  }
+
+  /**
+   * Only "completed" has real backend signal today (Article.alreadyRead).
+   * Challenges carry no per-user completion field yet, and there's no
+   * assignment API at all, so both fall back to "pending" until the
+   * backend exposes that data — this keeps the tabs honest instead of
+   * guessing.
+   */
+  getParentItemStatus(item: LearningCardData): ParentLearningStatus {
+    const raw = item.rawData as any;
+    if (item.type === 'article') {
+      return raw?.alreadyRead === true || raw?.status === 'READ' ? 'completed' : 'pending';
+    }
+    return raw?.completed === true || raw?.isCompleted === true ? 'completed' : 'pending';
+  }
+
+  getParentStatusCount(status: ParentLearningStatus): number {
+    return this.visibleCategoryContent.filter(item => this.getParentItemStatus(item) === status).length;
+  }
+
+  getParentActionLabel(item: LearningCardData): string {
+    const status = this.getParentItemStatus(item);
+    if (status === 'completed') return item.type === 'article' ? 'Read Again' : 'Play Again';
+    if (status === 'assigned') return item.type === 'article' ? 'Start Reading' : 'Start';
+    return item.type === 'article' ? 'Read Now' : 'Play Now';
+  }
+
+  openParentLearningItem(item: LearningCardData): void {
+    const extras = { state: { source: '/authed/learning-main?view=parent' } };
+    if (item.type === 'article') {
+      void this.router.navigate(['/authed/content/article', item.id], extras);
+      return;
+    }
+    void this.router.navigate(['/authed/content/description', item.id], extras);
+  }
+
+  onParentImageError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
   }
 
   get currentPetCuriousImage(): string {
@@ -128,6 +256,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     if (!forceRefresh && this.loadedTabs.has(tab)) return;
 
     this.loadingTabs[tab] = true;
+    this.tabErrors[tab] = false;
     this.getCategoryRequest(tab)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -139,6 +268,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
         },
         error: () => {
           this.loadingTabs[tab] = false;
+          this.tabErrors[tab] = true;
         }
       });
   }
@@ -146,14 +276,14 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   private getCategoryRequest(tab: LearningCategoryTab): Observable<LearningCategorySummary[]> {
     switch (tab) {
       case 'quizzes':
-        return this.learningService.fetchChallengeCategorySummary('QUIZ');
+        return this.learningService.fetchChallengeCategorySummary('QUIZ', !this.parentView);
       case 'articles':
-        return this.learningService.fetchArticleCategories();
+        return this.learningService.fetchArticleCategories(!this.parentView);
       case 'masterclass':
         return this.fetchMasterClassCategories();
       case 'puzzles':
       default:
-        return this.learningService.fetchChallengeCategorySummary('PUZZLE');
+        return this.learningService.fetchChallengeCategorySummary('PUZZLE', !this.parentView);
     }
   }
 
@@ -169,7 +299,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
         .map(category => this.mapAcademyCategoryToSummary(category))),
       catchError(error => {
         console.error('Error fetching Life Skills Quest categories for MasterClass:', error);
-        return of([]);
+        return this.parentView ? throwError(() => error) : of([]);
       })
     );
   }
@@ -450,6 +580,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     this.selectedCategoryItem = item;
     this.categoryContentItems = [];
     this.categoryContentLoading = true;
+    this.categoryContentError = false;
 
     const request = this.selectedCategory === 'articles'
       ? this.learningService.fetchArticlesForLearningCategory(categoryName)
@@ -466,6 +597,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       error: () => {
         this.categoryContentItems = [];
         this.categoryContentLoading = false;
+        this.categoryContentError = true;
       }
     });
   }

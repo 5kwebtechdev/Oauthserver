@@ -360,7 +360,7 @@
           </h4>
           <div class="input-group">
             <input [ngClass]="{'error' : name?.invalid && (name?.dirty || name?.touched)}" formControlName="name" type="text"
-              placeholder="Name" [readonly]="isOAuthSignup" />
+              placeholder="Name" />
             <div class="error" *ngIf="name?.invalid && (name?.dirty || name?.touched)">
               {{ getNameErrorMessage() }}
             </div>

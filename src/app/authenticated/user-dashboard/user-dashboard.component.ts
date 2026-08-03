@@ -34,8 +34,27 @@ import { AuthService } from '../../core/services/auth.service';
 import { ChildSelfImageService } from '../../core/services/child-self-image.service';
 import { CustomToastService, Toast } from '../../core/services/custom-toast.service';
 import { RefreshService } from '../../core/services/refresh.service';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, catchError, forkJoin, of } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
+import { MoodService } from '../../core/services/mood.service';
+import { MoodTransition } from '../../core/models/mood.model';
+
+type MoodBalanceKey = 'good' | 'okay' | 'tough' | 'hard';
+
+interface MoodBalanceSegment {
+  key: MoodBalanceKey;
+  label: string;
+  value: number;
+  color: string;
+}
+
+interface SelfMetric {
+  label: string;
+  value: number;
+  displayValue: string;
+  color: string;
+  status: string;
+}
 
 type HomeTimePeriod = 'morning' | 'evening' | 'night';
 
@@ -117,6 +136,19 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   public awaitingHabits: number = 0;
   public weekStreakDays: DayStreak[] = [];
 
+  // Insights — "This Week's Performance" + Mood Balance, same widget the
+  // Parent Home Screen shows about a selected child, scoped here to the
+  // logged-in user's own data (no forUserId passed to the API calls).
+  public completionRate: number = 0;
+  public consistencyRate: number = 0;
+  public improvementRate: number = 0;
+  public appScore: number = 0;
+  public performanceLoading = false;
+  public moodBalanceLoading = false;
+  public moodBalance: MoodBalanceSegment[] = this.createEmptyMoodBalance();
+  public statsUpdatedAt = new Date();
+  private moodBalanceRequestId = 0;
+
   // Family connected acknowledgment popup
   showFamilyAck = false;
   familyAckRole = '';
@@ -167,9 +199,163 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     private toastService: CustomToastService,
     private refreshService: RefreshService,
     private streakRestoreApi: StreakRestoreApi,
-    private petMessageApi: PetMessageApiService
+    private petMessageApi: PetMessageApiService,
+    private moodService: MoodService
   ) {
     this.toast$ = this.toastService.toast$;
+  }
+
+  get performanceMetrics(): SelfMetric[] {
+    return [
+      this.buildMetric('Completion Rate', this.completionRate, `${this.clampPercentage(this.completionRate)}%`),
+      this.buildMetric('Consistency Rate', this.consistencyRate, `${this.clampPercentage(this.consistencyRate)}%`),
+      this.buildMetric(
+        'Improvement Rate',
+        Math.abs(this.improvementRate),
+        `${this.improvementRate > 0 ? '+' : ''}${Math.round(this.improvementRate)}%`
+      ),
+      this.buildMetric('App’s Score', this.appScore, `${Math.round(this.appScore)}`)
+    ];
+  }
+
+  get aiInsight(): string {
+    if (this.appScore >= 80) {
+      return 'You’re showing strong and consistent progress this week.';
+    }
+    if (this.appScore >= 60) {
+      return 'You’re doing reasonably well, though there’s room to tighten one or two areas.';
+    }
+    return 'You may benefit from a little extra support and a simpler daily plan this week.';
+  }
+
+  get statsUpdatedLabel(): string {
+    return this.statsUpdatedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+
+  private clampPercentage(value: number): number {
+    if (!Number.isFinite(Number(value))) return 0;
+    return Math.min(100, Math.max(0, Math.round(Number(value))));
+  }
+
+  /** PRD color logic: Red 0-59, Yellow 60-79, Green 80-100 */
+  private getMetricColor(value: number): string {
+    if (value >= 80) return '#4CAF50';
+    if (value >= 60) return '#F0AD4E';
+    return '#E74C3C';
+  }
+
+  private buildMetric(label: string, value: number, displayValue: string): SelfMetric {
+    const normalizedValue = this.clampPercentage(value);
+    const isNegativeImprovement = label === 'Improvement Rate' && this.improvementRate < 0;
+    return {
+      label,
+      value: normalizedValue,
+      displayValue,
+      color: this.getMetricColor(isNegativeImprovement ? -1 : normalizedValue),
+      status: isNegativeImprovement
+        ? 'Needs Improvement'
+        : normalizedValue >= 80
+        ? 'Great progress !'
+        : normalizedValue >= 60
+          ? 'Attention Needed'
+          : 'Needs Improvement'
+    };
+  }
+
+  private createEmptyMoodBalance(): MoodBalanceSegment[] {
+    return [
+      { key: 'good', label: 'Good', value: 0, color: '#4CAF50' },
+      { key: 'okay', label: 'Okay', value: 0, color: '#F0AD4E' },
+      { key: 'tough', label: 'Tough', value: 0, color: '#EE6621' },
+      { key: 'hard', label: 'Hard', value: 0, color: '#BB2124' }
+    ];
+  }
+
+  private calculateMoodBalance(transitions: MoodTransition[]): MoodBalanceSegment[] {
+    const counts: Record<MoodBalanceKey, number> = { good: 0, okay: 0, tough: 0, hard: 0 };
+
+    transitions.forEach(item => {
+      counts[this.mapMoodBalanceKey(item.toMood || item.fromMood)] += 1;
+    });
+
+    const total = Object.values(counts).reduce((sum, value) => sum + value, 0);
+    const base = this.createEmptyMoodBalance();
+    if (total === 0) return base;
+
+    let assigned = 0;
+    return base.map((segment, index) => {
+      const isLast = index === base.length - 1;
+      const value = isLast
+        ? Math.max(0, 100 - assigned)
+        : Math.round((counts[segment.key] / total) * 100);
+      assigned += value;
+      return { ...segment, value };
+    });
+  }
+
+  private mapMoodBalanceKey(mood: string): MoodBalanceKey {
+    const normalized = String(mood || '').trim().toLowerCase().replace(/[_-]+/g, ' ');
+    if (/(angry|upset|frustrated|very sad|terrible|hard)/.test(normalized)) return 'hard';
+    if (/(sad|nervous|anxious|worried|tough)/.test(normalized)) return 'tough';
+    if (/(neutral|okay|calm|fine)/.test(normalized)) return 'okay';
+    return 'good';
+  }
+
+  /** Load this user's own performance stats (no forUserId — self-scoped by the auth token). */
+  private loadInsightStats(): void {
+    this.performanceLoading = true;
+    this.moodService.getVibesDisplay()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          const d = Array.isArray(data) && data.length ? data[0] : null;
+          if (d) {
+            this.completionRate = Math.round(d.completionRate || 0);
+            this.consistencyRate = Math.round(d.consistencyRate || 0);
+            this.improvementRate = Math.round(d.improvementRate || 0);
+            this.appScore = Math.round(d.appScore || 0);
+            this.statsUpdatedAt = new Date();
+          }
+          this.performanceLoading = false;
+        },
+        error: () => {
+          this.performanceLoading = false;
+        }
+      });
+  }
+
+  /** Load this user's own mood balance for the last 7 days (self-scoped). */
+  private loadInsightMoodBalance(): void {
+    const requestId = ++this.moodBalanceRequestId;
+    this.moodBalanceLoading = true;
+    const now = new Date();
+    const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+    forkJoin([
+      this.moodService.getMoodTransitionsMonthly(now.getFullYear(), now.getMonth() + 1)
+        .pipe(catchError(() => of([] as MoodTransition[]))),
+      this.moodService.getMoodTransitionsMonthly(previousMonth.getFullYear(), previousMonth.getMonth() + 1)
+        .pipe(catchError(() => of([] as MoodTransition[])))
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([current, previous]) => {
+        if (requestId !== this.moodBalanceRequestId) return;
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setHours(0, 0, 0, 0);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+
+        const transitions = [...previous, ...current].filter(item => {
+          const date = new Date(`${item.date}T00:00:00`);
+          return Number.isFinite(date.getTime()) && date >= sevenDaysAgo && date <= now;
+        });
+
+        this.moodBalance = this.calculateMoodBalance(transitions);
+        this.moodBalanceLoading = false;
+      });
+  }
+
+  openInsights(): void {
+    this.router.navigate(['/authed/analytics']);
   }
 
   dismissFamilyAck(): void {
@@ -241,6 +427,10 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
 
     // Fetch user stats (coins, streaks, badges, etc.) from backend
     this.loadUserStats();
+
+    // Insights — "This Week's Performance" + Mood Balance, self-scoped
+    this.loadInsightStats();
+    this.loadInsightMoodBalance();
 
     // Fallback: show overlays even if stats API is slow (buildOverlayQueue guards against double-run)
     setTimeout(() => this.buildOverlayQueue(), 2000);

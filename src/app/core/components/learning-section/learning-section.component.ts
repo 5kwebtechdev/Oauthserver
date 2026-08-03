@@ -3,9 +3,10 @@ import { NgIf, NgForOf } from "@angular/common";
 import { forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { IonicModule } from "@ionic/angular";
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { LearningCardComponent } from './learning-card/learning-card.component';
 import { LearningService } from 'src/app/core/services/learning.service';
+import { AuthService } from 'src/app/core/services/auth.service';
 
 @Component({
   selector: 'learning-section',
@@ -21,7 +22,7 @@ import { LearningService } from 'src/app/core/services/learning.service';
           <p class="content-sub">{{ subtitle || 'Explore • Challenge • Grow' }}</p>
         </div>
         <nav class="content-actions">
-          <button class="view-all-pill" [routerLink]="['/authed','content']" aria-label="View all content">
+          <button class="view-all-pill" type="button" aria-label="View all content" (click)="onViewAllClick()">
             View all
           </button>
         </nav>
@@ -411,6 +412,11 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
   @Input() subtitle: string = '';
   @Input() headerIcon: string = '';
   @Input() rewardMode: boolean = false;
+  /** Opens the dedicated learning listing only for Child or Self accounts. */
+  @Input() childSelfLearningViewAll: boolean = false;
+  /** Opens the Figma Parenting listing only for Parent accounts. */
+  @Input() parentLearningViewAll: boolean = false;
+  @Input() parentLearningCategory: 'blogs' | 'quizzes' = 'blogs';
   @Input() imageUrl: string = '';
   @Input() difficulty: string = '';
   @Input() likes: number = 0;
@@ -437,7 +443,12 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
 
   private scrollHandler?: () => void;
 
-  constructor(private renderer: Renderer2, private learningService: LearningService) { }
+  constructor(
+    private renderer: Renderer2,
+    private learningService: LearningService,
+    private authService: AuthService,
+    private router: Router
+  ) { }
 
   ngAfterViewInit(): void {
     if (!this.slidesRef) return;
@@ -495,6 +506,29 @@ export class LearningSectionComponent implements OnInit, AfterViewInit, OnDestro
   onRewardClick(event: Event, item: any, index: number): void {
     event.stopPropagation();
     this.rewardSelected.emit({ item, index, coins: this.getRewardCoins(item) });
+  }
+
+  onViewAllClick(): void {
+    this.viewAll.emit();
+    const relationship = String(this.authService.getUserRelationship() || '').trim().toUpperCase();
+    const isChildOrSelf = relationship === 'CHILD' || relationship === 'SELF';
+
+    if (this.parentLearningViewAll && relationship === 'PARENT') {
+      void this.router.navigate(['/authed/parent-learning'], {
+        queryParams: { category: this.parentLearningCategory },
+        state: { source: this.source || '/authed/parent-account' }
+      });
+      return;
+    }
+
+    if (this.childSelfLearningViewAll && isChildOrSelf) {
+      void this.router.navigate(['/authed/content'], {
+        queryParams: { view: 'child-self' },
+        state: { source: this.source || '/authed/user-dashboard' }
+      });
+      return;
+    }
+    void this.router.navigate(['/authed/content']);
   }
 
   getRewardCoins(item: any): number {
