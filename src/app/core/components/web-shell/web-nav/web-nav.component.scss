@@ -1,4 +1,4 @@
-@use '../../../../theme/breakpoints' as bp;
+@use '../../../../../theme/breakpoints' as bp;
 
 :host {
   display: none;
@@ -25,7 +25,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 14px 32px;
+  padding: 2px 32px;
 }
 
 .web-header__brand {
@@ -37,15 +37,15 @@
 }
 
 .web-header__logo {
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
 }
 
 .web-header__wordmark {
   color: #282527;
   font-family: var(--font-heading);
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -143,28 +143,38 @@
 
 .web-header__stat {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
   white-space: nowrap;
 
   span {
     color: #282527;
     font-family: var(--font-sans);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 800;
   }
 }
 
 .web-header__stat-icon {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
   flex-shrink: 0;
 }
 
+.web-header__profile {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
 .web-header__avatar {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
   border-radius: 50%;
   overflow: hidden;
@@ -184,6 +194,17 @@
   font-family: var(--font-heading);
   font-size: 16px;
   font-weight: 600;
+}
+
+.web-header__profile-name {
+  color: #6B656A;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @include bp.above(lg) {

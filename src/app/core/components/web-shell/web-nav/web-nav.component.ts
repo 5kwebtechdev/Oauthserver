@@ -1,0 +1,151 @@
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
+import { Subject, takeUntil } from 'rxjs';
+import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
+import { AuthService } from '../../../services/auth.service';
+import { UserService } from '../../../services/user.service';
+import { ChildSelfImageService } from '../../../services/child-self-image.service';
+
+interface WebNavLink {
+  label: string;
+  link?: string;
+  href?: string;
+}
+
+interface WebNavItem {
+  label: string;
+  link?: string;
+  children?: WebNavLink[];
+}
+
+const CHILD_NAV_ITEMS: WebNavItem[] = [
+  { label: 'Shop', link: '/authed/school-store' },
+  {
+    label: 'Learning',
+    children: [
+      { label: 'Content Library', link: '/authed/content' },
+      { label: 'Academy', link: '/authed/academy' },
+      { label: 'Education Hub', link: '/authed/education' }
+    ]
+  },
+  {
+    label: 'Tutor',
+    children: [
+      { label: 'Find a Tutor', link: '/authed/tutors' },
+      { label: 'Become a Tutor', href: 'https://supermeapp.com/become-a-tutor' }
+    ]
+  },
+  {
+    label: 'Calendar',
+    children: [
+      { label: 'Timetable', link: '/authed/activity-timeline' },
+      { label: 'Calendar View', link: '/authed/activity-calendar' }
+    ]
+  },
+  { label: 'Notes', link: '/authed/notes' }
+];
+
+// Mirrors the parent-role items already used by the mobile bottom tab bar
+// (see FooterComponent's *ngIf="isParentUser()" branches) — a parent account
+// has no personal coins/streak/badges, so those destinations/stats don't apply.
+const PARENT_NAV_ITEMS: WebNavItem[] = [
+  { label: 'TimeTable', link: '/authed/activity-timeline' },
+  { label: 'Coins', link: '/authed/coin' },
+  {
+    label: 'Reels',
+    children: [
+      { label: 'Reels', link: '/authed/reels' },
+      { label: 'Bookmarked', link: '/authed/bookmark-reels' }
+    ]
+  },
+  { label: 'Insights', link: '/authed/analytics' },
+  { label: 'Notes', link: '/authed/notes' }
+];
+
+@Component({
+  selector: 'web-nav',
+  standalone: true,
+  imports: [CommonModule, RouterModule, IonicModule, SkeletonImageComponent],
+  templateUrl: './web-nav.component.html',
+  styleUrls: ['./web-nav.component.scss']
+})
+export class WebNavComponent implements OnInit, OnDestroy {
+  isParent = false;
+  navItems: WebNavItem[] = CHILD_NAV_ITEMS;
+
+  userName = '';
+  userAvatarUrl: string | null = null;
+  avatarImageName: string | null = null;
+
+  coins = 0;
+  streaks = 0;
+  trophies = 0;
+  badges = 0;
+
+  openMenu: string | null = null;
+
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private authService: AuthService,
+    private userService: UserService,
+    private childSelfImageService: ChildSelfImageService
+  ) {}
+
+  ngOnInit(): void {
+    this.isParent = this.authService.isParentUser();
+    this.navItems = this.isParent ? PARENT_NAV_ITEMS : CHILD_NAV_ITEMS;
+
+    this.authService.userData$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(userData => {
+        if (userData) {
+          this.userName = userData.name || '';
+          const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
+          this.userAvatarUrl = resolved.url || null;
+          this.avatarImageName = resolved.alt || null;
+        }
+      });
+
+    if (!this.isParent) {
+      this.userService.stats$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(stats => {
+          if (stats) {
+            this.coins = stats.coins;
+            this.streaks = stats.streaks;
+            this.trophies = stats.days;
+            this.badges = stats.badges;
+          }
+        });
+      // Ensure stats are populated even if the current page never fetches
+      // them itself (UserService dedupes against any in-flight request).
+      this.userService.refreshStats().subscribe();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  get userInitial(): string {
+    return (this.userName || '').trim().charAt(0).toUpperCase();
+  }
+
+  toggleMenu(label: string, event: Event): void {
+    event.stopPropagation();
+    this.openMenu = this.openMenu === label ? null : label;
+  }
+
+  closeMenu(): void {
+    this.openMenu = null;
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.closeMenu();
+  }
+}

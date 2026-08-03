@@ -1,3 +1,40 @@
+@use '../../theme/breakpoints' as bp;
+
+// Persistent website-shell layout: web-nav (hidden on mobile, see
+// WebNavComponent's own :host rules) stacked above the routed outlet, which
+// fills the remaining height. Mirrors app.component.html's own
+// .app-router-container wrapper around its top-level ion-router-outlet.
+:host {
+  display: block;
+  height: 100%;
+}
+
+@include bp.tablet-up {
+  // global.scss caps every routed page (`ion-router-outlet, .ion-page`) at
+  // `--container-md`/`--container-lg` for a readable single-column width —
+  // correct for individual pages, but this component's own host IS that
+  // top-level routed page for everything under /authed/*, and the
+  // persistent web-nav above needs to span the full viewport width on every
+  // authenticated page, not just a readable column. Same opt-out pattern
+  // user-dashboard.component.scss already uses for its own wide layout.
+  :host(.ion-page) {
+    max-width: none !important;
+    margin-inline: 0 !important;
+  }
+}
+
+.authed-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.authed-shell__outlet {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
 // Global pull-to-refresh styling for all authenticated pages
 ion-refresher {
   --background: transparent;

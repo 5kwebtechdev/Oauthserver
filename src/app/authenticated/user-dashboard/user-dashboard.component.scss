@@ -1352,7 +1352,7 @@ ion-content {
     gap: 32px;
     width: 100%;
     max-width: 393px;
-    margin-inline: auto;
+    // margin-inline: auto;
     padding: 16px;
     box-sizing: border-box;
   }
@@ -1454,17 +1454,17 @@ footer {
 }
 
 // ── Web / tablet chrome swap ─────────────────────────────────────────────
-// Above the tablet breakpoint we show the dashboard-web-header /
-// dashboard-web-footer (wired up in the template) instead of the mobile
-// hero banner + fixed bottom tab bar, per PRD website-view requirements.
+// Above the tablet breakpoint the persistent shell nav (see
+// AuthenticatedComponent > WebNavComponent) replaces the mobile hero banner
+// + fixed bottom tab bar, per PRD website-view requirements.
 @include bp.tablet-up {
   // global.scss caps every routed page (`ion-router-outlet, .ion-page`) at
   // `--container-md`/`--container-lg` (768px/960px) — a generic "readable
   // width" treatment for typical single-column pages (see app-home.ion-page
   // for the same escape-hatch pattern used there). This page's web layout
-  // is built around its own 1200px `bp.web-container` (dashboard-web-header/
-  // footer, .dasboard-wrapper, .dashboard-content below), so the outer page
-  // itself must stay unconstrained or that inner container gets clipped to
+  // is built around its own 1200px `bp.web-container` (dashboard-web-footer,
+  // .dasboard-wrapper, .dashboard-content below), so the outer page itself
+  // must stay unconstrained or that inner container gets clipped to
   // 768/960px regardless of what .dashboard-content's own max-width says.
   :host(.ion-page) {
     max-width: none !important;
@@ -1479,8 +1479,8 @@ footer {
     --padding-bottom: var(--sab, 0px);
   }
 
-  // Same fluid container used by dashboard-web-header / dashboard-web-footer
-  // so the page content lines up on the same left/right edges as the chrome.
+  // Same fluid container used by dashboard-web-footer so the page content
+  // lines up on the same left/right edges as the chrome.
   .dasboard-wrapper,
   .dashboard-content {
     @include bp.web-container;
