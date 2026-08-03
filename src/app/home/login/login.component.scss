@@ -18,6 +18,7 @@
 
 :host {
   display: block;
+  width: 100%;
   height: 100%;
   min-height: 0;
   overflow: hidden;
@@ -656,15 +657,51 @@ button {
 }
 
 @media (min-width: 768px) {
+  // This page's own host takes over centering below instead of relying on
+  // global.scss's generic `.ion-page` readable-width cap (which centers the
+  // whole page, not this card, and was leaving .login-shell's own margin:
+  // auto centering it a second time *inside* an already off-center box).
+  :host(.ion-page) {
+    max-width: none !important;
+    margin-inline: 0 !important;
+  }
+
+  .login-content {
+    width: 100%;
+  }
+
+  .login-page {
+    width: 100%;
+  }
+
+  // The back button only makes sense as a mobile navigation affordance —
+  // on tablet/desktop "Sign up" below the form covers the same job, and a
+  // floating absolute-positioned arrow next to a centered card reads as a
+  // stray leftover.
+  superme-auth-back-button {
+    display: none;
+  }
+
   .login-back-btn {
     top: calc(env(safe-area-inset-top, 0px) + 52px);
     left: max(48px, env(safe-area-inset-left, 0px));
   }
 
+  // Centered via absolute + transform against .login-page (position:relative
+  // already, see base rule) instead of margin/flex centering — this doesn't
+  // depend on .login-page's own computed width resolving the way we expect,
+  // it just centers the card within whatever box .login-page actually is.
+  // Card keeps its normal mobile size (393px) — only the page around it is
+  // full width, not the form itself.
   .login-shell {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 393px;
-    max-width: calc(100% - 32px);
-    padding-top: calc(env(safe-area-inset-top, 0px) + 124px);
+    margin: 0;
+    padding-top: 0;
+    padding-bottom: 0;
   }
 
   .country-modal {
