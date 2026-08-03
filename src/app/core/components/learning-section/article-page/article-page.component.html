@@ -1,60 +1,141 @@
-<ion-content>
-  <div class="article-page d-flex flex-column gap-4" *ngIf="!isLoading && article">
-    <div class="article-container">
-      <superme-navigator backIcon="arrowSvg"></superme-navigator>
-      <h1 class="article-title">{{article.title}}</h1>
-      <div class="article-header">
-        <div class="article-description">
-          <p>{{article.description}}</p>
-        </div>
-      </div>
-    </div>
-    <div class="article-content-section" style="padding:0px 16px calc(90px + env(safe-area-inset-bottom, 0px)) 16px;">
-      <div class="article-content" style="margin-top: 16px; line-height: 1.6;" [innerHTML]="article.content">
-      </div>
+<ion-content fullscreen class="learning-details-content">
+  <div class="learning-details" *ngIf="!isLoading && article">
+    <header class="learning-details-header">
+      <button type="button" class="learning-details-header__back" (click)="goBack()" aria-label="Back">
+        <img src="assets/figma/learning-details/back.svg" alt="" aria-hidden="true">
+      </button>
 
-      <!-- Reading time gate -->
-      <div class="read-timer-pill d-flex align-items-center gap-3"
-           *ngIf="!isArticleRead && !readTimerComplete">
-        <div class="read-timer-ring">
-          <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
-            <circle class="ring-track" cx="20" cy="20" r="17" />
-            <circle class="ring-progress" cx="20" cy="20" r="17"
-                    [style.stroke-dasharray]="ringCircumference"
-                    [style.stroke-dashoffset]="ringCircumference - (ringCircumference * readTimerProgressPercent / 100)" />
-          </svg>
-          <span class="ring-icon" aria-hidden="true">⏱</span>
-        </div>
-        <div class="read-timer-copy d-flex flex-column">
-          <span class="read-timer-label">Take a moment to read</span>
-          <span class="read-timer-time">{{ readTimerDisplay }} left</span>
-        </div>
-      </div>
+      <button type="button" class="learning-details-header__share" (click)="shareArticle()" aria-label="Share article">
+        <span>
+          <img src="assets/figma/learning-details/share.svg" alt="" aria-hidden="true">
+        </span>
+        <small>Share</small>
+      </button>
+    </header>
 
-      <!-- Friendly confirmation once unlocked -->
-      <div class="read-ready-banner d-flex align-items-center gap-2"
-           *ngIf="!isArticleRead && readTimerComplete && justUnlocked">
-        <span class="ready-icon" aria-hidden="true">✓</span>
-        <span>You're ready to mark this as read!</span>
-      </div>
+    <main class="learning-details-main">
+      <section class="learning-details-hero" [attr.aria-label]="article.title + ' image'">
+        <img *ngIf="articleImage" [src]="articleImage" [alt]="article.title" (error)="hideBrokenImage($event)">
+      </section>
 
-      <superme-button type="green" size="full" [text]="isArticleRead ? 'Already read' : 'Mark as read'"
-        (click)="openMarkAsReadPopup()" [disabled]="isMarkAsReadDisabled"></superme-button>
-      <app-superme-popup *ngIf="true" [config]="markPopupConfig" [isVisible]="showMarkPopup"
-        (primaryAction)="confirmMarkAsRead()" (secondaryAction)="closeMarkPopup()"
-        (backdropClick)="closeMarkPopup()" (closeAction)="closeMarkPopup()">
-      </app-superme-popup>
-    </div>
+      <section class="learning-details-summary">
+        <div class="learning-details-summary__copy">
+          <h1>{{ article.title }}</h1>
+          <p *ngIf="article.description">{{ article.description }}</p>
+        </div>
+
+        <div class="learning-details-byline">
+          <span class="learning-details-byline__avatar">
+            <img [src]="articleAuthorImage" [alt]="articleAuthorName" (error)="useAuthorFallback($event)">
+          </span>
+
+          <span class="learning-details-byline__author">
+            <small>Blog By</small>
+            <strong>{{ articleAuthorName }}</strong>
+          </span>
+
+          <span class="learning-details-byline__meta" *ngIf="articleReadTime || articlePublishedDate">
+            <span *ngIf="articleReadTime">
+              <img src="assets/figma/learning-details/schedule.svg" alt="" aria-hidden="true">
+              {{ articleReadTime }}
+            </span>
+            <span *ngIf="articlePublishedDate">
+              <img src="assets/figma/learning-details/calendar.svg" alt="" aria-hidden="true">
+              {{ articlePublishedDate }}
+            </span>
+          </span>
+        </div>
+      </section>
+
+      <section class="learning-details-article article-content" *ngIf="primaryArticleContent"
+        [innerHTML]="primaryArticleContent">
+      </section>
+
+      <ad-banner class="learning-details-ads" screen="ARTICLES" variant="article-details"></ad-banner>
+
+      <section class="learning-details-article article-content learning-details-article--secondary"
+        *ngIf="secondaryArticleContent" [innerHTML]="secondaryArticleContent">
+      </section>
+
+      <section class="learning-details-related" *ngIf="relatedQuiz">
+        <h2>Since you read this, try these</h2>
+        <button type="button" class="learning-details-related__card" (click)="openRelatedQuiz()"
+          [attr.aria-label]="'Open ' + relatedQuiz.title">
+          <span class="learning-details-related__image">
+            <img *ngIf="hasRelatedImage()" [src]="relatedQuiz.image" [alt]="relatedQuiz.title"
+              (error)="hideBrokenImage($event)">
+          </span>
+          <span class="learning-details-related__body">
+            <small class="learning-details-related__difficulty" *ngIf="getRelatedDifficulty() as difficulty">
+              {{ difficulty }}
+            </small>
+            <strong>{{ relatedQuiz.title }}</strong>
+            <span class="learning-details-related__meta">
+              <span>
+                <img src="assets/figma/learning-details/coin.png" alt="" aria-hidden="true">
+                {{ relatedQuiz.coins || 0 }}
+              </span>
+              <span *ngIf="getRelatedDuration() as duration">
+                <img src="assets/figma/learning-details/schedule.svg" alt="" aria-hidden="true">
+                {{ duration }}
+              </span>
+            </span>
+          </span>
+        </button>
+      </section>
+
+      <section class="learning-details-action">
+        <button type="button" class="learning-details-action__button" (click)="openMarkAsReadPopup()"
+          [disabled]="isMarkAsReadDisabled" [class.learning-details-action__button--complete]="isArticleRead"
+          [attr.aria-label]="isArticleRead ? 'Article already read' : (!readTimerComplete ? 'Read this article, available in ' + readTimerDisplay : 'Mark this article as read')">
+          <ion-spinner *ngIf="isMarking" name="crescent"></ion-spinner>
+          <ng-container *ngIf="!isMarking">
+            <img src="assets/figma/learning-details/thumb-up.svg" alt="" aria-hidden="true">
+            <span>{{ isArticleRead ? 'Already Read' : 'Read This' }}</span>
+            <span class="learning-details-action__reward" *ngIf="articleCoins > 0">
+              <img src="assets/figma/learning-details/coin.png" alt="" aria-hidden="true">
+              {{ articleCoins }}
+            </span>
+          </ng-container>
+        </button>
+        <span class="visually-hidden" *ngIf="!isArticleRead && !readTimerComplete">
+          {{ readTimerDisplay }} remaining before this article can be marked as read.
+        </span>
+        <p class="learning-details-action__ready" *ngIf="!isArticleRead && readTimerComplete && justUnlocked">
+          You’re ready to mark this as read!
+        </p>
+        <p class="learning-details-action__error" *ngIf="actionError" role="alert">{{ actionError }}</p>
+      </section>
+
+      <section class="learning-details-feedback" aria-labelledby="learning-details-feedback-title">
+        <h2 id="learning-details-feedback-title">Was this article helpful?</h2>
+        <div class="learning-details-feedback__options">
+          <button *ngFor="let option of helpfulnessOptions" type="button" (click)="selectHelpfulness(option.value)"
+            [class.learning-details-feedback__option--active]="selectedHelpfulness === option.value"
+            [attr.aria-pressed]="selectedHelpfulness === option.value">
+            <span class="learning-details-feedback__image">
+              <img [src]="option.image" alt="" aria-hidden="true">
+            </span>
+            <small>{{ option.label }}</small>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <app-superme-popup [config]="markPopupConfig" [isVisible]="showMarkPopup"
+      (primaryAction)="confirmMarkAsRead()" (secondaryAction)="closeMarkPopup()"
+      (backdropClick)="closeMarkPopup()" (closeAction)="closeMarkPopup()">
+    </app-superme-popup>
   </div>
 
-  <div class="article-page d-flex flex-column gap-4" *ngIf="isLoading" style="text-align: center; padding: 48px 16px;">
+  <section class="learning-details-state" *ngIf="isLoading" aria-live="polite">
+    <ion-spinner name="crescent"></ion-spinner>
     <p>Loading article...</p>
-  </div>
+  </section>
 
-  <div class="article-page d-flex flex-column gap-4" *ngIf="!isLoading && !article"
-    style="text-align: center; padding: 48px 16px;">
-    <p>Article not found</p>
-    <superme-button type="green" text="Back to Learning"
-      (click)="router.navigate(['/authed/content'])"></superme-button>
-  </div>
+  <section class="learning-details-state learning-details-state--error" *ngIf="!isLoading && !article">
+    <h1>Article not found</h1>
+    <p>This learning detail is currently unavailable.</p>
+    <button type="button" (click)="goBack()">Back to Learning</button>
+  </section>
 </ion-content>

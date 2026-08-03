@@ -1,3 +1,151 @@
+<ng-container *ngIf="parentView; else standardLearningView">
+  <ion-content fullscreen class="parent-learning-content">
+    <main class="parent-learning-page">
+      <header class="parent-learning-header">
+        <button type="button" class="parent-learning-back" (click)="goBackFromParentLearning()"
+          aria-label="Go back">
+          <img src="assets/icons/back-arrow.svg" alt="" aria-hidden="true">
+        </button>
+        <div>
+          <h1>{{ parentHeaderTitle }}</h1>
+          <p *ngIf="parentHeaderSubtitle">{{ parentHeaderSubtitle }}</p>
+        </div>
+      </header>
+
+      <nav class="parent-learning-tabs" aria-label="Learning categories">
+        <ng-container *ngFor="let tab of parentCategoryTabs; let isLast = last">
+          <button type="button" class="parent-learning-tab" (click)="selectCategory(tab.id)"
+            [class.parent-learning-tab--active]="selectedCategory === tab.id"
+            [attr.aria-pressed]="selectedCategory === tab.id">
+            <img [src]="tab.icon" [alt]="tab.label">
+            <span>{{ tab.label }}</span>
+          </button>
+          <span *ngIf="!isLast" class="parent-learning-tabs__divider" aria-hidden="true"></span>
+        </ng-container>
+      </nav>
+
+      <section *ngIf="!selectedCategoryItem" class="parent-category-section">
+        <div *ngIf="activeTabLoading" class="parent-screen-state" aria-live="polite">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Loading categories...</p>
+        </div>
+
+        <div *ngIf="!activeTabLoading && tabErrors[selectedCategory]"
+          class="parent-screen-state parent-screen-state--error" aria-live="assertive">
+          <span aria-hidden="true">!</span>
+          <h2>Couldn’t load categories</h2>
+          <p>Please check your connection and try again.</p>
+          <button type="button" (click)="retryParentLoad()">Retry</button>
+        </div>
+
+        <div *ngIf="!activeTabLoading && !tabErrors[selectedCategory] && visibleCategoryCards.length === 0"
+          class="parent-screen-state">
+          <img [src]="currentPetCuriousImage" [alt]="currentPetCuriousAlt">
+          <h2>No categories available</h2>
+          <p>Please check again soon.</p>
+        </div>
+
+        <div *ngIf="!activeTabLoading && !tabErrors[selectedCategory] && visibleCategoryCards.length"
+          class="parent-category-grid">
+          <button *ngFor="let category of visibleCategoryCards" type="button" class="parent-category-card"
+            (click)="onCategoryCardClick(category)">
+            <span class="parent-category-card__copy">
+              <strong>{{ getCategoryTitle(category) }}</strong>
+              <small>{{ getCategoryCountText(category) }}</small>
+            </span>
+            <app-img class="parent-category-card__image" [src]="getCategoryImage(category)"
+              [fallback]="getCategoryFallbackImage()" [alt]="getCategoryTitle(category)" objectFit="contain">
+            </app-img>
+          </button>
+        </div>
+      </section>
+
+      <section *ngIf="selectedCategoryItem" class="parent-listing-section">
+        <label class="parent-learning-search">
+          <span class="parent-learning-search__icon" aria-hidden="true"></span>
+          <input type="search" [(ngModel)]="searchKeyword" (input)="onSearchInput()"
+            [placeholder]="parentSearchPlaceholder" [attr.aria-label]="parentSearchPlaceholder">
+          <span class="parent-learning-search__divider" aria-hidden="true"></span>
+          <button type="button" [class.parent-learning-search__mic--active]="isListening"
+            (click)="onVoiceSearch()" [attr.aria-label]="isListening ? 'Stop voice search' : 'Start voice search'">
+            <ion-icon name="mic-outline" aria-hidden="true"></ion-icon>
+          </button>
+        </label>
+
+        <div class="parent-status-tabs" role="tablist" aria-label="Learning status">
+          <button *ngFor="let status of parentStatusOptions" type="button" role="tab"
+            [class.parent-status-tabs__active]="parentStatus === status.id"
+            [attr.aria-selected]="parentStatus === status.id"
+            (click)="setParentStatus(status.id)">
+            {{ status.label }} ({{ status.count }})
+          </button>
+        </div>
+
+        <div *ngIf="categoryContentLoading" class="parent-screen-state" aria-live="polite">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Loading {{ selectedCategory }}...</p>
+        </div>
+
+        <div *ngIf="!categoryContentLoading && categoryContentError"
+          class="parent-screen-state parent-screen-state--error" aria-live="assertive">
+          <span aria-hidden="true">!</span>
+          <h2>Couldn’t load this category</h2>
+          <p>Please check your connection and try again.</p>
+          <button type="button" (click)="retryParentLoad()">Retry</button>
+        </div>
+
+        <div *ngIf="!categoryContentLoading && !categoryContentError && visibleParentContent.length === 0"
+          class="parent-screen-state">
+          <img [src]="currentPetCuriousImage" [alt]="currentPetCuriousAlt">
+          <h2>No {{ parentStatus }} items</h2>
+          <p *ngIf="searchKeyword">Try another search term.</p>
+          <p *ngIf="!searchKeyword">Nothing is available in this section yet.</p>
+          <button *ngIf="searchKeyword" type="button" (click)="clearSearch()">Clear search</button>
+        </div>
+
+        <div *ngIf="!categoryContentLoading && !categoryContentError && visibleParentContent.length"
+          class="parent-learning-list">
+          <ng-container *ngFor="let item of visibleParentContent; let i = index">
+            <article class="parent-learning-card-item"
+              [class.parent-learning-card-item--completed]="getParentItemStatus(item) === 'completed'">
+              <div *ngIf="getParentItemStatus(item) === 'completed'" class="parent-learning-card-item__state">
+                Completed
+              </div>
+              <button type="button" class="parent-learning-card-item__media" (click)="openParentLearningItem(item)"
+                [attr.aria-label]="'Open ' + item.title">
+                <img [src]="item.image" [alt]="item.title" (error)="onParentImageError($event)">
+              </button>
+              <div class="parent-learning-card-item__body">
+                <div class="parent-learning-card-item__heading">
+                  <h2>{{ item.title }}</h2>
+                  <span *ngIf="item.difficulty">{{ item.difficulty }}</span>
+                </div>
+                <p>{{ item.description }}</p>
+                <div class="parent-learning-card-item__footer">
+                  <div class="parent-learning-card-item__rewards">
+                    <span><img src="assets/Icons-Neutral/Icons-Coins.png" alt="Coins">{{ item.coins || 0 }}</span>
+                    <span *ngIf="item.trophy != null"><img src="assets/Icons-Neutral/Icon-Trophy.png" alt="Trophies">{{ item.trophy }}</span>
+                  </div>
+                  <button type="button" (click)="openParentLearningItem(item)">
+                    {{ getParentActionLabel(item) }}
+                    <ng-container *ngIf="getParentItemStatus(item) === 'pending'">
+                      <img src="assets/Icons-Neutral/Icons-Coins.png" alt="">
+                      {{ item.coins || 0 }}
+                    </ng-container>
+                  </button>
+                </div>
+              </div>
+            </article>
+            <ad-banner *ngIf="i === 1" class="parent-learning-ad" screen="LEARNING"></ad-banner>
+          </ng-container>
+        </div>
+      </section>
+    </main>
+    <app-footer></app-footer>
+  </ion-content>
+</ng-container>
+
+<ng-template #standardLearningView>
 <ion-content fullscreen style="--padding-top: var(--sat)">
   <div class="content-page">
     <div class="content-main">
@@ -129,3 +277,4 @@
   </div>
   <app-footer></app-footer>
 </ion-content>
+</ng-template>

@@ -105,3 +105,37 @@
     transform: scale(0.9);
   }
 }
+
+.adb--article-details {
+  gap: 8px;
+
+  .adb__scroll-track {
+    gap: 8px;
+  }
+
+  .adb__card {
+    height: 182px;
+    min-width: 84.5%;
+    flex-basis: 84.5%;
+    border-radius: 16px;
+    background: #6b656a;
+    box-shadow: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .adb__card--active {
+    opacity: 1;
+    transform: none;
+  }
+
+  .adb__counter {
+    background: #90214d;
+  }
+}
+
+@media (max-width: 359px) {
+  .adb--article-details .adb__card {
+    height: 166px;
+  }
+}
