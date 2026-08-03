@@ -1,11 +1,12 @@
-<nav class="footer-main" aria-label="Primary navigation" [class.keyboard-hidden]="isKeyboardOpen">
+<nav class="footer-main" aria-label="Primary navigation" [class.keyboard-hidden]="isKeyboardOpen"
+  [class.footer-main--parenting]="mode === 'parenting'">
   <img class="footer-background" src="assets/figma/child-home/footer/nav-background.png" alt="" aria-hidden="true">
 
-  <a href="/authed/content" class="footer-item"
-    [class.active]="isRouteActive('/authed/content')"
-    (click)="navigateTab($event, '/authed/content')">
+  <a [href]="primaryLink" class="footer-item"
+    [class.active]="isRouteActive(primaryLink)"
+    (click)="navigateTab($event, primaryLink)">
     <span class="footer-icon footer-icon--learning" aria-hidden="true"></span>
-    <span class="footer-text">Learning</span>
+    <span class="footer-text">{{ primaryLabel }}</span>
   </a>
 
   <a href="/authed/school-store" class="footer-item"

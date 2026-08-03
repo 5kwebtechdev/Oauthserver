@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { BehaviorSubject, Observable, catchError, map, of, tap } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, map, of, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Challenge, Article, LearningCardData, LearningCategorySummary } from '../models/learning.models';
 import { AuthService } from '../../../package/api/auth.service';
@@ -169,12 +169,18 @@ export class LearningService {
     /**
      * Fetch all articles from backend
      */
-    fetchArticles(): Observable<Article[]> {
+    fetchArticles(recoverWithEmpty = true): Observable<Article[]> {
         this.articlesLoading$.next(true);
         const age = this.getUserAge();
         const url = age ? `${this.apiUrl}/articles?age=${age}` : `${this.apiUrl}/articles`;
-        return this.http.get<Article[]>(url, { headers: this.getHeaders() })
+        return this.http.get<Article[] | { articles?: Article[] }>(url, { headers: this.getHeaders() })
             .pipe(
+                // The API can return either a bare array or an object like
+                // { articles: [...], completed: [...], pending: [...] } —
+                // treating the latter as an array (the old assumption) threw
+                // at runtime (articles.map is not a function), which
+                // catchError silently turned into a generic load failure.
+                map(response => Array.isArray(response) ? response : (response?.articles ?? [])),
                 tap(articles => {
                     this.articlesCache$.next(articles);
                     this.articlesLoading$.next(false);
@@ -182,7 +188,7 @@ export class LearningService {
                 catchError(error => {
                     console.error('Error fetching articles:', error);
                     this.articlesLoading$.next(false);
-                    return of([]);
+                    return recoverWithEmpty ? of([]) : throwError(() => error);
                 })
             );
     }
@@ -204,12 +210,18 @@ export class LearningService {
     /**
      * Fetch quizzes from dedicated endpoint
      */
-    fetchQuizCards(): Observable<LearningCardData[]> {
+    fetchQuizCards(recoverWithEmpty = true): Observable<LearningCardData[]> {
         const age = this.getUserAge();
         const url = age ? `${this.apiUrl}/challenges/quizzes?age=${age}` : `${this.apiUrl}/challenges/quizzes`;
-        return this.http.get<Challenge[]>(url, { headers: this.getHeaders() }).pipe(
-            map(challenges => (challenges || []).map(c => this.transformChallengeToCard(c))),
-            catchError(() => of([]))
+        return this.http.get<Challenge[] | { quizzes?: Challenge[] }>(url, { headers: this.getHeaders() }).pipe(
+            // Defensive against the same wrapped-response shape found on
+            // /articles ({ quizzes: [...], completed: [...], pending: [...] }
+            // instead of a bare array) — see fetchArticles().
+            map(response => (Array.isArray(response) ? response : (response?.quizzes ?? [])).map(c => this.transformChallengeToCard(c))),
+            catchError(error => {
+                console.error('Error fetching quiz cards:', error);
+                return recoverWithEmpty ? of([]) : throwError(() => error);
+            })
         );
     }
 
@@ -219,8 +231,8 @@ export class LearningService {
     fetchPuzzleCards(): Observable<LearningCardData[]> {
         const age = this.getUserAge();
         const url = age ? `${this.apiUrl}/challenges/puzzles?age=${age}` : `${this.apiUrl}/challenges/puzzles`;
-        return this.http.get<Challenge[]>(url, { headers: this.getHeaders() }).pipe(
-            map(challenges => (challenges || []).map(c => this.transformChallengeToCard(c))),
+        return this.http.get<Challenge[] | { puzzles?: Challenge[] }>(url, { headers: this.getHeaders() }).pipe(
+            map(response => (Array.isArray(response) ? response : (response?.puzzles ?? [])).map(c => this.transformChallengeToCard(c))),
             catchError(() => of([]))
         );
     }
@@ -228,8 +240,8 @@ export class LearningService {
     /**
      * Fetch articles as cards from dedicated endpoint
      */
-    fetchArticleCards(): Observable<LearningCardData[]> {
-        return this.fetchArticles().pipe(
+    fetchArticleCards(recoverWithEmpty = true): Observable<LearningCardData[]> {
+        return this.fetchArticles(recoverWithEmpty).pipe(
             map(articles => articles.map(a => this.transformArticleToCard(a)))
         );
     }
@@ -237,7 +249,10 @@ export class LearningService {
     /**
      * Fetch challenge category summaries for the Learning category grid.
      */
-    fetchChallengeCategorySummary(challengeType: 'QUIZ' | 'PUZZLE'): Observable<LearningCategorySummary[]> {
+    fetchChallengeCategorySummary(
+        challengeType: 'QUIZ' | 'PUZZLE',
+        recoverWithEmpty = true
+    ): Observable<LearningCategorySummary[]> {
         const url = `${this.apiUrl}/challenges/categories/summary?challengeType=${challengeType}`;
         const type = challengeType === 'QUIZ' ? 'quiz' : 'puzzle';
 
@@ -245,7 +260,7 @@ export class LearningService {
             map(categories => this.normalizeLearningCategories(categories, type)),
             catchError(error => {
                 console.error(`Error fetching ${challengeType} category summary:`, error);
-                return of([]);
+                return recoverWithEmpty ? of([]) : throwError(() => error);
             })
         );
     }
@@ -266,12 +281,12 @@ export class LearningService {
     /**
      * Fetch article categories for the Learning category grid.
      */
-    fetchArticleCategories(): Observable<LearningCategorySummary[]> {
+    fetchArticleCategories(recoverWithEmpty = true): Observable<LearningCategorySummary[]> {
         return this.http.get<LearningCategorySummary[]>(`${this.apiUrl}/articles/categories`, { headers: this.getHeaders() }).pipe(
             map(categories => this.normalizeLearningCategories(categories, 'article')),
             catchError(error => {
                 console.error('Error fetching article categories:', error);
-                return of([]);
+                return recoverWithEmpty ? of([]) : throwError(() => error);
             })
         );
     }
@@ -282,7 +297,8 @@ export class LearningService {
      */
     fetchChallengesForLearningCategory(
         categoryName: string,
-        challengeType?: Challenge['category']
+        challengeType?: Challenge['category'],
+        recoverWithEmpty = true
     ): Observable<LearningCardData[]> {
         const params = new HttpParams().set('category', categoryName);
 
@@ -298,7 +314,7 @@ export class LearningService {
             map(challenges => challenges.map(challenge => this.transformChallengeToCard(challenge))),
             catchError(error => {
                 console.error(`Error fetching challenges for category ${categoryName}:`, error);
-                return of([]);
+                return recoverWithEmpty ? of([]) : throwError(() => error);
             })
         );
     }
@@ -306,7 +322,10 @@ export class LearningService {
     /**
      * Fetch the article cards belonging to a named Learning category.
      */
-    fetchArticlesForLearningCategory(categoryName: string): Observable<LearningCardData[]> {
+    fetchArticlesForLearningCategory(
+        categoryName: string,
+        recoverWithEmpty = true
+    ): Observable<LearningCardData[]> {
         const params = new HttpParams().set('category', categoryName);
 
         return this.http.get<{ articles?: Article[] } | Article[]>(
@@ -317,7 +336,7 @@ export class LearningService {
             map(articles => articles.map(article => this.transformArticleToCard(article))),
             catchError(error => {
                 console.error(`Error fetching articles for category ${categoryName}:`, error);
-                return of([]);
+                return recoverWithEmpty ? of([]) : throwError(() => error);
             })
         );
     }

@@ -65,6 +65,8 @@ const IN_APP_ROUTE_MAP: Record<string, string> = {
 export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
   /** Which screen this banner is on - determines which ads the API returns */
   @Input() screen: AdScreen = 'HOME';
+  /** Optional Figma layout used by the article Learning Details screen. */
+  @Input() variant: 'default' | 'article-details' = 'default';
 
   @ViewChild('scrollTrack') scrollTrackRef?: ElementRef<HTMLElement>;
 
@@ -91,6 +93,10 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['screen'] && !changes['screen'].firstChange) {
       this.loadAds();
+      return;
+    }
+    if (changes['variant'] && !changes['variant'].firstChange) {
+      setTimeout(() => this.updateTrackPosition(), 0);
     }
   }
 
@@ -196,10 +202,10 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
     const el = this.scrollTrackRef?.nativeElement;
     if (!el) return;
     const containerWidth = (el.parentElement?.clientWidth ?? el.clientWidth);
-    // card = 82% of container, gap = 10px
-    const cardWidth = containerWidth * 0.82;
-    const gap = 10;
-    const peekOffset = (containerWidth - cardWidth) / 2; // centres active card
+    const articleDetails = this.variant === 'article-details';
+    const cardWidth = containerWidth * (articleDetails ? 0.845 : 0.82);
+    const gap = articleDetails ? 8 : 10;
+    const peekOffset = articleDetails ? 0 : (containerWidth - cardWidth) / 2;
     const translateX = peekOffset - this.currentIndex * (cardWidth + gap);
     el.style.transform = `translateX(${translateX}px)`;
   }
