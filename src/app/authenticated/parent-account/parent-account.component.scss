@@ -116,7 +116,7 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 26px;
+  height: 36px;
   border: 1px solid #8b8dcb;
   background:
     linear-gradient(#ffffff, #ffffff) padding-box,
@@ -126,25 +126,25 @@ button {
 }
 
 .notification-button {
-  width: 26px;
-  padding: 5px;
+  width: 36px;
+  padding: 6px;
   border-radius: 50%;
 
   img {
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
   }
 }
 
 .parent-coin-pill {
-  gap: 2px;
+  gap: 4px;
   min-width: 66px;
-  padding: 4px 8px;
+  padding: 2px 8px;
   border-radius: 31px;
 
   img {
-    width: 16px;
-    height: 16px;
+    width: 32px;
+    height: 32px;
     object-fit: contain;
   }
 
@@ -163,25 +163,19 @@ button {
 
   &__rail {
     display: flex;
+    flex-wrap: wrap;
     align-items: stretch;
+    gap: 6px;
     width: 100%;
     min-height: 76px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x proximity;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
   }
 }
 
 .switcher-child {
   position: relative;
   display: flex;
-  flex: 0 0 136px;
+  flex: 0 1 136px;
+  min-width: 96px;
   align-items: center;
   width: 136px;
   height: 76px;
@@ -192,7 +186,6 @@ button {
   color: #282527;
   text-align: left;
   cursor: pointer;
-  scroll-snap-align: start;
   transition: flex-basis 220ms ease, width 220ms ease, color 220ms ease;
 
   &--selected {
@@ -201,14 +194,16 @@ button {
 
   &--selected-single {
     width: 212px;
-    flex-basis: 212px;
+    flex: 0 1 212px;
+    min-width: 160px;
     padding: 10px 8px;
     border-radius: 16px 0 0 16px;
   }
 
   &--selected-multiple {
     width: 196px;
-    flex-basis: 196px;
+    flex: 0 1 196px;
+    min-width: 150px;
     padding: 10px 8px;
   }
 
@@ -292,8 +287,8 @@ button {
     }
 
     img {
-      width: 12px;
-      height: 12px;
+      width: 16px;
+      height: 16px;
       object-fit: contain;
     }
   }
@@ -357,7 +352,6 @@ button {
   background: #ffffff;
   color: #6b656a;
   cursor: pointer;
-  scroll-snap-align: start;
 
   &__icon {
     position: relative;
@@ -436,7 +430,6 @@ button {
   background: #ffffff;
   color: #282527;
   cursor: pointer;
-  scroll-snap-align: start;
 
   &__avatar {
     display: flex;
@@ -700,6 +693,7 @@ button {
     height: 64px;
     border-radius: 50%;
     background: conic-gradient(var(--metric-color) var(--metric-value), #dedede 0);
+    transition: background 220ms ease;
 
     &::after {
       position: absolute;
@@ -716,6 +710,11 @@ button {
       font-size: 13px;
       font-weight: 600;
     }
+
+    &--loading {
+      background: conic-gradient(#8b8dcb 0deg 90deg, #ececec 90deg 360deg);
+      animation: metric-ring-spin 900ms linear infinite;
+    }
   }
 
   > strong {
@@ -724,6 +723,42 @@ button {
     font-weight: 700;
     line-height: normal;
     text-align: center;
+  }
+
+  &__status-skeleton {
+    display: inline-block;
+    width: 56px;
+    min-height: 12px;
+    margin-top: 8px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #ececec 25%, #f5f3fa 50%, #ececec 75%);
+    background-size: 200% 100%;
+    animation: metric-skeleton-shimmer 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes metric-ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes metric-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .metric__ring--loading {
+    animation: none;
+  }
+
+  .metric__status-skeleton {
+    animation: none;
   }
 }
 

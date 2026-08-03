@@ -1133,11 +1133,16 @@ Thank you!`;
                 familyName: sessionStorage.getItem('familyName') || this.createdFamilyName || '',
                 unlockPotential: false
             };
-            const avatarKey = Number(profile.avatar);
-            if (Number.isInteger(avatarKey) && avatarKey >= 1 && avatarKey <= 12) {
-                payload.avatarName = `avatar_${avatarKey}`;
-                payload.avatarImageName = `avatars/avatar${avatarKey}.png`;
-            }
+            // Parents aren't shown the avatar picker during signup, so
+            // profile.avatar is almost never a real 1-12 pick — fall back to
+            // a sensible default so the dashboard always has a real picture
+            // instead of showing just their name's initial forever.
+            const parsedAvatarKey = Number(profile.avatar);
+            const avatarKey = (Number.isInteger(parsedAvatarKey) && parsedAvatarKey >= 1 && parsedAvatarKey <= 12)
+                ? parsedAvatarKey
+                : this.resolveParentAvatarKey(profile);
+            payload.avatarName = `avatar_${avatarKey}`;
+            payload.avatarImageName = `avatars/avatar${avatarKey}.png`;
             // Optional — omit entirely rather than defaulting to a value the
             // user never actually chose (toApiGender() always resolves to a
             // real enum, which would falsely look like an explicit choice).
@@ -1298,10 +1303,18 @@ Thank you!`;
         if (profile.gender) {
             googlePayload.gender = toApiGender(profile.gender);
         }
-        const avatarKey = Number(profile.avatar);
-        if (Number.isInteger(avatarKey) && avatarKey >= 1 && avatarKey <= 12) {
-            googlePayload.avatarName = `avatar_${avatarKey}`;
-            googlePayload.avatarImageName = `avatars/avatar${avatarKey}.png`;
+        const parsedAvatarKey = Number(profile.avatar);
+        if (Number.isInteger(parsedAvatarKey) && parsedAvatarKey >= 1 && parsedAvatarKey <= 12) {
+            googlePayload.avatarName = `avatar_${parsedAvatarKey}`;
+            googlePayload.avatarImageName = `avatars/avatar${parsedAvatarKey}.png`;
+        } else if (!avatarUrl) {
+            // No preset avatar chosen and no real Google/Apple photo either
+            // (e.g. Apple never provides one, or photo access was denied) —
+            // assign a default so the dashboard has a real picture instead
+            // of falling back to just their name's initial.
+            const fallbackKey = this.resolveParentAvatarKey(profile);
+            googlePayload.avatarName = `avatar_${fallbackKey}`;
+            googlePayload.avatarImageName = `avatars/avatar${fallbackKey}.png`;
         }
 
         if (idToken) {
@@ -1422,6 +1435,18 @@ Thank you!`;
 
         const familyCode = candidates.find(value => typeof value === 'string' && value.trim());
         return familyCode ? familyCode.trim().toUpperCase() : '';
+    }
+
+    /**
+     * Parents never see the avatar picker during signup, so pick a sensible
+     * default preset avatar (1-6 female, 7-12 male, otherwise any of the 12)
+     * rather than leaving them with no picture at all.
+     */
+    private resolveParentAvatarKey(profile: any): number {
+        const gender = String(profile?.gender || '').trim().toLowerCase();
+        if (gender === 'female') return Math.floor(Math.random() * 6) + 1;
+        if (gender === 'male') return Math.floor(Math.random() * 6) + 7;
+        return Math.floor(Math.random() * 12) + 1;
     }
 
     private clearOAuthSignupSession(): void {

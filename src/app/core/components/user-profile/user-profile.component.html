@@ -117,9 +117,12 @@
       <div class="menu-group">
         <p class="menu-group__label">Preferences</p>
         <div class="menu-group__card">
+          <!-- Hidden per Apple App Review (Guideline 3.1.1) until membership
+               is either removed or properly implemented via In-App Purchase.
           <profile-content-card iconName="creditCard" title="Manage Membership"
             subtitle="Perks, upgrade, or cancel anytime" (select)="onManageMembership()"></profile-content-card>
           <div class="menu-divider"></div>
+          -->
           <profile-content-card iconName="notification" title="Notifications" subtitle="Manage your notifications"
             (select)="onNotifications()"></profile-content-card>
         </div>

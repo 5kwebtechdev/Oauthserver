@@ -77,6 +77,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     private readonly destroy$ = new Subject<void>();
     private childrenRequestId = 0;
     private moodBalanceRequestId = 0;
+    private performanceRequestId = 0;
     private messageComposerCloseTimer?: ReturnType<typeof setTimeout>;
     private messageComposerTrigger?: HTMLElement;
     private activeMessageTemplate?: 'celebrate' | 'encourage';
@@ -104,6 +105,10 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     public statsUpdatedAt = new Date();
     public moodBalanceLoading = false;
     public moodBalance: MoodBalanceSegment[] = this.createEmptyMoodBalance();
+    // True while performanceMetrics is being refreshed for the currently
+    // selected child — the template shows an animated skeleton instead of
+    // the (possibly stale, previous child's) numbers while this is true.
+    public performanceLoading = false;
     
     // Stats
     public completionRate: number = 0;
@@ -429,9 +434,21 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         this.profileStore.selectionChanged$.pipe(takeUntil(this.destroy$)).subscribe(child => {
             this.selectedChild = child;
             if (child) {
+                // Apply the cached snapshot immediately so the screen isn't
+                // blank, then refresh from the API — the template shows a
+                // loading skeleton on the performance metrics for the
+                // duration so those (possibly stale) cached numbers are
+                // never mistaken for confirmed, up-to-date ones.
                 this.applyChildStats(child);
                 this.loadMoodBalance();
+                this.loadUserStats();
             } else {
+                // Invalidate any child-scoped responses still in flight so
+                // they cannot repaint the parent/no-child state later.
+                ++this.moodBalanceRequestId;
+                ++this.performanceRequestId;
+                this.moodBalanceLoading = false;
+                this.performanceLoading = false;
                 this.useParentAsDefault();
                 this.moodBalance = this.createEmptyMoodBalance();
             }
@@ -791,21 +808,27 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
     /** Apply child stats to UI */
     private applyChildStats(c: ChildInfo): void {
-        // Mood
-        if (c.mood) {
-            const moodUpper = String(c.mood).toUpperCase();
-            const assetPath = this.moodAssetMap[moodUpper] || this.moodAssetMap['NEUTRAL'];
-            this.selectedMood = 'asset:' + assetPath;
-        }
-        // Stats
-        this.userCoins = c.coins ?? this.userCoins;
-        this.userStreaks = c.streak ?? this.userStreaks;
-        this.userDays = c.trophies ?? this.userDays;
-        this.userBadges = c.badges ?? this.userBadges;
-        this.completionRate = c.completionRate ?? this.completionRate;
-        this.consistencyRate = c.consistencyRate ?? this.consistencyRate;
-        this.improvementRate = c.improvementRate ?? this.improvementRate;
-        this.appScore = c.appScore ?? this.appScore;
+        // Mood — always reflect the newly selected child; default to
+        // neutral instead of leaving the previous child's mood on screen
+        // when this child has none recorded yet.
+        const moodUpper = String(c.mood || 'NEUTRAL').toUpperCase();
+        const assetPath = this.moodAssetMap[moodUpper] || this.moodAssetMap['NEUTRAL'];
+        this.selectedMood = 'asset:' + assetPath;
+
+        // Stats — default to 0 rather than falling back to `this.XXX` (the
+        // previously selected child's number). Falling back to the old
+        // value here was the bug: if this child's cached summary is
+        // missing a field, the screen would silently keep showing the
+        // last child's stat mislabeled as this child's. loadUserStats()
+        // fills in the authoritative values right after this runs.
+        this.userCoins = c.coins ?? 0;
+        this.userStreaks = c.streak ?? 0;
+        this.userDays = c.trophies ?? 0;
+        this.userBadges = c.badges ?? 0;
+        this.completionRate = c.completionRate ?? 0;
+        this.consistencyRate = c.consistencyRate ?? 0;
+        this.improvementRate = c.improvementRate ?? 0;
+        this.appScore = c.appScore ?? 0;
         this.userService.saveUserStats({
             coins: this.userCoins,
             streaks: this.userStreaks,
@@ -813,11 +836,11 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
             badges: this.userBadges
         });
         // Progress
-        this.totalHabits = c.totalHabits ?? this.totalHabits;
-        this.completedHabits = c.completedHabits ?? this.completedHabits;
-        this.totalTasks = c.totalTasks ?? this.totalTasks;
-        this.completedTasks = c.completedTasks ?? this.completedTasks;
-        this.progressPercentage = c.progressPercentage ?? this.progressPercentage;
+        this.totalHabits = c.totalHabits ?? 0;
+        this.completedHabits = c.completedHabits ?? 0;
+        this.totalTasks = c.totalTasks ?? 0;
+        this.completedTasks = c.completedTasks ?? 0;
+        this.progressPercentage = c.progressPercentage ?? 0;
         // Vibe fields
         this.vibeTitle = c.vibeTitle ?? '';
         this.vibeDescription = c.vibeDescription ?? '';
@@ -856,6 +879,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         const requestId = ++this.moodBalanceRequestId;
         const selectedChildId = this.selectedChild?.id;
         if (selectedChildId === null || selectedChildId === undefined) {
+            this.moodBalanceLoading = false;
             this.moodBalance = this.createEmptyMoodBalance();
             return;
         }
@@ -865,11 +889,16 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
         const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
         forkJoin([
-            this.moodService.getMoodTransitionsMonthly(now.getFullYear(), now.getMonth() + 1)
+            this.moodService.getMoodTransitionsMonthly(
+                now.getFullYear(),
+                now.getMonth() + 1,
+                selectedChildId
+            )
                 .pipe(catchError(() => of([] as MoodTransition[]))),
             this.moodService.getMoodTransitionsMonthly(
                 previousMonth.getFullYear(),
-                previousMonth.getMonth() + 1
+                previousMonth.getMonth() + 1,
+                selectedChildId
             ).pipe(catchError(() => of([] as MoodTransition[])))
         ])
             .pipe(takeUntil(this.destroy$))
@@ -880,6 +909,13 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                 sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
 
                 const transitions = [...previous, ...current].filter(item => {
+                    // Some backend versions return all family members even
+                    // when forUserId is supplied. Keep only the requested
+                    // child's records in that case.
+                    if (item.userId !== null && item.userId !== undefined
+                        && String(item.userId) !== String(selectedChildId)) {
+                        return false;
+                    }
                     const date = new Date(`${item.date}T00:00:00`);
                     return Number.isFinite(date.getTime()) && date >= sevenDaysAgo && date <= now;
                 });
@@ -931,11 +967,25 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
     /** Load user stats from API */
     private loadUserStats(): void {
-        this.moodService.getVibesDisplay().pipe(takeUntil(this.destroy$)).subscribe({
+        const selectedChildId = this.selectedChild?.id;
+        const requestId = ++this.performanceRequestId;
+        if (selectedChildId === null || selectedChildId === undefined) {
+            this.performanceLoading = false;
+            return;
+        }
+
+        this.performanceLoading = true;
+        this.moodService.getVibesDisplay(selectedChildId).pipe(takeUntil(this.destroy$)).subscribe({
             next: (data) => {
-                if (data?.length) {
-                    const selectedId = this.selectedChild?.id;
-                    const d = data.find(item => String(item.userId) === String(selectedId)) || data[0];
+                // A slower response for the previously selected child must
+                // never overwrite the analytics for the current child.
+                if (requestId !== this.performanceRequestId
+                    || String(this.selectedChild?.id) !== String(selectedChildId)) {
+                    return;
+                }
+
+                const d = data?.find(item => String(item.userId) === String(selectedChildId));
+                if (d) {
                     this.userCoins = d.coins || 0;
                     this.userStreaks = d.streak || 0;
                     this.userDays = d.trophies || 0;
@@ -952,6 +1002,11 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                     });
                     this.statsUpdatedAt = new Date();
                 }
+                this.performanceLoading = false;
+            },
+            error: () => {
+                if (requestId !== this.performanceRequestId) return;
+                this.performanceLoading = false;
             }
         });
     }
