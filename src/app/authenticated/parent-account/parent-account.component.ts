@@ -8,6 +8,7 @@ import { IonicModule } from "@ionic/angular";
 import { MoodService } from '../../core/services/mood.service';
 import { MoodTransition, VibesDisplayResponse } from '../../core/models/mood.model';
 import { FooterComponent } from '../../core/components/footer/footer.component';
+import { DashboardWebFooterComponent } from '../../core/components/dashboard-web-footer/dashboard-web-footer.component';
 import { AdBannerComponent } from '../../core/components/ad-banner/ad-banner.component';
 import { ActivityCardComponent } from '../../core/components/activity-section/activity-card/activity-card.component';
 import { HabitService } from '../../core/components/activity-section/habit.service';
@@ -66,6 +67,7 @@ interface FamilySwitcherParent {
         IonicModule,
         AdBannerComponent,
         FooterComponent,
+        DashboardWebFooterComponent,
         ActivityCardComponent,
         LearningSectionComponent,
         AcademySectionComponent,
@@ -368,12 +370,20 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     ngOnDestroy(): void {
         if (this.messageComposerCloseTimer) clearTimeout(this.messageComposerCloseTimer);
         document.body.style.overflow = '';
+        document.body.classList.remove('dashboard-web-view');
         this.refreshService.unregisterRefreshHandler('ParentAccount');
         this.destroy$.next();
         this.destroy$.complete();
     }
 
     ngOnInit(): void {
+        // global.scss caps every ion-page/ion-router-outlet to a readable content
+        // width by default — this page's web layout builds its own wide
+        // container internally (bp.web-container, see dashboard-web-footer and
+        // .parent-web-content below), so it opts out of that generic cap for as
+        // long as it's active. Same pattern as UserDashboardComponent.
+        document.body.classList.add('dashboard-web-view');
+
         // Register with global pull-to-refresh service
         this.refreshService.registerRefreshHandler('ParentAccount', () => this.onGlobalRefresh());
         this.platform.resume.pipe(takeUntil(this.destroy$)).subscribe(() => {
