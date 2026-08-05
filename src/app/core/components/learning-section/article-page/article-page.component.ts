@@ -141,7 +141,8 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     const article = this.article as any;
     const createdBy = typeof article?.createdBy === 'string' ? article.createdBy : '';
     return String(
-      article?.author?.name
+      article?.publishedBy
+      || article?.author?.name
       || article?.authorName
       || article?.createdByName
       || article?.createdBy?.name

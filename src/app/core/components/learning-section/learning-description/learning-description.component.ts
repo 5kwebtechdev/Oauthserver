@@ -91,10 +91,10 @@ import { Challenge } from 'src/app/core/models/learning.models';
       height: 100%;
       overflow-y: auto;
     }
-    .content-description-screen { padding: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+    .content-description-screen { width: 100%; padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
     .content-description-screen .back-title { display: flex; justify-content: center; align-items: center; gap: 12px; }
-    .content-description-screen .desc-image { margin: 8px 0 16px; }
-    .content-description-screen .desc-image .hero-image { height: 160px; border-radius: 12px; display: block; }
+    .content-description-screen .desc-image { width: 100%; aspect-ratio: 16 / 9; margin: 8px 0 16px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 12px; background: #f6f4f4; }
+    .content-description-screen .desc-image .hero-image { display: block; width: 100%; max-width: 100%; height: 100%; object-fit: contain; object-position: center; }
     .content-description-screen .meta-cards { display: flex; padding: 8px; align-items: flex-start; gap: 24px; align-self: stretch; }
     .content-description-screen .meta-cards .meta { display: flex; padding: 12px; flex-direction: column; align-items: flex-start; gap: 2px; border-radius: 12px; border-bottom: 3px solid #E1527C; background: #FFF; box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10); }
     .content-description-screen .meta-cards .meta-value { display: flex; align-items: center; gap: 8px; font-family: Nunito; font-weight: 700; font-size: 18px; color: #282527; }

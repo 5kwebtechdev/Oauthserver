@@ -1,7 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
-import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavigationService } from '../../../services/navigation.service';
 import { IonicModule, ModalController } from '@ionic/angular';
@@ -11,10 +9,23 @@ import { AcademyService, CourseDetailResponse, CourseLesson } from '../../../ser
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 
+type CourseLessonView = {
+  title: string;
+  desc: string;
+  time: string;
+  image?: string;
+  coins?: number;
+  lessonId?: number;
+  isCompleted?: boolean;
+  isLocked?: boolean;
+  lessonStatus?: string | null;
+  status?: string | null;
+};
+
 @Component({
   selector: 'app-academy-course',
   standalone: true,
-  imports: [CommonModule, IonicModule, SupermeNavigatorComponent, SupermeButtonComponent],
+  imports: [CommonModule, IonicModule],
   templateUrl: './academy-course.component.html',
   styleUrls: ['./academy-course.component.scss'],
 })
@@ -24,7 +35,7 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
   @Output() courseOpen = new EventEmitter<CourseCard>();
   @Output() lessonStart = new EventEmitter<{ courseId: string; lessonIndex: number }>();
 
-  lessons: Array<{ title: string; desc: string; time: string; image?: string; coins?: number; lessonId?: number; isCompleted?: boolean; isLocked?: boolean; lessonStatus?: string | null; status?: string | null }> = [];
+  lessons: CourseLessonView[] = [];
 
   // If the user has an in-progress lesson, index of that lesson in `lessons`; null when none
   resumeLessonIndex: number | null = null;
@@ -348,6 +359,45 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
       case 'COMPLETED': return 'status-completed';
       default: return '';
     }
+  }
+
+  get courseCategory(): string {
+    return this.courseDetail?.category || this.course?.level || 'MasterClass';
+  }
+
+  get courseCoins(): number {
+    const total = Number(this.courseDetail?.totalCoins);
+    if (Number.isFinite(total) && total > 0) {
+      return total;
+    }
+
+    return this.lessons.reduce((sum, lesson) => sum + (Number(lesson.coins) || 0), 0);
+  }
+
+  get averageLessonCoins(): number {
+    if (!this.lessons.length || !this.courseCoins) {
+      return 0;
+    }
+    return Math.max(1, Math.round(this.courseCoins / this.lessons.length));
+  }
+
+  getLessonOrder(lesson: CourseLessonView, index: number): number {
+    const match = String(lesson.title || '').match(/^\s*(\d+)\s*[.)-]/);
+    return match ? Number(match[1]) : index + 1;
+  }
+
+  getLessonTitle(lesson: CourseLessonView): string {
+    return String(lesson.title || 'Lesson').replace(/^\s*\d+\s*[.)-]\s*/, '');
+  }
+
+  getLessonFormat(lesson: CourseLessonView): string {
+    const [format] = String(lesson.time || 'Text-based').split(/[•·]/);
+    return format.trim() || 'Text-based';
+  }
+
+  getLessonDuration(lesson: CourseLessonView): string {
+    const parts = String(lesson.time || '').split(/[•·]/).map(part => part.trim()).filter(Boolean);
+    return parts.length > 1 ? parts[parts.length - 1] : '';
   }
 
   private async openChaptersModal(lessonIndex: number): Promise<void> {

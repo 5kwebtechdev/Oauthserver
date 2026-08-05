@@ -1,81 +1,140 @@
-<ion-content>
-  <!-- Loading state -->
+<ion-content [fullscreen]="true" class="course-content">
   <div *ngIf="isLoadingCourse" class="loading-container">
     <ion-spinner name="crescent"></ion-spinner>
     <p>Loading course...</p>
   </div>
 
-  <!-- Error state -->
   <div *ngIf="!isLoadingCourse && loadError" class="error-container">
     <p class="error-message">{{ loadError }}</p>
   </div>
 
-  <div *ngIf="!isLoadingCourse && !loadError && course">
-
-    <!-- ── Hero ── -->
-    <div class="hero">
-      <superme-navigator backIcon="arrowSvg" (back)="goBack()"></superme-navigator>
-      <img class="hero-img"
-           [src]="course.image || fallbackCourseImage"
-           [alt]="course.title"
-           (error)="onImageError($event, fallbackCourseImage)">
-      <h2 class="hero-title">{{ course.title }}</h2>
-      <p class="hero-meta">{{ course.lessons }} {{ course.lessons === 1 ? 'lesson' : 'lessons' }} • {{ course.duration }}</p>
-
-      <!-- Continue / Start button -->
-      <button class="hero-cta" *ngIf="!isLoadingCourse && lessons.length > 0 && !courseDetail?.isCourseCompleted"
-              (click)="onHeroCta()">
-        {{ resumeLessonIndex != null ? 'Continue with lesson ' + (resumeLessonIndex + 1) : 'Start with lesson 1' }}
+  <main *ngIf="!isLoadingCourse && !loadError && course" class="course-page">
+    <section class="course-hero" aria-labelledby="course-title">
+      <button type="button" class="hero-back" (click)="goBack()" aria-label="Go back">
+        <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
       </button>
 
-      <p class="hero-desc">{{ course.description }}</p>
-    </div>
-
-    <!-- ── Lesson List ── -->
-    <div class="lessons-list">
-      <div class="lesson-item"
-           *ngFor="let lesson of lessons; let i = index"
-           [class.expanded]="expandedLessonIndex === i"
-           [class.locked]="lesson.isLocked"
-           [class.completed]="lesson.isCompleted">
-
-        <!-- Tappable header row -->
-        <div class="lesson-row" (click)="toggleLesson(i)">
-          <div class="lesson-thumb">
-            <img [src]="lesson.image || fallbackLessonImage"
-                 [alt]="lesson.title"
-                 (error)="onImageError($event, fallbackLessonImage)">
-          </div>
-
-          <div class="lesson-body">
-            <h3 class="lesson-title">{{ lesson.title }}</h3>
-            <p class="lesson-desc">{{ lesson.desc }}</p>
-            <div class="lesson-meta">
-              <span class="lesson-time">{{ lesson.time }}</span>
-              <span class="meta-dot">•</span>
-              <img class="coin-icon" src="assets/Icons-Neutral/Icons-Coins.png" alt="coins">
-              <span class="lesson-coins">{{ lesson.coins ?? 0 }}</span>
-            </div>
-          </div>
-
-          <div class="lesson-chevron" [class.open]="expandedLessonIndex === i"></div>
-        </div>
-
-        <!-- CTA button — only when expanded and not locked -->
-        <div class="lesson-cta" *ngIf="expandedLessonIndex === i && !lesson.isLocked">
-          <superme-button [type]="'magenta'" small
-            [text]="lesson.isCompleted ? 'Read Again' : (isLessonInProgress(lesson) ? 'Continue' : 'Start Lesson')"
-            (click)="onStartLesson(i)">
-          </superme-button>
-        </div>
-
-        <!-- Locked banner — shown when a locked lesson is tapped -->
-        <div class="locked-notice" *ngIf="lockedBannerIndex === i">
-          Complete Previous Lesson first to unlock this!
-        </div>
-
+      <div class="hero-coins" *ngIf="courseCoins > 0" [attr.aria-label]="courseCoins + ' coins available'">
+        <img src="assets/Icons-Neutral/Icons-Coins.png" alt="" aria-hidden="true">
+        <strong>{{ courseCoins }}</strong>
       </div>
-    </div>
 
-  </div>
+      <div class="hero-shell">
+        <div class="hero-art" aria-hidden="true">
+          <img
+            [src]="course.image || fallbackCourseImage"
+            [alt]=""
+            (error)="onImageError($event, fallbackCourseImage)">
+        </div>
+
+        <div class="hero-copy">
+          <p class="hero-tag">
+            <ion-icon name="sparkles" aria-hidden="true"></ion-icon>
+            {{ courseCategory }}
+          </p>
+          <h1 id="course-title">{{ course.title }}</h1>
+
+          <div class="hero-stats" aria-label="Course information">
+            <span><ion-icon name="star-outline" aria-hidden="true"></ion-icon>{{ course.lessons }} {{ course.lessons === 1 ? 'lesson' : 'lessons' }}</span>
+            <i aria-hidden="true"></i>
+            <span><ion-icon name="time-outline" aria-hidden="true"></ion-icon>{{ course.duration }}</span>
+          </div>
+
+          <p class="hero-description">{{ course.description }}</p>
+
+          <button
+            type="button"
+            class="hero-cta"
+            *ngIf="lessons.length > 0 && !courseDetail?.isCourseCompleted"
+            (click)="onHeroCta()">
+            <ion-icon name="play" aria-hidden="true"></ion-icon>
+            {{ resumeLessonIndex != null ? 'Continue with lesson ' + (resumeLessonIndex + 1) : 'Start with lesson 1' }}
+          </button>
+        </div>
+      </div>
+
+      <section class="learning-summary" aria-labelledby="learning-summary-title">
+        <h2 id="learning-summary-title">What<br>you'll<br>learn</h2>
+        <div class="learning-summary__item">
+          <ion-icon name="bulb-outline" aria-hidden="true"></ion-icon>
+          <p><strong>Think</strong><span>like an entrepreneur</span></p>
+        </div>
+        <div class="learning-summary__item">
+          <ion-icon name="locate-outline" aria-hidden="true"></ion-icon>
+          <p><strong>Solve</strong><span>real-world problems</span></p>
+        </div>
+        <div class="learning-summary__item">
+          <ion-icon name="rocket-outline" aria-hidden="true"></ion-icon>
+          <p><strong>Build</strong><span>ideas into action</span></p>
+        </div>
+      </section>
+    </section>
+
+    <section class="course-lessons" aria-labelledby="course-lessons-title">
+      <div class="course-lessons__heading">
+        <h2 id="course-lessons-title"><ion-icon name="book-outline" aria-hidden="true"></ion-icon>Course Lessons</h2>
+        <span>{{ course.lessons }} {{ course.lessons === 1 ? 'lesson' : 'lessons' }}</span>
+      </div>
+
+      <div class="lesson-timeline">
+        <article
+          *ngFor="let lesson of lessons; let i = index"
+          class="lesson-card"
+          [class.lesson-card--active]="expandedLessonIndex === i"
+          [class.lesson-card--locked]="lesson.isLocked"
+          [class.lesson-card--completed]="lesson.isCompleted">
+
+          <span class="lesson-number" [attr.aria-label]="'Lesson ' + getLessonOrder(lesson, i)">{{ getLessonOrder(lesson, i) }}</span>
+
+          <button
+            type="button"
+            class="lesson-card__content"
+            (click)="toggleLesson(i)"
+            [attr.aria-expanded]="expandedLessonIndex === i"
+            [attr.aria-label]="lesson.isLocked ? getLessonTitle(lesson) + ', locked' : 'Open ' + getLessonTitle(lesson)">
+            <img
+              class="lesson-card__image"
+              [src]="lesson.image || fallbackLessonImage"
+              [alt]=""
+              (error)="onImageError($event, fallbackLessonImage)">
+
+            <span class="lesson-card__copy">
+              <strong>{{ getLessonTitle(lesson) }}</strong>
+              <small>{{ lesson.desc }}</small>
+              <span class="lesson-card__meta">
+                <span><ion-icon name="document-text-outline" aria-hidden="true"></ion-icon>{{ getLessonFormat(lesson) }}</span>
+                <i aria-hidden="true"></i>
+                <span><ion-icon name="time-outline" aria-hidden="true"></ion-icon>{{ getLessonDuration(lesson) }}</span>
+                <i aria-hidden="true"></i>
+                <span class="lesson-card__coins" *ngIf="lesson.coins != null">
+                  <img src="assets/Icons-Neutral/Icons-Coins.png" alt="" aria-hidden="true">{{ lesson.coins }}
+                </span>
+              </span>
+            </span>
+
+            <span class="lesson-card__arrow" aria-hidden="true">
+              <ion-icon [name]="expandedLessonIndex === i ? 'chevron-up-outline' : 'chevron-forward-outline'"></ion-icon>
+            </span>
+          </button>
+
+          <div class="lesson-card__action" *ngIf="expandedLessonIndex === i && !lesson.isLocked">
+            <button type="button" (click)="onStartLesson(i)">
+              <ion-icon name="play" aria-hidden="true"></ion-icon>
+              {{ lesson.isCompleted ? 'Read Again' : (isLessonInProgress(lesson) ? 'Continue lesson' : 'Start lesson') }}
+            </button>
+          </div>
+
+          <p class="locked-notice" *ngIf="lockedBannerIndex === i">
+            Complete the previous lesson to unlock this one.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <footer class="course-reward" *ngIf="courseCoins > 0">
+      <span class="course-reward__star"><ion-icon name="star" aria-hidden="true"></ion-icon></span>
+      <p>Earn coins <i aria-hidden="true"></i> Complete lessons <i aria-hidden="true"></i> Build skills</p>
+      <strong><img src="assets/Icons-Neutral/Icons-Coins.png" alt="" aria-hidden="true"> +{{ averageLessonCoins }} per lesson</strong>
+    </footer>
+  </main>
 </ion-content>

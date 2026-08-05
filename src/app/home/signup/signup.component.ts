@@ -87,16 +87,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
   }
 
-  /** Apple already supplied this account name, so never require it again. */
-  public get hasAppleProvidedName(): boolean {
-    if (!this.isAppleOAuthSignup) return false;
-    try {
-      return !!sessionStorage.getItem('google_signup_name')?.trim();
-    } catch {
-      return false;
-    }
-  }
-
   // OTP related properties
   public otpDigits: string[] = ['', '', '', ''];
   public canResendOtp = false;
@@ -397,10 +387,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.requestedIdentifier = googleEmail;
       }
 
-      // Sign in with Apple supplies the account name on first authorization
-      // and the saved account profile on later authorizations. Do not ask the
-      // user to provide that same name again during app onboarding.
-      if (this.hasAppleProvidedName) {
+      // Sign in with Apple supplies the account name on the initial native
+      // authorization and may omit it on later authorizations. In both cases,
+      // use the identity already supplied by Apple or returned by the backend;
+      // never ask the person to enter their name again during onboarding.
+      if (this.isAppleOAuthSignup) {
         this.profileForm.get('name')?.clearValidators();
         this.profileForm.get('name')?.updateValueAndValidity({ emitEvent: false });
       }

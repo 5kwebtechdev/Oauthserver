@@ -25,6 +25,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   private touchStartX = 0;
   private touchStartY = 0;
+  private isStartingJourney = false;
 
   constructor(
     private readonly router: Router,
@@ -48,7 +49,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    document.body.classList.remove('onboarding-active');
+    this.clearOnboardingPresentation();
 
     if (!Capacitor.isNativePlatform()) {
       return;
@@ -58,6 +59,15 @@ export class HomePage implements OnInit, OnDestroy {
     if (Capacitor.getPlatform() === 'android') {
       StatusBar.setBackgroundColor({ color: '#FFE9D6' }).catch(() => undefined);
     }
+  }
+
+  /**
+   * Ionic can retain a routed page instance on iOS during navigation. Clear
+   * the global splash presentation before the next route is drawn so it can
+   * never leave the signup page inside a transparent/blank router outlet.
+   */
+  ionViewWillLeave(): void {
+    this.clearOnboardingPresentation();
   }
 
   onTouchStart(event: TouchEvent): void {
@@ -102,12 +112,37 @@ export class HomePage implements OnInit, OnDestroy {
     }
   }
 
-  startJourney(): void {
+  async startJourney(): Promise<void> {
+    if (this.isStartingJourney) {
+      return;
+    }
+
+    this.isStartingJourney = true;
     this.onboardingState.markSplashCompleted();
-    this.navCtrl.navigateRoot(['/home/sign-up'], {
-      queryParams: { step: 1 },
-      animated: false
-    });
+    this.clearOnboardingPresentation();
+
+    try {
+      // Angular Router is more reliable here than an Ionic root transition on
+      // iOS after the full-screen walkthrough has been displayed.
+      const navigated = await this.router.navigate(['/home/sign-up'], {
+        queryParams: { step: 1 },
+        replaceUrl: true
+      });
+
+      if (!navigated) {
+        throw new Error('Signup navigation was cancelled.');
+      }
+    } catch (error) {
+      console.error('[Onboarding] Unable to open signup from walkthrough:', error);
+      // Keep a native fallback for an interrupted iOS router transition.
+      await this.navCtrl.navigateRoot('/home/sign-up?step=1', { animated: false });
+    } finally {
+      this.isStartingJourney = false;
+    }
+  }
+
+  private clearOnboardingPresentation(): void {
+    document.body.classList.remove('onboarding-active');
   }
 
   private setOnboardingStatusBar(): void {
