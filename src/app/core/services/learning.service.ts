@@ -173,14 +173,14 @@ export class LearningService {
         this.articlesLoading$.next(true);
         const age = this.getUserAge();
         const url = age ? `${this.apiUrl}/articles?age=${age}` : `${this.apiUrl}/articles`;
-        return this.http.get<Article[] | { articles?: Article[] }>(url, { headers: this.getHeaders() })
+        return this.http.get<Article[] | Record<string, Article[]>>(url, { headers: this.getHeaders() })
             .pipe(
                 // The API can return either a bare array or an object like
                 // { articles: [...], completed: [...], pending: [...] } —
                 // treating the latter as an array (the old assumption) threw
                 // at runtime (articles.map is not a function), which
                 // catchError silently turned into a generic load failure.
-                map(response => Array.isArray(response) ? response : (response?.articles ?? [])),
+                map(response => this.normalizeScopedResponse<Article>(response, 'articles')),
                 tap(articles => {
                     this.articlesCache$.next(articles);
                     this.articlesLoading$.next(false);
@@ -213,11 +213,12 @@ export class LearningService {
     fetchQuizCards(recoverWithEmpty = true): Observable<LearningCardData[]> {
         const age = this.getUserAge();
         const url = age ? `${this.apiUrl}/challenges/quizzes?age=${age}` : `${this.apiUrl}/challenges/quizzes`;
-        return this.http.get<Challenge[] | { quizzes?: Challenge[] }>(url, { headers: this.getHeaders() }).pipe(
+        return this.http.get<Challenge[] | Record<string, Challenge[]>>(url, { headers: this.getHeaders() }).pipe(
             // Defensive against the same wrapped-response shape found on
             // /articles ({ quizzes: [...], completed: [...], pending: [...] }
             // instead of a bare array) — see fetchArticles().
-            map(response => (Array.isArray(response) ? response : (response?.quizzes ?? [])).map(c => this.transformChallengeToCard(c))),
+            map(response => this.normalizeScopedResponse<Challenge>(response, 'quizzes')
+                .map(c => this.transformChallengeToCard(c))),
             catchError(error => {
                 console.error('Error fetching quiz cards:', error);
                 return recoverWithEmpty ? of([]) : throwError(() => error);
@@ -231,8 +232,9 @@ export class LearningService {
     fetchPuzzleCards(): Observable<LearningCardData[]> {
         const age = this.getUserAge();
         const url = age ? `${this.apiUrl}/challenges/puzzles?age=${age}` : `${this.apiUrl}/challenges/puzzles`;
-        return this.http.get<Challenge[] | { puzzles?: Challenge[] }>(url, { headers: this.getHeaders() }).pipe(
-            map(response => (Array.isArray(response) ? response : (response?.puzzles ?? [])).map(c => this.transformChallengeToCard(c))),
+        return this.http.get<Challenge[] | Record<string, Challenge[]>>(url, { headers: this.getHeaders() }).pipe(
+            map(response => this.normalizeScopedResponse<Challenge>(response, 'puzzles')
+                .map(c => this.transformChallengeToCard(c))),
             catchError(() => of([]))
         );
     }
@@ -251,12 +253,17 @@ export class LearningService {
      */
     fetchChallengeCategorySummary(
         challengeType: 'QUIZ' | 'PUZZLE',
-        recoverWithEmpty = true
+        recoverWithEmpty = true,
+        forUserId?: string | number | null
     ): Observable<LearningCategorySummary[]> {
         const url = `${this.apiUrl}/challenges/categories/summary?challengeType=${challengeType}`;
         const type = challengeType === 'QUIZ' ? 'quiz' : 'puzzle';
+        let params = new HttpParams();
+        if (forUserId != null && String(forUserId).trim()) {
+            params = params.set('forUserId', String(forUserId));
+        }
 
-        return this.http.get<LearningCategorySummary[]>(url, { headers: this.getHeaders() }).pipe(
+        return this.http.get<LearningCategorySummary[]>(url, { headers: this.getHeaders(), params }).pipe(
             map(categories => this.normalizeLearningCategories(categories, type)),
             catchError(error => {
                 console.error(`Error fetching ${challengeType} category summary:`, error);
@@ -281,8 +288,18 @@ export class LearningService {
     /**
      * Fetch article categories for the Learning category grid.
      */
-    fetchArticleCategories(recoverWithEmpty = true): Observable<LearningCategorySummary[]> {
-        return this.http.get<LearningCategorySummary[]>(`${this.apiUrl}/articles/categories`, { headers: this.getHeaders() }).pipe(
+    fetchArticleCategories(
+        recoverWithEmpty = true,
+        forUserId?: string | number | null
+    ): Observable<LearningCategorySummary[]> {
+        let params = new HttpParams();
+        if (forUserId != null && String(forUserId).trim()) {
+            params = params.set('forUserId', String(forUserId));
+        }
+        return this.http.get<LearningCategorySummary[]>(`${this.apiUrl}/articles/categories`, {
+            headers: this.getHeaders(),
+            params
+        }).pipe(
             map(categories => this.normalizeLearningCategories(categories, 'article')),
             catchError(error => {
                 console.error('Error fetching article categories:', error);
@@ -298,15 +315,19 @@ export class LearningService {
     fetchChallengesForLearningCategory(
         categoryName: string,
         challengeType?: Challenge['category'],
-        recoverWithEmpty = true
+        recoverWithEmpty = true,
+        forUserId?: string | number | null
     ): Observable<LearningCardData[]> {
-        const params = new HttpParams().set('category', categoryName);
+        let params = new HttpParams().set('category', categoryName);
+        if (forUserId != null && String(forUserId).trim()) {
+            params = params.set('forUserId', String(forUserId));
+        }
 
-        return this.http.get<{ challenges?: Challenge[] } | Challenge[]>(
+        return this.http.get<Record<string, Challenge[]> | Challenge[]>(
             `${this.apiUrl}/challenges`,
             { headers: this.getHeaders(), params }
         ).pipe(
-            map(response => Array.isArray(response) ? response : (response?.challenges || [])),
+            map(response => this.normalizeScopedResponse<Challenge>(response, 'challenges')),
             map(challenges => challengeType
                 ? challenges.filter(challenge => String(challenge.category).toUpperCase() === challengeType)
                 : challenges
@@ -324,15 +345,19 @@ export class LearningService {
      */
     fetchArticlesForLearningCategory(
         categoryName: string,
-        recoverWithEmpty = true
+        recoverWithEmpty = true,
+        forUserId?: string | number | null
     ): Observable<LearningCardData[]> {
-        const params = new HttpParams().set('category', categoryName);
+        let params = new HttpParams().set('category', categoryName);
+        if (forUserId != null && String(forUserId).trim()) {
+            params = params.set('forUserId', String(forUserId));
+        }
 
-        return this.http.get<{ articles?: Article[] } | Article[]>(
+        return this.http.get<Record<string, Article[]> | Article[]>(
             `${this.apiUrl}/articles`,
             { headers: this.getHeaders(), params }
         ).pipe(
-            map(response => Array.isArray(response) ? response : (response?.articles || [])),
+            map(response => this.normalizeScopedResponse<Article>(response, 'articles')),
             map(articles => articles.map(article => this.transformArticleToCard(article))),
             catchError(error => {
                 console.error(`Error fetching articles for category ${categoryName}:`, error);
@@ -356,6 +381,47 @@ export class LearningService {
                 image: this.normalizeApiImageUrl(category.image || category.thumbnailUrl),
                 count: Number(category.count || 0)
             }));
+    }
+
+    /**
+     * Child-scoped learning endpoints may return either a plain array or a
+     * response grouped into pending/completed/assigned collections. Preserve
+     * that backend progress state on each item instead of dropping it while
+     * normalising the response.
+     */
+    private normalizeScopedResponse<T extends Record<string, any>>(
+        response: T[] | Record<string, T[]> | null | undefined,
+        primaryKey: string
+    ): T[] {
+        if (Array.isArray(response)) return response;
+        if (!response || typeof response !== 'object') return [];
+
+        const result = new Map<string, T>();
+        let anonymousIndex = 0;
+        const addItems = (items: unknown, status?: string) => {
+            if (!Array.isArray(items)) return;
+            items.forEach(item => {
+                if (!item || typeof item !== 'object') return;
+                const raw = item as T;
+                const id = raw['id'] ?? raw['challengeId'] ?? raw['articleId'] ?? raw['courseId'];
+                const key = id == null ? `anonymous-${anonymousIndex++}` : String(id);
+                const existing = result.get(key);
+                result.set(key, {
+                    ...(existing || {} as T),
+                    ...raw,
+                    ...(status ? { userLearningStatus: status } : {})
+                } as T);
+            });
+        };
+
+        addItems(response[primaryKey]);
+        addItems(response['pending'], 'PENDING');
+        addItems(response['assigned'], 'ASSIGNED');
+        addItems(response['inProgress'], 'IN_PROGRESS');
+        addItems(response['completed'], 'COMPLETED');
+        addItems(response['read'], 'COMPLETED');
+
+        return Array.from(result.values());
     }
 
     private normalizeApiImageUrl(value?: string | null): string {

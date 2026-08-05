@@ -33,6 +33,11 @@ export interface Course {
   updatedAt?: string;
   enabled?: boolean;
   lessons?: Lesson[];
+  completedLessons?: number;
+  completionPercentage?: number;
+  isCourseCompleted?: boolean;
+  progressStatus?: string;
+  continueLessonId?: number | null;
 }
 
 export interface AcademyCategory {
@@ -184,6 +189,22 @@ export class AcademyService {
   getCoursesByAge(age: number): Observable<Course[]> {
     const params = new HttpParams().set('age', String(age));
     return this.http.get<Course[]>(`${this.base}/courses/by-age`, {
+      headers: this.getHeaders(),
+      params,
+    });
+  }
+
+  getCoursesByCategory(
+    category: string,
+    age?: number | null,
+    forUserId?: string | number | null
+  ): Observable<Course[]> {
+    let params = new HttpParams().set('category', category);
+    if (age != null) params = params.set('age', String(age));
+    if (forUserId != null && String(forUserId).trim()) {
+      params = params.set('forUserId', String(forUserId));
+    }
+    return this.http.get<Course[]>(`${this.base}/courses/by-category`, {
       headers: this.getHeaders(),
       params,
     });

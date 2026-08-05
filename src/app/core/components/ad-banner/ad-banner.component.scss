@@ -3,7 +3,8 @@
   width: 100%;
 }
 
-:host(.parent-eduhub-ad):not(:has(.adb)) {
+:host(.parent-eduhub-ad):not(:has(.adb)),
+:host(.parent-learning-ad):not(:has(.adb)) {
   display: none;
 }
 
@@ -183,6 +184,36 @@
     height: auto;
     min-width: 81%;
     flex-basis: 81%;
+    aspect-ratio: 305 / 182;
+    border-radius: 16px;
+    background: #6b656a;
+    box-shadow: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .adb__card--active {
+    opacity: 1;
+    transform: none;
+  }
+
+  .adb__counter {
+    background: #432477;
+  }
+}
+
+.adb--parent-learning {
+  gap: 8px;
+
+  .adb__scroll-track {
+    gap: 8px;
+  }
+
+  .adb__card {
+    width: min(305px, 84.5%);
+    height: auto;
+    min-width: min(305px, 84.5%);
+    flex-basis: min(305px, 84.5%);
     aspect-ratio: 305 / 182;
     border-radius: 16px;
     background: #6b656a;
