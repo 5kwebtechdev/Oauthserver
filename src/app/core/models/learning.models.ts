@@ -124,13 +124,13 @@ export interface LearningCardData {
     difficulty?: string;
     difficultyImage?: string; // Optional difficulty image path
     buttonText: string;
-    type: 'quiz' | 'puzzle' | 'article';
+    type: 'quiz' | 'puzzle' | 'article' | 'masterclass';
     category?: ChallengeCategory; // backend category for challenges (QUIZ | PUZZLE)
     subType?: string;
     timeDuration?: string;
     totalQuestions?: number;
     tags?: string[];
-    rawData?: Challenge | Article; // Original data for navigation
+    rawData?: unknown; // Original API data for navigation and user-scoped progress
 }
 
 /**

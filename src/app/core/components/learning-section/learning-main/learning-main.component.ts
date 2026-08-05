@@ -13,9 +13,11 @@ import { LearningService } from 'src/app/core/services/learning.service';
 import { LearningCardData, LearningCategorySummary } from 'src/app/core/models/learning.models';
 import { EmptyStateComponent } from 'src/app/core/components/empty-state/empty-state.component';
 import { CustomToastService } from 'src/app/core/services/custom-toast.service';
-import { AcademyCategory, AcademyService } from 'src/app/core/services/academy.service';
+import { AcademyCategory, AcademyService, Course } from 'src/app/core/services/academy.service';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { PetAgeService } from 'src/app/core/services/pet-age.service';
+import { ProfileStoreService } from 'src/app/core/services/profile-store.service';
+import { ChildInfo } from 'src/app/core/models/child-info.model';
 import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
 import { LearningChallengeCardComponent } from '../learning-card/learning-challenge-card.component';
 import { LearningArticleCardComponent } from '../learning-card/learning-article-card.component';
@@ -23,7 +25,7 @@ import { SectionComingSoonComponent } from '../../section-coming-soon/section-co
 import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
 
 type LearningCategoryTab = 'puzzles' | 'quizzes' | 'articles' | 'masterclass';
-type ParentLearningStatus = 'pending' | 'completed' | 'assigned';
+type ParentLearningStatus = 'pending' | 'completed';
 
 @Component({
   selector: 'learning-main',
@@ -40,13 +42,17 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   selectedCategory: LearningCategoryTab = 'puzzles';
   parentView = false;
   parentStatus: ParentLearningStatus = 'pending';
+  parentSearchOpen = false;
+  parentPage = 1;
+  readonly parentPageSize = 5;
+  selectedChild: ChildInfo | null = null;
   categoryContentError = false;
 
-  categoryTabs: { id: LearningCategoryTab; label: string; icon: string; ariaLabel: string }[] = [
-    { id: 'puzzles', label: 'Puzzles', icon: 'assets/Icons-Neutral/Icon-Content-Puzzle.png', ariaLabel: 'Open Puzzles' },
-    { id: 'quizzes', label: 'Quizzes', icon: 'assets/Icons-Neutral/Icon-Content-Quiz.png', ariaLabel: 'Open Quizzes' },
-    { id: 'articles', label: 'Articles', icon: 'assets/Icons-Neutral/Icon-Content-Articles.png', ariaLabel: 'Open Articles' },
-    { id: 'masterclass', label: 'MasterClass', icon: 'assets/Icons-Neutral/Icon-Content-ForYou.png', ariaLabel: 'Open MasterClass' }
+  categoryTabs: { id: LearningCategoryTab; label: string; icon: string; parentIcon: string; ariaLabel: string }[] = [
+    { id: 'puzzles', label: 'Puzzles', icon: 'assets/Icons-Neutral/Icon-Content-Puzzle.png', parentIcon: 'assets/figma/parent-child-learning/tab-puzzles.png', ariaLabel: 'Open Puzzles' },
+    { id: 'quizzes', label: 'Quizzes', icon: 'assets/Icons-Neutral/Icon-Content-Quiz.png', parentIcon: 'assets/figma/parent-child-learning/tab-quizzes.png', ariaLabel: 'Open Quizzes' },
+    { id: 'articles', label: 'Articles', icon: 'assets/Icons-Neutral/Icon-Content-Articles.png', parentIcon: 'assets/figma/parent-child-learning/tab-articles.png', ariaLabel: 'Open Articles' },
+    { id: 'masterclass', label: 'MasterClass', icon: 'assets/Icons-Neutral/Icon-Content-ForYou.png', parentIcon: 'assets/figma/parent-child-learning/tab-masterclass.png', ariaLabel: 'Open MasterClass' }
   ];
 
   categoryItems: Record<LearningCategoryTab, LearningCategorySummary[]> = {
@@ -75,6 +81,9 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   };
 
   private loadedTabs = new Set<LearningCategoryTab>();
+  private selectedChildId: string | number | null = null;
+  private parentSelectionInitialized = false;
+  private childRequestCancel$ = new Subject<void>();
 
   searchKeyword = '';
   isSearching   = false;
@@ -120,11 +129,27 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     return this.visibleCategoryContent.filter(item => this.getParentItemStatus(item) === this.parentStatus);
   }
 
+  get pagedParentContent(): LearningCardData[] {
+    const start = (this.parentPage - 1) * this.parentPageSize;
+    return this.visibleParentContent.slice(start, start + this.parentPageSize);
+  }
+
+  get parentTotalPages(): number {
+    return Math.max(1, Math.ceil(this.visibleParentContent.length / this.parentPageSize));
+  }
+
+  get parentPageNumbers(): number[] {
+    return Array.from({ length: this.parentTotalPages }, (_, index) => index + 1);
+  }
+
+  get hasSelectedChild(): boolean {
+    return this.selectedChildId !== null && this.selectedChildId !== undefined;
+  }
+
   get parentStatusOptions(): Array<{ id: ParentLearningStatus; label: string; count: number }> {
     return [
       { id: 'pending', label: 'Pending', count: this.getParentStatusCount('pending') },
-      { id: 'completed', label: 'Completed', count: this.getParentStatusCount('completed') },
-      { id: 'assigned', label: 'Assigned', count: this.getParentStatusCount('assigned') }
+      { id: 'completed', label: 'Completed', count: this.getParentStatusCount('completed') }
     ];
   }
 
@@ -134,6 +159,13 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
 
   get parentHeaderSubtitle(): string {
     return this.selectedCategoryItem ? this.getCategoryCountText(this.selectedCategoryItem) : '';
+  }
+
+  get parentGuidanceText(): string {
+    const name = String(this.selectedChild?.name || '').trim();
+    return name
+      ? `View ${name}'s feed, assign extra coins, and support their learning at each step.`
+      : `View your child's feed, assign extra coins, and support their learning at each step.`;
   }
 
   get parentSearchPlaceholder(): string {
@@ -152,6 +184,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     private academyService: AcademyService,
     private authService: AuthService,
     private petAgeService: PetAgeService,
+    private profileStore: ProfileStoreService,
     private router: Router,
     private zone: NgZone,
     private route: ActivatedRoute,
@@ -159,15 +192,66 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   ) { }
 
   ngOnInit(): void {
-    this.parentView = this.route.snapshot.queryParamMap.get('view') === 'parent';
+    this.parentView = this.route.snapshot.queryParamMap.get('view') === 'parent'
+      || this.authService.isParentUser();
     const requestedCategory = this.normalizeCategory(this.route.snapshot.queryParamMap.get('tab'));
     if (requestedCategory) {
       this.selectedCategory = requestedCategory;
     } else if (this.parentView) {
       const savedCategory = this.readParentCategory();
-      if (savedCategory) this.selectedCategory = savedCategory;
+      this.selectedCategory = savedCategory || 'quizzes';
     }
-    this.loadTab(this.selectedCategory);
+
+    if (this.parentView) {
+      this.bindSelectedChild();
+    } else {
+      this.loadTab(this.selectedCategory);
+    }
+  }
+
+  private bindSelectedChild(): void {
+    this.profileStore.selectionChanged$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(child => {
+        const nextId = child?.id ?? null;
+        const changed = !this.parentSelectionInitialized
+          || String(nextId ?? '') !== String(this.selectedChildId ?? '');
+
+        this.selectedChild = child;
+        this.selectedChildId = nextId;
+        if (!changed) return;
+
+        this.parentSelectionInitialized = true;
+        this.childRequestCancel$.next();
+        this.resetParentLearningData();
+        if (this.hasSelectedChild) {
+          this.loadTab(this.selectedCategory, true);
+        }
+      });
+  }
+
+  private resetParentLearningData(): void {
+    this.categoryItems = {
+      puzzles: [],
+      quizzes: [],
+      articles: [],
+      masterclass: []
+    };
+    this.searchItems = [];
+    this.selectedCategoryItem = null;
+    this.categoryContentItems = [];
+    this.categoryContentLoading = false;
+    this.categoryContentError = false;
+    this.searchKeyword = '';
+    this.isSearching = false;
+    this.parentSearchOpen = false;
+    this.parentStatus = 'pending';
+    this.parentPage = 1;
+    this.loadedTabs.clear();
+    (Object.keys(this.loadingTabs) as LearningCategoryTab[]).forEach(tab => {
+      this.loadingTabs[tab] = false;
+      this.tabErrors[tab] = false;
+    });
   }
 
   private readParentCategory(): LearningCategoryTab | null {
@@ -181,6 +265,14 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     }
   }
 
+  private persistParentCategory(category: LearningCategoryTab): void {
+    try {
+      sessionStorage.setItem('superme_parent_learning_main_tab', category);
+    } catch {
+      // Storage can be unavailable in restricted browser modes.
+    }
+  }
+
   private normalizeCategory(value: string | null): LearningCategoryTab | null {
     const normalized = String(value || '').trim().toLowerCase();
     const validTabs: LearningCategoryTab[] = ['puzzles', 'quizzes', 'articles', 'masterclass'];
@@ -188,6 +280,10 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   goBackFromParentLearning(): void {
+    if (this.selectedCategoryItem) {
+      this.closeCategoryContent();
+      return;
+    }
     this.location.back();
   }
 
@@ -201,6 +297,22 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
 
   setParentStatus(status: ParentLearningStatus): void {
     this.parentStatus = status;
+    this.parentPage = 1;
+  }
+
+  setParentPage(page: number): void {
+    const nextPage = Math.min(this.parentTotalPages, Math.max(1, page));
+    if (nextPage === this.parentPage) return;
+    this.parentPage = nextPage;
+    document.querySelector('.parent-status-tabs')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }
+
+  toggleParentSearch(): void {
+    this.parentSearchOpen = !this.parentSearchOpen;
+    if (!this.parentSearchOpen) this.clearSearch();
   }
 
   /**
@@ -212,6 +324,13 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
    */
   getParentItemStatus(item: LearningCardData): ParentLearningStatus {
     const raw = item.rawData as any;
+    const scopedStatus = String(raw?.userLearningStatus || raw?.progressStatus || '').toUpperCase();
+    if (scopedStatus === 'COMPLETED' || scopedStatus === 'READ') return 'completed';
+    if (item.type === 'masterclass') {
+      return raw?.isCourseCompleted === true || Number(raw?.completionPercentage || 0) >= 100
+        ? 'completed'
+        : 'pending';
+    }
     if (item.type === 'article') {
       return raw?.alreadyRead === true || raw?.status === 'READ' ? 'completed' : 'pending';
     }
@@ -224,13 +343,52 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
 
   getParentActionLabel(item: LearningCardData): string {
     const status = this.getParentItemStatus(item);
-    if (status === 'completed') return item.type === 'article' ? 'Read Again' : 'Play Again';
-    if (status === 'assigned') return item.type === 'article' ? 'Start Reading' : 'Start';
-    return item.type === 'article' ? 'Read Now' : 'Play Now';
+    if (status === 'completed') return 'View';
+    return this.isParentItemAssigned(item) ? 'View' : 'Assign';
+  }
+
+  getParentItemDetail(item: LearningCardData): string {
+    const raw = item.rawData as any;
+    if (item.type === 'masterclass') {
+      const lessons = Number(raw?.noOfLessons ?? raw?.lessons?.length ?? 0);
+      return `${lessons} ${lessons === 1 ? 'lesson' : 'lessons'}`;
+    }
+    if (item.type === 'article') {
+      const minutes = Number(raw?.durationMinutes || 0);
+      return minutes > 0 ? `${minutes} min read` : '';
+    }
+    return '';
+  }
+
+  getParentBonusCoins(item: LearningCardData): number {
+    const raw = item.rawData as any;
+    const value = Number(
+      raw?.assignmentCoins
+      ?? raw?.bonusCoins
+      ?? raw?.extraCoins
+      ?? raw?.coinsForCorrectAnswer
+      ?? 0
+    );
+    return Number.isFinite(value) && value > 0 ? Math.round(value) : 0;
+  }
+
+  isParentItemAssigned(item: LearningCardData): boolean {
+    const raw = item.rawData as any;
+    const status = String(raw?.userLearningStatus || raw?.assignmentStatus || '').toUpperCase();
+    return raw?.assigned === true || !!raw?.assignedAt || status === 'ASSIGNED';
   }
 
   openParentLearningItem(item: LearningCardData): void {
-    const extras = { state: { source: '/authed/learning-main?view=parent' } };
+    const extras = {
+      state: {
+        source: '/authed/content?view=parent',
+        selectedChildId: this.selectedChildId
+      }
+    };
+    if (item.type === 'masterclass') {
+      void this.router.navigate(['/authed/academy/course', item.id], extras);
+      return;
+    }
     if (item.type === 'article') {
       void this.router.navigate(['/authed/content/article', item.id], extras);
       return;
@@ -252,24 +410,31 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
 
   ionViewWillEnter(): void {
     // Refresh current tab when returning to the page
-    this.loadTab(this.selectedCategory, true);
+    if (!this.parentView || this.hasSelectedChild) {
+      this.loadTab(this.selectedCategory, true);
+    }
   }
 
   private loadTab(tab: LearningCategoryTab, forceRefresh = false): void {
     if (!forceRefresh && this.loadedTabs.has(tab)) return;
+    if (this.loadingTabs[tab]) return;
+    if (this.parentView && !this.hasSelectedChild) return;
 
     this.loadingTabs[tab] = true;
     this.tabErrors[tab] = false;
+    const requestChildId = this.parentView ? this.selectedChildId : null;
     this.getCategoryRequest(tab)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroy$), takeUntil(this.childRequestCancel$))
       .subscribe({
         next: items => {
+          if (this.parentView && String(requestChildId) !== String(this.selectedChildId)) return;
           this.categoryItems[tab] = items;
           this.loadingTabs[tab] = false;
           this.loadedTabs.add(tab);
           if (this.searchKeyword.trim()) this.updateSearchResults();
         },
         error: () => {
+          if (this.parentView && String(requestChildId) !== String(this.selectedChildId)) return;
           this.loadingTabs[tab] = false;
           this.tabErrors[tab] = true;
         }
@@ -279,14 +444,14 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   private getCategoryRequest(tab: LearningCategoryTab): Observable<LearningCategorySummary[]> {
     switch (tab) {
       case 'quizzes':
-        return this.learningService.fetchChallengeCategorySummary('QUIZ', !this.parentView);
+        return this.learningService.fetchChallengeCategorySummary('QUIZ', !this.parentView, this.selectedChildId);
       case 'articles':
-        return this.learningService.fetchArticleCategories(!this.parentView);
+        return this.learningService.fetchArticleCategories(!this.parentView, this.selectedChildId);
       case 'masterclass':
         return this.fetchMasterClassCategories();
       case 'puzzles':
       default:
-        return this.learningService.fetchChallengeCategorySummary('PUZZLE', !this.parentView);
+        return this.learningService.fetchChallengeCategorySummary('PUZZLE', !this.parentView, this.selectedChildId);
     }
   }
 
@@ -330,12 +495,15 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
 
   ngOnDestroy(): void {
     this.stopVoiceSearch();
+    this.childRequestCancel$.next();
+    this.childRequestCancel$.complete();
     this.destroy$.next();
     this.destroy$.complete();
   }
 
   selectCategory(cat: LearningCategoryTab) {
     this.selectedCategory = cat;
+    if (this.parentView) this.persistParentCategory(cat);
     this.closeCategoryContent();
     this.loadTab(cat);
     if (this.searchKeyword.trim()) this.updateSearchResults();
@@ -347,6 +515,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   openMasterClass() { this.selectCategory('masterclass'); }
 
   onSearchInput(): void {
+    if (this.parentView) this.parentPage = 1;
     this.updateSearchResults();
   }
 
@@ -523,6 +692,10 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   getCategoryFallbackImage(): string {
+    if (this.parentView) {
+      return this.parentCategoryTabs.find(tab => tab.id === this.selectedCategory)?.parentIcon
+        || 'assets/figma/parent-child-learning/tab-quizzes.png';
+    }
     switch (this.selectedCategory) {
       case 'quizzes':
         return 'assets/Icons-Neutral/Icon-Content-Quiz.png';
@@ -561,13 +734,14 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     this.searchKeyword = '';
     this.isSearching = false;
     this.searchItems = [];
+    this.parentPage = 1;
   }
 
   onCategoryCardClick(item: LearningCategorySummary): void {
     const categoryName = item.categoryName || item.name;
     if (!categoryName) return;
 
-    if (this.selectedCategory === 'masterclass') {
+    if (this.selectedCategory === 'masterclass' && !this.parentView) {
       const age = this.authService.getCurrentUserAge();
       const queryParams: Record<string, string | number> = {
         category: categoryName,
@@ -584,20 +758,42 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     this.categoryContentItems = [];
     this.categoryContentLoading = true;
     this.categoryContentError = false;
+    this.parentStatus = 'pending';
+    this.parentPage = 1;
+    this.parentSearchOpen = false;
+    this.clearSearch();
+    const requestChildId = this.parentView ? this.selectedChildId : null;
 
-    const request = this.selectedCategory === 'articles'
-      ? this.learningService.fetchArticlesForLearningCategory(categoryName)
-      : this.learningService.fetchChallengesForLearningCategory(
-          categoryName,
-          this.getSelectedChallengeType()
-        );
+    let request: Observable<LearningCardData[]>;
+    if (this.selectedCategory === 'masterclass') {
+      request = this.academyService.getCoursesByCategory(
+        categoryName,
+        null,
+        requestChildId
+      ).pipe(map(courses => (courses || []).map(course => this.mapCourseToLearningCard(course))));
+    } else if (this.selectedCategory === 'articles') {
+      request = this.learningService.fetchArticlesForLearningCategory(
+        categoryName,
+        !this.parentView,
+        requestChildId
+      );
+    } else {
+      request = this.learningService.fetchChallengesForLearningCategory(
+        categoryName,
+        this.getSelectedChallengeType(),
+        !this.parentView,
+        requestChildId
+      );
+    }
 
-    request.pipe(takeUntil(this.destroy$)).subscribe({
+    request.pipe(takeUntil(this.destroy$), takeUntil(this.childRequestCancel$)).subscribe({
       next: items => {
+        if (this.parentView && String(requestChildId) !== String(this.selectedChildId)) return;
         this.categoryContentItems = items;
         this.categoryContentLoading = false;
       },
       error: () => {
+        if (this.parentView && String(requestChildId) !== String(this.selectedChildId)) return;
         this.categoryContentItems = [];
         this.categoryContentLoading = false;
         this.categoryContentError = true;
@@ -609,7 +805,28 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     this.selectedCategoryItem = null;
     this.categoryContentItems = [];
     this.categoryContentLoading = false;
+    this.categoryContentError = false;
+    this.parentSearchOpen = false;
+    this.parentStatus = 'pending';
+    this.parentPage = 1;
+    this.clearSearch();
     if (this.searchKeyword.trim()) this.updateSearchResults();
+  }
+
+  private mapCourseToLearningCard(course: Course): LearningCardData {
+    return {
+      id: course.id,
+      title: course.courseName,
+      description: course.description || '',
+      image: course.thumbnailUrl || this.getCategoryFallbackImage(),
+      coins: Number(course.totalCoins || 0),
+      difficulty: course.difficulty || '',
+      buttonText: '',
+      type: 'masterclass',
+      subType: course.category || '',
+      timeDuration: course.duration ? String(course.duration) : '',
+      rawData: course
+    };
   }
 
   private getSelectedChallengeType(): 'QUIZ' | 'PUZZLE' | undefined {
