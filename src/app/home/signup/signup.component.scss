@@ -3853,19 +3853,19 @@ ion-content.details-content.referral-keyboard-open {
 
   .signup-entry-social::ng-deep {
     .login-with-buttons {
-      flex-direction: row;
-      justify-content: center;
-      gap: 24px;
+      flex-direction: column;
+      gap: 12px;
     }
 
     .social-login-btn {
-      width: 54px;
-      height: 54px;
-      min-width: 54px;
-      padding: 7px;
-      border: 0;
-      border-radius: 50%;
-      background: transparent;
+      width: 100%;
+      min-width: 140px;
+      height: 48px;
+      min-height: 44px;
+      padding: 0 16px;
+      border: 1px solid #ded9dd;
+      border-radius: 10px;
+      background: #ffffff;
 
       &:active {
         background: #f6f3f5;
@@ -3873,19 +3873,24 @@ ion-content.details-content.referral-keyboard-open {
     }
 
     .social-login-btn__icon {
-      width: 42px;
-      height: 42px;
+      width: 22px;
+      height: 22px;
     }
 
     .social-login-btn__label {
-      display: none;
+      display: inline;
     }
 
     .social-login-btn--apple {
-      background: transparent;
+      background: #000000;
+      border-color: #000000;
 
       path {
-        fill: #000000;
+        fill: #ffffff;
+      }
+
+      .social-login-btn__label {
+        color: #ffffff;
       }
     }
   }
