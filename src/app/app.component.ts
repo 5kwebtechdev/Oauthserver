@@ -179,6 +179,17 @@ export class AppComponent implements OnInit, OnDestroy {
     this.router.events.subscribe((event: RouterEvent) => {
       if (event instanceof NavigationStart) {
         const routePath = event.url.split('?')[0];
+
+        // The persistent website-shell nav (web-nav, inside AuthenticatedComponent)
+        // needs to span the full viewport width on every authenticated page, not
+        // only on whichever child page happens to opt its own inner layout into a
+        // wide desktop view (see body.dashboard-web-view below) — otherwise the
+        // shared nav gets squeezed by whatever narrower cap the *current* child
+        // page's own .ion-page/ion-router-outlet has. Toggled on the outer/app
+        // level here, ahead of the route even resolving, so there's no flash of
+        // the narrow layout while navigating into /authed.
+        document.body.classList.toggle('authed-shell-active', routePath.startsWith('/authed'));
+
         const skipNavigationLoader = routePath === '/home/reset-password';
 
         if (skipNavigationLoader) {

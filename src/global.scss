@@ -456,7 +456,15 @@ label {
 
 ion-content {
   --background: transparent;
-  width: 100vw;
+  // 100% (not 100vw) so ion-content fills whatever width its .ion-page
+  // ancestor actually resolves to. Most routed pages are intentionally
+  // capped to a centered readable column on desktop (see the tablet/desktop
+  // container rules below) — 100vw ignored that cap and forced content to
+  // bleed to the full viewport width regardless, overflowing past the
+  // (same-background, so invisible) page boundary and getting clipped by
+  // .app-router-container's overflow:hidden. Restored to 100vw below for
+  // mobile, where ion-content already always matches the full viewport.
+  width: 100%;
 
   // Height: full dynamic viewport minus bottom safe area.
   // On Android (setOverlaysWebView=false): --sab=0 → 100dvh (WebView already inset by system).
@@ -519,6 +527,7 @@ ion-content {
   }
 
   ion-content {
+    width: 100vw;
 
     &.bg-superme-primary,
     &.bg-superme-secondary,
@@ -982,6 +991,36 @@ body.onboarding-active {
 
   app-home.ion-page {
     width: 100vw !important;
+    max-width: none !important;
+    margin-inline: 0 !important;
+  }
+}
+
+// The persistent website-shell nav (web-nav, rendered once inside
+// AuthenticatedComponent) must span the full viewport width on *every*
+// authenticated page, not only on whichever child page happens to opt its
+// own inner layout into a wide desktop view (body.dashboard-web-view below).
+// Without this, the shared nav's own centered 1200px inner column
+// (web-nav.component.scss's bp.web-container) gets squeezed down to
+// whatever narrower cap the *current* child route's own .ion-page/
+// ion-router-outlet resolves to — so the nav's width varied page to page
+// depending on which route was active. `ion-app` and `app-authenticated`
+// are the two outer layers everything under /authed nests inside (ion-app
+// also picks up an `.ion-page` class here); AppComponent toggles this class
+// for as long as the active route is under /authed (see NavigationStart
+// above). The direct-child selector on ion-router-outlet targets only the
+// *outer*, app-level outlet — the nested one inside AuthenticatedComponent's
+// own template is untouched, so each child page still independently decides
+// whether *its own* page/outlet opts into a wide layout or stays at the
+// default readable-column width.
+body.authed-shell-active {
+  ion-app.ion-page,
+  app-authenticated.ion-page {
+    max-width: none !important;
+    margin-inline: 0 !important;
+  }
+
+  .app-router-container > ion-router-outlet {
     max-width: none !important;
     margin-inline: 0 !important;
   }
