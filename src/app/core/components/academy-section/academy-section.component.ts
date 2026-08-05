@@ -73,11 +73,15 @@ export class AcademySectionComponent implements OnInit {
   }
 
   openArticles(): void {
-    this.router.navigate(['/authed/content']);
+    this.router.navigate(['/authed/content'], {
+      queryParams: { tab: 'articles' }
+    });
   }
 
   onViewAll(): void {
-    this.router.navigate(['/authed/academy']);
+    this.router.navigate(['/authed/content'], {
+      queryParams: { tab: 'masterclass' }
+    });
   }
 
   onStartCourse(course: AcademyFeedCourse): void {
