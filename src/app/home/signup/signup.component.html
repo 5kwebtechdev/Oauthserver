@@ -369,14 +369,14 @@
           </ng-container>
           <ng-template #appleIdentityProvided>
             <p class="oauth-account-note" role="status">
-              Your name and email are securely provided by Apple.
+              Your name and email are securely provided by Apple. Choose a SuperMe username and avatar below to continue.
             </p>
           </ng-template>
 
           <ng-container *ngIf="currentRole !== 'parent'">
           <h4 class="profile-field-heading">
-            <span class="profile-field-title">Username</span>
-            <span class="profile-field-hint">Name used in the app</span>
+            <span class="profile-field-title">{{ isAppleOAuthSignup ? 'Choose a SuperMe username' : 'Username' }}</span>
+            <span class="profile-field-hint">{{ isAppleOAuthSignup ? 'Visible in SuperMe only' : 'Name used in the app' }}</span>
           </h4>
           <div class="input-group username-field">
             <div class="username-input-shell"
@@ -564,7 +564,7 @@
       <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
       <div class="profile-button-wrapper">
         <button type="button" class="details-next-button"
-          [disabled]="isProfileStepInvalid || registrationInProgress || referralValidationStatus === 'pending'"
+          [disabled]="(!isAppleOAuthSignup && isProfileStepInvalid) || registrationInProgress || referralValidationStatus === 'pending'"
           (click)="registerOrProceed()">Next</button>
       </div>
 
