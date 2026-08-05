@@ -1,17 +1,18 @@
 <header class="web-header" role="banner">
   <div class="web-header__inner">
     <a class="web-header__brand" [routerLink]="isParent ? '/authed/parent-account' : '/authed/user-dashboard'" aria-label="SuperMe App home">
-      <img class="web-header__logo" src="assets/Icons-Neutral/home-logo.png" alt="" aria-hidden="true">
+      <img class="web-header__logo" src="assets/Landing/SuperMe Logo Final.png" alt="" aria-hidden="true">
       <span class="web-header__wordmark">SuperMe App</span>
     </a>
 
-    <nav class="web-header__nav" aria-label="Primary">
+    <nav class="web-header__nav" [class.web-header__nav--parent]="isParent" aria-label="Primary">
       <ng-container *ngFor="let item of navItems">
         <a *ngIf="!item.children" class="web-header__nav-link" [routerLink]="item.link" routerLinkActive="active">
           {{ item.label }}
         </a>
 
-        <div *ngIf="item.children" class="web-header__nav-item" [class.open]="openMenu === item.label">
+        <div *ngIf="item.children" class="web-header__nav-item" [class.open]="openMenu === item.label"
+          (mouseenter)="openMenuOn(item.label)" (mouseleave)="closeMenu()">
           <button type="button" class="web-header__nav-link web-header__nav-link--toggle"
             (click)="toggleMenu(item.label, $event)"
             [attr.aria-expanded]="openMenu === item.label">
@@ -34,22 +35,31 @@
       </ng-container>
     </nav>
 
-    <div class="web-header__right">
-      <div class="web-header__stats" *ngIf="!isParent" aria-label="Your stats">
+    <!-- Child / Self: reward stats + avatar profile -->
+    <div class="web-header__right" *ngIf="!isParent">
+      <div class="web-header__stats" aria-label="Your stats">
         <div class="web-header__stat">
-          <img src="assets/icons/child-home-coin-figma.png" alt="Coins" class="web-header__stat-icon">
+          <div class="web-header__stat-icon-wrap">
+            <img src="assets/Icons-Neutral/Icons-Coins.png" alt="Coins" class="web-header__stat-icon web-header__stat-icon--coin">
+          </div>
           <span>{{ coins }}</span>
         </div>
         <div class="web-header__stat">
-          <img src="assets/icons/child-home-trophy-figma.png" alt="Trophies" class="web-header__stat-icon">
+          <div class="web-header__stat-icon-wrap">
+            <img src="assets/Icons-Neutral/Icon-Trophy.png" alt="Trophies" class="web-header__stat-icon">
+          </div>
           <span>{{ trophies }}</span>
         </div>
         <div class="web-header__stat">
-          <img src="assets/icons/child-home-streak-figma.png" alt="Streak" class="web-header__stat-icon">
+          <div class="web-header__stat-icon-wrap">
+            <img src="assets/Icons-Neutral/Icon-Streak.png" alt="Streak" class="web-header__stat-icon">
+          </div>
           <span>{{ streaks }}</span>
         </div>
         <div class="web-header__stat">
-          <img src="assets/icons/child-home-badge-figma.png" alt="Badges" class="web-header__stat-icon">
+          <div class="web-header__stat-icon-wrap">
+            <img src="assets/Icons-Neutral/Icon-Badge.png" alt="Badges" class="web-header__stat-icon">
+          </div>
           <span>{{ badges }}</span>
         </div>
       </div>
@@ -65,6 +75,38 @@
           <ng-template #avatarInitial>
             <span class="web-header__avatar-initial" aria-hidden="true">{{ userInitial }}</span>
           </ng-template>
+        </span>
+        <span class="web-header__profile-name">{{ userName }}</span>
+      </a>
+    </div>
+
+    <!-- Parent: child selector + coins + profile -->
+    <div class="web-header__right web-header__right--parent" *ngIf="isParent">
+      <div class="web-header__nav-item web-header__child-selector" *ngIf="children.length > 0"
+        [class.open]="openMenu === 'child'"
+        (click)="toggleMenu('child', $event); $event.stopPropagation()">
+        <img class="web-header__child-avatar" [src]="selectedChildAvatarUrl" [alt]="selectedChildName">
+        <span class="web-header__child-name">{{ selectedChildName }}</span>
+        <ion-icon name="chevron-down-outline" aria-hidden="true"></ion-icon>
+
+        <div class="web-header__dropdown web-header__dropdown--child" *ngIf="openMenu === 'child'" (click)="$event.stopPropagation()">
+          <button type="button" *ngFor="let child of children" class="web-header__dropdown-link web-header__dropdown-link--child"
+            (click)="selectChild(child)">
+            <img class="web-header__child-avatar web-header__child-avatar--option" [src]="child.avatarUrl" [alt]="child.name">
+            <span>{{ child.name }}</span>
+            <ion-icon *ngIf="selectedChild?.id === child.id" name="checkmark-outline" aria-hidden="true"></ion-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="web-header__coins" (click)="goToCoins()">
+        <img src="assets/Icons-Neutral/Icons-Coins.png" alt="coins" class="web-header__coins-icon">
+        <span>{{ selectedChildCoins | number }}</span>
+      </div>
+
+      <a class="web-header__profile" routerLink="/authed/user-profile" aria-label="Open profile">
+        <span class="web-header__avatar web-header__avatar--initial-only" [ngStyle]="parentAvatarStyle">
+          {{ parentInitial }}
         </span>
         <span class="web-header__profile-name">{{ userName }}</span>
       </a>

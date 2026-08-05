@@ -1,8 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
-import { QRCodeComponent } from 'angularx-qrcode';
 import { CustomToastService } from '../../services/custom-toast.service';
 
 interface FooterLink {
@@ -20,13 +18,17 @@ interface FooterColumn {
 @Component({
   selector: 'dashboard-web-footer',
   standalone: true,
-  imports: [CommonModule, RouterModule, IonicModule, QRCodeComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './dashboard-web-footer.component.html',
   styleUrls: ['./dashboard-web-footer.component.scss']
 })
 export class DashboardWebFooterComponent {
   readonly currentYear = new Date().getFullYear();
   readonly playStoreUrl = 'https://play.google.com/store/apps/details?id=com.superme.app';
+
+  readonly logoSrc = 'assets/Landing/SuperMe Logo Final.png';
+  readonly googlePlaySrc = 'assets/Landing/a545087c920a7aa3d0b8e311d8b60b7ded2efb74.png';
+  readonly qrSrc = 'assets/Landing/2f248945e515f53a46e556ed5d49f6415934d59a.png';
 
   readonly socialLinks = [
     { name: 'facebook', label: 'Facebook', url: 'https://www.facebook.com/SuperMeAppOfficial' },
