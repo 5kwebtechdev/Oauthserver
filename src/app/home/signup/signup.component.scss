@@ -745,6 +745,18 @@ superme-navigator.signup-navigator {
     }
   }
 
+  .oauth-account-note {
+    margin: 0 0 16px;
+    padding: 10px 12px;
+    border: 1px solid #d8d1ee;
+    border-radius: 10px;
+    background: #f8f6ff;
+    color: #554b67;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
   .profile-back-btn {
     display: inline-flex;
     align-items: center;

@@ -78,6 +78,25 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
   }
 
+  public get isAppleOAuthSignup(): boolean {
+    if (!this.isOAuthSignup) return false;
+    try {
+      return sessionStorage.getItem('oauth_signup_provider') === 'apple';
+    } catch {
+      return false;
+    }
+  }
+
+  /** Apple already supplied this account name, so never require it again. */
+  public get hasAppleProvidedName(): boolean {
+    if (!this.isAppleOAuthSignup) return false;
+    try {
+      return !!sessionStorage.getItem('google_signup_name')?.trim();
+    } catch {
+      return false;
+    }
+  }
+
   // OTP related properties
   public otpDigits: string[] = ['', '', '', ''];
   public canResendOtp = false;
@@ -376,6 +395,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       if (googleEmail) {
         this.signupForm.patchValue({ email: googleEmail });
         this.requestedIdentifier = googleEmail;
+      }
+
+      // Sign in with Apple supplies the account name on first authorization
+      // and the saved account profile on later authorizations. Do not ask the
+      // user to provide that same name again during app onboarding.
+      if (this.hasAppleProvidedName) {
+        this.profileForm.get('name')?.clearValidators();
+        this.profileForm.get('name')?.updateValueAndValidity({ emitEvent: false });
       }
 
       // Apple and Google don't provide DOB. It is optional for OAuth accounts

@@ -306,10 +306,15 @@ export class SocialMediaComponent implements OnInit {
           if (provider === 'apple') {
             // Apple authentication replaces email/OTP/password steps. A new
             // Apple user still selects a role before entering optional profile
-            // details. Preserve the Apple credential for that flow.
+            // details. Preserve the identity supplied by Apple (or already
+            // stored on the user) so onboarding never requests it again.
             const savedRole = this.onboardingState.getSignupRole(response.user);
             if (Number(appleOnboardingStep) < 4 || !savedRole) {
-              this.storeOAuthSignupSession('apple', profile);
+              this.storeOAuthSignupSession('apple', {
+                ...profile,
+                email: String(profile?.email || response.user?.email || '').trim(),
+                name: String(profile?.name || response.user?.name || '').trim()
+              });
               this.router.navigate(
                 ['home/sign-up'],
                 { queryParams: { step: 1 }, replaceUrl: true }

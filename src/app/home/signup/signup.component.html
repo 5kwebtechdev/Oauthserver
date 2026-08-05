@@ -355,16 +355,23 @@
 
       <div class="profile">
         <form [formGroup]="profileForm">
-          <h4 class="profile-field-heading">
-            <span class="profile-field-title">Full Name</span>
-          </h4>
-          <div class="input-group">
-            <input [ngClass]="{'error' : name?.invalid && (name?.dirty || name?.touched)}" formControlName="name" type="text"
-              placeholder="Name" />
-            <div class="error" *ngIf="name?.invalid && (name?.dirty || name?.touched)">
-              {{ getNameErrorMessage() }}
+          <ng-container *ngIf="!hasAppleProvidedName; else appleIdentityProvided">
+            <h4 class="profile-field-heading">
+              <span class="profile-field-title">Full Name</span>
+            </h4>
+            <div class="input-group">
+              <input [ngClass]="{'error' : name?.invalid && (name?.dirty || name?.touched)}" formControlName="name" type="text"
+                placeholder="Name" />
+              <div class="error" *ngIf="name?.invalid && (name?.dirty || name?.touched)">
+                {{ getNameErrorMessage() }}
+              </div>
             </div>
-          </div>
+          </ng-container>
+          <ng-template #appleIdentityProvided>
+            <p class="oauth-account-note" role="status">
+              Your name and email are securely provided by Apple.
+            </p>
+          </ng-template>
 
           <ng-container *ngIf="currentRole !== 'parent'">
           <h4 class="profile-field-heading">
