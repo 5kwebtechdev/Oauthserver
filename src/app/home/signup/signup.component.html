@@ -355,7 +355,7 @@
 
       <div class="profile">
         <form [formGroup]="profileForm">
-          <ng-container *ngIf="!hasAppleProvidedName; else appleIdentityProvided">
+          <ng-container *ngIf="!isAppleOAuthSignup; else appleIdentityProvided">
             <h4 class="profile-field-heading">
               <span class="profile-field-title">Full Name</span>
             </h4>
