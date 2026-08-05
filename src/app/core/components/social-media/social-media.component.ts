@@ -277,27 +277,23 @@ export class SocialMediaComponent implements OnInit {
     this.authService.googleOAuthLogin(profile).subscribe({
       next: async (response) => {
         await this.finishSocialLogin(loading);
-        const userId = response.user?.id;
+        // Older OAuth responses may place the onboarding step at the top
+        // level. Keep the backend value when present instead of rejecting an
+        // otherwise valid Apple session as an unknown account state.
+        const responseUser = {
+          ...(response.user || {}),
+          onboardingStep: response.user?.onboardingStep
+            ?? (response as any)?.onboardingStep
+            ?? (response as any)?.nextStep
+        };
+        const userId = responseUser.id;
         if (response.token && userId) {
           const appleOnboardingStep = provider === 'apple'
-            ? Number(response.user?.onboardingStep)
+            ? this.onboardingState.getOnboardingStep(responseUser)
             : null;
-          if (
-            provider === 'apple'
-            && (!Number.isFinite(appleOnboardingStep) || Number(appleOnboardingStep) < 1)
-          ) {
-            console.error(
-              '[Apple Sign-In] Login response is missing a valid onboardingStep:',
-              response
-            );
-            await this.presentToast(
-              'Apple sign-in could not determine your account setup status. Please try again.'
-            );
-            return;
-          }
 
           this.authService.setSession(
-            { token: response.token, userId, expiresIn: response.expiresIn, user: response.user },
+            { token: response.token, userId, expiresIn: response.expiresIn, user: responseUser },
             false
           );
           this.analytics.logLogin(provider);
@@ -308,12 +304,28 @@ export class SocialMediaComponent implements OnInit {
             // Apple user still selects a role before entering optional profile
             // details. Preserve the identity supplied by Apple (or already
             // stored on the user) so onboarding never requests it again.
-            const savedRole = this.onboardingState.getSignupRole(response.user);
-            if (Number(appleOnboardingStep) < 4 || !savedRole) {
+            const savedRole = this.onboardingState.getSignupRole(responseUser);
+            if (appleOnboardingStep === null && !savedRole) {
+              // New Apple accounts can legitimately start without an
+              // onboarding step. Let the user choose a role instead of
+              // showing a false sign-in error.
               this.storeOAuthSignupSession('apple', {
                 ...profile,
-                email: String(profile?.email || response.user?.email || '').trim(),
-                name: String(profile?.name || response.user?.name || '').trim()
+                email: String(profile?.email || responseUser.email || '').trim(),
+                name: String(profile?.name || responseUser.name || '').trim()
+              });
+              this.router.navigate(
+                ['home/sign-up'],
+                { queryParams: { step: 1 }, replaceUrl: true }
+              );
+              return;
+            }
+
+            if ((appleOnboardingStep !== null && appleOnboardingStep < 4) || !savedRole) {
+              this.storeOAuthSignupSession('apple', {
+                ...profile,
+                email: String(profile?.email || responseUser.email || '').trim(),
+                name: String(profile?.name || responseUser.name || '').trim()
               });
               this.router.navigate(
                 ['home/sign-up'],
@@ -323,7 +335,7 @@ export class SocialMediaComponent implements OnInit {
             }
           }
 
-          const onboardingResume = this.onboardingState.getResumeNavigation(response.user);
+          const onboardingResume = this.onboardingState.getResumeNavigation(responseUser);
           if (onboardingResume) {
             this.router.navigate([onboardingResume.url], {
               queryParams: onboardingResume.queryParams,
