@@ -1,10 +1,11 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { IonicModule, Platform, LoadingController, ToastController } from '@ionic/angular';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { getApps, getApp } from 'firebase/app';
 import { getAuth, signInWithCredential, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
+import { timeout } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { AuthSessionCleanupService } from '../../services/auth-session-cleanup.service';
@@ -73,7 +74,8 @@ export class SocialMediaComponent implements OnInit {
     private authSessionCleanup: AuthSessionCleanupService,
     private crashlytics: CrashlyticsService,
     private onboardingState: OnboardingStateService,
-    private appleSignIn: AppleSignInService
+    private appleSignIn: AppleSignInService,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit() {
@@ -232,14 +234,11 @@ export class SocialMediaComponent implements OnInit {
       }
 
       try {
-        if (getApps().length) {
-          const provider = new OAuthProvider('apple.com');
-          const firebaseCredential = provider.credential({
-            idToken: appleProfile.identityToken,
-            rawNonce: appleProfile.rawNonce
-          });
-          await signInWithCredential(getAuth(getApp()), firebaseCredential);
-        }
+        // Firebase is only used to mirror the user in Firebase Auth. The
+        // SuperMe backend is the authority for Apple authentication, so a
+        // stalled Firebase request must never strand an iOS user on a blank
+        // screen after the native Apple sheet closes.
+        await this.registerWithFirebaseAppleAuth(appleProfile);
       } catch (fbErr) {
         console.warn('[SocialMedia] Firebase Apple sign-in (non-fatal):', fbErr);
       }
@@ -247,7 +246,10 @@ export class SocialMediaComponent implements OnInit {
       // Always let the backend verify the Apple token and stable `sub`.
       // Email is not a reliable account key and Apple may omit name/email on
       // later authorizations.
-      this.loginWithOAuthProfile(appleProfile, loading, 'apple');
+      // Capacitor callbacks can resolve outside Angular's zone on iOS. Enter
+      // it explicitly so routing and the Ionic view update reliably on iPhone
+      // and iPad after the native authorization sheet is dismissed.
+      this.ngZone.run(() => this.loginWithOAuthProfile(appleProfile, loading, 'apple'));
     } catch (err: any) {
       await this.finishSocialLogin(loading);
       const normalizedError = this.appleSignIn.normalizeError(err);
@@ -274,7 +276,12 @@ export class SocialMediaComponent implements OnInit {
     provider: OAuthProviderName,
     fallbackMessage?: string
   ): void {
-    this.authService.googleOAuthLogin(profile).subscribe({
+    this.authService.googleOAuthLogin(profile).pipe(
+      // Prevent a stalled network request from leaving the native auth view in
+      // a loading/blank state indefinitely. This only cancels the client wait;
+      // the backend remains the final source of truth on a retry.
+      timeout({ first: 20_000 })
+    ).subscribe({
       next: async (response) => {
         await this.finishSocialLogin(loading);
         // Older OAuth responses may place the onboarding step at the top
@@ -358,8 +365,11 @@ export class SocialMediaComponent implements OnInit {
           provider,
           stage: 'oauthLogin'
         });
+        const timedOut = err?.name === 'TimeoutError';
         await this.presentToast(
-          err?.error?.message || fallbackMessage || `${this.getProviderLabel(provider)} sign-in failed. Please try again.`
+          timedOut
+            ? `${this.getProviderLabel(provider)} sign-in is taking too long. Please check your connection and try again.`
+            : err?.error?.message || fallbackMessage || `${this.getProviderLabel(provider)} sign-in failed. Please try again.`
         );
       }
     });
@@ -552,5 +562,44 @@ export class SocialMediaComponent implements OnInit {
     } catch (error: any) {
       console.warn('[SocialMedia] Firebase signInWithCredential failed (non-fatal):', error?.code ?? error);
     }
+  }
+
+  /**
+   * Firebase is supplementary to the backend Apple-auth flow. Give it a
+   * bounded amount of time so a Firebase/network problem cannot block native
+   * Apple users from continuing through SuperMe onboarding.
+   */
+  private async registerWithFirebaseAppleAuth(profile: AppleAuthorizationCredential): Promise<void> {
+    if (!getApps().length) {
+      return;
+    }
+
+    const provider = new OAuthProvider('apple.com');
+    const firebaseCredential = provider.credential({
+      idToken: profile.identityToken,
+      rawNonce: profile.rawNonce
+    });
+
+    await this.withTimeout(
+      signInWithCredential(getAuth(getApp()), firebaseCredential),
+      7_500,
+      'Firebase Apple sign-in timed out.'
+    );
+  }
+
+  private withTimeout<T>(operation: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error(message)), timeoutMs);
+      operation.then(
+        value => {
+          clearTimeout(timer);
+          resolve(value);
+        },
+        error => {
+          clearTimeout(timer);
+          reject(error);
+        }
+      );
+    });
   }
 }
