@@ -111,13 +111,13 @@ export class LoginComponent implements OnInit, OnDestroy {
           if (!onboardingResume) {
             this.onboardingState.markExistingUser();
             const onboardingStep = this.onboardingState.getOnboardingStep(response.user);
-            if (onboardingStep && onboardingStep >= 6) {
+            if (this.onboardingState.isOnboardingComplete(response.user)) {
               this.onboardingState.clearRegistrationDraft();
             }
           }
 
           // Incomplete onboarding always wins over a returnUrl or dashboard
-          // deep link. The main app is reachable only after backend step 6.
+          // deep link. The main app is reachable only after backend step 7.
           const dashboardRoute = this.authService.getDashboardRoute();
           const navigationTarget = this.returnUrl || dashboardRoute;
 

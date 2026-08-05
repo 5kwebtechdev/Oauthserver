@@ -933,7 +933,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           this.applyRegistrationDraft(restoredDraft);
 
           if (savedData.emailVerified === true) {
-            if (Number(effectiveStep) >= 6) {
+            if (Number(effectiveStep) >= 7) {
               this.onboardingState.clearRegistrationDraft();
               this.core.triggerToasrt('Your account is already set up. Please log in to continue.');
               this.navigateReplacing('/home/login');
@@ -2722,7 +2722,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           return;
         }
 
-        if (responseStep && responseStep >= 6) {
+        if (responseStep && responseStep >= 7) {
           this.finishCompletedRegistration(resp, payload, completedPassword);
           return;
         }
@@ -2878,8 +2878,13 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   /**
    * Register a child/self account using session data and then navigate to welcome (step 5).
    */
-  private completeGoogleOnboardingFlow(role: 'child' | 'parent' | 'self'): void {
+  private completeGoogleOnboardingFlow(
+    role: 'child' | 'parent' | 'self',
+    unlockPotential = false
+  ): void {
+    this.registrationInProgress = true;
     this.errorMessage = null;
+    this.loadingService.show();
 
     if (
       !environment.production
@@ -2980,6 +2985,10 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       } catch (e) {}
     }
 
+    if (unlockPotential) {
+      googlePayload.unlockPotential = true;
+    }
+
     if (!environment.production) {
       console.info('[OAuth signup] Submitting provider profile', {
         provider,
@@ -2995,36 +3004,79 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // Use oauth2-login — it creates the user if new, returns a valid token
     this.authService.googleOAuthLogin(googlePayload).subscribe({
       next: (response) => {
-        const userId = response.user?.id;
+        const responseStep = this.getResponseOnboardingStep(response);
+        const responseUser = {
+          ...(response?.user || {}),
+          ...(responseStep ? { onboardingStep: responseStep } : {})
+        };
+        const userId = responseUser.id;
         if (response.token && userId) {
           this.authService.setSession(
-            { token: response.token, userId, expiresIn: response.expiresIn, user: response.user },
+            { token: response.token, userId, expiresIn: response.expiresIn, user: responseUser },
             false
           );
+        } else if (Object.keys(responseUser).length) {
+          this.authService.updateUserData(responseUser);
         }
-        this.onboardingState.markExistingUser();
+
+        const responseData = this.getRegistrationResponseDraft(response);
+        const responseDraft: RegistrationDraftData = {
+          ...googlePayload,
+          ...responseData,
+          relationship: String(
+            responseData.relationship || role
+          ).toUpperCase(),
+          asChild: role === 'child',
+          ...(responseStep ? { onboardingStep: responseStep } : {})
+        };
+        if (responseStep) {
+          this.onboardingState.saveRegistrationDraft(responseDraft, responseStep, 'EMAIL');
+        }
+
+        // An OAuth account already exists as soon as Apple/Google authenticates
+        // it. Keep its OAuth credentials until activation is complete, so the
+        // Pet and Unlock steps update that same account instead of calling
+        // /auth/register and triggering duplicate email/phone validation.
+        if (unlockPotential) {
+          this.clearGoogleSignupSession();
+          this.continueAfterUnlock(responseDraft);
+          return;
+        }
+
         if (role === 'child') {
           try {
             sessionStorage.setItem(SignupComponent.CHILD_POST_FAMILY_WELCOME_KEY, 'true');
           } catch (e) {}
-        }
-        this.clearGoogleSignupSession();
-        const route = role === 'child'
-          ? '/home/join-family'
-          : (role === 'parent' ? '/authed/parent-account' : '/authed/user-dashboard');
-        setTimeout(() => {
+
+          this.registrationInProgress = false;
           this.loadingService.forceHide();
-          if (role === 'child') {
-            void this.navCtrl.navigateRoot(route, {
-              queryParams: { role: 'child' },
-              animated: false
-            });
-          } else {
-            this.navigateReplacing(route);
+
+          if (googlePayload.petName) {
+            // Step 6 is the activation screen. Replacing the route prevents
+            // the prior Pet page from flashing or returning via device Back.
+            this.navigateToSignupStep(5);
+            return;
           }
+
+          void this.navCtrl.navigateRoot('/home/join-family', {
+            queryParams: { role: 'child' },
+            animated: false
+          });
+          return;
+        }
+
+        this.onboardingState.markExistingUser();
+        this.clearGoogleSignupSession();
+        const route = role === 'parent' ? '/authed/parent-account' : '/authed/user-dashboard';
+        setTimeout(() => {
+          this.registrationInProgress = false;
+          this.loadingService.forceHide();
+          this.navigateReplacing(route);
         }, 50);
       },
       error: (err) => {
+        this.registrationInProgress = false;
+        this.loadingService.forceHide();
         const serverMsg = err?.error?.message || 'Sign-up failed. Please try again.';
         this.errorMessage = serverMsg;
         this.handleRecoverableFamilyJoinError(serverMsg);
@@ -3186,7 +3238,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
           return;
         }
 
-        if (responseStep && responseStep >= 6) {
+        if (responseStep && responseStep >= 7) {
           this.finishCompletedRegistration(resp, payload, passwordForLogin);
           return;
         }
@@ -3301,6 +3353,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       return;
     }
 
+    if (this.isOAuthSignup) {
+      const role = ((sessionStorage.getItem('signup_role') as 'child' | 'parent' | 'self')
+        || this.roleSelected
+        || this.currentRole) as 'child' | 'parent' | 'self';
+      this.completeGoogleOnboardingFlow(role, true);
+      return;
+    }
+
     this.registrationInProgress = true;
     this.errorMessage = null;
     this.loadingService.show();
@@ -3389,7 +3449,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
         this.authService.updateUserData(responseDraft);
 
-        if (responseStep && responseStep >= 6) {
+        if (this.onboardingState.isOnboardingComplete(responseDraft)) {
           this.onboardingState.clearRegistrationDraft();
           this.onboardingState.markExistingUser();
         } else if (responseStep) {
@@ -3414,8 +3474,6 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   private continueAfterUnlock(completedUserData?: RegistrationDraftData): void {
-    const completedStep = this.onboardingState.getOnboardingStep(completedUserData);
-
     // Child users reach this welcome screen only after a successful family
     // link and are already logged in. Continue directly without a second login.
     if (this.authService.isLoggedIn()) {
@@ -3423,7 +3481,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       if (this.beginManagedChildSignupAfterParentUnlock()) {
         return;
       }
-      const resume = completedStep && completedStep >= 6
+      const resume = this.onboardingState.isOnboardingComplete(completedUserData)
         ? null
         : this.onboardingState.getResumeNavigation(this.authService.getUserData());
       if (resume) {
@@ -3503,7 +3561,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.signupCredentialState.clear();
         this.registrationInProgress = false;
         this.loadingService.forceHide();
-        const resume = completedStep && completedStep >= 6
+        const resume = this.onboardingState.isOnboardingComplete(completedUserData)
           ? null
           : this.onboardingState.getResumeNavigation(loginResponse.user);
         if (resume) {
@@ -3626,8 +3684,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
 
     this.authService.updateUserData(completedUserData);
-    const completedStep = this.onboardingState.getOnboardingStep(completedUserData);
-    if (completedStep && completedStep >= 6) {
+    if (this.onboardingState.isOnboardingComplete(completedUserData)) {
       this.onboardingState.clearRegistrationDraft();
       this.onboardingState.markExistingUser();
     }
@@ -3859,8 +3916,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         next: () => {
           const freshUser = this.authService.getUserData() as RegistrationDraftData | null;
           const freshStep = this.onboardingState.getOnboardingStep(freshUser);
-
-          if (freshStep && freshStep >= 6) {
+          if (this.onboardingState.isOnboardingComplete(freshUser)) {
             this.onboardingState.clearRegistrationDraft();
             this.onboardingState.markExistingUser();
             this.navigateReplacing(this.authService.getDashboardRoute());

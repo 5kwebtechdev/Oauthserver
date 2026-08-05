@@ -53,6 +53,9 @@ export interface OnboardingResumeNavigation {
 })
 export class OnboardingStateService {
   private readonly legacyOnboardingKey = 'onboardingComplete';
+  // The backend uses step 6 for the final "Unlock My Potential" action and
+  // returns step 7 only after that action has completed successfully.
+  private readonly completedOnboardingStep = 7;
 
   getRegistrationState(): RegistrationOnboardingState | null {
     try {
@@ -136,8 +139,12 @@ export class OnboardingStateService {
 
   isOnboardingIncomplete(source?: RegistrationDraftData | null): boolean {
     const step = this.getOnboardingStep(source);
-    // The backend defines step 6 as the completed onboarding state.
-    return step !== null && step < 6;
+    return step !== null && step < this.completedOnboardingStep;
+  }
+
+  isOnboardingComplete(source?: RegistrationDraftData | null): boolean {
+    const step = this.getOnboardingStep(source);
+    return step !== null && step >= this.completedOnboardingStep;
   }
 
   getResumeNavigation(source?: RegistrationDraftData | null): OnboardingResumeNavigation | null {
@@ -151,9 +158,7 @@ export class OnboardingStateService {
         ? source.onboardingStep
         : state?.onboardingStep
     );
-    // Step 6 is complete; never route a completed user back to the
-    // activation/pet portion of signup.
-    if (!backendStep || backendStep >= 6) return null;
+    if (!backendStep || backendStep >= this.completedOnboardingStep) return null;
 
     let signupStep: number;
     if (backendStep === 1) {
@@ -164,8 +169,12 @@ export class OnboardingStateService {
       signupStep = 0.3;
     } else if (backendStep === 4) {
       signupStep = 2;
-    } else {
+    } else if (backendStep === 5) {
       signupStep = this.getSignupRole(savedData) === 'parent' ? 5 : 4;
+    } else {
+      // Backend step 6 means a pet has been saved and only the final
+      // activation action remains. Never send the user back to Pet.
+      signupStep = 5;
     }
 
     const role = this.getSignupRole(savedData);
