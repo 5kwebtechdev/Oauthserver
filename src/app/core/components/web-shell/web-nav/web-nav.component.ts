@@ -1,12 +1,15 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { Subject, takeUntil } from 'rxjs';
 import { SkeletonImageComponent } from '../../skeleton-image/skeleton-image.component';
 import { AuthService } from '../../../services/auth.service';
 import { UserService } from '../../../services/user.service';
 import { ChildSelfImageService } from '../../../services/child-self-image.service';
+import { ParentImageService } from '../../../services/parent-image.service';
+import { ProfileStoreService } from '../../../services/profile-store.service';
+import { ChildInfo } from '../../../models/child-info.model';
 
 interface WebNavLink {
   label: string;
@@ -49,10 +52,9 @@ const CHILD_NAV_ITEMS: WebNavItem[] = [
 
 // Mirrors the parent-role items already used by the mobile bottom tab bar
 // (see FooterComponent's *ngIf="isParentUser()" branches) — a parent account
-// has no personal coins/streak/badges, so those destinations/stats don't apply.
+// has no personal streak/badges, so those destinations/stats don't apply.
 const PARENT_NAV_ITEMS: WebNavItem[] = [
   { label: 'TimeTable', link: '/authed/activity-timeline' },
-  { label: 'Coins', link: '/authed/coin' },
   {
     label: 'Reels',
     children: [
@@ -84,14 +86,23 @@ export class WebNavComponent implements OnInit, OnDestroy {
   trophies = 0;
   badges = 0;
 
+  // Parent-only
+  parentAvatarStyle: Record<string, string> = {};
+  parentInitial = 'P';
+  children: ChildInfo[] = [];
+  selectedChild: ChildInfo | null = null;
+
   openMenu: string | null = null;
 
   private destroy$ = new Subject<void>();
 
   constructor(
+    private router: Router,
     private authService: AuthService,
     private userService: UserService,
-    private childSelfImageService: ChildSelfImageService
+    private childSelfImageService: ChildSelfImageService,
+    private parentImageService: ParentImageService,
+    private profileStore: ProfileStoreService
   ) {}
 
   ngOnInit(): void {
@@ -103,13 +114,28 @@ export class WebNavComponent implements OnInit, OnDestroy {
       .subscribe(userData => {
         if (userData) {
           this.userName = userData.name || '';
+          this.parentInitial = this.userName.charAt(0).toUpperCase() || 'P';
+          if (this.isParent) {
+            this.parentAvatarStyle = this.parentImageService.getAvatarStyle(
+              this.parentInitial,
+              String(userData.gender || '').toLowerCase() === 'female',
+              48
+            );
+          }
           const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
           this.userAvatarUrl = resolved.url || null;
           this.avatarImageName = resolved.alt || null;
         }
       });
 
-    if (!this.isParent) {
+    if (this.isParent) {
+      this.profileStore.children$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(children => (this.children = children));
+      this.profileStore.selectedChild$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(child => (this.selectedChild = child));
+    } else {
       this.userService.stats$
         .pipe(takeUntil(this.destroy$))
         .subscribe(stats => {
@@ -135,6 +161,22 @@ export class WebNavComponent implements OnInit, OnDestroy {
     return (this.userName || '').trim().charAt(0).toUpperCase();
   }
 
+  get selectedChildAvatarUrl(): string {
+    return this.selectedChild?.avatarUrl || 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
+  }
+
+  get selectedChildName(): string {
+    return this.selectedChild?.name || this.children[0]?.name || 'Child';
+  }
+
+  get selectedChildCoins(): number {
+    return this.selectedChild?.coins ?? 0;
+  }
+
+  openMenuOn(label: string): void {
+    this.openMenu = label;
+  }
+
   toggleMenu(label: string, event: Event): void {
     event.stopPropagation();
     this.openMenu = this.openMenu === label ? null : label;
@@ -142,6 +184,15 @@ export class WebNavComponent implements OnInit, OnDestroy {
 
   closeMenu(): void {
     this.openMenu = null;
+  }
+
+  selectChild(child: ChildInfo): void {
+    this.profileStore.select(child);
+    this.closeMenu();
+  }
+
+  goToCoins(): void {
+    this.router.navigate(['/authed/coin']);
   }
 
   @HostListener('document:click')

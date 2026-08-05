@@ -1,5 +1,21 @@
+@use '../../../../theme/breakpoints' as bp;
+
 :host {
   display: block;
+}
+
+// This is the mobile bottom-tab bar — web-nav (shown only on tablet-up, see
+// its own :host rules) is the desktop equivalent, rendered once in
+// AuthenticatedComponent. Most pages that include <app-footer> never
+// anticipated a desktop viewport and don't hide it themselves, so without
+// this it stays fixed to the bottom of the screen on desktop. UserDashboard
+// is the one page with a bespoke desktop footer (dashboard-web-footer) and
+// already hides this via its own "mobile-chrome" class — this rule is a
+// no-op there and the real fix for every other page.
+@include bp.tablet-up {
+  :host {
+    display: none !important;
+  }
 }
 
 .footer-main {
