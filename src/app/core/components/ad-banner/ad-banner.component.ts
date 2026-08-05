@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -65,8 +65,8 @@ const IN_APP_ROUTE_MAP: Record<string, string> = {
 export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
   /** Which screen this banner is on - determines which ads the API returns */
   @Input() screen: AdScreen = 'HOME';
-  /** Optional Figma layout used by the article Learning Details screen. */
-  @Input() variant: 'default' | 'article-details' = 'default';
+  /** Optional Figma layout used by screens with a dedicated ad treatment. */
+  @Input() variant: 'default' | 'article-details' | 'eduhub-parent' | 'eduhub-inner' = 'default';
 
   @ViewChild('scrollTrack') scrollTrackRef?: ElementRef<HTMLElement>;
 
@@ -102,6 +102,11 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearTimer();
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.updateTrackPosition();
   }
 
   private loadAds(): void {
@@ -203,9 +208,11 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
     if (!el) return;
     const containerWidth = (el.parentElement?.clientWidth ?? el.clientWidth);
     const articleDetails = this.variant === 'article-details';
-    const cardWidth = containerWidth * (articleDetails ? 0.845 : 0.82);
-    const gap = articleDetails ? 8 : 10;
-    const peekOffset = articleDetails ? 0 : (containerWidth - cardWidth) / 2;
+    const parentEduHub = this.variant === 'eduhub-parent';
+    const parentEduHubInner = this.variant === 'eduhub-inner';
+    const cardWidth = containerWidth * (articleDetails ? 0.845 : (parentEduHub || parentEduHubInner) ? 0.81 : 0.82);
+    const gap = articleDetails || parentEduHub || parentEduHubInner ? 8 : 10;
+    const peekOffset = articleDetails || parentEduHub || parentEduHubInner ? 0 : (containerWidth - cardWidth) / 2;
     const translateX = peekOffset - this.currentIndex * (cardWidth + gap);
     el.style.transform = `translateX(${translateX}px)`;
   }

@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 // Capacitor Keyboard (optional in web builds)
 import { Keyboard } from '@capacitor/keyboard';
+import { Capacitor } from '@capacitor/core';
 
 @Component({
   selector: 'app-footer',
@@ -66,16 +67,17 @@ export class FooterComponent implements OnInit, OnDestroy {
 
     // Check education active
     this.currentUrl = this.router.url;
-    this.isEducationActive = this.isAnyRouteActive(['/authed/education', '/authed/tutors']);
+    this.isEducationActive = this.isAnyRouteActive(['/authed/education', '/authed/tutors', '/authed/academies']);
     this.routerSub = this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         this.currentUrl = event.urlAfterRedirects || event.url;
-        this.isEducationActive = this.isAnyRouteActive(['/authed/education', '/authed/tutors']);
+        this.isEducationActive = this.isAnyRouteActive(['/authed/education', '/authed/tutors', '/authed/academies']);
       }
     });
 
     // Wire Capacitor Keyboard listeners if available
     try {
+      if (!Capacitor.isNativePlatform()) return;
       this.keyboardShowListener = Keyboard.addListener('keyboardDidShow', () => {
         this.ngZone.run(() => { this.isKeyboardOpen = true; });
       });

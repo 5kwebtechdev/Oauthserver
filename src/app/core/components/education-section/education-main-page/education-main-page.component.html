@@ -1,20 +1,80 @@
-<ion-content style="--padding-top: var(--sat)">
-    <div class="education-main-page-container">
-        <h1 class="edu-heading">Education & Essentials</h1>
-        <!-- Ad banner — loads EDUHUB screen ads from API -->
-        <div class="edu-ad-wrap">
-            <ad-banner [screen]="eduAdScreen"></ad-banner>
+<ion-content [style.--padding-top]="'var(--sat)'" [class.parent-eduhub-content]="isParentRole">
+    <ng-container *ngIf="isParentRole; else standardEduHub">
+        <main class="parent-eduhub-page">
+            <header class="parent-eduhub-header">
+                <button type="button" class="parent-eduhub-back" aria-label="Back" (click)="goBack()">
+                    <img src="assets/icons/back-arrow.svg" alt="" aria-hidden="true">
+                </button>
+                <h1>EduHub</h1>
+            </header>
+
+            <ad-banner class="parent-eduhub-ad" aria-label="Featured EduHub offers"
+                [screen]="eduAdScreen" variant="eduhub-parent">
+            </ad-banner>
+
+            <div class="parent-eduhub-sections">
+                <section class="parent-eduhub-section"
+                    *ngFor="let section of parentEduHubSections; trackBy: trackSection"
+                    [attr.aria-labelledby]="'parent-eduhub-' + section.key">
+                    <header class="parent-eduhub-section__header">
+                        <span class="parent-eduhub-section__icon" aria-hidden="true">
+                            <img [src]="section.icon" alt="">
+                        </span>
+                        <h2 [id]="'parent-eduhub-' + section.key">{{ section.label }}</h2>
+                    </header>
+
+                    <div class="parent-eduhub-grid parent-eduhub-grid--loading" *ngIf="section.loading" aria-label="Loading categories">
+                        <span class="parent-eduhub-card-skeleton" *ngFor="let card of parentLoadingCards"></span>
+                    </div>
+
+                    <div class="parent-eduhub-section-state parent-eduhub-section-state--error" *ngIf="!section.loading && section.error">
+                        <p>We couldn’t load these categories.</p>
+                        <button type="button" (click)="loadParentShopCategories()">Retry</button>
+                    </div>
+
+                    <div class="parent-eduhub-grid"
+                        *ngIf="!section.loading && !section.error && section.categories.length">
+                        <button type="button"
+                            class="parent-eduhub-card"
+                            *ngFor="let category of section.categories; trackBy: trackCategory"
+                            [class.is-selected]="selectedParentCategoryId === category.id"
+                            [attr.aria-label]="'Open ' + category.label"
+                            (click)="openParentCategory(category)">
+                            <span class="parent-eduhub-card__image" aria-hidden="true">
+                                <img [src]="category.image" alt=""
+                                    (error)="onCategoryImageError($event, category)">
+                            </span>
+                            <span class="parent-eduhub-card__label">{{ category.label }}</span>
+                        </button>
+                    </div>
+
+                    <p class="parent-eduhub-section-state"
+                        *ngIf="!section.loading && !section.error && !section.categories.length">
+                        No categories are available right now.
+                    </p>
+                </section>
+            </div>
+        </main>
+    </ng-container>
+
+    <ng-template #standardEduHub>
+        <div class="education-main-page-container">
+            <h1 class="edu-heading">Education &amp; Essentials</h1>
+            <div class="edu-ad-wrap">
+                <ad-banner [screen]="eduAdScreen"></ad-banner>
+            </div>
+            <div class="edu-item-list">
+                <a class="edu-item-cards" routerLink="/authed/tutors">
+                    <h1>Find a Tutor</h1>
+                    <app-img src="assets/Images-Transparent/Find-Tutors.png" alt="Find a Tutor" objectFit="contain"></app-img>
+                </a>
+                <a class="edu-item-cards" routerLink="/authed/academies">
+                    <h1>Find Academies</h1>
+                    <app-img src="assets/Images-Transparent/Academies.png" alt="Find Academies" objectFit="contain"></app-img>
+                </a>
+            </div>
         </div>
-        <div class="edu-item-list">
-            <a class="edu-item-cards" routerLink="/authed/tutors">
-                <h1>Find a Tutor</h1>
-                <app-img src="assets/Images-Transparent/Find-Tutors.png" alt="Find a Tutor" objectFit="contain"></app-img>
-            </a>
-            <a class="edu-item-cards" routerLink="/authed/academies">
-                <h1>Find Academies</h1>
-                <app-img src="assets/Images-Transparent/Academies.png" alt="Find Academies" objectFit="contain"></app-img>
-            </a>
-</div>
-    </div>
+    </ng-template>
+
     <app-footer></app-footer>
 </ion-content>

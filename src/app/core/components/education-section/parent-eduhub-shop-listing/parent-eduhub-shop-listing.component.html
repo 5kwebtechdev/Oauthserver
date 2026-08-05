@@ -1,0 +1,264 @@
+<ion-content fullscreen class="parent-eduhub-inner-content">
+  <div class="parent-eduhub-inner-page">
+    <header class="directory-hero">
+      <div class="directory-toolbar">
+        <div class="directory-toolbar__title">
+          <button type="button" class="icon-button icon-button--back" aria-label="Back" (click)="goBack()">
+            <img src="assets/figma/parent-eduhub-inner/back.svg" alt="" aria-hidden="true">
+          </button>
+          <h1>{{ pageTitle }}</h1>
+        </div>
+
+        <button type="button" class="icon-button icon-button--search" aria-label="Search listings"
+          [attr.aria-expanded]="searchOpen" (click)="toggleSearch()">
+          <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
+        </button>
+      </div>
+
+      <div class="directory-search" *ngIf="searchOpen">
+        <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
+        <input #searchInput type="search" autocomplete="off"
+          [value]="searchQuery"
+          [placeholder]="'Search ' + pageTitle.toLowerCase()"
+          (input)="updateSearch(searchInput.value)">
+        <button type="button" aria-label="Close search" (click)="toggleSearch()">×</button>
+      </div>
+
+      <div class="directory-hero__message">
+        <div class="directory-speech">
+          <img src="assets/figma/parent-eduhub-inner/speech-bubble.svg" alt="" aria-hidden="true">
+          <p>Find trusted <strong>{{ pageTitle.toLowerCase() }}</strong> around you.</p>
+        </div>
+        <superme-pet class="directory-pet" mood="playful" [size]="148" [animated]="false"></superme-pet>
+      </div>
+    </header>
+
+    <main class="directory-main">
+      <button type="button" class="refer-card" (click)="referForListing()">
+        <span class="refer-card__icon" aria-hidden="true">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="">
+        </span>
+        <span class="refer-card__copy">
+          <strong>Know a {{ singularPageTitle }}?</strong>
+          <small>Refer them to get listed on EduHub.</small>
+        </span>
+        <span class="refer-card__cta">Refer for listing</span>
+      </button>
+
+      <section class="directory-section" aria-labelledby="directory-list-heading">
+        <header class="directory-section__header">
+          <div class="directory-section__copy">
+            <h2 id="directory-list-heading">{{ sectionTitle }}</h2>
+            <p>Classifieds listings only. Contact sellers directly to enquire or buy.</p>
+          </div>
+
+          <div class="directory-sort" (click)="$event.stopPropagation()">
+            <button type="button" class="directory-sort__button" [attr.aria-expanded]="sortOpen"
+              (click)="toggleSort($event)">
+              <span>{{ selectedSortLabel }}</span>
+              <img src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
+            </button>
+            <div class="directory-sort__menu" *ngIf="sortOpen" role="menu">
+              <button *ngFor="let option of sortOptions" type="button" role="menuitem"
+                [class.is-selected]="selectedSort === option.value"
+                (click)="selectSort(option.value, $event)">
+                {{ option.label }}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div class="directory-loading" *ngIf="loading" aria-label="Loading nearby listings">
+          <div class="listing-card listing-card--skeleton" *ngFor="let card of loadingCards">
+            <span class="skeleton skeleton--image"></span>
+            <span class="skeleton skeleton--title"></span>
+            <span class="skeleton skeleton--line"></span>
+            <span class="skeleton skeleton--actions"></span>
+          </div>
+        </div>
+
+        <div class="directory-state directory-state--error" *ngIf="!loading && loadError">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+          <h3>Couldn’t load listings</h3>
+          <p>{{ loadError }}</p>
+          <button type="button" (click)="retry()">Retry</button>
+        </div>
+
+        <div class="directory-state" *ngIf="!loading && !loadError && !visibleListings.length">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+          <h3>{{ searchQuery ? 'No matching listings' : 'No listings available yet' }}</h3>
+          <p *ngIf="searchQuery">Try another name or location.</p>
+          <p *ngIf="!searchQuery">New {{ pageTitle.toLowerCase() }} will appear here when they are added.</p>
+          <button *ngIf="!searchQuery" type="button" (click)="referForListing()">Refer for listing</button>
+        </div>
+
+        <div class="directory-list" *ngIf="!loading && !loadError && visibleListings.length">
+          <ng-container *ngFor="let item of visibleListings; let index = index; trackBy: trackListing">
+            <article class="listing-card">
+              <div class="listing-card__top">
+                <div class="listing-card__image" [class.listing-card__image--empty]="!item.image">
+                  <img *ngIf="item.image" [src]="item.image" [alt]="item.name"
+                    (error)="onListingImageError(item)">
+                </div>
+
+                <div class="listing-card__details">
+                  <div class="listing-card__headline">
+                    <div class="listing-card__identity">
+                      <div class="listing-card__name">
+                        <h3>{{ item.name }}</h3>
+                        <img *ngIf="item.verified" src="assets/figma/parent-eduhub-inner/verified.png"
+                          alt="Verified" title="Verified">
+                      </div>
+
+                      <p class="listing-card__location" *ngIf="item.publicLocation">
+                        <img src="assets/figma/parent-eduhub-inner/location.svg" alt="" aria-hidden="true">
+                        <span>{{ item.publicLocation }}</span>
+                        <small *ngIf="selectedSort === 'nearest' && item.distanceKm != null">
+                          {{ item.distanceKm | number:'1.0-1' }} km
+                        </small>
+                      </p>
+
+                      <p class="listing-card__address" [class.is-unlocked]="item.unlocked">
+                        <img [src]="item.unlocked
+                          ? 'assets/figma/parent-eduhub-inner/location.svg'
+                          : 'assets/figma/parent-eduhub-inner/lock.svg'" alt="" aria-hidden="true">
+                        <span>{{ item.unlocked ? (item.fullAddress || item.publicLocation) : 'Full Address hidden' }}</span>
+                      </p>
+                    </div>
+
+                    <div class="listing-card__quick-actions">
+                      <button type="button" class="quick-action quick-action--favourite"
+                        [class.is-selected]="isFavourite(item)"
+                        [attr.aria-label]="isFavourite(item) ? 'Remove from favourites' : 'Add to favourites'"
+                        (click)="toggleFavourite(item)">
+                        <img src="assets/figma/parent-eduhub-inner/favorite.svg" alt="" aria-hidden="true">
+                      </button>
+                      <button type="button" class="quick-action quick-action--share" aria-label="Share listing"
+                        (click)="shareListing(item)">
+                        <img src="assets/figma/parent-eduhub-inner/share.svg" alt="" aria-hidden="true">
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="listing-card__footer">
+                <button type="button" class="listing-action listing-action--secondary"
+                  (click)="openDirections(item)">
+                  Get Directions
+                </button>
+
+                <div class="listing-card__unlock-wrap">
+                  <button type="button" class="listing-action listing-action--primary"
+                    (click)="requestUnlock(item)">
+                    <ng-container *ngIf="item.unlocked; else lockedAction">Contact</ng-container>
+                    <ng-template #lockedAction>
+                      <span>Unlock</span>
+                      <span class="listing-action__coins">
+                        <img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">
+                        {{ item.unlockCost }}
+                      </span>
+                    </ng-template>
+                  </button>
+                  <small *ngIf="!item.unlocked">
+                    <img src="assets/figma/parent-eduhub-inner/lock-muted.svg" alt="" aria-hidden="true">
+                    Unlocks address &amp; contact
+                  </small>
+                </div>
+              </div>
+            </article>
+
+            <ad-banner *ngIf="index === 2" class="directory-ad" screen="EDUHUB_PARENTS"
+              variant="eduhub-inner" aria-label="Featured EduHub offers"></ad-banner>
+          </ng-container>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="sheet-backdrop" *ngIf="unlockItem" (click)="closeUnlockSheet()">
+    <section class="unlock-sheet" role="dialog" aria-modal="true" aria-labelledby="unlock-sheet-title"
+      (click)="$event.stopPropagation()">
+      <button type="button" class="sheet-close" aria-label="Close unlock details" (click)="closeUnlockSheet()">
+        <img src="assets/figma/parent-eduhub-inner/close.svg" alt="" aria-hidden="true">
+      </button>
+
+      <img class="unlock-sheet__illustration" src="assets/figma/parent-eduhub-inner/unlock-illustration.png"
+        alt="" aria-hidden="true">
+      <div class="unlock-sheet__heading">
+        <h2 id="unlock-sheet-title">Unlock contact Details?</h2>
+        <p>This will unlock full contact information and other details of {{ unlockItem.name }}</p>
+      </div>
+
+      <div class="unlock-sheet__balance">
+        <img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">
+        <p><strong>{{ unlockItem.unlockCost }} coins will be deducted</strong>
+          <span>from your SuperMeApp coin balance.</span>
+        </p>
+        <div>
+          <span>Your balance</span>
+          <strong><img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">{{ coinBalance }}</strong>
+        </div>
+      </div>
+
+      <div class="unlock-sheet__benefits">
+        <p>You will get access to:</p>
+        <div>
+          <span *ngIf="unlockItem.fullAddress"><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="">Full address</span>
+          <span *ngIf="unlockItem.phone"><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="">Phone Number</span>
+          <span *ngIf="unlockItem.email"><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="">Email</span>
+          <span *ngIf="unlockItem.fullAddress || unlockItem.publicLocation"><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="">View on map</span>
+        </div>
+      </div>
+
+      <button type="button" class="sheet-primary-action" [disabled]="unlockRequestInProgress"
+        (click)="confirmUnlock()">
+        <ion-spinner *ngIf="unlockRequestInProgress" name="crescent"></ion-spinner>
+        <ng-container *ngIf="!unlockRequestInProgress">
+          <img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="" aria-hidden="true">
+          <span>Unlock Now</span>
+          <span class="sheet-primary-action__coins">
+            <img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">
+            {{ unlockItem.unlockCost }}
+          </span>
+        </ng-container>
+      </button>
+    </section>
+  </div>
+
+  <div class="sheet-backdrop" *ngIf="contactItem" (click)="closeContactSheet()">
+    <section class="contact-sheet" role="dialog" aria-modal="true" aria-labelledby="contact-sheet-title"
+      (click)="$event.stopPropagation()">
+      <header>
+        <h2 id="contact-sheet-title">Get in touch with {{ contactItem.name }}</h2>
+        <button type="button" aria-label="Close contact options" (click)="closeContactSheet()">
+          <img src="assets/figma/parent-eduhub-inner/close.svg" alt="" aria-hidden="true">
+        </button>
+      </header>
+
+      <div class="contact-sheet__options">
+        <button type="button" [disabled]="!contactItem.phone"
+          [class.is-selected]="selectedContactMethod === 'call'" (click)="selectContactMethod('call')">
+          <span class="contact-radio"></span>
+          <span>Call</span>
+        </button>
+        <button type="button" [disabled]="!contactItem.email"
+          [class.is-selected]="selectedContactMethod === 'email'" (click)="selectContactMethod('email')">
+          <span class="contact-radio"></span>
+          <span>Email</span>
+        </button>
+      </div>
+
+      <button type="button" class="sheet-primary-action" [disabled]="contactLaunching"
+        (click)="confirmContact()">
+        <ion-spinner *ngIf="contactLaunching" name="crescent"></ion-spinner>
+        <ng-container *ngIf="!contactLaunching">
+          <img *ngIf="selectedContactMethod === 'call'" src="assets/figma/parent-eduhub-inner/call.svg" alt="" aria-hidden="true">
+          <span>{{ contactActionLabel }}</span>
+        </ng-container>
+      </button>
+    </section>
+  </div>
+
+  <app-footer></app-footer>
+</ion-content>
