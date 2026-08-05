@@ -173,6 +173,9 @@ const routes: Routes = [
         path: 'school-store',
         loadComponent: () => import('../core/components/school-store/school-store.components').then(m => m.SchoolStoreComponent)
       }, {
+        path: 'education/shops',
+        loadComponent: () => import('../core/components/education-section/parent-eduhub-shop-listing/parent-eduhub-shop-listing.component').then(m => m.ParentEduHubShopListingComponent)
+      }, {
         path: 'school-store/address-input',
         loadComponent: () => import('../core/components/school-store/address-input/address-input.components').then(m => m.AddressInputComponent)
       }, {

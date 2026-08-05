@@ -1,5 +1,8 @@
 <ng-container *ngIf="isVisible && ads.length > 0">
-  <div class="adb" [class.adb--article-details]="variant === 'article-details'"
+  <div class="adb"
+    [class.adb--article-details]="variant === 'article-details'"
+    [class.adb--eduhub-parent]="variant === 'eduhub-parent'"
+    [class.adb--eduhub-inner]="variant === 'eduhub-inner'"
     (touchstart)="onTouchStart($event)"
     (touchend)="onTouchEnd($event)"
     role="region"

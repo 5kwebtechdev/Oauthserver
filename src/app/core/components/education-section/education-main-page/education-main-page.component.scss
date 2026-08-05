@@ -1,75 +1,292 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+ion-content {
+    --background: #ffffff;
+}
+
+.parent-eduhub-page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    min-height: 100%;
+    padding-bottom: calc(var(--footer-visual-height, 80px) + env(safe-area-inset-bottom, 0px) + 24px);
+    overflow-x: hidden;
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+.parent-eduhub-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: min(100%, 520px);
+    min-height: 48px;
+    margin: 0 auto;
+    padding: 12px 16px 0;
+    box-sizing: border-box;
+
+    h1 {
+        margin: 0;
+        color: #282527;
+        font-family: var(--font-heading, 'Fredoka', sans-serif);
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 1.4;
+    }
+}
+
+.parent-eduhub-back {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+
+    img {
+        display: block;
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+    }
+
+    &:active {
+        background: rgba(40, 37, 39, 0.05);
+        transform: scale(0.96);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(144, 33, 77, 0.4);
+        outline-offset: 1px;
+    }
+}
+
+.parent-eduhub-ad {
+    display: block;
+    width: min(100%, 520px);
+    margin: 0 auto;
+    padding-left: 16px;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.parent-eduhub-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    width: min(100%, 520px);
+    margin: 8px auto 0;
+}
+
+.parent-eduhub-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+.parent-eduhub-section__header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 32px;
+    padding: 0 16px;
+    box-sizing: border-box;
+
+    h2 {
+        min-width: 0;
+        margin: 0;
+        color: #282527;
+        font-family: var(--font-sans, 'Nunito', sans-serif);
+        font-size: 17px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: 1.25;
+        text-transform: capitalize;
+    }
+}
+
+.parent-eduhub-section__icon {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border-radius: 27px;
+
+    img {
+        display: block;
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+    }
+}
+
+.parent-eduhub-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 8px;
+    row-gap: 12px;
+    width: 100%;
+    padding: 0 16px;
+    box-sizing: border-box;
+}
+
+.parent-eduhub-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    min-height: 52px;
+    margin: 0;
+    padding: 0 8px 0 2px;
+    overflow: hidden;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    background: #b2caf2;
+    color: #282527;
+    box-shadow: 0 0 2px 1px rgba(49, 88, 168, 0.5);
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background-color 140ms ease, border-color 140ms ease, transform 120ms ease;
+    -webkit-tap-highlight-color: transparent;
+
+    &:active,
+    &.is-selected {
+        border-color: #3158a8;
+        background: #a5c0ec;
+        transform: scale(0.98);
+    }
+
+    &:focus-visible {
+        border-color: #3158a8;
+        outline: 2px solid rgba(49, 88, 168, 0.32);
+        outline-offset: 2px;
+    }
+}
+
+.parent-eduhub-card__image {
+    width: 50px;
+    height: 50px;
+    flex: 0 0 50px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+
+    img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+}
+
+.parent-eduhub-card__label {
+    min-width: 0;
+    color: #282527;
+    font-family: var(--font-sans, 'Nunito', sans-serif);
+    font-size: 15px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+.parent-eduhub-grid--loading {
+    row-gap: 12px;
+}
+
+.parent-eduhub-card-skeleton {
+    min-height: 52px;
+    overflow: hidden;
+    border-radius: 16px;
+    background: linear-gradient(100deg, #dce7f8 25%, #eef4fc 45%, #dce7f8 65%);
+    background-size: 220% 100%;
+    box-shadow: 0 0 2px 1px rgba(49, 88, 168, 0.16);
+    animation: parentEduHubShimmer 1.2s linear infinite;
+}
+
+@keyframes parentEduHubShimmer {
+    to {
+        background-position-x: -220%;
+    }
+}
+
+.parent-eduhub-section-state {
+    margin: 0;
+    padding: 8px 16px;
+    color: #6b656a;
+    font-family: var(--font-sans, 'Nunito', sans-serif);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.parent-eduhub-section-state--error {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    p {
+        margin: 0;
+    }
+
+    button {
+        min-height: 34px;
+        padding: 7px 18px;
+        border: 1px solid #90214d;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #90214d;
+        font-family: var(--font-sans, 'Nunito', sans-serif);
+        font-size: 13px;
+        font-weight: 700;
+    }
+}
+
+// Existing Child/Self EduHub remains unchanged.
 .education-main-page-container {
     display: flex;
     flex-direction: column;
     width: 100%;
     gap: 20px;
     padding: 16px 16px 0;
+    box-sizing: border-box;
 }
 
 .edu-ad-wrap {
-    width: 100%;
-    /* negative side margin so banner peek reaches screen edge */
-    margin-left: -16px;
     width: calc(100% + 32px);
+    margin-left: -16px;
 }
 
 .edu-heading {
+    margin: 0;
+    padding: 4px 0;
+    color: #282527;
     font-family: var(--font-heading);
     font-size: 22px;
     font-weight: 500;
-    color: #282527;
-    margin: 0;
     text-align: center;
-    padding: 4px 0;
-}
-
-.edu-banner-image {
-    width: 100%;
-    height: 180px;
-    background-image: url('/assets/Images-Thumbnails/educational-banner.jpg');
-    background-size: cover;
-    background-position: left center;
-    background-repeat: no-repeat;
-    border-radius: 16px;
-}
-
-.edu-swiper {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-    border-radius: 16px;
-}
-
-.edu-pagination {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 6px 8px;
-    align-items: center;
-}
-
-.edu-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.2);
-    border: none;
-    padding: 0;
-    transition: width 160ms ease, background 160ms ease, border-radius 160ms ease;
-}
-
-.edu-dot.active {
-    width: 16px;
-    background: #7284B9;
-    border-radius: 23px;
 }
 
 .edu-item-list {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
     width: 100%;
     align-items: stretch;
@@ -78,15 +295,16 @@
 
 .edu-item-cards {
     display: flex;
-    padding: 14px 10px;
     flex-direction: column;
     align-items: center;
     gap: 8px;
+    min-width: 0;
+    padding: 14px 10px;
     border-radius: 16px;
-    background: #FFF;
+    background: #ffffff;
+    color: inherit;
     box-shadow: 0 1px 6px rgba(107, 101, 106, 0.12);
     text-decoration: none;
-    color: inherit;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 
     &:active {
@@ -95,23 +313,51 @@
     }
 
     h1 {
+        margin: 0;
         color: #282527;
         font-family: var(--font-sans);
         font-size: 15px;
         font-weight: 600;
-        margin: 0;
         text-align: center;
     }
-
 }
 
 .edu-item-cards img,
 .edu-item-cards app-img {
+    display: block;
     width: 100%;
     height: 110px;
     max-height: 130px;
     object-fit: contain;
-    display: block;
+}
+
+@media (max-width: 359px) {
+    .parent-eduhub-header,
+    .parent-eduhub-section__header,
+    .parent-eduhub-grid {
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+
+    .parent-eduhub-ad {
+        padding-left: 12px;
+    }
+
+    .parent-eduhub-card {
+        gap: 4px;
+        min-height: 48px;
+        padding-right: 5px;
+    }
+
+    .parent-eduhub-card__image {
+        width: 44px;
+        height: 44px;
+        flex-basis: 44px;
+    }
+
+    .parent-eduhub-card__label {
+        font-size: 14px;
+    }
 }
 
 @media (min-width: 480px) {
@@ -120,12 +366,10 @@
     }
 }
 
-@media (min-width: 1024px) {
-    .edu-item-list {
-        gap: 20px;
-    }
-
-    .edu-item-cards img {
-        max-height: 160px;
+@media (prefers-reduced-motion: reduce) {
+    .parent-eduhub-card,
+    .parent-eduhub-card-skeleton {
+        transition: none;
+        animation: none;
     }
 }

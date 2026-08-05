@@ -1,3 +1,12 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+:host(.parent-eduhub-ad):not(:has(.adb)) {
+  display: none;
+}
+
 .adb {
   display: flex;
   flex-direction: column;
@@ -131,6 +140,64 @@
 
   .adb__counter {
     background: #90214d;
+  }
+}
+
+.adb--eduhub-parent {
+  gap: 8px;
+
+  .adb__scroll-track {
+    gap: 8px;
+  }
+
+  .adb__card {
+    height: auto;
+    min-width: 81%;
+    flex-basis: 81%;
+    aspect-ratio: 305 / 182;
+    border-radius: 16px;
+    background: #6b656a;
+    box-shadow: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .adb__card--active {
+    opacity: 1;
+    transform: none;
+  }
+
+  .adb__counter {
+    background: #90214d;
+  }
+}
+
+.adb--eduhub-inner {
+  gap: 8px;
+
+  .adb__scroll-track {
+    gap: 8px;
+  }
+
+  .adb__card {
+    height: auto;
+    min-width: 81%;
+    flex-basis: 81%;
+    aspect-ratio: 305 / 182;
+    border-radius: 16px;
+    background: #6b656a;
+    box-shadow: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .adb__card--active {
+    opacity: 1;
+    transform: none;
+  }
+
+  .adb__counter {
+    background: #432477;
   }
 }
 
