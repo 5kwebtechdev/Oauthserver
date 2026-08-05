@@ -43,7 +43,9 @@ const IN_APP_ROUTE_MAP: Record<string, string> = {
   LEARNING:       '/authed/content',
   COLINS:         '/authed/content',
   COLINS_PARENTS: '/authed/content',
-  ARTICLES:       '/authed/content',
+  // Keep the destination tab explicit. Without this, the Learning page falls
+  // back to its default Puzzles tab when an Articles banner is selected.
+  ARTICLES:       '/authed/content?tab=articles',
   ROCKS:          '/authed/reel-section',
   ROCKS_PARENTS:  '/authed/reel-section',
   TUTOR:          '/authed/tutors',

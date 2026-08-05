@@ -160,7 +160,10 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
 
   ngOnInit(): void {
     this.parentView = this.route.snapshot.queryParamMap.get('view') === 'parent';
-    if (this.parentView) {
+    const requestedCategory = this.normalizeCategory(this.route.snapshot.queryParamMap.get('tab'));
+    if (requestedCategory) {
+      this.selectedCategory = requestedCategory;
+    } else if (this.parentView) {
       const savedCategory = this.readParentCategory();
       if (savedCategory) this.selectedCategory = savedCategory;
     }
@@ -168,17 +171,17 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   private readParentCategory(): LearningCategoryTab | null {
-    const queryCategory = this.normalizeParentCategory(this.route.snapshot.queryParamMap.get('category'));
+    const queryCategory = this.normalizeCategory(this.route.snapshot.queryParamMap.get('category'));
     if (queryCategory) return queryCategory;
 
     try {
-      return this.normalizeParentCategory(sessionStorage.getItem('superme_parent_learning_main_tab'));
+      return this.normalizeCategory(sessionStorage.getItem('superme_parent_learning_main_tab'));
     } catch {
       return null;
     }
   }
 
-  private normalizeParentCategory(value: string | null): LearningCategoryTab | null {
+  private normalizeCategory(value: string | null): LearningCategoryTab | null {
     const normalized = String(value || '').trim().toLowerCase();
     const validTabs: LearningCategoryTab[] = ['puzzles', 'quizzes', 'articles', 'masterclass'];
     return validTabs.includes(normalized as LearningCategoryTab) ? (normalized as LearningCategoryTab) : null;
