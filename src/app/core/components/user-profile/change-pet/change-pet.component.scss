@@ -12,6 +12,11 @@ swiper-slide.swiper-slide-active .pet-card {
   background: #4CAF50;
 }
 
+swiper-slide.swiper-slide-active .pet-card h4,
+swiper-slide.swiper-slide-active .pet-card p {
+  color: #fff;
+}
+
 .pet-card {
   width: 100%;
   display: flex;
@@ -36,59 +41,19 @@ swiper-slide.swiper-slide-active .pet-card {
   flex-shrink: 0;
 }
 
-.pet-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgb(255 255 255 / 46%);
-  border-radius: 20px;
-  display: none;
-  z-index: 20;
-}
-
-.pet-card:not(.panda)::after {
-  display: block;
-}
-
 .pet-card h4 {
   font-weight: 500;
   font-size: 1.25rem;
-  color: white;
+  color: #1f2937;
 }
 
 .pet-card p {
   font-size: 0.8125rem;
-  color: white;
+  color: #4b5563;
 }
 
 swiper-slide {
   position: relative;
-}
-
-.pet-lock {
-  display: inline-flex;
-  height: 34px;
-  padding: 8px 12px;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  border-radius: 32px;
-  background: #fff;
-  z-index: 30;
-  color: #4CAF50;
-  font-family: var(--font-sans);
-  font-size: 16px;
-  font-weight: 600;
-  align-self: flex-start;
-  margin: 8px 0;
-  position: relative;
-}
-
-.pet-lock img {
-  width: 11px;
-  height: 14px;
-  display: inline-block;
-  filter: brightness(0) saturate(100%) invert(58%) sepia(47%) saturate(398%) hue-rotate(88deg) brightness(95%) contrast(91%);
 }
 
 .change-pet-actions {

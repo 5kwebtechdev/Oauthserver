@@ -1,29 +1,113 @@
 <div class="lesson-container">
+  <div *ngIf="isLoading" class="lesson-state" role="status" aria-live="polite">
+    <ion-spinner name="crescent"></ion-spinner>
+    <span>Opening your lesson…</span>
+  </div>
 
-  <!-- Scrollable area: header + body content -->
-  <div class="lesson-scroll">
+  <div *ngIf="!isLoading && loadError" class="lesson-state lesson-state--error" role="alert">
+    <span>{{ loadError }}</span>
+    <button type="button" (click)="retryLoad()">Try again</button>
+  </div>
 
-    <!-- Header -->
-    <div class="header" *ngIf="lesson">
-      <superme-navigator backIcon="arrowSvg" (back)="close()"></superme-navigator>
-      <img [src]="convertGoogleDriveUrl(lesson.thumbnailUrl)" alt="Lesson" class="lesson-img"
-        (error)="onImageError($event)">
-      <h1>{{ lesson.order }}. {{ lesson.title }}</h1>
-      <p class="time">{{ lesson.videoUrl ? 'Video' : 'Text-based' }} • {{ lesson.duration }} min</p>
-      <p class="desc">{{ lesson.description }}</p>
+  <ng-container *ngIf="!isLoading && !loadError && lesson">
+    <div class="lesson-scroll">
+      <header class="lesson-topbar">
+        <button type="button" class="topbar-back" (click)="close()" aria-label="Back to course">
+          <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+        </button>
+
+        <div class="topbar-actions">
+          <button type="button" class="topbar-action" (click)="shareLesson()">
+            <ion-icon name="share-social-outline" aria-hidden="true"></ion-icon>
+            <span>Share</span>
+          </button>
+        </div>
+      </header>
+
+      <p class="lesson-feedback" *ngIf="shareMessage" aria-live="polite">
+        {{ shareMessage }}
+      </p>
+
+      <section class="lesson-hero" aria-labelledby="lesson-title">
+        <div class="lesson-hero__copy">
+          <div class="lesson-tags">
+            <span class="lesson-order"><i aria-hidden="true"></i>Lesson {{ lesson.order }} of {{ courseLessons.length || lesson.order }}</span>
+            <span class="lesson-category">{{ courseTitle || 'Master Class' }}</span>
+          </div>
+
+          <h1 id="lesson-title">{{ lesson.order }}. {{ lesson.title }}</h1>
+
+          <div class="lesson-meta" aria-label="Lesson details">
+            <span><ion-icon name="time-outline" aria-hidden="true"></ion-icon>{{ lesson.duration }} min read</span>
+            <span><ion-icon name="document-text-outline" aria-hidden="true"></ion-icon>{{ lesson.videoUrl ? 'Video lesson' : 'Text lesson' }}</span>
+            <span *ngIf="lessonCoins"><img src="assets/Icons-Neutral/Icons-Coins.png" alt="" aria-hidden="true">+{{ lessonCoins }} coins</span>
+          </div>
+        </div>
+
+        <div class="lesson-hero__image">
+          <img
+            [src]="convertGoogleDriveUrl(lesson.thumbnailUrl)"
+            [alt]="lesson.title"
+            (error)="onImageError($event)">
+        </div>
+      </section>
+
+      <ad-banner class="lesson-ad" screen="ACCELERARY" variant="lesson"></ad-banner>
+
+      <article class="lesson-reading">
+        <p class="lesson-description" *ngIf="lesson.description">{{ lesson.description }}</p>
+        <div class="lesson-content" [innerHTML]="lesson.content"></div>
+
+        <section *ngIf="hasQuiz; else reflectionCard" class="lesson-quiz-card" aria-labelledby="quiz-title">
+          <superme-pet class="lesson-quiz-card__pet" mood="happy" [size]="116"></superme-pet>
+          <div class="lesson-quiz-card__copy">
+            <h2 id="quiz-title">Test Your Understanding!</h2>
+            <p>Take a quick quiz to check what you’ve learned and earn extra rewards.</p>
+          </div>
+          <button type="button" (click)="startQuiz()">
+            Start Quiz
+            <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+          </button>
+        </section>
+
+        <ng-template #reflectionCard>
+          <section class="lesson-reflection-card" aria-label="Lesson reflection">
+            <superme-pet class="lesson-reflection-card__pet" mood="curious" [size]="104"></superme-pet>
+            <div>
+              <ion-icon name="chatbox-ellipses" aria-hidden="true"></ion-icon>
+              <strong>{{ lesson.description || 'Small steps today can become big ideas tomorrow.' }}</strong>
+              <span>Take a moment to think about what you learned.</span>
+            </div>
+            <ion-icon name="star" aria-hidden="true"></ion-icon>
+          </section>
+        </ng-template>
+      </article>
     </div>
 
-    <div class="content" [innerHTML]="lesson?.content"></div>
+    <footer class="lesson-footer">
+      <div class="lesson-footer__progress" aria-label="Current lesson">
+        <span>Lesson {{ lesson.order }} of {{ courseLessons.length || lesson.order }}</span>
+        <div aria-hidden="true">
+          <i *ngFor="let dot of lessonProgressDots" [class.is-active]="dot === activeProgressDot"></i>
+        </div>
+      </div>
 
-  </div>
+      <div class="lesson-footer__timer" [class.is-complete]="canMarkDone" aria-live="polite">
+        <ion-icon name="timer-outline" aria-hidden="true"></ion-icon>
+        <span *ngIf="!canMarkDone">{{ timerDisplay }} focus time</span>
+        <span *ngIf="canMarkDone">Focus time complete</span>
+      </div>
 
-  <!-- Sticky footer — always visible above the system navigation bar -->
-  <div class="footer-cta d-flex w-100 gap-2" *ngIf="lesson && !wasCompletedOnLoad && (!doneClicked || !isLastLesson)">
-    <superme-button *ngIf="!doneClicked"
-      [type]="'green'" [text]="'Done'" (click)="onDoneClick()"></superme-button>
-    <superme-button *ngIf="doneClicked && !isLastLesson"
-      [type]="'magenta'" [text]="'Go to Lesson ' + nextLessonOrder" (click)="goToNext()">
-    </superme-button>
-  </div>
-
+      <button
+        type="button"
+        class="lesson-complete-button"
+        [disabled]="!canMarkDone || isCompleting"
+        (click)="onDoneClick()">
+        <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+        <span>{{ isCompleting ? 'Saving…' : 'Mark Done & Continue' }}</span>
+        <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+      </button>
+      <p *ngIf="completionError" class="lesson-completion-error" role="alert">{{ completionError }}</p>
+    </footer>
+  </ng-container>
 </div>

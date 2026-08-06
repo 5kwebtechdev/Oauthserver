@@ -111,6 +111,11 @@ export interface CourseLesson {
   lastAccessedAt: string | null;
   isLocked: boolean;
   coins?: number;
+  /** Optional assessment metadata returned for lessons that end with a quiz. */
+  hasQuiz?: boolean;
+  quizId?: number | string | null;
+  quiz?: { id?: number | string; challengeId?: number | string } | null;
+  assessmentId?: number | string | null;
 }
 
 export interface CourseDetailResponse {
@@ -154,6 +159,11 @@ export interface LessonDetailResponse {
   timeSpentMinutes: number;
   lastAccessedAt: string | null;
   isLocked: boolean;
+  /** Optional assessment metadata returned for lessons that end with a quiz. */
+  hasQuiz?: boolean;
+  quizId?: number | string | null;
+  quiz?: { id?: number | string; challengeId?: number | string } | null;
+  assessmentId?: number | string | null;
 }
 
 @Injectable({

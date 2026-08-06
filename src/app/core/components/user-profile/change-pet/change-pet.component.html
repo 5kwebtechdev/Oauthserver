@@ -5,25 +5,17 @@
     <swiper-container slides-per-view="1.2" centered-slides="true" space-between="10" grab-cursor="true"
       (slidechange)="onSlideChange()" (swiperstateupdate)="onSlideChange()" #swiperEl [style]="{padding: '0 0 24px 0', height: '67vh'}">
       <swiper-slide *ngFor="let pet of pets; let i = index">
-        <div class="pet-card d-flex flex-column" [ngClass]="{ 'panda': pet.name === 'Panda' }">
+        <div class="pet-card d-flex flex-column">
           <h4>{{pet.displayName}}</h4>
           <p>{{pet.text[0]}}</p>
           <p>{{pet.text[1]}}</p>
-
-          <!--petlock coming soon (placed between text and image; z-index keeps it above the dim overlay) -->
-          <div class="pet-lock" *ngIf="pet.name !== 'Panda'">
-            <img src="assets/icons/lock-orange.svg" alt="lock" aria-hidden="true" />
-            <span>Coming soon</span>
-          </div>
-
           <img [src]="pet.image" alt="" />
         </div>
-        <!--coming soon end-->
       </swiper-slide>
     </swiper-container>
 
     <div class="change-pet-actions">
-      <superme-button type="green" full text="Update your pet" [disabled]="currentIndex !== 0" (click)="confirmSelection()"></superme-button>
+      <superme-button type="green" full text="Update your pet" (click)="confirmSelection()"></superme-button>
     </div>
   </div>
 

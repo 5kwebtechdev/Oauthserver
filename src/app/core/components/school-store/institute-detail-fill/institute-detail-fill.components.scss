@@ -1,3 +1,19 @@
+:host {
+    --store-footer-clearance: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)));
+}
+
+/* ion-content owns the native scroll area, so reserve the fixed footer here
+   instead of relying only on padding inside the form. */
+ion-content {
+    --padding-bottom: var(--store-footer-clearance);
+}
+
+.institute-detail-fill-container {
+    box-sizing: border-box;
+    min-height: calc(100dvh - var(--sat, 0px));
+    padding-bottom: var(--store-footer-clearance);
+}
+
 .institute-field{
     display: flex;
     flex-direction: column;
@@ -119,7 +135,6 @@ background: #F9D2DC;
 
 .form-container{
     margin-top: -10vh; 
-    z-index: 20;
     position: relative;
     padding: 0 0 0 0;
 }
@@ -162,7 +177,8 @@ box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
 }
 
 .form-container{
-    padding:20px 16px calc(20px + var(--footer-visual-height, 80px) + env(safe-area-inset-bottom, 0px));
+    /* Keep the last field and CTA fully scrollable above the bottom navigation. */
+    padding: 20px 16px calc(32px + var(--store-footer-clearance));
 }
 
 /* Field selection bottom popup styles */
@@ -173,6 +189,8 @@ box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
     align-items: flex-end;
     justify-content: center;
     background: rgba(0,0,0,0.28);
+    /* This must sit above app-footer (z-index: 99). The form container must
+       not create a stacking context, otherwise this value cannot escape it. */
     z-index: 20000;
 }
 
@@ -190,8 +208,9 @@ box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
     animation: none;
     z-index: 20001;
     outline: 1px solid rgba(144,33,77,0.04);
-    /* constrain height so list scrolls */
-    max-height: 65dvh;
+    /* Use the dynamic viewport to avoid the home indicator/keyboard area on
+       iOS, while keeping every list item reachable on small Android screens. */
+    max-height: min(72dvh, calc(100dvh - var(--sat, 0px) - var(--sab, env(safe-area-inset-bottom, 0px)) - 16px));
     overflow: hidden;
     box-sizing: border-box;
 }
@@ -217,6 +236,9 @@ box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
     flex-direction: column;
     gap: 4px;
     overflow-y: auto;
+    min-height: 0;
+    overscroll-behavior: contain;
+    padding-bottom: 4px;
     -webkit-overflow-scrolling: touch;
     flex: 1;
     /* hide scrollbar visually but keep scroll functional */
