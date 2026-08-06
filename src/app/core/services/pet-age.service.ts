@@ -30,7 +30,7 @@ export interface PetAgeConfig {
 }
 
 export interface UserPetData {
-  petType: PetType;
+  petType: PetType | null;
   currentAge: number;            // 1, 2, or 3 (3 = max per PRD)
   activityCounts: PetActivityCounts;  // per-type counters, reset on each age-up
   totalActivityScore: number;         // accumulated score toward next threshold
@@ -79,7 +79,7 @@ export class PetAgeService {
   /** Migrate legacy streak-based format to activity-based format */
   private migrateData(raw: any): UserPetData {
     return {
-      petType: this.resolvePetType(raw.petType) || 'panda',
+      petType: this.resolvePetType(raw.petType),
       currentAge: Math.min(3, Math.max(1, Number(raw.currentAge) || 1)),
       activityCounts: raw.activityCounts ? { ...EMPTY_COUNTS, ...raw.activityCounts } : { ...EMPTY_COUNTS },
       totalActivityScore: Number(raw.totalActivityScore) || 0,
@@ -91,7 +91,7 @@ export class PetAgeService {
     };
   }
 
-  private createNewPet(petType: PetType = 'panda'): UserPetData {
+  private createNewPet(petType: PetType | null = null): UserPetData {
     return {
       petType,
       currentAge: 1,
@@ -127,13 +127,13 @@ export class PetAgeService {
     return this.petDataSubject.value.currentAge;
   }
 
-  getCurrentPetType(): PetType {
+  getCurrentPetType(): PetType | null {
     return this.petDataSubject.value.petType;
   }
 
   getCurrentPetDisplayName(): string {
     const petType = this.getCurrentPetType();
-    return petType.charAt(0).toUpperCase() + petType.slice(1);
+    return petType ? petType.charAt(0).toUpperCase() + petType.slice(1) : '';
   }
 
   /**
@@ -141,8 +141,13 @@ export class PetAgeService {
    * login/profile API. Activity age and progress are preserved.
    */
   syncFromUserPet(userPet: ApiUserPet | string | null | undefined): void {
+    // `undefined` means this response did not include pet data, so retain the
+    // existing selection. `null` is an explicit no-pet value and must not
+    // silently render a different user's previous pet.
+    if (userPet === undefined) return;
+
     const petType = this.resolvePetType(userPet);
-    if (!petType || petType === this.getCurrentPetType()) return;
+    if (petType === this.getCurrentPetType()) return;
 
     this.savePetData({
       ...this.getCurrentPetData(),
@@ -171,6 +176,8 @@ export class PetAgeService {
     animated: boolean = false
   ): string {
     const petName = this.getCurrentPetDisplayName();
+    if (!petName) return '';
+
     const normalizedAge = Math.max(1, Math.min(3, Number(age) || 1));
     const moodName = mood.charAt(0).toUpperCase() + mood.slice(1);
     const prefix = animated ? `${petName}-Move` : petName;
@@ -179,7 +186,8 @@ export class PetAgeService {
 
   getPetImageAlt(mood?: PetMood): string {
     const moodLabel = mood && mood !== 'base' ? `${mood} ` : '';
-    return `${moodLabel}${this.getCurrentPetDisplayName()} illustration`;
+    const petName = this.getCurrentPetDisplayName();
+    return petName ? `${moodLabel}${petName} illustration` : 'Digital pet';
   }
 
   getCurrentStreak(): number {

@@ -29,17 +29,17 @@
       </header>
 
       <div class="parent-learning-body">
-        <nav class="parent-learning-tabs" aria-label="Learning types">
+        <nav #parentTabs class="parent-learning-tabs" aria-label="Learning types">
           <button *ngFor="let tab of parentCategoryTabs" type="button" class="parent-learning-tab"
             (click)="selectCategory(tab.id)" [class.parent-learning-tab--active]="selectedCategory === tab.id"
-            [attr.aria-pressed]="selectedCategory === tab.id">
+            [attr.aria-pressed]="selectedCategory === tab.id" [attr.data-category-tab]="tab.id">
             <span class="parent-learning-tab__icon"><img [src]="tab.parentIcon" alt="" aria-hidden="true"></span>
             <span>{{ tab.label }}</span>
           </button>
         </nav>
 
         <section *ngIf="!hasSelectedChild" class="parent-screen-state parent-screen-state--child">
-          <img [src]="currentPetCuriousImage" [alt]="currentPetCuriousAlt">
+          <img *ngIf="currentPetCuriousImage" [src]="currentPetCuriousImage" [alt]="currentPetCuriousAlt">
           <h2>Select a child to view learning</h2>
           <p>Choose a child from Parent Home, then return to this section.</p>
           <button type="button" routerLink="/authed/parent-account">Go to Parent Home</button>
@@ -65,7 +65,7 @@
                 variant="parent-learning"></ad-banner>
 
               <div *ngIf="visibleCategoryCards.length === 0" class="parent-screen-state">
-                <img [src]="currentPetCuriousImage" [alt]="currentPetCuriousAlt">
+                <img *ngIf="currentPetCuriousImage" [src]="currentPetCuriousImage" [alt]="currentPetCuriousAlt">
                 <h2>No categories available</h2>
                 <p>Please check again soon.</p>
               </div>
@@ -121,7 +121,7 @@
 
             <div *ngIf="!categoryContentLoading && !categoryContentError && visibleParentContent.length === 0"
               class="parent-screen-state">
-              <img [src]="currentPetCuriousImage" [alt]="currentPetCuriousAlt">
+              <img *ngIf="currentPetCuriousImage" [src]="currentPetCuriousImage" [alt]="currentPetCuriousAlt">
               <h2>No {{ parentStatus }} items</h2>
               <p *ngIf="searchKeyword">Try another search term.</p>
               <p *ngIf="!searchKeyword">Nothing is available for {{ selectedChild?.name || 'this child' }} yet.</p>
@@ -436,10 +436,11 @@
       </div>
     </div>
 
-    <div class="categories">
+    <div #childTabs class="categories">
       <ng-container *ngFor="let tab of categoryTabs; let isLast = last">
         <button class="category" [ngClass]="tab.id" type="button" (click)="selectCategory(tab.id)"
-          [class.selected]="selectedCategory === tab.id" [attr.aria-label]="tab.ariaLabel">
+          [class.selected]="selectedCategory === tab.id" [attr.aria-label]="tab.ariaLabel"
+          [attr.data-category-tab]="tab.id">
           <div class="icon" aria-hidden="true">
             <img [src]="tab.icon" [alt]="tab.label" />
           </div>

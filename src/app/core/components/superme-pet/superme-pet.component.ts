@@ -1,4 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { PetAgeService, PetMood, PetType } from '../../services/pet-age.service';
@@ -8,7 +9,7 @@ export type { PetType, PetMood } from '../../services/pet-age.service';
 @Component({
   selector: 'superme-pet',
   standalone: true,
-  imports: [IonicModule],
+  imports: [CommonModule, IonicModule],
   templateUrl: './superme-pet.component.html',
   styleUrls: ['./superme-pet.component.scss']
 })
@@ -17,7 +18,7 @@ export class SupermePetComponent implements OnInit, OnChanges, OnDestroy {
 
   @Input() mood: PetMood = 'base';
 
-  @Input() pet: PetType = 'panda';
+  @Input() pet: PetType | null = null;
 
   @Input() age: number = 1;
 
@@ -31,7 +32,7 @@ export class SupermePetComponent implements OnInit, OnChanges, OnDestroy {
 
   @Output() petClick = new EventEmitter<void>();
 
-  @Output() petSelected = new EventEmitter<{ pet: string; age: number }>();
+  @Output() petSelected = new EventEmitter<{ pet: PetType | null; age: number }>();
 
   static readonly PETS = ['panda', 'dragon', 'llama', 'owl'] as const;
 
@@ -58,6 +59,8 @@ export class SupermePetComponent implements OnInit, OnChanges, OnDestroy {
 
     // Normalize inputs
     const petCapitalized = this.capitalizePetName(this.pet);
+    if (!petCapitalized) return '';
+
     const moodCapitalized = this.capitalizeMood(this.mood);
     const ageValue = Math.max(1, Math.min(3, this.age)); // Clamp age between 1-3 (PRD max is 3)
 
@@ -71,14 +74,16 @@ export class SupermePetComponent implements OnInit, OnChanges, OnDestroy {
   /**
    * Capitalize pet name for image path
    */
-  private capitalizePetName(pet: string): string {
+  private capitalizePetName(pet: string | null): string | null {
+    if (!pet) return null;
+
     const petMap: Record<string, string> = {
       'panda': 'Panda',
       'dragon': 'Dragon',
       'llama': 'Llama',
       'owl': 'Owl'
     };
-    return petMap[pet.toLowerCase()] || 'Panda';
+    return petMap[pet.toLowerCase()] || null;
   }
 
   /**
@@ -137,8 +142,8 @@ export class SupermePetComponent implements OnInit, OnChanges, OnDestroy {
     return this.capitalize(this.pet);
   }
 
-  private capitalize(s: string): string {
-    if (!s) return s;
+  private capitalize(s: string | null): string {
+    if (!s) return '';
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
 

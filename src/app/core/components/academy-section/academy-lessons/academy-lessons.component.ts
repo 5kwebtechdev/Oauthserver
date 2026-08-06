@@ -1,8 +1,9 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
-import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
-import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
+import { Router } from '@angular/router';
+import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
+import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
 import { AcademyService, CourseLesson, LessonDetailResponse } from '../../../services/academy.service';
 import { PetAgeService } from '../../../services/pet-age.service';
 import { catchError, finalize } from 'rxjs/operators';
@@ -11,11 +12,11 @@ import { of } from 'rxjs';
 @Component({
   selector: 'app-academy-lessons',
   standalone: true,
-  imports: [CommonModule, IonicModule, SupermeButtonComponent, SupermeNavigatorComponent],
+  imports: [CommonModule, IonicModule, SupermePetComponent, AdBannerComponent],
   templateUrl: './academy-lessons.component.html',
   styleUrls: ['./academy-lessons.component.scss']
 })
-export class AcademyLessonsComponent {
+export class AcademyLessonsComponent implements OnInit, OnDestroy {
   @Input() lessonId: number | string | undefined;
   @Input() courseId: string | undefined;
   @Input() courseTitle: string | undefined;
@@ -28,6 +29,12 @@ export class AcademyLessonsComponent {
   loadError: string | null = null;
   doneClicked = false;
   wasCompletedOnLoad = false;
+  isCompleting = false;
+  completionError = '';
+  shareMessage = '';
+  readonly focusDurationSeconds = 60;
+  remainingFocusSeconds = this.focusDurationSeconds;
+  private focusTimer?: ReturnType<typeof setInterval>;
   readonly fallbackLessonImage = 'assets/Images-Transparent/Academy-Course-Thubmnail2.png';
 
   // Parsed content sections
@@ -48,7 +55,8 @@ export class AcademyLessonsComponent {
   constructor(
     private modalCtrl: ModalController,
     private academyService: AcademyService,
-    private petAgeService: PetAgeService
+    private petAgeService: PetAgeService,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -80,6 +88,7 @@ export class AcademyLessonsComponent {
         if (response) {
           this.lesson = response;
           this.wasCompletedOnLoad = response.isCompleted;
+          this.startFocusTimer(response.isCompleted);
         }
       });
   }
@@ -103,6 +112,7 @@ export class AcademyLessonsComponent {
         if (response) {
           this.lesson = response;
           this.wasCompletedOnLoad = response.isCompleted;
+          this.startFocusTimer(response.isCompleted);
         }
       });
   }
@@ -198,59 +208,122 @@ export class AcademyLessonsComponent {
   }
 
   close(): void {
+    this.clearFocusTimer();
     this.modalCtrl.dismiss({
       completed: this.doneClicked,
       lessonId: this.lesson?.id
     });
   }
 
-  /**
-   * Mark the current lesson as complete.
-   * @param dismissAfter whether to dismiss the modal after marking complete
-   */
-  private markLessonComplete(dismissAfter = false): void {
-    if (!this.lesson) return;
+  get timerDisplay(): string {
+    const minutes = Math.floor(this.remainingFocusSeconds / 60);
+    const seconds = this.remainingFocusSeconds % 60;
+    return `${minutes}:${String(seconds).padStart(2, '0')}`;
+  }
 
-    this.academyService.completeLessonById(this.lesson.id)
-      .pipe(
-        catchError(error => {
-          console.error('Error marking lesson as complete:', error);
-          return of(null);
-        }),
-        finalize(() => {
-          if (dismissAfter) {
-            this.modalCtrl.dismiss({ completed: true, lessonId: this.lesson?.id });
-          }
-        })
-      )
-      .subscribe(response => {
-        if (response) {
-          console.log('Lesson marked as complete:', response);
-          this.petAgeService.recordActivity('lessons');
-        }
-      });
+  get canMarkDone(): boolean {
+    return this.wasCompletedOnLoad || this.doneClicked || this.remainingFocusSeconds <= 0;
+  }
+
+  get lessonCoins(): number | null {
+    const courseLesson = this.courseLessons.find(item => item.id === this.lesson?.id);
+    const coins = Number(courseLesson?.coins);
+    return Number.isFinite(coins) && coins > 0 ? coins : null;
+  }
+
+  get lessonProgressDots(): number[] {
+    return Array.from({ length: Math.min(6, Math.max(1, this.courseLessons.length)) }, (_, index) => index);
+  }
+
+  get activeProgressDot(): number {
+    if (this.lessonProgressDots.length === 1 || this.courseLessons.length <= 1) return 0;
+    return Math.round((this.currentLessonIndex / (this.courseLessons.length - 1)) * (this.lessonProgressDots.length - 1));
+  }
+
+  get hasQuiz(): boolean {
+    return this.getQuizSource() != null;
+  }
+
+  get quizId(): number | string | null {
+    const source = this.getQuizSource();
+    if (!source) return null;
+    const candidate = source.quizId ?? source.assessmentId ?? source.quiz?.challengeId ?? source.quiz?.id;
+    return candidate === undefined || candidate === null || candidate === '' ? null : candidate;
+  }
+
+  private getQuizSource(): Partial<LessonDetailResponse> | null {
+    const courseLesson = this.courseLessons.find(item => item.id === this.lesson?.id);
+    const sources = [this.lesson, courseLesson];
+    return sources.find(source => !!source && (
+      source.hasQuiz === true ||
+      source.quizId != null ||
+      source.assessmentId != null ||
+      source.quiz != null
+    )) ?? null;
+  }
+
+  private startFocusTimer(isCompleted: boolean): void {
+    this.clearFocusTimer();
+    this.remainingFocusSeconds = isCompleted ? 0 : this.focusDurationSeconds;
+    if (isCompleted) return;
+
+    this.focusTimer = setInterval(() => {
+      this.remainingFocusSeconds = Math.max(0, this.remainingFocusSeconds - 1);
+      if (this.remainingFocusSeconds === 0) this.clearFocusTimer();
+    }, 1000);
+  }
+
+  private clearFocusTimer(): void {
+    if (this.focusTimer) {
+      clearInterval(this.focusTimer);
+      this.focusTimer = undefined;
+    }
   }
 
   /**
    * Handler for the Done button: mark lesson complete but keep modal open so user can go to next.
    */
   onDoneClick(): void {
-    if (!this.lesson) return;
-    if (this.wasCompletedOnLoad) return;
-
-    // Optimistically mark completed locally so UI updates immediately
-    this.lesson.isCompleted = true;
-    this.doneClicked = true;
-
-    // Unlock next lesson in local courseLessons array
-    if (this.currentLessonIndex < this.courseLessons.length - 1) {
-      this.courseLessons[this.currentLessonIndex + 1].isLocked = false;
-    }
-    if (this.courseLessons[this.currentLessonIndex]) {
-      this.courseLessons[this.currentLessonIndex].isCompleted = true;
+    if (!this.lesson || this.isCompleting || !this.canMarkDone) return;
+    if (this.wasCompletedOnLoad || this.doneClicked) {
+      if (this.isLastLesson) {
+        this.close();
+      } else {
+        this.goToNext();
+      }
+      return;
     }
 
-    this.markLessonComplete(false);
+    this.isCompleting = true;
+    this.completionError = '';
+    this.academyService.completeLessonById(this.lesson.id)
+      .pipe(
+        catchError(() => {
+          this.completionError = 'We could not save your progress. Please try again.';
+          return of(null);
+        }),
+        finalize(() => this.isCompleting = false)
+      )
+      .subscribe(response => {
+        if (!response || !this.lesson) return;
+
+        this.lesson = { ...this.lesson, ...response, isCompleted: true };
+        this.doneClicked = true;
+        this.clearFocusTimer();
+        this.petAgeService.recordActivity('lessons');
+        if (this.currentLessonIndex < this.courseLessons.length - 1) {
+          this.courseLessons[this.currentLessonIndex + 1].isLocked = false;
+        }
+        if (this.courseLessons[this.currentLessonIndex]) {
+          this.courseLessons[this.currentLessonIndex].isCompleted = true;
+        }
+
+        if (this.isLastLesson) {
+          this.close();
+        } else {
+          this.goToNext();
+        }
+      });
   }
 
   /**
@@ -271,8 +344,48 @@ export class AcademyLessonsComponent {
     this.currentLessonIndex = nextIndex;
     this.lessonId = nextLesson.id;
     this.readOnly = false;
+    this.completionError = '';
 
     // Call /start for the next lesson
     this.startLesson(nextLesson.id);
+  }
+
+  async shareLesson(): Promise<void> {
+    const title = this.lesson?.title || 'A SuperMe lesson';
+    const text = `I am learning ${title} on SuperMe!`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text });
+        return;
+      }
+      await navigator.clipboard?.writeText(text);
+      this.shareMessage = 'Lesson link copied';
+    } catch (error: any) {
+      if (error?.name !== 'AbortError') this.shareMessage = 'Unable to share right now';
+    }
+  }
+
+  startQuiz(): void {
+    const quizId = this.quizId;
+    if (quizId == null) {
+      this.completionError = 'This quiz is not available yet. Please try again later.';
+      return;
+    }
+    this.clearFocusTimer();
+    this.modalCtrl.dismiss({ completed: this.doneClicked, lessonId: this.lesson?.id })
+      .then(() => this.router.navigate(['/authed/content/questions', quizId]));
+  }
+
+  retryLoad(): void {
+    if (!this.lessonId) return;
+    if (this.readOnly) {
+      this.fetchLesson(this.lessonId);
+    } else {
+      this.startLesson(this.lessonId);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.clearFocusTimer();
   }
 }
