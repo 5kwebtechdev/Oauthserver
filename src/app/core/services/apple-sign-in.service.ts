@@ -122,11 +122,30 @@ export class AppleSignInService {
 
     const cached = this.readCachedProfile(providerId);
     const email = String(response?.email || claims.email || cached?.email || '').trim();
+    // The current native plugin returns givenName/familyName. Keep the
+    // fullName fallbacks too so an upgrade or a platform-specific response
+    // shape cannot silently discard the one-time Apple name payload.
+    const responseWithNameFallbacks = response as unknown as {
+      givenName?: string | null;
+      familyName?: string | null;
+      fullName?: string | { givenName?: string | null; familyName?: string | null } | null;
+      name?: string | null;
+    } | undefined;
+    const nestedFullName = responseWithNameFallbacks?.fullName;
     const responseName = [
-      String(response?.givenName || '').trim(),
-      String(response?.familyName || '').trim()
+      String(responseWithNameFallbacks?.givenName || '').trim(),
+      String(responseWithNameFallbacks?.familyName || '').trim(),
+      typeof nestedFullName === 'object'
+        ? String(nestedFullName?.givenName || '').trim()
+        : '',
+      typeof nestedFullName === 'object'
+        ? String(nestedFullName?.familyName || '').trim()
+        : ''
     ].filter(Boolean).join(' ');
-    const name = responseName || String(cached?.name || '').trim();
+    const fullNameString = typeof nestedFullName === 'string'
+      ? nestedFullName.trim()
+      : String(responseWithNameFallbacks?.name || '').trim();
+    const name = responseName || fullNameString || String(cached?.name || '').trim();
 
     this.cacheFirstPartyProfile({ providerId, email, name });
 
