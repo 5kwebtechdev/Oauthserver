@@ -87,6 +87,18 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     }
   }
 
+  /** The immutable account name supplied by Apple or returned by our backend. */
+  public get appleAccountName(): string {
+    if (!this.isAppleOAuthSignup) return '';
+    return this.resolveAppleAccountName(this.profileForm?.get('name')?.value);
+  }
+
+  /** The immutable email supplied by Apple or returned by our backend. */
+  public get appleAccountEmail(): string {
+    if (!this.isAppleOAuthSignup) return '';
+    return this.resolveAppleAccountEmail(this.signupForm?.get('email')?.value);
+  }
+
   // OTP related properties
   public otpDigits: string[] = ['', '', '', ''];
   public canResendOtp = false;
@@ -389,9 +401,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
       // Sign in with Apple supplies the account name on the initial native
       // authorization and may omit it on later authorizations. In both cases,
-      // use the identity already supplied by Apple or returned by the backend;
-      // never ask the person to enter their name again during onboarding.
+      // use the identity already supplied by Apple or returned by the backend.
+      // It stays visible as a read-only, prefilled value and is kept in the
+      // payload, so the backend never receives an empty required name.
       if (this.isAppleOAuthSignup) {
+        this.hydrateAppleIdentity();
         this.profileForm.get('name')?.clearValidators();
         this.profileForm.get('name')?.updateValueAndValidity({ emitEvent: false });
       }
@@ -596,6 +610,51 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // Phone and gender remain optional; DOB and avatar are required.
     if (!this.avatarSelected) return true;
     return false;
+  }
+
+  private firstNonEmptyText(...values: unknown[]): string {
+    for (const value of values) {
+      const text = String(value || '').trim();
+      if (text) return text;
+    }
+    return '';
+  }
+
+  private resolveAppleAccountName(...values: unknown[]): string {
+    let sessionName = '';
+    try {
+      sessionName = sessionStorage.getItem('google_signup_name') || '';
+    } catch { /* Storage can be unavailable in a restricted web view. */ }
+    return this.firstNonEmptyText(
+      ...values,
+      sessionName,
+      this.authService.getUserData()?.name
+    );
+  }
+
+  private resolveAppleAccountEmail(...values: unknown[]): string {
+    let sessionEmail = '';
+    try {
+      sessionEmail = sessionStorage.getItem('google_signup_email') || '';
+    } catch { /* Storage can be unavailable in a restricted web view. */ }
+    return this.firstNonEmptyText(
+      ...values,
+      sessionEmail,
+      this.authService.getUserData()?.email
+    );
+  }
+
+  private hydrateAppleIdentity(): void {
+    const appleName = this.resolveAppleAccountName(this.profileForm.get('name')?.value);
+    const appleEmail = this.resolveAppleAccountEmail(this.signupForm.get('email')?.value);
+
+    if (appleName) {
+      this.profileForm.get('name')?.setValue(appleName, { emitEvent: false });
+    }
+    if (appleEmail) {
+      this.signupForm.get('email')?.setValue(appleEmail, { emitEvent: false });
+      this.requestedIdentifier = appleEmail;
+    }
   }
 
   private usernameRulesValidator(): ValidatorFn {
@@ -1123,6 +1182,16 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       || (this.showReferral && this.referralCheckInProgress)
     ) {
       return;
+    }
+
+    if (this.isAppleOAuthSignup) {
+      const appleName = this.resolveAppleAccountName(this.profileForm.get('name')?.value);
+      if (!appleName) {
+        this.errorMessage = 'We could not retrieve your name from Apple. Please try Sign in with Apple again.';
+        this.core.triggerToasrt(this.errorMessage);
+        return;
+      }
+      this.profileForm.get('name')?.setValue(appleName, { emitEvent: false });
     }
 
     this.profileForm.markAllAsTouched();
@@ -2893,7 +2962,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     try { profile = profileStr ? JSON.parse(profileStr) : {}; } catch (e) {}
 
     const provider  = (sessionStorage.getItem('oauth_signup_provider') || 'google') as 'google' | 'apple';
-    const email     = sessionStorage.getItem('google_signup_email') || this.email?.value;
+    const email = provider === 'apple'
+      ? this.resolveAppleAccountEmail(
+        sessionStorage.getItem('google_signup_email'),
+        this.email?.value
+      )
+      : sessionStorage.getItem('google_signup_email') || this.email?.value;
     const providerId = sessionStorage.getItem('google_signup_provider_id') || '';
     const avatarUrl  = sessionStorage.getItem('google_signup_avatar') || '';
     const idToken    = sessionStorage.getItem('oauth_signup_id_token') || '';
@@ -2911,11 +2985,29 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       ? (foundAvatar.value.split('/').pop() ?? `Avatar ${Number(avatarKey)}`)
       : (avatarKey ? `Avatar ${Number(avatarKey)}` : undefined);
 
+    const resolvedName = provider === 'apple'
+      ? this.resolveAppleAccountName(
+        profile.name,
+        this.profileForm.get('name')?.value,
+        sessionStorage.getItem('google_signup_name')
+      )
+      : profile.name || this.profileForm.get('name')?.value || sessionStorage.getItem('google_signup_name');
+
+    if (provider === 'apple' && (!resolvedName || !email)) {
+      this.registrationInProgress = false;
+      this.loadingService.forceHide();
+      this.errorMessage = !resolvedName
+        ? 'We could not retrieve your name from Apple. Please try Sign in with Apple again.'
+        : 'We could not retrieve your email from Apple. Please try Sign in with Apple again.';
+      this.core.triggerToasrt(this.errorMessage);
+      return;
+    }
+
     const googlePayload: any = {
       provider,
       providerId,
       email,
-      name:            profile.name || this.profileForm.get('name')?.value || sessionStorage.getItem('google_signup_name'),
+      name:            resolvedName,
       avatarUrl,
       role:            role.toUpperCase(),          // backend uses "role", not "relationship"
       avatarName:      avatarKey ? `avatar${avatarKey}` : undefined,

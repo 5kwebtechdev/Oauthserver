@@ -368,8 +368,22 @@
             </div>
           </ng-container>
           <ng-template #appleIdentityProvided>
+            <h4 class="profile-field-heading">
+              <span class="profile-field-title">Full Name</span>
+              <span class="profile-field-hint">Provided by Apple</span>
+            </h4>
+            <div class="input-group">
+              <input formControlName="name" type="text" readonly aria-readonly="true" autocomplete="name" />
+            </div>
+            <h4 class="profile-field-heading">
+              <span class="profile-field-title">Email Address</span>
+              <span class="profile-field-hint">Provided by Apple</span>
+            </h4>
+            <div class="input-group">
+              <input type="email" [value]="appleAccountEmail" readonly aria-readonly="true" autocomplete="email" />
+            </div>
             <p class="oauth-account-note" role="status">
-              Your name and email are securely provided by Apple. Choose a SuperMe username and avatar below to continue.
+              Your Apple details are prefilled. Choose a SuperMe username and avatar below to continue.
             </p>
           </ng-template>
 
