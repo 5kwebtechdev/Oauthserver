@@ -22,12 +22,20 @@ import { ProfileSelectorService } from '../../../services/profile-selector-servi
 import { CustomToastService } from '../../../services/custom-toast.service';
 
 type ActivityTab = 'habits' | 'tasks' | 'timetable' | 'events';
+type ActivityNavigationTab = ActivityTab | 'planner';
 type EventRecurrence = 'ONE_TIME' | 'MONTHLY' | 'YEARLY';
 
 interface ActivityTabOption {
-  key: ActivityTab;
+  key: ActivityNavigationTab;
   label: string;
   icon: string;
+}
+
+interface PlannerEntry {
+  name: string;
+  startTime: string;
+  endTime: string;
+  days: string[];
 }
 
 interface EventChoice {
@@ -57,7 +65,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
 
   // Input properties for modal usage - allows passing data directly via componentProps
   @Input() editingHabit: any = null;
-  @Input() initialTab: ActivityTab | null = null;
+  @Input() initialTab: ActivityNavigationTab | null = null;
 
   title = '';
   notes = '';
@@ -148,6 +156,27 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     { key: 'timetable', label: 'Time Table', icon: 'assets/figma/activity-event/tab-calendar.png' },
     { key: 'events', label: 'Event', icon: 'assets/figma/activity-event/tab-calendar.png' }
   ];
+
+  readonly childActivityTabs: ReadonlyArray<ActivityTabOption> = [
+    { key: 'habits', label: 'Habit', icon: 'assets/figma/child-planner/superme-planner-habit.png' },
+    { key: 'tasks', label: 'Task', icon: 'assets/figma/child-planner/superme-planner-task.png' },
+    { key: 'planner', label: 'Planner', icon: 'assets/figma/child-planner/superme-planner-tab.png' }
+  ];
+
+  readonly plannerColors = ['#0D47A1', '#B71C1C', '#880E4F', '#1B5E20', '#4A148C'];
+  selectedPlannerColor = this.plannerColors[0];
+
+  get isChildPlannerFlow(): boolean {
+    return this.isChild && !this.isParentCreated;
+  }
+
+  get visibleActivityTabs(): ReadonlyArray<ActivityTabOption> {
+    return this.isChildPlannerFlow ? this.childActivityTabs : this.activityTabs;
+  }
+
+  get isPlannerActive(): boolean {
+    return this.currentActive === 'timetable' || this.currentActive === 'events';
+  }
 
   get isTasks(): boolean {
     return this.currentActive === 'tasks';
@@ -263,10 +292,9 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   // Coin selector
   // coin selector removed for parent accounts
 
-  activities: { name: string; startTime: string; endTime: string }[] = [
-    { name: '', startTime: '', endTime: '' },
-    { name: '', startTime: '', endTime: '' },
-    { name: '', startTime: '', endTime: '' }
+  activities: PlannerEntry[] = [
+    { name: '', startTime: '', endTime: '', days: ['S'] },
+    { name: '', startTime: '', endTime: '', days: ['S'] }
   ];
 
   @ViewChild(SupermeTagsComponent) tagsComponent?: SupermeTagsComponent;
@@ -458,12 +486,44 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     }];
   }
 
-  selectActivityTab(tab: ActivityTab): void {
-    if (this.currentActive === tab) return;
-    this.currentActive = tab;
+  selectActivityTab(tab: ActivityNavigationTab): void {
+    const nextTab: ActivityTab = tab === 'planner' ? 'timetable' : tab;
+    if (this.currentActive === nextTab || (tab === 'planner' && this.isPlannerActive)) return;
+    this.currentActive = nextTab;
+    if (nextTab === 'timetable' && !this.priority) this.priority = 'low';
     this.attemptedSubmit = false;
     this.serverErrorMessage = '';
     Object.keys(this.errors).forEach(key => (this.errors as any)[key] = false);
+  }
+
+  isActivityTabSelected(tab: ActivityNavigationTab): boolean {
+    return tab === 'planner' ? this.isPlannerActive : this.currentActive === tab;
+  }
+
+  selectPlannerType(type: 'timetable' | 'events'): void {
+    this.selectActivityTab(type);
+  }
+
+  selectPlannerColor(color: string): void {
+    this.selectedPlannerColor = color;
+  }
+
+  isPlannerEntryDaySelected(entry: PlannerEntry, day: string): boolean {
+    return entry.days.includes(day);
+  }
+
+  togglePlannerEntryDay(entry: PlannerEntry, day: string): void {
+    entry.days = entry.days.includes(day)
+      ? entry.days.filter(value => value !== day)
+      : [...entry.days, day];
+  }
+
+  removePlannerEntry(index: number): void {
+    if (this.activities.length === 1) {
+      this.activities[0] = { name: '', startTime: '', endTime: '', days: ['S'] };
+      return;
+    }
+    this.activities.splice(index, 1);
   }
 
   selectEventType(key: string): void {
@@ -600,6 +660,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     if (normalized === 'habit' || normalized === 'habits') return 'habits';
     if (normalized === 'task' || normalized === 'tasks') return 'tasks';
     if (normalized === 'event' || normalized === 'events') return 'events';
+    if (normalized === 'planner') return 'timetable';
     if (normalized === 'timetable' || normalized === 'time table') return 'timetable';
     return fallback;
   }
@@ -711,7 +772,14 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         this.eventRecurrence = this.normalizeEventRecurrence(h.recurrence ?? h.repeatType ?? h.repeat_type);
       }
 
-      this.activities = Array.isArray(h.activities) && h.activities.length ? h.activities : this.activities;
+      this.activities = Array.isArray(h.activities) && h.activities.length
+        ? h.activities.map((entry: any) => ({
+          name: String(entry?.name || entry?.title || ''),
+          startTime: this.to12Hour(entry?.startTime || entry?.start_time || ''),
+          endTime: this.to12Hour(entry?.endTime || entry?.end_time || ''),
+          days: this.normalizePlannerEntryDays(entry?.days || entry?.daysOfWeek || h.daysOfWeek)
+        }))
+        : this.activities;
 
       // Handle new API format: h.tag = { id, name, system, userId }
       // Also handle legacy format: h.tags = ["Study"] (string array) for backward compat
@@ -774,10 +842,10 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     this.addingEventType = false;
     this.customEventTypeName = '';
     this.activities = [
-      { name: '', startTime: '', endTime: '' },
-      { name: '', startTime: '', endTime: '' },
-      { name: '', startTime: '', endTime: '' }
+      { name: '', startTime: '', endTime: '', days: ['S'] },
+      { name: '', startTime: '', endTime: '', days: ['S'] }
     ];
+    this.selectedPlannerColor = this.plannerColors[0];
     this.selectedTags = [];
     this.attemptedSubmit = false;
     this.serverErrorMessage = '';
@@ -804,6 +872,14 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       return !this.isEndTimeCrossingMidnight(this.startTime, this.endTime);
     }
 
+    if (this.currentActive === 'timetable' && this.isChildPlannerFlow) {
+      return !!this.title?.trim()
+        && !!this.startDate
+        && !!this.endDate
+        && this.startDate <= this.endDate
+        && this.activities.some(entry => this.isPlannerEntryComplete(entry));
+    }
+
     if (!this.title?.trim()) return false;
     if (!this.startDate || !this.endDate) return false;
     if (!this.startTime?.trim() || !this.endTime?.trim()) return false;
@@ -817,6 +893,41 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     if (!this.notes?.trim()) return false;
 
     return this.everyday || (this.selectedDays && this.selectedDays.size > 0);
+  }
+
+  get hasCompletePlannerEntry(): boolean {
+    return this.activities.some(entry => this.isPlannerEntryComplete(entry));
+  }
+
+  private normalizePlannerEntryDays(value: unknown): string[] {
+    const rawDays = Array.isArray(value) ? value : [];
+    const normalized = rawDays.map(day => {
+      const key = String(day || '').trim().toUpperCase();
+      const match = Object.entries(ActivityInputComponent.DAY_MAP)
+        .find(([, fullDay]) => fullDay === key)?.[0];
+      const shortCode = this.weekdays.find(code => code.toUpperCase() === key);
+      return match || shortCode || '';
+    }).filter(Boolean);
+    return normalized.length ? Array.from(new Set(normalized)) : ['S'];
+  }
+
+  private isPlannerEntryComplete(entry: PlannerEntry): boolean {
+    return !!entry.name?.trim()
+      && !!entry.startTime?.trim()
+      && !!entry.endTime?.trim()
+      && entry.days.length > 0
+      && !this.isEndTimeNotAfterStart(entry.startTime, entry.endTime)
+      && !this.isEndTimeCrossingMidnight(entry.startTime, entry.endTime);
+  }
+
+  private syncPlannerScheduleToLegacyFields(): void {
+    const entry = this.activities.find(item => this.isPlannerEntryComplete(item)) || this.activities[0];
+    if (!entry) return;
+    this.startTime = entry.startTime || '';
+    this.endTime = entry.endTime || '';
+    this.selectedDays = new Set(entry.days || []);
+    this.everyday = this.selectedDays.size === this.weekdays.length;
+    if (!this.priority) this.priority = 'low';
   }
 
   private parseTime(timeStr: string): { hours: number; minutes: number } | null {
@@ -1063,6 +1174,10 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       return;
     }
 
+    if (this.currentActive === 'timetable' && this.isChildPlannerFlow) {
+      this.syncPlannerScheduleToLegacyFields();
+    }
+
     this.attemptedSubmit = true;
     // clear any previous server-side message
     this.serverErrorMessage = '';
@@ -1160,6 +1275,17 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         priority,
         sharedWithParent
       };
+      if (this.isChildPlannerFlow) {
+        payload.colorCode = this.selectedPlannerColor;
+        payload.activities = this.activities
+          .filter(entry => entry.name.trim())
+          .map(entry => ({
+            name: entry.name.trim(),
+            startTime: this.to24Hour(entry.startTime || ''),
+            endTime: this.to24Hour(entry.endTime || ''),
+            daysOfWeek: entry.days.map(day => ActivityInputComponent.DAY_MAP[day]).filter(Boolean)
+          }));
+      }
       if (!(this.everyday && coversAllDays)) {
         payload.daysOfWeek = daysOfWeek;
       }
@@ -1483,6 +1609,27 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         priority: false,
         notes: false,
         eventType: !this.selectedEventType
+      } as any;
+    }
+
+    if (this.currentActive === 'timetable' && this.isChildPlannerFlow) {
+      const hasNamedEntry = this.activities.some(entry => !!entry.name.trim());
+      const hasEntryTimes = this.activities.some(entry => !!entry.startTime.trim() && !!entry.endTime.trim());
+      const hasEntryDays = this.activities.some(entry => entry.days.length > 0);
+      return {
+        title: !this.title?.trim(),
+        tag: false,
+        routine: false,
+        weekdays: !hasEntryDays,
+        time: !hasEntryTimes,
+        pastTime: false,
+        endTimeBeforeStart: hasEntryTimes && !this.activities.some(entry => this.isPlannerEntryComplete(entry)),
+        endTimeSingleDay: false,
+        date: !this.startDate || !this.endDate || !!(this.startDate && this.endDate && this.startDate > this.endDate),
+        startAfterEnd: !!(this.startDate && this.endDate && this.startDate > this.endDate),
+        priority: false,
+        notes: false,
+        eventType: !hasNamedEntry
       } as any;
     }
 
@@ -1908,7 +2055,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   }
 
   selectPriority(p: 'low' | 'medium' | 'high') { this.priority = p; this.clearPriorityError(); }
-  addActivity() { this.activities.push({ name: '', startTime: '', endTime: '' }); }
+  addActivity() { this.activities.push({ name: '', startTime: '', endTime: '', days: ['S'] }); }
 
   onTagsChange(payload: any) {
     // Normalize payload to an array to support singleSelection emitting a single value

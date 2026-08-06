@@ -1,5 +1,5 @@
-import { Component, Input, OnInit, OnDestroy, NgZone } from '@angular/core';
-import { ViewWillEnter } from '@ionic/angular';
+import { Component, Input, OnInit, OnDestroy, NgZone, ViewChild } from '@angular/core';
+import { IonContent, ViewWillEnter } from '@ionic/angular';
 import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -23,6 +23,7 @@ import { LearningChallengeCardComponent } from '../learning-card/learning-challe
 import { LearningArticleCardComponent } from '../learning-card/learning-article-card.component';
 import { SectionComingSoonComponent } from '../../section-coming-soon/section-coming-soon.component';
 import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
+import { UserService } from 'src/app/core/services/user.service';
 
 type LearningCategoryTab = 'puzzles' | 'quizzes' | 'articles' | 'masterclass';
 type ParentLearningStatus = 'pending' | 'completed';
@@ -36,11 +37,14 @@ type ParentLearningStatus = 'pending' | 'completed';
   providers: [LearningService]
 })
 export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
+  @ViewChild(IonContent) ionContent?: IonContent;
   @Input() title: string = '';
   @Input() body: string = '';
 
   selectedCategory: LearningCategoryTab = 'puzzles';
   parentView = false;
+  childView = false;
+  childCoins = 0;
   parentStatus: ParentLearningStatus = 'pending';
   parentSearchOpen = false;
   parentPage = 1;
@@ -188,25 +192,42 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     private router: Router,
     private zone: NgZone,
     private route: ActivatedRoute,
-    private location: Location
+    private location: Location,
+    private userService: UserService
   ) { }
 
   ngOnInit(): void {
     this.parentView = this.route.snapshot.queryParamMap.get('view') === 'parent'
       || this.authService.isParentUser();
+    this.childView = !this.parentView && this.authService.getUserRelationship() === 'CHILD';
     const requestedCategory = this.normalizeCategory(this.route.snapshot.queryParamMap.get('tab'));
     if (requestedCategory) {
       this.selectedCategory = requestedCategory;
     } else if (this.parentView) {
       const savedCategory = this.readParentCategory();
       this.selectedCategory = savedCategory || 'quizzes';
+    } else if (this.childView) {
+      this.selectedCategory = 'quizzes';
     }
 
     if (this.parentView) {
       this.bindSelectedChild();
     } else {
+      if (this.childView) this.bindChildStats();
       this.loadTab(this.selectedCategory);
     }
+  }
+
+  private bindChildStats(): void {
+    this.userService.stats$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(stats => {
+        if (stats) this.childCoins = Number(stats.coins || 0);
+      });
+
+    this.userService.refreshStats()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({ error: () => undefined });
   }
 
   private bindSelectedChild(): void {
@@ -304,7 +325,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     const nextPage = Math.min(this.parentTotalPages, Math.max(1, page));
     if (nextPage === this.parentPage) return;
     this.parentPage = nextPage;
-    document.querySelector('.parent-status-tabs')?.scrollIntoView({
+    document.querySelector('.parent-status-tabs, .child-status-tabs')?.scrollIntoView({
       behavior: 'smooth',
       block: 'start'
     });
@@ -394,6 +415,40 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       return;
     }
     void this.router.navigate(['/authed/content/description', item.id], extras);
+  }
+
+  openChildLearningItem(item: LearningCardData): void {
+    const extras = { state: { source: '/authed/content' } };
+    if (item.type === 'masterclass') {
+      void this.router.navigate(['/authed/academy/course', item.id], extras);
+      return;
+    }
+    if (item.type === 'article') {
+      void this.router.navigate(['/authed/content/article', item.id], extras);
+      return;
+    }
+    void this.router.navigate(['/authed/content/description', item.id], extras);
+  }
+
+  getChildTrophyCount(item: LearningCardData): number {
+    const raw = item.rawData as any;
+    const value = Number(item.trophy ?? raw?.trophies ?? raw?.trophy ?? 0);
+    return Number.isFinite(value) && value > 0 ? Math.round(value) : 0;
+  }
+
+  getChildTimeText(item: LearningCardData): string {
+    const raw = item.rawData as any;
+    const source = String(
+      item.timeDuration
+      ?? raw?.estimatedTimeMinutes
+      ?? raw?.durationMinutes
+      ?? raw?.duration
+      ?? ''
+    ).trim();
+    if (!source) return '';
+
+    const minutes = source.match(/\d+/)?.[0];
+    return minutes ? `${minutes} min` : source;
   }
 
   onParentImageError(event: Event): void {
@@ -507,6 +562,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     this.closeCategoryContent();
     this.loadTab(cat);
     if (this.searchKeyword.trim()) this.updateSearchResults();
+    this.scrollLearningToTop();
   }
 
   openPuzzles() { this.selectCategory('puzzles'); }
@@ -692,7 +748,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   getCategoryFallbackImage(): string {
-    if (this.parentView) {
+    if (this.parentView || this.childView) {
       return this.parentCategoryTabs.find(tab => tab.id === this.selectedCategory)?.parentIcon
         || 'assets/figma/parent-child-learning/tab-quizzes.png';
     }
@@ -740,6 +796,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   onCategoryCardClick(item: LearningCategorySummary): void {
     const categoryName = item.categoryName || item.name;
     if (!categoryName) return;
+    this.scrollLearningToTop();
 
     if (this.selectedCategory === 'masterclass' && !this.parentView) {
       const age = this.authService.getCurrentUserAge();
@@ -811,6 +868,11 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     this.parentPage = 1;
     this.clearSearch();
     if (this.searchKeyword.trim()) this.updateSearchResults();
+    this.scrollLearningToTop();
+  }
+
+  private scrollLearningToTop(): void {
+    setTimeout(() => void this.ionContent?.scrollToTop(0), 0);
   }
 
   private mapCourseToLearningCard(course: Course): LearningCardData {
