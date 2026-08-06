@@ -4,7 +4,8 @@
 }
 
 :host(.parent-eduhub-ad):not(:has(.adb)),
-:host(.parent-learning-ad):not(:has(.adb)) {
+:host(.parent-learning-ad):not(:has(.adb)),
+:host(.child-learning-ad):not(:has(.adb)) {
   display: none;
 }
 

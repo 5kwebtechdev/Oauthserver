@@ -15,6 +15,7 @@
             <div class="parent-eduhub-sections">
                 <section class="parent-eduhub-section"
                     *ngFor="let section of parentEduHubSections; trackBy: trackSection"
+                    [attr.aria-busy]="section.loading ? 'true' : null"
                     [attr.aria-labelledby]="'parent-eduhub-' + section.key">
                     <header class="parent-eduhub-section__header">
                         <span class="parent-eduhub-section__icon" aria-hidden="true">
@@ -41,7 +42,7 @@
                             [attr.aria-label]="'Open ' + category.label"
                             (click)="openParentCategory(category)">
                             <span class="parent-eduhub-card__image" aria-hidden="true">
-                                <img [src]="category.image" alt=""
+                                <img [src]="category.image" alt="" loading="lazy"
                                     (error)="onCategoryImageError($event, category)">
                             </span>
                             <span class="parent-eduhub-card__label">{{ category.label }}</span>

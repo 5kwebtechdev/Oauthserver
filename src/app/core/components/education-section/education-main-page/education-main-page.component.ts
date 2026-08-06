@@ -70,14 +70,14 @@ export class EducationMainPageComponent implements OnInit {
         {
             id: 'tutors',
             label: 'Tutor',
-            image: 'assets/figma/child-home/eduhub-tutors.png',
+            image: 'assets/figma/parent-eduhub/tutor.png',
             kind: 'route',
             route: '/authed/tutors'
         },
         {
             id: 'academies',
             label: 'Academies',
-            image: 'assets/figma/child-home/eduhub-academies.png',
+            image: 'assets/figma/parent-eduhub/academies.png',
             kind: 'route',
             route: '/authed/academies'
         }
@@ -96,13 +96,13 @@ export class EducationMainPageComponent implements OnInit {
         {
             id: 'events',
             label: 'Events',
-            image: 'assets/figma/child-home/eduhub-events.png',
+            image: 'assets/figma/parent-eduhub/events.png',
             kind: 'coming-soon'
         },
         {
             id: 'workshops',
             label: 'Workshops',
-            image: 'assets/figma/child-home/eduhub-workshops.png',
+            image: 'assets/figma/parent-eduhub/workshops.png',
             kind: 'coming-soon'
         }
     ];
@@ -177,7 +177,8 @@ export class EducationMainPageComponent implements OnInit {
                 const categories = Array.isArray(response) ? response : [];
                 this.parentShopCategories = categories
                     .map(category => this.mapStoreCategory(category))
-                    .filter((category): category is ParentEduHubCategory => category !== null);
+                    .filter((category): category is ParentEduHubCategory => category !== null)
+                    .sort((left, right) => this.getShopCategoryOrder(left.label) - this.getShopCategoryOrder(right.label));
                 this.parentShopCategoriesLoading = false;
                 this.cdr.detectChanges();
             },
@@ -278,7 +279,7 @@ export class EducationMainPageComponent implements OnInit {
         const normalized = label.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
         if (normalized.includes('station')) {
-            return 'assets/figma/child-home/eduhub-stationery.png';
+            return 'assets/figma/parent-eduhub/stationery.png';
         }
         if (normalized.includes('second') && normalized.includes('book')) {
             return 'assets/figma/parent-eduhub/second-hand-books.png';
@@ -291,5 +292,15 @@ export class EducationMainPageComponent implements OnInit {
         }
 
         return '';
+    }
+
+    private getShopCategoryOrder(label: string): number {
+        const normalized = label.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+        if (normalized.includes('station')) return 0;
+        if (normalized.includes('book') && !normalized.includes('second')) return 1;
+        if (normalized.includes('second') && normalized.includes('book')) return 2;
+        if (normalized.includes('sport')) return 3;
+        return 100;
     }
 }

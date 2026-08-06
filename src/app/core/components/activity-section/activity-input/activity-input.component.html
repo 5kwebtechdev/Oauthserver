@@ -110,20 +110,25 @@
   </div> -->
 </ng-template>
 
-<ng-template #titleInputSection let-placeholder="placeholder" let-errorMsg="errorMsg" let-subtitle="subtitle">
+<ng-template #titleInputSection let-placeholder="placeholder" let-errorMsg="errorMsg" let-subtitle="subtitle"
+  let-showCategory="showCategory">
   <div class="title-input" [class.invalid]="attemptedSubmit && showTitleError">
     <div class="title-card-main">
       <div class="title-card-icon" aria-hidden="true">
-        <span class="form-icon form-icon--edit"></span>
+        <img *ngIf="showCategory === false" class="title-card-figma-icon"
+          src="assets/figma/child-planner/edit.svg" alt="">
+        <span *ngIf="showCategory !== false" class="form-icon form-icon--edit"></span>
       </div>
       <div class="superme-input-group w-100 title-card-body" [class.missing-placeholder]="showTitleError && attemptedSubmit">
-        <input class="w-100" [(ngModel)]="title" (ngModelChange)="clearTitleError()" [placeholder]="placeholder"
-          maxlength="20" />
+        <input *ngIf="showCategory !== false" class="w-100" [(ngModel)]="title"
+          (ngModelChange)="clearTitleError()" [placeholder]="placeholder" maxlength="20" />
+        <textarea *ngIf="showCategory === false" class="planner-title-textarea" [(ngModel)]="title"
+          (ngModelChange)="clearTitleError()" [placeholder]="placeholder" maxlength="20" rows="2"></textarea>
         <div class="title-card-subtitle">{{ subtitle || 'Be specific and actionable.' }}</div>
       </div>
       <div class="priority-selection priority-toggle-row" [class.invalid]="attemptedSubmit && showPriorityError">
     <div class="priority-toggle-control">
-      <span class="priority-toggle-label">{{ priority === 'high' ? 'High Priority' : 'Low Priority' }}</span>
+      <span class="priority-toggle-label">{{ showCategory === false ? 'High Priority' : (priority === 'high' ? 'High Priority' : 'Low Priority') }}</span>
       <superme-toggle [checked]="priority === 'high'"
         (checkedChange)="selectPriority($event ? 'high' : 'low')"></superme-toggle>
     </div>
@@ -135,7 +140,7 @@
     <div class="title-card-count">{{ title.length }}/20</div>
   </div>
   <!-- <div class="title-card-count">{{ title.length }}/20</div> -->
-  <div class="category-card">
+  <div *ngIf="showCategory !== false" class="category-card">
     <div class="category-header">
       <div class="category-header-left">
         <span class="category-icon-tile" aria-hidden="true">
@@ -195,7 +200,9 @@
   <div class="notes-card" [class.invalid]="showNotesError && attemptedSubmit && showNotesValidation">
     <div class="notes-card-main">
       <span class="notes-icon-tile" aria-hidden="true">
-        <span class="form-icon form-icon--notes"></span>
+        <img *ngIf="currentActive === 'timetable' && isChildPlannerFlow" class="planner-template-icon"
+          src="assets/figma/child-planner/article.svg" alt="">
+        <span *ngIf="currentActive !== 'timetable' || !isChildPlannerFlow" class="form-icon form-icon--notes"></span>
       </span>
       <textarea [(ngModel)]="notes" (ngModelChange)="onNotesChange()" (input)="autoExpandTextarea($event)"
         [class.missing-border]="showNotesError && attemptedSubmit && showNotesValidation" maxlength="100"
@@ -213,7 +220,10 @@
       [attr.aria-expanded]="reminderExpanded" aria-controls="activity-reminder-options">
       <span class="reminder-trigger-left">
         <span class="reminder-icon-tile" aria-hidden="true">
-          <span class="form-icon form-icon--reminder-bell"></span>
+          <img *ngIf="currentActive === 'timetable' && isChildPlannerFlow" class="planner-template-icon"
+            src="assets/figma/child-planner/notifications.svg" alt="">
+          <span *ngIf="currentActive !== 'timetable' || !isChildPlannerFlow"
+            class="form-icon form-icon--reminder-bell"></span>
         </span>
         <span class="reminder-copy">
           <span class="reminder-title">Set Reminder (Optional)</span>
@@ -253,24 +263,56 @@
 <ion-content fullscreen>
   <superme-navigator [heading]="editingId ? 'Update Activity' : 'Create. Commit. Grow.'"
     [rightActions]="navigatorActions" (rightActionClick)="onNavigatorAction($event)" (back)="onNavigatorBack()">
-    <div *ngIf="isChild && !isParentCreated" slot="end" class="header-toggle d-flex flex-column " [ngClass]="currentActive" aria-label="Private toggle">
+    <div *ngIf="isChild && !isParentCreated" slot="end" class="header-toggle d-flex flex-column "
+      [ngClass]="isPlannerActive ? 'planner' : currentActive" aria-label="Private toggle">
       <label class="header-toggle-label">Private</label>
       <div class="toggle-right">
         <superme-toggle [(checked)]="isPrivate" (checkedChange)="onPrivateChange($event)"></superme-toggle>
       </div>
     </div>
   </superme-navigator>
-  <div class="habit-input-root" [ngClass]="currentActive">
+  <div class="habit-input-root" [ngClass]="currentActive"
+    [class.child-planner-root]="isChild && !isParentCreated">
     <div *ngIf="!editingId" class=" w-full">
-      <div class="activity-tabs" role="tablist" aria-label="Activity type">
-        <button *ngFor="let tab of activityTabs" type="button" class="activity-tab"
-          [ngClass]="'tab-' + tab.key" [class.active]="currentActive === tab.key"
-          role="tab" [attr.aria-selected]="currentActive === tab.key" (click)="selectActivityTab(tab.key)">
-          <img [src]="tab.icon" alt="" class="activity-tab-icon" aria-hidden="true">
+      <div class="activity-tabs" [class.child-planner-tabs]="isChild && !isParentCreated" role="tablist"
+        aria-label="Activity type">
+        <button *ngFor="let tab of visibleActivityTabs" type="button" class="activity-tab"
+          [ngClass]="'tab-' + tab.key" [class.active]="isActivityTabSelected(tab.key)"
+          role="tab" [attr.aria-selected]="isActivityTabSelected(tab.key)" (click)="selectActivityTab(tab.key)">
+          <span class="activity-tab-icon-frame" [ngClass]="'activity-tab-icon-frame--' + tab.key" aria-hidden="true">
+            <img [src]="tab.icon" alt="" class="activity-tab-icon">
+          </span>
           <span>{{ tab.label }}</span>
         </button>
       </div>
     </div>
+
+    <section *ngIf="!editingId && isChild && !isParentCreated && isPlannerActive"
+      class="planner-choice-section" aria-labelledby="planner-choice-title">
+      <h2 id="planner-choice-title">What are you adding?</h2>
+      <div class="planner-choice-grid" role="radiogroup" aria-label="Planner type">
+        <button type="button" class="planner-choice-card" [class.selected]="currentActive === 'timetable'"
+          [attr.aria-checked]="currentActive === 'timetable'" role="radio" (click)="selectPlannerType('timetable')">
+          <span class="planner-choice-icon planner-choice-icon--timetable" aria-hidden="true">
+            <img src="assets/figma/child-planner/superme-planner-timetable.png" alt="">
+          </span>
+          <span class="planner-choice-copy">
+            <strong>Time Table</strong>
+            <span>A named schedule with multiple recurring time slots</span>
+          </span>
+        </button>
+        <button type="button" class="planner-choice-card" [class.selected]="currentActive === 'events'"
+          [attr.aria-checked]="currentActive === 'events'" role="radio" (click)="selectPlannerType('events')">
+          <span class="planner-choice-icon planner-choice-icon--event" aria-hidden="true">
+            <img src="assets/figma/child-planner/superme-planner-event.png" alt="">
+          </span>
+          <span class="planner-choice-copy">
+            <strong>Event</strong>
+            <span>A birthday, exam, meeting, or any major milestone</span>
+          </span>
+        </button>
+      </div>
+    </section>
 
     <div *ngIf="currentActive === 'habits'" class="form-card">
       <ng-container
@@ -310,7 +352,133 @@
         *ngTemplateOutlet="submitSection; context: {btnType: 'orange', btnTypeFaded: 'orange-light', itemType: 'Task'}"></ng-container>
     </div>
 
-    <div *ngIf="currentActive === 'timetable'" class="form-card">
+    <div *ngIf="currentActive === 'timetable' && isChildPlannerFlow" class="form-card">
+      <ng-container
+        *ngTemplateOutlet="titleInputSection; context: {placeholder: 'What time table do you want to build?', errorMsg: 'Enter timetable title', subtitle: 'Be specific and actionable.', showCategory: false}"></ng-container>
+
+      <section class="planner-field-card planner-color-card" aria-labelledby="planner-color-title">
+        <div class="planner-field-heading">
+          <span class="planner-field-icon" aria-hidden="true">
+            <img src="assets/figma/child-planner/palette.svg" alt="">
+          </span>
+          <h2 id="planner-color-title">Pick a Color Coding</h2>
+        </div>
+        <div class="planner-color-options" role="radiogroup" aria-label="Time table color">
+          <button *ngFor="let color of plannerColors" type="button" class="planner-color-option"
+            [style.background]="color" [class.selected]="selectedPlannerColor === color"
+            [attr.aria-label]="'Select color ' + color" [attr.aria-checked]="selectedPlannerColor === color"
+            role="radio" (click)="selectPlannerColor(color)">
+            <img *ngIf="selectedPlannerColor === color" src="assets/figma/child-planner/check.svg" alt=""
+              aria-hidden="true">
+          </button>
+        </div>
+      </section>
+
+      <section class="planner-field-card planner-period-card" aria-labelledby="planner-period-title">
+        <div class="planner-field-heading">
+          <span class="planner-field-icon" aria-hidden="true">
+            <img src="assets/figma/child-planner/hourglass.svg" alt="">
+          </span>
+          <h2 id="planner-period-title">Active Period</h2>
+        </div>
+        <div class="planner-date-row">
+          <button type="button" class="planner-picker-card" (click)="startDateCtrl.toggleCalendar()">
+            <span class="planner-picker-icon" aria-hidden="true">
+              <img src="assets/figma/child-planner/calendar.svg" alt="">
+            </span>
+            <span class="planner-picker-copy">
+              <strong>Start Date</strong>
+              <superme-datepicker #startDateCtrl type="date" label="Start Date" [(ngModel)]="startDate"
+                [minDate]="today" [rangeStart]="startDate" [rangeEnd]="endDate"
+                placeholder="Select Start Date"></superme-datepicker>
+            </span>
+            <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
+          </button>
+          <button type="button" class="planner-picker-card" (click)="endDateCtrl.toggleCalendar()">
+            <span class="planner-picker-icon" aria-hidden="true">
+              <img src="assets/figma/child-planner/calendar.svg" alt="">
+            </span>
+            <span class="planner-picker-copy">
+              <strong>End Date</strong>
+              <superme-datepicker #endDateCtrl type="date" label="End Date" [(ngModel)]="endDate"
+                [minDate]="today" [rangeStart]="startDate" [rangeEnd]="endDate" [seedDate]="startDate"
+                [quickRanges]="endDateQuickRanges" placeholder="Select End Date"></superme-datepicker>
+            </span>
+            <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
+          </button>
+        </div>
+        <div *ngIf="attemptedSubmit && showDateError" class="field-error" role="alert">Please pick both dates.</div>
+        <div *ngIf="showStartAfterEnd" class="field-error" role="alert">End date must be after the start date.</div>
+      </section>
+
+      <section class="planner-field-card planner-entries-card" aria-labelledby="planner-entries-title">
+        <div class="planner-field-heading">
+          <span class="planner-field-icon" aria-hidden="true">
+            <img src="assets/figma/child-planner/checklist.svg" alt="">
+          </span>
+          <h2 id="planner-entries-title">Time Table Entries</h2>
+        </div>
+
+        <div class="planner-entry" *ngFor="let entry of activities; let i = index">
+          <div class="planner-entry-title-row">
+            <span class="planner-entry-number">{{ i + 1 }}</span>
+            <input [(ngModel)]="entry.name" maxlength="40" placeholder="Subject/Label"
+              [attr.aria-label]="'Time table entry ' + (i + 1) + ' label'">
+            <button type="button" class="planner-entry-remove" (click)="removePlannerEntry(i)"
+              [attr.aria-label]="'Remove time table entry ' + (i + 1)">
+              <img src="assets/figma/child-planner/close.svg" alt="" aria-hidden="true">
+            </button>
+          </div>
+
+          <div class="planner-entry-days" role="group" [attr.aria-label]="'Days for entry ' + (i + 1)">
+            <button *ngFor="let day of weekdays" type="button" [class.selected]="isPlannerEntryDaySelected(entry, day)"
+              [attr.aria-pressed]="isPlannerEntryDaySelected(entry, day)" (click)="togglePlannerEntryDay(entry, day)">
+              {{ day }}
+            </button>
+          </div>
+
+          <div class="planner-entry-time-row">
+            <button type="button" class="planner-picker-card" (click)="plannerStartTimeCtrl.openPopup()">
+              <span class="planner-picker-icon" aria-hidden="true">
+                <img src="assets/figma/child-planner/schedule.svg" alt="">
+              </span>
+              <span class="planner-picker-copy">
+                <strong>Start Time</strong>
+                <superme-timepicker #plannerStartTimeCtrl label="Start Time" placeholder="Select"
+                  [(ngModel)]="entry.startTime"></superme-timepicker>
+              </span>
+              <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
+            </button>
+            <button type="button" class="planner-picker-card" (click)="plannerEndTimeCtrl.openPopup()">
+              <span class="planner-picker-icon" aria-hidden="true">
+                <img src="assets/figma/child-planner/schedule.svg" alt="">
+              </span>
+              <span class="planner-picker-copy">
+                <strong>End Time</strong>
+                <superme-timepicker #plannerEndTimeCtrl label="End Time" placeholder="Select"
+                  [seedTime]="entry.startTime" [quickDurations]="[15, 30, 45, 60]"
+                  [(ngModel)]="entry.endTime"></superme-timepicker>
+              </span>
+              <img class="planner-picker-add" src="assets/figma/child-planner/add.svg" alt="" aria-hidden="true">
+            </button>
+          </div>
+        </div>
+
+        <button type="button" class="planner-add-entry" (click)="addActivity()">+ Add Time Entry</button>
+        <div *ngIf="attemptedSubmit && (showTimeError || showWeekdaysError || !hasCompletePlannerEntry)"
+          class="field-error" role="alert">
+          Add a label, day, start time, and end time for at least one entry.
+        </div>
+      </section>
+
+      <ng-container *ngTemplateOutlet="reminderSection"></ng-container>
+      <ng-container *ngTemplateOutlet="prioritySection"></ng-container>
+      <ng-container *ngTemplateOutlet="notesSection; context: {showNotesValidation: false, placeholder: 'Add a note to this time table (optional)'}"></ng-container>
+      <ng-container
+        *ngTemplateOutlet="submitSection; context: {btnType: 'aqua', btnTypeFaded: 'aqua-light', itemType: 'Time Table'}"></ng-container>
+    </div>
+
+    <div *ngIf="currentActive === 'timetable' && (!isChild || isParentCreated)" class="form-card">
       <ng-container
         *ngTemplateOutlet="titleInputSection; context: {placeholder: 'What do you want to schedule?', errorMsg: 'Enter timetable title', subtitle: 'Be specific and actionable.'}"></ng-container>
       <div class="date-time-selection">
@@ -325,8 +493,9 @@
               <div class="picker-body">
                 <span class="picker-title">Start Date</span>
                 <div class="superme-input-group" [class.missing-placeholder]="attemptedSubmit && showDateError">
-                  <superme-datepicker #startDateCtrl type="date" label="Start Date" [(ngModel)]="startDate" [minDate]="today" [rangeStart]="startDate"
-                    [rangeEnd]="endDate" placeholder="Select Start Date"></superme-datepicker>
+                  <superme-datepicker #startDateCtrl type="date" label="Start Date" [(ngModel)]="startDate"
+                    [minDate]="today" [rangeStart]="startDate" [rangeEnd]="endDate"
+                    placeholder="Select Start Date"></superme-datepicker>
                 </div>
               </div>
               <span class="picker-plus" aria-hidden="true">+</span>
@@ -338,32 +507,37 @@
               <div class="picker-body">
                 <span class="picker-title">End Date</span>
                 <div class="superme-input-group" [class.missing-placeholder]="attemptedSubmit && showDateError">
-                  <superme-datepicker #endDateCtrl type="date" label="End Date" [(ngModel)]="endDate" [minDate]="today"
-                    [rangeStart]="startDate" [rangeEnd]="endDate" [seedDate]="startDate" [quickRanges]="endDateQuickRanges"
-                    placeholder="Select End Date"></superme-datepicker>
+                  <superme-datepicker #endDateCtrl type="date" label="End Date" [(ngModel)]="endDate"
+                    [minDate]="today" [rangeStart]="startDate" [rangeEnd]="endDate" [seedDate]="startDate"
+                    [quickRanges]="endDateQuickRanges" placeholder="Select End Date"></superme-datepicker>
                 </div>
               </div>
               <span class="picker-plus" aria-hidden="true">+</span>
             </div>
           </div>
-          <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">Please pick both
-            dates.</div>
+          <div *ngIf="attemptedSubmit && showDateError" class="field-error bottom-margin" role="alert">
+            Please pick both dates.
+          </div>
           <div *ngIf="showStartAfterEnd" class="field-error" role="alert">End date must be after the start date</div>
-          <div *ngIf="showDaySelectionError" class="day-selection-error field-error top-margin">{{
-            daySelectionErrorMessage }}</div>
+          <div *ngIf="showDaySelectionError" class="day-selection-error field-error top-margin">
+            {{ daySelectionErrorMessage }}
+          </div>
         </div>
       </div>
       <ng-container *ngTemplateOutlet="reminderSection"></ng-container>
       <ng-container *ngTemplateOutlet="prioritySection"></ng-container>
-      <ng-container *ngTemplateOutlet="notesSection; context: {showNotesValidation: false, placeholder: 'Add a note to this time table (optional)'}"></ng-container>
-      <div *ngIf="attemptedSubmit && showNotesError" class="field-error" role="alert">Please add a short note about
-        this.</div>
+      <ng-container
+        *ngTemplateOutlet="notesSection; context: {showNotesValidation: false, placeholder: 'Add a note to this time table (optional)'}"></ng-container>
+      <div *ngIf="attemptedSubmit && showNotesError" class="field-error" role="alert">
+        Please add a short note about this.
+      </div>
       <ng-container
         *ngTemplateOutlet="submitSection; context: {btnType: 'aqua', btnTypeFaded: 'aqua-light', itemType: 'Time Table'}"></ng-container>
     </div>
 
     <div *ngIf="currentActive === 'events'" class="form-card event-form">
-      <section *ngIf="eventInfoVisible" class="event-info" aria-label="Calendar information">
+      <section *ngIf="eventInfoVisible && !(isChild && !isParentCreated)" class="event-info"
+        aria-label="Calendar information">
         <span class="event-info__copy">
           <img src="assets/figma/activity-event/info.svg" alt="" aria-hidden="true">
           <span>Events exist only in your calendar</span>
@@ -382,9 +556,14 @@
           <label class="event-title-field__copy">
             <span class="visually-hidden">Event title</span>
             <input [(ngModel)]="title" (ngModelChange)="clearTitleError()" maxlength="20"
-              placeholder="What’s the event? (eg. Birthday etc)">
+              [placeholder]="isChild && !isParentCreated ? 'What is the name of the event?' : 'What’s the event? (eg. Birthday etc)'">
             <span>Be specific and actionable.</span>
           </label>
+          <span *ngIf="isChild && !isParentCreated" class="planner-event-priority">
+            <span>High Priority</span>
+            <superme-toggle [checked]="eventHighPriority"
+              (checkedChange)="onEventPriorityChange($event)"></superme-toggle>
+          </span>
         </div>
         <span class="event-character-count" aria-live="polite">{{ title.length }}/20</span>
         <div *ngIf="attemptedSubmit && showTitleError" class="field-error" role="alert">Please give this event a name.</div>
@@ -522,7 +701,7 @@
         </div>
       </section>
 
-      <section class="event-card event-priority-card">
+      <section *ngIf="!(isChild && !isParentCreated)" class="event-card event-priority-card">
         <span class="event-section-title">
           <span class="event-icon-tile" aria-hidden="true">
             <img src="assets/figma/activity-event/priority.svg" alt="">
@@ -547,7 +726,8 @@
       </section>
 
       <div *ngIf="serverErrorMessage" class="field-error event-server-error" role="alert">{{ serverErrorMessage }}</div>
-      <button type="button" class="event-submit" [disabled]="isSubmitting || !isFormComplete" (click)="submit()">
+      <button type="button" class="event-submit" [class.child-planner-submit]="isChild && !isParentCreated"
+        [disabled]="isSubmitting || !isFormComplete" (click)="submit()">
         <span *ngIf="isSubmitting" class="event-submit__spinner" aria-hidden="true"></span>
         <span>{{ isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Event' : 'Create Event') }}</span>
       </button>
