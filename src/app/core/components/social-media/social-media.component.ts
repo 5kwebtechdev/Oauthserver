@@ -233,6 +233,11 @@ export class SocialMediaComponent implements OnInit {
         return;
       }
 
+      // Apple sends fullName only on the first successful authorization. Save
+      // the native credential before any Firebase/backend request or route
+      // transition so the name is available throughout onboarding.
+      this.storeOAuthSignupSession('apple', appleProfile);
+
       try {
         // Firebase is only used to mirror the user in Firebase Auth. The
         // SuperMe backend is the authority for Apple authentication, so a
@@ -350,6 +355,9 @@ export class SocialMediaComponent implements OnInit {
             });
           } else {
             this.onboardingState.markExistingUser();
+            if (provider === 'apple') {
+              this.clearAppleSignupSession();
+            }
             this.router.navigate([this.authService.getDashboardRoute()], { replaceUrl: true });
           }
           return;
@@ -360,6 +368,9 @@ export class SocialMediaComponent implements OnInit {
       },
       error: async (err) => {
         await this.finishSocialLogin(loading);
+        if (provider === 'apple') {
+          this.clearAppleSignupSession();
+        }
         console.error('[SocialMedia] OAuth login error:', err);
         this.crashlytics.recordException(err, {
           provider,
@@ -438,6 +449,23 @@ export class SocialMediaComponent implements OnInit {
 
       sessionStorage.setItem('requestedIdentifier', data.email);
     } catch (e) {}
+  }
+
+  private clearAppleSignupSession(): void {
+    try {
+      [
+        'signup_via_google', 'signup_via_oauth', 'oauth_signup_provider',
+        'google_signup_email', 'google_signup_name', 'google_signup_avatar',
+        'google_signup_provider_id', 'oauth_signup_id_token',
+        'oauth_signup_access_token', 'oauth_signup_server_auth_code',
+        'oauth_signup_identity_token', 'oauth_signup_authorization_code',
+        'oauth_signup_raw_nonce', 'oauth_signup_client_id',
+        'oauth_signup_is_development_mock', 'requestedIdentifier'
+      ].forEach(key => sessionStorage.removeItem(key));
+    } catch {
+      // Session storage is a convenience layer; the authenticated backend
+      // session remains the source of truth for completed accounts.
+    }
   }
 
   private async finishSocialLogin(loading: any): Promise<void> {
