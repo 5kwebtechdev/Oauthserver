@@ -1,5 +1,6 @@
 <div class="superme-pet" (click)="onClick()" role="button" tabindex="0" aria-label="Superme pet">
   <img
+    *ngIf="currentImage"
     class="pet-image"
     [src]="currentImage || ''"
     (error)="onImageError()"

@@ -414,6 +414,7 @@ export class AcademyCourseComponent implements OnChanges, OnInit, OnDestroy {
 
     const modal = await this.modalCtrl.create({
       component: AcademyLessonsComponent,
+      cssClass: 'academy-lesson-modal',
       componentProps: {
         lessonId: lessonId,
         courseId: this.course.id,

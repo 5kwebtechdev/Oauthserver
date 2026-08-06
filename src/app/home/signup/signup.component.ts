@@ -2767,6 +2767,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.registrationInProgress = false;
         this.errorMessage = null; // Clear any previous errors
         const responseStep = this.getResponseOnboardingStep(resp);
+        this.persistRegistrationPet(resp, payload);
         if (responseStep) {
           this.onboardingState.saveRegistrationDraft({
             ...payload,
@@ -3303,6 +3304,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         });
 
         const responseStep = this.getResponseOnboardingStep(resp);
+        this.persistRegistrationPet(resp, payload);
         if (responseStep) {
           this.onboardingState.saveRegistrationDraft(
             {
@@ -4056,6 +4058,31 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       ...(savedData || {}),
       ...(user || {})
     };
+  }
+
+  /**
+   * The registration endpoint can return `petName` directly, whereas login
+   * returns `user.pet`. Persist the authoritative response immediately so the
+   * shared pet renderer switches before any dashboard navigation occurs.
+   */
+  private persistRegistrationPet(response: any, payload: any): void {
+    const responseDraft = this.getRegistrationResponseDraft(response);
+    const hasResponsePet = Object.prototype.hasOwnProperty.call(responseDraft, 'pet')
+      || Object.prototype.hasOwnProperty.call(responseDraft, 'petName')
+      || Object.prototype.hasOwnProperty.call(responseDraft, 'petType')
+      || Object.prototype.hasOwnProperty.call(responseDraft, 'selectedPetName');
+
+    if (hasResponsePet) {
+      this.authService.updateUserData(responseDraft);
+      return;
+    }
+
+    // Some older responses omit pet data even when the registration was
+    // accepted. Preserve the user's explicit selection until a later login or
+    // profile refresh returns the backend value.
+    if (payload?.petName) {
+      this.authService.updateUserData({ petName: payload.petName });
+    }
   }
 
   private shouldOpenUnlockPotentialStep(

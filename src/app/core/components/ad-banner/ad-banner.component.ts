@@ -68,7 +68,7 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
   /** Which screen this banner is on - determines which ads the API returns */
   @Input() screen: AdScreen = 'HOME';
   /** Optional Figma layout used by screens with a dedicated ad treatment. */
-  @Input() variant: 'default' | 'article-details' | 'eduhub-parent' | 'eduhub-inner' | 'parent-learning' = 'default';
+  @Input() variant: 'default' | 'article-details' | 'eduhub-parent' | 'eduhub-inner' | 'parent-learning' | 'lesson' = 'default';
 
   @ViewChild('scrollTrack') scrollTrackRef?: ElementRef<HTMLElement>;
 
@@ -213,11 +213,14 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
     const parentEduHub = this.variant === 'eduhub-parent';
     const parentEduHubInner = this.variant === 'eduhub-inner';
     const parentLearning = this.variant === 'parent-learning';
-    const cardWidth = parentLearning
+    const lesson = this.variant === 'lesson';
+    const cardWidth = lesson
+      ? containerWidth
+      : parentLearning
       ? Math.min(305, containerWidth * 0.845)
       : containerWidth * (articleDetails ? 0.845 : (parentEduHub || parentEduHubInner) ? 0.81 : 0.82);
-    const gap = articleDetails || parentEduHub || parentEduHubInner || parentLearning ? 8 : 10;
-    const peekOffset = articleDetails || parentEduHub || parentEduHubInner || parentLearning ? 0 : (containerWidth - cardWidth) / 2;
+    const gap = lesson ? 0 : (articleDetails || parentEduHub || parentEduHubInner || parentLearning ? 8 : 10);
+    const peekOffset = lesson || articleDetails || parentEduHub || parentEduHubInner || parentLearning ? 0 : (containerWidth - cardWidth) / 2;
     const translateX = peekOffset - this.currentIndex * (cardWidth + gap);
     el.style.transform = `translateX(${translateX}px)`;
   }
