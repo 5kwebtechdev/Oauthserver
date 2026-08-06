@@ -4,7 +4,8 @@
 }
 
 :host(.parent-eduhub-ad):not(:has(.adb)),
-:host(.parent-learning-ad):not(:has(.adb)) {
+:host(.parent-learning-ad):not(:has(.adb)),
+:host(.lesson-ad):not(:has(.adb)) {
   display: none;
 }
 
@@ -13,6 +14,31 @@
   flex-direction: column;
   gap: 10px;
   width: 100%;
+}
+
+/* Compact inline placement for the Master Class lesson reader. The banner
+   remains data-driven and is entirely absent when the ads API has no result. */
+.adb--lesson {
+  gap: 0;
+
+  .adb__card {
+    flex: 0 0 100%;
+    min-width: 100%;
+    height: auto;
+    aspect-ratio: 2.85 / 1;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(44, 38, 84, .08);
+    transform: none;
+    opacity: 1;
+  }
+
+  .adb__img {
+    object-fit: cover;
+  }
+
+  .adb__dots {
+    display: none;
+  }
 }
 
 // ── Clip wrapper — only the card track gets overflow:hidden, not the dots row ─

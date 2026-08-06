@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, NgZone } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnInit, OnDestroy, NgZone, ViewChild } from '@angular/core';
 import { ViewWillEnter } from '@ionic/angular';
 import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
@@ -35,9 +35,11 @@ type ParentLearningStatus = 'pending' | 'completed';
   imports: [CommonModule, IonicModule, RouterModule, FormsModule, HttpClientModule, FooterComponent, SupermePetComponent, EmptyStateComponent, SkeletonImageComponent, LearningChallengeCardComponent, LearningArticleCardComponent, SectionComingSoonComponent, AdBannerComponent],
   providers: [LearningService]
 })
-export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
+export class LearningMainComponent implements OnInit, OnDestroy, AfterViewInit, ViewWillEnter {
   @Input() title: string = '';
   @Input() body: string = '';
+  @ViewChild('parentTabs') private parentTabs?: ElementRef<HTMLElement>;
+  @ViewChild('childTabs') private childTabs?: ElementRef<HTMLElement>;
 
   selectedCategory: LearningCategoryTab = 'puzzles';
   parentView = false;
@@ -52,7 +54,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     { id: 'puzzles', label: 'Puzzles', icon: 'assets/Icons-Neutral/Icon-Content-Puzzle.png', parentIcon: 'assets/figma/parent-child-learning/tab-puzzles.png', ariaLabel: 'Open Puzzles' },
     { id: 'quizzes', label: 'Quizzes', icon: 'assets/Icons-Neutral/Icon-Content-Quiz.png', parentIcon: 'assets/figma/parent-child-learning/tab-quizzes.png', ariaLabel: 'Open Quizzes' },
     { id: 'articles', label: 'Articles', icon: 'assets/Icons-Neutral/Icon-Content-Articles.png', parentIcon: 'assets/figma/parent-child-learning/tab-articles.png', ariaLabel: 'Open Articles' },
-    { id: 'masterclass', label: 'MasterClass', icon: 'assets/Icons-Neutral/Icon-Content-ForYou.png', parentIcon: 'assets/figma/parent-child-learning/tab-masterclass.png', ariaLabel: 'Open MasterClass' }
+    { id: 'masterclass', label: 'Master Class', icon: 'assets/Icons-Neutral/Icon-Content-ForYou.png', parentIcon: 'assets/figma/parent-child-learning/tab-masterclass.png', ariaLabel: 'Open Master Class' }
   ];
 
   categoryItems: Record<LearningCategoryTab, LearningCategorySummary[]> = {
@@ -207,6 +209,10 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     } else {
       this.loadTab(this.selectedCategory);
     }
+  }
+
+  ngAfterViewInit(): void {
+    this.scrollSelectedTabIntoView(false);
   }
 
   private bindSelectedChild(): void {
@@ -507,6 +513,23 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     this.closeCategoryContent();
     this.loadTab(cat);
     if (this.searchKeyword.trim()) this.updateSearchResults();
+    this.scrollSelectedTabIntoView();
+  }
+
+  private scrollSelectedTabIntoView(smooth = true): void {
+    // Wait until Angular applies the selected-tab class before measuring. This
+    // keeps the active tab fully visible on narrow iPhones and iPads.
+    setTimeout(() => {
+      const tabRow = this.parentView ? this.parentTabs?.nativeElement : this.childTabs?.nativeElement;
+      const selectedTab = tabRow?.querySelector<HTMLElement>(
+        `[data-category-tab="${this.selectedCategory}"]`
+      );
+      selectedTab?.scrollIntoView({
+        behavior: smooth ? 'smooth' : 'auto',
+        block: 'nearest',
+        inline: 'center'
+      });
+    });
   }
 
   openPuzzles() { this.selectCategory('puzzles'); }

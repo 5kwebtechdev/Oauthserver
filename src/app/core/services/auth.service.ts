@@ -806,18 +806,19 @@ export class AuthService {
    */
   updateUserData(data: Partial<any>): void {
     try {
+      const normalizedData = this.normalizeUserPetData(data);
       const currentData = this.userDataSubject.value || {};
-      const updatedData = { ...currentData, ...data };
+      const updatedData = { ...currentData, ...normalizedData };
       
       // Handle nested avatar object
-      if (data['avatar']) {
-        updatedData['avatar'] = { ...(currentData['avatar'] || {}), ...data['avatar'] };
+      if (normalizedData['avatar']) {
+        updatedData['avatar'] = { ...(currentData['avatar'] || {}), ...normalizedData['avatar'] };
       }
 
       // Preserve pet metadata (id, gender and backend URL) when only petName
       // changes, while still supporting APIs that return a pet string.
-      if (Object.prototype.hasOwnProperty.call(data, 'pet')) {
-        const nextPet = data['pet'];
+      if (Object.prototype.hasOwnProperty.call(normalizedData, 'pet')) {
+        const nextPet = normalizedData['pet'];
         const currentPet = (
           currentData['pet'] && typeof currentData['pet'] === 'object' && !Array.isArray(currentData['pet'])
         )
@@ -849,9 +850,10 @@ export class AuthService {
    */
   setUserData(data: any): void {
     try {
-      localStorage.setItem('user_data', JSON.stringify(data));
-      this.userDataSubject.next(data);
-      this.syncPetFromUserData(data);
+      const normalizedData = this.normalizeUserPetData(data);
+      localStorage.setItem('user_data', JSON.stringify(normalizedData));
+      this.userDataSubject.next(normalizedData);
+      this.syncPetFromUserData(normalizedData);
       console.log('[AuthService] User data set and broadcasted');
     } catch (error) {
       console.error('[AuthService] Error setting user data:', error);
@@ -972,9 +974,7 @@ export class AuthService {
   getUserPet(): any {
     try {
       const userData = this.getUserData();
-      if (userData && userData.pet) {
-        return userData.pet;
-      }
+      return this.extractPetFromUserData(userData) ?? null;
     } catch (error) {
       console.error('[AuthService] Error getting user pet:', error);
     }
@@ -982,7 +982,60 @@ export class AuthService {
   }
 
   private syncPetFromUserData(userData: any): void {
-    this.petAgeService.syncFromUserPet(userData?.pet);
+    this.petAgeService.syncFromUserPet(this.extractPetFromUserData(userData));
+  }
+
+  /**
+   * Backend responses have used both `user.pet` and a top-level `petName`.
+   * Convert the latter into the same persisted shape so every screen receives
+   * one source of truth, including immediately after registration.
+   */
+  private normalizeUserPetData(data: any): any {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      return data;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(data, 'pet')) {
+      return data;
+    }
+
+    const pet = this.extractPetFromUserData(data);
+    return pet === undefined ? data : { ...data, pet };
+  }
+
+  /**
+   * Supports all current API pet response shapes without inventing a default
+   * pet when the server explicitly reports a null or unsupported value.
+   */
+  private extractPetFromUserData(userData: any): any | null | undefined {
+    if (!userData || typeof userData !== 'object') {
+      return undefined;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(userData, 'pet')) {
+      return userData.pet;
+    }
+
+    const hasTopLevelPet = Object.prototype.hasOwnProperty.call(userData, 'petName')
+      || Object.prototype.hasOwnProperty.call(userData, 'petType')
+      || Object.prototype.hasOwnProperty.call(userData, 'selectedPetName');
+    if (!hasTopLevelPet) {
+      return undefined;
+    }
+
+    const petName = userData.petName ?? userData.petType ?? userData.selectedPetName;
+    if (petName === null || petName === '') {
+      return null;
+    }
+    if (petName === undefined) {
+      return undefined;
+    }
+
+    const url = userData.petUrl ?? userData.petImageUrl;
+    return {
+      petName: String(petName),
+      ...(typeof url === 'string' && url ? { url } : {})
+    };
   }
 
   /**

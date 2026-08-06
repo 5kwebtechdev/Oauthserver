@@ -158,8 +158,20 @@
 	.categories {
 		display: flex;
 		align-items: stretch;
-		padding: 6px 16px 0;
+		padding: 6px max(16px, env(safe-area-inset-left)) 0 max(16px, env(safe-area-inset-right));
 		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+		overflow-x: auto;
+		overflow-y: hidden;
+		overscroll-behavior-x: contain;
+		scroll-snap-type: x proximity;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
 	}
 
 
@@ -170,8 +182,9 @@
 		justify-content: center;
 		width: auto;
 		height: 80px;
-		min-width: 0;
-		flex: 1 1 0;
+		min-width: 82px;
+		flex: 0 0 82px;
+		scroll-snap-align: center;
 		text-decoration: none;
 		color: #282527;
 		background: transparent;
@@ -1006,19 +1019,33 @@
 }
 
 /* Parent Role → selected child's Learning, Figma node 23758:41561. */
+:host(.ion-page) {
+	/* This is a full-bleed mobile screen. Do not inherit the app-wide
+	   readable-column cap, which exposes white gutters on wider iPhones/iPads. */
+	width: 100% !important;
+	max-width: none !important;
+	margin-inline: 0 !important;
+}
+
 .parent-learning-content {
 	--background: #fff;
 	--padding-top: 0;
 	--padding-start: 0;
 	--padding-end: 0;
+	width: 100%;
+	max-width: 100%;
+	overflow-x: clip;
 }
 
 .parent-learning-page {
-	width: min(100%, 393px);
+	width: 100%;
+	max-width: none;
+	box-sizing: border-box;
 	min-height: 100%;
 	margin: 0 auto;
 	padding: 0 0 calc(114px + var(--sab, 0px));
-	overflow: hidden;
+	overflow-x: clip;
+	overflow-y: visible;
 	background: #fff;
 	color: #282527;
 	font-family: var(--font-sans, 'Nunito', sans-serif);
@@ -1164,8 +1191,8 @@
 	align-self: end;
 	justify-self: end;
 	display: block;
-	object-fit: cover;
-	object-position: top center;
+	object-fit: contain;
+	object-position: right bottom;
 }
 
 .parent-learning-body {
@@ -1173,34 +1200,51 @@
 	flex-direction: column;
 	gap: 16px;
 	padding-top: 16px;
+	width: 100%;
+	min-width: 0;
+	max-width: 100%;
+	box-sizing: border-box;
+	overflow-x: clip;
 }
 
 .parent-learning-tabs {
-	width: calc(100% - 32px);
+	width: auto;
 	height: 66px;
 	min-height: 66px;
-	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
+	display: flex;
 	align-items: stretch;
-	gap: 0;
-	margin: 0 16px;
+	justify-content: flex-start;
+	gap: 4px;
+	margin: 0 max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
 	padding: 2px;
-	overflow: hidden;
+	box-sizing: border-box;
+	overflow-x: auto;
+	overflow-y: hidden;
+	overscroll-behavior-x: contain;
+	scroll-snap-type: x proximity;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
 	border-radius: 8px;
 	background: #fff;
 	box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
 }
 
 .parent-learning-tab {
 	width: auto;
 	height: 62px;
-	min-width: 0;
+	min-width: max-content;
+	flex: 0 0 auto;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	gap: 2px;
-	padding: 8px 2px;
+	padding: 8px 12px;
+	scroll-snap-align: center;
 	border: 0;
 	border-radius: 8px;
 	background: transparent;
@@ -1212,9 +1256,9 @@
 	transition: background-color 160ms ease, color 160ms ease;
 
 	> span:last-child {
-		max-width: 100%;
-		overflow: hidden;
-		text-overflow: ellipsis;
+		max-width: none;
+		overflow: visible;
+		text-overflow: clip;
 		white-space: nowrap;
 	}
 }
@@ -1718,8 +1762,9 @@
 
 @media (min-width: 700px) {
 	.parent-learning-page {
-		width: min(100%, 560px);
-		box-shadow: 0 0 24px rgba(40, 37, 39, 0.06);
+		width: 100%;
+		max-width: none;
+		box-shadow: none;
 	}
 
 	.parent-learning-hero__content {
@@ -1755,8 +1800,9 @@
 	}
 
 	.parent-learning-tabs {
-		width: calc(100% - 24px);
-		margin-inline: 12px;
+		width: auto;
+		margin-right: max(12px, env(safe-area-inset-right));
+		margin-left: max(12px, env(safe-area-inset-left));
 	}
 
 	.parent-learning-tab {
