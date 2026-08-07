@@ -102,44 +102,6 @@
             <ad-banner [screen]="adScreen"></ad-banner>
         </div>
 
-        <div class="routine-container">
-            <div class="routine-header">
-                <h3>Your Daily Routines</h3>
-
-                <div class="routine-selectors d-flex justify-content-between">
-                    <superme-badge [text]="`Morning (${habitRoutineSummary.morning})`" type="morning"
-                        [disabled]="routineSubFilter !== 'morning'" [active]="routineSubFilter === 'morning'"
-                        (click)="selectRoutineSubFilter('morning')"></superme-badge>
-                    <superme-badge [text]="`Evening (${habitRoutineSummary.evening})`" type="evening"
-                        [disabled]="routineSubFilter !== 'evening'" [active]="routineSubFilter === 'evening'"
-                        (click)="selectRoutineSubFilter('evening')"></superme-badge>
-                    <superme-badge [text]="`Night (${habitRoutineSummary.night})`" type="night"
-                        [disabled]="routineSubFilter !== 'night'" [active]="routineSubFilter === 'night'"
-                        (click)="selectRoutineSubFilter('night')"></superme-badge>
-                </div>
-            </div>
-            <div class="habit-list-container" *ngIf="currentMainTab === 'habits'">
-                <div *ngIf="filteredHabitsByRoutine && filteredHabitsByRoutine.length > 0; else noRoutineHabitsTemplate"
-                    class="habit-list-content">
-                    <div *ngFor="let habit of filteredHabitsByRoutine">
-                        <activity-card [habit]="habit" [startTime]="habit.startTimeStamp" [endTime]="habit.endTimeStamp"
-                            [inProgress]="habit.startTimeStamp <= currentTimestamp && habit.endTimeStamp >= currentTimestamp"
-                            [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()"
-                            (cardTap)="onCardTap($event)" (cardLongPress)="onCardLongPress($event)">
-                        </activity-card>
-                    </div>
-                </div>
-                <ng-template #noRoutineHabitsTemplate>
-                    <empty-state
-                        [imageSrc]="showPet ? currentPetBaseImage : ''"
-                        [imageAlt]="currentPetImageAlt"
-                        [leadText]="routineSubFilter === 'morning' ? 'No morning routine yet' : (routineSubFilter === 'evening' ? 'No evening routine yet' : 'No night routine yet')"
-                        [subText]="routineSubFilter === 'morning' ? 'Add morning routine to your habits and tasks to view them here' : (routineSubFilter === 'evening' ? 'Add evening routine to your habits and tasks to view them here' : 'Add night routine to your habits and tasks to view them here')"
-                        [buttonText]="''">
-                    </empty-state>
-                </ng-template>
-            </div>
-        </div>
     </div>
 
     <!-- Tasks layout mirrors Habits: Journey, Priority, Routine selectors and lists -->
@@ -227,44 +189,6 @@
             <ad-banner [screen]="adScreen"></ad-banner>
         </div>
 
-        <div class="routine-container">
-            <div class="routine-header">
-                <h3>Your Daily Routines</h3>
-                <div class="routine-selectors d-flex justify-content-between">
-                    <superme-badge [text]="`Morning (${taskRoutineSummary.morning})`" type="morning"
-                        [disabled]="routineSubFilter !== 'morning'" [active]="routineSubFilter === 'morning'"
-                        (click)="selectRoutineSubFilter('morning')"></superme-badge>
-                    <superme-badge [text]="`Evening (${taskRoutineSummary.evening})`" type="evening"
-                        [disabled]="routineSubFilter !== 'evening'" [active]="routineSubFilter === 'evening'"
-                        (click)="selectRoutineSubFilter('evening')"></superme-badge>
-                    <superme-badge [text]="`Night (${taskRoutineSummary.night})`" type="night"
-                        [disabled]="routineSubFilter !== 'night'" [active]="routineSubFilter === 'night'"
-                        (click)="selectRoutineSubFilter('night')"></superme-badge>
-                </div>
-            </div>
-                <div class="habit-list-container">
-                <div *ngIf="filteredTasksByRoutine && filteredTasksByRoutine.length > 0; else noRoutineTasksTemplate"
-                    class="habit-list-content">
-                    <div *ngFor="let task of filteredTasksByRoutine">
-                        <activity-card [habit]="task.task ? task.task : task" [startTime]="task.startTimeStamp"
-                            [endTime]="task.endTimeStamp"
-                            [inProgress]="(task.startTimeStamp || 0) <= currentTimestamp && (task.endTimeStamp || MAX_SAFE_INTEGER) >= currentTimestamp"
-                            [isCurrentDateView]="isSelectedDateToday()" [selectedDate]="getSelectedDateString()"
-                            (cardTap)="onCardTap($event)" (cardLongPress)="onCardLongPress($event)">
-                        </activity-card>
-                    </div>
-                </div>
-                <ng-template #noRoutineTasksTemplate>
-                    <empty-state
-                        [imageSrc]="showPet ? currentPetBaseImage : ''"
-                        [imageAlt]="currentPetImageAlt"
-                        [leadText]="routineSubFilter === 'morning' ? 'No morning routine yet' : (routineSubFilter === 'evening' ? 'No evening routine yet' : 'No night routine yet')"
-                        [subText]="routineSubFilter === 'morning' ? 'Add morning routine to your habits and tasks to view them here' : (routineSubFilter === 'evening' ? 'Add evening routine to your habits and tasks to view them here' : 'Add night routine to your habits and tasks to view them here')"
-                        [buttonText]="''">
-                    </empty-state>
-                </ng-template>
-            </div>
-        </div>
     </div>
 
 

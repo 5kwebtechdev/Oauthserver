@@ -183,17 +183,6 @@
   </superme-tags>
 </ng-template>
 
-<ng-template #routineSection let-borderColor="borderColor">
-  <div class="d-flex flex-column" [style.border-bottom]="'1px solid ' + borderColor">
-    <div class="routine-section">
-      <label>Routine</label>
-      <superme-selectors class="w-100" [options]="routineOptions" componentType="badge" [singleSelection]="true"
-        (selectedKeysChange)="onRoutineSelected($event)" [scrollable]="false"></superme-selectors>
-    </div>
-    <!-- routine error shown under time section -->
-  </div>
-</ng-template>
-
 <!-- coinSection removed (parent-only assign coins UI) -->
 
 <ng-template #notesSection let-showNotesValidation="showNotesValidation" let-notesPlaceholder="placeholder">
@@ -317,7 +306,6 @@
     <div *ngIf="currentActive === 'habits'" class="form-card">
       <ng-container
         *ngTemplateOutlet="titleInputSection; context: {placeholder: 'What habit do you want to build?', errorMsg: 'Please give this a name', subtitle: 'Be specific and actionable.'}"></ng-container>
-      <ng-container *ngTemplateOutlet="routineSection; context: {borderColor: '#8B8DCB'}"></ng-container>
       <div class="date-time-selection">
         <ng-container *ngTemplateOutlet="repeatSection"></ng-container>
         <div class="date-time--pick">
@@ -336,7 +324,6 @@
     <div *ngIf="currentActive === 'tasks'" class="form-card">
       <ng-container
         *ngTemplateOutlet="titleInputSection; context: {placeholder: 'What task do you want to complete?', errorMsg: 'Please give this a name', subtitle: 'Be specific and actionable.'}"></ng-container>
-      <ng-container *ngTemplateOutlet="routineSection; context: {borderColor: '#F6AC72'}"></ng-container>
       <div class="date-time-selection">
         <ng-container *ngTemplateOutlet="repeatSection"></ng-container>
         <div class="date-time--pick">
@@ -594,9 +581,10 @@
           <input [(ngModel)]="customEventTypeName" maxlength="20" placeholder="Event type name"
             aria-label="New event type" (keyup.enter)="saveCustomEventType()">
           <button type="button" (click)="cancelAddEventType()">Cancel</button>
-          <button type="button" class="event-custom-type__save" [disabled]="!customEventTypeName.trim()"
-            (click)="saveCustomEventType()">Add</button>
+          <button type="button" class="event-custom-type__save" [disabled]="!customEventTypeName.trim() || savingEventType"
+            (click)="saveCustomEventType()">{{ savingEventType ? 'Adding...' : 'Add' }}</button>
         </div>
+        <div *ngIf="eventTypeErrorMessage" class="field-error" role="alert">{{ eventTypeErrorMessage }}</div>
         <div *ngIf="attemptedSubmit && showEventTypeError" class="field-error" role="alert">Select an event type.</div>
       </section>
 

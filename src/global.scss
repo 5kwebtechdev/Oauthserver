@@ -1,4 +1,10 @@
 @use 'sass:map';
+@use './theme/signup-details-figma';
+@use './theme/signup-role-figma';
+@use './theme/family-code-figma';
+@use './theme/signup-managed-child-figma';
+@use './theme/child-learning-figma';
+@use './theme/child-planner-figma';
 @import "@ionic/angular/css/core.css";
 
 @import "@ionic/angular/css/normalize.css";
@@ -58,7 +64,6 @@ $svg-icons: (
     background-color: $color;
   }
 }
-
 // Optional: Generate utility classes for each icon
 @each $name, $path in $svg-icons {
   .icon-#{$name} {
@@ -501,13 +506,13 @@ ion-content {
     position: relative;
     // Safe area top is handled by ion-content --padding-top above — no extra top needed
     padding-top: 0 !important;
+    padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab));
 
     >* {
       margin-top: 0 !important;
     }
 
     // Bottom: reserve space for fixed footer + bottom gesture bar on every device.
-    padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab));
   }
 }
 
@@ -1151,10 +1156,3 @@ ion-content {
     background: rgba(0, 0, 0, 0.5);
   }
 }
-
-@import './theme/signup-details-figma';
-@import './theme/signup-role-figma';
-@import './theme/family-code-figma';
-@import './theme/signup-managed-child-figma';
-@import './theme/child-learning-figma';
-@import './theme/child-planner-figma';

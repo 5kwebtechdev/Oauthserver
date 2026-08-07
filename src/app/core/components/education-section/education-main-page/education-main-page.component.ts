@@ -42,6 +42,13 @@ interface StoreCategoryResponse {
     requiresSchoolClass?: boolean;
 }
 
+interface ParentShopCategoryDefinition {
+    id: string;
+    label: string;
+    image: string;
+    aliases: string[];
+}
+
 @Component({
     selector: 'app-education-main-page',
     standalone: true,
@@ -107,6 +114,33 @@ export class EducationMainPageComponent implements OnInit {
         }
     ];
 
+    private readonly parentShopCategoryDefinitions: ParentShopCategoryDefinition[] = [
+        {
+            id: 'stationery-shops',
+            label: 'Stationery Shops',
+            image: 'assets/figma/parent-eduhub/stationery.png',
+            aliases: ['stationery']
+        },
+        {
+            id: 'book-stores',
+            label: 'Book Stores',
+            image: 'assets/figma/parent-eduhub/books.png',
+            aliases: ['book store', 'books', 'textbook']
+        },
+        {
+            id: 'second-hand-books',
+            label: 'Second-hand Books',
+            image: 'assets/figma/parent-eduhub/second-hand-books.png',
+            aliases: ['second hand book', 'secondhand book', 'used book']
+        },
+        {
+            id: 'sports-shop',
+            label: 'Sports Shop',
+            image: 'assets/figma/parent-eduhub/sports.png',
+            aliases: ['sports', 'sport shop']
+        }
+    ];
+
     constructor(
         private router: Router,
         private authService: AuthService,
@@ -115,6 +149,7 @@ export class EducationMainPageComponent implements OnInit {
         private cdr: ChangeDetectorRef
     ) {
         this.isParentRole = this.authService.isParentUser();
+        this.parentShopCategories = this.createParentShopCategories();
     }
 
     get eduAdScreen(): AdScreen {
@@ -175,17 +210,16 @@ export class EducationMainPageComponent implements OnInit {
         ).subscribe({
             next: (response) => {
                 const categories = Array.isArray(response) ? response : [];
-                this.parentShopCategories = categories
-                    .map(category => this.mapStoreCategory(category))
-                    .filter((category): category is ParentEduHubCategory => category !== null)
-                    .sort((left, right) => this.getShopCategoryOrder(left.label) - this.getShopCategoryOrder(right.label));
+                this.parentShopCategories = this.createParentShopCategories(categories);
                 this.parentShopCategoriesLoading = false;
                 this.cdr.detectChanges();
             },
             error: () => {
-                this.parentShopCategories = [];
+                // Keep the four design categories available even if category metadata
+                // cannot be refreshed. Their listings screen safely filters by label.
+                this.parentShopCategories = this.createParentShopCategories();
                 this.parentShopCategoriesLoading = false;
-                this.parentShopCategoriesError = true;
+                this.parentShopCategoriesError = false;
                 this.cdr.detectChanges();
             }
         });
@@ -200,12 +234,11 @@ export class EducationMainPageComponent implements OnInit {
             return;
         }
 
-        if (category.kind === 'store' && category.storeCategoryId != null) {
+        if (category.kind === 'store') {
             void this.router.navigate(['/authed/education/shops'], {
-                queryParams: {
-                    category: category.storeCategoryId,
-                    label: category.label
-                },
+                queryParams: category.storeCategoryId != null
+                    ? { category: category.storeCategoryId, label: category.label }
+                    : { label: category.label },
                 state: {
                     categoryLabel: category.label,
                     categoryId: category.storeCategoryId
@@ -255,52 +288,26 @@ export class EducationMainPageComponent implements OnInit {
         return headers;
     }
 
-    private mapStoreCategory(category: StoreCategoryResponse): ParentEduHubCategory | null {
-        const label = String(category?.displayName ?? category?.name ?? '').trim();
-        const id = Number(category?.id);
-        if (!label || !Number.isFinite(id)) return null;
+    private createParentShopCategories(categories: StoreCategoryResponse[] = []): ParentEduHubCategory[] {
+        return this.parentShopCategoryDefinitions.map(definition => {
+            const match = categories.find(category => {
+                const categoryLabel = String(category?.displayName ?? category?.name ?? '')
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, ' ')
+                    .trim();
+                return definition.aliases.some(alias => categoryLabel.includes(alias));
+            });
+            const categoryId = Number(match?.id);
 
-        const apiImage = String(category?.iconUrl ?? category?.imageUrl ?? '').trim();
-        const figmaImage = this.getFigmaShopImage(label);
-        const fallbackImage = figmaImage || 'assets/figma/parent-eduhub/shops.svg';
-
-        return {
-            id: `store-${id}`,
-            label,
-            image: figmaImage || apiImage || fallbackImage,
-            fallbackImage,
-            kind: 'store',
-            storeCategoryId: id,
-            requiresSchoolClass: !!category.requiresSchoolClass
-        };
-    }
-
-    private getFigmaShopImage(label: string): string {
-        const normalized = label.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-
-        if (normalized.includes('station')) {
-            return 'assets/figma/parent-eduhub/stationery.png';
-        }
-        if (normalized.includes('second') && normalized.includes('book')) {
-            return 'assets/figma/parent-eduhub/second-hand-books.png';
-        }
-        if (normalized.includes('sport')) {
-            return 'assets/figma/parent-eduhub/sports.png';
-        }
-        if (normalized.includes('book')) {
-            return 'assets/figma/parent-eduhub/books.png';
-        }
-
-        return '';
-    }
-
-    private getShopCategoryOrder(label: string): number {
-        const normalized = label.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-
-        if (normalized.includes('station')) return 0;
-        if (normalized.includes('book') && !normalized.includes('second')) return 1;
-        if (normalized.includes('second') && normalized.includes('book')) return 2;
-        if (normalized.includes('sport')) return 3;
-        return 100;
+            return {
+                id: `store-${definition.id}`,
+                label: definition.label,
+                image: definition.image,
+                fallbackImage: definition.image,
+                kind: 'store',
+                storeCategoryId: Number.isFinite(categoryId) ? categoryId : undefined,
+                requiresSchoolClass: !!match?.requiresSchoolClass
+            };
+        });
     }
 }

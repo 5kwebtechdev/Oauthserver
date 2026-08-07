@@ -7,12 +7,14 @@
 
 .analytics-content {
   --background: #ffffff;
+  // Global ion-content styling already applies the top safe-area inset.
+  // Reserve the footer space here, in Ionic's actual scroll container.
+  --padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 16px);
 }
-
 .analytics-page {
   min-height: 100%;
-  padding: calc(12px + env(safe-area-inset-top, 0px)) 0
-    calc(var(--footer-visual-height, 80px) + env(safe-area-inset-bottom, 0px));
+  padding: 0 0 16px;
+  box-sizing: border-box;
   background: #ffffff;
 }
 
@@ -51,9 +53,4 @@
     object-fit: contain;
   }
 }
-
-@media (max-height: 700px) {
-  .analytics-page {
-    padding-top: env(safe-area-inset-top, 0px);
-  }
-}
+// End of Insights page styles.
