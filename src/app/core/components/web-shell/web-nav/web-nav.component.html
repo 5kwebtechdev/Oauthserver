@@ -82,6 +82,7 @@
 
     <!-- Parent: child selector + coins + profile -->
     <div class="web-header__right web-header__right--parent" *ngIf="isParent">
+      <!--
       <div class="web-header__nav-item web-header__child-selector" *ngIf="children.length > 0"
         [class.open]="openMenu === 'child'"
         (click)="toggleMenu('child', $event); $event.stopPropagation()">
@@ -98,6 +99,7 @@
           </button>
         </div>
       </div>
+      -->
 
       <div class="web-header__coins" (click)="goToCoins()">
         <img src="assets/Icons-Neutral/Icons-Coins.png" alt="coins" class="web-header__coins-icon">

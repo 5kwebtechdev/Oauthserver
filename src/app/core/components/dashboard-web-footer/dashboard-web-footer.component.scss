@@ -26,14 +26,18 @@ $scale: math.div(1200, 1440);
   }
 }
 
+// The background is boxed to the same width as every other section instead
+// of bleeding edge-to-edge — bp.web-container lives on this outer element,
+// not just the inner content, so the pink fill itself is inset from the
+// viewport edges, not just the columns/logo inside it.
 .web-footer {
-  width: 100%;
-  box-sizing: border-box;
-  background: #fce7eb;
+  @include bp.web-container;
 }
 
 .web-footer__inner {
-  @include bp.web-container;
+  width: 100%;
+  background: #fce7eb;
+
 }
 
 // ── Shared bits (both layouts) ────────────────────────────────────────────
@@ -183,16 +187,20 @@ $scale: math.div(1200, 1440);
 
 .web-footer__top {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   width: 100%;
-  gap: fluid(10, 20);
+  row-gap: fluid(16, 32);
+  column-gap: fluid(10, 20);
 }
 
 .web-footer__brand-links {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   min-width: 0;
+  row-gap: fluid(16, 32);
   gap: fluid(12, 64);
 }
 
@@ -215,11 +223,19 @@ $scale: math.div(1200, 1440);
   }
 }
 
+// 2x2 grid instead of a single row of 4 — with columns in TUTOR, COMPANY,
+// SUPPORT, LEGAL order, row-major auto-placement puts SUPPORT under TUTOR
+// and LEGAL under COMPANY. Sitting between .web-footer__brand-links and
+// .web-footer__cta as a third sibling of .web-footer__top (itself
+// justify-content: space-between), this reads as the centered middle section
+// of a brand / links / CTA three-part footer.
 .web-footer__columns {
-  display: flex;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  align-items: start;
   min-width: 0;
-  gap: fluid(12, 56);
+  row-gap: fluid(16, 32);
+  column-gap: fluid(24, 64);
 }
 
 .web-footer__column {

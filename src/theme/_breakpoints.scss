@@ -29,14 +29,24 @@ $_breakpoints: (xs: $bp-xs, sm: $bp-sm, md: $bp-md, lg: $bp-lg, xl: $bp-xl, '2xl
 @mixin mobile-only   { @media (max-width: $bp-sm)         { @content; } }
 @mixin landscape-xs  { @media (orientation: landscape) and (max-height: 500px) { @content; } }
 
-// Shared fluid container: full-bleed background, content capped and centered.
+// Shared fluid container: full-bleed background, content padded and centered.
 // Used by the tablet/web-only dashboard header, footer, and page content so
-// they all line up on the same left/right edges instead of drifting.
+// they all line up on the same left/right edges instead of drifting. A flat
+// 10% inline padding scales proportionally with the viewport instead of a
+// fixed-pixel gutter, so the margin stays visually consistent (and never
+// collapses to zero) at any web/desktop width. $web-container-max keeps the
+// box from growing unbounded on ultra-wide monitors, which otherwise starves
+// fixed-size inner content (stat rows, icon grids) into a sparse-looking
+// strip on the left with dead space on the right. Every call site is itself
+// gated behind bp.tablet-up (either via the component's own :host display:none
+// on mobile, or an explicit @include bp.tablet-up wrapper), so this never
+// reaches the mobile app view.
 $web-container-max: 1200px;
 
 @mixin web-container {
   width: 100%;
   max-width: $web-container-max;
   margin-inline: auto;
+  padding-inline: 10%;
   box-sizing: border-box;
 }

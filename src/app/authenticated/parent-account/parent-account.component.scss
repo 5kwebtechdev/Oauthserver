@@ -1,3 +1,5 @@
+@use '../../../theme/breakpoints' as bp;
+
 :host {
   display: block;
   min-height: 100%;
@@ -278,20 +280,28 @@ button {
   &__stats {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 
     span {
       display: inline-flex;
       align-items: center;
+      gap: 2px;
       color: #6b656a;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
     }
 
     img {
-      width: 16px;
-      height: 16px;
+      width: 20px;
+      height: 20px;
       object-fit: contain;
+    }
+
+    // Streak (fire) icon is the first of the two stat images — sized up
+    // separately since it read visually smaller than the coin icon next to it.
+    span:first-child img {
+      width: 26px;
+      height: 26px;
     }
   }
 
@@ -1725,6 +1735,362 @@ button {
 
   .today-plan ::ng-deep .glance-card {
     border-radius: 32px;
+  }
+}
+
+// ── Web / tablet chrome swap ─────────────────────────────────────────────
+// Mirrors UserDashboardComponent's own escape-hatch: global.scss caps every
+// routed page (`ion-router-outlet, .ion-page`) at `--container-md`/
+// `--container-lg` (768px/960px) by default, and this page's own base rule
+// above additionally pins `.parent-home` to a fixed 720px reading column.
+// Above the tablet breakpoint this swaps to the same 1200px `bp.web-container`
+// used by the persistent web-nav header and dashboard-web-footer, so the
+// parent dashboard lines up on the same left/right edges as the rest of the
+// authenticated web-view shell instead of floating as a narrow island.
+@include bp.tablet-up {
+  :host(.ion-page) {
+    max-width: none !important;
+    margin-inline: 0 !important;
+    padding-inline: 0 !important;
+  }
+
+  // app-footer already hides itself at this breakpoint (see its own :host
+  // tablet-up rule) — this just stops mobile-chrome's fixed-bar bottom
+  // padding from leaving dead space above the in-flow desktop footer.
+  .parent-home-content {
+    --padding-bottom: var(--sab, 0px);
+  }
+
+  // bp.web-container's own max-width (1200px) overrides the base rule's
+  // fixed 720px mobile reading column, since this declaration comes later
+  // in the cascade.
+  .parent-home {
+    @include bp.web-container;
+  }
+}
+
+// ── Web / tablet type & icon scale ────────────────────────────────────────
+// The width swap above only widens the outer column — every icon/font size
+// inside was still the exact mobile pixel value, so on a 1200px-wide screen
+// it all reads as tiny, sparse content with huge gaps around it. Scale the
+// header, child switcher, mood balance, and performance sections up
+// (~1.3–1.5×) to match the wider canvas.
+@include bp.tablet-up {
+  .parent-header {
+    height: 64px;
+
+    &__copy {
+      gap: 4px;
+
+      strong {
+        font-size: 17px;
+      }
+
+      span {
+        font-size: 14px;
+      }
+    }
+  }
+
+  .parent-avatar {
+    width: 64px;
+    height: 64px;
+    flex: 0 0 64px;
+
+    img,
+    span {
+      font-size: 26px;
+    }
+  }
+
+  .notification-button {
+    width: 48px;
+    height: 48px;
+    padding: 8px;
+
+    img {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  .parent-coin-pill {
+    height: 48px;
+    min-width: 84px;
+    padding: 4px 14px;
+
+    img {
+      width: 40px;
+      height: 40px;
+    }
+
+    span {
+      font-size: 18px;
+    }
+  }
+
+  .child-switcher {
+    margin-top: 24px;
+
+    &__rail {
+      gap: 10px;
+      min-height: 100px;
+    }
+  }
+
+  .switcher-child {
+    width: 178px;
+    flex: 0 1 178px;
+    min-width: 130px;
+    height: 100px;
+    padding: 20px 12px;
+
+    &--selected-single {
+      width: 280px;
+      flex: 0 1 280px;
+      min-width: 220px;
+    }
+
+    &--selected-multiple {
+      width: 256px;
+      flex: 0 1 256px;
+      min-width: 200px;
+    }
+
+    &__content {
+      gap: 12px;
+    }
+
+    &__avatar {
+      width: 52px;
+      height: 52px;
+      flex: 0 0 52px;
+
+      img {
+        width: 52px;
+        height: 52px;
+      }
+
+      i {
+        width: 8px;
+        height: 8px;
+      }
+    }
+
+    &__details {
+      gap: 6px;
+
+      > strong {
+        max-width: 100px;
+        font-size: 17px;
+      }
+    }
+
+    &--selected-single &__details > strong {
+      max-width: 190px;
+    }
+
+    &--selected-multiple &__details > strong {
+      max-width: 170px;
+    }
+
+    &__stats {
+      gap: 8px;
+
+      span {
+        font-size: 15px;
+      }
+
+      img {
+        width: 26px;
+        height: 26px;
+      }
+
+      span:first-child img {
+        width: 32px;
+        height: 32px;
+      }
+    }
+  }
+
+  .switcher-action {
+    flex-basis: 92px;
+    min-width: 92px;
+    height: 100px;
+    gap: 6px;
+
+    &__icon {
+      width: 52px;
+      height: 52px;
+
+      > img {
+        width: 30px;
+        height: 30px;
+      }
+
+      i {
+        width: 20px;
+        height: 20px;
+        font-size: 15px;
+      }
+    }
+
+    > span:last-child {
+      max-width: 92px;
+      font-size: 13px;
+    }
+
+    &--add {
+      flex-basis: 138px;
+      min-width: 138px;
+    }
+  }
+
+  .child-switcher__rail--multiple .switcher-action {
+    flex-basis: 88px;
+    min-width: 88px;
+
+    > span:last-child {
+      max-width: 88px;
+    }
+  }
+
+  .switcher-co-parent {
+    width: 92px;
+    flex: 0 0 92px;
+    height: 100px;
+
+    &__avatar {
+      width: 42px;
+      height: 42px;
+    }
+  }
+
+  .section-heading {
+    margin-bottom: 20px;
+
+    h2 {
+      font-size: 22px;
+
+      &--button img {
+        width: 15px;
+        height: 15px;
+      }
+    }
+
+    > span {
+      font-size: 16px;
+    }
+
+    &--button {
+      min-height: 44px;
+
+      h2 img {
+        width: 15px;
+        height: 15px;
+      }
+    }
+  }
+
+  .outline-pill {
+    min-height: 44px;
+    padding: 10px 22px;
+    font-size: 16px;
+  }
+
+  .performance-card {
+    padding: 28px;
+    border-radius: 40px;
+  }
+
+  .metric-grid {
+    grid-template-columns: repeat(4, minmax(0, 96px));
+    gap: 32px;
+  }
+
+  .metric {
+    gap: 8px;
+
+    &__label {
+      min-height: 36px;
+      font-size: 14px;
+
+      span {
+        max-width: 96px;
+      }
+
+      img {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    &__ring {
+      width: 96px;
+      height: 96px;
+
+      span {
+        font-size: 20px;
+      }
+    }
+
+    > strong {
+      min-height: 32px;
+      font-size: 14px;
+    }
+  }
+
+  .ai-insight {
+    gap: 12px;
+    min-height: 120px;
+    margin-top: 20px;
+    padding: 18px;
+
+    > img {
+      width: 52px;
+      height: 52px;
+      flex: 0 0 52px;
+    }
+
+    > span {
+      gap: 10px;
+      font-size: 16px;
+    }
+  }
+
+  .mood-balance {
+    gap: 12px;
+
+    &__bar {
+      height: 64px;
+      border-radius: 20px;
+
+      span {
+        font-size: 18px;
+
+        &:first-child {
+          border-radius: 20px 0 0 20px;
+        }
+
+        &:last-child {
+          border-radius: 0 20px 20px 0;
+        }
+      }
+    }
+
+    &__legend {
+      gap: 24px;
+
+      span {
+        font-size: 16px;
+        gap: 6px;
+      }
+
+      i {
+        width: 16px;
+        height: 16px;
+      }
+    }
   }
 }
 

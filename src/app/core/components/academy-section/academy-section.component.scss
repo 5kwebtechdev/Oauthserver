@@ -288,3 +288,125 @@
     max-width: 180px;
   }
 }
+
+// No dedicated web/tablet layout previously — every icon/font size below was
+// the exact mobile pixel value, so on a widened desktop column it read as
+// tiny cards with big gaps around them (matches learning-section, its
+// sibling in the parent/user dashboard "Skills Quest" area).
+@media (min-width: 769px) {
+  .academy {
+    gap: 12px;
+  }
+
+  .academy__title-row img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .academy__title-row h3 {
+    font-size: 22px;
+  }
+
+  .academy__heading p {
+    font-size: 14px;
+  }
+
+  .academy__feature {
+    min-height: 104px;
+    padding: 16px 14px;
+  }
+
+  .academy__feature-icon {
+    width: 52px;
+    height: 62px;
+  }
+
+  .academy__feature-copy {
+    margin-left: 14px;
+
+    strong {
+      font-size: 20px;
+    }
+
+    small {
+      font-size: 13px;
+    }
+
+    em {
+      font-size: 13px;
+    }
+  }
+
+  .academy__feature-arrow {
+    width: 40px;
+    height: 40px;
+  }
+
+  .academy__masterclass {
+    gap: 20px;
+    padding: 18px 16px;
+
+    .academy__feature {
+      min-height: 72px;
+    }
+  }
+
+  .academy__loading {
+    min-height: 120px;
+  }
+
+  .academy__progress-cards {
+    gap: 14px;
+  }
+
+  .academy__progress-card {
+    flex-basis: 260px;
+    gap: 16px;
+    padding: 12px 12px 16px;
+    border-radius: 16px;
+  }
+
+  .academy__course-head {
+    gap: 8px;
+
+    > img {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+    }
+
+    small,
+    strong {
+      max-width: 190px;
+    }
+
+    small {
+      font-size: 13px;
+    }
+
+    strong {
+      font-size: 17px;
+    }
+  }
+
+  .academy__progress-label {
+    font-size: 13px;
+
+    em {
+      max-width: 190px;
+    }
+
+    small {
+      font-size: 13px;
+    }
+  }
+
+  .academy__progress-track {
+    height: 4px;
+  }
+
+  .academy__empty {
+    padding: 20px 12px;
+    font-size: 15px;
+  }
+}
