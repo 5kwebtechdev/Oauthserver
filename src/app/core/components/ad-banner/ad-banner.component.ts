@@ -163,8 +163,23 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
     ).then(results => results.filter((ad): ad is AdItem => ad !== null));
   }
 
+  /** True for the default (unvariant) ad slot on tablet/desktop — the
+   *  2-per-view web layout, where the fade/scale on the "inactive" card and
+   *  the slide counter are switched off since both visible cards are equally
+   *  current rather than one active slide among peeking neighbors. */
+  private isDesktopDefaultCarousel(): boolean {
+    const isVariant = this.variant === 'article-details' || this.variant === 'eduhub-parent'
+      || this.variant === 'eduhub-inner' || this.variant === 'parent-learning' || this.variant === 'lesson';
+    const isTabletUp = typeof window !== 'undefined' && window.innerWidth > 768;
+    return !isVariant && isTabletUp;
+  }
+
   private startAutoPlay(): void {
     this.clearTimer();
+    // Desktop's 2-per-view layout already shows both ads at once when there
+    // are only 2 — nothing left to slide to, so skip autoplay entirely. With
+    // more than 2, autoplay still advances one card at a time as usual.
+    if (this.isDesktopDefaultCarousel() && this.ads.length <= 2) return;
     if (this.ads.length > 1) {
       this.timer = setInterval(() => {
         this.currentIndex = (this.currentIndex + 1) % this.ads.length;
@@ -219,9 +234,10 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
       ? containerWidth
       : parentLearning
       ? Math.min(305, containerWidth * 0.845)
-      : containerWidth * (articleDetails ? 0.845 : (parentEduHub || parentEduHubInner) ? 0.81 : 0.82);
+      : containerWidth * (articleDetails ? 0.845 : (parentEduHub || parentEduHubInner) ? 0.81 : defaultDesktop ? 0.47 : 0.82);
     const gap = lesson ? 0 : (articleDetails || parentEduHub || parentEduHubInner || parentLearning ? 8 : 10);
-    const peekOffset = lesson || articleDetails || parentEduHub || parentEduHubInner || parentLearning ? 0 : (containerWidth - cardWidth) / 2;
+    const noPeek = lesson || articleDetails || parentEduHub || parentEduHubInner || parentLearning || defaultDesktop;
+    const peekOffset = noPeek ? 0 : (containerWidth - cardWidth) / 2;
     const translateX = peekOffset - this.currentIndex * (cardWidth + gap);
     el.style.transform = `translateX(${translateX}px)`;
   }

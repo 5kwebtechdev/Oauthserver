@@ -158,6 +158,81 @@
   height: 162px;
 }
 
+// Web/tablet viewports have room to lay the three role cards out
+// side by side instead of stacking them full-width (which stretched
+// each card into a short wide strip with a cramped image). The whole
+// unauthenticated shell is capped to a readable column (960px, see
+// `.ion-page` rules in global.scss) no matter how wide the browser
+// window is, so the row only ever has ~900px to divide between 3
+// cards + gaps — sizes below are tuned to that real ceiling, not the
+// viewport.
+@media (min-width: 768px) {
+  // `ion-content` ancestor prefix bumps specificity past
+  // signup.component.scss's `.signup-container[_ngcontent-xxx]` (an
+  // Angular-encapsulation attribute selector, which counts the same
+  // as a class — so it ties `.signup-container.role-layout` on class
+  // count alone and wins the tie by injection order). Without the
+  // extra selector this padding/width silently loses to that rule.
+  ion-content .signup-container.role-layout {
+    width: min(100%, 960px);
+    padding: 48px 32px 40px;
+  }
+
+  .signup-container.role-layout .role-hero--figma .role-hero__title {
+    font-size: 28px;
+  }
+
+  .signup-container.role-layout .role-hero--figma .role-hero__subtitle {
+    font-size: 15px;
+  }
+
+  .signup-role-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 40px;
+  }
+
+  // Stack copy above art instead of the mobile side-by-side layout —
+  // at card widths this wide, text-left/image-right left a large dead
+  // gap between the two. High-specificity selectors (anchored on the
+  // .signup-container.role-layout ancestor) are needed to beat the
+  // per-variant width/size rules declared above, which aren't anchored.
+  .signup-role-card {
+    width: auto;
+    height: auto;
+    min-height: 340px;
+    flex: 1 1 260px;
+    min-width: 240px;
+    max-width: 300px;
+    padding: 24px 20px 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .signup-container.role-layout .signup-role-card__copy {
+    width: 100%;
+    white-space: normal;
+    font-size: 15px;
+    gap: 6px;
+  }
+
+  .signup-container.role-layout .signup-role-card__copy strong {
+    font-size: 28px;
+  }
+
+  .signup-container.role-layout .signup-role-card > img {
+    right: auto;
+    left: 50%;
+    bottom: 0;
+    width: 100%;
+    height: auto;
+    max-width: 65%;
+    transform: translateX(-50%);
+  }
+}
+
 @media (max-width: 360px), (max-height: 760px) {
   .signup-container.role-layout {
     padding-top: clamp(48px, 7.98dvh, 68px);
@@ -181,7 +256,8 @@
   .signup-role-card__copy {
     gap: 3px;
     width: 58%;
-    font-size: clamp(9px, 2.9vw, 10px);
+    font-size: 15px
+    // font-size: clamp(9px, 2.9vw, 10px);
   }
 
   .signup-role-card--child .signup-role-card__copy {
