@@ -108,10 +108,17 @@ button {
   width: min(100%, 393px);
   margin: 0 auto;
   padding:
-    calc(env(safe-area-inset-top, 0px) + 124px)
+    84px
     16px
     calc(env(safe-area-inset-bottom, 0px) + 40px);
   animation: loginEnter 220ms ease-out;
+}
+
+// ion-content already applies the top safe-area inset globally. Keeping the
+// shared back control relative to that inset prevents a second offset on iOS.
+.login-page > superme-auth-back-button {
+  top: 12px;
+  left: 16px;
 }
 
 .login-header {
@@ -747,12 +754,8 @@ button {
 }
 
 @media (max-height: 740px) {
-  .login-back-btn {
-    top: calc(env(safe-area-inset-top, 0px) + 18px);
-  }
-
   .login-shell {
-    padding-top: calc(env(safe-area-inset-top, 0px) + 64px);
+    padding-top: 56px;
   }
 
   .login-accent {

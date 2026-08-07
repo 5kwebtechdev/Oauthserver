@@ -11,7 +11,9 @@ import { AuthService } from 'src/app/core/services/auth.service';
 @Component({
   selector: 'learning-section',
   template: `
-    <section class="content-section" aria-label="Curiosity highlights">
+    <section class="content-section"
+      [class.content-section--parent-home]="rewardMode || parentLearningViewAll"
+      aria-label="Curiosity highlights">
       <header class="content-header">
         <div class="content-title">
           <h2>
@@ -166,15 +168,18 @@ import { AuthService } from 'src/app/core/services/auth.service';
       .view-all-pill {
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         flex: 0 0 auto;
-        min-width: 71px;
-        min-height: 22px;
+        box-sizing: border-box;
+        width: fit-content;
+        min-width: 68px;
+        height: 28px;
         background:
           linear-gradient(#FFFFFF, #FFFFFF) padding-box,
           linear-gradient(135deg, #7C74D8, #E1527C, #F2A33B) border-box;
         border: 2px solid transparent;
         border-radius: 16px;
-        padding: 4px 16px;
+        padding: 0 12px;
         color: #432478;
         font-family: var(--font-sans);
         font-size: 10px;
@@ -190,6 +195,24 @@ import { AuthService } from 'src/app/core/services/auth.service';
 
         &:active {
           background: rgba(225, 82, 124, 0.1);
+        }
+      }
+
+      &.content-section--parent-home {
+        .content-header {
+          align-items: center;
+          margin-bottom: 12px;
+        }
+
+        .content-actions {
+          flex: 0 0 auto;
+          align-self: center;
+        }
+
+        .view-all-pill {
+          border-radius: 14px;
+          font-size: 10px;
+          line-height: 1;
         }
       }
 

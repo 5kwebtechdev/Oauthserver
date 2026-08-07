@@ -13,6 +13,7 @@ import { HabitService } from '../habit.service';
 import { HabitApi } from '../../../api/habit.api';
 import { TaskApi } from '../../../api/task.api';
 import { CalendarApi } from '../../../api/calendar.api';
+import { EventApi, EventPayload, EventTypeDto } from '../../../api/event.api';
 import { TagsApi } from '../../../api/tags.api';
 import { Habit, ReminderOffset } from '../habit.types';
 import { Router } from '@angular/router';
@@ -42,6 +43,7 @@ interface EventChoice {
   key: string;
   label: string;
   icon: string;
+  id?: number;
   custom?: boolean;
 }
 
@@ -151,16 +153,16 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   originUrl: string | null = null;
 
   readonly activityTabs: ReadonlyArray<ActivityTabOption> = [
-    { key: 'habits', label: 'Habit', icon: 'assets/figma/activity-event/tab-habit.png' },
-    { key: 'tasks', label: 'Task', icon: 'assets/figma/activity-event/tab-task.png' },
-    { key: 'timetable', label: 'Time Table', icon: 'assets/figma/activity-event/tab-calendar.png' },
-    { key: 'events', label: 'Event', icon: 'assets/figma/activity-event/tab-calendar.png' }
+    { key: 'habits', label: 'Habit', icon: 'assets/icons/Habit.svg' },
+    { key: 'tasks', label: 'Task', icon: 'assets/icons/Task.svg' },
+    { key: 'timetable', label: 'Time Table', icon: 'assets/figma/child-planner/calendar.svg' },
+    { key: 'events', label: 'Event', icon: 'assets/figma/activity-event/event-type.svg' }
   ];
 
   readonly childActivityTabs: ReadonlyArray<ActivityTabOption> = [
-    { key: 'habits', label: 'Habit', icon: 'assets/figma/child-planner/superme-planner-habit.png' },
-    { key: 'tasks', label: 'Task', icon: 'assets/figma/child-planner/superme-planner-task.png' },
-    { key: 'planner', label: 'Planner', icon: 'assets/figma/child-planner/superme-planner-tab.png' }
+    { key: 'habits', label: 'Habit', icon: 'assets/icons/Habit.svg' },
+    { key: 'tasks', label: 'Task', icon: 'assets/icons/Task.svg' },
+    { key: 'planner', label: 'Planner', icon: 'assets/figma/child-planner/schedule.svg' }
   ];
 
   readonly plannerColors = ['#0D47A1', '#B71C1C', '#880E4F', '#1B5E20', '#4A148C'];
@@ -249,7 +251,9 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   selectedEventType = '';
   eventRecurrence: EventRecurrence = 'ONE_TIME';
   addingEventType = false;
+  savingEventType = false;
   customEventTypeName = '';
+  eventTypeErrorMessage = '';
 
   eventTypes: EventChoice[] = [];
 
@@ -284,6 +288,23 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     return this.reminderOptions.some(option => option.value === normalized)
       ? normalized as ReminderOffset
       : null;
+  }
+
+  private normalizeEventReminderOffset(value: unknown): ReminderOffset | null {
+    const minutes = Number(value);
+    if (minutes === 15) return 'MINUTES_15';
+    if (minutes === 30) return 'MINUTES_30';
+    if (minutes === 45) return 'MINUTES_45';
+    return this.normalizeReminderOffset(value);
+  }
+
+  private getEventReminderMinutes(): number | null {
+    switch (this.reminderOffset) {
+      case 'MINUTES_15': return 15;
+      case 'MINUTES_30': return 30;
+      case 'MINUTES_45': return 45;
+      default: return null;
+    }
   }
 
   // Tag variant mapping by activity type
@@ -393,6 +414,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     private router: Router,
     private taskApi: TaskApi,
     private calendarApi: CalendarApi,
+    private eventApi: EventApi,
     private habitApi: HabitApi,
     private navigation: NavigationService,
     private authService: AuthService,
@@ -441,49 +463,48 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   }
 
   private loadEventTypes(): void {
-    const base: EventChoice[] = [
-      { key: 'BIRTHDAY', label: 'Birthday', icon: 'assets/figma/activity-event/birthday.svg' },
-      { key: 'ANNIVERSARY', label: 'Anniversary', icon: 'assets/figma/activity-event/anniversary.svg' },
-      { key: 'HOLIDAY', label: 'Holiday', icon: 'assets/figma/activity-event/holiday.svg' },
-      { key: 'WORK', label: 'Work', icon: 'assets/figma/activity-event/work.svg' },
-      { key: 'PERSONAL', label: 'Personal', icon: 'assets/figma/activity-event/personal.svg' }
-    ];
-
-    try {
-      const saved = JSON.parse(localStorage.getItem(this.eventTypesStorageKey) || '[]');
-      const custom = Array.isArray(saved)
-        ? saved.filter(item => item && item.key && item.label).map(item => ({
-            key: String(item.key),
-            label: String(item.label),
-            icon: 'assets/figma/activity-event/personal.svg',
-            custom: true
-          }))
-        : [];
-      this.eventTypes = [...base, ...custom.filter(item => !base.some(baseItem => baseItem.key === item.key))];
-    } catch {
-      this.eventTypes = base;
-    }
-  }
-
-  private get eventTypesStorageKey(): string {
-    return `superme_event_types_${this.authService.getUserId() || 'guest'}`;
+    this.eventApi.getEventTypes().subscribe({
+      next: (types) => {
+        this.eventTypes = (Array.isArray(types) ? types : [])
+          .filter(type => !!String(type?.name ?? '').trim())
+          .map(type => this.mapEventType(type));
+        this.ensureEventTypeOption(this.selectedEventType);
+        try { this.cd.detectChanges(); } catch { /* view may not be ready */ }
+      },
+      error: () => {
+        // Keep the required system choices usable if the type request is unavailable.
+        this.eventTypes = [
+          { key: 'Birthday', label: 'Birthday', icon: 'assets/figma/activity-event/birthday.svg' },
+          { key: 'Anniversary', label: 'Anniversary', icon: 'assets/figma/activity-event/anniversary.svg' },
+          { key: 'Exam', label: 'Exam', icon: 'assets/figma/activity-event/personal.svg' }
+        ];
+        this.ensureEventTypeOption(this.selectedEventType);
+      }
+    });
   }
 
   private ensureEventTypeOption(key: string): void {
     if (!key || this.eventTypes.some(item => item.key === key)) return;
-    const label = key
-      .replace(/^CUSTOM_/, '')
-      .toLowerCase()
-      .split('_')
-      .filter(Boolean)
-      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(' ');
     this.eventTypes = [...this.eventTypes, {
       key,
-      label: label || 'Custom',
+      label: key,
       icon: 'assets/figma/activity-event/personal.svg',
       custom: true
     }];
+  }
+
+  private mapEventType(type: EventTypeDto): EventChoice {
+    const label = String(type.name || '').trim();
+    const normalized = label.toLowerCase();
+    const icon = normalized === 'birthday'
+      ? 'assets/figma/activity-event/birthday.svg'
+      : normalized === 'anniversary'
+        ? 'assets/figma/activity-event/anniversary.svg'
+        : normalized === 'exam'
+          ? 'assets/figma/activity-event/personal.svg'
+          : 'assets/figma/activity-event/personal.svg';
+
+    return { key: label, label, icon, id: type.id, custom: !type.system };
   }
 
   selectActivityTab(tab: ActivityNavigationTab): void {
@@ -528,6 +549,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
 
   selectEventType(key: string): void {
     this.selectedEventType = key;
+    this.eventTypeErrorMessage = '';
     this.clearError('eventType');
   }
 
@@ -540,40 +562,42 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   beginAddEventType(): void {
     this.addingEventType = true;
     this.customEventTypeName = '';
+    this.eventTypeErrorMessage = '';
   }
 
   cancelAddEventType(): void {
     this.addingEventType = false;
+    this.savingEventType = false;
     this.customEventTypeName = '';
+    this.eventTypeErrorMessage = '';
   }
 
   saveCustomEventType(): void {
     const label = this.customEventTypeName.trim().slice(0, 20);
-    if (!label) return;
+    if (!label || this.savingEventType) return;
 
-    const key = `CUSTOM_${label.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '')}`;
-    const existing = this.eventTypes.find(item => item.key === key || item.label.toLowerCase() === label.toLowerCase());
+    const existing = this.eventTypes.find(item => item.label.toLowerCase() === label.toLowerCase());
     if (existing) {
       this.selectEventType(existing.key);
       this.cancelAddEventType();
       return;
     }
 
-    const custom: EventChoice = {
-      key,
-      label,
-      icon: 'assets/figma/activity-event/personal.svg',
-      custom: true
-    };
-    this.eventTypes = [...this.eventTypes, custom];
-    this.selectedEventType = key;
-    this.clearError('eventType');
-    this.addingEventType = false;
-    this.customEventTypeName = '';
-
-    try {
-      localStorage.setItem(this.eventTypesStorageKey, JSON.stringify(this.eventTypes.filter(item => item.custom)));
-    } catch { /* custom event types still remain available for this session */ }
+    this.savingEventType = true;
+    this.eventTypeErrorMessage = '';
+    this.eventApi.createEventType(label).subscribe({
+      next: (type) => {
+        const custom = this.mapEventType(type);
+        this.eventTypes = [...this.eventTypes, custom];
+        this.selectEventType(custom.key);
+        this.savingEventType = false;
+        this.cancelAddEventType();
+      },
+      error: (error) => {
+        this.savingEventType = false;
+        this.eventTypeErrorMessage = error?.error?.message || error?.message || 'Unable to add this event type. Please try again.';
+      }
+    });
   }
 
   dismissEventInfo(): void {
@@ -764,12 +788,15 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         : ActivityInputComponent.PRIORITY_MAP[rawPriority] || '') as any;
 
       if (this.currentActive === 'events') {
-        this.eventDate = this.startDate;
+        this.eventDate = h.eventDate ? new Date(h.eventDate) : this.startDate;
         this.eventAllDay = !!(h.allDay ?? h.all_day);
-        this.eventHighPriority = rawPriority === 'high' || rawPriority === '3';
-        this.selectedEventType = String(h.eventType ?? h.event_type ?? '').trim().toUpperCase();
+        this.eventHighPriority = !!(h.highPriority ?? h.high_priority) || rawPriority === 'high' || rawPriority === '3';
+        this.selectedEventType = String(h.eventType ?? h.event_type ?? '').trim();
         this.ensureEventTypeOption(this.selectedEventType);
         this.eventRecurrence = this.normalizeEventRecurrence(h.recurrence ?? h.repeatType ?? h.repeat_type);
+        this.reminderOffset = this.normalizeEventReminderOffset(
+          h.reminderMinutesBefore ?? h.reminder_minutes_before ?? h.reminderOffset ?? h.reminder_offset
+        );
       }
 
       this.activities = Array.isArray(h.activities) && h.activities.length
@@ -840,7 +867,9 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     this.selectedEventType = '';
     this.eventRecurrence = 'ONE_TIME';
     this.addingEventType = false;
+    this.savingEventType = false;
     this.customEventTypeName = '';
+    this.eventTypeErrorMessage = '';
     this.activities = [
       { name: '', startTime: '', endTime: '', days: ['S'] },
       { name: '', startTime: '', endTime: '', days: ['S'] }
@@ -1466,34 +1495,24 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
     }
 
     const eventDate = this.formatDateStr(this.eventDate);
-    const formattedStartTime = this.eventAllDay ? '00:00:00' : this.to24Hour(this.startTime || '');
-    const formattedEndTime = this.eventAllDay ? '23:59:00' : this.to24Hour(this.endTime || '');
-    const isCreatedByParent = this.authService.isParentUser();
-    const sharedWithParent = isCreatedByParent || (this.isChild && !this.isPrivate);
-    const isPrivateToChild = isCreatedByParent ? false : (this.isChild ? this.isPrivate : false);
-    const forUserId = this.profileSelector.getChildId() || this.authService.getUserId();
-
-    const payload: any = {
-      title: this.title.trim(),
-      description: this.notes.trim(),
-      notes: this.notes.trim(),
-      type: 'EVENT',
+    const formattedStartTime = this.eventAllDay ? '' : this.toEventApiTime(this.startTime);
+    const formattedEndTime = this.eventAllDay ? '' : this.toEventApiTime(this.endTime);
+    const payload: EventPayload = {
+      name: this.title.trim(),
+      isPrivate: this.isPrivate,
+      highPriority: this.eventHighPriority,
       eventType: this.selectedEventType,
-      recurrence: this.eventRecurrence,
       allDay: this.eventAllDay,
-      startDate: eventDate,
-      endDate: eventDate,
-      startTime: formattedStartTime,
-      endTime: formattedEndTime,
-      priority: this.eventHighPriority ? 'HIGH' : 'MEDIUM',
-      everyday: false,
-      sharedWithParent,
-      isPrivateToChild
+      eventDate,
+      recurrence: this.eventRecurrence,
+      reminderMinutesBefore: this.getEventReminderMinutes(),
+      note: this.notes.trim() || null
     };
 
-    if (this.reminderOffset) payload.reminderOffset = this.reminderOffset;
-    else if (this.editingId) payload.reminderOffset = null;
-    if (forUserId) payload.forUserId = forUserId;
+    if (!this.eventAllDay) {
+      payload.startTime = formattedStartTime;
+      payload.endTime = formattedEndTime;
+    }
 
     const localEvent: Habit = {
       id: crypto.randomUUID(),
@@ -1523,19 +1542,17 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
 
     this.isSubmitting = true;
     const request$ = this.editingId
-      ? this.calendarApi.updateCalendarEvent(this.editingId, payload)
-      : this.calendarApi.addCalendarEvent(payload);
+      ? this.eventApi.updateEvent(this.editingId, payload)
+      : this.eventApi.createEvent(payload);
 
     request$.subscribe({
       next: (response) => {
         try {
-          const savedEvent = this.buildHabitFromResponse(
+          const savedEvent = this.buildEventFromResponse(
             response,
             localEvent,
-            'events',
             formattedStartTime,
-            formattedEndTime,
-            []
+            formattedEndTime
           );
           if (this.editingId) this.habitService.updateHabit(savedEvent);
           else this.habitService.addHabit(savedEvent);
@@ -1669,6 +1686,39 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
 
     // Prevent further handling if needed
     try { event.stopPropagation(); } catch (e) { }
+  }
+
+  private toEventApiTime(value: string): string {
+    const normalized = this.to24Hour(value || '');
+    return normalized ? normalized.slice(0, 5) : '';
+  }
+
+  private buildEventFromResponse(response: any, baseEvent: Habit, fallbackStartTime: string, fallbackEndTime: string): Habit {
+    const data = response || {};
+    const eventDate = String(data.eventDate || this.formatDateStr(this.eventDate) || '');
+    const allDay = !!data.allDay;
+    const startTime = String(data.startTime ?? fallbackStartTime ?? '');
+    const endTime = String(data.endTime ?? fallbackEndTime ?? '');
+
+    return {
+      ...baseEvent,
+      id: String(data.id ?? baseEvent.id),
+      title: String(data.name ?? baseEvent.title),
+      notes: String(data.note ?? baseEvent.notes ?? ''),
+      startDate: eventDate ? new Date(eventDate) : baseEvent.startDate,
+      endDate: eventDate ? new Date(eventDate) : baseEvent.endDate,
+      startTime,
+      endTime,
+      startTimeStamp: eventDate && startTime ? new Date(`${eventDate}T${startTime}`).getTime() : 0,
+      endTimeStamp: eventDate && endTime ? new Date(`${eventDate}T${endTime}`).getTime() : 0,
+      priority: data.highPriority ? 'high' : 'medium',
+      isPrivate: !!data.isPrivate,
+      reminderOffset: this.normalizeEventReminderOffset(data.reminderMinutesBefore),
+      eventType: String(data.eventType ?? baseEvent.eventType ?? ''),
+      recurrence: this.normalizeEventRecurrence(data.recurrence ?? baseEvent.recurrence),
+      allDay,
+      createdAt: data.createdAt ? new Date(data.createdAt) : baseEvent.createdAt
+    };
   }
 
   private buildHabitFromResponse(res: any, baseHabit: Habit, type: ActivityTab, formattedStartTime: string, formattedEndTime: string, daysOfWeek: string[]): Habit {
@@ -1985,7 +2035,21 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
       return;
     }
 
-    if (this.currentActive === 'timetable' || this.currentActive === 'events') {
+    if (this.currentActive === 'events') {
+      this.eventApi.deleteEvent(backendId).subscribe({
+        next: () => {
+          finalizeLocalDelete(this.editingId);
+          this.deleting = false;
+        },
+        error: (err) => {
+          this.deleting = false;
+          this.toastService.error(err?.error?.message || err?.message || 'Failed to delete the event. Please try again.');
+        }
+      });
+      return;
+    }
+
+    if (this.currentActive === 'timetable') {
       this.calendarApi.deleteCalendarEvent(backendId).subscribe({
         next: () => {
           console.log('Calendar event deleted successfully');

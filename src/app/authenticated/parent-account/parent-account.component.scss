@@ -881,8 +881,16 @@ button {
   display: flex;
   gap: 16px;
   width: 100%;
+  // Horizontal scrolling creates a clipping boundary. Reserve space for each
+  // card's rounded edge and subtle shadow so they are not cut off vertically.
+  // Offset the padding so the card content still aligns with the heading,
+  // while its left/right rounded edge and shadow remain inside the scroller.
+  margin: -4px;
+  padding: 4px;
   overflow-x: auto;
+  overflow-y: hidden;
   scroll-snap-type: x mandatory;
+  scroll-padding-inline: 4px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 

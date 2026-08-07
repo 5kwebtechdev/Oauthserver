@@ -1032,14 +1032,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       const recentList = (this.recentHabits && this.recentHabits.length > 0) ? this.recentHabits : this.filteredRecentHabits;
       this.habitAllDoneComputed = Array.isArray(recentList) && recentList.length > 0 && recentList.every(h => {
         const s = (h?.status || '').toString().toLowerCase();
-        return s === 'completed' || s === 'skipped';
+        return s === 'completed';
       });
 
       // Compute task-all-done for recent mode using `recentTasks` if provided
       const recentTaskList = (this.recentTasks && this.recentTasks.length > 0) ? this.recentTasks : this.filteredRecentTasks;
       this.taskAllDoneComputed = Array.isArray(recentTaskList) && recentTaskList.length > 0 && recentTaskList.every(t => {
         const s = (t?.status || '').toString().toLowerCase();
-        return s === 'completed' || s === 'skipped';
+        return s === 'completed';
       });
 
       // Determine empty: for recent mode, if user selected 'habits' tab and all habits are done, show empty
@@ -1546,7 +1546,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       const recentList = (this.recentHabits && this.recentHabits.length > 0) ? this.recentHabits : this.filteredRecentHabits;
       this.habitAllDoneComputed = Array.isArray(recentList) && recentList.length > 0 && recentList.every(h => {
         const s = (h?.status || '').toString().toLowerCase();
-        return s === 'completed' || s === 'skipped';
+        return s === 'completed';
       });
 
       const recentTaskList = (this.recentTasks && this.recentTasks.length > 0) ? this.recentTasks : this.filteredRecentTasks;
@@ -1613,7 +1613,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
         // Count how many habits are actually completed/skipped (from raw data)
         this.totalHabitsCompleted = allHabits.filter((h: Habit) => {
           const s = (h.status || '').toString().toLowerCase();
-          return s === 'completed' || s === 'skipped';
+          return s === 'completed';
         }).length;
         
         this.habits = allHabits
@@ -1917,7 +1917,7 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
       const recentList = (this.recentHabits && this.recentHabits.length > 0) ? this.recentHabits : this.filteredRecentHabits;
       this.habitAllDoneComputed = Array.isArray(recentList) && recentList.length > 0 && recentList.every(h => {
         const s = (h?.status || '').toString().toLowerCase();
-        return s === 'completed' || s === 'skipped';
+        return s === 'completed';
       });
 
       if (this.currentActive === 'habits') {
@@ -2143,13 +2143,14 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   /**
-   * Get filtered recent habits excluding completed and skipped ones
+   * Get recent habits to display. A skipped habit remains visible as a missed
+   * item so users can review or complete it instead of seeing an empty state.
    */
   get filteredRecentHabits(): Habit[] {
     if (!this.recentHabits) return [];
     return this.recentHabits.filter(habit => {
       const status = (habit.status || '').toLowerCase();
-      return status !== 'completed' && status !== 'skipped';
+      return status !== 'completed';
     });
   }
 

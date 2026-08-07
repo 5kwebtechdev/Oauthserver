@@ -38,6 +38,7 @@ import { Observable, Subject, catchError, forkJoin, of } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { MoodService } from '../../core/services/mood.service';
 import { MoodTransition } from '../../core/models/mood.model';
+import { Capacitor } from '@capacitor/core';
 
 type MoodBalanceKey = 'good' | 'okay' | 'tough' | 'hard';
 
@@ -84,6 +85,9 @@ type HomeTimePeriod = 'morning' | 'evening' | 'night';
   ]
 })
 export class UserDashboardComponent implements OnInit, OnDestroy {
+  // Reels are temporarily unavailable on iOS while that experience is revised.
+  public readonly showReelPreview = Capacitor.getPlatform() !== 'ios';
+
   // Minimal properties used by the template
   public userName = '';
   public userAvatarUrl: string | null = null;
@@ -589,12 +593,14 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
             };
           });
 
-          // Filter out completed/skipped and items 5 min past their endTime
+          // Completed habits disappear from Home. Keep skipped habits visible so
+          // a backend-marked missed habit is not presented as an empty day.
           const now = Date.now();
           const fiveMinMs = 5 * 60 * 1000;
           habitsData = habitsData.filter((h: any) => {
             const status = (h.status || '').toLowerCase();
-            if (status === 'completed' || status === 'skipped') return false;
+            if (status === 'completed') return false;
+            if (status === 'skipped') return true;
             // Hide card if current time > endTime + 5 minutes
             const endTs = Number(h.endTimeStamp || 0);
             if (endTs > 0 && now > endTs + fiveMinMs) return false;

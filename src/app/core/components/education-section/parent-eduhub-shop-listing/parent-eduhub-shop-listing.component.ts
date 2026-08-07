@@ -450,7 +450,7 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     this.listings = [];
 
     this.http.get<any>(
-      `${environment.apiUrl}/admin/eduhub`,
+      `${environment.apiUrl}/eduhub`,
       { headers: this.getApiHeaders() }
     ).subscribe({
       next: response => {
@@ -502,7 +502,21 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
       item.categoryName
     ].filter(Boolean).join(' '));
 
-    return selectedTokens.every(token => itemCategory.includes(token));
+    return selectedTokens.every(token =>
+      this.categoryTokenAlternatives(token).some(candidate => itemCategory.includes(candidate))
+    );
+  }
+
+  /**
+   * The user-facing category is correctly called "Stationery", while the
+   * current API uses the legacy entityType spelling "stationary". Treat both
+   * forms as the same category so the directory does not show an empty state.
+   */
+  private categoryTokenAlternatives(token: string): string[] {
+    if (token === 'stationery' || token === 'stationary') {
+      return ['stationery', 'stationary'];
+    }
+    return [token];
   }
 
   private categoryTokens(value: string): string[] {

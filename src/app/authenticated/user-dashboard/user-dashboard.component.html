@@ -299,8 +299,8 @@
       <!-- Quick Access (Write Now / Notes / Calendar) -->
       <quick-access-section class="w-full"></quick-access-section>
 
-      <!-- API-backed reels preview -->
-      <reel-preview-section class="w-full"></reel-preview-section>
+      <!-- Reels are temporarily hidden only in the iOS native app. -->
+      <reel-preview-section *ngIf="showReelPreview" class="w-full"></reel-preview-section>
 
     </div>
   </div>

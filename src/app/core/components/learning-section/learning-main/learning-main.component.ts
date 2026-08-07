@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, NgZone, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, OnDestroy, NgZone, ViewChild } from '@angular/core';
 import { IonContent, ViewWillEnter } from '@ionic/angular';
 import { CommonModule, Location } from '@angular/common';
 import { IonicModule } from '@ionic/angular';

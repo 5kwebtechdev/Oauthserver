@@ -10,7 +10,8 @@
   display: flex;
   flex-direction: column;
   background: #FDF6EE;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+  // The navigator sits outside ion-content, so it owns the single top inset.
+  padding-top: var(--sat, env(safe-area-inset-top, 0px));
   box-sizing: border-box;
 }
 
@@ -23,6 +24,8 @@ superme-navigator {
 
 ion-content {
   --background: #FDF6EE;
+  // Do not apply the global ion-content top inset again below the navigator.
+  --padding-top: 0px;
   --padding-bottom: max(24px, env(safe-area-inset-bottom, 0px));
   flex: 1 1 auto;
   min-height: 0;

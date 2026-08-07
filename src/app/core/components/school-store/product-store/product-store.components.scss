@@ -22,7 +22,9 @@ button {
 .store-header {
   position: relative;
   z-index: 10;
-  padding-top: env(safe-area-inset-top, 0px);
+  // ion-content already applies the device safe-area inset. Adding it here
+  // again created an oversized blank area above the store toolbar on iOS.
+  padding-top: 0;
   overflow: hidden;
   background: #ffffff;
   box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);

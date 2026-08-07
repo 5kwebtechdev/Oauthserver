@@ -5,6 +5,9 @@
 
 ion-content {
     --background: #ffffff;
+    // The footer is fixed, so reserve room in Ionic's actual scroll area.
+    // This keeps the final EduHub section reachable on small devices.
+    --padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 32px);
 }
 
 .parent-eduhub-page {
@@ -15,7 +18,7 @@ ion-content {
     max-width: 393px;
     min-height: 100%;
     margin: 0 auto;
-    padding-bottom: calc(var(--footer-visual-height, 80px) + env(safe-area-inset-bottom, 0px) + 24px);
+    padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 48px);
     overflow-x: hidden;
     background: #ffffff;
     box-sizing: border-box;

@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, of, catchError } from 'rxjs';
+import { Observable, map, of, catchError, forkJoin } from 'rxjs';
 import { CalendarResponse, TimelineEvent } from '../models/calendar.model';
 import { environment } from 'src/environments/environment';
+import { EventApi, EventDto } from '../api/event.api';
+import { AuthService } from './auth.service';
 
 @Injectable({
     providedIn: 'root'
@@ -10,13 +12,36 @@ import { environment } from 'src/environments/environment';
 export class CalendarService {
     private readonly apiUrl = `${environment.apiUrl}/calendar`;
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        private eventApi: EventApi,
+        private authService: AuthService
+    ) { }
 
     getUserCalendar(date: string | Date, viewType: 'day' | 'month' = 'day', forceReload: boolean = false): Observable<CalendarResponse> {
         const dateStr = this.formatDateToYYYYMMDD(date);
         const url = `${this.apiUrl}/user-calendar?date=${dateStr}&viewType=${viewType}`;
-        return this.http.get<CalendarResponse>(url).pipe(
-            catchError(() => of({ events: [], tasks: [], habits: [], totalTasks: 0, totalTasksCompleted: 0, taskCompletionRate: 0, totalHabits: 0, totalHabitsCompleted: 0, habitCompletionRate: 0 } as CalendarResponse))
+        const calendar$ = this.http.get<CalendarResponse>(url).pipe(
+            catchError(() => of(this.emptyCalendarResponse()))
+        );
+
+        // Planner Events have their own API and are not included in
+        // /calendar/user-calendar. Only merge them for the Child flow so a
+        // parent viewing a selected child never sees the parent's own events.
+        const plannerEvents$ = this.authService.getUserRelationship() === 'CHILD'
+            ? this.eventApi.getEvents().pipe(catchError(() => of([] as EventDto[])))
+            : of([] as EventDto[]);
+
+        return forkJoin({ calendar: calendar$, plannerEvents: plannerEvents$ }).pipe(
+            map(({ calendar, plannerEvents }) => ({
+                ...calendar,
+                events: [
+                    ...(calendar.events || []),
+                    ...plannerEvents
+                        .filter(event => this.eventOccursInView(event, dateStr, viewType))
+                        .map(event => this.toCalendarEvent(event))
+                ]
+            }))
         );
     }
 
@@ -28,6 +53,72 @@ export class CalendarService {
         if (typeof date === 'string') return date.split('T')[0];
         const d = date;
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    private emptyCalendarResponse(): CalendarResponse {
+        return {
+            events: [],
+            tasks: [],
+            habits: [],
+            totalTasks: 0,
+            totalTasksCompleted: 0,
+            taskCompletionRate: 0,
+            totalHabits: 0,
+            totalHabitsCompleted: 0,
+            habitCompletionRate: 0
+        };
+    }
+
+    private eventOccursInView(event: EventDto, targetDate: string, viewType: 'day' | 'month'): boolean {
+        const eventDate = String(event?.eventDate || '').slice(0, 10);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)) return false;
+
+        if (viewType === 'month') {
+            const targetMonth = targetDate.slice(0, 7);
+            if (event.recurrence === 'ONE_TIME') return eventDate.slice(0, 7) === targetMonth;
+            if (eventDate > `${targetMonth}-31`) return false;
+            if (event.recurrence === 'YEARLY') return eventDate.slice(5, 7) === targetDate.slice(5, 7);
+            return true;
+        }
+
+        if (event.recurrence === 'ONE_TIME') return eventDate === targetDate;
+        if (eventDate > targetDate) return false;
+        if (event.recurrence === 'YEARLY') return eventDate.slice(5) === targetDate.slice(5);
+        return eventDate.slice(8) === targetDate.slice(8);
+    }
+
+    private toCalendarEvent(event: EventDto): CalendarResponse['events'][number] {
+        const eventDate = String(event.eventDate).slice(0, 10);
+        const reminderOffset = event.reminderMinutesBefore === 15
+            ? 'MINUTES_15'
+            : event.reminderMinutesBefore === 30
+                ? 'MINUTES_30'
+                : event.reminderMinutesBefore === 45
+                    ? 'MINUTES_45'
+                    : null;
+
+        return {
+            id: event.id,
+            title: event.name,
+            description: event.note || '',
+            startDate: eventDate,
+            endDate: eventDate,
+            startTime: event.startTime || '00:00:00',
+            endTime: event.endTime || '23:59:59',
+            type: 'EVENT',
+            completed: event.completed,
+            family: null,
+            createdAt: event.createdAt,
+            updatedAt: event.updatedAt,
+            tags: event.eventType ? [event.eventType] : [],
+            daysOfWeek: [],
+            priority: event.highPriority ? 'HIGH' : 'MEDIUM',
+            everyday: false,
+            reminderOffset,
+            eventType: event.eventType,
+            recurrence: event.recurrence,
+            allDay: event.allDay
+        };
     }
 
     /**
