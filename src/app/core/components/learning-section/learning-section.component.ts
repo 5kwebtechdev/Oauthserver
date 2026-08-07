@@ -79,6 +79,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
         .content-title {
           text-align: left;
           display: flex;
+          flex: 1 1 auto;
           flex-direction: column;
           align-items: flex-start;
           min-width: 0;
@@ -94,8 +95,10 @@ import { AuthService } from 'src/app/core/services/auth.service';
           font-size: 16px;
           font-weight: 500;
           color: #282527;
-          width: auto;
-          white-space: nowrap;
+          width: 100%;
+          min-width: 0;
+          white-space: normal;
+          overflow-wrap: anywhere;
         }
 
         .content-title-icon {
@@ -159,6 +162,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
 
       .content-actions {
         display: flex;
+        flex: 0 0 auto;
         justify-content: flex-end;
         width: auto;
         padding: 0;
