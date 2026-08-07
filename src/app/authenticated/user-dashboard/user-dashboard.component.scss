@@ -1469,6 +1469,7 @@ footer {
   :host(.ion-page) {
     max-width: none !important;
     margin-inline: 0 !important;
+    padding-inline: 0 !important;
   }
 
   .mobile-chrome {
@@ -1489,7 +1490,6 @@ footer {
   .dashboard-content {
     padding-top: 32px;
     padding-bottom: 48px;
-    padding-inline: 32px;
   }
 
   // The "full-bleed" negative-margin trick (.home-glance-card, .ad-full-bleed)
@@ -1503,13 +1503,28 @@ footer {
     width: 100%;
     margin-inline: 0;
   }
-}
 
-@include bp.above(lg) {
-  .dashboard-content {
-    padding-inline: 48px;
+  // Scoped to the dashboard's own "Today's Mood" card wrapper (not
+  // mood-selector's other instance in the overlay picker, which stays inside
+  // a narrow fixed-width popup regardless of viewport) — ::ng-deep pierces
+  // MoodSelectorComponent's encapsulated styles for this instance only.
+  .mood-selector {
+    ::ng-deep .mood-option-avatar {
+      width: 72px;
+      height: 72px;
+    }
+
+    ::ng-deep .mood-option-art {
+      width: 56px;
+      height: 56px;
+    }
+
+    ::ng-deep .mood-option-label {
+      font-size: 15px;
+    }
   }
 }
+
 
 // ── Insights: This Week's Performance + Mood Balance (self-scoped) ──
 // Mirrors parent-account.component.scss's widget of the same name.

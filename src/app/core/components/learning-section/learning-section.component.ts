@@ -104,7 +104,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
 
         .content-sub {
           margin: 0;
-          font-size: 10px;
+          font-size: 14px;
           text-align: left;
           color: #6B656A;
           font-family: var(--font-sans);
@@ -401,6 +401,114 @@ import { AuthService } from 'src/app/core/services/auth.service';
 
       .dot.active {
         width: 16px;
+      }
+
+      // This component has no dedicated web/tablet layout of its own — the
+      // parent page (parent-account, user-dashboard, etc.) widens the outer
+      // column on desktop, but everything in here was still the exact
+      // mobile pixel size, so it read as tiny, sparse cards with big gaps.
+      @media (min-width: 769px) {
+        .content-title h2 {
+          font-size: 22px;
+        }
+
+        .content-title-icon {
+          width: 32px;
+          height: 32px;
+        }
+
+        .content-sub {
+          font-size: 14px;
+        }
+
+        .view-all-pill {
+          min-width: 90px;
+          min-height: 32px;
+          padding: 8px 20px;
+          font-size: 14px;
+        }
+
+        .slides {
+          gap: 16px;
+        }
+
+        .learning-slide-shell {
+          flex: 0 0 230px;
+          border-radius: 16px;
+        }
+
+        learning-card {
+          height: 140px;
+        }
+
+        .reward-assign {
+          min-height: 46px;
+          gap: 8px;
+          padding: 10px 14px;
+          font-size: 13px;
+
+          img {
+            width: 20px;
+            height: 20px;
+          }
+        }
+
+        ::ng-deep learning-card .card-root {
+          height: 140px;
+          border-radius: 16px;
+        }
+
+        ::ng-deep learning-card .media {
+          height: 140px;
+        }
+
+        ::ng-deep learning-card .slide-body,
+        ::ng-deep learning-card .article-body {
+          min-height: 48px;
+          padding: 0 12px 8px;
+          gap: 6px;
+        }
+
+        ::ng-deep learning-card .head h3,
+        ::ng-deep learning-card .slide-body h3,
+        ::ng-deep learning-card .article-body h3 {
+          font-size: 14px;
+        }
+
+        ::ng-deep learning-card .coins,
+        ::ng-deep learning-card .trophy,
+        ::ng-deep learning-card .time-duration {
+          font-size: 13px;
+        }
+
+        ::ng-deep learning-card .coins img,
+        ::ng-deep learning-card .trophy img {
+          width: 20px !important;
+          height: 20px !important;
+        }
+
+        ::ng-deep learning-card .difficulty {
+          min-width: 40px;
+          min-height: 22px;
+          padding: 5px 10px;
+        }
+
+        ::ng-deep learning-card .difficulty::after {
+          font-size: 9px;
+        }
+
+        .pager {
+          gap: 8px;
+        }
+
+        .dot {
+          width: 8px;
+          height: 8px;
+        }
+
+        .dot.active {
+          width: 22px;
+        }
       }
     }
   `],
