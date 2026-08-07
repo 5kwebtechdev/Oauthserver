@@ -2232,13 +2232,29 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
   }
 
   /** "Today at a Glance" header subtitle, e.g. "5 Habits • 3 Tasks • 1 Time Table" */
+  /** True for the independent Child and Self experiences. */
+  get usesPlannerExperience(): boolean {
+    const relationship = String(this.authService.getUserRelationship?.() || '').toUpperCase();
+    return relationship === 'CHILD' || relationship === 'SELF';
+  }
+
+  get plannerTabLabel(): string {
+    return this.usesPlannerExperience ? 'Planner' : 'Time Table';
+  }
+
+  get plannerTabIcon(): string {
+    return this.usesPlannerExperience
+      ? 'assets/figma/child-planner/schedule.svg'
+      : 'assets/figma/child-home/glance-timetable.png';
+  }
+
   get glanceSubtitle(): string {
     const parts = [
       `${this.totalHabitsLoaded} Habit${this.totalHabitsLoaded === 1 ? '' : 's'}`,
       `${this.totalTasksLoaded} Task${this.totalTasksLoaded === 1 ? '' : 's'}`
     ];
     if (this.totalTimetablesLoaded > 0) {
-      parts.push(`${this.totalTimetablesLoaded} Time Table${this.totalTimetablesLoaded === 1 ? '' : 's'}`);
+      parts.push(`${this.totalTimetablesLoaded} ${this.plannerTabLabel}${this.totalTimetablesLoaded === 1 ? '' : 's'}`);
     }
     return parts.join(' • ');
   }

@@ -199,6 +199,16 @@
   }
 }
 
+// A single banner must use the whole content width. The former 81% carousel
+// width is useful only when there is another card to preview; with one result
+// it leaves a distracting empty area and looks broken on narrow devices.
+.adb--single {
+  .adb__card {
+    flex-basis: 100%;
+    min-width: 100%;
+  }
+}
+
 .adb--eduhub-inner {
   gap: 8px;
 

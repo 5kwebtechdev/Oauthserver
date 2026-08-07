@@ -29,7 +29,9 @@ export class UserProfileComponent implements OnInit, OnChanges {
   @Input() user: any = {};
 
   // Local user avatar URL
-  userAvatarUrl: string = 'assets/app-assets/Default-avatar-home.svg';
+  // This is a real bundled asset. The previous fallback path no longer
+  // exists, which caused a broken-image/question-mark icon in child view.
+  userAvatarUrl: string = 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
   // Avatar image name (e.g., "Avatar 3") coming from login response
   avatarImageName: string | null = null;
 

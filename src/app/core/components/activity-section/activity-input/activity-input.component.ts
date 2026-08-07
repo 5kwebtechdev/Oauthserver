@@ -169,7 +169,9 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   selectedPlannerColor = this.plannerColors[0];
 
   get isChildPlannerFlow(): boolean {
-    return this.isChild && !this.isParentCreated;
+    // The compact Habit / Task / Planner experience is for independent users.
+    // Keep parent-created activities on the full assignment form.
+    return (this.isChild || this.isSelf) && !this.isParentCreated;
   }
 
   get visibleActivityTabs(): ReadonlyArray<ActivityTabOption> {
@@ -185,6 +187,7 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
   }
   isPrivate = false;
   isChild = false;
+  isSelf = false;
   isParent = false;
   isParentCreated = false;
   selectedTags: Array<{ key: string, value: string, type?: string }> = [];
@@ -651,7 +654,8 @@ export class ActivityInputComponent implements OnInit, AfterViewInit, ViewWillEn
         const parsed = JSON.parse(ud || '{}');
         const rel = (parsed.relationship || parsed.role || '').toString().toUpperCase();
         this.isChild = rel === 'CHILD';
-        console.log('[PrivateToggle][DEBUG] user_data.relationship/role ->', parsed.relationship, '/', parsed.role, '-> isChild =', this.isChild);
+        this.isSelf = rel === 'SELF';
+        console.log('[PrivateToggle][DEBUG] user_data.relationship/role ->', parsed.relationship, '/', parsed.role, '-> isChild =', this.isChild, 'isSelf =', this.isSelf);
       } else {
         console.log('[PrivateToggle][DEBUG] no user_data found in localStorage — isChild stays false');
       }

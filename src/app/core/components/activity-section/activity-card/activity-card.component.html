@@ -39,8 +39,8 @@
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
           [attr.aria-selected]="currentActive === 'timetable'" (click)="switchTab('timetable')">
-          <img class="glance-tab-icon" src="assets/figma/child-home/glance-timetable.png" alt="" aria-hidden="true">
-          <span>Time Table</span>
+          <img class="glance-tab-icon" [src]="plannerTabIcon" alt="" aria-hidden="true">
+          <span>{{ plannerTabLabel }}</span>
         </button>
       </div>
     </div>
@@ -215,8 +215,8 @@
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
           [attr.aria-selected]="currentActive === 'timetable'" (click)="switchTab('timetable')">
-          <img class="glance-tab-icon" src="assets/figma/child-home/glance-timetable.png" alt="" aria-hidden="true">
-          <span>Time Table</span>
+          <img class="glance-tab-icon" [src]="plannerTabIcon" alt="" aria-hidden="true">
+          <span>{{ plannerTabLabel }}</span>
         </button>
       </div>
     </div>

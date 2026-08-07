@@ -37,6 +37,20 @@ ion-content.password-scroll-content::part(scroll) {
   -webkit-overflow-scrolling: touch;
 }
 
+// The pet carousel can be taller than a compact phone viewport. Reserve a
+// bottom-safe area in Ionic's actual scroll container so the Next action is
+// never covered by the device navigation bar.
+ion-content.pet-selection-content {
+  --padding-top: 0;
+  --padding-bottom: max(32px, calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 32px));
+  --overflow: auto;
+}
+
+ion-content.pet-selection-content::part(scroll) {
+  scroll-padding-bottom: max(48px, calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 48px));
+  -webkit-overflow-scrolling: touch;
+}
+
 superme-navigator.signup-navigator {
   display: block;
   width: calc(100% - var(--signup-profile-gutter) - var(--signup-profile-gutter));
@@ -1039,7 +1053,7 @@ superme-navigator.signup-navigator {
 .signup-container.pet-layout {
   width: 100%;
   max-width: none;
-  min-height: 100dvh;
+  min-height: 100%;
   gap: 0;
   padding: 0;
   overflow: visible;
@@ -1069,8 +1083,8 @@ superme-navigator.signup-navigator {
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 100dvh;
-  padding: calc(var(--sat, 0px) + 20px) 0 calc(var(--sab, 0px) + 22px);
+  min-height: 100%;
+  padding: calc(var(--sat, 0px) + 12px) 0 max(48px, calc(var(--sab, 0px) + 32px));
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -1096,7 +1110,7 @@ superme-navigator.signup-navigator {
 }
 
 .pet-step-header {
-  margin-top: clamp(34px, 6.5dvh, 90px);
+  margin-top: clamp(12px, 2.5dvh, 28px);
   padding: 0 20px;
   text-align: center;
 }
@@ -1132,7 +1146,7 @@ superme-navigator.signup-navigator {
 .pet-carousel {
   display: block;
   width: min(100vw, 640px);
-  margin-top: clamp(28px, 3.5dvh, 42px);
+  margin-top: clamp(18px, 2.5dvh, 28px);
   margin-right: auto;
   margin-left: auto;
   overflow: visible;
@@ -1148,7 +1162,7 @@ superme-navigator.signup-navigator {
   display: flex;
   flex-direction: column;
   width: 100%;
-  aspect-ratio: 1220 / 1920;
+  height: clamp(330px, 54dvh, 460px);
   overflow: hidden;
   border-radius: clamp(22px, 4vw, 38px);
   background: linear-gradient(145deg, #f5f2f8 0%, #fbeddf 42%, #edf7f7 76%, #fff7fb 100%);
@@ -1259,7 +1273,7 @@ swiper-slide.swiper-slide-active .pet-card {
   width: calc(100% - clamp(30px, 7.5vw, 72px));
   height: 56px;
   min-height: 56px;
-  margin: clamp(28px, 4dvh, 42px) auto 0;
+  margin: clamp(16px, 2.5dvh, 28px) auto 0;
   padding: 8px 16px;
   border: 1px solid transparent;
   border-radius: 16px;
@@ -1302,7 +1316,7 @@ swiper-slide.swiper-slide-active .pet-card {
 
 @media (max-width: 360px) {
   .pet-step-header {
-    margin-top: 22px;
+    margin-top: 10px;
   }
 
   .pet-step-progress {
@@ -1310,11 +1324,11 @@ swiper-slide.swiper-slide-active .pet-card {
   }
 
   .pet-carousel {
-    margin-top: 22px;
+    margin-top: 16px;
   }
 
   .pet-step-next {
-    margin-top: 22px;
+    margin-top: 16px;
   }
 
   .pet-card-copy {

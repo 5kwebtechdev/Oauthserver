@@ -9,6 +9,9 @@
 
 ion-content.tutor-detail-page {
   --background: #f6f7fb;
+  // The detail shell manages the status-bar clearance. Reset the shared
+  // ion-content inset so notched devices do not receive it twice.
+  --padding-top: 0px;
   font-family: var(--font-sans, 'Inter', sans-serif);
 }
 
@@ -16,7 +19,10 @@ ion-content.tutor-detail-page {
   width: min(100%, 760px);
   min-height: 100%;
   margin: 0 auto;
-  padding: max(14px, env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));
+  padding:
+    calc(var(--sat, env(safe-area-inset-top, 0px)) + 10px)
+    clamp(12px, 4vw, 16px)
+    calc(32px + var(--sab, env(safe-area-inset-bottom, 0px)));
   box-sizing: border-box;
   background: #fff;
 }
@@ -465,9 +471,25 @@ ion-content.tutor-detail-page {
   justify-content: center;
   gap: 9px;
 
-  span {
+  .unlock-button__lock {
     color: #ffd73d;
     font-size: 22px;
+  }
+
+  .unlock-button__cost {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: #FFFFFF;
+    font-size: 18px;
+    font-weight: 750;
+    line-height: 1;
+
+    img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+    }
   }
 }
 

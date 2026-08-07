@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
@@ -115,6 +115,38 @@ export class TutorService {
                     return of([]);
                 })
             );
+    }
+
+    /**
+     * Loads a specific user-facing directory without relying on client-side
+     * category guesses. For example, EduHub Counselors uses
+     * GET /v1/tutors?entityType=COUNSELOR.
+     */
+    fetchTutorsByEntityType(entityType: string): Observable<Tutor[]> {
+        const normalizedType = String(entityType || '').trim().toUpperCase();
+        if (!normalizedType) return this.fetchTutors();
+
+        this.tutorsLoading$.next(true);
+        const params = new HttpParams().set('entityType', normalizedType);
+        return this.http.get<Tutor[] | { content?: Tutor[]; data?: Tutor[] }>(`${this.apiUrl}/tutors`, {
+            headers: this.getHeaders(),
+            params
+        }).pipe(
+            map(response => Array.isArray(response)
+                ? response
+                : (response?.content || response?.data || [])),
+            tap(tutors => {
+                this.tutorsCache$.next(tutors);
+                this.tutorsLoaded = true;
+                this.tutorsLoading$.next(false);
+                this.applyFiltersAndSort();
+            }),
+            catchError(error => {
+                console.error(`[TutorService] Error fetching ${normalizedType} directory:`, error);
+                this.tutorsLoading$.next(false);
+                return of([]);
+            })
+        );
     }
 
     /**

@@ -91,7 +91,9 @@ import { Challenge } from 'src/app/core/models/learning.models';
       height: 100%;
       overflow-y: auto;
     }
-    .content-description-screen { width: 100%; padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+    /* This routed screen does not use ion-content, so it must provide its
+       own single safe-area inset for the navigator on notched devices. */
+    .content-description-screen { width: 100%; padding: calc(var(--sat, 0px) + 12px) 16px 16px; box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
     .content-description-screen .back-title { display: flex; justify-content: center; align-items: center; gap: 12px; }
     .content-description-screen .desc-image { width: 100%; aspect-ratio: 16 / 9; margin: 8px 0 16px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 12px; background: #f6f4f4; }
     .content-description-screen .desc-image .hero-image { display: block; width: 100%; max-width: 100%; height: 100%; object-fit: contain; object-position: center; }

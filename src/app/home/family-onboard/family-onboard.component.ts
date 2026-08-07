@@ -21,6 +21,7 @@ import { environment } from '../../../environments/environment';
 import { Subscription } from 'rxjs';
 import { NavigationService } from '../../core/services/navigation.service';
 import { Share } from '@capacitor/share';
+import { Clipboard } from '@capacitor/clipboard';
 
 type ViewMode = 'instructions-parent' | 'join-family-child' | 'join-family-parent';
 type FamilyMode = 'create' | 'join';
@@ -856,38 +857,54 @@ export class FamilyOnboardComponent implements OnInit, OnDestroy {
         document.body.removeChild(textArea);
     }
 
-    /**
-     * Share QR code via native share or fallback toast
-     */
+    /** Share the family-link message through the iOS/Android share sheet. */
     async shareQRCode(): Promise<void> {
         if (!this.familyCode) return;
 
-        const text = `Join my family on SuperMe with code: ${this.familyCode}`;
+        const text = [
+            `Join my family on SuperMe with code: ${this.familyCode}`,
+            this.appDownloadUrl ? `Download SuperMe: ${this.appDownloadUrl}` : ''
+        ].filter(Boolean).join('\n\n');
+
         try {
-            await Share.share({
-                title: 'Family Code',
-                text,
-                url: this.appDownloadUrl
-            });
+            const canShare = await Share.canShare();
+            if (canShare.value) {
+                // Keep the URL in the text payload. Passing it separately can
+                // make iOS reject the share request for an unavailable/empty
+                // store destination, even though the family code is shareable.
+                await Share.share({ title: 'Family Code', text });
+                return;
+            }
         } catch (error) {
             const message = String((error as any)?.message || error || '').toLowerCase();
             if (message.includes('cancel') || message.includes('dismiss')) return;
+            console.warn('[FamilyOnboard] Native family share unavailable:', message);
+        }
 
-            if (navigator.clipboard && window.isSecureContext) {
-                try {
-                    await navigator.clipboard.writeText(`${text}\n${this.appDownloadUrl}`);
-                    this.core.triggerToasrt('Family code copied. You can share it now!', 'success');
-                    return;
-                } catch (clipboardError) {
-                    // Continue to the standard unavailable message below.
-                }
+        // iOS WebViews may expose the web share sheet even when the native
+        // bridge is temporarily unavailable (for example, after a hot reload).
+        if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+            try {
+                await navigator.share({ title: 'Family Code', text });
+                return;
+            } catch (error) {
+                const message = String((error as any)?.message || error || '').toLowerCase();
+                if (message.includes('cancel') || message.includes('abort')) return;
             }
-            this.fallbackShare();
+        }
+
+        // Capacitor Clipboard works in native iOS apps where the browser
+        // clipboard API is not considered a secure context.
+        try {
+            await Clipboard.write({ string: text });
+            this.core.triggerToasrt('Family code copied. You can share it now!', 'success');
+        } catch (error) {
+            this.fallbackCopyTextToClipboard(text);
         }
     }
 
     private fallbackShare(): void {
-        this.core.triggerToasrt('Share functionality not available on this device');
+        this.core.triggerToasrt('Unable to open sharing. The family code was copied instead.');
     }
 
     /**

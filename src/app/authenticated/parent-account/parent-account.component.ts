@@ -76,6 +76,7 @@ interface FamilySwitcherParent {
     providers: [RefreshService]
 })
 export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter {
+    private static readonly MANAGED_CHILD_REFRESH_KEY = 'family_children_refresh_pending';
     private readonly destroy$ = new Subject<void>();
     private childrenRequestId = 0;
     private moodBalanceRequestId = 0;
@@ -83,6 +84,7 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
     private messageComposerCloseTimer?: ReturnType<typeof setTimeout>;
     private messageComposerTrigger?: HTMLElement;
     private activeMessageTemplate?: 'celebrate' | 'encourage';
+    private managedChildRefreshTimers: ReturnType<typeof setTimeout>[] = [];
     
     public userName: string = 'User';
     public parentName: string = 'Parent';
@@ -374,6 +376,8 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
 
     ngOnDestroy(): void {
         if (this.messageComposerCloseTimer) clearTimeout(this.messageComposerCloseTimer);
+        this.managedChildRefreshTimers.forEach(timer => clearTimeout(timer));
+        this.managedChildRefreshTimers = [];
         document.body.style.overflow = '';
         document.body.classList.remove('dashboard-web-view');
         this.refreshService.unregisterRefreshHandler('ParentAccount');
@@ -488,7 +492,32 @@ export class ParentAccountComponent implements OnInit, OnDestroy, ViewWillEnter 
                 this.authService.refreshUserData().pipe(catchError(() => of(false)))
             )
         ]);
+        this.refreshChildrenAfterManagedChildCreation();
         this.activityCard?.refresh();
+    }
+
+    /**
+     * A managed child is linked immediately after its account is registered,
+     * but the family-members read model can take a moment to include it.  On
+     * the one return journey from that flow, retry the lightweight child-list
+     * request a few times instead of making the parent manually refresh.
+     */
+    private refreshChildrenAfterManagedChildCreation(): void {
+        let pending = false;
+        try {
+            pending = sessionStorage.getItem(ParentAccountComponent.MANAGED_CHILD_REFRESH_KEY) === 'true';
+            if (pending) sessionStorage.removeItem(ParentAccountComponent.MANAGED_CHILD_REFRESH_KEY);
+        } catch (error) {
+            console.warn('[ParentAccount] Unable to read managed child refresh state', error);
+            return;
+        }
+
+        if (!pending) return;
+
+        this.managedChildRefreshTimers.forEach(timer => clearTimeout(timer));
+        this.managedChildRefreshTimers = [700, 1800, 3500].map(delay => setTimeout(() => {
+            void this.loadChildren();
+        }, delay));
     }
 
     private applyAuthenticatedParent(session: any): void {

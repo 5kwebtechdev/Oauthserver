@@ -5,7 +5,10 @@
 }
 
 .course-content {
-  --background: #fffdf8;
+  // The yellow hero owns the top safe area. Without this override, Ionic adds
+  // another inset above it and leaves an empty band at the top of the screen.
+  --background: linear-gradient(132deg, #fff1a6 0%, #ffedbc 53%, #fff6d6 100%);
+  --padding-top: 0;
 }
 
 .course-page {

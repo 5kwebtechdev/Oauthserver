@@ -200,6 +200,11 @@ input[type="radio"]:checked::after {
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    // Fixed order overlays sit outside ion-content's padded scroll area.
+    // Reserve the device insets here so their navigator never sits below the
+    // status bar or gesture area.
+    padding: var(--sat, env(safe-area-inset-top, 0px)) 0 var(--sab, env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
 }
 
 .order-filter-screen.visible {
@@ -221,6 +226,8 @@ input[type="radio"]:checked::after {
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    padding: var(--sat, env(safe-area-inset-top, 0px)) 0 var(--sab, env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
 }
 
 .order-detail-screen.visible {
@@ -240,6 +247,8 @@ input[type="radio"]:checked::after {
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    padding: var(--sat, env(safe-area-inset-top, 0px)) 0 var(--sab, env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
 }
 
 .order-cancel-reason-screen.visible {
@@ -559,5 +568,4 @@ box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
     height: 14px !important;
     aspect-ratio: 1/1 !important;
 }
-
 

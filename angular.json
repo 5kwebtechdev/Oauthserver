@@ -29,7 +29,24 @@
               {
                 "glob": "**/*",
                 "input": "src/assets",
-                "output": "assets"
+                "output": "assets",
+                "ignore": [
+                  "figma/child-planner/superme-planner-habit.png",
+                  "figma/child-planner/superme-planner-tab.png",
+                  "figma/child-planner/superme-planner-task.png",
+                  "icons/Time-table.svg",
+                  "figma/activity-event/tab-calendar.png",
+                  "figma/activity-event/tab-task.png",
+                  "figma/activity-event/tab-habit.png",
+                  "Images-Thumbnails/Image-Onboarding3.jpg",
+                  "Images-Thumbnails/Background-Home.png",
+                  "Images-Thumbnails/Image-Onboarding1.jpg",
+                  "Images-Transparent/Image-Onboarding-Pet2.png",
+                  "Images-Transparent/Image-Onboading-Pet.png",
+                  "app-assets/badges/comeback-star-icon.png",
+                  "app-assets/badges/habit-master-icon.png",
+                  "app-assets/badges/first-big-win-icon.png"
+                ]
               },
               {
                 "glob": "**/*.svg",

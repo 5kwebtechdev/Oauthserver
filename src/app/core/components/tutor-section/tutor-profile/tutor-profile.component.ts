@@ -33,6 +33,8 @@ type ContactMethod = 'call' | 'email' | 'whatsapp';
   styleUrls: ['./tutor-profile.component.scss']
 })
 export class TutorProfileComponent implements OnInit, OnDestroy {
+  /** Contact unlock pricing is currently a fixed product rule. */
+  readonly contactUnlockCost = 50;
   @Input() tutor: Tutor | undefined;
   @Input() categoryKey: string | null = null;
 

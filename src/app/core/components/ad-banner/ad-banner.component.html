@@ -5,6 +5,7 @@
     [class.adb--eduhub-inner]="variant === 'eduhub-inner'"
     [class.adb--parent-learning]="variant === 'parent-learning'"
     [class.adb--lesson]="variant === 'lesson'"
+    [class.adb--single]="ads.length === 1"
     (touchstart)="onTouchStart($event)"
     (touchend)="onTouchEnd($event)"
     role="region"

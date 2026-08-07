@@ -214,7 +214,8 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
     const parentEduHubInner = this.variant === 'eduhub-inner';
     const parentLearning = this.variant === 'parent-learning';
     const lesson = this.variant === 'lesson';
-    const cardWidth = lesson
+    const singleAd = this.ads.length === 1;
+    const cardWidth = lesson || singleAd
       ? containerWidth
       : parentLearning
       ? Math.min(305, containerWidth * 0.845)

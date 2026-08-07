@@ -1,28 +1,40 @@
 h2 { margin: 0; }
 
+// This hero owns the status-bar inset so it stays flush with the top of the
+// screen. The app-wide ion-content padding would otherwise add that inset a
+// second time and leave an oversized gap above the header on iOS/Android.
+:host ion-content {
+  --padding-top: 0px;
+}
+
+.academies-page {
+  width: 100%;
+  min-width: 0;
+}
+
 // ── Header ────────────────────────────────────────────────────────────────────
 .ac-header {
-  height: calc(254px + env(safe-area-inset-top));
+  height: calc(254px + var(--sat, env(safe-area-inset-top, 0px)));
   flex-shrink: 0;
   background-image: url('/assets/Images-Thumbnails/Imgae-Tutor-TopBg.jpg');
   background-repeat: no-repeat;
   background-position: center center;
   background-size: cover;
-  padding: 0 16px;
+  padding: var(--sat, env(safe-area-inset-top, 0px)) clamp(12px, 4vw, 16px) 0;
   box-sizing: border-box;
   position: relative;
   border-radius: 0px 0px 48px 48px;
   display: flex;
   flex-direction: column;
-  padding-top: env(safe-area-inset-top, 0) !important;
-  gap: 24px;
+  gap: clamp(16px, 5vw, 24px);
 }
 
 .header-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0px;
+  padding: 10px 0;
+  gap: 10px;
 }
 
 .header-top h2 {
@@ -171,7 +183,7 @@ h2 { margin: 0; }
 
 // ── List section ─────────────────────────────────────────────────────────────
 .academies-list-section {
-  padding: 0 16px 130px 16px;
+  padding: 0 clamp(12px, 4vw, 16px) 130px;
   gap: 16px;
 }
 
@@ -438,4 +450,24 @@ h2 { margin: 0; }
 
 :host ::ng-deep app-superme-popup .superme-popup-actions .superme-popup-dual-cta > * {
   width: 100%;
+}
+
+@media (max-width: 360px) {
+  .ac-header {
+    height: calc(238px + var(--sat, env(safe-area-inset-top, 0px)));
+    gap: 12px;
+    border-radius: 0 0 36px 36px;
+  }
+
+  .header-top h2 {
+    font-size: 14px;
+  }
+
+  .search-bar {
+    padding: 7px 10px;
+  }
+
+  .controls-row {
+    padding-inline: 12px;
+  }
 }

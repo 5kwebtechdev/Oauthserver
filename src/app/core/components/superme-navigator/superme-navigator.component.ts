@@ -42,6 +42,8 @@ export class SupermeNavigatorComponent implements OnInit {
   @Input() rightIcon2Alt: string = '';
 
   @Output() rightIcon2Click = new EventEmitter<void>();
+  /** Emits when the optional location/address subtext is selected. */
+  @Output() subtextClick = new EventEmitter<void>();
   @Input() rightType?: 'edit';
   // Accept flexible action types to keep navigator generic and avoid hard-coding specific actions
   @Input() rightActions?: Array<{ type?: string, src?: string, alt?: string, count?: number }>;
@@ -97,6 +99,11 @@ export class SupermeNavigatorComponent implements OnInit {
 
   onRight2Click() {
     this.rightIcon2Click.emit();
+  }
+
+  onSubtextClick(event: Event): void {
+    event.stopPropagation();
+    this.subtextClick.emit();
   }
 
   onActionClick(index: number, action: any) {

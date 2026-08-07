@@ -24,7 +24,7 @@ type CategoryKey =
 interface EduHubCategory {
   key: CategoryKey;
   label: string;
-  spriteX: string;
+  image: string;
   route: string;
 }
 
@@ -43,15 +43,15 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   isLoading = false;
 
   readonly categories: EduHubCategory[] = [
-    { key: 'tutors', label: 'Tutors', spriteX: '-8px', route: '/authed/tutors' },
-    { key: 'academies', label: 'Academies', spriteX: '-88px', route: '/authed/academies' },
-    { key: 'workshops', label: 'Workshops', spriteX: '-180px', route: '/authed/education' },
-    { key: 'events', label: 'Events', spriteX: '-263px', route: '/authed/education' },
-    { key: 'stationery', label: 'Stationery Shops', spriteX: '-362px', route: '/authed/school-store' },
-    { key: 'book-stores', label: 'Book Stores', spriteX: '-473px', route: '/authed/school-store' },
-    { key: 'counselors', label: 'Counselors', spriteX: '-571px', route: '/authed/education' },
-    { key: 'second-hand-books', label: 'Second-Hand Books', spriteX: '-685px', route: '/authed/school-store' },
-    { key: 'sports-shops', label: 'Sports Shops', spriteX: '-810px', route: '/authed/school-store' }
+    { key: 'tutors', label: 'Tutors', image: 'assets/figma/parent-eduhub/tutor.png', route: '/authed/tutors' },
+    { key: 'academies', label: 'Academies', image: 'assets/figma/parent-eduhub/academies.png', route: '/authed/academies' },
+    { key: 'workshops', label: 'Workshops', image: 'assets/figma/parent-eduhub/workshops.png', route: '/authed/education' },
+    { key: 'events', label: 'Events', image: 'assets/figma/parent-eduhub/events.png', route: '/authed/education' },
+    { key: 'stationery', label: 'Stationery Shops', image: 'assets/figma/parent-eduhub/stationery.png', route: '/authed/school-store' },
+    { key: 'book-stores', label: 'Book Stores', image: 'assets/figma/parent-eduhub/books.png', route: '/authed/school-store' },
+    { key: 'counselors', label: 'Counselors', image: 'assets/figma/parent-eduhub/counselors.png', route: '/authed/education' },
+    { key: 'second-hand-books', label: 'Second-Hand Books', image: 'assets/figma/parent-eduhub/second-hand-books.png', route: '/authed/school-store' },
+    { key: 'sports-shops', label: 'Sports Shops', image: 'assets/figma/parent-eduhub/sports.png', route: '/authed/school-store' }
   ];
 
   selectedCategoryKey: CategoryKey = 'tutors';
