@@ -147,7 +147,7 @@ export class UserService {
     } else if (profile?.gender === 'female') {
       return 'assets/Images-Transparent/Image-Onboarding-Avatar-Female1.png';
     }
-    return 'assets/app-assets/Default-avatar-home.svg';
+    return 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
   }
 
   /**
@@ -284,7 +284,7 @@ export class UserService {
   private getAvatarUrlFromSelection(avatarNumber: number, gender?: string): string {
     const parsedAvatarNumber = Number(avatarNumber);
     if (!Number.isInteger(parsedAvatarNumber) || parsedAvatarNumber < 1 || parsedAvatarNumber > 12) {
-      return '/assets/app-assets/Default-avatar-home.svg';
+      return '/assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png';
     }
 
     const isFemaleAvatar = parsedAvatarNumber <= 6;

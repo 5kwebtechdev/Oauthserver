@@ -10,6 +10,9 @@
 
 .learning-details-content {
   --background: #ffffff;
+  // The header handles the top safe area itself; avoid a second Ionic inset
+  // that leaves a white spacer above the article controls.
+  --padding-top: 0;
   --padding-bottom: 0;
 }
 
@@ -22,11 +25,11 @@
 .learning-details-header {
   display: flex;
   width: min(100%, 760px);
-  min-height: 86px;
+  min-height: 64px;
   align-items: flex-start;
   justify-content: space-between;
   margin: 0 auto;
-  padding: calc(env(safe-area-inset-top, 0px) + 8px) 16px 0;
+  padding: calc(var(--sat, 0px) + 8px) 16px 0;
   box-sizing: border-box;
 
   button {
@@ -91,7 +94,7 @@
   flex-direction: column;
   gap: 16px;
   margin: 0 auto;
-  padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+  padding: 8px 16px calc(24px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
 }
 

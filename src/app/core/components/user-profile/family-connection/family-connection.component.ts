@@ -906,13 +906,28 @@ export class FamilyConnectionComponent implements OnInit, OnDestroy {
           this.coreAuthService.replaceAuthToken(response.token);
         }
 
-        const childName = response?.name || member.name || 'Child';
-        const childId = response?.memberId || memberId;
+        // A child-view session must be built from the child response/member,
+        // not from the parent's cached profile.  Reusing parentUserData here
+        // made the child profile lose its own avatar, age and contact details.
+        const childResponse = response?.user || response?.member || response?.profile || response || {};
+        const childName = childResponse?.name || member.name || 'Child';
+        const childId = childResponse?.id || childResponse?.userId || childResponse?.memberId || memberId;
         const childUserData = {
-          ...parentUserData,
+          ...member,
+          ...childResponse,
           id: childId,
+          userId: childId,
           name: childName,
-          relationship: 'CHILD'
+          relationship: 'CHILD',
+          age: childResponse?.age ?? member.age,
+          dateOfBirth: childResponse?.dateOfBirth ?? member.dateOfBirth,
+          avatar: childResponse?.avatar ?? member.avatar,
+          avatarUrl: childResponse?.avatarUrl ?? member.avatarUrl,
+          avatarName: childResponse?.avatarName ?? member.avatarName,
+          avatarImageName: childResponse?.avatarImageName
+            ?? member.avatarImageName
+            ?? member.avatar?.avatarImageName
+            ?? member.avatarName
         };
 
         this.coreAuthService.setUserData(childUserData);

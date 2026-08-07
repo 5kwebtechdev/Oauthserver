@@ -95,7 +95,8 @@ export class EducationMainPageComponent implements OnInit {
             id: 'counselors',
             label: 'Counselors',
             image: 'assets/figma/parent-eduhub/counselors.png',
-            kind: 'coming-soon'
+            kind: 'route',
+            route: '/authed/tutors?entityType=COUNSELOR'
         }
     ];
 

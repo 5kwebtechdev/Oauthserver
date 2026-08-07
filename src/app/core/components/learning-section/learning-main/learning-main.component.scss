@@ -1028,7 +1028,9 @@
 }
 
 .parent-learning-content {
-	--background: #fff;
+	// The safe-area region is part of the hero on mobile. Leaving this white
+	// created a visible empty band above the parent learning header on iOS.
+	--background: linear-gradient(96.9deg, #e1527c 0.13%, #cf3359 99.87%);
 	--padding-top: 0;
 	--padding-start: 0;
 	--padding-end: 0;
@@ -1066,6 +1068,12 @@
 .parent-learning-hero--detail {
 	gap: 16px;
 	min-height: calc(185px + var(--sat, 0px));
+}
+
+// The bottom-navigation root is not a drill-down page. Removing the empty
+// navigation row keeps the hero balanced when there is no Back action.
+.parent-learning-hero--root {
+	min-height: calc(125px + var(--sat, 0px));
 }
 
 .parent-learning-hero__nav {

@@ -216,66 +216,6 @@
         <mood-selector [value]="selectedMood" (valueChange)="onMoodChange($event)"></mood-selector>
       </div>
 
-      <!-- Insights: This Week's Performance + Mood Balance (self-scoped) -->
-      <section class="mood-balance-section" aria-labelledby="self-mood-balance-title">
-        <div class="section-heading section-heading--button">
-          <h2 id="self-mood-balance-title">
-            Mood Balance (Last 7 days)
-            <img src="assets/figma/parent-home/info.svg" alt="" aria-hidden="true">
-          </h2>
-          <button type="button" class="outline-pill" (click)="openInsights()">View more</button>
-        </div>
-
-        <div class="mood-balance" [class.mood-balance--loading]="moodBalanceLoading">
-          <div class="mood-balance__bar" role="img" aria-label="Mood balance for the last seven days">
-            <span *ngFor="let segment of moodBalance"
-              [style.flex-basis.%]="segment.value"
-              [style.background]="segment.color"
-              [class.mood-balance__segment--empty]="segment.value === 0">
-              <b *ngIf="segment.value > 0">{{ segment.value }}%</b>
-            </span>
-          </div>
-          <div class="mood-balance__legend">
-            <span *ngFor="let segment of moodBalance">
-              <i [style.background]="segment.color"></i>{{ segment.label }}
-            </span>
-          </div>
-        </div>
-      </section>
-
-      <section class="performance-section" aria-labelledby="self-performance-title">
-        <div class="section-heading">
-          <h2 id="self-performance-title">This Week's Performance</h2>
-          <span>Updated {{ statsUpdatedLabel }}</span>
-        </div>
-
-        <div class="performance-card">
-          <div class="metric-grid" [attr.aria-busy]="performanceLoading ? 'true' : null">
-            <article class="metric" *ngFor="let metric of performanceMetrics">
-              <div class="metric__label">
-                <span>{{ metric.label }}</span>
-                <img src="assets/figma/parent-home/info.svg" alt="" aria-hidden="true">
-              </div>
-              <div class="metric__ring" [class.metric__ring--loading]="performanceLoading"
-                [style.--metric-value]="metric.value + '%'"
-                [style.--metric-color]="metric.color">
-                <span *ngIf="!performanceLoading">{{ metric.displayValue }}</span>
-              </div>
-              <strong *ngIf="!performanceLoading" [style.color]="metric.color">{{ metric.status }}</strong>
-              <span *ngIf="performanceLoading" class="metric__status-skeleton" aria-hidden="true"></span>
-            </article>
-          </div>
-
-          <button class="ai-insight" type="button" (click)="openInsights()">
-            <img src="assets/figma/parent-home/ai-insight.png" alt="" aria-hidden="true">
-            <span>
-              <span><strong>AI Insight :</strong> {{ aiInsight }}</span>
-              <u>View full insights</u>
-            </span>
-          </button>
-        </div>
-      </section>
-
       <!-- activity Card -->
       <activity-card class="home-glance-card" mode="recent" [recentHabits]="recentHabits"
         [recentTasks]="recentTasks" [recentTimetables]="recentTimetables" [totalTasks]="totalTasks" [totalTasksCompleted]="totalTasksCompleted"

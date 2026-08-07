@@ -6,6 +6,27 @@ def envOrProp = { String name ->
     return project.findProperty(name)?.toString() ?: System.getenv(name)
 }
 
+// These files are legacy design exports with no application references. Keep
+// them out of an Android package even if an older Capacitor sync left a stale
+// copy in android/app/src/main/assets/public.
+def unusedWebAssetNames = [
+    'superme-planner-habit.png',
+    'superme-planner-tab.png',
+    'superme-planner-task.png',
+    'Time-table.svg',
+    'tab-calendar.png',
+    'tab-task.png',
+    'tab-habit.png',
+    'Image-Onboarding3.jpg',
+    'Background-Home.png',
+    'Image-Onboarding1.jpg',
+    'Image-Onboarding-Pet2.png',
+    'Image-Onboading-Pet.png',
+    'comeback-star-icon.png',
+    'habit-master-icon.png',
+    'first-big-win-icon.png'
+]
+
 android {
     namespace = "io.ionic.starter"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -25,7 +46,8 @@ android {
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
-            ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+            ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~:' +
+                unusedWebAssetNames.collect { "!${it}" }.join(':')
         }
     }
     signingConfigs {

@@ -1,19 +1,28 @@
-<div class="mood-card" role="group" aria-label="Mood selector">
-
-  <div class="mood-card-header">
-    <span class="mood-card-title">Today’s Mood</span>
-  </div>
-
+<div class="mood-card" [class.mood-card--saved]="!isParent && !showMoodPicker" role="group" aria-label="Mood selector">
   <ng-container *ngIf="isParent">
     <div class="mood-card-preview">
       <img [src]="popupPreviewSrc" [alt]="popupPreviewLabel" />
     </div>
     <p class="mood-card-subtitle">
-      You're in a calm <strong>{{ activeLabel | uppercase }}</strong> space right now !
+      You're in a calm <strong>{{ activeLabel | uppercase }}</strong> space right now!
     </p>
   </ng-container>
 
-  <ng-container *ngIf="!isParent">
+  <ng-container *ngIf="!isParent && !showMoodPicker">
+    <div class="saved-mood" aria-live="polite">
+      <div class="saved-mood-avatar">
+        <img [src]="displayAssetSrc" [alt]="activeLabel" />
+        <button type="button" class="saved-mood-edit" aria-label="Change your mood" (click)="editMood()">
+          <span aria-hidden="true">&#9998;</span>
+        </button>
+      </div>
+      <p class="saved-mood-message">
+        You’re in a calm <strong>{{ activeLabel | uppercase }}</strong> space right now!
+      </p>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="!isParent && showMoodPicker">
     <div class="mood-card-grid" aria-label="Choose your mood">
       <button
         *ngFor="let p of popupOptions; trackBy: trackByMood"
@@ -35,9 +44,11 @@
       You can only input your mood twice a day
     </span>
 
-    <button type="button" class="mood-card-cta" [disabled]="!popupSelection" (click)="setVibe()">
-      Set the Vibe
-    </button>
+    <div class="mood-picker-actions">
+      <button type="button" class="mood-card-cta" [disabled]="!popupSelection" (click)="setVibe()">Set the Vibe</button>
+      <span class="mood-set-count">{{ moodSetsLabel }}</span>
+      <button type="button" class="mood-limit-info" aria-label="Mood setting limit information" [attr.aria-expanded]="limitInfoVisible" (click)="toggleLimitInfo()">i</button>
+    </div>
+    <p *ngIf="limitInfoVisible" class="mood-limit-message" role="status">You can set your mood up to twice each day.</p>
   </ng-container>
-
 </div>

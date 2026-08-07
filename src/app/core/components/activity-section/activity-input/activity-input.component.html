@@ -261,9 +261,9 @@
     </div>
   </superme-navigator>
   <div class="habit-input-root" [ngClass]="currentActive"
-    [class.child-planner-root]="isChild && !isParentCreated">
+    [class.child-planner-root]="isChildPlannerFlow">
     <div *ngIf="!editingId" class=" w-full">
-      <div class="activity-tabs" [class.child-planner-tabs]="isChild && !isParentCreated" role="tablist"
+      <div class="activity-tabs" [class.child-planner-tabs]="isChildPlannerFlow" role="tablist"
         aria-label="Activity type">
         <button *ngFor="let tab of visibleActivityTabs" type="button" class="activity-tab"
           [ngClass]="'tab-' + tab.key" [class.active]="isActivityTabSelected(tab.key)"
@@ -276,7 +276,7 @@
       </div>
     </div>
 
-    <section *ngIf="!editingId && isChild && !isParentCreated && isPlannerActive"
+    <section *ngIf="!editingId && isChildPlannerFlow && isPlannerActive"
       class="planner-choice-section" aria-labelledby="planner-choice-title">
       <h2 id="planner-choice-title">What are you adding?</h2>
       <div class="planner-choice-grid" role="radiogroup" aria-label="Planner type">
@@ -465,7 +465,7 @@
         *ngTemplateOutlet="submitSection; context: {btnType: 'aqua', btnTypeFaded: 'aqua-light', itemType: 'Time Table'}"></ng-container>
     </div>
 
-    <div *ngIf="currentActive === 'timetable' && (!isChild || isParentCreated)" class="form-card">
+    <div *ngIf="currentActive === 'timetable' && !isChildPlannerFlow" class="form-card">
       <ng-container
         *ngTemplateOutlet="titleInputSection; context: {placeholder: 'What do you want to schedule?', errorMsg: 'Enter timetable title', subtitle: 'Be specific and actionable.'}"></ng-container>
       <div class="date-time-selection">
@@ -523,7 +523,7 @@
     </div>
 
     <div *ngIf="currentActive === 'events'" class="form-card event-form">
-      <section *ngIf="eventInfoVisible && !(isChild && !isParentCreated)" class="event-info"
+      <section *ngIf="eventInfoVisible && !isChildPlannerFlow" class="event-info"
         aria-label="Calendar information">
         <span class="event-info__copy">
           <img src="assets/figma/activity-event/info.svg" alt="" aria-hidden="true">
@@ -543,10 +543,10 @@
           <label class="event-title-field__copy">
             <span class="visually-hidden">Event title</span>
             <input [(ngModel)]="title" (ngModelChange)="clearTitleError()" maxlength="20"
-              [placeholder]="isChild && !isParentCreated ? 'What is the name of the event?' : 'What’s the event? (eg. Birthday etc)'">
+              [placeholder]="isChildPlannerFlow ? 'What is the name of the event?' : 'What’s the event? (eg. Birthday etc)'">
             <span>Be specific and actionable.</span>
           </label>
-          <span *ngIf="isChild && !isParentCreated" class="planner-event-priority">
+          <span *ngIf="isChildPlannerFlow" class="planner-event-priority">
             <span>High Priority</span>
             <superme-toggle [checked]="eventHighPriority"
               (checkedChange)="onEventPriorityChange($event)"></superme-toggle>
@@ -689,7 +689,7 @@
         </div>
       </section>
 
-      <section *ngIf="!(isChild && !isParentCreated)" class="event-card event-priority-card">
+      <section *ngIf="!isChildPlannerFlow" class="event-card event-priority-card">
         <span class="event-section-title">
           <span class="event-icon-tile" aria-hidden="true">
             <img src="assets/figma/activity-event/priority.svg" alt="">
@@ -714,7 +714,7 @@
       </section>
 
       <div *ngIf="serverErrorMessage" class="field-error event-server-error" role="alert">{{ serverErrorMessage }}</div>
-      <button type="button" class="event-submit" [class.child-planner-submit]="isChild && !isParentCreated"
+      <button type="button" class="event-submit" [class.child-planner-submit]="isChildPlannerFlow"
         [disabled]="isSubmitting || !isFormComplete" (click)="submit()">
         <span *ngIf="isSubmitting" class="event-submit__spinner" aria-hidden="true"></span>
         <span>{{ isSubmitting ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Event' : 'Create Event') }}</span>

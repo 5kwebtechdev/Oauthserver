@@ -46,6 +46,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
   private static readonly MANAGED_CHILD_FAMILY_CODE_KEY = 'managed_child_family_code';
   private static readonly MANAGED_CHILD_SUCCESS_EMAIL_KEY = 'managed_child_success_email';
   private static readonly MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY = 'managed_child_parent_welcome_pending';
+  private static readonly MANAGED_CHILD_REFRESH_KEY = 'family_children_refresh_pending';
   // Persist identifier used to request OTP so it can be reused in later steps
   public requestedIdentifier: string | null = null;
   public signupForm: FormGroup;
@@ -1402,6 +1403,14 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       sessionStorage.removeItem(SignupComponent.MANAGED_CHILD_PARENT_WELCOME_PENDING_KEY);
     } catch (error) {
       console.warn('[Signup] Unable to read deferred parent welcome state', error);
+    }
+
+    try {
+      // The parent dashboard uses this one-time flag to reload the family
+      // members after the new child has been committed by the backend.
+      sessionStorage.setItem(SignupComponent.MANAGED_CHILD_REFRESH_KEY, 'true');
+    } catch (error) {
+      console.warn('[Signup] Unable to mark parent child-list refresh', error);
     }
 
     this.clearManagedChildSignupState();
@@ -3562,11 +3571,11 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     // Child users reach this welcome screen only after a successful family
     // link and are already logged in. Continue directly without a second login.
     if (this.authService.isLoggedIn()) {
-      this.applyCompletedUnlockState(completedUserData);
+      const finalizedUserData = this.applyCompletedUnlockState(completedUserData);
       if (this.beginManagedChildSignupAfterParentUnlock()) {
         return;
       }
-      const resume = this.onboardingState.isOnboardingComplete(completedUserData)
+      const resume = this.onboardingState.isOnboardingComplete(finalizedUserData)
         ? null
         : this.onboardingState.getResumeNavigation(this.authService.getUserData());
       if (resume) {
@@ -3638,7 +3647,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         // AuthService stores the login response before this callback. Reapply
         // the newer unlock response so a stale login payload cannot send the
         // completed parent back into onboarding.
-        this.applyCompletedUnlockState(completedUserData);
+        const finalizedUserData = this.applyCompletedUnlockState(completedUserData);
         if (this.beginManagedChildSignupAfterParentUnlock()) {
           return;
         }
@@ -3646,7 +3655,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.signupCredentialState.clear();
         this.registrationInProgress = false;
         this.loadingService.forceHide();
-        const resume = this.onboardingState.isOnboardingComplete(completedUserData)
+        const resume = this.onboardingState.isOnboardingComplete(finalizedUserData)
           ? null
           : this.onboardingState.getResumeNavigation(loginResponse.user);
         if (resume) {
@@ -3763,16 +3772,30 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return true;
   }
 
-  private applyCompletedUnlockState(completedUserData?: RegistrationDraftData): void {
+  private applyCompletedUnlockState(
+    completedUserData?: RegistrationDraftData
+  ): RegistrationDraftData | undefined {
     if (!completedUserData) {
-      return;
+      return undefined;
     }
 
-    this.authService.updateUserData(completedUserData);
-    if (this.onboardingState.isOnboardingComplete(completedUserData)) {
+    // The only way to reach this handler is a successful final
+    // `unlockPotential: true` update. Some responses briefly still report
+    // step 6 while the backend persists step 7; treating that stale value as
+    // incomplete sends a parent back to this screen instead of Home.
+    const finalizedUserData: RegistrationDraftData = {
+      ...completedUserData,
+      unlockPotential: true,
+      onboardingStep: 7
+    };
+
+    this.authService.updateUserData(finalizedUserData);
+    if (this.onboardingState.isOnboardingComplete(finalizedUserData)) {
       this.onboardingState.clearRegistrationDraft();
       this.onboardingState.markExistingUser();
     }
+
+    return finalizedUserData;
   }
 
   /**

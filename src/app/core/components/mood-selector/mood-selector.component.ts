@@ -29,9 +29,14 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
 
   vibes: VibesDisplayResponse[] = [];
   private setsToday = 0;
+  /** Retains the most recently confirmed API mood while the display request refreshes. */
+  private savedMoodKey: string | null = null;
 
   // selection state
   popupSelection: string | null = null;
+  /** A user can reopen the picker after saving a mood by using the edit button. */
+  pickerOpen = false;
+  limitInfoVisible = false;
   // blocked-tooltip state
   blockedTooltipVisible = false;
   private blockedTooltipTimer: any = null;
@@ -40,15 +45,15 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
 
   // Mood to asset mapping (backend mood -> asset path)
   private readonly moodAssetMap: Record<string, string> = {
-    'HAPPY': 'assets/Images-Transparent/Image-Mood-Happy.png',
-    'VERY HAPPY': 'assets/Images-Transparent/Image-Mood-Very happy.png',
-    'EXCITED': 'assets/Images-Transparent/Image-Mood-Excited.png',
-    'NERVOUS': 'assets/Images-Transparent/Image-Mood-Nervous.png',
-    'ANXIOUS': 'assets/Images-Transparent/Image-Mood-Nervous.png',
-    'SAD': 'assets/Images-Transparent/Image-Mood-Sad.png',
-    'UPSET': 'assets/figma/child-home/mood-frustrated.png',
-    'FRUSTRATED': 'assets/figma/child-home/mood-frustrated.png',
-    'NEUTRAL': this.neutralAsset
+    'HAPPY': 'assets/figma/child-home/moods/happy.svg',
+    'VERY HAPPY': 'assets/figma/child-home/moods/happy.svg',
+    'EXCITED': 'assets/figma/child-home/moods/excited.svg',
+    'NERVOUS': 'assets/figma/child-home/moods/anxious.svg',
+    'ANXIOUS': 'assets/figma/child-home/moods/anxious.svg',
+    'SAD': 'assets/figma/child-home/moods/sad.svg',
+    'UPSET': 'assets/figma/child-home/moods/frustrated.svg',
+    'FRUSTRATED': 'assets/figma/child-home/moods/frustrated.svg',
+    'NEUTRAL': 'assets/figma/child-home/moods/Calm.svg'
   };
 
   private readonly moodLabelMap: Record<string, string> = {
@@ -65,11 +70,12 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
 
   // Popup options - Neutral is NOT shown in popup, only as default
   popupOptions: PopupMoodOption[] = [
-    { src: 'assets/Images-Transparent/Image-Mood-Happy.png', label: 'Happy', vibe: 'HAPPY', art: 'happy' },
-    { src: 'assets/Images-Transparent/Image-Mood-Excited.png', label: 'Excited', vibe: 'EXCITED', art: 'excited' },
-    { src: 'assets/Images-Transparent/Image-Mood-Nervous.png', label: 'Anxious', vibe: 'NERVOUS', art: 'anxious' },
-    { src: 'assets/Images-Transparent/Image-Mood-Sad.png', label: 'Sad', vibe: 'SAD', art: 'sad' },
-    { src: 'assets/figma/child-home/mood-frustrated.png', label: 'Frustrated', vibe: 'UPSET', art: 'frustrated' }
+    { src: 'assets/figma/child-home/moods/happy.svg', label: 'Happy', vibe: 'HAPPY', art: 'happy' },
+    { src: 'assets/figma/child-home/moods/excited.svg', label: 'Excited', vibe: 'EXCITED', art: 'excited' },
+    { src: 'assets/figma/child-home/moods/anxious.svg', label: 'Anxious', vibe: 'NERVOUS', art: 'anxious' },
+    { src: 'assets/figma/child-home/moods/sad.svg', label: 'Sad', vibe: 'SAD', art: 'sad' },
+    { src: 'assets/figma/child-home/moods/frustrated.svg', label: 'Frustrated', vibe: 'UPSET', art: 'frustrated' },
+    { src: 'assets/figma/child-home/moods/Calm.svg', label: 'Calm', vibe: 'NEUTRAL', art: 'calm' }
   ];
 
   ngOnInit() {
@@ -120,11 +126,13 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
         const vibe = this.activeVibe;
         if (vibe && vibe.mood) {
           const moodUpper = vibe.mood.toUpperCase();
+          this.savedMoodKey = moodUpper;
           const assetPath = this.moodAssetMap[moodUpper];
           this.value = assetPath
             ? 'asset:' + assetPath
             : 'asset:' + this.moodAssetMap['NEUTRAL'];
         } else {
+          this.savedMoodKey = null;
           this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
         }
         this.valueChange.emit(this.value);
@@ -152,6 +160,32 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
     this.popupSelection = src;
   }
 
+  /** Show the picker again without discarding the mood already saved by the API. */
+  editMood(): void {
+    if (this.isParent) return;
+    this.popupSelection = null;
+    this.limitInfoVisible = false;
+    this.pickerOpen = true;
+  }
+
+  toggleLimitInfo(): void {
+    this.limitInfoVisible = !this.limitInfoVisible;
+  }
+
+  /** The summary is API driven, so it remains correct after navigation or a new login. */
+  get hasSavedMood(): boolean {
+    const mood = String(this.savedMoodKey || this.activeVibe?.mood || '').trim().toUpperCase();
+    return !!mood;
+  }
+
+  get showMoodPicker(): boolean {
+    return !this.hasSavedMood || this.pickerOpen;
+  }
+
+  get moodSetsLabel(): string {
+    return `${Math.min(Math.max(this.setsToday, 0), 2)}/2`;
+  }
+
   /**
    * Keep the selected treatment in sync with both a newly tapped option and
    * the mood currently returned by the API. This makes the active mood clear
@@ -172,7 +206,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
     if (opt?.label) {
       return opt.label;
     }
-    const moodKey = (this.activeVibe?.mood || 'NEUTRAL').toUpperCase();
+    const moodKey = (this.savedMoodKey || this.activeVibe?.mood || 'NEUTRAL').toUpperCase();
     return this.moodLabelMap[moodKey] || 'Neutral';
   }
 
@@ -225,8 +259,11 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
         // On success: update UI
         this.value = 'asset:' + this.popupSelection;
         this.valueChange.emit(this.value);
+        this.savedMoodKey = vibeKey;
         this.incrementDailySetCount();
         this.popupSelection = null;
+        this.pickerOpen = false;
+        this.limitInfoVisible = false;
         // Clear cache and refresh
         this.moodService.clearVibesDisplayCache();
         this.getTodayVibe();
@@ -272,10 +309,10 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
     return m?.emoji || '';
   }
   get activeLabel() {
-    const vibe = this.activeVibe;
-    if (vibe && vibe.mood) {
-      const moodUpper = String(vibe.mood).toUpperCase();
-      return this.moodLabelMap[moodUpper] || vibe.mood;
+    const moodKey = this.savedMoodKey || this.activeVibe?.mood;
+    if (moodKey) {
+      const moodUpper = String(moodKey).toUpperCase();
+      return this.moodLabelMap[moodUpper] || moodKey;
     }
     const m = this.options.find(x => x.key === this.value) || this.options[0];
     return m?.label || '';
@@ -337,6 +374,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
-    return `vibe_sets_${yyyy}-${mm}-${dd}`;
+    const userId = this.authService.getUserId() || 'anonymous';
+    return `vibe_sets_${userId}_${yyyy}-${mm}-${dd}`;
   }
 }

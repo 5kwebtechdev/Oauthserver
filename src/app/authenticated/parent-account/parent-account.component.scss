@@ -27,7 +27,9 @@ button {
   max-width: 720px;
   min-height: 100%;
   margin: 0 auto;
-  padding-top: max(8px, env(safe-area-inset-top, 0px));
+  // ion-content owns the safe-area inset. Adding it here as well pushed the
+  // parent header down a second time on iOS.
+  padding-top: 8px;
   padding-bottom: 32px;
   overflow: hidden;
   background: #ffffff;
@@ -1709,7 +1711,7 @@ button {
 
 @media (min-width: 600px) {
   .parent-home {
-    padding-top: max(16px, env(safe-area-inset-top, 0px));
+    padding-top: 16px;
   }
 
   .metric-grid {

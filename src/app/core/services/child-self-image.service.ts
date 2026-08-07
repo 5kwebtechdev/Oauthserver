@@ -56,8 +56,11 @@ export class ChildSelfImageService {
                 return { url: hostedUrl, alt: user.name ? `${user.name} avatar` : null };
             }
 
-            // Fallback: no avatar found
-            return { url: null, alt: user.name ? `${user.name} avatar` : null };
+            // Never return a broken/missing avatar source.  A family member
+            // response can omit avatar fields during a parent-to-child view
+            // switch, so show a valid bundled avatar until the exact profile
+            // avatar is available from the API.
+            return this.getSafeFallbackAvatar(user);
         } catch (e) {
             console.error('[ChildSelfImageService] Error resolving avatar:', e);
             return { url: null, alt: null };
@@ -93,7 +96,7 @@ export class ChildSelfImageService {
                 return { url: hostedUrl, alt: member.name ? `${member.name} avatar` : null };
             }
 
-            return { url: null, alt: member.name ? `${member.name} avatar` : null };
+            return this.getSafeFallbackAvatar(member);
         } catch (e) {
             console.error('[ChildSelfImageService] Error resolving member avatar:', e);
             return { url: null, alt: null };
@@ -120,6 +123,18 @@ export class ChildSelfImageService {
         }
 
         return '';
+    }
+
+    private getSafeFallbackAvatar(user: any): { url: string; alt: string | null } {
+        const gender = String(user?.gender || '').trim().toLowerCase();
+        const fallback = gender === 'female'
+            ? this.avatars.find(avatar => avatar.key === 1)
+            : this.avatars.find(avatar => avatar.key === 7);
+
+        return {
+            url: fallback?.value || 'assets/Images-Transparent/Image-Onboarding-Avatar-Male1.png',
+            alt: user?.name ? `${user.name} avatar` : (fallback?.alt || 'User avatar')
+        };
     }
 
     /**

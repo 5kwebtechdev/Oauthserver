@@ -433,8 +433,6 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.loadUserStats();
 
     // Insights — "This Week's Performance" + Mood Balance, self-scoped
-    this.loadInsightStats();
-    this.loadInsightMoodBalance();
 
     // Fallback: show overlays even if stats API is slow (buildOverlayQueue guards against double-run)
     setTimeout(() => this.buildOverlayQueue(), 2000);

@@ -2,7 +2,7 @@ import { Component, Output, EventEmitter, HostListener, OnInit, OnDestroy, Chang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ModalController, ViewWillEnter } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -38,6 +38,7 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
   tutors: TutorListItem[] = [];
   isLoading = false;
   searchQuery = '';
+  private directoryEntityType = '';
   private lastAppliedFilters: any = null;
 
   /** Emitted when a tutor profile is requested */
@@ -63,10 +64,12 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
     private tutorService: TutorService,
     private tutorApi: TutorApi,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
+    this.directoryEntityType = String(this.route.snapshot.queryParamMap.get('entityType') || '').trim().toUpperCase();
     this.loadTutors();
   }
 
@@ -84,7 +87,15 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
       .pipe(takeUntil(this.destroy$))
       .subscribe(loading => { this.isLoading = loading; });
 
-    this.tutorService.fetchTutors()
+    // A filtered EduHub directory must start with unfiltered API data instead
+    // of inheriting search/filter state from the general Tutors page.
+    if (this.directoryEntityType) this.tutorService.clearFilters();
+
+    const request = this.directoryEntityType
+      ? this.tutorService.fetchTutorsByEntityType(this.directoryEntityType)
+      : this.tutorService.fetchTutors();
+
+    request
       .pipe(takeUntil(this.destroy$))
       .subscribe();
 
@@ -93,6 +104,24 @@ export class TutorHomepageComponent implements OnInit, OnDestroy, ViewWillEnter 
       .subscribe(tutors => { this.tutors = tutors; });
 
     this.currentSort = this.tutorService.getCurrentSort();
+  }
+
+  get isCounselorDirectory(): boolean {
+    return this.directoryEntityType === 'COUNSELOR';
+  }
+
+  get directoryHeading(): string {
+    return this.isCounselorDirectory ? 'Your Trusted Counselors' : 'Your Guides to Greatness!';
+  }
+
+  get directorySearchPlaceholder(): string {
+    return this.isCounselorDirectory ? 'Looking for support?' : 'Looking for a math hero?';
+  }
+
+  get directoryIntro(): string {
+    return this.isCounselorDirectory
+      ? 'Find a trusted counselor who can support your child.'
+      : 'Sniffed out the best tutors just for you, ready to fetch your favorite?';
   }
 
   onViewProfile(tutor: TutorListItem): void {

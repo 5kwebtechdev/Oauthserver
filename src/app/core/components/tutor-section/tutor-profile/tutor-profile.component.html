@@ -193,8 +193,12 @@
         </div>
 
         <button type="button" class="unlock-button" (click)="requestUnlock()">
-          <span aria-hidden="true">♛</span>
-          Unlock Now
+          <span class="unlock-button__lock" aria-hidden="true">♛</span>
+          <span>Unlock Now</span>
+          <span class="unlock-button__cost">
+            <img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">
+            {{ contactUnlockCost }}
+          </span>
         </button>
       </section>
 

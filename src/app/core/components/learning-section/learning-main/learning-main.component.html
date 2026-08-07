@@ -1,8 +1,9 @@
 <ng-container *ngIf="parentView; else nonParentLearningView">
   <ion-content fullscreen class="parent-learning-content">
     <main class="parent-learning-page">
-      <header class="parent-learning-hero" [class.parent-learning-hero--detail]="selectedCategoryItem">
-        <div class="parent-learning-hero__nav">
+      <header class="parent-learning-hero" [class.parent-learning-hero--detail]="selectedCategoryItem"
+        [class.parent-learning-hero--root]="!selectedCategoryItem">
+        <div *ngIf="selectedCategoryItem" class="parent-learning-hero__nav">
           <div class="parent-learning-hero__heading">
             <button type="button" class="parent-learning-back" (click)="goBackFromParentLearning()"
               [attr.aria-label]="selectedCategoryItem ? 'Back to learning categories' : 'Go back'">

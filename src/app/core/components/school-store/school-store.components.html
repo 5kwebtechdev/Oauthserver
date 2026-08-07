@@ -7,6 +7,7 @@
                 [subtext]="navigatorSubtext"
                 [showSubtext]="true"
                 (back)="goBack()"
+                (subtextClick)="openAddressPopup()"
                 [rightActions]="[{ type: 'cart', count: cartCount, alt: 'My cart' }, { type: 'package', count: packageCount, alt: 'Packages' }]"
                 (rightActionClick)="onNavigatorAction($event)">
             </superme-navigator>

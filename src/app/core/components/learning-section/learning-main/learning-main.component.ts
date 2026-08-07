@@ -201,7 +201,10 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   ngOnInit(): void {
     this.parentView = this.route.snapshot.queryParamMap.get('view') === 'parent'
       || this.authService.isParentUser();
-    this.childView = !this.parentView && this.authService.getUserRelationship() === 'CHILD';
+    // Self users share the same independent Learning experience as children.
+    // Parent users continue to use the family/child-management experience.
+    const relationship = String(this.authService.getUserRelationship() || '').toUpperCase();
+    this.childView = !this.parentView && (relationship === 'CHILD' || relationship === 'SELF');
     const requestedCategory = this.normalizeCategory(this.route.snapshot.queryParamMap.get('tab'));
     if (requestedCategory) {
       this.selectedCategory = requestedCategory;

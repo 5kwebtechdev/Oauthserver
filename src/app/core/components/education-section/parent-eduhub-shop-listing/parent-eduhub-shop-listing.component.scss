@@ -62,7 +62,7 @@ button {
   gap: 4px;
 
   h1 {
-    max-width: min(62vw, 330px);
+    max-width: min(calc(100vw - 144px), 330px);
     margin: 0;
     overflow: hidden;
     color: var(--directory-neutral-900);
@@ -97,10 +97,17 @@ button {
 }
 
 .icon-button--search {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: #fff;
+  box-shadow: 0 2px 10px rgba(49, 88, 168, 0.12);
+
+  img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+  }
 }
 
 .directory-search {
@@ -233,6 +240,8 @@ button {
   }
 
   ::ng-deep .pet-image {
+    width: 148px !important;
+    height: 148px !important;
     object-fit: contain;
   }
 }
@@ -651,9 +660,10 @@ button {
 
 .listing-action--primary,
 .sheet-primary-action {
-  background: radial-gradient(ellipse at center, #3158a8 0%, #2345a8 50%, #1432a8 100%);
+  border-color: #6e31d8;
+  background: linear-gradient(105deg, #4d18c7 0%, #6f2ee3 52%, #5120c9 100%);
   color: #fff;
-  box-shadow: inset -1px -1px 1px #b2caf2;
+  box-shadow: 0 3px 8px rgba(84, 35, 197, 0.24);
 }
 
 .listing-action__coins,
@@ -949,23 +959,24 @@ button {
 
 .sheet-primary-action {
   display: flex;
-  width: 100%;
-  min-height: 48px;
+  width: min(100%, 220px);
+  min-height: 36px;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  margin-top: 16px;
-  padding: 12px;
-  border: 1px solid #3158a8;
-  border-radius: 16px;
+  gap: 6px;
+  margin: 16px auto 0;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 6px;
   color: #fff;
   font-family: var(--font-sans, 'Nunito', sans-serif);
-  font-size: 17px;
+  font-size: 13px;
   font-weight: 700;
+  line-height: 1.2;
 
   > img {
-    width: 24px;
-    height: 24px;
+    width: 16px;
+    height: 16px;
   }
 
   ion-spinner {
@@ -976,6 +987,16 @@ button {
 
   &:disabled {
     opacity: 0.68;
+  }
+
+  .sheet-primary-action__coins {
+    gap: 2px;
+    font-variant-numeric: tabular-nums;
+
+    img {
+      width: 15px;
+      height: 15px;
+    }
   }
 }
 
