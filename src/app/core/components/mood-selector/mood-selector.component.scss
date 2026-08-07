@@ -4,6 +4,7 @@
 }
 
 .mood-card {
+  position: relative;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -81,7 +82,7 @@
   row-gap: 6px;
   align-items: start;
   width: 100%;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .mood-option {
@@ -125,6 +126,7 @@
   width: 42px;
   height: 42px;
   line-height: 0;
+  transition: transform 140ms ease;
 
   img {
     display: block;
@@ -140,8 +142,10 @@
 }
 
 .mood-option-art--calm {
-  width: 44px;
-  height: 44px;
+  // The Calm SVG includes more transparent space in its viewBox than the
+  // other mood assets, so it needs a slightly larger rendered box.
+  width: 52px;
+  height: 52px;
 }
 
 .mood-option-label {
@@ -169,17 +173,22 @@
     color: #432477;
     font-weight: 700;
   }
+
+  .mood-option-art {
+    transform: scale(1.16);
+  }
 }
 
 .mood-picker-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: center;
-  gap: 10px;
+  column-gap: 8px;
   width: 100%;
 }
 
 .mood-card-cta {
+  grid-column: 2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -213,25 +222,30 @@
 }
 
 .mood-set-count {
+  grid-column: 3;
+  justify-self: start;
   color: #5e5961;
   font-family: var(--font-sans);
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1;
 }
 
 .mood-limit-info {
-  display: inline-grid;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
   place-items: center;
-  width: 20px;
-  height: 20px;
+  width: 17px;
+  height: 17px;
   padding: 0;
   border: 1.5px solid #6a6270;
   border-radius: 50%;
   background: #fff;
   color: #5d5760;
   font-family: serif;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
   font-style: italic;
   line-height: 1;
@@ -349,8 +363,8 @@
   }
 
   .mood-option-art--calm {
-    width: 38px;
-    height: 38px;
+    width: 46px;
+    height: 46px;
   }
 
   .mood-option-label {
@@ -374,7 +388,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mood-option-avatar {
+  .mood-option-avatar,
+  .mood-option-art {
     transition: none;
   }
 }

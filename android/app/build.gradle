@@ -35,8 +35,8 @@ android {
         applicationId = "com.superme.app"
         minSdk = 26
         targetSdk = rootProject.ext.targetSdkVersion
-        versionCode = 36
-        versionName = "0.1.5"
+        versionCode = 37
+        versionName = "0.1.6"
         manifestPlaceholders = [    
             deeplinkHost: envOrProp('DEEPLINK_HOST') ?: 'supermeapp.com',
             deeplinkAltHost: envOrProp('DEEPLINK_ALT_HOST') ?: 'www.supermeapp.com',
@@ -69,6 +69,15 @@ android {
                 signingConfig = signingConfigs.release
             }
         }
+    }
+}
+
+// Release bundles are uploaded manually to Google Play. Avoid making the
+// local build depend on a Crashlytics network upload; the mapping file remains
+// available in the build outputs for separate upload when needed.
+tasks.configureEach {
+    if (name.startsWith('uploadCrashlyticsMappingFile')) {
+        enabled = false
     }
 }
 
