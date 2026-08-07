@@ -1,3 +1,5 @@
+@use '../../../../theme/breakpoints' as bp;
+
 :host {
   display: block;
   width: 100%;
@@ -61,7 +63,7 @@
   min-width: 82%;
   border-radius: 16px;
   overflow: hidden;
-  height: clamp(140px, 40vw, 210px);
+  height: clamp(140px, 40vw, 276px);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
   transform: scale(0.95);
   opacity: 0.65;
@@ -261,5 +263,29 @@
 @media (max-width: 359px) {
   .adb--article-details .adb__card {
     height: 166px;
+  }
+}
+
+// Default (unvariant) ad slots — user-dashboard's screen="HOME" and similar —
+// show 2 cards at once on tablet/desktop instead of the mobile single-card-
+// peek carousel, with no dimmed "inactive" card (both are equally current)
+// and no "1/3" slide-count badge (dot buttons themselves stay visible). No
+// autoplay when there are only 2 ads — see isDesktopDefaultCarousel() in the
+// .ts, both are already on screen together so there's nothing to slide to.
+// :not() scoping keeps this from touching the other variant carousels
+// (article/eduhub/parent-learning/lesson), which already run at their own
+// fixed sizing on every screen size.
+@include bp.tablet-up {
+  .adb:not(.adb--article-details):not(.adb--eduhub-parent):not(.adb--eduhub-inner):not(.adb--parent-learning):not(.adb--lesson) {
+    .adb__card {
+      flex: 0 0 calc(50% - 5px);
+      min-width: calc(50% - 5px);
+      opacity: 1;
+      transform: none;
+    }
+
+    .adb__counter {
+      display: none;
+    }
   }
 }

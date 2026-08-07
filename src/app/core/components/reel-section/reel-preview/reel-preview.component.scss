@@ -1,3 +1,5 @@
+@use '../../../../../theme/breakpoints' as bp;
+
 :host {
   display: block;
   width: 100%;
@@ -208,5 +210,15 @@
   .reel-preview-grid {
     grid-auto-columns: calc((100% - 10px) / 2);
     gap: 10px;
+  }
+}
+
+// Mobile's grid-auto-columns is 50%-of-container-width by design (2 cards
+// mostly visible, a 3rd peeking) — inside the wide desktop .dashboard-content
+// that 50% balloons into an oversized card. Fix the column to a sane pixel
+// width instead so several normal-sized reel cards show in a row.
+@include bp.tablet-up {
+  .reel-preview-grid {
+    grid-auto-columns: 200px;
   }
 }

@@ -33,20 +33,20 @@
             </a>
           </div>
         </div>
+      </div>
 
-        <div class="web-footer__columns">
-          <div class="web-footer__column" *ngFor="let col of columns">
-            <h3 class="web-footer__column-title">{{ col.title }}</h3>
-            <a *ngFor="let l of col.links"
-              class="web-footer__column-link"
-              [routerLink]="l.link ? l.link : null"
-              [queryParams]="l.queryParams || null"
-              [attr.href]="l.href || null"
-              [attr.target]="l.href ? '_blank' : null"
-              [attr.rel]="l.href ? 'noopener noreferrer' : null">
-              {{ l.label }}
-            </a>
-          </div>
+      <div class="web-footer__columns">
+        <div class="web-footer__column" *ngFor="let col of columns">
+          <h3 class="web-footer__column-title">{{ col.title }}</h3>
+          <a *ngFor="let l of col.links"
+            class="web-footer__column-link"
+            [routerLink]="l.link ? l.link : null"
+            [queryParams]="l.queryParams || null"
+            [attr.href]="l.href || null"
+            [attr.target]="l.href ? '_blank' : null"
+            [attr.rel]="l.href ? 'noopener noreferrer' : null">
+            {{ l.label }}
+          </a>
         </div>
       </div>
 

@@ -129,9 +129,15 @@
   }
 }
 
-.mood-option-art--frustrated {
-  width: 40px;
-  height: 40px;
+// mood-frustrated.png's own canvas (192x107) carries far more transparent
+// side padding than the other mood PNGs (~137x108, each with a similarly
+// sized ~82-93px character vs this one's 92px sitting in a canvas nearly
+// 1.8x as wide). object-fit: contain scales the whole canvas including that
+// padding, so at an identical box size this asset's actual character renders
+// noticeably smaller than the others — scale the image back up to compensate
+// instead of just shrinking its box, which only made the gap more visible.
+.mood-option-art--frustrated img {
+  transform: scale(1.3);
 }
 
 .mood-option-label {
@@ -227,11 +233,6 @@
   .mood-option-art {
     width: 38px;
     height: 38px;
-  }
-
-  .mood-option-art--frustrated {
-    width: 36px;
-    height: 36px;
   }
 }
 

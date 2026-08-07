@@ -24,20 +24,12 @@ interface WebNavItem {
 }
 
 const CHILD_NAV_ITEMS: WebNavItem[] = [
-  { label: 'Shop', link: '/authed/school-store' },
   {
     label: 'Learning',
     children: [
       { label: 'Content Library', link: '/authed/content' },
       { label: 'Academy', link: '/authed/academy' },
       { label: 'Education Hub', link: '/authed/education' }
-    ]
-  },
-  {
-    label: 'Tutor',
-    children: [
-      { label: 'Find a Tutor', link: '/authed/tutors' },
-      { label: 'Become a Tutor', href: 'https://supermeapp.com/become-a-tutor' }
     ]
   },
   {
@@ -50,21 +42,9 @@ const CHILD_NAV_ITEMS: WebNavItem[] = [
   { label: 'Notes', link: '/authed/notes' }
 ];
 
-// Mirrors the parent-role items already used by the mobile bottom tab bar
-// (see FooterComponent's *ngIf="isParentUser()" branches) — a parent account
-// has no personal streak/badges, so those destinations/stats don't apply.
-const PARENT_NAV_ITEMS: WebNavItem[] = [
-  { label: 'TimeTable', link: '/authed/activity-timeline' },
-  {
-    label: 'Reels',
-    children: [
-      { label: 'Reels', link: '/authed/reels' },
-      { label: 'Bookmarked', link: '/authed/bookmark-reels' }
-    ]
-  },
-  { label: 'Insights', link: '/authed/analytics' },
-  { label: 'Notes', link: '/authed/notes' }
-];
+// Parent accounts get no primary nav links in the web header — just the
+// child selector / coins / profile on the right (see web-nav.component.html).
+const PARENT_NAV_ITEMS: WebNavItem[] = [];
 
 @Component({
   selector: 'web-nav',

@@ -10,22 +10,40 @@
   }
 }
 
+// The background (and its box-shadow) is boxed to the same width as every
+// other section instead of bleeding edge-to-edge — bp.web-container lives on
+// this outer element, not just the inner content, so the white bar itself is
+// inset from the viewport edges, not just the logo/nav inside it.
 .web-header {
-  width: 100%;
-  box-sizing: border-box;
+  @include bp.web-container;
+  // Narrower than bp.web-container's shared 1200px cap — the header reads
+  // better at this width than the wider footer/dashboard content blocks.
+  max-width: 911px;
+  // bp.web-container's 10% inline padding is sized for wide content blocks
+  // (footer columns, dashboard cards) — on the header's single slim row it
+  // just reads as excess empty space before the logo/nav, so use a smaller
+  // fixed gutter here instead.
+  padding-inline: 10px;
   background: #FFFFFF;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   position: relative;
   z-index: 20;
 }
 
+
+
+// @include bp.above(lg) {
+//   .web-header {
+//     padding-inline: 10%;
+//   }
+// }
+
 .web-header__inner {
-  // @include bp.web-container;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 8px 32px;
+  gap: 8%;
+  padding-block: 8px;
 }
 
 .web-header__brand {
@@ -349,10 +367,6 @@
 }
 
 @include bp.above(lg) {
-  .web-header__inner {
-    padding-inline: 48px;
-  }
-
   .web-header__nav {
     gap: 32px;
   }
@@ -373,7 +387,6 @@
 @include bp.between(md, lg) {
   .web-header__inner {
     gap: 12px;
-    padding-inline: 20px;
   }
 
   .web-header__nav {

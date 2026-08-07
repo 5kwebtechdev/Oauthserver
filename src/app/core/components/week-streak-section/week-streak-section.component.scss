@@ -1,3 +1,5 @@
+@use '../../../../theme/breakpoints' as bp;
+
 :host {
   display: block;
   width: 100%;
@@ -120,5 +122,45 @@
 
   .week-streak-day-label {
     font-size: 12px;
+  }
+}
+
+// This card is only used inside UserDashboardComponent's wide web-view
+// layout (.dashboard-content, capped ~1200px). At that width the row's
+// default flex-start clumps the 7 day markers on the left, leaving a large
+// empty gap on the right — spread them across the full card width instead.
+@include bp.tablet-up {
+  .week-streak-card {
+    min-height: 140px;
+    padding: 16px 24px;
+  }
+
+  .week-streak-row {
+    justify-content: space-between;
+    gap: 0;
+  }
+
+  .week-streak-day {
+    width: 48px;
+    gap: 8px;
+  }
+
+  .week-streak-day-label {
+    font-size: 16px;
+  }
+
+  .week-streak-marker {
+    width: 48px;
+    height: 48px;
+  }
+
+  .week-streak-fire-crop,
+  .week-streak-check {
+    width: 24px;
+    height: 24px;
+  }
+
+  .week-streak-rest {
+    font-size: 22px;
   }
 }
