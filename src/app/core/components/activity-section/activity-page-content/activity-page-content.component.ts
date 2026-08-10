@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
@@ -15,6 +15,8 @@ import { AuthService } from '../../../services/auth.service';
 import { PetAgeService } from '../../../services/pet-age.service';
 import { CustomToastService, Toast } from '../../../services/custom-toast.service';
 import { Habit } from '../habit.types';
+import { CalendarService } from '../../../services/calendar.service';
+import { CalendarResponse } from '../../../models/calendar.model';
 import { Observable, Subscription, filter, take } from 'rxjs';
 
 @Component({
@@ -26,6 +28,8 @@ import { Observable, Subscription, filter, take } from 'rxjs';
 })
 
 export class ActivityPageContentComponent implements OnInit, OnDestroy {
+    @Output() back = new EventEmitter<void>();
+
     public currentMainTab: 'habits' | 'tasks' = 'habits';
     public showContent: boolean = true;
     public subFilter: 'journey' | 'priorities' | 'routine' | 'all' = 'journey';
@@ -52,6 +56,12 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
     public singleModeHabit: Habit | null = null;
     public readonly MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER;
 
+    /** Latest Figma calendar controls. These are kept separate from the legacy filters. */
+    public childCalendarTab: 'all' | 'habit' | 'task' | 'planner' = 'all';
+    public childStatusFilter: 'pending' | 'ongoing' | 'completed' | 'skipped' = 'pending';
+    public childDateActivities: Record<string, { habit?: boolean; task?: boolean; planner?: boolean }> = {};
+    public childPlannerItems: any[] = [];
+
     // Normalize timestamps coming from API: if timestamp looks like seconds, convert to ms
     private normalizeTimestamp(ts: any): number {
         if (!ts && ts !== 0) return ts;
@@ -69,6 +79,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         private habitService: HabitService,
         private buttonLogic: HabitButtonLogicService,
         private taskApi: TaskApi,
+        private calendarService: CalendarService,
         private route: ActivatedRoute,
         private profileSelector: ProfileSelectorService,
         private authService: AuthService,
@@ -77,6 +88,11 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         private toastService: CustomToastService
     ) {
         this.toast$ = this.toastService.toast$;
+    }
+
+    /** The new calendar design is intentionally limited to linked Child accounts. */
+    public get isChildCalendarDesign(): boolean {
+        return String(this.authService.getUserRelationship() || '').toUpperCase() === 'CHILD';
     }
 
     /**
@@ -161,8 +177,13 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                 // Allow opening the page with a specific main tab (habits|tasks)
                 if (params['tab']) {
                     const t = String(params['tab']).toLowerCase();
-                    if (t === 'tasks') this.currentMainTab = 'tasks';
-                    else if (t === 'habits') this.currentMainTab = 'habits';
+                    if (t === 'tasks') {
+                        this.currentMainTab = 'tasks';
+                        if (this.isChildCalendarDesign) this.childCalendarTab = 'task';
+                    } else if (t === 'habits') {
+                        this.currentMainTab = 'habits';
+                        if (this.isChildCalendarDesign) this.childCalendarTab = 'habit';
+                    }
                     // if 'all' or unknown, keep default (habits)
                 }
             })
@@ -172,8 +193,13 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
             const stored = sessionStorage.getItem('activityInitialTab');
             if (stored) {
                 const t = String(stored).toLowerCase();
-                if (t === 'tasks') this.currentMainTab = 'tasks';
-                else if (t === 'habits') this.currentMainTab = 'habits';
+                if (t === 'tasks') {
+                    this.currentMainTab = 'tasks';
+                    if (this.isChildCalendarDesign) this.childCalendarTab = 'task';
+                } else if (t === 'habits') {
+                    this.currentMainTab = 'habits';
+                    if (this.isChildCalendarDesign) this.childCalendarTab = 'habit';
+                }
                 // remove key after consuming
                 sessionStorage.removeItem('activityInitialTab');
                 try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
@@ -221,8 +247,11 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         this.loadHabits();
         // Only fetch tasks if Tasks tab is already active (e.g. pre-selected via route param).
         // Otherwise tasks are fetched lazily on first tap of the Tasks tab.
-        if (this.currentMainTab === 'tasks') {
-            this.loadTasksForSelectedDate(new Date());
+        if (this.currentMainTab === 'tasks' || this.isChildCalendarDesign) {
+            this.loadTasksForSelectedDate(this.selectedDate);
+        }
+        if (this.isChildCalendarDesign) {
+            this.loadChildCalendarData();
         }
     }
 
@@ -241,9 +270,221 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         this.loadHabits();
         // Only reload tasks when the Tasks tab is visible — avoids a redundant
         // API call when the user is on the Habits tab and picks a different date.
-        if (this.currentMainTab === 'tasks') {
+        if (this.currentMainTab === 'tasks' || this.isChildCalendarDesign) {
             this.loadTasksForSelectedDate(date);
         }
+        if (this.isChildCalendarDesign) {
+            this.loadChildCalendarData();
+        }
+    }
+
+    /** Select a category in the new Child calendar without changing legacy tabs. */
+    selectChildCalendarTab(tab: 'all' | 'habit' | 'task' | 'planner'): void {
+        this.childCalendarTab = tab;
+        this.currentMainTab = tab === 'task' ? 'tasks' : 'habits';
+        if (tab === 'all' || tab === 'task') {
+            this.loadTasksForSelectedDate(this.selectedDate, true);
+        }
+        this.applyFilters();
+    }
+
+    selectChildStatusFilter(filter: 'pending' | 'ongoing' | 'completed' | 'skipped'): void {
+        this.childStatusFilter = filter;
+    }
+
+    selectChildDate(date: Date): void {
+        this.onDateSelected(date);
+    }
+
+    moveChildMonth(offset: number): void {
+        const target = new Date(this.selectedDate);
+        const day = target.getDate();
+        target.setDate(1);
+        target.setMonth(target.getMonth() + offset);
+        target.setDate(Math.min(day, new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate()));
+        this.onDateSelected(target);
+    }
+
+    get childWeekDates(): Date[] {
+        const start = new Date(this.selectedDate);
+        start.setHours(0, 0, 0, 0);
+        start.setDate(start.getDate() - start.getDay());
+        return Array.from({ length: 7 }, (_, index) => {
+            const date = new Date(start);
+            date.setDate(start.getDate() + index);
+            return date;
+        });
+    }
+
+    get childMonthLabel(): string {
+        return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(this.selectedDate);
+    }
+
+    isChildDateSelected(date: Date): boolean {
+        return this.habitService.formatDateToYYYYMMDD(date) === this.getSelectedDateString();
+    }
+
+    getChildDateActivities(date: Date): { habit?: boolean; task?: boolean; planner?: boolean } {
+        return this.childDateActivities[this.habitService.formatDateToYYYYMMDD(date)] || {};
+    }
+
+    get childHabitItems(): Habit[] {
+        return this.sortArrayByUpcoming(this.getHabitsForSelectedDate().filter(item => this.matchesChildStatus(item)));
+    }
+
+    get childTaskItems(): any[] {
+        return this.sortArrayByUpcoming(this.tasks.filter(item => this.matchesChildStatus(item)));
+    }
+
+    get childPlannerItemsForStatus(): any[] {
+        // Planner events do not have the Habit/Task state machine, so retain them for every status view.
+        return this.childPlannerItems;
+    }
+
+    get childVisibleItems(): Array<{ item: any; type: 'habit' | 'task' | 'planner' }> {
+        const items: Array<{ item: any; type: 'habit' | 'task' | 'planner' }> = [];
+        if (this.childCalendarTab === 'all' || this.childCalendarTab === 'habit') {
+            this.childHabitItems.forEach(item => items.push({ item, type: 'habit' }));
+        }
+        if (this.childCalendarTab === 'all' || this.childCalendarTab === 'task') {
+            this.childTaskItems.forEach(item => items.push({ item, type: 'task' }));
+        }
+        if (this.childCalendarTab === 'planner') {
+            this.childPlannerItemsForStatus.forEach(item => items.push({ item, type: 'planner' }));
+        }
+        return this.sortArrayByUpcoming(items.map(entry => ({
+            ...entry,
+            startTimeStamp: entry.item.startTimeStamp || this.getTimestampFromTime(entry.item.startTime),
+            endTimeStamp: entry.item.endTimeStamp || this.getTimestampFromTime(entry.item.endTime)
+        }))) as Array<{ item: any; type: 'habit' | 'task' | 'planner' }>;
+    }
+
+    get childHabitCompletedCount(): number {
+        return this.getHabitsForSelectedDate().filter(item => this.normalizedItemStatus(item) === 'completed').length;
+    }
+
+    get childTaskCompletedCount(): number {
+        return this.tasks.filter(item => this.normalizedItemStatus(item) === 'completed').length;
+    }
+
+    get childHabitCompletionRate(): number {
+        const total = this.getHabitsForSelectedDate().length;
+        return total ? Math.round((this.childHabitCompletedCount / total) * 100) : 0;
+    }
+
+    get childTaskCompletionRate(): number {
+        const total = this.tasks.length;
+        return total ? Math.round((this.childTaskCompletedCount / total) * 100) : 0;
+    }
+
+    get childPulseDateLabel(): string {
+        const day = String(this.selectedDate.getDate()).padStart(2, '0');
+        const month = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(this.selectedDate);
+        return `${day} ${month}, ${this.selectedDate.getFullYear()}`;
+    }
+
+    getChildItemTitle(item: any): string {
+        return item?.title || item?.name || item?.habitName || item?.taskName || 'Untitled';
+    }
+
+    getChildItemTag(item: any): string {
+        const tags = Array.isArray(item?.tags) ? item.tags : (item?.tag ? [item.tag] : []);
+        const tag = tags.find((value: any) => Boolean(value));
+        if (typeof tag === 'object') return tag.value || tag.name || tag.title || 'General';
+        return tag || 'General';
+    }
+
+    getChildItemTime(item: any): string {
+        const start = this.formatChildTime(item?.startTime || item?.start_time || item?.startTimeStamp);
+        const end = this.formatChildTime(item?.endTime || item?.end_time || item?.endTimeStamp);
+        return start && end ? `${start} - ${end}` : (start || end || 'Any time');
+    }
+
+    getChildPlannerMeta(item: any): string {
+        const eventType = String(item?.eventType || item?.type || 'Planner').replace(/_/g, ' ');
+        return eventType.charAt(0).toUpperCase() + eventType.slice(1).toLowerCase();
+    }
+
+    private matchesChildStatus(item: any): boolean {
+        return this.normalizedItemStatus(item) === this.childStatusFilter;
+    }
+
+    private normalizedItemStatus(item: any): 'pending' | 'ongoing' | 'completed' | 'skipped' {
+        return this.normalizeStatus(item?.status || (item?.completed ? 'completed' : 'pending'));
+    }
+
+    private formatChildTime(value: any): string {
+        if (value === null || value === undefined || value === '') return '';
+        if (typeof value === 'number') {
+            const date = new Date(this.normalizeTimestamp(value));
+            return isNaN(date.getTime()) ? '' : new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).format(date);
+        }
+        const match = String(value).match(/(\d{1,2}):(\d{2})/);
+        if (!match) return String(value);
+        const date = new Date(this.selectedDate);
+        date.setHours(Number(match[1]), Number(match[2]), 0, 0);
+        return new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).format(date);
+    }
+
+    private getTimestampFromTime(value: any): number {
+        const match = String(value || '').match(/(\d{1,2}):(\d{2})/);
+        if (!match) return 0;
+        const date = new Date(this.selectedDate);
+        date.setHours(Number(match[1]), Number(match[2]), 0, 0);
+        return date.getTime();
+    }
+
+    private loadChildCalendarData(): void {
+        const selectedDateString = this.getSelectedDateString();
+        this.subscriptions.add(
+            this.calendarService.getUserCalendarMonth(selectedDateString).subscribe({
+                next: (response: CalendarResponse) => {
+                    this.childDateActivities = {};
+                    this.recordChildCalendarActivities(response.habits || [], 'habit');
+                    this.recordChildCalendarActivities(response.tasks || [], 'task');
+                    this.recordChildCalendarActivities(response.events || [], 'planner');
+                    this.childPlannerItems = (response.events || [])
+                        .filter(event => this.eventOccursOnSelectedDate(event, selectedDateString))
+                        .map(event => ({
+                            ...event,
+                            type: 'timetable',
+                            status: event.completed ? 'completed' : 'pending',
+                            startTimeStamp: this.getTimestampFromTime(event.startTime),
+                            endTimeStamp: this.getTimestampFromTime(event.endTime)
+                        }));
+                    try { this.cdr.detectChanges(); } catch (e) { /* ignore */ }
+                },
+                error: () => {
+                    this.childDateActivities = {};
+                    this.childPlannerItems = [];
+                }
+            })
+        );
+    }
+
+    private recordChildCalendarActivities(items: any[], type: 'habit' | 'task' | 'planner'): void {
+        items.forEach(item => {
+            this.getItemCalendarDates(item).forEach(date => {
+                this.childDateActivities[date] = { ...this.childDateActivities[date], [type]: true };
+            });
+        });
+    }
+
+    private getItemCalendarDates(item: any): string[] {
+        const candidates = item?.completionDate ?? item?.completion_date ?? item?.completions ?? item?.startDate ?? item?.start_date;
+        const values = Array.isArray(candidates) ? candidates : [candidates];
+        return values
+            .map(value => value ? new Date(value) : null)
+            .filter((date): date is Date => !!date && !isNaN(date.getTime()))
+            .map(date => this.habitService.formatDateToYYYYMMDD(date));
+    }
+
+    private eventOccursOnSelectedDate(event: any, selectedDate: string): boolean {
+        const eventDate = String(event?.startDate || event?.eventDate || '').slice(0, 10);
+        if (eventDate === selectedDate) return true;
+        if (event?.recurrence === 'YEARLY') return eventDate.slice(5) === selectedDate.slice(5);
+        if (event?.recurrence === 'MONTHLY') return eventDate.slice(8) === selectedDate.slice(8);
+        return false;
     }
 
     /**
@@ -554,7 +795,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         return this.countByRoutine(this.tasks);
     }
 
-    private getHabitsForSelectedDate(): Habit[] {
+    public getHabitsForSelectedDate(): Habit[] {
         return this.filterByDate(this.allHabits);
     }
 
@@ -607,6 +848,9 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         console.log('[HabitPageContent] Refreshing data...');
         this.loadHabits(true);
         this.loadTasksForSelectedDate(this.selectedDate, true);
+        if (this.isChildCalendarDesign) {
+            this.loadChildCalendarData();
+        }
     }
 
     /**

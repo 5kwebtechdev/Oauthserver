@@ -1,3 +1,145 @@
+<ng-container *ngIf="isChildCalendarDesign; else legacyActivityContent">
+    <section class="child-activity-design" aria-label="Daily planner">
+        <header class="child-activity-header">
+            <button type="button" class="child-icon-button" aria-label="Go back" (click)="back.emit()">
+                <img src="assets/figma/child-activity/back.svg" alt="" />
+            </button>
+            <h1>One Day at a Time!</h1>
+        </header>
+
+        <section class="child-week-card" aria-label="Select a day">
+            <div class="child-month-picker">
+                <button type="button" class="child-month-button" aria-label="Previous month" (click)="moveChildMonth(-1)">
+                    <img src="assets/figma/child-activity/chevron-left.svg" alt="" />
+                </button>
+                <span>{{ childMonthLabel }}</span>
+                <button type="button" class="child-month-button" aria-label="Next month" (click)="moveChildMonth(1)">
+                    <img src="assets/figma/child-activity/chevron-right.svg" alt="" />
+                </button>
+            </div>
+
+            <div class="child-week-days">
+                <button type="button" class="child-week-day" *ngFor="let day of childWeekDates"
+                    [class.is-selected]="isChildDateSelected(day)" (click)="selectChildDate(day)"
+                    [attr.aria-label]="(day | date:'fullDate')">
+                    <span>{{ day | date:'EEE' }}</span>
+                    <strong>{{ day | date:'d' }}</strong>
+                    <i class="child-date-dots" aria-hidden="true">
+                        <b class="habit-dot" [class.is-visible]="getChildDateActivities(day).habit"></b>
+                        <b class="task-dot" [class.is-visible]="getChildDateActivities(day).task"></b>
+                        <b class="planner-dot" [class.is-visible]="getChildDateActivities(day).planner"></b>
+                    </i>
+                </button>
+            </div>
+
+            <div class="child-activity-legend" aria-label="Calendar key">
+                <span><i class="habit-dot"></i>Habits</span>
+                <b></b>
+                <span><i class="task-dot"></i>Tasks</span>
+                <b></b>
+                <span><i class="planner-dot"></i>Planner</span>
+            </div>
+        </section>
+
+        <section class="child-day-pulse" aria-label="Day's pulse">
+            <div class="child-pulse-heading">
+                <h2>Day’s Pulse</h2>
+                <span>{{ childPulseDateLabel }}</span>
+            </div>
+            <div class="child-pulse-grid">
+                <div class="child-pulse-item">
+                    <div class="child-pulse-ring habit-ring" [style.--progress]="childHabitCompletionRate + '%'">
+                        <span>{{ childHabitCompletedCount }}/{{ getHabitsForSelectedDate().length }}</span>
+                    </div>
+                    <p>Total habits<br />completed</p>
+                </div>
+                <div class="child-pulse-item">
+                    <div class="child-pulse-ring task-ring" [style.--progress]="childTaskCompletionRate + '%'">
+                        <span>{{ childTaskCompletedCount }}/{{ tasks.length }}</span>
+                    </div>
+                    <p>Total tasks<br />completed</p>
+                </div>
+                <div class="child-pulse-item">
+                    <div class="child-pulse-ring habit-ring" [style.--progress]="childHabitCompletionRate + '%'">
+                        <span>{{ childHabitCompletionRate }}%</span>
+                    </div>
+                    <p>Habit<br />completion rate</p>
+                </div>
+                <div class="child-pulse-item">
+                    <div class="child-pulse-ring task-ring" [style.--progress]="childTaskCompletionRate + '%'">
+                        <span>{{ childTaskCompletionRate }}%</span>
+                    </div>
+                    <p>Task<br />completion rate</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="child-calendar-content">
+            <nav class="child-category-tabs" aria-label="Activity categories">
+                <button type="button" [class.is-active]="childCalendarTab === 'all'" class="tab-all"
+                    (click)="selectChildCalendarTab('all')">
+                    <img src="assets/figma/child-activity/tab-all.png" alt="" /><span>All</span>
+                </button>
+                <button type="button" [class.is-active]="childCalendarTab === 'habit'" class="tab-habit"
+                    (click)="selectChildCalendarTab('habit')">
+                    <img src="assets/figma/child-activity/tab-habit.png" alt="" /><span>Habit</span>
+                </button>
+                <button type="button" [class.is-active]="childCalendarTab === 'task'" class="tab-task"
+                    (click)="selectChildCalendarTab('task')">
+                    <img src="assets/figma/child-activity/tab-task.png" alt="" /><span>Task</span>
+                </button>
+                <button type="button" [class.is-active]="childCalendarTab === 'planner'" class="tab-planner"
+                    (click)="selectChildCalendarTab('planner')">
+                    <img src="assets/figma/child-activity/tab-planner.png" alt="" /><span>Planner</span>
+                </button>
+            </nav>
+
+            <div class="child-status-filters" aria-label="Filter by status" *ngIf="childCalendarTab !== 'planner'">
+                <button type="button" [class.is-active]="childStatusFilter === 'pending'" class="status-pending"
+                    (click)="selectChildStatusFilter('pending')">Pending</button>
+                <button type="button" [class.is-active]="childStatusFilter === 'ongoing'" class="status-ongoing"
+                    (click)="selectChildStatusFilter('ongoing')">Ongoing</button>
+                <button type="button" [class.is-active]="childStatusFilter === 'completed'" class="status-completed"
+                    (click)="selectChildStatusFilter('completed')">Completed</button>
+                <button type="button" [class.is-active]="childStatusFilter === 'skipped'" class="status-skipped"
+                    (click)="selectChildStatusFilter('skipped')">Skipped</button>
+            </div>
+
+            <div class="child-activity-list" *ngIf="!loading; else childActivityLoading">
+                <button type="button" class="child-activity-card" *ngFor="let entry of childVisibleItems"
+                    [ngClass]="'child-activity-card--' + entry.type" (click)="onCardTap(entry.item)">
+                    <ng-container *ngIf="entry.type !== 'planner'; else plannerCard">
+                        <div class="child-card-copy">
+                            <strong>{{ getChildItemTitle(entry.item) }}</strong>
+                            <span>{{ getChildItemTime(entry.item) }}</span>
+                        </div>
+                        <em>{{ getChildItemTag(entry.item) }}</em>
+                    </ng-container>
+                    <ng-template #plannerCard>
+                        <div class="child-planner-symbol" aria-hidden="true">
+                            <img src="assets/figma/child-activity/tab-planner.png" alt="" />
+                        </div>
+                        <div class="child-card-copy">
+                            <strong>{{ getChildItemTitle(entry.item) }}</strong>
+                            <span>{{ getChildItemTime(entry.item) }}</span>
+                        </div>
+                        <em>{{ getChildPlannerMeta(entry.item) }}</em>
+                    </ng-template>
+                </button>
+
+                <div class="child-calendar-empty" *ngIf="childVisibleItems.length === 0">
+                    <strong>{{ childCalendarTab === 'planner' ? 'No planner items for this day' : 'Nothing here yet' }}</strong>
+                    <span>{{ childCalendarTab === 'planner' ? 'Your events will appear here.' : 'Choose another status or add a new activity.' }}</span>
+                </div>
+            </div>
+            <ng-template #childActivityLoading>
+                <div class="child-calendar-loading" aria-live="polite"><ion-spinner name="crescent"></ion-spinner></div>
+            </ng-template>
+        </section>
+    </section>
+</ng-container>
+
+<ng-template #legacyActivityContent>
 <div class="activity-page-content">
     <div class="habit-week">
         <superme-week (dateSelected)="onDateSelected($event)"></superme-week>
@@ -193,3 +335,4 @@
 
 
 </div>
+</ng-template>

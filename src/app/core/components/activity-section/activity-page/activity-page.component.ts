@@ -15,13 +15,19 @@ import { RefreshService } from '../../../services/refresh.service';
 @Component({
   standalone: true,
   selector: 'activity-page',
-  template: `<ion-content>
-    <superme-navigator heading="Your Universe" [rightIcon]="'assets/Icons-Neutral/Icon-Calendar.png'"
+  template: `<ion-content [class.child-activity-page]="isChildActivityRole">
+    <superme-navigator *ngIf="!isChildActivityRole" heading="Your Universe" [rightIcon]="'assets/Icons-Neutral/Icon-Calendar.png'"
         rightIconAlt="Calendar" (rightIconClick)="onOpenCalendar()" (back)="onBack()"></superme-navigator>
 
-    <activity-page-content #habitContent style="padding:0px 16px;"></activity-page-content>
+    <activity-page-content #habitContent (back)="onBack()"
+      [style.padding]="isChildActivityRole ? '0' : '0 16px'"></activity-page-content>
 
-    <div class="habit-add-btn">
+    <button *ngIf="isChildActivityRole" type="button" class="child-activity-add" (click)="onAddHabit()"
+      aria-label="Add activity">
+      <img src="assets/figma/child-activity/add.svg" alt="" />
+    </button>
+
+    <div *ngIf="!isChildActivityRole" class="habit-add-btn">
       <superme-button
         type="add"
         [size]="'large'"
@@ -39,6 +45,29 @@ import { RefreshService } from '../../../services/refresh.service';
       bottom: calc(24px + env(safe-area-inset-bottom, 0px));
       z-index: 1000;
     }
+
+    .child-activity-add {
+      align-items: center;
+      appearance: none;
+      background: radial-gradient(circle at 50% 0%, #7341A7 0%, #5B338F 49%, #432477 98%);
+      border: 1px solid #432477;
+      border-radius: 20px;
+      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      box-shadow: inset -1px -1px 2px #ebe6f5;
+      cursor: pointer;
+      display: inline-flex;
+      height: 64px;
+      justify-content: center;
+      padding: 13px;
+      position: fixed;
+      right: 16px;
+      width: 64px;
+      z-index: 1000;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .child-activity-add:active { transform: scale(.96); }
+    .child-activity-add img { height: 24px; width: 24px; }
   `],
   imports: [
     CommonModule,
@@ -56,6 +85,10 @@ export class ActivityPageComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private refreshService: RefreshService
   ) { }
+
+  get isChildActivityRole(): boolean {
+    return String(this.authService.getUserRelationship() || '').toUpperCase() === 'CHILD';
+  }
 
   ngOnInit(): void {
     // Register with global pull-to-refresh service
