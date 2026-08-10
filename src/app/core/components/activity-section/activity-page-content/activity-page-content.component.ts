@@ -387,11 +387,12 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
         return item?.title || item?.name || item?.habitName || item?.taskName || 'Untitled';
     }
 
-    getChildItemTag(item: any): string {
+    getChildItemTag(item: any): string | null {
         const tags = Array.isArray(item?.tags) ? item.tags : (item?.tag ? [item.tag] : []);
         const tag = tags.find((value: any) => Boolean(value));
-        if (typeof tag === 'object') return tag.value || tag.name || tag.title || 'General';
-        return tag || 'General';
+        if (!tag) return null;
+        if (typeof tag === 'object') return tag.value || tag.name || tag.title || null;
+        return String(tag).trim() || null;
     }
 
     getChildItemTime(item: any): string {

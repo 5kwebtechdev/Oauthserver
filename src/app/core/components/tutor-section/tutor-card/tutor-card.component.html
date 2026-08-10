@@ -6,7 +6,7 @@
     </div>
     <div class="eduhub-listings" *ngIf="!isLoading">
       <img src="assets/figma/child-home/footer/eduhub-verified.png" alt="" aria-hidden="true">
-      <strong>{{ listingCount }}<ng-container *ngIf="listingCount > 0">+</ng-container></strong>
+      <strong>{{ totalListingCount }}<ng-container *ngIf="totalListingCount > 0">+</ng-container></strong>
       <span>Listings</span>
     </div>
   </header>
@@ -21,9 +21,9 @@
     </button>
   </nav>
 
-  <div class="eduhub-loading" *ngIf="isLoading"><ion-spinner name="crescent"></ion-spinner></div>
+  <div class="eduhub-loading" *ngIf="isLoading || isExternalCategoryLoading"><ion-spinner name="crescent"></ion-spinner></div>
 
-  <ng-container *ngIf="!isLoading">
+  <ng-container *ngIf="!isLoading && !isExternalCategoryLoading">
     <ng-container *ngIf="selectedCategoryKey === 'tutors'">
       <div class="eduhub-tutors" *ngIf="visibleTutors.length">
         <article class="eduhub-tutor" *ngFor="let tutor of visibleTutors" (click)="onViewProfile(tutor)" role="button" tabindex="0" (keyup.enter)="onViewProfile(tutor)">
@@ -34,7 +34,7 @@
             <small class="eduhub-tutor__time" *ngIf="tutor.startTime || tutor.endTime"><img src="assets/figma/child-home/eduhub-time.png" alt="" aria-hidden="true">{{ tutor.startTime }}<ng-container *ngIf="tutor.startTime && tutor.endTime">–</ng-container>{{ tutor.endTime }}</small>
           </div>
           <div class="eduhub-tutor__footer">
-            <span>{{ tutor.hourlyRate ? ('₹ ' + tutor.hourlyRate + ' / Per Hour') : 'Contact for pricing' }}</span>
+            <span>{{ tutor.hourlyRate ? ('₹ ' + tutor.hourlyRate + ' / Hours') : 'Contact for pricing' }}</span>
             <button type="button" (click)="onViewProfile(tutor); $event.stopPropagation()">Check Full Profile</button>
           </div>
         </article>
@@ -52,7 +52,7 @@
             <small class="eduhub-tutor__time" *ngIf="academy.startTime || academy.endTime"><img src="assets/figma/child-home/eduhub-time.png" alt="" aria-hidden="true">{{ academy.startTime }}<ng-container *ngIf="academy.startTime && academy.endTime">–</ng-container>{{ academy.endTime }}</small>
           </div>
           <div class="eduhub-tutor__footer">
-            <span>{{ academy.hourlyRate ? ('₹ ' + academy.hourlyRate + ' / Per Hour') : 'Contact for pricing' }}</span>
+            <span>{{ academy.hourlyRate ? ('₹ ' + academy.hourlyRate + ' / Hours') : 'Contact for pricing' }}</span>
             <button type="button" (click)="onViewAcademyProfile(academy); $event.stopPropagation()">Check Full Profile</button>
           </div>
         </article>
@@ -60,7 +60,25 @@
       <p class="eduhub-empty" *ngIf="!academyTutors.length">No academies available right now.</p>
     </ng-container>
 
-    <ng-container *ngIf="selectedCategoryKey !== 'tutors' && selectedCategoryKey !== 'academies'"><p class="eduhub-empty">{{ selectedCategory.label }} are coming soon.</p></ng-container>
+    <ng-container *ngIf="visibleExternalPreviews.length">
+      <div class="eduhub-tutors">
+        <article class="eduhub-tutor" *ngFor="let listing of visibleExternalPreviews">
+          <img class="eduhub-tutor__avatar" [src]="listing.image" [alt]="listing.name">
+          <div class="eduhub-tutor__body">
+            <div class="eduhub-tutor__headline"><strong>{{ listing.name }}</strong></div>
+            <p>{{ listing.description }}</p>
+            <small class="eduhub-tutor__time" *ngIf="listing.location">{{ listing.location }}</small>
+          </div>
+          <div class="eduhub-tutor__footer">
+            <span>{{ listing.fee != null ? ('₹ ' + listing.fee) : 'Contact for pricing' }}</span>
+          </div>
+        </article>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="selectedCategoryKey !== 'tutors' && selectedCategoryKey !== 'academies' && !visibleExternalPreviews.length">
+      <p class="eduhub-empty">No {{ selectedCategory.label.toLowerCase() }} available right now.</p>
+    </ng-container>
   </ng-container>
 
   <button class="eduhub-view-all" type="button" *ngIf="showViewAll" [attr.aria-label]="'View all ' + selectedCategory.label" (click)="onViewAll()">View all {{ selectedCategory.label }}</button>

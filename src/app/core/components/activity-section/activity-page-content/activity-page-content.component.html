@@ -113,7 +113,7 @@
                             <strong>{{ getChildItemTitle(entry.item) }}</strong>
                             <span>{{ getChildItemTime(entry.item) }}</span>
                         </div>
-                        <em>{{ getChildItemTag(entry.item) }}</em>
+                        <em *ngIf="getChildItemTag(entry.item) as tag">{{ tag }}</em>
                     </ng-container>
                     <ng-template #plannerCard>
                         <div class="child-planner-symbol" aria-hidden="true">
@@ -123,7 +123,6 @@
                             <strong>{{ getChildItemTitle(entry.item) }}</strong>
                             <span>{{ getChildItemTime(entry.item) }}</span>
                         </div>
-                        <em>{{ getChildPlannerMeta(entry.item) }}</em>
                     </ng-template>
                 </button>
 

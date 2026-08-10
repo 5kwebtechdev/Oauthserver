@@ -100,7 +100,12 @@ export class ActivityPageComponent implements OnInit, OnDestroy {
   }
 
   onAddHabit(): void {
-    const currentTab = this.habitContent?.currentMainTab ?? 'habits';
+    // Keep the create form aligned with the visible tab. The child calendar's
+    // Planner tab maps to the activity-input timetable/planner form.
+    const selectedChildTab = this.habitContent?.childCalendarTab;
+    const currentTab = this.isChildActivityRole && selectedChildTab
+      ? ({ task: 'tasks', planner: 'timetable', habit: 'habits', all: 'habits' } as const)[selectedChildTab]
+      : (this.habitContent?.currentMainTab ?? 'habits');
     const origin = this.router.url || '/authed/user-dashboard';
     this.router.navigate(['/authed/activity-input'], { state: { currentActive: currentTab, origin } }).catch(() => { });
   }

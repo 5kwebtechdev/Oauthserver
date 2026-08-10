@@ -24,17 +24,17 @@
       <div class="glance-tabs" role="tablist" aria-label="Filter by type">
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
           [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
-          <img class="glance-tab-icon" src="assets/figma/child-home/glance-all.png" alt="" aria-hidden="true">
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-all.svg" alt="" aria-hidden="true">
           <span>All</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'habits'"
           [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
-          <img class="glance-tab-icon" src="assets/figma/child-home/glance-habit.png" alt="" aria-hidden="true">
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-habit.svg" alt="" aria-hidden="true">
           <span>Habit</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
           [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
-          <img class="glance-tab-icon" src="assets/figma/child-home/glance-task.png" alt="" aria-hidden="true">
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-task.svg" alt="" aria-hidden="true">
           <span>Task</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
@@ -176,16 +176,20 @@
   </div>
 
   <!-- CTA Buttons -->
-  <div class="add-button-container empty-add-btn" [class.mt-4]="!isEmpty" *ngIf="isEmpty">
-    <superme-button type="magenta" large style="display:block; width:100%" text="Add New"
-      (click)="openHabitInput()"></superme-button>
+  <div class="add-button-container empty-action-container" [class.mt-4]="!isEmpty" *ngIf="isEmpty">
+    <button class="text-view-all" (click)="openHabitPage()">
+      {{ viewActionLabel }}
+    </button>
+    <button class="add-new-pill" (click)="openHabitInput()">
+      {{ addActionLabel }}
+    </button>
   </div>
   <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
     <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">
-      View all
+      {{ viewActionLabel }}
     </button>
     <button class="add-new-pill" (click)="openHabitInput()">
-      {{ addButtonLabel }}
+      {{ addActionLabel }}
     </button>
   </div>
 </div>
@@ -200,17 +204,17 @@
       <div class="glance-tabs" role="tablist" aria-label="Filter by type">
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'all'"
           [attr.aria-selected]="currentActive === 'all'" (click)="switchTab('all')">
-          <img class="glance-tab-icon" src="assets/figma/child-home/glance-all.png" alt="" aria-hidden="true">
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-all.svg" alt="" aria-hidden="true">
           <span>All</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'habits'"
           [attr.aria-selected]="currentActive === 'habits'" (click)="switchTab('habits')">
-          <img class="glance-tab-icon" src="assets/figma/child-home/glance-habit.png" alt="" aria-hidden="true">
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-habit.svg" alt="" aria-hidden="true">
           <span>Habit</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'tasks'"
           [attr.aria-selected]="currentActive === 'tasks'" (click)="switchTab('tasks')">
-          <img class="glance-tab-icon" src="assets/figma/child-home/glance-task.png" alt="" aria-hidden="true">
+          <img class="glance-tab-icon" src="assets/figma/child-home/glance-task.svg" alt="" aria-hidden="true">
           <span>Task</span>
         </button>
         <button type="button" class="glance-tab" role="tab" [class.active]="currentActive === 'timetable'"
@@ -332,18 +336,20 @@
   </div>
 
   <!-- CTA Buttons -->
-  <div class="add-button-container d-flex gap-2" [class.mt-4]="!isEmpty" *ngIf="isEmpty">
-    <superme-button type="magenta-transparent" medium style="display:block; width:100%" text="View all"
-      (click)="openHabitPage()"></superme-button>
-    <superme-button type="magenta" medium style="display:block; width:100%" text="Add New"
-      (click)="openHabitInput()"></superme-button>
+  <div class="add-button-container empty-action-container" [class.mt-4]="!isEmpty" *ngIf="isEmpty">
+    <button class="text-view-all" (click)="openHabitPage()">
+      {{ viewActionLabel }}
+    </button>
+    <button class="add-new-pill" (click)="openHabitInput()">
+      {{ addActionLabel }}
+    </button>
   </div>
   <div class="add-button-container" [class.mt-4]="!isEmpty" *ngIf="!isEmpty">
     <button class="text-view-all" [routerLink]="['/authed/activity-page']" [queryParams]="{ tab: currentActive }">
-      View all
+      {{ viewActionLabel }}
     </button>
     <button class="add-new-pill" (click)="openHabitInput()">
-      {{ addButtonLabel }}
+      {{ addActionLabel }}
     </button>
   </div>
 </div>
@@ -379,8 +385,8 @@
           <div class="d-flex gap-1 align-items-center">
 
             <img *ngIf="hasRoutine()" class="routine-icon" [src]="getRoutineIcon()" alt="" height="24" width="24">
-            <div class="badge">
-              {{getTagOrRoutine()}}
+            <div class="badge" *ngIf="getTagOrRoutine() as tag">
+              {{ tag }}
             </div>
             <!-- Indicator that this is expandable -->
             <!-- <div class="expand-indicator" [ngClass]="{'rotated': expanded}">
