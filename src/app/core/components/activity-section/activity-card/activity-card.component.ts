@@ -1485,9 +1485,20 @@ export class ActivityCardComponent implements OnInit, OnChanges, AfterViewInit, 
 
   async openHabitInput() {
     const { ActivityInputComponent } = await import('../activity-input/activity-input.component');
-    // Determine which tab to open in the ActivityInput modal. If the dashboard/list toggle
-    // is set to 'tasks', open the modal on the tasks tab; otherwise default to 'habits'.
-    const initialTab = (this.currentActive === 'tasks') ? 'tasks' : (this.currentActive === 'habits' ? 'habits' : (this.habit?.type === 'tasks' ? 'tasks' : 'habits'));
+    // Keep the add form on the tab the user selected in Today at a Glance.
+    // Planner is represented internally as `timetable`, which the input screen
+    // maps to the visible Planner tab for Self and Child users.
+    const initialTab = this.currentActive === 'tasks'
+      ? 'tasks'
+      : this.currentActive === 'timetable'
+      ? 'timetable'
+      : this.currentActive === 'habits'
+      ? 'habits'
+      : this.habit?.type === 'tasks'
+      ? 'tasks'
+      : this.habit?.type === 'timetable'
+      ? 'timetable'
+      : 'habits';
     const modal = await this.modalCtrl.create({
       component: ActivityInputComponent,
       componentProps: { initialTab }

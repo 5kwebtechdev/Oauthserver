@@ -472,11 +472,13 @@ $theme-colors-dark: (
 }
 
 .title-card-main {
-  display: flex;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
+  column-gap: 10px;
   width: 100%;
-   position: relative;
+  min-width: 0;
+  position: relative;
   padding: 10px;
   border: 1px solid #E5E7EB;
   border-radius: 16px;
@@ -507,6 +509,25 @@ $theme-colors-dark: (
   flex-direction: column;
   gap: 2px;
   padding-top: 2px;
+}
+
+.planner-title-textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 20px;
+  margin: 0;
+  padding: 0;
+  resize: none;
+  overflow: hidden;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #282527;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .title-card-subtitle {
@@ -1051,10 +1072,9 @@ $theme-colors-dark: (
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
-  width: 100%;
-  // padding-bottom: 16px;
-  flex-direction:column;
+  gap: 2px;
+  width: auto;
+  flex-direction: column;
 }
 
 .priority-toggle-label {
@@ -1071,6 +1091,9 @@ $theme-colors-dark: (
 .priority-selection {
   display: flex;
   flex-direction: column;
+  grid-column: 3;
+  min-width: 48px;
+  align-items: center;
   border-bottom: 0px solid;
 }
 
@@ -1222,6 +1245,72 @@ $title-colors: (habits: #46456A, tasks: #B93915, timetable: #3E5A60, events: #28
   color: #BB2124 !important;
   opacity: 1 !important;
   text-decoration: none !important;
+}
+
+/* An empty field should look like an instruction, while entered text stays
+   dark and bold. This makes the fill state clear at a glance. */
+.title-card-main:not(.has-value) .title-card-body input::placeholder,
+.title-card-main:not(.has-value) .planner-title-textarea::placeholder {
+  color: #817b84 !important;
+  font-weight: 500 !important;
+  opacity: 1;
+}
+
+.title-card-main.has-value .title-card-body input,
+.title-card-main.has-value .planner-title-textarea {
+  color: #282527;
+  font-weight: 700;
+}
+
+@media (max-width: 360px) {
+  .title-card-main {
+    grid-template-columns: 28px minmax(0, 1fr) 42px;
+    column-gap: 6px;
+    padding: 8px;
+    border-radius: 12px;
+  }
+
+  .title-card-icon {
+    flex-basis: 28px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+
+    .form-icon,
+    .title-card-figma-icon {
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  .title-card-body {
+    gap: 1px;
+    padding-top: 0;
+  }
+
+  .title-card-body input,
+  .planner-title-textarea {
+    font-size: 11px !important;
+    line-height: 1.25;
+  }
+
+  .title-card-subtitle {
+    overflow: hidden;
+    font-size: 8px;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .priority-selection {
+    min-width: 42px;
+  }
+
+  .priority-toggle-label {
+    font-size: 8px;
+    line-height: 1;
+    white-space: nowrap;
+  }
 }
 
 .start-end-row {
