@@ -287,7 +287,7 @@ SPEC CHECKSUMS:
   CapacitorShare: eac8c1e192dbbb0737a84a50552ffe12398cb11f
   CapacitorStatusBar: 275cbf2f4dfc00388f519ef80c7ec22edda342c9
   CodetrixStudioCapacitorGoogleAuth: a733613ca7221cf8e469303e56346bd075bee1fd
-  CordovaPlugins: b7e950a67b0c414459d92f485d1e1859dbc76233
+  CordovaPlugins: 309c7ce4aaaa496a9cd8285600140363f0831965
   CordovaPluginsResources: da93847212bf7b16ba770e4d6c3e7dba820174c7
   FirebaseAnalytics: bc9e565af9044ba8d6c6e4157e4edca8e5fdf7ec
   FirebaseCore: 3227e35f4197a924206fbcdc0349325baf4f5de4

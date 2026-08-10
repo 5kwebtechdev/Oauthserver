@@ -236,6 +236,11 @@ export class EducationMainPageComponent implements OnInit {
         }
 
         if (category.kind === 'store') {
+            if (category.id === 'second-hand-books') {
+                void this.router.navigate(['/authed/second-hand-books']);
+                return;
+            }
+
             void this.router.navigate(['/authed/education/shops'], {
                 queryParams: category.storeCategoryId != null
                     ? { category: category.storeCategoryId, label: category.label }

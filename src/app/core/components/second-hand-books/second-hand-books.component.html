@@ -1,0 +1,119 @@
+<ion-content fullscreen class="second-hand-books-content">
+  <div class="second-hand-books-page">
+    <header class="books-hero">
+      <img class="books-hero__background" src="assets/figma/second-hand-books/hero-background.png" alt="" aria-hidden="true">
+
+      <div class="books-toolbar">
+        <button type="button" class="books-back" aria-label="Back" (click)="goBack()">
+          <img src="assets/icons/back-arrow.svg" alt="" aria-hidden="true">
+        </button>
+        <h1>Second Hand Books</h1>
+      </div>
+
+      <div class="books-hero__message">
+        <div class="books-speech">
+          <p><strong>Find &amp; Sell</strong> Books near you</p>
+          <span>Save up to <strong>80%</strong> on books</span>
+        </div>
+        <img class="books-hero__pet" src="assets/figma/second-hand-books/pet.png" alt="" aria-hidden="true">
+      </div>
+    </header>
+
+    <main class="books-main" [class.books-main--buyer]="view === 'buyer'">
+      <ng-container *ngIf="view === 'choice'; else buyerView">
+        <section class="books-choice" aria-labelledby="books-choice-title">
+          <header class="books-choice__heading">
+            <h2 id="books-choice-title">What brings you here today?</h2>
+            <p>Choose an option to get started.</p>
+          </header>
+
+          <div class="books-choice__actions">
+            <button type="button" class="books-action-card" (click)="openBuyer()">
+              <span class="books-action-card__art" aria-hidden="true">
+                <img src="assets/figma/second-hand-books/buyer.png" alt="">
+              </span>
+              <span class="books-action-card__content">
+                <strong>I am a buyer</strong>
+                <span>Search and discover books from nearby sellers</span>
+              </span>
+              <span class="books-action-card__arrow" aria-hidden="true"><ion-icon name="arrow-forward"></ion-icon></span>
+            </button>
+
+            <button type="button" class="books-action-card" (click)="openSellerFlow()">
+              <span class="books-action-card__art" aria-hidden="true">
+                <img src="assets/figma/second-hand-books/seller.png" alt="">
+              </span>
+              <span class="books-action-card__content">
+                <strong>I am a seller</strong>
+                <span>List your books and reach interested buyers.</span>
+              </span>
+              <span class="books-action-card__arrow" aria-hidden="true"><ion-icon name="arrow-forward"></ion-icon></span>
+            </button>
+
+            <button type="button" class="books-action-card" (click)="openMyListings()">
+              <span class="books-action-card__art" aria-hidden="true">
+                <img src="assets/figma/second-hand-books/my-listings.png" alt="">
+              </span>
+              <span class="books-action-card__content">
+                <strong>My Listings</strong>
+                <span>View and manage the books you have listed.</span>
+              </span>
+              <span class="books-action-card__arrow" aria-hidden="true"><ion-icon name="arrow-forward"></ion-icon></span>
+            </button>
+          </div>
+        </section>
+      </ng-container>
+
+      <ng-template #buyerView>
+        <section class="buyer-form" aria-labelledby="buyer-heading">
+          <header class="buyer-form__heading">
+            <h2 id="buyer-heading">You’re a buyer!</h2>
+            <p>Select your preferences below, and search to find the right book.</p>
+          </header>
+
+          <div class="buyer-form__section">
+            <span class="buyer-form__label">Book Type <b aria-hidden="true">*</b></span>
+            <div class="book-type-grid">
+              <button *ngFor="let type of bookTypes; trackBy: trackByBookType" type="button" class="book-type-option"
+                [class.is-selected]="buyer.bookType === type.value" (click)="selectBookType(type.value)">
+                <ion-icon [name]="type.icon" aria-hidden="true"></ion-icon>
+                <span>{{ type.label }}</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="buyer-filters">
+            <label *ngFor="let field of selectFields; let index = index; trackBy: trackByPreferenceField" class="buyer-field"
+              [class.buyer-field--wide]="index === selectFields.length - 1 && selectFields.length % 2 !== 0">
+              <span>{{ field.label }} <b aria-hidden="true">*</b></span>
+              <span class="buyer-select-wrap">
+                <select [(ngModel)]="buyer[field.key]" [attr.aria-label]="'Select ' + field.label">
+                  <option value="" disabled>Select {{ field.label }}</option>
+                  <option *ngFor="let option of field.options" [value]="option">{{ option }}</option>
+                </select>
+                <ion-icon name="chevron-down" aria-hidden="true"></ion-icon>
+              </span>
+            </label>
+          </div>
+
+          <label class="buyer-field buyer-field--full">
+            <span>Book Title <b aria-hidden="true">*</b></span>
+            <input type="text" [(ngModel)]="buyer.title" placeholder="eg. Mathematics Class 12 NCERT" autocomplete="off">
+          </label>
+
+          <label class="buyer-field buyer-field--full">
+            <span>Author / Publisher <b aria-hidden="true">*</b></span>
+            <input type="text" [(ngModel)]="buyer.author" placeholder="eg. R.D Sharma" autocomplete="off">
+          </label>
+
+          <button type="button" class="books-search-button" [disabled]="!isBuyerReady" (click)="searchBooks()">
+            <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
+            <span>Search</span>
+          </button>
+        </section>
+      </ng-template>
+    </main>
+  </div>
+
+  <app-footer></app-footer>
+</ion-content>
