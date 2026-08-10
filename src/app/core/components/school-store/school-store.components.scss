@@ -6,8 +6,7 @@ padding: 0px 16px calc(var(--footer-visual-height, 80px) + env(safe-area-inset-b
 }
 
 .store-ad-wrap {
-    margin-left: -16px;
-    width: calc(100% + 32px);
+    width: 100%;
 }
 /* Removed legacy navigator slot button styles: icons are now inlined via superme-navigator rightActions */
 

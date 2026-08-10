@@ -319,6 +319,10 @@ export class LearningService {
         forUserId?: string | number | null
     ): Observable<LearningCardData[]> {
         let params = new HttpParams().set('category', categoryName);
+        const age = this.getUserAge();
+        if (age != null) {
+            params = params.set('age', String(age));
+        }
         if (forUserId != null && String(forUserId).trim()) {
             params = params.set('forUserId', String(forUserId));
         }
