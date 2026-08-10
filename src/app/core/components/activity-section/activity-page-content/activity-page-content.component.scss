@@ -254,6 +254,12 @@
     width: 16px;
 
     img { height: 16px; width: 16px; }
+
+    // The supplied chevron artwork points right. Mirror only the previous-month
+    // control so its visual direction matches the navigation action.
+    &:first-child img {
+        transform: scaleX(-1);
+    }
 }
 
 .child-week-days {

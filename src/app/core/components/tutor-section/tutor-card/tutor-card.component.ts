@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from "@ionic/angular";
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { TutorService } from '../../../services/tutor.service';
 import { Tutor, TutorListItem } from '../../../models/tutor.model';
 import { Subscription } from 'rxjs';
@@ -26,6 +26,34 @@ interface EduHubCategory {
   label: string;
   image: string;
   route: string;
+}
+
+interface EduHubDirectoryItem {
+  id?: number | string;
+  name?: string | null;
+  title?: string | null;
+  bio?: string | null;
+  description?: string | null;
+  fee?: number | string | null;
+  hourlyRate?: number | string | null;
+  imageUrls?: string[] | null;
+  imageUrl?: string | null;
+  thumbnailUrl?: string | null;
+  profilePicUrl?: string | null;
+  avatar?: string | null;
+  headline?: string | null;
+  city?: string | null;
+  state?: string | null;
+  address?: string | null;
+}
+
+interface EduHubPreview {
+  id: string | number;
+  name: string;
+  description: string;
+  image: string;
+  fee: number | null;
+  location: string;
 }
 
 @Component({
@@ -66,6 +94,18 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   private academyLoaded = false;
   private academyLoading = false;
 
+  private readonly externalCategorySources: Partial<Record<CategoryKey, { endpoint: 'events' | 'shops' | 'tutors'; entityType: string }>> = {
+    workshops: { endpoint: 'events', entityType: 'Workshop' },
+    events: { endpoint: 'events', entityType: 'Events' },
+    'book-stores': { endpoint: 'shops', entityType: 'Bookstore' },
+    stationery: { endpoint: 'shops', entityType: 'stationary' },
+    'sports-shops': { endpoint: 'shops', entityType: 'sports shop' },
+    counselors: { endpoint: 'tutors', entityType: 'COUNSELOR' }
+  };
+  private readonly externalPreviews = new Map<CategoryKey, EduHubPreview[]>();
+  private readonly externalCounts = new Map<CategoryKey, number>();
+  private readonly externalLoading = new Set<CategoryKey>();
+
   private subscriptions = new Subscription();
   private likeSubscriptions = new Map<string, Subscription>();
 
@@ -79,6 +119,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadTutors();
+    this.preloadExternalCategories();
   }
 
   ngOnDestroy(): void {
@@ -100,6 +141,20 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     return this.listingCount > this.visibleTutors.length;
   }
 
+  get totalListingCount(): number {
+    const externalCount = Array.from(this.externalCounts.values())
+      .reduce((total, count) => total + count, 0);
+    return this.listingCount + externalCount;
+  }
+
+  get visibleExternalPreviews(): EduHubPreview[] {
+    return (this.externalPreviews.get(this.selectedCategoryKey) || []).slice(0, this.maxTutors);
+  }
+
+  get isExternalCategoryLoading(): boolean {
+    return this.externalLoading.has(this.selectedCategoryKey);
+  }
+
   /**
    * Whether to show the View All button for the current category. Tutors
    * and Academies only show it once there are more than 4 items to see;
@@ -110,6 +165,7 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     if (this.isLoading) return false;
     if (this.selectedCategoryKey === 'tutors') return this.hasMoreTutors;
     if (this.selectedCategoryKey === 'academies') return this.academyTotalCount > this.maxTutors;
+    if (this.isExternalCategory(this.selectedCategoryKey)) return this.visibleExternalPreviews.length > 0;
     return true;
   }
 
@@ -127,8 +183,83 @@ export class TutorCardComponent implements OnInit, OnDestroy {
     } else if (category.key === 'academies' && !this.academyLoaded && !this.academyLoading) {
       this.loadAcademies();
     }
+    if (this.isExternalCategory(category.key)) this.loadExternalCategory(category.key);
     // Workshops / Events / Stationery: no backend source yet — the template
     // shows an empty state for them instead of hardcoded placeholder data.
+  }
+
+  private preloadExternalCategories(): void {
+    (Object.keys(this.externalCategorySources) as CategoryKey[])
+      .forEach(categoryKey => this.loadExternalCategory(categoryKey));
+  }
+
+  private isExternalCategory(categoryKey: CategoryKey): boolean {
+    return !!this.externalCategorySources[categoryKey];
+  }
+
+  private loadExternalCategory(categoryKey: CategoryKey): void {
+    const source = this.externalCategorySources[categoryKey];
+    if (!source || this.externalLoading.has(categoryKey) || this.externalPreviews.has(categoryKey)) return;
+
+    this.externalLoading.add(categoryKey);
+    const baseUrl = this.getUserFacingApiBaseUrl();
+    const endpointUrl = source.endpoint === 'tutors'
+      ? `${baseUrl}/tutors`
+      : `${baseUrl}/eduhub/${source.endpoint}`;
+    let params = new HttpParams().set('entityType', source.entityType);
+    if (source.endpoint !== 'tutors') {
+      params = params.set('page', '0').set('size', '20');
+    }
+    this.subscriptions.add(
+      this.http.get<any>(endpointUrl, {
+        headers: this.academyHeaders(),
+        params
+      }).subscribe({
+        next: response => {
+          const rawItems = this.extractDirectoryItems(response);
+          const fallbackImage = this.categories.find(category => category.key === categoryKey)?.image || '';
+          const previews = rawItems.map(item => this.mapExternalPreview(item, fallbackImage));
+          this.externalPreviews.set(categoryKey, previews);
+          this.externalCounts.set(categoryKey, Number(response?.totalElements ?? response?.data?.totalElements ?? previews.length));
+          this.externalLoading.delete(categoryKey);
+        },
+        error: () => {
+          this.externalPreviews.set(categoryKey, []);
+          this.externalCounts.set(categoryKey, 0);
+          this.externalLoading.delete(categoryKey);
+        }
+      })
+    );
+  }
+
+  private extractDirectoryItems(response: any): EduHubDirectoryItem[] {
+    const items = Array.isArray(response)
+      ? response
+      : (response?.content ?? response?.items ?? response?.tutors ?? response?.data?.content ?? response?.data?.items ?? response?.data?.tutors ?? response?.data ?? []);
+    return Array.isArray(items) ? items : [];
+  }
+
+  /**
+   * Use the local backend only for an Angular browser dev server. Capacitor
+   * builds continue using the configured secure API URL.
+   */
+  private getUserFacingApiBaseUrl(): string {
+    const isBrowserLocalDev = typeof window !== 'undefined'
+      && ['localhost', '127.0.0.1'].includes(window.location.hostname)
+      && window.location.port === '4200';
+    return isBrowserLocalDev ? 'http://localhost:8080/v1' : environment.apiUrl;
+  }
+
+  private mapExternalPreview(item: EduHubDirectoryItem, fallbackImage: string): EduHubPreview {
+    const fee = Number(item?.fee ?? item?.hourlyRate);
+    return {
+      id: item?.id ?? `${item?.name || item?.title || 'listing'}-${item?.city || ''}`,
+      name: String(item?.name || item?.title || 'EduHub listing').trim(),
+      description: String(item?.bio || item?.description || item?.headline || [item?.city, item?.state].filter(Boolean).join(', ') || 'EduHub listing').trim(),
+      image: item?.imageUrls?.[0] || item?.imageUrl || item?.thumbnailUrl || item?.profilePicUrl || item?.avatar || fallbackImage,
+      fee: Number.isFinite(fee) ? fee : null,
+      location: [item?.city, item?.state].filter(Boolean).join(', ') || String(item?.address || '').trim()
+    };
   }
 
   /**
