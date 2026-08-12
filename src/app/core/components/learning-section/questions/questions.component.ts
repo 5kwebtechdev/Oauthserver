@@ -1,9 +1,8 @@
-import { Component, ViewChildren, ViewChild, QueryList, OnInit, OnDestroy } from '@angular/core';
+import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, IonContent } from '@ionic/angular';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
-import { SupermeNavigatorComponent } from '../../superme-navigator/superme-navigator.component';
 import { SupermeButtonComponent } from '../../superme-button/superme-button.component';
 import { SupermePopupComponent, SupermePopupConfig } from '../../superme-popup/superme-popup.component';
 import { Challenge, ChallengeQuestion, QuestionOption } from 'src/app/core/models/learning.models';
@@ -38,7 +37,7 @@ interface VisualOption {
 @Component({
     selector: 'app-questions',
     standalone: true,
-    imports: [CommonModule, IonicModule, HttpClientModule, SupermeNavigatorComponent, SupermeButtonComponent, SupermePopupComponent],
+    imports: [CommonModule, IonicModule, HttpClientModule, SupermeButtonComponent, SupermePopupComponent],
     providers: [LearningService],
     templateUrl: './questions.component.html',
     styleUrls: ['./questions.component.scss']
@@ -52,9 +51,6 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
     /** Total number of questions in the quiz; default to 5 to match template text */
     totalQuestions = 5;
-
-    // Store references to all answer buttons
-    @ViewChildren(SupermeButtonComponent) answerButtons!: QueryList<SupermeButtonComponent>;
 
     // Reference to ion-content for scrolling
     @ViewChild(IonContent) content!: IonContent;
@@ -169,6 +165,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     // Questions will be loaded from the backend via route state or service
     questions: Question[] = [];
 
+    readonly trueFalseOptions = ['True', 'False'];
+
     // Track answers for each question
     questionAnswers: { [key: number]: { selected: string | null, correct: boolean, selectedOptionId: number | null } } = {};
 
@@ -181,8 +179,6 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     // Submission state
     isSubmitting = false;
     private returnUrl = '/authed/content';
-
-    // (No rightActions used — we project the inline SVG timer into the navigator slot)
 
     constructor(
         private router: Router,
@@ -337,6 +333,31 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         return (option.optionText || '').trim() || String(option.optionId);
     }
 
+    get currentQuestion(): Question | null {
+        return this.questions[this.currentQuestionIndex] ?? null;
+    }
+
+    get questionPositionLabel(): string {
+        return `${this.currentQuestionIndex + 1}/${this.totalQuestions}`;
+    }
+
+    get questionImageAlt(): string {
+        return `${this.quizTitle} question ${this.currentQuestionIndex + 1} illustration`;
+    }
+
+    getOptionLabel(index: number): string {
+        return String.fromCharCode(65 + index);
+    }
+
+    isVisualOptionCorrect(option: VisualOption): boolean {
+        const currentQuestion = this.currentQuestion;
+        if (!currentQuestion) return false;
+
+        return currentQuestion.correctOptionId !== null && currentQuestion.correctOptionId !== undefined
+            ? option.id === currentQuestion.correctOptionId
+            : option.answerValue === currentQuestion.correctAnswer;
+    }
+
     parseTimeDuration(duration: string) {
         // Parse duration string like "5 Minutes" or "10 Minutes"
         const match = duration.match(/(\d+)\s*min/i);
@@ -391,23 +412,11 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         this.showHint = !!cached;
         this.hintErrorText = '';
 
-        // Reset all buttons when loading a new question
-        setTimeout(() => {
-            this.answerButtons.forEach(button => {
-                button.correct = false;
-                button.incorrect = false;
-            });
-        }, 0);
     }
 
     onCancel() {
         // Show the leave challenge popup instead of navigating directly
         this.showLeaveChallengePopup = true;
-    }
-
-    onRightAction(event?: { index: number, action: any }) {
-        // Placeholder for right-action behavior (open help/info etc.)
-        console.log('Navigator right action clicked', event ?? 'clicked');
     }
 
     /**
@@ -459,35 +468,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             // Save the selected answer for this question
             this.questionAnswers[currentQuestionId].selected = normalizedAnswer;
 
-            // For True/False questions, we need to visually update the buttons
-            if (this.questions[this.currentQuestionIndex].type === 'true-false') {
-                // The visual update is handled by the [class.selected] binding in the template
-                this.scrollToBottom();
-                return;
-            }
-
-            // For Visual questions, we need to visually update the options
-            if (this.questions[this.currentQuestionIndex].type === 'visual') {
-                // The visual update is handled by the [class.selected] binding in the template
-                this.scrollToBottom();
-                return;
-            }
-
-            // Update button states - only change the selected button to green (for MCQ)
-            // First, reset all buttons to unselected state
-            this.answerButtons.forEach(button => {
-                button.correct = false;
-                button.incorrect = false;
-            });
-
-            // Then, mark the selected button as correct temporarily to show green color
-            const selectedButton = this.answerButtons.find(button => button.text === selectedAnswer);
-            if (selectedButton) {
-                selectedButton.correct = true;
-                selectedButton.incorrect = false;
-            }
-
-            // Scroll to bottom to show the Check button
+            // Scroll to the newly enabled Check button when it sits below the fold.
             this.scrollToBottom();
         }
     }
@@ -504,7 +485,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     }
 
     onCheck() {
-        if (this.selectedAnswer !== null) {
+        if (this.selectedAnswer !== null && !this.answerChecked) {
             this.answerChecked = true;
 
             const currentQuestionId = this.questions[this.currentQuestionIndex].id;
@@ -514,11 +495,6 @@ export class QuestionsComponent implements OnInit, OnDestroy {
                 ? currentAnswer.selectedOptionId === currentQuestion.correctOptionId
                 : this.selectedAnswer === this.correctAnswer;
             this.questionAnswers[currentQuestionId].correct = this.isAnswerCorrect;
-
-            this.answerButtons.forEach(button => {
-                button.correct = false;
-                button.incorrect = false;
-            });
 
             this.showPopup = true;
 
@@ -538,23 +514,6 @@ export class QuestionsComponent implements OnInit, OnDestroy {
                 }
                 this.nextButtonType = 'green';
 
-                // For True/False questions, update the visual state using class binding
-                if (this.questions[this.currentQuestionIndex].type === 'true-false') {
-                    // The visual update is handled by the template bindings
-                    return;
-                }
-
-                // For Visual questions, update the visual state using class binding
-                if (this.questions[this.currentQuestionIndex].type === 'visual') {
-                    // The visual update is handled by the template bindings
-                    return;
-                }
-
-                // Mark the selected button as correct (for MCQ)
-                const selectedButton = this.answerButtons.find(button => button.text === this.selectedAnswer);
-                if (selectedButton) {
-                    selectedButton.correct = true;
-                }
             } else {
                 // Incorrect answer - use current question negativeFeedback from backend or fallback
                 this.setFeedbackPopupContent(
@@ -638,11 +597,6 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         this.answerChecked = false;
         this.isAnswerCorrect = false;
 
-        // Reset all buttons
-        this.answerButtons.forEach(button => {
-            button.correct = false;
-            button.incorrect = false;
-        });
     }
 
     /**
