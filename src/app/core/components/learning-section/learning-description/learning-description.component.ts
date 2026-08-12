@@ -113,6 +113,7 @@ export class LearningDescriptionComponent implements OnInit {
   challenge: Challenge | null = null;
   isLoading = true;
   private isNavigating = false;
+  private returnUrl = '/authed/content';
 
   constructor(
     public router: Router,
@@ -121,6 +122,12 @@ export class LearningDescriptionComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    const navigation = this.router.getCurrentNavigation();
+    const source = navigation?.extras?.state?.['source'] ?? (history as any)?.state?.['source'];
+    if (typeof source === 'string' && source.startsWith('/authed/content')) {
+      this.returnUrl = source;
+    }
+
     // Get challenge ID from route parameters
     const challengeId = this.route.snapshot.paramMap.get('id');
     console.log('Challenge ID from route:', challengeId);
@@ -151,7 +158,7 @@ export class LearningDescriptionComponent implements OnInit {
     this.isNavigating = true;
     if (this.challenge) {
       this.router.navigate(['/authed/content/questions', this.challenge.challengeId], {
-        state: { challenge: this.challenge }
+        state: { challenge: this.challenge, source: this.returnUrl }
       });
     } else {
       this.router.navigate(['/authed/content/questions']);
@@ -159,7 +166,7 @@ export class LearningDescriptionComponent implements OnInit {
   }
 
   onBack() {
-    this.router.navigate(['/authed/user-dashboard']);
+    void this.router.navigateByUrl(this.returnUrl);
   }
 
   formatDuration(value: any): string {

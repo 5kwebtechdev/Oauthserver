@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 
-export type DayStreakStatus = 'completed' | 'missed' | 'pending';
+export type DayStreakStatus = 'completed' | 'missed' | 'pending' | 'neutral';
 
 export interface DayStreak {
   label: string;

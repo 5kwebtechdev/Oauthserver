@@ -20,7 +20,7 @@ export interface AddressDetails {
     providedIn: 'root'
 })
 export class LocationService {
-    private readonly googleMapsApiKey = environment.googleMapsApiKey;
+    private readonly googleMapsApiKey = String((environment as any).googleMapsApiKey || '');
 
     constructor(private http: HttpClient) { }
 

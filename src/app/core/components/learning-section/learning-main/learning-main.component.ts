@@ -198,6 +198,12 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     private userService: UserService
   ) { }
 
+  openCoinPage(): void {
+    void this.router.navigateByUrl('/authed/coin', {
+      state: { coins: this.childCoins }
+    } as any);
+  }
+
   ngOnInit(): void {
     this.parentView = this.route.snapshot.queryParamMap.get('view') === 'parent'
       || this.authService.isParentUser();
@@ -221,6 +227,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       if (this.childView) this.bindChildStats();
       this.loadTab(this.selectedCategory);
     }
+    this.scrollActiveTabIntoView();
   }
 
   private bindChildStats(): void {
@@ -380,8 +387,9 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       return `${lessons} ${lessons === 1 ? 'lesson' : 'lessons'}`;
     }
     if (item.type === 'article') {
-      const minutes = Number(raw?.durationMinutes || 0);
-      return minutes > 0 ? `${minutes} min read` : '';
+      // Article duration is already shown next to the coins in the reward row.
+      // Avoid repeating it as a separate “min read” label above the metadata.
+      return '';
     }
     return '';
   }
@@ -398,10 +406,29 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     return Number.isFinite(value) && value > 0 ? Math.round(value) : 0;
   }
 
+  /** The parent-learning reward is 20 coins until the API provides an item-specific amount. */
+  getParentAssignmentCoins(item: LearningCardData): number {
+    return this.getParentBonusCoins(item) || 20;
+  }
+
   isParentItemAssigned(item: LearningCardData): boolean {
     const raw = item.rawData as any;
     const status = String(raw?.userLearningStatus || raw?.assignmentStatus || '').toUpperCase();
     return raw?.assigned === true || !!raw?.assignedAt || status === 'ASSIGNED';
+  }
+
+  /**
+   * "Assign" is a parent-only action. It must not start the child's quiz or
+   * puzzle attempt. The API does not currently expose an assignment endpoint,
+   * so keep the user on this screen and clearly explain the current state.
+   */
+  onParentLearningAction(item: LearningCardData): void {
+    if (!this.isParentItemAssigned(item) && this.getParentItemStatus(item) !== 'completed') {
+      this.toastService.show(`Assign ${this.getParentAssignmentCoins(item)} coins to ${item.title} when the assignment API is available.`, 'info', 3000);
+      return;
+    }
+
+    this.openParentLearningItem(item);
   }
 
   openParentLearningItem(item: LearningCardData): void {
@@ -568,6 +595,15 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
     this.loadTab(cat);
     if (this.searchKeyword.trim()) this.updateSearchResults();
     this.scrollLearningToTop();
+    this.scrollActiveTabIntoView();
+  }
+
+  private scrollActiveTabIntoView(): void {
+    setTimeout(() => {
+      const tabs = this.parentView ? this.parentTabs?.nativeElement : this.childTabs?.nativeElement;
+      const activeTab = tabs?.querySelector<HTMLElement>('[data-category-tab].parent-learning-tab--active, .child-learning-tab--active');
+      activeTab?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }, 0);
   }
 
   openPuzzles() { this.selectCategory('puzzles'); }
@@ -749,7 +785,9 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   getCategoryImageFit(item: LearningCategorySummary): 'cover' | 'contain' {
-    return this.isPhotographicCategoryImage(item) ? 'cover' : 'contain';
+    // Category art is an illustration, not a photo thumbnail. Preserve every
+    // part of it (especially the lower artwork) instead of cropping it to fill.
+    return 'contain';
   }
 
   getCategoryFallbackImage(): string {
@@ -784,7 +822,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
       case 'articles':
         return singular ? 'article' : 'articles';
       case 'masterclass':
-        return singular ? 'masterclass' : 'masterclasses';
+        return singular ? 'course' : 'courses';
       case 'puzzles':
       default:
         return singular ? 'puzzle' : 'puzzles';

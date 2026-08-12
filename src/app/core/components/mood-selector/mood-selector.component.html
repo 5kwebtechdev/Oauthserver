@@ -1,4 +1,5 @@
-<div class="mood-card" [class.mood-card--saved]="!isParent && !showMoodPicker" role="group" aria-label="Mood selector">
+<div class="mood-card" [class.mood-card--saved]="!isParent && !showMoodPicker"
+  [class.mood-card--picker]="!isParent && showMoodPicker" role="group" aria-label="Mood selector">
   <ng-container *ngIf="isParent">
     <div class="mood-card-preview">
       <img [src]="popupPreviewSrc" [alt]="popupPreviewLabel" />
@@ -36,6 +37,7 @@
             <img [src]="p.src" [alt]="p.label" />
           </span>
         </span>
+        <span *ngIf="isMoodSelected(p)" class="mood-option-selected-mark" aria-hidden="true">✓</span>
         <span class="mood-option-label">{{ p.label }}</span>
       </button>
     </div>

@@ -168,11 +168,17 @@ ion-content {
     transition: background-color 140ms ease, border-color 140ms ease, transform 120ms ease;
     -webkit-tap-highlight-color: transparent;
 
-    &:active,
-    &.is-selected {
+    &:active {
         border-color: #3158a8;
         background: #a5c0ec;
         transform: scale(0.98);
+    }
+
+    &.is-selected {
+        border-color: transparent;
+        background: #b2caf2;
+        box-shadow: 0 0 2px 1px rgba(49, 88, 168, 0.18);
+        transform: none;
     }
 
     &:focus-visible {

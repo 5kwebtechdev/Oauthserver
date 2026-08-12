@@ -1,7 +1,11 @@
 :host {
-    flex: 0 0 263px;
-    height: 300px;
+    // The parent learning carousel defines the card size. Keeping the old
+    // 300px fixed height here made every compact Home card reserve a large
+    // empty area underneath its content.
     display: block;
+    width: 100%;
+    height: 100%;
+    flex: 1 1 auto;
 }
 
 .media {

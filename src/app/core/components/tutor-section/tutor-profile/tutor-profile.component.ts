@@ -21,6 +21,7 @@ import { AuthService } from '../../../services/auth.service';
 import { CustomToastService, Toast } from '../../../services/custom-toast.service';
 import { TutorLikeService } from '../../../services/tutor-like.service';
 import { TutorService } from '../../../services/tutor.service';
+import { UserService } from '../../../services/user.service';
 import { FaqItem, PROFILE_FAQS, ProfileFactsComponent } from '../../user-profile/profile-facts/profile-facts.component';
 
 type ContactMethod = 'call' | 'email' | 'whatsapp';
@@ -54,6 +55,8 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   showContactSheet = false;
   selectedContactMethod: ContactMethod = 'call';
   isContactLaunching = false;
+  isUnlockingContact = false;
+  isContactUnlocked = false;
   toast$: Observable<Toast | null> = this.toastService.toast$;
 
   private tutorCategories: TutorCategory[] = [];
@@ -69,7 +72,8 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     private tutorApi: TutorApi,
     private route: ActivatedRoute,
     private router: Router,
-    private tutorService: TutorService
+    private tutorService: TutorService,
+    private userService: UserService
   ) {}
 
   ngOnInit(): void {
@@ -405,7 +409,33 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
       this.toastService.error('Ask your parent to unlock the tutor contact details.');
       return;
     }
-    this.openContactSheet();
+    if (this.isContactUnlocked) {
+      this.openContactSheet();
+      return;
+    }
+
+    if (!this.tutor || this.isUnlockingContact) return;
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      this.toastService.error('Unable to identify your account. Please sign in again.');
+      return;
+    }
+
+    this.isUnlockingContact = true;
+    this.tutorApi.unlockContact(userId, this.tutor.id, this.contactUnlockCost).subscribe({
+      next: response => {
+        this.applyUnlockedContact(response);
+        this.isContactUnlocked = true;
+        this.updateCoinBalance(response);
+        this.isUnlockingContact = false;
+        this.toastService.success('Contact details unlocked successfully.');
+        this.openContactSheet();
+      },
+      error: error => {
+        this.isUnlockingContact = false;
+        this.toastService.error(error?.error?.message || 'Unable to unlock contact details. Please try again.');
+      }
+    });
   }
 
   openContactSheet(): void {
@@ -461,6 +491,37 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     if (this.selectedContactMethod === 'call') return 'Call Now';
     if (this.selectedContactMethod === 'whatsapp') return 'Open WhatsApp';
     return 'Send Email';
+  }
+
+  private applyUnlockedContact(response: any): void {
+    const unlocked = response?.data?.tutor ?? response?.tutor ?? response?.data ?? response;
+    if (!this.tutor || !unlocked || typeof unlocked !== 'object') return;
+    Object.assign(this.tutor as any, {
+      phone: unlocked.phone ?? (this.tutor as any).phone,
+      email: unlocked.email ?? (this.tutor as any).email,
+      addressLine: unlocked.addressLine ?? unlocked.address ?? (this.tutor as any).addressLine,
+      location: unlocked.location ?? (this.tutor as any).location,
+      state: unlocked.state ?? (this.tutor as any).state,
+      city: unlocked.city ?? (this.tutor as any).city,
+      pincode: unlocked.pincode ?? (this.tutor as any).pincode,
+      unlocked: true
+    });
+  }
+
+  private updateCoinBalance(response: any): void {
+    const amount = Number(
+      response?.remainingBalance ?? response?.data?.remainingBalance ?? response?.coins ?? response?.data?.coins
+    );
+    if (!Number.isFinite(amount)) {
+      this.userService.refreshStats().subscribe();
+      return;
+    }
+
+    const coins = Math.max(0, amount);
+    this.authService.updateUserData({ coins });
+    const stats = this.userService.getUserStats();
+    if (stats) this.userService.saveUserStats({ ...stats, coins });
+    else this.userService.refreshStats().subscribe();
   }
 
   private getRawPhone(): string {

@@ -11,6 +11,7 @@ import { Subscription } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { AuthService } from '../../../services/auth.service';
 import { CoreService } from '../../../services/core.service';
+import { UserService } from '../../../services/user.service';
 import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
 import { FooterComponent } from '../../footer/footer.component';
 import { SupermePetComponent } from '../../superme-pet/superme-pet.component';
@@ -117,7 +118,8 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     private readonly location: Location,
     private readonly http: HttpClient,
     private readonly authService: AuthService,
-    private readonly core: CoreService
+    private readonly core: CoreService,
+    private readonly userService: UserService
   ) {}
 
   ngOnInit(): void {
@@ -276,6 +278,11 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
   }
 
   async openDirections(item: EduHubShopListing): Promise<void> {
+    if (!item.unlocked) {
+      this.core.triggerToasrt('Unlock this listing to view directions.', 'info');
+      return;
+    }
+
     const coordinates = item.unlocked && item.latitude != null && item.longitude != null
       ? `${item.latitude},${item.longitude}`
       : '';
@@ -300,11 +307,8 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!item.phone && !item.email && !item.fullAddress) {
-      this.core.triggerToasrt('Contact details are not available for this listing yet.', 'info');
-      return;
-    }
-
+    // The directory response intentionally hides protected contact data. The
+    // unlock endpoint returns those fields after it verifies and deducts coins.
     this.unlockItem = item;
     document.body.style.overflow = 'hidden';
   }
@@ -319,38 +323,31 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     const item = this.unlockItem;
     if (!item || this.unlockRequestInProgress) return;
 
-    if (item.unlockCost === 0) {
-      item.unlocked = true;
-      this.persistUnlockedItem(item.id);
-      this.unlockItem = null;
-      document.body.style.overflow = '';
-      this.openContactSheet(item);
-      return;
-    }
-
-    if (this.coinBalance < item.unlockCost) {
-      this.core.triggerToasrt('You do not have enough coins to unlock these details.', 'error');
+    const userId = this.authService.getUserId();
+    if (userId == null) {
+      this.core.triggerToasrt('Unable to identify your account. Please sign in again.', 'error');
       return;
     }
 
     this.unlockRequestInProgress = true;
     const params = new HttpParams()
-      .set('amount', String(item.unlockCost))
-      .set('type', 'EDUHUB_CONTACT_UNLOCK');
+      .set('userId', String(userId))
+      .set('id', String(item.id));
 
     this.http.post<any>(
-      `${environment.apiUrl}/coins/spend`,
+      `${environment.apiUrl}/eduhub/unlock-contact`,
       null,
       { headers: this.getApiHeaders(), params }
     ).subscribe({
       next: response => {
+        this.applyUnlockedListing(item, response);
         item.unlocked = true;
         this.persistUnlockedItem(item.id);
-        this.coinBalance = this.extractCoinBalance(response, this.coinBalance - item.unlockCost);
-        this.authService.updateUserData({ coins: this.coinBalance });
         this.unlockRequestInProgress = false;
         this.unlockItem = null;
         document.body.style.overflow = '';
+        this.refreshCoinBalance();
+        this.core.triggerToasrt('Contact details unlocked successfully.', 'success');
         this.openContactSheet(item);
       },
       error: (error: HttpErrorResponse) => {
@@ -560,6 +557,33 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
     };
   }
 
+  /** Apply the unlocked listing returned by the API without discarding card data omitted by a response wrapper. */
+  private applyUnlockedListing(item: EduHubShopListing, response: any): void {
+    const serverItem = response?.data?.listing ?? response?.listing ?? response?.data ?? response;
+    if (!serverItem || typeof serverItem !== 'object') return;
+
+    const updated = this.mapListing({
+      ...serverItem,
+      id: serverItem.id ?? item.id,
+      unlocked: true,
+      isUnlocked: true
+    });
+
+    Object.assign(item, {
+      ...updated,
+      id: item.id,
+      name: updated.name || item.name,
+      image: updated.image || item.image,
+      publicLocation: updated.publicLocation || item.publicLocation,
+      fullAddress: updated.fullAddress || item.fullAddress,
+      phone: updated.phone || item.phone,
+      email: updated.email || item.email,
+      latitude: updated.latitude ?? item.latitude,
+      longitude: updated.longitude ?? item.longitude,
+      unlocked: true
+    });
+  }
+
   private publicAddressFallback(fullAddress: string): string {
     if (!fullAddress) return '';
     const segments = fullAddress.split(',').map(part => part.trim()).filter(Boolean);
@@ -584,7 +608,18 @@ export class ParentEduHubShopListingComponent implements OnInit, OnDestroy {
       { headers: this.getApiHeaders() }
     ).subscribe({
       next: response => {
-        this.coinBalance = this.extractCoinBalance(response, this.coinBalance);
+        const coins = this.extractCoinBalance(response, this.coinBalance);
+        this.coinBalance = coins;
+        this.authService.updateUserData({ coins });
+
+        const currentStats = this.userService.getUserStats();
+        if (currentStats) {
+          this.userService.saveUserStats({ ...currentStats, coins });
+        } else {
+          // Seed the persistent header state even if Home has not loaded its
+          // stats cache yet; the API refresh keeps streaks and badges current.
+          this.userService.refreshStats().subscribe();
+        }
       }
     });
   }

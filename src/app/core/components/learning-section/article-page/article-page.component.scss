@@ -1,8 +1,8 @@
 :host {
   display: block;
   min-height: 100%;
-  --details-purple: #432477;
-  --details-purple-light: #7341a7;
+  --details-purple: #c12562;
+  --details-purple-light: #e6417b;
   --details-ink: #282527;
   --details-muted: #6b656a;
   --details-border: #d9d6d8;
@@ -274,8 +274,8 @@
 
   ::ng-deep ul,
   ::ng-deep ol {
-    margin: 0 0 8px;
-    padding-left: 22px;
+    margin: 0 0 10px !important;
+    padding-left: 26px !important;
     color: rgba(40, 37, 39, 0.7);
     font-family: var(--font-sans);
     font-size: 15px;
@@ -284,6 +284,18 @@
 
   ::ng-deep li + li {
     margin-top: 4px;
+  }
+
+  // CMS content occasionally sends bare list items rather than a ul/ol.
+  // Give them the same readable indent instead of pinning bullets to the edge.
+  ::ng-deep > li {
+    display: list-item;
+    margin: 0 0 6px 26px;
+    padding-left: 2px;
+    color: rgba(40, 37, 39, 0.7);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 500;
   }
 
   ::ng-deep strong,
@@ -381,7 +393,7 @@
     min-width: 0;
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: 6px;
     padding: 2px 8px 0;
   }
 
@@ -420,8 +432,8 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
-    margin-top: auto;
+    gap: 10px;
+    margin-top: 0;
 
     > span {
       display: inline-flex;
@@ -462,8 +474,8 @@
     overflow: hidden;
     border: 1px solid var(--details-purple);
     border-radius: 16px;
-    background: linear-gradient(90deg, #432477 0%, #7341a7 50%, #432477 100%);
-    box-shadow: inset -1px -1px 2px #ebe6f5;
+    background: linear-gradient(90deg, #b91e59 0%, #df3374 50%, #b91e59 100%);
+    box-shadow: inset -1px -1px 2px #f9dce8;
     color: #ffffff;
     font-family: var(--font-sans);
     cursor: pointer;
@@ -516,6 +528,7 @@
   }
 
   &__ready,
+  &__timer,
   &__error {
     margin: 0;
     font-family: var(--font-sans);
@@ -526,6 +539,18 @@
 
   &__ready {
     color: #178a43;
+  }
+
+  &__timer {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--details-purple);
+  }
+
+  &__timer-icon {
+    font-size: 16px;
+    line-height: 1;
   }
 
   &__error {
@@ -580,22 +605,16 @@
       transform: scale(0.97);
     }
 
-    small {
-      font-size: 13px;
-      font-weight: 600;
-      line-height: normal;
-      white-space: nowrap;
-    }
   }
 
   &__option--active {
     border-color: var(--details-purple) !important;
-    background: #ebe6f5 !important;
+    background: #fbe4ee !important;
   }
 
   &__image {
     display: inline-flex;
-    width: 56px;
+    width: 48px;
     height: 48px;
     align-items: center;
     justify-content: center;
@@ -603,11 +622,47 @@
 
     img {
       display: block;
-      width: 56px;
+      width: 48px;
       height: 48px;
-      object-fit: contain;
+      object-fit: fill;
     }
   }
+}
+
+.learning-details-feedback-success {
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 8px 18px;
+  border: 1px solid #f3c3d6;
+  border-radius: 22px;
+  background: #fdf0f5;
+  color: var(--details-purple);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  animation: feedback-success-in 180ms ease-out;
+
+  span {
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--details-purple);
+    color: #fff;
+    font-size: 13px;
+  }
+
+  p { margin: 0; }
+}
+
+@keyframes feedback-success-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .learning-details-state {

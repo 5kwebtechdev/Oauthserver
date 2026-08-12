@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, catchError, map, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthApi } from './auth.api';
@@ -80,5 +80,17 @@ export class TutorApi {
     getTutorById(tutorId: number | string): Observable<any> {
         const url = `${this.base}/tutors/${tutorId}`;
         return this.http.get<any>(url, { headers: this.headers() });
+    }
+
+    /** Unlock protected Tutor or Academy contact details for the requesting user. */
+    unlockContact(userId: number | string, tutorId: number | string, amount: number): Observable<any> {
+        const params = new HttpParams()
+            .set('userId', String(userId))
+            .set('id', String(tutorId))
+            .set('amount', String(amount));
+        return this.http.post<any>(`${this.base}/tutors/unlock-contact`, null, {
+            headers: this.headers(),
+            params
+        });
     }
 }

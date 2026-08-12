@@ -172,6 +172,12 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
   loadCategories(initialCategoryId?: number): void {
     this.categoriesLoading = true;
     this.categoriesError = false;
+    // A category refresh can overlap with an earlier product request. Invalidate
+    // that request and empty the pane immediately so products from the previous
+    // category can never flash while the new category tree is loading.
+    ++this.productsRequestId;
+    this.products = [];
+    this.productsLoading = true;
     this.productsRequestCompleted = false;
     this.productsError = false;
     const token = this.authService.getToken();
@@ -196,6 +202,7 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
           this.loadProducts();
           this.loadSubCategoryLevel(0, []);
         } else {
+          this.productsLoading = false;
           this.productsRequestCompleted = true;
           this.productsError = true;
         }
@@ -204,6 +211,7 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
       error: () => {
         this.categoriesLoading = false;
         this.categoriesError = true;
+        this.productsLoading = false;
         this.productsRequestCompleted = true;
         this.productsError = true;
         this.cdr.detectChanges();
@@ -449,6 +457,10 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
     this.productsLoading = true;
     this.productsRequestCompleted = false;
     this.productsError = false;
+    // Do not leave cards from the previous category visible while the next
+    // category request is loading. The skeleton state is the only content
+    // shown until the response for the active category arrives.
+    this.products = [];
     const token = this.authService.getToken();
     const headers = new HttpHeaders({
       'Authorization': token?.startsWith('Bearer ') ? token : `Bearer ${token ?? ''}`,
@@ -728,8 +740,11 @@ export class ProductStoreComponent implements OnDestroy, OnInit {
   }
 
   goBack(): void {
-    // Always navigate to the app entry (home) page instead of relying on history
-    this.router.navigateByUrl('/home');
+    // Product listings are opened from Student Store. Returning there is
+    // deterministic and avoids the old behaviour that sent users to Home.
+    this.router.navigateByUrl('/authed/school-store').catch(() => {
+      window.history.back();
+    });
   }
 
   // Scroll page to top with smooth behaviour

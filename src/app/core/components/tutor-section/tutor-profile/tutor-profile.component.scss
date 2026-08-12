@@ -471,6 +471,11 @@ ion-content.tutor-detail-page {
   justify-content: center;
   gap: 9px;
 
+  &:disabled {
+    cursor: wait;
+    opacity: .78;
+  }
+
   .unlock-button__lock {
     color: #ffd73d;
     font-size: 22px;
@@ -491,6 +496,16 @@ ion-content.tutor-detail-page {
       object-fit: contain;
     }
   }
+}
+
+.unlocked-detail {
+  display: block;
+  margin-top: 6px;
+  color: #2148b8;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .tutor-faq {

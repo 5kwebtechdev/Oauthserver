@@ -4,10 +4,9 @@
   <div class="glance-heading-block">
     <superme-card-header [title]="headerTitle" [subtitleMiddle]="glanceSubtitle">
       <div class="glance-header-actions" superme-header-actions>
-        <button type="button" class="glance-done-pill" (click)="openTimeline()"
-          aria-label="Open today's progress timeline">
+        <span class="glance-done-pill" aria-label="Today's completion progress">
           {{ overallCompletionRate }}% done
-        </button>
+        </span>
       </div>
     </superme-card-header>
     <div class="glance-progress-track" *ngIf="totalHabitsLoaded > 0 || totalTasksLoaded > 0">

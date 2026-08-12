@@ -11,9 +11,12 @@ import { AdBannerComponent } from '../../ad-banner/ad-banner.component';
 import { LearningService } from 'src/app/core/services/learning.service';
 import { BadgePopupService } from 'src/app/core/services/badge-popup.service';
 import { PetAgeService } from 'src/app/core/services/pet-age.service';
+import { AuthService } from 'src/app/core/services/auth.service';
 import { Article, LearningCardData } from 'src/app/core/models/learning.models';
+import { environment } from 'src/environments/environment';
 
 type HelpfulnessValue = 'very-helpful' | 'helpful' | 'not-helpful';
+type ArticleFeedback = 'VERY_HELPFUL' | 'HELPFUL' | 'NOT_HELPFUL';
 
 interface HelpfulnessOption {
   value: HelpfulnessValue;
@@ -45,22 +48,26 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   isMarking = false;
   actionError = '';
   selectedHelpfulness: HelpfulnessValue | null = null;
+  isSubmittingFeedback = false;
+  feedbackError = '';
+  feedbackSubmitted = false;
+  showFeedbackPrompt = false;
 
   readonly helpfulnessOptions: HelpfulnessOption[] = [
     {
       value: 'very-helpful',
       label: 'Very Helpful',
-      image: 'assets/figma/learning-details/very-helpful.png'
+      image: 'assets/figma/learning-details/very-helpful.svg'
     },
     {
       value: 'helpful',
       label: 'Helpful',
-      image: 'assets/figma/learning-details/helpful.png'
+      image: 'assets/figma/learning-details/helpful.svg'
     },
     {
       value: 'not-helpful',
       label: 'Not Helpful',
-      image: 'assets/figma/learning-details/not-helpful.png'
+      image: 'assets/figma/learning-details/not-helpful.svg'
     }
   ];
 
@@ -105,7 +112,8 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     public router: Router,
     private location: Location,
     private badgePopupService: BadgePopupService,
-    private petAgeService: PetAgeService
+    private petAgeService: PetAgeService,
+    private authService: AuthService
   ) {
     const navigationState = this.router.getCurrentNavigation()?.extras.state || history.state;
     const source = String(navigationState?.['source'] || '');
@@ -209,8 +217,19 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   }
 
   openMarkAsReadPopup(): void {
-    if (!this.article || this.isArticleRead || !this.readTimerComplete) return;
-    this.showMarkPopup = true;
+    this.openFeedbackPrompt();
+  }
+
+  openFeedbackPrompt(): void {
+    if (!this.article || this.isArticleRead || !this.readTimerComplete || this.isMarking) return;
+    this.feedbackError = '';
+    this.showFeedbackPrompt = true;
+    // The prompt is rendered below the CTA. Bring it into view immediately so
+    // the user can rate the article as part of the same completion action.
+    setTimeout(() => {
+      document.querySelector<HTMLElement>('.learning-details-feedback')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
   }
 
   closeMarkPopup(): void {
@@ -221,7 +240,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
     if (!this.article || this.isArticleRead || this.isMarking) return;
     this.isMarking = true;
     this.actionError = '';
-    this.learningService.markArticleComplete(this.article.id)
+    this.learningService.markArticleComplete(this.article.id, this.toArticleFeedback(this.selectedHelpfulness))
       .pipe(takeUntil(this.destroy$))
       .subscribe({
       next: (res) => {
@@ -294,7 +313,7 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
       await Share.share({
         title: this.article.title,
         text: this.article.description || this.article.title,
-        url: window.location.href,
+        url: this.getPublicArticleUrl(),
         dialogTitle: `Share ${this.article.title}`
       });
     } catch (error) {
@@ -303,12 +322,54 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
   }
 
   selectHelpfulness(value: HelpfulnessValue): void {
+    if (!this.article || this.isArticleRead || !this.showFeedbackPrompt || this.isSubmittingFeedback || this.feedbackSubmitted) return;
     this.selectedHelpfulness = value;
-    if (!this.article) return;
+    this.feedbackError = '';
 
-    try {
-      localStorage.setItem(`superme_article_helpfulness_${this.article.id}`, value);
-    } catch { /* Storage can be unavailable in restricted browser modes. */ }
+    this.isSubmittingFeedback = true;
+    this.isMarking = true;
+    this.learningService.markArticleComplete(this.article.id, this.toArticleFeedback(value))
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.isSubmittingFeedback = false;
+          this.isMarking = false;
+          this.feedbackSubmitted = true;
+          this.showFeedbackPrompt = false;
+          this.article = { ...this.article!, alreadyRead: true };
+          this.petAgeService.recordActivity('articles');
+          this.badgePopupService.check();
+          try {
+            localStorage.setItem(this.getFeedbackStorageKey(this.article!.id), value);
+          } catch { /* Storage can be unavailable in restricted browser modes. */ }
+        },
+        error: () => {
+          this.isSubmittingFeedback = false;
+          this.isMarking = false;
+          this.selectedHelpfulness = null;
+          this.feedbackError = 'We could not save your feedback. Please try again.';
+        }
+      });
+  }
+
+  private getPublicArticleUrl(): string {
+    const baseUrl = String(environment.publicWebUrl || 'https://supermeapp.com').replace(/\/+$/, '');
+    return `${baseUrl}/authed/content/article/${encodeURIComponent(String(this.article?.id || ''))}`;
+  }
+
+  private toArticleFeedback(value: HelpfulnessValue | null): ArticleFeedback | undefined {
+    const feedback: Record<HelpfulnessValue, ArticleFeedback> = {
+      'very-helpful': 'VERY_HELPFUL',
+      helpful: 'HELPFUL',
+      'not-helpful': 'NOT_HELPFUL'
+    };
+    return value ? feedback[value] : undefined;
+  }
+
+  private getFeedbackStorageKey(articleId: number): string {
+    const user = this.authService.getUserData() || {};
+    const userId = String(user.id || user.userId || user.email || 'anonymous').trim();
+    return `superme_article_helpfulness_${userId}_${articleId}`;
   }
 
   openRelatedQuiz(): void {
@@ -432,13 +493,17 @@ export class ArticlePageComponent implements OnInit, OnDestroy {
 
     if (apiValue === 'very-helpful' || apiValue === 'helpful' || apiValue === 'not-helpful') {
       this.selectedHelpfulness = apiValue;
+      this.feedbackSubmitted = true;
+      this.showFeedbackPrompt = false;
       return;
     }
 
     try {
-      const storedValue = localStorage.getItem(`superme_article_helpfulness_${article.id}`) as HelpfulnessValue | null;
+      const storedValue = localStorage.getItem(this.getFeedbackStorageKey(article.id)) as HelpfulnessValue | null;
       if (storedValue === 'very-helpful' || storedValue === 'helpful' || storedValue === 'not-helpful') {
         this.selectedHelpfulness = storedValue;
+        this.feedbackSubmitted = true;
+        this.showFeedbackPrompt = false;
       }
     } catch { /* Storage can be unavailable in restricted browser modes. */ }
   }

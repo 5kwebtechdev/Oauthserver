@@ -85,7 +85,7 @@
       </section>
 
       <section class="learning-details-action">
-        <button type="button" class="learning-details-action__button" (click)="openMarkAsReadPopup()"
+        <button type="button" class="learning-details-action__button" (click)="openFeedbackPrompt()"
           [disabled]="isMarkAsReadDisabled" [class.learning-details-action__button--complete]="isArticleRead"
           [attr.aria-label]="isArticleRead ? 'Article already read' : (!readTimerComplete ? 'Read this article, available in ' + readTimerDisplay : 'Mark this article as read')">
           <ion-spinner *ngIf="isMarking" name="crescent"></ion-spinner>
@@ -98,34 +98,39 @@
             </span>
           </ng-container>
         </button>
-        <span class="visually-hidden" *ngIf="!isArticleRead && !readTimerComplete">
-          {{ readTimerDisplay }} remaining before this article can be marked as read.
-        </span>
+        <p class="learning-details-action__timer" *ngIf="!isArticleRead && !readTimerComplete" aria-live="polite">
+          <span class="learning-details-action__timer-icon" aria-hidden="true">◷</span>
+          Read for {{ readTimerDisplay }} to unlock your coins
+        </p>
         <p class="learning-details-action__ready" *ngIf="!isArticleRead && readTimerComplete && justUnlocked">
           You’re ready to mark this as read!
         </p>
         <p class="learning-details-action__error" *ngIf="actionError" role="alert">{{ actionError }}</p>
       </section>
 
-      <section class="learning-details-feedback" aria-labelledby="learning-details-feedback-title">
+      <section *ngIf="showFeedbackPrompt && !feedbackSubmitted" class="learning-details-feedback"
+        aria-labelledby="learning-details-feedback-title">
         <h2 id="learning-details-feedback-title">Was this article helpful?</h2>
         <div class="learning-details-feedback__options">
           <button *ngFor="let option of helpfulnessOptions" type="button" (click)="selectHelpfulness(option.value)"
             [class.learning-details-feedback__option--active]="selectedHelpfulness === option.value"
+            [disabled]="isSubmittingFeedback"
             [attr.aria-pressed]="selectedHelpfulness === option.value">
             <span class="learning-details-feedback__image">
               <img [src]="option.image" alt="" aria-hidden="true">
             </span>
-            <small>{{ option.label }}</small>
+            <span class="visually-hidden">{{ option.label }}</span>
           </button>
         </div>
+        <p class="learning-details-feedback__error" *ngIf="feedbackError" role="alert">{{ feedbackError }}</p>
+      </section>
+
+      <section *ngIf="feedbackSubmitted" class="learning-details-feedback-success" role="status" aria-live="polite">
+        <span aria-hidden="true">✓</span>
+        <p>Thanks for your feedback!</p>
       </section>
     </main>
 
-    <app-superme-popup [config]="markPopupConfig" [isVisible]="showMarkPopup"
-      (primaryAction)="confirmMarkAsRead()" (secondaryAction)="closeMarkPopup()"
-      (backdropClick)="closeMarkPopup()" (closeAction)="closeMarkPopup()">
-    </app-superme-popup>
   </div>
 
   <section class="learning-details-state" *ngIf="isLoading" aria-live="polite">

@@ -71,8 +71,13 @@ export class LearningService {
         this.challengesLoading$.next(true);
         const age = this.getUserAge();
         const url = age ? `${this.apiUrl}/challenges?age=${age}` : `${this.apiUrl}/challenges`;
-        return this.http.get<Challenge[]>(url, { headers: this.getHeaders() })
+        return this.http.get<Challenge[] | Record<string, Challenge[]>>(url, { headers: this.getHeaders() })
             .pipe(
+                // Challenge APIs are returned as either an array or a scoped/
+                // paginated object (for example { content: [...] }). Always
+                // unwrap the actual records before caching or rendering them.
+                map(response => this.normalizeScopedResponse<Challenge>(response, 'challenges')
+                    .map(challenge => this.normalizeChallenge(challenge))),
                 tap(challenges => {
                     this.challengesCache$.next(challenges);
                     this.challengesLoading$.next(false);
@@ -419,6 +424,21 @@ export class LearningService {
         };
 
         addItems(response[primaryKey]);
+        // Spring pagination and some user-scoped endpoints wrap the list in
+        // `content`, `items`, or `data`.  Support each response shape so a
+        // successful request cannot be mistaken for an empty feed.
+        addItems(response['content']);
+        addItems(response['items']);
+        addItems(response['results']);
+        if (response['data'] && typeof response['data'] === 'object' && !Array.isArray(response['data'])) {
+            const data = response['data'] as Record<string, unknown>;
+            addItems(data[primaryKey]);
+            addItems(data['content']);
+            addItems(data['items']);
+            addItems(data['results']);
+        } else {
+            addItems(response['data']);
+        }
         addItems(response['pending'], 'PENDING');
         addItems(response['assigned'], 'ASSIGNED');
         addItems(response['inProgress'], 'IN_PROGRESS');
@@ -550,10 +570,17 @@ export class LearningService {
     }
 
     private normalizeChallenge(challenge: Challenge): Challenge {
-        const apiChallenge = challenge as Challenge & { id?: number };
+        const apiChallenge = challenge as Challenge & { id?: number; challengeType?: string; type?: string };
+        const rawCategory = String(apiChallenge.category ?? apiChallenge.challengeType ?? apiChallenge.type ?? '').toUpperCase();
+        const category = rawCategory.includes('QUIZ')
+            ? 'QUIZ'
+            : rawCategory.includes('PUZZLE')
+                ? 'PUZZLE'
+                : rawCategory as Challenge['category'];
         return {
             ...challenge,
             challengeId: Number(apiChallenge.challengeId ?? apiChallenge.id),
+            category,
             thumbnailImageUrl: this.normalizeApiImageUrl(challenge.thumbnailImageUrl),
             innerImageUrl: this.normalizeApiImageUrl(challenge.innerImageUrl)
         };
@@ -713,10 +740,11 @@ export class LearningService {
     /**
      * Mark an article as complete/read for the current user
      */
-    markArticleComplete(articleId: number): Observable<any> {
+    markArticleComplete(articleId: number, feedback?: 'VERY_HELPFUL' | 'HELPFUL' | 'NOT_HELPFUL'): Observable<any> {
         const url = `${this.apiUrl}/articles/${articleId}/complete`;
+        const params = feedback ? new HttpParams().set('feedback', feedback) : undefined;
         console.log('Marking article complete at:', url);
-        return this.http.post<any>(url, {}, { headers: this.getHeaders() })
+        return this.http.post<any>(url, {}, { headers: this.getHeaders(), params })
             .pipe(
                 tap(response => {
                     console.log('Article marked complete:', response);

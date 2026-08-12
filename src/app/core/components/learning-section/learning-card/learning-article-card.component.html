@@ -1,6 +1,7 @@
-<div class="card-root">
+<div class="card-root" role="button" tabindex="0" [attr.aria-label]="'Open ' + item.title"
+    (click)="onCardClick()" (keydown.enter)="onCardClick()" (keydown.space)="$event.preventDefault(); onCardClick()">
     <div class="media">
-        <app-img [src]="item.image" [alt]="item.title" objectFit="cover"></app-img>
+        <app-img [src]="item.image" [alt]="item.title" objectFit="contain"></app-img>
     </div>
 
     <div class="article-body">
@@ -22,7 +23,7 @@
             <p class="desc">{{ item.description }}</p>
 
             <superme-button class="text-nowrap" [type]="'pink-small'" [text]="item.buttonText || 'Read in 5 min'"
-                (click)="onCardClick()"></superme-button>
+                (click)="onCardAction($event)"></superme-button>
         </div>
     </div>
 </div>

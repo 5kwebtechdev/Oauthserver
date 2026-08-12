@@ -135,15 +135,32 @@
                 <article class="parent-learning-card-item"
                   [class.parent-learning-card-item--course]="item.type === 'masterclass'"
                   [class.parent-learning-card-item--completed]="getParentItemStatus(item) === 'completed'">
-                  <button type="button" class="parent-learning-card-item__media" (click)="openParentLearningItem(item)"
-                    [attr.aria-label]="'Open ' + item.title">
+                  <div *ngIf="item.type === 'masterclass'; else openParentItem"
+                    class="parent-learning-card-item__media parent-learning-card-item__media--static"
+                    [attr.aria-label]="item.title">
                     <app-img [src]="item.image" [fallback]="getCategoryFallbackImage()" [alt]="item.title"
                       objectFit="cover"></app-img>
-                  </button>
+                  </div>
+                  <ng-template #openParentItem>
+                    <button type="button" class="parent-learning-card-item__media" (click)="openParentLearningItem(item)"
+                      [attr.aria-label]="'Open ' + item.title">
+                      <app-img [src]="item.image" [fallback]="getCategoryFallbackImage()" [alt]="item.title"
+                        objectFit="cover"></app-img>
+                    </button>
+                  </ng-template>
                   <div class="parent-learning-card-item__body">
-                    <span *ngIf="item.difficulty" class="parent-learning-card-item__difficulty">{{ item.difficulty }}</span>
-                    <h2>{{ item.title }}</h2>
-                    <p *ngIf="getParentItemDetail(item) as detail">{{ detail }}</p>
+                    <ng-container *ngIf="item.type === 'masterclass'; else standardParentItemHeading">
+                      <div class="parent-learning-card-item__heading-row">
+                        <h2>{{ item.title }}</h2>
+                        <span *ngIf="item.difficulty" class="parent-learning-card-item__difficulty">{{ item.difficulty }}</span>
+                      </div>
+                      <p *ngIf="getParentItemDetail(item) as detail">{{ detail }}</p>
+                    </ng-container>
+                    <ng-template #standardParentItemHeading>
+                      <span *ngIf="item.difficulty" class="parent-learning-card-item__difficulty">{{ item.difficulty }}</span>
+                      <h2>{{ item.title }}</h2>
+                      <p *ngIf="getParentItemDetail(item) as detail">{{ detail }}</p>
+                    </ng-template>
                     <div class="parent-learning-card-item__footer">
                       <div class="parent-learning-card-item__rewards">
                         <span><img src="assets/figma/parent-child-learning/coin.png" alt="Coins">{{ item.coins || 0 }}</span>
@@ -154,10 +171,10 @@
                         </ng-container>
                       </div>
                       <button *ngIf="!isParentItemAssigned(item) || getParentItemStatus(item) === 'completed'"
-                        type="button" (click)="openParentLearningItem(item)">
+                        type="button" (click)="onParentLearningAction(item)">
                         {{ getParentActionLabel(item) }}
-                        <ng-container *ngIf="getParentItemStatus(item) === 'pending' && getParentBonusCoins(item) as bonus">
-                          <img src="assets/figma/parent-child-learning/coin.png" alt="">{{ bonus }}
+                        <ng-container *ngIf="getParentItemStatus(item) === 'pending'">
+                          <img src="assets/figma/parent-child-learning/coin.png" alt="">{{ getParentAssignmentCoins(item) }}
                         </ng-container>
                       </button>
                     </div>
@@ -218,12 +235,20 @@
 
             <ng-template #childMainHeader>
               <h1>Learnings</h1>
-              <span class="child-learning-coins" [attr.aria-label]="childCoins + ' coins'">
+              <button type="button" class="child-learning-coins" (click)="openCoinPage()"
+                [attr.aria-label]="'Open coins. ' + childCoins + ' coins'">
                 <img src="assets/figma/parent-child-learning/coin.png" alt="" aria-hidden="true">
                 <strong>{{ childCoins }}</strong>
-              </span>
+              </button>
             </ng-template>
           </div>
+
+          <label *ngIf="selectedCategoryItem && parentSearchOpen" id="child-learning-search" class="child-learning-search child-learning-search--hero">
+            <img src="assets/figma/parent-child-learning/search.svg" alt="" aria-hidden="true">
+            <input type="search" [(ngModel)]="searchKeyword" (input)="onSearchInput()"
+              [placeholder]="parentSearchPlaceholder" [attr.aria-label]="parentSearchPlaceholder">
+            <button *ngIf="searchKeyword" type="button" (click)="clearSearch()" aria-label="Clear search">×</button>
+          </label>
 
           <div class="child-learning-bubble" [class.child-learning-bubble--detail]="selectedCategoryItem">
             <img [src]="selectedCategoryItem
@@ -246,7 +271,7 @@
         </header>
 
         <section class="child-learning-body">
-          <nav class="child-learning-tabs" aria-label="Learning types">
+          <nav #childTabs class="child-learning-tabs" aria-label="Learning types">
             <button *ngFor="let tab of parentCategoryTabs" type="button" class="child-learning-tab"
               (click)="selectCategory(tab.id)" [class.child-learning-tab--active]="selectedCategory === tab.id"
               [attr.aria-pressed]="selectedCategory === tab.id">
@@ -275,7 +300,7 @@
               </h2>
 
               <ad-banner *ngIf="selectedCategory !== 'masterclass'"
-                class="child-learning-ad child-learning-ad--categories" screen="LEARNING"
+                class="child-learning-ad child-learning-ad--categories" screen="LEARNING" fallbackScreen="HOME"
                 variant="parent-learning"></ad-banner>
 
               <div *ngIf="visibleCategoryCards.length" class="child-category-grid">
@@ -300,7 +325,7 @@
           </section>
 
           <section *ngIf="selectedCategoryItem" class="child-listing-section">
-            <label *ngIf="parentSearchOpen" id="child-learning-search" class="child-learning-search">
+            <label *ngIf="false" id="child-learning-search-old" class="child-learning-search">
               <img src="assets/figma/parent-child-learning/search.svg" alt="" aria-hidden="true">
               <input type="search" [(ngModel)]="searchKeyword" (input)="onSearchInput()"
                 [placeholder]="parentSearchPlaceholder" [attr.aria-label]="parentSearchPlaceholder">
@@ -312,7 +337,7 @@
                 [class.child-status-tabs__active]="parentStatus === status.id"
                 [attr.aria-selected]="parentStatus === status.id" (click)="setParentStatus(status.id)">
                 <span class="child-status-tabs__label">
-                  <img [src]="status.id === 'pending'
+                  <img [class.status-icon--active]="parentStatus === status.id" [src]="status.id === 'pending'
                     ? 'assets/figma/parent-child-learning/pending.svg'
                     : 'assets/figma/parent-child-learning/completed.svg'" alt="" aria-hidden="true">
                   {{ status.label }}
@@ -354,7 +379,8 @@
                       objectFit="cover"></app-img>
                   </span>
                   <span class="child-learning-item__body">
-                    <span *ngIf="item.difficulty" class="child-learning-item__difficulty">{{ item.difficulty }}</span>
+                    <span *ngIf="item.difficulty" class="child-learning-item__difficulty"
+                      [class.is-easy]="item.difficulty.toLowerCase() === 'easy'">{{ item.difficulty }}</span>
                     <strong>{{ item.title }}</strong>
                     <span *ngIf="getParentItemDetail(item) as detail" class="child-learning-item__detail">{{ detail }}</span>
                     <span class="child-learning-item__rewards">
@@ -373,7 +399,8 @@
                     </span>
                   </span>
                 </button>
-                <ad-banner *ngIf="i === 2" class="child-learning-ad" screen="LEARNING"
+                <ad-banner *ngIf="i === 2" class="child-learning-ad"
+                  [screen]="selectedCategory === 'articles' ? 'ARTICLES' : 'LEARNING'"
                   variant="parent-learning"></ad-banner>
               </ng-container>
             </div>

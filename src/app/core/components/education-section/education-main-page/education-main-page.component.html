@@ -1,8 +1,8 @@
-<ion-content [style.--padding-top]="'var(--sat)'" [class.parent-eduhub-content]="isParentRole">
-    <ng-container *ngIf="isParentRole; else standardEduHub">
+<ion-content [style.--padding-top]="'var(--sat)'" [class.parent-eduhub-content]="usesNewEduHubLayout">
+    <ng-container *ngIf="usesNewEduHubLayout; else standardEduHub">
         <main class="parent-eduhub-page">
             <header class="parent-eduhub-header">
-                <button type="button" class="parent-eduhub-back" aria-label="Back" (click)="goBack()">
+                <button *ngIf="isParentRole" type="button" class="parent-eduhub-back" aria-label="Back" (click)="goBack()">
                     <img src="assets/icons/back-arrow.svg" alt="" aria-hidden="true">
                 </button>
                 <h1>EduHub</h1>

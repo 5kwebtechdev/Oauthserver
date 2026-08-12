@@ -30,4 +30,9 @@ export class LearningArticleCardComponent implements OnChanges {
         // Navigate with the article ID
         this.router.navigate(['/authed/content/article', this.item.id]);
     }
+
+    onCardAction(event: Event): void {
+        event.stopPropagation();
+        this.onCardClick();
+    }
 }

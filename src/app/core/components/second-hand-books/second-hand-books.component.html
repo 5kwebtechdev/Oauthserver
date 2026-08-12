@@ -5,7 +5,7 @@
 
       <div class="books-toolbar">
         <button type="button" class="books-back" aria-label="Back" (click)="goBack()">
-          <img src="assets/icons/back-arrow.svg" alt="" aria-hidden="true">
+          <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
         </button>
         <h1>Second Hand Books</h1>
       </div>
@@ -15,12 +15,12 @@
           <p><strong>Find &amp; Sell</strong> Books near you</p>
           <span>Save up to <strong>80%</strong> on books</span>
         </div>
-        <img class="books-hero__pet" src="assets/figma/second-hand-books/pet.png" alt="" aria-hidden="true">
+        <img class="books-hero__pet" src="assets/figma/second-hand-books/pet-latest.svg" alt="" aria-hidden="true">
       </div>
     </header>
 
     <main class="books-main" [class.books-main--buyer]="view === 'buyer'">
-      <ng-container *ngIf="view === 'choice'; else buyerView">
+      <ng-container *ngIf="view === 'choice'; else nonChoiceView">
         <section class="books-choice" aria-labelledby="books-choice-title">
           <header class="books-choice__heading">
             <h2 id="books-choice-title">What brings you here today?</h2>
@@ -30,7 +30,7 @@
           <div class="books-choice__actions">
             <button type="button" class="books-action-card" (click)="openBuyer()">
               <span class="books-action-card__art" aria-hidden="true">
-                <img src="assets/figma/second-hand-books/buyer.png" alt="">
+                <img src="assets/figma/second-hand-books/buyer-latest.svg" alt="">
               </span>
               <span class="books-action-card__content">
                 <strong>I am a buyer</strong>
@@ -41,7 +41,7 @@
 
             <button type="button" class="books-action-card" (click)="openSellerFlow()">
               <span class="books-action-card__art" aria-hidden="true">
-                <img src="assets/figma/second-hand-books/seller.png" alt="">
+                <img src="assets/figma/second-hand-books/seller-latest.svg" alt="">
               </span>
               <span class="books-action-card__content">
                 <strong>I am a seller</strong>
@@ -52,7 +52,7 @@
 
             <button type="button" class="books-action-card" (click)="openMyListings()">
               <span class="books-action-card__art" aria-hidden="true">
-                <img src="assets/figma/second-hand-books/my-listings.png" alt="">
+                <img src="assets/figma/second-hand-books/my-listings-latest.svg" alt="">
               </span>
               <span class="books-action-card__content">
                 <strong>My Listings</strong>
@@ -63,6 +63,30 @@
           </div>
         </section>
       </ng-container>
+
+      <ng-template #nonChoiceView>
+        <ng-container *ngIf="view === 'buyer'; else listingsView">
+          <ng-container *ngTemplateOutlet="buyerView"></ng-container>
+        </ng-container>
+      </ng-template>
+
+      <ng-template #listingsView>
+        <section class="books-choice" aria-live="polite">
+          <header class="books-choice__heading">
+            <h2>{{ view === 'my-listings' ? 'My Listings' : 'Books near you' }}</h2>
+            <p *ngIf="view === 'my-listings'">Track pending, approved, and rejected books.</p>
+            <p *ngIf="view === 'listings'">Nearby books are sorted by distance when location is available.</p>
+          </header>
+          <p *ngIf="listingsLoading">Loading listings…</p>
+          <p *ngIf="listingsError">{{ listingsError }}</p>
+          <article class="books-action-card" *ngFor="let listing of listings">
+            <span class="books-action-card__art"><img *ngIf="listing.imageUrls?.length" [src]="listing.imageUrls?.[0]" [alt]="listing.title"></span>
+            <span class="books-action-card__content"><strong>{{ listing.title }}</strong><span>₹{{ listing.sellingPrice }} <span *ngIf="listing.distanceKm != null">• {{ listing.distanceKm }} km away</span><span *ngIf="view === 'my-listings'"> • {{ listing.status }}</span></span></span>
+            <button *ngIf="view === 'listings' && !listing.contactUnlocked" type="button" class="books-action-card__arrow" (click)="unlockContact(listing)" [attr.aria-label]="'Unlock contact for ' + listing.title">{{ listing.unlockCost || 10 }}</button>
+          </article>
+          <p *ngIf="!listingsLoading && !listingsError && !listings.length">No listings available right now.</p>
+        </section>
+      </ng-template>
 
       <ng-template #buyerView>
         <section class="buyer-form" aria-labelledby="buyer-heading">
@@ -76,7 +100,7 @@
             <div class="book-type-grid">
               <button *ngFor="let type of bookTypes; trackBy: trackByBookType" type="button" class="book-type-option"
                 [class.is-selected]="buyer.bookType === type.value" (click)="selectBookType(type.value)">
-                <ion-icon [name]="type.icon" aria-hidden="true"></ion-icon>
+                <img class="book-type-option__icon" [src]="type.icon" alt="" aria-hidden="true">
                 <span>{{ type.label }}</span>
               </button>
             </div>
