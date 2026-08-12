@@ -1138,9 +1138,12 @@ export class AuthService {
   }
 
   /**
-   * Refresh user data from the API and update local storage
-   * This validates the session and fetches fresh user data
-   * @returns Observable<boolean> - true if session is valid and data refreshed, false otherwise
+   * Refresh the locally stored user session data.
+   *
+   * The former `/v1/users/{id}/profile` request is not supported by the
+   * backend. It also received a selected child's `forUserId` from the global
+   * profile interceptor, so it must not be issued from the mobile app.
+   * @returns Observable<boolean> - true when a local authenticated session exists
    */
   refreshUserData(): Observable<boolean> {
     const token = this.getToken();
@@ -1151,69 +1154,10 @@ export class AuthService {
       return of(false);
     }
 
-    console.log('[AuthService] Refreshing user data from API...');
-
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    });
-
-    // Fetch user profile from API
-    return this.http.get<any>(`${this.apiUrl}/users/${userId}/profile`, { headers }).pipe(
-      tap({
-        next: (userData) => {
-          const refreshedUser = userData?.user && typeof userData.user === 'object'
-            ? userData.user
-            : userData;
-          console.log('[AuthService] User data refreshed successfully:', {
-            userId: refreshedUser?.id || userId,
-            hasData: !!refreshedUser,
-            timestamp: new Date().toISOString()
-          });
-
-          if (refreshedUser) {
-            // Update user_data using the new method (updates localStorage and notifies subscribers)
-            const existingData = this.getUserData() || {};
-            const updatedData = {
-              ...existingData,
-              ...refreshedUser,
-              id: refreshedUser.id || existingData.id || parseInt(userId, 10)
-            };
-            this.setUserData(updatedData);
-            const onboardingStep = this.onboardingState.getOnboardingStep(updatedData);
-            if (this.onboardingState.isOnboardingIncomplete(updatedData)) {
-              this.onboardingState.saveRegistrationDraft(updatedData, onboardingStep);
-            } else if (this.onboardingState.isOnboardingComplete(updatedData)) {
-              this.onboardingState.clearRegistrationDraft();
-            }
-
-            // Update last activity to keep session fresh
-            this.updateLastActivity();
-          }
-        },
-        error: (error) => {
-          console.error('[AuthService] Failed to refresh user data:', {
-            error: error.message,
-            status: error.status,
-            timestamp: new Date().toISOString()
-          });
-
-          // If unauthorized (401), session is invalid - logout
-          if (error.status === 401) {
-            console.log('[AuthService] Session invalid, logging out...');
-            this.logout();
-          }
-        }
-      }),
-      map(() => true),
-      catchError((error) => {
-        // Return false but don't throw - let the app continue
-        if (error.status !== 401) {
-          return of(false);
-        }
-        return of(false);
-      })
-    );
+    // Keep existing callers stable without requesting the removed backend
+    // endpoint. Supported domain APIs refresh their own data when needed.
+    this.updateLastActivity();
+    return of(true);
   }
 
   /**

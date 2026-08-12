@@ -90,6 +90,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   private selectedChildId: string | number | null = null;
   private parentSelectionInitialized = false;
   private childRequestCancel$ = new Subject<void>();
+  private readonly assigningCourseIds = new Set<string>();
 
   searchKeyword = '';
   isSearching   = false;
@@ -375,6 +376,7 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   getParentActionLabel(item: LearningCardData): string {
+    if (item.type === 'masterclass' && this.isParentItemAssigned(item)) return 'Assigned';
     const status = this.getParentItemStatus(item);
     if (status === 'completed') return 'View';
     return this.isParentItemAssigned(item) ? 'View' : 'Assign';
@@ -414,21 +416,85 @@ export class LearningMainComponent implements OnInit, OnDestroy, ViewWillEnter {
   isParentItemAssigned(item: LearningCardData): boolean {
     const raw = item.rawData as any;
     const status = String(raw?.userLearningStatus || raw?.assignmentStatus || '').toUpperCase();
-    return raw?.assigned === true || !!raw?.assignedAt || status === 'ASSIGNED';
+    return raw?.assignedToChild === true || raw?.assigned === true || !!raw?.assignedAt || status === 'ASSIGNED';
   }
 
-  /**
-   * "Assign" is a parent-only action. It must not start the child's quiz or
-   * puzzle attempt. The API does not currently expose an assignment endpoint,
-   * so keep the user on this screen and clearly explain the current state.
-   */
+  isParentCourseAssigning(item: LearningCardData): boolean {
+    return this.assigningCourseIds.has(String(item.id));
+  }
+
+  /** "Assign" must remain in the parent flow and never open a child course. */
   onParentLearningAction(item: LearningCardData): void {
+    if (item.type === 'masterclass') {
+      if (!this.isParentItemAssigned(item) && this.getParentItemStatus(item) !== 'completed') {
+        this.assignCourseToSelectedChild(item);
+      }
+      return;
+    }
+
     if (!this.isParentItemAssigned(item) && this.getParentItemStatus(item) !== 'completed') {
       this.toastService.show(`Assign ${this.getParentAssignmentCoins(item)} coins to ${item.title} when the assignment API is available.`, 'info', 3000);
       return;
     }
 
     this.openParentLearningItem(item);
+  }
+
+  private assignCourseToSelectedChild(item: LearningCardData): void {
+    const courseId = Number(item.id);
+    const childId = Number(this.selectedChildId);
+    if (!Number.isFinite(courseId) || courseId <= 0 || !Number.isFinite(childId) || childId <= 0) {
+      this.toastService.error('Select a child before assigning a course.');
+      return;
+    }
+    if (this.isParentCourseAssigning(item)) return;
+
+    this.assigningCourseIds.add(String(item.id));
+    this.academyService.assignCourse(courseId, [childId])
+      .pipe(takeUntil(this.destroy$), takeUntil(this.childRequestCancel$))
+      .subscribe({
+        next: response => {
+          // Reflect the successful assignment immediately, then refresh the
+          // category silently so the server's child-specific status is shown.
+          this.categoryContentItems = this.categoryContentItems.map(course =>
+            String(course.id) === String(item.id)
+              ? {
+                  ...course,
+                  rawData: {
+                    ...(course.rawData as Record<string, unknown>),
+                    assignedToChild: true,
+                    assignedAt: response.assignedAt,
+                  },
+                }
+              : course,
+          );
+          const childName = String(this.selectedChild?.name || 'your child').trim();
+          this.toastService.success(`${response.courseName || item.title} assigned to ${childName}.`);
+          this.refreshAssignedCourseListing();
+        },
+        error: error => {
+          const message = String(error?.error?.message || error?.message || 'Unable to assign this course. Please try again.');
+          this.toastService.error(message);
+        },
+      })
+      .add(() => this.assigningCourseIds.delete(String(item.id)));
+  }
+
+  private refreshAssignedCourseListing(): void {
+    const categoryName = this.selectedCategoryItem?.categoryName || this.selectedCategoryItem?.name;
+    const requestChildId = this.selectedChildId;
+    if (!categoryName || requestChildId === null || requestChildId === undefined) return;
+
+    this.academyService.getCoursesByCategory(categoryName, null, requestChildId)
+      .pipe(takeUntil(this.destroy$), takeUntil(this.childRequestCancel$))
+      .subscribe({
+        next: courses => {
+          if (String(requestChildId) !== String(this.selectedChildId)) return;
+          this.categoryContentItems = (courses || []).map(course => this.mapCourseToLearningCard(course));
+        },
+        // The local update remains visible if the non-essential refresh fails.
+        error: () => undefined,
+      });
   }
 
   openParentLearningItem(item: LearningCardData): void {

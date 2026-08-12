@@ -4,11 +4,13 @@ import { NavigationService } from '../../../services/navigation.service';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { AcademyService, Course } from '../../../services/academy.service';
+import { AuthService } from '../../../services/auth.service';
 
 interface AcademyLessonCard {
   title: string;
   meta: string;
   coins: number;
+  assignedByParent: boolean;
   badge: string;
   thumb: string;
   fallbackThumb: string;
@@ -58,6 +60,7 @@ export class AcademySubjectComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private academyService: AcademyService,
+    private authService: AuthService,
     private navigation: NavigationService
   ) { }
 
@@ -76,13 +79,21 @@ export class AcademySubjectComponent implements OnInit {
   loadCourses() {
     this.isLoading = true;
 
-    const courses$ = this.age
-      ? this.academyService.getCoursesByAge(this.age)
-      : this.academyService.getCourses();
+    // The category endpoint returns `assignedToChild` only when the current
+    // child's id is supplied. This keeps parent assignments visible to the
+    // right child without changing normal course navigation.
+    const forUserId = this.authService.getUserRelationship() === 'CHILD'
+      ? this.authService.getUserId()
+      : null;
+    const courses$ = this.academyService.getCoursesByCategory(
+      this.category,
+      this.age,
+      forUserId,
+    );
 
     courses$.subscribe({
       next: (courses: Course[]) => {
-        console.log(this.age ? `Courses from by-age API for age ${this.age}:` : 'All courses from API:', courses);
+        console.log(`Courses from by-category API for ${this.category}:`, courses);
         console.log('Current category:', this.category);
 
         // Filter courses by category only (removed enabled filter for testing)
@@ -101,6 +112,7 @@ export class AcademySubjectComponent implements OnInit {
             title: course.courseName,
             meta: `${course.noOfLessons} ${course.noOfLessons === 1 ? 'lesson' : 'lessons'} • ${course.duration} min`,
             coins: course.totalCoins || 0,
+            assignedByParent: course.assignedToChild === true,
             badge: this.formatDifficulty(course.difficulty || 'BEGINNER'),
             thumb: this.convertDriveLink(course.thumbnailUrl || '', fallbackThumb),
             fallbackThumb,

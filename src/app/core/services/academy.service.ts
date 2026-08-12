@@ -38,6 +38,16 @@ export interface Course {
   isCourseCompleted?: boolean;
   progressStatus?: string;
   continueLessonId?: number | null;
+  /** True only when the requested child has this course assigned. */
+  assignedToChild?: boolean;
+}
+
+export interface CourseAssignmentResponse {
+  courseId: number;
+  courseName: string;
+  assignedBy: number;
+  assignedToChild: number[];
+  assignedAt: string;
 }
 
 export interface AcademyCategory {
@@ -218,6 +228,21 @@ export class AcademyService {
       headers: this.getHeaders(),
       params,
     });
+  }
+
+  /**
+   * Assign a Master Class course to one or more children in the signed-in
+   * parent's family. The parent is determined by the bearer token.
+   */
+  assignCourse(
+    courseId: number,
+    childIds: number[],
+  ): Observable<CourseAssignmentResponse> {
+    return this.http.post<CourseAssignmentResponse>(
+      `${this.base}/courses/assign`,
+      { courseId, childIds },
+      { headers: this.getHeaders() },
+    );
   }
 
   getCategories(): Observable<AcademyCategory[]> {
