@@ -30,6 +30,11 @@ export class LearningChallengeCardComponent {
         });
     }
 
+    onCardAction(event: Event): void {
+        event.stopPropagation();
+        this.onCardClick();
+    }
+
     // Type-safe image error handler used by the template.
     // Ensures `src` is set on the actual HTMLImageElement and avoids template type errors.
     onImageError(event: Event) {

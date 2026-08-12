@@ -410,7 +410,24 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
           const resolved = this.childSelfImageService.resolveAvatarFromUser(userData);
           this.userAvatarUrl = resolved.url || null;
           this.avatarImageName = resolved.alt || null;
+
+          // A profile refresh can supply createdDateTime after the dashboard
+          // initially renders. Rebuild the week so dates before account
+          // creation are immediately shown as neutral instead of missed.
+          this.refreshWeekStreakDays();
         }
+      });
+
+    // Keep the Home coin header in sync with purchases/unlocks completed on
+    // other screens. UserService publishes the shared stats cache immediately.
+    this.userService.stats$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(stats => {
+        if (!stats) return;
+        this.userCoins = stats.coins;
+        this.userStreaks = stats.streaks;
+        this.userDays = stats.days;
+        this.userBadges = stats.badges;
       });
 
     // Load user profile from service (secondary source for additional profile info)
@@ -849,14 +866,22 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
    */
   private refreshWeekStreakDays(streakLength: number = this.userStreaks): void {
     const labels = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'];
-    const todayIndex = new Date().getDay();
+    const today = new Date();
+    const todayIndex = today.getDay();
     this.currentStreakDayIndex = todayIndex;
     const safeStreak = Math.max(0, Number(streakLength) || 0);
     const completedFrom = Math.max(0, todayIndex - safeStreak + 1);
+    const accountCreatedAt = this.getAccountCreatedAt();
 
     this.weekStreakDays = labels.map((label, index) => {
       let status: DayStreak['status'];
-      if (index > todayIndex) {
+      const dayDate = new Date(today);
+      dayDate.setHours(0, 0, 0, 0);
+      dayDate.setDate(today.getDate() - (todayIndex - index));
+
+      if (accountCreatedAt && dayDate < accountCreatedAt) {
+        status = 'neutral';
+      } else if (index > todayIndex) {
         status = 'pending';
       } else if (safeStreak > 0 && index >= completedFrom) {
         status = 'completed';
@@ -867,6 +892,23 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
       }
       return { label, status };
     });
+  }
+
+  private getAccountCreatedAt(): Date | null {
+    const user = this.authService.getUserData();
+    const profile = user?.user ?? user?.data ?? user;
+    const rawDate = profile?.createdDateTime
+      ?? profile?.createdAt
+      ?? profile?.createdDate
+      ?? profile?.createdOn
+      ?? profile?.registrationDate
+      ?? null;
+    if (!rawDate) return null;
+
+    const date = new Date(rawDate);
+    if (Number.isNaN(date.getTime())) return null;
+    date.setHours(0, 0, 0, 0);
+    return date;
   }
 
   getStreakDayAriaLabel(day: DayStreak, index: number): string {

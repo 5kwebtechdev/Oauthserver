@@ -5,9 +5,11 @@ import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 
 import { FooterComponent } from '../footer/footer.component';
+import { BookListing, BookListingType, BookListingsService } from '../../services/book-listings.service';
+import { LocationService } from '../../services/location.service';
 
 type BookType = 'school' | 'college' | 'exam' | 'general';
-type SecondHandBooksView = 'choice' | 'buyer';
+type SecondHandBooksView = 'choice' | 'buyer' | 'listings' | 'my-listings';
 type ListingEntryPoint = 'buyer' | 'seller' | 'my-listings';
 
 interface BuyerPreferences {
@@ -38,18 +40,24 @@ interface PreferenceField {
 })
 export class SecondHandBooksComponent implements OnInit {
   readonly bookTypes: Array<{ value: BookType; label: string; icon: string }> = [
-    { value: 'school', label: 'School', icon: 'school-outline' },
-    { value: 'college', label: 'College', icon: 'business-outline' },
-    { value: 'exam', label: 'Exam Prep', icon: 'document-text-outline' },
-    { value: 'general', label: 'General', icon: 'book-outline' }
+    { value: 'school', label: 'School', icon: 'assets/figma/second-hand-books/book-type-school.svg' },
+    { value: 'college', label: 'College', icon: 'assets/figma/second-hand-books/book-type-college.svg' },
+    { value: 'exam', label: 'Exam Prep', icon: 'assets/figma/second-hand-books/book-type-exam.svg' },
+    { value: 'general', label: 'General', icon: 'assets/figma/second-hand-books/book-type-general.svg' }
   ];
 
   view: SecondHandBooksView = 'choice';
   buyer: BuyerPreferences = this.createEmptyPreferences();
+  listings: BookListing[] = [];
+  listingsLoading = false;
+  listingsError = '';
+  private buyerLocation: { lat: number; lng: number } | null = null;
 
   constructor(
     private readonly location: Location,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly bookListings: BookListingsService,
+    private readonly locationService: LocationService
   ) {}
 
   ngOnInit(): void {
@@ -101,6 +109,11 @@ export class SecondHandBooksComponent implements OnInit {
       return;
     }
 
+    if (this.view === 'listings' || this.view === 'my-listings') {
+      this.view = 'choice';
+      return;
+    }
+
     this.location.back();
   }
 
@@ -108,7 +121,8 @@ export class SecondHandBooksComponent implements OnInit {
     if (!this.isBuyerReady) return;
 
     this.savePreferences();
-    this.openDynamicListings('buyer');
+    this.view = 'listings';
+    void this.loadPublicListings();
   }
 
   openSellerFlow(): void {
@@ -116,7 +130,21 @@ export class SecondHandBooksComponent implements OnInit {
   }
 
   openMyListings(): void {
-    this.openDynamicListings('my-listings');
+    this.view = 'my-listings';
+    this.listingsLoading = true;
+    this.listingsError = '';
+    this.bookListings.mine().subscribe({
+      next: listings => { this.listings = Array.isArray(listings) ? listings : []; this.listingsLoading = false; },
+      error: () => { this.listings = []; this.listingsLoading = false; this.listingsError = 'Unable to load your listings. Please try again.'; }
+    });
+  }
+
+  unlockContact(listing: BookListing): void {
+    if (listing.contactUnlocked) return;
+    this.bookListings.unlockContact(listing.id).subscribe({
+      next: updated => Object.assign(listing, updated),
+      error: () => this.listingsError = 'Unable to unlock contact details. Please check your coins and try again.'
+    });
   }
 
   trackByBookType(_: number, type: { value: BookType }): BookType {
@@ -132,6 +160,21 @@ export class SecondHandBooksComponent implements OnInit {
     void this.router.navigate(['/authed/education/shops'], {
       queryParams: { label: 'Second-hand Books' },
       state: { entryPoint, buyerPreferences: this.buyer }
+    });
+  }
+
+  private async loadPublicListings(): Promise<void> {
+    this.listingsLoading = true;
+    this.listingsError = '';
+    this.listings = [];
+    try {
+      const position = await this.locationService.getCurrentPosition();
+      this.buyerLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+    } catch { this.buyerLocation = null; }
+    const typeMap: Record<BookType, BookListingType> = { school: 'SCHOOL_TEXTBOOK', college: 'REFERENCE', exam: 'COMPETITIVE_EXAM', general: 'FICTION_NOVEL' };
+    this.bookListings.list({ bookType: typeMap[this.buyer.bookType], userLat: this.buyerLocation?.lat, userLng: this.buyerLocation?.lng, page: 0, size: 20 }).subscribe({
+      next: page => { this.listings = Array.isArray(page?.content) ? page.content : []; this.listingsLoading = false; },
+      error: () => { this.listingsLoading = false; this.listingsError = 'Unable to load nearby books. Please try again.'; }
     });
   }
 

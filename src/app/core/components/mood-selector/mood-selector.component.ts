@@ -126,21 +126,37 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
         const vibe = this.activeVibe;
         if (vibe && vibe.mood) {
           const moodUpper = vibe.mood.toUpperCase();
-          this.savedMoodKey = moodUpper;
-          const assetPath = this.moodAssetMap[moodUpper];
-          this.value = assetPath
-            ? 'asset:' + assetPath
-            : 'asset:' + this.moodAssetMap['NEUTRAL'];
-        } else {
-          this.savedMoodKey = null;
+          const isDefaultNeutral = moodUpper === 'NEUTRAL' && this.setsToday === 0 && !this.savedMoodKey;
+          if (isDefaultNeutral) {
+            // The backend uses NEUTRAL as its initial state. It is not a
+            // user reaction, so first-time users must see the emoji picker.
+            this.savedMoodKey = null;
+            this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
+          } else {
+            this.savedMoodKey = moodUpper;
+            this.persistDailyMoodState();
+            const assetPath = this.moodAssetMap[moodUpper];
+            this.value = assetPath
+              ? 'asset:' + assetPath
+              : 'asset:' + this.moodAssetMap['NEUTRAL'];
+          }
+        } else if (!this.savedMoodKey) {
+          // A display response can legitimately be empty while it is being
+          // refreshed. Do not erase a mood the user already saved today.
           this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
         }
-        this.valueChange.emit(this.value);
+        this.valueChange.emit(this.value || '');
       },
       error: (err) => {
         console.error('Failed to fetch vibes display', err);
         this.vibes = [];
-        this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
+        // Keep the locally confirmed mood visible on an intermittent API
+        // failure instead of reopening the picker as if nothing was saved.
+        if (this.savedMoodKey) {
+          this.value = 'asset:' + (this.moodAssetMap[this.savedMoodKey] || this.moodAssetMap['NEUTRAL']);
+        } else {
+          this.value = 'asset:' + this.moodAssetMap['NEUTRAL'];
+        }
       }
     });
   }
@@ -163,6 +179,10 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
   /** Show the picker again without discarding the mood already saved by the API. */
   editMood(): void {
     if (this.isParent) return;
+    if (this.setsToday >= 2) {
+      this.showBlockedTooltip();
+      return;
+    }
     this.popupSelection = null;
     this.limitInfoVisible = false;
     this.pickerOpen = true;
@@ -174,8 +194,11 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
 
   /** The summary is API driven, so it remains correct after navigation or a new login. */
   get hasSavedMood(): boolean {
-    const mood = String(this.savedMoodKey || this.activeVibe?.mood || '').trim().toUpperCase();
-    return !!mood;
+    if (this.savedMoodKey) return true;
+    const apiMood = String(this.activeVibe?.mood || '').trim().toUpperCase();
+    // Do not display the saved card for the backend's neutral default. A
+    // locally confirmed set count makes NEUTRAL a real Calm selection.
+    return !!apiMood && (apiMood !== 'NEUTRAL' || this.setsToday > 0);
   }
 
   get showMoodPicker(): boolean {
@@ -258,9 +281,9 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
       next: () => {
         // On success: update UI
         this.value = 'asset:' + this.popupSelection;
-        this.valueChange.emit(this.value);
+        this.valueChange.emit(this.value || '');
         this.savedMoodKey = vibeKey;
-        this.incrementDailySetCount();
+        this.incrementDailySetCount(vibeKey);
         this.popupSelection = null;
         this.pickerOpen = false;
         this.limitInfoVisible = false;
@@ -278,7 +301,7 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
         if (m.includes('you can set your mood only 2 times') || m.includes('only 2 times') || m.includes('twice')) {
           try {
             this.setsToday = 2;
-            localStorage.setItem(this.dailyKey(), '2');
+            this.persistDailyMoodState();
           } catch (e) { /* ignore */ }
           this.showBlockedTooltip();
         }
@@ -356,25 +379,92 @@ export class MoodSelectorComponent implements ViewWillEnter, OnChanges {
 
   private loadDailySetCount() {
     try {
-      const key = this.dailyKey();
-      const raw = localStorage.getItem(key);
-      this.setsToday = raw ? parseInt(raw, 10) || 0 : 0;
+      const stateRaw = localStorage.getItem(this.dailyStateKey());
+      if (stateRaw) {
+        const state = JSON.parse(stateRaw) as { count?: unknown; mood?: unknown };
+        this.setsToday = this.toDailyCount(state.count);
+        const mood = String(state.mood || '').trim().toUpperCase();
+        this.savedMoodKey = mood === 'NEUTRAL' && this.setsToday === 0 ? null : (mood || null);
+        if (this.savedMoodKey) {
+          this.value = 'asset:' + (this.moodAssetMap[this.savedMoodKey] || this.moodAssetMap['NEUTRAL']);
+        }
+        return;
+      }
+
+      // Migrate the original counter key and its anonymous fallback so users
+      // who already set a mood today do not see a false 0/2 after this update.
+      const legacyCount = localStorage.getItem(this.dailyKey())
+        ?? localStorage.getItem(this.anonymousDailyKey());
+      const legacyMood = localStorage.getItem(this.legacyMoodKey())
+        ?? localStorage.getItem(this.anonymousLegacyMoodKey());
+      this.setsToday = this.toDailyCount(legacyCount);
+      const mood = String(legacyMood || '').trim().toUpperCase();
+      this.savedMoodKey = mood === 'NEUTRAL' && this.setsToday === 0 ? null : (mood || null);
+      if (this.savedMoodKey) {
+        this.value = 'asset:' + (this.moodAssetMap[this.savedMoodKey] || this.moodAssetMap['NEUTRAL']);
+      }
+      this.persistDailyMoodState();
     } catch { this.setsToday = 0; }
   }
 
-  private incrementDailySetCount() {
+  private incrementDailySetCount(mood: string) {
     try {
       this.setsToday = Math.min(2, (this.setsToday || 0) + 1);
-      localStorage.setItem(this.dailyKey(), String(this.setsToday));
+      this.savedMoodKey = mood;
+      this.persistDailyMoodState();
     } catch { /* ignore */ }
   }
 
-  private dailyKey() {
+  private persistDailyMoodState(): void {
+    const state = { count: Math.min(2, Math.max(0, this.setsToday || 0)), mood: this.savedMoodKey || null };
+    localStorage.setItem(this.dailyStateKey(), JSON.stringify(state));
+    // Preserve the original counter too for backwards compatibility with any
+    // already-installed WebView that has not yet received this code.
+    localStorage.setItem(this.dailyKey(), String(state.count));
+    if (state.mood) localStorage.setItem(this.legacyMoodKey(), state.mood);
+  }
+
+  private toDailyCount(value: unknown): number {
+    const parsed = Number.parseInt(String(value ?? ''), 10);
+    return Number.isFinite(parsed) ? Math.min(2, Math.max(0, parsed)) : 0;
+  }
+
+  private currentDateKey(): string {
     const d = new Date();
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
-    const userId = this.authService.getUserId() || 'anonymous';
-    return `vibe_sets_${userId}_${yyyy}-${mm}-${dd}`;
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  private storageUserId(): string {
+    try {
+      const directId = localStorage.getItem('user_id') || this.authService.getUserId();
+      if (directId) return String(directId);
+      const profile = JSON.parse(localStorage.getItem('user_data') || '{}');
+      return String(profile?.id ?? profile?.userId ?? profile?.email ?? 'anonymous');
+    } catch {
+      return 'anonymous';
+    }
+  }
+
+  private dailyStateKey(): string {
+    return `vibe_daily_state_${this.storageUserId()}_${this.currentDateKey()}`;
+  }
+
+  private dailyKey() {
+    return `vibe_sets_${this.storageUserId()}_${this.currentDateKey()}`;
+  }
+
+  private legacyMoodKey(): string {
+    return `vibe_mood_${this.storageUserId()}_${this.currentDateKey()}`;
+  }
+
+  private anonymousDailyKey(): string {
+    return `vibe_sets_anonymous_${this.currentDateKey()}`;
+  }
+
+  private anonymousLegacyMoodKey(): string {
+    return `vibe_mood_anonymous_${this.currentDateKey()}`;
   }
 }

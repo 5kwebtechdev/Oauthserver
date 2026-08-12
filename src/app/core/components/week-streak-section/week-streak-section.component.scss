@@ -74,6 +74,12 @@
     background: transparent;
     border: 1px solid #6B656A;
   }
+
+  // Days before a new user's account existed are not missed streak days.
+  &.neutral {
+    background: #D9D6D8;
+    border: 1px solid #D9D6D8;
+  }
 }
 
 .week-streak-fire-crop,

@@ -52,9 +52,11 @@
 }
 
 .child-learning-coins {
-	width: 85px;
+	width: auto;
+	min-width: 98px;
+	max-width: 132px;
 	height: 36px;
-	flex: 0 0 85px;
+	flex: 0 1 auto;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -64,6 +66,14 @@
 	border-radius: 31px;
 	background: #fff;
 	box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+	appearance: none;
+	cursor: pointer;
+	transition: transform 160ms ease, box-shadow 160ms ease;
+
+	&:active {
+		transform: scale(.96);
+		box-shadow: 0 0 0 2px rgba(225, 82, 124, .2);
+	}
 
 	img {
 		width: 31px;
@@ -73,14 +83,12 @@
 	}
 
 	strong {
-		min-width: 0;
-		overflow: hidden;
+		min-width: max-content;
 		color: #432477;
 		font-family: var(--font-sans, 'Nunito', sans-serif);
 		font-size: 15px;
 		font-weight: 700;
 		line-height: 1.4;
-		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 }
@@ -141,6 +149,8 @@
 	width: 48px;
 	height: 48px;
 	flex: 0 0 48px;
+
+	img { filter: brightness(0); }
 }
 
 .child-learning-hero__actions {
@@ -251,7 +261,9 @@
 	position: absolute;
 	z-index: 1;
 	right: 8px;
-	bottom: 0;
+	/* The PNG includes transparent pixels below the grass. Offset the image by
+	 * that padding so the visible ground is anchored to the hero edge. */
+	bottom: -10px;
 	width: 140px;
 	height: 144px;
 	object-fit: contain;
@@ -268,25 +280,32 @@
 .child-learning-tabs {
 	width: calc(100% - 32px);
 	height: 66px;
-	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
+	display: flex;
 	margin: 0 16px;
 	padding: 2px;
-	overflow: hidden;
+	overflow-x: auto;
+	overflow-y: hidden;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
 	border-radius: 8px;
 	background: #fff;
 	box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.10);
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
 }
 
 .child-learning-tab {
-	min-width: 0;
+	min-width: max-content;
 	height: 62px;
+	flex: 0 0 auto;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	gap: 2px;
-	padding: 8px 2px;
+	padding: 8px 12px;
 	border: 0;
 	border-radius: 8px;
 	background: transparent;
@@ -298,12 +317,7 @@
 	appearance: none;
 	cursor: pointer;
 
-	> span:last-child {
-		max-width: 100%;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
+	> span:last-child { white-space: nowrap; }
 }
 
 .child-learning-tab--active {
@@ -468,6 +482,25 @@
 	}
 }
 
+.child-learning-search--hero {
+	position: relative;
+	z-index: 5;
+	margin-top: -6px;
+	margin-bottom: 8px;
+	border-radius: 16px;
+	box-shadow: 0 8px 20px rgba(40, 37, 39, .14);
+}
+
+.child-status-tabs__label img {
+	/* Both status icons use the same neutral colour until their tab is selected. */
+	filter: grayscale(1) brightness(.75) opacity(.9);
+}
+
+.child-status-tabs__label img.status-icon--active {
+	/* Keep Pending and Completed visually consistent when either is active. */
+	filter: invert(20%) sepia(77%) saturate(2271%) hue-rotate(311deg) brightness(83%) contrast(96%);
+}
+
 .child-status-tabs {
 	width: calc(100% - 32px);
 	height: 50px;
@@ -486,12 +519,12 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 8px;
-		padding: 8px;
+		gap: 4px;
+		padding: 4px;
 		border: 0;
 		background: transparent;
 		color: #6b656a;
-		font: 600 15px/1.4 var(--font-sans, 'Nunito', sans-serif);
+		font: 600 13px/1.25 var(--font-sans, 'Nunito', sans-serif);
 	}
 
 	button + button::before {
@@ -515,28 +548,31 @@
 
 .child-status-tabs__label {
 	min-width: 0;
+	flex: 1 1 auto;
 	display: inline-flex;
 	align-items: center;
+	justify-content: center;
 	gap: 4px;
 	white-space: nowrap;
 
 	img {
-		width: 24px;
-		height: 24px;
-		flex: 0 0 24px;
+		width: 16px;
+		height: 16px;
+		flex: 0 0 16px;
 	}
 }
 
 .child-status-tabs__count {
-	min-width: 40px;
-	height: 26px;
+	min-width: 24px;
+	height: 22px;
+	flex: 0 0 auto;
 	display: grid;
 	place-items: center;
-	padding: 4px 12px;
+	padding: 3px 7px;
 	border-radius: 24px;
 	background: #6b656a;
 	color: #fff;
-	font-size: 13px;
+	font-size: 12px;
 	font-weight: 600;
 }
 
@@ -598,14 +634,15 @@
 
 	> strong {
 		width: 100%;
-		overflow: hidden;
 		color: #282527;
 		font-family: var(--font-sans, 'Nunito', sans-serif);
 		font-size: 15px;
 		font-weight: 600;
-		line-height: normal;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		line-height: 1.25;
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		overflow: hidden;
 	}
 }
 
@@ -625,6 +662,12 @@
 	font-weight: 600;
 	line-height: 1.4;
 	text-transform: capitalize;
+
+	&.is-easy {
+		border-color: #4caf50;
+		background: #edf8ee;
+		color: #287d32;
+	}
 }
 
 .child-learning-item__detail {
@@ -736,8 +779,10 @@
 	}
 
 	p {
+		width: 100%;
 		max-width: 290px;
 		margin: 6px 0 0;
+		overflow-wrap: anywhere;
 		color: #6b656a;
 		font: 500 13px/1.4 var(--font-sans, 'Nunito', sans-serif);
 	}
@@ -768,8 +813,9 @@
 	}
 
 	.child-learning-coins {
-		width: 82px;
-		flex-basis: 82px;
+		min-width: 90px;
+		max-width: 118px;
+		flex-basis: auto;
 		padding-inline: 5px;
 
 		img {
@@ -814,6 +860,7 @@
 
 	.child-learning-hero__pet {
 		right: -5px;
+		bottom: -8px;
 		width: 130px;
 		height: 134px;
 	}

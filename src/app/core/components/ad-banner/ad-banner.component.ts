@@ -67,6 +67,8 @@ const IN_APP_ROUTE_MAP: Record<string, string> = {
 export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
   /** Which screen this banner is on - determines which ads the API returns */
   @Input() screen: AdScreen = 'HOME';
+  /** Optional screen to try only when the primary screen has no valid banners. */
+  @Input() fallbackScreen?: AdScreen;
   /** Optional Figma layout used by screens with a dedicated ad treatment. */
   @Input() variant: 'default' | 'article-details' | 'eduhub-parent' | 'eduhub-inner' | 'parent-learning' | 'lesson' = 'default';
 
@@ -111,7 +113,7 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
     this.updateTrackPosition();
   }
 
-  private loadAds(): void {
+  private loadAds(screen: AdScreen = this.screen, allowFallback = true): void {
     this.clearTimer();
     this.ads = [];
     this.currentIndex = 0;
@@ -130,16 +132,16 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
 
     const params = new HttpParams()
       .set('age', String(age))
-      .set('screen', this.screen);
+      .set('screen', screen);
 
     this.http.get<AdItem[]>(`${environment.apiUrl}/ads/age`, { headers, params }).subscribe({
       next: (ads) => {
-        if (!Array.isArray(ads)) { this.isVisible = false; return; }
+        if (!Array.isArray(ads)) { this.loadFallbackAds(allowFallback); return; }
         const candidates = ads.filter(ad => !!ad?.image);
-        if (candidates.length === 0) { this.isVisible = false; return; }
+        if (candidates.length === 0) { this.loadFallbackAds(allowFallback); return; }
         // Preload all images — only keep ones that actually load
         this.preloadImages(candidates).then(valid => {
-          if (valid.length === 0) { this.isVisible = false; return; }
+          if (valid.length === 0) { this.loadFallbackAds(allowFallback); return; }
           this.ads = valid;
           this.isVisible = true;
           this.currentIndex = 0;
@@ -148,8 +150,17 @@ export class AdBannerComponent implements OnInit, OnChanges, OnDestroy {
           setTimeout(() => this.updateTrackPosition(), 50);
         });
       },
-      error: () => { this.isVisible = false; }
+      error: () => this.loadFallbackAds(allowFallback)
     });
+  }
+
+  private loadFallbackAds(allowFallback: boolean): void {
+    const fallback = this.fallbackScreen;
+    if (allowFallback && fallback && fallback !== this.screen) {
+      this.loadAds(fallback, false);
+      return;
+    }
+    this.isVisible = false;
   }
 
   private preloadImages(ads: AdItem[]): Promise<AdItem[]> {

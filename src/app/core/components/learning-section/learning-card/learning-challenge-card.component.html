@@ -1,10 +1,11 @@
-<div class="card-root">
+<div class="card-root" role="button" tabindex="0" [attr.aria-label]="'Open ' + item.title"
+    (click)="onCardClick()" (keydown.enter)="onCardClick()" (keydown.space)="$event.preventDefault(); onCardClick()">
     <div class="media">
         <app-img
             [src]="item.image"
             fallback="/assets/icons/Flux_Dev_a_surreal_and_vibrant_cinematic_photo_of_A_minimal_ye_3%201.jpg"
             [alt]="item.title"
-            objectFit="cover">
+            objectFit="contain">
         </app-img>
         <div class="difficulty" *ngIf="item.difficulty" [attr.data-label]="item.difficulty">
             <img [src]="difficultyImageSrc" [alt]="item.difficulty" />
@@ -36,7 +37,7 @@
                 <img src="assets/figma/child-home/learning-schedule.svg" alt="" aria-hidden="true">
                 {{ item.timeDuration }}
             </span>
-            <superme-button [type]="'pink-small'" [text]="item.buttonText || 'Start Challenge'" (click)="onCardClick()"></superme-button>
+            <superme-button [type]="'pink-small'" [text]="item.buttonText || 'Start Challenge'" (click)="onCardAction($event)"></superme-button>
         </div>
     </div>
 </div>

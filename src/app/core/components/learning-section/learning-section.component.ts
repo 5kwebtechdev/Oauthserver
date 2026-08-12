@@ -322,10 +322,23 @@ import { AuthService } from 'src/app/core/services/auth.service';
         height: 104px;
         border-radius: 12px;
         box-shadow: none;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      ::ng-deep learning-card .card-root:focus-visible {
+        outline: 2px solid #6C3FCC;
+        outline-offset: 2px;
       }
 
       ::ng-deep learning-card .media {
         height: 104px;
+        background: #F8F6FA;
+      }
+
+      ::ng-deep learning-card .media .sk-img {
+        object-fit: contain !important;
+        object-position: center;
       }
 
       ::ng-deep learning-card .slide-body,

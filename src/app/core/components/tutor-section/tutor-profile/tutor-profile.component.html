@@ -139,12 +139,13 @@
           </div>
           <div class="information-value">
             <span>{{ getPublicLocation() }}</span>
-            <button type="button" class="locked-link" (click)="requestUnlock()">
+            <button *ngIf="!isContactUnlocked" type="button" class="locked-link" (click)="requestUnlock()">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M7.5 10V7.5a4.5 4.5 0 0 1 9 0V10M6 10h12v10H6z" />
               </svg>
               Unlock exact address &amp; map
             </button>
+            <span *ngIf="isContactUnlocked" class="unlocked-detail">{{ getFullLocation() }}</span>
           </div>
         </div>
 
@@ -159,7 +160,7 @@
               <small>{{ getFeeTypeString() }}</small>
             </span>
             <ng-template #feeUnavailable>Not specified</ng-template>
-            <button type="button" class="locked-link" (click)="requestUnlock()">
+            <button *ngIf="!isContactUnlocked" type="button" class="locked-link" (click)="requestUnlock()">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M7.5 10V7.5a4.5 4.5 0 0 1 9 0V10M6 10h12v10H6z" />
               </svg>
@@ -169,7 +170,7 @@
         </div>
       </section>
 
-      <section class="unlock-card">
+      <section class="unlock-card" *ngIf="!isContactUnlocked">
         <div class="unlock-heading">
           <div class="unlock-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24">
@@ -192,13 +193,16 @@
           <span>🔒 Fee details</span>
         </div>
 
-        <button type="button" class="unlock-button" (click)="requestUnlock()">
+        <button type="button" class="unlock-button" [disabled]="isUnlockingContact" (click)="requestUnlock()">
+          <ion-spinner *ngIf="isUnlockingContact" name="crescent"></ion-spinner>
+          <ng-container *ngIf="!isUnlockingContact">
           <span class="unlock-button__lock" aria-hidden="true">♛</span>
           <span>Unlock Now</span>
           <span class="unlock-button__cost">
             <img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">
             {{ contactUnlockCost }}
           </span>
+          </ng-container>
         </button>
       </section>
 

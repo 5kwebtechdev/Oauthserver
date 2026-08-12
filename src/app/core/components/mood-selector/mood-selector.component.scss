@@ -23,6 +23,15 @@
   padding: 8px;
 }
 
+// Reserve a small header lane for the information control so it never sits
+// over the final mood option on narrow screens.
+.mood-card--picker {
+  // The selected Calm art and its checkmark reach above the emoji row. Keep
+  // a dedicated header lane so they cannot collide with the information icon.
+  padding-top: 46px;
+  padding-inline: clamp(8px, 3.5vw, 16px);
+}
+
 .mood-card-header {
   display: flex;
   align-items: center;
@@ -78,7 +87,7 @@
 .mood-card-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  column-gap: clamp(4px, 1.8vw, 10px);
+  column-gap: clamp(1px, 1vw, 7px);
   row-gap: 6px;
   align-items: start;
   width: 100%;
@@ -86,6 +95,7 @@
 }
 
 .mood-option {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -107,6 +117,7 @@
 }
 
 .mood-option-avatar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -142,22 +153,31 @@
 }
 
 .mood-option-art--calm {
-  // The Calm SVG includes more transparent space in its viewBox than the
-  // other mood assets, so it needs a slightly larger rendered box.
-  width: 52px;
-  height: 52px;
+  // Keep Calm in the exact same layout box as every other mood. A larger box
+  // made it appear higher than the other icons on the shared baseline.
+  width: 42px;
+  height: 42px;
+
+  // The exported Calm SVG contains more transparent viewBox padding than the
+  // other assets. Scale its artwork, not its layout box, to match their
+  // visible icon size and preserve the shared baseline.
+  img {
+    transform: scale(1.28);
+    transform-origin: center;
+  }
 }
 
 .mood-option-label {
-  overflow: hidden;
+  display: block;
   max-width: 100%;
+  min-height: 12px;
   color: #282527;
   font-family: var(--font-sans);
-  font-size: clamp(10px, 3.2vw, 13px);
+  font-size: clamp(7.5px, 2.45vw, 11px);
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.1;
   text-align: center;
-  text-overflow: ellipsis;
+  letter-spacing: -0.12px;
   white-space: nowrap;
 }
 
@@ -166,7 +186,21 @@
     border-color: #d8cdfb;
     background: linear-gradient(180deg, #ffffff 0%, #f4f1ff 100%);
     box-shadow: 0 4px 12px rgba(117, 83, 214, 0.14);
-    transform: translateY(-1px);
+    transform: translateY(-3px) scale(1.12);
+    animation: selected-mood-pop 320ms cubic-bezier(.2, .9, .25, 1.35) both;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-right: 5px solid transparent;
+      border-left: 5px solid transparent;
+      border-top: 6px solid #d8cdfb;
+      transform: translateX(-50%);
+    }
   }
 
   .mood-option-label {
@@ -175,8 +209,27 @@
   }
 
   .mood-option-art {
-    transform: scale(1.16);
+    transform: scale(1.2);
   }
+}
+
+.mood-option-selected-mark {
+  position: absolute;
+  top: -4px;
+  right: max(0px, calc(50% - 25px));
+  z-index: 2;
+  display: grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #5c36a4;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  animation: selected-mark-in 260ms ease-out both;
 }
 
 .mood-picker-actions {
@@ -233,12 +286,12 @@
 
 .mood-limit-info {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 11px;
+  right: 14px;
   display: grid;
   place-items: center;
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
   padding: 0;
   border: 1.5px solid #6a6270;
   border-radius: 50%;
@@ -249,6 +302,17 @@
   font-weight: 700;
   font-style: italic;
   line-height: 1;
+}
+
+@keyframes selected-mood-pop {
+  from { transform: translateY(0) scale(1); }
+  65% { transform: translateY(-4px) scale(1.18); }
+  to { transform: translateY(-3px) scale(1.12); }
+}
+
+@keyframes selected-mark-in {
+  from { opacity: 0; transform: scale(.5); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .mood-limit-message {
@@ -363,12 +427,16 @@
   }
 
   .mood-option-art--calm {
-    width: 46px;
-    height: 46px;
+    width: 38px;
+    height: 38px;
+
+    img {
+      transform: scale(1.28);
+    }
   }
 
   .mood-option-label {
-    font-size: 9px;
+    font-size: 8px;
   }
 
   .saved-mood-message {
@@ -391,5 +459,10 @@
   .mood-option-avatar,
   .mood-option-art {
     transition: none;
+  }
+
+  .mood-option.selected .mood-option-avatar,
+  .mood-option-selected-mark {
+    animation: none;
   }
 }

@@ -180,6 +180,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
     // Submission state
     isSubmitting = false;
+    private returnUrl = '/authed/content';
 
     // (No rightActions used — we project the inline SVG timer into the navigator slot)
 
@@ -196,6 +197,10 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         const nav = this.router.getCurrentNavigation();
         const stateChallenge: Challenge | undefined =
             nav?.extras?.state?.['challenge'] ?? (history as any)?.state?.['challenge'];
+        const source = nav?.extras?.state?.['source'] ?? (history as any)?.state?.['source'];
+        if (typeof source === 'string' && source.startsWith('/authed/content')) {
+            this.returnUrl = source;
+        }
 
         const challengeId: number = stateChallenge?.challengeId
             ?? Number(this.route.snapshot.paramMap.get('id'));
@@ -835,9 +840,11 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         this.stopTimer();
         // Navigate back to the description screen
         if (this.challenge) {
-            this.router.navigate(['/authed/content/description', this.challenge.challengeId]);
+            this.router.navigate(['/authed/content/description', this.challenge.challengeId], {
+                state: { source: this.returnUrl }
+            });
         } else {
-            this.router.navigate(['/authed/content']);
+            this.router.navigateByUrl(this.returnUrl);
         }
     }
 

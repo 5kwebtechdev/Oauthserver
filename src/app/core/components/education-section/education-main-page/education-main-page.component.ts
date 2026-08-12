@@ -66,6 +66,7 @@ interface ParentShopCategoryDefinition {
 })
 export class EducationMainPageComponent implements OnInit {
     readonly isParentRole: boolean;
+    readonly usesNewEduHubLayout: boolean;
     readonly parentLoadingCards = [0, 1, 2, 3];
 
     parentShopCategories: ParentEduHubCategory[] = [];
@@ -150,6 +151,10 @@ export class EducationMainPageComponent implements OnInit {
         private cdr: ChangeDetectorRef
     ) {
         this.isParentRole = this.authService.isParentUser();
+        // Use one consistent, category-based EduHub experience for every
+        // authenticated role. The header still keeps Parent-specific back
+        // navigation where applicable.
+        this.usesNewEduHubLayout = true;
         this.parentShopCategories = this.createParentShopCategories();
     }
 
@@ -189,8 +194,10 @@ export class EducationMainPageComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        if (this.isParentRole) {
-            this.selectedParentCategoryId = sessionStorage.getItem('superme_parent_eduhub_category');
+        if (this.usesNewEduHubLayout) {
+            // A category is a navigation action, not a persistent selection.
+            // Restoring it after returning made the card retain a dark stroke.
+            this.selectedParentCategoryId = null;
             this.loadParentShopCategories();
         }
     }
@@ -227,8 +234,9 @@ export class EducationMainPageComponent implements OnInit {
     }
 
     openParentCategory(category: ParentEduHubCategory): void {
-        this.selectedParentCategoryId = category.id;
-        sessionStorage.setItem('superme_parent_eduhub_category', category.id);
+        // Keep the category cards visually neutral after the next navigation.
+        // The :active state still provides immediate tap feedback.
+        this.selectedParentCategoryId = null;
 
         if (category.kind === 'route' && category.route) {
             void this.router.navigateByUrl(category.route);

@@ -30,7 +30,7 @@
           <p>Find trusted <strong>{{ pageTitle.toLowerCase() }}</strong> around you.</p>
         </div>
         <!-- Decorative EduHub mascot from the design, independent of the user's selected pet. -->
-        <superme-pet class="directory-pet" pet="panda" mood="playful" [size]="148" [animated]="false"></superme-pet>
+        <superme-pet class="directory-pet" pet="panda" [age]="3" mood="playful" [size]="180" [animated]="false"></superme-pet>
       </div>
     </header>
 
@@ -132,7 +132,7 @@
                         [class.is-selected]="isFavourite(item)"
                         [attr.aria-label]="isFavourite(item) ? 'Remove from favourites' : 'Add to favourites'"
                         (click)="toggleFavourite(item)">
-                        <img src="assets/figma/parent-eduhub-inner/favorite.svg" alt="" aria-hidden="true">
+                        <span class="quick-action__heart" aria-hidden="true"></span>
                       </button>
                       <button type="button" class="quick-action quick-action--share" aria-label="Share listing"
                         (click)="shareListing(item)">
@@ -145,6 +145,8 @@
 
               <div class="listing-card__footer">
                 <button type="button" class="listing-action listing-action--secondary"
+                  [disabled]="!item.unlocked"
+                  [attr.aria-label]="item.unlocked ? 'Get directions' : 'Unlock listing to get directions'"
                   (click)="openDirections(item)">
                   Get Directions
                 </button>

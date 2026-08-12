@@ -35,7 +35,7 @@ button {
 .directory-hero {
   position: relative;
   z-index: 1;
-  min-height: calc(240px + env(safe-area-inset-top, 0px));
+  min-height: calc(260px + env(safe-area-inset-top, 0px));
   padding-top: env(safe-area-inset-top, 0px);
   overflow: hidden;
   background: #c7c5ff url('/assets/figma/parent-eduhub-inner/header-background.png') center / cover no-repeat;
@@ -179,7 +179,7 @@ button {
   justify-content: center;
   width: 100%;
   max-width: 520px;
-  height: 145px;
+  height: 172px;
   margin: 0 auto;
   padding: 0 8px 0 18px;
   box-sizing: border-box;
@@ -189,9 +189,9 @@ button {
   position: relative;
   z-index: 2;
   align-self: flex-start;
-  width: min(66vw, 259px);
-  height: 97px;
-  margin-top: 4px;
+  width: min(68vw, 290px);
+  height: 124px;
+  margin-top: 0;
 
   > img {
     position: absolute;
@@ -200,19 +200,19 @@ button {
     width: 100%;
     // Some category names take three lines on compact phones. Keep the
     // speech-bubble artwork tall enough to contain the entire message.
-    height: 68px;
+    height: 104px;
     object-fit: fill;
   }
 
   p {
     position: relative;
     z-index: 1;
-    width: calc(100% - 32px);
+    width: calc(100% - 22px);
     margin: 0;
-    padding: 8px 12px 9px;
+    padding: 17px 18px 12px;
     color: var(--directory-neutral-900);
     font-family: var(--font-sans, 'Nunito', sans-serif);
-    font-size: clamp(10px, 3.2vw, 13px);
+    font-size: clamp(14px, 4vw, 18px);
     font-weight: 700;
     line-height: 1.2;
     box-sizing: border-box;
@@ -228,20 +228,20 @@ button {
 .directory-pet {
   position: relative;
   z-index: 1;
-  width: 148px;
-  height: 148px;
-  margin-left: -42px;
-  transform: translateY(6px);
+  width: 180px;
+  height: 180px;
+  margin-left: -54px;
+  transform: translateY(0);
 
   ::ng-deep .superme-pet,
   ::ng-deep .pet-image {
-    width: 148px;
-    height: 148px;
+    width: 180px;
+    height: 180px;
   }
 
   ::ng-deep .pet-image {
-    width: 148px !important;
-    height: 148px !important;
+    width: 180px !important;
+    height: 180px !important;
     object-fit: contain;
   }
 }
@@ -614,9 +614,23 @@ button {
   box-shadow: 0 0 2px 1px rgba(178, 191, 242, 0.5);
 
   &.is-selected {
-    background: var(--directory-blue-100);
-    box-shadow: 0 0 0 1px var(--directory-blue-600);
+    // Keep the circular button neutral; only the selected heart is red.
+    background: #fff;
+    box-shadow: 0 0 2px 1px rgba(178, 191, 242, 0.5);
   }
+}
+
+.quick-action__heart {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background: var(--directory-blue-600);
+  mask: url('/assets/figma/parent-eduhub-inner/favorite.svg') center / contain no-repeat;
+  -webkit-mask: url('/assets/figma/parent-eduhub-inner/favorite.svg') center / contain no-repeat;
+}
+
+.quick-action--favourite.is-selected .quick-action__heart {
+  background: #e53935;
 }
 
 .quick-action--share {
@@ -656,14 +670,21 @@ button {
   margin-top: 0;
   background: #fff;
   color: var(--directory-blue-600);
+
+  &:disabled {
+    border-color: #d5dbea;
+    color: #9ba7be;
+    cursor: not-allowed;
+    opacity: 0.72;
+  }
 }
 
 .listing-action--primary,
 .sheet-primary-action {
-  border-color: #6e31d8;
-  background: linear-gradient(105deg, #4d18c7 0%, #6f2ee3 52%, #5120c9 100%);
+  border-color: #1432a8;
+  background: linear-gradient(105deg, #1432a8 0%, #2453cb 52%, #1432a8 100%);
   color: #fff;
-  box-shadow: 0 3px 8px rgba(84, 35, 197, 0.24);
+  box-shadow: 0 3px 8px rgba(20, 50, 168, 0.28);
 }
 
 .listing-action__coins,
@@ -1115,16 +1136,17 @@ button {
   }
 
   .directory-speech {
-    width: 220px;
+    width: min(68vw, 238px);
 
     p {
-      font-size: 12px;
+      padding: 15px 16px 10px;
+      font-size: 14px;
     }
   }
 
   .directory-pet {
-    margin-left: -54px;
-    transform: translate(12px, 6px) scale(0.88);
+    margin-left: -58px;
+    transform: translate(10px, 0) scale(0.82);
     transform-origin: bottom right;
   }
 

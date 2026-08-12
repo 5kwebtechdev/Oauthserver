@@ -174,7 +174,7 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                     const paramDate = new Date(params['date']);
                     if (!isNaN(paramDate.getTime())) this.selectedDate = paramDate;
                 }
-                // Allow opening the page with a specific main tab (habits|tasks)
+                // Allow opening the page with a specific tab from Today at a Glance.
                 if (params['tab']) {
                     const t = String(params['tab']).toLowerCase();
                     if (t === 'tasks') {
@@ -183,8 +183,12 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                     } else if (t === 'habits') {
                         this.currentMainTab = 'habits';
                         if (this.isChildCalendarDesign) this.childCalendarTab = 'habit';
+                    } else if ((t === 'timetable' || t === 'planner') && this.isChildCalendarDesign) {
+                        // Planner items use the legacy `timetable` type internally.
+                        this.currentMainTab = 'habits';
+                        this.childCalendarTab = 'planner';
                     }
-                    // if 'all' or unknown, keep default (habits)
+                    // if 'all' or unknown, keep the default tab
                 }
             })
         );
@@ -199,6 +203,9 @@ export class ActivityPageContentComponent implements OnInit, OnDestroy {
                 } else if (t === 'habits') {
                     this.currentMainTab = 'habits';
                     if (this.isChildCalendarDesign) this.childCalendarTab = 'habit';
+                } else if ((t === 'timetable' || t === 'planner') && this.isChildCalendarDesign) {
+                    this.currentMainTab = 'habits';
+                    this.childCalendarTab = 'planner';
                 }
                 // remove key after consuming
                 sessionStorage.removeItem('activityInitialTab');

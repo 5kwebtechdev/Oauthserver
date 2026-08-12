@@ -1193,6 +1193,7 @@
 }
 
 .parent-learning-hero__art {
+	position: relative;
 	width: 186px;
 	height: 113px;
 	max-width: 100%;
@@ -1201,6 +1202,16 @@
 	display: block;
 	object-fit: contain;
 	object-position: right bottom;
+	// header-family.png has transparent pixels beneath the visible table. Pull
+	// the canvas down by that margin so the visible artwork touches the hero edge.
+	transform: translateY(10px);
+}
+
+// The root Parent Learning page has no navigation row. Reserve the same
+// visual breathing room above its title without adding blank space to detail
+// pages that already have a back-navigation header.
+.parent-learning-hero--root .parent-learning-hero__copy {
+	padding-top: 16px;
 }
 
 .parent-learning-body {
@@ -1216,20 +1227,17 @@
 }
 
 .parent-learning-tabs {
-	width: auto;
+	width: calc(100% - max(32px, env(safe-area-inset-left) + env(safe-area-inset-right)));
 	height: 66px;
 	min-height: 66px;
 	display: flex;
 	align-items: stretch;
-	justify-content: flex-start;
 	gap: 4px;
 	margin: 0 max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
 	padding: 2px;
 	box-sizing: border-box;
 	overflow-x: auto;
 	overflow-y: hidden;
-	overscroll-behavior-x: contain;
-	scroll-snap-type: x proximity;
 	-webkit-overflow-scrolling: touch;
 	scrollbar-width: none;
 	border-radius: 8px;
@@ -1252,7 +1260,6 @@
 	justify-content: center;
 	gap: 2px;
 	padding: 8px 12px;
-	scroll-snap-align: center;
 	border: 0;
 	border-radius: 8px;
 	background: transparent;
@@ -1263,12 +1270,7 @@
 	line-height: normal;
 	transition: background-color 160ms ease, color 160ms ease;
 
-	> span:last-child {
-		max-width: none;
-		overflow: visible;
-		text-overflow: clip;
-		white-space: nowrap;
-	}
+	> span:last-child { white-space: nowrap; }
 }
 
 .parent-learning-tab__icon {
@@ -1539,7 +1541,7 @@
 	padding: 0;
 	border: 0;
 	border-radius: 16px;
-	background: #a19ca0;
+	background: transparent;
 
 	app-img {
 		width: 100%;
@@ -1548,9 +1550,17 @@
 	}
 }
 
+.parent-learning-card-item__media--static {
+	pointer-events: none;
+}
+
 .parent-learning-card-item--course .parent-learning-card-item__media {
 	width: 102px;
 	flex-basis: 102px;
+}
+
+.parent-learning-card-item--course .parent-learning-card-item__media app-img {
+	background: transparent;
 }
 
 .parent-learning-card-item__body {
@@ -1559,7 +1569,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	justify-content: center;
+	justify-content: flex-start;
 	padding: 2px 8px;
 
 	&::before {
@@ -1606,7 +1616,41 @@
 	font-size: 10px;
 	font-weight: 600;
 	line-height: 1.4;
-	text-transform: capitalize;
+	text-transform: lowercase;
+}
+
+.parent-learning-card-item--course .parent-learning-card-item__difficulty {
+	min-width: 0;
+	min-height: 26px;
+	flex: 0 0 auto;
+	padding: 4px 10px;
+	border-color: #4caf50;
+	border-radius: 14px;
+	background: #edf8ee;
+	color: #287d32;
+	font-size: 11px;
+	text-transform: lowercase;
+}
+
+.parent-learning-card-item__heading-row {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+
+	h2 {
+		min-width: 0;
+		margin: 0;
+	}
+}
+
+.parent-learning-card-item--course .parent-learning-card-item__body {
+	padding: 8px 8px 6px;
+}
+
+.parent-learning-card-item--course .parent-learning-card-item__body > p {
+	margin-top: 1px;
 }
 
 .parent-learning-card-item__footer {
@@ -1616,7 +1660,7 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 6px;
-	margin-top: auto;
+	margin-top: 4px;
 
 	> button {
 		min-width: 0;
@@ -1781,6 +1825,7 @@
 
 	.parent-learning-hero__art {
 		width: 230px;
+		transform: translateY(12px);
 	}
 
 	.parent-category-grid {
