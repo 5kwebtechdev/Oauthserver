@@ -23,6 +23,13 @@ export class ProfileSelectorInterceptor implements HttpInterceptor {
   }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    // Course assignment already receives the selected child in `childIds`.
+    // Do not append the profile-selector `forUserId`, because this endpoint's
+    // request contract is intentionally limited to courseId and childIds.
+    if (req.url.includes('/courses/assign')) {
+      return next.handle(req);
+    }
+
     return this.profileSelector.child$.pipe(
       take(1),
       switchMap((forUserId) => {

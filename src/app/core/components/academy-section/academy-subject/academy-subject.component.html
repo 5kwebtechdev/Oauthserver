@@ -37,8 +37,9 @@
           <div class="as-course__bottom">
             <div class="as-course__coins">
               <img [src]="l.coinIcon" alt="coins">
-              <span>{{ l.coins }}</span>
+              <span>{{ l.coins }} coins</span>
             </div>
+            <span *ngIf="l.assignedByParent" class="as-assigned-by-parent">Assigned by Parent</span>
             <span class="as-badge" [ngClass]="l.badge.toLowerCase()">{{ l.badge }}</span>
           </div>
         </div>

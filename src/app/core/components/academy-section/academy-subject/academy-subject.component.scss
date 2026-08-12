@@ -148,6 +148,7 @@
 .as-course__bottom {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -172,6 +173,18 @@
 .as-course__chevron {
   flex-shrink: 0;
   opacity: 0.5;
+}
+
+.as-assigned-by-parent {
+  max-width: 100%;
+  padding: 3px 7px;
+  border-radius: 10px;
+  background: #f1eaff;
+  color: #6038a6;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 // ── Badge ──
