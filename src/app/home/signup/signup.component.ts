@@ -364,6 +364,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
 
     this.restoreSignupStateFromSession();
     this.restorePersistedRegistrationState();
+    this.updateComputedAge(this.profileForm.get('dob')?.value);
     this.refreshIncompleteAuthenticatedOnboarding();
 
     // Registration now starts with email only. Ignore a stale phone-mode value
@@ -474,6 +475,9 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
         this.username?.updateValueAndValidity({ emitEvent: false });
         this.scheduleUsernameAvailabilityCheck();
       })
+    );
+    this.subscription.add(
+      this.profileForm.get('dob')!.valueChanges.subscribe(value => this.updateComputedAge(value))
     );
 
     this.route.queryParams.subscribe(params => {
@@ -1684,7 +1688,7 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
       dob: parsedDate.toISOString().slice(0, 10)
     })
 
-    this.computedAge = this.calculateAge(parsedDate);
+    this.updateComputedAge(parsedDate);
     // close the picker after choosing a date
     this.openBirthdayPicker = false;
 
@@ -1704,6 +1708,12 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     } catch (e) {
       return null;
     }
+  }
+
+  private updateComputedAge(value: unknown): void {
+    const dob = value instanceof Date ? value : new Date(String(value || ''));
+    const today = new Date();
+    this.computedAge = isNaN(dob.getTime()) || dob > today ? null : this.calculateAge(dob);
   }
 
   private getAgeSuggestionRoles(role: SignupRole, age: number | null): SignupRole[] {
