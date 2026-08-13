@@ -282,15 +282,15 @@ a {
   align-items: center;
   gap: 14px;
   padding: 16px;
-  border: 1px solid #dbd4ff;
+  border: 1px solid #c5d7f6;
   border-radius: 20px;
-  background: linear-gradient(120deg, #f5f2ff 0%, #eef4ff 100%);
+  background: #d9e5f9;
   box-sizing: border-box;
 
   > img {
-    width: 78px;
-    height: 78px;
-    flex: 0 0 78px;
+    width: 60px;
+    height: 56px;
+    flex: 0 0 60px;
     object-fit: contain;
   }
 
@@ -319,30 +319,45 @@ a {
     line-height: 1.35;
   }
 
-  span {
-    color: var(--detail-blue);
-    font-weight: 700;
-  }
-
   button {
     display: inline-flex;
-    width: fit-content;
-    min-height: 36px;
+    width: 100%;
+    min-height: 48px;
     align-items: center;
     justify-content: center;
-    margin-top: 10px;
-    padding: 0 17px;
-    border: 0;
-    border-radius: 10px;
-    background: var(--detail-blue);
+    gap: 4px;
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid #3158a8;
+    border-radius: 16px;
+    background: radial-gradient(184% 190% at 50% 0%, #3158a8 0%, #2345a8 50%, #1432a8 100%);
+    box-shadow: inset -2px -2px 2px #b2caf2;
     color: #fff;
     font-family: var(--font-sans, 'Nunito', sans-serif);
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 800;
 
     ion-spinner {
       width: 18px;
       height: 18px;
+    }
+
+    > img,
+    .contact-lock-card__coins img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
+
+    .contact-lock-card__coins {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .contact-lock-card__coins img {
+      width: 20px;
+      height: 20px;
     }
   }
 }

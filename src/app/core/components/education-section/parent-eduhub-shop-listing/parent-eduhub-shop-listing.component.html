@@ -156,9 +156,10 @@
                     (click)="requestUnlock(item)">
                     <ng-container *ngIf="item.unlocked; else lockedAction">Contact</ng-container>
                     <ng-template #lockedAction>
+                      <img class="listing-action__unlock-icon" src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
                       <span>Unlock</span>
                       <span class="listing-action__coins">
-                        <img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">
+                        <img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">
                         {{ item.unlockCost }}
                       </span>
                     </ng-template>
@@ -186,7 +187,7 @@
         <img src="assets/figma/parent-eduhub-inner/close.svg" alt="" aria-hidden="true">
       </button>
 
-      <img class="unlock-sheet__illustration" src="assets/figma/parent-eduhub-inner/unlock-illustration.png"
+      <img class="unlock-sheet__illustration" src="assets/figma/contact-unlock/sheet-illustration.png"
         alt="" aria-hidden="true">
       <div class="unlock-sheet__heading">
         <h2 id="unlock-sheet-title">Unlock contact Details?</h2>
@@ -194,23 +195,23 @@
       </div>
 
       <div class="unlock-sheet__balance">
-        <img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">
+        <img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">
         <p><strong>{{ unlockItem.unlockCost }} coins will be deducted</strong>
           <span>from your SuperMeApp coin balance.</span>
         </p>
         <div>
           <span>Your balance</span>
-          <strong><img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">{{ coinBalance }}</strong>
+          <strong><img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">{{ coinBalance }}</strong>
         </div>
       </div>
 
       <div class="unlock-sheet__benefits">
         <p>You will get access to:</p>
         <div>
-          <span *ngIf="unlockItem.fullAddress"><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="">Full address</span>
-          <span *ngIf="unlockItem.phone"><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="">Phone Number</span>
-          <span *ngIf="unlockItem.email"><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="">Email</span>
-          <span *ngIf="unlockItem.fullAddress || unlockItem.publicLocation"><img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="">View on map</span>
+          <span *ngIf="unlockItem.fullAddress"><img src="assets/figma/contact-unlock/lock-open.svg" alt="">Full address</span>
+          <span *ngIf="unlockItem.phone"><img src="assets/figma/contact-unlock/lock-open.svg" alt="">Phone Number</span>
+          <span *ngIf="unlockItem.email"><img src="assets/figma/contact-unlock/lock-open.svg" alt="">Email</span>
+          <span *ngIf="unlockItem.fullAddress || unlockItem.publicLocation"><img src="assets/figma/contact-unlock/lock-open.svg" alt="">View on map</span>
         </div>
       </div>
 
@@ -218,10 +219,10 @@
         (click)="confirmUnlock()">
         <ion-spinner *ngIf="unlockRequestInProgress" name="crescent"></ion-spinner>
         <ng-container *ngIf="!unlockRequestInProgress">
-          <img src="assets/figma/parent-eduhub-inner/lock-open-white.svg" alt="" aria-hidden="true">
+          <img src="assets/figma/contact-unlock/lock-open.svg" alt="" aria-hidden="true">
           <span>Unlock Now</span>
           <span class="sheet-primary-action__coins">
-            <img src="assets/figma/parent-eduhub-inner/coin.png" alt="" aria-hidden="true">
+            <img src="assets/figma/contact-unlock/coin.png" alt="" aria-hidden="true">
             {{ unlockItem.unlockCost }}
           </span>
         </ng-container>

@@ -936,8 +936,8 @@
 }
 
 .book-contact-unlock__illustration {
-  width: 54px;
-  height: 54px;
+  width: 60px;
+  height: 56px;
   grid-row: span 2;
   object-fit: contain;
 }
@@ -954,24 +954,24 @@
 .book-contact-unlock > button,
 .book-contact-button,
 .book-contact-sheet__confirm {
-  min-height: 38px;
+  min-height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
   border: 1px solid #3158a8;
-  border-radius: 10px;
+  border-radius: 16px;
   background: radial-gradient(184% 190% at 50% 0%, #3158a8 0%, #2345a8 50%, #1432a8 100%);
-  box-shadow: inset -1px -1px 1px #b2caf2;
+  box-shadow: inset -2px -2px 2px #b2caf2;
   color: #ffffff;
-  font: 800 13px/18px var(--font-sans, 'Nunito', sans-serif);
+  font: 800 15px/20px var(--font-sans, 'Nunito', sans-serif);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 
 .book-contact-unlock > button { grid-column: 1 / -1; width: 100%; margin-top: 8px; }
-.book-contact-unlock > button ion-icon { width: 18px; height: 18px; font-size: 18px; }
-.book-contact-unlock > button img { width: 15px; height: 15px; margin-left: -1px; object-fit: contain; }
+.book-contact-unlock > button .book-contact-unlock__lock { width: 24px; height: 24px; flex: 0 0 24px; margin: 0; object-fit: contain; }
+.book-contact-unlock > button img { width: 20px; height: 20px; margin-left: -1px; object-fit: contain; }
 .book-contact-unlock > button:disabled { cursor: not-allowed; opacity: .72; }
 .book-contact-unlock > button ion-spinner,
 .book-contact-sheet__confirm ion-spinner { width: 18px; height: 18px; --color: #ffffff; }

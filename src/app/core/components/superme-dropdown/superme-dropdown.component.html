@@ -1,12 +1,21 @@
-<div class='dropdown-container' [ngClass]='width'>
-  <div class='dropdown-selector' (click)='toggleDropdown()'>
-    <div class='dropdown-label'>{{ selectedOption ? selectedOption.value : label }}</div>
-    <div class='dropdown-chevron' [ngClass]="{ 'open': isOpen }"><ion-icon name='chevron-down-outline'></ion-icon></div>
-  </div>
-  <div class='dropdown-options' *ngIf='isOpen'>
-    <div class='option-item' *ngFor='let option of options' (click)='selectOption(option)'>
-      <div class='option-value'>{{ option.value }}</div>
-      <div class='option-check' *ngIf='selectedOption && selectedOption.key === option.key'><ion-icon name='checkmark-outline'></ion-icon></div>
-    </div>
+<div class="dropdown-container" [ngClass]="[width, 'dropdown-container--' + variant, isOpen ? 'is-open' : '']">
+  <button type="button" class="dropdown-selector" [class.is-disabled]="disabled || isDisabled" [disabled]="disabled || isDisabled" [attr.aria-label]="ariaLabel || label" [attr.aria-expanded]="isOpen" (click)="toggleDropdown()">
+    <span class="dropdown-label">{{ selectedOption ? selectedOption.value : label }}</span>
+    <span class="dropdown-chevron" [ngClass]="{ 'open': isOpen }" aria-hidden="true">
+      <img *ngIf="chevronAsset; else defaultChevron" [src]="chevronAsset" alt="">
+      <ng-template #defaultChevron><span>⌄</span></ng-template>
+    </span>
+  </button>
+  <div class="dropdown-options" *ngIf="isOpen" [style.max-height]="menuMaxHeight" role="listbox">
+    <label *ngIf="searchable" class="dropdown-search">
+      <img *ngIf="searchIconAsset" [src]="searchIconAsset" alt="" aria-hidden="true">
+      <span *ngIf="!searchIconAsset" class="dropdown-search__fallback" aria-hidden="true">⌕</span>
+      <input type="search" [(ngModel)]="searchTerm" [placeholder]="searchPlaceholder" [attr.aria-label]="searchPlaceholder" autocomplete="off">
+    </label>
+    <button type="button" class="option-item" *ngFor="let option of filteredOptions" [class.is-selected]="selectedOption?.key === option.key" role="option" [attr.aria-selected]="selectedOption?.key === option.key" (click)="selectOption(option)">
+      <img *ngIf="option.icon" class="option-icon" [src]="option.icon" alt="" aria-hidden="true">
+      <span class="option-value">{{ option.value }}</span>
+    </button>
+    <p class="dropdown-empty" *ngIf="!filteredOptions.length">No matching options</p>
   </div>
 </div>

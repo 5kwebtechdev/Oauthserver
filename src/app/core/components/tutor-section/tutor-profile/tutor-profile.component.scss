@@ -451,7 +451,6 @@ ion-content.tutor-detail-page {
   }
 }
 
-.unlock-button,
 .contact-confirm,
 .error-state button {
   min-height: 48px;
@@ -477,8 +476,10 @@ ion-content.tutor-detail-page {
   }
 
   .unlock-button__lock {
-    color: #ffd73d;
-    font-size: 22px;
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    object-fit: contain;
   }
 
   .unlock-button__cost {
@@ -496,6 +497,74 @@ ion-content.tutor-detail-page {
       object-fit: contain;
     }
   }
+}
+
+/* Contact unlock calls-to-action use the shared Figma blue treatment. */
+.unlock-button,
+.counselor-unlock-card > button,
+.counselor-unlock-confirm {
+  border: 1px solid #3158a8;
+  border-radius: 16px;
+  background: radial-gradient(184% 190% at 50% 0%, #3158a8 0%, #2345a8 50%, #1432a8 100%);
+  box-shadow: inset -2px -2px 2px #b2caf2;
+}
+
+.unlock-card {
+  border-color: #c5d7f6;
+  background: #d9e5f9;
+}
+
+.unlock-icon {
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+
+  img {
+    width: 60px;
+    height: 56px;
+    object-fit: contain;
+  }
+}
+
+.unlock-benefits span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 0;
+  background: #1472c8;
+  color: #fff;
+
+  img {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+  }
+}
+
+.counselor-unlock-card > button,
+.counselor-unlock-confirm {
+  gap: 4px;
+  font-size: 15px;
+
+  > img {
+    width: 24px;
+    height: 24px;
+  }
+
+  > span img {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.counselor-unlock-confirm {
+  min-height: 48px;
+  font-size: 17px;
+}
+
+.counselor-unlock-sheet {
+  border-radius: 32px 32px 0 0;
 }
 
 .unlocked-detail {
@@ -862,4 +931,30 @@ ion-content.counselor-detail-page { --background: #fff; --padding-bottom: calc(1
     border-radius: 28px;
     box-shadow: 0 12px 36px rgba(31, 25, 42, .08);
   }
+}
+
+/* Keep counselor contact-unlock controls aligned with the current Figma CTA. */
+.counselor-unlock-card > button,
+.counselor-unlock-confirm {
+  gap: 4px;
+  border: 1px solid #3158a8;
+  border-radius: 16px;
+  background: radial-gradient(184% 190% at 50% 0%, #3158a8 0%, #2345a8 50%, #1432a8 100%);
+  box-shadow: inset -2px -2px 2px #b2caf2;
+  font-size: 15px;
+
+  > img {
+    width: 24px;
+    height: 24px;
+  }
+
+  > span img {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.counselor-unlock-confirm {
+  min-height: 48px;
+  font-size: 17px;
 }
