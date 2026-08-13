@@ -31,7 +31,7 @@
 
       <div class="signup-entry-shell">
         <header class="signup-entry-hero">
-          <p class="signup-entry-step">Step 1 of {{ isManagedChildSignup ? 5 : 6 }}</p>
+          <p class="signup-entry-step">Step 1 of {{ isManagedChildSignup || currentRole === 'self' ? 5 : 6 }}</p>
           <h1 id="signup-entry-title" class="signup-entry-title">
             {{ isManagedChildSignup ? "Let's Create Your Child's Account" : "Let's Create Your Account" }}
           </h1>
@@ -39,7 +39,7 @@
         </header>
 
         <div class="signup-entry-progress" role="progressbar" aria-label="Registration progress"
-          aria-valuemin="1" aria-valuemax="6" aria-valuenow="1">
+          aria-valuemin="1" [attr.aria-valuemax]="isManagedChildSignup || currentRole === 'self' ? 5 : 6" aria-valuenow="1">
           <span *ngIf="isManagedChildSignup" aria-hidden="true"></span>
           <img *ngIf="!isManagedChildSignup" src="assets/icons/signup-progress-step-1-figma.svg" alt="" aria-hidden="true" />
         </div>
@@ -85,7 +85,7 @@
 
       <div class="otp-shell">
         <header class="otp-hero">
-          <p class="otp-step-label">Step 2 of {{ isManagedChildSignup ? 5 : 6 }}</p>
+          <p class="otp-step-label">Step 2 of {{ isManagedChildSignup || currentRole === 'self' ? 5 : 6 }}</p>
           <h1 id="signup-otp-title" class="otp-hero__title">
             {{ loginMode === 'phone' ? 'Check Your Phone' : 'Check Your Email' }}
           </h1>
@@ -102,7 +102,7 @@
         </header>
 
         <div class="otp-progress" role="progressbar" aria-label="Registration progress" aria-valuemin="1"
-          [attr.aria-valuemax]="isManagedChildSignup ? 5 : 6" aria-valuenow="2">
+          [attr.aria-valuemax]="isManagedChildSignup || currentRole === 'self' ? 5 : 6" aria-valuenow="2">
           <span></span>
         </div>
 
@@ -142,12 +142,12 @@
 
       <div class="pwd-shell">
         <header class="pwd-hero">
-          <p class="pwd-step-label">Step 3 of {{ isManagedChildSignup ? 5 : 6 }}</p>
+          <p class="pwd-step-label">Step 3 of {{ isManagedChildSignup || currentRole === 'self' ? 5 : 6 }}</p>
           <h1 id="signup-password-title" class="pwd-hero__title">Create a Password</h1>
         </header>
 
         <div class="pwd-progress" role="progressbar" aria-label="Registration progress"
-          aria-valuemin="1" [attr.aria-valuemax]="isManagedChildSignup ? 5 : 6" aria-valuenow="3">
+          aria-valuemin="1" [attr.aria-valuemax]="isManagedChildSignup || currentRole === 'self' ? 5 : 6" aria-valuenow="3">
           <span></span>
         </div>
 
@@ -335,12 +335,12 @@
               <span>{{ isManagedChildSignup ? 'Your Child' : 'You' }} <strong>Up</strong></span>
             </h1>
             <div class="details-progress-copy">
-              <p class="profile-step-label">Step 4 of {{ isManagedChildSignup || currentRole === 'parent' ? 5 : 6 }}</p>
+              <p class="profile-step-label">Step 4 of {{ isManagedChildSignup || currentRole === 'self' ? 5 : 6 }}</p>
               <p class="profile-hero__title">
                 {{ isManagedChildSignup ? 'Tell us about your child!' : 'Tell us about yourself !' }}
               </p>
               <div class="profile-progress" role="progressbar" aria-label="Registration progress" aria-valuemin="1"
-                [attr.aria-valuemax]="isManagedChildSignup || currentRole === 'parent' ? 5 : 6" aria-valuenow="4"><span></span></div>
+                [attr.aria-valuemax]="isManagedChildSignup || currentRole === 'self' ? 5 : 6" aria-valuenow="4"><span></span></div>
             </div>
           </div>
           <div class="details-header-illustration" aria-hidden="true">
@@ -457,7 +457,7 @@
           <h4 class="profile-field-heading">
             <span class="profile-field-title">Date of Birth</span>
             <span class="profile-field-meta">
-              <span *ngIf="computedAge !== null && currentRole !== 'parent'" class="profile-field-hint age-count">
+              <span *ngIf="computedAge !== null" class="profile-field-hint age-count">
                 {{ computedAge }} years old
               </span>
             </span>
@@ -531,7 +531,6 @@
               </ng-container>
             </div>
         </section>
-      </div>
 
 
       <div class="referral-section details-referral-section">
@@ -585,6 +584,8 @@
         <button type="button" class="details-next-button"
           [disabled]="(!isAppleOAuthSignup && isProfileStepInvalid) || registrationInProgress || referralValidationStatus === 'pending'"
           (click)="registerOrProceed()">Next</button>
+      </div>
+
       </div>
 
     </div>
@@ -642,12 +643,12 @@
       <superme-auth-back-button *ngIf="!isPostFamilyChildPetStep" (back)="goBack()"></superme-auth-back-button>
 
       <header class="pet-step-header">
-        <p>Step 5 of {{ isManagedChildSignup ? 5 : 6 }}</p>
+        <p>Step 5 of {{ isManagedChildSignup || currentRole === 'self' ? 5 : 6 }}</p>
         <h1 id="pet-step-title">Choose Your Digital Pet</h1>
       </header>
 
       <div class="pet-step-progress" role="progressbar" aria-label="Registration progress"
-        aria-valuemin="1" [attr.aria-valuemax]="isManagedChildSignup ? 5 : 6" aria-valuenow="5">
+        aria-valuemin="1" [attr.aria-valuemax]="isManagedChildSignup || currentRole === 'self' ? 5 : 6" aria-valuenow="5">
         <span></span>
       </div>
 

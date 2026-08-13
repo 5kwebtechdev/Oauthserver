@@ -529,6 +529,10 @@
 .profile-step--figma .details-referral-section .referral-input-wrapper {
   display: grid;
   grid-template-rows: 0fr;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   margin-top: 0;
   opacity: 0;
   visibility: hidden;
@@ -552,12 +556,23 @@
 }
 
 .profile-step--figma .details-referral-section .referral-input-inner {
+  width: 100%;
+  max-width: 100%;
   min-height: 0;
-  overflow: hidden;
+  min-width: 0;
+  overflow: visible;
 }
 
 .profile-step--figma .details-referral-section .input-group {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   margin: 0;
+}
+
+.profile-step--figma .details-referral-section .input-group input {
+  min-width: 0 !important;
 }
 
 .profile-step--figma .details-referral-section .referral-validation {
@@ -672,6 +687,14 @@
   max-width: 361px !important;
   margin-right: auto !important;
   margin-left: auto !important;
+}
+
+.signup-container.profile-layout .profile-step.profile-step--figma > .details-referral-section {
+  width: min(361px, calc(100% - 32px)) !important;
+  max-width: 361px !important;
+  min-width: 0;
+  padding-inline: 0;
+  box-sizing: border-box;
 }
 
 @media (max-width: 360px) {

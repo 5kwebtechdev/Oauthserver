@@ -3718,12 +3718,12 @@ ion-content.details-content.referral-keyboard-open {
 
   .signup-entry-field {
     display: flex;
-    min-height: 72px;
+    min-height: 57px;
     align-items: center;
     border: 1px solid #f1eef0;
-    border-radius: 8px;
+    border-radius: 12px;
     background: #ffffff;
-    box-shadow: 0 2px 9px rgba(40, 37, 39, 0.12);
+    box-shadow: 0 0 2px 2px rgba(107, 101, 106, 0.1);
     transition: border-color 160ms ease, box-shadow 160ms ease;
 
     &:focus-within {
@@ -3737,8 +3737,8 @@ ion-content.details-content.referral-keyboard-open {
 
     input {
       width: 100%;
-      height: 70px;
-      padding: 0 22px;
+      height: 55px;
+      padding: 0 24px;
       border: 0;
       outline: 0;
       background: transparent;
