@@ -97,7 +97,7 @@ export class EducationMainPageComponent implements OnInit {
             label: 'Counselors',
             image: 'assets/figma/parent-eduhub/counselors.png',
             kind: 'route',
-            route: '/authed/tutors?entityType=COUNSELOR'
+            route: '/authed/counselors'
         }
     ];
 
@@ -106,13 +106,15 @@ export class EducationMainPageComponent implements OnInit {
             id: 'events',
             label: 'Events',
             image: 'assets/figma/parent-eduhub/events.png',
-            kind: 'coming-soon'
+            kind: 'route',
+            route: '/authed/education/events'
         },
         {
             id: 'workshops',
             label: 'Workshops',
             image: 'assets/figma/parent-eduhub/workshops.png',
-            kind: 'coming-soon'
+            kind: 'route',
+            route: '/authed/education/workshops'
         }
     ];
 

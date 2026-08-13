@@ -1,4 +1,4 @@
-<ion-content #content [scrollY]="step !== 5 && step !== 0.1 && step !== 0.2"
+<ion-content #content [scrollY]="step !== 0.1 && step !== 0.2 && (step !== 5 || isParentWelcomeScreen)"
   [class.auth-static-content]="step === 0.1 || step === 0.2"
   [class.password-scroll-content]="step === 0.3"
   [class.password-keyboard-open]="step === 0.3 && isPasswordKeyboardOpen"
@@ -693,53 +693,100 @@
       <p class="pet-step-error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
     </section>
 
-    <div *ngIf="step === 5" [@slideIn]
-      class="welcome-page d-flex flex-column align-items-center justify-content-center gap-3" style="min-height: 90dvh; margin-top: 10dvh;">
-      <img src="assets/Images-Transparent/SuperMeLogoFinal3.png" alt="Onboarding pet" class="onboarding-image" />
+    <ng-container *ngIf="step === 5">
+      <section *ngIf="isParentWelcomeScreen; else sharedWelcomeScreen" [@slideIn]
+        class="parent-welcome" aria-labelledby="parent-welcome-title">
+        <img class="parent-welcome__logo" src="assets/figma/parent-welcome/superme-logo.png" alt="SuperMe" />
 
-      <div class="welcome-content d-flex flex-column justify-content-center align-items-center gap-2">
-        <h1 class="superpower-title">Your Superpower is now active!</h1>
-        <p class="superpower-subtitle">You're set to master every part of your life. Here's what's waiting for you:</p>
-      </div>
-      <!--new messages-->
-      <div class="new-messages superpower-list">
-        <div class="superpower-card">
-          <span class="superpower-icon">
-            <!-- <img src="assets/icons/superpower-placeholder.svg" alt="" aria-hidden="true" /> -->
-             <img src="assets/icons/superpower-build.png" alt="" aria-hidden="true" />
-          </span>
-          <p><span class="first-word first-word--build">Build</span> unbreakable habits that stick.</p>
-        </div>
-        <div class="superpower-card">
-          <span class="superpower-icon">
-            <!-- <img src="assets/icons/superpower-placeholder.svg" alt="" aria-hidden="true" /> -->
-          <img src="assets/icons/superpower-crush.png" alt="" aria-hidden="true" />
-          </span>
-          <p><span class="first-word first-word--crush">Crush</span> your daily tasks with ease.</p>
-        </div>
-        <div class="superpower-card">
-          <span class="superpower-icon">
-            <!-- <img src="assets/icons/superpower-placeholder.svg" alt="" aria-hidden="true" /> -->
-          <img src="assets/icons/superpower-own.png" alt="" aria-hidden="true" />
-          </span>
-          <p><span class="first-word first-word--own">Own</span> your time and stay ahead.</p>
-        </div>
-        <div class="superpower-card">
-          <span class="superpower-icon">
-            <!-- <img src="assets/icons/superpower-placeholder.svg" alt="" aria-hidden="true" /> -->
-          <img src="assets/icons/superpower-unlock.png" alt="" aria-hidden="true" />
-          </span>
-          <p><span class="first-word first-word--unlock">Unlock</span> life learnings to level up.</p>
-        </div>
-      </div>
+        <header class="parent-welcome__heading">
+          <h1 id="parent-welcome-title">You’re <span>All Set !</span></h1>
+          <p>Your family's journey toward raising confident, responsible, future‑ready kids begins today.</p>
+        </header>
 
-      <!-- new message ends-->
+        <div class="parent-welcome__benefits" aria-label="Your SuperMe benefits">
+          <article class="parent-welcome__benefit">
+            <img src="assets/figma/parent-welcome/benefit-build.png" alt="" aria-hidden="true" />
+            <div>
+              <h2><span>Build</span> habits that lasts</h2>
+              <p>Your family's journey toward raising confident, responsible, future‑ready kids begins today.</p>
+            </div>
+          </article>
+          <article class="parent-welcome__benefit">
+            <img src="assets/figma/parent-welcome/benefit-calm-days.png" alt="" aria-hidden="true" />
+            <div>
+              <h2>Create <span>Calmer</span> Days</h2>
+              <p>Habits, tasks, timetable, and rewards all in one place.</p>
+            </div>
+          </article>
+          <article class="parent-welcome__benefit">
+            <img src="assets/figma/parent-welcome/benefit-learning.png" alt="" aria-hidden="true" />
+            <div>
+              <h2>Make <span>learning</span> exciting</h2>
+              <p>Quizzes, challenges, and life-skills children actually enjoy</p>
+            </div>
+          </article>
+          <article class="parent-welcome__benefit">
+            <img src="assets/figma/parent-welcome/benefit-connected.png" alt="" aria-hidden="true" />
+            <div>
+              <h2>Stay <span>Connected</span></h2>
+              <p>Celebrate every milestone together as a family</p>
+            </div>
+          </article>
+        </div>
 
-      <div class="begin-action welcome-cta-btn w-100">
-        <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
-        <superme-button type="magenta" full text="Unlock My Potential" [disabled]="registrationInProgress" (click)="onBegin()"></superme-button>
-      </div>
-    </div>
+        <section class="parent-welcome__morning" aria-labelledby="parent-welcome-morning-title">
+          <h2 id="parent-welcome-morning-title">Here’s what you’ll see each morning</h2>
+          <div class="parent-welcome__morning-grid">
+            <article><img src="assets/figma/parent-welcome/morning-daily-focus.png" alt="" aria-hidden="true" /><span>Daily<br />Focus</span></article>
+            <article><img src="assets/figma/parent-welcome/morning-habit-streaks.png" alt="" aria-hidden="true" /><span>Habit<br />Streaks</span></article>
+            <article><img src="assets/figma/parent-welcome/morning-achievements.png" alt="" aria-hidden="true" /><span>Achievements</span></article>
+            <article><img src="assets/figma/parent-welcome/morning-learning-progress.png" alt="" aria-hidden="true" /><span>Learning<br />progress</span></article>
+            <article><img src="assets/figma/parent-welcome/morning-parenting-insight.png" alt="" aria-hidden="true" /><span>Parenting<br />Insight</span></article>
+            <article><img src="assets/figma/parent-welcome/morning-child-wins.png" alt="" aria-hidden="true" /><span>Your Child’s<br />Latest Wins</span></article>
+          </div>
+        </section>
+
+        <p class="parent-welcome__error" *ngIf="errorMessage" role="alert">{{ errorMessage }}</p>
+        <button type="button" class="parent-welcome__cta" [disabled]="registrationInProgress" (click)="onBegin()">
+          <ion-spinner *ngIf="registrationInProgress" name="crescent" aria-hidden="true"></ion-spinner>
+          <span>{{ registrationInProgress ? 'Unlocking...' : 'Unlock My Journey' }}</span>
+        </button>
+      </section>
+
+      <ng-template #sharedWelcomeScreen>
+        <div [@slideIn] class="welcome-page d-flex flex-column align-items-center justify-content-center gap-3" style="min-height: 90dvh; margin-top: 10dvh;">
+          <img src="assets/Images-Transparent/SuperMeLogoFinal3.png" alt="Onboarding pet" class="onboarding-image" />
+
+          <div class="welcome-content d-flex flex-column justify-content-center align-items-center gap-2">
+            <h1 class="superpower-title">Your Superpower is now active!</h1>
+            <p class="superpower-subtitle">You're set to master every part of your life. Here's what's waiting for you:</p>
+          </div>
+          <div class="new-messages superpower-list">
+            <div class="superpower-card">
+              <span class="superpower-icon"><img src="assets/icons/superpower-build.png" alt="" aria-hidden="true" /></span>
+              <p><span class="first-word first-word--build">Build</span> unbreakable habits that stick.</p>
+            </div>
+            <div class="superpower-card">
+              <span class="superpower-icon"><img src="assets/icons/superpower-crush.png" alt="" aria-hidden="true" /></span>
+              <p><span class="first-word first-word--crush">Crush</span> your daily tasks with ease.</p>
+            </div>
+            <div class="superpower-card">
+              <span class="superpower-icon"><img src="assets/icons/superpower-own.png" alt="" aria-hidden="true" /></span>
+              <p><span class="first-word first-word--own">Own</span> your time and stay ahead.</p>
+            </div>
+            <div class="superpower-card">
+              <span class="superpower-icon"><img src="assets/icons/superpower-unlock.png" alt="" aria-hidden="true" /></span>
+              <p><span class="first-word first-word--unlock">Unlock</span> life learnings to level up.</p>
+            </div>
+          </div>
+
+          <div class="begin-action welcome-cta-btn w-100">
+            <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+            <superme-button type="magenta" full text="Unlock My Potential" [disabled]="registrationInProgress" (click)="onBegin()"></superme-button>
+          </div>
+        </div>
+      </ng-template>
+    </ng-container>
 
     <section *ngIf="step === 6 && isManagedChildSignup" [@slideIn]
       class="managed-child-success" aria-labelledby="managed-child-success-title">

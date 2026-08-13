@@ -872,6 +872,36 @@ export class SignupComponent implements AfterViewInit, OnInit, OnDestroy {
     return this.managedChildSignup && this.currentRole === 'child';
   }
 
+  /**
+   * The Parent completion screen is entered from both normal registration and
+   * the family setup flow. Family setup deliberately clears the temporary
+   * signup role before returning here, so also use the persisted onboarding
+   * relationship, authenticated user, and one-time family acknowledgement.
+   */
+  get isParentWelcomeScreen(): boolean {
+    if (this.step !== 5) return false;
+
+    const registrationRole = String(
+      this.onboardingState.getRegistrationState()?.savedData?.relationship || ''
+    ).trim().toUpperCase();
+    const authenticatedRole = String(
+      this.authService.getUserData()?.relationship || ''
+    ).trim().toUpperCase();
+    let familyAcknowledgement = '';
+    try {
+      familyAcknowledgement = String(sessionStorage.getItem('family_connected_ack') || '')
+        .trim()
+        .toUpperCase();
+    } catch {
+      // The page remains usable when session storage is unavailable.
+    }
+
+    return this.currentRole === 'parent'
+      || registrationRole === 'PARENT'
+      || authenticatedRole === 'PARENT'
+      || familyAcknowledgement === 'PARENT';
+  }
+
   get isPostFamilyChildPetStep(): boolean {
     return this.step === 4
       && this.currentRole === 'child'

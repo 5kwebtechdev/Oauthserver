@@ -53,6 +53,7 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   isLikeRequestInProgress = false;
   isAboutExpanded = false;
   showContactSheet = false;
+  showUnlockConfirmation = false;
   selectedContactMethod: ContactMethod = 'call';
   isContactLaunching = false;
   isUnlockingContact = false;
@@ -95,6 +96,11 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
     }
   }
 
+  get isCounselorProfile(): boolean {
+    return String(this.route.snapshot.data?.['entityType'] || '').toUpperCase() === 'COUNSELOR'
+      || this.route.snapshot.routeConfig?.path?.startsWith('counselors/') === true;
+  }
+
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
     document.body.style.overflow = '';
@@ -135,6 +141,7 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
 
   private setTutor(tutor: Tutor): void {
     this.tutor = tutor;
+    this.isContactUnlocked = !!((tutor as any)?.unlocked || (tutor as any)?.isUnlocked);
     this.categoryFieldRows = this.buildCategoryFieldRows(this.tutorCategories);
     this.initializeLikeState(tutor);
   }
@@ -211,11 +218,11 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
   }
 
   getDisplayName(): string {
-    if (!this.tutor) return 'Tutor';
+    if (!this.tutor) return this.isCounselorProfile ? 'Counselor' : 'Tutor';
     if (this.isAcademyProfile()) {
       return this.tutor.entityName?.trim() || this.tutor.name?.trim() || 'Academy';
     }
-    return this.tutor.name?.trim() || this.tutor.entityName?.trim() || 'Tutor';
+    return this.tutor.name?.trim() || this.tutor.entityName?.trim() || (this.isCounselorProfile ? 'Counselor' : 'Tutor');
   }
 
   getProfileImage(): string {
@@ -436,6 +443,56 @@ export class TutorProfileComponent implements OnInit, OnDestroy {
         this.toastService.error(error?.error?.message || 'Unable to unlock contact details. Please try again.');
       }
     });
+  }
+
+  openUnlockConfirmation(): void {
+    if (this.isChildUser()) {
+      this.toastService.error('Ask your parent to unlock the counselor contact details.');
+      return;
+    }
+    if (this.isContactUnlocked) {
+      this.openContactSheet();
+      return;
+    }
+    if (!this.tutor || this.isUnlockingContact) return;
+    this.showUnlockConfirmation = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeUnlockConfirmation(): void {
+    if (this.isUnlockingContact) return;
+    this.showUnlockConfirmation = false;
+    document.body.style.overflow = '';
+  }
+
+  confirmUnlock(): void {
+    if (this.isUnlockingContact) return;
+    this.showUnlockConfirmation = false;
+    document.body.style.overflow = '';
+    this.requestUnlock();
+  }
+
+  getCoinBalance(): number {
+    const coins = Number(this.authService.getUserData()?.coins);
+    return Number.isFinite(coins) ? Math.max(0, coins) : 0;
+  }
+
+  getCounselorQualifications(): string {
+    return this.tutor?.qualification?.trim() || this.getProfileSubtitle() || 'Not specified';
+  }
+
+  getCounselorSpecializations(): string {
+    const rows = this.getTeachingRows();
+    const specializationRows = rows.filter(row => /special|subject|expert/i.test(row.label));
+    const values = specializationRows.map(row => row.value).filter(Boolean);
+    return values.join(', ') || this.getSubjectsString() || 'Not specified';
+  }
+
+  getCounselorFee(): string {
+    const fee = this.getHourlyRate();
+    return fee > 0
+      ? `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(fee)} ${this.getFeeTypeString()}`
+      : 'Not specified';
   }
 
   openContactSheet(): void {

@@ -174,11 +174,18 @@ export class LearningService {
     /**
      * Fetch all articles from backend
      */
-    fetchArticles(recoverWithEmpty = true): Observable<Article[]> {
+    fetchArticles(
+        recoverWithEmpty = true,
+        forUserId?: string | number | null
+    ): Observable<Article[]> {
         this.articlesLoading$.next(true);
         const age = this.getUserAge();
-        const url = age ? `${this.apiUrl}/articles?age=${age}` : `${this.apiUrl}/articles`;
-        return this.http.get<Article[] | Record<string, Article[]>>(url, { headers: this.getHeaders() })
+        let params = new HttpParams();
+        if (age != null) params = params.set('age', String(age));
+        if (forUserId != null && String(forUserId).trim()) {
+            params = params.set('forUserId', String(forUserId));
+        }
+        return this.http.get<Article[] | Record<string, Article[]>>(`${this.apiUrl}/articles`, { headers: this.getHeaders(), params })
             .pipe(
                 // The API can return either a bare array or an object like
                 // { articles: [...], completed: [...], pending: [...] } —
@@ -187,7 +194,11 @@ export class LearningService {
                 // catchError silently turned into a generic load failure.
                 map(response => this.normalizeScopedResponse<Article>(response, 'articles')),
                 tap(articles => {
-                    this.articlesCache$.next(articles);
+                    // Analytics asks for an explicit Child/Self context. Do not
+                    // replace the shared Learning feed cache with scoped stats.
+                    if (forUserId == null) {
+                        this.articlesCache$.next(articles);
+                    }
                     this.articlesLoading$.next(false);
                 }),
                 catchError(error => {
@@ -215,10 +226,17 @@ export class LearningService {
     /**
      * Fetch quizzes from dedicated endpoint
      */
-    fetchQuizCards(recoverWithEmpty = true): Observable<LearningCardData[]> {
+    fetchQuizCards(
+        recoverWithEmpty = true,
+        forUserId?: string | number | null
+    ): Observable<LearningCardData[]> {
         const age = this.getUserAge();
-        const url = age ? `${this.apiUrl}/challenges/quizzes?age=${age}` : `${this.apiUrl}/challenges/quizzes`;
-        return this.http.get<Challenge[] | Record<string, Challenge[]>>(url, { headers: this.getHeaders() }).pipe(
+        let params = new HttpParams();
+        if (age != null) params = params.set('age', String(age));
+        if (forUserId != null && String(forUserId).trim()) {
+            params = params.set('forUserId', String(forUserId));
+        }
+        return this.http.get<Challenge[] | Record<string, Challenge[]>>(`${this.apiUrl}/challenges/quizzes`, { headers: this.getHeaders(), params }).pipe(
             // Defensive against the same wrapped-response shape found on
             // /articles ({ quizzes: [...], completed: [...], pending: [...] }
             // instead of a bare array) — see fetchArticles().
@@ -234,21 +252,31 @@ export class LearningService {
     /**
      * Fetch puzzles from dedicated endpoint
      */
-    fetchPuzzleCards(): Observable<LearningCardData[]> {
+    fetchPuzzleCards(
+        recoverWithEmpty = true,
+        forUserId?: string | number | null
+    ): Observable<LearningCardData[]> {
         const age = this.getUserAge();
-        const url = age ? `${this.apiUrl}/challenges/puzzles?age=${age}` : `${this.apiUrl}/challenges/puzzles`;
-        return this.http.get<Challenge[] | Record<string, Challenge[]>>(url, { headers: this.getHeaders() }).pipe(
+        let params = new HttpParams();
+        if (age != null) params = params.set('age', String(age));
+        if (forUserId != null && String(forUserId).trim()) {
+            params = params.set('forUserId', String(forUserId));
+        }
+        return this.http.get<Challenge[] | Record<string, Challenge[]>>(`${this.apiUrl}/challenges/puzzles`, { headers: this.getHeaders(), params }).pipe(
             map(response => this.normalizeScopedResponse<Challenge>(response, 'puzzles')
                 .map(c => this.transformChallengeToCard(c))),
-            catchError(() => of([]))
+            catchError(error => recoverWithEmpty ? of([]) : throwError(() => error))
         );
     }
 
     /**
      * Fetch articles as cards from dedicated endpoint
      */
-    fetchArticleCards(recoverWithEmpty = true): Observable<LearningCardData[]> {
-        return this.fetchArticles(recoverWithEmpty).pipe(
+    fetchArticleCards(
+        recoverWithEmpty = true,
+        forUserId?: string | number | null
+    ): Observable<LearningCardData[]> {
+        return this.fetchArticles(recoverWithEmpty, forUserId).pipe(
             map(articles => articles.map(a => this.transformArticleToCard(a)))
         );
     }

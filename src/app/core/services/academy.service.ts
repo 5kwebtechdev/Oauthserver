@@ -287,9 +287,15 @@ export class AcademyService {
     );
   }
 
-  getAcademyFeed(age?: number): Observable<AcademyFeedResponse> {
+  getAcademyFeed(
+    age?: number,
+    forUserId?: string | number | null,
+  ): Observable<AcademyFeedResponse> {
     let params = new HttpParams();
     if (age != null) params = params.set('age', String(age));
+    if (forUserId != null && String(forUserId).trim()) {
+      params = params.set('forUserId', String(forUserId));
+    }
     return this.http.get<AcademyFeedResponse>(`${this.base}/courses/academy-feed`, {
       headers: this.getHeaders(),
       params,

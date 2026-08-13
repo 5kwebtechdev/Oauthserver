@@ -2,55 +2,371 @@
   display: block;
   height: 100%;
   overflow: hidden;
-  border-radius: 16px;
 }
 
 .analytics-content {
-  --background: #ffffff;
-  // Global ion-content styling already applies the top safe-area inset.
-  // Reserve the footer space here, in Ionic's actual scroll container.
-  --padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 16px);
+  --background: transparent;
+  --padding-bottom: calc(var(--footer-visual-height, 80px) + var(--sab, env(safe-area-inset-bottom, 0px)) + 20px);
 }
+
 .analytics-page {
-  min-height: 100%;
-  padding: 0 0 16px;
   box-sizing: border-box;
-  background: #ffffff;
+  min-height: 100%;
+  padding: 0 16px 24px;
+  background:
+    radial-gradient(ellipse 105% 40% at -24% -3%, rgba(211, 216, 242, 0.88) 0%, rgba(221, 224, 243, 0.62) 38%, transparent 70%),
+    radial-gradient(ellipse 88% 34% at 116% 11%, rgba(253, 223, 230, 0.9) 0%, rgba(252, 228, 234, 0.64) 43%, transparent 73%),
+    radial-gradient(ellipse 115% 41% at -22% 91%, rgba(255, 229, 206, 0.88) 0%, rgba(255, 232, 211, 0.58) 43%, transparent 74%),
+    radial-gradient(ellipse 103% 40% at 116% 80%, rgba(221, 241, 232, 0.9) 0%, rgba(227, 243, 236, 0.58) 44%, transparent 74%),
+    #f7f6f6;
 }
 
 .analytics-header {
-  min-height: 48px;
   display: flex;
+  align-items: flex-start;
+  gap: 0;
+  padding-top: max(8px, env(safe-area-inset-top, 0px));
+  margin: 0 -8px 20px;
+}
+
+.analytics-back {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 16px;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 24px;
+  color: #282527;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #442477;
+    outline-offset: -2px;
+  }
+}
+
+.analytics-heading {
+  min-width: 0;
+  padding-top: 7px;
+
+  h1,
+  p {
+    margin: 0;
+  }
 
   h1 {
-    margin: 0;
     color: #282527;
     font-family: var(--font-heading, 'Fredoka', sans-serif);
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 500;
+    line-height: 1.4;
+  }
+
+  p {
+    color: #6b656a;
+    font-family: var(--font-sans, 'Nunito', sans-serif);
+    font-size: 13px;
+    font-weight: 600;
     line-height: 1.4;
   }
 }
 
-.analytics-back {
-  width: 48px;
-  height: 36px;
+.insights-sections,
+.insights-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 393px;
+  margin: 0 auto;
+}
+
+.insights-section,
+.insights-skeleton__section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.insights-section h2 {
+  margin: 0;
+  color: #282527;
+  font-family: var(--font-heading, 'Fredoka', sans-serif);
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.insight-card {
+  --metric-color: #8b8dcb;
+  --metric-soft: #e8ecf7;
+  --metric-shadow: rgba(116, 113, 186, 0.5);
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px 8px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 0 2px 1px var(--metric-shadow);
+
+  &--habit {
+    --metric-color: #8b8dcb;
+    --metric-soft: #e8ecf7;
+    --metric-shadow: rgba(116, 113, 186, 0.5);
+  }
+
+  &--task {
+    --metric-color: #f6ac72;
+    --metric-soft: #fdead7;
+    --metric-shadow: rgba(238, 102, 33, 0.5);
+  }
+
+  &--knowledge {
+    --metric-color: #e1527c;
+    --metric-soft: #fcf3f6;
+    --metric-shadow: rgba(207, 51, 89, 0.5);
+  }
+
+  &--journal,
+  &--achievement {
+    --metric-color: #432477;
+    --metric-soft: #ebe6f5;
+    --metric-shadow: rgba(67, 36, 119, 0.5);
+  }
+}
+
+.insight-card__top {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.insight-card__visual {
   display: inline-flex;
-  flex: 0 0 48px;
+  flex: 0 0 40px;
   align-items: center;
-  justify-content: flex-start;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
 
   img {
-    width: 26px;
-    height: 26px;
+    display: block;
+    width: 48px;
+    height: 48px;
     object-fit: contain;
   }
 }
-// End of Insights page styles.
+
+.insight-card__value-block {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-top: 0;
+}
+
+.insight-card__label,
+.insight-card__value,
+.insight-card__description {
+  margin: 0;
+}
+
+.insight-card__label {
+  overflow: hidden;
+  color: #6b656a;
+  font-family: var(--font-sans, 'Nunito', sans-serif);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.insight-card__value {
+  display: block;
+  overflow: hidden;
+  color: var(--metric-color);
+  font-family: var(--font-sans, 'Nunito', sans-serif);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.insight-card__description {
+  display: -webkit-box;
+  min-height: 32px;
+  padding: 4px 6px;
+  overflow: hidden;
+  color: #878286;
+  font-family: var(--font-sans, 'Nunito', sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: normal;
+  background: var(--metric-soft);
+  border-radius: 12px;
+  box-shadow: 0 0 2px 1px var(--metric-shadow);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.insights-state {
+  max-width: 361px;
+  margin: 32px auto 0;
+  padding: 24px 20px;
+  text-align: center;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 0 2px 1px rgba(116, 113, 186, 0.28);
+
+  h2,
+  p {
+    margin: 0;
+  }
+
+  h2 {
+    color: #282527;
+    font-family: var(--font-heading, 'Fredoka', sans-serif);
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  p {
+    margin-top: 8px;
+    color: #6b656a;
+    font-family: var(--font-sans, 'Nunito', sans-serif);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+}
+
+.state-button {
+  min-width: 112px;
+  min-height: 40px;
+  margin-top: 18px;
+  padding: 8px 20px;
+  color: #ffffff;
+  font-family: var(--font-sans, 'Nunito', sans-serif);
+  font-size: 14px;
+  font-weight: 700;
+  border: 0;
+  border-radius: 12px;
+  background: #452184;
+  box-shadow: 0 2px 5px rgba(69, 33, 132, 0.24);
+}
+
+.skeleton-line,
+.skeleton-orb {
+  display: block;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.52), rgba(232, 236, 247, 0.96), rgba(255, 255, 255, 0.52));
+  background-size: 200% 100%;
+  animation: insights-shimmer 1.3s ease-in-out infinite;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 999px;
+
+  &--title {
+    width: 104px;
+    height: 24px;
+  }
+
+  &--label {
+    width: 72px;
+  }
+
+  &--value {
+    width: 42px;
+    height: 26px;
+    margin-top: 4px;
+  }
+
+  &--description {
+    width: 100%;
+    height: 32px;
+    margin-top: auto;
+  }
+}
+
+.skeleton-card {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr;
+  gap: 6px 8px;
+  min-height: 110px;
+  padding: 12px 8px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 0 2px 1px rgba(116, 113, 186, 0.32);
+
+  .skeleton-orb {
+    grid-row: 1 / span 2;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+
+  .skeleton-line--description {
+    grid-column: 1 / -1;
+  }
+}
+
+@keyframes insights-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@media (max-width: 359px) {
+  .analytics-page {
+    padding-inline: 12px;
+  }
+
+  .insights-grid {
+    gap: 12px;
+  }
+
+  .insight-card {
+    padding-inline: 7px;
+  }
+
+  .insight-card__visual {
+    flex-basis: 34px;
+    width: 34px;
+    height: 34px;
+
+    img {
+      width: 42px;
+      height: 42px;
+    }
+  }
+
+  .insight-card__label {
+    font-size: 13px;
+  }
+}

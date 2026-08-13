@@ -1,0 +1,159 @@
+<ion-content fullscreen class="eduhub-events-content">
+  <div class="eduhub-events-page">
+    <header class="events-hero">
+      <div class="events-toolbar">
+        <div class="events-toolbar__title">
+          <button type="button" class="toolbar-button toolbar-button--back" aria-label="Back" (click)="goBack()">
+            <img src="assets/figma/parent-eduhub-inner/back.svg" alt="" aria-hidden="true">
+          </button>
+          <h1>{{ title }}</h1>
+        </div>
+
+        <button type="button" class="toolbar-button toolbar-button--search" aria-label="Search listings"
+          [attr.aria-expanded]="searchOpen" (click)="toggleSearch()">
+          <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
+        </button>
+      </div>
+
+      <div class="events-search" *ngIf="searchOpen">
+        <img src="assets/figma/parent-eduhub-inner/search.svg" alt="" aria-hidden="true">
+        <input #searchInput type="search" autocomplete="off" [value]="searchQuery"
+          [placeholder]="'Search ' + title.toLowerCase()"
+          (input)="updateSearch(searchInput.value)">
+        <button type="button" aria-label="Close search" (click)="toggleSearch()">×</button>
+      </div>
+
+      <div class="events-hero__content">
+        <div class="events-speech" aria-hidden="true">
+          <img src="assets/figma/parent-eduhub-inner/speech-bubble.svg" alt="">
+          <p>Find exciting <strong>{{ title }}</strong><br>around you.</p>
+        </div>
+        <img class="events-mascot" src="assets/figma/eduhub-events/hero-panda.png" alt="" aria-hidden="true">
+      </div>
+    </header>
+
+    <main class="events-main">
+      <button type="button" class="refer-card" (click)="referForListing()">
+        <img class="refer-card__icon" src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+        <span class="refer-card__copy">
+          <strong>Know an Organizer?</strong>
+          <small>Refer them to get listed on EduHub.</small>
+        </span>
+        <span class="refer-card__cta">Refer for listing</span>
+      </button>
+
+      <section class="events-section" aria-labelledby="events-nearby-title">
+        <header class="events-section__header">
+          <div class="events-section__copy">
+            <h2 id="events-nearby-title">{{ sectionTitle }}</h2>
+            <p>Classifieds listings only. Contact sellers directly to enquire or buy.</p>
+          </div>
+
+          <div class="verified-filter" (click)="$event.stopPropagation()">
+            <button type="button" class="verified-filter__button" [attr.aria-expanded]="filterOpen"
+              (click)="toggleFilter($event)">
+              <span>{{ activeFilterLabel }}</span>
+              <img src="assets/figma/parent-eduhub-inner/chevron.svg" alt="" aria-hidden="true">
+            </button>
+            <div class="verified-filter__menu" *ngIf="filterOpen" role="menu">
+              <button type="button" role="menuitem" [class.is-selected]="activeFilter === 'verified'"
+                (click)="selectFilter('verified', $event)">Verified</button>
+              <button type="button" role="menuitem" [class.is-selected]="activeFilter === 'all'"
+                (click)="selectFilter('all', $event)">All</button>
+            </div>
+          </div>
+        </header>
+
+        <div class="events-loading" *ngIf="isLoading" aria-label="Loading listings">
+          <article class="event-card event-card--skeleton" *ngFor="let card of loadingCards">
+            <span class="skeleton skeleton--image"></span>
+            <span class="skeleton skeleton--title"></span>
+            <span class="skeleton skeleton--line"></span>
+            <span class="skeleton skeleton--actions"></span>
+          </article>
+        </div>
+
+        <div class="events-state events-state--error" *ngIf="!isLoading && errorMessage">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+          <h3>Couldn’t load {{ title.toLowerCase() }}</h3>
+          <p>{{ errorMessage }}</p>
+          <button type="button" (click)="retry()">Retry</button>
+        </div>
+
+        <div class="events-state" *ngIf="!isLoading && !errorMessage && !visibleItems.length">
+          <img src="assets/figma/parent-eduhub-inner/refer-listing.png" alt="" aria-hidden="true">
+          <h3>{{ searchQuery || activeFilter === 'verified' && items.length ? 'No matching listings' : 'No listings available yet' }}</h3>
+          <p *ngIf="searchQuery || activeFilter === 'verified' && items.length">Try another search or show all listings.</p>
+          <p *ngIf="!searchQuery && !(activeFilter === 'verified' && items.length)">New {{ title.toLowerCase() }} will appear here when they are added.</p>
+          <button *ngIf="!searchQuery && !(activeFilter === 'verified' && items.length)" type="button" (click)="referForListing()">Refer for listing</button>
+        </div>
+
+        <div class="events-list" *ngIf="!isLoading && !errorMessage && visibleItems.length">
+          <ng-container *ngFor="let item of visibleItems; let index = index; trackBy: trackItem">
+            <article class="event-card">
+              <div class="event-card__top">
+                <div class="event-card__image" [class.event-card__image--empty]="!getImage(item)">
+                  <img *ngIf="getImage(item)" [src]="getImage(item)" [alt]="item.name"
+                    (error)="onImageError(item)">
+                </div>
+
+                <div class="event-card__details">
+                  <div class="event-card__header">
+                    <div class="event-card__identity">
+                      <div class="event-card__name-row">
+                        <h3>{{ item.name }}</h3>
+                        <img *ngIf="item.verified" class="event-card__verified"
+                          src="assets/figma/parent-eduhub-inner/verified.png" alt="Verified" title="Verified">
+                      </div>
+                      <p *ngIf="getLocation(item)" class="event-card__location">
+                        <img src="assets/figma/parent-eduhub-inner/location.svg" alt="" aria-hidden="true">
+                        <span>{{ getLocation(item) }}</span>
+                      </p>
+                    </div>
+
+                    <div class="event-card__quick-actions">
+                      <button type="button" class="quick-action quick-action--favourite"
+                        [class.is-selected]="isFavourite(item)"
+                        [attr.aria-label]="isFavourite(item) ? 'Remove from favourites' : 'Add to favourites'"
+                        (click)="toggleFavourite(item)">
+                        <span class="quick-action__heart" aria-hidden="true"></span>
+                      </button>
+                      <button type="button" class="quick-action quick-action--share" aria-label="Share listing"
+                        (click)="shareItem(item)">
+                        <img src="assets/figma/parent-eduhub-inner/share.svg" alt="" aria-hidden="true">
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="event-card__footer">
+                <span *ngIf="getFeeLabel(item)" class="event-card__fee" [class.event-card__fee--free]="getFeeLabel(item) === 'FREE'">
+                  {{ getFeeLabel(item) }}
+                </span>
+                <button type="button" class="event-card__details-button" (click)="openDetails(item)">
+                  View Details
+                </button>
+              </div>
+            </article>
+
+            <ad-banner *ngIf="index === 2" class="events-ad" [screen]="eduAdScreen" variant="eduhub-inner"
+              aria-label="Featured EduHub offers"></ad-banner>
+          </ng-container>
+        </div>
+
+        <div class="pagination-error" *ngIf="!isLoading && !errorMessage && paginationError">
+          <span>{{ paginationError }}</span>
+          <button type="button" (click)="retryPagination()">Retry</button>
+        </div>
+
+        <ion-infinite-scroll *ngIf="!isLoading && !errorMessage && canLoadMore" threshold="160px"
+          (ionInfinite)="loadNextPage($event)">
+          <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading more listings…"></ion-infinite-scroll-content>
+        </ion-infinite-scroll>
+      </section>
+    </main>
+  </div>
+
+  <app-footer></app-footer>
+</ion-content>
