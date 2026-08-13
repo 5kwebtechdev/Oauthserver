@@ -549,7 +549,7 @@
           [attr.aria-hidden]="!showReferral">
           <div class="referral-input-inner">
             <div class="input-group">
-              <label class="signup-entry-sr-label" for="signup-referral-code">Referral code</label>
+              <label class="referral-field-label" for="signup-referral-code">Referral code</label>
               <input #referralInput id="signup-referral-code" type="text" [value]="referralCode"
                 (input)="onReferralInput($event)" (focus)="onReferralFieldFocus($event)"
                 (blur)="onReferralFieldBlur()" [disabled]="!showReferral"

@@ -176,6 +176,15 @@ export class TutorCardComponent implements OnInit, OnDestroy {
    */
   selectCategory(category: EduHubCategory): void {
     if (this.selectedCategoryKey === category.key) return;
+
+    // Counselors use their own EduHub directory.  Opening the generic tutor
+    // preview here caused Parent and Self users to land in the legacy tutor
+    // experience instead of the dedicated counselor screen used by children.
+    if (category.key === 'counselors') {
+      void this.router.navigateByUrl(category.route);
+      return;
+    }
+
     this.selectedCategoryKey = category.key;
 
     if (category.key === 'tutors' && !this.tutorService.isLoaded) {

@@ -370,3 +370,68 @@
     font-size: 13px;
   }
 }
+
+/* Keep the two-column Insights cards readable on very narrow devices. */
+@media (max-width: 280px) {
+  .analytics-page {
+    padding-inline: 8px;
+  }
+
+  .insights-sections,
+  .insights-skeleton {
+    gap: 16px;
+  }
+
+  .insights-section,
+  .insights-skeleton__section {
+    gap: 10px;
+  }
+
+  .insights-section h2 {
+    font-size: 14px;
+  }
+
+  .insights-grid {
+    gap: 8px;
+  }
+
+  .insight-card {
+    gap: 6px;
+    min-height: 82px;
+    padding: 8px 6px;
+    border-radius: 12px;
+  }
+
+  .insight-card__top {
+    gap: 5px;
+  }
+
+  .insight-card__visual {
+    flex-basis: 22px;
+    width: 22px;
+    height: 22px;
+
+    img {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  .insight-card__label {
+    font-size: 10px;
+    line-height: 1.2;
+  }
+
+  .insight-card__value {
+    font-size: 17px;
+    line-height: 1.15;
+  }
+
+  .insight-card__description {
+    min-height: 26px;
+    padding: 3px 4px;
+    font-size: 9px;
+    line-height: 1.2;
+    border-radius: 8px;
+  }
+}

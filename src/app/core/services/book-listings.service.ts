@@ -73,14 +73,12 @@ export class BookListingsService {
   unlockContact(id: number): Observable<BookListing> { return this.http.post<BookListing>(`${this.baseUrl}/${id}/unlock-contact`, {}, { headers: this.headers() }); }
   mine(): Observable<BookListing[] | BookListingPage> { return this.http.get<BookListing[] | BookListingPage>(`${this.baseUrl}/mine`, { headers: this.headers() }); }
   create(request: BookListingCreateRequest, images: File[]): Observable<BookListing> {
-    let params = new HttpParams();
-    Object.entries(request).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') params = params.set(key, String(value));
-    });
-
     const data = new FormData();
+    Object.entries(request).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') data.append(key, String(value));
+    });
     images.forEach(image => data.append('images', image, image.name));
-    return this.http.post<BookListing>(this.baseUrl, data, { headers: this.headers(), params });
+    return this.http.post<BookListing>(this.baseUrl, data, { headers: this.headers() });
   }
   update(id: number, data: FormData): Observable<BookListing> { return this.http.put<BookListing>(`${this.baseUrl}/${id}`, data, { headers: this.headers() }); }
   markAsSold(id: number): Observable<BookListing> { return this.http.put<BookListing>(`${this.baseUrl}/${id}/mark-sold`, {}, { headers: this.headers() }); }
