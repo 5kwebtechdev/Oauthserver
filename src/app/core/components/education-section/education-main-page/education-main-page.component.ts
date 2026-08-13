@@ -246,7 +246,11 @@ export class EducationMainPageComponent implements OnInit {
         }
 
         if (category.kind === 'store') {
-            if (category.id === 'second-hand-books') {
+            // Shop cards receive the `store-` ID prefix when constructed. Use
+            // that runtime ID (and the label as a safe fallback) so this card
+            // always opens the buyer/seller/listings entry screen, rather than
+            // the generic shop listing page.
+            if (category.id === 'store-second-hand-books' || category.label.toLowerCase() === 'second-hand books') {
                 void this.router.navigate(['/authed/second-hand-books']);
                 return;
             }

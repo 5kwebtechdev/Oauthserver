@@ -177,10 +177,10 @@ export class TutorCardComponent implements OnInit, OnDestroy {
   selectCategory(category: EduHubCategory): void {
     if (this.selectedCategoryKey === category.key) return;
 
-    // Counselors use their own EduHub directory.  Opening the generic tutor
-    // preview here caused Parent and Self users to land in the legacy tutor
-    // experience instead of the dedicated counselor screen used by children.
-    if (category.key === 'counselors') {
+    // These categories have dedicated EduHub flows. Opening an inline preview
+    // here made the card feel unresponsive and prevented users from reaching
+    // the required entry screen.
+    if (category.key === 'counselors' || category.key === 'second-hand-books') {
       void this.router.navigateByUrl(category.route);
       return;
     }

@@ -30,8 +30,10 @@ interface BuyerPreferences {
   subject: string;
   degree: string;
   stream: string;
+  year: string;
   exam: string;
   genre: string;
+  language: string;
   title: string;
   author: string;
 }
@@ -167,18 +169,17 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
     switch (this.buyer.bookType) {
       case 'college':
         return [
-          { key: 'degree', label: 'Degree', options: ['B.A.', 'B.Com', 'B.Sc.', 'B.Tech', 'M.A.', 'M.Sc.', 'Other'] },
-          { key: 'stream', label: 'Stream', options: ['Arts', 'Commerce', 'Science', 'Engineering', 'Medical', 'Other'] },
-          { key: 'subject', label: 'Subject', options: ['Mathematics', 'Science', 'English', 'Computer Science', 'Other'] }
+          { key: 'degree', label: 'Degree / Stream', options: ['B.A. (Arts)', 'B.Com (Commerce)', 'B.Sc. (Science)', 'B.Tech (Engineering)', 'M.A. (Arts)', 'M.Sc. (Science)', 'Other'] },
+          { key: 'year', label: 'Year / Semester', options: ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Semester 1', 'Semester 2', 'Semester 3', 'Semester 4', 'Semester 5', 'Semester 6', 'Other'] }
         ];
       case 'exam':
         return [
-          { key: 'exam', label: 'Exam', options: ['JEE', 'NEET', 'UPSC', 'CUET', 'SSC', 'Other'] },
-          { key: 'subject', label: 'Subject', options: ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'General Knowledge'] }
+          { key: 'exam', label: 'Target Exam', options: ['JEE', 'NEET', 'UPSC', 'CUET', 'SSC', 'Other'] }
         ];
       case 'general':
         return [
-          { key: 'genre', label: 'Genre', options: ['Fiction', 'Non-fiction', 'Biography', 'Self-help', 'Children', 'Other'] }
+          { key: 'genre', label: 'Genre', options: ['Fiction', 'Non-fiction', 'Biography', 'Self-help', 'Children', 'Other'] },
+          { key: 'language', label: 'Language', options: ['English', 'Hindi', 'Punjabi', 'Tamil', 'Telugu', 'Other'] }
         ];
       default:
         return [
@@ -426,8 +427,6 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
   }
 
   searchBooks(): void {
-    if (!this.isBuyerReady) return;
-
     this.savePreferences();
     this.view = 'listings';
     void this.loadPublicListings();
@@ -807,7 +806,21 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
       this.buyerLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
     } catch { this.buyerLocation = null; }
     const typeMap: Record<BookType, BookListingType> = { school: 'SCHOOL', college: 'COLLEGE', exam: 'EXAM_PREP', general: 'GENERAL' };
-    this.bookListings.list({ bookType: typeMap[this.buyer.bookType], userLat: this.buyerLocation?.lat, userLng: this.buyerLocation?.lng, page: 0, size: 20 }).subscribe({
+    this.bookListings.list({
+      bookType: typeMap[this.buyer.bookType],
+      bookClass: this.buyer.bookType === 'school' ? this.buyer.classLevel : undefined,
+      board: this.buyer.bookType === 'school' ? this.buyer.board : undefined,
+      subject: this.buyer.bookType === 'school' ? this.buyer.subject : undefined,
+      degreeStream: this.buyer.bookType === 'college' ? this.buyer.degree : undefined,
+      year: this.buyer.bookType === 'college' ? this.buyer.year : undefined,
+      targetExam: this.buyer.bookType === 'exam' ? this.buyer.exam : undefined,
+      genre: this.buyer.bookType === 'general' ? this.buyer.genre : undefined,
+      language: this.buyer.bookType === 'general' ? this.buyer.language : undefined,
+      userLat: this.buyerLocation?.lat,
+      userLng: this.buyerLocation?.lng,
+      page: 0,
+      size: 20
+    }).subscribe({
       next: page => { this.listings = Array.isArray(page?.content) ? page.content : []; this.listingsLoading = false; },
       error: () => { this.listingsLoading = false; this.listingsError = 'Unable to load nearby books. Please try again.'; }
     });
@@ -1042,8 +1055,10 @@ export class SecondHandBooksComponent implements OnInit, OnDestroy {
       subject: '',
       degree: '',
       stream: '',
+      year: '',
       exam: '',
       genre: '',
+      language: '',
       title: '',
       author: ''
     };

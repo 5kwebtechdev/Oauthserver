@@ -61,7 +61,7 @@ export class BookListingsService {
   private readonly baseUrl = `${environment.apiUrl}/book-listings`;
   constructor(private readonly http: HttpClient, private readonly auth: AuthService) {}
 
-  list(filters: { bookType?: BookListingType; condition?: BookListingCondition; minPrice?: number; maxPrice?: number; userLat?: number; userLng?: number; page?: number; size?: number } = {}): Observable<BookListingPage> {
+  list(filters: { bookType?: BookListingType; condition?: BookListingCondition; bookClass?: string; board?: string; subject?: string; degreeStream?: string; year?: string; targetExam?: string; genre?: string; language?: string; minPrice?: number; maxPrice?: number; userLat?: number; userLng?: number; page?: number; size?: number } = {}): Observable<BookListingPage> {
     let params = new HttpParams().set('page', String(filters.page ?? 0)).set('size', String(filters.size ?? 20));
     Object.entries(filters).forEach(([key, value]) => { if (value != null && !['page', 'size'].includes(key)) params = params.set(key, String(value)); });
     return this.http.get<BookListingPage>(this.baseUrl, { headers: this.headers(), params });

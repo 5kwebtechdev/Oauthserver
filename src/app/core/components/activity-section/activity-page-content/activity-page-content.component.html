@@ -18,13 +18,15 @@
                 </button>
             </div>
 
-            <div class="child-week-days">
+            <div class="child-week-days" (pointerdown)="onChildDateCarouselPointerDown($event)"
+                (pointerup)="onChildDateCarouselPointerUp($event)" (pointercancel)="onChildDateCarouselPointerUp($event)">
                 <button type="button" class="child-week-day" *ngFor="let day of childWeekDates"
                     [class.is-selected]="isChildDateSelected(day)" (click)="selectChildDate(day)"
                     [attr.aria-label]="(day | date:'fullDate')">
                     <span>{{ day | date:'EEE' }}</span>
                     <strong>{{ day | date:'d' }}</strong>
-                    <i class="child-date-dots" aria-hidden="true">
+                    <i class="child-date-dots" aria-hidden="true"
+                        [class.has-single-dot]="childDateActivityCount(day) === 1">
                         <b class="habit-dot" [class.is-visible]="getChildDateActivities(day).habit"></b>
                         <b class="task-dot" [class.is-visible]="getChildDateActivities(day).task"></b>
                         <b class="planner-dot" [class.is-visible]="getChildDateActivities(day).planner"></b>
@@ -82,11 +84,11 @@
                 </button>
                 <button type="button" [class.is-active]="childCalendarTab === 'habit'" class="tab-habit"
                     (click)="selectChildCalendarTab('habit')">
-                    <img src="assets/figma/child-activity/tab-habit.png" alt="" /><span>Habit</span>
+                    <img src="assets/figma/child-home/glance-habit.png" alt="" /><span>Habit</span>
                 </button>
                 <button type="button" [class.is-active]="childCalendarTab === 'task'" class="tab-task"
                     (click)="selectChildCalendarTab('task')">
-                    <img src="assets/figma/child-activity/tab-task.png" alt="" /><span>Task</span>
+                    <img src="assets/figma/child-home/glance-task.png" alt="" /><span>Task</span>
                 </button>
                 <button type="button" [class.is-active]="childCalendarTab === 'planner'" class="tab-planner"
                     (click)="selectChildCalendarTab('planner')">
@@ -94,7 +96,8 @@
                 </button>
             </nav>
 
-            <div class="child-status-filters" aria-label="Filter by status" *ngIf="childCalendarTab !== 'planner'">
+            <div class="child-status-filters" aria-label="Filter by status"
+                *ngIf="childCalendarTab === 'habit' || childCalendarTab === 'task'">
                 <button type="button" [class.is-active]="childStatusFilter === 'pending'" class="status-pending"
                     (click)="selectChildStatusFilter('pending')">Pending</button>
                 <button type="button" [class.is-active]="childStatusFilter === 'ongoing'" class="status-ongoing"
